@@ -3,25 +3,31 @@
 from __future__ import annotations
 
 import argparse
-import io
-import subprocess
 import sys
 import tarfile
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
+
+try:
+    from scripts.subprocess_guard import run_monitored_phase, run_process
+except ModuleNotFoundError:  # executed directly from scripts/
+    from subprocess_guard import run_monitored_phase, run_process
 
 
 class ValidationError(Exception):
     pass
 
 
-def run_git(repo_root: Path, *args: str, text: bool = True) -> subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]:
-    return subprocess.run(
-        ["git", *args],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=text,
+def run_git(repo_root: Path, *args: str, text: bool = True):  # noqa: ANN201
+    result = run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
+    if text:
+        return result
+    return SimpleNamespace(
+        args=result.args,
+        returncode=result.returncode,
+        stdout=result.stdout.encode("utf-8", errors="surrogateescape"),
+        stderr=result.stderr.encode("utf-8", errors="surrogateescape"),
     )
 
 
@@ -34,18 +40,24 @@ def ensure_git_commit(repo_root: Path, ref: str) -> None:
 
 
 def extract_snapshot(repo_root: Path, ref: str, snapshot_root: Path) -> None:
-    archive = run_git(repo_root, "archive", "--format=tar", ref, text=False)
+    archive_path = snapshot_root.parent / "snapshot.tar"
+    archive_path.unlink(missing_ok=True)
+    snapshot_root.parent.mkdir(parents=True, exist_ok=True)
+    archive = run_process(
+        ["git", "archive", "--format=tar", "--output", str(archive_path), ref],
+        cwd=repo_root,
+        timeout_seconds=None,
+    )
     if archive.returncode != 0:
-        stderr = archive.stderr.decode("utf-8", errors="replace")
         raise ValidationError(
-            f"could not archive git ref `{ref}` in `{repo_root}`:\nSTDERR:\n{stderr}"
+            f"could not archive git ref `{ref}` in `{repo_root}`:\nSTDERR:\n{archive.stderr}"
         )
     snapshot_root.mkdir(parents=True, exist_ok=True)
-    with tarfile.open(fileobj=io.BytesIO(archive.stdout), mode="r:") as tar:
+    with tarfile.open(archive_path, mode="r:") as tar:
         tar.extractall(snapshot_root)
 
 
-def validate_snapshot(snapshot_root: Path) -> subprocess.CompletedProcess[str]:
+def validate_snapshot(snapshot_root: Path):  # noqa: ANN201
     script_path = snapshot_root / "scripts" / "validate_packaging.py"
     if not script_path.is_file():
         raise ValidationError(f"snapshot is missing `{script_path.relative_to(snapshot_root)}`")
@@ -61,17 +73,17 @@ def validate_snapshot(snapshot_root: Path) -> subprocess.CompletedProcess[str]:
     # What survives is the part that was never about the export: the committed manifests
     # and marketplace records still have to be well-formed and agree with each other,
     # and a malformed one reaches consumers exactly the way it always did.
-    return subprocess.run(
+    return run_monitored_phase(
         [
-            "python3",
+            sys.executable,
             str(script_path),
             "--repo-root",
             str(snapshot_root),
         ],
         cwd=snapshot_root,
-        check=False,
-        capture_output=True,
-        text=True,
+        phase="packaging-snapshot-validation",
+        timeout_seconds=None,
+        capture=True,
     )
 
 

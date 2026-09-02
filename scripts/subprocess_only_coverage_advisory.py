@@ -13,7 +13,7 @@ mutation-coverage producer (`scripts/mutation_sampling_lib.py`) writes a
 `COVERAGE_PROCESS_START` / `PYTHONPATH`, so a child process that inherits the
 parent environment IS measured. That is not a code-reading inference: it was
 measured, with a purpose-built control. A script whose ONLY exercise was
-`subprocess.run([sys.executable, <in-repo path>], ...)` with an inherited
+an interpreter child launched for an in-repo path with an inherited
 environment — no import, no in-process call, no copy — had its executed lines
 attributed and its unexercised branch correctly reported missing. (A first attempt
 at this measurement used `tests/quality_gates/test_release_narrative_audit.py` and
@@ -69,6 +69,7 @@ What it deliberately does NOT claim:
 
 It is not a gate, not a blocking condition, and it never suppresses a blocker.
 """
+
 from __future__ import annotations
 
 import ast
@@ -82,7 +83,9 @@ BASELINE_REL = "scripts/boundary-bypass-baseline.json"
 _COPY_FUNCS = frozenset({"copy", "copy2", "copyfile", "copytree"})
 
 
-def load_subprocess_boundary_pairs(repo_root: Path, *, baseline_rel: str = BASELINE_REL) -> dict[str, list[str]]:
+def load_subprocess_boundary_pairs(
+    repo_root: Path, *, baseline_rel: str = BASELINE_REL
+) -> dict[str, list[str]]:
     """`{script_path: [test_file, ...]}` from the boundary-bypass ratchet baseline.
 
     Absent, unreadable, or malformed baseline -> `{}`. This is advisory-only, so a
@@ -206,8 +209,7 @@ def _spawn_of_this_script_replaces_env(tree: ast.AST, script_path: str) -> bool:
         if not isinstance(node, ast.Call) or not _is_spawn_call(node):
             continue
         if not any(
-            _mentions_script(value, script_path)
-            for value in _iter_spawn_command_strings(node)
+            _mentions_script(value, script_path) for value in _iter_spawn_command_strings(node)
         ):
             continue
         for keyword in node.keywords:
@@ -456,7 +458,9 @@ def advisory_scope_line(scope: dict[str, object] | None) -> str | None:
     if not scope or scope.get("files_named"):
         return None
     if scope.get("error"):
-        return f"subprocess-coverage advisory did not run ({scope['error']}); silence is unexamined.\n"
+        return (
+            f"subprocess-coverage advisory did not run ({scope['error']}); silence is unexamined.\n"
+        )
     return (
         f"subprocess-coverage advisory examined {scope.get('candidate_tests_examined', 0)} candidate "
         f"test file(s) across {scope.get('blocked_files_examined', 0)} blocked file(s) "

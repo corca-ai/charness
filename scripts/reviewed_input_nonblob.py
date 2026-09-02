@@ -19,14 +19,19 @@ from __future__ import annotations
 
 import hashlib
 import os
-import subprocess
+import tempfile
 from pathlib import Path
+
+try:
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:  # loaded as a standalone sibling module
+    from subprocess_guard import run_process
 
 
 def _git_bytes_optional(repo_root: Path, *args: str) -> bytes | None:
     """None for a git that ran and failed, or for a genuinely ABSENT working directory.
 
-    `subprocess.run(cwd=...)` raises `FileNotFoundError` when the directory is
+    A guarded process launch raises `FileNotFoundError` when the directory is
     gone, which a function named `_optional` must not do to its caller: a
     submodule deleted from disk while its gitlink stays in the index crashed
     identity construction instead of falling through to the pre-image the
@@ -40,13 +45,29 @@ def _git_bytes_optional(repo_root: Path, *args: str) -> bytes | None:
     exists to close, so anything that is not an absent directory propagates.
     """
     try:
-        result = subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True)
+        result = run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
     except FileNotFoundError:
         if repo_root.exists():
             # The directory is there, so the missing thing is `git` itself.
             raise
         return None
-    return result.stdout if result.returncode == 0 else None
+    return (
+        result.stdout.encode("utf-8", errors="surrogateescape") if result.returncode == 0 else None
+    )
+
+
+def _run_with_input(repo_root: Path, command: list[str], payload: bytes):
+    """Use the guard while preserving a binary stdin payload for Git batch mode."""
+    with tempfile.TemporaryFile() as source:
+        source.write(payload)
+        source.seek(0)
+        saved_stdin = os.dup(0)
+        try:
+            os.dup2(source.fileno(), 0)
+            return run_process(command, cwd=repo_root, timeout_seconds=None)
+        finally:
+            os.dup2(saved_stdin, 0)
+            os.close(saved_stdin)
 
 
 def _sha256(payload: bytes) -> str:
@@ -65,18 +86,14 @@ GitlinkSnapshot = dict[tuple[Path, str, str | None], str | None]
 GitObjectSnapshot = dict[tuple[Path, str], bytes | None]
 
 
-def _object_or_show(
-    repo_root: Path, spec: str, snapshot: GitObjectSnapshot | None
-) -> bytes | None:
+def _object_or_show(repo_root: Path, spec: str, snapshot: GitObjectSnapshot | None) -> bytes | None:
     key = (repo_root.resolve(), spec)
     if snapshot is not None and key in snapshot:
         return snapshot[key]
     return _git_bytes_optional(repo_root, "show", spec)
 
 
-def _parse_cat_file_batch(
-    output: bytes, specs: list[str]
-) -> dict[str, bytes | None] | None:
+def _parse_cat_file_batch(output: bytes, specs: list[str]) -> dict[str, bytes | None] | None:
     values: dict[str, bytes | None] = {}
     offset = 0
     for spec in specs:
@@ -120,15 +137,12 @@ def _git_objects_optional(
                 cache[(root, spec)] = _git_bytes_optional(repo_root, "show", spec)
         else:
             try:
-                result = subprocess.run(
+                result = _run_with_input(
+                    repo_root,
                     ["git", "cat-file", "--batch"],
-                    cwd=repo_root,
-                    input=b"".join(
-                        spec.encode("utf-8", errors="surrogateescape") + b"\n"
-                        for spec in pending
+                    b"".join(
+                        spec.encode("utf-8", errors="surrogateescape") + b"\n" for spec in pending
                     ),
-                    check=False,
-                    capture_output=True,
                 )
             except OSError:
                 result = None
@@ -136,7 +150,9 @@ def _git_objects_optional(
                 for spec in pending:
                     cache[(root, spec)] = _git_bytes_optional(repo_root, "show", spec)
             else:
-                parsed = _parse_cat_file_batch(result.stdout, pending)
+                parsed = _parse_cat_file_batch(
+                    result.stdout.encode("utf-8", errors="surrogateescape"), pending
+                )
                 if parsed is None:
                     for spec in pending:
                         cache[(root, spec)] = _git_bytes_optional(repo_root, "show", spec)
@@ -215,17 +231,13 @@ def _prepare_path_snapshots(
         return
     if committed_ref:
         target_specs = [f"{base_head}:{path}" for path in paths]
-        target_content = _git_objects_optional(
-            repo_root, target_specs, git_object_snapshot
-        )
+        target_content = _git_objects_optional(repo_root, target_specs, git_object_snapshot)
         missing_target = [
             path for path, spec in zip(paths, target_specs) if target_content[spec] is None
         ]
         if not missing_target:
             return
-        gitlink_snapshot.update(
-            _gitlink_snapshot_for_paths(repo_root, missing_target, base_head)
-        )
+        gitlink_snapshot.update(_gitlink_snapshot_for_paths(repo_root, missing_target, base_head))
         for preimage_ref in preimage_refs or ():
             gitlink_snapshot.update(
                 _gitlink_snapshot_for_paths(repo_root, missing_target, preimage_ref)
@@ -245,31 +257,21 @@ def _prepare_path_snapshots(
     if not needs_index:
         return
     unknown_gitlinks = [
-        path
-        for path in needs_index
-        if (repo_root.resolve(), path, None) not in gitlink_snapshot
+        path for path in needs_index if (repo_root.resolve(), path, None) not in gitlink_snapshot
     ]
-    gitlink_snapshot.update(
-        _gitlink_snapshot_for_paths(repo_root, unknown_gitlinks, None)
-    )
+    gitlink_snapshot.update(_gitlink_snapshot_for_paths(repo_root, unknown_gitlinks, None))
     needs_staged = [
         path
         for path in needs_index
         if gitlink_snapshot.get((repo_root.resolve(), path, None)) is None
     ]
     staged_specs = [f":{path}" for path in needs_staged]
-    staged_content = _git_objects_optional(
-        repo_root, staged_specs, git_object_snapshot
-    )
+    staged_content = _git_objects_optional(repo_root, staged_specs, git_object_snapshot)
     needs_head = [
-        path
-        for path, spec in zip(needs_staged, staged_specs)
-        if staged_content[spec] is None
+        path for path, spec in zip(needs_staged, staged_specs) if staged_content[spec] is None
     ]
     if needs_head:
-        gitlink_snapshot.update(
-            _gitlink_snapshot_for_paths(repo_root, needs_head, base_head)
-        )
+        gitlink_snapshot.update(_gitlink_snapshot_for_paths(repo_root, needs_head, base_head))
         _git_objects_optional(
             repo_root,
             [f"{base_head}:{path}" for path in needs_head],
@@ -323,9 +325,9 @@ def _current_pointer_payload(repo_root: Path, path: str) -> str | None:
         # record verified as `current`. Refuse instead; the same shape as catching
         # every OSError around the submodule checkout.
         selected = _sha256(resolved.read_bytes())
-    return _sha256(
-        b"current-pointer\0" + os.fsencode(target) + b"\0" + selected.encode("ascii")
-    )
+    return _sha256(b"current-pointer\0" + os.fsencode(target) + b"\0" + selected.encode("ascii"))
+
+
 def _checked_out_gitlink_commit(path: str, submodule_root: Path) -> str | None:
     """The commit the submodule is CHECKED OUT at, or None to fall back to the record.
 

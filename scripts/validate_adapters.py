@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
+import io
 import json
-import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
 
@@ -17,6 +19,8 @@ load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
 validate_adapter_version = _scripts_adapter_lib_module.validate_adapter_version
 _scripts_critique_adapter_lib_module = import_repo_module(__file__, "scripts.critique_adapter_lib")
 load_critique_adapter = _scripts_critique_adapter_lib_module.load_adapter
+
+
 def _load_retro_resolver_module():
     for relative in (
         Path("skills/public/retro/scripts/resolve_adapter.py"),
@@ -67,16 +71,58 @@ def expected_artifact_filename(skill_id: str) -> str:
     return current_artifact_filename(skill_id)
 
 
+def _run_resolver_in_process(path: Path, root: Path) -> SimpleNamespace:
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    module_name = f"validate_adapters_resolver_{abs(hash(path.resolve()))}"
+    with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+        try:
+            module = load_path_module(module_name, path)
+            load_adapter = getattr(module, "load_adapter", None)
+            if callable(load_adapter):
+                return SimpleNamespace(
+                    returncode=0,
+                    stdout=json.dumps(load_adapter(root)),
+                    stderr=stderr.getvalue(),
+                )
+
+            main = getattr(module, "main", None)
+            if not callable(main):
+                if stdout.getvalue():
+                    return SimpleNamespace(
+                        returncode=0,
+                        stdout=stdout.getvalue(),
+                        stderr=stderr.getvalue(),
+                    )
+                raise ValidationError(f"{path}: resolver has no load_adapter or main")
+            previous_argv = sys.argv
+            sys.argv = [str(path), "--repo-root", str(root)]
+            try:
+                result = main()
+            except SystemExit as exc:
+                result = exc.code
+            finally:
+                sys.argv = previous_argv
+            return SimpleNamespace(
+                returncode=result if isinstance(result, int) else 0,
+                stdout=stdout.getvalue(),
+                stderr=stderr.getvalue(),
+            )
+        except Exception as exc:
+            return SimpleNamespace(
+                returncode=1,
+                stdout=stdout.getvalue(),
+                stderr=f"{stderr.getvalue()}{exc}\n",
+            )
+
+
 def validate_resolver(path: Path, root: Path) -> None:
     skill_id = path.parent.parent.name
-    completed = subprocess.run(
-        ["python3", str(path), "--repo-root", str(root)],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    completed = _run_resolver_in_process(path, root)
     if completed.returncode != 0:
-        raise ValidationError(f"{path}: exited with code {completed.returncode}: {completed.stderr.strip()}")
+        raise ValidationError(
+            f"{path}: exited with code {completed.returncode}: {completed.stderr.strip()}"
+        )
     # PyYAML stays OPTIONAL here, mirroring the producer. `yaml_output.render_yaml`
     # falls back to compact JSON when PyYAML is absent, so on such an interpreter the
     # resolver emits JSON and `json.loads` reads it. The migration's first cut hoisted
@@ -157,23 +203,33 @@ def validate_charness_quality_commands(path: Path, data: dict) -> None:
 
 
 def validate_charness_quality_adapter_contract(path: Path, data: dict) -> None:
-    if path.name != "quality-adapter.yaml" or path.parent.name != ".agents" or data.get("repo") != "charness":
+    if (
+        path.name != "quality-adapter.yaml"
+        or path.parent.name != ".agents"
+        or data.get("repo") != "charness"
+    ):
         return
 
     missing = [field for field in CHARNESS_QUALITY_ADAPTER_REQUIRED_FIELDS if field not in data]
     if missing:
         rendered = ", ".join(f"`{field}`" for field in missing)
-        raise ValidationError(f"{path}: mature charness quality adapter must explicitly declare {rendered}")
+        raise ValidationError(
+            f"{path}: mature charness quality adapter must explicitly declare {rendered}"
+        )
 
     product_surfaces = data.get("product_surfaces")
-    if not isinstance(product_surfaces, list) or not {"installable_cli", "bundled_skill"}.issubset(product_surfaces):
+    if not isinstance(product_surfaces, list) or not {"installable_cli", "bundled_skill"}.issubset(
+        product_surfaces
+    ):
         raise ValidationError(
             f"{path}: product_surfaces must explicitly include `installable_cli` and `bundled_skill`"
         )
 
     canonical_surfaces = data.get("canonical_markdown_surfaces")
     required_surfaces = {"AGENTS.md", "CLAUDE.md", "docs/index.md"}
-    if not isinstance(canonical_surfaces, list) or not required_surfaces.issubset(canonical_surfaces):
+    if not isinstance(canonical_surfaces, list) or not required_surfaces.issubset(
+        canonical_surfaces
+    ):
         raise ValidationError(
             f"{path}: canonical_markdown_surfaces must explicitly include AGENTS.md, CLAUDE.md, and docs/index.md"
         )
@@ -265,7 +321,9 @@ def validate_adapter_integration_schema(path: Path) -> None:
     try:
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        raise ValidationError(f"{schema_path}: integration manifest schema is unreadable: {exc}") from exc
+        raise ValidationError(
+            f"{schema_path}: integration manifest schema is unreadable: {exc}"
+        ) from exc
     # Parse with yaml.safe_load like the runtime consumers (not the minimal
     # adapter_lib parser) so the commit-time verdict matches the runtime owner.
     try:
@@ -277,7 +335,9 @@ def validate_adapter_integration_schema(path: Path) -> None:
     try:
         jsonschema.validate(data, schema)
     except jsonschema.ValidationError as exc:
-        raise ValidationError(f"{path}: rejected by integration schema {schema_path}: {exc.message}") from exc
+        raise ValidationError(
+            f"{path}: rejected by integration schema {schema_path}: {exc.message}"
+        ) from exc
 
 
 def _require_declared_version(path: Path) -> None:
@@ -338,9 +398,7 @@ def main() -> int:
 
     root = args.repo_root.resolve()
     snapshot = RepoFileSnapshot(root, require_git=args.require_git_file_listing)
-    resolvers = iter_resolvers(
-        root, require_git=args.require_git_file_listing, snapshot=snapshot
-    )
+    resolvers = iter_resolvers(root, require_git=args.require_git_file_listing, snapshot=snapshot)
     adapter_yaml = iter_adapter_yaml(
         root, require_git=args.require_git_file_listing, snapshot=snapshot
     )
@@ -354,7 +412,9 @@ def main() -> int:
         validate_adapter_yaml(path)
         validate_adapter_integration_schema(path)
 
-    print(f"Validated {len(resolvers)} adapter resolvers and {len(adapter_yaml)} adapter YAML file(s).")
+    print(
+        f"Validated {len(resolvers)} adapter resolvers and {len(adapter_yaml)} adapter YAML file(s)."
+    )
     return 0
 
 

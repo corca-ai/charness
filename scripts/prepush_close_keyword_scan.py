@@ -32,16 +32,27 @@ Not claimed by this reader:
     coverage hole, not a diagnosis; the guard next door turns a nonzero count into a
     no-verdict exit rather than judging the remainder as if it were the push.
 """
+
 from __future__ import annotations
 
 import re
-import subprocess
 from pathlib import Path
 from typing import Any
 
 ZERO_SHA = "0" * 40
 GIT_TIMEOUT_SECONDS = 30
 NO_VERDICT_EXIT = 2
+
+try:
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:  # executed directly from scripts/
+    try:
+        from subprocess_guard import run_process
+    except ModuleNotFoundError:
+
+        def run_process(*_args: Any, **_kwargs: Any):
+            raise ModuleNotFoundError("subprocess_guard")
+
 
 # The close verbs and the three ref forms GitHub closes on, spelled exactly as the
 # canonical scanner now spells them. `GH-123` and the full issue URL were once visible
@@ -50,9 +61,7 @@ NO_VERDICT_EXIT = 2
 # REDUNDANT second reader, not the only one that can see them.
 _VERB = r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?:\s*:\s*|\s+)"
 _SLUG = r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"
-_REF = (
-    rf"(?:(?:{_SLUG})?\#\d+|GH-\d+|https?://(?:www\.)?github\.com/{_SLUG}/issues/\d+)"
-)
+_REF = rf"(?:(?:{_SLUG})?\#\d+|GH-\d+|https?://(?:www\.)?github\.com/{_SLUG}/issues/\d+)"
 # The comma-list form applies to every spelling, not only to `#N`. Keeping `GH-`/URL
 # out of the list grammar left `Closes GH-10, GH-11` reporting only 10 -- under-fire
 # on the one surface whose job is to be at least as wide as GitHub.
@@ -77,18 +86,11 @@ class RangeUnreadable(RuntimeError):
     """The push range could not be resolved. Distinct from a refusal: the guard
     judged nothing, so its exit code must not be confused with a pass."""
 
+
 def _git(repo_root: Path, *args: str) -> str:
-    try:
-        result = subprocess.run(
-            ["git", *args],
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=GIT_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired as exc:
-        raise RangeUnreadable(f"git {' '.join(args)} timed out after {GIT_TIMEOUT_SECONDS}s") from exc
+    result = run_process(["git", *args], cwd=repo_root, timeout_seconds=GIT_TIMEOUT_SECONDS)
+    if result.returncode == 124:
+        raise RangeUnreadable(f"git {' '.join(args)} timed out after {GIT_TIMEOUT_SECONDS}s")
     if result.returncode != 0:
         raise RangeUnreadable(f"git {' '.join(args)} failed: {result.stderr.strip()!r}")
     return result.stdout
@@ -127,7 +129,15 @@ def parse_push_stdin(text: str) -> list[dict[str, str]]:
             }
         )
     if not refs and dropped:
-        return [{"local_ref": "", "local_sha": "", "remote_ref": "", "remote_sha": "", "dropped_lines": dropped}]
+        return [
+            {
+                "local_ref": "",
+                "local_sha": "",
+                "remote_ref": "",
+                "remote_sha": "",
+                "dropped_lines": dropped,
+            }
+        ]
     for ref in refs:
         ref["dropped_lines"] = dropped
     return refs
@@ -225,8 +235,15 @@ def commit_paths(repo_root: Path, sha: str) -> list[str]:
     # and its declared classification lost, which is the defect this reader exists to
     # fix, arriving through the filename instead of through the parse.
     out = _git(
-        repo_root, "-c", "core.quotePath=false",
-        "diff-tree", "--no-commit-id", "--name-only", "--diff-filter=ACM", "-r", sha,
+        repo_root,
+        "-c",
+        "core.quotePath=false",
+        "diff-tree",
+        "--no-commit-id",
+        "--name-only",
+        "--diff-filter=ACM",
+        "-r",
+        sha,
     )
     return [line.strip() for line in out.splitlines() if line.strip()]
 
@@ -276,5 +293,3 @@ def local_numbers(qualified: list[tuple[str | None, int]], repo: str) -> set[int
         for ref_repo, number in qualified
         if ref_repo is None or ref_repo.lower() == repo.lower()
     }
-
-

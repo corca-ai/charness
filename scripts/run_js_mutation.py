@@ -4,11 +4,13 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import os
-import subprocess
 import sys
 from pathlib import Path
+
+from scripts.subprocess_guard import run_monitored_phase
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = Path("stryker.config.mjs")
@@ -26,6 +28,21 @@ JS_MUTATION_MUTANT_WEIGHTS = {
     "scripts/agent-runtime/run-local-eval-test.mjs": 668,
     "scripts/agent-runtime/skill-test-telemetry.mjs": 86,
 }
+
+
+@contextlib.contextmanager
+def _redirect_child_stdio(log):
+    saved_stdout = os.dup(1)
+    saved_stderr = os.dup(2)
+    try:
+        os.dup2(log.fileno(), 1)
+        os.dup2(log.fileno(), 2)
+        yield
+    finally:
+        os.dup2(saved_stdout, 1)
+        os.dup2(saved_stderr, 2)
+        os.close(saved_stdout)
+        os.close(saved_stderr)
 
 
 def resolve(repo_root: Path, path: Path) -> Path:
@@ -75,9 +92,7 @@ def select_js_targets(repo_root: Path, *, mode: str) -> list[str]:
         return targets
     missing_weights = sorted(set(targets) - set(JS_MUTATION_MUTANT_WEIGHTS))
     if missing_weights:
-        raise SystemExit(
-            "missing JS mutation mutant weights for: " + ", ".join(missing_weights)
-        )
+        raise SystemExit("missing JS mutation mutant weights for: " + ", ".join(missing_weights))
     non_positive_weights = sorted(path for path in targets if JS_MUTATION_MUTANT_WEIGHTS[path] <= 0)
     if non_positive_weights:
         raise SystemExit(
@@ -109,7 +124,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--timeout-seconds",
         type=int,
-        default=positive_int(os.environ.get("MUTATION_JS_TIMEOUT_SECONDS"), DEFAULT_TIMEOUT_SECONDS),
+        default=positive_int(
+            os.environ.get("MUTATION_JS_TIMEOUT_SECONDS"), DEFAULT_TIMEOUT_SECONDS
+        ),
     )
     return parser.parse_args()
 
@@ -135,7 +152,9 @@ def main() -> int:
 
     targets = select_js_targets(repo_root, mode=args.mode)
     if not targets:
-        raise SystemExit("no JS mutation targets selected; adjust MUTATION_JS_MAX_MUTANTS or MUTATION_JS_TARGETS")
+        raise SystemExit(
+            "no JS mutation targets selected; adjust MUTATION_JS_MAX_MUTANTS or MUTATION_JS_TARGETS"
+        )
     env = {**os.environ, "MUTATION_JS_TARGETS": " ".join(targets)}
 
     with log_path.open("w", encoding="utf-8") as log:
@@ -143,23 +162,26 @@ def main() -> int:
         log.write(f"MUTATION_JS_TARGETS={env['MUTATION_JS_TARGETS']}\n")
         log.write(f"STRYKER_JS_REPORT={report_path}\n")
         log.flush()
+        terminal_stderr = os.fdopen(os.dup(2), "w", buffering=1, closefd=True)
         try:
-            result = subprocess.run(
-                command,
-                cwd=repo_root,
-                check=False,
-                text=True,
-                stdout=log,
-                stderr=subprocess.STDOUT,
-                timeout=args.timeout_seconds,
-                env=env,
-            )
-        except subprocess.TimeoutExpired:
+            with _redirect_child_stdio(log):
+                outcome = run_monitored_phase(
+                    command,
+                    cwd=repo_root,
+                    phase="stryker-js",
+                    timeout_seconds=args.timeout_seconds,
+                    env=env,
+                    capture=False,
+                    stream=terminal_stderr,
+                )
+        finally:
+            terminal_stderr.close()
+        if outcome.timed_out:
             log.write(f"\nStrykerJS mutation timed out after {args.timeout_seconds}s.\n")
             return 124
 
     sys.stdout.write(f"StrykerJS {args.mode} log written to {log_path}\n")
-    return result.returncode
+    return outcome.returncode
 
 
 if __name__ == "__main__":

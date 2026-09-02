@@ -35,11 +35,11 @@ from __future__ import annotations
 import argparse
 import ast
 import re
-import subprocess
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from scripts.subprocess_guard import run_process
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
@@ -202,18 +202,19 @@ def slice_base_paths(repo_root: Path, against: str, fallback: list[str]) -> list
     the measured incident replayed exactly. Falls back to the caller's set when
     the base does not resolve.
     """
-    proc = subprocess.run(
+    proc = run_process(
         ["git", "-C", str(repo_root), "diff", "--name-only", f"{against}...HEAD"],
-        check=False,
-        capture_output=True,
-        text=True,
+        cwd=repo_root,
+        timeout_seconds=None,
     )
     if proc.returncode != 0:
         return fallback
     return sorted(set(fallback) | {line for line in proc.stdout.split() if line.endswith(".py")})
 
 
-def advise_removed_name_consumers(repo_root: Path, changed_paths: list[str], against: str = "HEAD") -> None:
+def advise_removed_name_consumers(
+    repo_root: Path, changed_paths: list[str], against: str = "HEAD"
+) -> None:
     """Print an ADVISORY naming the files that still read a deleted module-level name."""
     changed_paths = slice_base_paths(Path(repo_root), against, list(changed_paths))
     candidates = [

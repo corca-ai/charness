@@ -13,6 +13,7 @@ The runner keeps the pytest COMMAND (targets, xdist, scheduling) and the RUN
 itself (monitored child, run record). Nothing here spawns pytest or reads the
 runner's arguments; the dependency points one way.
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -21,16 +22,19 @@ import hashlib
 import os
 import re
 import shutil
-import subprocess
 import sys
 import time
 from pathlib import Path
+
+try:
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:  # executed directly from scripts/
+    from subprocess_guard import run_process
 
 FAILED_BASETEMP_KEEP = 3
 _RUN_BASETEMP_NAME = re.compile(r"^charness-run-[0-9]+$")
 _FAILED_BASETEMP_MARKER = ".charness-failed-run"
 _KEPT_BASETEMP_MARKER = ".charness-explicitly-kept-run"
-
 
 
 def repo_tmp_key(repo_root: Path) -> str:
@@ -76,12 +80,9 @@ def ensure_external_temp_root(repo_root: Path, temp_root: Path) -> None:
 def default_basetemp(repo_root: Path, env: dict[str, str] | None = None) -> Path:
     temp_root = default_temp_root(repo_root, env)
     ensure_external_temp_root(repo_root, temp_root)
-    user = subprocess.run(
-        ["id", "-un"],
-        check=False,
-        capture_output=True,
-        text=True,
-    ).stdout.strip() or "unknown"
+    user = (
+        run_process(["id", "-un"], cwd=repo_root, timeout_seconds=None).stdout.strip() or "unknown"
+    )
     # The leaf MUST NOT start with "pytest-". This basetemp lives under the shared
     # PYTEST_DEBUG_TEMPROOT/pytest-of-<user> rootdir, and nested pytest runs spawned
     # by tests inherit PYTEST_DEBUG_TEMPROOT and run pytest's numbered-dir cleanup

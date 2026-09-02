@@ -5,9 +5,13 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-import subprocess
 from pathlib import Path
 from typing import Any
+
+try:
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:  # loaded as a standalone sibling module
+    from subprocess_guard import run_process
 
 ALGORITHM = "sha256-v2"
 SUBSTRATE_WORKING_TREE = "working-tree"
@@ -44,9 +48,7 @@ PROVENANCE_FIELDS = ("auto_excluded_paths",)
 class ReviewedInputError(ValueError):
     """Typed refusal while constructing or validating a review substrate."""
 
-    def __init__(
-        self, code: str, message: str, *, details: dict[str, Any] | None = None
-    ) -> None:
+    def __init__(self, code: str, message: str, *, details: dict[str, Any] | None = None) -> None:
         self.code = code
         self.details = details or {}
         super().__init__(message)
@@ -71,19 +73,15 @@ def _substrate_mode(changed_ref: str | None, substrate_mode: str | None) -> str:
     return mode
 
 
-
-
 def _git_bytes(repo_root: Path, *args: str) -> bytes:
     if args == ("rev-parse", "HEAD"):
         oid = _checkout.head_oid_from_files(repo_root)
         if oid:
             return oid.encode("ascii") + b"\n"
-    result = subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True)
+    result = run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
     if result.returncode != 0:
-        raise ValueError(
-            f"git {' '.join(args)} failed: {result.stderr.decode(errors='replace').strip()}"
-        )
-    return result.stdout
+        raise ValueError(f"git {' '.join(args)} failed: {result.stderr.strip()}")
+    return result.stdout.encode("utf-8", errors="surrogateescape")
 
 
 def _git_bytes_optional(repo_root: Path, *args: str) -> bytes | None:
@@ -91,16 +89,14 @@ def _git_bytes_optional(repo_root: Path, *args: str) -> bytes | None:
         oid = _checkout.head_oid_from_files(repo_root)
         if oid:
             return oid.encode("ascii") + b"\n"
-    result = subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True)
-    return result.stdout if result.returncode == 0 else None
+    result = run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
+    return (
+        result.stdout.encode("utf-8", errors="surrogateescape") if result.returncode == 0 else None
+    )
 
 
 def _sha256(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
-
-
-
-
 
 
 try:
@@ -122,6 +118,7 @@ _worktree_content_sha256 = _worktree.content_sha256
 
 def _working_tree_snapshot(repo_root: Path) -> WorkingTreeSnapshot:
     return _worktree.capture(repo_root, _git_bytes)
+
 
 _nonblob = _load_sibling("reviewed_input_nonblob")
 _current_pointer_payload = _nonblob._current_pointer_payload
@@ -156,14 +153,13 @@ def _with_identity_digest(components: dict[str, Any]) -> dict[str, Any]:
     provenance_only = components.get("base_head_role") == "provenance-only"
     for field in PROVENANCE_FIELDS + (WORKING_TREE_PROVENANCE_FIELDS if provenance_only else ()):
         digest_components.pop(field, None)
-    canonical = json.dumps(digest_components, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-    return {**components, "identity_sha256": _sha256(canonical.encode("utf-8", errors="surrogateescape"))}
-
-
-
-
-
-
+    canonical = json.dumps(
+        digest_components, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    )
+    return {
+        **components,
+        "identity_sha256": _sha256(canonical.encode("utf-8", errors="surrogateescape")),
+    }
 
 
 def _review_paths(
@@ -189,8 +185,8 @@ def _review_paths(
         paths = sorted(set(reviewed_paths))
     if mode == SUBSTRATE_COMMITTED_REF:
         try:
-            expected_paths = swept if swept is not None else set(
-                _auto_paths(repo_root, changed_ref)
+            expected_paths = (
+                swept if swept is not None else set(_auto_paths(repo_root, changed_ref))
             )
         except ValueError as exc:
             _fail("changed-ref-unavailable", str(exc))
@@ -228,9 +224,7 @@ def _review_paths(
         candidate = _checked_path(repo_root, path)
         if not candidate.is_dir() or candidate.is_symlink():
             continue
-        gitlink_snapshot.update(
-            _gitlink_snapshot_for_paths(repo_root, [path], None)
-        )
+        gitlink_snapshot.update(_gitlink_snapshot_for_paths(repo_root, [path], None))
         if _gitlink_sha256(repo_root, path, None, gitlink_snapshot) is not None:
             # A gitlink LOOKS like a directory on disk but binds a commit id, so
             # "declare the individual files" names files that do not exist.
@@ -349,17 +343,13 @@ def _committed_ref_digest(
             return _sha256(previous), True
         # `git show <ref>:<path>` cannot read a gitlink, so a REMOVED submodule
         # fell through both the deletion fallback and the gitlink binder.
-        removed_gitlink = _gitlink_sha256(
-            repo_root, path, preimage_ref, gitlink_snapshot
-        )
+        removed_gitlink = _gitlink_sha256(repo_root, path, preimage_ref, gitlink_snapshot)
         if removed_gitlink is not None:
             return removed_gitlink, True
     return None, False
 
 
-def _recorded_blob_digest(
-    repo_root: Path, path: str, tree_ref: str | None, blob: bytes
-) -> str:
+def _recorded_blob_digest(repo_root: Path, path: str, tree_ref: str | None, blob: bytes) -> str:
     """Digest a recovered blob the same way a present file is digested.
 
     `_worktree_content_sha256` folds the exec bit in, because `chmod +x` on a
@@ -523,9 +513,7 @@ def build_reviewed_input_identity(
     # nothing is lost by asking it first. The auto sweep stays after the snapshot:
     # it reads git itself, and its failure is the `unavailable` verdict.
     selected = (
-        select_paths()
-        if reviewed_paths is not None and mode == SUBSTRATE_WORKING_TREE
-        else None
+        select_paths() if reviewed_paths is not None and mode == SUBSTRATE_WORKING_TREE else None
     )
     status_snapshot: WorkingTreeSnapshot | None = None
     try:

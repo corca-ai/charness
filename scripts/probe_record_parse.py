@@ -23,8 +23,9 @@ carries the full list.
 from __future__ import annotations
 
 import re
-import subprocess
 from pathlib import Path
+
+from scripts.subprocess_guard import run_process
 
 # FIELD LINES START AT COLUMN 0. The permissive `^\s*` this replaces made every indented
 # line a candidate field, so a markdown sub-list under a value (`  - the exit status: 0 vs
@@ -107,7 +108,9 @@ def parse_probe_record(text: str) -> dict:
                     # heading seeds `""`, and an EMPTY first fence is still a fence that
                     # ran, so a truthiness guard silently overwrote it instead of
                     # appending the second -- the one case the append was added for.
-                    sections[heading] = f"{sections[heading]}\n{body}".strip("\n") if heading in filled else body
+                    sections[heading] = (
+                        f"{sections[heading]}\n{body}".strip("\n") if heading in filled else body
+                    )
                     filled.add(heading)
                 fence = None
                 buffer = []
@@ -219,12 +222,8 @@ def _read_source(repo_root: Path, rel: str, revision: str | None) -> tuple[str |
     """
     if revision:
         try:
-            done = subprocess.run(
-                ["git", "show", f"{revision}:{rel}"],
-                cwd=repo_root,
-                capture_output=True,
-                text=True,
-                check=False,
+            done = run_process(
+                ["git", "show", f"{revision}:{rel}"], cwd=repo_root, timeout_seconds=None
             )
         except OSError as exc:  # pragma: no cover - git absent from PATH
             return None, f"could not run git to read `{rel}` at `{revision}`: {exc}"
@@ -235,7 +234,6 @@ def _read_source(repo_root: Path, rel: str, revision: str | None) -> tuple[str |
         return (repo_root / rel).read_text(encoding="utf-8"), None
     except (OSError, UnicodeDecodeError) as exc:
         return None, f"could not read `{rel}`: {exc}"
-
 
 
 def verify_source_quote(
@@ -281,10 +279,19 @@ def verify_source_quote(
     ref = (source_ref or "").strip().strip("`")
     nonlocal_ref = bool(_NONLOCAL_REF_RE.match(ref))
     if not ref or not _substantive(source_text):
-        return {"status": "unresolvable", "reason": "no source ref or no quoted source text",
-                "path": None, "local": not nonlocal_ref}
+        return {
+            "status": "unresolvable",
+            "reason": "no source ref or no quoted source text",
+            "path": None,
+            "local": not nonlocal_ref,
+        }
     if nonlocal_ref:
-        return {"status": "unresolvable", "reason": f"`{ref}` is not a path this repo can open", "path": None, "local": False}
+        return {
+            "status": "unresolvable",
+            "reason": f"`{ref}` is not a path this repo can open",
+            "path": None,
+            "local": False,
+        }
     match = _LOCAL_REF_RE.match(ref)
     if match is None:
         return {

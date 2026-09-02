@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import subprocess
 import time
 from pathlib import Path
 from typing import Any
@@ -8,6 +7,9 @@ from typing import Any
 from runtime_bootstrap import import_repo_module
 
 _adapter_lib_module = import_repo_module(__file__, "scripts.adapter_lib")
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
+TIMEOUT_EXIT_CODE = _subprocess_guard.TIMEOUT_EXIT_CODE
 load_yaml_file = _adapter_lib_module.load_yaml_file
 validate_adapter_version = _adapter_lib_module.validate_adapter_version
 
@@ -99,7 +101,9 @@ def _validate_doctor_section(doctor: Any, errors: list[str]) -> None:
         else:
             seen_ids: set[str] = set()
             for index, entry in enumerate(checks):
-                _validate_doctor_check_entry(entry, f"manifest.doctor.checks[{index}]", errors, seen_ids)
+                _validate_doctor_check_entry(
+                    entry, f"manifest.doctor.checks[{index}]", errors, seen_ids
+                )
     disabled = doctor.get("disable_canonical_checks")
     if disabled is not None:
         _validate_disabled_checks(disabled, errors)
@@ -143,7 +147,9 @@ def _validate_argv(argv: Any, label: str, errors: list[str]) -> None:
             return
 
 
-def _validate_doctor_check_entry(entry: Any, label: str, errors: list[str], seen_ids: set[str]) -> None:
+def _validate_doctor_check_entry(
+    entry: Any, label: str, errors: list[str], seen_ids: set[str]
+) -> None:
     if not isinstance(entry, dict):
         errors.append(f"{label} must be a mapping")
         return
@@ -181,7 +187,9 @@ def run_doctor(repo_root: Path, *, require_isolation: bool = False) -> dict[str,
             "next_step": f"Fix manifest at {MANIFEST_RELATIVE_PATH}: {'; '.join(manifest_state.errors)}",
         }
     disabled_raw = (
-        manifest_state.data.get("doctor", {}).get("disable_canonical_checks", []) if manifest_state.data else []
+        manifest_state.data.get("doctor", {}).get("disable_canonical_checks", [])
+        if manifest_state.data
+        else []
     )
     disabled = {entry for entry in disabled_raw if isinstance(entry, str)}
     canonical, facts = run_canonical_checks_with_facts(
@@ -244,14 +252,7 @@ def _execute_prepare_command(entry: dict[str, Any], repo_root: Path) -> tuple[Co
     timeout = int(entry.get("timeout_seconds") or DEFAULT_PREPARE_TIMEOUT_SECONDS)
     start = time.monotonic()
     try:
-        result = subprocess.run(
-            argv,
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
+        result = run_process(argv, cwd=repo_root, timeout_seconds=timeout)
     except FileNotFoundError as exc:
         duration_ms = int((time.monotonic() - start) * 1000)
         return (
@@ -265,10 +266,10 @@ def _execute_prepare_command(entry: dict[str, Any], repo_root: Path) -> tuple[Co
             ),
             True,
         )
-    except subprocess.TimeoutExpired as exc:
+    if result.returncode == TIMEOUT_EXIT_CODE:
         duration_ms = int((time.monotonic() - start) * 1000)
-        stderr_tail = tail(exc.stderr.decode("utf-8", "replace") if isinstance(exc.stderr, bytes) else (exc.stderr or ""))
-        stdout_tail = tail(exc.stdout.decode("utf-8", "replace") if isinstance(exc.stdout, bytes) else (exc.stdout or ""))
+        stderr_tail = tail(result.stderr or "")
+        stdout_tail = tail(result.stdout or "")
         return (
             CommandResult(
                 id=command_id,
@@ -323,7 +324,9 @@ def _prepare_coverage(manifest: dict[str, Any], doctor: dict[str, Any]) -> dict[
     passing_ids = {
         check.get("id")
         for check in doctor.get("checks") or []
-        if isinstance(check, dict) and check.get("status") == PASS and isinstance(check.get("id"), str)
+        if isinstance(check, dict)
+        and check.get("status") == PASS
+        and isinstance(check.get("id"), str)
     }
     passing_coverage = {
         check_id: declared_by_check[check_id]
@@ -331,15 +334,17 @@ def _prepare_coverage(manifest: dict[str, Any], doctor: dict[str, Any]) -> dict[
         if check_id in declared_by_check
     }
     declared_intersection = {
-        command_id
-        for covered_ids in passing_coverage.values()
-        for command_id in covered_ids
+        command_id for covered_ids in passing_coverage.values() for command_id in covered_ids
     }
     intersection = sorted(
-        command_id for command_id in set(prepare_ids) - {None} if command_id in declared_intersection
+        command_id
+        for command_id in set(prepare_ids) - {None}
+        if command_id in declared_intersection
     )
     uncovered = [
-        command_id for command_id in prepare_ids if command_id is None or command_id not in declared_intersection
+        command_id
+        for command_id in prepare_ids
+        if command_id is None or command_id not in declared_intersection
     ]
     unique_prepare_ids = len(prepare_ids) == len(set(prepare_ids)) and None not in prepare_ids
     established = bool(prepare_ids) and unique_prepare_ids and not uncovered
@@ -382,7 +387,9 @@ def run_prepare(
     if pre_doctor is None:
         pre_doctor = run_doctor(repo_root, require_isolation=require_isolation)
     coverage = _prepare_coverage(manifest_state.data, pre_doctor)
-    skip_when_clean = bool(manifest_state.data.get("prepare", {}).get("skip_if_doctor_passes", False))
+    skip_when_clean = bool(
+        manifest_state.data.get("prepare", {}).get("skip_if_doctor_passes", False)
+    )
     if pre_doctor["status"] == PASS and skip_when_clean and coverage["established"] and not force:
         prepare_ids = ", ".join(coverage["prepare_command_ids"])
         doctor_ids = ", ".join(coverage["doctor_check_ids"])
@@ -420,7 +427,10 @@ def run_prepare(
         next_step = "A prepare command failed; fix it and re-run `charness worktree prepare`."
     elif post_doctor["status"] == FAIL:
         status = FAIL
-        next_step = post_doctor.get("next_step") or "Doctor still reports failures after prepare; inspect output."
+        next_step = (
+            post_doctor.get("next_step")
+            or "Doctor still reports failures after prepare; inspect output."
+        )
     else:
         status = PASS
         next_step = None

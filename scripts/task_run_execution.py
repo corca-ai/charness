@@ -4,12 +4,73 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import signal
-import subprocess
+import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 import yaml
+
+from scripts.subprocess_guard import render_display, run_monitored_phase
+
+_DESCENDANT_CLEANUP_SHELL = (
+    'printf "%s\\n" "$$" > "$1"; shift; exec 3<&0; "$@" <&3 & '
+    'child=$!; wait "$child"; status=$?; exit "$status"'
+)
+
+
+def _command_with_normal_completion_cleanup(
+    command: Sequence[str], configured_env: Mapping[str, str], group_path: Path
+) -> Sequence[str]:
+    """Keep the task runner's old whole-group cleanup after a clean child exit."""
+    if not command:
+        return command
+    executable = os.fspath(command[0])
+    if "/" in executable:
+        available = os.access(executable, os.X_OK)
+    else:
+        available = (
+            shutil.which(executable, path=configured_env.get("PATH", os.defpath)) is not None
+        )
+    if not available:
+        # Keep the guard's FileNotFoundError path for a missing Codex executable.
+        return command
+    return [
+        "sh",
+        "-c",
+        _DESCENDANT_CLEANUP_SHELL,
+        "charness-task-run",
+        str(group_path),
+        *command,
+    ]
+
+
+def _kill_recorded_process_group(group_path: Path) -> None:
+    try:
+        group_id = int(group_path.read_text(encoding="ascii").strip())
+    except (OSError, ValueError):
+        return
+    try:
+        os.killpg(group_id, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    finally:
+        group_path.unlink(missing_ok=True)
+
+
+@contextmanager
+def _redirect_stdio(stdin_handle, stdout_handle, stderr_handle):  # noqa: ANN001
+    saved = [os.dup(fd) for fd in (0, 1, 2)]
+    try:
+        for fd, handle in zip((0, 1, 2), (stdin_handle, stdout_handle, stderr_handle)):
+            os.dup2(handle.fileno(), fd)
+        yield
+    finally:
+        for fd, saved_fd in zip((0, 1, 2), saved):
+            os.dup2(saved_fd, fd)
+            os.close(saved_fd)
 
 
 def _execute_codex(
@@ -23,46 +84,42 @@ def _execute_codex(
     timeout_seconds: int,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {"exit_code": None, "timed_out": False, "interrupted": False}
-
-    # Takes the process rather than closing over an Optional one. Every call site is
-    # inside the `with` block, after Popen has returned; a Popen that raises goes to
-    # the outer OSError handler and never reaches here. The former `if process is
-    # None: return` guard was therefore unreachable -- it existed to narrow the type
-    # of a variable that only needed to be Optional because of the closure.
-    def stop_process_group(process: subprocess.Popen[str]) -> None:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
+    group_path = stdout_log.with_suffix(".pgid")
+    group_path.unlink(missing_ok=True)
 
     try:
         with (
             stdout_log.open("w", encoding="utf-8") as stdout_handle,
             stderr_log.open("w", encoding="utf-8") as stderr_handle,
         ):
-            process = subprocess.Popen(
-                command,
-                stdin=subprocess.PIPE,
-                cwd=target_path,
-                env=dict(configured_env),
-                stdout=stdout_handle,
-                stderr=stderr_handle,
-                text=True,
-                start_new_session=True,
-            )
-            try:
-                process.communicate(input=prompt, timeout=timeout_seconds)
-                result["exit_code"] = process.returncode
-            except subprocess.TimeoutExpired:
-                result["timed_out"] = True
-                stop_process_group(process)
-                process.communicate()
-            except KeyboardInterrupt:
-                result["interrupted"] = True
-                stop_process_group(process)
-                process.communicate()
-            else:
-                stop_process_group(process)
+            with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as prompt_handle:
+                prompt_handle.write(prompt)
+                prompt_handle.flush()
+                prompt_handle.seek(0)
+                terminal_stderr = os.fdopen(os.dup(2), "w", buffering=1, closefd=True)
+                outcome = None
+                try:
+                    with _redirect_stdio(prompt_handle, stdout_handle, stderr_handle):
+                        outcome = run_monitored_phase(
+                            _command_with_normal_completion_cleanup(
+                                command, configured_env, group_path
+                            ),
+                            cwd=target_path,
+                            phase="codex",
+                            timeout_seconds=timeout_seconds,
+                            display=render_display(command),
+                            env=dict(configured_env),
+                            capture=False,
+                            stream=terminal_stderr,
+                        )
+                except KeyboardInterrupt:
+                    result["interrupted"] = True
+                finally:
+                    terminal_stderr.close()
+                    _kill_recorded_process_group(group_path)
+                if outcome is not None:
+                    result["timed_out"] = outcome.timed_out
+                    result["exit_code"] = None if outcome.timed_out else outcome.returncode
     except OSError as exc:
         result["exec_error"] = str(exc)
     return result

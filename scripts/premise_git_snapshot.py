@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
-import subprocess
+import os
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
+
+try:
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:  # loaded as a standalone sibling module
+    from subprocess_guard import run_process
 
 
 @dataclass(frozen=True)
@@ -56,31 +62,38 @@ def _parse_batch(payload: bytes, count: int) -> list[tuple[str, str, bytes] | No
 def _batch_objects(
     repo_root: Path, expressions: list[str]
 ) -> list[tuple[str, str, bytes] | None] | None:
-    result = subprocess.run(
-        ["git", "cat-file", "--batch"],
-        cwd=repo_root,
-        input=b"".join(expression.encode("utf-8", errors="surrogateescape") + b"\n" for expression in expressions),
-        capture_output=True,
-        check=False,
+    payload = b"".join(
+        expression.encode("utf-8", errors="surrogateescape") + b"\n" for expression in expressions
     )
+    with tempfile.TemporaryFile() as source:
+        source.write(payload)
+        source.seek(0)
+        saved_stdin = os.dup(0)
+        try:
+            os.dup2(source.fileno(), 0)
+            result = run_process(
+                ["git", "cat-file", "--batch"], cwd=repo_root, timeout_seconds=None
+            )
+        finally:
+            os.dup2(saved_stdin, 0)
+            os.close(saved_stdin)
     if result.returncode != 0:
         return None
-    return _parse_batch(result.stdout, len(expressions))
+    return _parse_batch(result.stdout.encode("utf-8", errors="surrogateescape"), len(expressions))
 
 
 def _tree_modes(repo_root: Path, revision: str, paths: list[str]) -> dict[str, str] | None:
     if not paths:
         return {}
-    result = subprocess.run(
+    result = run_process(
         ["git", "ls-tree", "-z", revision, "--", *paths],
         cwd=repo_root,
-        capture_output=True,
-        check=False,
+        timeout_seconds=None,
     )
     if result.returncode != 0:
         return None
     modes: dict[str, str] = {}
-    for record in result.stdout.split(b"\0"):
+    for record in result.stdout.encode("utf-8", errors="surrogateescape").split(b"\0"):
         if not record:
             continue
         metadata, separator, raw_path = record.partition(b"\t")
@@ -97,11 +110,7 @@ def _commit_parents_and_message(payload: bytes) -> tuple[list[str], str]:
     header, separator, message = text.partition("\n\n")
     if not separator:
         return [], ""
-    parents = [
-        line[7:].strip()
-        for line in header.splitlines()
-        if line.startswith("parent ")
-    ]
+    parents = [line[7:].strip() for line in header.splitlines() if line.startswith("parent ")]
     return parents, message
 
 
@@ -146,10 +155,7 @@ def _head_and_index(
     head = batched[0]
     head_sha = head[0] if head is not None and head[1] == "commit" else None
     head_commit = head[2] if head is not None and head[1] == "commit" else None
-    index_objects = {
-        path: _typed_payload(item)
-        for path, item in zip(protected_paths, batched[1:])
-    }
+    index_objects = {path: _typed_payload(item) for path, item in zip(protected_paths, batched[1:])}
     return head_sha, head_commit, index_objects
 
 
@@ -159,41 +165,32 @@ def _individual_snapshot(
     protected_paths: list[str],
     expected_missing: list[str],
 ) -> CapturedTreeSnapshot:
-    commit = subprocess.run(
+    commit = run_process(
         ["git", "cat-file", "-e", f"{revision}^{{commit}}"],
         cwd=repo_root,
-        capture_output=True,
-        check=False,
+        timeout_seconds=None,
     )
     modes: dict[str, str] = {}
     objects: dict[str, tuple[str, bytes] | None] = {}
     for path in protected_paths:
-        listing = subprocess.run(
+        listing = run_process(
             ["git", "ls-tree", revision, "--", path],
             cwd=repo_root,
-            capture_output=True,
-            check=False,
+            timeout_seconds=None,
         )
-        fields = listing.stdout.split(maxsplit=1)
+        fields = listing.stdout.encode("utf-8", errors="surrogateescape").split(maxsplit=1)
         if listing.returncode == 0 and fields:
             modes[path] = fields[0].decode("ascii", errors="ignore")
         expression = f"{revision}:{path}"
-        result = subprocess.run(
-            ["git", "cat-file", "--batch"],
-            cwd=repo_root,
-            input=expression.encode("utf-8", errors="surrogateescape") + b"\n",
-            capture_output=True,
-            check=False,
-        )
-        parsed = _parse_batch(result.stdout, 1) if result.returncode == 0 else None
+        parsed_items = _batch_objects(repo_root, [expression])
+        parsed = parsed_items if parsed_items is not None else None
         objects[path] = _typed_payload(parsed[0] if parsed else None)
     for path in expected_missing:
         expression = f"{revision}:{path}"
-        result = subprocess.run(
+        result = run_process(
             ["git", "cat-file", "-e", expression],
             cwd=repo_root,
-            capture_output=True,
-            check=False,
+            timeout_seconds=None,
         )
         objects[path] = ("present", b"") if result.returncode == 0 else None
     head_sha, head_commit, index_objects = _head_and_index(repo_root, protected_paths)
@@ -237,8 +234,7 @@ def inspect_captured_tree(
     }
     index_offset = path_offset + len(all_paths)
     index_objects = {
-        path: _typed_payload(item)
-        for path, item in zip(protected_paths, objects[index_offset:])
+        path: _typed_payload(item) for path, item in zip(protected_paths, objects[index_offset:])
     }
     return CapturedTreeSnapshot(
         True,

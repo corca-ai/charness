@@ -35,6 +35,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import check_prescribed_skill_executed_lib as _residual_lib  # noqa: E402
 from repo_path_display import display_path as _display_path  # noqa: E402
 
+try:
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:  # executed directly from scripts/
+    from subprocess_guard import run_process
+
 DEFAULT_ARTIFACT_PATH = "charness-artifacts/quality/latest.md"
 DEFAULT_CONSUMER_FIELDS_PATH = "skills/public/quality/references/inventory-consumer-fields.json"
 INVENTORY_FILE_RE = re.compile(r"inventory_[A-Za-z0-9_]+\.py")
@@ -55,9 +60,7 @@ TARGET_BOUNDARY_RE = re.compile(r"(?im)^\s*(?:[-*]\s*)?Target boundary\s*:")
 AMBIENT_REPO_FINDINGS_RE = re.compile(r"(?im)^\s*(?:[-*]\s*)?Ambient repo findings\s*:")
 # Stub vocabulary: a value that names no observation. `n/a` against a field is the
 # artifact declining to engage, spelled as engagement.
-STUB_VALUE_RE = re.compile(
-    r"^(n/?a|none|nil|tbd|todo|unknown|skipped|-{1,3}|\?)$", re.IGNORECASE
-)
+STUB_VALUE_RE = re.compile(r"^(n/?a|none|nil|tbd|todo|unknown|skipped|-{1,3}|\?)$", re.IGNORECASE)
 # Multi-word stubs. The per-token filter below can never match a phrase — `not` and
 # `applicable` are separate tokens, neither a stub — so `not applicable` scored 13 and
 # passed. This vocabulary is matched against the whole normalized value first.
@@ -141,8 +144,7 @@ def residual_chars(line: str, label: str, other_labels: tuple[str, ...] = ()) ->
     for token in sorted({t for t in (label, *other_labels) if t}, key=len, reverse=True):
         stripped = re.sub(re.escape(token), " ", stripped, flags=re.IGNORECASE)
     without_stubs = " ".join(
-        part for part in _PUNCTUATION_RE.sub(" ", stripped).split()
-        if not STUB_VALUE_RE.match(part)
+        part for part in _PUNCTUATION_RE.sub(" ", stripped).split() if not STUB_VALUE_RE.match(part)
     )
     # The shared alphanumeric counter, so a punctuation-heavy line does not score as prose.
     return _residual_lib._bound_residual_chars(without_stubs, [])
@@ -174,7 +176,7 @@ def _labelled_line_engages(body: str, label_re: re.Pattern[str]) -> bool:
     """
     for match in label_re.finditer(body):
         line_end = body.find("\n", match.end())
-        value = body[match.end():] if line_end == -1 else body[match.end():line_end]
+        value = body[match.end() :] if line_end == -1 else body[match.end() : line_end]
         if residual_chars(value, "") >= MIN_ENGAGEMENT_RESIDUAL_CHARS:
             return True
     return False
@@ -182,11 +184,8 @@ def _labelled_line_engages(body: str, label_re: re.Pattern[str]) -> bool:
 
 def _git(repo_root: Path, *args: str) -> subprocess.CompletedProcess | None:
     try:
-        return subprocess.run(
-            ["git", *args], cwd=repo_root, capture_output=True, text=True,
-            check=False, timeout=15,
-        )
-    except (OSError, subprocess.SubprocessError):
+        return run_process(["git", *args], cwd=repo_root, timeout_seconds=15)
+    except OSError:
         return None
 
 
@@ -294,7 +293,9 @@ def _skill_ergonomics_failures(
     ]
 
 
-def _exemption_verdict(repo_root: Path, artifact_path: Path, relative: str, artifact_text: str) -> int | None:
+def _exemption_verdict(
+    repo_root: Path, artifact_path: Path, relative: str, artifact_text: str
+) -> int | None:
     """`0` to skip as exempt, `1` to refuse the exemption, `None` to run the floors.
 
     Extracted from ``main`` because the four corroboration arms are one concept, and
@@ -315,7 +316,8 @@ def _exemption_verdict(repo_root: Path, artifact_path: Path, relative: str, arti
     if state in {"uncommitted", "dirty"} and committed is not None:
         if committed >= ENFORCED_FROM_DATE:
             what = (
-                "has never been committed" if state == "uncommitted"
+                "has never been committed"
+                if state == "uncommitted"
                 else "has uncommitted modifications"
             )
             print(
@@ -409,8 +411,7 @@ def main() -> int:
         if not fields:
             continue
         engaged = [
-            field for field in fields
-            if _engages(body_without_commands, field, tuple(fields))
+            field for field in fields if _engages(body_without_commands, field, tuple(fields))
         ]
         required = 2 if len(fields) >= 2 else 1
         if len(engaged) < required:

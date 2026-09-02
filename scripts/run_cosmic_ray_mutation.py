@@ -11,7 +11,6 @@ import argparse
 import json
 import os
 import signal
-import subprocess
 import sys
 from pathlib import Path
 
@@ -19,6 +18,7 @@ from runtime_bootstrap import import_repo_module
 
 _abort_lib = import_repo_module(__file__, "scripts.mutation_baseline_abort_lib")
 _sampling = import_repo_module(__file__, "scripts.mutation_sampling_lib")
+_guard = import_repo_module(__file__, "scripts.subprocess_guard")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = Path("cosmic-ray.toml")
@@ -30,6 +30,14 @@ DEFAULT_TIMEOUT_MARKER = Path("reports/mutation/exec-timeout.json")
 DEFAULT_EXEC_TIMEOUT_SECONDS = 9000
 
 
+class _CommandFailure(RuntimeError):
+    def __init__(self, returncode: int, command, output: str = ""):  # noqa: ANN001
+        super().__init__(f"command exited {returncode}")
+        self.returncode = returncode
+        self.command = command
+        self.output = output
+
+
 def resolve(repo_root: Path, path: Path) -> Path:
     return path if path.is_absolute() else repo_root / path
 
@@ -38,12 +46,14 @@ def run(command: list[str], repo_root: Path) -> None:
     sys.stdout.write(f"+ {' '.join(command)}\n")
     sys.stdout.flush()
     try:
-        subprocess.run(command, cwd=repo_root, check=True)
+        result = _guard.run_process(command, cwd=repo_root, timeout_seconds=None)
     except FileNotFoundError as exc:
         raise SystemExit(
             "cosmic-ray executable not found; install Cosmic Ray 8.4.6 "
             "or run the GitHub Actions workflow install step first"
         ) from exc
+    if result.returncode != 0:
+        raise _CommandFailure(result.returncode, command, result.stdout + result.stderr)
 
 
 def _run_baseline(config: Path, repo_root: Path, *, marker_path: Path) -> None:
@@ -63,39 +73,34 @@ def _run_baseline(config: Path, repo_root: Path, *, marker_path: Path) -> None:
     command = ["cosmic-ray", "baseline", str(config)]
     sys.stdout.write(f"+ {' '.join(command)}\n")
     sys.stdout.flush()
-    # Streamed AND accumulated, not `capture_output`. `cosmic-ray baseline` runs the
-    # whole unmutated suite and carries no internal timeout, so a job killed at its
-    # 180-minute ceiling during baseline would emit NOTHING under buffering -- a
-    # diagnosability regression inside the diagnosability repair.
-    lines: list[str] = []
     try:
-        with subprocess.Popen(
-            command, cwd=repo_root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
-        ) as proc:
-            assert proc.stdout is not None
-            for line in proc.stdout:
-                lines.append(line)
-                sys.stdout.write(line)
-                sys.stdout.flush()
-            returncode = proc.wait()
+        outcome = _guard.run_monitored_phase(
+            command,
+            cwd=repo_root,
+            phase="cosmic-ray-baseline",
+            timeout_seconds=None,
+            capture=True,
+        )
     except FileNotFoundError as exc:
         raise SystemExit(
             "cosmic-ray executable not found; install Cosmic Ray 8.4.6 "
             "or run the GitHub Actions workflow install step first"
         ) from exc
-    combined = "".join(lines)
-    if returncode == 0:
+    combined = outcome.stdout + outcome.stderr
+    sys.stdout.write(combined)
+    sys.stdout.flush()
+    if outcome.returncode == 0:
         return
     failing_nodeids = _abort_lib.parse_failed_nodeids(combined)
     _abort_lib.write_baseline_abort_marker(
         marker_path,
-        exit_code=returncode,
+        exit_code=outcome.returncode,
         test_command=" ".join(command),
         failing_nodeids=failing_nodeids,
         log_tail=[] if failing_nodeids else _abort_lib.log_tail_lines(combined),
         stage=_abort_lib.STAGE_COSMIC_RAY_BASELINE,
     )
-    raise subprocess.CalledProcessError(returncode, command, output=combined)
+    raise _CommandFailure(outcome.returncode, command, combined)
 
 
 def _run_exec_with_timeout(
@@ -116,26 +121,32 @@ def _run_exec_with_timeout(
     sys.stdout.write(f"+ {' '.join(command)} (internal timeout: {timeout_seconds}s)\n")
     sys.stdout.flush()
     try:
-        result = subprocess.run(command, cwd=repo_root, check=False, timeout=timeout_seconds)
-    except subprocess.TimeoutExpired:
+        outcome = _guard.run_monitored_phase(
+            command,
+            cwd=repo_root,
+            phase="cosmic-ray-exec",
+            timeout_seconds=timeout_seconds,
+            capture=False,
+        )
+    except FileNotFoundError as exc:
+        raise SystemExit(
+            "cosmic-ray executable not found; install Cosmic Ray 8.4.6 "
+            "or run the GitHub Actions workflow install step first"
+        ) from exc
+    if outcome.timed_out:
         sys.stdout.write(
             f"cosmic-ray exec exceeded {timeout_seconds}s; "
             "continuing to dump so partial results survive\n"
         )
         sys.stdout.flush()
         return True, -1
-    except FileNotFoundError as exc:
-        raise SystemExit(
-            "cosmic-ray executable not found; install Cosmic Ray 8.4.6 "
-            "or run the GitHub Actions workflow install step first"
-        ) from exc
-    if result.returncode != 0:
+    if outcome.returncode != 0:
         sys.stdout.write(
-            f"cosmic-ray exec exited {result.returncode}; "
+            f"cosmic-ray exec exited {outcome.returncode}; "
             "continuing to dump so any completed mutants are still scored\n"
         )
         sys.stdout.flush()
-    return False, result.returncode
+    return False, outcome.returncode
 
 
 def _write_timeout_marker(marker_path: Path, exec_timeout_seconds: int) -> None:
@@ -166,13 +177,19 @@ def _dump_session(session: Path, dump_path: Path, repo_root: Path) -> int:
         partial.unlink()
     try:
         with partial.open("w", encoding="utf-8") as output:
-            result = subprocess.run(
-                ["cosmic-ray", "dump", str(session)],
-                cwd=repo_root,
-                check=False,
-                stdout=output,
-                text=True,
-            )
+            saved_stdout = os.dup(1)
+            try:
+                os.dup2(output.fileno(), 1)
+                result = _guard.run_monitored_phase(
+                    ["cosmic-ray", "dump", str(session)],
+                    cwd=repo_root,
+                    phase="cosmic-ray-dump",
+                    timeout_seconds=None,
+                    capture=False,
+                )
+            finally:
+                os.dup2(saved_stdout, 1)
+                os.close(saved_stdout)
     except FileNotFoundError as exc:
         raise SystemExit(
             "cosmic-ray executable not found; install Cosmic Ray 8.4.6 "
@@ -205,17 +222,14 @@ def _read_module_paths(config: Path, repo_root: Path) -> list[Path]:
             import tomli as toml_reader  # 3.10 backport
         except ModuleNotFoundError:
             sys.stdout.write(
-                "no TOML parser (tomllib/tomli) available; "
-                "defensive module-path restore disabled\n"
+                "no TOML parser (tomllib/tomli) available; defensive module-path restore disabled\n"
             )
             sys.stdout.flush()
             return []
     try:
         data = toml_reader.loads(config.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
-        sys.stdout.write(
-            f"could not parse {config} for module-path restore: {exc}\n"
-        )
+        sys.stdout.write(f"could not parse {config} for module-path restore: {exc}\n")
         sys.stdout.flush()
         return []
     raw = data.get("cosmic-ray", {}).get("module-path", [])
@@ -239,28 +253,19 @@ def _restore_module_paths(module_paths: list[Path], repo_root: Path) -> None:
         return
     for path in module_paths:
         try:
-            result = subprocess.run(
-                ["git", "checkout", "--", str(path)],
-                cwd=repo_root,
-                check=False,
-                capture_output=True,
-                text=True,
+            result = _guard.run_process(
+                ["git", "checkout", "--", str(path)], cwd=repo_root, timeout_seconds=None
             )
         except FileNotFoundError:
-            sys.stdout.write(
-                "git not found; skipping defensive module-path restore\n"
-            )
+            sys.stdout.write("git not found; skipping defensive module-path restore\n")
             sys.stdout.flush()
             return
         if result.returncode != 0:
             sys.stdout.write(
-                f"defensive restore of {path} exited {result.returncode}: "
-                f"{result.stderr.strip()}\n"
+                f"defensive restore of {path} exited {result.returncode}: {result.stderr.strip()}\n"
             )
             sys.stdout.flush()
-    sys.stdout.write(
-        f"defensively restored {len(module_paths)} module-path file(s)\n"
-    )
+    sys.stdout.write(f"defensively restored {len(module_paths)} module-path file(s)\n")
     sys.stdout.flush()
 
 
@@ -403,7 +408,7 @@ def main() -> int:
         run(["cosmic-ray", "init", str(config), str(session)], repo_root)
         if filter_script.is_file():
             filter_command = [
-                "python3",
+                sys.executable,
                 str(filter_script),
                 "--repo-root",
                 str(repo_root),
@@ -412,7 +417,20 @@ def main() -> int:
             ]
             if coverage_json.is_file():
                 filter_command.extend(["--coverage-json", str(coverage_json)])
-            run(filter_command, repo_root)
+            if filter_script.resolve() == (repo_root / DEFAULT_FILTER).resolve():
+                filter_module = import_repo_module(__file__, "scripts.filter_cosmic_ray_mutants")
+                previous_argv = sys.argv
+                try:
+                    sys.argv = filter_command[1:]
+                    filter_returncode = int(filter_module.main() or 0)
+                except SystemExit as exc:
+                    filter_returncode = int(exc.code or 0)
+                finally:
+                    sys.argv = previous_argv
+                if filter_returncode != 0:
+                    raise _CommandFailure(filter_returncode, filter_command)
+            else:
+                run(filter_command, repo_root)
         if args.mode == "full":
             failure = _run_full_mode(
                 config,
@@ -427,7 +445,7 @@ def main() -> int:
                 return failure
         else:
             sys.stdout.write("dry-run complete after baseline and session init\n")
-    except subprocess.CalledProcessError as exc:
+    except _CommandFailure as exc:
         return exc.returncode
     return 0
 

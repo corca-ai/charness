@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 _PLAN_HELPERS_ROOT = repo_root_from_script(__file__)
 _artifact_preflight = import_repo_module(__file__, "scripts.check_artifact_surface_preflight")
@@ -26,10 +28,10 @@ def _git_stdout(repo_root: Path, args: list[str], failure: str) -> str:
     C-quoting under ``-z``), so a strict locale decode would take the pre-commit
     hook down with a traceback on a latin-1 filename.
     """
-    result = subprocess.run(["git", *args], cwd=repo_root, check=False, capture_output=True)
+    result = run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
     if result.returncode != 0:
-        raise RuntimeError(result.stderr.decode("utf-8", errors="replace").strip() or failure)
-    return result.stdout.decode("utf-8", errors="surrogateescape")
+        raise RuntimeError(result.stderr.strip() or failure)
+    return result.stdout
 
 
 def collect_staged_scope_paths(repo_root: Path) -> list[str]:

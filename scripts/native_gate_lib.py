@@ -18,12 +18,16 @@ from __future__ import annotations
 import argparse
 import os
 import shutil
-import subprocess
 import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
+
+try:
+    from scripts.subprocess_guard import run_monitored_phase
+except ModuleNotFoundError:  # executed directly from scripts/
+    from subprocess_guard import run_monitored_phase
 
 Provenance = Literal["override", "dev-tree", "installed"]
 
@@ -117,12 +121,12 @@ def build_dev_tree(crate_root: Path, binary: Path, *, reason: str) -> None:
     # land on the JSON stdout a calling gate parses. `cwd` is the crate root
     # because rustup selects the toolchain from the working directory, and the
     # crate pins one in rust-toolchain.toml.
-    completed = subprocess.run(
+    completed = run_monitored_phase(
         ["cargo", "build", "--release", "--locked"],
         cwd=crate_root,
-        check=False,
-        stdout=2,
-        stderr=2,
+        phase="native-build",
+        timeout_seconds=None,
+        capture=False,
     )
     elapsed = time.monotonic() - started
     if completed.returncode != 0:
@@ -221,9 +225,12 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     try:
-        completed = subprocess.run(
+        completed = run_monitored_phase(
             [str(resolved.path), *args.repograph_command],
-            check=False,
+            cwd=args.repo_root.resolve(),
+            phase="native-gate",
+            timeout_seconds=None,
+            capture=False,
         )
     except OSError as exc:
         print(f"native gate could not execute {resolved.path}: {exc}", file=sys.stderr)

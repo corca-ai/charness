@@ -14,6 +14,7 @@ from scripts.checkout_view import CheckoutView, GitCheckout, moment_from_status
 from scripts.git_checkout import head_oid_from_files as _head_sha_from_checkout
 from scripts.git_checkout import identity_from_files, layout_from_files, worktree_root_from_files
 from scripts.git_status_snapshot import GitStatusError
+from scripts.subprocess_guard import run_process
 from scripts.task_run_contract import (
     _BRANCH_RE,
     _GIT_DISCOVERY_ENV,
@@ -22,9 +23,7 @@ from scripts.task_run_contract import (
     TaskRunError,
 )
 
-WIP_CANDIDATE_COMMIT_MESSAGE = (
-    "task-run: WIP candidate — interrupted mid-edit — state unknown"
-)
+WIP_CANDIDATE_COMMIT_MESSAGE = "task-run: WIP candidate — interrupted mid-edit — state unknown"
 
 
 def _git_env() -> dict[str, str]:
@@ -32,14 +31,7 @@ def _git_env() -> dict[str, str]:
 
 
 def _git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["git", *args],
-        cwd=repo_root,
-        env=_git_env(),
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    return run_process(["git", *args], cwd=repo_root, env=_git_env(), timeout_seconds=None)
 
 
 def _git_output(repo_root: Path, *args: str) -> str:
@@ -249,9 +241,7 @@ def _collect_populations_with_metadata(
 ) -> tuple[dict[str, list[str]], str | None, str | None]:
     """Read one worktree moment: dirty populations plus the checked-out HEAD."""
     try:
-        moment = moment_from_status(
-            (checkout or GitCheckout(repo_root)).status(ignored=True)
-        )
+        moment = moment_from_status((checkout or GitCheckout(repo_root)).status(ignored=True))
     except (GitStatusError, OSError) as exc:
         raise TaskRunError(str(exc)) from exc
     return moment.populations, moment.head_oid, moment.branch
@@ -337,9 +327,7 @@ def _digest_frame(digest: Any, value: bytes) -> None:
     digest.update(value)
 
 
-def _candidate_content_digest(
-    repo_root: Path, base_sha: str, changed_paths: Sequence[str]
-) -> str:
+def _candidate_content_digest(repo_root: Path, base_sha: str, changed_paths: Sequence[str]) -> str:
     digest = hashlib.sha256()
     _digest_frame(digest, b"charness.task-run.candidate.v1")
     _digest_frame(digest, base_sha.encode("ascii"))
@@ -366,10 +354,10 @@ def _candidate_content_digest(
 
 def _is_ancestor(repo_root: Path, base_sha: str, head: str) -> bool:
     """True when `base_sha` is reachable from `head`, so HEAD can carry base-to-HEAD."""
-    completed = subprocess.run(
+    completed = run_process(
         ["git", "-C", str(repo_root), "merge-base", "--is-ancestor", base_sha, head],
-        capture_output=True,
-        check=False,
+        cwd=repo_root,
+        timeout_seconds=None,
     )
     return completed.returncode == 0
 
@@ -382,7 +370,11 @@ def _candidate_carrier(
     branch: str | None = None,
 ) -> dict[str, Any]:
     """Describe which lane tree carries the complete validated candidate."""
-    head = head or _head_sha_from_checkout(repo_root) or _git_output(repo_root, "rev-parse", "HEAD").strip()
+    head = (
+        head
+        or _head_sha_from_checkout(repo_root)
+        or _git_output(repo_root, "rev-parse", "HEAD").strip()
+    )
     # ANCESTRY, not inequality. `head != base_sha` answers "did HEAD move", which is a
     # different question from "does HEAD carry the base-to-worktree candidate". A lane
     # that amends its own base, or resets to an ancestor, leaves a clean tree at a
@@ -403,9 +395,7 @@ def _candidate_carrier(
     # restored to the selected base after a lane commit.
     current_populations = populations or _collect_populations(repo_root)
     untracked_paths = list(current_populations["untracked"])
-    working_tree_paths = sorted(
-        set(current_populations["tracked"]) | set(untracked_paths)
-    )
+    working_tree_paths = sorted(set(current_populations["tracked"]) | set(untracked_paths))
     if head == base_sha:
         # The two tracked views are identical when HEAD is the selected base;
         # status is the complete candidate view, so no separate diff or
@@ -419,9 +409,7 @@ def _candidate_carrier(
             # read above. Re-running the same base diff cannot add information.
             changed_paths = list(committed_paths)
         else:
-            changed_paths = sorted(
-                set(_diff_paths(repo_root, base_sha)) | set(untracked_paths)
-            )
+            changed_paths = sorted(set(_diff_paths(repo_root, base_sha)) | set(untracked_paths))
     if not has_commit:
         carrier_kind = "worktree-only"
     elif dirty_paths:

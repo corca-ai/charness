@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
+TIMEOUT_EXIT_CODE = _subprocess_guard.TIMEOUT_EXIT_CODE
 
 _state = import_repo_module(__file__, "scripts.worktree_doctor_state")
 CheckResult = _state.CheckResult
@@ -14,23 +17,14 @@ PASS = _state.PASS
 tail = _state.tail
 
 
-def _run_manifest_doctor_command(
-    entry: dict[str, Any], repo_root: Path
-) -> CheckResult:
+def _run_manifest_doctor_command(entry: dict[str, Any], repo_root: Path) -> CheckResult:
     check_id = entry.get("id")
     argv = list(entry.get("argv") or [])
     timeout = int(entry.get("timeout_seconds") or DEFAULT_DOCTOR_TIMEOUT_SECONDS)
     expect_exit = int(entry.get("expect_exit_code", 0))
     next_hint = entry.get("next_action_hint")
     try:
-        result = subprocess.run(
-            argv,
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
+        result = run_process(argv, cwd=repo_root, timeout_seconds=timeout)
     except FileNotFoundError as exc:
         return CheckResult(
             id=check_id,
@@ -39,7 +33,7 @@ def _run_manifest_doctor_command(
             next_step=next_hint,
             source="manifest",
         )
-    except subprocess.TimeoutExpired:
+    if result.returncode == TIMEOUT_EXIT_CODE:
         return CheckResult(
             id=check_id,
             status=FAIL,
@@ -64,9 +58,7 @@ def _run_manifest_doctor_command(
     )
 
 
-def run_manifest_doctor_checks(
-    repo_root: Path, manifest: dict[str, Any]
-) -> list[CheckResult]:
+def run_manifest_doctor_checks(repo_root: Path, manifest: dict[str, Any]) -> list[CheckResult]:
     doctor = manifest.get("doctor") or {}
     checks = doctor.get("checks") or []
     return [_run_manifest_doctor_command(entry, repo_root) for entry in checks]

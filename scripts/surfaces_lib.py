@@ -5,7 +5,6 @@ from __future__ import annotations
 import fnmatch
 import json
 import re
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -13,6 +12,7 @@ from typing import Any
 from scripts.git_status_snapshot import GitStatusError
 from scripts.git_status_snapshot import capture as capture_git_status
 from scripts.git_status_snapshot import parse as parse_git_status
+from scripts.subprocess_guard import run_process
 
 SURFACES_PATH = Path(".agents/surfaces.json")
 
@@ -80,8 +80,12 @@ def _check_surface_idiom(patterns: list[str], field: str) -> None:
 def _validate_generated_markdown_entry(entry: object, field: str) -> dict[str, str]:
     if not isinstance(entry, dict):
         raise SurfaceError(f"`{field}` must be an object")
-    source_path = normalize_repo_path(_require_string(entry.get("source_path"), f"{field}.source_path"))
-    derived_path = normalize_repo_path(_require_string(entry.get("derived_path"), f"{field}.derived_path"))
+    source_path = normalize_repo_path(
+        _require_string(entry.get("source_path"), f"{field}.source_path")
+    )
+    derived_path = normalize_repo_path(
+        _require_string(entry.get("derived_path"), f"{field}.derived_path")
+    )
     generator = _require_string(entry.get("generator"), f"{field}.generator")
     sync_command = _require_string(entry.get("sync_command"), f"{field}.sync_command")
     return {
@@ -98,12 +102,20 @@ def _validate_surface(surface: object, index: int) -> dict[str, Any]:
         raise SurfaceError(f"`{field}` must be an object")
     surface_id = _require_string(surface.get("surface_id"), f"{field}.surface_id")
     description = _require_string(surface.get("description"), f"{field}.description")
-    source_paths = [normalize_repo_path(path) for path in _require_string_list(surface.get("source_paths"), f"{field}.source_paths")]
-    derived_paths = [normalize_repo_path(path) for path in _require_string_list(surface.get("derived_paths"), f"{field}.derived_paths")]
+    source_paths = [
+        normalize_repo_path(path)
+        for path in _require_string_list(surface.get("source_paths"), f"{field}.source_paths")
+    ]
+    derived_paths = [
+        normalize_repo_path(path)
+        for path in _require_string_list(surface.get("derived_paths"), f"{field}.derived_paths")
+    ]
     _check_surface_idiom(source_paths, f"{field}.source_paths")
     _check_surface_idiom(derived_paths, f"{field}.derived_paths")
     sync_commands = _require_string_list(surface.get("sync_commands"), f"{field}.sync_commands")
-    verify_commands = _require_string_list(surface.get("verify_commands"), f"{field}.verify_commands")
+    verify_commands = _require_string_list(
+        surface.get("verify_commands"), f"{field}.verify_commands"
+    )
     notes = _require_string_list(surface.get("notes"), f"{field}.notes")
     generated_markdown_raw = surface.get("generated_markdown", [])
     if not isinstance(generated_markdown_raw, list):
@@ -133,7 +145,9 @@ def _validate_surface(surface: object, index: int) -> dict[str, Any]:
     }
 
 
-def load_surfaces(repo_root: Path, *, surfaces_path: Path = SURFACES_PATH, required: bool = True) -> dict[str, Any] | None:
+def load_surfaces(
+    repo_root: Path, *, surfaces_path: Path = SURFACES_PATH, required: bool = True
+) -> dict[str, Any] | None:
     manifest_path = surfaces_path if surfaces_path.is_absolute() else repo_root / surfaces_path
     if not manifest_path.exists():
         if required:
@@ -199,10 +213,14 @@ def match_surfaces(manifest: dict[str, Any], changed_paths: list[str]) -> dict[s
 
     for surface in manifest["surfaces"]:
         matched_source_paths = [
-            path for path in normalized_paths if path_matches_patterns(path, surface["source_paths"])
+            path
+            for path in normalized_paths
+            if path_matches_patterns(path, surface["source_paths"])
         ]
         matched_derived_paths = [
-            path for path in normalized_paths if path_matches_patterns(path, surface["derived_paths"])
+            path
+            for path in normalized_paths
+            if path_matches_patterns(path, surface["derived_paths"])
         ]
         if not matched_source_paths and not matched_derived_paths:
             continue
@@ -238,7 +256,9 @@ def match_surfaces(manifest: dict[str, Any], changed_paths: list[str]) -> dict[s
     }
 
 
-def lookup_generated_markdown(manifest: dict[str, Any] | None, derived_path: str) -> dict[str, str] | None:
+def lookup_generated_markdown(
+    manifest: dict[str, Any] | None, derived_path: str
+) -> dict[str, str] | None:
     if manifest is None:
         return None
     normalized = normalize_repo_path(derived_path)
@@ -279,18 +299,12 @@ def _run_git(repo_root: Path, *args: str) -> list[str]:
     "no surfaces matched". Invisible on a maintainer machine whose gitconfig sets
     `core.quotepath=false`, and live on a fresh clone or CI runner that does not.
     """
-    result = subprocess.run(
-        ["git", *args, "-z"],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-    )
+    result = run_process(["git", *args, "-z"], cwd=repo_root, timeout_seconds=None)
     if result.returncode != 0:
-        stderr = result.stderr.decode("utf-8", errors="replace").strip()
-        stdout = result.stdout.decode("utf-8", errors="replace").strip()
+        stderr = result.stderr.strip()
+        stdout = result.stdout.strip()
         raise SurfaceError(stderr or stdout or "git command failed")
-    decoded = result.stdout.decode("utf-8", errors="surrogateescape")
-    return [entry for entry in decoded.split("\0") if entry]
+    return [entry for entry in result.stdout.split("\0") if entry]
 
 
 def _parse_working_tree_status(output: bytes) -> WorkingTreeSnapshot:
@@ -298,9 +312,7 @@ def _parse_working_tree_status(output: bytes) -> WorkingTreeSnapshot:
         snapshot = parse_git_status(output)
     except GitStatusError as exc:
         raise SurfaceError(str(exc)) from exc
-    return WorkingTreeSnapshot(
-        tuple(snapshot.dirty_destination_paths()), snapshot.deleted_paths()
-    )
+    return WorkingTreeSnapshot(tuple(snapshot.dirty_destination_paths()), snapshot.deleted_paths())
 
 
 def collect_working_tree_snapshot(repo_root: Path) -> WorkingTreeSnapshot:
@@ -315,9 +327,7 @@ def collect_working_tree_snapshot(repo_root: Path) -> WorkingTreeSnapshot:
         for path in snapshot.deleted_paths()
         if not ((repo_root / path).exists() or (repo_root / path).is_symlink())
     }
-    return WorkingTreeSnapshot(
-        tuple(snapshot.dirty_destination_paths()), deleted
-    )
+    return WorkingTreeSnapshot(tuple(snapshot.dirty_destination_paths()), deleted)
 
 
 def collect_changed_paths(repo_root: Path) -> list[str]:
@@ -361,8 +371,14 @@ def collect_deleted_paths_for_ref(repo_root: Path, ref: str) -> set[str]:
         args = ("diff", "--name-only", "--diff-filter=D", ref)
     else:
         args = (
-            "diff-tree", "--root", "-m", "--no-commit-id", "--name-only",
-            "--diff-filter=D", "-r", ref,
+            "diff-tree",
+            "--root",
+            "-m",
+            "--no-commit-id",
+            "--name-only",
+            "--diff-filter=D",
+            "-r",
+            ref,
         )
     return set(dedupe_preserve_order(_run_git(repo_root, *args)))
 
@@ -408,7 +424,12 @@ def collect_changed_and_deleted_paths_for_ref(
         args = ("diff", "--name-status", ref)
     else:
         args = (
-            "diff-tree", "--root", "-m", "--no-commit-id", "--name-status",
-            "-r", ref,
+            "diff-tree",
+            "--root",
+            "-m",
+            "--no-commit-id",
+            "--name-status",
+            "-r",
+            ref,
         )
     return _parse_name_status_records(_run_git(repo_root, *args))

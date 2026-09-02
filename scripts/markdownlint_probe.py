@@ -11,14 +11,19 @@ The central distinction this module exists to keep is RESOLUTION vs EXECUTION. A
 resolved command is not a run engine, and treating the two as one made a proof surface
 report a rule class as forecast-and-clean when it had never been measured.
 """
+
 from __future__ import annotations
 
 import os
 import re
 import shutil
-import subprocess
 from pathlib import Path
 from typing import Any
+
+try:
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:  # executed directly from scripts/
+    from subprocess_guard import run_process
 
 # markdownlint-cli2's first output line, on every run it makes: ``markdownlint-cli2 v0.21.0
 # (markdownlint v0.40.0)``. It is the only evidence available here that the ENGINE ran, as
@@ -133,12 +138,10 @@ def collect_markdownlint(repo_root: Path, rel: str) -> dict[str, Any]:
     cmd = resolve_markdownlint_cmd(repo_root)
     if cmd is None:
         return {"available": False, "findings": []}
-    proc = subprocess.run(
+    proc = run_process(
         [*cmd, "--no-globs", rel],
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
+        timeout_seconds=None,
     )
     findings = parse_markdownlint_findings(proc.stdout, proc.stderr, rel)
     # Parse BEFORE deciding whether the engine ran: parsed violations are as strong a

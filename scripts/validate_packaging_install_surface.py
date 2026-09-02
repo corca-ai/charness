@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-import subprocess
+import sys
 import tempfile
 from pathlib import Path
 from typing import Callable
@@ -14,6 +14,8 @@ except ModuleNotFoundError:  # imported as scripts.validate_packaging_install_su
     from scripts.runtime_bootstrap import import_repo_module
 
 _skill_iter_module = import_repo_module(__file__, "scripts.skill_iter")
+_subprocess_guard_module = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard_module.run_process
 iter_skill_ids = _skill_iter_module.iter_skill_ids
 
 
@@ -26,17 +28,26 @@ def validate_exported_public_skills(
     require_file: Callable[[Path, str], None],
     validate_relative_path: Callable[[object, str], str],
 ) -> None:
-    source_public_dir = root / validate_relative_path(source.get("public_skills_dir"), "source.public_skills_dir")
+    source_public_dir = root / validate_relative_path(
+        source.get("public_skills_dir"), "source.public_skills_dir"
+    )
     exported_skills_dir = plugin_root / "skills"
     require_dir(exported_skills_dir, "materialized_plugin_export.skills")
     if (exported_skills_dir / "public").exists() or (exported_skills_dir / "support").exists():
-        raise RuntimeError("materialized plugin export skills must be flat public skill directories, not `skills/public` or `skills/support`")
+        raise RuntimeError(
+            "materialized plugin export skills must be flat public skill directories, not `skills/public` or `skills/support`"
+        )
     expected = iter_skill_ids(source_public_dir)
     actual = iter_skill_ids(exported_skills_dir)
     if actual != expected:
-        raise RuntimeError("materialized plugin export public skills do not match source public skills")
+        raise RuntimeError(
+            "materialized plugin export public skills do not match source public skills"
+        )
     for skill_id in expected:
-        require_file(exported_skills_dir / skill_id / "SKILL.md", f"materialized_plugin_export.skills.{skill_id}")
+        require_file(
+            exported_skills_dir / skill_id / "SKILL.md",
+            f"materialized_plugin_export.skills.{skill_id}",
+        )
 
 
 def validate_exported_support_assets(
@@ -47,15 +58,21 @@ def validate_exported_support_assets(
     require_dir: Callable[[Path, str], None],
     validate_relative_path: Callable[[object, str], str],
 ) -> None:
-    source_support_dir = root / validate_relative_path(source.get("support_skills_dir"), "source.support_skills_dir")
+    source_support_dir = root / validate_relative_path(
+        source.get("support_skills_dir"), "source.support_skills_dir"
+    )
     exported_support_dir = plugin_root / "support"
     require_dir(exported_support_dir, "materialized_plugin_export.support")
     if (exported_support_dir / "generated").exists():
-        raise RuntimeError("materialized plugin export support assets must exclude machine-generated support artifacts")
+        raise RuntimeError(
+            "materialized plugin export support assets must exclude machine-generated support artifacts"
+        )
     expected = iter_skill_ids(source_support_dir, exclude=("generated",))
     actual = iter_skill_ids(exported_support_dir)
     if actual != expected:
-        raise RuntimeError("materialized plugin export support assets do not match source support assets")
+        raise RuntimeError(
+            "materialized plugin export support assets do not match source support assets"
+        )
     for entry in expected:
         capability_path = exported_support_dir / entry / "capability.json"
         if capability_path.exists():
@@ -78,8 +95,16 @@ def validate_materialized_plugin_export(
     plugin_root = root / "plugins" / data["package_id"]
     require_dir(plugin_root, "materialized_plugin_export.root")
     require_file(plugin_root / "README.md", "materialized_plugin_export.readme")
-    require_json_matches(plugin_root / data["claude"]["manifest_path"], data["claude"]["manifest"], "materialized_plugin_export.claude.manifest_path")
-    require_json_matches(plugin_root / data["codex"]["manifest_path"], data["codex"]["manifest"], "materialized_plugin_export.codex.manifest_path")
+    require_json_matches(
+        plugin_root / data["claude"]["manifest_path"],
+        data["claude"]["manifest"],
+        "materialized_plugin_export.claude.manifest_path",
+    )
+    require_json_matches(
+        plugin_root / data["codex"]["manifest_path"],
+        data["codex"]["manifest"],
+        "materialized_plugin_export.codex.manifest_path",
+    )
     source = data["source"]
     if not isinstance(source, dict):
         raise RuntimeError("`source` must be an object")
@@ -104,10 +129,15 @@ def validate_materialized_plugin_export(
         rel_path = validate_relative_path(source.get(field), f"source.{field}")
         require_dir(plugin_root / rel_path, f"materialized_plugin_export.{field}")
     if (root / "integrations" / "locks").is_dir():
-        require_dir(plugin_root / "integrations" / "locks", "materialized_plugin_export.integrations_locks")
+        require_dir(
+            plugin_root / "integrations" / "locks", "materialized_plugin_export.integrations_locks"
+        )
     if (root / "scripts").is_dir():
         require_dir(plugin_root / "scripts", "materialized_plugin_export.scripts")
-        require_file(plugin_root / "scripts" / "adapter_lib.py", "materialized_plugin_export.scripts.adapter_lib")
+        require_file(
+            plugin_root / "scripts" / "adapter_lib.py",
+            "materialized_plugin_export.scripts.adapter_lib",
+        )
         # `adapter_lib` loads this BY PATH at module scope since the YAML dialect moved
         # out of it, so an installed plugin missing it fails at import of `adapter_lib` --
         # strictly earlier than the `adapter_yaml_render_lib` case below, which earned its
@@ -123,8 +153,14 @@ def validate_materialized_plugin_export(
             plugin_root / "scripts" / "adapter_yaml_render_lib.py",
             "materialized_plugin_export.scripts.adapter_yaml_render_lib",
         )
-        require_file(plugin_root / "scripts" / "adapter_init_lib.py", "materialized_plugin_export.scripts.adapter_init_lib")
-        require_file(plugin_root / "scripts" / "control_plane_lib.py", "materialized_plugin_export.scripts.control_plane_lib")
+        require_file(
+            plugin_root / "scripts" / "adapter_init_lib.py",
+            "materialized_plugin_export.scripts.adapter_init_lib",
+        )
+        require_file(
+            plugin_root / "scripts" / "control_plane_lib.py",
+            "materialized_plugin_export.scripts.control_plane_lib",
+        )
     validate_materialized_plugin_export_matches_generated(root, plugin_root, data)
 
 
@@ -141,7 +177,9 @@ def collect_files(root: Path) -> set[Path]:
     return {path.relative_to(root) for path in root.rglob("*") if path.is_file()}
 
 
-def validate_materialized_plugin_export_matches_generated(root: Path, plugin_root: Path, data: dict[str, object]) -> None:
+def validate_materialized_plugin_export_matches_generated(
+    root: Path, plugin_root: Path, data: dict[str, object]
+) -> None:
     from scripts.packaging_lib import export_plugin_tree
 
     with tempfile.TemporaryDirectory(prefix="charness-validate-plugin-tree-") as tmpdir:
@@ -192,14 +230,11 @@ def smoke_exported_plugin_imports(plugin_root: Path) -> None:
     side effects do not fire. `SystemExit` is swallowed because a few
     helpers call `sys.exit` during module body when imported standalone.
     """
-    result = subprocess.run(
-        ["python3", "-c", _IMPORT_SMOKE_SCRIPT, str(plugin_root)],
-        check=False,
-        capture_output=True,
-        timeout=30,
+    result = run_process(
+        [sys.executable, "-c", _IMPORT_SMOKE_SCRIPT, str(plugin_root)],
+        cwd=Path.cwd(),
+        timeout_seconds=30,
     )
     if result.returncode != 0:
-        stderr = result.stderr.decode("utf-8", errors="replace").strip()
-        raise RuntimeError(
-            "exported plugin tree has modules that fail at import time:\n" + stderr
-        )
+        stderr = result.stderr.strip()
+        raise RuntimeError("exported plugin tree has modules that fail at import time:\n" + stderr)

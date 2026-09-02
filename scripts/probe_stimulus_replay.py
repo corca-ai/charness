@@ -110,13 +110,13 @@ could not see any renderer. Round 1 rewrote this list after defeating three of i
 
 from __future__ import annotations
 
-import subprocess
 import sys
 import tempfile
 from functools import lru_cache
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
+from scripts.subprocess_guard import run_process
 
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 _documents = import_repo_module(__file__, "scripts.probe_stimulus_documents")
@@ -199,18 +199,19 @@ def _resolve_process(
     agents.mkdir(parents=True, exist_ok=True)
     (agents / filename).write_text(text, encoding="utf-8")
     try:
-        done = subprocess.run(
+        done = run_process(
             [sys.executable, str(resolver), "--repo-root", str(sandbox)],
             cwd=repo_root,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            timeout=_RESOLVE_TIMEOUT_SECONDS,
-            check=False,
+            timeout_seconds=_RESOLVE_TIMEOUT_SECONDS,
         )
-    except (OSError, subprocess.SubprocessError) as exc:  # pragma: no cover - resolver absent
+    except OSError as exc:  # pragma: no cover - resolver absent
         return {"data": None, "output": f"the resolver could not be run: {exc}", "exit_code": None}
-    return {"data": _data_block(done.stdout), "output": done.stdout, "exit_code": done.returncode}
+    output = done.stdout + done.stderr
+    return {
+        "data": _data_block(output),
+        "output": output,
+        "exit_code": None if done.returncode == 124 else done.returncode,
+    }
 
 
 def _data_block(output: str) -> str | None:
@@ -361,8 +362,13 @@ def _inspect_document(repo_root: Path, document: dict) -> dict:
 
 
 def _declaration_verdict(
-    repo_root: Path, resolver: Path, sandbox: Path, filename: str,
-    speakable: str, declaration: dict, whole: object,
+    repo_root: Path,
+    resolver: Path,
+    sandbox: Path,
+    filename: str,
+    speakable: str,
+    declaration: dict,
+    whole: object,
 ) -> tuple[str | None, str | None]:
     """``(verdict, reason)`` for ONE declaration: is it read, unread, or a restated default?
 
@@ -409,7 +415,9 @@ def replay_probe_stimulus(record: dict, *, repo_root: Path) -> dict:
     """
     stimulus = (record.get("sections") or {}).get("stimulus") or ""
     if not stimulus.strip():
-        return _report(STIMULUS_NOT_CONFIGURED, ["the record carries no `## Stimulus` block to replay"], [])
+        return _report(
+            STIMULUS_NOT_CONFIGURED, ["the record carries no `## Stimulus` block to replay"], []
+        )
     documents = extract_adapter_documents(stimulus)
     if not documents:
         return _report(

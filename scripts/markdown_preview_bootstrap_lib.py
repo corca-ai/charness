@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-import subprocess
+import contextlib
+import io
 import sys
+import traceback
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +11,7 @@ import yaml
 
 from scripts.adapter_lib import plan_generated_write
 from scripts.adapter_yaml_render_lib import render_yaml_mapping
+from scripts.runtime_bootstrap import load_path_module
 
 LIB_REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_SEARCH_PATHS = (
@@ -143,7 +146,9 @@ def scaffold_markdown_preview(
     )
     resolved_output = output_path if output_path.is_absolute() else repo_root / output_path
     relative_output = resolved_output.relative_to(repo_root).as_posix()
-    existing_text = resolved_output.read_text(encoding="utf-8") if resolved_output.is_file() else None
+    existing_text = (
+        resolved_output.read_text(encoding="utf-8") if resolved_output.is_file() else None
+    )
 
     plan = plan_generated_write(existing_text, config_text)
     if plan == "absent":
@@ -177,23 +182,35 @@ def scaffold_markdown_preview(
     }
 
 
-def run_markdown_preview(repo_root: Path, *, config_path: str) -> tuple[int, dict[str, Any] | None, str]:
+def run_markdown_preview(
+    repo_root: Path, *, config_path: str
+) -> tuple[int, dict[str, Any] | None, str]:
     command = preview_command(repo_root, config_path)
-    completed = subprocess.run(
-        command,
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    helper = load_path_module("charness_markdown_preview_helper", _helper_script_path())
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    previous_argv = sys.argv
+    try:
+        sys.argv = command[1:]
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            try:
+                returncode = int(helper.main())
+            except SystemExit as exc:
+                returncode = int(exc.code or 0)
+            except Exception:
+                returncode = 1
+                traceback.print_exc()
+    finally:
+        sys.argv = previous_argv
+    completed_stdout = stdout.getvalue()
     payload: dict[str, Any] | None = None
-    if completed.stdout.strip():
+    if completed_stdout.strip():
         try:
-            payload = yaml.safe_load(completed.stdout)
+            payload = yaml.safe_load(completed_stdout)
         except yaml.YAMLError:
             payload = None
         if not isinstance(payload, dict):
             # `yaml.safe_load` returns a scalar where `json.loads` raised, so the
             # mapping check preserves the "unreadable stdout -> no payload" contract.
             payload = None
-    return completed.returncode, payload, completed.stderr.strip()
+    return returncode, payload, stderr.getvalue().strip()

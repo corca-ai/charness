@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import contextlib
 import datetime as dt
+import importlib.util
+import io
 import re
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -22,6 +24,7 @@ from scripts.lesson_command_citation import (
     script_tree_root,
 )
 from scripts.recent_lessons_lib import build_indexed_recent_lessons, lesson_selection_index_path
+from scripts.runtime_bootstrap import load_path_module
 
 _PERSISTED_LINE_PATTERN = re.compile(r"^Persisted:.*$", re.MULTILINE)
 _GOAL_FIELD_PATTERN = re.compile(r"^Goal:[ \t]*(?P<value>[^\r\n]*)$")
@@ -32,6 +35,20 @@ _FENCE_PATTERN = re.compile(r"^[ \t]*(?P<marker>`{3,}|~{3,})(?P<info>.*)$")
 _ATX_HEADING_PATTERN = re.compile(r"^[ ]{0,3}#{1,6}[ \t]+")
 _H1_PATTERN = re.compile(r"^[ ]{0,3}#[ \t]+")
 _SETEXT_H2_PATTERN = re.compile(r"^[ \t]*---+[ \t]*$")
+
+
+def _load_registered_path_module(module_name: str, path: Path):
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"unable to load module {module_name} from {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    try:
+        spec.loader.exec_module(module)
+    except BaseException:
+        sys.modules.pop(module_name, None)
+        raise
+    return module
 
 
 def stamp_persisted_path(markdown_text: str, relpath: str) -> str:
@@ -123,17 +140,35 @@ def _run_index_builder(repo_root: Path, output_dir: Path) -> Path:
             "retro lesson selection builder is unavailable in the running tree; "
             f"cannot refresh the index with `{command}`"
         )
-    completed = subprocess.run(
-        [sys.executable, str(builder_path), "--repo-root", str(repo_root), "--write"],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if completed.returncode != 0:
-        detail = (completed.stderr or completed.stdout).strip()
+    module = load_path_module("charness_retro_lesson_selection_builder", builder_path)
+    target_recent = builder_path.parent / "recent_lessons_lib.py"
+    if builder_path.is_relative_to(repo_root) and target_recent.is_file():
+        recent_module = _load_registered_path_module(
+            "charness_target_recent_lessons_lib", target_recent
+        )
+        for name in (
+            "build_lesson_selection_index",
+            "check_lesson_selection_index",
+            "lesson_selection_index_path",
+            "write_lesson_selection_index",
+        ):
+            setattr(module, name, getattr(recent_module, name))
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    previous_argv = sys.argv
+    try:
+        sys.argv = [str(builder_path), "--repo-root", str(repo_root), "--write"]
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            try:
+                returncode = int(module.main())
+            except SystemExit as exc:
+                returncode = int(exc.code or 0)
+    finally:
+        sys.argv = previous_argv
+    if returncode != 0:
+        detail = (stderr.getvalue() or stdout.getvalue()).strip()
         raise ValueError(
-            f"retro lesson selection builder failed with exit {completed.returncode}"
+            f"retro lesson selection builder failed with exit {returncode}"
             + (f": {detail}" if detail else "")
         )
     return lesson_selection_index_path(output_dir)
@@ -227,7 +262,9 @@ def _canonicalize_goal_metadata(markdown_text: str, canonical_path: str) -> str:
 def _goal_identity(repo_root: Path, goal_path: Path, markdown_text: str) -> dict[str, str]:
     """Resolve and validate the exact identity used by goal-aware persistence."""
     root = repo_root.resolve()
-    resolved_goal = (root / goal_path).resolve() if not goal_path.is_absolute() else goal_path.resolve()
+    resolved_goal = (
+        (root / goal_path).resolve() if not goal_path.is_absolute() else goal_path.resolve()
+    )
     try:
         relative_goal = resolved_goal.relative_to(root).as_posix()
     except ValueError as exc:
@@ -241,7 +278,9 @@ def _goal_identity(repo_root: Path, goal_path: Path, markdown_text: str) -> dict
 
     fields = _goal_metadata_fields(markdown_text)
     if len(fields) != 1 or not fields[0]:
-        raise ValueError("goal-aware retro must contain exactly one non-empty `Goal:` metadata field")
+        raise ValueError(
+            "goal-aware retro must contain exactly one non-empty `Goal:` metadata field"
+        )
     expected_path = relative_goal
     expected_slug = path_match.group("slug")
     if fields[0] not in {expected_path, expected_slug}:
@@ -270,7 +309,9 @@ def persist_retro_artifact(
     require_repo_local_helper(__file__, repo_root)
     if goal_path is not None and goal_lineage_path is not None:
         raise ValueError("retro accepts either --goal-path or --goal-lineage-file, not both")
-    goal_identity = _goal_identity(repo_root, goal_path, markdown_text) if goal_path is not None else None
+    goal_identity = (
+        _goal_identity(repo_root, goal_path, markdown_text) if goal_path is not None else None
+    )
     try:
         if goal_lineage_path is not None:
             goal_lineage = load_goal_lineage_file(repo_root, goal_lineage_path)
@@ -310,7 +351,9 @@ def persist_retro_artifact(
     result["goal_lineage"] = goal_lineage
 
     if summary_path is not None and artifact_path.resolve() != summary_path.resolve():
-        digest = build_indexed_recent_lessons(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
+        digest = build_indexed_recent_lessons(
+            repo_root=repo_root, output_dir=output_dir, summary_path=summary_path
+        )
         section_counts = digest.section_counts
         no_candidates = sum(section_counts.values()) == 0
         existing_text = summary_path.read_text(encoding="utf-8") if summary_path.is_file() else ""

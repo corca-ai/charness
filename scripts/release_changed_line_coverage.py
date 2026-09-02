@@ -59,12 +59,15 @@ Exit codes:
      mapper's blind spot. 3 was previously undocumented here; documenting it
      alongside 4 is the point, since the difference between them IS the refusal.
 """
+
 from __future__ import annotations
 
 import argparse
-import subprocess
+import contextlib
+import io
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import yaml
 
@@ -75,6 +78,8 @@ if str(REPO_ROOT) not in sys.path:
 from scripts import changed_line_verdict_codes as _verdict_codes  # noqa: E402
 from scripts import mutation_coverage_producer as _producer  # noqa: E402
 from scripts import suggest_mutation_coverage_command as _suggest  # noqa: E402
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from scripts.subprocess_guard import run_monitored_phase  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 NO_VERDICT_EXIT = _verdict_codes.REFUSED_EXIT
@@ -175,7 +180,6 @@ def _focused_pytest_command(recommendation: dict) -> str | None:
     if not isinstance(command, str) or not command.strip():
         return None
     return command
-
 
 
 def _dispose_consumer_verdict(payload: dict, result, args) -> int | None:
@@ -281,9 +285,7 @@ def main(argv: list[str] | None = None) -> int:
             "no base SHA (no origin/main merge-base): there is no range to analyze, so "
             "this run rendered no changed-line verdict. It is NOT a pass."
         )
-        emit_yaml(
-            {"status": "no-verdict", "reason": "base discovery failed", "base_sha": None}
-        )
+        emit_yaml({"status": "no-verdict", "reason": "base discovery failed", "base_sha": None})
         return NO_VERDICT_EXIT
 
     recommendation = _suggest.build_recommendation(repo_root, base_sha=base_sha)
@@ -293,7 +295,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if status == "noop":
         emit_yaml(
-            {"status": "noop", "reason": "no eligible mutation-pool files changed", "base_sha": base_sha}
+            {
+                "status": "noop",
+                "reason": "no eligible mutation-pool files changed",
+                "base_sha": base_sha,
+            }
         )
         return 0
 
@@ -345,11 +351,12 @@ def main(argv: list[str] | None = None) -> int:
             # tree is avoidable serialization work on this lane.
             include_paths=mapped,
         )
-    except subprocess.CalledProcessError as exc:
+    except RuntimeError as exc:
         # A producer that DIED proved nothing. Reporting 0 here would reinstate the
         # exact silence this gate replaces.
+        exit_code = getattr(exc, "returncode", 1)
         _warn(
-            f"the focused coverage producer failed (exit {exc.returncode}); no "
+            f"the focused coverage producer failed (exit {exit_code}); no "
             "changed-line verdict was rendered. This is NOT a pass."
         )
         emit_yaml(
@@ -365,7 +372,11 @@ def main(argv: list[str] | None = None) -> int:
             "no changed-line verdict was rendered. This is NOT a pass."
         )
         emit_yaml(
-            {"status": "no-verdict", "reason": "focused coverage was not produced", "base_sha": base_sha}
+            {
+                "status": "no-verdict",
+                "reason": "focused coverage was not produced",
+                "base_sha": base_sha,
+            }
         )
         return NO_VERDICT_EXIT
 
@@ -378,7 +389,11 @@ def main(argv: list[str] | None = None) -> int:
             "no changed-line verdict was rendered. This is NOT a pass."
         )
         emit_yaml(
-            {"status": "no-verdict", "reason": "focused coverage missing after produce", "base_sha": base_sha}
+            {
+                "status": "no-verdict",
+                "reason": "focused coverage missing after produce",
+                "base_sha": base_sha,
+            }
         )
         return NO_VERDICT_EXIT
 
@@ -406,7 +421,28 @@ def main(argv: list[str] | None = None) -> int:
     ]
     for path in mapped:
         consumer_argv += ["--limit-to-file", path]
-    result = subprocess.run(consumer_argv, cwd=repo_root, capture_output=True, text=True)
+    consumer = import_repo_module(__file__, "scripts.check_changed_line_mutation_coverage")
+    consumer_stdout = io.StringIO()
+    consumer_stderr = io.StringIO()
+    previous_argv = sys.argv
+    try:
+        sys.argv = consumer_argv[1:]
+        with (
+            contextlib.redirect_stdout(consumer_stdout),
+            contextlib.redirect_stderr(consumer_stderr),
+        ):
+            try:
+                consumer_returncode = int(consumer.main())
+            except SystemExit as exc:
+                consumer_returncode = int(exc.code or 0)
+    finally:
+        sys.argv = previous_argv
+    result = SimpleNamespace(
+        args=consumer_argv,
+        returncode=consumer_returncode,
+        stdout=consumer_stdout.getvalue(),
+        stderr=consumer_stderr.getvalue(),
+    )
     sys.stderr.write(result.stderr)
     status, reason = _verdict_from_consumer(result)
     payload = {
@@ -425,7 +461,7 @@ def main(argv: list[str] | None = None) -> int:
     return result.returncode
 
 
-def _verdict_from_consumer(result: subprocess.CompletedProcess) -> tuple[str, str]:
+def _verdict_from_consumer(result) -> tuple[str, str]:  # noqa: ANN001
     """Read the consumer's PAYLOAD, not just its exit code.
 
     The consumer reaches exit 0 on three materially different outcomes, and only one
@@ -483,17 +519,34 @@ def _verdict_from_consumer(result: subprocess.CompletedProcess) -> tuple[str, st
 
 
 def _run_command(repo_root: Path, command: str, phase: str) -> dict[str, object]:
-    result = subprocess.run(command, cwd=repo_root, shell=True, capture_output=True, text=True)
-    if result.returncode != 0:
+    outcome = run_monitored_phase(
+        command,
+        cwd=repo_root,
+        phase=phase,
+        timeout_seconds=None,
+        shell=True,
+        capture=True,
+    )
+    if outcome.returncode != 0:
         # pytest reports failures on STDOUT. Surfacing only stderr here left the
         # operator with "the producer failed (exit 1)" and no way to see which test
         # failed — a gate whose failure cannot be diagnosed is a gate that gets
         # disabled, which is the whole history this lane is repairing.
-        sys.stderr.write(result.stdout[-6000:])
-    sys.stderr.write(result.stderr[-4000:])
-    if result.returncode != 0:
-        raise subprocess.CalledProcessError(result.returncode, command, result.stdout, result.stderr)
-    return {"command": command, "returncode": result.returncode, "stdout": result.stdout, "phase": phase}
+        sys.stderr.write(outcome.stdout[-6000:])
+    sys.stderr.write(outcome.stderr[-4000:])
+    if outcome.returncode != 0:
+        error = RuntimeError(f"coverage producer command failed with exit {outcome.returncode}")
+        error.returncode = outcome.returncode  # type: ignore[attr-defined]
+        error.output = outcome.stdout  # type: ignore[attr-defined]
+        error.stderr = outcome.stderr  # type: ignore[attr-defined]
+        raise error
+    return {
+        "command": command,
+        "returncode": outcome.returncode,
+        "stdout": outcome.stdout,
+        "stderr": outcome.stderr,
+        "phase": phase,
+    }
 
 
 if __name__ == "__main__":

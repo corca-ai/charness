@@ -6,13 +6,17 @@ import json
 import os
 import re
 import shutil
-import subprocess
 import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any
 
 from packaging.version import InvalidVersion, Version
+
+try:
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:  # executed directly from scripts/
+    from subprocess_guard import run_process
 
 SEMVER_RE = re.compile(r"(?<!\d)(\d+(?:\.\d+){1,}(?:-[0-9A-Za-z.-]+)?)(?![0-9A-Za-z.-])")
 GITHUB_API_TEMPLATE = "https://api.github.com/repos/{repo}/releases/latest"
@@ -37,7 +41,9 @@ def observed_version_from_detect(detect_result: Any) -> str | None:
     return extract_version("\n".join(outputs))
 
 
-def upgrade_advisory(observed_version: str | None, release: dict[str, Any] | None) -> dict[str, Any] | None:
+def upgrade_advisory(
+    observed_version: str | None, release: dict[str, Any] | None
+) -> dict[str, Any] | None:
     """Compare an installed version against the probed latest upstream release.
 
     Returns a `behind` advisory when a newer release exists, a `current` marker
@@ -154,16 +160,18 @@ def _probe_github_release_with_gh(repo: str) -> dict[str, Any] | None:
         return None
     if shutil.which("gh") is None:
         return None
-    try:
-        completed = subprocess.run(
-            ["gh", "api", f"/repos/{repo}/releases/latest"],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=10,
+    completed = run_process(
+        ["gh", "api", f"/repos/{repo}/releases/latest"],
+        cwd=Path.cwd(),
+        timeout_seconds=10,
+    )
+    if completed.returncode == 124:
+        return error_release(
+            repo,
+            status="error",
+            reason="github-gh-timeout",
+            error=f"Command {completed.args!r} timed out after 10 seconds",
         )
-    except subprocess.TimeoutExpired as exc:
-        return error_release(repo, status="error", reason="github-gh-timeout", error=str(exc))
     if completed.returncode != 0:
         return None
     try:
@@ -191,10 +199,14 @@ def probe_github_release(repo: str) -> dict[str, Any]:
             payload = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         if exc.code == 404:
-            return error_release(repo, status="no-release", reason="github-no-release", error="http 404")
+            return error_release(
+                repo, status="no-release", reason="github-no-release", error="http 404"
+            )
         if exc.code == 403:
             return error_release(repo, status="error", reason="github-forbidden", error="http 403")
-        return error_release(repo, status="error", reason=f"github-http-{exc.code}", error=f"http {exc.code}")
+        return error_release(
+            repo, status="error", reason=f"github-http-{exc.code}", error=f"http {exc.code}"
+        )
     except json.JSONDecodeError as exc:
         return error_release(repo, status="error", reason="github-invalid-json", error=str(exc))
     except (TimeoutError, urllib.error.URLError) as exc:

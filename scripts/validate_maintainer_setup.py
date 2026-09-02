@@ -8,6 +8,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+try:
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:  # executed directly from scripts/
+    from subprocess_guard import run_process
+
 CLOSE_KEYWORD_GUARD_BASENAME = "prepush_close_keyword_guard.py"
 # The interpreter is required: `scripts/prepush_close_keyword_guard.py` alone would
 # also match the string inside an `echo`, which is the mention-counted-as-invocation
@@ -30,9 +35,7 @@ COMMAND_MODIFIER_RE = re.compile(
 # `standing_gate_discovery_lib.ENV_PREFIX_RE`; deliberately duplicated rather
 # than imported, because this script is copied standalone into consumer repos by
 # `install-git-hooks.sh` and must not grow a cross-tree import.
-ENV_ASSIGNMENT_RE = re.compile(
-    r'^([A-Za-z_][A-Za-z0-9_]*)=("[^"]*"|\'[^\']*\'|\S*)\s+'
-)
+ENV_ASSIGNMENT_RE = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)=("[^"]*"|\'[^\']*\'|\S*)\s+')
 # Constructs that mention a command without running it. `[`/`[[` cover defensive
 # shell guards, while `echo`/`printf` cover operator-facing advice in the hook.
 NOT_A_COMMAND_RE = re.compile(r"^(?:echo|printf|test|\[\[?|:(?:\s|$)|command\s+-v)")
@@ -162,12 +165,12 @@ def _split_commands(line: str) -> list[tuple[str, str]]:
             continue
         char = line[index]
         if line.startswith("&&", index) or line.startswith("||", index):
-            pairs.append((line[start:index], line[index:index + 2]))
+            pairs.append((line[start:index], line[index : index + 2]))
             index += 2
             start = index
             continue
         # `2>&1` and `&>log` are redirections, not backgrounding.
-        if char == "&" and (line[index - 1:index] == ">" or line[index + 1:index + 2] == ">"):
+        if char == "&" and (line[index - 1 : index] == ">" or line[index + 1 : index + 2] == ">"):
             index += 1
             continue
         if char in ";|&":
@@ -192,7 +195,7 @@ def _strip_modifiers_and_env(chunk: str) -> tuple[str, dict[str, str]]:
     while True:
         modifier = COMMAND_MODIFIER_RE.match(command)
         if modifier:
-            command = command[modifier.end():]
+            command = command[modifier.end() :]
             continue
         if re.match(r"^env\s+(?=[A-Za-z_][A-Za-z0-9_]*=)", command):
             command = re.sub(r"^env\s+", "", command)
@@ -203,7 +206,7 @@ def _strip_modifiers_and_env(chunk: str) -> tuple[str, dict[str, str]]:
             if value[:1] in "\"'" and value[:1] == value[-1:]:
                 value = value[1:-1]
             assignments[name] = value
-            command = command[assignment.end():]
+            command = command[assignment.end() :]
             continue
         return command, assignments
 
@@ -287,13 +290,7 @@ def close_keyword_guard_invocations(hook_text: str) -> tuple[list[str], list[str
 
 
 def run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["git", *args],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    return run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
 
 
 def resolve_hookspath(repo_root: Path, configured: str) -> Path:
@@ -304,7 +301,9 @@ def resolve_hookspath(repo_root: Path, configured: str) -> Path:
 
 
 def is_charness_source_repo(repo_root: Path) -> bool:
-    return (repo_root / "packaging" / "charness.json").is_file() and (repo_root / "plugins" / "charness").is_dir()
+    return (repo_root / "packaging" / "charness.json").is_file() and (
+        repo_root / "plugins" / "charness"
+    ).is_dir()
 
 
 def main() -> int:
@@ -321,11 +320,12 @@ def main() -> int:
     if not present_hooks:
         print("No checked-in maintainer hooks to validate.")
         return 0
-    missing_hooks = [str(path.relative_to(repo_root)) for path in expected_hooks if not path.exists()]
+    missing_hooks = [
+        str(path.relative_to(repo_root)) for path in expected_hooks if not path.exists()
+    ]
     if missing_hooks:
         raise ValidationError(
-            "checked-in maintainer hook set is incomplete: "
-            + ", ".join(missing_hooks)
+            "checked-in maintainer hook set is incomplete: " + ", ".join(missing_hooks)
         )
 
     worktree = run_git(repo_root, "rev-parse", "--is-inside-work-tree")

@@ -46,15 +46,16 @@ import importlib.util
 import inspect
 import json
 import re
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
-from runtime_bootstrap import repo_root_from_script
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 REVIEW_SNAPSHOT = "review-snapshot"
 SNAPSHOT_RELATIVE_PATH = Path(".charness/reviewer-boundary/snapshot.json")
@@ -67,12 +68,10 @@ class ParityError(Exception):
 
 def source_at_ref(repo_root: Path, path: str, ref: str) -> str | None:
     """Source of `path` at a committed ref, or None when it did not exist there."""
-    proc = subprocess.run(
+    proc = run_process(
         ["git", "-C", str(repo_root), "show", f"{ref}:{path}"],
-        check=False,
-        capture_output=True,
-        text=True,
-        errors="surrogateescape",
+        cwd=repo_root,
+        timeout_seconds=None,
     )
     return proc.stdout if proc.returncode == 0 else None
 
@@ -97,8 +96,10 @@ def source_at_review_snapshot(repo_root: Path, path: str) -> str | None:
 
 
 def _current_head(repo_root: Path) -> str | None:
-    proc = subprocess.run(
-        ["git", "-C", str(repo_root), "rev-parse", "HEAD"], check=False, capture_output=True, text=True
+    proc = run_process(
+        ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+        cwd=repo_root,
+        timeout_seconds=None,
     )
     return proc.stdout.strip() if proc.returncode == 0 else None
 
@@ -322,13 +323,22 @@ def changed_python_paths(repo_root: Path) -> list[str]:
     is what the reviewer's snapshot captured under, so keeping both is what lets a
     rename-plus-repair still find its baseline.
     """
-    proc = subprocess.run(
-        ["git", "-C", str(repo_root), "status", "--porcelain=v1", "-z", "--untracked-files=all"],
-        check=False,
-        capture_output=True,
-        text=True,
-        errors="surrogateescape",
-    )
+    try:
+        proc = run_process(
+            [
+                "git",
+                "-C",
+                str(repo_root),
+                "status",
+                "--porcelain=v1",
+                "-z",
+                "--untracked-files=all",
+            ],
+            cwd=repo_root,
+            timeout_seconds=None,
+        )
+    except OSError:
+        return []
     if proc.returncode != 0:
         return []
     fields = [field for field in proc.stdout.split("\0") if field]
@@ -401,7 +411,9 @@ def main() -> int:
         default=REVIEW_SNAPSHOT,
         help=f"a git ref, or `{REVIEW_SNAPSHOT}` for what the last bounded reviewer read",
     )
-    parser.add_argument("--paths", nargs="*", default=None, help="defaults to the captured/changed set")
+    parser.add_argument(
+        "--paths", nargs="*", default=None, help="defaults to the captured/changed set"
+    )
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
@@ -416,11 +428,10 @@ def main() -> int:
             # compare" stays distinguishable from "nothing was repaired".
             paths = sorted(set(captured_paths(root)) | set(changed_python_paths(root)))
         else:
-            proc = subprocess.run(
+            proc = run_process(
                 ["git", "-C", str(root), "diff", "--name-only", args.against],
-                check=False,
-                capture_output=True,
-                text=True,
+                cwd=root,
+                timeout_seconds=None,
             )
             paths = [line for line in proc.stdout.split() if line.endswith(".py")]
     report = _render_repairs(root, sorted(paths), args.against)

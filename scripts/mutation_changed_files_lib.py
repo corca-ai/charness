@@ -9,7 +9,6 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-import subprocess
 from collections.abc import Mapping
 from pathlib import Path
 
@@ -18,6 +17,7 @@ from scripts.git_status_snapshot import GitStatusError  # noqa: E402
 from scripts.mutation_changed_line_diff import (  # noqa: E402
     changed_line_numbers_for_paths as _batch_changed_line_numbers_for_paths,
 )
+from scripts.subprocess_guard import run_process  # noqa: E402
 
 _IMMUTABLE_REF = re.compile(r"[0-9a-f]{40}")
 _CHANGED_LINE_CACHE: dict[tuple[str, str, str, str], frozenset[int]] = {}
@@ -55,9 +55,15 @@ def changed_line_numbers(repo_root: Path, base_sha: str, head_sha: str, path: st
         if cached is not None:
             return set(cached)
     command = ["git", "diff", "-U0", "--no-renames", f"{base_sha}..{head}", "--", path]
-    result = subprocess.run(command, cwd=repo_root, check=True, text=True, capture_output=True)
+    result = run_process(command, cwd=repo_root, timeout_seconds=None)
+    if result.returncode != 0:
+        raise RuntimeError(
+            result.stderr.strip() or f"git diff failed with exit {result.returncode}"
+        )
     lines: set[int] = set()
-    for match in re.finditer(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@", result.stdout, re.MULTILINE):
+    for match in re.finditer(
+        r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@", result.stdout, re.MULTILINE
+    ):
         start = int(match.group(1))
         count = int(match.group(2)) if match.group(2) is not None else 1
         lines.update(range(start, start + count))
@@ -211,10 +217,14 @@ def classify_changed_sample_scope(
     coverage_eligible: list[str],
     statement_lines: dict[str, tuple[set[int], set[int]]],
     coverage_enabled: bool,
-) -> tuple[list[str], list[str], list[str], list[str], list[str], dict[str, list[dict[str, object]]]]:
-    changed_lines = changed_line_numbers_for_paths(
-        repo_root, base_sha or "", head_sha, changed_before_coverage
-    ) if coverage_enabled and base_sha else {}
+) -> tuple[
+    list[str], list[str], list[str], list[str], list[str], dict[str, list[dict[str, object]]]
+]:
+    changed_lines = (
+        changed_line_numbers_for_paths(repo_root, base_sha or "", head_sha, changed_before_coverage)
+        if coverage_enabled and base_sha
+        else {}
+    )
     changed = [path for path in changed_before_coverage if path in set(eligible)]
     (
         changed_files_excluded_by_file_coverage,
@@ -264,7 +274,9 @@ def line_source_targets(
     source_lines = line_source_text(repo_root, path, ref)
     entries: list[dict[str, object]] = []
     for line_number in sorted(line_numbers):
-        source = source_lines[line_number - 1].strip() if 1 <= line_number <= len(source_lines) else ""
+        source = (
+            source_lines[line_number - 1].strip() if 1 <= line_number <= len(source_lines) else ""
+        )
         if not source:
             continue
         entries.append({"line": line_number, "source": source})
@@ -274,14 +286,12 @@ def line_source_targets(
 def line_source_text(repo_root: Path, path: str, ref: str | None = None) -> list[str]:
     if ref:
         try:
-            result = subprocess.run(
-                ["git", "show", f"{ref}:{path}"],
-                cwd=repo_root,
-                check=True,
-                capture_output=True,
-                text=True,
+            result = run_process(
+                ["git", "show", f"{ref}:{path}"], cwd=repo_root, timeout_seconds=None
             )
-        except (OSError, subprocess.CalledProcessError):
+        except OSError:
+            return []
+        if result.returncode != 0:
             return []
         return result.stdout.splitlines()
     source_path = repo_root / path
@@ -316,7 +326,11 @@ def changed_pool_files_vs_base(
 
     eligible = list_eligible(repo_root)
     command = ["git", "diff", "--name-only", base_sha, "--", *mutation_pathspecs()]
-    result = subprocess.run(command, cwd=repo_root, check=True, text=True, capture_output=True)
+    result = run_process(command, cwd=repo_root, timeout_seconds=None)
+    if result.returncode != 0:
+        raise RuntimeError(
+            result.stderr.strip() or f"git diff failed with exit {result.returncode}"
+        )
     changed = {line.strip() for line in result.stdout.splitlines() if line.strip()}
     if untracked is None:
         try:

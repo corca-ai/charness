@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import shutil
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -14,6 +13,9 @@ FAIL = _state.FAIL
 PASS = _state.PASS
 SKIPPED = _state.SKIPPED
 _manifest = import_repo_module(__file__, "scripts.worktree_doctor_manifest")
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
+TIMEOUT_EXIT_CODE = _subprocess_guard.TIMEOUT_EXIT_CODE
 run_manifest_doctor_checks = _manifest.run_manifest_doctor_checks
 
 
@@ -36,16 +38,15 @@ def _git_output(repo_root: Path, *args: str) -> str | None:
     cannot be applied to some probes and not others.
     """
     try:
-        result = subprocess.run(
+        result = run_process(
             ["git", *args],
             cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=5,
+            timeout_seconds=5,
             env=_git_env(),
         )
-    except (FileNotFoundError, subprocess.TimeoutExpired, NotADirectoryError):
+    except (FileNotFoundError, NotADirectoryError):
+        return None
+    if result.returncode in (TIMEOUT_EXIT_CODE,):
         return None
     if result.returncode != 0:
         return None
@@ -99,9 +100,7 @@ def _hooks_path_from_layout(repo_root: Path, layout) -> Path:
     return layout.common_dir / "hooks"
 
 
-def git_checkout_facts(
-    repo_root: Path, *, include_hooks_path: bool = True
-) -> GitCheckoutFacts:
+def git_checkout_facts(repo_root: Path, *, include_hooks_path: bool = True) -> GitCheckoutFacts:
     """Read one checkout snapshot, optionally omitting the hooks target."""
     from scripts.git_checkout import is_bare_repository, layout_from_files
 

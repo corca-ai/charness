@@ -13,13 +13,19 @@ import hashlib
 import json
 import os
 import signal
-import subprocess
 import sys
+import threading
 import time
 import uuid
 from contextlib import contextmanager
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Callable
+
+try:
+    from scripts.subprocess_guard import run_monitored_phase, run_process
+except ModuleNotFoundError:
+    from subprocess_guard import run_monitored_phase, run_process
 
 
 class RecoveryError(Exception):
@@ -51,14 +57,11 @@ def recovery_state_dir(repo_root: Path) -> Path:
     if not discovery_redirected() and not discoverable(repo_root):
         return repo_root / ".charness" / "mutation-recovery"
     try:
-        completed = subprocess.run(
-            ["git", "rev-parse", "--git-dir"],
-            cwd=repo_root,
-            capture_output=True,
-            text=True,
+        completed = run_process(
+            ["git", "rev-parse", "--git-dir"], cwd=repo_root, timeout_seconds=None
         )
     except OSError:
-        completed = subprocess.CompletedProcess(["git", "rev-parse", "--git-dir"], 1, "", "")
+        completed = SimpleNamespace(returncode=1, stdout="", stderr="")
     if completed.returncode == 0 and completed.stdout.strip():
         git_dir = Path(completed.stdout.strip())
         if not git_dir.is_absolute():
@@ -170,14 +173,16 @@ class MutationRecovery:
     def clear(self, journal_id: str) -> None:
         payload = self._read()
         if payload.get("id") != journal_id:
-            raise RecoveryError("mutation recovery ownership changed; refusing to clear another sweep's journal")
+            raise RecoveryError(
+                "mutation recovery ownership changed; refusing to clear another sweep's journal"
+            )
         self._clear_child_markers()
         self.journal_path.unlink()
         for staged in self.state_dir.glob("journal.*.tmp"):
             staged.unlink(missing_ok=True)
         self.state_dir.rmdir()
 
-    def attach_child(self, journal_id: str, process: subprocess.Popen) -> int:
+    def attach_child(self, journal_id: str, process) -> int:  # noqa: ANN001
         """Bind a stopped child session to the journal before allowing exec."""
         # The wait condition is a READABLE pgid, not a path that exists. Existence alone
         # was the race: the wrapper published the marker with write_text, so the parent
@@ -195,7 +200,9 @@ class MutationRecovery:
             except (OSError, ValueError):
                 pass
             if process.poll() is not None:
-                raise RecoveryError("mutated test wrapper exited before recording its process group")
+                raise RecoveryError(
+                    "mutated test wrapper exited before recording its process group"
+                )
             time.sleep(0.01)
         if process_group is None:
             if self.child_marker.exists():
@@ -226,7 +233,12 @@ class MutationRecovery:
         except PermissionError:
             return True
         try:
-            state = (Path("/proc") / str(pid) / "stat").read_text(encoding="utf-8").rsplit(")", 1)[1].split()[0]
+            state = (
+                (Path("/proc") / str(pid) / "stat")
+                .read_text(encoding="utf-8")
+                .rsplit(")", 1)[1]
+                .split()[0]
+            )
         except (OSError, IndexError):
             return True
         return state != "Z"
@@ -254,13 +266,17 @@ class MutationRecovery:
     def _stop_owned_processes(self, payload: dict) -> None:
         owner = payload.get("pid")
         if isinstance(owner, int) and owner != os.getpid() and self._pid_active(owner):
-            raise RecoveryError(f"mutation sweep pid {owner} is still active; refusing concurrent recovery")
+            raise RecoveryError(
+                f"mutation sweep pid {owner} is still active; refusing concurrent recovery"
+            )
         process_group = payload.get("child_process_group")
         if process_group is None and self.child_marker.exists():
             try:
                 process_group = int(self.child_marker.read_text(encoding="utf-8").strip())
             except (OSError, ValueError) as exc:
-                raise RecoveryError("interrupted mutation has an invalid child process-group marker") from exc
+                raise RecoveryError(
+                    "interrupted mutation has an invalid child process-group marker"
+                ) from exc
         if not isinstance(process_group, int) or not self._group_active(process_group):
             return
         if process_group <= 1 or process_group == os.getpgrp():
@@ -299,7 +315,9 @@ class MutationRecovery:
         except (KeyError, ValueError) as exc:
             raise RecoveryError("mutation recovery record has invalid pristine bytes") from exc
         if _sha256(original) != payload.get("original_sha256"):
-            raise RecoveryError("mutation recovery record's pristine-byte digest does not match its payload")
+            raise RecoveryError(
+                "mutation recovery record's pristine-byte digest does not match its payload"
+            )
         current_sha = _sha256(path.read_bytes())
         if current_sha == payload.get("original_sha256"):
             disposition = f"{rel} was already restored; cleared the stale recovery record"
@@ -375,7 +393,7 @@ def _stop_process_group(process_group: int) -> None:
 
 def run_mutation_command(
     command: list[str], cwd: Path, recovery: MutationRecovery, journal_id: str
-) -> subprocess.CompletedProcess:
+):
     """Run a mutant in an owned session that recovery can stop before clearing."""
     wrapped = [
         sys.executable,
@@ -386,19 +404,40 @@ def run_mutation_command(
         str(os.getpid()),
         *command,
     ]
-    process = subprocess.Popen(
-        wrapped,
-        cwd=cwd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        start_new_session=True,
-    )
+    outcome: list[object] = []
+    worker_error: list[BaseException] = []
+
+    def execute() -> None:
+        try:
+            outcome.append(
+                run_monitored_phase(
+                    wrapped,
+                    cwd=cwd,
+                    phase="mutated-test",
+                    timeout_seconds=None,
+                    capture=True,
+                )
+            )
+        except BaseException as exc:  # pragma: no cover - guard setup failure
+            worker_error.append(exc)
+
+    worker = threading.Thread(target=execute, name="charness-mutated-test")
+    worker.start()
+
+    class _WorkerProcess:
+        def poll(self):  # noqa: ANN201
+            return None if worker.is_alive() else 0
+
+    process = _WorkerProcess()
     process_group: int | None = None
     try:
         process_group = recovery.attach_child(journal_id, process)
-        stdout, stderr = process.communicate()
-        return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
+        worker.join()
+        if worker_error:
+            raise worker_error[0]
+        if not outcome:
+            raise RecoveryError("mutated test guard exited without a result")
+        return outcome[0].completed_process()
     except BaseException:
         if process_group is None and recovery.child_marker.exists():
             try:
@@ -407,9 +446,7 @@ def run_mutation_command(
                 process_group = None
         if process_group is not None:
             _stop_process_group(process_group)
-        if process.poll() is None:
-            process.kill()
-        process.wait()
+        worker.join()
         raise
     finally:
         recovery._clear_child_markers()

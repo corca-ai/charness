@@ -77,6 +77,11 @@ from mutation_recovery import (
     termination_handlers,
 )
 
+try:
+    from scripts.subprocess_guard import run_monitored_phase
+except ModuleNotFoundError:
+    from subprocess_guard import run_monitored_phase
+
 from yaml_output import emit_yaml
 
 # How to READ a runner's count report lives in `mutation_test_reporters` (#689):
@@ -183,7 +188,13 @@ def parse_passed(output: str, reporter=_reporters.PytestReporter) -> int | None:
 
 
 def run_command(command: list[str], cwd: Path) -> subprocess.CompletedProcess:
-    return subprocess.run(command, cwd=cwd, capture_output=True, text=True)
+    return run_monitored_phase(
+        command,
+        cwd=cwd,
+        phase="mutation-baseline",
+        timeout_seconds=None,
+        capture=True,
+    ).completed_process()
 
 
 def measure_baseline(command: list[str], cwd: Path, reporter=_reporters.PytestReporter) -> Baseline:
@@ -276,7 +287,9 @@ def restore(path: Path, original: bytes) -> None:
     invalidate_bytecode(path)
 
 
-def classify_mutant_run(completed: subprocess.CompletedProcess, baseline: Baseline, reporter=_reporters.PytestReporter) -> tuple[str, str]:
+def classify_mutant_run(
+    completed: subprocess.CompletedProcess, baseline: Baseline, reporter=_reporters.PytestReporter
+) -> tuple[str, str]:
     """Decide killed / survived / refused from EVIDENCE, not from the exit byte.
 
     `#565` was a broken run read as a clean sweep. Reading a mutant's bare
@@ -322,7 +335,10 @@ def classify_mutant_run(completed: subprocess.CompletedProcess, baseline: Baseli
 
 
 def run_mutant(
-    spec: dict, command: list[str], repo_root: Path, baseline: Baseline,
+    spec: dict,
+    command: list[str],
+    repo_root: Path,
+    baseline: Baseline,
     reporter=_reporters.PytestReporter,
 ) -> MutantResult:
     # Key guard FIRST: a mis-keyed plan (`replacement`, `to`) would otherwise
@@ -331,7 +347,9 @@ def run_mutant(
     missing_keys = [key for key in ("path", "find", "replace") if key not in spec]
     if missing_keys:
         label = spec.get("id") or spec.get("path", "<unnamed>")
-        return MutantResult(label, spec.get("path", "?"), REFUSED, f"plan entry is missing {missing_keys}")
+        return MutantResult(
+            label, spec.get("path", "?"), REFUSED, f"plan entry is missing {missing_keys}"
+        )
     # Read BEFORE the early returns, so `declared_call_site` reports what the plan said
     # even for a mutant refused on its path or its find text. It used to be read after
     # them, so a declared mutant with a typo'd `find` reported `declared_call_site: false`
@@ -343,7 +361,9 @@ def run_mutant(
     declared_raw = spec.get("call_site", False)
     if not isinstance(declared_raw, bool):
         return MutantResult(
-            spec.get("id") or spec["path"], spec["path"], REFUSED,
+            spec.get("id") or spec["path"],
+            spec["path"],
+            REFUSED,
             f"`call_site` must be a boolean, got {declared_raw!r}; a truthy string would "
             "declare a caller test nobody wrote and silence the caller-side non-claim",
         )
@@ -351,9 +371,13 @@ def run_mutant(
     path = (repo_root / spec["path"]).resolve()
     mutant_id = spec.get("id") or f"{spec['path']}:{spec['find'][:40]}"
     if not path.is_relative_to(repo_root.resolve()):
-        return MutantResult(mutant_id, spec["path"], REFUSED, "target escapes the repo root", None, None, declared)
+        return MutantResult(
+            mutant_id, spec["path"], REFUSED, "target escapes the repo root", None, None, declared
+        )
     if not path.is_file():
-        return MutantResult(mutant_id, spec["path"], REFUSED, "target file does not exist", None, None, declared)
+        return MutantResult(
+            mutant_id, spec["path"], REFUSED, "target file does not exist", None, None, declared
+        )
     # Read the pristine bytes BEFORE any write, so the restore in `finally`
     # covers the write itself. Taking them from apply_mutation's return left a
     # window where a failure after the write had no copy to restore from.
@@ -389,14 +413,20 @@ def run_mutant(
         removed = removed_calls(original, path.read_bytes())
         if declared and removed == ():
             return MutantResult(
-                mutant_id, spec["path"], REFUSED,
+                mutant_id,
+                spec["path"],
+                REFUSED,
                 "declared `call_site` but the edit removed no call; a false declaration is "
                 "worse than none, because it SILENCES the caller-side non-claim",
-                None, removed, declared,
+                None,
+                removed,
+                declared,
             )
         completed = run_mutation_command(command, repo_root, recovery, journal_id)
         verdict, detail = classify_mutant_run(completed, baseline, reporter)
-        return MutantResult(mutant_id, spec["path"], verdict, detail, completed.returncode, removed, declared)
+        return MutantResult(
+            mutant_id, spec["path"], verdict, detail, completed.returncode, removed, declared
+        )
     finally:
         restore(path, original)
         # The journal is cleared only AFTER restore's byte-for-byte verification.
@@ -444,7 +474,10 @@ def run_sweep(plan: dict, repo_root: Path, emit=print) -> Sweep:
         if result.removed_calls:
             bits.append("removes " + ", ".join(result.removed_calls))
         calls = f" [{'; '.join(bits)}]" if bits else ""
-        emit(f"  {result.verdict:<8} {result.id}{calls}" + (f" -- {result.detail}" if result.detail else ""))
+        emit(
+            f"  {result.verdict:<8} {result.id}{calls}"
+            + (f" -- {result.detail}" if result.detail else "")
+        )
     return sweep
 
 
@@ -507,7 +540,7 @@ def call_site_non_claim(sweep: Sweep) -> str | None:
     # the operator-facing one was the false one, on a surface whose whole thesis is not
     # reporting what it did not establish.
     claim = (
-        "no mutant was DECLARED a call-site test (`\"call_site\": true`), so a clean result "
+        'no mutant was DECLARED a call-site test (`"call_site": true`), so a clean result '
         "here says nothing about whether these repairs are still REACHED in production: a "
         "repair pinned only at its own function survives deletion of its caller with the "
         "suite green (#564, measured three times in one goal, none visible in the diff)"

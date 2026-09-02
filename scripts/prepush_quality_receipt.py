@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 """Issue and validate one-push quality receipts for the release helper."""
+
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
 import shlex
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+try:
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:  # executed directly from scripts/
+    from subprocess_guard import run_process
 
 SCHEMA = "charness.prepush-quality-receipt.v1"
 SCOPE = "release-full-superset"
@@ -22,9 +27,7 @@ class ReceiptError(ValueError):
 
 
 def _git(repo_root: Path, *args: str) -> str:
-    result = subprocess.run(
-        ["git", *args], cwd=repo_root, check=False, capture_output=True, text=True
-    )
+    result = run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
     if result.returncode != 0:
         detail = result.stderr.strip() or result.stdout.strip() or "git command failed"
         raise ReceiptError(detail)
@@ -65,7 +68,9 @@ def _materialized_digest(repo_root: Path, relative_root: str) -> str:
     ):
         relative = path.relative_to(materialized_root).as_posix().encode("utf-8")
         if path.is_symlink():
-            digest.update(b"link\0" + relative + b"\0" + path.readlink().as_posix().encode("utf-8") + b"\0")
+            digest.update(
+                b"link\0" + relative + b"\0" + path.readlink().as_posix().encode("utf-8") + b"\0"
+            )
         elif path.is_file():
             digest.update(b"file\0" + relative + b"\0" + hashlib.sha256(path.read_bytes()).digest())
     return digest.hexdigest()
@@ -151,9 +156,7 @@ def _push_local_shas(push_input: str) -> list[str]:
     return local_shas
 
 
-def validate_receipt(
-    repo_root: Path, receipt_path: Path, push_input: str
-) -> dict[str, Any]:
+def validate_receipt(repo_root: Path, receipt_path: Path, push_input: str) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     receipt = _load_receipt(repo_root, receipt_path)
     expected_keys = {
@@ -196,12 +199,10 @@ def validate_receipt(
     ):
         raise ReceiptError("materialized plugin export changed after release quality")
     for local_sha in _push_local_shas(push_input):
-        result = subprocess.run(
+        result = run_process(
             ["git", "merge-base", "--is-ancestor", local_sha, head],
             cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
+            timeout_seconds=None,
         )
         if result.returncode != 0:
             raise ReceiptError(f"pushed object {local_sha} is not covered by verified HEAD")

@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
+
+try:
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:  # loaded as a standalone sibling module
+    from subprocess_guard import run_process
 
 try:
     from scripts.git_checkout import discoverable as _git_metadata_is_discoverable
@@ -127,8 +131,8 @@ def iter_generated_mirror_files(repo_root: Path, patterns: tuple[str, ...]) -> l
     return sorted(matches)
 
 
-def _decode_output(value: bytes) -> str:
-    return value.decode("utf-8", errors="replace")
+def _decode_output(value: str | bytes) -> str:
+    return value if isinstance(value, str) else value.decode("utf-8", errors="replace")
 
 
 def git_list_repo_files(
@@ -150,12 +154,7 @@ def git_list_repo_files(
                 "STDERR:\nnot a git repository (Git discovery preflight)"
             )
         return None
-    result = subprocess.run(
-        args,
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-    )
+    result = run_process(args, cwd=repo_root, timeout_seconds=None)
     if result.returncode != 0:
         if require_git:
             raise RepoFileListingError(
@@ -166,7 +165,7 @@ def git_list_repo_files(
                 f"STDERR:\n{_decode_output(result.stderr)}"
             )
         return None
-    return sorted(repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel)
+    return sorted(repo_root / rel for rel in result.stdout.split("\0") if rel)
 
 
 def iter_repo_files(
@@ -176,9 +175,7 @@ def iter_repo_files(
     require_git: bool = False,
     snapshot: RepoFileSnapshot | None = None,
 ) -> list[Path]:
-    listing = _listing_snapshot(
-        repo_root, require_git=require_git, snapshot=snapshot
-    )
+    listing = _listing_snapshot(repo_root, require_git=require_git, snapshot=snapshot)
     paths = listing.list_files(include_untracked=include_untracked)
     if paths is not None:
         return [path for path in paths if path.is_file()]
@@ -222,9 +219,7 @@ def iter_matching_repo_files(
     matches: list[Path] = []
     seen: set[Path] = set()
 
-    listing = _listing_snapshot(
-        repo_root, require_git=require_git, snapshot=snapshot
-    )
+    listing = _listing_snapshot(repo_root, require_git=require_git, snapshot=snapshot)
     git_paths = listing.list_files(include_untracked=include_untracked)
     if git_paths is not None:
         allowed = {path for path in git_paths if path.is_file()}

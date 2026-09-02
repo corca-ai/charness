@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -9,6 +8,7 @@ from typing import Any
 from runtime_bootstrap import import_repo_module
 
 _doctor_lib = import_repo_module(__file__, "scripts.worktree_doctor_lib")
+_guard = import_repo_module(__file__, "scripts.subprocess_guard")
 
 PASS = "pass"
 WARN = "warn"
@@ -23,12 +23,10 @@ DEFAULT_STALE_DAYS = 14
 
 
 def _run_git_worktree_list(repo_root: Path) -> tuple[int, str, str]:
-    proc = subprocess.run(
+    proc = _guard.run_process(
         ["git", "worktree", "list", "--porcelain"],
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
+        timeout_seconds=None,
     )
     return proc.returncode, proc.stdout, proc.stderr
 
@@ -81,7 +79,9 @@ def _resolve_age_days(path: Path, now: datetime) -> float | None:
     return (now - moment).total_seconds() / 86400.0
 
 
-def classify(entry: dict[str, Any], *, primary_path: Path, stale_days: int, now: datetime) -> dict[str, Any]:
+def classify(
+    entry: dict[str, Any], *, primary_path: Path, stale_days: int, now: datetime
+) -> dict[str, Any]:
     path = Path(entry["worktree"])
     classification: str
     reasons: list[str] = []
@@ -166,12 +166,10 @@ def _git_common_dir(repo_root: Path) -> Path | None:
     layout = layout_from_files(repo_root)
     if layout is not None:
         return layout.common_dir
-    proc = subprocess.run(
+    proc = _guard.run_process(
         ["git", "rev-parse", "--git-common-dir"],
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
+        timeout_seconds=None,
     )
     if proc.returncode != 0:
         return None
@@ -211,7 +209,9 @@ def _primary_worktree_path(repo_root: Path, entries: list[dict[str, Any]]) -> Pa
     return repo_root.resolve()
 
 
-def run_audit(repo_root: Path, *, stale_days: int = DEFAULT_STALE_DAYS, include_doctor: bool = False) -> dict[str, Any]:
+def run_audit(
+    repo_root: Path, *, stale_days: int = DEFAULT_STALE_DAYS, include_doctor: bool = False
+) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     rc, stdout, stderr = _run_git_worktree_list(repo_root)
     if rc != 0:
@@ -227,7 +227,10 @@ def run_audit(repo_root: Path, *, stale_days: int = DEFAULT_STALE_DAYS, include_
     primary_path = _primary_worktree_path(repo_root, raw_entries)
     now = datetime.now(tz=timezone.utc)
 
-    classified = [classify(entry, primary_path=primary_path, stale_days=stale_days, now=now) for entry in raw_entries]
+    classified = [
+        classify(entry, primary_path=primary_path, stale_days=stale_days, now=now)
+        for entry in raw_entries
+    ]
     doctor_summary = _attach_doctor_summaries(classified) if include_doctor else None
 
     summary = {
@@ -275,12 +278,10 @@ def run_audit(repo_root: Path, *, stale_days: int = DEFAULT_STALE_DAYS, include_
 def run_prune(repo_root: Path) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     before = run_audit(repo_root)
-    proc = subprocess.run(
+    proc = _guard.run_process(
         ["git", "worktree", "prune", "--verbose"],
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
+        timeout_seconds=None,
     )
     after = run_audit(repo_root)
     delta = max(0, before["summary"].get("prunable", 0) - after["summary"].get("prunable", 0))

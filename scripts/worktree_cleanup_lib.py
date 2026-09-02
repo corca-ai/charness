@@ -6,6 +6,9 @@ from typing import Any
 
 from runtime_bootstrap import import_repo_module
 
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
+
 _audit_lib = import_repo_module(__file__, "scripts.worktree_audit_lib")
 _status = import_repo_module(__file__, "scripts.git_status_snapshot")
 
@@ -13,14 +16,10 @@ PASS = "pass"
 FAIL = "fail"
 
 
-def _run_git(repo_root: Path, *args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["git", *args],
-        cwd=cwd or repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+def _run_git(
+    repo_root: Path, *args: str, cwd: Path | None = None
+) -> subprocess.CompletedProcess[str]:
+    return run_process(["git", *args], cwd=cwd or repo_root, timeout_seconds=None)
 
 
 def _short_branch(ref: str | None) -> str | None:
@@ -57,14 +56,18 @@ def _branch_is_contained(repo_root: Path, branch: str, base: str) -> tuple[bool,
     return False, result.stderr.strip() or f"could not compare {branch_ref} to {base}"
 
 
-def _action(action_id: str, command: list[str], status: str, reason: str | None = None) -> dict[str, Any]:
+def _action(
+    action_id: str, command: list[str], status: str, reason: str | None = None
+) -> dict[str, Any]:
     payload: dict[str, Any] = {"id": action_id, "command": command, "status": status}
     if reason:
         payload["reason"] = reason
     return payload
 
 
-def _fail(repo_root: Path, target_path: Path, message: str, *, actions: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+def _fail(
+    repo_root: Path, target_path: Path, message: str, *, actions: list[dict[str, Any]] | None = None
+) -> dict[str, Any]:
     return {
         "status": FAIL,
         "repo_root": str(repo_root),
@@ -84,14 +87,32 @@ def _resolve_cleanup_target(
 ) -> tuple[dict[str, Any] | None, Path | None, dict[str, Any] | None, bool, str]:
     audit = _audit_lib.run_audit(repo_root)
     if audit.get("status") == FAIL:
-        return None, None, _fail(repo_root, target_path, audit.get("error") or "worktree audit failed"), False, ""
+        return (
+            None,
+            None,
+            _fail(repo_root, target_path, audit.get("error") or "worktree audit failed"),
+            False,
+            "",
+        )
 
     primary_worktree = Path(audit["primary_worktree"]).resolve()
     entry = _find_entry(audit.get("entries", []), target_path)
     if entry is None:
-        return None, primary_worktree, _fail(primary_worktree, target_path, "target path is not registered as a git worktree"), False, ""
+        return (
+            None,
+            primary_worktree,
+            _fail(primary_worktree, target_path, "target path is not registered as a git worktree"),
+            False,
+            "",
+        )
     if primary_worktree == target_path:
-        return None, primary_worktree, _fail(primary_worktree, target_path, "refusing to remove the primary worktree"), False, ""
+        return (
+            None,
+            primary_worktree,
+            _fail(primary_worktree, target_path, "refusing to remove the primary worktree"),
+            False,
+            "",
+        )
     if entry.get("prunable") or not target_path.exists():
         return (
             None,
@@ -145,7 +166,12 @@ def _plan_cleanup_actions(
             if not contained:
                 return (
                     actions,
-                    _fail(repo_root, target_path, f"refusing to delete branch {branch!r}: {reason}", actions=actions),
+                    _fail(
+                        repo_root,
+                        target_path,
+                        f"refusing to delete branch {branch!r}: {reason}",
+                        actions=actions,
+                    ),
                 )
             actions.append(_action("delete-branch", ["git", "branch", "-D", branch], "planned"))
 
@@ -161,13 +187,7 @@ def _execute_actions(
         if action["status"] == "skipped":
             continue
         command = action["command"]
-        result = subprocess.run(
-            command,
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
+        result = run_process(command, cwd=repo_root, timeout_seconds=None)
         action["exit_code"] = result.returncode
         if result.stdout.strip():
             action["stdout"] = result.stdout.strip()
@@ -192,7 +212,9 @@ def run_cleanup(
     repo_root = repo_root.resolve()
     target_path = target_path.resolve()
 
-    entry, operation_root, failure, dirty, dirty_detail = _resolve_cleanup_target(repo_root, target_path, force=force)
+    entry, operation_root, failure, dirty, dirty_detail = _resolve_cleanup_target(
+        repo_root, target_path, force=force
+    )
     if failure is not None:
         return failure
     assert entry is not None

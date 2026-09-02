@@ -18,16 +18,24 @@ by scripts/check_inventory_declaration_coverage.py.
 from __future__ import annotations
 
 import argparse
+import contextlib
+import io
 import json
-import subprocess
 import sys
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import yaml
 
+try:
+    from runtime_bootstrap import load_path_module
+except ModuleNotFoundError:  # imported as scripts.validate_inventory_consumption_declaration
+    from scripts.runtime_bootstrap import load_path_module
+
 DEFAULT_CONSUMER_FIELDS_PATH = "skills/public/quality/references/inventory-consumer-fields.json"
 INVENTORY_DIR = "skills/public/quality/scripts"
+_IN_PROCESS_LOCK = threading.Lock()
 
 
 def parse_args() -> argparse.Namespace:
@@ -55,23 +63,27 @@ def _collect_keys(node: object, sink: set[str]) -> None:
 
 
 def _run_inventory(script_path: Path, repo_root: Path) -> tuple[object | None, str | None]:
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    with _IN_PROCESS_LOCK:
+        old_argv = sys.argv
+        sys.argv = [str(script_path), "--repo-root", str(repo_root), "--detail"]
+        try:
+            with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                module = load_path_module(f"charness_inventory_{script_path.stem}", script_path)
+                try:
+                    returncode = module.main()
+                except SystemExit as exc:
+                    returncode = exc.code if isinstance(exc.code, int) else 1
+        except Exception as exc:
+            return None, f"unexpected {type(exc).__name__}: {exc}"
+        finally:
+            sys.argv = old_argv
+    if returncode != 0:
+        error = stderr.getvalue().strip().splitlines()
+        return None, f"exit {returncode}: {error[-1] if error else '(no stderr)'}"
     try:
-        completed = subprocess.run(
-            [sys.executable, str(script_path), "--repo-root", str(repo_root), "--detail"],
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=120,
-        )
-    except subprocess.TimeoutExpired:
-        return None, "timed out after 120s"
-    except Exception as exc:
-        return None, f"unexpected {type(exc).__name__}: {exc}"
-    if completed.returncode != 0:
-        stderr = completed.stderr.strip().splitlines()[-1] if completed.stderr.strip() else "(no stderr)"
-        return None, f"exit {completed.returncode}: {stderr}"
-    try:
-        return yaml.safe_load(completed.stdout), None
+        return yaml.safe_load(stdout.getvalue()), None
     except yaml.YAMLError as exc:
         return None, f"non-YAML stdout: {exc}"
 

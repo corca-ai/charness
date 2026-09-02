@@ -9,16 +9,21 @@ the current changed-pool content.
 
 The transferable doctrine lives in skills/public/quality/references/mutation-testing.md.
 """
+
 from __future__ import annotations
 
 import shlex
-import subprocess
 import sys
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Callable
 
 from runtime_bootstrap import import_repo_module
+
+try:
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:  # executed directly from scripts/
+    from subprocess_guard import run_process
 
 _sampling = import_repo_module(__file__, "scripts.mutation_sampling_lib")
 _changed_files = import_repo_module(__file__, "scripts.mutation_changed_files_lib")
@@ -53,6 +58,8 @@ _COVERAGE_ENV_KEYS = (
 classify_instrumentable_command = _sampling.classify_instrumentable_command
 is_standing_pytest_runner_command = _sampling.is_standing_pytest_runner_command
 is_instrumentable_pytest_command = _sampling.is_instrumentable_pytest_command
+
+
 def instrument_broad_command(
     command: str,
     data_file: Path,
@@ -81,7 +88,9 @@ def instrument_broad_command(
     driver = shlex.quote(interpreter or sys.executable)
     prefix = f"{driver} -m coverage run --data-file {data_file_arg}"
     if kind == _sampling.PYTEST_KIND:
-        extra_suffix = (" " + shlex.join(list(extra_pytest_targets))) if extra_pytest_targets else ""
+        extra_suffix = (
+            (" " + shlex.join(list(extra_pytest_targets))) if extra_pytest_targets else ""
+        )
         return f"{prefix} -m pytest" + remainder + extra_suffix
     extra_suffix = "".join(
         f" --extra-pytest-target {shlex.quote(target)}" for target in extra_pytest_targets
@@ -137,9 +146,9 @@ def produce_command_coverage(
 def default_mutation_base_sha(repo_root: Path) -> str:
     """The merge-base with origin/main — the same base the release consumer uses
     so the producer's freshness fingerprint matches the consumer's recomputation."""
-    result = subprocess.run(
+    result = run_process(
         ["git", "-C", str(repo_root), "merge-base", "origin/main", "HEAD"],
-        capture_output=True,
-        text=True,
+        cwd=repo_root,
+        timeout_seconds=None,
     )
     return result.stdout.strip() if result.returncode == 0 else ""

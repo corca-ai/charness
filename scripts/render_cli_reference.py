@@ -6,7 +6,6 @@ import argparse
 import re
 import runpy
 import shlex
-import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,6 +15,8 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _command_docs = import_repo_module(__file__, "scripts.check_command_docs")
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 
 def commands_from_contract(repo_root: Path) -> tuple[tuple[str, tuple[str, ...]], ...]:
@@ -63,12 +64,10 @@ EXAMPLES: dict[str, tuple[str, ...]] = {
 
 
 def run_help(repo_root: Path, command: tuple[str, ...]) -> str:
-    result = subprocess.run(
+    result = run_process(
         list(command),
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
+        timeout_seconds=None,
     )
     if result.returncode != 0:
         raise SystemExit(

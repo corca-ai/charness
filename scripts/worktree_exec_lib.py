@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import subprocess
 from pathlib import Path
 from typing import MutableMapping
 
@@ -12,6 +11,8 @@ from runtime_bootstrap import (
 )
 
 _doctor_checks = import_repo_module(__file__, "scripts.worktree_doctor_checks")
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
 git_checkout_facts = _doctor_checks.git_checkout_facts
 checkout_isolation = _doctor_checks.checkout_isolation
 
@@ -73,7 +74,7 @@ def run_exec(
 
     child_env = prepare_exec_environment(repo_root, env)
     try:
-        result = subprocess.run(command, cwd=repo_root, env=child_env, check=False)
+        result = run_process(command, cwd=repo_root, env=child_env, timeout_seconds=None)
     except OSError as exc:
         raise WorktreeExecError(f"could not execute {command[0]!r}: {exc}") from exc
 

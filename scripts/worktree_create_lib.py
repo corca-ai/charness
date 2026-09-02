@@ -6,6 +6,9 @@ from typing import Any
 
 from runtime_bootstrap import import_repo_module
 
+_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _subprocess_guard.run_process
+
 _doctor_lib = import_repo_module(__file__, "scripts.worktree_doctor_lib")
 
 PASS = "pass"
@@ -14,10 +17,12 @@ FAIL = "fail"
 
 
 def _run_git(repo_root: Path, command: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(command, cwd=repo_root, check=False, capture_output=True, text=True)
+    return run_process(command, cwd=repo_root, timeout_seconds=None)
 
 
-def _action(action_id: str, command: list[str], status: str, reason: str | None = None) -> dict[str, Any]:
+def _action(
+    action_id: str, command: list[str], status: str, reason: str | None = None
+) -> dict[str, Any]:
     payload: dict[str, Any] = {"id": action_id, "command": command, "status": status}
     if reason:
         payload["reason"] = reason
@@ -157,9 +162,14 @@ def run_create(
             payload["next_step"] = None
         else:
             payload["status"] = FAIL
-            payload["next_step"] = prepare_payload.get("next_step") or "Fix prepare failures, then re-run `charness worktree prepare`."
+            payload["next_step"] = (
+                prepare_payload.get("next_step")
+                or "Fix prepare failures, then re-run `charness worktree prepare`."
+            )
         return payload
 
     if doctor.get("status") != PASS:
-        payload["next_step"] = doctor.get("next_step") or f"Run `charness worktree prepare --repo-root {target_path}`."
+        payload["next_step"] = (
+            doctor.get("next_step") or f"Run `charness worktree prepare --repo-root {target_path}`."
+        )
     return payload

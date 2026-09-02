@@ -3,10 +3,10 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
-import subprocess
 from pathlib import Path
 
 from scripts.git_checkout import discoverable as _git_metadata_is_discoverable
+from scripts.subprocess_guard import run_process
 
 
 def _present_paths(repo_root: Path, candidates: tuple[str, ...]) -> list[str]:
@@ -74,35 +74,54 @@ def _detect_hook_policy(repo_root: Path, package_json: dict[str, object]) -> dic
     )
     hook_candidates: list[tuple[str, str]] = []
     if any(path in hook_files for path in ("lefthook.yml", "lefthook.yaml")):
-        hook_candidates.append(("lefthook", "existing Lefthook config must be preserved and integrated"))
+        hook_candidates.append(
+            ("lefthook", "existing Lefthook config must be preserved and integrated")
+        )
     if any(path.startswith(".husky/") for path in hook_files) or (repo_root / ".husky").is_dir():
         hook_candidates.append(("husky", "existing Husky hooks must be preserved and integrated"))
     if any(path.startswith(".githooks/") or path.startswith(".git/hooks/") for path in hook_files):
-        hook_candidates.append(("git-native", "existing git hook path must be preserved and integrated"))
+        hook_candidates.append(
+            ("git-native", "existing git hook path must be preserved and integrated")
+        )
     if ".pre-commit-config.yaml" in hook_files:
-        hook_candidates.append(("pre-commit", "existing pre-commit configuration must be preserved and integrated"))
+        hook_candidates.append(
+            ("pre-commit", "existing pre-commit configuration must be preserved and integrated")
+        )
     if "overcommit.yml" in hook_files:
-        hook_candidates.append(("overcommit", "existing Overcommit configuration must be preserved and integrated"))
+        hook_candidates.append(
+            ("overcommit", "existing Overcommit configuration must be preserved and integrated")
+        )
     if isinstance(package_json.get("simple-git-hooks"), dict):
-        hook_candidates.append(("simple-git-hooks", "existing package hook configuration must be preserved and integrated"))
-    if isinstance(package_json.get("husky"), dict) and not any(name == "husky" for name, _ in hook_candidates):
-        hook_candidates.append(("husky", "existing package Husky configuration must be preserved and integrated"))
+        hook_candidates.append(
+            (
+                "simple-git-hooks",
+                "existing package hook configuration must be preserved and integrated",
+            )
+        )
+    if isinstance(package_json.get("husky"), dict) and not any(
+        name == "husky" for name, _ in hook_candidates
+    ):
+        hook_candidates.append(
+            ("husky", "existing package Husky configuration must be preserved and integrated")
+        )
     if isinstance(package_json.get("pre-commit"), (dict, list, str)) and not any(
         name == "pre-commit" for name, _ in hook_candidates
     ):
-        hook_candidates.append(("pre-commit", "existing package pre-commit configuration must be preserved and integrated"))
+        hook_candidates.append(
+            (
+                "pre-commit",
+                "existing package pre-commit configuration must be preserved and integrated",
+            )
+        )
     configured = ""
     if _git_metadata_is_discoverable(repo_root):
         try:
-            configured = subprocess.run(
+            configured = run_process(
                 ["git", "config", "--get", "core.hooksPath"],
                 cwd=repo_root,
-                check=False,
-                capture_output=True,
-                text=True,
-                timeout=2,
+                timeout_seconds=2,
             ).stdout.strip()
-        except (OSError, subprocess.SubprocessError):
+        except OSError:
             configured = ""
     if configured and not any(name == "git-native" for name, _ in hook_candidates):
         hook_candidates.append(("git-native", f"git core.hooksPath={configured}"))
@@ -119,7 +138,9 @@ def _detect_hook_policy(repo_root: Path, package_json: dict[str, object]) -> dic
         "hook_policy": {
             "recommendation": "prefer-lefthook-when-no-hook-manager",
             "rationale": "Lefthook is recommended for declarative stages, parallel commands, worktree installation, and visible failure text/log routing; this is a preference, not permission to replace an existing hook system.",
-            "existing_manager_action": "preserve-and-integrate" if hook_manager else "propose-lefthook",
+            "existing_manager_action": "preserve-and-integrate"
+            if hook_manager
+            else "propose-lefthook",
             "existing_manager_reason": hook_reason,
         },
     }
@@ -133,11 +154,25 @@ def _detect_quality_tooling(repo_root: Path) -> dict[str, object]:
         ),
         "linters": _present_paths(
             repo_root,
-            ("ruff.toml", ".flake8", ".eslintrc", ".eslintrc.json", "eslint.config.js", "eslint.config.mjs", ".golangci.yml"),
+            (
+                "ruff.toml",
+                ".flake8",
+                ".eslintrc",
+                ".eslintrc.json",
+                "eslint.config.js",
+                "eslint.config.mjs",
+                ".golangci.yml",
+            ),
         ),
         "ratchets": _present_paths(
             repo_root,
-            (".jscpd.json", "stryker.config.mjs", "stryker.config.js", "mutmut-config.py", ".coveragerc"),
+            (
+                ".jscpd.json",
+                "stryker.config.mjs",
+                "stryker.config.js",
+                "mutmut-config.py",
+                ".coveragerc",
+            ),
         ),
     }
     pyproject = repo_root / "pyproject.toml"
@@ -156,7 +191,12 @@ def _detect_quality_tooling(repo_root: Path) -> dict[str, object]:
         except (OSError, UnicodeError, json.JSONDecodeError):
             package_json = {}
     package_text = json.dumps(package_json)
-    for tool, section in (("biome", "formatters"), ("prettier", "formatters"), ("eslint", "linters"), ("lint-staged", "scoped_hooks")):
+    for tool, section in (
+        ("biome", "formatters"),
+        ("prettier", "formatters"),
+        ("eslint", "linters"),
+        ("lint-staged", "scoped_hooks"),
+    ):
         if tool in package_text and tool not in files.setdefault(section, []):
             files[section].append(f"package.json:{tool}")
     package_managers = {
@@ -168,7 +208,9 @@ def _detect_quality_tooling(repo_root: Path) -> dict[str, object]:
         "cargo": "Cargo.toml",
         "go": "go.mod",
     }
-    detected_managers = [name for name, marker in package_managers.items() if (repo_root / marker).is_file()]
+    detected_managers = [
+        name for name, marker in package_managers.items() if (repo_root / marker).is_file()
+    ]
     hook_policy = _detect_hook_policy(repo_root, package_json)
     quality_adapter = repo_root / ".agents" / "quality-adapter.yaml"
     return {
@@ -190,11 +232,30 @@ def probe_awiki(repo_root: Path) -> dict[str, object]:
     command = "awiki lint -root docs -recursive"
     binary = shutil.which("awiki")
     if binary is None:
-        return {"status": "unproven", "binary_found": False, "command": command, "reason": "awiki binary not found; docs graph health is unproven"}
+        return {
+            "status": "unproven",
+            "binary_found": False,
+            "command": command,
+            "reason": "awiki binary not found; docs graph health is unproven",
+        }
     try:
-        probe = subprocess.run([binary, "--help"], cwd=repo_root, check=False, capture_output=True, text=True, timeout=3)
-    except (OSError, subprocess.SubprocessError) as exc:
-        return {"status": "unproven", "binary_found": True, "binary": binary, "command": command, "reason": f"awiki healthcheck failed: {exc}"}
+        probe = run_process([binary, "--help"], cwd=repo_root, timeout_seconds=3)
+    except OSError as exc:
+        return {
+            "status": "unproven",
+            "binary_found": True,
+            "binary": binary,
+            "command": command,
+            "reason": f"awiki healthcheck failed: {exc}",
+        }
+    if probe.returncode == 124:
+        return {
+            "status": "unproven",
+            "binary_found": True,
+            "binary": binary,
+            "command": command,
+            "reason": "awiki healthcheck failed: timed out after 3s",
+        }
     return {
         "status": "unproven",
         "binary_status": "available" if probe.returncode == 0 else "unproven",
@@ -209,16 +270,36 @@ def probe_awiki(repo_root: Path) -> dict[str, object]:
 def docs_inventory(repo_root: Path) -> dict[str, object]:
     docs_root = repo_root / "docs"
     if not docs_root.is_dir():
-        return {"status": "missing", "root": "docs", "paths": [], "nested_paths": [], "migration_policy": "preserve-existing-nested-until-explicit-approval"}
+        return {
+            "status": "missing",
+            "root": "docs",
+            "paths": [],
+            "nested_paths": [],
+            "migration_policy": "preserve-existing-nested-until-explicit-approval",
+        }
     paths: list[dict[str, object]] = []
     for path in sorted(docs_root.rglob("*")):
         if path.is_file() and path.suffix.lower() == ".md":
-            paths.append({"path": path.relative_to(repo_root).as_posix(), "sha256": _file_digest(path)})
-    nested_paths = [item["path"] for item in paths if isinstance(item.get("path"), str) and "/" in item["path"][len("docs/") :]]
-    return {"status": "observed", "root": "docs", "paths": paths, "nested_paths": nested_paths, "migration_policy": "preserve-existing-nested-until-explicit-approval"}
+            paths.append(
+                {"path": path.relative_to(repo_root).as_posix(), "sha256": _file_digest(path)}
+            )
+    nested_paths = [
+        item["path"]
+        for item in paths
+        if isinstance(item.get("path"), str) and "/" in item["path"][len("docs/") :]
+    ]
+    return {
+        "status": "observed",
+        "root": "docs",
+        "paths": paths,
+        "nested_paths": nested_paths,
+        "migration_policy": "preserve-existing-nested-until-explicit-approval",
+    }
 
 
-def approval_plan(repo_root: Path, payload: dict[str, object], default_surfaces: dict[str, Path]) -> dict[str, object]:
+def approval_plan(
+    repo_root: Path, payload: dict[str, object], default_surfaces: dict[str, Path]
+) -> dict[str, object]:
     tooling = payload["quality_setup"]["tooling"]
     candidate_paths = {str(path) for path in default_surfaces.values()}
     candidate_paths.update({".agents/setup-adapter.yaml", ".agents/quality-adapter.yaml"})
@@ -246,9 +327,20 @@ def approval_plan(repo_root: Path, payload: dict[str, object], default_surfaces:
             if isinstance(item, dict) and isinstance(item.get("path"), str):
                 candidate_paths.add(item["path"])
     inputs = {path: _file_digest(repo_root / path) for path in sorted(candidate_paths)}
-    basis = {"inspection": {key: value for key, value in payload.items() if key != "approval_plan"}, "inputs": inputs}
-    encoded = json.dumps(basis, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
-    return {"identity": f"sha256:{hashlib.sha256(encoded).hexdigest()}", "algorithm": "sha256", "state": "plan-only", "approval_required": True, "input_paths": sorted(inputs)}
+    basis = {
+        "inspection": {key: value for key, value in payload.items() if key != "approval_plan"},
+        "inputs": inputs,
+    }
+    encoded = json.dumps(basis, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode(
+        "utf-8"
+    )
+    return {
+        "identity": f"sha256:{hashlib.sha256(encoded).hexdigest()}",
+        "algorithm": "sha256",
+        "state": "plan-only",
+        "approval_required": True,
+        "input_paths": sorted(inputs),
+    }
 
 
 def quality_setup_snapshot(repo_root: Path) -> dict[str, object]:
@@ -269,13 +361,21 @@ def quality_setup_snapshot(repo_root: Path) -> dict[str, object]:
 
         resolved = load_quality_adapter(repo_root)
         state, field_statuses, deferred_setup = build_bootstrap_state(repo_root)
-        adapter_status = "configured" if resolved.get("found") and resolved.get("valid") else "plan-only"
+        adapter_status = (
+            "configured" if resolved.get("found") and resolved.get("valid") else "plan-only"
+        )
         if resolved.get("found") and not resolved.get("valid"):
             adapter_status = "blocked"
         return {
             "owner_skill": "quality",
             "status": adapter_status,
-            "adapter": {"path": resolved.get("path"), "found": bool(resolved.get("found")), "valid": bool(resolved.get("valid")), "errors": list(resolved.get("errors") or []), "warnings": list(resolved.get("warnings") or [])},
+            "adapter": {
+                "path": resolved.get("path"),
+                "found": bool(resolved.get("found")),
+                "valid": bool(resolved.get("valid")),
+                "errors": list(resolved.get("errors") or []),
+                "warnings": list(resolved.get("warnings") or []),
+            },
             "preset_lineage": list(state.get("preset_lineage") or []),
             "field_statuses": field_statuses,
             "deferred_setup": deferred_setup,
@@ -288,4 +388,12 @@ def quality_setup_snapshot(repo_root: Path) -> dict[str, object]:
             ],
         }
     except Exception as exc:
-        return {"owner_skill": "quality", "status": "unavailable", "adapter": {"path": ".agents/quality-adapter.yaml", "found": False, "valid": False}, "tooling": tooling, "operating_surface_ownership": ownership, "plan_commands": plan_commands, "non_claims": [f"quality bootstrap state could not be read: {exc}"]}
+        return {
+            "owner_skill": "quality",
+            "status": "unavailable",
+            "adapter": {"path": ".agents/quality-adapter.yaml", "found": False, "valid": False},
+            "tooling": tooling,
+            "operating_surface_ownership": ownership,
+            "plan_commands": plan_commands,
+            "non_claims": [f"quality bootstrap state could not be read: {exc}"],
+        }

@@ -2,14 +2,16 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
+import io
 import shlex
-import subprocess
+import sys
 from datetime import date
 from pathlib import Path
 
 import yaml
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
+from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
@@ -63,16 +65,33 @@ def load_adapter(repo_root: Path, skill_id: str) -> dict[str, object]:
             "No skill adapter resolver found in the consumer repo or installed Charness plugin "
             f"for skill `{skill_id}`"
         )
-    completed = subprocess.run(
-        ["python3", str(resolver), "--repo-root", str(repo_root)],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if completed.returncode != 0:
-        raise SystemExit(completed.stderr.strip() or f"{resolver} failed")
-    adapter = yaml.safe_load(completed.stdout)
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+        module = load_path_module("charness_artifact_resolve_adapter", resolver)
+        loader = getattr(module, "load_adapter", None)
+        if callable(loader):
+            try:
+                adapter = loader(repo_root)
+            except Exception as exc:
+                raise SystemExit(str(exc) or f"{resolver} failed") from exc
+        else:
+            main = getattr(module, "main", None)
+            previous_argv = sys.argv
+            try:
+                sys.argv = [str(resolver), "--repo-root", str(repo_root)]
+                if callable(main):
+                    try:
+                        returncode = int(main() or 0)
+                    except SystemExit as exc:
+                        returncode = int(exc.code or 0)
+                else:
+                    returncode = 0
+            finally:
+                sys.argv = previous_argv
+            if returncode != 0:
+                raise SystemExit(stderr.getvalue().strip() or f"{resolver} failed")
+            adapter = yaml.safe_load(stdout.getvalue())
     _refuse_unhonored_adapter(adapter, skill_id)
     return adapter
 
@@ -130,7 +149,8 @@ def _refuse_unhonored_adapter(adapter: object, skill_id: str) -> None:
         # `unspeakable_version_message` words carefully ("what THEY declared is serving an
         # inferred default"), reproduced by the repair that cited it.
         dropped = "; ".join(
-            str(warning) for warning in adapter.get("warnings", [])
+            str(warning)
+            for warning in adapter.get("warnings", [])
             if _verdict.UNINTERPRETED_WARNING_MARKER in str(warning)
         )
         lead = f"`.agents/{adapter_name}` has lines this reader could not interpret ({dropped})."
@@ -178,7 +198,9 @@ def payload_for(
     output_dir = Path(data["output_dir"])
     artifact_filename = adapter.get("artifact_filename")
     current_filename = (
-        artifact_filename if isinstance(artifact_filename, str) else current_artifact_filename(skill_id)
+        artifact_filename
+        if isinstance(artifact_filename, str)
+        else current_artifact_filename(skill_id)
     )
     current_path = output_dir / current_filename
     try:
@@ -196,7 +218,9 @@ def payload_for(
         refresh_argv = _refresh_current_pointer_argv(skill_id, record_path)
         refresh_command = shlex.join(refresh_argv)
     else:
-        write_path, write_role, _ = _scaffold_artifact_lib.current_pointer_write_path(repo_root, current_path)
+        write_path, write_role, _ = _scaffold_artifact_lib.current_pointer_write_path(
+            repo_root, current_path
+        )
         update_current_pointer_after_write = False
         refresh_argv = None
         refresh_command = None

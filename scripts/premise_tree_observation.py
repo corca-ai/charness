@@ -4,9 +4,13 @@ from __future__ import annotations
 
 import hashlib
 import os
-import subprocess
 from pathlib import Path
 from typing import Any
+
+try:
+    from scripts.subprocess_guard import run_process
+except ModuleNotFoundError:  # loaded as a standalone sibling module
+    from subprocess_guard import run_process
 
 
 class ObservationPathEscape(ValueError):
@@ -30,13 +34,8 @@ def _sha256(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
-def _git_bytes(repo_root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
-    return subprocess.run(
-        ["git", *args],
-        cwd=repo_root,
-        capture_output=True,
-        check=False,
-    )
+def _git_bytes(repo_root: Path, *args: str):
+    return run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
 
 
 def _index_paths(repo_root: Path) -> set[bytes]:
@@ -45,17 +44,12 @@ def _index_paths(repo_root: Path) -> set[bytes]:
     except ModuleNotFoundError:
         from repo_file_listing import RepoFileListingError, RepoFileSnapshot
     try:
-        listed = RepoFileSnapshot(repo_root, require_git=True).list_files(
-            include_untracked=False
-        )
+        listed = RepoFileSnapshot(repo_root, require_git=True).list_files(include_untracked=False)
     except RepoFileListingError as exc:
         raise CurrentTreeInspectionError("cannot inspect the current index") from exc
     if listed is None:
         raise CurrentTreeInspectionError("cannot inspect the current index")
-    return {
-        path.relative_to(repo_root).as_posix().encode("utf-8")
-        for path in listed
-    }
+    return {path.relative_to(repo_root).as_posix().encode("utf-8") for path in listed}
 
 
 def observe_current_tree(
@@ -91,7 +85,7 @@ def observe_current_tree(
         else:
             index = _git_bytes(repo_root, "show", f":{row['path']}")
             if index.returncode == 0:
-                index_sha = _sha256(index.stdout)
+                index_sha = _sha256(index.stdout.encode("utf-8", errors="surrogateescape"))
         if index_sha != row["sha256"]:
             drift = True
         observations["protected"].append(

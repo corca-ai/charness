@@ -41,16 +41,17 @@ Blind class:
 - It discovers crates by `native/*/Cargo.toml`. A Rust source tree elsewhere in the
   repo is not measured and is not reported as unmeasured.
 """
+
 from __future__ import annotations
 
 import argparse
 import re
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
+from scripts.subprocess_guard import run_monitored_phase, run_process
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
@@ -71,10 +72,10 @@ def discover_crates(repo_root: Path) -> list[Path]:
 def changed_rust_lines(repo_root: Path, base_sha: str) -> dict[str, set[int]]:
     """Added/modified line numbers per changed `.rs` file, from the diff itself."""
 
-    result = subprocess.run(
+    result = run_process(
         ["git", "-C", str(repo_root), "diff", "--unified=0", base_sha, "--", "*.rs"],
-        capture_output=True,
-        text=True,
+        cwd=repo_root,
+        timeout_seconds=None,
     )
     if result.returncode != 0:
         raise RustCoverageError(f"git diff against {base_sha} failed: {result.stderr.strip()}")
@@ -98,12 +99,12 @@ def changed_rust_lines(repo_root: Path, base_sha: str) -> dict[str, set[int]]:
 def crate_line_counts(crate: Path) -> dict[str, dict[int, int]]:
     """`{repo-relative path: {line: hit count}}` from one `cargo llvm-cov --lcov` run."""
 
-    completed = subprocess.run(
+    completed = run_monitored_phase(
         ["cargo", "llvm-cov", "--lcov", "--output-path", "/dev/stdout"],
         cwd=crate,
-        capture_output=True,
-        text=True,
-        timeout=COVERAGE_TIMEOUT_SECONDS,
+        phase="rust-coverage",
+        timeout_seconds=COVERAGE_TIMEOUT_SECONDS,
+        capture=True,
     )
     if completed.returncode != 0:
         raise RustCoverageError(
@@ -190,7 +191,9 @@ def build_report(repo_root: Path, *, base_sha: str) -> dict[str, Any]:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--base-sha", default=None, help="Defaults to the merge-base with origin/main")
+    parser.add_argument(
+        "--base-sha", default=None, help="Defaults to the merge-base with origin/main"
+    )
     parser.add_argument(
         "--refuse-uncovered",
         action="store_true",
@@ -204,23 +207,27 @@ def main(argv: list[str] | None = None) -> int:
     repo_root = args.repo_root.resolve()
     base_sha = args.base_sha or _producer.default_mutation_base_sha(repo_root)
     if not base_sha:
-        emit_yaml({
-            "schema": "charness.rust_changed_line_coverage.v1",
-            "status": "unestablished",
-            "reason": "no base sha: `git merge-base origin/main HEAD` produced nothing",
-        })
+        emit_yaml(
+            {
+                "schema": "charness.rust_changed_line_coverage.v1",
+                "status": "unestablished",
+                "reason": "no base sha: `git merge-base origin/main HEAD` produced nothing",
+            }
+        )
         # Unestablished is not a pass and not a floor violation; it is its own state,
         # distinguishable by exit code from both.
         return 3
     try:
         report = build_report(repo_root, base_sha=base_sha)
-    except (RustCoverageError, subprocess.TimeoutExpired) as exc:
-        emit_yaml({
-            "schema": "charness.rust_changed_line_coverage.v1",
-            "status": "unestablished",
-            "base_sha": base_sha,
-            "reason": str(exc),
-        })
+    except RustCoverageError as exc:
+        emit_yaml(
+            {
+                "schema": "charness.rust_changed_line_coverage.v1",
+                "status": "unestablished",
+                "base_sha": base_sha,
+                "reason": str(exc),
+            }
+        )
         return 3
     emit_yaml(report)
     if args.refuse_uncovered and report["uncovered"]:

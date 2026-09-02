@@ -6,7 +6,6 @@ import hashlib
 import json
 import os
 import re
-import subprocess
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -15,6 +14,7 @@ from scripts import coverage_instrumentation_policy as _policy
 from scripts.mutation_line_coverage_lib import covered_statement_spans as _covered_statement_spans
 from scripts.mutation_line_coverage_lib import mutation_line_is_covered as _mutation_line_is_covered
 from scripts.runtime_bootstrap import configure_runtime_environment
+from scripts.subprocess_guard import run_monitored_phase, run_process
 
 DEFAULT_SAMPLE_COVERAGE_JSON = Path("reports/mutation/sample-coverage.json")
 
@@ -48,6 +48,15 @@ classify_instrumentable_command = _policy.classify_instrumentable_command
 is_standing_pytest_runner_command = _policy.is_standing_pytest_runner_command
 is_instrumentable_pytest_command = _policy.is_instrumentable_pytest_command
 coverage_run_command = _policy.coverage_run_command
+
+
+class CoverageCommandError(RuntimeError):
+    def __init__(self, returncode: int, command, stdout: str, stderr: str):  # noqa: ANN001
+        super().__init__(f"coverage test command failed with exit {returncode}")
+        self.returncode = returncode
+        self.command = command
+        self.output = stdout
+        self.stderr = stderr
 
 
 def _sitecustomize_source(*, dynamic_context: bool) -> str:
@@ -86,9 +95,7 @@ def _sitecustomize_source(*, dynamic_context: bool) -> str:
     return "\n".join(lines) + "\n"
 
 
-def coverage_runtime_paths(
-    coverage_json: Path, *, repo_root: Path
-) -> tuple[Path, Path, Path]:
+def coverage_runtime_paths(coverage_json: Path, *, repo_root: Path) -> tuple[Path, Path, Path]:
     """Return the isolated runtime files owned by one coverage report.
 
     The broad pytest producer and the incremental changed-line producer can run
@@ -103,9 +110,7 @@ def coverage_runtime_paths(
     runtime = configure_runtime_environment(repo_root)
     repo_key = hashlib.sha256(str(repo_root.resolve()).encode("utf-8")).hexdigest()[:16]
     runtime_dir = (
-        Path(runtime["CHARNESS_RUNTIME_ROOT"])
-        / "coverage"
-        / f"{repo_key}-{coverage_json.stem}"
+        Path(runtime["CHARNESS_RUNTIME_ROOT"]) / "coverage" / f"{repo_key}-{coverage_json.stem}"
     )
     runtime_dir.mkdir(parents=True, exist_ok=True)
     prefix = f".{coverage_json.stem}"
@@ -179,15 +184,38 @@ def combine_and_export_coverage(
     # stdout=DEVNULL: coverage's "Combined N files" / "Wrote JSON report" info
     # lines would otherwise pollute the release producer's YAML payload. Errors
     # still surface on stderr.
-    subprocess.run(
-        [sys.executable, "-m", "coverage", "combine", "--rcfile", str(rcfile),
-         "--data-file", str(data_file), str(data_file.parent)],
-        cwd=repo_root, check=True, env=env, stdout=subprocess.DEVNULL,
+    result = run_process(
+        [
+            sys.executable,
+            "-m",
+            "coverage",
+            "combine",
+            "--rcfile",
+            str(rcfile),
+            "--data-file",
+            str(data_file),
+            str(data_file.parent),
+        ],
+        cwd=repo_root,
+        timeout_seconds=None,
+        env=env,
     )
+    if result.returncode != 0:
+        raise RuntimeError(
+            result.stderr.strip() or f"coverage combine failed with exit {result.returncode}"
+        )
     json_command = [
-        sys.executable, "-m", "coverage", "json", "--rcfile", str(rcfile),
+        sys.executable,
+        "-m",
+        "coverage",
+        "json",
+        "--rcfile",
+        str(rcfile),
         *(["--show-contexts"] if show_contexts else []),
-        "--data-file", str(data_file), "-o", str(coverage_json),
+        "--data-file",
+        str(data_file),
+        "-o",
+        str(coverage_json),
     ]
     paths = [path for path in include_paths or () if path]
     if paths:
@@ -195,7 +223,11 @@ def combine_and_export_coverage(
         # silently keeps only the last path, which would make earlier mapped
         # changed files look uncovered to the consumer.
         json_command.extend(["--include", ",".join(paths)])
-    subprocess.run(json_command, cwd=repo_root, check=True, env=env, stdout=subprocess.DEVNULL)
+    result = run_process(json_command, cwd=repo_root, timeout_seconds=None, env=env)
+    if result.returncode != 0:
+        raise RuntimeError(
+            result.stderr.strip() or f"coverage json failed with exit {result.returncode}"
+        )
 
 
 def prepare_plain_coverage(
@@ -209,8 +241,10 @@ def prepare_plain_coverage(
         repo_root, coverage_json, dynamic_context=False
     )
     clear_stale_coverage_data(data_file)
-    return data_file, rcfile, coverage_subprocess_env(
-        rcfile, sitecustomize_dir, data_file=data_file
+    return (
+        data_file,
+        rcfile,
+        coverage_subprocess_env(rcfile, sitecustomize_dir, data_file=data_file),
     )
 
 
@@ -225,15 +259,18 @@ def run_test_coverage(
     env = coverage_subprocess_env(rcfile, sitecustomize_dir, data_file=data_file)
     # Captured (not streamed) so a failure can be inspected for failing nodeids
     # by the caller; teed back to stdout/stderr to preserve CI step-log fidelity.
-    result = subprocess.run(
-        command, cwd=repo_root, check=False, env=env, capture_output=True, text=True
+    outcome = run_monitored_phase(
+        command,
+        cwd=repo_root,
+        phase="coverage-tests",
+        timeout_seconds=None,
+        env=env,
+        capture=True,
     )
-    sys.stdout.write(result.stdout)
-    sys.stderr.write(result.stderr)
-    if result.returncode != 0:
-        raise subprocess.CalledProcessError(
-            result.returncode, command, output=result.stdout, stderr=result.stderr
-        )
+    sys.stdout.write(outcome.stdout)
+    sys.stderr.write(outcome.stderr)
+    if outcome.returncode != 0:
+        raise CoverageCommandError(outcome.returncode, command, outcome.stdout, outcome.stderr)
     combine_and_export_coverage(
         repo_root, rcfile, data_file, coverage_json, env, show_contexts=dynamic_context
     )
@@ -291,7 +328,9 @@ def coverage_is_context_bearing(coverage_json: Path) -> bool | None:
     return None if match is None else match.group(1) == b"true"
 
 
-def load_file_statement_lines(repo_root: Path, coverage_json: Path) -> dict[str, tuple[set[int], set[int]]]:
+def load_file_statement_lines(
+    repo_root: Path, coverage_json: Path
+) -> dict[str, tuple[set[int], set[int]]]:
     data = json.loads(coverage_json.read_text(encoding="utf-8"))
     coverage: dict[str, tuple[set[int], set[int]]] = {}
     for raw_path, payload in (data.get("files") or {}).items():
@@ -378,12 +417,10 @@ def build_mutation_line_coverage(
     rewrite_cosmic_ray_targets(probe_config, candidates)
     if probe_session.exists():
         probe_session.unlink()
-    result = subprocess.run(
+    result = run_process(
         ["cosmic-ray", "init", str(probe_config), str(probe_session)],
         cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
+        timeout_seconds=None,
     )
     if result.returncode != 0:
         raise SystemExit(
@@ -468,7 +505,9 @@ def pytest_nodeid_from_coverage_context(repo_root: Path, context: str) -> str | 
     return None
 
 
-def select_test_nodeids(repo_root: Path, sample: list[str], line_contexts: dict[str, dict[int, set[str]]]) -> list[str]:
+def select_test_nodeids(
+    repo_root: Path, sample: list[str], line_contexts: dict[str, dict[int, set[str]]]
+) -> list[str]:
     nodeids: set[str] = set()
     for path in sample:
         for contexts in line_contexts.get(path, {}).values():
@@ -479,7 +518,9 @@ def select_test_nodeids(repo_root: Path, sample: list[str], line_contexts: dict[
     return sorted(nodeids)
 
 
-def file_test_nodeids(repo_root: Path, path: str, line_contexts: dict[str, dict[int, set[str]]]) -> list[str]:
+def file_test_nodeids(
+    repo_root: Path, path: str, line_contexts: dict[str, dict[int, set[str]]]
+) -> list[str]:
     return select_test_nodeids(repo_root, [path], line_contexts)
 
 

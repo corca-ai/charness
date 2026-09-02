@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import re
-import subprocess
 from collections.abc import Callable
 from pathlib import Path
+
+from scripts.subprocess_guard import run_process
 
 
 def _parse_changed_line_diff(output: str, requested: set[str]) -> dict[str, set[int]]:
@@ -47,10 +48,7 @@ def changed_line_numbers_for_paths(
     if not requested or not base_sha:
         return {path: set() for path in requested}
     if any(not re.fullmatch(r"[A-Za-z0-9_./-]+", path) for path in requested):
-        return {
-            path: single_path_loader(repo_root, base_sha, head_sha, path)
-            for path in requested
-        }
+        return {path: single_path_loader(repo_root, base_sha, head_sha, path) for path in requested}
     head = head_sha or "HEAD"
     command = [
         "git",
@@ -61,5 +59,9 @@ def changed_line_numbers_for_paths(
         "--",
         *sorted(requested),
     ]
-    result = subprocess.run(command, cwd=repo_root, check=True, text=True, capture_output=True)
+    result = run_process(command, cwd=repo_root, timeout_seconds=None)
+    if result.returncode != 0:
+        raise RuntimeError(
+            result.stderr.strip() or f"git diff failed with exit {result.returncode}"
+        )
     return _parse_changed_line_diff(result.stdout, requested)

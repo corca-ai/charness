@@ -10,7 +10,6 @@ from __future__ import annotations
 import argparse
 import os
 import shlex
-import subprocess
 import sys
 import time
 from pathlib import Path
@@ -35,6 +34,7 @@ from scripts.mutation_changed_files_lib import (  # noqa: E402
 from scripts.mutation_manifest_lib import build_manifest_from_state, write_manifest  # noqa: E402
 from scripts.mutation_sampling_lib import (  # noqa: E402
     DEFAULT_SAMPLE_COVERAGE_JSON,
+    CoverageCommandError,
     build_mutation_line_coverage,
     filter_eligible_by_coverage,
     filter_eligible_by_mutation_line_coverage,
@@ -48,6 +48,7 @@ from scripts.mutation_sampling_lib import (  # noqa: E402
     select_budgeted_sample,
     select_test_nodeids,
 )
+from scripts.subprocess_guard import run_process  # noqa: E402
 
 MUTATION_POOLS = {
     "core-python": (
@@ -127,24 +128,17 @@ def list_changed(repo_root: Path, base_sha: str, head_sha: str) -> list[str]:
         return []
     head = head_sha or "HEAD"
     command = ["git", "diff", "--name-only", f"{base_sha}..{head}", "--", *mutation_pathspecs()]
-    try:
-        result = subprocess.run(
-            command,
-            cwd=repo_root,
-            check=True,
-            text=True,
-            capture_output=True,
-        )
-    except subprocess.CalledProcessError as exc:
+    result = run_process(command, cwd=repo_root, timeout_seconds=None)
+    if result.returncode != 0:
         raise SystemExit(
             "mutation changed-file diff failed while computing sample candidates\n"
             f"base_sha: {base_sha}\n"
             f"head_sha: {head}\n"
             f"command: {shlex.join(command)}\n"
-            f"exit_code: {exc.returncode}\n"
-            f"STDOUT:\n{exc.stdout or ''}\n"
-            f"STDERR:\n{exc.stderr or ''}"
-        ) from exc
+            f"exit_code: {result.returncode}\n"
+            f"STDOUT:\n{result.stdout}\n"
+            f"STDERR:\n{result.stderr}"
+        )
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
 
 
@@ -238,7 +232,7 @@ def select_eligible_for_mutation(
     invalidate_changed_line_coverage_marker(coverage_json)
     try:
         run_test_coverage(repo_root, test_command, coverage_json)
-    except subprocess.CalledProcessError as exc:
+    except CoverageCommandError as exc:
         combined_output = f"{exc.output or ''}{exc.stderr or ''}"
         failing_nodeids = parse_failed_nodeids(combined_output)
         write_baseline_abort_marker(
@@ -251,7 +245,9 @@ def select_eligible_for_mutation(
         )
         message = f"test-command coverage probe failed with exit {exc.returncode}: {test_command}"
         if failing_nodeids:
-            message += "\nfailing nodeids:\n" + "\n".join(f"  - {nodeid}" for nodeid in failing_nodeids)
+            message += "\nfailing nodeids:\n" + "\n".join(
+                f"  - {nodeid}" for nodeid in failing_nodeids
+            )
         raise SystemExit(message) from exc
 
     covered_lines = load_covered_lines(repo_root, coverage_json)
@@ -294,12 +290,16 @@ def mutation_test_command_for_sample(
 
 
 def parse_workload_limits() -> tuple[int, int, int]:
-    total = positive_int(os.environ.get("MUTATION_SAMPLE_MAX_EXECUTABLE_MUTANTS"), DEFAULT_MAX_EXECUTABLE_MUTANTS)
+    total = positive_int(
+        os.environ.get("MUTATION_SAMPLE_MAX_EXECUTABLE_MUTANTS"), DEFAULT_MAX_EXECUTABLE_MUTANTS
+    )
     per_file = positive_int(
         os.environ.get("MUTATION_SAMPLE_MAX_EXECUTABLE_MUTANTS_PER_FILE"),
         DEFAULT_MAX_EXECUTABLE_MUTANTS_PER_FILE,
     )
-    nodeids = positive_int(os.environ.get("MUTATION_SAMPLE_MAX_TEST_NODEIDS"), DEFAULT_MAX_TEST_NODEIDS)
+    nodeids = positive_int(
+        os.environ.get("MUTATION_SAMPLE_MAX_TEST_NODEIDS"), DEFAULT_MAX_TEST_NODEIDS
+    )
     return total, per_file, nodeids
 
 
@@ -307,14 +307,14 @@ def output_paths(args: argparse.Namespace, repo_root: Path) -> tuple[Path, Path]
     manifest_json = (
         args.manifest_json if args.manifest_json.is_absolute() else repo_root / args.manifest_json
     )
-    manifest_md = args.manifest_md if args.manifest_md.is_absolute() else repo_root / args.manifest_md
+    manifest_md = (
+        args.manifest_md if args.manifest_md.is_absolute() else repo_root / args.manifest_md
+    )
     return manifest_json, manifest_md
 
 
 def report_no_eligible(coverage_enabled: bool, test_command: str) -> None:
-    pools = ", ".join(
-        pattern for patterns in MUTATION_POOLS.values() for pattern in patterns
-    )
+    pools = ", ".join(pattern for patterns in MUTATION_POOLS.values() for pattern in patterns)
     if coverage_enabled:
         sys.stderr.write(
             f"refusing empty matched mutation universe; no eligible mutation pool files "
@@ -410,7 +410,9 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     config_path = args.config if args.config.is_absolute() else repo_root / args.config
-    baseline_abort_marker_path = resolve_baseline_abort_marker(repo_root, args.baseline_abort_marker)
+    baseline_abort_marker_path = resolve_baseline_abort_marker(
+        repo_root, args.baseline_abort_marker
+    )
     delete_stale_baseline_abort_marker(baseline_abort_marker_path)
     max_files = positive_int(os.environ.get("MUTATION_SAMPLE_MAX_FILES"), DEFAULT_MAX_FILES)
     changed_quota = min(
@@ -424,7 +426,9 @@ def main() -> int:
     workload_limits = parse_workload_limits()
     max_executable_mutants, max_executable_mutants_per_file, max_test_nodeids = workload_limits
 
-    coverage_json = args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
+    coverage_json = (
+        args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
+    )
     test_command = read_test_command(config_path)
     # Two commands, deliberately not one. `coverage_test_command` is the probe
     # this slice makes overridable; `test_command` stays the config literal
@@ -437,22 +441,28 @@ def main() -> int:
     )
 
     all_eligible = list_eligible(repo_root)
-    eligible, coverage_eligible, line_contexts, mutation_line_coverage = select_eligible_for_mutation(
-        repo_root=repo_root,
-        config_path=config_path,
-        all_eligible=all_eligible,
-        coverage_enabled=coverage_enabled,
-        coverage_json=coverage_json,
-        test_command=coverage_test_command,
-        min_file_coverage=min_file_coverage,
-        baseline_abort_marker_path=baseline_abort_marker_path,
+    eligible, coverage_eligible, line_contexts, mutation_line_coverage = (
+        select_eligible_for_mutation(
+            repo_root=repo_root,
+            config_path=config_path,
+            all_eligible=all_eligible,
+            coverage_enabled=coverage_enabled,
+            coverage_json=coverage_json,
+            test_command=coverage_test_command,
+            min_file_coverage=min_file_coverage,
+            baseline_abort_marker_path=baseline_abort_marker_path,
+        )
     )
     if not eligible:
         report_no_eligible(coverage_enabled, coverage_test_command)
         return 1
-    statement_lines = load_file_statement_lines(repo_root, coverage_json) if coverage_enabled else {}
+    statement_lines = (
+        load_file_statement_lines(repo_root, coverage_json) if coverage_enabled else {}
+    )
     changed_before_coverage = [
-        path for path in list_changed(repo_root, base_sha or "", head_sha) if path in set(all_eligible)
+        path
+        for path in list_changed(repo_root, base_sha or "", head_sha)
+        if path in set(all_eligible)
     ]
     (
         changed,
