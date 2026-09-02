@@ -85,6 +85,7 @@ def _fake_ytdlp_browser_guard(
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / "scripts" / "evidence").mkdir(parents=True)
+    (repo / "scripts" / "evidence").mkdir(parents=True, exist_ok=True)
     (repo / "scripts" / "evidence" / "agent_browser_runtime_guard.py").write_text(
         "\n".join(
             [

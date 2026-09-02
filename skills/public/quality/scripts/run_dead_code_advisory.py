@@ -14,8 +14,8 @@ from types import SimpleNamespace
 try:
     from scripts.core.subprocess_guard import run_process
 except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
-    _scripts = (p / "scripts" for p in Path(__file__).resolve().parents)
-    sys.path.insert(0, str(next(d for d in _scripts if (d / "subprocess_guard.py").is_file())))
+    _roots = (p for p in Path(__file__).resolve().parents)
+    sys.path.insert(0, str(next(r for r in _roots if (r / "scripts" / "core" / "subprocess_guard.py").is_file())))
     from scripts.core.subprocess_guard import run_process
 
 _summary_output = SimpleNamespace(

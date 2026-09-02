@@ -46,8 +46,18 @@ def quality_resolver_path(repo_root: Path) -> Path:
     return found
 
 
-def load_adapter_validators(repo_root: Path):
-    """Import the quality skill's `adapter_validators` from whichever layout ships it."""
+def load_adapter_validators(anchor_file: str | Path):
+    """Import the quality skill's `adapter_validators` from the tree that ships `anchor_file`.
+
+    The anchor's OWN checkout, not the analysed repo: a gate run with
+    `CHARNESS_REPO_ROOT` pointing at a consumer still validates with the
+    validators that ship beside it.
+    """
+    anchor = Path(anchor_file).resolve()
+    repo_root = next(
+        (p for p in anchor.parents if (p / "scripts" / "adapter_lib.py").is_file()),
+        anchor.parents[2] if anchor.parent.name != "scripts" else anchor.parents[1],
+    )
     for candidate in (
         repo_root / "skills" / "public" / "quality" / "scripts",
         repo_root / "skills" / "quality" / "scripts",

@@ -439,7 +439,7 @@ def staged_commit_gate_plan(
             _plan_helpers.present_gate(
                 repo_root,
                 "validate-adapters",
-                "validate_adapters.py",
+                "gates/validate_adapters.py",
                 "--repo-root",
                 str(repo_root),
             )
@@ -480,7 +480,7 @@ def staged_commit_gate_plan(
         # catch it. Widening the trigger would have to move both gates together, so it
         # is not done here unilaterally.
         for label, script in (
-            ("check-doc-links", "check_doc_links.py"),
+            ("check-doc-links", "gates/check_doc_links.py"),
             (
                 "check-plugin-doc-links",
                 "tools/check_plugin_doc_links.py",

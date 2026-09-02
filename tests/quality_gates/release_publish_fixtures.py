@@ -117,6 +117,7 @@ def _write_fake_git(repo: Path, bin_dir: Path) -> None:
 
 def _write_sync_script(repo: Path) -> None:
     script = repo / "scripts" / "plugin_export" / "sync_root_plugin_manifests.py"
+    script.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(FIXTURES / "release_publish_sync_root_plugin_manifests.py", script)
     script.chmod(0o755)
 
@@ -150,8 +151,20 @@ def _setup_git(repo: Path) -> None:
 
 
 def _attach_remote_and_push(repo: Path, remote: Path) -> None:
-    subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "push", "-u", "origin", "main"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "remote", "add", "origin", str(remote)],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "push", "-u", "origin", "main"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
 
 
 def ensure_fixture_release_base(repo: Path) -> None:
@@ -249,6 +262,7 @@ def _simulate_partial_publish(
     # Resume revalidates generated surfaces after claims review. Keep this success
     # fixture synced; an absent tree belongs in a refusal fixture instead.
     sync_script = repo / "scripts" / "plugin_export" / "sync_root_plugin_manifests.py"
+    sync_script.parent.mkdir(parents=True, exist_ok=True)
     previous_cwd = Path.cwd()
     try:
         os.chdir(repo)
@@ -264,7 +278,9 @@ def _simulate_partial_publish(
         commit_args.extend(["-m", closeout_body])
     subprocess.run(commit_args, cwd=repo, check=True, capture_output=True, text=True)
     if create_tag:
-        subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
+        subprocess.run(
+            ["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True
+        )
 
 
 def _release_env(tmp_path: Path, bin_dir: Path) -> dict[str, str]:
@@ -375,7 +391,9 @@ def _derive_review_scope(repo: Path, prepared_commit: str) -> tuple[dict[str, li
 
     described = subprocess.run(
         ["git", "describe", "--tags", "--abbrev=0", f"{prepared_commit}^"],
-        cwd=repo, capture_output=True, text=True,
+        cwd=repo,
+        capture_output=True,
+        text=True,
     )
     base = described.stdout.strip()
     # No previous tag is the NORMAL case in a seeded harness repo. Fall back to
@@ -385,7 +403,9 @@ def _derive_review_scope(repo: Path, prepared_commit: str) -> tuple[dict[str, li
     span = f"{base}..{prepared_commit}" if (described.returncode == 0 and base) else prepared_commit
     listed = subprocess.run(
         ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", span],
-        cwd=repo, capture_output=True, text=True,
+        cwd=repo,
+        capture_output=True,
+        text=True,
     )
     paths = [line for line in listed.stdout.splitlines() if line]
     split = claims_review_scope.partition(paths)
@@ -416,9 +436,14 @@ def commit_claims_review(
     review_path = f"charness-artifacts/release-review/{stem}.json"
     narrative_path = f"charness-artifacts/release-review/{stem}.md"
     record = claims_review_record(
-        prepared_commit=prepared_commit, prepared_record=prepared_record,
-        target_version=target_version, tag_name=tag_name, narrative_path=narrative_path,
-        verdict=verdict, kind=kind, release_record_path=release_record_path,
+        prepared_commit=prepared_commit,
+        prepared_record=prepared_record,
+        target_version=target_version,
+        tag_name=tag_name,
+        narrative_path=narrative_path,
+        verdict=verdict,
+        kind=kind,
+        release_record_path=release_record_path,
     )
     if verdict == "pass":
         # DERIVE the scope from the repo, exactly as a real reviewer must: the
@@ -435,12 +460,19 @@ def commit_claims_review(
         )
         paths.append(narrative_path)
     subprocess.run(["git", "add", *paths], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "commit", "-m", "Record claims review"], cwd=repo, check=True,
-                   capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "Record claims review"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     return review_path
 
 
-def _run_publish_patch(repo: Path, env: dict[str, str], *extra: str) -> subprocess.CompletedProcess[str]:
+def _run_publish_patch(
+    repo: Path, env: dict[str, str], *extra: str
+) -> subprocess.CompletedProcess[str]:
     # The release critique gate refuses publish unless one of
     # --critique-artifact / --critique-blocked is supplied. Tests that already
     # pass a critique flag are honored; tests that target a downstream failure
@@ -464,10 +496,12 @@ def _run_publish_patch(repo: Path, env: dict[str, str], *extra: str) -> subproce
         )
         extras.extend(["--close-issue-carrier-file", str(carrier)])
     if not has_critique_flag:
-        extras.extend([
-            "--critique-blocked",
-            "synthetic-test-harness does not spawn real critique subagents",
-        ])
+        extras.extend(
+            [
+                "--critique-blocked",
+                "synthetic-test-harness does not spawn real critique subagents",
+            ]
+        )
     prepared = _run_publish(repo, env, "--part", "patch", *extras, "--execute")
     if prepared.returncode != 0:
         return prepared
@@ -475,15 +509,28 @@ def _run_publish_patch(repo: Path, env: dict[str, str], *extra: str) -> subproce
     prepared_commit = payload["prepared_release_commit"]
     record = subprocess.run(
         ["git", "show", f"{prepared_commit}:charness-artifacts/release/latest.md"],
-        cwd=repo, check=True, capture_output=True, text=True,
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
     ).stdout
     review_path = commit_claims_review(
-        repo, prepared_commit=prepared_commit, prepared_record=record,
-        target_version=payload["target_version"], tag_name=payload["tag_name"], stem="fixture-claims",
+        repo,
+        prepared_commit=prepared_commit,
+        prepared_record=record,
+        target_version=payload["target_version"],
+        tag_name=payload["tag_name"],
+        stem="fixture-claims",
     )
     resumed = _run_publish(
-        repo, env, "--resume", "--publish-current", *extras,
-        "--claims-review-artifact", review_path, "--execute",
+        repo,
+        env,
+        "--resume",
+        "--publish-current",
+        *extras,
+        "--claims-review-artifact",
+        review_path,
+        "--execute",
     )
     if resumed.returncode == 0:
         final_payload = yaml.safe_load(resumed.stdout)

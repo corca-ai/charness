@@ -11,6 +11,7 @@ import yaml
 
 from tests.quality_gates.repo_shapes import install_committed_repo
 
+from .seeding_support import seed_script_closure
 from .support import (
     ROOT,
     charness_shaped_repo,
@@ -23,10 +24,16 @@ PYTHON_LENGTHS = importlib.import_module("scripts.gates.check_code_lengths")
 
 
 def _copy_quality_universe_support(repo: Path) -> None:
-    scripts_dir = repo / "scripts"
-    scripts_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ROOT / "scripts" / "adapter_lib.py", scripts_dir / "adapter_lib.py")
-    shutil.copytree(ROOT / "scripts" / "adapters", scripts_dir / "adapters", dirs_exist_ok=True)
+    # The universes library and everything it imports, at their packaged paths,
+    # plus the quality skill's validators the adapter loader imports at module scope.
+    seed_script_closure(repo, "adapters/quality_universes_lib.py")
+    quality_scripts = repo / "skills" / "public" / "quality" / "scripts"
+    quality_scripts.mkdir(parents=True, exist_ok=True)
+    for name in ("adapter_validators.py", "runtime_budget_intent.py"):
+        source = ROOT / "skills" / "public" / "quality" / "scripts" / name
+        if source.is_file():
+            shutil.copy2(source, quality_scripts / name)
+
 
 
 def _copy_script(repo: Path, script_name: str) -> Path:
@@ -40,7 +47,7 @@ def _copy_script(repo: Path, script_name: str) -> Path:
     shutil.copy2(
         ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh"
     )
-    if script_name == "check-secrets.sh":
+    if script_name in ("check-secrets.sh", "check-shell.sh", "check-python-lint.sh"):
         _copy_quality_universe_support(repo)
     (repo / "packaging").mkdir(exist_ok=True)
     shutil.copy2(ROOT / "packaging" / "charness.json", repo / "packaging" / "charness.json")
@@ -108,7 +115,8 @@ def _markdown_gate_repo(tmp_path: Path, *, advisory: bool) -> tuple[Path, Path, 
 
     repo, source, _mirror = charness_shaped_repo(tmp_path, "check-markdown.sh")
     body = f'import sys\nsys.stdout.write("{_STUB_ADVISORY_DETAIL}\\n")\nraise SystemExit(1)\n'
-    (source.parent / "check_markdown_inline_code.py").write_text(
+    (source.parent / "gates").mkdir(parents=True, exist_ok=True)
+    (source.parent / "gates" / "check_markdown_inline_code.py").write_text(
         body if advisory else "raise SystemExit(0)\n", encoding="utf-8"
     )
     bin_dir = repo / "bin"

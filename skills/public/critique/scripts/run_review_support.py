@@ -30,7 +30,7 @@ except ModuleNotFoundError:
     )
     if _scripts_dir is None:
         raise
-    sys.path.insert(0, str(_scripts_dir))
+    sys.path.insert(0, str(_scripts_dir.parent))  # the repo root: `scripts` is a package
     from scripts.core.subprocess_guard import run_monitored_phase, run_process
 
 

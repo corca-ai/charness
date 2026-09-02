@@ -72,7 +72,10 @@ def _bundle_yaml_output(root: Path) -> None:
 def _bundle_subprocess_guard(root: Path) -> None:
     scripts_dir = root / "scripts"
     scripts_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ROOT / "scripts" / "core" / "subprocess_guard.py", scripts_dir / "subprocess_guard.py")
+    (scripts_dir / "core").mkdir(parents=True, exist_ok=True)
+    (scripts_dir / "core" / "__init__.py").touch()
+    (scripts_dir / "__init__.py").touch()
+    shutil.copy2(ROOT / "scripts" / "core" / "subprocess_guard.py", scripts_dir / "core" / "subprocess_guard.py")
 
 
 def _close_was_attempted(log_path: Path) -> bool:
@@ -220,6 +223,7 @@ def test_gather_reaches_acquire_and_bundled_guard_in_exported_layout(tmp_path: P
     _bundle_subprocess_guard(plugin)
     # A bundled guard that FAILS proves it was actually run (reached), not skipped.
     (plugin / "scripts" / "evidence").mkdir(parents=True, exist_ok=True)
+    (plugin / "scripts" / "evidence").mkdir(parents=True, exist_ok=True)
     (plugin / "scripts" / "evidence" / "agent_browser_runtime_guard.py").write_text(
         "#!/usr/bin/env python3\nimport sys\nprint('reparented chromium residue remains', file=sys.stderr)\nsys.exit(1)\n",
         encoding="utf-8",
@@ -320,6 +324,7 @@ def test_acquire_preserves_render_error_when_cleanup_also_fails(tmp_path: Path) 
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / "scripts" / "evidence").mkdir(parents=True)
+    (repo / "scripts" / "evidence").mkdir(parents=True, exist_ok=True)
     (repo / "scripts" / "evidence" / "agent_browser_runtime_guard.py").write_text(
         "#!/usr/bin/env python3\nimport sys\nprint('orphan daemon remains', file=sys.stderr)\nsys.exit(1)\n",
         encoding="utf-8",
@@ -366,6 +371,7 @@ def test_acquire_public_url_degrades_when_close_leaves_dirty_runtime(tmp_path: P
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / "scripts" / "evidence").mkdir(parents=True)
+    (repo / "scripts" / "evidence").mkdir(parents=True, exist_ok=True)
     (repo / "scripts" / "evidence" / "agent_browser_runtime_guard.py").write_text(
         "#!/usr/bin/env python3\nimport sys\nprint('orphan daemon remains', file=sys.stderr)\nsys.exit(1)\n",
         encoding="utf-8",

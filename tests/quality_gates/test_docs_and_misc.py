@@ -73,6 +73,7 @@ def _write_release_repo(tmp_path: Path, *, with_sync: bool = True) -> tuple[Path
     (repo / "packaging" / "demo.json").write_text(manifest_text, encoding="utf-8")
     if with_sync:
         (repo / "scripts" / "plugin_export").mkdir(parents=True)
+        (repo / "scripts" / "plugin_export").mkdir(parents=True, exist_ok=True)
         (repo / "scripts" / "plugin_export" / "sync_root_plugin_manifests.py").write_text(
             "\n".join(
                 [

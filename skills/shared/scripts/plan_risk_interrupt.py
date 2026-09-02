@@ -2,13 +2,13 @@
 """Layout-independent entrypoint for `<authoring-repo>/scripts/gates_support/plan_risk_interrupt.py` (#477).
 
 `impl` and `spec` invoked the planner as
-`$SKILL_DIR/../../../scripts/gates_support/plan_risk_interrupt.py`. Three levels up reaches the
+`$SKILL_DIR/../../../scripts/plan_risk_interrupt.py`. Three levels up reaches the
 repo root from `skills/public/<skill>` and OVERSHOOTS from
 `plugins/<pkg>/skills/<skill>`, where the exported scripts sit two levels up — so
 the command resolved in the authoring tree and nowhere else, silently, because
 both call sites ended in `2>/dev/null || true`.
 
-Reachable as `$SKILL_DIR/../../shared/scripts/gates_support/plan_risk_interrupt.py` from any
+Reachable as `$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py` from any
 skill package, in both layouts. See `authoring_script_shim` for why.
 """
 from __future__ import annotations

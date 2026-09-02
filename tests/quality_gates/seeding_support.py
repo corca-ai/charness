@@ -484,3 +484,28 @@ def _seed_path(target_dir: Path, filename: str) -> Path:
     path = target_dir / filename
     path.parent.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def seed_script_closure(repo: Path, *entries: str) -> None:
+    """Copy `scripts/<entry>` and every repo script it imports, keeping package paths.
+
+    Since the concept packaging a copied script reaches its siblings through the
+    `scripts` package, so a seeded tree carries the packages (with `__init__.py`)
+    and the root shims the real tree has.
+    """
+    from tests.script_closure import script_import_closure
+
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True, exist_ok=True)
+    (scripts_dir / "__init__.py").touch()
+    for name in script_import_closure(*entries):
+        source = ROOT / "scripts" / name
+        target = scripts_dir / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        for package_dir in Path(name).parents:
+            if str(package_dir) != ".":
+                (scripts_dir / package_dir / "__init__.py").touch()
+        shutil.copy2(source, target)
+    for shim in ("runtime_bootstrap.py", "yaml_output.py", "skill_runtime_bootstrap.py"):
+        if (ROOT / shim).is_file():
+            shutil.copy2(ROOT / shim, repo / shim)

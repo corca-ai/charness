@@ -91,6 +91,7 @@ def seed_repo(
         encoding="utf-8",
     )
     (repo / ".gitignore").write_text(".charness/quality/runtime-smoothing.json\n", encoding="utf-8")
+    (repo / "scripts" / "gates_support").mkdir(parents=True, exist_ok=True)
     (repo / "scripts" / "gates_support" / "record_quality_runtime.py").write_text(
         "\n".join(
             [
@@ -105,7 +106,10 @@ def seed_repo(
     )
     (repo / "tools").mkdir()
     (repo / "tools" / "check_coverage.py").write_text("# coverage\n", encoding="utf-8")
-    (repo / "scripts" / "gates" / "check_test_production_ratio.py").write_text("# ratio\n", encoding="utf-8")
+    (repo / "scripts" / "gates").mkdir(parents=True, exist_ok=True)
+    (repo / "scripts" / "gates" / "check_test_production_ratio.py").write_text(
+        "# ratio\n", encoding="utf-8"
+    )
     (repo / "skills" / "public" / "quality" / "scripts" / "check_runtime_budget.py").write_text(
         "\n".join(
             [
@@ -314,9 +318,7 @@ def test_release_version_claim_is_checked_in_every_rendering(tmp_path: Path) -> 
     ):
         repo = seed_repo(tmp_path / label)
         _write_release_pointer(repo, body)
-        result = run_script(
-            "tools/validate_current_pointer_freshness.py", "--repo-root", str(repo)
-        )
+        result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
         assert result.returncode == 1, (label, result.stdout)
         assert "release pointer version claim is stale" in result.stderr, label
 
@@ -359,9 +361,7 @@ def test_release_version_claim_matching_the_manifests_still_passes(tmp_path: Pat
     ):
         repo = seed_repo(tmp_path / f"ok-{label}")
         _write_release_pointer(repo, body)
-        result = run_script(
-            "tools/validate_current_pointer_freshness.py", "--repo-root", str(repo)
-        )
+        result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
         assert result.returncode == 0, (label, result.stderr)
 
 
@@ -385,17 +385,13 @@ def test_release_version_claim_survives_nested_markup_and_placeholders(tmp_path:
     ):
         repo = seed_repo(tmp_path / f"ok-{label}")
         _write_release_pointer(repo, body)
-        result = run_script(
-            "tools/validate_current_pointer_freshness.py", "--repo-root", str(repo)
-        )
+        result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
         assert result.returncode == 0, (label, result.stderr)
 
     for label, body in (("TBD", "- target version: TBD\n"), ("N/A", "- target version: N/A\n")):
         repo = seed_repo(tmp_path / f"placeholder-{label}")
         _write_release_pointer(repo, body)
-        result = run_script(
-            "tools/validate_current_pointer_freshness.py", "--repo-root", str(repo)
-        )
+        result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
         assert result.returncode == 1, label
         assert "no parseable `target version:` claim" in result.stderr, label
         assert "is stale" not in result.stderr, label

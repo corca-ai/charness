@@ -437,6 +437,7 @@ def test_quality_resolve_rejects_invalid_review_fields(tmp_path: Path) -> None:
 def test_quality_bootstrap_detects_repo_owned_github_actions_check(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
     (repo / "scripts" / "run-quality.sh").unlink()
+    (repo / "scripts" / "gates").mkdir(parents=True, exist_ok=True)
     (repo / "scripts" / "gates" / "check_github_actions.py").write_text("print('ok')\n", encoding="utf-8")
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo))

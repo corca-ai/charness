@@ -29,14 +29,13 @@ def _scaffold_rel(artifact_type: str) -> str | None:
     consumer repo may not ship the skill tree), otherwise the command would name
     a file the author cannot run.
     """
-    scripts_dir = Path(__file__).resolve().parent.parent
+    tree_root = Path(__file__).resolve().parents[2]
     try:
-        if str(scripts_dir) not in sys.path:
-            sys.path.insert(0, str(scripts_dir))
-        registry = importlib.import_module("check_artifact_surface_preflight").REGISTRY
+        if str(tree_root) not in sys.path:
+            sys.path.insert(0, str(tree_root))
+        registry = importlib.import_module("scripts.gates.check_artifact_surface_preflight").REGISTRY
     except Exception:
         return None
-    tree_root = scripts_dir.parent
     for surface in registry:
         if surface.artifact_type == artifact_type and surface.scaffold:
             for candidate in _layout_spellings(surface.scaffold):

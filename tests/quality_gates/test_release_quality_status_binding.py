@@ -198,7 +198,7 @@ def test_resume_push_exposes_one_receipt_and_restores_the_host_environment(
 def test_release_quality_seals_a_semantic_one_push_receipt(tmp_path: Path) -> None:
     common = _load("publish_release_common")
     repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "core").mkdir(parents=True)
     (repo / "plugins" / "charness").mkdir(parents=True)
     (repo / ".gitignore").write_text("plugins/\n", encoding="utf-8")
     (repo / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
@@ -210,6 +210,8 @@ def test_release_quality_seals_a_semantic_one_push_receipt(tmp_path: Path) -> No
         ROOT / "scripts" / "core" / "subprocess_guard.py",
         repo / "scripts" / "core" / "subprocess_guard.py",
     )
+    # The repo shim finds its root by the scripts/adapter_lib.py marker (#770).
+    (repo / "scripts" / "adapter_lib.py").write_text("", encoding="utf-8")
     (repo / "plugins" / "charness" / "plugin.txt").write_text("v1\n", encoding="utf-8")
     replace_with_committed_repo(repo, message="seed")
 

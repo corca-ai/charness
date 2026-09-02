@@ -14,8 +14,11 @@ DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS = ["proof: pointer", "proof: pointer-s
 
 def load_repo_script_module(module_name: str) -> Any | None:
     for ancestor in Path(__file__).resolve().parents:
-        for package in ("", "adapters"):
-            candidate = ancestor / "scripts" / package / f"{module_name}.py"
+        scripts_root = ancestor / "scripts"
+        flat = scripts_root / f"{module_name}.py"
+        # Flat first, then whichever concept package owns the module.
+        candidates = [flat, *sorted(scripts_root.glob(f"*/{module_name}.py"))]
+        for candidate in candidates:
             if not candidate.is_file():
                 continue
             spec = importlib.util.spec_from_file_location(module_name, candidate)

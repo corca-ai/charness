@@ -142,7 +142,7 @@ def test_an_undeclared_exception_keeps_its_traceback_instead_of_becoming_a_refus
     refusal channel is noisy and start reading past it — and the one refusal that
     mattered would be read past with the rest.
     """
-    refusal_lib = _load(SCRIPTS / "closeout_refusal_lib.py", "coverage_refusal_lib")
+    refusal_lib = _load(SCRIPTS / "review" / "closeout_refusal_lib.py", "coverage_refusal_lib")
 
     def _boom() -> dict:
         raise ValueError("not a declared refusal")
@@ -166,7 +166,7 @@ def test_the_commit_carrier_finds_the_authorization_module_in_the_exported_layou
     install would silently take the module-absent path and authorize protected closes
     it should refuse — the loader is the difference between a gate and a no-op.
     """
-    authz = _load(SCRIPTS / "commit_msg_closeout_authorization.py", "coverage_commit_authz")
+    authz = _load(SCRIPTS / "hooks" / "commit_msg_closeout_authorization.py", "coverage_commit_authz")
     exported = tmp_path / "skills" / "issue" / "scripts"
     exported.mkdir(parents=True)
     shutil.copy2(ISSUE_SCRIPTS / "issue_closeout_authorization.py", exported)
@@ -188,7 +188,7 @@ def test_an_install_without_the_issue_skill_reports_the_gate_as_unavailable(
     record carries `authorization_module_unavailable` and `applies: False` rather than
     a bare `authorized: True` a reader could mistake for a verdict.
     """
-    authz = _load(SCRIPTS / "commit_msg_closeout_authorization.py", "coverage_commit_authz_2")
+    authz = _load(SCRIPTS / "hooks" / "commit_msg_closeout_authorization.py", "coverage_commit_authz_2")
     assert authz.load_authorization_module(tmp_path) is None
 
     _relocate(monkeypatch, authz, tmp_path / "install" / "scripts")
@@ -212,7 +212,7 @@ def test_an_unloadable_authorization_candidate_is_skipped_not_half_loaded(
     put a broken object in front of an irreversible close, where the first attribute
     access decides whether the close is refused or crashes past the check.
     """
-    authz = _load(SCRIPTS / "commit_msg_closeout_authorization.py", "coverage_commit_authz_3")
+    authz = _load(SCRIPTS / "hooks" / "commit_msg_closeout_authorization.py", "coverage_commit_authz_3")
     present = tmp_path / "skills" / "public" / "issue" / "scripts"
     present.mkdir(parents=True)
     shutil.copy2(ISSUE_SCRIPTS / "issue_closeout_authorization.py", present)
@@ -234,7 +234,7 @@ def test_the_commit_hook_tells_a_blocked_author_what_was_refused_and_what_else_i
     — the exact escape. So the refusal names the code, the detail, the protected set,
     and the two legitimate ways out, and states that unrelated closes are unaffected.
     """
-    hook = _load(SCRIPTS / "check_issue_closeout_commit_msg.py", "coverage_commit_hook")
+    hook = _load(SCRIPTS / "gates" / "check_issue_closeout_commit_msg.py", "coverage_commit_hook")
     _install_empty_git_dir(tmp_path, branch="main")
     build_protected_world(tmp_path)
     message_file = tmp_path / "COMMIT_EDITMSG"
@@ -266,7 +266,7 @@ def test_the_commit_hook_refuses_to_run_at_all_without_its_authorization_sibling
     loaders correctly do, would make a broken install of the gate indistinguishable from
     a passing commit, which is the failure the whole lane exists to prevent.
     """
-    hook = _load(SCRIPTS / "check_issue_closeout_commit_msg.py", "coverage_commit_hook_2")
+    hook = _load(SCRIPTS / "gates" / "check_issue_closeout_commit_msg.py", "coverage_commit_hook_2")
     monkeypatch.setattr(importlib.util, "spec_from_file_location", _null_spec)
 
     with pytest.raises(RuntimeError, match="unable to load sibling module"):
@@ -343,6 +343,7 @@ def test_an_unloadable_crosswalk_candidate_does_not_stop_the_search(
     """
     monkeypatch.setattr(sys, "path", list(sys.path))
     (tmp_path / "scripts" / "evidence").mkdir(parents=True)
+    (tmp_path / "scripts" / "evidence").mkdir(parents=True, exist_ok=True)
     (tmp_path / "scripts" / "evidence" / "evidence_boundary_crosswalk.py").write_text(
         "", encoding="utf-8"
     )

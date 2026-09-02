@@ -326,6 +326,7 @@ def test_check_doc_links_accepts_fenced_command_naming_an_existing_script(
 ) -> None:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "gates").mkdir(parents=True, exist_ok=True)
     (repo / "scripts" / "gates" / "check_prose_pin.py").write_text("print('hi')\n", encoding="utf-8")
     (repo / "README.md").write_text(
         "\n".join(["# Demo", "", "```bash", "python3 scripts/gates/check_prose_pin.py --repo-root .", "```", ""]),
@@ -375,6 +376,7 @@ def test_check_doc_links_allows_placeholder_bearing_fenced_command_target(
         encoding="utf-8",
     )
     (repo / "scripts" / "gates").mkdir(parents=True)
+    (repo / "scripts" / "gates").mkdir(parents=True, exist_ok=True)
     (repo / "scripts" / "gates" / "check_skill_surface_preflight.py").write_text("print('hi')\n", encoding="utf-8")
 
     result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))

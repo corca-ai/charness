@@ -80,15 +80,28 @@ def validator_command(
     suffix = " --evidence-led" if evidence_mode else ""
     suffix += f" --paths {artifact_path}" if artifact_path else ""
     for script_name in script_names:
-        repo_local = repo_root / "scripts" / script_name
-        if repo_local.is_file():
-            return f"python3 scripts/{script_name} --repo-root .{suffix}"
+        repo_local = _repo_script(repo_root, script_name)
+        if repo_local is not None:
+            relative = repo_local.relative_to(repo_root).as_posix()
+            return f"python3 {relative} --repo-root .{suffix}"
     for ancestor in Path(script_file).resolve().parents:
         for script_name in script_names:
-            candidate = ancestor / "scripts" / script_name
-            if candidate.is_file():
+            candidate = _repo_script(ancestor, script_name)
+            if candidate is not None:
                 return f"python3 {candidate} --repo-root .{suffix}"
     raise FileNotFoundError(f"{script_names[0]} not found in installed Charness layout")
+
+
+def _repo_script(root: Path, script_name: str) -> Path | None:
+    """`<root>/scripts/<name>` flat, or inside the concept package that owns it."""
+    flat = root / "scripts" / script_name
+    if flat.is_file():
+        return flat
+    scripts_root = root / "scripts"
+    if not scripts_root.is_dir():
+        return None
+    packaged = sorted(p for p in scripts_root.glob(f"*/{script_name}") if p.is_file())
+    return packaged[0] if packaged else None
 
 
 def current_pointer_payload(

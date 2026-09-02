@@ -91,16 +91,16 @@ def test_scaffold_rel_binds_the_registry_from_the_scripts_layout(monkeypatch) ->
     than being skipped by the `not in sys.path` check. Assert the module that the
     function bound, not the test process's ambient path.
     """
-    scripts_dir = str(Path(artifact_violation_report.__file__).resolve().parent)
-    monkeypatch.setattr(sys, "path", [p for p in sys.path if p != scripts_dir])
+    repo_root = Path(artifact_violation_report.__file__).resolve().parents[2]
+    monkeypatch.setattr(sys, "path", [p for p in sys.path if p != str(repo_root)])
     # quality is a registered surface with a real scaffold in this layout.
     assert artifact_validator._scaffold_rel("quality") is not None
     registry = artifact_validator._scaffold_rel.__globals__["importlib"].import_module(
-        "check_artifact_surface_preflight"
+        "scripts.gates.check_artifact_surface_preflight"
     )
     assert (
         Path(registry.__file__).resolve()
-        == Path(scripts_dir) / "check_artifact_surface_preflight.py"
+        == repo_root / "scripts" / "gates" / "check_artifact_surface_preflight.py"
     )
 
 

@@ -306,8 +306,8 @@ def file_warn_for(path: Path, root: Path) -> int:
 
 
 # The canonical root-walking shim every NESTED repo script carries (enforced by
-# tools/check_bootstrap_shim_consistency.py): def line, eight body lines, and the
-# call. It is layout boilerplate, identical in every file, not the file's own
+# the authoring repo's shim-consistency check): def line, eight body lines, and
+# the call. It is layout boilerplate, identical in every file, not the file's own
 # code, so the cap measures the file without it.
 _REPO_SHIM_MARKER = "def _load_repo_runtime_bootstrap():"
 _REPO_SHIM_CODE_LINES = 10

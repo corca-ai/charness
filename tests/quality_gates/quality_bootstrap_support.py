@@ -111,6 +111,7 @@ def seed_quality_repo(tmp_path: Path) -> Path:
     (repo / "package.json").write_text('{"name":"demo","workspaces":["packages/*"]}\n', encoding="utf-8")
     (repo / "pnpm-workspace.yaml").write_text("packages:\n  - packages/*\n", encoding="utf-8")
     (repo / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    (repo / "scripts" / "setup").mkdir(parents=True, exist_ok=True)
     (repo / "scripts" / "setup" / "validate_maintainer_setup.py").write_text(
         "print('ok')\n", encoding="utf-8"
     )

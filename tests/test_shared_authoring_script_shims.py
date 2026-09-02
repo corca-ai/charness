@@ -44,8 +44,13 @@ SHIMS = {
 @pytest.mark.parametrize(
     ("scripts_dir", "expected_target_dir"),
     [
-        pytest.param(SHARED_SCRIPTS, REPO_ROOT / "scripts", id="authoring"),
-        pytest.param(MIRROR_SCRIPTS, REPO_ROOT / "plugins" / "charness" / "scripts", id="shipped"),
+        # plan_risk_interrupt lives in the gates_support concept package since #770.
+        pytest.param(SHARED_SCRIPTS, REPO_ROOT / "scripts" / "gates_support", id="authoring"),
+        pytest.param(
+            MIRROR_SCRIPTS,
+            REPO_ROOT / "plugins" / "charness" / "scripts" / "gates_support",
+            id="shipped",
+        ),
     ],
 )
 def test_each_shim_resolves_to_its_OWN_tree(

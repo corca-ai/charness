@@ -24,7 +24,7 @@ except ModuleNotFoundError:
     )
     if _scripts_dir is None:
         raise
-    sys.path.insert(0, str(_scripts_dir))
+    sys.path.insert(0, str(_scripts_dir.parent))
     from scripts.core.subprocess_guard import run_process
 
 MAX_SEMANTIC_INPUT_BYTES = 1024 * 1024

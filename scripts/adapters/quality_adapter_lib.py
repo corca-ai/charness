@@ -51,13 +51,12 @@ from scripts.adapters.quality_policy_defaults import (  # noqa: E402
 )
 from scripts.adapters.quality_universes_lib import DEFAULT_UNIVERSES  # noqa: E402
 from scripts.artifacts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN  # noqa: E402
-from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
 
 ARTIFACT_FILENAME = "latest.md"
 ARTIFACT_CLASS = "history"
 
 
-adapter_validators = load_adapter_validators(repo_root_from_script(__file__))
+adapter_validators = load_adapter_validators(__file__)
 
 
 def _float_value(value: Any, field: str, errors: list[str]) -> float | None:

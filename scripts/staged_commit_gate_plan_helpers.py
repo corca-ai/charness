@@ -188,7 +188,7 @@ def _script_argv(script: str, *args: str) -> tuple[str, ...]:
 
 _INDEX_HYGIENE_GATES = (
     ("check-staged-reversion", "hooks/check_staged_reversion.py"),
-    ("check-git-identity", "check_git_identity.py"),
+    ("check-git-identity", "gates/check_git_identity.py"),
     ("staged-worktree-consistency", "hooks/check_staged_worktree_consistency.py"),
 )
 

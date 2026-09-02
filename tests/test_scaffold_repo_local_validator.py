@@ -44,7 +44,8 @@ def test_installed_like_scaffold_prefers_repo_local_validator_when_repo_owns_one
     assert scaffold.is_file(), scaffold
     # Precondition: the installed-like tree ships a validator that the old
     # ancestor-first lookup would have cited (this is the shadow to beat).
-    assert (PLUGIN_ROOT / "scripts" / validator_name).is_file(), validator_name
+    # Bundled validators live in concept packages under scripts/ (#770).
+    assert any((PLUGIN_ROOT / "scripts").rglob(validator_name)), validator_name
 
     repo = tmp_path / "repo-with-own-validator"
     (repo / ".agents").mkdir(parents=True)

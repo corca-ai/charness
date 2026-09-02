@@ -23,7 +23,7 @@ for f in README.md AGENTS.md "$SKILL_DIR/../ideation/references/spec-boundary.md
 
 # 2. existing concept/spec/design docs + implementation-side acceptance reality
 rg -n "concept|spec|requirements|success criteria|acceptance|entity|stage|constraint|test|fixture|scenario|operator|takeover|smoke|integration" .
-python3 "$SKILL_DIR/../../shared/scripts/gates_support/plan_risk_interrupt.py" --repo-root . --detail
+python3 "$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py" --repo-root . --detail
 ```
 
 If an ideation document already exists, refine it instead of restating the full

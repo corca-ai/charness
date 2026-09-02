@@ -128,22 +128,16 @@ def test_a_symlink_pointer_already_aimed_at_the_record_is_a_noop_and_keeps_its_l
 # ---------------------------------------------------------------------------
 
 
-def test_the_seed_budget_gate_still_finds_its_emitter_without_the_scripts_package(
+def test_the_seed_budget_gate_still_finds_its_emitter_when_loaded_by_path(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """The gate must import in the flattened export, where `scripts.` is not a package.
+    """The gate, loaded by path, binds a live emitter.
 
-    This repo keeps the gate under `scripts/`, so `from scripts.yaml_output import
-    emit_yaml` resolves; the exported plugin copy flattens the tree and that import
-    raises. Without the bare-name fallback the gate would die at import time in every
-    consuming install -- a gate that cannot load is a gate that never blocks, which is
-    the same fail-open shape `classify_scan` exists to refuse.
+    The export copies scripts/ with its concept packages, so `scripts.` is a package
+    in every consuming install and a nested gate reaches yaml_output through the
+    root its shim puts on sys.path. The claim kept: a by-path load must not leave the
+    emitter unbound -- a gate that cannot load is a gate that never blocks.
     """
-    # Both deletions are what makes the flattened layout real: with only `scripts`
-    # blanked, an ALREADY-CACHED `scripts.yaml_output` would still satisfy the first
-    # import and the fallback would never be reached.
-    monkeypatch.setitem(sys.modules, "scripts", None)
-    monkeypatch.delitem(sys.modules, "scripts.yaml_output", raising=False)
     monkeypatch.delitem(sys.modules, "check_seed_fixture_budget_flat_layout", raising=False)
 
     path = ROOT / "scripts" / "gates" / "check_seed_fixture_budget.py"

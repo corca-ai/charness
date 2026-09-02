@@ -137,6 +137,7 @@ def test_install_git_hooks_materializes_consumer_commit_msg_hook(tmp_path: Path)
         ROOT / "scripts" / "install-git-hooks.sh", source / "scripts" / "install-git-hooks.sh"
     )
     checker = source / "scripts" / "gates" / "check_issue_closeout_commit_msg.py"
+    checker.parent.mkdir(parents=True, exist_ok=True)
     checker.write_text("#!/usr/bin/env python3\nprint('checker')\n", encoding="utf-8")
     checker.chmod(0o755)
     init_git_repo(consumer)

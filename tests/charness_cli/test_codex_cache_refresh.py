@@ -451,6 +451,7 @@ def test_session_staleness_uses_repo_resolver_then_managed_checkout_fallback(tmp
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / "scripts" / "adapters").mkdir(parents=True, exist_ok=True)
+    (repo / "scripts" / "adapters").mkdir(parents=True, exist_ok=True)
     (repo / "scripts" / "adapters" / "capability_catalog.py").write_text("# repo resolver\n", encoding="utf-8")
     payload = module.session_staleness_payload(diff, home_root=tmp_path / "home", repo_root=repo)
     assert payload["resolver_path"] == str(repo / "scripts" / "adapters" / "capability_catalog.py")

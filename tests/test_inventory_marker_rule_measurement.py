@@ -169,11 +169,12 @@ def test_d47_uses_a_hash_bound_dated_measurement_snapshot():
     assert snapshot["schema_version"] == "charness.inventory_marker_rule_snapshot.v1"
     assert snapshot["captured_at"] == "2026-08-12"
     assert "immutable historical evidence" in snapshot["scope"]
+    # The snapshot predates the #770 packaging, so it spells the flat path.
     assert snapshot["measurement_command"] == (
-        "python3 scripts/gates/measure_inventory_marker_rule.py --repo-root . --json"
+        "python3 scripts/measure_inventory_marker_rule.py --repo-root . --json"  # sweep-keep
     )
     assert snapshot["recursive_measurement_command"] == (
-        "python3 scripts/gates/measure_inventory_marker_rule.py --repo-root . --recursive --json"
+        "python3 scripts/measure_inventory_marker_rule.py --repo-root . --recursive --json"  # sweep-keep
     )
     source_commit = snapshot["source_commit"]
     assert re.fullmatch(r"[0-9a-f]{40}", source_commit)

@@ -34,7 +34,7 @@ except ModuleNotFoundError:
     )
     if _scripts_dir is None:
         raise
-    sys.path.insert(0, str(_scripts_dir))
+    sys.path.insert(0, str(_scripts_dir.parent))
     import scripts.core.subprocess_guard as _subprocess_guard
     from scripts.core.subprocess_guard import run_process
 

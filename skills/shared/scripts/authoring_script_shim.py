@@ -30,7 +30,7 @@ from pathlib import Path
 # found there -- a consumer plausibly owns a `validate_skills.py`, and running
 # their file is worse than the FileNotFoundError this promises.
 _MAX_ANCESTORS = 5
-_TARGET_ROOTS = {"validate_skills.py": "tools"}
+_TARGET_ROOTS = {"validate_skills.py": "tools", "plan_risk_interrupt.py": "scripts/gates_support"}
 
 
 def locate(name: str, caller: Path) -> Path:
@@ -45,7 +45,7 @@ def locate(name: str, caller: Path) -> Path:
     origin = caller.resolve()
     target_root = _TARGET_ROOTS.get(name, "scripts")
     for ancestor in list(origin.parents)[:_MAX_ANCESTORS]:
-        candidate = ancestor / target_root / name
+        candidate = ancestor.joinpath(*target_root.split("/")) / name
         if candidate.is_file() and candidate.resolve() != origin:
             if target_root == "tools" and not (ancestor / "packaging" / "charness.json").is_file():
                 # A consumer's own tools/<name> is not the authoring-repo script;

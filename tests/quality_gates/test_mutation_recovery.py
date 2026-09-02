@@ -683,14 +683,14 @@ def test_commit_and_quality_consumers_refuse_pending_recovery_then_unblock(tmp_p
         "run_quality_engine_receipt.py",
         "run_quality_engine_phase.py",
         "runtime_bootstrap.py",
-        "subprocess_guard.py",
+        "core/subprocess_guard.py",
         "evidence/proof_receipt.py",
         "quality_label_universe.py",
         "adapter_lib.py",
         "yaml_output.py",
-        "adapter_yaml_parse.py",
-        "helper_provenance_lib.py",
-        "script_timeout.py",
+        "adapters/adapter_yaml_parse.py",
+        "core/helper_provenance_lib.py",
+        "core/script_timeout.py",
     ):
         source = ROOT / "scripts" / name
         destination = quality_repo / "scripts" / name
@@ -731,11 +731,12 @@ def test_commit_and_quality_consumers_refuse_pending_recovery_then_unblock(tmp_p
     # is a disarm vector, so the absent-script case is a stub here rather than a
     # skip there.
     for gate in (
-        "check_git_identity.py",
+        "gates/check_git_identity.py",
         "hooks/check_staged_router_change.py",
         "hooks/check_staged_test_boundaries.py",
     ):
         gate_path = commit_repo / "scripts" / gate
+        gate_path.parent.mkdir(parents=True, exist_ok=True)
         gate_path.write_text("raise SystemExit(0)\n", encoding="utf-8")
     commit_state = commit_repo / ".git" / "charness-mutation-recovery"
     commit_state.mkdir()

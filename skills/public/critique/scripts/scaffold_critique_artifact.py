@@ -82,8 +82,8 @@ ALLOWED_BOUNDARY_VERDICTS = ("single-surface", "owned-correctly", "moved-to-owne
 ALLOWED_FAILURE_CLASSIFICATIONS = ("scope-too-broad", "verifier-defect", "subject-defect", "none")
 ALLOWED_RETRY_DISPOSITIONS = ("first-attempt", "retry-new-identity", "stop-no-progress", "non-claim")
 VALIDATOR_SCRIPT_NAMES = (
-    "review/validate_critique_artifacts.py",
-    "review/validate-critique-artifacts.py",
+    "validate_critique_artifacts.py",
+    "validate-critique-artifacts.py",
 )
 
 

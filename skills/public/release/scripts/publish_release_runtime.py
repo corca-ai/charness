@@ -17,7 +17,7 @@ except ImportError:  # flat layout: the script dir is on sys.path, the repo root
         if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
     )
     if str(_scripts_dir) not in sys.path:
-        sys.path.insert(0, str(_scripts_dir))
+        sys.path.insert(0, str(_scripts_dir.parent))
     from scripts.core.subprocess_guard import run_process
 from scripts.yaml_output import render_yaml as _render_yaml
 

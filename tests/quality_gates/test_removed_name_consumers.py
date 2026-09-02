@@ -56,6 +56,7 @@ def test_removed_name_consumers_on_one_tree(tmp_path: Path) -> None:
             "scripts/reader_typed.py": "import typed\n\n\ndef f():\n    return typed.COUNT\n",
         },
     )
+    (repo / "scripts" / "gates").mkdir(parents=True, exist_ok=True)
     (repo / "scripts" / "gates" / "check_doc_links.py").write_text(MODULE_AFTER, encoding="utf-8")
     (repo / "scripts" / "lonely.py").write_text("", encoding="utf-8")
     (repo / "scripts" / "owner_token.py").write_text("", encoding="utf-8")
@@ -137,6 +138,7 @@ def test_the_advisory_writes_to_stderr_and_names_the_readers(tmp_path: Path, cap
             "scripts/gates/check_doc_authoring_preflight.py": CONSUMER,
         },
     )
+    (repo / "scripts" / "gates").mkdir(parents=True, exist_ok=True)
     (repo / "scripts" / "gates" / "check_doc_links.py").write_text(MODULE_AFTER, encoding="utf-8")
 
     _removed.advise_removed_name_consumers(repo, ["scripts/gates/check_doc_links.py"], against="HEAD")

@@ -27,7 +27,13 @@ dependencies_schema_path = _control_plane_lib.dependencies_schema_path
 
 
 def _plugin_schema_source() -> Path:
-    return Path(_control_plane_lib.__file__).resolve().parent.parent / "integrations" / "tools" / "dependencies.schema.json"
+    # The library may sit flat under scripts/ or inside a concept package;
+    # the schema lives at the tree root either way.
+    relative = Path("integrations") / "tools" / "dependencies.schema.json"
+    for parent in Path(_control_plane_lib.__file__).resolve().parents:
+        if parent.name == "scripts":
+            return parent.parent / relative
+    return Path(_control_plane_lib.__file__).resolve().parent.parent / relative
 
 
 def _resolve_tool_ids(repo_root: Path, *, explicit: list[str], from_recommendations: bool) -> list[str]:
