@@ -82,7 +82,7 @@ _GITIGNORE_SCAN = (
     "python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py "
     "--repo-root . --require-empty --require-git-file-listing"
 )
-_RETRO_INDEX_CHECK = "python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check"
+_RETRO_INDEX_CHECK = "python3 scripts/lessons/build_retro_lesson_selection_index.py --repo-root . --check"
 _SUBPROCESS_FORM = (
     "python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing"
 )

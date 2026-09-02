@@ -29,7 +29,7 @@ _version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.adapter_version_verdict"
 )
 
-_scripts_recent_lessons_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.recent_lessons_lib")
+_scripts_recent_lessons_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.lessons.recent_lessons_lib")
 build_recent_lessons = _scripts_recent_lessons_lib_module.build_recent_lessons
 build_indexed_recent_lessons = _scripts_recent_lessons_lib_module.build_indexed_recent_lessons
 write_lesson_selection_index = _scripts_recent_lessons_lib_module.write_lesson_selection_index

@@ -21,7 +21,7 @@ from __future__ import annotations
 import copy
 from typing import Any
 
-from scripts import lesson_score_outcome_lib as outcome_lib
+from scripts.lessons import lesson_score_outcome_lib as outcome_lib
 
 
 def blank_lesson(source_retro: str, transition_id: str) -> dict[str, Any]:

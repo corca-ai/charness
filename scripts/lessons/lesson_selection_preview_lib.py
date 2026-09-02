@@ -9,12 +9,29 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from scripts.lesson_ledger_lib import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.lessons.lesson_ledger_lib import (  # noqa: E402
     lesson_ledger_path,
     migrate_ledger_payload,
     validate_lesson_ledger,
 )
-from scripts.recent_lessons_lib import build_lesson_selection_index, check_lesson_selection_index
+from scripts.lessons.recent_lessons_lib import (  # noqa: E402
+    build_lesson_selection_index,
+    check_lesson_selection_index,
+)
 
 KIND = "charness.lesson-selection-preview"
 SCHEMA_VERSION = 1

@@ -43,7 +43,7 @@ _MODULES = {
         "scripts/review/validate_critique_artifacts.py",
         "scripts/gates/validate_retro_artifact.py",
         "scripts/gates/validate_ideation_artifact.py",
-        "scripts/check_lesson_ledger.py",
+        "scripts/lessons/check_lesson_ledger.py",
         "scripts/mutation/check_mutation_run_proof.py",
         "scripts/gates/check_code_lengths.py",
         "scripts/gates/check_python_runtime_inheritance.py",
@@ -145,7 +145,7 @@ def test_declared_u2_universes_refuse_when_empty(tmp_path: Path) -> None:
             "scripts/gates/validate_ideation_artifact.py",
             ("--all",),
         ),
-        ("artifact_roots", "retro", "scripts/check_lesson_ledger.py", ()),
+        ("artifact_roots", "retro", "scripts/lessons/check_lesson_ledger.py", ()),
     )
     for index, (field, family, script, extra) in enumerate(cases):
         if field == "doc_surfaces":

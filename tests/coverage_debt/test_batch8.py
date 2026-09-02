@@ -26,7 +26,6 @@ import pytest
 
 from scripts import (
     checkout_view,
-    lesson_ledger_lib,
     setup_inspect_quality_lib,
     sibling_module_loader,
     task_run,
@@ -35,6 +34,7 @@ from scripts import (
 from scripts import git_checkout as checkout
 from scripts import git_status_snapshot as status_snapshot
 from scripts import prepush_quality_receipt as receipt
+from scripts.lessons import lesson_ledger_lib
 from scripts.review import reviewed_input_identity as reviewed_identity
 from scripts.review import reviewed_input_nonblob as reviewed_nonblob
 from scripts.review import reviewed_input_worktree as reviewed_worktree

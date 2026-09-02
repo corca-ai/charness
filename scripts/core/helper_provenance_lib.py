@@ -157,7 +157,7 @@ def entry_script(own_root: Path) -> Path | None:
     """The script the operator actually invoked, when it belongs to the same tree.
 
     A guard called from a library knows only the library's own path, and naming
-    `scripts/recent_lessons_lib.py --repo-root .` as the remediation would hand the
+    `scripts/lessons/recent_lessons_lib.py --repo-root .` as the remediation would hand the
     operator a command that is not runnable. ``sys.argv[0]`` is the invoked
     entry point, so the refusal can name a command that works.
     """
@@ -253,7 +253,7 @@ def tree_python_files(own_root: Path) -> list[Path]:
     ``sys.modules`` (plus the anchors' skill siblings). A module the run imports
     *later* is therefore invisible to a check that runs *first* — which is
     exactly the gap an entrypoint guard exists to close. The drift that killed
-    two publishes lived in ``scripts/recent_lessons_lib.py``, which the release
+    two publishes lived in ``scripts/lessons/recent_lessons_lib.py``, which the release
     path imports only when it writes the retro closeout, long after the
     entrypoint ran; an anchor scan at the entrypoint reports ``in-sync`` and
     waves the run through. Version comparison does not cover it either: the

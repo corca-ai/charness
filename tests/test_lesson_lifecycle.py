@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import lesson_ledger_lib as ledger
-from scripts import record_lesson_lifecycle as lifecycle_recorder
+from scripts.lessons import lesson_ledger_lib as ledger
+from scripts.lessons import record_lesson_lifecycle as lifecycle_recorder
 from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.script_main import run_loaded_script_main
 from tests.test_lesson_ledger import (

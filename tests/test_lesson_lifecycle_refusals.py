@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from scripts import lesson_ledger_lib as ledger
-from scripts import lesson_score_outcome_lib as outcome_lib
-from scripts import lesson_selection_preview_lib as preview
-from scripts import record_lesson_lifecycle as lifecycle_recorder
+from scripts.lessons import lesson_ledger_lib as ledger
+from scripts.lessons import lesson_score_outcome_lib as outcome_lib
+from scripts.lessons import lesson_selection_preview_lib as preview
+from scripts.lessons import record_lesson_lifecycle as lifecycle_recorder
 from tests.test_lesson_ledger import _ledger, _retro
 
 

@@ -15,8 +15,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import lesson_ledger_writer_lib as writer
-from scripts import record_lesson_score as scorer
+from scripts.lessons import lesson_ledger_writer_lib as writer
+from scripts.lessons import record_lesson_score as scorer
 from tests.test_lesson_ledger import ANCHOR, _ledger, _retro, _validate
 
 

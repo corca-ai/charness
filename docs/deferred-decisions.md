@@ -336,7 +336,7 @@ the evidence is sufficient for the boundary at hand.
   should not; guessing that taxonomy while fixing one instance is the
   validator-post-hoc-churn reflex. The decay mechanism stays live for every
   other current Next Improvement, which is the accepted residual.
-- Impact surfaces: [build_retro_lesson_selection_index.py](../scripts/build_retro_lesson_selection_index.py),
+- Impact surfaces: [build_retro_lesson_selection_index.py](../scripts/lessons/build_retro_lesson_selection_index.py),
   [lesson-selection-index.json](../charness-artifacts/retro/lesson-selection-index.json), the `retro` skill.
 - Reopen trigger: a third recurrence of any lesson previously recorded in a retro
   and since decayed, or a session that re-derives a wrong attribution the repo

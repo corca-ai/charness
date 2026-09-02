@@ -38,7 +38,7 @@ NORMALIZE_HOST_DOCS = load_script_module(
 )
 BUILD_RETRO_INDEX = load_script_module(
     "coverage_debt_build_retro_lesson_selection_index",
-    ROOT / "scripts/build_retro_lesson_selection_index.py",
+    ROOT / "scripts/lessons/build_retro_lesson_selection_index.py",
 )
 
 

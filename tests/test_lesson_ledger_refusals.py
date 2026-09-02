@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import lesson_ledger_lib as ledger
-from scripts import lesson_score_outcome_lib as outcome_lib
+from scripts.lessons import lesson_ledger_lib as ledger
+from scripts.lessons import lesson_score_outcome_lib as outcome_lib
 from tests.lesson_ledger_fixtures import outcome_event
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -77,7 +77,7 @@ def test_ledger_checker_and_writer_scripts_print_refusals(
 ) -> None:
     monkeypatch.setattr(sys, "argv", ["check_lesson_ledger.py", "--repo-root", str(tmp_path)])
     with pytest.raises(SystemExit, match="0"):
-        runpy.run_path(str(ROOT / "scripts/check_lesson_ledger.py"), run_name="__main__")
+        runpy.run_path(str(ROOT / "scripts/lessons/check_lesson_ledger.py"), run_name="__main__")
     assert "Discovered empty lesson ledger universe" in capsys.readouterr().out
     for script, args in (
         (
@@ -99,7 +99,7 @@ def test_ledger_checker_and_writer_scripts_print_refusals(
         monkeypatch.setenv("CHARNESS_REPO_ROOT", str(tmp_path))
         monkeypatch.setattr(sys, "argv", [script, "--repo-root", str(tmp_path), *args])
         with pytest.raises(SystemExit, match="1"):
-            runpy.run_path(str(ROOT / "scripts" / script), run_name="__main__")
+            runpy.run_path(str(ROOT / "scripts" / "lessons" / script), run_name="__main__")
         assert "missing lesson ledger" in capsys.readouterr().err
 
 

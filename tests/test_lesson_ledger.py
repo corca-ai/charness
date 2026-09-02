@@ -12,9 +12,9 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import lesson_ledger_lib as ledger
-from scripts import lesson_ledger_writer_lib as writer
-from scripts import record_lesson_score as scorer
+from scripts.lessons import lesson_ledger_lib as ledger
+from scripts.lessons import lesson_ledger_writer_lib as writer
+from scripts.lessons import record_lesson_score as scorer
 from tests.lesson_ledger_fixtures import blank_lesson, legacy_v8_payload, outcome_event
 from tests.lesson_ledger_fixtures import materialize as _materialize
 from tests.script_loader import load_script_module
@@ -96,7 +96,7 @@ def test_ledger_replays_cited_scores_and_checker_cli(tmp_path: Path, monkeypatch
         "path": "charness-artifacts/retro/lesson-ledger.json",
     }
     checker = load_script_module(
-        "check_lesson_ledger_for_test", ROOT / "scripts/check_lesson_ledger.py"
+        "check_lesson_ledger_for_test", ROOT / "scripts/lessons/check_lesson_ledger.py"
     )
     monkeypatch.setattr(sys, "argv", ["check_lesson_ledger.py", "--repo-root", str(tmp_path)])
     assert checker.main() == 0
@@ -358,7 +358,7 @@ def test_writer_reports_open_acquire_and_release_failures(
 
 
 def test_empty_ledger_bootstrap_is_valid_and_refuses_overwrite(tmp_path: Path) -> None:
-    init = load_script_module("init_lesson_ledger_for_test", ROOT / "scripts/init_lesson_ledger.py")
+    init = load_script_module("init_lesson_ledger_for_test", ROOT / "scripts/lessons/init_lesson_ledger.py")
     output_dir = tmp_path / "charness-artifacts/retro"
     result = init.init_lesson_ledger(
         repo_root=tmp_path, output_dir=output_dir, summary_path=output_dir / "recent-lessons.md"
@@ -376,7 +376,7 @@ def test_empty_ledger_bootstrap_is_valid_and_refuses_overwrite(tmp_path: Path) -
 
 def test_empty_ledger_bootstrap_refuses_to_wipe_a_committed_ledger(tmp_path: Path) -> None:
     init = load_script_module(
-        "init_lesson_ledger_wipe_test", ROOT / "scripts/init_lesson_ledger.py"
+        "init_lesson_ledger_wipe_test", ROOT / "scripts/lessons/init_lesson_ledger.py"
     )
     from tests.quality_gates.repo_shapes import replace_with_committed_repo
 
@@ -397,7 +397,7 @@ def test_empty_ledger_bootstrap_yields_to_a_ledger_that_appeared_inside_the_lock
     tmp_path: Path, monkeypatch
 ) -> None:
     init = load_script_module(
-        "init_lesson_ledger_race_test", ROOT / "scripts/init_lesson_ledger.py"
+        "init_lesson_ledger_race_test", ROOT / "scripts/lessons/init_lesson_ledger.py"
     )
     winner = b'{"the winner already wrote this"}'
 
@@ -424,7 +424,7 @@ def test_empty_ledger_bootstrap_entrypoint_reports_refusal_without_traceback(
     _ledger(tmp_path)
     monkeypatch.setattr(sys, "argv", ["init_lesson_ledger.py", "--repo-root", str(tmp_path)])
     with pytest.raises(SystemExit) as caught:
-        runpy.run_path(str(ROOT / "scripts/init_lesson_ledger.py"), run_name="__main__")
+        runpy.run_path(str(ROOT / "scripts/lessons/init_lesson_ledger.py"), run_name="__main__")
     assert caught.value.code == 1
     captured = capsys.readouterr()
     assert captured.out == ""

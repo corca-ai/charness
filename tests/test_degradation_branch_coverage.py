@@ -371,7 +371,8 @@ def test_lesson_that_is_only_a_class_tag_is_skipped(tmp_path) -> None:
     an empty lesson would otherwise be indexed with a blank display string.
     """
     lib = load_script_module(
-        "recent_lessons_lib_degradation_test", ROOT / "scripts" / "recent_lessons_lib.py"
+        "recent_lessons_lib_degradation_test",
+        ROOT / "scripts" / "lessons" / "recent_lessons_lib.py",
     )
 
     retro_dir = tmp_path / "charness-artifacts" / "retro"

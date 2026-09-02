@@ -17,13 +17,16 @@ from scripts.goal_lineage import (
     not_goal_bound_lineage,
     planning_only_lineage,
 )
-from scripts.lesson_command_citation import (
+from scripts.lessons.lesson_command_citation import (
     INDEX_SCRIPT_RELATIVE,
     index_build_command,
     repo_carries_index_builder,
     script_tree_root,
 )
-from scripts.recent_lessons_lib import build_indexed_recent_lessons, lesson_selection_index_path
+from scripts.lessons.recent_lessons_lib import (
+    build_indexed_recent_lessons,
+    lesson_selection_index_path,
+)
 from scripts.runtime_bootstrap import load_path_module
 
 _PERSISTED_LINE_PATTERN = re.compile(r"^Persisted:.*$", re.MULTILINE)

@@ -14,13 +14,11 @@ re-derivation, which is the exact vacuous-test failure mode this file exists to 
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
 
-import recent_lessons_lib as lib  # noqa: E402
+from scripts.lessons import recent_lessons_lib as lib
 
 RETRO_DIR = "charness-artifacts/retro"
 

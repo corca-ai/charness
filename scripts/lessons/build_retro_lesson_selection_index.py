@@ -6,17 +6,35 @@ import argparse
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import (  # noqa: E402
+    import_repo_module,
+    load_path_module,
+    repo_root_from_script,
+)
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_recent_lessons_module = import_repo_module(__file__, "scripts.recent_lessons_lib")
+_recent_lessons_module = import_repo_module(__file__, "scripts.lessons.recent_lessons_lib")
 build_lesson_selection_index = _recent_lessons_module.build_lesson_selection_index
 check_lesson_selection_index = _recent_lessons_module.check_lesson_selection_index
 lesson_selection_index_path = _recent_lessons_module.lesson_selection_index_path
 write_lesson_selection_index = _recent_lessons_module.write_lesson_selection_index
-_lesson_ledger_module = import_repo_module(__file__, "scripts.lesson_ledger_lib")
+_lesson_ledger_module = import_repo_module(__file__, "scripts.lessons.lesson_ledger_lib")
 validate_lesson_ledger = _lesson_ledger_module.validate_lesson_ledger
 
 

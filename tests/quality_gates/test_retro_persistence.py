@@ -266,7 +266,7 @@ def test_persist_then_index_checker_accepts_persisted_index(
     assert result.returncode == 0, result.stderr
 
     checker = run_script(
-        "scripts/build_retro_lesson_selection_index.py",
+        "scripts/lessons/build_retro_lesson_selection_index.py",
         "--repo-root",
         str(repo),
         "--check",
@@ -298,11 +298,11 @@ def test_persist_then_repo_checker_accepts_the_repo_producer_index(
     # the moment `helper_provenance_lib` gained an import. `adapter_lib` is a
     # second ENTRY point rather than a closure member: the target checkout reads
     # its retro adapter through it, which no import from the builder reaches.
-    for name in script_import_closure("build_retro_lesson_selection_index.py", "adapter_lib.py"):
+    for name in script_import_closure("lessons/build_retro_lesson_selection_index.py", "adapter_lib.py"):
         target = repo / "scripts" / name
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / "scripts" / name, target)
-    target_recent = repo / "scripts" / "recent_lessons_lib.py"
+    target_recent = repo / "scripts" / "lessons" / "recent_lessons_lib.py"
     target_recent.write_text(
         target_recent.read_text(encoding="utf-8").replace(
             '        "schema_version": 1,\n',
@@ -336,7 +336,7 @@ def test_persist_then_repo_checker_accepts_the_repo_producer_index(
     checker = subprocess.run(
         [
             sys.executable,
-            str(repo / "scripts" / "build_retro_lesson_selection_index.py"),
+            str(repo / "scripts" / "lessons" / "build_retro_lesson_selection_index.py"),
             "--repo-root",
             str(repo),
             "--check",

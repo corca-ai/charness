@@ -86,7 +86,7 @@ DEFAULT_ARTIFACT_ROOTS = _quality_universes.DEFAULT_ARTIFACT_ROOTS
 matching_files = _quality_universes.matching_files
 refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty
 resolve_universe = _quality_universes.resolve_universe
-_retro_index = import_repo_module(__file__, "scripts.build_retro_lesson_selection_index")
+_retro_index = import_repo_module(__file__, "scripts.lessons.build_retro_lesson_selection_index")
 load_retro_paths = _retro_index._load_retro_paths
 
 #: One Git reachability query per SHA per artifact would be thousands of

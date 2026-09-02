@@ -32,7 +32,7 @@ def _foreign_tree(tmp_path: Path) -> Path:
         json.dumps({"name": "charness", "version": "0.0.1"}), encoding="utf-8"
     )
     shutil.copytree(REPO_ROOT / "scripts", foreign / "scripts", ignore=REPO_COPY_IGNORE)
-    lessons = foreign / "scripts" / "recent_lessons_lib.py"
+    lessons = foreign / "scripts" / "lessons" / "recent_lessons_lib.py"
     lessons.write_text(lessons.read_text(encoding="utf-8") + "\n# drifted\n", encoding="utf-8")
     entry = foreign / "skills" / "release" / "scripts"
     entry.mkdir(parents=True)
@@ -70,7 +70,7 @@ def test_publish_entrypoint_refuses_a_drifted_foreign_copy(tmp_path: Path) -> No
     )
     assert result.returncode == 2, (result.returncode, result.stdout[-2000:], result.stderr[-2000:])
     assert "helper provenance refusal" in result.stderr
-    assert "scripts/recent_lessons_lib.py" in result.stderr
+    assert "scripts/lessons/recent_lessons_lib.py" in result.stderr
     assert "skills/public/release/scripts/publish_release.py" in result.stderr
 
 

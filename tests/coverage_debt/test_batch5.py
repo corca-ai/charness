@@ -248,7 +248,7 @@ def test_the_bare_invocation_emits_the_derived_index_without_touching_the_tree(
 
 
 # ---------------------------------------------------------------------------
-# scripts/lesson_score_outcome_lib.py -- three refusals on the score vocabulary
+# scripts/lessons/lesson_score_outcome_lib.py -- three refusals on the score vocabulary
 # ---------------------------------------------------------------------------
 
 
@@ -260,7 +260,7 @@ def test_a_non_object_score_event_has_no_outcome_rather_than_exploding() -> None
     an AttributeError instead of emitting its own "score event N is not an object"
     refusal, and the author would get no idea which event to fix.
     """
-    from scripts import lesson_score_outcome_lib as outcome_lib
+    from scripts.lessons import lesson_score_outcome_lib as outcome_lib
 
     for junk in ("changed-an-action", ["changed-an-action"], 3, None):
         assert outcome_lib.outcome_of(junk) is None
@@ -276,7 +276,7 @@ def test_a_retro_citation_that_is_not_a_clean_string_is_refused() -> None:
     retro at a path that does not exist and no later commit may repair the event.
     Refusing at write time is the only moment the mistake is cheap.
     """
-    from scripts import lesson_score_outcome_lib as outcome_lib
+    from scripts.lessons import lesson_score_outcome_lib as outcome_lib
 
     for bad in (
         None,
@@ -300,7 +300,7 @@ def test_an_unknown_outcome_word_is_refused_and_the_message_lists_the_vocabulary
     grep the library for the spellings; naming them is what makes the shape check
     self-teaching at the one moment the author still remembers the encounter.
     """
-    from scripts import lesson_score_outcome_lib as outcome_lib
+    from scripts.lessons import lesson_score_outcome_lib as outcome_lib
 
     event = {
         "event_id": "e1",
@@ -329,7 +329,7 @@ def test_a_score_for_a_lesson_no_transition_ever_seeded_is_refused() -> None:
     depth -- see the note in the module report -- so it is exercised at its own
     contract rather than through the full validator.
     """
-    from scripts import lesson_ledger_lib as ledger_lib
+    from scripts.lessons import lesson_ledger_lib as ledger_lib
 
     event = {
         "event_id": "e1",

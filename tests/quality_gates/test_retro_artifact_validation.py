@@ -13,8 +13,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import init_lesson_ledger
-from scripts.gates import validate_retro_artifact as retro_validator
+from scripts import validate_retro_artifact as retro_validator
+from scripts.lessons import init_lesson_ledger
 from tests.quality_gates.support import ROOT, run_script
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
@@ -288,7 +288,7 @@ def test_a_named_missing_retro_is_refused_under_a_custom_output_dir(tmp_path: Pa
     repo = _repo_with_retro_output_dir(tmp_path, "artifacts/retros")
 
     result = run_script(
-        str(ROOT / "scripts" / "gates" / "validate_retro_artifact.py"),
+        str(ROOT / "scripts" / "validate_retro_artifact.py"),
         "--repo-root",
         str(repo),
         "--paths",
@@ -314,7 +314,7 @@ def test_a_sweep_over_a_missing_output_directory_is_refused_not_reported_clean(
     (repo / "artifacts" / "retros").rmdir()
 
     result = run_script(
-        str(ROOT / "scripts" / "gates" / "validate_retro_artifact.py"), "--repo-root", str(repo), "--all"
+        str(ROOT / "scripts" / "validate_retro_artifact.py"), "--repo-root", str(repo), "--all"
     )
 
     assert result.returncode != 0, result.stdout

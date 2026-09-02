@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import lesson_command_citation, recent_lessons_lib
+from scripts.lessons import lesson_command_citation, recent_lessons_lib
 from tests.dsl import Repo, run_at
 
 ROOT_PATH = Path(__file__).resolve().parents[2]
@@ -24,7 +24,7 @@ RETRO = Repo().adapter(
     },
 )
 
-BUILD_INDEX = "scripts/build_retro_lesson_selection_index.py"
+BUILD_INDEX = "scripts/lessons/build_retro_lesson_selection_index.py"
 REFRESH = "skills/public/retro/scripts/refresh_recent_lessons.py"
 
 
@@ -280,7 +280,7 @@ def test_stale_index_refusal_keeps_the_foreign_copy_warning_for_a_repo_that_owns
     through that copy is a loop rather than a fix.
     """
     repo = _staleable_repo(tmp_path, name="source-like")
-    builder = repo / "scripts" / "build_retro_lesson_selection_index.py"
+    builder = repo / "scripts" / "lessons" / "build_retro_lesson_selection_index.py"
     builder.parent.mkdir(parents=True, exist_ok=True)
     builder.write_text("# stand-in for this repo's own builder\n", encoding="utf-8")
     # BOTH conditions, matching `helper_provenance_lib.is_charness_source_tree`. The
@@ -298,7 +298,7 @@ def test_stale_index_refusal_keeps_the_foreign_copy_warning_for_a_repo_that_owns
     # not that tree: a relative `scripts/...` beside an absolute `--repo-root` would
     # run THIS checkout's builder against a different one.
     assert (
-        f"python3 {repo}/scripts/{lesson_command_citation.INDEX_SCRIPT_NAME} --repo-root {repo} --write"
+        f"python3 {repo}/{lesson_command_citation.INDEX_SCRIPT_RELATIVE} --repo-root {repo} --write"
         in message
     )
 
@@ -328,7 +328,9 @@ def test_the_generated_export_is_not_treated_as_a_competing_source_tree() -> Non
     discriminator has to agree with it.
     """
     export = Path(__file__).resolve().parents[2] / "plugins" / "charness"
-    if not (export / "scripts" / lesson_command_citation.INDEX_SCRIPT_NAME).is_file():
+    if not (
+        export / lesson_command_citation.INDEX_SCRIPT_RELATIVE
+    ).is_file():
         # The generated export is intentionally absent from some source checkouts;
         # absence must still not turn an arbitrary directory into a competing tree.
         assert not lesson_command_citation.repo_carries_index_builder(export)

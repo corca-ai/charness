@@ -14,8 +14,7 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from scripts import yaml_output
-from scripts.core import gate_report_emit
+from scripts import gate_report_emit, yaml_output
 from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
@@ -103,10 +102,10 @@ JSON_FLAG_MUST_BE_UNRECOGNIZED = (
     ("tools/check_public_doc_coupling.py", "--repo-root", "."),
     ("scripts/gates/check_skill_ownership_overlap.py", "--repo-root", "."),
     ("scripts/gates_support/dup_ratchet_edit_advisory.py", "--repo-root", ".", "--path", "README.md"),
-    ("scripts/init_lesson_ledger.py", "--repo-root", "."),
+    ("scripts/lessons/init_lesson_ledger.py", "--repo-root", "."),
     ("tools/inventory_skill_script_references.py", "--repo-root", ".", "--strict"),
     ("scripts/gates/measure_inventory_consumption_floor.py", "--repo-root", "."),
-    ("scripts/render_lesson_selection_preview.py", "--repo-root", ".", "--seed", "contract-probe"),
+    ("scripts/lessons/render_lesson_selection_preview.py", "--repo-root", ".", "--seed", "contract-probe"),
     ("skills/public/setup/scripts/seed_dependencies.py", "--repo-root", ".", "--tool-id", "ruff"),
     ("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", "."),
 )

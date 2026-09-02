@@ -298,7 +298,7 @@ def test_ideation_uses_declared_artifact_root_and_refuses_empty(tmp_path: Path) 
 
 
 def test_lesson_ledger_reads_retro_adapter_paths_and_optional_absence(tmp_path: Path) -> None:
-    gate = _load("scripts/check_lesson_ledger.py", "u2_check_lesson_ledger")
+    gate = _load("scripts/lessons/check_lesson_ledger.py", "u2_check_lesson_ledger")
     repo = install_committed_repo(
         tmp_path / "seeded",
         {

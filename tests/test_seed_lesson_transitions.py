@@ -8,9 +8,9 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import lesson_ledger_lib as ledger
-from scripts import lesson_score_outcome_lib as outcome_lib
-from scripts import seed_lesson_transitions as seeder
+from scripts.lessons import lesson_ledger_lib as ledger
+from scripts.lessons import lesson_score_outcome_lib as outcome_lib
+from scripts.lessons import seed_lesson_transitions as seeder
 from tests.quality_gates.support import run_script
 from tests.test_lesson_ledger import ROOT, _ledger, _retro, _validate
 
@@ -337,7 +337,7 @@ def test_cli_dry_run_and_write_roundtrip(tmp_path: Path) -> None:
     _retro(tmp_path, "source.md", "a")
     path = _empty_ledger(tmp_path)
     rehearsal = run_script(
-        str(ROOT / "scripts/seed_lesson_transitions.py"),
+        str(ROOT / "scripts/lessons/seed_lesson_transitions.py"),
         "--repo-root",
         str(tmp_path),
         "--dry-run",
@@ -349,7 +349,7 @@ def test_cli_dry_run_and_write_roundtrip(tmp_path: Path) -> None:
     assert json.loads(path.read_text(encoding="utf-8"))["transitions"] == []
 
     applied = run_script(
-        str(ROOT / "scripts/seed_lesson_transitions.py"),
+        str(ROOT / "scripts/lessons/seed_lesson_transitions.py"),
         "--repo-root",
         str(tmp_path),
     )
@@ -376,7 +376,7 @@ def test_receipt_carries_the_freeze_warning_and_its_context_on_every_path(tmp_pa
     _retro(tmp_path, "source.md", "a")
     _empty_ledger(tmp_path)
     rehearsal = run_script(
-        str(ROOT / "scripts/seed_lesson_transitions.py"),
+        str(ROOT / "scripts/lessons/seed_lesson_transitions.py"),
         "--repo-root",
         str(tmp_path),
         "--dry-run",
@@ -391,7 +391,7 @@ def test_receipt_carries_the_freeze_warning_and_its_context_on_every_path(tmp_pa
     assert planned["active_lesson_budget"] == ledger.ACTIVE_LESSON_BUDGET
 
     applied = run_script(
-        str(ROOT / "scripts/seed_lesson_transitions.py"),
+        str(ROOT / "scripts/lessons/seed_lesson_transitions.py"),
         "--repo-root",
         str(tmp_path),
     )
@@ -402,7 +402,7 @@ def test_receipt_carries_the_freeze_warning_and_its_context_on_every_path(tmp_pa
 
     # And the nothing-to-do receipt names why, rather than reporting an empty list.
     idle = run_script(
-        str(ROOT / "scripts/seed_lesson_transitions.py"),
+        str(ROOT / "scripts/lessons/seed_lesson_transitions.py"),
         "--repo-root",
         str(tmp_path),
     )
@@ -438,7 +438,7 @@ def test_two_concurrent_seeders_smoke_check_the_shared_lock(tmp_path: Path) -> N
 
     command = [
         sys.executable,
-        str(ROOT / "scripts/seed_lesson_transitions.py"),
+        str(ROOT / "scripts/lessons/seed_lesson_transitions.py"),
         "--repo-root",
         str(tmp_path),
     ]
@@ -463,7 +463,7 @@ def test_two_concurrent_seeders_smoke_check_the_shared_lock(tmp_path: Path) -> N
 def test_cli_refuses_a_missing_ledger_and_names_the_bootstrap(tmp_path: Path) -> None:
     _retro(tmp_path, "source.md", "a")
     command = run_script(
-        str(ROOT / "scripts/seed_lesson_transitions.py"),
+        str(ROOT / "scripts/lessons/seed_lesson_transitions.py"),
         "--repo-root",
         str(tmp_path),
         real_process=True,
@@ -474,7 +474,7 @@ def test_cli_refuses_a_missing_ledger_and_names_the_bootstrap(tmp_path: Path) ->
     # was repaired, so it could not fail on a revert. `tmp_path` has no `scripts/` of its
     # own -- the shape of a consuming repo -- and the bootstrap command must therefore
     # resolve to a path that reader can actually run, not to `scripts/...`.
-    assert "python3 scripts/init_lesson_ledger.py" not in command.stderr
+    assert "python3 scripts/lessons/init_lesson_ledger.py" not in command.stderr
     commands = [part for part in command.stderr.split("`") if part.startswith("python3 ")]
     assert commands, command.stderr
     named = Path(commands[0].split()[1])

@@ -238,6 +238,7 @@ def assert_quality_receipt(
 
 
 def write_executable(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
     path.chmod(0o755)
 
@@ -333,8 +334,8 @@ QUALITY_PYTHON_STUBS = (
     ("validate-packaging-committed", "validate_packaging_committed.py"),
     ("validate-debug-artifact", "validate_debug_artifact.py"),
     ("validate-debug-seam-index", "build_debug_seam_risk_index.py"),
-    ("validate-retro-lesson-index", "build_retro_lesson_selection_index.py"),
-    ("validate-lesson-ledger", "check_lesson_ledger.py"),
+    ("validate-retro-lesson-index", "lessons/build_retro_lesson_selection_index.py"),
+    ("validate-lesson-ledger", "lessons/check_lesson_ledger.py"),
     ("validate-quality-artifact", "validate_quality_artifact.py"),
     ("validate-attention-state-visibility", "validate_attention_state_visibility.py"),
     ("validate-inventory-consumption", "validate_inventory_consumption.py"),

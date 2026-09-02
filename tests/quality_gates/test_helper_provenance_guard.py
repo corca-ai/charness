@@ -194,7 +194,7 @@ def test_refusal_names_the_invoked_entry_point_not_the_library(
 ) -> None:
     """A guard called from a library must not tell the operator to run the library.
 
-    `scripts/recent_lessons_lib.py --repo-root .` is not a runnable command, so the
+    `scripts/lessons/recent_lessons_lib.py --repo-root .` is not a runnable command, so the
     remediation has to name what was actually invoked.
     """
     source = _source_tree(tmp_path, version="2.11.1")

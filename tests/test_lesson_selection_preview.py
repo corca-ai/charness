@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import lesson_selection_preview_lib as preview
+from scripts.lessons import lesson_selection_preview_lib as preview
 from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,7 +28,7 @@ def _build(seed: str = "stable-preview-seed") -> dict:
 def run_index_builder(*args: str):
     module = load_script_module(
         "build_retro_lesson_selection_index_under_test",
-        ROOT / "scripts" / "build_retro_lesson_selection_index.py",
+        ROOT / "scripts" / "lessons" / "build_retro_lesson_selection_index.py",
     )
     return run_loaded_script_main("build_retro_lesson_selection_index.py", module, *args)
 
@@ -120,7 +120,7 @@ def test_preview_requires_a_nonempty_seed() -> None:
 def test_preview_renderer_cli_emits_only_the_selection_projection(monkeypatch, capsys) -> None:
     renderer = load_script_module(
         "render_lesson_selection_preview_for_test",
-        ROOT / "scripts" / "render_lesson_selection_preview.py",
+        ROOT / "scripts" / "lessons" / "render_lesson_selection_preview.py",
     )
     rendered = {
         "items": [{"lesson_id": "a", "lesson": "useful lesson"}],
@@ -150,7 +150,8 @@ def test_preview_renderer_script_entrypoint_exits_successfully(monkeypatch, caps
     )
     with pytest.raises(SystemExit, match="0"):
         runpy.run_path(
-            str(ROOT / "scripts" / "render_lesson_selection_preview.py"), run_name="__main__"
+            str(ROOT / "scripts" / "lessons" / "render_lesson_selection_preview.py"),
+            run_name="__main__",
         )
     assert yaml.safe_load(capsys.readouterr().out)["kind"] == preview.KIND
 

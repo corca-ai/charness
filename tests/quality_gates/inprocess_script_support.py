@@ -321,17 +321,17 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_collect_commits",
         ROOT / "skills" / "public" / "announcement" / "scripts" / "collect_commits.py",
     ),
-    "scripts/seed_lesson_transitions.py": (
+    "scripts/lessons/seed_lesson_transitions.py": (
         "tests.quality_gates.support_seed_lesson_transitions",
-        ROOT / "scripts" / "seed_lesson_transitions.py",
+        ROOT / "scripts" / "lessons" / "seed_lesson_transitions.py",
     ),
     "skills/public/quality/references/find_inline_prompt_bulk.py": (
         "tests.quality_gates.support_find_inline_prompt_bulk",
         ROOT / "skills" / "public" / "quality" / "references" / "find_inline_prompt_bulk.py",
     ),
-    "scripts/build_retro_lesson_selection_index.py": (
+    "scripts/lessons/build_retro_lesson_selection_index.py": (
         "tests.quality_gates.support_build_retro_lesson_selection_index",
-        ROOT / "scripts" / "build_retro_lesson_selection_index.py",
+        ROOT / "scripts" / "lessons" / "build_retro_lesson_selection_index.py",
     ),
     "skills/public/achieve/scripts/upsert_goal.py": (
         "tests.quality_gates.support_upsert_goal",

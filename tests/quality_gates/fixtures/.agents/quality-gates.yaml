@@ -254,7 +254,7 @@ phases:
   - label: validate-retro-lesson-index
     command:
     - python3
-    - scripts/build_retro_lesson_selection_index.py
+    - scripts/lessons/build_retro_lesson_selection_index.py
     - --repo-root
     - $REPO_ROOT
     - --check
@@ -264,7 +264,7 @@ phases:
   - label: validate-lesson-ledger
     command:
     - python3
-    - scripts/check_lesson_ledger.py
+    - scripts/lessons/check_lesson_ledger.py
     - --repo-root
     - $REPO_ROOT
     lane: standard

@@ -4,7 +4,7 @@ A refusal that names a path the reader cannot run is worse than one that names
 nothing: the operator follows it, gets a second, unrelated error, and reads the tool
 as broken rather than the instruction as wrong. That happened for real -- the
 lesson-selection path opened from an installed plugin failed with an instruction naming
-``scripts/build_retro_lesson_selection_index.py``, which the consuming repo does not
+``scripts/lessons/build_retro_lesson_selection_index.py``, which the consuming repo does not
 have, and the recovery from THAT failure named
 ``skills/public/retro/scripts/refresh_recent_lessons.py``, which exists in neither the
 consuming repo nor the installed plugin (the exporter flattens it to
@@ -33,10 +33,42 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.core.helper_provenance_lib import is_charness_source_tree
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.core.helper_provenance_lib import is_charness_source_tree  # noqa: E402
 
 INDEX_SCRIPT_NAME = "build_retro_lesson_selection_index.py"
-INDEX_SCRIPT_RELATIVE = Path("scripts") / INDEX_SCRIPT_NAME
+INDEX_SCRIPT_RELATIVE = Path("scripts") / "lessons" / INDEX_SCRIPT_NAME
+LESSON_SCRIPT_NAMES = frozenset(
+    {
+        "build_retro_lesson_selection_index.py",
+        "check_lesson_ledger.py",
+        "init_lesson_ledger.py",
+        "lesson_command_citation.py",
+        "lesson_ledger_lib.py",
+        "lesson_ledger_writer_lib.py",
+        "lesson_score_outcome_lib.py",
+        "lesson_selection_preview_lib.py",
+        "recent_lesson_selection.py",
+        "recent_lessons_lib.py",
+        "record_lesson_lifecycle.py",
+        "record_lesson_score.py",
+        "render_lesson_selection_preview.py",
+        "seed_lesson_transitions.py",
+    }
+)
 # BOTH spellings, because a reference can resolve in one layout and not the other. The
 # source tree has `skills/public/retro/`; the export flattens it to `skills/retro/`.
 REFRESH_SCRIPT_RELATIVE = (
@@ -51,12 +83,24 @@ PLUGIN_DIR_TOKEN = "CHARNESS_PLUGIN_DIR"
 
 def script_tree_root() -> Path:
     """The tree this copy belongs to: repo root here, `plugins/<pkg>` when installed."""
-    return Path(__file__).resolve().parent.parent
+    script_path = Path(__file__).resolve()
+    marker = Path("scripts") / "adapter_lib.py"
+    for parent in script_path.parents:
+        if (parent / marker).is_file():
+            return parent
+    # Keep synthetic/partial trees on the existing no-candidate path. Real source and
+    # exported trees are marker-backed; this fallback lets callers report the named
+    # installed shape when neither tree carries the builder.
+    return script_path.parent.parent
 
 
 def repo_or_installed_command(repo_root: Path, script_name: str, *args: str) -> str:
     """Spell a repo-owned script for the tree the reader actually has."""
-    relative = Path("scripts") / script_name
+    relative = (
+        Path("scripts")
+        / ("lessons" if script_name in LESSON_SCRIPT_NAMES else "")
+        / script_name
+    )
     candidates: list[Path] = []
     if is_charness_source_tree(repo_root):
         candidates.append(repo_root / relative)

@@ -27,7 +27,7 @@ _retro_paths = _SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.retro_output_dir_lib"
 )
 _lesson_preview = _SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.lesson_selection_preview_lib"
+    __file__, "scripts.lessons.lesson_selection_preview_lib"
 )
 
 LESSON_SECTIONS = ("Current Focus", "Repeat Traps", "Next-Time Checklist")

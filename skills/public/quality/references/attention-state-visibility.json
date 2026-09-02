@@ -54,7 +54,7 @@
       ],
       "rationale": "Skipped debug artifacts are listed in the index payload with reasons and are not treated as clean seam-risk proof."
     },
-    "scripts/build_retro_lesson_selection_index.py": {
+    "scripts/lessons/build_retro_lesson_selection_index.py": {
       "states": [
         "not_configured"
       ],

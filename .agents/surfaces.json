@@ -691,8 +691,8 @@
       "source_paths": [
         "charness-artifacts/retro/*.md",
         "charness-artifacts/retro/*-packet.json",
-        "scripts/recent_lessons_lib.py",
-        "scripts/build_retro_lesson_selection_index.py",
+        "scripts/lessons/recent_lessons_lib.py",
+        "scripts/lessons/build_retro_lesson_selection_index.py",
         "scripts/retro_persistence_lib.py",
         "skills/public/retro/scripts/refresh_recent_lessons.py"
       ],
@@ -700,11 +700,11 @@
         "charness-artifacts/retro/lesson-selection-index.json"
       ],
       "sync_commands": [
-        "python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write"
+        "python3 scripts/lessons/build_retro_lesson_selection_index.py --repo-root . --write"
       ],
       "verify_commands": [
         "for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done",
-        "python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check"
+        "python3 scripts/lessons/build_retro_lesson_selection_index.py --repo-root . --check"
       ],
       "notes": [
         "The index is advisory source-linked selection evidence; it must not replace dated retro artifacts or make the ledger opaque; this repository declares no digest (`summary_path: null`, #774).",
@@ -718,20 +718,20 @@
         "charness-artifacts/retro/lesson-ledger.json",
         "scripts/lesson_ledger_lib.py",
         "scripts/lesson_selection_preview_lib.py",
-        "scripts/check_lesson_ledger.py",
+        "scripts/lessons/check_lesson_ledger.py",
         "scripts/record_lesson_score.py"
       ],
       "derived_paths": [
         "plugins/charness/scripts/lesson_ledger_lib.py",
         "plugins/charness/scripts/lesson_selection_preview_lib.py",
-        "plugins/charness/scripts/check_lesson_ledger.py",
+        "plugins/charness/scripts/lessons/check_lesson_ledger.py",
         "plugins/charness/scripts/record_lesson_score.py"
       ],
       "sync_commands": [
         "python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root ."
       ],
       "verify_commands": [
-        "python3 scripts/check_lesson_ledger.py --repo-root .",
+        "python3 scripts/lessons/check_lesson_ledger.py --repo-root .",
         "python3 -m pytest -q tests/test_lesson_ledger.py tests/test_lesson_selection_preview.py"
       ],
       "notes": [

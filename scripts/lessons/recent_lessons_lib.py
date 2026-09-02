@@ -11,14 +11,28 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from runtime_bootstrap import import_repo_module
-from scripts.lesson_command_citation import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.lessons.lesson_command_citation import (  # noqa: E402
     index_build_command,
     refresh_digest_command,
     stale_index_message,
 )
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
-_selection = import_repo_module(__file__, "scripts.recent_lesson_selection")
+_selection = import_repo_module(__file__, "scripts.lessons.recent_lesson_selection")
 DATE_IN_NAME = _selection.DATE_IN_NAME
 DATE_LINE = _selection.DATE_LINE
 LESSON_INDEX_FILENAME = _selection.LESSON_INDEX_FILENAME

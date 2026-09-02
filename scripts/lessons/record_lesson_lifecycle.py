@@ -10,12 +10,30 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script, require_repo_local_helper
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import (  # noqa: E402
+    import_repo_module,
+    repo_root_from_script,
+    require_repo_local_helper,
+)
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 ROOT = repo_root_from_script(__file__)
-_ledger = import_repo_module(__file__, "scripts.lesson_ledger_lib")
-_writer = import_repo_module(__file__, "scripts.lesson_ledger_writer_lib")
+_ledger = import_repo_module(__file__, "scripts.lessons.lesson_ledger_lib")
+_writer = import_repo_module(__file__, "scripts.lessons.lesson_ledger_writer_lib")
 
 
 def _nonblank(value: str, name: str) -> str:
