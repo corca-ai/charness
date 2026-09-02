@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -19,6 +17,7 @@ from .support import (
     make_fake_codex,
     pin_state_home,
     run_cli,
+    run_cli_path,
 )
 from .test_managed_install import load_charness_module
 
@@ -43,12 +42,14 @@ def test_charness_init_installs_codex_via_official_app_server(tmp_path: Path, se
     pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_claude.parent, fake_codex.parent, standalone_cli.parent)
 
-    result = subprocess.run(
-        [sys.executable, str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
+    result = run_cli_path(
+        standalone_cli,
+        "init",
+        "--home-root",
+        str(home_root),
+        "--repo-url",
+        str(source_repo),
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert result.returncode == 0, result.stderr

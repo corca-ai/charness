@@ -413,6 +413,9 @@ def test_receipt_carries_the_freeze_warning_and_its_context_on_every_path(tmp_pa
     assert "unrepairably" in nothing["freeze_note"]
 
 
+@pytest.mark.boundary_contract(
+    reason="the ledger lock smoke requires two real writer processes"
+)
 def test_two_concurrent_seeders_smoke_check_the_shared_lock(tmp_path: Path) -> None:
     """A SMOKE CHECK, deliberately weaker than it first claimed to be.
 

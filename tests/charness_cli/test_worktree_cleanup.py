@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import yaml
 
 from scripts import worktree_cleanup_lib as lib
 from tests.charness_cli.worktree_fixtures import copy_worktree_seed
+
+from .support import run_cli_path
 
 SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "worktree_cleanup.py"
 
@@ -126,19 +127,14 @@ def test_cleanup_stdout_carries_next_step_affordance(tmp_path: Path) -> None:
     feature_path = _add_feature_worktree(repo, tmp_path)
     _git("merge", "--no-ff", "feature", "-m", "merge feature", cwd=repo)
 
-    completed = subprocess.run(
-        [
-            sys.executable,
-            str(SCRIPT),
-            "--repo-root",
-            str(repo),
-            "--path",
-            str(feature_path),
-            "--delete-merged-branch",
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
+    completed = run_cli_path(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--path",
+        str(feature_path),
+        "--delete-merged-branch",
+        cwd=Path.cwd(),
     )
 
     assert completed.returncode == 0, completed.stderr

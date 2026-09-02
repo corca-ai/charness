@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import importlib.machinery
-import importlib.util
 import json
 import os
 import shutil
@@ -11,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from .support import pin_state_home
+from .support import load_cli_module, pin_state_home
 
 ROOT = Path(__file__).resolve().parents[2]
 BOOTSTRAP_RUNTIME_PATH = ROOT / "scripts" / "bootstrap_runtime.py"
@@ -20,12 +18,7 @@ INIT_SH_PATH = ROOT / "init.sh"
 
 
 def load_module(module_name: str, path: Path):
-    loader = importlib.machinery.SourceFileLoader(module_name, str(path))
-    spec = importlib.util.spec_from_loader(module_name, loader)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_cli_module(module_name, path)
 
 
 def copy_bootstrap_contract(repo_root: Path) -> None:
@@ -366,6 +359,9 @@ def test_resolve_repo_python_bootstraps_when_launcher_is_not_executable(
     assert module.resolve_repo_python(repo_root) == "/tmp/repaired/bin/python"
 
 
+@pytest.mark.boundary_contract(
+    reason="init.sh must bootstrap an exported checkout through a clean PATH"
+)
 def test_init_sh_falls_back_to_python_when_python3_is_missing(tmp_path: Path) -> None:
     fixture_repo = tmp_path / "fixture-repo"
     (fixture_repo / "scripts").mkdir(parents=True)

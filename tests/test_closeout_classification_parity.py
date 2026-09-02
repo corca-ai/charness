@@ -14,18 +14,19 @@ on the wired path"; shipping it unqueued would make it the seventh instance.
 from __future__ import annotations
 
 import re
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 import yaml
 
-from runtime_bootstrap import import_repo_module
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
 GATE_REL = "scripts/check_closeout_classification_parity.py"
-_gate = import_repo_module(__file__, "scripts.check_closeout_classification_parity")
+_gate = load_script_module(
+    "scripts.check_closeout_classification_parity",
+    ROOT / GATE_REL,
+)
 _RUN_QUALITY = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
 
 # The value the measurement runs assume. It is deliberately NOT a plausible
@@ -50,11 +51,12 @@ def _verdict(sites) -> str:
 
 
 def _run(*extra: str) -> tuple[int, dict]:
-    result = subprocess.run(
-        [sys.executable, str(ROOT / GATE_REL), "--repo-root", str(ROOT), *extra],
-        capture_output=True,
-        text=True,
-        cwd=ROOT,
+    result = run_loaded_script_main(
+        GATE_REL,
+        _gate,
+        "--repo-root",
+        str(ROOT),
+        *extra,
     )
     return result.returncode, yaml.safe_load(result.stdout)
 

@@ -15,6 +15,7 @@ from scripts.repo_file_listing import (
     unbind_subject_listing,
 )
 from tests import seed_cache
+from tests.script_main import load_script_module, run_loaded_script_main
 
 pytest_plugins = [
     "tests.repo_copy",
@@ -346,13 +347,14 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
     guard = _REPO_ROOT / "scripts" / "agent_browser_runtime_guard.py"
     if not guard.is_file():
         return
-    cleanup = [sys.executable, str(guard), "--repo-root", str(_REPO_ROOT), "--cleanup-orphans", "--execute"]
-    inspect = [sys.executable, str(guard), "--repo-root", str(_REPO_ROOT), "--assert-no-orphans"]
+    guard_module = load_script_module("agent_browser_runtime_guard_session_cleanup", guard)
+    cleanup = ("--repo-root", str(_REPO_ROOT), "--cleanup-orphans", "--execute")
+    inspect = ("--repo-root", str(_REPO_ROOT), "--assert-no-orphans")
     deadline = time.monotonic() + 10
     while True:
         try:
-            subprocess.run(cleanup, check=False, capture_output=True, timeout=30)
-            result = subprocess.run(inspect, check=False, capture_output=True, timeout=30)
+            run_loaded_script_main(str(guard), guard_module, *cleanup)
+            result = run_loaded_script_main(str(guard), guard_module, *inspect)
         except (OSError, subprocess.SubprocessError):
             return
         if result.returncode == 0 or time.monotonic() >= deadline:

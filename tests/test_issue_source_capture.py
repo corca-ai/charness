@@ -10,7 +10,6 @@ short because they are not where the danger lives.
 from __future__ import annotations
 
 import json
-import runpy
 import subprocess
 import sys
 from pathlib import Path
@@ -19,7 +18,6 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-import scripts.capture_issue_source as capture_module
 import scripts.issue_source_capture_lib as capture_lib
 from scripts.capture_issue_source import resolve_adapter_module, run_capture
 from scripts.issue_source_capture_lib import (
@@ -35,8 +33,12 @@ from scripts.issue_source_normalize_lib import (
     clause_inventory_identity,
     split_clauses,
 )
+from tests.script_main import load_script_module
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+capture_module = load_script_module(
+    "capture_issue_source_under_test", REPO_ROOT / "scripts" / "capture_issue_source.py"
+)
 GH_BACKEND = {"id": "gh", "binary": "gh", "commands": None}
 CAPABILITY = {
     "enumeration": "cursor",
@@ -410,12 +412,9 @@ def test_a_resolver_that_reports_no_capture_capability_refuses(
 
 
 def _run_main(argv: list[str], monkeypatch: pytest.MonkeyPatch) -> int:
-    """Drive the CLI entrypoint in-process, through the `__main__` guard."""
+    """Drive the CLI entrypoint in-process through the canonical script loader."""
     monkeypatch.setattr(sys, "argv", ["capture_issue_source.py", *argv])
-    with pytest.raises(SystemExit) as exit_info:
-        runpy.run_path(str(REPO_ROOT / "scripts" / "capture_issue_source.py"), run_name="__main__")
-    assert isinstance(exit_info.value.code, int)
-    return exit_info.value.code
+    return capture_module.main()
 
 
 def test_cli_resolves_a_relative_snapshot_against_the_repo_root_it_was_given(

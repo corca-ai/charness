@@ -21,10 +21,14 @@ from .support import (
     make_fake_codex,
     pin_state_home,
     run_cli,
+    run_cli_path,
 )
 from .test_managed_install import load_charness_module
 
 CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
+pytestmark = pytest.mark.boundary_contract(
+    reason="JSON-RPC refresh tests require a real child transport and deadline"
+)
 
 
 @pytest.mark.release_only
@@ -552,19 +556,13 @@ def test_installed_cli_catalog_list_loads_backend_from_managed_checkout(tmp_path
     env = os.environ.copy()
     env["HOME"] = str(home_root)
     pin_state_home(env, home_root)
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(installed_cli),
-            "catalog",
-            "list",
-            "--repo-root",
-            str(consumer_repo),
-        ],
+    result = run_cli_path(
+        installed_cli,
+        "catalog",
+        "list",
+        "--repo-root",
+        str(consumer_repo),
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
 

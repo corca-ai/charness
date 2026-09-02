@@ -3,16 +3,17 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
+from tests.quality_gates.support import run_script as run_repo_script
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def run_script(repo_root: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", "scripts/list_external_links.py", "--repo-root", str(repo_root)],
+    return run_repo_script(
+        "scripts/list_external_links.py",
+        "--repo-root",
+        str(repo_root),
         cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
     )
 
 

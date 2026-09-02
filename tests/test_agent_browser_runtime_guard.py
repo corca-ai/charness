@@ -1,18 +1,21 @@
 from __future__ import annotations
 
-import importlib.util
 import os
 import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 import scripts.doctor as doctor_module
-from tests.script_main import run_loaded_script_main
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_GUARD_PATH = ROOT / "scripts" / "agent_browser_runtime_guard.py"
+pytestmark = pytest.mark.boundary_contract(
+    reason="tests create real marker processes to verify checkout-owned process cleanup"
+)
 
 # Ownership scoping (#365) keys on the process working directory. The pure
 # inspect_runtime tests pass simulated cwd values so no real process is needed;
@@ -24,12 +27,7 @@ FOREIGN = "/other/neighbor"
 
 
 def load_runtime_guard_module():
-    spec = importlib.util.spec_from_file_location("agent_browser_runtime_guard", RUNTIME_GUARD_PATH)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_script_module("agent_browser_runtime_guard", RUNTIME_GUARD_PATH)
 
 
 def make_fake_agent_browser(bin_dir: Path) -> None:
@@ -145,12 +143,19 @@ def _run_guard(args: list[str], bin_dir: Path, repo_root: Path) -> subprocess.Co
     env["PATH"] = f"{bin_dir}:/usr/bin:/bin"
     env.setdefault("CHARNESS_AGENT_BROWSER_TERM_GRACE_SECONDS", "0.01")
     env.pop("CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS", None)
-    return subprocess.run(
-        [sys.executable, str(RUNTIME_GUARD_PATH), "--repo-root", str(repo_root), *args],
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_loaded_script_main(
+        str(RUNTIME_GUARD_PATH),
+        load_runtime_guard_module(),
+        "--repo-root",
+        str(repo_root),
+        *args,
         env=env,
+    )
+    return subprocess.CompletedProcess(
+        [str(RUNTIME_GUARD_PATH), "--repo-root", str(repo_root), *args],
+        result.returncode,
+        result.stdout,
+        result.stderr,
     )
 
 

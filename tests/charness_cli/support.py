@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import importlib.machinery
+import importlib.util
+import itertools
 import json
 import os
 import shutil
@@ -11,9 +14,11 @@ from pathlib import Path
 import pytest
 
 from tests.repo_copy import ROOT
+from tests.script_main import load_script_module, run_loaded_script_main
 
 CLI = ROOT / "charness"
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
+_CLI_INVOCATIONS = itertools.count()
 
 
 def pin_state_home(env: dict[str, str], home_root: Path) -> dict[str, str]:
@@ -34,25 +39,50 @@ def _isolated_cli_env(args: tuple[str, ...], env: dict[str, str] | None) -> dict
 
 
 def run_cli(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, str(CLI), *args],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=_isolated_cli_env(args, env),
+    return run_cli_path(CLI, *args, cwd=ROOT, env=env)
+
+
+def load_cli_module(module_name: str, script: Path) -> object:
+    if script.suffix:
+        return load_script_module(module_name, script)
+    loader = importlib.machinery.SourceFileLoader(module_name, str(script))
+    spec = importlib.util.spec_from_loader(module_name, loader, origin=str(script))
+    if spec is None:
+        raise ImportError(f"Unable to load {script}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    loader.exec_module(module)
+    return module
+
+
+def run_cli_path(
+    script: Path,
+    *args: str,
+    cwd: Path | None = None,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    """Run one Charness CLI copy through its real ``main`` entrypoint."""
+    module_name = f"tests.charness_cli.loaded_cli_{next(_CLI_INVOCATIONS)}"
+    module = load_cli_module(module_name, script)
+    previous_cwd = Path.cwd()
+    try:
+        os.chdir(cwd or script.parent)
+        result = run_loaded_script_main(
+            str(script),
+            module,
+            *args,
+            cli_error_names=("ValidationError", "ExportError", "CharnessError"),
+            env=_isolated_cli_env(args, env),
+        )
+    finally:
+        os.chdir(previous_cwd)
+    return subprocess.CompletedProcess(
+        [str(script), *args], result.returncode, result.stdout, result.stderr
     )
 
 
 def run_cli_in_repo(repo_root: Path, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, str(repo_root / "charness"), *args],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=_isolated_cli_env(args, env),
-    )
+    return run_cli_path(repo_root / "charness", *args, cwd=repo_root, env=env)
 
 
 def build_test_path(*bin_dirs: Path) -> str:

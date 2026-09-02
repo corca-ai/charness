@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 import builtins
-import importlib.machinery
-import importlib.util
 import json
 import os
 import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
-from .support import ROOT, run_cli
+from .support import ROOT, load_cli_module, run_cli
 
 PACKAGING_VERSION = json.loads(
     (ROOT / "packaging" / "charness.json").read_text(encoding="utf-8")
@@ -19,12 +18,7 @@ PACKAGING_VERSION = json.loads(
 
 
 def load_charness_module(module_name: str):
-    loader = importlib.machinery.SourceFileLoader(module_name, str(ROOT / "charness"))
-    spec = importlib.util.spec_from_loader(module_name, loader)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_cli_module(module_name, ROOT / "charness")
 
 
 def version_state_path(home_root: Path) -> Path:
@@ -47,6 +41,9 @@ def test_source_checkout_version_uses_embedded_packaging_manifest() -> None:
     assert yaml.safe_load(result.stdout) == {"version": PACKAGING_VERSION}
 
 
+@pytest.mark.boundary_contract(
+    reason="-S runs the standalone CLI in a clean interpreter without site packages"
+)
 def test_standalone_version_falls_back_to_valid_yaml_without_pyyaml() -> None:
     result = subprocess.run(
         [sys.executable, "-S", str(ROOT / "charness"), "version"],

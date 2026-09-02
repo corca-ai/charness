@@ -13,7 +13,6 @@ ratchet treats a fresh script spawn as a crossing that needs its own justificati
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import os
 import sys
@@ -25,8 +24,7 @@ import yaml
 
 from tests.charness_cli.test_managed_install import load_charness_module
 from tests.quality_gates.support import ROOT
-from tests.script_loader import load_script_module
-from tests.script_main import run_loaded_script_main
+from tests.script_main import load_script_module, run_loaded_script_main
 
 # ---------------------------------------------------------------------------
 # scripts/refresh_current_pointer.py -- the two "already correct" verdicts
@@ -146,10 +144,7 @@ def test_the_seed_budget_gate_still_finds_its_emitter_without_the_scripts_packag
     monkeypatch.delitem(sys.modules, "check_seed_fixture_budget_flat_layout", raising=False)
 
     path = ROOT / "scripts" / "check_seed_fixture_budget.py"
-    spec = importlib.util.spec_from_file_location("check_seed_fixture_budget_flat_layout", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    module = load_script_module("check_seed_fixture_budget_flat_layout", path)
 
     # Loaded is not enough: the name it bound has to be a live emitter, so the gate
     # can still produce the one YAML document its runner parses.

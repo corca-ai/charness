@@ -100,6 +100,9 @@ def test_the_walk_is_bounded_and_cannot_reach_an_unrelated_scripts_dir(tmp_path:
         shim_lib.locate("validate_skills.py", caller)
 
 
+@pytest.mark.boundary_contract(
+    reason="the shim must preserve the target's __main__ error and exit contract"
+)
 def test_a_failing_target_reports_its_own_verdict_not_a_traceback(tmp_path: Path) -> None:
     """Two targets put their ERROR HANDLING in the `__main__` guard.
 
@@ -136,6 +139,9 @@ def test_locate_raises_rather_than_returning_none_when_nothing_is_there(tmp_path
     "scripts_dir",
     [pytest.param(SHARED_SCRIPTS, id="authoring"), pytest.param(MIRROR_SCRIPTS, id="shipped")],
 )
+@pytest.mark.boundary_contract(
+    reason="shim help is a standalone __main__ dispatch smoke in both layouts"
+)
 def test_every_shim_answers_help_in_both_layouts(name: str, scripts_dir: Path) -> None:
     """The claim the old path could not make: one spelling, both trees.
 
@@ -153,6 +159,9 @@ def test_every_shim_answers_help_in_both_layouts(name: str, scripts_dir: Path) -
     assert "usage:" in result.stdout.lower()
 
 
+@pytest.mark.boundary_contract(
+    reason="the planner shim must run as the installed standalone command"
+)
 def test_the_planner_shim_degrades_gracefully_where_no_debug_artifact_exists(tmp_path: Path) -> None:
     """A consuming repo's shape: the command must run, not just resolve."""
     (tmp_path / ".agents").mkdir()

@@ -13,6 +13,8 @@ from scripts import worktree_doctor_checks as checks
 from scripts import worktree_doctor_lib as lib
 from tests.charness_cli.worktree_fixtures import copy_worktree_seed
 
+from .support import run_cli_path
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -251,11 +253,13 @@ def test_manifest_doctor_check_failure_surfaces_next_step(
     # actionable step now has to reach the operator through the command payload
     # itself, at the top level, as the manifest's own hint rather than the
     # generic fallback.
-    result = subprocess.run(
-        [sys.executable, str(ROOT / "charness"), "worktree", "doctor", "--repo-root", str(repo)],
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_cli_path(
+        ROOT / "charness",
+        "worktree",
+        "doctor",
+        "--repo-root",
+        str(repo),
+        cwd=ROOT,
     )
     emitted = yaml.safe_load(result.stdout)
     assert emitted["status"] == "fail"
@@ -300,11 +304,13 @@ def test_prepare_with_passing_commands_but_failing_doctor_surfaces_next_step(
     # Renderer deleted: the post-prepare doctor's next step must still surface at
     # the top level of the emitted prepare payload, not only nested under
     # `doctor`, so the operator reads it without digging.
-    result = subprocess.run(
-        [sys.executable, str(ROOT / "charness"), "worktree", "prepare", "--repo-root", str(repo)],
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_cli_path(
+        ROOT / "charness",
+        "worktree",
+        "prepare",
+        "--repo-root",
+        str(repo),
+        cwd=ROOT,
     )
     emitted = yaml.safe_load(result.stdout)
     assert emitted["status"] == "fail"
@@ -445,11 +451,13 @@ def test_prepare_no_manifest_emits_actionable_next_step(tmp_path: Path) -> None:
 
 def test_cli_doctor_subcommand_returns_yaml(tmp_path: Path) -> None:
     repo = _make_git_worktree(tmp_path)
-    result = subprocess.run(
-        [sys.executable, str(ROOT / "charness"), "worktree", "doctor", "--repo-root", str(repo)],
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_cli_path(
+        ROOT / "charness",
+        "worktree",
+        "doctor",
+        "--repo-root",
+        str(repo),
+        cwd=ROOT,
     )
     assert result.returncode == 0, result.stderr
     assert yaml.safe_load(result.stdout)["status"] == "pass"
@@ -471,19 +479,14 @@ def test_cli_prepare_subcommand_runs_command(tmp_path: Path) -> None:
             f"        - 'echo cli > {marker}'\n"
         ),
     )
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "charness"),
-            "worktree",
-            "prepare",
-            "--repo-root",
-            str(repo),
-            "--force",
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_cli_path(
+        ROOT / "charness",
+        "worktree",
+        "prepare",
+        "--repo-root",
+        str(repo),
+        "--force",
+        cwd=ROOT,
     )
     assert result.returncode == 0, result.stderr
     assert marker.read_text(encoding="utf-8").strip() == "cli"
@@ -504,20 +507,15 @@ def _install_path_shim(tmp_path: Path) -> tuple[Path, Path]:
 def test_cli_worktree_doctor_via_path_shim_routes_to_managed_checkout(tmp_path: Path) -> None:
     repo = _make_git_worktree(tmp_path)
     home, shim = _install_path_shim(tmp_path)
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(shim),
-            "worktree",
-            "doctor",
-            "--home-root",
-            str(home),
-            "--repo-root",
-            str(repo),
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_cli_path(
+        shim,
+        "worktree",
+        "doctor",
+        "--home-root",
+        str(home),
+        "--repo-root",
+        str(repo),
+        cwd=ROOT,
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -531,20 +529,15 @@ def test_cli_worktree_doctor_via_path_shim_missing_checkout_emits_actionable_err
     shim_dir.mkdir(parents=True)
     shim = shim_dir / "charness"
     shutil.copy2(ROOT / "charness", shim)
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(shim),
-            "worktree",
-            "doctor",
-            "--home-root",
-            str(home),
-            "--repo-root",
-            str(repo),
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_cli_path(
+        shim,
+        "worktree",
+        "doctor",
+        "--home-root",
+        str(home),
+        "--repo-root",
+        str(repo),
+        cwd=ROOT,
     )
     assert result.returncode != 0
     assert "charness init" in result.stderr
@@ -558,22 +551,17 @@ def test_cli_worktree_doctor_via_path_shim_explicit_checkout(tmp_path: Path) -> 
     shim_dir.mkdir(parents=True)
     shim = shim_dir / "charness"
     shutil.copy2(ROOT / "charness", shim)
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(shim),
-            "worktree",
-            "doctor",
-            "--home-root",
-            str(home),
-            "--charness-checkout",
-            str(ROOT),
-            "--repo-root",
-            str(repo),
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_cli_path(
+        shim,
+        "worktree",
+        "doctor",
+        "--home-root",
+        str(home),
+        "--charness-checkout",
+        str(ROOT),
+        "--repo-root",
+        str(repo),
+        cwd=ROOT,
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)

@@ -10,6 +10,8 @@ import pytest
 from scripts import worktree_exec_lib as lib
 from tests.charness_cli.worktree_fixtures import copy_worktree_seed
 
+from .support import run_cli_path
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -117,6 +119,9 @@ def test_exec_preflight_reads_one_topology_snapshot(
     assert calls == []
 
 
+@pytest.mark.boundary_contract(
+    reason="worktree exec must observe its child pytest process and external runtime outputs"
+)
 def test_cli_exec_in_linked_worktree_keeps_python_outputs_external(tmp_path: Path) -> None:
     repo = _make_primary(tmp_path)
     (repo / "module.py").write_text("VALUE = 7\n", encoding="utf-8")
@@ -132,20 +137,17 @@ def test_cli_exec_in_linked_worktree_keeps_python_outputs_external(tmp_path: Pat
     linked = tmp_path / "linked"
     _git("worktree", "add", "-b", "slice", str(linked), cwd=repo)
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "charness"),
-            "worktree",
-            "exec",
-            "--repo-root",
-            str(linked),
-            "--",
-            sys.executable,
-            "-m",
-            "pytest",
-            "-q",
-        ],
+    result = run_cli_path(
+        ROOT / "charness",
+        "worktree",
+        "exec",
+        "--repo-root",
+        str(linked),
+        "--",
+        sys.executable,
+        "-m",
+        "pytest",
+        "-q",
         cwd=ROOT,
         env={
             **os.environ,
@@ -153,9 +155,6 @@ def test_cli_exec_in_linked_worktree_keeps_python_outputs_external(tmp_path: Pat
             "PYTHONPYCACHEPREFIX": str(tmp_path / "launcher-pycache"),
             "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
         },
-        check=False,
-        capture_output=True,
-        text=True,
     )
 
     assert result.returncode == 0, result.stderr
@@ -167,31 +166,20 @@ def test_cli_exec_in_linked_worktree_keeps_python_outputs_external(tmp_path: Pat
 
 
 def test_cli_worktree_exec_help_and_primary_refusal(tmp_path: Path) -> None:
-    help_result = subprocess.run(
-        [sys.executable, str(ROOT / "charness"), "worktree", "exec", "--help"],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    help_result = run_cli_path(ROOT / "charness", "worktree", "exec", "--help", cwd=ROOT)
     assert help_result.returncode == 0, help_result.stderr
     assert "external runtime caches" in help_result.stdout
 
     repo = _make_primary(tmp_path)
-    refusal = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "charness"),
-            "worktree",
-            "exec",
-            "--repo-root",
-            str(repo),
-            "--",
-            "/bin/true",
-        ],
+    refusal = run_cli_path(
+        ROOT / "charness",
+        "worktree",
+        "exec",
+        "--repo-root",
+        str(repo),
+        "--",
+        "/bin/true",
         cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
     )
     assert refusal.returncode == 2
     assert "primary worktree" in refusal.stdout

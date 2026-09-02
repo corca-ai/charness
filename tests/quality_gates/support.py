@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import importlib
-import importlib.util
 import json
 import os
 import shutil
@@ -21,37 +19,24 @@ from tests.quality_gates.quality_runner_seed import (
 from tests.quality_gates.quality_runner_seed import (
     seeded_quality_runner_repo as seeded_quality_runner_repo,
 )
-from tests.script_main import run_loaded_script_main
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-EVAL_REGISTRY = importlib.import_module("scripts.eval_registry")
+EVAL_REGISTRY = load_script_module(
+    "tests.quality_gates.support_eval_registry", ROOT / "scripts" / "eval_registry.py"
+)
 
 ADAPTER_LIB_PATH = ROOT / "scripts" / "adapter_lib.py"
-ADAPTER_LIB_SPEC = importlib.util.spec_from_file_location("adapter_lib", ADAPTER_LIB_PATH)
-assert ADAPTER_LIB_SPEC is not None and ADAPTER_LIB_SPEC.loader is not None
-ADAPTER_LIB = importlib.util.module_from_spec(ADAPTER_LIB_SPEC)
-ADAPTER_LIB_SPEC.loader.exec_module(ADAPTER_LIB)
+ADAPTER_LIB = load_script_module("adapter_lib", ADAPTER_LIB_PATH)
 
 # The YAML emitter now lives beside the parser rather than inside it. Round-trip tests
 # need both halves, so both are loaded here instead of one re-exporting the other.
 ADAPTER_RENDER_LIB_PATH = ROOT / "scripts" / "adapter_yaml_render_lib.py"
-ADAPTER_RENDER_LIB_SPEC = importlib.util.spec_from_file_location(
-    "adapter_yaml_render_lib", ADAPTER_RENDER_LIB_PATH
-)
-assert ADAPTER_RENDER_LIB_SPEC is not None and ADAPTER_RENDER_LIB_SPEC.loader is not None
-ADAPTER_RENDER_LIB = importlib.util.module_from_spec(ADAPTER_RENDER_LIB_SPEC)
-ADAPTER_RENDER_LIB_SPEC.loader.exec_module(ADAPTER_RENDER_LIB)
+ADAPTER_RENDER_LIB = load_script_module("adapter_yaml_render_lib", ADAPTER_RENDER_LIB_PATH)
 
 
 def _load_script_module(module_name: str, module_path: Path):
-    spec = importlib.util.spec_from_file_location(module_name, module_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to load {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_script_module(module_name, module_path)
 
 
 SETUP_INSPECT_REPO = _load_script_module(

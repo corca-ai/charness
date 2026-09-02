@@ -1,29 +1,19 @@
 from __future__ import annotations
 
-import importlib.util
 import json
-import sys
 from pathlib import Path
 
 import yaml
 
 from tests.quality_gates.support import run_script
+from tests.script_main import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "skills" / "public" / "impl" / "scripts" / "survey_verification.py"
 
 
 def _load_module():
-    name = "impl_survey_verification"
-    cached = sys.modules.get(name)
-    if cached is not None:
-        return cached
-    spec = importlib.util.spec_from_file_location(name, SCRIPT)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_script_module("impl_survey_verification", SCRIPT)
 
 
 def test_parse_spec_refuses_bare_tool_name() -> None:

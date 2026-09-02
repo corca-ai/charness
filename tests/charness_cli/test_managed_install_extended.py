@@ -22,12 +22,16 @@ from .support import (
     make_support_sync_fixture,
     pin_state_home,
     run_cli,
+    run_cli_path,
 )
 from .test_managed_install import init_managed_home_from_repo
 from .tool_fakes import make_fake_nose
 
 
 @pytest.mark.release_only
+@pytest.mark.boundary_contract(
+    reason="the update-all target spawns git and external tool binaries whose process outputs are asserted"
+)
 def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -70,7 +74,16 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     update_result = subprocess.run(
-        [sys.executable, str(installed_cli), "update", "all", "--detail", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
+        [
+            sys.executable,
+            str(installed_cli),
+            "update",
+            "all",
+            "--detail",
+            "--home-root",
+            str(home_root),
+            "--skip-codex-cache-refresh",
+        ],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -153,12 +166,13 @@ def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path
     installed_cli.write_text(CLI.read_text(encoding="utf-8"), encoding="utf-8")
     installed_cli.chmod(0o755)
 
-    doctor_result = subprocess.run(
-        [sys.executable, str(installed_cli), "doctor", "--detail", "--home-root", str(home_root)],
+    doctor_result = run_cli_path(
+        installed_cli,
+        "doctor",
+        "--detail",
+        "--home-root",
+        str(home_root),
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert doctor_result.returncode == 0, doctor_result.stderr

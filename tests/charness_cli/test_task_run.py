@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 import shlex
 import signal
-import subprocess
 import time
 from pathlib import Path
 
@@ -16,6 +15,7 @@ from scripts import (
     task_run_runtime,
 )
 
+from .support import run_cli_path
 from .test_task_run_fixtures import _codex, _git, _repo, _run
 
 
@@ -277,28 +277,23 @@ def test_task_run_lane_shorthand_optouts_enable_diagnostics(tmp_path: Path, monk
 
 def test_task_run_cli_rejects_lane_and_explicit_identity_mix(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
-    result = subprocess.run(
-        [
-            os.fspath(Path(__file__).resolve().parents[2] / "charness"),
-            "task",
-            "run",
-            "--repo-root",
-            str(repo),
-            "--lane",
-            "ambiguous",
-            "--path",
-            str(tmp_path / "lane"),
-            "--scope",
-            "module.py",
-            "--prompt",
-            "noop",
-            "--effort",
-            "xhigh",
-        ],
+    result = run_cli_path(
+        Path(__file__).resolve().parents[2] / "charness",
+        "task",
+        "run",
+        "--repo-root",
+        str(repo),
+        "--lane",
+        "ambiguous",
+        "--path",
+        str(tmp_path / "lane"),
+        "--scope",
+        "module.py",
+        "--prompt",
+        "noop",
+        "--effort",
+        "xhigh",
         cwd=repo,
-        check=False,
-        capture_output=True,
-        text=True,
     )
 
     assert result.returncode == 1
@@ -308,12 +303,7 @@ def test_task_run_cli_rejects_lane_and_explicit_identity_mix(tmp_path: Path) -> 
 
 def test_task_run_cli_does_not_expose_host_override() -> None:
     cli = os.fspath(Path(__file__).resolve().parents[2] / "charness")
-    help_result = subprocess.run(
-        [cli, "task", "run", "--help"],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    help_result = run_cli_path(Path(cli), "task", "run", "--help")
     assert help_result.returncode == 0
     assert "--model" not in help_result.stdout
     assert "--codex" not in help_result.stdout
@@ -537,26 +527,24 @@ def test_task_run_dry_run_has_no_worktree_or_runtime_side_effect(tmp_path: Path)
 def test_task_run_cli_accepts_repo_root_after_subcommand(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     _codex(tmp_path, "printf 'VALUE = 3\\n' > module.py")
-    result = subprocess.run(
-        [
-            os.fspath(Path(__file__).resolve().parents[2] / "charness"),
-            "task",
-            "run",
-            "--repo-root",
-            str(repo),
-            "--path",
-            str(tmp_path / "lane"),
-            "--branch",
-            "lane/cli",
-            "--base",
-            "HEAD",
-            "--scope",
-            "module.py",
-            "--prompt",
-            "noop",
-            "--effort",
-            "medium",
-        ],
+    result = run_cli_path(
+        Path(__file__).resolve().parents[2] / "charness",
+        "task",
+        "run",
+        "--repo-root",
+        str(repo),
+        "--path",
+        str(tmp_path / "lane"),
+        "--branch",
+        "lane/cli",
+        "--base",
+        "HEAD",
+        "--scope",
+        "module.py",
+        "--prompt",
+        "noop",
+        "--effort",
+        "medium",
         cwd=repo,
         env={
             **os.environ,
@@ -564,9 +552,6 @@ def test_task_run_cli_accepts_repo_root_after_subcommand(tmp_path: Path) -> None
             "CHARNESS_STATE_HOME": str(tmp_path / "home" / ".local" / "state"),
             "PYTHONPYCACHEPREFIX": str(tmp_path / "launcher-pycache"),
         },
-        check=False,
-        capture_output=True,
-        text=True,
     )
 
     assert result.returncode == 0, result.stderr
@@ -581,9 +566,14 @@ def test_task_status_reads_the_external_result_store(tmp_path: Path) -> None:
 
     result_path = Path(payload["runtime_root"]) / "task-run" / "status-check" / "result.json"
     assert result_path.is_file()
-    status = subprocess.run(
-        [os.fspath(Path(__file__).resolve().parents[2] / "charness"), "task", "status", "--repo-root", str(repo), "status-check"],
-        cwd=repo, check=False, capture_output=True, text=True,
+    status = run_cli_path(
+        Path(__file__).resolve().parents[2] / "charness",
+        "task",
+        "status",
+        "--repo-root",
+        str(repo),
+        "status-check",
+        cwd=repo,
     )
     assert status.returncode == 0
     assert "status: completed" in status.stdout

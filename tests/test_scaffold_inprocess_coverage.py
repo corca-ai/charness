@@ -23,7 +23,6 @@ recurring lines now read as covered through the gate's own coverage probe.
 from __future__ import annotations
 
 import datetime as dt
-import importlib.util
 import inspect
 import io
 import os
@@ -32,6 +31,8 @@ from pathlib import Path
 
 import pytest
 import yaml
+
+from tests.script_main import load_script_module
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -58,11 +59,7 @@ def _scaffold_path(slug: str) -> Path:
 def _load_scaffold(slug: str):
     """Import the real scaffold module by path so coverage attributes its lines."""
     path = _scaffold_path(slug)
-    spec = importlib.util.spec_from_file_location(f"scaffold_{slug}_inproc", path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_script_module(f"scaffold_{slug}_inproc", path)
 
 
 def _expected_validator_names(module) -> tuple[str, ...]:

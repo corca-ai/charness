@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 import scripts.script_timeout as script_timeout
 from scripts.script_timeout import resolve_timeout_seconds
 
@@ -17,6 +19,9 @@ def test_resolve_timeout_seconds_ignores_invalid_env(monkeypatch) -> None:
     assert resolve_timeout_seconds(default_seconds=7) == 7
 
 
+@pytest.mark.boundary_contract(
+    reason="timeout behavior is the child process's signal and exit-code contract"
+)
 def test_arm_cli_timeout_exits_in_subprocess(tmp_path: Path) -> None:
     script = tmp_path / "slow.py"
     script.write_text(

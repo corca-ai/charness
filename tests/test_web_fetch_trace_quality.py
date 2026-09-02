@@ -1,24 +1,38 @@
 from __future__ import annotations
 
+import io
 import os
 import subprocess
 import sys
 import types
 from pathlib import Path
+from unittest.mock import patch
 
 import yaml
 
+from tests.script_main import load_script_module, run_loaded_script_main
+
 ROOT = Path(__file__).resolve().parents[1]
 WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
-sys.path.insert(0, str(WEB_FETCH_SCRIPTS))
 
-import acquire_public_url  # noqa: E402
-import acquire_public_url_policy as policy  # noqa: E402
-import classify_fetch_response  # noqa: E402
-import impersonated_fetch_stage  # noqa: E402
-import patchright_headless_stage  # noqa: E402
-from acquisition_trace_lib import AcquisitionAttempt  # noqa: E402
-from acquisition_trace_lib import payload as acquisition_payload  # noqa: E402
+acquire_public_url = load_script_module(
+    "acquire_public_url_trace_test", WEB_FETCH_SCRIPTS / "acquire_public_url.py"
+)
+policy = load_script_module(
+    "acquire_public_url_policy_trace_test", WEB_FETCH_SCRIPTS / "acquire_public_url_policy.py"
+)
+classify_fetch_response = load_script_module(
+    "classify_fetch_response_trace_test", WEB_FETCH_SCRIPTS / "classify_fetch_response.py"
+)
+impersonated_fetch_stage = load_script_module(
+    "impersonated_fetch_stage_trace_test", WEB_FETCH_SCRIPTS / "impersonated_fetch_stage.py"
+)
+patchright_headless_stage = load_script_module(
+    "patchright_headless_stage_trace_test", WEB_FETCH_SCRIPTS / "patchright_headless_stage.py"
+)
+_trace = load_script_module("acquisition_trace_lib_trace_test", WEB_FETCH_SCRIPTS / "acquisition_trace_lib.py")
+AcquisitionAttempt = _trace.AcquisitionAttempt
+acquisition_payload = _trace.payload
 
 
 def run_helper(
@@ -27,14 +41,19 @@ def run_helper(
     input_text: str | None = None,
     env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, script, *args],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        input=input_text,
-        env=env,
+    module = load_script_module(
+        f"web_fetch_trace_{Path(script).stem}", ROOT / script
+    )
+    previous_cwd = Path.cwd()
+    try:
+        os.chdir(ROOT)
+        stdin = patch("sys.stdin", io.StringIO(input_text)) if input_text is not None else patch.object(sys, "stdin", sys.stdin)
+        with stdin:
+            result = run_loaded_script_main(script, module, *args, env=env)
+    finally:
+        os.chdir(previous_cwd)
+    return subprocess.CompletedProcess(
+        [script, *args], result.returncode, result.stdout, result.stderr
     )
 
 

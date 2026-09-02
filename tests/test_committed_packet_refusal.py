@@ -3,18 +3,18 @@
 from __future__ import annotations
 
 import json
-import subprocess
-import sys
 from pathlib import Path
 
 import yaml
 
 from tests.quality_gates.repo_shapes import install_two_commit_repo
 from tests.quality_gates.support import run_script
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
 PREPARE = ROOT / "skills/public/critique/scripts/prepare_packet.py"
 RUN_REVIEW = ROOT / "skills/public/critique/scripts/run_review.py"
+RUN_REVIEW_MODULE = load_script_module("run_review_under_test", RUN_REVIEW)
 
 _PACKET_ADAPTER = (
     "version: 1\n"
@@ -48,6 +48,10 @@ def _committed_packet_repo(repo: Path) -> str:
         second_message="change with prior packet",
     )
     return "HEAD"
+
+
+def run_review(*args: str):
+    return run_loaded_script_main("run_review.py", RUN_REVIEW_MODULE, *args)
 
 
 def test_default_committed_packet_refusal_lists_omitted_paths_and_remedy(
@@ -92,27 +96,20 @@ def test_explicit_manifest_route_binds_prior_packet_without_self_inclusion(
         "reviewed.txt\ncharness-artifacts/critique/prior-packet.json\n",
         encoding="utf-8",
     )
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(RUN_REVIEW),
-            "--repo-root",
-            str(tmp_path),
-            "--scope",
-            "committed packet",
-            "--lens",
-            "operability",
-            "--attempt-id",
-            "manifest-route",
-            "--commit",
-            changed_ref,
-            "--reviewed-paths-file",
-            str(manifest.relative_to(tmp_path)),
-            "--dry-run",
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
+    result = run_review(
+        "--repo-root",
+        str(tmp_path),
+        "--scope",
+        "committed packet",
+        "--lens",
+        "operability",
+        "--attempt-id",
+        "manifest-route",
+        "--commit",
+        changed_ref,
+        "--reviewed-paths-file",
+        str(manifest.relative_to(tmp_path)),
+        "--dry-run",
     )
 
     payload = yaml.safe_load(result.stdout)
@@ -131,25 +128,18 @@ def test_explicit_manifest_route_binds_prior_packet_without_self_inclusion(
 
 def test_semantic_wrapper_preserves_default_refusal_details(tmp_path: Path) -> None:
     changed_ref = _committed_packet_repo(tmp_path)
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(RUN_REVIEW),
-            "--repo-root",
-            str(tmp_path),
-            "--scope",
-            "committed packet",
-            "--lens",
-            "operability",
-            "--attempt-id",
-            "wrapper-refusal",
-            "--commit",
-            changed_ref,
-            "--dry-run",
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
+    result = run_review(
+        "--repo-root",
+        str(tmp_path),
+        "--scope",
+        "committed packet",
+        "--lens",
+        "operability",
+        "--attempt-id",
+        "wrapper-refusal",
+        "--commit",
+        changed_ref,
+        "--dry-run",
     )
 
     payload = yaml.safe_load(result.stdout)

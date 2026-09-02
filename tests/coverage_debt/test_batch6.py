@@ -12,8 +12,6 @@ entry from the one under test.
 
 from __future__ import annotations
 
-import importlib
-import importlib.util
 import json
 import subprocess
 import sys
@@ -22,19 +20,20 @@ from pathlib import Path
 import pytest
 import yaml
 
-from runtime_bootstrap import import_repo_module
 from scripts import check_skill_cut_safety as csafety
-from tests.script_loader import load_script_module
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
 
-_ANCHOR = str(ROOT / "scripts" / "x.py")
-EXPORT_LIB = import_repo_module(_ANCHOR, "scripts.export_self_sufficiency_lib")
-
-if str(ROOT / "scripts") not in sys.path:
-    sys.path.insert(0, str(ROOT / "scripts"))
-ARTIFACT_PREFLIGHT = importlib.import_module("check_artifact_surface_preflight")
-SKILL_PREFLIGHT = importlib.import_module("check_skill_surface_preflight")
+EXPORT_LIB = load_script_module(
+    "scripts.export_self_sufficiency_lib", ROOT / "scripts" / "export_self_sufficiency_lib.py"
+)
+ARTIFACT_PREFLIGHT = load_script_module(
+    "check_artifact_surface_preflight", ROOT / "scripts" / "check_artifact_surface_preflight.py"
+)
+SKILL_PREFLIGHT = load_script_module(
+    "check_skill_surface_preflight", ROOT / "scripts" / "check_skill_surface_preflight.py"
+)
 
 NARRATIVE_GATE = load_script_module(
     "publish_release_narrative_gate_batch6",
@@ -48,13 +47,13 @@ QUALITY_RESOLVER_SCRIPT = ROOT / "skills/public/quality/scripts/resolve_quality_
 
 
 def _run(script: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, str(script), *args],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    module = load_script_module(f"batch6_{script.stem}", script)
+    result = run_loaded_script_main(
+        script.name,
+        module,
+        *args,
     )
+    return subprocess.CompletedProcess([str(script), *args], result.returncode, result.stdout, result.stderr)
 
 
 # --- check_artifact_surface_preflight: structured-stdout parsing ----------------

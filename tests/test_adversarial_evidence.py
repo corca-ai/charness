@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import json
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
 from scripts.adversarial_evidence import EvidenceValidationError, validate
+from tests.script_main import load_script_module, run_loaded_script_main
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -245,12 +244,15 @@ def test_external_source_without_repo_root_is_non_claim() -> None:
 )
 def test_evidence_led_scaffolds_bind_template_and_validator(skill: str, heading: str) -> None:
     script = REPO_ROOT / "skills" / "public" / skill / "scripts" / f"scaffold_{skill}_artifact.py"
-    result = subprocess.run(
-        [sys.executable, str(script), "--repo-root", str(REPO_ROOT), "--evidence-led", "--subject", "evidence-test"],
-        cwd=REPO_ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    module = load_script_module(f"scaffold_{skill}_artifact_under_test", script)
+    result = run_loaded_script_main(
+        script.name,
+        module,
+        "--repo-root",
+        str(REPO_ROOT),
+        "--evidence-led",
+        "--subject",
+        "evidence-test",
     )
     assert result.returncode == 0, result.stderr
     assert "evidence_mode: true" in result.stdout

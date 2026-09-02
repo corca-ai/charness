@@ -1,22 +1,19 @@
 from __future__ import annotations
 
 import re
-import subprocess
-import sys
 from pathlib import Path
+
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "skills" / "public" / "retro" / "scripts"
 
 
 def _help(script: str) -> str:
-    result = subprocess.run(
-        [sys.executable, str(SCRIPTS / script), "--help"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    module = load_script_module(f"retro_help_{Path(script).stem}", SCRIPTS / script)
+    result = run_loaded_script_main(script, module, "--help")
+    if result.returncode != 0:
+        raise AssertionError(result.stderr)
     return result.stdout
 
 

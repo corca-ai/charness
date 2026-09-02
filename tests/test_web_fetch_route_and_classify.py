@@ -1,36 +1,40 @@
 from __future__ import annotations
 
+import io
+import os
 import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import yaml
 
-from runtime_bootstrap import load_path_module
-from tests.quality_gates.support import run_script
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
-sys.path.insert(0, str(WEB_FETCH_SCRIPTS))
 
-_acquire_public_url_io_surface = load_path_module(
+_acquire_public_url_io_surface = load_script_module(
     "acquire_public_url_io_test_surface",
     ROOT / "skills" / "support" / "web-fetch" / "scripts" / "acquire_public_url_io.py",
 )
-_markdown_negotiation_stage_surface = load_path_module(
+_markdown_negotiation_stage_surface = load_script_module(
     "markdown_negotiation_stage_test_surface",
     ROOT / "skills" / "support" / "web-fetch" / "scripts" / "markdown_negotiation_stage.py",
 )
-_route_stage_catalog_surface = load_path_module(
+_route_stage_catalog_surface = load_script_module(
     "route_stage_catalog_test_surface",
     ROOT / "skills" / "support" / "web-fetch" / "scripts" / "route_stage_catalog.py",
 )
 
-import acquire_public_url as apu  # noqa: E402
-import classify_fetch_response as cfr  # noqa: E402
-import route_public_fetch_routes as rpf_routes  # noqa: E402
-from acquisition_trace_lib import AcquisitionAttempt  # noqa: E402
+apu = load_script_module("acquire_public_url_route_test", WEB_FETCH_SCRIPTS / "acquire_public_url.py")
+cfr = load_script_module("classify_fetch_response_route_test", WEB_FETCH_SCRIPTS / "classify_fetch_response.py")
+rpf_routes = load_script_module(
+    "route_public_fetch_routes_route_test", WEB_FETCH_SCRIPTS / "route_public_fetch_routes.py"
+)
+_trace = load_script_module("acquisition_trace_lib_route_test", WEB_FETCH_SCRIPTS / "acquisition_trace_lib.py")
+AcquisitionAttempt = _trace.AcquisitionAttempt
 
 
 def run_helper(
@@ -38,15 +42,19 @@ def run_helper(
     *args: str,
     input_text: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    if input_text is None:
-        return run_script(script, *args, cwd=ROOT)
-    return subprocess.run(
-        [sys.executable, script, *args],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        input=input_text,
+    module = load_script_module(
+        f"web_fetch_route_{Path(script).stem}", ROOT / script
+    )
+    previous_cwd = Path.cwd()
+    try:
+        os.chdir(ROOT)
+        stdin = patch("sys.stdin", io.StringIO(input_text)) if input_text is not None else patch.object(sys, "stdin", sys.stdin)
+        with stdin:
+            result = run_loaded_script_main(script, module, *args)
+    finally:
+        os.chdir(previous_cwd)
+    return subprocess.CompletedProcess(
+        [script, *args], result.returncode, result.stdout, result.stderr
     )
 
 

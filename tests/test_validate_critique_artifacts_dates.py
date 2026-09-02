@@ -1,7 +1,7 @@
 """In-process coverage for the critique-artifact date fallbacks
 (`scripts/validate_critique_artifacts.py`). ``tests/test_critique_artifact_validation.py``
-and the ``quality_gates`` critique suites drive this module ONLY via
-``subprocess.run(["python3", ...])``, so coverage.py never attributes lines
+and the ``quality_gates`` critique suites drive this module through the CLI helper,
+so this file attributes the date-parsing lines directly
 inside its date-parsing helpers. Both ``_date_from_filename`` and
 ``_date_from_body`` match a well-formed-looking date string with a regex and
 then hand it to ``date.fromisoformat``, which can still reject an
@@ -13,7 +13,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import scripts.validate_critique_artifacts as vca
+from tests.script_main import load_script_module
+
+ROOT = Path(__file__).resolve().parents[1]
+vca = load_script_module(
+    "validate_critique_artifacts_dates_under_test",
+    ROOT / "scripts" / "validate_critique_artifacts.py",
+)
 
 
 def test_date_from_filename_returns_none_on_regex_match_but_invalid_calendar_date() -> None:
@@ -72,12 +78,12 @@ def test_c6_worktree_scope_arms_the_cross_surface_tooth(tmp_path: Path, monkeypa
     flag-OFF, nothing-supplied case must still report `not-established` — the #408
     guard against "configured but handed nothing" reading as a clean miss.
     """
-    import importlib
-    import sys
-
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-    scope = importlib.import_module("critique_enforcement_scope")
-    probe = importlib.import_module("boundary_probe_lib")
+    scope = load_script_module(
+        "critique_enforcement_scope_dates_under_test", ROOT / "scripts" / "critique_enforcement_scope.py"
+    )
+    probe = load_script_module(
+        "boundary_probe_lib_dates_under_test", ROOT / "scripts" / "boundary_probe_lib.py"
+    )
 
     class _Adapter:
         @staticmethod
@@ -129,12 +135,12 @@ def test_an_empty_resolved_scope_is_not_established_even_with_the_flag(
     set comes from the worktree read. That is the shape `run-quality.sh` actually
     produces on a base-less host, which is why it is the one pinned.
     """
-    import importlib
-    import sys
-
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-    scope = importlib.import_module("critique_enforcement_scope")
-    probe = importlib.import_module("boundary_probe_lib")
+    scope = load_script_module(
+        "critique_enforcement_scope_dates_under_test", ROOT / "scripts" / "critique_enforcement_scope.py"
+    )
+    probe = load_script_module(
+        "boundary_probe_lib_dates_under_test", ROOT / "scripts" / "boundary_probe_lib.py"
+    )
 
     class _Adapter:
         @staticmethod
@@ -159,11 +165,9 @@ def test_the_empty_worktree_scope_note_states_its_real_cause() -> None:
     --changed-ref/--changed-path resolved") is FALSE for the new one: a ref and
     the worktree were both supplied, the probe ran, and the union was empty.
     """
-    import importlib
-    import sys
-
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-    scope = importlib.import_module("critique_enforcement_scope")
+    scope = load_script_module(
+        "critique_enforcement_scope_note_dates_under_test", ROOT / "scripts" / "critique_enforcement_scope.py"
+    )
 
     empty_with_worktree = scope.CrossSurfaceScope(
         scope.CROSS_SURFACE_NOT_ESTABLISHED, False, 0, True, None

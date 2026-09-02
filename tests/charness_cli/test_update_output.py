@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -16,6 +14,7 @@ from .support import (
     make_fake_npm_agent_browser,
     make_release_fixture,
     make_support_sync_fixture,
+    run_cli_path,
 )
 from .test_managed_install import init_managed_home_from_repo, load_charness_module
 from .tool_fakes import make_fake_nose
@@ -49,12 +48,14 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
 
     installed_cli = home_root / ".local" / "bin" / "charness"
-    update_result = subprocess.run(
-        [sys.executable, str(installed_cli), "update", "all", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
+    update_result = run_cli_path(
+        installed_cli,
+        "update",
+        "all",
+        "--home-root",
+        str(home_root),
+        "--skip-codex-cache-refresh",
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     # A successful updater command is not enough: blocking post-update doctor
@@ -84,21 +85,15 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     assert "STEP: refreshing tool doctor state" in update_result.stderr
     assert "FAILED: update incomplete" in update_result.stderr
 
-    detail_result = subprocess.run(
-        [
-            sys.executable,
-            str(installed_cli),
-            "update",
-            "all",
-            "--detail",
-            "--home-root",
-            str(home_root),
-            "--skip-codex-cache-refresh",
-        ],
+    detail_result = run_cli_path(
+        installed_cli,
+        "update",
+        "all",
+        "--detail",
+        "--home-root",
+        str(home_root),
+        "--skip-codex-cache-refresh",
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert detail_result.returncode == 1, detail_result.stderr

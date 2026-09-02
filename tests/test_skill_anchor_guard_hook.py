@@ -338,6 +338,9 @@ def test_guard_still_scans_when_rule_library_is_present(tmp_path: Path) -> None:
     assert guard_main(["--repo-root", str(repo)], stdin=_payload(str(clean))) == 0
 
 
+@pytest.mark.boundary_contract(
+    reason="the post-edit guard's exact exit code and stderr are the hook contract"
+)
 def test_guard_process_contract_exit_codes(tmp_path: Path) -> None:
     # The host invokes the guard as a subprocess with the hook payload on
     # stdin and branches on exit 0 (silent) vs 2 (surface findings) — that IS

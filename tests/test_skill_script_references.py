@@ -270,6 +270,9 @@ def test_a_reference_escaping_the_repo_does_not_raise(tmp_path: Path) -> None:
     assert rows[0]["found_at"] == outside.as_posix()
 
 
+@pytest.mark.boundary_contract(
+    reason="the documented command must exercise the script's __main__ dispatch"
+)
 def test_the_documented_command_actually_runs_as_a_command(tmp_path: Path) -> None:
     """Invoke the advisory the way its own docs tell a reader to invoke it.
 

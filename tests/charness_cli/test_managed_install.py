@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-import contextlib
-import importlib.machinery
-import importlib.util
-import io
 import json
 import os
 import subprocess
@@ -15,47 +11,38 @@ import yaml
 
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.repo_copy import clone_seeded_charness_repo
+from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import (
     CLI,
     build_test_path,
     clone_seeded_managed_home,
+    load_cli_module,
     make_fake_claude,
     make_release_fixture,
     pin_state_home,
     run_cli,
+    run_cli_path,
 )
 
 CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
 
 
 def load_charness_module(module_name: str = "charness_managed_install_under_test"):
-    loader = importlib.machinery.SourceFileLoader(module_name, str(CLI))
-    spec = importlib.util.spec_from_loader(module_name, loader)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_cli_module(module_name, CLI)
 
 
 def sync_root_plugin_manifests_inprocess(repo_root: Path) -> dict[str, object]:
     module_name = "sync_root_plugin_manifests_managed_install_under_test"
-    spec = importlib.util.spec_from_file_location(module_name, CLI.parent / "scripts" / "sync_root_plugin_manifests.py")
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    saved_argv = module.sys.argv
+    module = load_script_module(module_name, CLI.parent / "scripts" / "sync_root_plugin_manifests.py")
     saved_cwd = Path.cwd()
-    buffer = io.StringIO()
-    module.sys.argv = ["sync_root_plugin_manifests.py", "--repo-root", "."]
     try:
         os.chdir(repo_root)
-        with contextlib.redirect_stdout(buffer):
-            assert module.main() == 0
+        result = run_loaded_script_main("sync_root_plugin_manifests.py", module, "--repo-root", ".")
     finally:
         os.chdir(saved_cwd)
-        module.sys.argv = saved_argv
-    return yaml.safe_load(buffer.getvalue())
+    assert result.returncode == 0, result.stderr
+    return yaml.safe_load(result.stdout)
 
 
 def init_managed_home_from_repo(
@@ -74,12 +61,14 @@ def init_managed_home_from_repo(
     env["HOME"] = str(home_root)
     pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
-    init_result = subprocess.run(
-        [sys.executable, str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
+    init_result = run_cli_path(
+        standalone_cli,
+        "init",
+        "--home-root",
+        str(home_root),
+        "--repo-url",
+        str(source_repo),
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert init_result.returncode == 0, init_result.stderr
@@ -207,12 +196,15 @@ def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_p
     env["HOME"] = str(home_root)
     pin_state_home(env, home_root)
     env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
-    result = subprocess.run(
-        [sys.executable, str(standalone_cli), "init", "--detail", "--home-root", str(home_root), "--repo-url", str(source_repo)],
+    result = run_cli_path(
+        standalone_cli,
+        "init",
+        "--detail",
+        "--home-root",
+        str(home_root),
+        "--repo-url",
+        str(source_repo),
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert result.returncode == 0, result.stderr
@@ -228,6 +220,9 @@ def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_p
 
 
 @pytest.mark.release_only
+@pytest.mark.boundary_contract(
+    reason="init self-reexecutes the refreshed CLI and the test asserts the final process payload"
+)
 def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     embedded_root = tmp_path / "embedded"
     embedded_root.mkdir()
@@ -372,6 +367,9 @@ def test_charness_doctor_binds_claude_to_custom_home(tmp_path: Path, seeded_mana
 
 
 @pytest.mark.release_only
+@pytest.mark.boundary_contract(
+    reason="update self-reexecutes the refreshed CLI and the test asserts the final process payload"
+)
 def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -393,7 +391,14 @@ def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(t
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     update_result = subprocess.run(
-        [sys.executable, str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
+        [
+            sys.executable,
+            str(installed_cli),
+            "update",
+            "--home-root",
+            str(home_root),
+            "--skip-codex-cache-refresh",
+        ],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -428,12 +433,13 @@ def test_installed_cli_update_suppresses_pre_update_notice(
     env["CHARNESS_FORCE_UPDATE_CHECK"] = "1"
 
     installed_cli = home_root / ".local" / "bin" / "charness"
-    update_result = subprocess.run(
-        [sys.executable, str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
+    update_result = run_cli_path(
+        installed_cli,
+        "update",
+        "--home-root",
+        str(home_root),
+        "--skip-codex-cache-refresh",
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
 
@@ -454,12 +460,13 @@ def test_installed_cli_update_allows_untracked_files_in_managed_checkout(tmp_pat
     untracked.write_text("runtime cache placeholder\n", encoding="utf-8")
 
     installed_cli = home_root / ".local" / "bin" / "charness"
-    update_result = subprocess.run(
-        [sys.executable, str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
+    update_result = run_cli_path(
+        installed_cli,
+        "update",
+        "--home-root",
+        str(home_root),
+        "--skip-codex-cache-refresh",
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert update_result.returncode == 0, update_result.stderr
@@ -483,19 +490,13 @@ def test_installed_cli_update_skips_cwd_onboarding_by_default(tmp_path: Path, se
     (cwd_repo / ".agents" / "setup-adapter.yaml").write_text("- malformed\n", encoding="utf-8")
 
     installed_cli = home_root / ".local" / "bin" / "charness"
-    update_result = subprocess.run(
-        [
-            sys.executable,
-            str(installed_cli),
-            "update",
-            "--home-root",
-            str(home_root),
-            "--skip-codex-cache-refresh",
-        ],
+    update_result = run_cli_path(
+        installed_cli,
+        "update",
+        "--home-root",
+        str(home_root),
+        "--skip-codex-cache-refresh",
         cwd=cwd_repo,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
 
@@ -517,12 +518,13 @@ def test_installed_cli_update_blocks_tracked_changes_in_managed_checkout(tmp_pat
     readme_path.write_text(readme_path.read_text(encoding="utf-8") + "\ntracked edit\n", encoding="utf-8")
 
     installed_cli = home_root / ".local" / "bin" / "charness"
-    update_result = subprocess.run(
-        [sys.executable, str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
+    update_result = run_cli_path(
+        installed_cli,
+        "update",
+        "--home-root",
+        str(home_root),
+        "--skip-codex-cache-refresh",
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert update_result.returncode != 0
@@ -560,12 +562,13 @@ def test_installed_cli_update_reports_diverged_managed_checkout(tmp_path: Path, 
     )
 
     installed_cli = home_root / ".local" / "bin" / "charness"
-    update_result = subprocess.run(
-        [sys.executable, str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
+    update_result = run_cli_path(
+        installed_cli,
+        "update",
+        "--home-root",
+        str(home_root),
+        "--skip-codex-cache-refresh",
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     output = update_result.stderr + update_result.stdout
@@ -579,12 +582,13 @@ def test_installed_cli_update_reports_diverged_managed_checkout(tmp_path: Path, 
 def test_installed_cli_remembers_managed_checkout(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     installed_cli = home_root / ".local" / "bin" / "charness"
-    doctor_result = subprocess.run(
-        [sys.executable, str(installed_cli), "doctor", "--detail", "--home-root", str(home_root)],
+    doctor_result = run_cli_path(
+        installed_cli,
+        "doctor",
+        "--detail",
+        "--home-root",
+        str(home_root),
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert doctor_result.returncode == 0, doctor_result.stderr

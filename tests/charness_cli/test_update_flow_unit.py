@@ -1,19 +1,14 @@
 from __future__ import annotations
 
-import importlib.machinery
-import importlib.util
 from pathlib import Path
+
+from .support import load_cli_module
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 def load_charness_module(module_name: str = "charness_update_flow_unit_under_test"):
-    loader = importlib.machinery.SourceFileLoader(module_name, str(ROOT / "charness"))
-    spec = importlib.util.spec_from_loader(module_name, loader)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_cli_module(module_name, ROOT / "charness")
 
 
 def test_update_all_flow_reuses_precomputed_support_results(monkeypatch, tmp_path: Path) -> None:

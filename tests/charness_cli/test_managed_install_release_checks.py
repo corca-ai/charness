@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import json
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 import yaml
 
-from .support import CLI, clone_seeded_managed_home, make_release_fixture
+from .support import CLI, clone_seeded_managed_home, make_release_fixture, run_cli_path
 
 CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
 CURRENT_RELEASE_TAG = f"v{CURRENT_VERSION}"
@@ -26,12 +24,13 @@ def test_charness_version_can_refresh_latest_release_and_record_provenance(
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
 
     installed_cli = home_root / ".local" / "bin" / "charness"
-    version_result = subprocess.run(
-        [sys.executable, str(installed_cli), "version", "--home-root", str(home_root), "--check"],
+    version_result = run_cli_path(
+        installed_cli,
+        "version",
+        "--home-root",
+        str(home_root),
+        "--check",
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert version_result.returncode == 0, version_result.stderr
@@ -63,12 +62,13 @@ def test_charness_version_skips_notice_when_latest_release_matches_current(
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
 
     installed_cli = home_root / ".local" / "bin" / "charness"
-    version_result = subprocess.run(
-        [sys.executable, str(installed_cli), "version", "--home-root", str(home_root), "--check"],
+    version_result = run_cli_path(
+        installed_cli,
+        "version",
+        "--home-root",
+        str(home_root),
+        "--check",
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert version_result.returncode == 0, version_result.stderr
@@ -87,12 +87,13 @@ def test_charness_version_skips_notice_when_latest_release_is_older(
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
 
     installed_cli = home_root / ".local" / "bin" / "charness"
-    version_result = subprocess.run(
-        [sys.executable, str(installed_cli), "version", "--home-root", str(home_root), "--check"],
+    version_result = run_cli_path(
+        installed_cli,
+        "version",
+        "--home-root",
+        str(home_root),
+        "--check",
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert version_result.returncode == 0, version_result.stderr
@@ -112,12 +113,12 @@ def test_installed_cli_can_emit_auto_update_notice_for_newer_release(
     env["CHARNESS_FORCE_UPDATE_CHECK"] = "1"
 
     installed_cli = home_root / ".local" / "bin" / "charness"
-    doctor_result = subprocess.run(
-        [sys.executable, str(installed_cli), "doctor", "--home-root", str(home_root)],
+    doctor_result = run_cli_path(
+        installed_cli,
+        "doctor",
+        "--home-root",
+        str(home_root),
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert doctor_result.returncode == 0, doctor_result.stderr
@@ -133,12 +134,13 @@ def test_charness_version_preserves_prerelease_tag_in_update_notice(
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
 
     installed_cli = home_root / ".local" / "bin" / "charness"
-    version_result = subprocess.run(
-        [sys.executable, str(installed_cli), "version", "--home-root", str(home_root), "--check"],
+    version_result = run_cli_path(
+        installed_cli,
+        "version",
+        "--home-root",
+        str(home_root),
+        "--check",
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert version_result.returncode == 0, version_result.stderr
@@ -158,12 +160,13 @@ def test_charness_version_without_writable_state_cache_degrades_to_payload(tmp_p
     home_root.mkdir()
     (home_root / ".local").write_text("not a directory\n", encoding="utf-8")
 
-    version_result = subprocess.run(
-        [sys.executable, str(CLI), "version", "--verbose", "--home-root", str(home_root)],
+    version_result = run_cli_path(
+        CLI,
+        "version",
+        "--verbose",
+        "--home-root",
+        str(home_root),
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
     )
     assert version_result.returncode == 0, version_result.stderr
     payload = yaml.safe_load(version_result.stdout)

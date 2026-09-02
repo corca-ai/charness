@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import os
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -16,6 +14,7 @@ from .support import (
     make_fake_claude,
     pin_state_home,
     run_cli,
+    run_cli_path,
 )
 
 
@@ -74,12 +73,12 @@ def test_charness_doctor_next_action_without_source_uses_manual_guidance(tmp_pat
     installed_cli.write_text(CLI.read_text(encoding="utf-8"), encoding="utf-8")
     installed_cli.chmod(0o755)
 
-    doctor_result = subprocess.run(
-        [sys.executable, str(installed_cli), "doctor", "--home-root", str(home_root)],
+    doctor_result = run_cli_path(
+        installed_cli,
+        "doctor",
+        "--home-root",
+        str(home_root),
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert doctor_result.returncode == 0, doctor_result.stderr
@@ -101,20 +100,14 @@ def test_charness_doctor_can_surface_repo_onboarding_as_primary_next_action(
     consumer_repo.mkdir()
     (consumer_repo / "README.md").write_text("# Demo\n", encoding="utf-8")
 
-    doctor_result = subprocess.run(
-        [
-            sys.executable,
-            str(CLI),
-            "doctor",
-            "--home-root",
-            str(home_root),
-            "--target-repo-root",
-            str(consumer_repo),
-        ],
+    doctor_result = run_cli_path(
+        CLI,
+        "doctor",
+        "--home-root",
+        str(home_root),
+        "--target-repo-root",
+        str(consumer_repo),
         cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert doctor_result.returncode == 0, doctor_result.stderr

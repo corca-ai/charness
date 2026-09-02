@@ -1,7 +1,7 @@
 """Slice 2 / #338: gather X-Twitter exact-source fallback, source-identity proof,
 visible failed-attempt trace, and honest no-substitution stop.
 
-Direct unit tests of the identity-keyed exact-source logic plus subprocess
+Direct unit tests of the identity-keyed exact-source logic plus in-process
 integration of the acquire/gather CLIs with SEEDED responses (no live X fetch)."""
 from __future__ import annotations
 
@@ -12,13 +12,11 @@ from pathlib import Path
 import yaml
 
 from tests.quality_gates.support import run_script
+from tests.script_main import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
 WEBFETCH = ROOT / "skills" / "support" / "web-fetch" / "scripts"
-if str(WEBFETCH) not in sys.path:
-    sys.path.insert(0, str(WEBFETCH))
-
-import twitter_exact_source as tes  # noqa: E402
+tes = load_script_module("twitter_exact_source_under_test", WEBFETCH / "twitter_exact_source.py")
 
 SID = "1799999999999999999"
 STATUS_URL = f"https://x.com/acme/status/{SID}"
@@ -29,14 +27,10 @@ def test_module_bootstrap_inserts_script_dir_when_absent(monkeypatch) -> None:
     # Covers the guarded sys.path bootstrap: when the web-fetch scripts dir is NOT
     # already on sys.path, a fresh load inserts it (the branch the normal import
     # path never hits, since a sibling has already inserted the dir).
-    import importlib.util
-
     monkeypatch.setattr(sys, "path", [p for p in sys.path if p != str(WEBFETCH)])
     assert str(WEBFETCH) not in sys.path
-    spec = importlib.util.spec_from_file_location("tes_fresh_bootstrap", WEBFETCH / "twitter_exact_source.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    assert str(WEBFETCH) in sys.path  # the guarded insert executed
+    module = load_script_module("tes_fresh_bootstrap", WEBFETCH / "twitter_exact_source.py")
+    assert Path(module.classify.__globals__["__file__"]).resolve() == (WEBFETCH / "classify_fetch_response.py").resolve()
     assert module.parse_status_url(STATUS_URL) == {"handle": "acme", "status_id": SID}
 
 
@@ -276,13 +270,8 @@ def test_acquire_non_twitter_has_no_source_identity(tmp_path: Path) -> None:
 
 
 def _load_gather():
-    import importlib.util
-
     path = ROOT / "skills" / "public" / "gather" / "scripts" / "gather_public_url.py"
-    spec = importlib.util.spec_from_file_location("gather_public_url", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_script_module("gather_public_url_twitter_test", path)
 
 
 gpu = _load_gather()

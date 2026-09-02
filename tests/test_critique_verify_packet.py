@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import runpy
 import shlex
 import shutil
 import subprocess
@@ -15,6 +14,7 @@ import pytest
 import yaml
 
 from tests.quality_gates.support import run_script
+from tests.script_main import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
 PREPARE = ROOT / "skills/public/critique/scripts/prepare_packet.py"
@@ -157,7 +157,8 @@ def _run(command: str, *, cwd: Path) -> subprocess.CompletedProcess[str]:
 
 
 def _verifier_namespace() -> dict:
-    return runpy.run_path(str(VERIFY_ENTRYPOINTS[0]), run_name="critique_verify_packet_test")
+    module = load_script_module("critique_verify_packet_under_test", VERIFY_ENTRYPOINTS[0])
+    return vars(module)
 
 
 def test_missing_skill_runtime_bootstrap_raises_explicitly(monkeypatch) -> None:
@@ -276,22 +277,17 @@ def test_committed_ref_packet_refuses_mismatched_declared_paths(tmp_path: Path) 
 def test_verifier_refuses_null_hash_arguments_with_typed_reason(tmp_path: Path) -> None:
     _packet_path, receipt, _packet = _static_packet(tmp_path)
     binding = receipt["reviewed_input_binding"]
-    result = subprocess.run(
-        [
-            "python3",
-            str(VERIFY_ENTRYPOINTS[0]),
-            "--repo-root",
-            ".",
-            "--packet-path",
-            binding["packet_path"],
-            "--packet-sha256",
-            "null",
-            "--identity-sha256",
-            binding["identity_sha256"],
-        ],
+    result = run_script(
+        str(VERIFY_ENTRYPOINTS[0]),
+        "--repo-root",
+        ".",
+        "--packet-path",
+        binding["packet_path"],
+        "--packet-sha256",
+        "null",
+        "--identity-sha256",
+        binding["identity_sha256"],
         cwd=tmp_path,
-        capture_output=True,
-        text=True,
     )
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
@@ -314,40 +310,30 @@ def test_malformed_packet_and_expected_identity_mismatch_refuse(tmp_path: Path) 
     packet_path, receipt, packet = _static_packet(tmp_path)
     binding = receipt["reviewed_input_binding"]
     verifier = str(VERIFY_ENTRYPOINTS[0])
-    mismatch = subprocess.run(
-        [
-            "python3",
-            verifier,
-            "--repo-root",
-            ".",
-            "--packet-path",
-            binding["packet_path"],
-            "--packet-sha256",
-            binding["packet_sha256"],
-            "--identity-sha256",
-            "0" * 64,
-        ],
+    mismatch = run_script(
+        verifier,
+        "--repo-root",
+        ".",
+        "--packet-path",
+        binding["packet_path"],
+        "--packet-sha256",
+        binding["packet_sha256"],
+        "--identity-sha256",
+        "0" * 64,
         cwd=tmp_path,
-        capture_output=True,
-        text=True,
     )
     packet_path.write_bytes(b"not-json\n")
-    malformed = subprocess.run(
-        [
-            "python3",
-            verifier,
-            "--repo-root",
-            ".",
-            "--packet-path",
-            binding["packet_path"],
-            "--packet-sha256",
-            hashlib.sha256(b"not-json\n").hexdigest(),
-            "--identity-sha256",
-            packet["reviewed_input_identity"]["identity_sha256"],
-        ],
+    malformed = run_script(
+        verifier,
+        "--repo-root",
+        ".",
+        "--packet-path",
+        binding["packet_path"],
+        "--packet-sha256",
+        hashlib.sha256(b"not-json\n").hexdigest(),
+        "--identity-sha256",
+        packet["reviewed_input_identity"]["identity_sha256"],
         cwd=tmp_path,
-        capture_output=True,
-        text=True,
     )
 
     assert mismatch.returncode == 1
@@ -371,6 +357,9 @@ def test_receipt_and_markdown_carry_one_executable_command(tmp_path: Path) -> No
     assert result.returncode == 0, result.stderr
 
 
+@pytest.mark.boundary_contract(
+    reason="source and generated verifier copies must be self-sufficient in clean interpreters"
+)
 def test_source_and_generated_plugin_verifier_entrypoints_work(tmp_path: Path) -> None:
     _packet_path, receipt, _packet = _static_packet(tmp_path)
     binding = receipt["reviewed_input_binding"]

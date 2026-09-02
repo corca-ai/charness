@@ -10,7 +10,7 @@ import pytest
 import yaml
 
 from scripts import lesson_selection_preview_lib as preview
-from tests.script_loader import load_script_module
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
 RETRO_DIR = ROOT / "charness-artifacts/retro"
@@ -23,6 +23,14 @@ def _build(seed: str = "stable-preview-seed") -> dict:
         summary_path=RETRO_DIR / "recent-lessons.md",
         seed=seed,
     )
+
+
+def run_index_builder(*args: str):
+    module = load_script_module(
+        "build_retro_lesson_selection_index_under_test",
+        ROOT / "scripts" / "build_retro_lesson_selection_index.py",
+    )
+    return run_loaded_script_main("build_retro_lesson_selection_index.py", module, *args)
 
 
 def test_preview_is_flat_seeded_and_fills_the_empty_archive_slot_from_uncertainty() -> None:
@@ -197,7 +205,6 @@ def test_a_legacy_schema_consumer_can_preview_without_its_ledger_changing(tmp_pa
     """
     import json
     import shutil
-    import subprocess
 
     output_dir = tmp_path / "charness-artifacts" / "retro"
     (tmp_path / ".agents").mkdir(parents=True)
@@ -205,11 +212,12 @@ def test_a_legacy_schema_consumer_can_preview_without_its_ledger_changing(tmp_pa
         "version: 1\nrepo: consumer\n", encoding="utf-8"
     )
     shutil.copytree(RETRO_DIR, output_dir)
-    subprocess.run(
-        ["python3", str(ROOT / "scripts" / "build_retro_lesson_selection_index.py"),
-         "--repo-root", str(tmp_path), "--write"],
-        check=True, capture_output=True,
+    result = run_index_builder(
+        "--repo-root",
+        str(tmp_path),
+        "--write",
     )
+    assert result.returncode == 0, result.stderr
     ledger_path = output_dir / "lesson-ledger.json"
     current = json.loads(ledger_path.read_text(encoding="utf-8"))
     from tests.lesson_ledger_fixtures import legacy_v8_payload

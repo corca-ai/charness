@@ -10,7 +10,7 @@ import yaml
 
 from tests.repo_copy import clone_seeded_charness_repo
 
-from .support import make_fake_claude, pin_state_home
+from .support import make_fake_claude, pin_state_home, run_cli_path
 from .test_managed_install import sync_root_plugin_manifests_inprocess
 
 PROBE_SKILL_ID = "update-probe-extra"
@@ -33,12 +33,14 @@ def test_installed_cli_update_propagates_new_skill_into_exported_plugin_root(tmp
     pin_state_home(env, home_root)
     env["PATH"] = f"{fake_claude.parent}:{standalone_cli.parent}:{env.get('PATH', '')}"
 
-    init_result = subprocess.run(
-        ["python3", str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
+    init_result = run_cli_path(
+        standalone_cli,
+        "init",
+        "--home-root",
+        str(home_root),
+        "--repo-url",
+        str(source_repo),
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert init_result.returncode == 0, init_result.stderr
@@ -118,12 +120,12 @@ Use this only to confirm that a newly added public skill became visible after
     )
 
     installed_cli = home_root / ".local" / "bin" / "charness"
-    update_result = subprocess.run(
-        ["python3", str(installed_cli), "update", "--home-root", str(home_root)],
+    update_result = run_cli_path(
+        installed_cli,
+        "update",
+        "--home-root",
+        str(home_root),
         cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
     )
     assert update_result.returncode == 0, update_result.stderr

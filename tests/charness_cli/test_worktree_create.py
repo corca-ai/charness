@@ -10,6 +10,8 @@ import yaml
 from scripts import worktree_create_lib as lib
 from tests.charness_cli.worktree_fixtures import copy_worktree_seed
 
+from .support import run_cli_path
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -139,23 +141,18 @@ def test_failed_create_carries_the_next_step_affordance_to_stdout(tmp_path: Path
     repo = _make_primary(tmp_path)
     target = tmp_path / "conflicting"
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "charness"),
-            "worktree",
-            "create",
-            "--repo-root",
-            str(repo),
-            "--path",
-            str(target),
-            "--branch",
-            "conflicting",
-            "--detach",
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_cli_path(
+        ROOT / "charness",
+        "worktree",
+        "create",
+        "--repo-root",
+        str(repo),
+        "--path",
+        str(target),
+        "--branch",
+        "conflicting",
+        "--detach",
+        cwd=ROOT,
     )
 
     payload = yaml.safe_load(result.stdout)
@@ -165,33 +162,18 @@ def test_failed_create_carries_the_next_step_affordance_to_stdout(tmp_path: Path
 
 
 def test_cli_worktree_create_and_add_are_discoverable(tmp_path: Path) -> None:
-    result = subprocess.run(
-        [sys.executable, str(ROOT / "charness"), "worktree", "--help"],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli_path(ROOT / "charness", "worktree", "--help", cwd=ROOT)
 
     assert result.returncode == 0, result.stderr
     assert "create" in result.stdout
     assert "add" in result.stdout
 
-    create_help = subprocess.run(
-        [sys.executable, str(ROOT / "charness"), "worktree", "create", "--help"],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    create_help = run_cli_path(ROOT / "charness", "worktree", "create", "--help", cwd=ROOT)
     assert create_help.returncode == 0, create_help.stderr
     assert "--prepare" in create_help.stdout
     assert "--path" in create_help.stdout
 
-    add_help = subprocess.run(
-        [sys.executable, str(ROOT / "charness"), "worktree", "add", "--help"],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    add_help = run_cli_path(ROOT / "charness", "worktree", "add", "--help", cwd=ROOT)
     assert add_help.returncode == 0, add_help.stderr
     assert "--prepare" in add_help.stdout
     assert "--path" in add_help.stdout
@@ -201,24 +183,19 @@ def test_cli_worktree_create_json_executes_and_reports_doctor(tmp_path: Path) ->
     repo = _make_primary(tmp_path)
     target = tmp_path / "cli-feature"
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "charness"),
-            "worktree",
-            "create",
-            "--repo-root",
-            str(repo),
-            "--path",
-            str(target),
-            "--branch",
-            "cli-feature",
-            "--base",
-            "main",
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_cli_path(
+        ROOT / "charness",
+        "worktree",
+        "create",
+        "--repo-root",
+        str(repo),
+        "--path",
+        str(target),
+        "--branch",
+        "cli-feature",
+        "--base",
+        "main",
+        cwd=ROOT,
     )
 
     assert result.returncode == 0, result.stderr

@@ -749,6 +749,9 @@ def test_the_gate_is_wired_into_the_quality_runner() -> None:
     assert 'queue_selected "docs-graph" python3 scripts/check_docs_graph.py' in runner
 
 
+@pytest.mark.boundary_contract(
+    reason="the live docs gate must observe its external awiki binary invocation"
+)
 def test_the_live_repo_lane_runs_and_reports_a_real_verdict() -> None:
     # End-to-end against the real binary when it is installed. Skipped rather
     # than faked when absent -- a test that pretends to have run the tool is the

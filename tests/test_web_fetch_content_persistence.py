@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
-import sys
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
@@ -10,16 +10,23 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.script_main import load_script_module, run_loaded_script_main
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def run_helper(script: str, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, script, *args],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    module = load_script_module(
+        f"web_fetch_content_{Path(script).stem}", ROOT / script
+    )
+    previous_cwd = Path.cwd()
+    try:
+        os.chdir(ROOT)
+        result = run_loaded_script_main(script, module, *args)
+    finally:
+        os.chdir(previous_cwd)
+    return subprocess.CompletedProcess(
+        [script, *args], result.returncode, result.stdout, result.stderr
     )
 
 

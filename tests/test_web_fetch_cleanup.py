@@ -9,6 +9,7 @@ import time
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
 import yaml
 
 from tests.repo_copy import REPO_COPY_IGNORE
@@ -122,6 +123,9 @@ def test_acquire_attempts_close_on_render_failure(tmp_path: Path) -> None:
     assert render["error"]
 
 
+@pytest.mark.boundary_contract(
+    reason="an exported support layout must be self-sufficient in a clean interpreter"
+)
 def test_acquire_guard_unavailable_is_fail_visible(tmp_path: Path) -> None:
     # In a layout where the runtime guard is not reachable from repo_root/scripts
     # or any ancestor of the acquire helper, a skipped post-close proof must be
@@ -168,6 +172,9 @@ def test_acquire_guard_unavailable_is_fail_visible(tmp_path: Path) -> None:
     assert render["details"]["cleanup"] == "failed"
 
 
+@pytest.mark.boundary_contract(
+    reason="an exported gather layout must be self-sufficient in a clean interpreter"
+)
 def test_gather_reaches_acquire_and_bundled_guard_in_exported_layout(tmp_path: Path) -> None:
     # #302: from an exported/installed plugin layout (skills/gather + support/web-fetch
     # + bundled scripts/guard) and an arbitrary user repo_root, gather must reach the
@@ -330,6 +337,9 @@ def test_acquire_public_url_degrades_when_close_leaves_dirty_runtime(tmp_path: P
     assert "orphan daemon remains" in attempt["error"]
 
 
+@pytest.mark.boundary_contract(
+    reason="SIGTERM must reach the standalone fetch process during a browser stage"
+)
 def test_acquire_closes_session_on_sigterm_mid_render(tmp_path: Path) -> None:
     # #371 Tier 1: a host SIGTERM mid-browser-stage must still close the live
     # agent-browser session (best-effort) instead of leaking the daemon.

@@ -18,11 +18,15 @@ from pathlib import Path
 import pytest
 import yaml
 
-from runtime_bootstrap import import_repo_module
+from tests.script_main import load_script_module, run_loaded_script_main
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "scripts" / "measure_inventory_marker_rule.py"
-MEASURE = import_repo_module(SCRIPT, "scripts.measure_inventory_marker_rule")
+MEASURE = load_script_module("scripts.measure_inventory_marker_rule", SCRIPT)
+
+
+def run_measure(*args: str):
+    return run_loaded_script_main("measure_inventory_marker_rule.py", MEASURE, *args)
 
 
 @pytest.mark.parametrize(
@@ -122,10 +126,7 @@ def test_an_empty_corpus_exits_2_rather_than_reporting_a_clean_measurement(tmp_p
     empty = tmp_path / "empty"
     empty.mkdir()
 
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(tmp_path), "--corpus", str(empty)],
-        capture_output=True, text=True, check=False,
-    )
+    result = run_measure("--repo-root", str(tmp_path), "--corpus", str(empty))
 
     assert result.returncode == 2
     assert "not a measurement" in result.stderr
@@ -221,11 +222,13 @@ def test_the_emitted_payload_names_every_refused_artifact(tmp_path):
         + "## Findings\n\n- the scope of this pass was every checked-in skill package\n"
         + "- runtime hotspot ranking excludes samples older than fourteen days\n",
     )
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo),
-         "--corpus", str(repo / "charness-artifacts" / "quality"),
-         "--consumer-fields-path", str(fields)],
-        capture_output=True, text=True, check=False,
+    result = run_measure(
+        "--repo-root",
+        str(repo),
+        "--corpus",
+        str(repo / "charness-artifacts" / "quality"),
+        "--consumer-fields-path",
+        str(fields),
     )
 
     assert result.returncode == 0, result.stderr
@@ -245,11 +248,14 @@ def test_the_recursive_run_says_so_in_its_scope_field(tmp_path):
     and `recursive: true` alone is a flag the retired summary spelled out.
     """
     repo, fields = _corpus(tmp_path, _CITING + "## Findings\n\n- `scope` covered everything\n")
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo),
-         "--corpus", str(repo / "charness-artifacts" / "quality"),
-         "--consumer-fields-path", str(fields), "--recursive"],
-        capture_output=True, text=True, check=False,
+    result = run_measure(
+        "--repo-root",
+        str(repo),
+        "--corpus",
+        str(repo / "charness-artifacts" / "quality"),
+        "--consumer-fields-path",
+        str(fields),
+        "--recursive",
     )
 
     assert result.returncode == 0, result.stderr

@@ -28,6 +28,7 @@ from scripts.validate_critique_artifacts import (
 from scripts.validate_critique_artifacts import (
     validate_reviewed_input_binding,
 )
+from tests.quality_gates.support import run_script
 from tests.reviewed_input_identity_fixtures import (
     repo_seed as identity_repo_seed,
 )
@@ -355,10 +356,15 @@ packet_sections:
     content: smoke-body
 """)
     runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
-    result = subprocess.run(
-        ["python3", str(runner), "--repo-root", str(tmp_path),
-         "--prepared-for", "smoke", "--slug", "smoke"],
-        capture_output=True, text=True, check=False,
+    result = run_script(
+        str(runner),
+        "--repo-root",
+        str(tmp_path),
+        "--prepared-for",
+        "smoke",
+        "--slug",
+        "smoke",
+        cwd=tmp_path,
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)

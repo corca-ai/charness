@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 import yaml
 
-from runtime_bootstrap import import_repo_module
 from scripts.public_skill_dogfood_lib import build_matrix
 from scripts.public_skill_dogfood_validation_lib import (
     ValidationError,
@@ -16,22 +14,19 @@ from scripts.public_skill_dogfood_validation_lib import (
     validate_registry,
 )
 from scripts.public_skill_validation_lib import ValidationError as PolicyValidationError
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
-_suggest_public_skill_dogfood = import_repo_module(
+_suggest_public_skill_dogfood = load_script_module(
+    "suggest_public_skill_dogfood_under_test",
     ROOT / "scripts" / "suggest_public_skill_dogfood.py",
-    "scripts.suggest_public_skill_dogfood",
 )
 
 
 def run_suggest_public_skill_dogfood(monkeypatch, capsys, *args: str) -> SimpleNamespace:
-    monkeypatch.setattr(sys, "argv", ["suggest_public_skill_dogfood.py", *args])
-    try:
-        returncode = _suggest_public_skill_dogfood.main()
-    except SystemExit as exc:
-        returncode = exc.code if isinstance(exc.code, int) else 1
-    captured = capsys.readouterr()
-    return SimpleNamespace(returncode=returncode, stdout=captured.out, stderr=captured.err)
+    del monkeypatch, capsys
+    result = run_loaded_script_main("suggest_public_skill_dogfood.py", _suggest_public_skill_dogfood, *args)
+    return SimpleNamespace(returncode=result.returncode, stdout=result.stdout, stderr=result.stderr)
 
 
 def seed_repo(tmp_path: Path) -> Path:
@@ -269,24 +264,21 @@ def test_format_human_renders_registry_owned_case_without_warning(tmp_path: Path
 
 
 def test_quality_skill_cli_copy_uses_registry_without_warning(tmp_path: Path) -> None:
-    import subprocess
-
     repo = seed_repo(tmp_path)
     seed_skill(repo, "demo", description="Improve the demo skill first.")
     write_registry(repo, base_registry(repo))
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "skills" / "public" / "quality" / "scripts" / "suggest_public_skill_dogfood.py"),
-            "--repo-root",
-            str(repo),
-            "--skill-id",
-            "demo",
-            "--detail",
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
+    module = load_script_module(
+        "suggest_public_skill_dogfood_copy_under_test",
+        ROOT / "skills" / "public" / "quality" / "scripts" / "suggest_public_skill_dogfood.py",
+    )
+    result = run_loaded_script_main(
+        "suggest_public_skill_dogfood.py",
+        module,
+        "--repo-root",
+        str(repo),
+        "--skill-id",
+        "demo",
+        "--detail",
     )
     assert result.returncode == 0, result.stderr
     assert set(yaml.safe_load(result.stdout)["matrix"][0]) == {

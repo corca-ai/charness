@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import subprocess
-import sys
 from functools import cache
 from pathlib import Path
 
@@ -14,6 +13,38 @@ ROOT = Path(__file__).resolve().parents[2]
 # entry points are listed here. Other scripts retain their process contract
 # unless they are explicitly reviewed and added to this mapping.
 _IN_PROCESS_SCRIPT_MODULES = {
+    "charness": (
+        "tests.quality_gates.support_charness_cli",
+        ROOT / "charness",
+    ),
+    "scripts/check_docs_graph.py": (
+        "tests.quality_gates.support_check_docs_graph",
+        ROOT / "scripts" / "check_docs_graph.py",
+    ),
+    "scripts/check_skill_script_references.py": (
+        "tests.quality_gates.support_check_skill_script_references",
+        ROOT / "scripts" / "check_skill_script_references.py",
+    ),
+    "scripts/check_supply_chain_online.py": (
+        "tests.quality_gates.support_check_supply_chain_online",
+        ROOT / "scripts" / "check_supply_chain_online.py",
+    ),
+    "scripts/list_external_links.py": (
+        "tests.quality_gates.support_list_external_links",
+        ROOT / "scripts" / "list_external_links.py",
+    ),
+    "scripts/measure_inventory_marker_rule.py": (
+        "tests.quality_gates.support_measure_inventory_marker_rule",
+        ROOT / "scripts" / "measure_inventory_marker_rule.py",
+    ),
+    "scripts/post_edit_skill_anchor_guard.py": (
+        "tests.quality_gates.support_post_edit_skill_anchor_guard",
+        ROOT / "scripts" / "post_edit_skill_anchor_guard.py",
+    ),
+    "skills/public/critique/scripts/run_review.py": (
+        "tests.quality_gates.support_run_review",
+        ROOT / "skills" / "public" / "critique" / "scripts" / "run_review.py",
+    ),
     "scripts/check_mutation_score.py": (
         "tests.quality_gates.support_check_mutation_score",
         ROOT / "scripts" / "check_mutation_score.py",
@@ -572,7 +603,7 @@ def run_allowlisted_script(
     finally:
         os.chdir(previous_cwd)
     return subprocess.CompletedProcess(
-        [sys.executable, str(script), *args],
+        [str(script), *args],
         result.returncode,
         result.stdout,
         result.stderr,

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import json
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -20,6 +19,7 @@ from scripts.validate_adapters import (
     integration_schema_path,
     validate_adapter_integration_schema,
 )
+from tests.quality_gates.support import run_script as run_repo_script
 
 jsonschema = pytest.importorskip("jsonschema")
 
@@ -116,11 +116,10 @@ def test_cli_main_rejects_schema_violating_adapter(tmp_path: Path) -> None:
     # Pins the main() wiring: without the validate_adapter_integration_schema
     # call, this tmp repo passes the generic shape checks and exits 0.
     _seed_pair(tmp_path, "worktree", "version: 1\nrepo: tmp\nenabled: false\nnot_in_schema_342: true\n")
-    completed = subprocess.run(
-        [sys.executable, str(REPO_ROOT / "scripts" / "validate_adapters.py"), "--repo-root", str(tmp_path)],
-        capture_output=True,
-        text=True,
-        check=False,
+    completed = run_repo_script(
+        "scripts/validate_adapters.py",
+        "--repo-root",
+        str(tmp_path),
     )
     assert completed.returncode == 1
     assert "not_in_schema_342" in completed.stderr
@@ -142,11 +141,10 @@ packet_sections:
         encoding="utf-8",
     )
 
-    completed = subprocess.run(
-        [sys.executable, str(REPO_ROOT / "scripts" / "validate_adapters.py"), "--repo-root", str(tmp_path)],
-        capture_output=True,
-        text=True,
-        check=False,
+    completed = run_repo_script(
+        "scripts/validate_adapters.py",
+        "--repo-root",
+        str(tmp_path),
     )
 
     assert completed.returncode == 1
@@ -158,11 +156,10 @@ def test_cli_main_preserves_generic_floor_for_retro_adapter(tmp_path: Path) -> N
     agents.mkdir(parents=True)
     (agents / "retro-adapter.yaml").write_text("packet_sections: []\n", encoding="utf-8")
 
-    completed = subprocess.run(
-        [sys.executable, str(REPO_ROOT / "scripts" / "validate_adapters.py"), "--repo-root", str(tmp_path)],
-        capture_output=True,
-        text=True,
-        check=False,
+    completed = run_repo_script(
+        "scripts/validate_adapters.py",
+        "--repo-root",
+        str(tmp_path),
     )
 
     assert completed.returncode == 1

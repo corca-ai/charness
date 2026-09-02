@@ -20,8 +20,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.script_loader import load_script_module
-from tests.script_main import run_loaded_script_main
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
 

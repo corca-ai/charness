@@ -9,6 +9,8 @@ from pathlib import Path
 from scripts import worktree_audit_lib as lib
 from tests.charness_cli.worktree_fixtures import copy_worktree_seed
 
+from .support import run_cli_path
+
 SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "worktree_audit.py"
 
 
@@ -237,11 +239,11 @@ def test_audit_cli_emits_a_parseable_payload_unconditionally(tmp_path: Path) -> 
 
     repo = _make_primary(tmp_path)
 
-    completed = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo)],
-        capture_output=True,
-        text=True,
-        check=False,
+    completed = run_cli_path(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        cwd=Path.cwd(),
     )
 
     decoded = yaml.safe_load(completed.stdout)
@@ -253,11 +255,12 @@ def test_audit_cli_rejects_the_removed_json_flag(tmp_path: Path) -> None:
     """`--json` is gone repo-wide; asking for it is an argparse error, not a fallback."""
     repo = _make_primary(tmp_path)
 
-    completed = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--json"],
-        capture_output=True,
-        text=True,
-        check=False,
+    completed = run_cli_path(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--json",
+        cwd=Path.cwd(),
     )
 
     assert completed.returncode == 2

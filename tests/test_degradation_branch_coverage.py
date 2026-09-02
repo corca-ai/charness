@@ -27,18 +27,27 @@ from types import SimpleNamespace
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
+from tests.script_main import load_script_module, run_loaded_script_main
 
-import artifact_validator  # noqa: E402
-import check_doc_authoring_preflight as preflight  # noqa: E402
-import check_doc_links  # noqa: E402
+ROOT = Path(__file__).resolve().parents[1]
+artifact_validator = load_script_module(
+    "artifact_validator_degradation_test", ROOT / "scripts" / "artifact_validator.py"
+)
+preflight = load_script_module(
+    "check_doc_authoring_preflight_degradation_test",
+    ROOT / "scripts" / "check_doc_authoring_preflight.py",
+)
+check_doc_links = load_script_module(
+    "check_doc_links_degradation_test", ROOT / "scripts" / "check_doc_links.py"
+)
 
 # `from scripts import ...`, not a bare `import artifact_violation_report`: the
 # coverage mapper resolves a changed file to its tests by looking for the DOTTED
 # module path, and a bare top-level import is invisible to it -- the gate reported
 # this file as mapping to no standing test at all while these tests drove it.
-from scripts import artifact_violation_report  # noqa: E402
+artifact_violation_report = load_script_module(
+    "artifact_violation_report_degradation_test", ROOT / "scripts" / "artifact_violation_report.py"
+)
 
 # --- artifact_violation_report: the scaffold hint must degrade, never raise ----
 # The hint machinery moved out of `artifact_validator` when that file hit its length
@@ -75,17 +84,21 @@ def test_report_validation_failure_still_exits_one_without_a_hint(monkeypatch, c
     assert "hint:" not in err
 
 
-def test_scaffold_rel_puts_the_scripts_dir_on_sys_path(monkeypatch) -> None:
-    """The `sys.path.insert` guard is what makes the registry importable at all.
+def test_scaffold_rel_binds_the_registry_from_the_scripts_layout(monkeypatch) -> None:
+    """The hint function binds the registry from the scripts layout.
 
     Covers the branch by removing the entry first, so the insert line runs rather
-    than being skipped by the `not in sys.path` check.
+    than being skipped by the `not in sys.path` check. Assert the module that the
+    function bound, not the test process's ambient path.
     """
     scripts_dir = str(Path(artifact_violation_report.__file__).resolve().parent)
     monkeypatch.setattr(sys, "path", [p for p in sys.path if p != scripts_dir])
     # quality is a registered surface with a real scaffold in this layout.
     assert artifact_validator._scaffold_rel("quality") is not None
-    assert scripts_dir in sys.path
+    registry = artifact_validator._scaffold_rel.__globals__["importlib"].import_module(
+        "check_artifact_surface_preflight"
+    )
+    assert Path(registry.__file__).resolve() == Path(scripts_dir) / "check_artifact_surface_preflight.py"
 
 
 # --- check_changed_line_mutation_coverage: fingerprint degrades to "" ----------
@@ -253,7 +266,9 @@ def test_preflight_collects_an_unresolved_command_target_finding(tmp_path) -> No
 
 def test_quality_script_lookup_raises_when_absent(tmp_path) -> None:
     """A missing quality helper must name itself, not fail later as an AttributeError."""
-    import record_quality_runtime
+    record_quality_runtime = load_script_module(
+        "record_quality_runtime_degradation_test", ROOT / "scripts" / "record_quality_runtime.py"
+    )
 
     with pytest.raises(FileNotFoundError) as excinfo:
         record_quality_runtime._quality_script_path(tmp_path, "definitely_absent.py")
@@ -264,8 +279,10 @@ def test_quality_script_lookup_raises_when_absent(tmp_path) -> None:
 
 
 def _run(script: str, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", script, *args], cwd=ROOT, check=False, capture_output=True, text=True
+    module = load_script_module(f"degradation_{Path(script).stem}", ROOT / script)
+    result = run_loaded_script_main(script, module, *args)
+    return subprocess.CompletedProcess(
+        [script, *args], result.returncode, result.stdout, result.stderr
     )
 
 
@@ -350,10 +367,9 @@ def test_lesson_that_is_only_a_class_tag_is_skipped(tmp_path) -> None:
     Covers the post-strip `continue`: stripping the marker can empty the text, and
     an empty lesson would otherwise be indexed with a blank display string.
     """
-    import sys as _sys
-
-    _sys.path.insert(0, str(ROOT / "scripts"))
-    import recent_lessons_lib as lib
+    lib = load_script_module(
+        "recent_lessons_lib_degradation_test", ROOT / "scripts" / "recent_lessons_lib.py"
+    )
 
     retro_dir = tmp_path / "charness-artifacts" / "retro"
     retro_dir.mkdir(parents=True)
@@ -373,10 +389,9 @@ def test_lesson_that_is_only_a_class_tag_is_skipped(tmp_path) -> None:
 
 def test_source_tree_marker_with_unreadable_manifest_is_not_a_source_tree(tmp_path) -> None:
     """A corrupt marker must read as 'not a source tree', never crash the guard."""
-    import sys as _sys
-
-    _sys.path.insert(0, str(ROOT / "scripts"))
-    import helper_provenance_lib as lib
+    lib = load_script_module(
+        "helper_provenance_lib_degradation_test", ROOT / "scripts" / "helper_provenance_lib.py"
+    )
 
     root = tmp_path / "repo"
     root.mkdir()
@@ -388,10 +403,9 @@ def test_source_tree_marker_with_unreadable_manifest_is_not_a_source_tree(tmp_pa
 
 def test_charness_version_skips_unreadable_and_non_dict_manifests(tmp_path) -> None:
     """Version lookup walks past a corrupt or wrong-shaped manifest to the next one."""
-    import sys as _sys
-
-    _sys.path.insert(0, str(ROOT / "scripts"))
-    import helper_provenance_lib as lib
+    lib = load_script_module(
+        "helper_provenance_lib_version_degradation_test", ROOT / "scripts" / "helper_provenance_lib.py"
+    )
 
     root = tmp_path / "repo"
     root.mkdir()
@@ -418,10 +432,10 @@ def test_help_probe_readers_are_empty_when_the_probe_did_not_run_clean() -> None
     branch is what makes the walk descend exactly one level per round.
     """
     import subprocess as _sp
-    import sys as _sys
 
-    _sys.path.insert(0, str(ROOT / "scripts"))
-    import argparse_help_probe as probe_module
+    probe_module = load_script_module(
+        "argparse_help_probe_degradation_test", ROOT / "scripts" / "argparse_help_probe.py"
+    )
 
     probe = probe_module.HelpProbe(ROOT)
     unprimed = ("demo",)
@@ -440,10 +454,10 @@ def test_attention_scan_roots_include_skills_shared_when_present(tmp_path) -> No
 
     It sat outside every scan root, so its declarations could never be satisfied.
     """
-    import sys as _sys
-
-    _sys.path.insert(0, str(ROOT / "scripts"))
-    import validate_attention_state_visibility as gate
+    gate = load_script_module(
+        "validate_attention_state_visibility_degradation_test",
+        ROOT / "scripts" / "validate_attention_state_visibility.py",
+    )
 
     repo = tmp_path / "repo"
     for rel in ("skills/public", "skills/support"):
@@ -618,8 +632,6 @@ def test_a_scaffold_still_imports_when_the_repo_root_validator_is_absent(
     so a path filter would be undone by the module under test. A finder refuses the one
     name regardless of how the path is arranged, which is the local fact being asserted.
     """
-    import importlib.util
-
     class _Refuse:
         def find_spec(self, name, path=None, target=None):
             if name == validator_module:
@@ -635,9 +647,7 @@ def test_a_scaffold_still_imports_when_the_repo_root_validator_is_absent(
     monkeypatch.setattr(sys, "meta_path", [_Refuse(), *sys.meta_path])
 
     path = ROOT / scaffold_rel
-    spec = importlib.util.spec_from_file_location(f"probe_{attr}", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    module = load_script_module(f"probe_{attr}", path)
 
     assert getattr(module, attr) is None
     assert module._MAX_ARTIFACT_WORDS is None

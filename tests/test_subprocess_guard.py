@@ -22,6 +22,9 @@ from scripts.subprocess_guard import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
+pytestmark = pytest.mark.boundary_contract(
+    reason="these tests assert child exit, signal, timeout, and process-group behavior"
+)
 
 
 def test_run_process_returns_timeout_completed_process(tmp_path: Path) -> None:

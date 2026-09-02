@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import importlib.util
+import importlib
 import os
 import stat
 import subprocess
@@ -12,31 +12,24 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
+from tests.script_main import load_script_module
+
 ROOT = Path(__file__).resolve().parents[1]
 RENDER_SCRIPT = "skills/support/markdown-preview/scripts/render_markdown_preview.py"
 
 
 def _load_render_markdown_preview():
-    spec = importlib.util.spec_from_file_location(
-        "render_markdown_preview",
-        ROOT / RENDER_SCRIPT,
-    )
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_script_module("render_markdown_preview", ROOT / RENDER_SCRIPT)
 
 
 RENDER_MARKDOWN_PREVIEW = _load_render_markdown_preview()
 
 
 def _load_check_glow_backend():
-    spec = importlib.util.spec_from_file_location(
+    return load_script_module(
         "check_glow_backend",
         ROOT / "skills" / "support" / "markdown-preview" / "scripts" / "check_glow_backend.py",
     )
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 def run_helper_in_process(

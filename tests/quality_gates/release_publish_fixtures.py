@@ -6,18 +6,22 @@ import os
 import shlex
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 
 import yaml
 
 from scripts.yaml_output import render_yaml
+from tests.script_main import load_script_module, run_loaded_script_main
 
 from .issue_closeout_support import bug_closeout_body
 from .support import run_script
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PUBLISH_SCRIPT = "skills/public/release/scripts/publish_release.py"
+PUBLISH_CLI = load_script_module(
+    "release_publish_cli_fixture_under_test",
+    REPO_ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_cli.py",
+)
 REVIEW_GATE_SCRIPT = "skills/public/release/scripts/check_requested_review_gate.py"
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
@@ -244,13 +248,16 @@ def _simulate_partial_publish(
     (output_dir / "latest.md").write_text("# Release demo 0.0.0 (partial)\n", encoding="utf-8")
     # Resume revalidates generated surfaces after claims review. Keep this success
     # fixture synced; an absent tree belongs in a refusal fixture instead.
-    subprocess.run(
-        [sys.executable, str(repo / "scripts" / "sync_root_plugin_manifests.py"), "--repo-root", str(repo)],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    sync_script = repo / "scripts" / "sync_root_plugin_manifests.py"
+    previous_cwd = Path.cwd()
+    try:
+        os.chdir(repo)
+        load_script_module(
+            f"release_publish_sync_fixture_{abs(hash(repo))}",
+            sync_script,
+        )
+    finally:
+        os.chdir(previous_cwd)
     subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
     commit_args = ["git", "commit", "-m", "Release demo 0.0.0"]
     if closeout_body is not None:
@@ -272,13 +279,24 @@ def _release_env(tmp_path: Path, bin_dir: Path) -> dict[str, str]:
 
 
 def _run_publish(repo: Path, env: dict[str, str], *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", PUBLISH_SCRIPT, "--repo-root", str(repo), *args],
-        cwd=REPO_ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
+    previous_cwd = Path.cwd()
+    try:
+        os.chdir(REPO_ROOT)
+        result = run_loaded_script_main(
+            PUBLISH_SCRIPT,
+            PUBLISH_CLI,
+            "--repo-root",
+            str(repo),
+            *args,
+            env=env,
+        )
+    finally:
+        os.chdir(previous_cwd)
+    return subprocess.CompletedProcess(
+        [PUBLISH_SCRIPT, "--repo-root", str(repo), *args],
+        result.returncode,
+        result.stdout,
+        result.stderr,
     )
 
 
@@ -350,11 +368,10 @@ def claims_review_record(
 
 def _derive_review_scope(repo: Path, prepared_commit: str) -> tuple[dict[str, list[str]], dict]:
     """Partition the real prepared-commit delta, the way a reviewer would."""
-    import sys as _sys
     release_scripts = REPO_ROOT / "skills" / "public" / "release" / "scripts"
-    if str(release_scripts) not in _sys.path:
-        _sys.path.insert(0, str(release_scripts))
-    from claims_review_scope import changed_paths_sha256, partition  # noqa: PLC0415
+    claims_review_scope = load_script_module(
+        "claims_review_scope_fixture_under_test", release_scripts / "claims_review_scope.py"
+    )
 
     described = subprocess.run(
         ["git", "describe", "--tags", "--abbrev=0", f"{prepared_commit}^"],
@@ -371,12 +388,12 @@ def _derive_review_scope(repo: Path, prepared_commit: str) -> tuple[dict[str, li
         cwd=repo, capture_output=True, text=True,
     )
     paths = [line for line in listed.stdout.splitlines() if line]
-    split = partition(paths)
+    split = claims_review_scope.partition(paths)
     return (
         {"blocking_paths": split["blocking"], "advisory_paths": split["advisory"]},
         {
             "base_ref": f"refs/tags/{base}" if base else "<fixture-no-release-base>",
-            "changed_paths_sha256": changed_paths_sha256(paths),
+            "changed_paths_sha256": claims_review_scope.changed_paths_sha256(paths),
             "changed_path_count": len(set(paths)),
         },
     )

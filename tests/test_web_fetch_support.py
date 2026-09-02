@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import io
 import os
 import subprocess
 import sys
 from pathlib import Path
+from unittest.mock import patch
 
 import yaml
 
-from tests.quality_gates.support import run_script
+from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -18,16 +20,19 @@ def run_helper(
     input_text: str | None = None,
     env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    if input_text is None:
-        return run_script(script, *args, cwd=ROOT, env=env)
-    return subprocess.run(
-        [sys.executable, script, *args],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        input=input_text,
-        env=env,
+    module = load_script_module(
+        f"web_fetch_support_{Path(script).stem}", ROOT / script
+    )
+    previous_cwd = Path.cwd()
+    try:
+        os.chdir(ROOT)
+        stdin = patch("sys.stdin", io.StringIO(input_text)) if input_text is not None else patch.object(sys, "stdin", sys.stdin)
+        with stdin:
+            result = run_loaded_script_main(script, module, *args, env=env)
+    finally:
+        os.chdir(previous_cwd)
+    return subprocess.CompletedProcess(
+        [script, *args], result.returncode, result.stdout, result.stderr
     )
 
 

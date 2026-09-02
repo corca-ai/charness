@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import re
-import subprocess
-import sys
 from pathlib import Path
 
 import yaml
 
 from tests.quality_gates.support import run_script
-from tests.script_loader import load_script_module
+from tests.script_main import load_script_module, run_loaded_script_main
 
 PLAN = "skills/public/gather/scripts/gather_plan.py"
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,6 +14,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def load_plan_module():
     return load_script_module("gather_plan_under_test", ROOT / PLAN)
+
+
+def run_plan(module, *args: str):
+    return run_loaded_script_main("gather_plan.py", module, *args)
 
 
 def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
@@ -30,13 +32,7 @@ def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
 
 
 def test_gather_plan_help_describes_all_options() -> None:
-    result = subprocess.run(
-        [sys.executable, str(ROOT / PLAN), "--help"],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = run_plan(load_plan_module(), "--help")
 
     assert result.returncode == 0, result.stderr
     _assert_help_pairs(
@@ -161,18 +157,16 @@ def test_gather_plan_resolves_support_route_in_exported_plugin_layout(tmp_path: 
     user_repo = tmp_path / "user_repo"
     user_repo.mkdir()
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "plugins" / "charness" / "skills" / "gather" / "scripts" / "gather_plan.py"),
-            "--repo-root",
-            str(user_repo),
-            "--url",
-            "https://www.reddit.com/r/python/",
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
+    plugin_plan = load_script_module(
+        "exported_gather_plan_under_test",
+        ROOT / "plugins" / "charness" / "skills" / "gather" / "scripts" / "gather_plan.py",
+    )
+    result = run_plan(
+        plugin_plan,
+        "--repo-root",
+        str(user_repo),
+        "--url",
+        "https://www.reddit.com/r/python/",
     )
 
     assert result.returncode == 0, result.stderr
@@ -189,18 +183,16 @@ def test_exported_gather_plan_honors_github_adapter_mode(tmp_path: Path) -> None
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "plugins" / "charness" / "skills" / "gather" / "scripts" / "gather_plan.py"),
-            "--repo-root",
-            str(user_repo),
-            "--url",
-            "https://github.com/corca-ai/charness",
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
+    plugin_plan = load_script_module(
+        "exported_gather_plan_github_mode_under_test",
+        ROOT / "plugins" / "charness" / "skills" / "gather" / "scripts" / "gather_plan.py",
+    )
+    result = run_plan(
+        plugin_plan,
+        "--repo-root",
+        str(user_repo),
+        "--url",
+        "https://github.com/corca-ai/charness",
     )
 
     assert result.returncode == 0, result.stderr

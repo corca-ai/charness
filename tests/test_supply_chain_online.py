@@ -4,17 +4,16 @@ import json
 import subprocess
 from pathlib import Path
 
+from tests.quality_gates.support import run_script as run_repo_script
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def run_script(*args: str, cwd: Path, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", *args],
+    return run_repo_script(
+        *args,
         cwd=cwd,
         env=env,
-        check=False,
-        capture_output=True,
-        text=True,
     )
 
 
