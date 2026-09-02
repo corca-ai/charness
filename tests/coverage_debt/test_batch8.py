@@ -24,8 +24,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import git_checkout as checkout
-from scripts import git_status_snapshot as status_snapshot
+from scripts.core import git_checkout as checkout
+from scripts.core import git_status_snapshot as status_snapshot
 from scripts import (
     lesson_ledger_lib,
     setup_inspect_quality_lib,

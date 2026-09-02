@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import check_artifact_surface_preflight as preflight
+from scripts.gates import check_artifact_surface_preflight as preflight
 from scripts.plugin_export import export_plugin as export_plugin_module
 from skills.public.critique.scripts.verification_retry import build_retry_key
 from tests.script_main import load_script_module, run_loaded_script_main

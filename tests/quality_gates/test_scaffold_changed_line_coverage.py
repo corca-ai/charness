@@ -32,7 +32,9 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-from scripts.mutation.mutation_changed_files_lib import classify_changed_line_scope_gap  # noqa: E402
+from scripts.mutation.mutation_changed_files_lib import (  # noqa: E402
+    classify_changed_line_scope_gap,  # noqa: E402
+)
 from scripts.mutation.mutation_sampling_lib import (  # noqa: E402
     load_file_statement_lines,
     run_test_coverage,
@@ -61,7 +63,7 @@ def _validator_fallback_lines() -> list[int]:
             in_fallback = True
         if in_fallback and stripped.startswith("repo_local = repo_root /"):
             fallback.append(index)
-        elif in_fallback and stripped.startswith("return f\"python3 scripts/"):
+        elif in_fallback and stripped.startswith('return f"python3 scripts/'):
             fallback.append(index)
             break
     assert fallback, "could not locate shared validator fallback lines"
