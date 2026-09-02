@@ -29,7 +29,7 @@ _version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.adapters.adapter_version_verdict"
 )
 
-_scripts_retro_persistence_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.retro_persistence_lib")
+_scripts_retro_persistence_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.retro_debug.retro_persistence_lib")
 persist_retro_artifact = _scripts_retro_persistence_lib_module.persist_retro_artifact
 
 emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml

@@ -20,7 +20,7 @@ packet_sections:
   - id: rework-issues-by-causing-skill
     title: Rework Issues By Causing Skill
     content_kind: script
-    command: "python3 scripts/render_retro_section_rework_issues.py --repo corca-ai/charness"
+    command: "python3 scripts/retro_debug/render_retro_section_rework_issues.py --repo corca-ai/charness"
 auto_session_trigger_surfaces:
   - materialized-plugin-export
   - integrations-and-control-plane

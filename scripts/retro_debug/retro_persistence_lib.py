@@ -27,7 +27,22 @@ from scripts.lessons.recent_lessons_lib import (
     build_indexed_recent_lessons,
     lesson_selection_index_path,
 )
-from scripts.runtime_bootstrap import load_path_module
+
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import load_path_module  # noqa: E402
 
 _PERSISTED_LINE_PATTERN = re.compile(r"^Persisted:.*$", re.MULTILINE)
 _GOAL_FIELD_PATTERN = re.compile(r"^Goal:[ \t]*(?P<value>[^\r\n]*)$")

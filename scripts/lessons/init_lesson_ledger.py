@@ -46,7 +46,7 @@ ROOT = repo_root_from_script(__file__)
 _ledger = import_repo_module(__file__, "scripts.lessons.lesson_ledger_lib")
 _writer = import_repo_module(__file__, "scripts.lessons.lesson_ledger_writer_lib")
 _commands = import_repo_module(__file__, "scripts.lessons.lesson_command_citation")
-_retro = import_repo_module(__file__, "scripts.retro_output_dir_lib")
+_retro = import_repo_module(__file__, "scripts.retro_debug.retro_output_dir_lib")
 
 
 def seed_lesson_next_step(repo_root: Path) -> str:

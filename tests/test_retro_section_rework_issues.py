@@ -4,7 +4,7 @@ import subprocess
 from datetime import date
 from pathlib import Path
 
-from scripts import render_retro_section_rework_issues as producer_module
+from scripts.retro_debug import render_retro_section_rework_issues as producer_module
 
 
 def test_parse_causing_skills_variants() -> None:

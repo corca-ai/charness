@@ -493,9 +493,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_render_cli_reference",
         ROOT / "scripts" / "gates_support" / "render_cli_reference.py",
     ),
-    "scripts/build_debug_seam_risk_index.py": (
+    "scripts/retro_debug/build_debug_seam_risk_index.py": (
         "tests.quality_gates.support_build_debug_seam_risk_index",
-        ROOT / "scripts" / "build_debug_seam_risk_index.py",
+        ROOT / "scripts" / "retro_debug" / "build_debug_seam_risk_index.py",
     ),
     "skills/public/narrative/scripts/review_adapter.py": (
         "tests.quality_gates.support_narrative_review_adapter",

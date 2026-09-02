@@ -12,8 +12,8 @@ from runtime_bootstrap import import_repo_module
 
 from .support import ROOT, run_script
 
-SCRIPT = "scripts/build_debug_seam_risk_index.py"
-_build_debug_seam_risk_index = import_repo_module(ROOT / SCRIPT, "scripts.build_debug_seam_risk_index")
+SCRIPT = "scripts/retro_debug/build_debug_seam_risk_index.py"
+_build_debug_seam_risk_index = import_repo_module(ROOT / SCRIPT, "scripts.retro_debug.build_debug_seam_risk_index")
 
 
 def run_debug_seam_risk_index(monkeypatch, capsys, *args: str) -> SimpleNamespace:

@@ -24,7 +24,7 @@ def _load_skill_runtime_bootstrap():
 _SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _retro_paths = _SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.retro_output_dir_lib"
+    __file__, "scripts.retro_debug.retro_output_dir_lib"
 )
 _lesson_preview = _SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.lessons.lesson_selection_preview_lib"

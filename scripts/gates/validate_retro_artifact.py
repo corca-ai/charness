@@ -38,7 +38,7 @@ _skill_markdown_lib = import_repo_module(__file__, "scripts.core.skill_markdown_
 # literal written here. `retro_artifact_prefix` is used below; `DEFAULT_RETRO_ARTIFACT_PREFIX`
 # is re-exported for tests that assert the fallback identity. An earlier comment claimed
 # `plan_retro_run` and `seed_retro_memory` needed one import site for these.
-_output_dir = import_repo_module(__file__, "scripts.retro_output_dir_lib")
+_output_dir = import_repo_module(__file__, "scripts.retro_debug.retro_output_dir_lib")
 DEFAULT_RETRO_ARTIFACT_PREFIX = _output_dir.DEFAULT_RETRO_ARTIFACT_PREFIX
 retro_artifact_prefix = _output_dir.retro_artifact_prefix
 _adapter_version_verdict = import_repo_module(__file__, "scripts.adapters.adapter_version_verdict")
@@ -54,7 +54,7 @@ def _unspeakable_adapter_version(repo_root: Path) -> str | None:
     )
 # Which dated floors are switched on for this repo. Re-exported because
 # `plan_retro_run` loads this module.
-_floor_scope = import_repo_module(__file__, "scripts.retro_floor_scope_lib")
+_floor_scope = import_repo_module(__file__, "scripts.retro_debug.retro_floor_scope_lib")
 NEXT_IMPROVEMENTS_HEADING = _floor_scope.NEXT_IMPROVEMENTS_HEADING
 RECURRENCE_LINEAGE_RULE_DATE = _floor_scope.RECURRENCE_LINEAGE_RULE_DATE
 PERSISTED_FORM_RULE_DATE = _floor_scope.PERSISTED_FORM_RULE_DATE

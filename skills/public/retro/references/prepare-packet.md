@@ -28,7 +28,7 @@ same producer contract as critique packets. For committed-diff retros, pass
 
 ## Rework Issues Section
 
-`<plugin-dir>/scripts/render_retro_section_rework_issues.py` is the section producer that
+`<plugin-dir>/scripts/retro_debug/render_retro_section_rework_issues.py` is the section producer that
 turns the operator's rework filings into evidence. It runs
 `gh issue list --label rework --state all` for the repository, keeps the issues
 created inside the window (default: the last 30 days, or `--since YYYY-MM-DD`),

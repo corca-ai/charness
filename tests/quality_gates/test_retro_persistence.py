@@ -22,8 +22,8 @@ _persist_retro_artifact = import_repo_module(
     "skills.public.retro.scripts.persist_retro_artifact",
 )
 _persistence_lib = import_repo_module(
-    ROOT / "scripts" / "retro_persistence_lib.py",
-    "scripts.retro_persistence_lib",
+    ROOT / "scripts" / "retro_debug" / "retro_persistence_lib.py",
+    "scripts.retro_debug.retro_persistence_lib",
 )
 _scaffold_retro_artifact = import_repo_module(
     ROOT / "skills" / "public" / "retro" / "scripts" / "scaffold_retro_artifact.py",

@@ -22,7 +22,7 @@ def _load(name: str, relpath: str) -> ModuleType:
 
 
 RETRO_OUTPUT_DIR_LIB = _load(
-    "retro_output_dir_lib_plan_test", "scripts/retro_output_dir_lib.py"
+    "retro_output_dir_lib_plan_test", "scripts/retro_debug/retro_output_dir_lib.py"
 )
 
 

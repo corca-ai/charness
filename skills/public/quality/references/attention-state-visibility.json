@@ -42,7 +42,7 @@
       ],
       "rationale": "`not_configured` is one arm of the three-state probe vocabulary `evaluated | not-configured | not-established` that replaced a bare `triggered: false`. It is a DETERMINED verdict, not a silent pass: the repo deliberately declared no cross-surface probe, so the objective override is off by design while the always-brief and closeout presence floors still apply. It is distinguishable from `not-established` (configured but not evaluable) on two channels at once — the state word and the exit byte, since undetermined exits 3 and this exits 0. The state leads the payload and `triggered` is emitted ONLY when the probe actually ran, so a caller polling one key cannot read 'could not tell' as 'no'."
     },
-    "scripts/build_debug_seam_risk_index.py": {
+    "scripts/retro_debug/build_debug_seam_risk_index.py": {
       "states": [
         "skipped"
       ],
@@ -411,7 +411,7 @@
       ],
       "rationale": "A path with no baseline at the compared ref cannot be examined, and that is NOT the same answer as \"no name was removed\". On a shallow clone, a fresh clone, or a consumer repo with no remote-tracking base ref, EVERY path lands there -- and a silent pass would read as a clean check that never ran. Uncomparable paths are counted per path with the reason, printed on the success line, and carried under `uncomparable` in the YAML payload, so a consumer can distinguish an empty result from an unexamined one. The sibling parity harness lost exactly this distinction in its first draft and had it restored by a bounded review."
     },
-    "scripts/retro_persistence_lib.py": {
+    "scripts/retro_debug/retro_persistence_lib.py": {
       "states": [
         "skipped"
       ],

@@ -203,7 +203,7 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
         _packet(
             "seam-risk-index",
             "deterministic index builder when available; agent judges whether a risk interrupt is warranted",
-            **_relative_script_command(repo_root, "scripts/build_debug_seam_risk_index.py", "--repo-root", "."),
+            **_relative_script_command(repo_root, "scripts/retro_debug/build_debug_seam_risk_index.py", "--repo-root", "."),
         ),
     ]
 

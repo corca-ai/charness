@@ -169,11 +169,12 @@ def test_the_seed_budget_gate_still_finds_its_emitter_without_the_scripts_packag
 
 
 # ---------------------------------------------------------------------------
-# scripts/build_debug_seam_risk_index.py -- the --check and bare verdicts
+# scripts/retro_debug/build_debug_seam_risk_index.py -- the --check and bare verdicts
 # ---------------------------------------------------------------------------
 
 DEBUG_SEAM_INDEX = load_script_module(
-    "build_debug_seam_risk_index_batch5", ROOT / "scripts" / "build_debug_seam_risk_index.py"
+    "build_debug_seam_risk_index_batch5",
+    ROOT / "scripts" / "retro_debug" / "build_debug_seam_risk_index.py",
 )
 
 

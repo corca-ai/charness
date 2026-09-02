@@ -23,7 +23,7 @@ _version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.adapters.adapter_version_verdict"
 )
 _persistence = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.debug_persistence_lib"
+    __file__, "scripts.retro_debug.debug_persistence_lib"
 )
 _scaffold = SKILL_RUNTIME.load_local_skill_module(__file__, "scaffold_debug_artifact")
 emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml

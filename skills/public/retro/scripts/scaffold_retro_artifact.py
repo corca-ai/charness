@@ -22,7 +22,7 @@ _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.adapters.adapter_version_verdict"
 )
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.core.scaffold_artifact_lib")
-_persistence_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.retro_persistence_lib")
+_persistence_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.retro_debug.retro_persistence_lib")
 resolve_retro_artifact_path = _persistence_lib.resolve_retro_artifact_path
 
 VALIDATOR_SCRIPT_NAMES = ("validate_retro_artifact.py", "validate-retro-artifact.py")

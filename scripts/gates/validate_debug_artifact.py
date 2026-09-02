@@ -87,7 +87,7 @@ _parse_risk_classes = _scripts_risk_interrupt_lib_module._parse_risk_classes
 # The interrupt/seam grammar lives in its own module (split at the length cap
 # during #636's one-pass reporting work); re-exported here so callers and tests
 # keep one import surface for debug validation.
-_scripts_debug_interrupt_grammar_module = import_repo_module(__file__, "scripts.debug_interrupt_grammar")
+_scripts_debug_interrupt_grammar_module = import_repo_module(__file__, "scripts.retro_debug.debug_interrupt_grammar")
 section_lines = _scripts_debug_interrupt_grammar_module.section_lines
 extract_prefixed_values = _scripts_debug_interrupt_grammar_module.extract_prefixed_values
 validate_current_interrupt_sections = _scripts_debug_interrupt_grammar_module.validate_current_interrupt_sections

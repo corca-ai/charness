@@ -363,7 +363,8 @@ def test_prefix_resolution_returns_a_verdict_when_the_consumer_resolver_raises(
     """A verdict surface must not traceback. The docstring claimed an unreadable
     adapter kept today's behaviour while only a MISSING one did."""
     output_dir_lib = load_script_module(
-        "retro_output_dir_lib_raising", ROOT / "scripts" / "retro_output_dir_lib.py"
+        "retro_output_dir_lib_raising",
+        ROOT / "scripts" / "retro_debug" / "retro_output_dir_lib.py",
     )
     repo = tmp_path / "broken"
     resolver = repo / "skills" / "public" / "retro" / "scripts" / "resolve_adapter.py"
@@ -394,7 +395,8 @@ def test_the_adapter_loader_raises_when_no_resolver_is_reachable(
     can make it return None.
     """
     output_dir_lib = load_script_module(
-        "retro_output_dir_lib_no_resolver", ROOT / "scripts" / "retro_output_dir_lib.py"
+        "retro_output_dir_lib_no_resolver",
+        ROOT / "scripts" / "retro_debug" / "retro_output_dir_lib.py",
     )
     verdict = load_script_module(
         "adapter_version_verdict_no_resolver",
@@ -420,7 +422,8 @@ def test_prefix_falls_back_when_a_resolver_hands_back_a_path_outside_the_repo(
     or escaping value; if one arrives from an older adapter or a resolver that skips
     validation, owning NOTHING is the fail-quiet this module exists to close."""
     output_dir_lib = load_script_module(
-        "retro_output_dir_lib_escaping", ROOT / "scripts" / "retro_output_dir_lib.py"
+        "retro_output_dir_lib_escaping",
+        ROOT / "scripts" / "retro_debug" / "retro_output_dir_lib.py",
     )
     repo = tmp_path / "escaping"
     resolver = repo / "skills" / "public" / "retro" / "scripts" / "resolve_adapter.py"
@@ -442,7 +445,8 @@ def test_no_resolver_in_either_root_yields_no_resolver_path(
     Forcing both to miss is the only way to reach the arm, and the arm matters: a repo
     with no retro skill reachable is a no-op, not an error."""
     output_dir_lib = load_script_module(
-        "retro_output_dir_lib_norsolver", ROOT / "scripts" / "retro_output_dir_lib.py"
+        "retro_output_dir_lib_norsolver",
+        ROOT / "scripts" / "retro_debug" / "retro_output_dir_lib.py",
     )
     monkeypatch.setattr(output_dir_lib, "_SCRIPT_REPO_ROOT", tmp_path / "nowhere")
 

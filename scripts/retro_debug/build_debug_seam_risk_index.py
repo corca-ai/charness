@@ -8,13 +8,27 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from runtime_bootstrap import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import (  # noqa: E402
     import_repo_module,
     load_path_module,
     repo_root_from_script,
     require_repo_local_helper,
 )
-from yaml_output import emit_yaml
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 INDEX_FILENAME = "seam-risk-index.json"
@@ -216,13 +230,13 @@ def check_index(repo_root: Path, payload: dict[str, Any]) -> None:
     if not index_path.is_file():
         raise ValidationError(
             f"missing debug seam-risk index `{_relative(repo_root, index_path)}`; "
-            "run `python3 scripts/build_debug_seam_risk_index.py --repo-root . --write`"
+            "run `python3 scripts/retro_debug/build_debug_seam_risk_index.py --repo-root . --write`"
         )
     actual = index_path.read_text(encoding="utf-8")
     if actual != expected:
         raise ValidationError(
             f"debug seam-risk index `{_relative(repo_root, index_path)}` is stale; "
-            "run `python3 scripts/build_debug_seam_risk_index.py --repo-root . --write`"
+            "run `python3 scripts/retro_debug/build_debug_seam_risk_index.py --repo-root . --write`"
         )
 
 

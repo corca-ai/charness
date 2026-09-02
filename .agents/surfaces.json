@@ -247,7 +247,7 @@
       ],
       "derived_paths": [
         "plugins/charness/scripts/check_consumer_validator_catalog.py",
-        "plugins/charness/scripts/adapters/capability_catalog.py",
+        "plugins/charness/scripts/capability_catalog.py",
         "plugins/charness/scripts/packaging_lib.py",
         "plugins/charness/scripts/run-quality.sh",
         "plugins/charness/scripts/staged_commit_gate_plan.py",
@@ -670,16 +670,16 @@
       "description": "Generated source-linked index over debug artifact seam-risk fields.",
       "source_paths": [
         "charness-artifacts/debug/*.md",
-        "scripts/build_debug_seam_risk_index.py"
+        "scripts/retro_debug/build_debug_seam_risk_index.py"
       ],
       "derived_paths": [
         "charness-artifacts/debug/seam-risk-index.json"
       ],
       "sync_commands": [
-        "python3 scripts/build_debug_seam_risk_index.py --repo-root . --write"
+        "python3 scripts/retro_debug/build_debug_seam_risk_index.py --repo-root . --write"
       ],
       "verify_commands": [
-        "python3 scripts/build_debug_seam_risk_index.py --repo-root . --check"
+        "python3 scripts/retro_debug/build_debug_seam_risk_index.py --repo-root . --check"
       ],
       "notes": [
         "The index must link back to source debug artifacts and must not replace incident records with a single risk score."
@@ -693,7 +693,7 @@
         "charness-artifacts/retro/*-packet.json",
         "scripts/lessons/recent_lessons_lib.py",
         "scripts/lessons/build_retro_lesson_selection_index.py",
-        "scripts/retro_persistence_lib.py",
+        "scripts/retro_debug/retro_persistence_lib.py",
         "skills/public/retro/scripts/refresh_recent_lessons.py"
       ],
       "derived_paths": [
@@ -724,7 +724,7 @@
       "derived_paths": [
         "plugins/charness/scripts/lesson_ledger_lib.py",
         "plugins/charness/scripts/lesson_selection_preview_lib.py",
-        "plugins/charness/scripts/lessons/check_lesson_ledger.py",
+        "plugins/charness/scripts/check_lesson_ledger.py",
         "plugins/charness/scripts/record_lesson_score.py"
       ],
       "sync_commands": [
@@ -777,9 +777,9 @@
       ],
       "derived_paths": [
         "plugins/charness/integrations/tools/**",
-        "plugins/charness/scripts/adapters/control_plane_lib.py",
-        "plugins/charness/scripts/adapters/control_plane_lifecycle_lib.py",
-        "plugins/charness/scripts/adapters/control_plane_render.py",
+        "plugins/charness/scripts/control_plane_lib.py",
+        "plugins/charness/scripts/control_plane_lifecycle_lib.py",
+        "plugins/charness/scripts/control_plane_render.py",
         "plugins/charness/scripts/doctor.py",
         "plugins/charness/scripts/setup/doctor_lib.py",
         "plugins/charness/scripts/install_provenance_lib.py",

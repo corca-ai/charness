@@ -244,7 +244,7 @@ phases:
   - label: validate-debug-seam-index
     command:
     - python3
-    - scripts/build_debug_seam_risk_index.py
+    - scripts/retro_debug/build_debug_seam_risk_index.py
     - --repo-root
     - $REPO_ROOT
     - --check
