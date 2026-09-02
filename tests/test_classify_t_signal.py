@@ -11,7 +11,7 @@ import pytest
 from tests.seed_cache import get_or_build
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-MODULE_PATH = REPO_ROOT / "scripts" / "classify_t_signal.py"
+MODULE_PATH = REPO_ROOT / "scripts" / "gates_support" / "classify_t_signal.py"
 HEAD = "a" * 40
 
 

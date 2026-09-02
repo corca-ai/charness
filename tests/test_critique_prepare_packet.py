@@ -24,7 +24,7 @@ from scripts.critique_packet_lib import (
     reviewer_tier_evidence,
     write_packet,
 )
-from scripts.prepare_packet_markdown_kind import prepare_packet_markdown_kind
+from scripts.gates_support.prepare_packet_markdown_kind import prepare_packet_markdown_kind
 from scripts.reviewed_input_verification import verify_reviewed_input_identity
 from scripts.surfaces_lib import collect_changed_paths_for_ref
 from scripts.validate_critique_artifacts import (

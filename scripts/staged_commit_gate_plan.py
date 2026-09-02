@@ -209,7 +209,7 @@ def _touches_current_pointer_freshness_surface(paths: list[str]) -> bool:
         "scripts/run-quality.sh",
         ".agents/quality-gates.yaml",
         "tools/validate_current_pointer_freshness.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
-        "scripts/record_quality_runtime.py",
+        "scripts/gates_support/record_quality_runtime.py",
         "skills/public/quality/scripts/check_runtime_budget.py",
         "skills/public/quality/scripts/runtime_budget_lib.py",
         "scripts/capability_catalog_sources.py",

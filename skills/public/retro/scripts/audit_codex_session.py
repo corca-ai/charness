@@ -16,10 +16,10 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 codex_audit = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.codex_session_audit_lib"
+    __file__, "scripts.gates_support.codex_session_audit_lib"
 )
 jsonl_audit = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.codex_session_jsonl_audit"
+    __file__, "scripts.gates_support.codex_session_jsonl_audit"
 )
 emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
 

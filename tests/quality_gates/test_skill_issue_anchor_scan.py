@@ -9,7 +9,7 @@ import pytest
 import yaml
 
 from scripts import check_skill_surface_preflight as preflight
-from scripts import skill_issue_anchor_scan as anchor_scan
+from scripts.gates_support import skill_issue_anchor_scan as anchor_scan
 
 tqlib = anchor_scan._load_text_quality_lib()
 

@@ -228,7 +228,7 @@ def _pytest_variables(
             context,
             [
                 "python3",
-                "scripts/run_standing_pytest.py",
+                "scripts/gates_support/run_standing_pytest.py",
                 "--repo-root",
                 str(context.repo_root),
                 flag,
@@ -457,7 +457,7 @@ def record_runtime_batch(context: RuntimeContext, records: list[dict[str, Any]])
         context,
         [
             "python3",
-            "scripts/record_quality_runtime.py",
+            "scripts/gates_support/record_quality_runtime.py",
             "--repo-root",
             str(context.repo_root),
             *context.state_args,
@@ -478,7 +478,7 @@ def record_runtime_single(
         context,
         [
             "python3",
-            "scripts/record_quality_runtime.py",
+            "scripts/gates_support/record_quality_runtime.py",
             "--repo-root",
             str(context.repo_root),
             *context.state_args,

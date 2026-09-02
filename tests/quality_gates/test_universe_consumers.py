@@ -9,7 +9,7 @@ from .seeding_support import write_quality_adapter
 
 
 def test_standing_pytest_uses_adapter_pytest_targets(tmp_path: Path, monkeypatch) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     repo = tmp_path / "consumer"
     selected = repo / "tests" / "test_selected.py"
@@ -33,7 +33,7 @@ def test_standing_pytest_uses_adapter_pytest_targets(tmp_path: Path, monkeypatch
 
 
 def test_standing_pytest_refuses_declared_empty_pytest_targets(tmp_path: Path) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     repo = tmp_path / "consumer"
     repo.mkdir()

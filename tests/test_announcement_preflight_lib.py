@@ -3,7 +3,7 @@ from __future__ import annotations
 import textwrap
 from pathlib import Path
 
-from scripts.announcement_preflight_lib import preflight_sources
+from scripts.gates_support.announcement_preflight_lib import preflight_sources
 
 
 def test_preflight_passes_when_no_sources_declared(tmp_path: Path) -> None:

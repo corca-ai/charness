@@ -163,7 +163,7 @@ def _canonical_runner_candidates(snippets: list[dict[str, str]]) -> list[dict[st
 
 def _repo_runner_candidates(repo_root: Path) -> list[dict[str, str]]:
     candidates = []
-    for rel_path in ("scripts/run_standing_pytest.py", "scripts/run-quality.sh"):
+    for rel_path in ("scripts/gates_support/run_standing_pytest.py", "scripts/run-quality.sh"):
         if (repo_root / rel_path).is_file():
             candidates.append({"path": rel_path, "origin": "repo-file", "snippet": rel_path})
     return candidates

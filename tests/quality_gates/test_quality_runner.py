@@ -8,7 +8,7 @@ import pytest
 import yaml
 
 from runtime_bootstrap import import_repo_module
-from scripts.run_standing_pytest import choose_xdist_workers
+from scripts.gates_support.run_standing_pytest import choose_xdist_workers
 
 from .support import (
     ROOT,
@@ -34,7 +34,7 @@ def test_quality_runner_seed_uses_the_cross_worker_cache(tmp_path: Path) -> None
 
     seed = quality_runner_seed(cache_get_or_build=fake_cache)
 
-    assert cache_calls == ["quality-runner-repo-seed-r2b"]
+    assert cache_calls == ["quality-runner-repo-seed-r2c"]
     assert (seed / "scripts" / "run-quality.sh").is_file()
 
 
@@ -792,7 +792,7 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
 
     stubbed = {name for _, name in QUALITY_PYTHON_STUBS}
     stubbed |= {name for _, name in QUALITY_SHELL_STUBS}
-    copied_real_scripts = {"run_standing_pytest.py", "specdown_ephemeral_config.py"}
+    copied_real_scripts = {"gates_support/run_standing_pytest.py", "specdown_ephemeral_config.py"}
     missing = sorted(queued - stubbed - copied_real_scripts)
     assert missing == [], (
         "run-quality.sh queues repo-script gates with no seeded harness stub; "

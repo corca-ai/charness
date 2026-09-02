@@ -470,7 +470,7 @@ def test_the_counted_defect_is_caught_across_packages_not_just_within_one(tmp_pa
 def test_a_basename_in_both_a_package_and_the_root_is_not_refused(tmp_path: Path) -> None:
     """Ambiguous is not blockable.
 
-    `plan_risk_interrupt.py` is BOTH `scripts/plan_risk_interrupt.py` and the
+    `plan_risk_interrupt.py` is BOTH `scripts/gates_support/plan_risk_interrupt.py` and the
     `skills/shared/scripts/` shim, so a true sentence about the repo-level
     planner would otherwise be refused — with advice pointing at the shim, i.e.
     a refusal no correct edit can clear.

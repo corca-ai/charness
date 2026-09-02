@@ -40,7 +40,7 @@ TS_LOADER_RE = re.compile(r"\b(tsx|ts-node|swc-node|esbuild-register)\b")
 # Recognize both pytest's own numbered session dirs (`pytest-<n>`) and the standing
 # runner's explicit basetemp (`charness-run-<time_ns>`, deliberately not named
 # `pytest-*` so pytest's numbered-dir cleanup cannot delete it mid-run — see
-# scripts/run_standing_pytest.py default_basetemp). Both hold the same
+# scripts/gates_support/run_standing_pytest.py default_basetemp). Both hold the same
 # `popen-gw*`/seed footprint the drill-down inventory reports.
 PYTEST_SESSION_RE = _SCAN.PYTEST_SESSION_RE
 PYTEST_WORKER_RE = _SCAN.PYTEST_WORKER_RE

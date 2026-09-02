@@ -1,7 +1,7 @@
 """The bare-run guard in `tests/conftest.py`.
 
 The guard's job is to stop a broad selection from running single-process when
-`scripts/run_standing_pytest.py` would have supplied xdist. Measured on this
+`scripts/gates_support/run_standing_pytest.py` would have supplied xdist. Measured on this
 repo: 8400 tests take ~110s through the runner and over half an hour without it,
 and nothing in pytest's own output says the fast path was skipped.
 
@@ -101,7 +101,7 @@ def test_the_runner_actually_sets_the_marker_the_guard_reads() -> None:
     A guard keyed on a name the runner never sets would refuse the runner's own
     serial fallback, and nothing else in the suite pairs the two spellings.
     """
-    source = (ROOT / "scripts" / "run_standing_pytest.py").read_text(encoding="utf-8")
+    source = (ROOT / "scripts" / "gates_support" / "run_standing_pytest.py").read_text(encoding="utf-8")
     assert f'env["{conftest.CANONICAL_RUNNER_ENV}"] = "1"' in source
 
 

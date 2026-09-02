@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -102,7 +104,16 @@ def _sha256(payload: bytes) -> str:
 try:
     from scripts.core.sibling_module_loader import load_sibling as _load_sibling
 except ModuleNotFoundError:  # invoked as `python3 scripts/<name>.py`
-    from scripts.core.sibling_module_loader import load_sibling as _load_sibling
+    _sibling_loader_spec = importlib.util.spec_from_file_location(
+        "sibling_module_loader",
+        Path(__file__).resolve().parent / "core" / "sibling_module_loader.py",
+    )
+    if _sibling_loader_spec is None or _sibling_loader_spec.loader is None:
+        raise
+    _sibling_loader = importlib.util.module_from_spec(_sibling_loader_spec)
+    sys.modules["sibling_module_loader"] = _sibling_loader
+    _sibling_loader_spec.loader.exec_module(_sibling_loader)
+    _load_sibling = _sibling_loader.load_sibling
 
 _checkout = _load_sibling("git_checkout")
 _path_selection = _load_sibling("reviewed_input_path_selection")

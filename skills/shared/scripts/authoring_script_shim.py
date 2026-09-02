@@ -82,7 +82,7 @@ def run(name: str, caller: str) -> int:
 
     SINGLE-SHOT PER PROCESS. `runpy` itself is re-entrant, but the targets are
     not: their module-level `import_repo_module` caches libraries in `sys.modules`
-    under tree-independent keys (`scripts.risk_interrupt_lib`, ...). A second call
+    under tree-independent keys (`scripts.gates_support.risk_interrupt_lib`, ...). A second call
     for the same target from the OTHER tree would re-run the entrypoint while
     silently reusing the first tree's libraries -- the resolved-to-the-wrong-tree
     class this shim exists to kill, one layer down. Every call site is

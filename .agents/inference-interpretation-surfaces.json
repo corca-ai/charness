@@ -55,7 +55,7 @@
     {
       "surface_id": "lint-ignores",
       "kind": "python",
-      "declaration_file": "scripts/lint_ignore_inventory_lib.py",
+      "declaration_file": "scripts/gates_support/lint_ignore_inventory_lib.py",
       "declaration_symbol": "INTERPRETATION",
       "consumer_reference": "skills/public/quality/references/automation-promotion.md",
       "consumer_anchor": "provenance-bearing deferrals versus normalized debt",

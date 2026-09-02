@@ -4,12 +4,24 @@ from __future__ import annotations
 
 import hashlib
 import os
+import importlib.util
+import sys
 from pathlib import Path
 from typing import Any
 
 from runtime_bootstrap import import_repo_module
 
-_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
+try:
+    _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
+except ModuleNotFoundError:
+    _subprocess_guard_spec = importlib.util.spec_from_file_location(
+        "subprocess_guard", Path(__file__).resolve().parent / "core" / "subprocess_guard.py"
+    )
+    if _subprocess_guard_spec is None or _subprocess_guard_spec.loader is None:
+        raise
+    _subprocess_guard = importlib.util.module_from_spec(_subprocess_guard_spec)
+    sys.modules["subprocess_guard"] = _subprocess_guard
+    _subprocess_guard_spec.loader.exec_module(_subprocess_guard)
 run_process = _subprocess_guard.run_process
 
 
@@ -39,7 +51,17 @@ def _git_bytes(repo_root: Path, *args: str):
 
 
 def _index_paths(repo_root: Path) -> set[bytes]:
-    _repo_file_listing = import_repo_module(__file__, "scripts.core.repo_file_listing")
+    try:
+        _repo_file_listing = import_repo_module(__file__, "scripts.core.repo_file_listing")
+    except ModuleNotFoundError:
+        _repo_file_listing_spec = importlib.util.spec_from_file_location(
+            "repo_file_listing", Path(__file__).resolve().parent / "core" / "repo_file_listing.py"
+        )
+        if _repo_file_listing_spec is None or _repo_file_listing_spec.loader is None:
+            raise
+        _repo_file_listing = importlib.util.module_from_spec(_repo_file_listing_spec)
+        sys.modules["repo_file_listing"] = _repo_file_listing
+        _repo_file_listing_spec.loader.exec_module(_repo_file_listing)
     RepoFileListingError = _repo_file_listing.RepoFileListingError
     RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
     try:

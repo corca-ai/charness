@@ -11,7 +11,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_public_skill_dogfood_lib_module = import_repo_module(
-    __file__, "scripts.public_skill_dogfood_lib"
+    __file__, "scripts.gates_support.public_skill_dogfood_lib"
 )
 DOGFOOD_PATH = _scripts_public_skill_dogfood_lib_module.DOGFOOD_PATH
 _scripts_public_skill_dogfood_validation_lib_module = import_repo_module(

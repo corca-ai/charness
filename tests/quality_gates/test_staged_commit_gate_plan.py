@@ -334,7 +334,7 @@ def test_timing_pull_current_pointer_freshness_fires_for_pointer_surfaces() -> N
         ".agents/quality-gates.yaml",
         "scripts/any_quality_pointer_helper.py",
         "tools/validate_current_pointer_freshness.py",
-        "scripts/record_quality_runtime.py",
+        "scripts/gates_support/record_quality_runtime.py",
         "skills/public/quality/scripts/check_runtime_budget.py",
         "skills/public/quality/scripts/runtime_budget_lib.py",
         "scripts/capability_catalog_sources.py",

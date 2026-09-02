@@ -51,7 +51,7 @@ def _recommendation(**overrides) -> dict:
             shlex.join(
                 [
                     "python3",
-                    "scripts/run_standing_pytest.py",
+                    "scripts/gates_support/run_standing_pytest.py",
                     "--repo-root",
                     ".",
                     "--mode",
@@ -161,7 +161,7 @@ def test_focused_command_is_instrumentable_and_keeps_broad_marker_policy(gate) -
     tokens = shlex.split(command)
     assert tokens[:6] == [
         "python3",
-        "scripts/run_standing_pytest.py",
+        "scripts/gates_support/run_standing_pytest.py",
         "--repo-root",
         ".",
         "--mode",

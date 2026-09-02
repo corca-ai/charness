@@ -50,7 +50,7 @@ def _seed(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     fixture_stub = repo / "tests" / "quality_gates" / "fixtures" / "engine_gate.py"
     fixture_stub.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(ROOT / "tests" / "quality_gates" / "fixtures" / "engine_gate.py", fixture_stub)
-    write_executable(repo / "scripts" / "record_quality_runtime.py", _runtime_recorder_stub())
+    write_executable(repo / "scripts" / "gates_support" / "record_quality_runtime.py", _runtime_recorder_stub())
     write_executable(
         repo / "bin" / "python3",
         f'#!/usr/bin/env bash\nexec {sys.executable!r} "$@"\n',

@@ -11,7 +11,7 @@ from yaml_output import emit_yaml
 REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_public_skill_validation_lib_module = import_repo_module(
-    __file__, "scripts.public_skill_validation_lib"
+    __file__, "scripts.gates_support.public_skill_validation_lib"
 )
 POLICY_PATH = _scripts_public_skill_validation_lib_module.POLICY_PATH
 VALID_ADAPTER_REQUIREMENTS = _scripts_public_skill_validation_lib_module.VALID_ADAPTER_REQUIREMENTS

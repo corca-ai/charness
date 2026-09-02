@@ -24,7 +24,7 @@ phases:
     - env
     - CHARNESS_STANDING_PYTEST_PYTHON=python3
     - python3
-    - scripts/run_standing_pytest.py
+    - scripts/gates_support/run_standing_pytest.py
     - ${PYTEST_FLAGS[@]}
     lane: release-only
     variant_of: pytest
@@ -35,7 +35,7 @@ phases:
     - env
     - CHARNESS_STANDING_PYTEST_PYTHON=python3
     - python3
-    - scripts/run_standing_pytest.py
+    - scripts/gates_support/run_standing_pytest.py
     - ${PYTEST_FLAGS[@]}
     lane: standard
     timing_layer: stays

@@ -45,7 +45,7 @@ dominated_commands:
     # clean. It was in this list for one round; a round-2 reviewer caught that it
     # contradicts the field's own definition. `--last-failed` stays, because that
     # one genuinely runs only the previously-failing subset.
-    replacement: python3 scripts/run_standing_pytest.py
+    replacement: python3 scripts/gates_support/run_standing_pytest.py
     reason: >-
       A bare whole-suite pytest run costs ~22 minutes; the standing runner covers
       the same scope with xdist, is budgeted under `pytest` in
@@ -55,7 +55,7 @@ dominated_commands:
       `.agents/surfaces.json` carries a dozen such commands.
     measured: >-
       2026-08-15 (S5): 84s for 9403 tests over 567 of 567 test files via
-      `scripts/run_standing_pytest.py`, against ~22 minutes for the same scope via
+      `scripts/gates_support/run_standing_pytest.py`, against ~22 minutes for the same scope via
       bare pytest. 14.7x. Re-measure before trusting this line; nothing here
       re-runs it.
 

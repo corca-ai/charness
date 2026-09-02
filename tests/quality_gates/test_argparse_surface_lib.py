@@ -332,7 +332,7 @@ def test_a_command_inside_another_commands_flag_value_keeps_its_own_flags() -> N
     """
     carrier = (
         "python3 scripts/check_changed_line_mutation_coverage.py --repo-root . "
-        '--test-command "python3 scripts/run_standing_pytest.py --repo-root ." --write-fresh-marker'
+        '--test-command "python3 scripts/gates_support/run_standing_pytest.py --repo-root ." --write-fresh-marker'
     )
     outer, inner = _attribution(carrier)
     assert outer[1] == ["--repo-root", "--test-command", "--write-fresh-marker"]
@@ -349,7 +349,7 @@ def test_a_nested_command_quoted_with_the_other_quote_character_is_still_bounded
     """
     carrier = (
         "python3 scripts/sample_mutation_files.py "
-        "--test-command 'python3 scripts/run_standing_pytest.py' --repo-root ."
+        "--test-command 'python3 scripts/gates_support/run_standing_pytest.py' --repo-root ."
     )
     outer, inner = _attribution(carrier)
     assert outer[1] == ["--test-command", "--repo-root"]

@@ -14,7 +14,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
-from runtime_bootstrap import import_repo_module
+try:
+    from scripts.runtime_bootstrap import import_repo_module
+except ModuleNotFoundError:  # executed directly from scripts/
+    from runtime_bootstrap import import_repo_module
 
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process

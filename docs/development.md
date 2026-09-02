@@ -55,14 +55,14 @@ temporary output outside the checkout; `.gitignore` only hides output.
 Run focused tests for ordinary changes. Use the small quality lane when the
 core contract is relevant and the explicit full lane for broad, release, or
 review work.
-[The standing pytest runner](../scripts/run_standing_pytest.py) is the pytest
+[The standing pytest runner](../scripts/gates_support/run_standing_pytest.py) is the pytest
 owner — it supplies xdist workers, chunk sizing, and an external basetemp, and a
 bare `python3 -m pytest` gets none of them (and is refused for a broad
 selection):
 
 ```bash
-python3 scripts/run_standing_pytest.py --repo-root . --pytest-target <path-or-nodeid>
-python3 scripts/run_standing_pytest.py --repo-root .
+python3 scripts/gates_support/run_standing_pytest.py --repo-root . --pytest-target <path-or-nodeid>
+python3 scripts/gates_support/run_standing_pytest.py --repo-root .
 ./scripts/run-quality.sh
 ./scripts/run-quality.sh --full --read-only
 ```

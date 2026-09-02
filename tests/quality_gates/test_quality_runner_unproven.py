@@ -82,7 +82,7 @@ def test_the_unproven_column_is_absent_when_every_gate_established_its_scope(
 
 def test_the_real_runtime_recorder_accepts_every_status_the_runner_emits() -> None:
     recorder = import_repo_module(
-        ROOT / "scripts/record_quality_runtime.py", "scripts.record_quality_runtime"
+        ROOT / "scripts/gates_support/record_quality_runtime.py", "scripts.gates_support.record_quality_runtime"
     )
 
     assert "unestablished" in recorder.VALID_STATUSES

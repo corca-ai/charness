@@ -48,7 +48,7 @@ def run_process(*args, **kwargs):
 # Recognize both pytest's own numbered session dirs (`pytest-<n>`) and the standing
 # runner's explicit basetemp (`charness-run-<time_ns>`, deliberately not named
 # `pytest-*` so pytest's numbered-dir cleanup cannot delete it mid-run — see
-# scripts/run_standing_pytest.py default_basetemp). Both hold the same
+# scripts/gates_support/run_standing_pytest.py default_basetemp). Both hold the same
 # `popen-gw*`/seed footprint the drill-down inventory reports.
 PYTEST_SESSION_RE = re.compile(r"^(?:pytest|charness-run)-\d+$")
 PYTEST_WORKER_RE = re.compile(r"^popen-gw\d+$")

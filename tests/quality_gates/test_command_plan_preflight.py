@@ -9,7 +9,7 @@ import pytest
 from .repo_shapes import install_committed_repo
 from .support import ROOT, run_script
 
-SCRIPT = ROOT / "scripts" / "command_plan_preflight.py"
+SCRIPT = ROOT / "scripts" / "gates_support" / "command_plan_preflight.py"
 
 _DEMO_PY = """import argparse
 

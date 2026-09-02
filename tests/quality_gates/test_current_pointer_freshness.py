@@ -91,7 +91,7 @@ def seed_repo(
         encoding="utf-8",
     )
     (repo / ".gitignore").write_text(".charness/quality/runtime-smoothing.json\n", encoding="utf-8")
-    (repo / "scripts" / "record_quality_runtime.py").write_text(
+    (repo / "scripts" / "gates_support" / "record_quality_runtime.py").write_text(
         "\n".join(
             [
                 'SMOOTHING_FILENAME = "runtime-smoothing.json"',

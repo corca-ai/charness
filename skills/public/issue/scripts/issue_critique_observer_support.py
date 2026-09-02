@@ -8,6 +8,7 @@ parsing, and keeping that boundary explicit makes both sides easier to test.
 from __future__ import annotations
 
 import json
+import importlib.util
 import re
 import sys
 from datetime import date
@@ -17,20 +18,25 @@ try:
     from scripts.core import subprocess_guard as _subprocess_guard
     from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:
-    _scripts_dir = next(
+    _subprocess_guard_path = next(
         (
-            ancestor / "scripts"
+            ancestor / "scripts" / "core" / "subprocess_guard.py"
             for ancestor in (Path(__file__).resolve(), *Path(__file__).resolve().parents)
             if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
         ),
         None,
     )
-    if _scripts_dir is None:
+    if _subprocess_guard_path is None:
         raise
-    if str(_scripts_dir) not in sys.path:
-        sys.path.insert(0, str(_scripts_dir))
-    import scripts.core.subprocess_guard as _subprocess_guard
-    from scripts.core.subprocess_guard import run_process
+    _subprocess_guard_spec = importlib.util.spec_from_file_location(
+        "subprocess_guard", _subprocess_guard_path
+    )
+    if _subprocess_guard_spec is None or _subprocess_guard_spec.loader is None:
+        raise
+    _subprocess_guard = importlib.util.module_from_spec(_subprocess_guard_spec)
+    sys.modules["subprocess_guard"] = _subprocess_guard
+    _subprocess_guard_spec.loader.exec_module(_subprocess_guard)
+    run_process = _subprocess_guard.run_process
 
 subprocess = _subprocess_guard.subprocess
 
@@ -61,7 +67,25 @@ def _path_is_tracked(root: Path, relative: str) -> bool:
     try:
         from scripts.core.repo_file_listing import RepoFileSnapshot
     except ModuleNotFoundError:
-        from scripts.core.repo_file_listing import RepoFileSnapshot
+        _repo_file_listing_path = next(
+            (
+                ancestor / "scripts" / "core" / "repo_file_listing.py"
+                for ancestor in (Path(__file__).resolve(), *Path(__file__).resolve().parents)
+                if (ancestor / "scripts" / "core" / "repo_file_listing.py").is_file()
+            ),
+            None,
+        )
+        if _repo_file_listing_path is None:
+            return False
+        _repo_file_listing_spec = importlib.util.spec_from_file_location(
+            "repo_file_listing", _repo_file_listing_path
+        )
+        if _repo_file_listing_spec is None or _repo_file_listing_spec.loader is None:
+            return False
+        _repo_file_listing = importlib.util.module_from_spec(_repo_file_listing_spec)
+        sys.modules["repo_file_listing"] = _repo_file_listing
+        _repo_file_listing_spec.loader.exec_module(_repo_file_listing)
+        RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
     listed = RepoFileSnapshot(root).list_files(include_untracked=False)
     return listed is not None and (root / relative) in listed
 

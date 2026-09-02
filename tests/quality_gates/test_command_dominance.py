@@ -5,7 +5,7 @@ wrong noun, and that ordering is deliberate. Both false central claims of the
 preceding session were reachable from the single question "what can this
 mechanism NOT see?", and both were found by a reviewer rather than by the author.
 The registry's replacement for a bare-pytest run is
-`python3 scripts/run_standing_pytest.py` — whose own path contains the substring
+`python3 scripts/gates_support/run_standing_pytest.py` — whose own path contains the substring
 `pytest`. A detector that asks "does this mention pytest" reports the FIX as the
 DEFECT, stays green on everything that matters, and reads exactly like a working
 gate. That is the wrong noun, and `test_naming_the_replacement_is_not_a_prescription`
@@ -38,7 +38,7 @@ UNIVERSE = load_script_module(
     ROOT / "tools" / "check_runtime_budget_universe.py",
 )
 
-REPLACEMENT = "python3 scripts/run_standing_pytest.py"
+REPLACEMENT = "python3 scripts/gates_support/run_standing_pytest.py"
 
 
 def _registry_data(
@@ -74,7 +74,7 @@ def _registry(**kwargs):
 def test_naming_the_replacement_is_not_a_prescription() -> None:
     """The fix is not the defect.
 
-    `python3 scripts/run_standing_pytest.py` contains the substring `pytest`. A
+    `python3 scripts/gates_support/run_standing_pytest.py` contains the substring `pytest`. A
     substring reader flags every document and gate that adopts the replacement,
     which is every surface this slice repairs.
     """

@@ -100,7 +100,7 @@ jobs:
           # ripgrep is explicitly NON-BASELINE per skills/shared/references/binary-preflight.md
           # ("Anything outside this list is non-baseline. Today that notably includes
           # `rg`"), so nothing may assume it. That reference governs SKILL bootstrap
-          # fences; scripts/command_plan_preflight.py is Python that shells out to rg
+          # fences; scripts/gates_support/command_plan_preflight.py is Python that shells out to rg
           # with no declaration and no fallback, which is a separate defect tracked as
           # a follow-up. This step makes THIS repo's CI image supply the binary that
           # script currently hard-requires -- binary-preflight.md itself supplies the

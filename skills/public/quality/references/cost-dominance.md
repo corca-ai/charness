@@ -83,7 +83,7 @@ dominated_commands:
                                  # to run the whole suite. Do NOT list a flag that only
                                  # REORDERS (`--failed-first`) -- it excludes nothing,
                                  # and listing it lets a full run pass clean.
-    replacement: python3 scripts/run_standing_pytest.py
+    replacement: python3 scripts/gates_support/run_standing_pytest.py
     reason: why the replacement is equivalent evidence
     measured: the evidence a human collected; nothing re-runs it
 wrapper_programs:                # programs that RUN another program

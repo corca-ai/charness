@@ -72,7 +72,7 @@ that fix waits — while every part the review does not gate proceeds.
 
 `charness task run` already owns its lane's base, branch, path, scope, and
 worktree preflight. Do not create a second plan for that path. Use
-[`command_plan_preflight.py`](../scripts/command_plan_preflight.py) only for a manually assembled fan-out whose target,
+[`command_plan_preflight.py`](../scripts/gates_support/command_plan_preflight.py) only for a manually assembled fan-out whose target,
 ref, or flag resolution is otherwise ambiguous, or when an irreversible/review
 boundary explicitly needs that receipt. It proves resolution and parser
 ownership only, not runtime, installed state, hosted state, or external truth.

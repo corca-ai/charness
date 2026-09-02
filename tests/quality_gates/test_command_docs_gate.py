@@ -20,7 +20,7 @@ from .support import ROOT, run_script, write_executable
 
 def _load_render_cli_reference():
     spec = importlib.util.spec_from_file_location(
-        "render_cli_reference", ROOT / "scripts" / "render_cli_reference.py"
+        "render_cli_reference", ROOT / "scripts" / "gates_support" / "render_cli_reference.py"
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -163,7 +163,7 @@ def test_render_cli_reference_matches_checked_in_doc(tmp_path: Path) -> None:
     output = tmp_path / "cli-reference.md"
 
     result = run_script(
-        "scripts/render_cli_reference.py",
+        "scripts/gates_support/render_cli_reference.py",
         "--repo-root",
         str(ROOT),
         "--output",

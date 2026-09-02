@@ -7,8 +7,8 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from scripts.public_skill_dogfood_lib import build_matrix
-from scripts.public_skill_validation_lib import ValidationError as PolicyValidationError
+from scripts.gates_support.public_skill_dogfood_lib import build_matrix
+from scripts.gates_support.public_skill_validation_lib import ValidationError as PolicyValidationError
 from tests.script_main import load_script_module, run_loaded_script_main
 from tools.public_skill_dogfood_validation_lib import (
     ValidationError,
@@ -265,7 +265,7 @@ def test_format_human_renders_registry_owned_case_without_warning(tmp_path: Path
     repo = seed_repo(tmp_path)
     seed_skill(repo, "demo", description="Improve the demo skill first.")
     write_registry(repo, base_registry(repo))
-    from scripts.public_skill_dogfood_lib import format_human
+    from scripts.gates_support.public_skill_dogfood_lib import format_human
 
     report = build_matrix(repo, ["demo"])
     rendered = format_human(report)

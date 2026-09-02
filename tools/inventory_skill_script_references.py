@@ -267,7 +267,7 @@ def _classify_repo_root_form(
 
     The `at_root` escape matters: when the basename ALSO exists at the authoring
     root, the reference is genuinely ambiguous -- `plan_risk_interrupt.py` is
-    both `scripts/plan_risk_interrupt.py` and the `skills/shared/scripts/` shim,
+    both `scripts/gates_support/plan_risk_interrupt.py` and the `skills/shared/scripts/` shim,
     so a true sentence about the repo-level planner would otherwise be refused
     with advice pointing at the shim. Ambiguous is not blockable.
     """

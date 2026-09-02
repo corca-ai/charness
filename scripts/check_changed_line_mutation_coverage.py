@@ -57,9 +57,9 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts import changed_line_gate_cli as _cli  # noqa: E402
-from scripts.changed_line_resume_route import resume_fields  # noqa: E402
-from scripts.changed_line_run_trust import (  # noqa: E402
+from scripts.gates_support import changed_line_gate_cli as _cli  # noqa: E402
+from scripts.gates_support.changed_line_resume_route import resume_fields  # noqa: E402
+from scripts.gates_support.changed_line_run_trust import (  # noqa: E402
     INSPECTION_FAILED,
     SCOPE_MISMATCH,
     _git_lines,
@@ -74,14 +74,14 @@ from scripts.changed_line_run_trust import (  # noqa: E402
     run_state_drift,
     uncommitted_pool_changes,
 )
-from scripts.changed_line_run_trust import (  # noqa: E402
+from scripts.gates_support.changed_line_run_trust import (  # noqa: E402
     write_blocking_stderr as _write_blocking_stderr,
 )
-from scripts.changed_line_scope_counts import (  # noqa: E402
+from scripts.gates_support.changed_line_scope_counts import (  # noqa: E402
     apply_file_limit as _apply_file_limit,
 )
-from scripts.changed_line_scope_counts import scope_counts, scope_counts_not_computed  # noqa: E402
-from scripts.changed_line_verdict_codes import (  # noqa: E402
+from scripts.gates_support.changed_line_scope_counts import scope_counts, scope_counts_not_computed  # noqa: E402
+from scripts.gates_support.changed_line_verdict_codes import (  # noqa: E402
     PARTIAL_EXIT,
     REFUSED_EXIT,
     UNESTABLISHED_EXIT,

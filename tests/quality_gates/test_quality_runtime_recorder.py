@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import record_quality_runtime
+from scripts.gates_support import record_quality_runtime
 
 # In-process on purpose: this recorder is import-safe and its `main()` is the whole
 # CLI, so the 21 subprocess starts these cases used to pay bought no extra coverage.

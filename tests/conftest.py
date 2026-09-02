@@ -289,8 +289,8 @@ def bare_pytest_refusal(config: pytest.Config, items: list[pytest.Item]) -> str 
 
     guidance = (
         f"\n{len(items)} tests selected without the repo's pytest runner.\n\n"
-        "  whole suite:  python3 scripts/run_standing_pytest.py --repo-root .\n"
-        "  focused:      python3 scripts/run_standing_pytest.py --repo-root . "
+        "  whole suite:  python3 scripts/gates_support/run_standing_pytest.py --repo-root .\n"
+        "  focused:      python3 scripts/gates_support/run_standing_pytest.py --repo-root . "
         "--pytest-target <path-or-nodeid>\n"
         "  full battery: ./scripts/run-quality.sh --full --release\n\n"
         f"Set {BARE_PYTEST_ESCAPE_ENV}=1 to run single-process on purpose.\n"
@@ -303,7 +303,7 @@ def bare_pytest_refusal(config: pytest.Config, items: list[pytest.Item]) -> str 
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
-    """Refuse a broad run that bypasses `scripts/run_standing_pytest.py`.
+    """Refuse a broad run that bypasses `scripts/gates_support/run_standing_pytest.py`.
 
     That script owns xdist worker selection, `--dist load` chunk sizing, an
     external basetemp, and serial fallback. A bare `python3 -m pytest tests`

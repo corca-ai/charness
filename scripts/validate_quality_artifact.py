@@ -93,7 +93,7 @@ RUNTIME_SIGNAL_PREFIXES = (
 RUNTIME_TIMING_RE = re.compile(r"\b\d+(?:\.\d+)?\s*(?:ms|s)\b")
 STRUCTURED_RUNTIME_SOURCE_MARKERS = (
     ".charness/quality/runtime-signals.json",
-    "scripts/record_quality_runtime.py",
+    "scripts/gates_support/record_quality_runtime.py",
     "render_runtime_summary.py",
     "check_runtime_budget.py",
 )

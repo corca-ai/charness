@@ -40,11 +40,11 @@ DEFAULT_PROBE_TIMEOUT_SECONDS = 20
 
 
 def _record_runtime_script_path(repo_root: Path) -> Path:
-    repo_candidate = repo_root / "scripts" / "record_quality_runtime.py"
+    repo_candidate = repo_root / "scripts" / "gates_support" / "record_quality_runtime.py"
     if repo_candidate.is_file():
         return repo_candidate
     for ancestor in Path(__file__).resolve().parents:
-        candidate = ancestor / "scripts" / "record_quality_runtime.py"
+        candidate = ancestor / "scripts" / "gates_support" / "record_quality_runtime.py"
         if candidate.is_file():
             return candidate
     raise FileNotFoundError("record_quality_runtime.py not found")
@@ -73,7 +73,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--record-runtime-signals",
         action="store_true",
-        help="Persist the latest elapsed time for each measured probe through scripts/record_quality_runtime.py.",
+        help="Persist the latest elapsed time for each measured probe through scripts/gates_support/record_quality_runtime.py.",
     )
     parser.add_argument(
         "--state-root",
@@ -114,7 +114,7 @@ def _record_runtime_signal(
     if state_root is not None:
         command.extend(("--state-root", str(state_root)))
     recorder = SKILL_RUNTIME.load_repo_module_from_skill_script(
-        __file__, "scripts.record_quality_runtime"
+        __file__, "scripts.gates_support.record_quality_runtime"
     )
     previous_argv = sys.argv
     try:

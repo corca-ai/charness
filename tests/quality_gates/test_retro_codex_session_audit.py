@@ -6,7 +6,7 @@ from pathlib import Path
 
 import yaml
 
-from scripts import codex_session_audit_lib as audit_lib
+from scripts.gates_support import codex_session_audit_lib as audit_lib
 
 from .support import run_script
 

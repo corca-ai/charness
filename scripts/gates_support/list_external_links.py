@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+
+from __future__ import annotations
+
+import argparse
+import re
+from pathlib import Path
+from urllib.parse import urlsplit
+
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+
+_repo_file_listing = import_repo_module(__file__, "scripts.core.repo_file_listing")
+iter_repo_files = _repo_file_listing.iter_repo_files
+
+TEXT_SUFFIXES = {".md", ".json", ".yaml", ".yml", ".jsonc", ".toml"}
+SKIP_DIR_NAMES = {".git", ".charness", "node_modules", ".pytest_cache", "charness-artifacts", "__pycache__"}
+SKIP_FILE_NAMES = {"package-lock.json"}
+SKIP_HOSTS = {"example.com", "example.org", "example.net", "localhost"}
+SKIP_HOST_SUFFIXES = (".internal", ".invalid", ".local", ".localhost", ".test")
+URL_PATTERN = re.compile(r"https?://[^\s<>'\"\\]+")
+FENCED_CODE_BLOCK_PATTERN = re.compile(r"(^|\n)(```|~~~).*?(\n\2)(?=\n|$)", re.DOTALL)
+INLINE_CODE_PATTERN = re.compile(r"`[^`\n]+`")
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--repo-root", type=Path, required=True)
+    return parser.parse_args()
+
+
+def list_candidate_files(repo_root: Path) -> list[Path]:
+    return sorted(path for path in iter_repo_files(repo_root) if should_scan_path(path))
+
+
+def should_scan_path(path: Path) -> bool:
+    if not path.is_file():
+        return False
+    if path.name in SKIP_FILE_NAMES:
+        return False
+    if path.suffix not in TEXT_SUFFIXES:
+        return False
+    return not any(part in SKIP_DIR_NAMES for part in path.parts)
+
+
+def strip_markdown_code(text: str) -> str:
+    without_fences = FENCED_CODE_BLOCK_PATTERN.sub("\n", text)
+    return INLINE_CODE_PATTERN.sub("", without_fences)
+
+
+def normalize_candidate(candidate: str) -> str | None:
+    cleaned = candidate.rstrip(".,;:)]}>`'")
+    parsed = urlsplit(cleaned)
+    hostname = parsed.hostname
+    if parsed.scheme not in {"http", "https"} or not hostname:
+        return None
+    if hostname in SKIP_HOSTS:
+        return None
+    if hostname.endswith(SKIP_HOST_SUFFIXES):
+        return None
+    if any(token in cleaned for token in ("${", "{", "}", "<", ">")):
+        return None
+    return cleaned
+
+
+def extract_urls(path: Path) -> set[str]:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return set()
+
+    if path.suffix == ".md":
+        text = strip_markdown_code(text)
+
+    urls = set()
+    for match in URL_PATTERN.findall(text):
+        normalized = normalize_candidate(match)
+        if normalized is not None:
+            urls.add(normalized)
+    return urls
+
+
+def main() -> int:
+    args = parse_args()
+    repo_root = args.repo_root.resolve()
+    urls = set()
+    for path in list_candidate_files(repo_root):
+        urls.update(extract_urls(path))
+
+    for url in sorted(urls):
+        print(url)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.core.skill_iter import iter_skill_ids  # noqa: E402
+
+VALID_TIERS = ("smoke-only", "hitl-recommended", "evaluator-required")
+VALID_ADAPTER_REQUIREMENTS = ("required", "adapter-free")
+VALID_FALLBACK_POLICIES = ("allow", "visible", "block")
+POLICY_PATH = Path("docs/public-skill-validation.json")
+
+
+class ValidationError(Exception):
+    pass
+
+
+def public_skill_ids(repo_root: Path) -> list[str]:
+    return iter_skill_ids(repo_root / "skills" / "public", exclude=("generated",))
+
+
+def load_policy(repo_root: Path) -> dict[str, object]:
+    path = repo_root / POLICY_PATH
+    if not path.is_file():
+        raise ValidationError(f"missing `{POLICY_PATH}`")
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValidationError(f"{POLICY_PATH}: invalid JSON: {exc}") from exc
+    if not isinstance(data, dict):
+        raise ValidationError(f"{POLICY_PATH}: top-level JSON value must be an object")
+    return data
+
+
+def _normalized_skill_list(value: object, *, field: str) -> list[str]:
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise ValidationError(f"{field} must be a list of skill ids")
+    return sorted(value)
+
+
+def _render_expected_locations(field: str, categories: tuple[str, ...]) -> str:
+    rendered = ", ".join(f"`{field}.{category}`" for category in categories)
+    return f"Add each missing skill to exactly one of {rendered} in `{POLICY_PATH}`"
+
+
+def partition_missing_skills(
+    assignments: dict[str, list[str]],
+    *,
+    all_skills: list[str],
+) -> list[str]:
+    seen: set[str] = set()
+    for skill_ids in assignments.values():
+        seen.update(skill_ids)
+    return sorted(set(all_skills) - seen)
+
+
+def _validate_partition(
+    assignments: dict[str, list[str]],
+    *,
+    expected_categories: tuple[str, ...],
+    all_skills: list[str],
+    field: str,
+) -> None:
+    if set(assignments) != set(expected_categories):
+        raise ValidationError(
+            f"{field} must define exactly these categories: {', '.join(expected_categories)}"
+        )
+
+    seen: dict[str, str] = {}
+    for category in expected_categories:
+        for skill_id in assignments[category]:
+            if skill_id not in all_skills:
+                raise ValidationError(f"{field}.{category} references unknown public skill `{skill_id}`")
+            previous = seen.get(skill_id)
+            if previous is not None:
+                raise ValidationError(
+                    f"public skill `{skill_id}` appears in both `{field}.{previous}` and `{field}.{category}`"
+                )
+            seen[skill_id] = category
+
+    missing = partition_missing_skills(assignments, all_skills=all_skills)
+    if missing:
+        rendered = ", ".join(f"`{skill_id}`" for skill_id in missing)
+        guidance = _render_expected_locations(field, expected_categories)
+        raise ValidationError(
+            f"{field} does not classify every public skill; missing {rendered}. {guidance}."
+        )
+
+
+def validate_policy(data: dict[str, object], repo_root: Path) -> dict[str, dict[str, list[str]]]:
+    schema_version = data.get("schema_version")
+    if schema_version != 1:
+        raise ValidationError(f"{POLICY_PATH}: schema_version must be 1")
+
+    raw_tiers = data.get("tiers")
+    if not isinstance(raw_tiers, dict):
+        raise ValidationError(f"{POLICY_PATH}: `tiers` must be an object")
+    tiers = {
+        tier: _normalized_skill_list(raw_tiers.get(tier), field=f"tiers.{tier}")
+        for tier in VALID_TIERS
+    }
+
+    raw_requirements = data.get("adapter_requirements")
+    if not isinstance(raw_requirements, dict):
+        raise ValidationError(f"{POLICY_PATH}: `adapter_requirements` must be an object")
+    adapter_requirements = {
+        requirement: _normalized_skill_list(
+            raw_requirements.get(requirement),
+            field=f"adapter_requirements.{requirement}",
+        )
+        for requirement in VALID_ADAPTER_REQUIREMENTS
+    }
+    raw_fallback_policy = data.get("fallback_policy")
+    if not isinstance(raw_fallback_policy, dict):
+        raise ValidationError(f"{POLICY_PATH}: `fallback_policy` must be an object")
+    fallback_policy = {
+        mode: _normalized_skill_list(
+            raw_fallback_policy.get(mode),
+            field=f"fallback_policy.{mode}",
+        )
+        for mode in VALID_FALLBACK_POLICIES
+    }
+
+    all_skills = public_skill_ids(repo_root)
+    _validate_partition(tiers, expected_categories=VALID_TIERS, all_skills=all_skills, field="tiers")
+    _validate_partition(
+        adapter_requirements,
+        expected_categories=VALID_ADAPTER_REQUIREMENTS,
+        all_skills=all_skills,
+        field="adapter_requirements",
+    )
+    _validate_partition(
+        fallback_policy,
+        expected_categories=VALID_FALLBACK_POLICIES,
+        all_skills=all_skills,
+        field="fallback_policy",
+    )
+    blocked_without_adapter = sorted(
+        set(fallback_policy["block"]) - set(adapter_requirements["required"])
+    )
+    if blocked_without_adapter:
+        rendered = ", ".join(f"`{skill_id}`" for skill_id in blocked_without_adapter)
+        raise ValidationError(
+            f"fallback_policy.block must be a subset of adapter_requirements.required; missing {rendered}"
+        )
+    return {
+        "tiers": tiers,
+        "adapter_requirements": adapter_requirements,
+        "fallback_policy": fallback_policy,
+    }

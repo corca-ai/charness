@@ -337,7 +337,7 @@ def test_an_env_prefixed_command_is_a_command_not_an_assignment(tmp_path: Path) 
     scripts = tmp_path / "scripts"
     scripts.mkdir()
     (scripts / "run-quality.sh").write_text(
-        '#!/usr/bin/env bash\nqueue_selected "pytest" python3 scripts/run_standing_pytest.py\n',
+        '#!/usr/bin/env bash\nqueue_selected "pytest" python3 scripts/gates_support/run_standing_pytest.py\n',
         encoding="utf-8",
     )
 

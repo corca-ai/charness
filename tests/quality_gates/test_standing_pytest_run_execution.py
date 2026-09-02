@@ -55,7 +55,7 @@ def test_standing_pytest_runs_its_child_monitored_and_streamed(tmp_path: Path, m
     live progress goes silent, which is the regression a naive conversion makes
     and which no exit code would reveal.
     """
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     repo = tmp_path / "repo"
     (repo / "tests").mkdir(parents=True)
@@ -87,7 +87,7 @@ def test_standing_pytest_leaves_a_readable_record_of_a_run_that_finished(
 ) -> None:
     import json
 
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     repo = tmp_path / "repo"
     (repo / "tests").mkdir(parents=True)
@@ -120,7 +120,7 @@ def test_standing_pytest_run_record_survives_an_unwritable_state_dir(
     # Telemetry must never be why a suite fails. A runner that refused to run
     # because it could not write its own record would be strictly worse than one
     # with no record at all.
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -135,7 +135,7 @@ def test_standing_pytest_run_record_survives_an_unwritable_state_dir(
 
 
 def test_standing_pytest_run_record_is_external_runtime_telemetry(tmp_path: Path) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -149,7 +149,7 @@ def test_standing_pytest_run_record_is_external_runtime_telemetry(tmp_path: Path
 def test_standing_pytest_records_are_repo_scoped_under_a_shared_runtime_root(
     tmp_path: Path, monkeypatch
 ) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     first = tmp_path / "first"
     second = tmp_path / "second"
@@ -197,7 +197,7 @@ def test_print_last_run_reads_back_a_record_and_refuses_when_absent(
     the entire point of the record, because it is what a session reaches for
     after the run's own caller died.
     """
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -220,7 +220,7 @@ def test_print_last_run_reads_back_a_record_and_refuses_when_absent(
 def test_a_supplied_timeout_reaches_the_monitored_phase(tmp_path: Path, monkeypatch) -> None:
     # Only the None default was asserted; nothing proved a supplied value was
     # threaded through rather than dropped.
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     repo = tmp_path / "repo"
     (repo / "tests").mkdir(parents=True)
@@ -244,7 +244,7 @@ def test_a_supplied_timeout_reaches_the_monitored_phase(tmp_path: Path, monkeypa
 def test_the_heartbeat_interval_is_operator_overridable_and_refuses_nonsense(
     monkeypatch,
 ) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     monkeypatch.delenv(runner.HEARTBEAT_INTERVAL_ENV, raising=False)
     default = runner._heartbeat_seconds()
@@ -268,7 +268,7 @@ def test_an_interrupted_run_records_a_terminal_state_and_marks_its_basetemp(
     exists to remove. And an unmarked basetemp is never pruned, so every
     interrupted run would leak one permanently. Both were true until round 1.
     """
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     repo = tmp_path / "repo"
     (repo / "tests").mkdir(parents=True)
@@ -306,7 +306,7 @@ def test_sigterm_is_converted_so_the_guard_can_reap_the_child(monkeypatch) -> No
     kill takes the runner down and leaves the xdist tree running. The handler is
     what lets the guard's `except BaseException: _kill_tree` run first.
     """
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     before = signal.getsignal(signal.SIGTERM)
     with runner._terminate_reaps_the_child():
@@ -357,7 +357,7 @@ def test_a_wrapper_sigterm_reaps_the_real_child_tree(tmp_path: Path) -> None:
         "import sys\n"
         f"sys.path.insert(0, {str(ROOT)!r})\n"
         f"sys.path.insert(0, {str(ROOT / 'scripts')!r})\n"
-        "from scripts import run_standing_pytest as runner\n"
+        "from scripts.gates_support import run_standing_pytest as runner\n"
         "from types import SimpleNamespace\n"
         f"runner.build_pytest_command = lambda *a, **k: [{str(fake_pytest)!r}]\n"
         "runner.ensure_external_temp_root = lambda *a, **k: None\n"

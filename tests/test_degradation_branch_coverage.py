@@ -120,7 +120,7 @@ def test_changed_pool_fingerprint_failure_degrades_to_empty(monkeypatch, tmp_pat
     # coverage mapper resolves a changed file to its tests by looking for the DOTTED
     # module path, and a bare top-level import is invisible to it. Written that way,
     # this file covers the lines below while the gate still reports them uncovered.
-    from scripts import changed_line_run_trust as trust
+    from scripts.gates_support import changed_line_run_trust as trust
 
     def boom(*_args, **_kwargs):
         raise OSError("git unavailable")
@@ -134,7 +134,7 @@ def test_changed_pool_fingerprint_failure_degrades_to_empty(monkeypatch, tmp_pat
 
 
 def test_pin_run_state_reads_literal_head_once(monkeypatch, tmp_path) -> None:
-    from scripts import changed_line_run_trust as trust
+    from scripts.gates_support import changed_line_run_trust as trust
 
     calls: list[tuple[str, ...]] = []
 
@@ -270,7 +270,7 @@ def test_preflight_collects_an_unresolved_command_target_finding(tmp_path) -> No
 def test_quality_script_lookup_raises_when_absent(tmp_path) -> None:
     """A missing quality helper must name itself, not fail later as an AttributeError."""
     record_quality_runtime = load_script_module(
-        "record_quality_runtime_degradation_test", ROOT / "scripts" / "record_quality_runtime.py"
+        "record_quality_runtime_degradation_test", ROOT / "scripts" / "gates_support" / "record_quality_runtime.py"
     )
 
     with pytest.raises(FileNotFoundError) as excinfo:
@@ -483,7 +483,7 @@ def test_pin_run_state_survives_a_git_failure_in_the_fingerprint(monkeypatch, tm
     # coverage mapper resolves a changed file to its tests by looking for the DOTTED
     # module path, and a bare top-level import is invisible to it. Written that way,
     # this file covers the lines below while the gate still reports them uncovered.
-    from scripts import changed_line_run_trust as trust
+    from scripts.gates_support import changed_line_run_trust as trust
 
     def boom(*_args, **_kwargs):
         raise OSError("git not found")

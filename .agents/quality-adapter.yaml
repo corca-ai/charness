@@ -267,7 +267,7 @@ runtime_budget_profiles:
       # 52138ms max is drawn from the regime the gate now runs in.
       #
       # 2026-07-26 (b): 73000 lasted one day. `--maxschedchunk 1` (see
-      # `choose_sched_chunk` in scripts/run_standing_pytest.py) took this gate from
+      # `choose_sched_chunk` in scripts/gates_support/run_standing_pytest.py) took this gate from
       # 52.1s to 35.4s contended, which put 73000 at 2.04x the new median — the same
       # ratio the affinity-holes critique failed a bar for. 1.4x the 41702ms max of
       # the window at the time it was set; the window is 20/20 post-change and has
@@ -759,7 +759,7 @@ mutation_testing:
     # config literal names. This is the CALLER, not an opt-in flag: S6b-1 shipped
     # the same override on the changed-line gate with zero automated callers and
     # an adversarial reviewer measured that it therefore reached nobody.
-    sample: "python3 scripts/sample_mutation_files.py --repo-root . --test-command 'python3 scripts/run_standing_pytest.py --repo-root .'"
+    sample: "python3 scripts/sample_mutation_files.py --repo-root . --test-command 'python3 scripts/gates_support/run_standing_pytest.py --repo-root .'"
     summary: "python3 scripts/check_mutation_suite_score.py --repo-root ."
   score_break: 80
   schedule_cron: "17 */12 * * *"

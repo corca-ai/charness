@@ -1,6 +1,6 @@
 """The analyzed/changed COUNT PAIR every changed-line verdict carries.
 
-`scripts/changed_line_scope_counts.py` owns the scope split and its disclosure;
+`scripts/gates_support/changed_line_scope_counts.py` owns the scope split and its disclosure;
 these tests pin that EVERY verdict-emitting path of
 `scripts/check_changed_line_mutation_coverage.py` states how many of how many
 pool files it actually read, and that stating it changed no verdict.
@@ -34,7 +34,7 @@ COUNTS_KEY = "changed_pool_file_counts"
 
 def _load_scope_counts():
     return load_script_module(
-        "changed_line_scope_counts", ROOT / "scripts" / "changed_line_scope_counts.py"
+        "changed_line_scope_counts", ROOT / "scripts" / "gates_support" / "changed_line_scope_counts.py"
     )
 
 

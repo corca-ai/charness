@@ -470,7 +470,7 @@ def test_checked_in_mutation_workflow_installs_length_gate_binary_before_samplin
 def test_checked_in_workflows_install_ripgrep_before_running_the_standing_suite() -> None:
     """The same pin tokei got after #274, for the binary behind the 2026-08-22 outage.
 
-    `scripts/command_plan_preflight.py` resolves its inventory through `rg --files`
+    `scripts/gates_support/command_plan_preflight.py` resolves its inventory through `rg --files`
     and ubuntu-latest does not ship ripgrep. Absent rg the module refuses every plan
     with `rg-unavailable`, eight `test_command_plan_preflight.py` tests fail asserting
     codes they never reach, the sampler's coverage baseline goes red, and the mutation
@@ -480,7 +480,7 @@ def test_checked_in_workflows_install_ripgrep_before_running_the_standing_suite(
     than spelling that command in YAML. Keep the binary install next to the actual
     scheduled consumer and assert the adapter still points at the standing runner.
     """
-    suite_marker = "scripts/run_standing_pytest.py"
+    suite_marker = "scripts/gates_support/run_standing_pytest.py"
     mutation_body = MUTATION_WORKFLOW
     adapter = yaml.safe_load(
         (ROOT / ".agents" / "quality-adapter.yaml").read_text(encoding="utf-8")
@@ -591,7 +591,7 @@ def test_repo_quality_adapter_enables_mutation_sample_command() -> None:
     payload = load_quality_adapter(ROOT)
     assert payload["data"]["mutation_testing"]["commands"]["sample"] == (
         "python3 scripts/sample_mutation_files.py --repo-root . "
-        "--test-command 'python3 scripts/run_standing_pytest.py --repo-root .'"
+        "--test-command 'python3 scripts/gates_support/run_standing_pytest.py --repo-root .'"
     )
 
 

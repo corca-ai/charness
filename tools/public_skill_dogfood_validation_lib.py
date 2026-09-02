@@ -5,10 +5,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from scripts.public_skill_dogfood_lib import (
+from scripts.gates_support.public_skill_dogfood_lib import (
     DOGFOOD_PATH,
 )
-from scripts.public_skill_validation_lib import public_skill_ids
+from scripts.gates_support.public_skill_validation_lib import public_skill_ids
 
 
 class ValidationError(Exception):

@@ -24,7 +24,7 @@ _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artif
 ValidationError = _scripts_artifact_validator_module.ValidationError
 find_index = _scripts_artifact_validator_module.find_index
 
-_scripts_risk_interrupt_lib_module = import_repo_module(__file__, "scripts.risk_interrupt_lib")
+_scripts_risk_interrupt_lib_module = import_repo_module(__file__, "scripts.gates_support.risk_interrupt_lib")
 ALLOWED_RISK_CLASSES = _scripts_risk_interrupt_lib_module.ALLOWED_RISK_CLASSES
 FORCED_RISK_CLASSES = _scripts_risk_interrupt_lib_module.FORCED_RISK_CLASSES
 ALLOWED_GENERALIZATION_PRESSURE = _scripts_risk_interrupt_lib_module.ALLOWED_GENERALIZATION_PRESSURE

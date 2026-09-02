@@ -48,13 +48,13 @@ def test_structural_waste_reports_duplicate_pytest_collection(tmp_path: Path) ->
         "\n".join(
             [
                 "#!/usr/bin/env bash",
-                "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only",
+                "python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only",
                 "python3 -m pytest --collect-only -q tests",
             ]
         )
         + "\n",
     )
-    _write(repo / "scripts" / "run_standing_pytest.py", "print('runner')\n")
+    _write(repo / "scripts" / "gates_support" / "run_standing_pytest.py", "print('runner')\n")
 
     payload = _run_json(repo)
 
@@ -313,10 +313,10 @@ def test_structural_waste_text_output_prints_findings_and_candidates(tmp_path: P
     repo.mkdir()
     _write(
         repo / ".githooks" / "pre-push",
-        "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n"
+        "python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n"
         "python3 -m pytest --collect-only -q tests\n",
     )
-    _write(repo / "scripts" / "run_standing_pytest.py", "print('runner')\n")
+    _write(repo / "scripts" / "gates_support" / "run_standing_pytest.py", "print('runner')\n")
     _write(
         repo / "scripts" / "scan_everything.py",
         "from pathlib import Path\nimport ast\nfor path in Path('.').rglob('*.py'):\n    ast.parse(path.read_text())\n",

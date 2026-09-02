@@ -7,7 +7,7 @@ from pathlib import Path
 import yaml
 
 from scripts import capability_catalog as CAPABILITY_CATALOG
-from scripts.operator_acceptance_lib import SHARED_START_CANDIDATES, synthesize_operator_acceptance
+from scripts.gates_support.operator_acceptance_lib import SHARED_START_CANDIDATES, synthesize_operator_acceptance
 from tests.script_loader import load_script_module
 from tools.validate_quality_closeout_contract import validate_quality_closeout_contract
 

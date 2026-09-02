@@ -18,7 +18,7 @@ import host_hook_install_lib as lib
 import host_hook_skill_anchor_guard as guard
 import pytest
 
-import scripts.skill_issue_anchor_scan as anchor_scan
+import scripts.gates_support.skill_issue_anchor_scan as anchor_scan
 from scripts.post_edit_skill_anchor_guard import main as guard_main
 
 ROOT = Path(__file__).resolve().parents[1]

@@ -26,6 +26,7 @@ installed-plugin case, and the consuming repo owns no competing copy.
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import sys
 from pathlib import Path
@@ -57,7 +58,15 @@ _load_repo_runtime_bootstrap()
 try:
     from scripts.core.env_bypass import env_bypass_enabled
 except ModuleNotFoundError:
-    from scripts.core.env_bypass import env_bypass_enabled
+    _env_bypass_spec = importlib.util.spec_from_file_location(
+        "env_bypass", Path(__file__).with_name("env_bypass.py")
+    )
+    if _env_bypass_spec is None or _env_bypass_spec.loader is None:
+        raise
+    _env_bypass = importlib.util.module_from_spec(_env_bypass_spec)
+    sys.modules["env_bypass"] = _env_bypass
+    _env_bypass_spec.loader.exec_module(_env_bypass)
+    env_bypass_enabled = _env_bypass.env_bypass_enabled
 
 OVERRIDE_ENV = "CHARNESS_ALLOW_FOREIGN_HELPER"
 SOURCE_TREE_MARKER = Path("packaging") / "charness.json"

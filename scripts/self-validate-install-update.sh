@@ -25,7 +25,7 @@ GATE_ACCEPTS_REPO_ROOT_HATCH=0
 # shellcheck source=scripts/exported-copy-guard.sh
 source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
 
-python3 scripts/run_standing_pytest.py \
+python3 scripts/gates_support/run_standing_pytest.py \
   --repo-root "$REPO_ROOT" \
   --mode read-only \
   --include-release-only \

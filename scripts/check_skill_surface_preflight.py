@@ -12,11 +12,11 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
-_issue_anchor_scan = import_repo_module(__file__, "scripts.skill_issue_anchor_scan")
+_issue_anchor_scan = import_repo_module(__file__, "scripts.gates_support.skill_issue_anchor_scan")
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 run_processes_in_order = _subprocess_guard.run_processes_in_order
-_density = import_repo_module(__file__, "scripts.skill_core_density")
+_density = import_repo_module(__file__, "scripts.gates_support.skill_core_density")
 # Core-density accounting lives in its own module (cohesive split at the length
 # cap): the preflight owns the verdict, `skill_core_density` owns the count and
 # the exemption audit. Re-exported so the preflight stays the single import for

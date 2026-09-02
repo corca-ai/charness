@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import importlib.util
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -15,8 +16,25 @@ try:
     from scripts.core.repo_layout import support_dir
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:  # invoked directly with only the scripts directory importable
-    from scripts.core.repo_file_listing import RepoFileSnapshot, iter_matching_repo_files, iter_repo_files
-    from scripts.core.repo_layout import support_dir
+    _repo_file_listing_spec = importlib.util.spec_from_file_location(
+        "repo_file_listing",
+        Path(__file__).resolve().parents[1] / "scripts" / "core" / "repo_file_listing.py",
+    )
+    if _repo_file_listing_spec is None or _repo_file_listing_spec.loader is None:
+        raise
+    _repo_file_listing = importlib.util.module_from_spec(_repo_file_listing_spec)
+    _repo_file_listing_spec.loader.exec_module(_repo_file_listing)
+    RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
+    iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
+    iter_repo_files = _repo_file_listing.iter_repo_files
+    _repo_layout_spec = importlib.util.spec_from_file_location(
+        "repo_layout", Path(__file__).resolve().parents[1] / "scripts" / "core" / "repo_layout.py"
+    )
+    if _repo_layout_spec is None or _repo_layout_spec.loader is None:
+        raise
+    _repo_layout = importlib.util.module_from_spec(_repo_layout_spec)
+    _repo_layout_spec.loader.exec_module(_repo_layout)
+    support_dir = _repo_layout.support_dir
 
     from yaml_output import emit_yaml
 

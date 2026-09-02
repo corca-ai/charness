@@ -30,7 +30,7 @@ and generated surfaces the lane must not hand-edit.>
 ## Verification
 
 <The canonical runners, by name — never ad hoc pytest/py invocations:
-- focused tests: `python3 scripts/run_standing_pytest.py <paths>`;
+- focused tests: `python3 scripts/gates_support/run_standing_pytest.py <paths>`;
 - gate labels: `./scripts/run-quality.sh <label>` with the exact label;
 - Rust work: `cargo test` / `cargo fmt --check` /
   `cargo clippy -- -D warnings` / `cargo build --release` in

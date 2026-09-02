@@ -52,7 +52,7 @@ def artifact_with_delegated_review(*section_lines: str) -> str:
                 "- gate",
                 "## Runtime Signals",
                 "- runtime source: structured metrics from `.charness/quality/runtime-signals.json`"
-                " rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`.",
+                " rendered by `render_runtime_summary.py` via `scripts/gates_support/record_quality_runtime.py`.",
                 "- runtime hot spots: `pytest` 10s",
                 "- coverage gate: none",
                 "- evaluator depth: adapter bootstrap only",

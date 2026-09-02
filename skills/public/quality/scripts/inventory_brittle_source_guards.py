@@ -17,7 +17,7 @@ DEFAULT_MIN_PATTERN_CHARS = 40
 
 def _load_source_guard_scan_lib():
     for ancestor in Path(__file__).resolve().parents:
-        candidate = ancestor / "scripts" / "source_guard_scan_lib.py"
+        candidate = ancestor / "scripts" / "gates_support" / "source_guard_scan_lib.py"
         if candidate.is_file():
             spec = importlib.util.spec_from_file_location("source_guard_scan_lib", candidate)
             if spec is None or spec.loader is None:
@@ -25,7 +25,7 @@ def _load_source_guard_scan_lib():
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             return module
-    raise ImportError("scripts/source_guard_scan_lib.py not found")
+    raise ImportError("scripts/gates_support/source_guard_scan_lib.py not found")
 
 
 _source_guard_scan_lib = _load_source_guard_scan_lib()

@@ -50,7 +50,7 @@ DETAIL_COMMANDS = (
         ".",
     ),
     ("skills/public/release/scripts/plan_release_run.py", "--repo-root", "."),
-    ("scripts/plan_risk_interrupt.py", "--repo-root", "."),
+    ("scripts/gates_support/plan_risk_interrupt.py", "--repo-root", "."),
     (
         "skills/public/quality/scripts/suggest_public_skill_dogfood.py",
         "--repo-root",
@@ -102,7 +102,7 @@ JSON_FLAG_MUST_BE_UNRECOGNIZED = (
     ),
     ("tools/check_public_doc_coupling.py", "--repo-root", "."),
     ("scripts/check_skill_ownership_overlap.py", "--repo-root", "."),
-    ("scripts/dup_ratchet_edit_advisory.py", "--repo-root", ".", "--path", "README.md"),
+    ("scripts/gates_support/dup_ratchet_edit_advisory.py", "--repo-root", ".", "--path", "README.md"),
     ("scripts/init_lesson_ledger.py", "--repo-root", "."),
     ("tools/inventory_skill_script_references.py", "--repo-root", ".", "--strict"),
     ("scripts/measure_inventory_consumption_floor.py", "--repo-root", "."),

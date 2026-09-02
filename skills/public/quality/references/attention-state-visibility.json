@@ -14,7 +14,7 @@
     "terminal_payload"
   ],
   "files": {
-    "scripts/announcement_verification_lib.py": {
+    "scripts/gates_support/announcement_verification_lib.py": {
       "states": [
         "skipped"
       ],
@@ -230,7 +230,7 @@
       ],
       "rationale": "Skipped upstream checks are surfaced as per-record errors in the drift report."
     },
-    "scripts/classify_t_signal.py": {
+    "scripts/gates_support/classify_t_signal.py": {
       "states": [
         "skipped"
       ],
@@ -317,7 +317,7 @@
       ],
       "rationale": "Not a gate: the shared renderer the findings-shaped gates emit through. render_findings_with_skipped owns the \"Not proven\" tail for every caller, and it appends that tail to the PASS output as well as the fail output -- a bare \"validated N invocations\" reads as full coverage of a surface and a gate that skipped anything has not covered it. The literal lives here rather than in each gate, which is why the callers declare the `skipped` state and this file declares the term that renders it."
     },
-    "scripts/github_actions_lib.py": {
+    "scripts/gates_support/github_actions_lib.py": {
       "states": [
         "skipped"
       ],
@@ -396,7 +396,7 @@
       ],
       "rationale": "Plugin preamble prints disabled runtime self-update status."
     },
-    "scripts/removed_name_consumers.py": {
+    "scripts/gates_support/removed_name_consumers.py": {
       "states": [
         "skipped"
       ],

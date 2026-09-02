@@ -6,7 +6,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
-from scripts import claude_session_jsonl_audit, codex_session_jsonl_audit
+from scripts.gates_support import claude_session_jsonl_audit, codex_session_jsonl_audit
 
 ISO_TS_PREFIX = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
 

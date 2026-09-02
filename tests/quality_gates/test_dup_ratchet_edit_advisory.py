@@ -46,7 +46,7 @@ def _load_module(relpath: str, name: str):
 
 @pytest.fixture(scope="module")
 def advisory():
-    return _load_module("scripts/dup_ratchet_edit_advisory.py", "_dup_edit_advisory")
+    return _load_module("scripts/gates_support/dup_ratchet_edit_advisory.py", "_dup_edit_advisory")
 
 
 def _tree_snapshot(root: Path) -> tuple[tuple[str, bytes], ...]:
@@ -262,8 +262,8 @@ def test_missing_scope_resolver_stays_conservative(tmp_path: Path, advisory, mon
     helper = tmp_path / "skills/public/quality/scripts/dup_ratchet_scope.py"
     helper.parent.mkdir(parents=True)
     helper.write_text("# resolver unavailable\n", encoding="utf-8")
-    module_path = tmp_path / "scripts/dup_ratchet_edit_advisory.py"
-    module_path.parent.mkdir()
+    module_path = tmp_path / "scripts/gates_support/dup_ratchet_edit_advisory.py"
+    module_path.parent.mkdir(parents=True)
     monkeypatch.setattr(advisory, "__file__", str(module_path))
     monkeypatch.setattr(advisory.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
     assert advisory._resolve_scope_prefixes(tmp_path, ("scripts",)) == ([], ["scripts"])
@@ -273,8 +273,8 @@ def test_scope_resolver_import_failure_stays_conservative(tmp_path: Path, adviso
     helper = tmp_path / "skills/public/quality/scripts/dup_ratchet_scope.py"
     helper.parent.mkdir(parents=True)
     helper.write_text("def resolve_scope_prefixes(_roots): return (None, [])\n", encoding="utf-8")
-    module_path = tmp_path / "scripts/dup_ratchet_edit_advisory.py"
-    module_path.parent.mkdir()
+    module_path = tmp_path / "scripts/gates_support/dup_ratchet_edit_advisory.py"
+    module_path.parent.mkdir(parents=True)
     monkeypatch.setattr(advisory, "__file__", str(module_path))
 
     def fail_import(_spec):

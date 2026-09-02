@@ -79,7 +79,7 @@ def _emit_dup_ratchet_advisory(repo_root: Path, raw_path: str) -> None:
         rel = repo_relpath(repo_root, raw_path)
         if rel is None:
             return
-        advisory = import_repo_module(__file__, "scripts.dup_ratchet_edit_advisory")
+        advisory = import_repo_module(__file__, "scripts.gates_support.dup_ratchet_edit_advisory")
         message = advisory.advise_for_edited_file(repo_root, rel)
         if not message:
             return
@@ -133,7 +133,7 @@ def main(argv: list[str] | None = None, stdin: Any = None) -> int:
         # Edited file already gone (rename/delete after the edit): nothing to
         # scan, and nothing was claimed about it.
         return 0
-    scan = import_repo_module(__file__, "scripts.skill_issue_anchor_scan")
+    scan = import_repo_module(__file__, "scripts.gates_support.skill_issue_anchor_scan")
     try:
         report = scan.scan_issue_anchors(repo_root, [rel])
     except scan.IssueAnchorScanError as exc:

@@ -60,7 +60,7 @@ def test_a_signal_handler_that_cannot_be_installed_is_reported_not_swallowed(cap
     Its own docstring says a swallowed install is REPORTED, "not silent", because
     off the main thread the tolerated outcome IS the orphaned-tree behaviour the
     handler exists to remove. That sentence had no test."""
-    record = import_repo_module(_ANCHOR, "scripts.standing_pytest_run_record")
+    record = import_repo_module(_ANCHOR, "scripts.gates_support.standing_pytest_run_record")
     real_signal = signal.signal
 
     def refuse(_number, _handler):
@@ -84,7 +84,7 @@ def test_restoring_a_non_python_previous_handler_is_skipped_rather_than_passed_b
     `signal.signal` returns None when the previous handler was not installed from
     Python; passing None back raises TypeError, which on the interrupt path would
     unwind INSTEAD of the KeyboardInterrupt and replace the real cause."""
-    record = import_repo_module(_ANCHOR, "scripts.standing_pytest_run_record")
+    record = import_repo_module(_ANCHOR, "scripts.gates_support.standing_pytest_run_record")
     real_signal = signal.signal
     restored: list[object] = []
 
@@ -107,7 +107,7 @@ def test_a_failing_restore_does_not_escape_the_context_manager() -> None:
 
     The restore runs in a `finally`; an exception raised there would replace
     whatever the body was already unwinding with."""
-    record = import_repo_module(_ANCHOR, "scripts.standing_pytest_run_record")
+    record = import_repo_module(_ANCHOR, "scripts.gates_support.standing_pytest_run_record")
     real_signal = signal.signal
     calls: list[int] = []
 
@@ -196,7 +196,7 @@ def test_the_gate_cli_module_puts_the_repo_root_on_the_path_when_absent(monkeypa
     # import then only resolves BECAUSE line 19 ran.
     spec = importlib.util.spec_from_file_location(
         "changed_line_gate_cli_direct_invocation_probe",
-        ROOT / "scripts/changed_line_gate_cli.py",
+        ROOT / "scripts/gates_support/changed_line_gate_cli.py",
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

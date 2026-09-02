@@ -18,7 +18,7 @@ def _load_skill_runtime_bootstrap():
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
-_verification_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.announcement_verification_lib")
+_verification_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.gates_support.announcement_verification_lib")
 DELIVERY_VERIFICATION_STATUSES = _verification_lib.DELIVERY_VERIFICATION_STATUSES
 evaluate_delivery_verification = _verification_lib.evaluate_delivery_verification
 evaluate_delivery_kind_agreement = _verification_lib.evaluate_delivery_kind_agreement

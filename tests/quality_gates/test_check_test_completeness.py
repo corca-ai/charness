@@ -38,7 +38,7 @@ def test_check_test_completeness_accepts_directory_and_glob_targets(
 def test_completeness_accepts_targets_expanded_from_the_adapter(
     tmp_path: Path, monkeypatch
 ) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     repo = tmp_path / "consumer"
     _write(repo / "src" / "tests" / "test_selected.py")

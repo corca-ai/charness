@@ -22,7 +22,7 @@ from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
 
-CLASSIFY_T_SIGNAL = load_script_module("classify_t_signal_batch1", ROOT / "scripts" / "classify_t_signal.py")
+CLASSIFY_T_SIGNAL = load_script_module("classify_t_signal_batch1", ROOT / "scripts" / "gates_support" / "classify_t_signal.py")
 COLLECT_COMMITS = load_script_module(
     "collect_commits_batch1", ROOT / "skills/public/announcement/scripts/collect_commits.py"
 )
@@ -127,7 +127,7 @@ def test_a_skill_script_outside_a_charness_tree_names_the_missing_bootstrap(
 
 
 # --------------------------------------------------------------------------
-# scripts/classify_t_signal.py
+# scripts/gates_support/classify_t_signal.py
 # --------------------------------------------------------------------------
 
 

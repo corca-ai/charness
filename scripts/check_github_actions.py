@@ -11,7 +11,7 @@ from yaml_output import render_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_github_actions_lib_module = import_repo_module(__file__, "scripts.github_actions_lib")
+_scripts_github_actions_lib_module = import_repo_module(__file__, "scripts.gates_support.github_actions_lib")
 collect_github_actions_drift = _scripts_github_actions_lib_module.collect_github_actions_drift
 
 # Folded in from the deleted human renderer. Output is unconditionally YAML now,

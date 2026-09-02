@@ -274,7 +274,7 @@
         "skills/shared/**",
         "docs/public-skill-validation.json",
         "docs/public-skill-validation.md",
-        "scripts/public_skill_validation_lib.py",
+        "scripts/gates_support/public_skill_validation_lib.py",
         "tools/validate_public_skill_validation.py",
         "tools/suggest_public_skill_validation.py"
       ],
@@ -295,7 +295,7 @@
         "skills/shared/**",
         "docs/public-skill-dogfood.json",
         "docs/public-skill-dogfood.md",
-        "scripts/public_skill_dogfood_lib.py",
+        "scripts/gates_support/public_skill_dogfood_lib.py",
         "scripts/suggest_public_skill_dogfood.py",
         "tools/validate_public_skill_dogfood.py"
       ],
@@ -869,7 +869,7 @@
         "python3 scripts/check_test_repo_copy_invariants.py --repo-root .",
         "python3 scripts/check_subprocess_form.py --repo-root . --require-git-file-listing",
         "./scripts/check-shell.sh",
-        "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only"
+        "python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only"
       ],
       "notes": [
         "Use targeted tests when iterating, but close out on the strongest standing Python gates the slice touched.",
@@ -891,7 +891,7 @@
         "skills/public/quality/scripts/inventory_skill_ergonomics.py",
         "skills/public/quality/scripts/inventory_standing_test_economics.py",
         "skills/public/quality/scripts/render_runtime_summary.py",
-        "scripts/lint_ignore_inventory_lib.py",
+        "scripts/gates_support/lint_ignore_inventory_lib.py",
         "scripts/check_code_lengths.py",
         "scripts/capability_catalog_sources.py",
         "skills/public/quality/references/automation-promotion.md",

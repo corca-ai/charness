@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Layout-independent entrypoint for `<authoring-repo>/scripts/plan_risk_interrupt.py` (#477).
+"""Layout-independent entrypoint for `<authoring-repo>/scripts/gates_support/plan_risk_interrupt.py` (#477).
 
 `impl` and `spec` invoked the planner as
-`$SKILL_DIR/../../../scripts/plan_risk_interrupt.py`. Three levels up reaches the
+`$SKILL_DIR/../../../scripts/gates_support/plan_risk_interrupt.py`. Three levels up reaches the
 repo root from `skills/public/<skill>` and OVERSHOOTS from
 `plugins/<pkg>/skills/<skill>`, where the exported scripts sit two levels up — so
 the command resolved in the authoring tree and nowhere else, silently, because

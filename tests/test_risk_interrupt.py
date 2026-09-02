@@ -8,8 +8,8 @@ import yaml
 from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[1]
-_plan_risk_interrupt_cli = import_repo_module(__file__, "scripts.plan_risk_interrupt")
-_risk_interrupt_lib = import_repo_module(__file__, "scripts.risk_interrupt_lib")
+_plan_risk_interrupt_cli = import_repo_module(__file__, "scripts.gates_support.plan_risk_interrupt")
+_risk_interrupt_lib = import_repo_module(__file__, "scripts.gates_support.risk_interrupt_lib")
 
 
 def seed_repo(tmp_path: Path, *, debug_body: str, spec_body: str | None = None) -> Path:
@@ -204,5 +204,5 @@ def test_plan_risk_interrupt_cli_checks_helper_provenance_before_planning(
     )
 
     assert _plan_risk_interrupt_cli.main() == 0
-    assert calls == [(ROOT / "scripts" / "plan_risk_interrupt.py", repo.resolve(), "tree")]
+    assert calls == [(ROOT / "scripts" / "gates_support" / "plan_risk_interrupt.py", repo.resolve(), "tree")]
     assert yaml.safe_load(capsys.readouterr().out)["status"] == "not-applicable"

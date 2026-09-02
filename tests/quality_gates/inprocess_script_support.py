@@ -29,9 +29,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_supply_chain_online",
         ROOT / "scripts" / "check_supply_chain_online.py",
     ),
-    "scripts/list_external_links.py": (
+    "scripts/gates_support/list_external_links.py": (
         "tests.quality_gates.support_list_external_links",
-        ROOT / "scripts" / "list_external_links.py",
+        ROOT / "scripts" / "gates_support" / "list_external_links.py",
     ),
     "scripts/measure_inventory_marker_rule.py": (
         "tests.quality_gates.support_measure_inventory_marker_rule",
@@ -61,9 +61,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_changed_surfaces",
         ROOT / "scripts" / "check_changed_surfaces.py",
     ),
-    "scripts/command_plan_preflight.py": (
+    "scripts/gates_support/command_plan_preflight.py": (
         "tests.quality_gates.support_command_plan_preflight",
-        ROOT / "scripts" / "command_plan_preflight.py",
+        ROOT / "scripts" / "gates_support" / "command_plan_preflight.py",
     ),
     "tools/check_bootstrap_shim_consistency.py": (
         "tests.quality_gates.support_check_bootstrap_shim_consistency",
@@ -193,9 +193,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_cli_skill_surface",
         ROOT / "scripts" / "check_cli_skill_surface.py",
     ),
-    "scripts/select_verifiers.py": (
+    "scripts/gates_support/select_verifiers.py": (
         "tests.quality_gates.support_select_verifiers",
-        ROOT / "scripts" / "select_verifiers.py",
+        ROOT / "scripts" / "gates_support" / "select_verifiers.py",
     ),
     "skills/public/retro/scripts/check_auto_trigger.py": (
         "tests.quality_gates.support_check_auto_trigger",
@@ -489,9 +489,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_python_runtime_inheritance",
         ROOT / "scripts" / "check_python_runtime_inheritance.py",
     ),
-    "scripts/render_cli_reference.py": (
+    "scripts/gates_support/render_cli_reference.py": (
         "tests.quality_gates.support_render_cli_reference",
-        ROOT / "scripts" / "render_cli_reference.py",
+        ROOT / "scripts" / "gates_support" / "render_cli_reference.py",
     ),
     "scripts/build_debug_seam_risk_index.py": (
         "tests.quality_gates.support_build_debug_seam_risk_index",
@@ -509,9 +509,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_release_changed_line_coverage",
         ROOT / "scripts" / "release_changed_line_coverage.py",
     ),
-    "scripts/removed_name_consumers.py": (
+    "scripts/gates_support/removed_name_consumers.py": (
         "tests.quality_gates.support_removed_name_consumers",
-        ROOT / "scripts" / "removed_name_consumers.py",
+        ROOT / "scripts" / "gates_support" / "removed_name_consumers.py",
     ),
     "scripts/check_test_repo_copy_invariants.py": (
         "tests.quality_gates.support_check_test_repo_copy_invariants",

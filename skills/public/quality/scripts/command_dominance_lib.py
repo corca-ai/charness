@@ -6,7 +6,7 @@ A *dominated* command is one that buys the same evidence as a cheaper command th
 repo already has. A dominated instruction is not a FALSE one, which is why every
 review angle this repo ships passes it: `python3 -m pytest -q ... tests` really
 does re-prove the suite. It just costs ~22 minutes where
-`python3 scripts/run_standing_pytest.py` costs ~84 seconds over the same scope.
+`python3 scripts/gates_support/run_standing_pytest.py` costs ~84 seconds over the same scope.
 Review is aimed at falsity, so cost needs a deterministic reader instead.
 
 WHAT THIS MECHANISM CANNOT SEE, stated before the detector rather than after a
@@ -123,10 +123,10 @@ def resolve_invocations(
     """Every `(program, argv-after-program)` a command chunk actually runs.
 
     The whole point of resolving rather than substring-matching: the REPLACEMENT
-    for the bare-pytest rule is `python3 scripts/run_standing_pytest.py`, whose
+    for the bare-pytest rule is `python3 scripts/gates_support/run_standing_pytest.py`, whose
     text contains `pytest`. A reader that asks "does this mention pytest" reports
     the fix as the defect. This resolves the program to
-    `scripts/run_standing_pytest.py` and the rule never fires on it.
+    `scripts/gates_support/run_standing_pytest.py` and the rule never fires on it.
 
     A LIST rather than one result, because `bash -c '<command>'` runs a command
     this reader can still see -- the inner text is a token, not an indirection

@@ -544,7 +544,7 @@ def seed_quality_python_binary_stub(target_dir: Path) -> None:
                 '  echo "quality success output from pytest"',
                 "  exit 0",
                 "fi",
-                'if [[ "${1:-}" == "scripts/record_quality_runtime.py" ]]; then',
+                'if [[ "${1:-}" == "scripts/gates_support/record_quality_runtime.py" ]]; then',
                 "  exit 0",
                 "fi",
                 f'exec {real_python!r} "$@"',
@@ -629,6 +629,7 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     bin_dir = repo / "bin"
     quality_scripts_dir = repo / "skills" / "public" / "quality" / "scripts"
     scripts_dir.mkdir(parents=True)
+    (scripts_dir / "gates_support").mkdir()
     tools_dir.mkdir()
     hooks_dir.mkdir()
     bin_dir.mkdir()
@@ -656,10 +657,10 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     shutil.copy2(ROOT / "scripts" / "proof_receipt.py", scripts_dir / "proof_receipt.py")
     (scripts_dir / "proof_receipt.py").chmod(0o755)
     shutil.copy2(
-        ROOT / "scripts" / "run_standing_pytest.py",
-        scripts_dir / "run_standing_pytest.py",
+        ROOT / "scripts" / "gates_support" / "run_standing_pytest.py",
+        scripts_dir / "gates_support" / "run_standing_pytest.py",
     )
-    (scripts_dir / "run_standing_pytest.py").chmod(0o755)
+    (scripts_dir / "gates_support" / "run_standing_pytest.py").chmod(0o755)
     # Copied rather than stubbed: the runner reads it at startup to build the label
     # universe it asserts every queued label against (#546). A stub returning nothing
     # would disable that assertion in every runner test -- the harness would then
@@ -675,6 +676,12 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     # rather than stubbed BECAUSE a stub is exactly the wrong repair here -- the
     # runner would fall back to an unmonitored child and the harness would keep
     # passing over the untracked process tree this slice exists to fix.
+    support_names = {
+        "standing_pytest_basetemp.py",
+        "standing_pytest_run_record.py",
+        "standing_pytest_environment.py",
+        "run_standing_pytest.py",
+    }
     for real_name in (
         "quality_label_universe.py",
         "runtime_bootstrap.py",
@@ -717,8 +724,18 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         "inventory_nose_clones_unavailable.py",
         "release_changed_line_coverage_unavailable.py",
     ):
-        shutil.copy2(ROOT / "scripts" / real_name, scripts_dir / real_name)
-        (scripts_dir / real_name).chmod(0o755)
+        if real_name == "subprocess_guard.py":
+            source = ROOT / "scripts" / "core" / real_name
+            destination = scripts_dir / "core" / real_name
+        elif real_name in support_names:
+            source = ROOT / "scripts" / "gates_support" / real_name
+            destination = scripts_dir / "gates_support" / real_name
+        else:
+            source = ROOT / "scripts" / real_name
+            destination = scripts_dir / real_name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+        destination.chmod(0o755)
     for real_name in ("adapter_validators.py", "runtime_budget_intent.py"):
         shutil.copy2(
             ROOT / "skills" / "public" / "quality" / "scripts" / real_name,

@@ -126,9 +126,9 @@ def render_markdown_lines(report: dict[str, object], *, repo_root: Path, signals
                 f"({timing_log.get('samples_total')} samples); profile `{profile}`."
             )
         else:
-            recorder = repo_root / "scripts" / "record_quality_runtime.py"
+            recorder = repo_root / "scripts" / "gates_support" / "record_quality_runtime.py"
             provenance = (
-                " via `scripts/record_quality_runtime.py`"
+                " via `scripts/gates_support/record_quality_runtime.py`"
                 if recorder.is_file()
                 else ""
             )

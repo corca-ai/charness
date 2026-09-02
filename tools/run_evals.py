@@ -18,7 +18,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 # Process width has one owner in this repo: the standing pytest runner, which decides
 # xdist worker count from affinity. Consumed here rather than re-derived so a third
 # copy of the affinity question cannot drift from the other two.
-usable_cpu_count = import_repo_module(__file__, "scripts.run_standing_pytest").usable_cpu_count
+usable_cpu_count = import_repo_module(__file__, "scripts.gates_support.run_standing_pytest").usable_cpu_count
 _scripts_subprocess_guard_module = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _scripts_subprocess_guard_module.run_process
 _tools_eval_setup_module = import_repo_module(__file__, "tools.eval_setup")
@@ -323,7 +323,7 @@ def scenario_representative_skill_contracts(root: Path) -> None:
 
 def scenario_support_sync_contracts(root: Path) -> None:
     result = run_command(
-        [sys.executable, "scripts/eval_support_sync_contracts.py", "--repo-root", str(root)],
+        [sys.executable, "scripts/gates_support/eval_support_sync_contracts.py", "--repo-root", str(root)],
         cwd=root,
     )
     expect_success(result, "support-sync dry-run contracts")

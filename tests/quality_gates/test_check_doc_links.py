@@ -11,8 +11,8 @@ from .support import ROOT, run_script
 
 _check_doc_links = import_repo_module(ROOT / "scripts/check_doc_links.py", "scripts.check_doc_links")
 _portable_command_carrier = load_path_module(
-    "scripts.portable_command_carrier_test_surface",
-    ROOT / "scripts" / "portable_command_carrier.py",
+    "scripts.gates_support.portable_command_carrier_test_surface",
+    ROOT / "scripts" / "gates_support" / "portable_command_carrier.py",
 )
 
 

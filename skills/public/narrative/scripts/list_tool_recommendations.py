@@ -17,7 +17,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _RECOMMENDATION_LIB = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.tool_recommendation_lib"
+    __file__, "scripts.gates_support.tool_recommendation_lib"
 )
 role_recommendation_payload = _RECOMMENDATION_LIB.role_recommendation_payload
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")

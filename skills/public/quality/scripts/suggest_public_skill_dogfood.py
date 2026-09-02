@@ -27,11 +27,11 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 
 
-_scripts_public_skill_dogfood_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.public_skill_dogfood_lib")
+_scripts_public_skill_dogfood_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.gates_support.public_skill_dogfood_lib")
 build_matrix = _scripts_public_skill_dogfood_lib_module.build_matrix
 format_human = _scripts_public_skill_dogfood_lib_module.format_human
 policy_applicability_report = _scripts_public_skill_dogfood_lib_module.policy_applicability_report
-_scripts_public_skill_validation_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.public_skill_validation_lib")
+_scripts_public_skill_validation_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.gates_support.public_skill_validation_lib")
 public_skill_ids = _scripts_public_skill_validation_lib_module.public_skill_ids
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()

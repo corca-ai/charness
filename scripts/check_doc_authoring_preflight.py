@@ -300,7 +300,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.path is None:
         # Rules with no target: the other half of the same question, owned by
         # `doc_authoring_rules` and imported here so one command answers both.
-        rules_module = import_repo_module(__file__, "scripts.doc_authoring_rules")
+        rules_module = import_repo_module(__file__, "scripts.gates_support.doc_authoring_rules")
         try:
             rules = rules_module.build_rules(repo_root)
         except rules_module.PreflightError as exc:

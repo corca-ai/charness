@@ -9,7 +9,7 @@ from runtime_bootstrap import import_repo_module
 from .repo_shapes import install_committed_repo
 from .support import ROOT, run_script
 
-_removed = import_repo_module(ROOT / "scripts/removed_name_consumers.py", "scripts.removed_name_consumers")
+_removed = import_repo_module(ROOT / "scripts/gates_support/removed_name_consumers.py", "scripts.gates_support.removed_name_consumers")
 
 # The real incident, transcribed. `LINK_RE` moved out of `check_doc_links.py` into
 # a shared module — a correct refactor — while `check_doc_authoring_preflight.py`
@@ -197,7 +197,7 @@ def test_the_cli_separates_a_clean_tree_from_an_unexamined_one(tmp_path: Path) -
     repo = seeded_repo(tmp_path / "repo", {"scripts/x.py": "V = 1\n"})
 
     result = run_script(
-        "scripts/removed_name_consumers.py",
+        "scripts/gates_support/removed_name_consumers.py",
         "--repo-root", str(repo),
         "--against", "no-such-ref",
         "--paths", "scripts/x.py",

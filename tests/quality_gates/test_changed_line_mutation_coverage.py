@@ -839,7 +839,7 @@ def test_the_gate_refuses_when_it_could_not_inspect_the_tree(tmp_path: Path, mon
     normal mid-work state; a broken git inheriting that leniency would be one
     cause borrowing another's justification.
     """
-    from scripts.changed_line_run_trust import INSPECTION_FAILED, TrustProbe
+    from scripts.gates_support.changed_line_run_trust import INSPECTION_FAILED, TrustProbe
 
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
     cov = _write_coverage(repo, executed=[1, 2, 5, 6], missing=[])
@@ -937,7 +937,7 @@ def test_the_scope_mismatch_return_carries_the_limit_disclosure_too(tmp_path: Pa
     own disclosure, so returning there dropped `unanalyzed_changed_pool_files`
     and the operator saw one reason and not the other.
     """
-    from scripts.changed_line_run_trust import SCOPE_MISMATCH, TrustProbe
+    from scripts.gates_support.changed_line_run_trust import SCOPE_MISMATCH, TrustProbe
 
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)

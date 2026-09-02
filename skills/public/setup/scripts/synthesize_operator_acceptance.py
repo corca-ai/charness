@@ -20,7 +20,7 @@ yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "script
 
 
 
-_scripts_operator_acceptance_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.operator_acceptance_lib")
+_scripts_operator_acceptance_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.gates_support.operator_acceptance_lib")
 synthesize_operator_acceptance = _scripts_operator_acceptance_lib_module.synthesize_operator_acceptance
 
 

@@ -72,7 +72,7 @@ The advisory never blocks; the length gate is the hard floor.
 A `skills/public/**` or `skills/support/**` `SKILL.md` core (frontmatter and body
 outside the exempt `## Load-Bearing Anchors` / `## References` /
 `## Closeout Vocabulary` sections — exempt only up to each heading's budget in
-[`scripts/skill_core_density.py`](../scripts/skill_core_density.py), with the
+[`scripts/gates_support/skill_core_density.py`](../scripts/gates_support/skill_core_density.py), with the
 overflow charged back to the count) is governed
 by *two* separate limits: a hard `core_nonempty` ceiling of **160** lines, and a
 broad-gate test that additionally requires at least **4** lines of headroom below

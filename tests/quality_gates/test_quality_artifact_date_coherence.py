@@ -26,7 +26,7 @@ ValidationError = _validate_quality_artifact.ValidationError
 
 RUNTIME_SOURCE = (
     "structured metrics from `.charness/quality/runtime-signals.json`"
-    " rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`."
+    " rendered by `render_runtime_summary.py` via `scripts/gates_support/record_quality_runtime.py`."
 )
 QUALITY_FAMILY = ROOT / "charness-artifacts" / "quality"
 

@@ -75,7 +75,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts import changed_line_verdict_codes as _verdict_codes  # noqa: E402
+from scripts.gates_support import changed_line_verdict_codes as _verdict_codes  # noqa: E402
 from scripts import mutation_coverage_producer as _producer  # noqa: E402
 from scripts import suggest_mutation_coverage_command as _suggest  # noqa: E402
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402

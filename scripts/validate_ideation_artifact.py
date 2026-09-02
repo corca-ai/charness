@@ -11,7 +11,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 # The required-fields / unique-id / typed-enum loop over a structured-entry
 # section, shared with the critique `## Structured Findings` floor.
-_structured_entry_floor = import_repo_module(__file__, "scripts.structured_entry_floor")
+_structured_entry_floor = import_repo_module(__file__, "scripts.gates_support.structured_entry_floor")
 ValidationError = _artifact_validator.ValidationError
 report_validation_failure = _artifact_validator.report_validation_failure
 run_changed_artifact_validator = _artifact_validator.run_changed_artifact_validator

@@ -272,7 +272,7 @@ the evidence is sufficient for the boundary at hand.
 
 - Question: Should [`record_announcement.py`](../skills/public/announcement/scripts/record_announcement.py) accept `--verification-status confirmed` for an external write (e.g. `human-backend`) on a caller self-attestation, or require an *independent* channel/observer (the north-star P4 distinct-channel test) before a delivery may be recorded `confirmed`?
 - Current choice: DECLINED (2026-07-04, operator decision) — not pursuing; accept the disclosed presence-floor residual as-is. Surfaced by the PR #419 adversarial verification and confirmed by an independent verifier: the floor enforces the *presence* of a typed verification record, not its *independence*, so a same-observer `confirmed` passes. The code openly frames itself as a presence/typed-disposition floor, so this is a disclosed residual, not a regression. Tightening it would change what passes at an irreversible boundary and would need its own critique cycle (likely an adapter-contract seam for the independent readback); the operator judged that cost not worth it for a disclosed presence floor.
-- Impact surfaces: [record_announcement.py](../skills/public/announcement/scripts/record_announcement.py), [announcement_verification_lib.py](../scripts/announcement_verification_lib.py), [delivery-seams.md](../skills/public/announcement/references/delivery-seams.md), [adapter-contract.md](../skills/public/announcement/references/adapter-contract.md).
+- Impact surfaces: [record_announcement.py](../skills/public/announcement/scripts/record_announcement.py), [announcement_verification_lib.py](../scripts/gates_support/announcement_verification_lib.py), [delivery-seams.md](../skills/public/announcement/references/delivery-seams.md), [adapter-contract.md](../skills/public/announcement/references/adapter-contract.md).
 - Reopen trigger: An announcement is recorded `confirmed` on a self-attestation that later proves wrong, or the delivery-verification seam is touched for another reason.
 
 ### D35. Release distinct-channel probe shape-match is loose against same-proxy commands
@@ -380,7 +380,7 @@ check.
 
 - Question: Should `tests_referencing_paths` resolve a changed script from a bare `import <stem>` / `from <stem> import ...`, or should the repo require the dotted `from scripts import <stem>` form in tests?
 - Current choice: Defer the mapper change; fix the call sites. The two tests found this way now use the dotted form, and the convention is the cheaper half.
-- Why now: surfaced by dogfooding the armed lane on its own slice. [test_degradation_branch_coverage.py](../tests/test_degradation_branch_coverage.py) covered `scripts/changed_line_run_trust.py:103-104` and the gate still reported those lines uncovered, because the test imported the module as a bare top-level name. [suggest_mutation_coverage_command.py](../scripts/suggest_mutation_coverage_command.py) builds its module map from `_module_name(path)` (`scripts.changed_line_run_trust`), so a bare import matches none of its patterns — not the quoted path, not the dotted module, not an import statement, not the stem-as-call-argument form. The blind spot is repo-wide: a conftest puts `scripts/` on `sys.path`, so the bare form works at runtime and several existing tests already use it.
+- Why now: surfaced by dogfooding the armed lane on its own slice. [test_degradation_branch_coverage.py](../tests/test_degradation_branch_coverage.py) covered `scripts/gates_support/changed_line_run_trust.py:103-104` and the gate still reported those lines uncovered, because the test imported the module as a bare top-level name. [suggest_mutation_coverage_command.py](../scripts/suggest_mutation_coverage_command.py) builds its module map from `_module_name(path)` (`scripts.gates_support.changed_line_run_trust`), so a bare import matches none of its patterns — not the quoted path, not the dotted module, not an import statement, not the stem-as-call-argument form. The blind spot is repo-wide: a conftest puts `scripts/` on `sys.path`, so the bare form works at runtime and several existing tests already use it.
 - Why deferral is right at the time: the obvious widening (match `import <stem>` for every pool file's stem) is a mapper change on a surface that now feeds a BLOCKING gate, so it owes its own two-round review — and it over-matches in a way the existing patterns do not, since a bare stem can collide with a real top-level package name. The direction is safe (an extra test only adds measured coverage) but the cost lands on every push, and the same effect is available for free by writing the import the way the rest of the repo does.
 - Impact surfaces: [suggest_mutation_coverage_command.py](../scripts/suggest_mutation_coverage_command.py), [release_changed_line_coverage.py](../scripts/release_changed_line_coverage.py), any test importing a `scripts/` module by bare name.
 - Reopen trigger: a third changed file reported uncovered while a test demonstrably covers it, or a slice where converting the call sites is not available (a vendored or generated test).
@@ -748,7 +748,7 @@ provider-specific integrations are not current execution authority.
 ### D54. Should a per-gate runtime budget measure the gate's own work rather than contended wall clock?
 
 - Question: A budget grades the recorded wall-clock of a queued command
-  ([record_quality_runtime.py](../scripts/record_quality_runtime.py) stores
+  ([record_quality_runtime.py](../scripts/gates_support/record_quality_runtime.py) stores
   `elapsed_ms`; the verdict reads `median_recent_elapsed_ms`). Since the 2026-07-26
   barrier removal the runner executes gates concurrently, so that number is contended
   wall time, not isolated gate time. `check-seed-fixture-budget` does ~0.06s of work and
@@ -770,7 +770,7 @@ provider-specific integrations are not current execution authority.
   values were not re-derived. Advisory timing output is not evidence that a release or
   hosted run is healthy.
 - Impact surfaces: [quality-adapter.yaml](../.agents/quality-adapter.yaml) (four
-  `runtime_budgets` blocks), [record_quality_runtime.py](../scripts/record_quality_runtime.py),
+  `runtime_budgets` blocks), [record_quality_runtime.py](../scripts/gates_support/record_quality_runtime.py),
   [runtime_budget_lib.py](../skills/public/quality/scripts/runtime_budget_lib.py),
   and [run-quality.sh](../scripts/run-quality.sh)'s concurrent queue.
 - Reopen trigger: a real correctness or safety decision becomes dependent on latency;

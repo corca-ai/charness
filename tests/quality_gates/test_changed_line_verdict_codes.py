@@ -1,6 +1,6 @@
 """The changed-line gate's exit-code ORDERING rule, tested where the rule is written.
 
-`scripts/changed_line_verdict_codes.py` says "ORDER IS THE CONTRACT", and until this
+`scripts/gates_support/changed_line_verdict_codes.py` says "ORDER IS THE CONTRACT", and until this
 file existed that contract was only exercised end-to-end through subprocess runs of
 the gate — which is how the ordering shipped inverted once. Inverting `blocking` and
 `fg_warning`, or `fg_warning` and `unanalyzed`, is a one-line edit whose consequence
@@ -19,7 +19,7 @@ from .seeding_support import load_module
 
 ROOT = Path(__file__).resolve().parents[2]
 
-codes = load_module("changed_line_verdict_codes", ROOT / "scripts" / "changed_line_verdict_codes.py")
+codes = load_module("changed_line_verdict_codes", ROOT / "scripts" / "gates_support" / "changed_line_verdict_codes.py")
 
 
 def test_the_four_bytes_are_distinct() -> None:

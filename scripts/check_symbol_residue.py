@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import re
 import sys
 from dataclasses import dataclass
@@ -18,7 +19,15 @@ try:
     from scripts.core.repo_file_listing import RepoFileSnapshot
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:
-    from scripts.core.repo_file_listing import RepoFileSnapshot
+    _repo_file_listing_spec = importlib.util.spec_from_file_location(
+        "repo_file_listing", Path(__file__).resolve().parent / "core" / "repo_file_listing.py"
+    )
+    if _repo_file_listing_spec is None or _repo_file_listing_spec.loader is None:
+        raise
+    _repo_file_listing = importlib.util.module_from_spec(_repo_file_listing_spec)
+    sys.modules["repo_file_listing"] = _repo_file_listing
+    _repo_file_listing_spec.loader.exec_module(_repo_file_listing)
+    RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
 
     from yaml_output import emit_yaml
 

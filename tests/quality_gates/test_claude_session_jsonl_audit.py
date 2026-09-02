@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from scripts import claude_session_jsonl_audit as audit_mod
+from scripts.gates_support import claude_session_jsonl_audit as audit_mod
 
 
 def _assistant_record(*, timestamp: str, tool_uses: list[dict] | None = None, usage: bool = True) -> str:

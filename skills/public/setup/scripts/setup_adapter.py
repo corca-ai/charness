@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts.adapter_lib import load_yaml_file, validate_adapter_version
-from scripts.source_guard_scan_lib import DEFAULT_SOURCE_GUARD_SCAN_ROOTS, fixed_source_guard_rows
+from scripts.gates_support.source_guard_scan_lib import DEFAULT_SOURCE_GUARD_SCAN_ROOTS, fixed_source_guard_rows
 
 ADAPTER_CANDIDATES = (
     Path(".agents/setup-adapter.yaml"),

@@ -38,7 +38,6 @@ from pathlib import Path
 import pytest
 
 from scripts import (
-    changed_line_run_trust,
     check_prose_pin,
     checkout_view,
     mutation_changed_files_lib,
@@ -47,8 +46,9 @@ from scripts import (
     task_run_state,
     worktree_cleanup_lib,
 )
+from scripts.gates_support import changed_line_run_trust
 from scripts import check_staged_worktree_consistency as staged_consistency
-from scripts import classify_t_signal as t_signal
+from scripts.gates_support import classify_t_signal as t_signal
 from scripts.core import git_checkout as checkout
 from scripts.core import git_status_snapshot as status_snapshot
 from scripts import premise_git_snapshot as premise_snapshot
@@ -443,7 +443,7 @@ def test_an_unreadable_head_and_index_batch_reports_every_path_as_unknown(
     assert index_objects == {"a.txt": None, "b.txt": None}
 
 
-# --- scripts/classify_t_signal --------------------------------------------------
+# --- scripts/gates_support/classify_t_signal --------------------------------------------------
 
 
 def test_a_repository_with_no_commit_yet_classifies_as_diff_unavailable(
@@ -874,7 +874,7 @@ def test_an_unreadable_worktree_is_treated_as_dirty(tmp_path: Path) -> None:
     assert reason.strip()
 
 
-# --- scripts/changed_line_run_trust ---------------------------------------------
+# --- scripts/gates_support/changed_line_run_trust ---------------------------------------------
 
 
 def test_a_symbolic_head_is_resolved_before_it_is_compared_with_the_live_head(

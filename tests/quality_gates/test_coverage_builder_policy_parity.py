@@ -55,35 +55,35 @@ COMMAND_SHAPES = [
     ("/usr/bin/python3 -m pytest -q tests", True),
     # The standing runner: the shape SC18 names, in every interpreter spelling
     # the two builders stripped differently.
-    ("python3 scripts/run_standing_pytest.py", True),
-    ("python3 scripts/run_standing_pytest.py --mode full", True),
-    ("python scripts/run_standing_pytest.py --mode full", True),
-    ("/usr/bin/python3 scripts/run_standing_pytest.py", True),
-    ("python3 /abs/path/to/scripts/run_standing_pytest.py --mode read-only", True),
-    ("scripts/run_standing_pytest.py --mode full", True),
+    ("python3 scripts/gates_support/run_standing_pytest.py", True),
+    ("python3 scripts/gates_support/run_standing_pytest.py --mode full", True),
+    ("python scripts/gates_support/run_standing_pytest.py --mode full", True),
+    ("/usr/bin/python3 scripts/gates_support/run_standing_pytest.py", True),
+    ("python3 /abs/path/to/scripts/gates_support/run_standing_pytest.py --mode read-only", True),
+    ("scripts/gates_support/run_standing_pytest.py --mode full", True),
     # Helper flags print and exit. Instrumenting one yields an EMPTY coverage set
     # that reads exactly like a suite which covered nothing.
-    ("python3 scripts/run_standing_pytest.py --print-command", False),
-    ("python3 scripts/run_standing_pytest.py --print-last-run", False),
-    ("python3 scripts/run_standing_pytest.py --print-targets", False),
-    ("python3 scripts/run_standing_pytest.py --print-expanded-targets", False),
-    ("python3 scripts/run_standing_pytest.py --print-temp-root", False),
+    ("python3 scripts/gates_support/run_standing_pytest.py --print-command", False),
+    ("python3 scripts/gates_support/run_standing_pytest.py --print-last-run", False),
+    ("python3 scripts/gates_support/run_standing_pytest.py --print-targets", False),
+    ("python3 scripts/gates_support/run_standing_pytest.py --print-expanded-targets", False),
+    ("python3 scripts/gates_support/run_standing_pytest.py --print-temp-root", False),
     # argparse accepts unambiguous abbreviations, so an ENUMERATED helper-flag
     # set is bypassed by spelling the same early exit shorter.
-    ("python3 scripts/run_standing_pytest.py --print-last", False),
-    ("python3 scripts/run_standing_pytest.py --print-temp", False),
+    ("python3 scripts/gates_support/run_standing_pytest.py --print-last", False),
+    ("python3 scripts/gates_support/run_standing_pytest.py --print-temp", False),
     # Bad quoting must not become a way PAST the helper-flag rule: acceptance
     # falls back to a naive split precisely so a `--print*` token is still seen.
-    ("python3 scripts/run_standing_pytest.py --print-last 'unterminated", False),
+    ("python3 scripts/gates_support/run_standing_pytest.py --print-last 'unterminated", False),
     # The other side of the prefix rule: `--p*` flags that are NOT print flags
     # must stay accepted. `--pytest-target` is the repo's own documented focused
     # coverage command (docs/implementation-discipline.md), so
     # widening the prefix to `--p` would refuse it.
-    ("python3 scripts/run_standing_pytest.py --pytest-target tests/x.py::test_one", True),
-    ("python3 scripts/run_standing_pytest.py --extra-pytest-target tests/x.py", True),
+    ("python3 scripts/gates_support/run_standing_pytest.py --pytest-target tests/x.py::test_one", True),
+    ("python3 scripts/gates_support/run_standing_pytest.py --extra-pytest-target tests/x.py", True),
     # A wrapper prefix renders into `coverage run env ...`, which execs the
     # wrapper as a Python script. Both builders refuse rather than emit it.
-    ("env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/run_standing_pytest.py", False),
+    ("env CHARNESS_STANDING_PYTEST_PYTHON=python3 python3 scripts/gates_support/run_standing_pytest.py", False),
     ("timeout 300 python3 -m pytest -q tests", False),
     ("ruff check .", False),
     ("bash scripts/run-quality.sh", False),
@@ -95,10 +95,10 @@ COMMAND_SHAPES = [
 #: producer stripped by basename, so each emitted an unrunnable command for the
 #: spelling the other handled.
 INTERPRETER_SPELLINGS = [
-    "python3 scripts/run_standing_pytest.py --mode full",
-    "python scripts/run_standing_pytest.py --mode full",
-    "/usr/bin/python3 scripts/run_standing_pytest.py --mode full",
-    "scripts/run_standing_pytest.py --mode full",
+    "python3 scripts/gates_support/run_standing_pytest.py --mode full",
+    "python scripts/gates_support/run_standing_pytest.py --mode full",
+    "/usr/bin/python3 scripts/gates_support/run_standing_pytest.py --mode full",
+    "scripts/gates_support/run_standing_pytest.py --mode full",
 ]
 
 
@@ -186,7 +186,7 @@ def test_an_unterminated_quote_is_refused_with_a_message_not_a_valueerror(tmp_pa
     """Acceptance tolerates bad quoting (it only needs to see a `--print*` token),
     but the argv builder must SPLIT, and a raw ValueError escaping into the gate's
     probe is the late failure `parse_args` exists to prevent."""
-    command = "python3 scripts/run_standing_pytest.py 'unterminated"
+    command = "python3 scripts/gates_support/run_standing_pytest.py 'unterminated"
     assert sampling.is_instrumentable_pytest_command(command) is True
 
     with pytest.raises(SystemExit) as excinfo:
@@ -220,7 +220,7 @@ def test_a_valid_test_command_parses_and_reaches_the_namespace(monkeypatch) -> N
     """Pins that the FLAG EXISTS. Without this, the refusal test below is green
     against a tree where `--test-command` was never added -- argparse exits 2 for
     an unrecognized option too."""
-    runner = "python3 scripts/run_standing_pytest.py"
+    runner = "python3 scripts/gates_support/run_standing_pytest.py"
     _teeth, args = _parse(monkeypatch, "--test-command", runner)
 
     assert args.test_command == runner
@@ -255,7 +255,7 @@ def test_test_command_override_replaces_the_config_literal(tmp_path: Path, monke
         lambda repo_root, command, coverage_json, **kw: seen.update(command=command),
     )
 
-    runner = "python3 scripts/run_standing_pytest.py"
+    runner = "python3 scripts/gates_support/run_standing_pytest.py"
     teeth._ensure_coverage(
         _probe_args(test_command=runner), tmp_path, tmp_path / "cov.json", "abc123"
     )

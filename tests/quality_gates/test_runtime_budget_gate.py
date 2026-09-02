@@ -776,7 +776,7 @@ def test_recorder_does_not_define_a_second_profile_derivation() -> None:
     """
     import inspect
 
-    from scripts import record_quality_runtime
+    from scripts.gates_support import record_quality_runtime
 
     source = Path(inspect.getsourcefile(record_quality_runtime.machine_runtime_profile) or "")
     assert source.name == "runtime_profile_lib.py", (

@@ -45,15 +45,15 @@ def test_instrument_broad_command_rewrites_and_preserves_glob(tmp_path: Path) ->
     out2 = instrument_broad_command("python3 -m pytest tests", data_file)
     assert "coverage run" in out2 and out2.endswith("-m pytest tests")
 
-    runner = "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only"
+    runner = "python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only"
     out3 = instrument_broad_command(runner, data_file)
     assert "coverage run" in out3
-    assert out3.endswith("scripts/run_standing_pytest.py --repo-root . --mode read-only")
+    assert out3.endswith("scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only")
 
     focused_runner = runner + " --pytest-target tests/focused.py::test_one"
     focused_out = instrument_broad_command(focused_runner, data_file)
     assert focused_out.endswith(
-        "scripts/run_standing_pytest.py --repo-root . --mode read-only "
+        "scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only "
         "--pytest-target tests/focused.py::test_one"
     )
 
@@ -81,11 +81,11 @@ def test_instrument_broad_command_rejects_non_pytest(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError):
         instrument_broad_command("ruff check .", tmp_path / ".data")
-    helper = "python3 scripts/run_standing_pytest.py --repo-root . --print-targets"
+    helper = "python3 scripts/gates_support/run_standing_pytest.py --repo-root . --print-targets"
     assert not is_instrumentable_pytest_command(helper)
     with pytest.raises(ValueError):
         instrument_broad_command(helper, tmp_path / ".data")
-    assert is_standing_pytest_runner_command("python3 scripts/run_standing_pytest.py 'unterminated")
+    assert is_standing_pytest_runner_command("python3 scripts/gates_support/run_standing_pytest.py 'unterminated")
 
 
 @pytest.mark.boundary_contract(
@@ -114,7 +114,7 @@ def test_standing_runner_child_process_reaches_coverage_json(tmp_path: Path) -> 
     (repo / "tests" / "test_demo_two.py").write_text(test_source, encoding="utf-8")
     coverage_json = repo / "coverage.json"
     data_file, rcfile, env = prod._sampling.prepare_plain_coverage(repo, coverage_json)
-    runner = Path(__file__).resolve().parents[2] / "scripts" / "run_standing_pytest.py"
+    runner = Path(__file__).resolve().parents[2] / "scripts" / "gates_support" / "run_standing_pytest.py"
     command = prod.instrument_broad_command(
         f"python3 {runner} --repo-root {repo} --mode read-only "
         "--pytest-target tests/test_demo_one.py "

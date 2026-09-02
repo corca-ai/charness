@@ -40,12 +40,12 @@ def _capture_run_quality_runtime_records(repo: Path) -> Path:
     state_root_path = repo / "quality-runtime-state-roots.jsonl"
     real_python = sys.executable
     write_executable(
-        repo / "scripts" / "record_quality_runtime.py",
+        repo / "scripts" / "gates_support" / "record_quality_runtime.py",
         "\n".join(
             [
                 "#!/usr/bin/env python3",
                 # NOT the stub the runner hits. `run-quality.sh` invokes
-                # `python3 scripts/record_quality_runtime.py` by RELATIVE path, which
+                # `python3 scripts/gates_support/record_quality_runtime.py` by RELATIVE path, which
                 # the `bin/python3` spy below intercepts; this file is reached only by
                 # an absolute-path invocation that falls through to the real
                 # interpreter. Regime capture therefore lives in the spy, not here.
@@ -84,7 +84,7 @@ def _capture_run_quality_runtime_records(repo: Path) -> Path:
                 "#!/usr/bin/env bash",
                 "set -euo pipefail",
                 "# Call spy keeps this aggregate test fast; direct-recorder tests cover real behavior elsewhere.",
-                'if [[ "${1:-}" == "scripts/record_quality_runtime.py" ]]; then',
+                'if [[ "${1:-}" == "scripts/gates_support/record_quality_runtime.py" ]]; then',
                 "  shift",
                 '  label="" elapsed_ms="" status="" timestamp="" batch="" regime="" state_root="" saw_regime=0',
                 '  while [[ "$#" -gt 0 ]]; do',

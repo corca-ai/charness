@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # package-root != git-root. The rule and its one implementation live in
-# scripts/exported-copy-guard.sh. `scripts/list_external_links.py` lists candidates with `git ls-files` run at
+# scripts/exported-copy-guard.sh. `scripts/gates_support/list_external_links.py` lists candidates with `git ls-files` run at
 # `--repo-root`, so the mirrored copy at `plugins/charness/scripts/` would hand it the mirror as
 # a repo root and collect only the mirror's own links -- then print "No external http(s) links
 # found in maintained text surfaces" and exit 0 over a population it never had. Same class as
@@ -45,7 +45,7 @@ tmp_links="$(mktemp)"
 # own. Measured on run-quality.sh, where it turned a correct exit 2 into a 1.
 trap 'rm -f "$tmp_links" || true' EXIT
 
-python3 scripts/list_external_links.py --repo-root "$REPO_ROOT" >"$tmp_links"
+python3 scripts/gates_support/list_external_links.py --repo-root "$REPO_ROOT" >"$tmp_links"
 
 if [[ ! -s "$tmp_links" ]]; then
   # Name the root that was measured. An empty result stays green -- a tree may honestly have no

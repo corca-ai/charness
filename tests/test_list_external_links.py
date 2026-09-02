@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def run_script(repo_root: Path) -> subprocess.CompletedProcess[str]:
     return run_repo_script(
-        "scripts/list_external_links.py",
+        "scripts/gates_support/list_external_links.py",
         "--repo-root",
         str(repo_root),
         cwd=ROOT,

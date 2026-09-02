@@ -23,7 +23,7 @@ _SUGGEST_FILES = {
 }
 
 _FOCUSED_COMMAND = (
-    "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only "
+    "python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only "
     "--pytest-target tests/quality_gates/test_foo.py --pytest-target tests/test_top.py"
 )
 
@@ -96,7 +96,7 @@ def test_recommendation_statuses_and_cli_on_one_checkout(
     }
     assert recommended["command"] == _FOCUSED_COMMAND
     assert sugg.main(["--repo-root", str(repo), "--base-sha", base]) == 0
-    assert "python3 scripts/run_standing_pytest.py" in capsys.readouterr().out
+    assert "python3 scripts/gates_support/run_standing_pytest.py" in capsys.readouterr().out
     assert sugg.main(["--repo-root", str(repo), "--base-sha", base, "--detail"]) == 0
     assert yaml.safe_load(capsys.readouterr().out)["status"] == "recommended"
 
@@ -146,7 +146,7 @@ def test_recommendation_statuses_and_cli_on_one_checkout(
     assert "tests/quality_gates/test_foo.py" in partial["command"]
     assert sugg.main(["--repo-root", str(repo), "--base-sha", base]) == 0
     partial_cli = capsys.readouterr()
-    assert "python3 scripts/run_standing_pytest.py" in partial_cli.out
+    assert "python3 scripts/gates_support/run_standing_pytest.py" in partial_cli.out
     assert "status: partial" in partial_cli.err
     assert "scripts/bar.py" in partial_cli.err
     assert "broad coverage fallback" in partial_cli.err

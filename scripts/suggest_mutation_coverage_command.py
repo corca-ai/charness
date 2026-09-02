@@ -15,7 +15,7 @@ if str(REPO_ROOT) not in sys.path:  # pragma: no cover - import bootstrap
 
 from scripts.mutation_changed_files_lib import changed_pool_files_vs_base  # noqa: E402
 from scripts.mutation_coverage_producer import default_mutation_base_sha  # noqa: E402
-from scripts.run_standing_pytest import expand_targets  # noqa: E402
+from scripts.gates_support.run_standing_pytest import expand_targets  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 HELP_EPILOG = """\
@@ -393,7 +393,7 @@ def build_recommendation(repo_root: Path, *, base_sha: str | None = None) -> dic
     command = shlex.join(
         [
             "python3",
-            "scripts/run_standing_pytest.py",
+            "scripts/gates_support/run_standing_pytest.py",
             "--repo-root",
             ".",
             "--mode",

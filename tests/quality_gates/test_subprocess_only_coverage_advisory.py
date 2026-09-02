@@ -348,7 +348,7 @@ def test_a_blocked_file_without_proof_targets_is_named_rather_than_dropped(capsy
     (`cite one blocking_targets entry, mutate that line`) is impossible for it and
     silence would read as "every blocker has a target".
     """
-    trust = import_repo_module(__file__, "scripts.changed_line_run_trust")
+    trust = import_repo_module(__file__, "scripts.gates_support.changed_line_run_trust")
 
     trust.write_blocking_stderr(
         ["scripts/mapped.py", "scripts/unmapped.py"],
@@ -363,7 +363,7 @@ def test_a_blocked_file_without_proof_targets_is_named_rather_than_dropped(capsy
 
 
 def test_the_advisory_sentence_rides_the_blocking_narration_when_one_exists(capsys) -> None:
-    trust = import_repo_module(__file__, "scripts.changed_line_run_trust")
+    trust = import_repo_module(__file__, "scripts.gates_support.changed_line_run_trust")
 
     trust.write_blocking_stderr(
         ["scripts/foo.py"],
@@ -605,7 +605,7 @@ def test_advisory_silence_is_narrated_to_the_operator_not_only_to_the_json(capsy
     and re-derived the diagnosis by hand, which is the waste #465 was filed about.
     Scope belongs in the channel a human reads, not only in the payload.
     """
-    trust = import_repo_module(__file__, "scripts.changed_line_run_trust")
+    trust = import_repo_module(__file__, "scripts.gates_support.changed_line_run_trust")
     scope = {
         "candidate_tests_examined": 7,
         "blocked_files_examined": 1,

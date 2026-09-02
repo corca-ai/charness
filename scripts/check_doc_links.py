@@ -13,7 +13,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_doc_file_population = import_repo_module(__file__, "scripts.doc_file_population")
+_doc_file_population = import_repo_module(__file__, "scripts.gates_support.doc_file_population")
 DOC_GLOBS = _doc_file_population.DOC_GLOBS
 RepoFileSnapshot = _doc_file_population.RepoFileSnapshot
 iter_docs = _doc_file_population.iter_docs
@@ -29,7 +29,7 @@ resolve_relative_link = _markdown_doc_scan.resolve_relative_link
 ABSOLUTE_LINK = _markdown_doc_scan.ABSOLUTE_LINK
 BARE_LINK = _markdown_doc_scan.BARE_LINK
 INERT_LINK = _markdown_doc_scan.INERT_LINK
-_portable_command_carrier = import_repo_module(__file__, "scripts.portable_command_carrier")
+_portable_command_carrier = import_repo_module(__file__, "scripts.gates_support.portable_command_carrier")
 iter_unportable_command_targets = _portable_command_carrier.iter_unportable_command_targets
 
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")

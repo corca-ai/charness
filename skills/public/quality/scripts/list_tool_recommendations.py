@@ -22,7 +22,7 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 
 
-_scripts_tool_recommendation_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.tool_recommendation_lib")
+_scripts_tool_recommendation_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.gates_support.tool_recommendation_lib")
 role_recommendation_payload = _scripts_tool_recommendation_lib_module.role_recommendation_payload
 _summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_output_lib")
 

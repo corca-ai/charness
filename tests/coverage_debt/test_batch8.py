@@ -735,7 +735,7 @@ def _without_the_scripts_package(
         ("scripts/core/helper_provenance_lib.py", "env_bypass_enabled", "env_bypass"),
         ("tools/check_current_pointer_writes.py", "RepoFileSnapshot", "repo_file_listing"),
         ("scripts/check_symbol_residue.py", "RepoFileSnapshot", "repo_file_listing"),
-        ("scripts/dup_ratchet_edit_advisory.py", "head_oid_from_files", "git_checkout"),
+        ("scripts/gates_support/dup_ratchet_edit_advisory.py", "head_oid_from_files", "git_checkout"),
     ],
 )
 def test_a_root_script_binds_its_owners_flat_when_the_package_is_unreachable(

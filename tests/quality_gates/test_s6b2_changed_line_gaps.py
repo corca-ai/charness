@@ -42,7 +42,7 @@ GATE = importlib.import_module("scripts.check_command_dominance")
 UNIVERSE = importlib.import_module("tools.check_runtime_budget_universe")
 SAMPLER = importlib.import_module("scripts.sample_mutation_files")
 
-REPLACEMENT = "python3 scripts/run_standing_pytest.py"
+REPLACEMENT = "python3 scripts/gates_support/run_standing_pytest.py"
 
 REGISTRY_YAML = (
     "version: 1\n"

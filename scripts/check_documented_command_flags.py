@@ -83,7 +83,7 @@ emit_findings_report = _gate_report_emit.emit_findings_report
 # spans of one could be a command string. `CLI_NAME` is bound from there rather
 # than redeclared: the carrier scan is what has to recognize the bare name as a
 # command token, and two copies of the literal would drift apart silently.
-_command_carrier_discovery = import_repo_module(__file__, "scripts.command_carrier_discovery")
+_command_carrier_discovery = import_repo_module(__file__, "scripts.gates_support.command_carrier_discovery")
 iter_scanned_files = _command_carrier_discovery.iter_scanned_files
 iter_command_carriers = _command_carrier_discovery.iter_command_carriers
 CLI_NAME = _command_carrier_discovery.CLI_NAME

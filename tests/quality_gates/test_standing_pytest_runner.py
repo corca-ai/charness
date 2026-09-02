@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, monkeypatch) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     (tmp_path / "tests").mkdir()
     (tmp_path / "tests" / "test_alpha.py").write_text("def test_alpha(): pass\n", encoding="utf-8")
@@ -63,7 +63,7 @@ def test_standing_pytest_command_uses_xdist_and_expands_globs(tmp_path: Path, mo
 
 
 def test_standing_pytest_command_appends_extra_pytest_targets(tmp_path: Path, monkeypatch) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     (tmp_path / "tests").mkdir()
     (tmp_path / "tests" / "test_alpha.py").write_text("def test_alpha(): pass\n", encoding="utf-8")
@@ -87,7 +87,7 @@ def test_standing_pytest_command_appends_extra_pytest_targets(tmp_path: Path, mo
 def test_standing_pytest_command_replaces_targets_without_losing_xdist(
     tmp_path: Path, monkeypatch
 ) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     monkeypatch.setattr(
         runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"]
@@ -125,7 +125,7 @@ def test_standing_pytest_command_replaces_targets_without_losing_xdist(
 
 
 def test_standing_pytest_temp_root_stays_outside_repo(tmp_path: Path) -> None:
-    from scripts import standing_pytest_basetemp as basetemp_lib
+    from scripts.gates_support import standing_pytest_basetemp as basetemp_lib
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -136,7 +136,7 @@ def test_standing_pytest_temp_root_stays_outside_repo(tmp_path: Path) -> None:
 
 
 def test_standing_pytest_env_temp_root_and_inside_repo_rejection(tmp_path: Path) -> None:
-    from scripts import standing_pytest_basetemp as basetemp_lib
+    from scripts.gates_support import standing_pytest_basetemp as basetemp_lib
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -184,8 +184,8 @@ def test_runtime_bootstrap_routes_tool_outputs_outside_repo(tmp_path: Path, monk
         assert path.exists()
     assert Path(configured["CHARNESS_RUNTIME_ROOT"]).is_dir()
 
-    monkeypatch.setattr("scripts.run_standing_pytest.has_xdist", lambda *args, **kwargs: False)
-    from scripts import run_standing_pytest as runner
+    monkeypatch.setattr("scripts.gates_support.run_standing_pytest.has_xdist", lambda *args, **kwargs: False)
+    from scripts.gates_support import run_standing_pytest as runner
 
     command = runner.build_pytest_command(
         repo,
@@ -208,7 +208,7 @@ def test_runtime_bootstrap_rejects_explicit_repo_local_runtime_root(tmp_path: Pa
 
 
 def test_standing_pytest_default_basetemp_uses_user_and_time(tmp_path: Path, monkeypatch) -> None:
-    from scripts import standing_pytest_basetemp as basetemp_lib
+    from scripts.gates_support import standing_pytest_basetemp as basetemp_lib
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -236,7 +236,7 @@ def test_standing_pytest_default_basetemp_uses_user_and_time(tmp_path: Path, mon
 def test_standing_pytest_command_probes_and_serial_fallback(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     monkeypatch.setattr(runner.importlib.util, "find_spec", lambda name: None)
 
@@ -259,7 +259,7 @@ def test_standing_pytest_command_probes_and_serial_fallback(
 
 
 def test_standing_pytest_worker_cap_and_override(monkeypatch) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     monkeypatch.setattr(runner.os, "cpu_count", lambda: 64)
     # Affinity is what the worker width reads, so a host-derived assertion must pin
@@ -297,7 +297,7 @@ def test_standing_pytest_sched_chunk_defaults_to_one_and_honors_overrides(monkey
     the suite back on the slow path where this repo's runtime bars go red having
     regressed nothing -- the reason is the only thing that makes that red diagnosable.
     """
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     monkeypatch.setattr(runner, "xdist_version", lambda: (3, 8, 0))
 
@@ -342,7 +342,7 @@ def test_standing_pytest_sched_chunk_suppressed_below_xdist_floor(monkeypatch) -
     environment can hold a version that predates the flag. The floor was first written
     as 2.3 from a guess and would have passed the flag to 3.0 and 3.1.
     """
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     monkeypatch.setattr(runner, "xdist_version", lambda: (3, 1, 0))
     assert runner.choose_sched_chunk({}) == (None, "pytest-xdist 3.1.0 is below 3.2")
@@ -366,7 +366,7 @@ def test_standing_pytest_warns_on_stderr_when_scheduling_is_suppressed(
     with nothing regressed. Without this warning there is no pointer from that red back
     to its cause, which is why the `has_xdist` branch already prints the analogue.
     """
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     monkeypatch.setattr(
         runner, "choose_pytest_command", lambda env=None: [sys.executable, "-m", "pytest"]
@@ -403,7 +403,7 @@ def test_standing_pytest_warns_on_stderr_when_scheduling_is_suppressed(
 
 def test_standing_pytest_xdist_version_parses_without_packaging_shadow(monkeypatch) -> None:
     """`pythonpath = ["."]` puts the repo's own `packaging/` dir ahead of the library."""
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     monkeypatch.setattr(runner.importlib.metadata, "version", lambda name: "3.8.0")
     assert runner.xdist_version() == (3, 8, 0)
@@ -419,7 +419,7 @@ def test_standing_pytest_xdist_version_parses_without_packaging_shadow(monkeypat
 
 
 def test_standing_pytest_choose_prefers_python_module(monkeypatch) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     monkeypatch.delenv("CHARNESS_STANDING_PYTEST_PYTHON", raising=False)
     monkeypatch.setattr(runner.importlib.util, "find_spec", lambda name: object())
@@ -433,7 +433,7 @@ def test_standing_pytest_choose_prefers_python_module(monkeypatch) -> None:
 
 
 def test_standing_pytest_xdist_probe_uses_importlib_without_subprocess(monkeypatch) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     looked_up: list[str] = []
 
@@ -463,7 +463,7 @@ def test_standing_pytest_xdist_probe_uses_importlib_without_subprocess(monkeypat
 
 
 def test_standing_pytest_xdist_probe_honors_disabled_plugin(monkeypatch) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     monkeypatch.setattr(runner.importlib.util, "find_spec", lambda name: object())
 
@@ -494,7 +494,7 @@ def test_standing_pytest_xdist_probe_honors_disabled_plugin(monkeypatch) -> None
 def test_standing_pytest_xdist_disabled_option_falls_back_on_unbalanced_addopts(
     monkeypatch,
 ) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     monkeypatch.setattr(runner.importlib.util, "find_spec", lambda name: object())
 
@@ -510,7 +510,7 @@ def test_standing_pytest_xdist_disabled_option_falls_back_on_unbalanced_addopts(
 def test_standing_pytest_run_print_command_and_executes(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -574,7 +574,7 @@ def test_standing_pytest_run_print_command_and_executes(
 def test_failed_basetemp_prune_keeps_newest_three_and_skips_active(
     tmp_path: Path,
 ) -> None:
-    from scripts import standing_pytest_basetemp as basetemp_lib
+    from scripts.gates_support import standing_pytest_basetemp as basetemp_lib
 
     parent = tmp_path / "pytest-of-alice"
     parent.mkdir()
@@ -598,8 +598,8 @@ def test_failed_basetemp_prune_keeps_newest_three_and_skips_active(
 
 
 def test_failed_standing_run_prunes_only_default_owned_roots(tmp_path: Path, monkeypatch) -> None:
-    from scripts import run_standing_pytest as runner
-    from scripts import standing_pytest_basetemp as basetemp_lib
+    from scripts.gates_support import run_standing_pytest as runner
+    from scripts.gates_support import standing_pytest_basetemp as basetemp_lib
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -645,7 +645,7 @@ def test_failed_standing_run_prunes_only_default_owned_roots(tmp_path: Path, mon
 
 
 def test_custom_basetemp_failure_does_not_prune_its_parent(tmp_path: Path, monkeypatch) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -684,8 +684,8 @@ def test_custom_basetemp_failure_does_not_prune_its_parent(tmp_path: Path, monke
 def test_success_keeps_three_prior_failures_without_reserving_a_current_slot(
     tmp_path: Path, monkeypatch
 ) -> None:
-    from scripts import run_standing_pytest as runner
-    from scripts import standing_pytest_basetemp as basetemp_lib
+    from scripts.gates_support import run_standing_pytest as runner
+    from scripts.gates_support import standing_pytest_basetemp as basetemp_lib
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -735,7 +735,7 @@ def test_success_keeps_three_prior_failures_without_reserving_a_current_slot(
 def test_explicitly_kept_success_and_unmarked_legacy_roots_are_never_failure_candidates(
     tmp_path: Path,
 ) -> None:
-    from scripts import standing_pytest_basetemp as basetemp_lib
+    from scripts.gates_support import standing_pytest_basetemp as basetemp_lib
 
     parent = tmp_path / "pytest-of-alice"
     parent.mkdir()
@@ -761,7 +761,7 @@ def test_explicitly_kept_success_and_unmarked_legacy_roots_are_never_failure_can
 def test_failed_basetemp_keep_override_defaults_safely_on_invalid_values(
     monkeypatch, capsys
 ) -> None:
-    from scripts import standing_pytest_basetemp as basetemp_lib
+    from scripts.gates_support import standing_pytest_basetemp as basetemp_lib
 
     assert basetemp_lib._failed_basetemp_keep({"CHARNESS_PYTEST_FAILED_BASETEMP_KEEP": "5"}) == 5
     for raw in ("0", "-1", "not-a-number"):
@@ -773,7 +773,7 @@ def test_failed_basetemp_keep_override_defaults_safely_on_invalid_values(
 
 
 def test_standing_pytest_main_print_modes(tmp_path: Path, monkeypatch, capsys) -> None:
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -821,7 +821,7 @@ def test_standing_pytest_script_entrypoint_print_targets(monkeypatch, capsys) ->
     monkeypatch.setattr(sys, "argv", ["run_standing_pytest.py", "--print-targets"])
 
     try:
-        runpy.run_path("scripts/run_standing_pytest.py", run_name="__main__")
+        runpy.run_path("scripts/gates_support/run_standing_pytest.py", run_name="__main__")
     except SystemExit as exc:
         assert exc.code == 0
     else:
@@ -865,7 +865,7 @@ def test_install_update_self_validation_delegates_to_parallel_runner(tmp_path: P
 
     assert result.returncode == 0, result.stderr
     assert capture.read_text(encoding="utf-8").splitlines() == [
-        "scripts/run_standing_pytest.py",
+        "scripts/gates_support/run_standing_pytest.py",
         "--repo-root",
         str(repo),
         "--mode",
@@ -881,7 +881,7 @@ def test_install_update_self_validation_delegates_to_parallel_runner(tmp_path: P
 
 
 def test_default_basetemp_leaf_is_not_a_pytest_cleanup_candidate(tmp_path: Path) -> None:
-    from scripts import standing_pytest_basetemp as basetemp_lib
+    from scripts.gates_support import standing_pytest_basetemp as basetemp_lib
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -910,7 +910,7 @@ def test_default_basetemp_survives_nested_pytest_cleanup(tmp_path: Path) -> None
         make_numbered_dir_with_cleanup,
     )
 
-    from scripts import standing_pytest_basetemp as basetemp_lib
+    from scripts.gates_support import standing_pytest_basetemp as basetemp_lib
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -948,7 +948,7 @@ def test_xdist_worker_width_keys_on_affinity_not_total_cpus(monkeypatch) -> None
     second caller: `os.cpu_count()` answers "how many CPUs does the box have", never
     "how many may this process use".
     """
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     # cpu_count says 36 and affinity says 4: the divergence IS the test.
     monkeypatch.setattr(runner.os, "cpu_count", lambda: 36)
@@ -983,10 +983,10 @@ def test_affinity_readers_stay_in_parity_across_their_two_owners(monkeypatch) ->
     import importlib.util
     from pathlib import Path as _Path
 
-    from scripts import run_standing_pytest as runner
+    from scripts.gates_support import run_standing_pytest as runner
 
     lib_path = (
-        _Path(runner.__file__).resolve().parent.parent
+        _Path(runner.__file__).resolve().parents[2]
         / "skills"
         / "public"
         / "quality"

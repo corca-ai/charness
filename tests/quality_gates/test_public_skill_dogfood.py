@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from scripts.public_skill_dogfood_lib import build_matrix
+from scripts.gates_support.public_skill_dogfood_lib import build_matrix
 
 from .support import ROOT, run_script
 

@@ -19,7 +19,7 @@ from yaml_output import emit_yaml
 REPO_ROOT = repo_root_from_script(__file__)
 INDEX_FILENAME = "seam-risk-index.json"
 
-_scripts_risk_interrupt_lib_module = import_repo_module(__file__, "scripts.risk_interrupt_lib")
+_scripts_risk_interrupt_lib_module = import_repo_module(__file__, "scripts.gates_support.risk_interrupt_lib")
 ValidationError = _scripts_risk_interrupt_lib_module.ValidationError
 parse_debug_interrupt = _scripts_risk_interrupt_lib_module.parse_debug_interrupt
 

@@ -14,8 +14,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from scripts import announcement_verification_lib as verification_lib
-from scripts.announcement_verification_lib import (
+from scripts.gates_support import announcement_verification_lib as verification_lib
+from scripts.gates_support.announcement_verification_lib import (
     DELIVERY_VERIFICATION_STATUSES,
     STATUSES_REQUIRING_REASON,
     evaluate_delivery_kind_agreement,

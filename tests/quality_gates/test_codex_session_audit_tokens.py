@@ -3,7 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import Any
 
-from scripts.codex_session_audit_tokens import (
+from scripts.gates_support.codex_session_audit_tokens import (
     TOKEN_KEYS,
     aggregate_tokens,
     cost_signal_status,

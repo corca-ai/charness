@@ -86,7 +86,7 @@ _RETRO_INDEX_CHECK = "python3 scripts/build_retro_lesson_selection_index.py --re
 _SUBPROCESS_FORM = (
     "python3 scripts/check_subprocess_form.py --repo-root . --require-git-file-listing"
 )
-_STANDING_PYTEST = "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only"
+_STANDING_PYTEST = "python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only"
 _SPEC_EVIDENCE = (
     "python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing"
 )
@@ -256,7 +256,7 @@ def test_check_changed_surfaces_reports_unmatched_paths() -> None:
 
 def test_select_verifiers_returns_smallest_repo_owned_bundle_for_readme() -> None:
     result = run_script(
-        "scripts/select_verifiers.py",
+        "scripts/gates_support/select_verifiers.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -279,7 +279,7 @@ def test_select_verifiers_returns_smallest_repo_owned_bundle_for_readme() -> Non
 
 def test_select_verifiers_includes_public_skill_policy_for_public_skill_changes() -> None:
     result = run_script(
-        "scripts/select_verifiers.py",
+        "scripts/gates_support/select_verifiers.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -297,7 +297,7 @@ def test_select_verifiers_includes_public_skill_policy_for_public_skill_changes(
 
 def test_select_verifiers_includes_public_skill_policy_for_policy_json_changes() -> None:
     result = run_script(
-        "scripts/select_verifiers.py",
+        "scripts/gates_support/select_verifiers.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -313,7 +313,7 @@ def test_select_verifiers_includes_public_skill_policy_for_policy_json_changes()
 
 def test_select_verifiers_includes_public_skill_dogfood_for_registry_changes() -> None:
     result = run_script(
-        "scripts/select_verifiers.py",
+        "scripts/gates_support/select_verifiers.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -329,7 +329,7 @@ def test_select_verifiers_includes_public_skill_dogfood_for_registry_changes() -
 
 def test_select_verifiers_reports_missing_bundle_for_unmatched_paths() -> None:
     result = run_script(
-        "scripts/select_verifiers.py",
+        "scripts/gates_support/select_verifiers.py",
         "--repo-root",
         str(ROOT),
         "--paths",
