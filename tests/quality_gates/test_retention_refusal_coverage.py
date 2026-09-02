@@ -10,9 +10,9 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from scripts import manage_mutation_reports as reports
-from scripts.gates_support import run_standing_pytest as runner
-from scripts.gates_support import standing_pytest_basetemp as basetemp_lib
+from scripts.mutation import manage_mutation_reports as reports
+from scripts import run_standing_pytest as runner
+from scripts import standing_pytest_basetemp as basetemp_lib
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -131,7 +131,7 @@ def test_main_rejects_negative_age_and_script_entrypoint_is_read_only(
         ["manage_mutation_reports.py", "--repo-root", str(ROOT), "--older-than-days", "0"],
     )
     with pytest.raises(SystemExit) as exit_result:
-        runpy.run_path(str(ROOT / "scripts/manage_mutation_reports.py"), run_name="__main__")
+        runpy.run_path(str(ROOT / "scripts/mutation/manage_mutation_reports.py"), run_name="__main__")
     assert exit_result.value.code == 0
     # The entrypoint's stdout is YAML now; parse it rather than substring-matching,
     # and keep asserting the field that proves the default run pruned nothing.

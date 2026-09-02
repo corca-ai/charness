@@ -18,15 +18,29 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Callable
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 try:
     from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:  # executed directly from scripts/
     from scripts.core.subprocess_guard import run_process
 
-_sampling = import_repo_module(__file__, "scripts.mutation_sampling_lib")
-_changed_files = import_repo_module(__file__, "scripts.mutation_changed_files_lib")
+_sampling = import_repo_module(__file__, "scripts.mutation.mutation_sampling_lib")
+_changed_files = import_repo_module(__file__, "scripts.mutation.mutation_changed_files_lib")
 
 #: Every key `mutation_sampling_lib.coverage_subprocess_env` assigns must appear
 #: here, because `_with_coverage_env` re-exports these and ONLY these into the

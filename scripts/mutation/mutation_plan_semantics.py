@@ -20,7 +20,9 @@ def mutation_bytes(original: bytes, find: str, replace: str) -> bytes:
     text = original.decode("utf-8")
     occurrences = text.count(find)
     if occurrences == 0:
-        raise MutationPlanError("mutation text not found; the mutant would be a no-op reported as killed")
+        raise MutationPlanError(
+            "mutation text not found; the mutant would be a no-op reported as killed"
+        )
     if occurrences > 1:
         raise MutationPlanError(
             f"mutation text occurs {occurrences} times; an ambiguous edit produces a kill "

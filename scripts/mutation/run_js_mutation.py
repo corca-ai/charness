@@ -10,19 +10,24 @@ import os
 import sys
 from pathlib import Path
 
-try:
-    from scripts.core.subprocess_guard import run_monitored_phase
-except ImportError:  # flat layout: the repo root is not on sys.path
-    _repo_root = next(
-        ancestor
-        for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
-    )
-    if str(_repo_root) not in sys.path:
-        sys.path.insert(0, str(_repo_root))
-    from scripts.core.subprocess_guard import run_monitored_phase
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
+from scripts.core.subprocess_guard import run_monitored_phase  # noqa: E402
+
+REPO_ROOT = repo_root_from_script(__file__)
 DEFAULT_CONFIG = Path("stryker.config.mjs")
 DEFAULT_LOG = Path("reports/mutation/stryker-js.log")
 DEFAULT_REPORT_JSON = Path("reports/mutation/stryker-js.json")

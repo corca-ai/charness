@@ -9,9 +9,7 @@ from pathlib import Path
 # block recovery: the change's own lines were left test-uncovered. This arm is
 # computed over ALL eligible changed files in range, independent of sampling,
 # so it keeps blocking real coverage gaps even for files the budgets dropped.
-SCOPE_GAP_BLOCKING_SECTIONS = (
-    ("changed_line_uncovered_changed_files", "Uncovered changed lines"),
-)
+SCOPE_GAP_BLOCKING_SECTIONS = (("changed_line_uncovered_changed_files", "Uncovered changed lines"),)
 
 # Capacity-class drops of changed files (cumulative selection/nodeid budgets,
 # workload budgets). Advisory, not blocking: a dropped file's changed lines
@@ -22,7 +20,10 @@ SCOPE_GAP_BLOCKING_SECTIONS = (
 # changing more eligible files than `max_files` guaranteed a red scheduled
 # run whose auto-issue a later empty-diff run closed without re-proof.
 SCOPE_GAP_CAPACITY_ADVISORY_SECTIONS = (
-    ("selection_excluded_changed_files", "Selection budget or nodeid (advisory: capacity, not coverage)"),
+    (
+        "selection_excluded_changed_files",
+        "Selection budget or nodeid (advisory: capacity, not coverage)",
+    ),
     ("workload_excluded_changed_files", "Workload budget (advisory: capacity, not coverage)"),
 )
 
@@ -57,13 +58,13 @@ def sample_manifest_scope_gap_details(
         return [], {}, "mutation sample manifest root must be an object"
     issues: list[str] = []
     if "base_sha" not in payload:
-        issues.append("mutation sample manifest missing `base_sha`; changed-file proof state is unknown")
+        issues.append(
+            "mutation sample manifest missing `base_sha`; changed-file proof state is unknown"
+        )
     elif payload["base_sha"] is not None and (
         not isinstance(payload["base_sha"], str) or not payload["base_sha"].strip()
     ):
-        issues.append(
-            "mutation sample manifest `base_sha` must be a non-empty string or null"
-        )
+        issues.append("mutation sample manifest `base_sha` must be a non-empty string or null")
 
     def read_section(key: str) -> list[str] | None:
         if key not in payload:
@@ -92,7 +93,9 @@ def sample_manifest_scope_gap_details(
     return sorted(blocking_paths), details, "; ".join(issues)
 
 
-def _collect_scope_gap_sections(read_section, details: dict[str, list[str]]) -> tuple[set[str], list[str]]:
+def _collect_scope_gap_sections(
+    read_section, details: dict[str, list[str]]
+) -> tuple[set[str], list[str]]:
     """Fill ``details`` from the blocking and capacity-advisory sections.
 
     Capacity-class sections stay out of the blocking set but keep their

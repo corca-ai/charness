@@ -14,17 +14,31 @@ import signal
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module
 
-_abort_lib = import_repo_module(__file__, "scripts.mutation_baseline_abort_lib")
-_sampling = import_repo_module(__file__, "scripts.mutation_sampling_lib")
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+
+_abort_lib = import_repo_module(__file__, "scripts.mutation.mutation_baseline_abort_lib")
+_sampling = import_repo_module(__file__, "scripts.mutation.mutation_sampling_lib")
 _guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = repo_root_from_script(__file__)
 DEFAULT_CONFIG = Path("cosmic-ray.toml")
 DEFAULT_SESSION = Path("reports/mutation/cosmic-ray.sqlite")
 DEFAULT_DUMP = Path("reports/mutation/cosmic-ray-dump.jsonl")
-DEFAULT_FILTER = Path("scripts/filter_cosmic_ray_mutants.py")
+DEFAULT_FILTER = Path("scripts/mutation/filter_cosmic_ray_mutants.py")
 DEFAULT_COVERAGE_JSON = _sampling.DEFAULT_SAMPLE_COVERAGE_JSON
 DEFAULT_TIMEOUT_MARKER = Path("reports/mutation/exec-timeout.json")
 DEFAULT_EXEC_TIMEOUT_SECONDS = 9000
@@ -418,7 +432,9 @@ def main() -> int:
             if coverage_json.is_file():
                 filter_command.extend(["--coverage-json", str(coverage_json)])
             if filter_script.resolve() == (repo_root / DEFAULT_FILTER).resolve():
-                filter_module = import_repo_module(__file__, "scripts.filter_cosmic_ray_mutants")
+                filter_module = import_repo_module(
+                    __file__, "scripts.mutation.filter_cosmic_ray_mutants"
+                )
                 previous_argv = sys.argv
                 try:
                     sys.argv = filter_command[1:]

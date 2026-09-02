@@ -532,11 +532,11 @@ def test_github_actions_report_states_that_no_workflows_were_found() -> None:
 
 
 # ---------------------------------------------------------------------------
-# scripts/filter_cosmic_ray_mutants.py -- main()
+# scripts/mutation/filter_cosmic_ray_mutants.py -- main()
 # ---------------------------------------------------------------------------
 
 _filter_mutants = load_script_module(
-    "coverage_debt_filter_cosmic_ray_mutants", ROOT / "scripts" / "filter_cosmic_ray_mutants.py"
+    "coverage_debt_filter_cosmic_ray_mutants", ROOT / "scripts" / "mutation" / "filter_cosmic_ray_mutants.py"
 )
 
 

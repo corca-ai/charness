@@ -19,9 +19,13 @@ from textwrap import dedent
 
 import pytest
 
-import scripts.sample_mutation_files as sample_mutation_files
-from scripts import check_js_mutation_score, check_mutation_score, check_mutation_score_summary_lib
-from scripts.mutation_baseline_abort_lib import (
+import scripts.mutation.sample_mutation_files as sample_mutation_files
+from scripts.mutation import (
+    check_js_mutation_score,
+    check_mutation_score,
+    check_mutation_score_summary_lib,
+)
+from scripts.mutation.mutation_baseline_abort_lib import (
     STAGE_COSMIC_RAY_BASELINE,
     STAGE_SAMPLER_COVERAGE,
     baseline_abort_cause,
@@ -30,8 +34,8 @@ from scripts.mutation_baseline_abort_lib import (
     read_baseline_abort_marker,
     write_baseline_abort_marker,
 )
-from scripts.mutation_sampling_lib import CoverageCommandError
-from scripts.sample_mutation_files import select_eligible_for_mutation
+from scripts.mutation.mutation_sampling_lib import CoverageCommandError
+from scripts.mutation.sample_mutation_files import select_eligible_for_mutation
 from tests.script_main import run_loaded_script_main
 
 _ADAPTER_HEADER = dedent(
@@ -871,8 +875,8 @@ def test_the_cosmic_ray_wrapper_clears_a_stale_marker_before_its_baseline(tmp_pa
     from runtime_bootstrap import import_repo_module
 
     rcrm = import_repo_module(
-        Path(__file__).resolve().parents[2] / "scripts" / "run_cosmic_ray_mutation.py",
-        "scripts.run_cosmic_ray_mutation",
+        Path(__file__).resolve().parents[2] / "scripts" / "mutation" / "run_cosmic_ray_mutation.py",
+        "scripts.mutation.run_cosmic_ray_mutation",
     )
     repo = tmp_path / "repo"
     repo.mkdir()

@@ -6,8 +6,8 @@ from pathlib import Path
 
 import yaml
 
-import scripts.sample_mutation_files as sample_mutation_files
-from scripts.mutation_changed_files_lib import (
+import scripts.mutation.sample_mutation_files as sample_mutation_files
+from scripts.mutation.mutation_changed_files_lib import (
     CHANGED_LINE_COVERAGE_MARKER_SCHEMA,
     CHANGED_LINE_COVERAGE_PRODUCER,
     changed_line_coverage_marker_path,
@@ -20,7 +20,7 @@ from .test_changed_line_mutation_coverage import (
     _seed_repo_with_changed_pool_file,
 )
 
-_TEETH = "scripts/check_changed_line_mutation_coverage.py"
+_TEETH = "scripts/mutation/check_changed_line_mutation_coverage.py"
 
 
 def test_sampler_shaped_report_with_matching_legacy_marker_is_rejected(tmp_path: Path) -> None:
@@ -142,7 +142,7 @@ def test_changed_line_marker_reader_rejects_malformed_payloads(tmp_path: Path) -
 
 
 def test_changed_line_marker_identifies_its_producer(tmp_path: Path) -> None:
-    from scripts import filter_cosmic_ray_mutants, run_cosmic_ray_mutation
+    from scripts.mutation import filter_cosmic_ray_mutants, run_cosmic_ray_mutation
 
     coverage = tmp_path / "reports" / "mutation" / "test-coverage.json"
     marker = changed_line_coverage_marker_path(coverage)

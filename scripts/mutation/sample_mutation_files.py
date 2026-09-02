@@ -14,11 +14,25 @@ import sys
 import time
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.mutation_baseline_abort_lib import (  # noqa: E402
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
+
+REPO_ROOT = repo_root_from_script(__file__)
+
+from scripts.mutation.mutation_baseline_abort_lib import (  # noqa: E402
     DEFAULT_BASELINE_ABORT_MARKER,
     STAGE_SAMPLER_COVERAGE,
     delete_stale_baseline_abort_marker,
@@ -27,13 +41,16 @@ from scripts.mutation_baseline_abort_lib import (  # noqa: E402
     resolve_baseline_abort_marker,
     write_baseline_abort_marker,
 )
-from scripts.mutation_changed_files_lib import (  # noqa: E402
+from scripts.mutation.mutation_changed_files_lib import (  # noqa: E402
     classify_changed_sample_scope,
     invalidate_changed_line_coverage_marker,
     resolved_mutation_pool,
 )
-from scripts.mutation_manifest_lib import build_manifest_from_state, write_manifest  # noqa: E402
-from scripts.mutation_sampling_lib import (  # noqa: E402
+from scripts.mutation.mutation_manifest_lib import (  # noqa: E402
+    build_manifest_from_state,
+    write_manifest,
+)
+from scripts.mutation.mutation_sampling_lib import (  # noqa: E402
     DEFAULT_SAMPLE_COVERAGE_JSON,
     CoverageCommandError,
     build_mutation_line_coverage,

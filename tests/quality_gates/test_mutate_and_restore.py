@@ -21,8 +21,8 @@ from runtime_bootstrap import import_repo_module
 from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts" / "mutate_and_restore.py"
-mar = import_repo_module(SCRIPT, "scripts.mutate_and_restore")
+SCRIPT = ROOT / "scripts" / "mutation" / "mutate_and_restore.py"
+mar = import_repo_module(SCRIPT, "scripts.mutation.mutate_and_restore")
 
 
 def _repo(tmp_path: Path, *, subject: str, test_body: str) -> Path:

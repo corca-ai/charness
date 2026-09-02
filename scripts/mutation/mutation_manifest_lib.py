@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from scripts.mutation_sampling_lib import mutation_workload, test_nodeid_count
+from scripts.mutation.mutation_sampling_lib import mutation_workload, test_nodeid_count
 
 
 def display_path(repo_root: Path, path: Path) -> str:
@@ -78,7 +78,10 @@ def write_manifest(manifest: dict, manifest_json: Path, manifest_md: Path) -> No
         "## Changed files excluded by per-file mutation budget (advisory, non-blocking)",
         "",
         *(
-            [f"- `{path}`" for path in manifest.get("changed_files_excluded_by_per_file_budget", [])]
+            [
+                f"- `{path}`"
+                for path in manifest.get("changed_files_excluded_by_per_file_budget", [])
+            ]
             or ["(none)"]
         ),
         "",
@@ -186,9 +189,7 @@ def build_manifest_from_state(state: dict) -> dict:
         if coverage_enabled
         else None,
         "changed_files_before_coverage": state["changed_before_coverage"],
-        "changed_files_excluded_by_file_coverage": state[
-            "changed_files_excluded_by_file_coverage"
-        ],
+        "changed_files_excluded_by_file_coverage": state["changed_files_excluded_by_file_coverage"],
         "changed_files_excluded_by_mutation_line_coverage": state[
             "changed_files_excluded_by_mutation_line_coverage"
         ],

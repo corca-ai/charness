@@ -22,11 +22,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Callable
 
-from runtime_bootstrap import import_repo_module
-
-_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
-run_monitored_phase = _subprocess_guard.run_monitored_phase
-run_process = _subprocess_guard.run_process
+from scripts.core.subprocess_guard import run_monitored_phase, run_process
 
 
 class RecoveryError(Exception):
@@ -47,10 +43,7 @@ def _sha256(content: bytes) -> str:
 
 def recovery_state_dir(repo_root: Path) -> Path:
     """Keep recovery bytes in git metadata when possible, never in a commit."""
-    _git_checkout = import_repo_module(__file__, "scripts.core.git_checkout")
-    discoverable = _git_checkout.discoverable
-    discovery_redirected = _git_checkout.discovery_redirected
-    layout_from_files = _git_checkout.layout_from_files
+    from scripts.core.git_checkout import discoverable, discovery_redirected, layout_from_files
 
     layout = layout_from_files(repo_root)
     if layout is not None:

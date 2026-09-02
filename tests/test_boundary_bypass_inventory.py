@@ -262,7 +262,7 @@ def test_ignores_script_path_named_only_in_assertion_string(tmp_path: Path) -> N
 def test_ignores_script_path_passed_as_data_argument_to_spawned_command(tmp_path: Path) -> None:
     repo = (
         Repo()
-        .file("scripts/release_changed_line_coverage.py", IMPORT_SAFE_INTERNAL_BOUNDARY)
+        .file("scripts/mutation/release_changed_line_coverage.py", IMPORT_SAFE_INTERNAL_BOUNDARY)
         .file("skills/public/setup/scripts/inspect_repo.py", IMPORT_SAFE)
         .file(
             "tests/test_release.py",
@@ -271,7 +271,7 @@ def test_ignores_script_path_passed_as_data_argument_to_spawned_command(tmp_path
                     "from support import run_script",
                     "def test_x():",
                     "    result = run_script(",
-                    "        'scripts/release_changed_line_coverage.py',",
+                    "        'scripts/mutation/release_changed_line_coverage.py',",
                     "        '--paths',",
                     "        'skills/public/setup/scripts/inspect_repo.py',",
                     "    )",
@@ -287,9 +287,9 @@ def test_ignores_script_path_passed_as_data_argument_to_spawned_command(tmp_path
 
     assert out["summary"]["candidate_count"] == 1
     cand = out["candidates"][0]
-    assert cand["import_safe_targets"] == ["scripts/release_changed_line_coverage.py"]
+    assert cand["import_safe_targets"] == ["scripts/mutation/release_changed_line_coverage.py"]
     assert cand["clean_inprocess_targets"] == []
-    assert cand["internal_boundary_targets"] == ["scripts/release_changed_line_coverage.py"]
+    assert cand["internal_boundary_targets"] == ["scripts/mutation/release_changed_line_coverage.py"]
 
 
 def test_finds_spawn_command_passed_by_keyword_argument(tmp_path: Path) -> None:

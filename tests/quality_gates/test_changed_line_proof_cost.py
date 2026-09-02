@@ -30,7 +30,7 @@ import yaml
 from .seeding_support import load_module
 from .support import ROOT, run_script
 
-_TEETH = "scripts/check_changed_line_mutation_coverage.py"
+_TEETH = "scripts/mutation/check_changed_line_mutation_coverage.py"
 
 
 def _load_teeth():
@@ -186,7 +186,7 @@ def test_an_unreadable_coverage_header_is_unknown_not_context_bearing() -> None:
     from runtime_bootstrap import import_repo_module
 
     sampling = import_repo_module(
-        "scripts/mutation_sampling_lib.py", "scripts.mutation_sampling_lib"
+        "scripts/mutation/mutation_sampling_lib.py", "scripts.mutation.mutation_sampling_lib"
     )
 
     assert sampling.coverage_is_context_bearing(Path("/nonexistent/never/here.json")) is None

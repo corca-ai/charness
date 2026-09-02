@@ -263,10 +263,10 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     }
     assert resolved["data"]["mutation_testing"] == {
         "commands": {
-            "dry_run": "python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode dry-run",
-            "full": "python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode full",
+            "dry_run": "python3 scripts/mutation/run_cosmic_ray_mutation.py --repo-root . --mode dry-run",
+            "full": "python3 scripts/mutation/run_cosmic_ray_mutation.py --repo-root . --mode full",
             "sample": "",
-            "summary": "python3 scripts/check_mutation_score.py --repo-root .",
+            "summary": "python3 scripts/mutation/check_mutation_score.py --repo-root .",
         },
         "score_break": 60,
         "schedule_cron": "17 */3 * * *",

@@ -1,6 +1,6 @@
 """Tests for the #358 mutation-run proof gate.
 
-`scripts/check_mutation_run_proof.py` is the gate-shaped upgrade of the
+`scripts/mutation/check_mutation_run_proof.py` is the gate-shaped upgrade of the
 `mutation-dispatch-no-base-sha-false-proof` durable artifact: a deterministic
 refusal when a mutation workflow run is cited as proof of a claim its trigger
 cannot evaluate. The classifier is pure, so the refusal matrix is pinned
@@ -18,7 +18,7 @@ import yaml
 from .seeding_support import load_module
 from .support import ROOT, run_script
 
-_GATE = "scripts/check_mutation_run_proof.py"
+_GATE = "scripts/mutation/check_mutation_run_proof.py"
 
 
 def _load_gate():

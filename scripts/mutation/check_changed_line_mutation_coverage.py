@@ -17,10 +17,10 @@ Usage::
 
     # full faithful run (collects coverage via the gate's own probe — slow):
     MUTATION_BASE_SHA=<base> MUTATION_HEAD_SHA=<head> \\
-        python3 scripts/check_changed_line_mutation_coverage.py --repo-root .
+        python3 scripts/mutation/check_changed_line_mutation_coverage.py --repo-root .
 
     # fast: reuse a coverage report you already produced this session:
-    python3 scripts/check_changed_line_mutation_coverage.py --repo-root . \\
+    python3 scripts/mutation/check_changed_line_mutation_coverage.py --repo-root . \\
         --base-sha <base> --head-sha <head> --reuse-coverage
 
 Exit 1 when any changed pool file has uncovered changed lines (the blocker);
@@ -53,9 +53,23 @@ import os
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
+
+REPO_ROOT = repo_root_from_script(__file__)
 
 from scripts.gates_support import changed_line_gate_cli as _cli  # noqa: E402
 from scripts.gates_support.changed_line_resume_route import resume_fields  # noqa: E402
@@ -88,24 +102,24 @@ from scripts.gates_support.changed_line_verdict_codes import (  # noqa: E402
     _verdict_exit_code,
 )
 from scripts.checkout_view import GitCheckout  # noqa: E402
-from scripts.mutation_changed_files_lib import (  # noqa: E402
+from scripts.mutation.mutation_changed_files_lib import (  # noqa: E402
     changed_line_coverage_marker_path,
     changed_pool_fingerprint,
     read_changed_line_coverage_marker,
     write_coverage_fingerprint_marker,
 )
-from scripts.mutation_changed_line_verdict import (  # noqa: E402
+from scripts.mutation.mutation_changed_line_verdict import (  # noqa: E402
     blocking_details,
     changed_line_scope_verdict,
 )
-from scripts.mutation_sampling_lib import (  # noqa: E402
+from scripts.mutation.mutation_sampling_lib import (  # noqa: E402
     coverage_is_context_bearing,
     load_file_statement_lines,
     read_test_command,
     run_test_coverage,
 )
-from scripts.sample_mutation_files import list_changed, list_eligible  # noqa: E402
-from scripts.subprocess_only_coverage_advisory import (  # noqa: E402
+from scripts.mutation.sample_mutation_files import list_changed, list_eligible  # noqa: E402
+from scripts.mutation.subprocess_only_coverage_advisory import (  # noqa: E402
     subprocess_coverage_advisory_report,
 )
 from scripts.yaml_output import emit_yaml  # noqa: E402
@@ -147,7 +161,9 @@ def _attach_warning(report: dict, warning: str | None) -> dict:
     return report
 
 
-def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: str, head_sha: str) -> dict | None:
+def _coverage_source_skip(
+    args, repo_root: Path, coverage_json: Path, base_sha: str, head_sha: str
+) -> dict | None:
     """Return a non-blocking skip report when the coverage source cannot be
     trusted for the release-boundary verdict, else None.
 
@@ -178,7 +194,12 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
     # to reuse what it was just told to produce would be the tool arguing with its
     # own flag.
     wants_contexts = getattr(args, "collect_test_contexts", False)
-    if reusing and not wants_contexts and coverage_json.is_file() and coverage_is_context_bearing(coverage_json) is True:
+    if (
+        reusing
+        and not wants_contexts
+        and coverage_json.is_file()
+        and coverage_is_context_bearing(coverage_json) is True
+    ):
         # Someone else's corpus. This gate never reads `contexts` and its own
         # probe never writes them, so a context-bearing file at the path it is
         # about to reuse was produced with contexts by SOMETHING -- most likely the
@@ -195,28 +216,40 @@ def _coverage_source_skip(args, repo_root: Path, coverage_json: Path, base_sha: 
         # A SKIP, not a blocker: the corpus being wrong for this reader says
         # nothing about whether the changed lines are covered, and inventing a
         # verdict from that is the substitution this whole lane refuses.
-        return {**base, "reason": (
-            f"coverage source at {args.coverage_json} carries per-test `contexts` "
-            "(`meta.show_contexts: true`), which this lane's producer never writes and "
-            "this verdict never reads; changed-line teeth skipped (non-blocking) rather "
-            "than paying a multi-GB load for those columns. See `resume_command` below."
-        ), **resume_fields(repo_root, base_sha)}
+        return {
+            **base,
+            "reason": (
+                f"coverage source at {args.coverage_json} carries per-test `contexts` "
+                "(`meta.show_contexts: true`), which this lane's producer never writes and "
+                "this verdict never reads; changed-line teeth skipped (non-blocking) rather "
+                "than paying a multi-GB load for those columns. See `resume_command` below."
+            ),
+            **resume_fields(repo_root, base_sha),
+        }
     if args.require_fresh_coverage and coverage_json.is_file():
         marker = changed_line_coverage_marker_path(coverage_json)
         recorded = read_changed_line_coverage_marker(marker)
         current = changed_pool_fingerprint(repo_root, base_sha)
         if recorded is None or recorded != current:
-            return {**base, "reason": (
-                f"coverage source is stale: fingerprint marker {recorded or 'absent'} != current "
-                f"{current}; changed-line teeth skipped (non-blocking). "
-                "See `resume_command` below: it renders the verdict itself, cheaply."
-            ), **resume_fields(repo_root, base_sha)}
+            return {
+                **base,
+                "reason": (
+                    f"coverage source is stale: fingerprint marker {recorded or 'absent'} != current "
+                    f"{current}; changed-line teeth skipped (non-blocking). "
+                    "See `resume_command` below: it renders the verdict itself, cheaply."
+                ),
+                **resume_fields(repo_root, base_sha),
+            }
     if args.skip_if_no_coverage and not coverage_json.is_file():
-        return {**base, "reason": (
-            f"no coverage source at {args.coverage_json}: changed-line teeth skipped "
-            "(non-blocking). See `resume_command` below: it renders the verdict itself "
-            "from its own focused corpus rather than writing this path."
-        ), **resume_fields(repo_root, base_sha)}
+        return {
+            **base,
+            "reason": (
+                f"no coverage source at {args.coverage_json}: changed-line teeth skipped "
+                "(non-blocking). See `resume_command` below: it renders the verdict itself "
+                "from its own focused corpus rather than writing this path."
+            ),
+            **resume_fields(repo_root, base_sha),
+        }
     return None
 
 
@@ -248,7 +281,9 @@ def _ensure_coverage(args, repo_root: Path, coverage_json: Path, base_sha: str) 
         config = args.config if args.config.is_absolute() else repo_root / args.config
         test_command = args.test_command or read_test_command(config)
         run_test_coverage(
-            repo_root, test_command, coverage_json,
+            repo_root,
+            test_command,
+            coverage_json,
             dynamic_context=getattr(args, "collect_test_contexts", False),
         )
     if args.write_fresh_marker:
@@ -274,9 +309,9 @@ def coverage_not_verified_warning(changed_eligible: list[str], reason: str) -> s
         f"changed lines were NOT verified for coverage ({reason.rstrip('.')}). An "
         "unverified skip reads as a clean pass, so uncovered changed lines reach main "
         "and the next scheduled mutation run flags them (the #335 recurrence). First run "
-        "`python3 scripts/suggest_mutation_coverage_command.py --repo-root . --detail` "
+        "`python3 scripts/mutation/suggest_mutation_coverage_command.py --repo-root . --detail` "
         "to find a focused producer command; if it cannot map the change, run "
-        "`python3 scripts/release_changed_line_coverage.py --repo-root . "
+        "`python3 scripts/mutation/release_changed_line_coverage.py --repo-root . "
         "--base-sha <base>` at the release boundary. "
         f"Files: {files}"
     )
@@ -289,7 +324,9 @@ def _surface_skip(skip: dict, changed_before_coverage: list[str]) -> dict:
     empty case returns earlier), so a skip ALWAYS means "eligible files changed but
     went unverified" — the recurrence driver. Write the obligation to stderr and
     record it structurally; the verdict itself stays non-blocking, but exits 3 (ran, established nothing) rather than 0."""
-    not_verified = coverage_not_verified_warning(changed_before_coverage, str(skip.get("reason", "coverage unavailable")))
+    not_verified = coverage_not_verified_warning(
+        changed_before_coverage, str(skip.get("reason", "coverage unavailable"))
+    )
     sys.stderr.write(f"WARNING (changed-line mutation gate): {not_verified}\n")
     skip["coverage_not_verified"] = True
     skip["changed_eligible_files"] = changed_before_coverage
@@ -302,22 +339,24 @@ def _emit_no_base_sha() -> int:
     carries a machine-readable `changed_line_proof` bit and stderr names the
     `mutation-dispatch-no-base-sha-false-proof` class, so an `ok: true` here can
     no longer be read as changed-line proof. Claim-time refusal is owned by
-    `scripts/check_mutation_run_proof.py`."""
+    `scripts/mutation/check_mutation_run_proof.py`."""
     sys.stderr.write(
         "WARNING (changed-line mutation gate): no base_sha, so this verdict proves NOTHING "
         "about changed-line coverage (the mutation-dispatch-no-base-sha-false-proof class). "
         "Before citing a run as changed-line proof, run "
-        "`python3 scripts/check_mutation_run_proof.py --claim changed-line ...`.\n"
+        "`python3 scripts/mutation/check_mutation_run_proof.py --claim changed-line ...`.\n"
     )
-    _emit({
-        "ok": True,
-        "blocking": [],
-        # No range, so no changed set was ever derived: the pair is null rather
-        # than `0 of 0`, which would claim an empty scope this run never read.
-        **scope_counts_not_computed("no base_sha: no range, so no changed set was derived"),
-        "changed_line_proof": "not-provable",
-        "reason": "no base_sha: the changed-line classifier is non-blocking by construction (matches workflow_dispatch, which computes no base_sha)",
-    })
+    _emit(
+        {
+            "ok": True,
+            "blocking": [],
+            # No range, so no changed set was ever derived: the pair is null rather
+            # than `0 of 0`, which would claim an empty scope this run never read.
+            **scope_counts_not_computed("no base_sha: no range, so no changed set was derived"),
+            "changed_line_proof": "not-provable",
+            "reason": "no base_sha: the changed-line classifier is non-blocking by construction (matches workflow_dispatch, which computes no base_sha)",
+        }
+    )
     return 0
 
 
@@ -325,18 +364,22 @@ def _emit_dirty_refusal(uncommitted: list[str], metadata: dict) -> int:
     """Startup refusal — emitted BEFORE any coverage/probe work."""
     message = dirty_pool_refusal(uncommitted)
     sys.stderr.write(f"ERROR (changed-line mutation gate): {message}\n")
-    _emit({
-        "ok": False,
-        "blocking": [],
-        "refused": True,
-        "reason": message,
-        **metadata,
-        "changed_line_proof": "refused",
-    })
+    _emit(
+        {
+            "ok": False,
+            "blocking": [],
+            "refused": True,
+            "reason": message,
+            **metadata,
+            "changed_line_proof": "refused",
+        }
+    )
     return REFUSED_EXIT
 
 
-def _run_metadata(base_sha: str, head_sha: str, pinned: dict[str, str], contaminated: list[str]) -> dict:
+def _run_metadata(
+    base_sha: str, head_sha: str, pinned: dict[str, str], contaminated: list[str]
+) -> dict:
     """Additive payload metadata shared by every verdict this run can emit."""
     metadata: dict[str, object] = {
         "base_sha": base_sha,
@@ -345,7 +388,9 @@ def _run_metadata(base_sha: str, head_sha: str, pinned: dict[str, str], contamin
         # Startup default: the refusal paths that fire before the changed set is
         # derived carry this, and `main` overwrites it with the real pair as soon
         # as the set exists. Both are the same key, so no verdict lacks one.
-        **scope_counts_not_computed("startup refusal: the run ended before the changed set was derived"),
+        **scope_counts_not_computed(
+            "startup refusal: the run ended before the changed set was derived"
+        ),
     }
     if contaminated:
         metadata["dirty_pool_unverified"] = True
@@ -354,7 +399,9 @@ def _run_metadata(base_sha: str, head_sha: str, pinned: dict[str, str], contamin
     return metadata
 
 
-def _finalize(report: dict, repo_root: Path, base_sha: str, head_sha: str, pinned: dict, exit_code: int) -> int:
+def _finalize(
+    report: dict, repo_root: Path, base_sha: str, head_sha: str, pinned: dict, exit_code: int
+) -> int:
     """Emit the report, downgrading it to UNTRUSTED when the repo moved mid-run."""
     drift = run_state_drift(repo_root, base_sha, head_sha, pinned)
     if drift:
@@ -366,7 +413,9 @@ def _finalize(report: dict, repo_root: Path, base_sha: str, head_sha: str, pinne
     return exit_code
 
 
-def _blocking_report(repo_root, args, base_sha, head_sha, changed_before_coverage, coverage_json) -> dict:
+def _blocking_report(
+    repo_root, args, base_sha, head_sha, changed_before_coverage, coverage_json
+) -> dict:
     """The authoritative changed-line verdict body for the analyzed (pinned) range."""
     _ensure_coverage(args, repo_root, coverage_json, base_sha)
     statement_lines = load_file_statement_lines(repo_root, coverage_json)
@@ -405,8 +454,12 @@ def _blocking_report(repo_root, args, base_sha, head_sha, changed_before_coverag
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
-    base_sha = (args.base_sha if args.base_sha is not None else os.environ.get("MUTATION_BASE_SHA") or "").strip() or None
-    head_sha = (args.head_sha if args.head_sha is not None else os.environ.get("MUTATION_HEAD_SHA") or "").strip() or "HEAD"
+    base_sha = (
+        args.base_sha if args.base_sha is not None else os.environ.get("MUTATION_BASE_SHA") or ""
+    ).strip() or None
+    head_sha = (
+        args.head_sha if args.head_sha is not None else os.environ.get("MUTATION_HEAD_SHA") or ""
+    ).strip() or "HEAD"
 
     if not base_sha:
         return _emit_no_base_sha()
@@ -436,14 +489,21 @@ def main() -> int:
             f"ERROR (changed-line mutation gate): {trust.unestablished_reason}; "
             "this run produced NO verdict.\n"
         )
-        return _finalize({
-            "ok": False,
-            "blocking": [],
-            "refused": True,
-            **metadata,
-            "changed_line_proof": "refused",
-            "reason": trust.unestablished_reason,
-        }, repo_root, base_sha, head_sha, pinned, REFUSED_EXIT)
+        return _finalize(
+            {
+                "ok": False,
+                "blocking": [],
+                "refused": True,
+                **metadata,
+                "changed_line_proof": "refused",
+                "reason": trust.unestablished_reason,
+            },
+            repo_root,
+            base_sha,
+            head_sha,
+            pinned,
+            REFUSED_EXIT,
+        )
     if contaminated and not args.allow_dirty:
         return _emit_dirty_refusal(contaminated, metadata)
     fg_warning = false_green_message(contaminated) if contaminated else None
@@ -451,7 +511,9 @@ def main() -> int:
         sys.stderr.write(f"WARNING (changed-line mutation gate): {fg_warning}\n")
     analyzed_head = pinned["resolved_head_sha"]
 
-    changed_before_coverage = [p for p in list_changed(repo_root, base_sha, analyzed_head) if p in all_eligible]
+    changed_before_coverage = [
+        p for p in list_changed(repo_root, base_sha, analyzed_head) if p in all_eligible
+    ]
     changed_before_coverage, unanalyzed = _apply_file_limit(args, changed_before_coverage)
     # The scope is now known, so every verdict emitted from here down states its
     # denominator — not only the limited runs that also get the `unanalyzed` list.
@@ -525,10 +587,18 @@ def main() -> int:
         # is the class this whole slice repairs, one branch over from where round 1
         # caught it.
         empty_code = UNESTABLISHED_EXIT if (unanalyzed or fg_warning) else 0
-        return _finalize(_attach_warning(empty_scope, fg_warning),
-            repo_root, base_sha, head_sha, pinned, empty_code)
+        return _finalize(
+            _attach_warning(empty_scope, fg_warning),
+            repo_root,
+            base_sha,
+            head_sha,
+            pinned,
+            empty_code,
+        )
 
-    coverage_json = args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
+    coverage_json = (
+        args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
+    )
     skip = _coverage_source_skip(args, repo_root, coverage_json, base_sha, head_sha)
     if skip is not None:
         skip = {**skip, **metadata}
@@ -550,11 +620,17 @@ def main() -> int:
         payload["changed_line_proof"] = "partial"
     code = _finalize(
         payload,
-        repo_root, base_sha, head_sha, pinned, clean_code,
+        repo_root,
+        base_sha,
+        head_sha,
+        pinned,
+        clean_code,
     )
     if blocking and code == 1:
         _write_blocking_stderr(
-            blocking, report["blocking_targets"], report.get("subprocess_coverage_advisory"),
+            blocking,
+            report["blocking_targets"],
+            report.get("subprocess_coverage_advisory"),
             report.get("subprocess_coverage_advisory_scope"),
         )
     return code

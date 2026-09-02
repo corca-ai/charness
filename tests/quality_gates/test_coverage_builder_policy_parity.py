@@ -27,8 +27,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from scripts import mutation_coverage_producer as producer
-from scripts import mutation_sampling_lib as sampling
+from scripts.mutation import mutation_coverage_producer as producer
+from scripts.mutation import mutation_sampling_lib as sampling
 
 from .seeding_support import load_module
 from .support import ROOT
@@ -37,7 +37,7 @@ from .support import ROOT
 def _load_teeth():
     return load_module(
         "check_changed_line_mutation_coverage",
-        ROOT / "scripts/check_changed_line_mutation_coverage.py",
+        ROOT / "scripts/mutation/check_changed_line_mutation_coverage.py",
     )
 
 

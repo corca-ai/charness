@@ -5,7 +5,7 @@ cd "$REPO_ROOT"
 
 MUTATION_RECOVERY_DIR="$(git rev-parse --git-dir)/charness-mutation-recovery"
 if [[ -e "$MUTATION_RECOVERY_DIR" || -e "$REPO_ROOT/.charness/mutation-recovery" ]]; then
-  echo "charness pre-commit: interrupted mutation recovery is REQUIRED; run python3 scripts/mutate_and_restore.py --repo-root . --check-recovery, then --recover" >&2
+  echo "charness pre-commit: interrupted mutation recovery is REQUIRED; run python3 scripts/mutation/mutate_and_restore.py --repo-root . --check-recovery, then --recover" >&2
   exit 2
 fi
 

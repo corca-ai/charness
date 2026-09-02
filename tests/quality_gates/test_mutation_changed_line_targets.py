@@ -8,10 +8,10 @@ from pathlib import Path
 
 import pytest
 
-import scripts.mutation_changed_files_lib as mutation_changed_files_lib
-import scripts.mutation_changed_line_diff as mutation_changed_line_diff
-from scripts.mutation_changed_files_lib import changed_line_scope_gap_targets
-from scripts.sample_mutation_files import write_manifest
+import scripts.mutation.mutation_changed_files_lib as mutation_changed_files_lib
+import scripts.mutation.mutation_changed_line_diff as mutation_changed_line_diff
+from scripts.mutation.mutation_changed_files_lib import changed_line_scope_gap_targets
+from scripts.mutation.sample_mutation_files import write_manifest
 
 
 def test_changed_line_scope_gap_targets_include_source_text(

@@ -158,7 +158,7 @@ def test_repo_python_surface_matches_top_level_scripts() -> None:
         "--repo-root",
         str(ROOT),
         "--paths",
-        "scripts/release_changed_line_coverage.py",
+        "scripts/mutation/release_changed_line_coverage.py",
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)

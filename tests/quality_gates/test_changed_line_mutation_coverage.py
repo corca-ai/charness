@@ -1,10 +1,11 @@
 """Targeted tests for the #260 preventive teeth.
 
-`scripts/check_changed_line_mutation_coverage.py` reproduces the mutation gate's
+`scripts/mutation/check_changed_line_mutation_coverage.py` reproduces the mutation gate's
 *blocking* changed-line signal locally. These tests pin its wiring (base/head
 resolution, eligible-pool changed-file derivation, coverage loading, exit code)
 by injecting a coverage JSON via --reuse-coverage so no slow real probe runs.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -16,7 +17,7 @@ from types import SimpleNamespace
 
 import yaml
 
-from scripts.mutation_changed_files_lib import (
+from scripts.mutation.mutation_changed_files_lib import (
     CHANGED_LINE_COVERAGE_MARKER_SCHEMA,
     CHANGED_LINE_COVERAGE_PRODUCER,
     changed_line_coverage_marker_path,
@@ -31,7 +32,7 @@ from .changed_line_mutation_fixtures import (
 from .seeding_support import seed_two_changed_pool_files
 from .support import ROOT, run_script
 
-_TEETH = "scripts/check_changed_line_mutation_coverage.py"
+_TEETH = "scripts/mutation/check_changed_line_mutation_coverage.py"
 
 
 def _load_teeth():
@@ -46,7 +47,9 @@ def _load_teeth():
 def _write_coverage(repo: Path, *, executed: list[int], missing: list[int]) -> Path:
     cov = repo / "coverage.json"
     cov.write_text(
-        json.dumps({"files": {"scripts/foo.py": {"executed_lines": executed, "missing_lines": missing}}}),
+        json.dumps(
+            {"files": {"scripts/foo.py": {"executed_lines": executed, "missing_lines": missing}}}
+        ),
         encoding="utf-8",
     )
     return cov
@@ -62,11 +65,15 @@ def _run(
 ) -> subprocess.CompletedProcess[str]:
     return run_script(
         _TEETH,
-        "--repo-root", str(repo),
-        "--base-sha", base,
-        "--head-sha", head,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
         "--reuse-coverage",
-        "--coverage-json", str(cov),
+        "--coverage-json",
+        str(cov),
         real_process=real_process,
     )
 
@@ -147,13 +154,23 @@ def test_resolves_relative_coverage_json_under_repo_root(tmp_path: Path) -> None
     repo, base, head = _seed_repo_with_changed_pool_file(tmp_path)
     (repo / "reports").mkdir()
     (repo / "reports" / "cov.json").write_text(
-        json.dumps({"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}),
+        json.dumps(
+            {"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}
+        ),
         encoding="utf-8",
     )
 
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--coverage-json", "reports/cov.json",  # relative -> repo_root/reports/cov.json
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--coverage-json",
+        "reports/cov.json",  # relative -> repo_root/reports/cov.json
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
@@ -199,8 +216,17 @@ def test_skip_if_no_coverage_is_non_blocking_when_absent(tmp_path: Path) -> None
     absent = repo / "reports" / "mutation" / "test-coverage.json"  # never written
 
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--skip-if-no-coverage", "--coverage-json", str(absent),
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--skip-if-no-coverage",
+        "--coverage-json",
+        str(absent),
     )
 
     assert result.returncode == UNESTABLISHED_EXIT, (
@@ -244,8 +270,17 @@ def test_skip_if_no_coverage_still_blocks_when_present(tmp_path: Path) -> None:
     cov = _write_coverage(repo, executed=[1, 2], missing=[5, 6])  # def b left uncovered
 
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--skip-if-no-coverage", "--coverage-json", str(cov),
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--skip-if-no-coverage",
+        "--coverage-json",
+        str(cov),
     )
 
     assert result.returncode == 1, result.stdout + result.stderr
@@ -262,7 +297,9 @@ def _marker_path(cov: Path) -> Path:
     return changed_line_coverage_marker_path(cov)
 
 
-def _write_marker(cov: Path, fingerprint: str, *, producer: str = CHANGED_LINE_COVERAGE_PRODUCER) -> None:
+def _write_marker(
+    cov: Path, fingerprint: str, *, producer: str = CHANGED_LINE_COVERAGE_PRODUCER
+) -> None:
     cov.with_name(cov.name + ".changed-line.fingerprint").write_text(
         json.dumps(
             {
@@ -288,8 +325,17 @@ def test_require_fresh_coverage_skips_when_marker_absent(tmp_path: Path) -> None
     # no <cov>.changed-line.fingerprint marker written
 
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--require-fresh-coverage", "--coverage-json", str(cov),
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--require-fresh-coverage",
+        "--coverage-json",
+        str(cov),
     )
 
     assert result.returncode == UNESTABLISHED_EXIT, (
@@ -311,8 +357,17 @@ def test_require_fresh_coverage_skips_when_marker_mismatched(tmp_path: Path) -> 
     _write_marker(cov, "0" * 64)  # wrong fingerprint
 
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--require-fresh-coverage", "--coverage-json", str(cov),
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--require-fresh-coverage",
+        "--coverage-json",
+        str(cov),
     )
 
     assert result.returncode == UNESTABLISHED_EXIT, (
@@ -334,8 +389,17 @@ def test_require_fresh_coverage_fires_when_marker_matches_fingerprint(tmp_path: 
     _write_marker(cov, _fingerprint(repo, base))
 
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--require-fresh-coverage", "--coverage-json", str(cov),
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--require-fresh-coverage",
+        "--coverage-json",
+        str(cov),
     )
 
     assert result.returncode == 1, result.stdout + result.stderr
@@ -359,7 +423,9 @@ def test_write_fresh_marker_stamps_coverage_fingerprint(tmp_path: Path, monkeypa
         seen["dynamic_context"] = dynamic_context
         Path(coverage_json).parent.mkdir(parents=True, exist_ok=True)
         Path(coverage_json).write_text(
-            json.dumps({"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}),
+            json.dumps(
+                {"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}
+            ),
             encoding="utf-8",
         )
 
@@ -368,8 +434,18 @@ def test_write_fresh_marker_stamps_coverage_fingerprint(tmp_path: Path, monkeypa
     monkeypatch.setattr(
         sys,
         "argv",
-        ["teeth", "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-         "--coverage-json", str(cov_path), "--write-fresh-marker"],
+        [
+            "teeth",
+            "--repo-root",
+            str(repo),
+            "--base-sha",
+            base,
+            "--head-sha",
+            head,
+            "--coverage-json",
+            str(cov_path),
+            "--write-fresh-marker",
+        ],
     )
 
     rc = teeth.main()
@@ -386,7 +462,9 @@ def test_write_fresh_marker_stamps_coverage_fingerprint(tmp_path: Path, monkeypa
 def _dirty_pool_file(repo: Path) -> None:
     """Append an UNCOMMITTED change to the pool file (worktree, not committed)."""
     foo = repo / "scripts" / "foo.py"
-    foo.write_text(foo.read_text(encoding="utf-8") + "\n\ndef c():\n    return 3\n", encoding="utf-8")
+    foo.write_text(
+        foo.read_text(encoding="utf-8") + "\n\ndef c():\n    return 3\n", encoding="utf-8"
+    )
 
 
 def test_false_green_warning_fires_for_uncommitted_pool_change(tmp_path: Path) -> None:
@@ -413,9 +491,7 @@ def test_uncommitted_pool_changes_includes_untracked_nonignored_file(tmp_path: P
     untracked.write_text("def new():\n    return 1\n", encoding="utf-8")
 
     teeth = _load_teeth()
-    assert teeth.uncommitted_pool_changes(repo, {"scripts/new_pool.py"}) == [
-        "scripts/new_pool.py"
-    ]
+    assert teeth.uncommitted_pool_changes(repo, {"scripts/new_pool.py"}) == ["scripts/new_pool.py"]
 
 
 def test_false_green_warning_silent_when_change_outside_pool(tmp_path: Path) -> None:
@@ -434,7 +510,9 @@ def test_false_green_warning_silent_when_head_is_not_HEAD(tmp_path: Path) -> Non
     assert teeth.false_green_warning(repo, base, {"scripts/foo.py"}) is None
 
 
-def test_a_dirty_pool_still_reports_unestablished_when_the_scope_was_also_partial(tmp_path: Path) -> None:
+def test_a_dirty_pool_still_reports_unestablished_when_the_scope_was_also_partial(
+    tmp_path: Path,
+) -> None:
     """Both causes at once, and the REFUSABLE one must win.
 
     Exit 3 is refusable at push time (`--refuse-unestablished`); exit 4 is
@@ -454,9 +532,19 @@ def test_a_dirty_pool_still_reports_unestablished_when_the_scope_was_also_partia
     cov = _write_two_file_coverage(repo)
 
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--coverage-json", str(cov), "--allow-dirty",
-        "--limit-to-file", "scripts/foo.py",
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--coverage-json",
+        str(cov),
+        "--allow-dirty",
+        "--limit-to-file",
+        "scripts/foo.py",
     )
 
     assert result.returncode == UNESTABLISHED_EXIT, (
@@ -477,8 +565,17 @@ def test_false_green_warning_surfaces_in_report_and_stderr(tmp_path: Path) -> No
     _dirty_pool_file(repo)  # uncommitted def c, excluded from base..HEAD
     cov = _write_coverage(repo, executed=[1, 2, 5, 6], missing=[])  # in-range lines covered
     result = run_script(  # --head-sha <HEAD sha> -> resolves to HEAD
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--coverage-json", str(cov), "--allow-dirty",
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--coverage-json",
+        str(cov),
+        "--allow-dirty",
     )
 
     assert result.returncode == UNESTABLISHED_EXIT, (
@@ -527,7 +624,8 @@ def test_refusal_happens_before_the_coverage_probe_runs(tmp_path: Path, monkeypa
     monkeypatch.setattr(teeth, "run_test_coverage", explode)
     monkeypatch.setattr(teeth, "read_test_command", lambda config: "python3 -m pytest -q")
     monkeypatch.setattr(
-        sys, "argv",
+        sys,
+        "argv",
         ["teeth", "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD"],
     )
 
@@ -543,8 +641,17 @@ def test_allow_dirty_proceeds_but_records_the_result_as_unverified(tmp_path: Pat
     cov = _write_coverage(repo, executed=[1, 2, 5, 6], missing=[])
 
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--coverage-json", str(cov), "--allow-dirty",
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--coverage-json",
+        str(cov),
+        "--allow-dirty",
     )
 
     assert result.returncode == UNESTABLISHED_EXIT, (
@@ -567,8 +674,16 @@ def test_clean_worktree_does_not_refuse_and_reports_the_pinned_head(tmp_path: Pa
     cov = _write_coverage(repo, executed=[1, 2, 5, 6], missing=[])
 
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD",
-        "--reuse-coverage", "--coverage-json", str(cov),
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        "HEAD",
+        "--reuse-coverage",
+        "--coverage-json",
+        str(cov),
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
@@ -586,13 +701,19 @@ def test_mid_run_commit_marks_the_result_untrusted(tmp_path: Path, monkeypatch) 
     teeth = _load_teeth()
     cov_path = repo / "cov.json"
 
-    def commit_during_probe(repo_root, test_command, coverage_json, *, dynamic_context=True) -> None:
+    def commit_during_probe(
+        repo_root, test_command, coverage_json, *, dynamic_context=True
+    ) -> None:
         foo = repo / "scripts" / "foo.py"
-        foo.write_text(foo.read_text(encoding="utf-8") + "\n\ndef d():\n    return 4\n", encoding="utf-8")
+        foo.write_text(
+            foo.read_text(encoding="utf-8") + "\n\ndef d():\n    return 4\n", encoding="utf-8"
+        )
         _git(repo, "add", "-A")
         _git(repo, "commit", "-q", "-m", "mid-run")
         Path(coverage_json).write_text(
-            json.dumps({"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}),
+            json.dumps(
+                {"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}
+            ),
             encoding="utf-8",
         )
 
@@ -601,9 +722,19 @@ def test_mid_run_commit_marks_the_result_untrusted(tmp_path: Path, monkeypatch) 
     captured: list[dict] = []
     monkeypatch.setattr(teeth, "_emit", captured.append)
     monkeypatch.setattr(
-        sys, "argv",
-        ["teeth", "--repo-root", str(repo), "--base-sha", base, "--head-sha", "HEAD",
-         "--coverage-json", str(cov_path)],
+        sys,
+        "argv",
+        [
+            "teeth",
+            "--repo-root",
+            str(repo),
+            "--base-sha",
+            base,
+            "--head-sha",
+            "HEAD",
+            "--coverage-json",
+            str(cov_path),
+        ],
     )
 
     rc = teeth.main()
@@ -669,7 +800,9 @@ def test_runs_coverage_probe_when_not_reusing(tmp_path: Path, monkeypatch) -> No
         called["dynamic_context"] = dynamic_context
         Path(coverage_json).parent.mkdir(parents=True, exist_ok=True)
         Path(coverage_json).write_text(
-            json.dumps({"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}),
+            json.dumps(
+                {"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}
+            ),
             encoding="utf-8",
         )
 
@@ -678,8 +811,17 @@ def test_runs_coverage_probe_when_not_reusing(tmp_path: Path, monkeypatch) -> No
     monkeypatch.setattr(
         sys,
         "argv",
-        ["teeth", "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-         "--coverage-json", str(repo / "cov.json")],
+        [
+            "teeth",
+            "--repo-root",
+            str(repo),
+            "--base-sha",
+            base,
+            "--head-sha",
+            head,
+            "--coverage-json",
+            str(repo / "cov.json"),
+        ],
     )
 
     rc = teeth.main()
@@ -700,10 +842,14 @@ def _write_two_file_coverage(repo: Path) -> Path:
     were outside the focused subset."""
     cov = repo / "coverage.json"
     cov.write_text(
-        json.dumps({"files": {
-            "scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []},
-            "scripts/bar.py": {"executed_lines": [1, 2], "missing_lines": [5, 6]},
-        }}),
+        json.dumps(
+            {
+                "files": {
+                    "scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []},
+                    "scripts/bar.py": {"executed_lines": [1, 2], "missing_lines": [5, 6]},
+                }
+            }
+        ),
         encoding="utf-8",
     )
     return cov
@@ -714,8 +860,18 @@ def test_limit_to_file_narrows_the_blocking_set_and_names_the_rest(tmp_path: Pat
     cov = _write_two_file_coverage(repo)
 
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--coverage-json", str(cov), "--limit-to-file", "scripts/foo.py",
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--coverage-json",
+        str(cov),
+        "--limit-to-file",
+        "scripts/foo.py",
     )
 
     # Exit 4 (PARTIAL). It used to be 0 -- the same byte as a run with no blind
@@ -738,8 +894,16 @@ def test_without_the_limit_the_same_coverage_still_blocks(tmp_path: Path) -> Non
     cov = _write_two_file_coverage(repo)
 
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--coverage-json", str(cov),
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--coverage-json",
+        str(cov),
     )
 
     assert result.returncode == 1
@@ -759,8 +923,18 @@ def test_a_limit_that_matches_nothing_refuses_to_report_an_empty_range(tmp_path:
     cov = _write_two_file_coverage(repo)
 
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--coverage-json", str(cov), "--limit-to-file", "scripts/absent.py",
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--coverage-json",
+        str(cov),
+        "--limit-to-file",
+        "scripts/absent.py",
     )
 
     assert result.returncode == UNESTABLISHED_EXIT, (
@@ -784,6 +958,7 @@ def test_an_absent_limit_analyzes_everything(tmp_path: Path) -> None:
 
     assert analyzed == ["scripts/foo.py", "scripts/bar.py"]
     assert unanalyzed == []
+
 
 def test_probe_run_trust_separates_could_not_look_from_looked_and_found_nothing() -> None:
     """The distinction this module's docstring demanded and the code did not have.
@@ -845,14 +1020,25 @@ def test_the_gate_refuses_when_it_could_not_inspect_the_tree(tmp_path: Path, mon
     cov = _write_coverage(repo, executed=[1, 2, 5, 6], missing=[])
     teeth = _load_teeth()
     monkeypatch.setattr(
-        teeth, "probe_run_trust",
+        teeth,
+        "probe_run_trust",
         lambda *_a, **_k: TrustProbe([], "probe forced unestablished", INSPECTION_FAILED),
     )
     monkeypatch.setattr(
-        sys, "argv",
-        ["check_changed_line_mutation_coverage.py", "--repo-root", str(repo),
-         "--base-sha", base, "--head-sha", head, "--reuse-coverage",
-         "--coverage-json", str(cov)],
+        sys,
+        "argv",
+        [
+            "check_changed_line_mutation_coverage.py",
+            "--repo-root",
+            str(repo),
+            "--base-sha",
+            base,
+            "--head-sha",
+            head,
+            "--reuse-coverage",
+            "--coverage-json",
+            str(cov),
+        ],
     )
     assert teeth.main() == teeth.REFUSED_EXIT
 
@@ -884,6 +1070,7 @@ def test_a_scope_mismatch_does_not_make_an_empty_changed_set_refusable(tmp_path:
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert "no eligible" in yaml.safe_load(result.stdout)["reason"]
+
 
 def test_a_scope_mismatch_over_an_empty_scope_still_discloses_itself(tmp_path: Path) -> None:
     """Exit 0 is right; silence is not.
@@ -930,7 +1117,9 @@ def test_a_scope_mismatch_over_an_empty_scope_still_discloses_itself(tmp_path: P
     assert honest.returncode == 1, honest.stdout + honest.stderr
 
 
-def test_the_scope_mismatch_return_carries_the_limit_disclosure_too(tmp_path: Path, monkeypatch) -> None:
+def test_the_scope_mismatch_return_carries_the_limit_disclosure_too(
+    tmp_path: Path, monkeypatch
+) -> None:
     """Two unestablished causes at once must not mask each other.
 
     The scope-mismatch return sits between `_apply_file_limit` and the limit's
@@ -956,20 +1145,37 @@ def test_the_scope_mismatch_return_carries_the_limit_disclosure_too(tmp_path: Pa
     head = _git(repo, "rev-parse", "HEAD")
     cov = repo / "coverage.json"
     cov.write_text(
-        json.dumps({"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}),
+        json.dumps(
+            {"files": {"scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []}}}
+        ),
         encoding="utf-8",
     )
 
     teeth = _load_teeth()
     monkeypatch.setattr(
-        teeth, "probe_run_trust",
-        lambda *_a, **_k: TrustProbe([], "analyzed head is not the checked-out HEAD", SCOPE_MISMATCH),
+        teeth,
+        "probe_run_trust",
+        lambda *_a, **_k: TrustProbe(
+            [], "analyzed head is not the checked-out HEAD", SCOPE_MISMATCH
+        ),
     )
     monkeypatch.setattr(
-        sys, "argv",
-        ["check_changed_line_mutation_coverage.py", "--repo-root", str(repo),
-         "--base-sha", base, "--head-sha", head, "--reuse-coverage",
-         "--coverage-json", str(cov), "--limit-to-file", "scripts/foo.py"],
+        sys,
+        "argv",
+        [
+            "check_changed_line_mutation_coverage.py",
+            "--repo-root",
+            str(repo),
+            "--base-sha",
+            base,
+            "--head-sha",
+            head,
+            "--reuse-coverage",
+            "--coverage-json",
+            str(cov),
+            "--limit-to-file",
+            "scripts/foo.py",
+        ],
     )
     emitted: list[dict] = []
     monkeypatch.setattr(teeth, "_emit", lambda report: emitted.append(report))
@@ -1000,7 +1206,6 @@ def test_an_unresolvable_head_sha_is_inspection_failed_not_a_clean_probe(tmp_pat
     assert probe.contaminated == []
     assert probe.unestablished_kind == teeth.INSPECTION_FAILED
     assert "could not resolve" in probe.unestablished_reason
-
 
 
 # --- #465: subprocess-only coverage advisory on the blocking payload -------------

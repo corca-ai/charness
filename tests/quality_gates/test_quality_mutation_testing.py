@@ -20,12 +20,12 @@ from textwrap import dedent
 import pytest
 import yaml
 
-from scripts import check_mutation_score
-from scripts.check_mutation_score import (
+from scripts.mutation import check_mutation_score
+from scripts.mutation.check_mutation_score import (
     iter_dump_records,
     summarize_survived_mutations,
 )
-from scripts.filter_cosmic_ray_mutants import (
+from scripts.mutation.filter_cosmic_ray_mutants import (
     UNCOVERED_MUTATION_SKIP_OUTPUT,
     coverage_skip_reason,
     is_trivial_entry_guard_mutation,
@@ -590,7 +590,7 @@ def test_validate_data_with_empty_dict_includes_mutation_testing(tmp_path: Path)
 def test_repo_quality_adapter_enables_mutation_sample_command() -> None:
     payload = load_quality_adapter(ROOT)
     assert payload["data"]["mutation_testing"]["commands"]["sample"] == (
-        "python3 scripts/sample_mutation_files.py --repo-root . "
+        "python3 scripts/mutation/sample_mutation_files.py --repo-root . "
         "--test-command 'python3 scripts/gates_support/run_standing_pytest.py --repo-root .'"
     )
 
@@ -747,7 +747,7 @@ def test_cosmic_ray_filter_bootstraps_repo_root_for_direct_script_import(
     monkeypatch.setattr(sys, "path", [entry for entry in sys.path if entry != root])
     spec = importlib.util.spec_from_file_location(
         "filter_cosmic_ray_mutants_direct_import_probe",
-        ROOT / "scripts" / "filter_cosmic_ray_mutants.py",
+        ROOT / "scripts" / "mutation" / "filter_cosmic_ray_mutants.py",
     )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -810,7 +810,7 @@ def test_run_cosmic_ray_mutation_invokes_filter_after_init(tmp_path: Path) -> No
     result = subprocess.run(
         [
             "python3",
-            "scripts/run_cosmic_ray_mutation.py",
+            "scripts/mutation/run_cosmic_ray_mutation.py",
             "--repo-root",
             str(repo),
             "--mode",

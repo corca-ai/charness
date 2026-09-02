@@ -45,13 +45,13 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_run_review",
         ROOT / "skills" / "public" / "critique" / "scripts" / "run_review.py",
     ),
-    "scripts/check_mutation_score.py": (
+    "scripts/mutation/check_mutation_score.py": (
         "tests.quality_gates.support_check_mutation_score",
-        ROOT / "scripts" / "check_mutation_score.py",
+        ROOT / "scripts" / "mutation" / "check_mutation_score.py",
     ),
-    "scripts/check_mutation_run_proof.py": (
+    "scripts/mutation/check_mutation_run_proof.py": (
         "tests.quality_gates.support_check_mutation_run_proof",
-        ROOT / "scripts" / "check_mutation_run_proof.py",
+        ROOT / "scripts" / "mutation" / "check_mutation_run_proof.py",
     ),
     "skills/public/quality/scripts/plan_quality_run.py": (
         "tests.quality_gates.support_plan_quality_run",
@@ -129,9 +129,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_runtime_budget",
         ROOT / "skills" / "public" / "quality" / "scripts" / "check_runtime_budget.py",
     ),
-    "scripts/check_changed_line_mutation_coverage.py": (
+    "scripts/mutation/check_changed_line_mutation_coverage.py": (
         "tests.quality_gates.support_check_changed_line_mutation_coverage",
-        ROOT / "scripts" / "check_changed_line_mutation_coverage.py",
+        ROOT / "scripts" / "mutation" / "check_changed_line_mutation_coverage.py",
     ),
     "scripts/gates/validate_debug_artifact.py": (
         "tests.quality_gates.support_validate_debug_artifact",
@@ -505,9 +505,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_validate_presets",
         ROOT / "tools" / "validate_presets.py",
     ),
-    "scripts/release_changed_line_coverage.py": (
+    "scripts/mutation/release_changed_line_coverage.py": (
         "tests.quality_gates.support_release_changed_line_coverage",
-        ROOT / "scripts" / "release_changed_line_coverage.py",
+        ROOT / "scripts" / "mutation" / "release_changed_line_coverage.py",
     ),
     "scripts/gates_support/removed_name_consumers.py": (
         "tests.quality_gates.support_removed_name_consumers",

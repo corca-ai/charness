@@ -8,11 +8,25 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.mutation_baseline_abort_lib import (  # noqa: E402
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
+
+REPO_ROOT = repo_root_from_script(__file__)
+
+from scripts.mutation.mutation_baseline_abort_lib import (  # noqa: E402
     DEFAULT_BASELINE_ABORT_MARKER,
     UNMEASURED_STATUS,
     baseline_abort_cause,
@@ -26,7 +40,9 @@ from scripts.quality_adapter_lib import load_quality_adapter  # noqa: E402
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path("."))
-    parser.add_argument("--report-json", type=Path, default=Path("reports/mutation/stryker-js.json"))
+    parser.add_argument(
+        "--report-json", type=Path, default=Path("reports/mutation/stryker-js.json")
+    )
     parser.add_argument(
         "--baseline-abort-marker",
         type=Path,
@@ -44,7 +60,9 @@ def mutation_config(repo_root: Path) -> tuple[float, Path] | None:
         return None
     block = (payload.get("data") or {}).get("mutation_testing") or {}
     score_break = float(block.get("score_break", 60))
-    summary_rel = (block.get("report_paths") or {}).get("summary_md") or "reports/mutation/summary.md"
+    summary_rel = (block.get("report_paths") or {}).get(
+        "summary_md"
+    ) or "reports/mutation/summary.md"
     return score_break, repo_root / summary_rel
 
 
@@ -175,7 +193,9 @@ def append_missing_report_summary(
             "so the JS slice was never invoked (see Mutation Testing Summary above)."
         )
     else:
-        lines.append("- Blocking signal: JS mutation full mode did not produce a fresh JSON report.")
+        lines.append(
+            "- Blocking signal: JS mutation full mode did not produce a fresh JSON report."
+        )
     _append_summary_section(summary_path, lines)
 
 
@@ -209,9 +229,13 @@ def main() -> int:
     if config is None:
         return 2
     score_break, summary_path = config
-    report_path = args.report_json if args.report_json.is_absolute() else repo_root / args.report_json
+    report_path = (
+        args.report_json if args.report_json.is_absolute() else repo_root / args.report_json
+    )
     if not report_path.is_file():
-        baseline_abort_marker_path = resolve_baseline_abort_marker(repo_root, args.baseline_abort_marker)
+        baseline_abort_marker_path = resolve_baseline_abort_marker(
+            repo_root, args.baseline_abort_marker
+        )
         marker = read_baseline_abort_marker(baseline_abort_marker_path)
         if marker is not None and _marker_is_stale(baseline_abort_marker_path, repo_root):
             # A marker older than this run's own mutation artifacts describes an
@@ -221,7 +245,9 @@ def main() -> int:
             # reader to stop looking at the thing that actually broke.
             marker = None
         append_missing_report_summary(summary_path, report_path, baseline_abort_marker=marker)
-        sys.stderr.write(f"StrykerJS report not found at {report_path}; failing JS mutation summary.\n")
+        sys.stderr.write(
+            f"StrykerJS report not found at {report_path}; failing JS mutation summary.\n"
+        )
         return 1
     metrics = summarize_report(report_path)
     append_summary(summary_path, metrics, score_break)

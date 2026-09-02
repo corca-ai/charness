@@ -5,7 +5,7 @@ from __future__ import annotations
 import shlex
 from pathlib import Path
 
-RELEASE_SCRIPT = "scripts/release_changed_line_coverage.py"
+RELEASE_SCRIPT = "scripts/mutation/release_changed_line_coverage.py"
 
 
 def release_refresh_command(repo_root: Path, base_sha: str) -> str:

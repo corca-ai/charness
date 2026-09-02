@@ -15,19 +15,19 @@ Run it before citing a CI mutation run as proof in a closeout, issue
 resolution, or release note::
 
     # facts mode (no network):
-    python3 scripts/check_mutation_run_proof.py --claim changed-line \\
+    python3 scripts/mutation/check_mutation_run_proof.py --claim changed-line \\
         --event workflow_dispatch                       # exit 1: refused
-    python3 scripts/check_mutation_run_proof.py --claim changed-line \\
+    python3 scripts/mutation/check_mutation_run_proof.py --claim changed-line \\
         --event schedule --base-sha <sha>               # exit 0: provable
 
     # manifest mode: judge from the run's downloaded sample manifest. This is the
     # only mode that ESTABLISHES the range: the manifest carries the changed-pool
     # count, so a run whose range held no pool file is refused rather than cited.
-    python3 scripts/check_mutation_run_proof.py --claim changed-line \\
+    python3 scripts/mutation/check_mutation_run_proof.py --claim changed-line \\
         --sample-manifest reports/mutation/sample.json  # or sample.md
 
     # run mode: resolve the trigger event live via `gh run view`:
-    python3 scripts/check_mutation_run_proof.py --claim changed-line \\
+    python3 scripts/mutation/check_mutation_run_proof.py --claim changed-line \\
         --run-id <id> [--repo <org/repo>]
 
 Exit 0 when the run can support the claim; exit 1 when it cannot. Refusals carry
@@ -51,8 +51,22 @@ import re
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
@@ -60,7 +74,7 @@ run_process = _subprocess_guard.run_process
 CLASS_KEY = "mutation-dispatch-no-base-sha-false-proof"
 SUPPORTED_CHANGED_LINE_PROOF_PATHS = [
     "the next scheduled mutation run (schedule events compute base_sha from the previous completed run)",
-    "a local run of scripts/check_changed_line_mutation_coverage.py with explicit MUTATION_BASE_SHA/MUTATION_HEAD_SHA over the fix range",
+    "a local run of scripts/mutation/check_changed_line_mutation_coverage.py with explicit MUTATION_BASE_SHA/MUTATION_HEAD_SHA over the fix range",
 ]
 _MANIFEST_MD_BASE_RE = re.compile(r"^- Base SHA: `([^`]*)`", re.MULTILINE)
 _MANIFEST_MD_CHANGED_RE = re.compile(r"^- Changed pool files: (\d+)", re.MULTILINE)

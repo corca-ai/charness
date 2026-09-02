@@ -11,7 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 from textwrap import dedent
 
-from scripts.filter_cosmic_ray_mutants import (
+from scripts.mutation.filter_cosmic_ray_mutants import (
     _annotation_union_positions,
     _pipe_position,
     annotation_union_operator_positions,

@@ -8,7 +8,7 @@ diagnosis by hand after a BLOCK.
 
 **The mechanism is narrower than "subprocess", and getting it wrong would make this
 advisory false reassurance printed onto a blocking gate.** This repo's
-mutation-coverage producer (`scripts/mutation_sampling_lib.py`) writes a
+mutation-coverage producer (`scripts/mutation/mutation_sampling_lib.py`) writes a
 `sitecustomize` calling `coverage.process_startup()` and exports
 `COVERAGE_PROCESS_START` / `PYTHONPATH`, so a child process that inherits the
 parent environment IS measured. That is not a code-reading inference: it was
@@ -116,7 +116,7 @@ def _referencing_tests(repo_root: Path, paths: list[str]) -> dict[str, list[str]
     degrade to "no candidates from this source", never to a lost blocking report.
     """
     try:
-        from scripts.suggest_mutation_coverage_command import tests_referencing_paths
+        from scripts.mutation.suggest_mutation_coverage_command import tests_referencing_paths
     except Exception:  # pragma: no cover - import-shape drift must not break a gate
         return {}
     try:

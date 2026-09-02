@@ -255,7 +255,7 @@ def run(args: argparse.Namespace) -> int:
         if _mutation_recovery_pending(context):
             print(
                 "run-quality: FAIL interrupted mutation recovery is REQUIRED; run "
-                "python3 scripts/mutate_and_restore.py --repo-root . --check-recovery, "
+                "python3 scripts/mutation/mutate_and_restore.py --repo-root . --check-recovery, "
                 "then --recover",
                 file=sys.stderr,
             )

@@ -23,7 +23,7 @@ import yaml
 
 from .support import ROOT, run_script
 
-SCRIPT = "scripts/release_changed_line_coverage.py"
+SCRIPT = "scripts/mutation/release_changed_line_coverage.py"
 
 
 @pytest.fixture()
@@ -147,7 +147,7 @@ def test_warning_lines_use_the_head_run_quality_actually_surfaces(gate, capsys) 
 
 def test_focused_command_is_instrumentable_and_keeps_broad_marker_policy(gate) -> None:
     """Target narrowing may not admit tests the broad coverage producer excludes."""
-    from scripts.mutation_sampling_lib import read_test_command
+    from scripts.mutation.mutation_sampling_lib import read_test_command
 
     command = gate._focused_pytest_command(
         _recommendation(

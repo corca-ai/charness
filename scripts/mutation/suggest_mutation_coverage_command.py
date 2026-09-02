@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Suggest a focused pytest command for changed-line coverage production."""
+
 from __future__ import annotations
 
 import argparse
@@ -9,12 +10,26 @@ import shlex
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:  # pragma: no cover - import bootstrap
-    sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.mutation_changed_files_lib import changed_pool_files_vs_base  # noqa: E402
-from scripts.mutation_coverage_producer import default_mutation_base_sha  # noqa: E402
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
+
+REPO_ROOT = repo_root_from_script(__file__)
+
+from scripts.mutation.mutation_changed_files_lib import changed_pool_files_vs_base  # noqa: E402
+from scripts.mutation.mutation_coverage_producer import default_mutation_base_sha  # noqa: E402
 from scripts.gates_support.run_standing_pytest import expand_targets  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
@@ -73,9 +88,7 @@ def _reference_patterns(path: str) -> list[re.Pattern[str]]:
     patterns = [
         re.compile(rf"['\"]{escaped_path}['\"]"),
         re.compile(
-            r"\s*/\s*".join(
-                rf"['\"]{re.escape(segment)}['\"]" for segment in path.split("/")
-            )
+            r"\s*/\s*".join(rf"['\"]{re.escape(segment)}['\"]" for segment in path.split("/"))
         ),
     ]
     if path.endswith(".py"):
@@ -231,10 +244,7 @@ def _candidate_test_sources(repo_root: Path) -> list[str]:
     for target in expand_targets(repo_root):
         absolute = repo_root / target
         if absolute.is_dir():
-            paths.extend(
-                path.relative_to(repo_root).as_posix()
-                for path in absolute.rglob("*.py")
-            )
+            paths.extend(path.relative_to(repo_root).as_posix() for path in absolute.rglob("*.py"))
         elif target.endswith(".py") and absolute.is_file():
             paths.append(target)
     return sorted(dict.fromkeys(paths))
@@ -256,7 +266,7 @@ def _local_import_paths(path: str, text: str, module_paths: dict[str, str]) -> s
         if isinstance(node, ast.Import):
             candidates.extend(alias.name for alias in node.names)
         elif isinstance(node, ast.ImportFrom):
-            prefix = current[:-node.level] if node.level else []
+            prefix = current[: -node.level] if node.level else []
             module = node.module.split(".") if node.module else []
             base = ".".join([*prefix, *module])
             if base:
@@ -273,8 +283,7 @@ def _local_import_paths(path: str, text: str, module_paths: dict[str, str]) -> s
 def _test_source_closures(source_text: dict[str, str]) -> dict[str, set[str]]:
     module_paths = _module_name_to_path(list(source_text))
     dependencies = {
-        path: _local_import_paths(path, text, module_paths)
-        for path, text in source_text.items()
+        path: _local_import_paths(path, text, module_paths) for path, text in source_text.items()
     }
     closures: dict[str, set[str]] = {}
     for test_path in source_text:
@@ -299,7 +308,9 @@ def _candidate_module_sources(repo_root: Path) -> list[str]:
     unmapped even though running that one test covers it. Sourcing the pool from the
     same helper the gate uses keeps the two from disagreeing about what a pool file is.
     """
-    from scripts.sample_mutation_files import list_eligible  # local: keeps CLI import cheap
+    from scripts.mutation.sample_mutation_files import (
+        list_eligible,  # local: keeps CLI import cheap
+    )
 
     return sorted(list_eligible(repo_root))
 

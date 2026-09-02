@@ -11,16 +11,16 @@ from textwrap import dedent
 
 import pytest
 
-import scripts.mutation_changed_files_lib as mutation_changed_files_lib
-import scripts.sample_mutation_files as sample_mutation_files
-from scripts.mutation_changed_files_lib import (
+import scripts.mutation.mutation_changed_files_lib as mutation_changed_files_lib
+import scripts.mutation.sample_mutation_files as sample_mutation_files
+from scripts.mutation.mutation_changed_files_lib import (
     changed_line_numbers,
     classify_changed_file_exclusions,
     classify_changed_line_scope_gap,
 )
-from scripts.mutation_manifest_lib import split_per_file_budget_exclusions
-from scripts.mutation_sample_manifest_score_lib import sample_manifest_scope_gap_details
-from scripts.mutation_sampling_lib import (
+from scripts.mutation.mutation_manifest_lib import split_per_file_budget_exclusions
+from scripts.mutation.mutation_sample_manifest_score_lib import sample_manifest_scope_gap_details
+from scripts.mutation.mutation_sampling_lib import (
     filter_eligible_by_coverage,
     filter_eligible_by_mutation_line_coverage,
     mutation_probe_paths,
@@ -30,7 +30,7 @@ from scripts.mutation_sampling_lib import (
     select_budgeted_sample,
     select_test_nodeids,
 )
-from scripts.sample_mutation_files import (
+from scripts.mutation.sample_mutation_files import (
     list_changed,
     list_eligible,
     mutation_pathspecs,
@@ -172,7 +172,7 @@ def test_sample_script_fails_closed_before_writes_when_changed_diff_fails(tmp_pa
     result = subprocess.run(
         [
             "python3",
-            "scripts/sample_mutation_files.py",
+            "scripts/mutation/sample_mutation_files.py",
             "--repo-root",
             str(repo),
             "--skip-coverage",
@@ -250,7 +250,7 @@ def test_sample_script_rewrites_config_and_manifest(tmp_path: Path) -> None:
     try:
         os.chdir(ROOT)
         result = run_loaded_script_main(
-            "scripts/sample_mutation_files.py",
+            "scripts/mutation/sample_mutation_files.py",
             sample_mutation_files,
             "--repo-root",
             str(repo),
@@ -317,7 +317,7 @@ def test_sample_refuses_when_repo_contains_only_out_of_pool_files(tmp_path: Path
     result = subprocess.run(
         [
             "python3",
-            "scripts/sample_mutation_files.py",
+            "scripts/mutation/sample_mutation_files.py",
             "--repo-root",
             str(repo),
             "--skip-coverage",

@@ -14,7 +14,11 @@ def statement_nodes(path: Path) -> list[ast.stmt]:
 def executable_statement_lines(path: Path) -> set[int]:
     lines: set[int] = set()
     for node in statement_nodes(path):
-        if isinstance(node, ast.Expr) and isinstance(getattr(node, "value", None), ast.Constant) and isinstance(node.value.value, str):
+        if (
+            isinstance(node, ast.Expr)
+            and isinstance(getattr(node, "value", None), ast.Constant)
+            and isinstance(node.value.value, str)
+        ):
             continue
         lines.add(int(node.lineno))
     return lines
@@ -57,7 +61,9 @@ def child_statement_suite_start(node: ast.stmt) -> int | None:
     return min(starts, default=None)
 
 
-def mutation_line_is_covered(line_number: int, covered: set[int], spans: list[tuple[int, int]]) -> bool:
+def mutation_line_is_covered(
+    line_number: int, covered: set[int], spans: list[tuple[int, int]]
+) -> bool:
     if line_number in covered:
         return True
     return any(start <= line_number <= end for start, end in spans)

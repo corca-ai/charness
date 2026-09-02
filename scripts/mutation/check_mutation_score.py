@@ -11,6 +11,7 @@ Denominator: killed / (killed + survived). Native no-mutation-possible outcomes
 and Charness coverage scope gaps are reported separately and do not enter the
 score.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -18,12 +19,28 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
 
-from scripts import check_mutation_score_summary_lib as mutation_score_summary  # noqa: E402
-from scripts.mutation_baseline_abort_lib import (  # noqa: E402
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
+
+REPO_ROOT = repo_root_from_script(__file__)
+
+from scripts.mutation import (  # noqa: E402
+    check_mutation_score_summary_lib as mutation_score_summary,  # noqa: E402
+)
+from scripts.mutation.mutation_baseline_abort_lib import (  # noqa: E402
     DEFAULT_BASELINE_ABORT_MARKER,
     UNMEASURED_STATUS,
     baseline_abort_cause,
@@ -31,7 +48,7 @@ from scripts.mutation_baseline_abort_lib import (  # noqa: E402
     resolve_baseline_abort_marker,
     verdict_token,
 )
-from scripts.mutation_sample_manifest_score_lib import (  # noqa: E402
+from scripts.mutation.mutation_sample_manifest_score_lib import (  # noqa: E402
     changed_scope_gap_section_lines,
     sample_manifest_scope_gap_details,
 )
@@ -145,7 +162,9 @@ def load_mutation_config(repo_root: Path) -> tuple[float, Path] | None:
 
     block = (payload.get("data") or {}).get("mutation_testing") or {}
     score_break = float(block.get("score_break", 60))
-    summary_rel = (block.get("report_paths") or {}).get("summary_md") or "reports/mutation/summary.md"
+    summary_rel = (block.get("report_paths") or {}).get(
+        "summary_md"
+    ) or "reports/mutation/summary.md"
     return score_break, repo_root / summary_rel
 
 
@@ -241,7 +260,11 @@ def mutation_file_completion(
     stats: dict[str, dict[str, int]] = {}
     for work_item, result in records:
         mutations = work_item.get("mutations") or []
-        module_path = str((mutations[0] or {}).get("module_path") or "<unknown>") if mutations else "<unknown>"
+        module_path = (
+            str((mutations[0] or {}).get("module_path") or "<unknown>")
+            if mutations
+            else "<unknown>"
+        )
         bucket = stats.setdefault(module_path, {"total": 0, "skipped": 0, "pending": 0})
         bucket["total"] += 1
         if result is None:
@@ -258,7 +281,7 @@ def mutation_file_completion(
         executed = executable_total - bucket["pending"]
         ratio = executed / executable_total
         if executed <= 0 or ratio < floor:
-            incomplete.append(f"{module_path} {executed}/{executable_total} ({ratio*100:.1f}%)")
+            incomplete.append(f"{module_path} {executed}/{executable_total} ({ratio * 100:.1f}%)")
     return not incomplete, incomplete
 
 
@@ -321,7 +344,9 @@ def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
     stats_path = args.stats if args.stats.is_absolute() else (repo_root / args.stats)
-    baseline_abort_marker_path = resolve_baseline_abort_marker(repo_root, args.baseline_abort_marker)
+    baseline_abort_marker_path = resolve_baseline_abort_marker(
+        repo_root, args.baseline_abort_marker
+    )
     marker = read_baseline_abort_marker(baseline_abort_marker_path)
     if marker is not None and not _marker_is_stale(baseline_abort_marker_path, stats_path):
         config = load_mutation_config(repo_root)
@@ -359,15 +384,19 @@ def main() -> int:
         return 2
     score_break, summary_path = config
     timeout_marker_path = (
-        args.timeout_marker if args.timeout_marker.is_absolute() else repo_root / args.timeout_marker
+        args.timeout_marker
+        if args.timeout_marker.is_absolute()
+        else repo_root / args.timeout_marker
     )
     sample_manifest_path = (
-        args.sample_manifest if args.sample_manifest.is_absolute() else repo_root / args.sample_manifest
+        args.sample_manifest
+        if args.sample_manifest.is_absolute()
+        else repo_root / args.sample_manifest
     )
     exec_timed_out, _ = _read_timeout_marker(timeout_marker_path)
     per_file_completion_ok, incomplete_files = mutation_file_completion(records)
-    changed_scope_gap_files, changed_scope_gap_details, sample_manifest_issue = sample_manifest_scope_gap_details(
-        sample_manifest_path
+    changed_scope_gap_files, changed_scope_gap_details, sample_manifest_issue = (
+        sample_manifest_scope_gap_details(sample_manifest_path)
     )
     changed_scope_gap_count = len(changed_scope_gap_files)
     metrics = mutation_metrics(
@@ -382,7 +411,9 @@ def main() -> int:
     lines = build_summary_lines(records, repo_root, metrics)
     if changed_scope_gap_files or changed_scope_gap_details:
         try:
-            insert_at = lines.index("Score denominator: `killed / (killed + survived)` (reachable mutants only;")
+            insert_at = lines.index(
+                "Score denominator: `killed / (killed + survived)` (reachable mutants only;"
+            )
         except ValueError:
             insert_at = len(lines)
         lines[insert_at:insert_at] = changed_scope_gap_section_lines(
@@ -391,7 +422,9 @@ def main() -> int:
         )
     if incomplete_files:
         try:
-            insert_at = lines.index("Score denominator: `killed / (killed + survived)` (reachable mutants only;")
+            insert_at = lines.index(
+                "Score denominator: `killed / (killed + survived)` (reachable mutants only;"
+            )
         except ValueError:
             insert_at = len(lines)
         lines[insert_at:insert_at] = [

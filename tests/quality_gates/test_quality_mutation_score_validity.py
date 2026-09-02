@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from scripts.check_mutation_score import (
+from scripts.mutation.check_mutation_score import (
     iter_dump_records,
     mutation_metrics,
     summarize_cosmic_ray,
@@ -20,11 +20,22 @@ def test_cosmic_ray_dump_summary_counts_reachable_denominator(tmp_path: Path) ->
     dump.write_text(
         "\n".join(
             [
-                json.dumps([{"job_id": "a"}, {"worker_outcome": "normal", "test_outcome": "killed"}]),
-                json.dumps([{"job_id": "b"}, {"worker_outcome": "normal", "test_outcome": "survived"}]),
-                json.dumps([{"job_id": "c"}, {"worker_outcome": "exception", "test_outcome": "incompetent"}]),
+                json.dumps(
+                    [{"job_id": "a"}, {"worker_outcome": "normal", "test_outcome": "killed"}]
+                ),
+                json.dumps(
+                    [{"job_id": "b"}, {"worker_outcome": "normal", "test_outcome": "survived"}]
+                ),
+                json.dumps(
+                    [
+                        {"job_id": "c"},
+                        {"worker_outcome": "exception", "test_outcome": "incompetent"},
+                    ]
+                ),
                 json.dumps([{"job_id": "d"}, None]),
-                json.dumps([{"job_id": "e"}, {"worker_outcome": "skipped", "test_outcome": "killed"}]),
+                json.dumps(
+                    [{"job_id": "e"}, {"worker_outcome": "skipped", "test_outcome": "killed"}]
+                ),
             ]
         )
         + "\n",
@@ -89,7 +100,13 @@ def test_check_mutation_score_fails_zero_reachable_dump(tmp_path: Path) -> None:
     dump = tmp_path / "dump.jsonl"
     dump.write_text(json.dumps([{"job_id": "a"}, None]) + "\n", encoding="utf-8")
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -114,15 +131,25 @@ def test_check_mutation_score_fails_no_tests_dump(tmp_path: Path) -> None:
     dump.write_text(
         "\n".join(
             [
-                json.dumps([{"job_id": "a"}, {"worker_outcome": "normal", "test_outcome": "killed"}]),
-                json.dumps([{"job_id": "b"}, {"worker_outcome": "no-test", "test_outcome": "survived"}]),
+                json.dumps(
+                    [{"job_id": "a"}, {"worker_outcome": "normal", "test_outcome": "killed"}]
+                ),
+                json.dumps(
+                    [{"job_id": "b"}, {"worker_outcome": "no-test", "test_outcome": "survived"}]
+                ),
             ]
         )
         + "\n",
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -141,7 +168,9 @@ def test_check_mutation_score_fails_scope_gap_skips(tmp_path: Path) -> None:
     dump.write_text(
         "\n".join(
             [
-                json.dumps([{"job_id": "a"}, {"worker_outcome": "normal", "test_outcome": "killed"}]),
+                json.dumps(
+                    [{"job_id": "a"}, {"worker_outcome": "normal", "test_outcome": "killed"}]
+                ),
                 json.dumps(
                     [
                         {"job_id": "b"},
@@ -158,12 +187,20 @@ def test_check_mutation_score_fails_scope_gap_skips(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
     assert "Scope gaps (uncovered sampled mutants): 1" in summary
-    assert "Blocking signal: sampled mutants were not covered by the selected test command." in summary
+    assert (
+        "Blocking signal: sampled mutants were not covered by the selected test command." in summary
+    )
 
 
 def _write_score_fixture(tmp_path: Path, sample_payload: dict | str | None) -> Path:
@@ -186,7 +223,13 @@ def _write_score_fixture(tmp_path: Path, sample_payload: dict | str | None) -> P
 def test_check_mutation_score_fails_missing_sample_manifest(tmp_path: Path) -> None:
     dump = _write_score_fixture(tmp_path, sample_payload=None)
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -196,7 +239,13 @@ def test_check_mutation_score_fails_missing_sample_manifest(tmp_path: Path) -> N
 def test_check_mutation_score_fails_malformed_sample_manifest(tmp_path: Path) -> None:
     dump = _write_score_fixture(tmp_path, sample_payload="{not-json\n")
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -206,7 +255,13 @@ def test_check_mutation_score_fails_malformed_sample_manifest(tmp_path: Path) ->
 def test_check_mutation_score_fails_non_object_sample_manifest(tmp_path: Path) -> None:
     dump = _write_score_fixture(tmp_path, sample_payload="[]\n")
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -216,7 +271,13 @@ def test_check_mutation_score_fails_non_object_sample_manifest(tmp_path: Path) -
 def test_check_mutation_score_fails_missing_base_sha_sample_manifest(tmp_path: Path) -> None:
     dump = _write_score_fixture(tmp_path, sample_payload={})
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -226,11 +287,20 @@ def test_check_mutation_score_fails_missing_base_sha_sample_manifest(tmp_path: P
 def test_check_mutation_score_fails_empty_base_sha_sample_manifest(tmp_path: Path) -> None:
     dump = _write_score_fixture(tmp_path, sample_payload={"base_sha": ""})
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
-    assert "Blocking signal: mutation sample manifest `base_sha` must be a non-empty string or null" in summary
+    assert (
+        "Blocking signal: mutation sample manifest `base_sha` must be a non-empty string or null"
+        in summary
+    )
 
 
 def test_check_mutation_score_fails_wrong_typed_scope_gap_section(tmp_path: Path) -> None:
@@ -239,7 +309,13 @@ def test_check_mutation_score_fails_wrong_typed_scope_gap_section(tmp_path: Path
         sample_payload={"base_sha": None, "uncovered_changed_files": "scripts/changed.py"},
     )
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -255,7 +331,13 @@ def test_check_mutation_score_fails_non_string_scope_gap_entry(tmp_path: Path) -
         sample_payload={"base_sha": None, "uncovered_changed_files": ["scripts/changed.py", 3]},
     )
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 1
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -270,7 +352,13 @@ def test_check_mutation_score_allows_manifest_with_changed_file_proof_disabled(
 ) -> None:
     dump = _write_score_fixture(tmp_path, sample_payload={"base_sha": None})
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 0, result.stderr
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -302,7 +390,13 @@ def test_check_mutation_score_fails_when_changed_lines_uncovered(tmp_path: Path)
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 1
     summary = (reports / "summary.md").read_text(encoding="utf-8")
@@ -311,8 +405,7 @@ def test_check_mutation_score_fails_when_changed_lines_uncovered(tmp_path: Path)
     assert "- Blocking signals: **FAIL** (changed-line coverage)" in summary
     assert (
         "Blocking signal: changed lines were left test-uncovered before mutation "
-        "(budget/capacity drops of covered changed files are advisory, not blocking)."
-        in summary
+        "(budget/capacity drops of covered changed files are advisory, not blocking)." in summary
     )
     assert "## Changed Files Excluded Before Mutation" in summary
     assert "### Uncovered changed lines" in summary
@@ -344,14 +437,25 @@ def test_check_mutation_score_fails_changed_line_blocker_without_exact_targets(
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 1
     summary = (reports / "summary.md").read_text(encoding="utf-8")
-    assert "Blocking signal: mutation sample manifest changed-line blockers missing exact proof targets" in summary
+    assert (
+        "Blocking signal: mutation sample manifest changed-line blockers missing exact proof targets"
+        in summary
+    )
 
 
-def test_check_mutation_score_passes_when_budgets_drop_covered_changed_files(tmp_path: Path) -> None:
+def test_check_mutation_score_passes_when_budgets_drop_covered_changed_files(
+    tmp_path: Path,
+) -> None:
     # Capacity-class drops (cumulative selection/workload budgets) are advisory:
     # the dropped files' changed lines already passed the blocking uncovered
     # arm, which scans ALL eligible changed files independent of sampling.
@@ -378,7 +482,13 @@ def test_check_mutation_score_passes_when_budgets_drop_covered_changed_files(tmp
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 0, result.stdout + result.stderr
     summary = (reports / "summary.md").read_text(encoding="utf-8")
@@ -404,9 +514,7 @@ def test_check_mutation_score_passes_when_only_whole_file_coverage_excludes_chan
             {
                 "base_sha": "deadbeef",
                 "changed_files_excluded_by_file_coverage": ["scripts/file_floor.py"],
-                "changed_files_excluded_by_mutation_line_coverage": [
-                    "scripts/mutation_line.py"
-                ],
+                "changed_files_excluded_by_mutation_line_coverage": ["scripts/mutation_line.py"],
                 "uncovered_changed_files": [
                     "scripts/file_floor.py",
                     "scripts/mutation_line.py",
@@ -424,7 +532,13 @@ def test_check_mutation_score_passes_when_only_whole_file_coverage_excludes_chan
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump))
+    result = run_script(
+        "scripts/mutation/check_mutation_score.py",
+        "--repo-root",
+        str(tmp_path),
+        "--stats",
+        str(dump),
+    )
 
     assert result.returncode == 0, result.stderr
     summary = (reports / "summary.md").read_text(encoding="utf-8")

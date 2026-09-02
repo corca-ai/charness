@@ -21,6 +21,20 @@ import sys
 from functools import lru_cache
 from pathlib import Path
 
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 BITOR_OPERATOR_PREFIX = "core/ReplaceBinaryOperator_BitOr_"
 COMPARISON_EQ_OPERATOR_PREFIX = "core/ReplaceComparisonOperator_Eq_"
 NUMBER_REPLACER_OPERATOR = "core/NumberReplacer"
@@ -28,14 +42,11 @@ ANNOTATION_UNION_SKIP_OUTPUT = "Filtered function annotation union"
 UNCOVERED_MUTATION_SKIP_OUTPUT = "Filtered uncovered mutation line"
 ENTRY_GUARD_SKIP_OUTPUT = "Filtered trivial entry guard"
 
-if str(Path(__file__).resolve().parent.parent) not in sys.path:
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-from scripts.mutation_line_coverage_lib import (  # noqa: E402
+from scripts.mutation.mutation_line_coverage_lib import (  # noqa: E402
     covered_statement_spans,
     mutation_line_is_covered,
 )
-from scripts.mutation_sampling_lib import (  # noqa: E402
+from scripts.mutation.mutation_sampling_lib import (  # noqa: E402
     DEFAULT_SAMPLE_COVERAGE_JSON as DEFAULT_MUTATION_SAMPLE_COVERAGE_JSON,
 )
 from scripts.yaml_output import emit_yaml  # noqa: E402
@@ -119,7 +130,9 @@ def _annotation_union_positions(path_str: str) -> frozenset[tuple[int, int]]:
     return frozenset(positions)
 
 
-def annotation_union_operator_positions(repo_root: Path, module_path: Path) -> frozenset[tuple[int, int]]:
+def annotation_union_operator_positions(
+    repo_root: Path, module_path: Path
+) -> frozenset[tuple[int, int]]:
     return _annotation_union_positions(str(resolve(repo_root, module_path)))
 
 
@@ -129,12 +142,16 @@ def should_skip_mutation(repo_root: Path, mutation: object) -> bool:
         return False
     line_number, start_col = getattr(mutation, "start_pos", (0, 0))
     module_path = getattr(mutation, "module_path", Path())
-    return (int(line_number), int(start_col)) in annotation_union_operator_positions(repo_root, module_path)
+    return (int(line_number), int(start_col)) in annotation_union_operator_positions(
+        repo_root, module_path
+    )
 
 
 def is_trivial_entry_guard_mutation(line: str, operator_name: str) -> bool:
     stripped = line.lstrip()
-    if stripped.startswith("if __name__ ==") and operator_name.startswith(COMPARISON_EQ_OPERATOR_PREFIX):
+    if stripped.startswith("if __name__ ==") and operator_name.startswith(
+        COMPARISON_EQ_OPERATOR_PREFIX
+    ):
         return True
     if stripped.startswith("sys.path.insert(") and operator_name == NUMBER_REPLACER_OPERATOR:
         return True
@@ -179,7 +196,9 @@ def coverage_skip_reason(
     return None
 
 
-def skip_reason(repo_root: Path, mutation: object, covered_lines: dict[str, set[int]]) -> str | None:
+def skip_reason(
+    repo_root: Path, mutation: object, covered_lines: dict[str, set[int]]
+) -> str | None:
     if should_skip_mutation(repo_root, mutation):
         return ANNOTATION_UNION_SKIP_OUTPUT
     line_number, _start_col = getattr(mutation, "start_pos", (0, 0))
@@ -189,7 +208,9 @@ def skip_reason(repo_root: Path, mutation: object, covered_lines: dict[str, set[
     return coverage_skip_reason(mutation, covered_lines, repo_root=repo_root)
 
 
-def filter_session(repo_root: Path, session: Path, coverage_json: Path | None = None) -> dict[str, int]:
+def filter_session(
+    repo_root: Path, session: Path, coverage_json: Path | None = None
+) -> dict[str, int]:
     try:
         from cosmic_ray.work_db import use_db
         from cosmic_ray.work_item import TestOutcome, WorkerOutcome, WorkResult

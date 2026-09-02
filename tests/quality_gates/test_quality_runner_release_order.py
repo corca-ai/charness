@@ -60,7 +60,7 @@ def _release_fixture(
         _append_event_script("check-runtime-budget"),
     )
     write_executable(
-        repo / "scripts" / "release_changed_line_coverage.py",
+        repo / "scripts" / "mutation" / "release_changed_line_coverage.py",
         "#!/usr/bin/env python3\n"
         "import os\n"
         "import sys\n"

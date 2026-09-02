@@ -181,7 +181,7 @@ The Charness repo itself uses Cosmic Ray 8.4.6, verified from PyPI's latest
 release metadata on 2026-05-15. These helpers are dogfood support for this
 repo's own mutation workflow, not a portable requirement for consumers:
 
-- `<plugin-dir>/scripts/sample_mutation_files.py` rewrites `cosmic-ray.toml`'s
+- `<plugin-dir>/scripts/mutation/sample_mutation_files.py` rewrites `cosmic-ray.toml`'s
   `[cosmic-ray].module-path` list, derives the pytest node ids that actually
   covered the selected mutation surface, rewrites `[cosmic-ray].test-command`
   for that sampled surface, applies executable-mutant and pytest-nodeid
@@ -189,13 +189,13 @@ repo's own mutation workflow, not a portable requirement for consumers:
   Its coverage probe defaults to `reports/mutation/sample-coverage.json`, which
   is separate from the changed-line producer's
   `reports/mutation/test-coverage.json`.
-- `scripts/run_cosmic_ray_mutation.py --mode dry-run` runs baseline + init,
+- `scripts/mutation/run_cosmic_ray_mutation.py --mode dry-run` runs baseline + init,
   then filters known low-signal annotation-only work items from the session.
-- `scripts/run_cosmic_ray_mutation.py --mode full` runs baseline + init +
+- `scripts/mutation/run_cosmic_ray_mutation.py --mode full` runs baseline + init +
   filter + exec + dump.
-- `<plugin-dir>/scripts/check_mutation_score.py` consumes `cosmic-ray dump` JSONL and
+- `<plugin-dir>/scripts/mutation/check_mutation_score.py` consumes `cosmic-ray dump` JSONL and
   writes `report_paths.summary_md`.
-- `<plugin-dir>/scripts/run_js_mutation.py` runs the repo's StrykerJS command-runner slice
+- `<plugin-dir>/scripts/mutation/run_js_mutation.py` runs the repo's StrykerJS command-runner slice
   for `scripts/agent-runtime/*.mjs`. It is intentionally separate from the
   Python coverage-derived sampler: command-runner mode reruns the JS-native
   `npm run test:agent-runtime` command per mutant, so Charness budgets it by
@@ -379,7 +379,7 @@ fails), two traps waste time and produce false proof:
   proves only the **score/survivor** path. This false-proof class recurred
   after its prose-only lesson, so the rule is now gate-shaped: before citing a
   CI mutation run as changed-line proof, run
-  `python3 <plugin-dir>/scripts/check_mutation_run_proof.py --claim changed-line --run-id <id>`
+  `python3 <plugin-dir>/scripts/mutation/check_mutation_run_proof.py --claim changed-line --run-id <id>`
   (or pass explicit `--event`/`--base-sha`/`--sample-manifest` facts); it
   refuses the claim deterministically when the run's trigger cannot evaluate
   it. A changed-line-blocker fix is confirmed by the **next scheduled run**, or

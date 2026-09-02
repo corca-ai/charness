@@ -1,4 +1,4 @@
-"""Partial-run handling for `scripts/check_mutation_score.py` (#183 fix)."""
+"""Partial-run handling for `scripts/mutation/check_mutation_score.py` (#183 fix)."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from .seeding_support import load_module
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-CMS = load_module("check_mutation_score", ROOT / "scripts" / "check_mutation_score.py")
+CMS = load_module("check_mutation_score", ROOT / "scripts" / "mutation" / "check_mutation_score.py")
 
 
 def _stats(

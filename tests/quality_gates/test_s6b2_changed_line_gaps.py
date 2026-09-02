@@ -40,7 +40,7 @@ DOMINANCE = load_path_module("command_dominance_lib_gaps", LIB_PATH)
 INVENTORY = load_path_module("inventory_command_dominance_gaps", INVENTORY_PATH)
 GATE = importlib.import_module("scripts.gates.check_command_dominance")
 UNIVERSE = importlib.import_module("tools.check_runtime_budget_universe")
-SAMPLER = importlib.import_module("scripts.sample_mutation_files")
+SAMPLER = importlib.import_module("scripts.mutation.sample_mutation_files")
 
 REPLACEMENT = "python3 scripts/gates_support/run_standing_pytest.py"
 
@@ -706,7 +706,7 @@ def test_the_manifest_records_the_command_the_probe_actually_ran() -> None:
     regression issue bodies, so a wrong `coverage_command` tells an auditor the
     dominated serial command produced coverage the standing runner produced.
     """
-    manifest_lib = importlib.import_module("scripts.mutation_manifest_lib")
+    manifest_lib = importlib.import_module("scripts.mutation.mutation_manifest_lib")
     state = {
         "repo_root": ROOT,
         "test_command": "python3 -m pytest -q -m 'not release_only' tests",

@@ -8,7 +8,7 @@ from textwrap import dedent
 
 import pytest
 
-from scripts.mutation_sampling_lib import (
+from scripts.mutation.mutation_sampling_lib import (
     coverage_run_command,
     coverage_runtime_paths,
     load_line_contexts,

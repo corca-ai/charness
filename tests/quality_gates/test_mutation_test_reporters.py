@@ -29,9 +29,11 @@ pytestmark = pytest.mark.boundary_contract(
 )
 
 reporters = import_repo_module(
-    "scripts/mutation_test_reporters.py", "scripts.mutation_test_reporters"
+    "scripts/mutation/mutation_test_reporters.py", "scripts.mutation.mutation_test_reporters"
 )
-mar = import_repo_module("scripts/mutate_and_restore.py", "scripts.mutate_and_restore")
+mar = import_repo_module(
+    "scripts/mutation/mutate_and_restore.py", "scripts.mutation.mutate_and_restore"
+)
 
 _NODE_PASS = """\
 TAP version 13
@@ -237,7 +239,7 @@ def _run_harness(repo: Path, plan: dict, tmp_path: Path) -> subprocess.Completed
     return subprocess.run(
         [
             "python3",
-            str(ROOT / "scripts" / "mutate_and_restore.py"),
+            str(ROOT / "scripts" / "mutation" / "mutate_and_restore.py"),
             "--repo-root",
             str(repo),
             "--plan",

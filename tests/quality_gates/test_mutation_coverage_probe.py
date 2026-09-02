@@ -6,7 +6,7 @@ from textwrap import dedent
 
 import pytest
 
-from scripts.mutation_sampling_lib import CoverageCommandError, run_test_coverage
+from scripts.mutation.mutation_sampling_lib import CoverageCommandError, run_test_coverage
 
 
 def test_mutation_coverage_ignores_deleted_sources_outside_repo(tmp_path: Path) -> None:

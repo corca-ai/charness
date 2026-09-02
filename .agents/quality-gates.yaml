@@ -1090,7 +1090,7 @@ phases:
   - label: release-changed-line-coverage
     command:
     - python3
-    - scripts/release_changed_line_coverage.py
+    - scripts/mutation/release_changed_line_coverage.py
     - --repo-root
     - $REPO_ROOT
     - --base-sha

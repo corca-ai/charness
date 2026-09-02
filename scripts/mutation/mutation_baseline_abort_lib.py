@@ -12,7 +12,7 @@ denominator is another, and `UNMEASURED_STATUS` is the single word both report.
 Every spelling of that word in the repo resolves to the constant below; the
 constant is the owner, not a suggestion.
 
-When `scripts/sample_mutation_files.py`'s coverage-baseline pytest run fails,
+When `scripts/mutation/sample_mutation_files.py`'s coverage-baseline pytest run fails,
 no mutation manifest is written and the failing nodeids only ever reached the
 CI step log. `check_mutation_score.py` then reported nothing but the
 collateral "stats missing" symptom, and `check_js_mutation_score.py` appended
@@ -119,7 +119,9 @@ def write_baseline_abort_marker(
     # wrong label -- which is exactly the hardcoded-sampler sentence this vocabulary
     # exists to remove. Both current callers already know their stage.
     if stage not in _STAGE_CAUSES:
-        raise ValueError(f"unknown baseline-abort stage {stage!r}; allowed: {sorted(_STAGE_CAUSES)}")
+        raise ValueError(
+            f"unknown baseline-abort stage {stage!r}; allowed: {sorted(_STAGE_CAUSES)}"
+        )
     marker_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "kind": _MARKER_KIND,

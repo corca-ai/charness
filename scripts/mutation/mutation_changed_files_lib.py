@@ -15,21 +15,10 @@ from pathlib import Path
 
 from scripts.checkout_view import CheckoutView, GitCheckout  # noqa: E402
 from scripts.core.git_status_snapshot import GitStatusError  # noqa: E402
-from scripts.mutation_changed_line_diff import (  # noqa: E402
+from scripts.mutation.mutation_changed_line_diff import (  # noqa: E402
     changed_line_numbers_for_paths as _batch_changed_line_numbers_for_paths,
 )
-
-try:
-    from scripts.core.subprocess_guard import run_process
-except ImportError:  # flat layout: the repo root is not on sys.path
-    _repo_root = next(
-        ancestor
-        for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
-    )
-    if str(_repo_root) not in sys.path:
-        sys.path.insert(0, str(_repo_root))
-    from scripts.core.subprocess_guard import run_process
+from scripts.core.subprocess_guard import run_process
 
 _IMMUTABLE_REF = re.compile(r"[0-9a-f]{40}")
 _CHANGED_LINE_CACHE: dict[tuple[str, str, str, str], frozenset[int]] = {}
@@ -359,7 +348,7 @@ def changed_pool_files_vs_base(
     """
     if not base_sha:
         return []
-    from scripts.sample_mutation_files import mutation_pathspecs  # noqa: E402
+    from scripts.mutation.sample_mutation_files import mutation_pathspecs  # noqa: E402
 
     universe, pool_files = resolved_mutation_pool(
         repo_root,

@@ -2,7 +2,7 @@
 
 `scripts/gates_support/changed_line_scope_counts.py` owns the scope split and its disclosure;
 these tests pin that EVERY verdict-emitting path of
-`scripts/check_changed_line_mutation_coverage.py` states how many of how many
+`scripts/mutation/check_changed_line_mutation_coverage.py` states how many of how many
 pool files it actually read, and that stating it changed no verdict.
 
 The shared history fixture lives in `seeding_support` so the sibling changed-line

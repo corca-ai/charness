@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import Counter
 from pathlib import Path
 
-from scripts.mutation_baseline_abort_lib import verdict_token
+from scripts.mutation.mutation_baseline_abort_lib import verdict_token
 
 SURVIVED_DETAIL_LIMIT = 10
 PARTIAL_RUN_COMPLETION_FLOOR = 0.75
@@ -11,7 +11,12 @@ PARTIAL_RUN_COMPLETION_FLOOR = 0.75
 
 def _source_line(repo_root: Path, module_path: str, line_number: int) -> str:
     try:
-        return (repo_root / module_path).read_text(encoding="utf-8").splitlines()[line_number - 1].strip()
+        return (
+            (repo_root / module_path)
+            .read_text(encoding="utf-8")
+            .splitlines()[line_number - 1]
+            .strip()
+        )
     except (OSError, IndexError):
         return ""
 
@@ -61,7 +66,10 @@ def blocking_signal_labels(metrics: dict[str, float | int | bool | str]) -> list
     checks = (
         (metrics["pending"], "pending mutants"),
         (partial, "partial execution"),
-        (partial and not metrics.get("per_file_completion_ok", True), "per-file partial completion"),
+        (
+            partial and not metrics.get("per_file_completion_ok", True),
+            "per-file partial completion",
+        ),
         (metrics["status"] == "PASS-partial", "partial recovery closeout"),
         (not metrics["reachable"], "no reachable mutants"),
         (metrics["no_tests"], "no mutation possible"),
@@ -112,7 +120,7 @@ def build_summary_lines(
         f"- Blocking signals: **{blocking_result}** ({blocking_detail})",
         f"- Total mutants: {metrics['total']}",
         f"- Executable mutants: {metrics['executable_total']} (total minus skipped)",
-        f"- Executed: {metrics['executed']} ({metrics['executed_ratio']*100:.1f}% of executable total)",
+        f"- Executed: {metrics['executed']} ({metrics['executed_ratio'] * 100:.1f}% of executable total)",
         f"- Killed: {metrics['killed']}",
         f"- Survived: {metrics['survived']}",
         f"- Scope gaps (uncovered sampled mutants): {metrics.get('scope_gap', 0)}",
@@ -133,7 +141,7 @@ def build_summary_lines(
     status_reflects = (
         "status reflects a zero denominator, not the completion ratio"
         if not reachable
-        else f"status reflects partial completion (floor {PARTIAL_RUN_COMPLETION_FLOOR*100:.0f}% of executable mutants)"
+        else f"status reflects partial completion (floor {PARTIAL_RUN_COMPLETION_FLOOR * 100:.0f}% of executable mutants)"
     )
     if metrics["exec_timed_out"]:
         lines.append(f"- Exec timeout fired; {status_reflects}.")
@@ -149,7 +157,9 @@ def build_summary_lines(
     if metrics["no_tests"]:
         lines.append("- Blocking signal: Cosmic Ray reported mutants with no mutation possible.")
     if metrics.get("scope_gap", 0):
-        lines.append("- Blocking signal: sampled mutants were not covered by the selected test command.")
+        lines.append(
+            "- Blocking signal: sampled mutants were not covered by the selected test command."
+        )
     if metrics.get("changed_scope_gap_count", 0):
         lines.append(
             "- Blocking signal: changed lines were left test-uncovered before mutation "
@@ -170,16 +180,15 @@ def build_summary_lines(
             ],
             "",
             "Top operators:",
-            *[
-                f"- `{operator}`: {count}"
-                for operator, count in survived_details["operators"]
-            ],
+            *[f"- `{operator}`: {count}" for operator, count in survived_details["operators"]],
             "",
             "Sample locations:",
             *[
                 f"- `{module_path}:{line_number}` `{definition}` `{operator}`"
                 + (f" - {source}" if source else "")
-                for module_path, line_number, definition, operator, source in survived_details["locations"]
+                for module_path, line_number, definition, operator, source in survived_details[
+                    "locations"
+                ]
             ],
         ]
     return lines + [

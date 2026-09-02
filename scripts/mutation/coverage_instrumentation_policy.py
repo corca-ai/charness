@@ -99,13 +99,13 @@ def classify_instrumentable_command(command: str) -> tuple[str, str | None, str]
     """
     match = _PYTEST_PREFIX_RE.match(command)
     if match is not None:
-        return PYTEST_KIND, match.group("interp"), command[match.end():]
+        return PYTEST_KIND, match.group("interp"), command[match.end() :]
     match = _STANDING_RUNNER_PREFIX_RE.match(command)
     if match is None:
         return None
     if any(token.startswith(STANDING_RUNNER_HELPER_FLAG_PREFIX) for token in _tokens(command)):
         return None
-    return STANDING_RUNNER_KIND, match.group("interp"), command[match.start("script"):]
+    return STANDING_RUNNER_KIND, match.group("interp"), command[match.start("script") :]
 
 
 def is_standing_pytest_runner_command(command: str) -> bool:

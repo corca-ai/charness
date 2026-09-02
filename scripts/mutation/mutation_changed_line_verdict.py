@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from scripts.mutation_changed_files_lib import (
+from scripts.mutation.mutation_changed_files_lib import (
     changed_line_numbers_for_paths,
     changed_line_scope_gap_targets,
     classify_changed_line_scope_gap,

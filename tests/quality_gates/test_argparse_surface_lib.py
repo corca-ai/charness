@@ -331,7 +331,7 @@ def test_a_command_inside_another_commands_flag_value_keeps_its_own_flags() -> N
     on a correct doc, which is what this repo's own command-surface gate hit.
     """
     carrier = (
-        "python3 scripts/check_changed_line_mutation_coverage.py --repo-root . "
+        "python3 scripts/mutation/check_changed_line_mutation_coverage.py --repo-root . "
         '--test-command "python3 scripts/gates_support/run_standing_pytest.py --repo-root ." --write-fresh-marker'
     )
     outer, inner = _attribution(carrier)
@@ -348,7 +348,7 @@ def test_a_nested_command_quoted_with_the_other_quote_character_is_still_bounded
     exact false attribution the boundary exists to stop.
     """
     carrier = (
-        "python3 scripts/sample_mutation_files.py "
+        "python3 scripts/mutation/sample_mutation_files.py "
         "--test-command 'python3 scripts/gates_support/run_standing_pytest.py' --repo-root ."
     )
     outer, inner = _attribution(carrier)

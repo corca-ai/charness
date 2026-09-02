@@ -10,26 +10,37 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from scripts import coverage_instrumentation_policy as _policy
-from scripts.mutation_line_coverage_lib import covered_statement_spans as _covered_statement_spans
-from scripts.mutation_line_coverage_lib import mutation_line_is_covered as _mutation_line_is_covered
-from scripts.runtime_bootstrap import configure_runtime_environment, import_repo_module
+import scripts.mutation.coverage_instrumentation_policy as _policy
+from scripts.mutation.mutation_line_coverage_lib import (
+    covered_statement_spans as _covered_statement_spans,
+)
+from scripts.mutation.mutation_line_coverage_lib import (
+    mutation_line_is_covered as _mutation_line_is_covered,
+)
 
-try:
-    from scripts.core.subprocess_guard import run_monitored_phase, run_process
-except ImportError:  # flat layout: the repo root is not on sys.path
-    _repo_root = next(
-        ancestor
-        for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
-    )
-    if str(_repo_root) not in sys.path:
-        sys.path.insert(0, str(_repo_root))
-    from scripts.core.subprocess_guard import run_monitored_phase, run_process
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import (  # noqa: E402
+    configure_runtime_environment,
+    import_repo_module,
+)
+from scripts.core.subprocess_guard import run_monitored_phase, run_process  # noqa: E402
 
 DEFAULT_SAMPLE_COVERAGE_JSON = Path("reports/mutation/sample-coverage.json")
 
-_sampling_selection = import_repo_module(__file__, "scripts.mutation_sampling_selection")
+_sampling_selection = import_repo_module(__file__, "scripts.mutation.mutation_sampling_selection")
 stable_hash = _sampling_selection.stable_hash
 deterministic_sample = _sampling_selection.deterministic_sample
 read_test_command = _sampling_selection.read_test_command
@@ -397,7 +408,7 @@ def build_mutation_line_coverage(
     try:
         from cosmic_ray.work_db import use_db
 
-        from scripts.filter_cosmic_ray_mutants import (
+        from scripts.mutation.filter_cosmic_ray_mutants import (
             is_trivial_entry_guard_mutation,
             should_skip_mutation,
             source_line,

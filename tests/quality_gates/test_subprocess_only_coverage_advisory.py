@@ -23,7 +23,7 @@ from scripts.runtime_bootstrap import import_repo_module
 from .seeding_support import seed_two_changed_pool_files
 from .support import ROOT, run_script
 
-_TEETH = str(ROOT / "scripts" / "check_changed_line_mutation_coverage.py")
+_TEETH = str(ROOT / "scripts" / "mutation" / "check_changed_line_mutation_coverage.py")
 
 
 #: How a test file spawns the script under test. The keyword alone is NOT the
@@ -48,7 +48,7 @@ def _write_test_file(repo: Path, rel: str, target: str, *, shape: str = "replace
 
 
 def _advisory_lib():
-    return import_repo_module(__file__, "scripts.subprocess_only_coverage_advisory")
+    return import_repo_module(__file__, "scripts.mutation.subprocess_only_coverage_advisory")
 
 
 def _write_raw(source: str) -> Path:
@@ -664,9 +664,9 @@ def test_a_reference_map_returning_a_non_mapping_degrades_to_no_candidates(
     # degraded shape and not about a helper that never finds anything.
     assert list(lib.subprocess_coverage_advisory(tmp_path, targets)) == ["scripts/foo.py"]
 
-    stub = types.ModuleType("scripts.suggest_mutation_coverage_command")
+    stub = types.ModuleType("scripts.mutation.suggest_mutation_coverage_command")
     stub.tests_referencing_paths = lambda repo_root, paths: ["not", "a", "mapping"]
-    monkeypatch.setitem(sys.modules, "scripts.suggest_mutation_coverage_command", stub)
+    monkeypatch.setitem(sys.modules, "scripts.mutation.suggest_mutation_coverage_command", stub)
 
     assert lib._referencing_tests(tmp_path, ["scripts/foo.py"]) == {}
     assert lib.subprocess_coverage_advisory(tmp_path, targets) == {}, (

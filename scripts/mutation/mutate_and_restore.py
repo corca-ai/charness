@@ -65,10 +65,29 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import mutation_test_reporters as _reporters
-from mutation_plan_semantics import MutationPlanError, removed_calls
-from mutation_plan_semantics import mutation_bytes as plan_mutation_bytes
-from mutation_recovery import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.mutation import mutation_test_reporters as _reporters  # noqa: E402
+from scripts.mutation.mutation_plan_semantics import (  # noqa: E402
+    MutationPlanError,
+    removed_calls,
+)
+from scripts.mutation.mutation_plan_semantics import (  # noqa: E402
+    mutation_bytes as plan_mutation_bytes,  # noqa: E402
+)
+from scripts.mutation.mutation_recovery import (  # noqa: E402
     MutationRecovery,
     RecoveryError,
     SweepTerminated,
@@ -76,20 +95,11 @@ from mutation_recovery import (
     run_mutation_command,
     termination_handlers,
 )
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from scripts.core.subprocess_guard import run_monitored_phase  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
-from runtime_bootstrap import import_repo_module
-
-_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
-run_monitored_phase = _subprocess_guard.run_monitored_phase
-
-from yaml_output import emit_yaml
-
-try:
-    from runtime_bootstrap import import_repo_module
-except ModuleNotFoundError:
-    from scripts.runtime_bootstrap import import_repo_module
-
-_sweep_report = import_repo_module(__file__, "scripts.mutation_sweep_report")
+_sweep_report = import_repo_module(__file__, "scripts.mutation.mutation_sweep_report")
 render = _sweep_report.render
 
 # How to READ a runner's count report lives in `mutation_test_reporters` (#689):

@@ -24,7 +24,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_check_coverage_lib_module = import_repo_module(__file__, "scripts.gates.check_coverage_lib")
 _tools_check_coverage_extra_lib_module = import_repo_module(__file__, "tools.check_coverage_extra_lib")
-_scripts_mutation_line_coverage_lib_module = import_repo_module(__file__, "scripts.mutation_line_coverage_lib")
+_scripts_mutation_line_coverage_lib_module = import_repo_module(__file__, "scripts.mutation.mutation_line_coverage_lib")
 PER_FILE_WARN_BELOW = _scripts_check_coverage_lib_module.PER_FILE_WARN_BELOW
 PER_FILE_MIN_COVERAGE = _scripts_check_coverage_lib_module.PER_FILE_MIN_COVERAGE
 build_per_file_floor_report = _scripts_check_coverage_lib_module.build_per_file_floor_report
@@ -45,7 +45,7 @@ executable_statement_lines = _scripts_mutation_line_coverage_lib_module.executab
 # this: gating a whole-file floor on a changed subset would false-fire on a
 # well-tested change to a partially-covered file (the #208 mutation-gate trap).
 # If this is ever narrowed to changed files, scope the floor to changed lines as
-# scripts/mutation_changed_files_lib.py:classify_changed_line_scope_gap does.
+# scripts/mutation/mutation_changed_files_lib.py:classify_changed_line_scope_gap does.
 TARGET_FILES = (
     Path("scripts/control_plane_lib.py"),
     Path("scripts/control_plane_lifecycle_lib.py"),

@@ -15,7 +15,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from scripts.mutation_changed_files_lib import (
+from scripts.mutation.mutation_changed_files_lib import (
     changed_line_coverage_marker_path,
     read_changed_line_coverage_marker,
 )
@@ -25,7 +25,7 @@ from .mutation_coverage_producer_fixtures import seed_mutation_coverage_repo as 
 
 
 def test_instrument_broad_command_rewrites_and_preserves_glob(tmp_path: Path) -> None:
-    from scripts.mutation_coverage_producer import instrument_broad_command
+    from scripts.mutation.mutation_coverage_producer import instrument_broad_command
 
     data_file = tmp_path / ".mutation-coverage"
     broad = (
@@ -73,7 +73,7 @@ def test_instrument_broad_command_rewrites_and_preserves_glob(tmp_path: Path) ->
 
 
 def test_instrument_broad_command_rejects_non_pytest(tmp_path: Path) -> None:
-    from scripts.mutation_coverage_producer import (
+    from scripts.mutation.mutation_coverage_producer import (
         instrument_broad_command,
         is_instrumentable_pytest_command,
         is_standing_pytest_runner_command,
@@ -93,7 +93,7 @@ def test_instrument_broad_command_rejects_non_pytest(tmp_path: Path) -> None:
 )
 def test_standing_runner_child_process_reaches_coverage_json(tmp_path: Path) -> None:
     """The focused runner adds a subprocess boundary; prove coverage crosses it."""
-    from scripts import mutation_coverage_producer as prod
+    from scripts.mutation import mutation_coverage_producer as prod
 
     pytest.importorskip("xdist", reason="worker coverage probe requires pytest-xdist")
     repo = tmp_path / "repo"
@@ -137,8 +137,8 @@ def test_standing_runner_child_process_reaches_coverage_json(tmp_path: Path) -> 
 
 
 def test_produce_command_coverage_emits_json_and_marker(tmp_path: Path, monkeypatch) -> None:
-    from scripts import mutation_coverage_producer as prod
-    from scripts.mutation_changed_files_lib import changed_pool_fingerprint
+    from scripts.mutation import mutation_coverage_producer as prod
+    from scripts.mutation.mutation_changed_files_lib import changed_pool_fingerprint
 
     repo, base = _seed_repo(tmp_path)
     cov = repo / "reports" / "mutation" / "test-coverage.json"
@@ -174,7 +174,7 @@ def test_produce_command_coverage_emits_json_and_marker(tmp_path: Path, monkeypa
 def test_produce_command_coverage_can_export_only_requested_paths(
     tmp_path: Path, monkeypatch
 ) -> None:
-    from scripts import mutation_coverage_producer as prod
+    from scripts.mutation import mutation_coverage_producer as prod
 
     repo, base = _seed_repo(tmp_path)
     cov = repo / "reports" / "mutation" / "test-coverage.json"
@@ -210,7 +210,7 @@ def test_produce_command_coverage_can_export_only_requested_paths(
 def test_combine_export_preserves_all_include_paths_in_coverage_argv(
     tmp_path: Path, monkeypatch
 ) -> None:
-    from scripts import mutation_sampling_lib as sampling
+    from scripts.mutation import mutation_sampling_lib as sampling
 
     commands: list[list[str]] = []
 
@@ -237,7 +237,7 @@ def test_combine_export_preserves_all_include_paths_in_coverage_argv(
 
 def test_changed_pool_files_vs_base_empty_base_is_empty(tmp_path: Path) -> None:
     # No base SHA -> no changed-pool set (the workflow_dispatch / first-push case).
-    from scripts.mutation_changed_files_lib import changed_pool_files_vs_base
+    from scripts.mutation.mutation_changed_files_lib import changed_pool_files_vs_base
 
     assert changed_pool_files_vs_base(tmp_path, "") == []
 
@@ -245,7 +245,7 @@ def test_changed_pool_files_vs_base_empty_base_is_empty(tmp_path: Path) -> None:
 def test_clear_stale_coverage_data_removes_data_file_and_shards(tmp_path: Path) -> None:
     # The exists->unlink branch + the parallel-shard glob cleanup before a fresh
     # plain-coverage run (otherwise a prior run's data leaks into the verdict).
-    from scripts.mutation_sampling_lib import clear_stale_coverage_data
+    from scripts.mutation.mutation_sampling_lib import clear_stale_coverage_data
 
     data_file = tmp_path / ".mutation-coverage"
     data_file.write_text("stale", encoding="utf-8")
@@ -261,7 +261,7 @@ def test_clear_stale_coverage_data_removes_data_file_and_shards(tmp_path: Path) 
 def test_safe_read_bytes_falls_back_for_unreadable_path(tmp_path: Path) -> None:
     # Covers the defensive `<absent>` branch the changed-line gate would otherwise
     # flag as an uncovered changed line in this pool file.
-    from scripts.mutation_changed_files_lib import _safe_read_bytes
+    from scripts.mutation.mutation_changed_files_lib import _safe_read_bytes
 
     real = tmp_path / "real.py"
     real.write_text("x = 1\n", encoding="utf-8")
@@ -273,7 +273,7 @@ def test_safe_read_bytes_falls_back_for_unreadable_path(tmp_path: Path) -> None:
     reason="exercise default mutation-base discovery against real git refs created for the fixture"
 )
 def test_default_mutation_base_sha_matches_merge_base(tmp_path: Path) -> None:
-    from scripts.mutation_coverage_producer import default_mutation_base_sha
+    from scripts.mutation.mutation_coverage_producer import default_mutation_base_sha
 
     repo, _base = _seed_repo(tmp_path)
     head = _git(repo, "rev-parse", "HEAD")
@@ -288,8 +288,8 @@ def test_default_mutation_base_sha_matches_merge_base(tmp_path: Path) -> None:
 
 
 def test_explicit_campaign_base_marker_mismatch_is_detectable(tmp_path: Path, monkeypatch) -> None:
-    from scripts import check_changed_line_mutation_coverage as consumer
-    from scripts import mutation_coverage_producer as prod
+    from scripts.mutation import check_changed_line_mutation_coverage as consumer
+    from scripts.mutation import mutation_coverage_producer as prod
 
     repo, base = _seed_repo(tmp_path)
     cov = repo / "reports" / "mutation" / "test-coverage.json"
@@ -344,8 +344,8 @@ def test_every_key_the_subprocess_env_sets_is_exported_to_the_child() -> None:
     """
     import os
 
-    from scripts import mutation_coverage_producer as prod
-    from scripts import mutation_sampling_lib as sampling
+    from scripts.mutation import mutation_coverage_producer as prod
+    from scripts.mutation import mutation_sampling_lib as sampling
 
     baseline = dict(os.environ)
     produced = sampling.coverage_subprocess_env(

@@ -259,11 +259,7 @@ class NodeTestReporter:
         end: int,
     ) -> list[re.Match[str]]:
         """Return matches starting inside one candidate region."""
-        return [
-            match
-            for match in pattern.finditer(output, region_start)
-            if match.start() < end
-        ]
+        return [match for match in pattern.finditer(output, region_start) if match.start() < end]
 
     @classmethod
     def _candidate_for_region(cls, output: str, region_start: int, end: int) -> _NodeRun | None:
@@ -342,7 +338,9 @@ class NodeTestReporter:
         # behavior. Neither can manufacture a kill. The selected run window keeps
         # an earlier run's diagnostics from crossing the summary boundary while
         # retaining the selected run's file-level failure details.
-        process_failures = min(len(_NODE_PROCESS_FAILURE_RE.findall(selected_run.text)), reported_failures)
+        process_failures = min(
+            len(_NODE_PROCESS_FAILURE_RE.findall(selected_run.text)), reported_failures
+        )
         return RunCounts(
             passed=counts["pass"],
             failed=reported_failures - process_failures,
@@ -410,8 +408,7 @@ def unreadable_refusal(configured: str, output: str) -> str:
         # this the operator gets a generic "nothing could read it" over output that
         # is obviously node's, which is the dead end this whole seam exists to end.
         return (
-            detail
-            + "; this IS node output, in the `spec` reporter. That format omits the "
+            detail + "; this IS node output, in the `spec` reporter. That format omits the "
             "file-level failure detail needed to tell a broken module from a caught "
             "mutation, so it is refused rather than half-read -- add "
             "`--test-reporter=tap` to the plan's test_command"
@@ -420,7 +417,7 @@ def unreadable_refusal(configured: str, output: str) -> str:
         detail += (
             "; this output IS readable by the "
             + ", ".join(f"`{name}`" for name in others)
-            + " reporter, so set `\"reporter\"` in the plan"
+            + ' reporter, so set `"reporter"` in the plan'
         )
     else:
         detail += (

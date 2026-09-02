@@ -231,7 +231,7 @@ def _scope_mismatch_report(base: dict, changed: list[str], mismatch: str) -> dic
     """The analyzed head is not `HEAD` and the range DID touch eligible files.
 
     `ok: True`, not `ok: False`, and reported only once the changed set is known.
-    Both choices copy `scripts/check_changed_line_mutation_coverage.py`, which
+    Both choices copy `scripts/mutation/check_changed_line_mutation_coverage.py`, which
     reached them the hard way and wrote down why:
 
     * Placed AFTER the changed set, because refusing before it made an EMPTY scope

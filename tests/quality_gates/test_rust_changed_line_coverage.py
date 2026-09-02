@@ -7,6 +7,7 @@ lines are judged, and the three-way classification that decides what a judgement
 means. Coverage itself comes from `cargo llvm-cov`, which is not re-implemented
 here and not run by these tests.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -15,7 +16,9 @@ from .repo_shapes import install_two_commit_repo
 from .seeding_support import load_module
 from .support import ROOT
 
-MODULE = load_module("rust_changed_line_coverage", ROOT / "scripts/rust_changed_line_coverage.py")
+MODULE = load_module(
+    "rust_changed_line_coverage", ROOT / "scripts/mutation/rust_changed_line_coverage.py"
+)
 
 
 _LIB_SEED = "fn a() {}\nfn b() {}\nfn c() {}\n"
@@ -62,19 +65,22 @@ def test_a_line_with_no_coverage_record_is_not_executable_never_uncovered(monkey
     make it worthless. Only the second is unsafe, so the lane is built to under-report.
     """
 
-    monkeypatch.setattr(MODULE, "changed_rust_lines", lambda *_a, **_k: {"native/demo/src/lib.rs": {1, 2, 3}})
+    monkeypatch.setattr(
+        MODULE, "changed_rust_lines", lambda *_a, **_k: {"native/demo/src/lib.rs": {1, 2, 3}}
+    )
     monkeypatch.setattr(MODULE, "discover_crates", lambda *_a, **_k: [Path("native/demo")])
     monkeypatch.setattr(
-        MODULE, "crate_line_counts",
+        MODULE,
+        "crate_line_counts",
         lambda *_a, **_k: {"native/demo/src/lib.rs": {2: 0, 3: 7}},
     )
     monkeypatch.setattr(MODULE, "_relative", lambda _root, name: name)
 
     report = MODULE.build_report(Path("/repo"), base_sha="deadbeef")
 
-    assert report["not_executable"] == 1               # line 1: no record
+    assert report["not_executable"] == 1  # line 1: no record
     assert [u["line"] for u in report["uncovered"]] == [2]  # record, zero hits
-    assert report["covered"] == 1                      # line 3: record, hits
+    assert report["covered"] == 1  # line 3: record, hits
     assert report["status"] == "established"
 
 
@@ -121,8 +127,13 @@ def test_the_floor_is_opt_in(monkeypatch, capsys) -> None:
     """
 
     monkeypatch.setattr(
-        MODULE, "build_report",
-        lambda *_a, **_k: {"schema": "x", "status": "established", "uncovered": [{"path": "a.rs", "line": 1}]},
+        MODULE,
+        "build_report",
+        lambda *_a, **_k: {
+            "schema": "x",
+            "status": "established",
+            "uncovered": [{"path": "a.rs", "line": 1}],
+        },
     )
     monkeypatch.setattr(MODULE._producer, "default_mutation_base_sha", lambda _root: "deadbeef")
 

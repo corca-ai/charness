@@ -50,7 +50,7 @@ def _claims_module():
 @pytest.mark.parametrize(
     "path",
     [
-        "scripts/mutate_and_restore.py",
+        "scripts/mutation/mutate_and_restore.py",
         "skills/public/release/SKILL.md",
         "plugins/charness/scripts/x.py",
         "tests/quality_gates/test_x.py",

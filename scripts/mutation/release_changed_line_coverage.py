@@ -71,13 +71,27 @@ from types import SimpleNamespace
 
 import yaml
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.gates_support import changed_line_verdict_codes as _verdict_codes  # noqa: E402
-from scripts import mutation_coverage_producer as _producer  # noqa: E402
-from scripts import suggest_mutation_coverage_command as _suggest  # noqa: E402
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
+
+REPO_ROOT = repo_root_from_script(__file__)
+
+from scripts import changed_line_verdict_codes as _verdict_codes  # noqa: E402
+from scripts.mutation import mutation_coverage_producer as _producer  # noqa: E402
+from scripts.mutation import suggest_mutation_coverage_command as _suggest  # noqa: E402
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 from scripts.core.subprocess_guard import run_monitored_phase  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
@@ -101,7 +115,7 @@ CONSUMER_PARTIAL_EXIT = _verdict_codes.PARTIAL_EXIT
 # This lane's own byte for the same state. `run-quality.sh` renders it FAIL for
 # this label, which is not in its `UNESTABLISHED_CAPABLE_LABELS` opt-in list.
 PARTIAL_EXIT = _verdict_codes.PARTIAL_EXIT
-CONSUMER = "scripts/check_changed_line_mutation_coverage.py"
+CONSUMER = "scripts/mutation/check_changed_line_mutation_coverage.py"
 
 #: The run judged nothing about the files it was asked to judge — a dirty pool whose
 #: edits `base..HEAD` cannot see, or a limit that intersected to nothing. Kept DISTINCT
@@ -421,7 +435,7 @@ def main(argv: list[str] | None = None) -> int:
     ]
     for path in mapped:
         consumer_argv += ["--limit-to-file", path]
-    consumer = import_repo_module(__file__, "scripts.check_changed_line_mutation_coverage")
+    consumer = import_repo_module(__file__, "scripts.mutation.check_changed_line_mutation_coverage")
     consumer_stdout = io.StringIO()
     consumer_stderr = io.StringIO()
     previous_argv = sys.argv

@@ -4,7 +4,7 @@ import os
 import time
 from pathlib import Path
 
-from scripts import manage_mutation_reports as reports
+from scripts.mutation import manage_mutation_reports as reports
 
 
 def _file(path: Path, *, age_days: int, text: str = "x") -> Path:

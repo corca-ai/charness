@@ -17,16 +17,16 @@ from runtime_bootstrap import import_repo_module
 from scripts.core.subprocess_guard import PhaseOutcome
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts" / "mutate_and_restore.py"
-mar = import_repo_module(SCRIPT, "scripts.mutate_and_restore")
+SCRIPT = ROOT / "scripts" / "mutation" / "mutate_and_restore.py"
+mar = import_repo_module(SCRIPT, "scripts.mutation.mutate_and_restore")
 mr = sys.modules[mar.MutationRecovery.__module__]
 #: The file `mr` must resolve to. Named as a literal because the hop above is invisible to
 #: the mutation-pool mapper: it walks imports and text, and this module is reached through
-#: a `sys.modules` lookup keyed on a class's `__module__`, so `scripts/mutation_recovery.py`
+#: a `sys.modules` lookup keyed on a class's `__module__`, so `scripts/mutation/mutation_recovery.py`
 #: mapped to NO standing test and its changed lines went unjudged (PARTIAL, exit 4).
 #: Re-importing the file to fix that would bind a SECOND module object, and the
 #: monkeypatching below would then patch a module nothing under test uses.
-RECOVERY_SOURCE = ROOT / "scripts" / "mutation_recovery.py"
+RECOVERY_SOURCE = ROOT / "scripts" / "mutation" / "mutation_recovery.py"
 
 
 def test_the_module_under_test_is_the_file_on_disk() -> None:

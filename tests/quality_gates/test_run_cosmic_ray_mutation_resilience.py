@@ -1,4 +1,4 @@
-"""Resilience tests for `scripts/run_cosmic_ray_mutation.py` (#183 follow-up).
+"""Resilience tests for `scripts/mutation/run_cosmic_ray_mutation.py` (#183 follow-up).
 
 The original #183 fix preserved partial dumps on `cosmic-ray exec` timeout. A
 post-push critique pointed out that a non-zero exec exit (worker crash, etc.)
@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 _spec = importlib.util.spec_from_file_location(
-    "run_cosmic_ray_mutation", ROOT / "scripts" / "run_cosmic_ray_mutation.py"
+    "run_cosmic_ray_mutation", ROOT / "scripts" / "mutation" / "run_cosmic_ray_mutation.py"
 )
 assert _spec is not None and _spec.loader is not None
 RCRM = importlib.util.module_from_spec(_spec)

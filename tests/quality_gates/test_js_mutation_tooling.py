@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.run_js_mutation import (
+from scripts.mutation.run_js_mutation import (
     JS_MUTATION_MUTANT_WEIGHTS,
     list_js_targets,
     remove_stale_report,
@@ -19,10 +19,10 @@ from tests.script_main import load_script_module, run_loaded_script_main
 from .support import ROOT
 
 RUN_JS_MUTATION = load_script_module(
-    "run_js_mutation_cli_boundary", ROOT / "scripts" / "run_js_mutation.py"
+    "run_js_mutation_cli_boundary", ROOT / "scripts" / "mutation" / "run_js_mutation.py"
 )
 CHECK_JS_MUTATION_SCORE = load_script_module(
-    "check_js_mutation_score_cli", ROOT / "scripts" / "check_js_mutation_score.py"
+    "check_js_mutation_score_cli", ROOT / "scripts" / "mutation" / "check_js_mutation_score.py"
 )
 
 
@@ -140,7 +140,7 @@ def test_js_mutation_runner_requires_local_stryker_install(tmp_path) -> None:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / "stryker.config.mjs").write_text("export default {};\n", encoding="utf-8")
-    runner = ROOT / "scripts" / "run_js_mutation.py"
+    runner = ROOT / "scripts" / "mutation" / "run_js_mutation.py"
 
     result = run_loaded_script_main(
         str(runner), RUN_JS_MUTATION, "--repo-root", str(repo), "--mode", "dry-run"
@@ -182,7 +182,7 @@ def test_js_mutation_summary_fails_when_report_missing(tmp_path) -> None:
     )
 
     result = run_loaded_script_main(
-        "scripts/check_js_mutation_score.py",
+        "scripts/mutation/check_js_mutation_score.py",
         CHECK_JS_MUTATION_SCORE,
         "--repo-root",
         str(repo),
@@ -243,7 +243,7 @@ def test_js_all_ignored_report_is_unmeasured_through_the_cli(tmp_path) -> None:
     )
 
     result = run_loaded_script_main(
-        "scripts/check_js_mutation_score.py",
+        "scripts/mutation/check_js_mutation_score.py",
         CHECK_JS_MUTATION_SCORE,
         "--repo-root",
         str(repo),
@@ -301,7 +301,7 @@ def test_js_mutation_summary_appends_stryker_results(tmp_path) -> None:
     )
 
     result = run_loaded_script_main(
-        "scripts/check_js_mutation_score.py",
+        "scripts/mutation/check_js_mutation_score.py",
         CHECK_JS_MUTATION_SCORE,
         "--repo-root",
         str(repo),
@@ -352,7 +352,7 @@ def test_js_mutation_summary_blocks_no_coverage_mutants(tmp_path) -> None:
     )
 
     result = run_loaded_script_main(
-        "scripts/check_js_mutation_score.py",
+        "scripts/mutation/check_js_mutation_score.py",
         CHECK_JS_MUTATION_SCORE,
         "--repo-root",
         str(repo),

@@ -44,7 +44,7 @@ _MODULES = {
         "scripts/gates/validate_retro_artifact.py",
         "scripts/gates/validate_ideation_artifact.py",
         "scripts/check_lesson_ledger.py",
-        "scripts/check_mutation_run_proof.py",
+        "scripts/mutation/check_mutation_run_proof.py",
         "scripts/gates/check_code_lengths.py",
         "scripts/gates/check_python_runtime_inheritance.py",
         "tools/check_skill_bootstrap_vars.py",
@@ -304,7 +304,7 @@ def test_mutation_run_proof_refuses_without_a_run() -> None:
         (["--claim", "changed-line"], "no base_sha evidence"),
     )
     for args, expected_fragment in cases:
-        result = run_gate("scripts/check_mutation_run_proof.py", *args)
+        result = run_gate("scripts/mutation/check_mutation_run_proof.py", *args)
         assert result.returncode != 0, args
         verdict = yaml.safe_load(result.stdout)
         assert verdict["provable"] is False
@@ -313,7 +313,7 @@ def test_mutation_run_proof_refuses_without_a_run() -> None:
 
 def test_mutation_run_proof_still_confirms_a_green_identified_run() -> None:
     result = run_gate(
-        "scripts/check_mutation_run_proof.py",
+        "scripts/mutation/check_mutation_run_proof.py",
         "--claim",
         "score",
         "--event",
@@ -332,7 +332,7 @@ def test_provable_says_whether_the_run_was_known_green() -> None:
     could evaluate the claim", not "and the run was green". The verdict must not
     let one word carry both."""
     result = run_gate(
-        "scripts/check_mutation_run_proof.py", "--claim", "score", "--event", "schedule"
+        "scripts/mutation/check_mutation_run_proof.py", "--claim", "score", "--event", "schedule"
     )
     verdict = yaml.safe_load(result.stdout)
     assert verdict["provable"] is True
@@ -343,7 +343,7 @@ def test_known_red_run_is_distinguishable_from_unknown_conclusion() -> None:
     """Both refuse, for opposite reasons. A consumer reading a missing field as
     False would collapse "known red" into "nobody checked"."""
     red = run_gate(
-        "scripts/check_mutation_run_proof.py",
+        "scripts/mutation/check_mutation_run_proof.py",
         "--claim",
         "score",
         "--event",

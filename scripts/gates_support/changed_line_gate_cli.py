@@ -32,7 +32,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.mutation_sampling_lib import (  # noqa: E402
+from scripts.mutation.mutation_sampling_lib import (  # noqa: E402
     INSTRUMENTABLE_COMMAND_REFUSAL,
     is_instrumentable_pytest_command,
 )
@@ -134,7 +134,7 @@ def parse_args() -> argparse.Namespace:
             "changed-line verdict consumes `executed_lines`/`missing_lines` only, via "
             "`load_file_statement_lines`. The single reader of the `contexts` block is "
             "`load_line_contexts`, used by the cosmic-ray sampler "
-            "(`scripts/sample_mutation_files.py`), which builds its own corpus and does "
+            "(`scripts/mutation/sample_mutation_files.py`), which builds its own corpus and does "
             "not depend on this flag. Pass it only to hand-build a context-bearing "
             "corpus for that sampler. Measured cost of leaving it on (#696): the same "
             "coverage data exported to 8.22 GB instead of 12.26 MB (671x), taking 36.5s "

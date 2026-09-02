@@ -146,7 +146,7 @@
       ],
       "rationale": "A documented `charness` invocation whose subcommand token is not a single subcommand name -- `charness tool install/update/doctor` names three of them in one prose span -- is counted by reason instead of guessed at. render_report delegates to gate_report_emit.render_findings_with_skipped, which appends the \"Not proven\" count and every reason to the PASS output as well as the fail output; the same map rides in the YAML payload as skipped, so a green run states how much of the documented subcommand surface it did not prove rather than reading as full coverage."
     },
-    "scripts/check_mutation_score.py": {
+    "scripts/mutation/check_mutation_score.py": {
       "states": [
         "skipped"
       ],
@@ -159,7 +159,7 @@
       ],
       "rationale": "Mutation skipped workers remain counted in the score metrics and are rendered by the summary helper."
     },
-    "scripts/check_mutation_score_summary_lib.py": {
+    "scripts/mutation/check_mutation_score_summary_lib.py": {
       "states": [
         "skipped"
       ],
@@ -289,7 +289,7 @@
       ],
       "rationale": "Doctor output reports disabled tool installs and skipped release probes as structured JSON."
     },
-    "scripts/filter_cosmic_ray_mutants.py": {
+    "scripts/mutation/filter_cosmic_ray_mutants.py": {
       "states": [
         "skipped"
       ],
@@ -356,7 +356,7 @@
       ],
       "rationale": "The measurement reports every pre-contract citation it skipped as a named list rather than dropping it silently, and states in its non-claims that the gate's prose_review_status arm is not modelled."
     },
-    "scripts/mutation_test_reporters.py": {
+    "scripts/mutation/mutation_test_reporters.py": {
       "states": [
         "skipped"
       ],

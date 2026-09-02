@@ -32,22 +32,8 @@ import sys
 from pathlib import Path
 from typing import NamedTuple
 
-
-def _load_repo_runtime_bootstrap():
-    pathlib, sys = __import__("pathlib"), __import__("sys")
-    marker = ("scripts", "adapter_lib.py")
-    parents = pathlib.Path(__file__).resolve().parents
-    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is None:
-        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
-    if str(root) not in sys.path:
-        sys.path.insert(0, str(root))
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
-from scripts.subprocess_only_coverage_advisory import advisory_scope_line, advisory_stderr_line  # noqa: E402
+from runtime_bootstrap import import_repo_module
+from scripts.mutation.subprocess_only_coverage_advisory import advisory_scope_line, advisory_stderr_line
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:  # pragma: no cover - import bootstrap
@@ -56,7 +42,7 @@ if str(REPO_ROOT) not in sys.path:  # pragma: no cover - import bootstrap
 from scripts.checkout_view import CheckoutView, GitCheckout  # noqa: E402
 from scripts.core.git_status_snapshot import GitStatusError  # noqa: E402
 from scripts.core.git_status_snapshot import parse as parse_git_status  # noqa: E402
-from scripts.mutation_changed_files_lib import changed_pool_fingerprint  # noqa: E402
+from scripts.mutation.mutation_changed_files_lib import changed_pool_fingerprint  # noqa: E402
 
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
