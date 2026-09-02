@@ -17,6 +17,8 @@ _load_repo_runtime_bootstrap()
 
 from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
 
+_repo_layout = import_repo_module(__file__, "scripts.core.repo_layout")
+find_repo_script = _repo_layout.find_repo_script
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
@@ -158,14 +160,16 @@ def present_gate(repo_root: Path, label: str, script: str, *args: str) -> list[G
     path-based invocation when a moved gate is pulled to the commit boundary.
     """
     script_path = Path(script)
-    path = (
-        repo_root / script_path
-        if script_path.parts[:1] == ("tools",)
-        else repo_root / "scripts" / script
-    )
-    if not path.exists():
+    if script_path.parts[:1] == ("tools",):
+        if not (repo_root / script_path).is_file():
+            return []
+        return [GateCommand(label, _script_argv(script, *args))]
+    resolved = find_repo_script(repo_root, script)
+    if resolved is None:
         return []
-    return [GateCommand(label, _script_argv(script, *args))]
+    # argv names the path the resolver found, so a bare name that now lives in a
+    # concept package schedules the packaged script rather than a missing flat one.
+    return [GateCommand(label, _script_argv(resolved.relative_to(repo_root).as_posix(), *args))]
 
 
 def present_tools_gate(repo_root: Path, label: str, script: str, *args: str) -> list[GateCommand]:

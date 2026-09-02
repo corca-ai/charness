@@ -28,6 +28,8 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
+from scripts.core.repo_layout import RepoScriptAmbiguity, find_repo_script
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 
@@ -41,10 +43,13 @@ def _script_relative(stem: str) -> str:
     """
     value = stem.removesuffix(".py")
     value = value.replace(".", "/") if "/" not in value else value
-    if "/" not in value and not (SCRIPTS / f"{value}.py").is_file():
-        packaged = sorted(p for p in SCRIPTS.rglob(f"{value}.py") if p.is_file())
-        if packaged:
-            return packaged[0].relative_to(SCRIPTS).with_suffix("").as_posix()
+    if "/" not in value:
+        try:
+            packaged = find_repo_script(ROOT, f"{value}.py")
+        except RepoScriptAmbiguity:
+            packaged = None  # two owners: the flat spelling names neither, so it stays a miss
+        if packaged is not None:
+            return packaged.relative_to(SCRIPTS).with_suffix("").as_posix()
     return value
 
 
@@ -78,13 +83,12 @@ def _from_string(value: str) -> set[str]:
     if value.endswith(".py") and _is_script(value.removesuffix(".py")):
         return {_script_relative(value)}
     if value.endswith(".py"):
-        matches = sorted(
-            path.relative_to(SCRIPTS).with_suffix("").as_posix()
-            for path in SCRIPTS.rglob(value)
-            if path.is_file()
-        )
-        if len(matches) == 1:
-            return {matches[0]}
+        try:
+            match = find_repo_script(ROOT, value)
+        except RepoScriptAmbiguity:
+            match = None  # a name two packages own is not a closure entry
+        if match is not None:
+            return {match.relative_to(SCRIPTS).with_suffix("").as_posix()}
     return set()
 
 

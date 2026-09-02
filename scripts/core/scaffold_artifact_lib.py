@@ -7,34 +7,37 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 
 
-def _load_repo_helper(module_filename: str) -> dict[str, object]:
-    """Reach a repo-level `scripts/` helper without importing repo machinery.
+def _load_repo_layout() -> dict[str, object]:
+    """The layout resolver, by its one fixed path, without importing repo machinery.
 
     ``scaffold_ideation_artifact.py`` loads this module by file path with no
     package context, so the seams its siblings use (``runtime_bootstrap`` /
     ``skill_runtime_bootstrap``) are unavailable here and
     ``test_the_owner_stays_importable_with_no_package_context`` forbids them.
-    ``runpy`` over an ancestor walk is the same stdlib-only spelling
-    the artifact runners use for the identical constraint, and it finds
-    ``scripts/<helper>.py`` at the repo root here and at the plugin root once
-    exported. Both helpers this module needs ship in that same directory, so the
-    walk is parameterized rather than copied per helper.
+    ``runpy`` over an ancestor walk is the same stdlib-only spelling the artifact
+    runners use for the identical constraint. This is the ONE path this module
+    hard-codes: `scripts/core/repo_layout.py` is where every other script
+    location is asked for, at the repo root here and at the plugin root once
+    exported.
     """
-    helper = next(
-        (
-            candidate
-            for ancestor in Path(__file__).resolve().parents
-            for candidate in (
-                ancestor / "scripts" / module_filename,
-                ancestor / "scripts" / "artifacts" / module_filename,
-            )
-            if candidate.is_file()
-        ),
-        None,
-    )
-    if helper is None:
-        raise ImportError(f"scripts/{module_filename} not found")
-    return runpy.run_path(str(helper))
+    for ancestor in Path(__file__).resolve().parents:
+        candidate = ancestor / "scripts" / "core" / "repo_layout.py"
+        if candidate.is_file():
+            return runpy.run_path(str(candidate))
+    raise ImportError("scripts/core/repo_layout.py not found")
+
+
+_LAYOUT = _load_repo_layout()
+find_repo_script = _LAYOUT["find_repo_script"]
+
+
+def _load_repo_helper(module_filename: str) -> dict[str, object]:
+    """Reach a repo-level `scripts/` helper through the layout resolver."""
+    for ancestor in Path(__file__).resolve().parents:
+        helper = find_repo_script(ancestor, module_filename)
+        if helper is not None:
+            return runpy.run_path(str(helper))
+    raise ImportError(f"scripts/{module_filename} not found")
 
 
 emit_yaml = _load_repo_helper("yaml_output.py")["emit_yaml"]
@@ -80,28 +83,16 @@ def validator_command(
     suffix = " --evidence-led" if evidence_mode else ""
     suffix += f" --paths {artifact_path}" if artifact_path else ""
     for script_name in script_names:
-        repo_local = _repo_script(repo_root, script_name)
+        repo_local = find_repo_script(repo_root, script_name)
         if repo_local is not None:
             relative = repo_local.relative_to(repo_root).as_posix()
             return f"python3 {relative} --repo-root .{suffix}"
     for ancestor in Path(script_file).resolve().parents:
         for script_name in script_names:
-            candidate = _repo_script(ancestor, script_name)
+            candidate = find_repo_script(ancestor, script_name)
             if candidate is not None:
                 return f"python3 {candidate} --repo-root .{suffix}"
     raise FileNotFoundError(f"{script_names[0]} not found in installed Charness layout")
-
-
-def _repo_script(root: Path, script_name: str) -> Path | None:
-    """`<root>/scripts/<name>` flat, or inside the concept package that owns it."""
-    flat = root / "scripts" / script_name
-    if flat.is_file():
-        return flat
-    scripts_root = root / "scripts"
-    if not scripts_root.is_dir():
-        return None
-    packaged = sorted(p for p in scripts_root.glob(f"*/{script_name}") if p.is_file())
-    return packaged[0] if packaged else None
 
 
 def current_pointer_payload(
@@ -257,8 +248,13 @@ def subject_scoped_record_payload(
     so computing it before the path is chosen points the validator at a file nothing writes.
     """
     write_path = f"{output_dir}/{date_text}-{record_slug}.md"
-    candidates = [write_path, *(f"{output_dir}/{date_text}-{record_slug}-{tail}.md" for tail in distinguishers)]
-    resolved = next((candidate for candidate in candidates if not (repo_root / candidate).exists()), None)
+    candidates = [
+        write_path,
+        *(f"{output_dir}/{date_text}-{record_slug}-{tail}.md" for tail in distinguishers),
+    ]
+    resolved = next(
+        (candidate for candidate in candidates if not (repo_root / candidate).exists()), None
+    )
     if resolved is None:
         raise SystemExit(
             f"every dated record path this scaffold derives for `{record_slug}` today already "
@@ -386,7 +382,12 @@ def emit_payload_main(
     supports_evidence_mode: bool = False,
 ) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help=f"Repo root to scaffold the {artifact_label} artifact into")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help=f"Repo root to scaffold the {artifact_label} artifact into",
+    )
     parser.add_argument("--title", help=f"Title for the scaffolded {artifact_label} artifact")
     # The invocation's SUBJECT, which the title cannot carry: `debug --title "Debug Review"`
     # is the default and names no investigation, so without this flag "I am continuing THIS

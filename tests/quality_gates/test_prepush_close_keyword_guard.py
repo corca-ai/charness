@@ -23,6 +23,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from scripts.core.repo_layout import repo_script
 from tests.closeout_authorization_world import CROSSWALK_REL, PROTECTED, build_protected_world
 from tests.quality_gates.prepush_close_keyword_fixtures import (
     commit as _commit,
@@ -646,10 +647,8 @@ def test_a_crash_exits_two_rather_than_the_refusal_code(repo: Path, tmp_path: Pa
         "runtime_bootstrap.py",
         "yaml_output.py",
     ):
-        source = ROOT / "scripts" / name
-        if not source.is_file():  # moved into a concept package; the lonely copy stays flat
-            source = sorted(p for p in (ROOT / "scripts").rglob(name) if p.is_file())[0]
-        shutil.copy2(source, lonely / name)
+        # A packaged script is copied flat: the lonely tree is the pre-packaging shape.
+        shutil.copy2(repo_script(ROOT, name), lonely / name)
     shutil.copy2(
         ROOT / "scripts" / "hooks" / "commit_msg_closeout_authorization.py",
         hooks_dir / "commit_msg_closeout_authorization.py",

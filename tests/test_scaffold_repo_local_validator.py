@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from scripts.core.repo_layout import find_repo_script
 from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,7 +46,7 @@ def test_installed_like_scaffold_prefers_repo_local_validator_when_repo_owns_one
     # Precondition: the installed-like tree ships a validator that the old
     # ancestor-first lookup would have cited (this is the shadow to beat).
     # Bundled validators live in concept packages under scripts/ (#770).
-    assert any((PLUGIN_ROOT / "scripts").rglob(validator_name)), validator_name
+    assert find_repo_script(PLUGIN_ROOT, validator_name) is not None, validator_name
 
     repo = tmp_path / "repo-with-own-validator"
     (repo / ".agents").mkdir(parents=True)

@@ -4,6 +4,8 @@ import importlib.util
 import sys
 from pathlib import Path
 
+from scripts.core.repo_layout import find_repo_script
+
 ROOT = Path(__file__).resolve().parents[1]
 PREFLIGHT_DOC = ROOT / "docs" / "authoring-preflight.md"
 DISCIPLINE_DOC = ROOT / "docs" / "implementation-discipline.md"
@@ -25,10 +27,8 @@ def _assert_points_at_runnable_script(text: str, script_name: str) -> None:
     # and the guard stays green while the documented command is unrunnable.
     assert script_name in text, f"authoring-preflight.md no longer names {script_name}"
     # Repo scripts live in concept packages under scripts/ (#770); tools/ stays flat.
-    candidates = [*(ROOT / "scripts").rglob(script_name), ROOT / "tools" / script_name]
-    assert any(path.is_file() for path in candidates), (
-        f"neither scripts/**/{script_name} nor tools/{script_name} exists"
-    )
+    runnable = find_repo_script(ROOT, script_name) or ROOT / "tools" / script_name
+    assert runnable.is_file(), f"neither scripts/**/{script_name} nor tools/{script_name} exists"
 
 
 def test_authoring_preflight_reference_exists_and_is_discoverable() -> None:

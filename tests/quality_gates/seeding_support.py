@@ -14,6 +14,8 @@ from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from typing import Callable, Mapping, Sequence
 
+from scripts.core.repo_layout import find_repo_script
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -452,29 +454,18 @@ def verify_closeout_args(
     return args
 
 
-def _packaged_script(real_name: str) -> Path:
-    """Where a repo script lives now: flat under scripts/ or inside a concept package."""
-    flat = ROOT / "scripts" / real_name
-    if flat.is_file():
-        return flat
-    found = sorted(p for p in (ROOT / "scripts").rglob(real_name) if p.is_file())
-    if not found:
-        raise FileNotFoundError(f"scripts/**/{real_name} is not in this checkout")
-    return found[0]
-
-
-def _seed_path(target_dir: Path, filename: str) -> Path:
+def seeded_script_path(target_dir: Path, filename: str) -> Path:
     """Where a seeded script goes: the packaged path its real twin has, else flat.
 
     The declared gate rows spell `scripts/<pkg>/<name>.py` since the concept
     packaging, so a stub must sit where the row points or the runner reports a
-    missing file instead of the stub's verdict.
+    missing file instead of the stub's verdict. The twin's location is the
+    layout resolver's answer, not a search of this checkout.
     """
-    real = ROOT / "scripts" / filename
-    if not real.is_file() and target_dir.name == "scripts":
-        found = sorted(p for p in (ROOT / "scripts").rglob(filename) if p.is_file())
-        if found:
-            relative = found[0].relative_to(ROOT / "scripts")
+    if target_dir.name == "scripts":
+        real = find_repo_script(ROOT, filename)
+        if real is not None and real.parent != ROOT / "scripts":
+            relative = real.relative_to(ROOT / "scripts")
             path = target_dir / relative
             path.parent.mkdir(parents=True, exist_ok=True)
             for package_dir in relative.parents:

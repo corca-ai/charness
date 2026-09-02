@@ -69,7 +69,13 @@ python3 scripts/gates_support/run_standing_pytest.py --repo-root .
 
 Production code spawns only through
 [`subprocess_guard.py`](../scripts/core/subprocess_guard.py); the standing
-[form check](../scripts/gates/check_subprocess_form.py) refuses a direct call. Tests
+[form check](../scripts/gates/check_subprocess_form.py) refuses a direct call.
+Where a repo script lives, flat under `scripts/` or inside the concept package
+that owns it, is answered only by the resolver in
+[`repo_layout.py`](../scripts/core/repo_layout.py) (`repo_script`,
+`find_repo_script`; a miss is typed, two owners is an ambiguity); the standing
+[lookup form check](../scripts/gates/check_script_lookup_form.py) refuses a
+by-name `glob` or `rglob` under `scripts/` anywhere else, tests included. Tests
 import the script under test in-process through the loaders in
 [`tests/script_loader.py`](../tests/script_loader.py),
 [`script_main.py`](../tests/script_main.py), and

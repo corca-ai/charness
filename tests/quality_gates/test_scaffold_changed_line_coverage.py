@@ -60,9 +60,9 @@ def _validator_fallback_lines() -> list[int]:
     for index, raw in enumerate(lines, start=1):
         stripped = raw.strip()
         # The fallback resolves the validator flat or inside its concept package.
-        if stripped.startswith("repo_local = _repo_script(repo_root,"):
+        if stripped.startswith("repo_local = find_repo_script(repo_root,"):
             in_fallback = True
-        if in_fallback and stripped.startswith("repo_local = _repo_script(repo_root,"):
+        if in_fallback and stripped.startswith("repo_local = find_repo_script(repo_root,"):
             fallback.append(index)
         elif in_fallback and stripped.startswith('return f"python3 {relative} --repo-root'):
             fallback.append(index)

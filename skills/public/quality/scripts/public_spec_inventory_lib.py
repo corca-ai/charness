@@ -8,10 +8,10 @@ from git_inventory_lib import (  # noqa: E402
     VisibleRepoFilesSnapshot,
     capture_visible_repo_files,
 )
-from public_spec_adapter_policy import load_quality_adapter_data, load_repo_script_module
+from public_spec_adapter_policy import load_quality_adapter_data, repo_script_module
 from public_spec_scan_lib import spec_inventory
 
-_VENDORED_LIB = load_repo_script_module("vendored_path_lib")
+_VENDORED_LIB = repo_script_module("vendored_path_lib")
 
 
 def _vendored_prefixes(data: dict[str, Any]) -> list[str]:
@@ -74,9 +74,15 @@ def inventory(
     duplicates = duplicate_commands(specs)
     smoke_paths, e2e_paths = iter_smoke_like_tests(repo_root, snapshot=snapshot)
     if vendored:
-        smoke_paths = [path for path in smoke_paths if not _VENDORED_LIB.is_vendored_relative(path, vendored)]
-        e2e_paths = [path for path in e2e_paths if not _VENDORED_LIB.is_vendored_relative(path, vendored)]
-    runner_specs = sorted(spec["spec_path"] for spec in specs if "delegated_test_runner_proof" in spec["heuristics"])
+        smoke_paths = [
+            path for path in smoke_paths if not _VENDORED_LIB.is_vendored_relative(path, vendored)
+        ]
+        e2e_paths = [
+            path for path in e2e_paths if not _VENDORED_LIB.is_vendored_relative(path, vendored)
+        ]
+    runner_specs = sorted(
+        spec["spec_path"] for spec in specs if "delegated_test_runner_proof" in spec["heuristics"]
+    )
     source_guard_spec_rows = qlib.source_guard_specs(specs)
     implementation_guard_spec_rows = qlib.implementation_guard_specs(specs)
     top_source_guard_specs = qlib.top_source_guard_specs(specs)

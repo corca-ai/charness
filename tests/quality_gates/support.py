@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from scripts.core.repo_layout import repo_script
 from tests.quality_gates import git_fixture_support as _git_fixture_support
 from tests.quality_gates.inprocess_script_support import (
     run_allowlisted_script,
@@ -20,7 +21,7 @@ from tests.quality_gates.quality_runner_seed import (
 from tests.quality_gates.quality_runner_seed import (
     seeded_quality_runner_repo as seeded_quality_runner_repo,
 )
-from tests.quality_gates.seeding_support import _packaged_script, _seed_path
+from tests.quality_gates.seeding_support import seeded_script_path
 from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -355,6 +356,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-python-filenames", "check_python_filenames.py"),
     ("check-python-runtime-inheritance", "check_python_runtime_inheritance.py"),
     ("check-subprocess-form", "check_subprocess_form.py"),
+    ("check-script-lookup-form", "check_script_lookup_form.py"),
     ("check-skill-contracts", "check_skill_contracts.py"),
     ("check-skill-bootstrap-vars", "check_skill_bootstrap_vars.py"),
     ("check-bootstrap-shim-consistency", "check_bootstrap_shim_consistency.py"),
@@ -490,7 +492,7 @@ def quality_shell_stub(label: str) -> str:
 
 def seed_quality_python_stubs(target_dir: Path, stubs: tuple[tuple[str, str], ...]) -> None:
     for label, filename in stubs:
-        write_executable(_seed_path(target_dir, filename), quality_python_stub(label))
+        write_executable(seeded_script_path(target_dir, filename), quality_python_stub(label))
 
 
 def seed_quality_shell_stubs(target_dir: Path) -> None:
@@ -560,7 +562,7 @@ def seed_quality_python_binary_stub(target_dir: Path) -> None:
 
 def seed_quality_runtime_recorder(target_dir: Path) -> None:
     write_executable(
-        _seed_path(target_dir, "record_quality_runtime.py"),
+        seeded_script_path(target_dir, "record_quality_runtime.py"),
         "\n".join(
             [
                 "#!/usr/bin/env python3",
@@ -666,9 +668,9 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     (evidence_dir / "proof_receipt.py").chmod(0o755)
     shutil.copy2(
         ROOT / "scripts" / "gates_support" / "run_standing_pytest.py",
-        _seed_path(scripts_dir, "run_standing_pytest.py"),
+        seeded_script_path(scripts_dir, "run_standing_pytest.py"),
     )
-    _seed_path(scripts_dir, "run_standing_pytest.py").chmod(0o755)
+    seeded_script_path(scripts_dir, "run_standing_pytest.py").chmod(0o755)
     # Copied rather than stubbed: the runner reads it at startup to build the label
     # universe it asserts every queued label against (#546). A stub returning nothing
     # would disable that assertion in every runner test -- the harness would then
@@ -726,7 +728,7 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         "inventory_nose_clones_unavailable.py",
         "release_changed_line_coverage_unavailable.py",
     ):
-        source = _packaged_script(real_name)
+        source = repo_script(ROOT, real_name)
         target = scripts_dir / source.relative_to(ROOT / "scripts")
         target.parent.mkdir(parents=True, exist_ok=True)
         for package_dir in target.relative_to(scripts_dir).parents:
@@ -743,9 +745,9 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     # stub would let the runner keep passing if the redirect it produces ever broke.
     shutil.copy2(
         ROOT / "scripts" / "plugin_export" / "specdown_ephemeral_config.py",
-        _seed_path(scripts_dir, "specdown_ephemeral_config.py"),
+        seeded_script_path(scripts_dir, "specdown_ephemeral_config.py"),
     )
-    _seed_path(scripts_dir, "specdown_ephemeral_config.py").chmod(0o755)
+    seeded_script_path(scripts_dir, "specdown_ephemeral_config.py").chmod(0o755)
     (repo / "specdown.json").write_text(
         json.dumps(
             {

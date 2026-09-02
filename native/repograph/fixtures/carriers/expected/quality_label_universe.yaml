@@ -40,6 +40,7 @@ labels:
 - check-python-filenames
 - check-python-runtime-inheritance
 - check-subprocess-form
+- check-script-lookup-form
 - check-skill-contracts
 - check-skill-bootstrap-vars
 - check-bootstrap-shim-consistency
@@ -143,6 +144,7 @@ sources:
   - check-python-filenames
   - check-python-runtime-inheritance
   - check-subprocess-form
+  - check-script-lookup-form
   - check-skill-contracts
   - check-skill-bootstrap-vars
   - check-bootstrap-shim-consistency
