@@ -36,11 +36,12 @@ def test_declared_fixture_and_captured_universe_match_shell_reader_in_process() 
     assert rows
     assert all(isinstance(gate["command"], list) and gate["command"] for gate in rows)
     declared_labels = list(dict.fromkeys(gate["label"] for gate in rows))
-    shell_labels = universe.queue_call_labels(
-        (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
-    )
-    assert set(declared_labels).symmetric_difference(shell_labels) == set()
-    assert declared_labels == shell_labels
+    # The shell queue is gone (#769 R2b): the declared list is the source, so the
+    # fixture is compared with the live declaration through the same reader.
+    live = universe.quality_gate_rows(ROOT) or []
+    live_labels = list(dict.fromkeys(row["label"] for row in live))
+    assert set(declared_labels).symmetric_difference(live_labels) == set()
+    assert declared_labels == live_labels
 
     captured = yaml.safe_load(CAPTURED.read_text(encoding="utf-8"))
     assert captured["sources"]["queue_call_sites"] == declared_labels

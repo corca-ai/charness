@@ -52,6 +52,7 @@ for arg in "$@"; do
       echo "  --release    include release-only tests"
       echo "  --non-claim=release-changed-line-coverage  explicitly omit only the release-final changed-line lane; requires --release"
       echo "  --receipt-json=PATH  write the per-run semantic receipt (also via CHARNESS_QUALITY_RECEIPT_JSON)"
+      echo "  CHARNESS_QUALITY_VERBOSE=1  print every gate's log instead of only failures (engine environment)"
       exit 0
       ;;
     *)

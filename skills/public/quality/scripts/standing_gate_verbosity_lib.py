@@ -193,12 +193,13 @@ def _chatter_axis(surfaces: list[dict[str, Any]], snippets: list[dict[str, str]]
         ),
         (
             "specdown",
-            lambda s: bool(
-                re.search(r"(^|&&\s*|\|\|\s*|;\s*|\(\s*|\s)specdown\b", s)
-            )
-            or "run_specdown.py" in s,
-            lambda s: bool(re.search(r"(^|\s)(-q|-quiet|--quiet)(\s|$)", s))
-            or "run_specdown.py" in s,
+            lambda s: (
+                bool(re.search(r"(^|&&\s*|\|\|\s*|;\s*|\(\s*|\s)specdown\b", s))
+                or "run_specdown.py" in s
+            ),
+            lambda s: (
+                bool(re.search(r"(^|\s)(-q|-quiet|--quiet)(\s|$)", s)) or "run_specdown.py" in s
+            ),
             "Gate `specdown` behind a quieter default or a repo-owned `VERBOSE=1` escape hatch.",
         ),
     ]
@@ -226,9 +227,12 @@ def _phase_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
         if surface["surface_type"] not in {"git_hook", "husky_hook", "shell_script"}:
             continue
         text = surface["text"]
-        structured = any(
-            token in text for token in ("elapsed_ms", "format_elapsed", "date +%s%N")
-        ) and any(token in text for token in ("summary", "PASS", "FAIL", "print_phase_output"))
+        structured = (
+            any(token in text for token in ("elapsed_ms", "format_elapsed", "date +%s%N"))
+            and any(token in text for token in ("summary", "PASS", "FAIL", "print_phase_output"))
+        ) or "run_quality_engine" in text
+        # A thin launcher that execs the declared-gate engine owns no phase output
+        # itself; the engine prints per-phase labels, elapsed time, and the summary.
         if structured:
             findings.append(
                 {
@@ -300,6 +304,20 @@ def _failure_detail_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
         lower_text = text.lower()
         has_failure_detail = any(marker in lower_text for marker in FAILURE_DETAIL_MARKERS)
         output_suppressed = bool(SUPPRESSED_OUTPUT_RE.search(text))
+        if "run_quality_engine" in text:
+            # The thin launcher delegates to the declared-gate engine, which keeps
+            # each failing gate's log and names it in the summary line.
+            findings.append(
+                {
+                    "type": "quiet_failure_detail",
+                    "path": surface["path"],
+                    "surface_type": surface["surface_type"],
+                    "tool": "run-quality-engine",
+                    "state": "actionable",
+                    "evidence": "declared-gate engine keeps per-gate failure logs",
+                    "suggestion": "",
+                }
+            )
         for tool, pattern, unit_label, native_detail in QUIET_FAILURE_TOOLS:
             queued_specdown = tool == "specdown" and surface["path"] in quiet_queue_paths
             if not pattern.search(text) and not queued_specdown:

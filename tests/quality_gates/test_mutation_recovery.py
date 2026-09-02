@@ -686,10 +686,17 @@ def test_commit_and_quality_consumers_refuse_pending_recovery_then_unblock(tmp_p
         "subprocess_guard.py",
         "proof_receipt.py",
         "quality_label_universe.py",
+        "adapter_lib.py",
+        "yaml_output.py",
+        "adapter_yaml_parse.py",
+        "helper_provenance_lib.py",
+        "script_timeout.py",
     ):
         shutil.copy2(ROOT / "scripts" / name, quality_repo / "scripts" / name)
     (quality_repo / ".agents").mkdir()
-    shutil.copy2(ROOT / ".agents" / "quality-gates.yaml", quality_repo / ".agents" / "quality-gates.yaml")
+    shutil.copy2(
+        ROOT / ".agents" / "quality-gates.yaml", quality_repo / ".agents" / "quality-gates.yaml"
+    )
     quality_state = quality_repo / ".charness" / "mutation-recovery"
     quality_state.mkdir(parents=True)
 
