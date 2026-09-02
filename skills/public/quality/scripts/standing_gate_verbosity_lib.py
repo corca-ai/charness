@@ -15,8 +15,11 @@ from standing_gate_discovery_lib import (  # noqa: E402
     discover_surfaces,
     iter_snippets,
 )
+from standing_gate_verbosity_launcher_axes import (  # noqa: E402
+    _escape_axis,
+    _phase_axis,
+)
 
-VERBOSE_VAR_RE = re.compile(r"\b[A-Z0-9_]*VERBOSE[A-Z0-9_]*\b")
 QUIET_SPECDOWN_RE = re.compile(r"\bspecdown\b(?=[^\n]*(?:-q|-quiet|--quiet))", re.IGNORECASE)
 QUIET_PYTEST_RE = re.compile(r"\bpytest\b(?=[^\n]*(?:-q|--quiet))", re.IGNORECASE)
 SUPPRESSED_OUTPUT_RE = re.compile(r"(?:^|\s)(?:1?>|2>)\s*/dev/null\b|--tb=no\b", re.IGNORECASE)
@@ -221,79 +224,17 @@ def _chatter_axis(surfaces: list[dict[str, Any]], snippets: list[dict[str, str]]
     return {"status": _quiet_status(findings), "findings": findings}
 
 
-def _phase_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
-    findings = []
-    for surface in surfaces:
-        if surface["surface_type"] not in {"git_hook", "husky_hook", "shell_script"}:
-            continue
-        text = surface["text"]
-        structured = (
-            any(token in text for token in ("elapsed_ms", "format_elapsed", "date +%s%N"))
-            and any(token in text for token in ("summary", "PASS", "FAIL", "print_phase_output"))
-        ) or "run_quality_engine" in text
-        # A thin launcher that execs the declared-gate engine owns no phase output
-        # itself; the engine prints per-phase labels, elapsed time, and the summary.
-        if structured:
-            findings.append(
-                {
-                    "type": "phase_level_signal",
-                    "path": surface["path"],
-                    "surface_type": surface["surface_type"],
-                    "state": "structured",
-                    "suggestion": "",
-                }
-            )
-        elif surface["commands"]:
-            findings.append(
-                {
-                    "type": "phase_level_signal",
-                    "path": surface["path"],
-                    "surface_type": surface["surface_type"],
-                    "state": "minimal",
-                    "suggestion": "Print per-phase labels and elapsed time so success answers which gate ran and failure answers where to look first.",
-                }
-            )
-    return {
-        "status": "not_applicable"
-        if not findings
-        else ("healthy" if any(item["state"] == "structured" for item in findings) else "weak"),
-        "findings": findings,
-    }
+_ENGINE_FAILURE_FINDING = {
+    "type": "quiet_failure_detail",
+    "tool": "run-quality-engine",
+    "state": "actionable",
+    "evidence": "declared-gate engine keeps per-gate failure logs",
+    "suggestion": "",
+}
 
 
-def _escape_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
-    findings = []
-    for surface in surfaces:
-        verbose_vars = sorted(set(VERBOSE_VAR_RE.findall(surface["text"])))
-        verbose_scripts = sorted(set(surface["metadata"].get("verbose_scripts", [])))
-        if verbose_vars or verbose_scripts:
-            findings.append(
-                {
-                    "type": "escape_hatch",
-                    "path": surface["path"],
-                    "surface_type": surface["surface_type"],
-                    "state": "present",
-                    "evidence": ", ".join([*verbose_vars, *verbose_scripts]),
-                    "suggestion": "",
-                }
-            )
-    if findings:
-        return {"status": "healthy", "findings": findings}
-    if any(surface["commands"] for surface in surfaces):
-        return {
-            "status": "missing",
-            "findings": [
-                {
-                    "type": "escape_hatch_missing",
-                    "path": "",
-                    "surface_type": "standing_gate",
-                    "state": "missing",
-                    "evidence": "",
-                    "suggestion": "Keep a verbose-on-demand seam such as `VERBOSE=1`, `CI=1`, or a sibling `*:verbose` script.",
-                }
-            ],
-        }
-    return {"status": "not_applicable", "findings": []}
+def _surface_keys(surface: dict[str, Any]) -> dict[str, Any]:
+    return {"path": surface["path"], "surface_type": surface["surface_type"]}
 
 
 def _failure_detail_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
@@ -307,17 +248,7 @@ def _failure_detail_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
         if "run_quality_engine" in text:
             # The thin launcher delegates to the declared-gate engine, which keeps
             # each failing gate's log and names it in the summary line.
-            findings.append(
-                {
-                    "type": "quiet_failure_detail",
-                    "path": surface["path"],
-                    "surface_type": surface["surface_type"],
-                    "tool": "run-quality-engine",
-                    "state": "actionable",
-                    "evidence": "declared-gate engine keeps per-gate failure logs",
-                    "suggestion": "",
-                }
-            )
+            findings.append({**_ENGINE_FAILURE_FINDING, **_surface_keys(surface)})
         for tool, pattern, unit_label, native_detail in QUIET_FAILURE_TOOLS:
             queued_specdown = tool == "specdown" and surface["path"] in quiet_queue_paths
             if not pattern.search(text) and not queued_specdown:
