@@ -95,7 +95,9 @@ def test_ledger_replays_cited_scores_and_checker_cli(tmp_path: Path, monkeypatch
         "active_lesson_count": 1,
         "path": "charness-artifacts/retro/lesson-ledger.json",
     }
-    checker = load_script_module("check_lesson_ledger_for_test", ROOT / "scripts/check_lesson_ledger.py")
+    checker = load_script_module(
+        "check_lesson_ledger_for_test", ROOT / "scripts/check_lesson_ledger.py"
+    )
     monkeypatch.setattr(sys, "argv", ["check_lesson_ledger.py", "--repo-root", str(tmp_path)])
     assert checker.main() == 0
     assert capsys.readouterr().out == (
@@ -124,8 +126,11 @@ def test_v8_ledger_migration_preserves_the_live_lesson_corpus(tmp_path: Path) ->
     # and no longer writes, so the on-disk copy is deliberately still legacy here.
     migrated = ledger.migrate_ledger_payload(json.loads(path.read_text(encoding="utf-8")))[0]
 
-    assert result["lesson_count"] == 43
-    assert len(migrated["lessons"]) == 43
+    # The live corpus grows by one seed transition per retro class; pin the
+    # migration to the corpus it read, not to the count on the day this was written.
+    live_count = len(current["lessons"])
+    assert result["lesson_count"] == live_count
+    assert len(migrated["lessons"]) == live_count
     assert migrated["schema_version"] == 9
     assert migrated["transitions"] == before_transitions
     assert migrated["score_events"] == before_scores
@@ -164,7 +169,9 @@ def test_ledger_rejects_invalid_transition_score_and_projection_shapes(tmp_path:
             _validate(tmp_path)
 
 
-def test_score_authoring_requires_one_cited_encounter_and_preserves_refusals(tmp_path: Path) -> None:
+def test_score_authoring_requires_one_cited_encounter_and_preserves_refusals(
+    tmp_path: Path,
+) -> None:
     _retro(tmp_path, "source.md", "a")
     path = _ledger(tmp_path)
     scorer.append_score(
@@ -229,16 +236,19 @@ def test_authoring_refuses_invalid_score_inputs(tmp_path: Path) -> None:
             outcome="changed-an-action",
             anchor="it helped a lot",
         )
-    assert scorer.append_score(
-        repo_root=tmp_path,
-        output_dir=path.parent,
-        summary_path=path.parent / "recent-lessons.md",
-        event_id="unanchored-negative-is-fine",
-        lesson_id="a",
-        source_retro="charness-artifacts/retro/source.md",
-        outcome="read-but-not-applied",
-        anchor="it helped a lot",
-    )["outcome"] == "read-but-not-applied"
+    assert (
+        scorer.append_score(
+            repo_root=tmp_path,
+            output_dir=path.parent,
+            summary_path=path.parent / "recent-lessons.md",
+            event_id="unanchored-negative-is-fine",
+            lesson_id="a",
+            source_retro="charness-artifacts/retro/source.md",
+            outcome="read-but-not-applied",
+            anchor="it helped a lot",
+        )["outcome"]
+        == "read-but-not-applied"
+    )
     with pytest.raises(ValueError, match="unseeded"):
         scorer.append_score(
             repo_root=tmp_path,
@@ -365,7 +375,9 @@ def test_empty_ledger_bootstrap_is_valid_and_refuses_overwrite(tmp_path: Path) -
 
 
 def test_empty_ledger_bootstrap_refuses_to_wipe_a_committed_ledger(tmp_path: Path) -> None:
-    init = load_script_module("init_lesson_ledger_wipe_test", ROOT / "scripts/init_lesson_ledger.py")
+    init = load_script_module(
+        "init_lesson_ledger_wipe_test", ROOT / "scripts/init_lesson_ledger.py"
+    )
     from tests.quality_gates.repo_shapes import replace_with_committed_repo
 
     _retro(tmp_path, "source.md", "a")
@@ -384,7 +396,9 @@ def test_empty_ledger_bootstrap_refuses_to_wipe_a_committed_ledger(tmp_path: Pat
 def test_empty_ledger_bootstrap_yields_to_a_ledger_that_appeared_inside_the_lock(
     tmp_path: Path, monkeypatch
 ) -> None:
-    init = load_script_module("init_lesson_ledger_race_test", ROOT / "scripts/init_lesson_ledger.py")
+    init = load_script_module(
+        "init_lesson_ledger_race_test", ROOT / "scripts/init_lesson_ledger.py"
+    )
     winner = b'{"the winner already wrote this"}'
 
     @contextlib.contextmanager
@@ -419,7 +433,6 @@ def test_empty_ledger_bootstrap_entrypoint_reports_refusal_without_traceback(
     assert "Traceback" not in captured.err
 
 
-
 def test_validation_migrates_in_memory_and_never_writes_the_ledger(tmp_path: Path) -> None:
     """A read must not perform a durable schema upgrade.
 
@@ -448,7 +461,11 @@ def test_validation_migrates_in_memory_and_never_writes_the_ledger(tmp_path: Pat
     )
 
     # The verdict is complete...
-    assert result["lesson_count"] == 43
+    assert result["lesson_count"] == len(
+        json.loads(
+            (ROOT / "charness-artifacts/retro/lesson-ledger.json").read_text(encoding="utf-8")
+        )["lessons"]
+    )
     # ...and the consumer's file is byte-for-byte what it was.
     assert path.read_bytes() == before
     assert json.loads(path.read_text(encoding="utf-8"))["schema_version"] == 8
