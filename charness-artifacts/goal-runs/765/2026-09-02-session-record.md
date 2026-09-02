@@ -83,9 +83,10 @@ was inside a repair lane's scope.
    host, so angles 2 to 4 beyond the recorded rows are unreviewed. The real
    finding: eight `ship` gates need adapter-declared inputs or they are a
    vacuous green in a consumer repo. Then #770, #772.
-5. Operator pushes `main`; the `Closes #N` carriers close #771, #773, #766,
-   #767; run `issue_tool.py verify-closeout ... --expect-state CLOSED` per
-   child and sync the parent cursor through the goal-run operations.
+5. Once the #768 tree is green and its closeout carrier is verified, ask the
+   operator for the push of the remaining commits (that push is NOT covered
+   by the step-0 authorization), then verify #768 CLOSED and advance the
+   cursor the same way as step 4 of "Session start".
 
 ## Lessons this session paid for
 
