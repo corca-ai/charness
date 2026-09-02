@@ -112,10 +112,12 @@ def _status_paths(repo_root: Path) -> tuple[set[str], set[str], set[str]]:
     except OSError as exc:  # git absent, cwd unusable
         raise RuntimeError(f"git status: {exc}") from exc
     if result.returncode != 0:
-        message = result.stderr.decode("utf-8", errors="replace").strip()
+        message = result.stderr.strip()
         raise RuntimeError(message or "git status failed")
     try:
-        snapshot = parse_git_status(result.stdout)
+        # The guard decodes child output with surrogateescape; encoding the same way
+        # hands the byte parser the exact bytes git emitted, so a non-UTF-8 path survives.
+        snapshot = parse_git_status(result.stdout.encode("utf-8", errors="surrogateescape"))
     except GitStatusError as exc:
         raise RuntimeError(str(exc)) from exc
     return _index_sides(snapshot)
