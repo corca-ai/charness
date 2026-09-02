@@ -47,3 +47,22 @@ def test_stub_imports_cleanly_and_exits_only_from_main(
             code = exc.code if isinstance(exc.code, int) else 1
     assert code == expected_code, (relative, out.getvalue(), err.getvalue())
     assert expected_text in out.getvalue() + err.getvalue()
+
+
+@pytest.mark.parametrize("relative, expected_code, expected_text", STUBS, ids=[s[0] for s in STUBS])
+def test_stub_runs_as_a_script_through_its_main_guard(
+    relative: str, expected_code: int, expected_text: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The `__main__` guard is the line a gate row actually executes."""
+    import runpy
+
+    monkeypatch.setattr(sys, "argv", [relative])
+    out, err = io.StringIO(), io.StringIO()
+    code = 0
+    with redirect_stdout(out), redirect_stderr(err):
+        try:
+            runpy.run_path(str(ROOT / relative), run_name="__main__")
+        except SystemExit as exc:
+            code = exc.code if isinstance(exc.code, int) else 1
+    assert code == expected_code, (relative, out.getvalue(), err.getvalue())
+    assert expected_text in out.getvalue() + err.getvalue()
