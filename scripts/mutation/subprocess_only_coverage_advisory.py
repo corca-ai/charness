@@ -40,7 +40,7 @@ as it exists now:
   are still unattributed. Also measured, and it is the mechanism behind the issue's
   own first instance. Running only
   `test_validate_maintainer_setup_requires_installed_hookspath` — which
-  `shutil.copy2`s `scripts/validate_maintainer_setup.py` into `tmp_path` and spawns
+  `shutil.copy2`s `scripts/setup/validate_maintainer_setup.py` into `tmp_path` and spawns
   the copy with an inherited env — attributes **0** lines to the real path. The
   mechanism is named for what is CHECKED (the copy names this script); the
   destination is not proven to be out of tree, and the operator text says so.

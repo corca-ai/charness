@@ -739,7 +739,7 @@ concept_paths:
   - charness-artifacts/quality/latest.md
   - README.md
 preflight_commands:
-  - python3 scripts/validate_maintainer_setup.py --repo-root .
+  - python3 scripts/setup/validate_maintainer_setup.py --repo-root .
   - python3 scripts/doctor.py
 gate_commands:
   - ./scripts/run-quality.sh

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import setup_adapter_inspect_lib
+from scripts.setup import setup_adapter_inspect_lib
 from tests.quality_gates.repo_shapes import replace_with_committed_repo
 
 from .support import SETUP_RESOLVE_ADAPTER, inspect_setup_repo

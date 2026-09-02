@@ -767,7 +767,7 @@
         "scripts/adapters/control_plane_lifecycle_lib.py",
         "scripts/adapters/control_plane_render.py",
         "scripts/doctor.py",
-        "scripts/doctor_lib.py",
+        "scripts/setup/doctor_lib.py",
         "scripts/install_provenance_lib.py",
         "scripts/install_tools.py",
         "scripts/support_sync_lib.py",
@@ -781,7 +781,7 @@
         "plugins/charness/scripts/adapters/control_plane_lifecycle_lib.py",
         "plugins/charness/scripts/adapters/control_plane_render.py",
         "plugins/charness/scripts/doctor.py",
-        "plugins/charness/scripts/doctor_lib.py",
+        "plugins/charness/scripts/setup/doctor_lib.py",
         "plugins/charness/scripts/install_provenance_lib.py",
         "plugins/charness/scripts/install_tools.py",
         "plugins/charness/scripts/support_sync_lib.py",
@@ -832,12 +832,12 @@
       "source_paths": [
         ".githooks/**",
         "scripts/install-git-hooks.sh",
-        "scripts/validate_maintainer_setup.py"
+        "scripts/setup/validate_maintainer_setup.py"
       ],
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_maintainer_setup.py --repo-root ."
+        "python3 scripts/setup/validate_maintainer_setup.py --repo-root ."
       ],
       "notes": [
         "Maintainer-local hook enforcement should fail closed when the clone drifts."

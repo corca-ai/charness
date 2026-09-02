@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import setup_inspect_quality_lib
+from scripts.setup import setup_inspect_quality_lib
 
 from .support import inspect_setup_repo
 from .support import seed_normalize_repo as _seed_normalize_repo

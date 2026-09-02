@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.setup_host_docs_lib import normalize_host_docs, render_agents_template
+from scripts.setup.setup_host_docs_lib import normalize_host_docs, render_agents_template
 
 
 def _normalize(repo: Path, *, execute: bool = False, compact: bool = False) -> dict[str, object]:

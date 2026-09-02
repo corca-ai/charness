@@ -17,7 +17,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _setup_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "setup_adapter")
-_inspect_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.setup_inspect_lib")
+_inspect_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.setup.setup_inspect_lib")
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 

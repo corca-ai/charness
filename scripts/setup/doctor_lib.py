@@ -5,14 +5,28 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from scripts.adapters.control_plane_lib import evaluate_version, read_lock, run_check
-from scripts.adapters.control_plane_lifecycle_lib import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.adapters.control_plane_lib import evaluate_version, read_lock, run_check  # noqa: E402
+from scripts.adapters.control_plane_lifecycle_lib import (  # noqa: E402
     evaluate_readiness,
     render_repo_followup,
     skipped_healthcheck,
 )
-from scripts.core.repo_layout import discovery_stub_dir, generated_support_dir
-from scripts.support_sync_lib import (
+from scripts.core.repo_layout import discovery_stub_dir, generated_support_dir  # noqa: E402
+from scripts.support_sync_lib import (  # noqa: E402
     inspect_support_sync,
     support_link_name,
     support_materialized_roots,

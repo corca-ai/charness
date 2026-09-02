@@ -19,7 +19,7 @@ PRE_PUSH_HOOK_TEXT = (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8
 PRE_COMMIT_HOOK_TEXT = (ROOT / ".githooks" / "pre-commit").read_text(encoding="utf-8")
 _VALIDATE_SETUP = load_script_module(
     "validate_maintainer_setup_for_test",
-    ROOT / "scripts" / "validate_maintainer_setup.py",
+    ROOT / "scripts" / "setup" / "validate_maintainer_setup.py",
 )
 CACHED_BOUNDARY_REASON = (
     "exercise the repository-owned hook-install and runtime shell processes because "
@@ -47,10 +47,11 @@ def _seed_source_repo(tmp_path: Path, pre_push_text: str = PRE_PUSH_HOOK_TEXT) -
     (repo / ".githooks").mkdir(parents=True)
     (repo / "packaging").mkdir(parents=True)
     (repo / "plugins" / "charness").mkdir(parents=True)
+    (repo / "scripts" / "setup").mkdir(parents=True)
     (repo / "packaging" / "charness.json").write_text("{}\n", encoding="utf-8")
     shutil.copy2(
-        ROOT / "scripts" / "validate_maintainer_setup.py",
-        repo / "scripts" / "validate_maintainer_setup.py",
+        ROOT / "scripts" / "setup" / "validate_maintainer_setup.py",
+        repo / "scripts" / "setup" / "validate_maintainer_setup.py",
     )
     for name in ("pre-commit", "commit-msg"):
         shutil.copy2(ROOT / ".githooks" / name, repo / ".githooks" / name)
@@ -234,7 +235,7 @@ def test_validate_maintainer_setup_requires_installed_hookspath(tmp_path: Path) 
 
 def test_pre_push_keeps_release_boundary_and_drops_mutation_arm(tmp_path: Path) -> None:
     assert "CHARNESS_PRE_PUSH" not in PRE_PUSH_HOOK_TEXT
-    module = import_repo_module(__file__, "scripts.validate_maintainer_setup")
+    module = import_repo_module(__file__, "scripts.setup.validate_maintainer_setup")
     hook = tmp_path / "pre-push"
     hook.write_text(PRE_PUSH_HOOK_TEXT, encoding="utf-8")
     module.check_close_keyword_guard_arming(hook, ".githooks/pre-push")
@@ -280,7 +281,7 @@ def _guard_hook(tmp_path: Path, invocation: str) -> Path:
 def test_close_keyword_guard_arming_refuses_each_disarm(
     tmp_path: Path, invocation: str, expected: str
 ) -> None:
-    module = import_repo_module(__file__, "scripts.validate_maintainer_setup")
+    module = import_repo_module(__file__, "scripts.setup.validate_maintainer_setup")
     with pytest.raises(module.ValidationError) as excinfo:
         module.check_close_keyword_guard_arming(
             _guard_hook(tmp_path, invocation), ".githooks/pre-push"

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.setup_inspect_quality_lib import quality_setup_snapshot
-from scripts.setup_operating_surface_lib import detect_operating_surface_ownership
+from scripts.setup.setup_inspect_quality_lib import quality_setup_snapshot
+from scripts.setup.setup_operating_surface_lib import detect_operating_surface_ownership
 
 from .support import inspect_setup_repo
 

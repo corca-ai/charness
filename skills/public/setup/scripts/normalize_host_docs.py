@@ -15,7 +15,7 @@ def _load_skill_runtime_bootstrap():
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
-_host_docs = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.setup_host_docs_lib")
+_host_docs = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.setup.setup_host_docs_lib")
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 
 

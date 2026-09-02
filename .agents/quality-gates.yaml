@@ -396,7 +396,7 @@ phases:
   - label: validate-maintainer-setup
     command:
     - python3
-    - scripts/validate_maintainer_setup.py
+    - scripts/setup/validate_maintainer_setup.py
     - --repo-root
     - $REPO_ROOT
     lane: standard

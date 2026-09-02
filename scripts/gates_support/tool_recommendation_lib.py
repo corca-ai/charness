@@ -23,7 +23,7 @@ from scripts.adapters.control_plane_lib import (  # noqa: E402
     load_manifests_for_discovery,
     staged_tool_ids,
 )
-from scripts.doctor_lib import inspect_capability_state  # noqa: E402
+from scripts.setup.doctor_lib import inspect_capability_state  # noqa: E402
 
 
 def recommendation_status_for_doctor_status(doctor_status: str) -> str:

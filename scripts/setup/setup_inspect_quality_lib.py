@@ -6,7 +6,21 @@ import shutil
 import sys
 from pathlib import Path
 
-from scripts.core.git_checkout import discoverable as _git_metadata_is_discoverable
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.core.git_checkout import discoverable as _git_metadata_is_discoverable  # noqa: E402
 
 try:
     from scripts.core.subprocess_guard import run_process
@@ -359,7 +373,7 @@ def quality_setup_snapshot(repo_root: Path) -> dict[str, object]:
     """Expose quality's bootstrap state without creating a second contract."""
 
     tooling = _detect_quality_tooling(repo_root)
-    from scripts.setup_operating_surface_lib import detect_operating_surface_ownership
+    from scripts.setup.setup_operating_surface_lib import detect_operating_surface_ownership
 
     ownership = detect_operating_surface_ownership(repo_root)
     plan_commands = {

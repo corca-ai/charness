@@ -386,7 +386,7 @@ def test_an_out_of_tree_copy_of_the_script_is_advised_on_even_with_an_inherited_
     inherits COVERAGE_PROCESS_START in full. Running only
     `test_maintainer_hooks.py::test_validate_maintainer_setup_requires_installed_hookspath`
     under the repo's own producer attributes **0** lines to
-    `scripts/validate_maintainer_setup.py`, while
+    `scripts/setup/validate_maintainer_setup.py`, while
     `test_release_narrative_audit.py` — an inherited-env spawn of the script at its
     REAL path — attributes 143 lines to it. Same env, opposite outcome: the
     discriminator is the out-of-tree copy, not the process boundary.

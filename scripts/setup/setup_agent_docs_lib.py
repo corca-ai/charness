@@ -2,7 +2,23 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.setup_operating_surface_lib import detect_operating_surface_ownership
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.setup.setup_operating_surface_lib import (
+    detect_operating_surface_ownership,  # noqa: E402
+)
 
 RETRO_ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
 RETRO_SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
@@ -139,7 +155,7 @@ def detect_agent_docs(repo_root: Path) -> dict[str, object]:
     else:
         action = "inspect_manually"
 
-    from scripts.setup_adapter_inspect_lib import (
+    from scripts.setup.setup_adapter_inspect_lib import (
         detect_setup_adapter_normalization,
         detect_worktree_adapter_normalization,
     )

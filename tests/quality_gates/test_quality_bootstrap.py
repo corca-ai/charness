@@ -126,7 +126,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     assert resolved["data"]["quality_phases"] == []
     assert resolved["data"]["gate_commands"] == ["./scripts/run-quality.sh"]
     assert resolved["data"]["review_commands"] == ["./scripts/run-quality.sh --review"]
-    assert resolved["data"]["preflight_commands"] == ["python3 scripts/validate_maintainer_setup.py --repo-root ."]
+    assert resolved["data"]["preflight_commands"] == ["python3 scripts/setup/validate_maintainer_setup.py --repo-root ."]
 
 
 def test_quality_bootstrap_conflicts_when_defaulted_fields_are_missing(tmp_path: Path) -> None:
