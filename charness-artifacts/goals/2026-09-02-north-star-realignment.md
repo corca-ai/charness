@@ -104,7 +104,7 @@ Order chosen for advantage: instrument first so the run observes its own rework;
 - `charness-artifacts/critique/2026-08-07-issue-492-493-494-resolution-critique.md:81` — the "no subdirectories" premise this goal invalidates.
 - `charness-artifacts/audit/2026-07-28-evidence-surface-triage-sweep.md` S40 — zero-file glob pass.
 - `charness-artifacts/quality/history/2026-07-03-pytest-suite-test-value-audit.md` — measured redundancy, not allocation.
-- `.charness/quality/runtime-signals.json` — standing lane ~119 s, release lane ~298 s; runtime is not the problem.
+- `.charness/quality/runtime-signals.json` — standing lane ~119 s, release lane ~298 s; runtime is not the problem. <!-- reproduction-source -->
 - Lesson ledger seed `north-star-realignment`: `skipped-is-not-passed`, `goal-closeout-evidence-binding`, `global-probe-for-local-fact`, `bar-recorded-as-prose`.
 
 ## Interview Decisions
