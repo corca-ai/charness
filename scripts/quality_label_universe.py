@@ -65,7 +65,7 @@ import argparse
 import re
 import sys
 from pathlib import Path
-from typing import Callable, TypeVar
+from typing import Any, Callable, TypeVar
 
 import adapter_lib
 
@@ -76,15 +76,16 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 RUN_QUALITY_PATH = Path("scripts/run-quality.sh")
 ADAPTER_PATH = Path(".agents/quality-adapter.yaml")
+QUALITY_GATES_PATH = Path(".agents/quality-gates.yaml")
+QUALITY_GATES_SCHEMA = "charness/quality-gates/v1"
+QUALITY_GATE_LANES = frozenset({"core", "standard", "release-only", "label-only", "opt-in"})
 
 # Every wrapper that can reach `queue_timed`. Adding a fourth wrapper without
 # adding it here does not fail silently: its labels drop out of the universe, and
 # the runner's queue-time assertion (`assert_label_in_universe`) refuses the run
 # naming the missing label rather than letting the shrunk set reach a verdict.
 QUEUE_FUNCTIONS = ("queue_selected", "queue_timed", "queue_agent_browser_runtime_gate")
-_QUEUE_CALL_RE = re.compile(
-    r"^\s*(?P<fn>" + "|".join(QUEUE_FUNCTIONS) + r")\s+(?P<rest>\S+)"
-)
+_QUEUE_CALL_RE = re.compile(r"^\s*(?P<fn>" + "|".join(QUEUE_FUNCTIONS) + r")\s+(?P<rest>\S+)")
 _FUNCTION_OPEN_RE = re.compile(r"^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\(\)\s*\{")
 _FUNCTION_CLOSE_RE = re.compile(r"^\}")
 _LITERAL_LABEL_RE = re.compile(r'^"(?P<label>[^"$]+)"$')
@@ -107,6 +108,117 @@ class UniverseError(RuntimeError):
     into a blocking false red, and the operator's only escape from the pre-push
     gate is `--no-verify`. Failing here names the file and line instead.
     """
+
+
+def _validate_quality_gate_row(row: object, where: str) -> dict[str, Any]:
+    if not isinstance(row, dict):
+        raise UniverseError(f"{QUALITY_GATES_PATH}: `{where}` must be a mapping")
+    label = row.get("label")
+    if not isinstance(label, str) or not _LABEL_SHAPE_RE.fullmatch(label):
+        raise UniverseError(f"{QUALITY_GATES_PATH}: `{where}.label` must be a runtime label")
+    command = row.get("command")
+    if (
+        not isinstance(command, list)
+        or not command
+        or any(not isinstance(token, str) for token in command)
+    ):
+        raise UniverseError(
+            f"{QUALITY_GATES_PATH}: `{where}.command` must be a non-empty "
+            "block-style list of strings"
+        )
+    if row.get("lane") not in QUALITY_GATE_LANES:
+        raise UniverseError(
+            f"{QUALITY_GATES_PATH}: `{where}.lane` must be one of {sorted(QUALITY_GATE_LANES)}"
+        )
+    return row
+
+
+def _quality_gate_rows(data: object) -> list[dict[str, Any]]:
+    if not isinstance(data, dict):
+        raise UniverseError(f"{QUALITY_GATES_PATH} must contain a mapping")
+    phases = data.get("phases")
+    if not isinstance(phases, list):
+        raise UniverseError(f"{QUALITY_GATES_PATH}: `phases` must be a list")
+    rows: list[dict[str, Any]] = []
+    for phase_index, phase in enumerate(phases):
+        if not isinstance(phase, dict):
+            raise UniverseError(f"{QUALITY_GATES_PATH}: `phases[{phase_index}]` must be a mapping")
+        gates = phase.get("gates")
+        if gates in (None, {}):
+            gates = []
+        if not isinstance(gates, list):
+            raise UniverseError(
+                f"{QUALITY_GATES_PATH}: `phases[{phase_index}].gates` must be a list"
+            )
+        for gate_index, gate in enumerate(gates):
+            rows.append(
+                _validate_quality_gate_row(gate, f"phases[{phase_index}].gates[{gate_index}]")
+            )
+    return rows
+
+
+def _quality_gate_declaration(repo_root: Path) -> dict[str, Any] | None:
+    """Read the declarative gate list, or return ``None`` when it is absent.
+
+    The data file is a migration seam, so its presence must never degrade to the
+    shell fallback when it is malformed or empty. Both cases would let readers
+    disagree about the gates while reporting a plausible green result. The
+    adapter-owned block YAML reader is used here so the source and exported
+    readers accept exactly the same dialect.
+    """
+    path = repo_root / QUALITY_GATES_PATH
+    if not path.is_file():
+        return None
+    try:
+        data, uninterpreted = adapter_lib.load_yaml_file_report(path)
+    except Exception as error:
+        raise UniverseError(f"{QUALITY_GATES_PATH} could not be read: {error}") from error
+    if uninterpreted:
+        raise UniverseError(
+            f"{QUALITY_GATES_PATH} has line(s) this reader dropped, so its gate list "
+            "cannot be trusted:\n  "
+            + "\n  ".join(adapter_lib.uninterpreted_warnings(uninterpreted))
+        )
+    if not isinstance(data, dict):
+        raise UniverseError(f"{QUALITY_GATES_PATH} must contain a mapping")
+    if data.get("schema") != QUALITY_GATES_SCHEMA:
+        raise UniverseError(
+            f"{QUALITY_GATES_PATH} has schema {data.get('schema')!r}; "
+            f"expected {QUALITY_GATES_SCHEMA!r}"
+        )
+    rows = _quality_gate_rows(data)
+    if not rows:
+        raise UniverseError(
+            f"{QUALITY_GATES_PATH} is present but declares zero gates; refusing to "
+            "fall back to the shell or report an empty universe"
+        )
+    labels: set[str] = set()
+    for index, row in enumerate(rows):
+        label = row["label"]
+        variant_of = row.get("variant_of")
+        if label in labels and variant_of != label:
+            raise UniverseError(
+                f"{QUALITY_GATES_PATH}: duplicate label {label!r} at gate row {index} "
+                "must name itself in `variant_of`"
+            )
+        labels.add(label)
+    data["_gate_rows"] = rows
+    return data
+
+
+def quality_gate_rows(repo_root: Path) -> list[dict[str, Any]] | None:
+    """Return declared rows, or ``None`` when the data file is absent."""
+    declaration = _quality_gate_declaration(repo_root)
+    if declaration is None:
+        return None
+    return list(declaration["_gate_rows"])
+
+
+def _declared_gate_labels(rows: list[dict[str, Any]]) -> list[str]:
+    labels: dict[str, None] = {}
+    for row in rows:
+        labels.setdefault(row["label"], None)
+    return list(labels)
 
 
 def _dispatcher_names() -> frozenset[str]:
@@ -140,13 +252,22 @@ def _logical_lines(text: str) -> list[tuple[int, str]]:
     return joined
 
 
-def queue_call_labels(text: str) -> list[str]:
+def queue_call_labels(text: str, *, repo_root: Path | None = None) -> list[str]:
     """Literal labels from `queue_*` call sites outside dispatcher bodies.
 
     First-seen order, de-duplicated. Raises `UniverseError` for a call site whose
     label is not a literal, unless it is inside a `queue_*` function definition --
     those forward a variable by construction and are the plumbing, not a gate.
+
+    When ``repo_root`` is supplied, a present declarative gate list is authoritative
+    and its row labels are returned. The optional argument keeps this function's
+    shell-text API for consumer repos and for migration parity, while every in-tree
+    reader can opt into the data source explicitly.
     """
+    if repo_root is not None:
+        rows = quality_gate_rows(repo_root)
+        if rows is not None:
+            return _declared_gate_labels(rows)
     dispatchers = _dispatcher_names()
     seen: dict[str, None] = {}
     current_function: str | None = None
@@ -242,7 +363,11 @@ def standing_probe_labels(adapter_text: str) -> list[str]:
         # budget gate red for a correct adapter, with a remedy naming the wrong repair.
         # A probe that is simply not `standing` is not this case: it is readable, and
         # the answer to "is it measured" is no.
-        if not isinstance(probe, dict) or not isinstance(probe.get("label"), str) or not probe["label"]:
+        if (
+            not isinstance(probe, dict)
+            or not isinstance(probe.get("label"), str)
+            or not probe["label"]
+        ):
             raise UniverseError(
                 f"{ADAPTER_PATH}: `startup_probes[{index}]` carries no readable "
                 "`label`, so the reader cannot tell whether it names a measured bar."
@@ -261,22 +386,25 @@ def label_universe(repo_root: Path) -> dict[str, object]:
     budget in a repo whose runner this module cannot see would be a blocking false
     red whose remedy tells the operator to delete correct bars.
     """
-    runner = repo_root / RUN_QUALITY_PATH
-    if not runner.is_file():
-        return {
-            "resolved": False,
-            "reason": f"{RUN_QUALITY_PATH} is absent; this repo does not vendor the run-quality surface",
-            "labels": [],
-            "sources": {},
-        }
-    queue_labels = queue_call_labels(runner.read_text(encoding="utf-8"))
-    aggregates = aggregate_labels()
+    rows = quality_gate_rows(repo_root)
+    if rows is not None:
+        queue_labels = _declared_gate_labels(rows)
+        source = "data"
+    else:
+        runner = repo_root / RUN_QUALITY_PATH
+        if not runner.is_file():
+            return {
+                "resolved": False,
+                "reason": f"{RUN_QUALITY_PATH} is absent; this repo does not vendor the run-quality surface",
+                "labels": [],
+                "source": "shell",
+                "sources": {},
+            }
+        queue_labels = queue_call_labels(runner.read_text(encoding="utf-8"))
+        source = "shell"
     adapter = repo_root / ADAPTER_PATH
-    probes = (
-        standing_probe_labels(adapter.read_text(encoding="utf-8"))
-        if adapter.is_file()
-        else []
-    )
+    probes = standing_probe_labels(adapter.read_text(encoding="utf-8")) if adapter.is_file() else []
+    aggregates = aggregate_labels()
     merged: dict[str, None] = {}
     for label in [*queue_labels, *aggregates, *probes]:
         merged.setdefault(label, None)
@@ -284,12 +412,34 @@ def label_universe(repo_root: Path) -> dict[str, object]:
         "resolved": True,
         "reason": None,
         "labels": list(merged),
+        "source": source,
         "sources": {
             "queue_call_sites": queue_labels,
             "aggregate": aggregates,
             "standing_startup_probes": probes,
         },
     }
+
+
+def parity(repo_root: Path) -> dict[str, set[str]]:
+    """Compare declared row labels with labels still found in the shell runner."""
+    rows = quality_gate_rows(repo_root)
+    if rows is None:
+        raise UniverseError(f"{QUALITY_GATES_PATH} is absent; migration parity cannot be measured")
+    runner = repo_root / RUN_QUALITY_PATH
+    shell_labels = (
+        set(queue_call_labels(runner.read_text(encoding="utf-8"))) if runner.is_file() else set()
+    )
+    data_labels = set(_declared_gate_labels(rows))
+    return {
+        "data_labels": data_labels,
+        "shell_labels": shell_labels,
+        "symmetric_difference": data_labels ^ shell_labels,
+    }
+
+
+def _parity_payload(comparison: dict[str, set[str]]) -> dict[str, object]:
+    return {key: sorted(value) for key, value in comparison.items()}
 
 
 def read_or_refuse(gate_name: str, compute: Callable[[], T]) -> tuple[int, T | None]:
@@ -320,7 +470,20 @@ def main() -> int:
         action="store_true",
         help="print resolved labels one per line instead of the YAML payload",
     )
+    parser.add_argument(
+        "--parity",
+        action="store_true",
+        help="compare declared row labels with labels still queued by the shell",
+    )
     args = parser.parse_args()
+    if args.parity:
+        code, comparison = read_or_refuse(
+            "quality label parity", lambda: parity(args.repo_root.resolve())
+        )
+        if comparison is None:
+            return code
+        emit_yaml(_parity_payload(comparison))
+        return 1 if comparison["symmetric_difference"] else 0
     code, universe = read_or_refuse(
         "quality label universe", lambda: label_universe(args.repo_root.resolve())
     )

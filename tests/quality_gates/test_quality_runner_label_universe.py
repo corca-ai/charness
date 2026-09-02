@@ -13,20 +13,67 @@ runs, an invisible call site is refused by the ASSERTION at the gate that queues
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
+import pytest
+
+from tests.script_loader import load_script_module
+
 from .support import clone_quality_runner_repo, run_shell_script
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def _quality_universe_module():
+    scripts_dir = ROOT / "scripts"
+    saved_path = list(sys.path)
+    sys.path.insert(0, str(scripts_dir))
+    try:
+        return load_script_module(
+            "quality_label_universe_declaration_under_test",
+            scripts_dir / "quality_label_universe.py",
+        )
+    finally:
+        sys.path[:] = saved_path
+
+
+def test_declared_gate_rows_are_nonempty_and_match_the_shell_migration_source() -> None:
+    universe = _quality_universe_module()
+    rows = universe.quality_gate_rows(ROOT)
+    assert rows
+    comparison = universe.parity(ROOT)
+    assert comparison["symmetric_difference"] == set()
+
+
+def test_present_but_empty_gate_declaration_is_a_loud_refusal(tmp_path: Path) -> None:
+    universe = _quality_universe_module()
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "quality-gates.yaml").write_text(
+        "schema: charness/quality-gates/v1\nphases:\n  - id: empty\n    gates:\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(universe.UniverseError, match="declares zero gates"):
+        universe.label_universe(tmp_path)
+
+
+def test_missing_gate_declaration_reports_the_shell_source(tmp_path: Path) -> None:
+    universe = _quality_universe_module()
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts" / "run-quality.sh").write_text(
+        'queue_selected "shell-gate" true\n', encoding="utf-8"
+    )
+    payload = universe.label_universe(tmp_path)
+    assert payload["source"] == "shell"
+    assert payload["sources"]["queue_call_sites"] == ["shell-gate"]
 
 
 def test_runner_consumes_labels_only_without_an_inline_parser(
     seeded_quality_runner_repo: Path,
 ) -> None:
-    runner = (seeded_quality_runner_repo / "scripts" / "run-quality.sh").read_text(
-        encoding="utf-8"
-    )
+    runner = (seeded_quality_runner_repo / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
     assert (
-        'python3 scripts/quality_label_universe.py --repo-root "$REPO_ROOT" '
-        "--labels-only"
+        'python3 scripts/quality_label_universe.py --repo-root "$REPO_ROOT" --labels-only'
     ) in runner
     assert "python3 -c" not in runner
 
@@ -55,9 +102,7 @@ def test_a_gate_label_the_universe_reader_cannot_see_refuses_the_run(
     marker = 'queue_selected "validate-skills"'
     assert marker in text, "runner shape changed; pick another insertion point"
     runner.write_text(
-        text.replace(
-            marker, 'if true; then queue_timed "ghost-gate" true; fi\n' + marker, 1
-        ),
+        text.replace(marker, 'if true; then queue_timed "ghost-gate" true; fi\n' + marker, 1),
         encoding="utf-8",
     )
     result = run_shell_script(runner, cwd=repo, env=env)

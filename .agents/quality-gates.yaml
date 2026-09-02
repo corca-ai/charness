@@ -1,0 +1,1078 @@
+schema: charness/quality-gates/v1
+runner_variables:
+  REPO_ROOT: absolute repository root resolved by run-quality.sh
+  PYTEST_FLAGS: pytest args for mode and release-only selection
+  STANDING_PYTEST_TARGETS: expanded pytest targets from run_standing_pytest.py
+  python_files: Python files matched by recursive compile globs
+  seed_budget_args: seed-budget args, including advisory opt-in
+  RUN_QUALITY_TMPDIR: per-run temporary directory for reports and logs
+  RUN_QUALITY_STATE_ROOT_ARGS: optional runtime state-root arguments
+  RUN_QUALITY_RUNTIME_ROOT: runtime state root for release proof output
+  RUN_QUALITY_RUNTIME_PROFILE: selected runtime budget profile
+  RUN_QUALITY_INCLUDE_RELEASE_ONLY: release-only flag for inline fallbacks
+  PROVENANCE_CONTRACT_CHECKER: first packaged provenance checker path
+  CRITIQUE_CHANGED_REF: changed range from the origin/main merge-base
+  CHANGED_LINE_BASE_SHA: origin/main merge-base for changed-line proof
+  release_changed_line_coverage_json: release changed-line coverage path
+  specdown_config: ephemeral specdown config from its inline command
+phases:
+- id: pytest
+  isolation: alone
+  fail_fast: true
+  gates:
+  - label: pytest-release
+    command:
+    - env
+    - CHARNESS_STANDING_PYTEST_PYTHON=python3
+    - python3
+    - scripts/run_standing_pytest.py
+    - ${PYTEST_FLAGS[@]}
+    lane: release-only
+    variant_of: pytest
+    timing_layer: stays
+    note: src scripts/run-quality.sh:952; labels literal (475-479).
+  - label: pytest
+    command:
+    - env
+    - CHARNESS_STANDING_PYTEST_PYTHON=python3
+    - python3
+    - scripts/run_standing_pytest.py
+    - ${PYTEST_FLAGS[@]}
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:954; labels literal (475-479).
+  fail_message: standing pytest failed; stopping before later quality checks.
+- id: agent-browser-baseline
+  isolation: alone
+  fail_fast: true
+  gates:
+  - label: agent-browser-runtime-baseline
+    command:
+    - env
+    - -u
+    - CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS
+    - python3
+    - scripts/agent_browser_runtime_guard.py
+    - --repo-root
+    - $REPO_ROOT
+    - --cleanup-orphans
+    lane: opt-in
+    condition:
+      env:
+        CHARNESS_AGENT_BROWSER_RUNTIME_HYGIENE: '1'
+    timing_layer: stays
+    note: src scripts/run-quality.sh:980; labels literal (475-479).
+- id: main
+  isolation: concurrent
+  fail_fast: false
+  gates:
+  - label: validate-skills
+    command:
+    - python3
+    - scripts/validate_skills.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: core
+    timing_layer: already earlier
+    note: src scripts/run-quality.sh:991; labels literal (475-479).
+  - label: validate-quality-reference-catalog
+    command:
+    - python3
+    - scripts/validate_quality_reference_catalog.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: '**pulled → commit-time** (2026-06-23)'
+    note: src scripts/run-quality.sh:992; labels literal (475-479).
+  - label: validate-skill-ergonomics
+    command:
+    - python3
+    - scripts/validate_skill_ergonomics.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: already earlier
+    note: src scripts/run-quality.sh:993; labels literal (475-479).
+  - label: quality-tool-fixtures
+    command:
+    - python3
+    - scripts/check_quality_tool_fixtures.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:994; labels literal (475-479).
+  - label: dead-code-advisory
+    command:
+    - python3
+    - skills/public/quality/scripts/run_dead_code_advisory.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: opt-in
+    condition:
+      env:
+        CHARNESS_QUALITY_DEAD_CODE: '1'
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1005; labels literal (475-479).
+  - label: check-cli-skill-surface
+    command:
+    - python3
+    - scripts/check_cli_skill_surface.py
+    - --repo-root
+    - $REPO_ROOT
+    - --run-probes
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1007; labels literal (475-479).
+  - label: validate-surfaces
+    command:
+    - python3
+    - scripts/validate_surfaces.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: '**pulled → commit-time**'
+    note: src scripts/run-quality.sh:1008; labels literal (475-479).
+  - label: validate-inference-interpretation
+    command:
+    - python3
+    - scripts/validate_inference_interpretation.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: '**pulled → commit-time** (#368, 2026-06-14)'
+    note: src scripts/run-quality.sh:1009; labels literal (475-479).
+  - label: validate-public-skill-validation
+    command:
+    - python3
+    - scripts/validate_public_skill_validation.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1010; labels literal (475-479).
+  - label: validate-public-skill-dogfood
+    command:
+    - python3
+    - scripts/validate_public_skill_dogfood.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1011; labels literal (475-479).
+  - label: validate-profiles
+    command:
+    - python3
+    - scripts/validate_profiles.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: already earlier
+    note: src scripts/run-quality.sh:1012; labels literal (475-479).
+  - label: validate-presets
+    command:
+    - python3
+    - scripts/validate_presets.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: already earlier
+    note: src scripts/run-quality.sh:1013; labels literal (475-479).
+  - label: validate-adapters
+    command:
+    - python3
+    - scripts/validate_adapters.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: already earlier
+    note: src scripts/run-quality.sh:1014; labels literal (475-479).
+  - label: validate-integrations
+    command:
+    - python3
+    - scripts/validate_integrations.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: already earlier
+    note: src scripts/run-quality.sh:1015; labels literal (475-479).
+  - label: validate-packaging
+    command:
+    - python3
+    - scripts/validate_packaging.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: core
+    timing_layer: already earlier
+    note: src scripts/run-quality.sh:1016; labels literal (475-479).
+  - label: validate-packaging-committed
+    command:
+    - python3
+    - scripts/validate_packaging_committed.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: release-only
+    timing_layer: moved to release boundary
+    note: src scripts/run-quality.sh:1020; labels literal (475-479).
+  - label: validate-debug-artifact
+    command:
+    - python3
+    - scripts/validate_debug_artifact.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    docs_only: true
+    note: src scripts/run-quality.sh:1022; labels literal (475-479).
+  - label: validate-debug-seam-index
+    command:
+    - python3
+    - scripts/build_debug_seam_risk_index.py
+    - --repo-root
+    - $REPO_ROOT
+    - --check
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1023; labels literal (475-479).
+  - label: validate-retro-lesson-index
+    command:
+    - python3
+    - scripts/build_retro_lesson_selection_index.py
+    - --repo-root
+    - $REPO_ROOT
+    - --check
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1024; labels literal (475-479).
+  - label: validate-lesson-ledger
+    command:
+    - python3
+    - scripts/check_lesson_ledger.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1025; labels literal (475-479).
+  - label: validate-quality-artifact
+    command:
+    - python3
+    - scripts/validate_quality_artifact.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    docs_only: true
+    note: src scripts/run-quality.sh:1026; labels literal (475-479).
+  - label: validate-attention-state-visibility
+    command:
+    - python3
+    - scripts/validate_attention_state_visibility.py
+    - --repo-root
+    - $REPO_ROOT
+    - --scan-root
+    - scripts
+    - --scan-root
+    - skills
+    - --scan-root-map
+    - ../charness-support=skills/support
+    lane: standard
+    timing_layer: already earlier
+    note: src scripts/run-quality.sh:1027; labels literal (475-479).
+  - label: validate-inventory-consumption
+    command:
+    - python3
+    - scripts/validate_inventory_consumption.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1028; labels literal (475-479).
+  - label: check-inventory-declaration-coverage
+    command:
+    - python3
+    - scripts/check_inventory_declaration_coverage.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: '**pulled → commit-time** (#368, 2026-06-14)'
+    note: src scripts/run-quality.sh:1029; labels literal (475-479).
+  - label: inventory-skill-script-references
+    command:
+    - python3
+    - scripts/inventory_skill_script_references.py
+    - --repo-root
+    - $REPO_ROOT
+    - --strict
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1037; labels literal (475-479).
+  - label: check-unreferenced-scripts
+    command:
+    - python3
+    - scripts/check_unreferenced_scripts.py
+    - --repo-root
+    - $REPO_ROOT
+    - --strict
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1038; labels literal (475-479).
+  - label: validate-quality-closeout-contract
+    command:
+    - python3
+    - scripts/validate_quality_closeout_contract.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1039; labels literal (475-479).
+  - label: validate-critique-artifacts
+    command:
+    - python3
+    - scripts/validate_critique_artifacts.py
+    - --repo-root
+    - $REPO_ROOT
+    - --changed-ref
+    - $CRITIQUE_CHANGED_REF
+    - --include-worktree
+    lane: standard
+    timing_layer: stays
+    docs_only: true
+    note: src scripts/run-quality.sh:1062; labels literal (475-479).
+  - label: validate-ideation-artifact
+    command:
+    - python3
+    - scripts/validate_ideation_artifact.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    docs_only: true
+    note: src scripts/run-quality.sh:1063; labels literal (475-479).
+  - label: validate-retro-artifact
+    command:
+    - python3
+    - scripts/validate_retro_artifact.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    docs_only: true
+    note: src scripts/run-quality.sh:1064; labels literal (475-479).
+  - label: validate-current-pointer-freshness
+    command:
+    - python3
+    - scripts/validate_current_pointer_freshness.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: already earlier
+    docs_only: true
+    note: src scripts/run-quality.sh:1065; labels literal (475-479).
+  - label: validate-maintainer-setup
+    command:
+    - python3
+    - scripts/validate_maintainer_setup.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1066; labels literal (475-479).
+  - label: check-python-lengths
+    command:
+    - python3
+    - scripts/check_code_lengths.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: already earlier
+    note: src scripts/run-quality.sh:1067; labels literal (475-479).
+  - label: check-python-filenames
+    command:
+    - python3
+    - scripts/check_python_filenames.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: '**pulled → commit-time**'
+    note: src scripts/run-quality.sh:1068; labels literal (475-479).
+  - label: check-python-runtime-inheritance
+    command:
+    - python3
+    - scripts/check_python_runtime_inheritance.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1069; labels literal (475-479).
+  - label: check-subprocess-form
+    command:
+    - python3
+    - scripts/check_subprocess_form.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: '**pulled → commit-time**'
+    note: src scripts/run-quality.sh:1070; labels literal (475-479).
+  - label: check-skill-contracts
+    command:
+    - python3
+    - scripts/check_skill_contracts.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: '**pulled → commit-time**'
+    note: src scripts/run-quality.sh:1071; labels literal (475-479).
+  - label: check-skill-bootstrap-vars
+    command:
+    - python3
+    - scripts/check_skill_bootstrap_vars.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: '**pulled → commit-time**'
+    note: src scripts/run-quality.sh:1072; labels literal (475-479).
+  - label: check-bootstrap-shim-consistency
+    command:
+    - python3
+    - scripts/check_bootstrap_shim_consistency.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: '**pulled → commit-time** (#368, 2026-06-14)'
+    note: src scripts/run-quality.sh:1073; labels literal (475-479).
+  - label: check-public-doc-coupling
+    command:
+    - python3
+    - scripts/check_public_doc_coupling.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: stays (advisory)
+    note: src scripts/run-quality.sh:1074; labels literal (475-479).
+  - label: check-regenerable-facts
+    command:
+    - python3
+    - skills/public/quality/scripts/check_regenerable_facts.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: '**stays (broad)**'
+    note: src scripts/run-quality.sh:1075; labels literal (475-479).
+  - label: check-timing-layer-completeness
+    command:
+    - python3
+    - scripts/check_timing_layer_completeness.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: '**pulled → commit-time** (#368, 2026-06-14)'
+    note: src scripts/run-quality.sh:1076; labels literal (475-479).
+  - label: check-runtime-budget-universe
+    command:
+    - python3
+    - scripts/check_runtime_budget_universe.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1081; labels literal (475-479).
+  - label: check-command-dominance
+    command:
+    - python3
+    - scripts/check_command_dominance.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1089; labels literal (475-479).
+  - label: check-export-safe-imports
+    command:
+    - python3
+    - scripts/native_gate_lib.py
+    - --repo-root
+    - $REPO_ROOT
+    - export-safe
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    native_preflight: true
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1090; labels literal (475-479).
+  - label: check-export-self-sufficiency
+    command:
+    - python3
+    - scripts/check_export_self_sufficiency.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    unestablished_capable: true
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1096; labels literal (475-479).
+  - label: check-plugin-import-smoke
+    command:
+    - python3
+    - scripts/check_plugin_import_smoke.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1097; labels literal (475-479).
+  - label: check-command-docs
+    command:
+    - python3
+    - scripts/check_command_docs.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: release-only
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1101; labels literal (475-479).
+  - label: check-docs
+    command:
+    - ./scripts/check-docs.sh
+    lane: standard
+    unestablished_capable: true
+    timing_layer: '**pulled → commit-time + broad**'
+    docs_only: true
+    note: src scripts/run-quality.sh:1103; labels literal (475-479).
+  - label: check-doc-links
+    command:
+    - python3
+    - scripts/check_doc_links.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: label-only
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1108; labels literal (475-479).
+  - label: docs-graph
+    command:
+    - python3
+    - scripts/check_docs_graph.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: label-only
+    unestablished_capable: true
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1109; labels literal (475-479).
+  - label: check-plugin-doc-links
+    command:
+    - python3
+    - scripts/check_plugin_doc_links.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: label-only
+    timing_layer: '**pulled → commit-time**'
+    note: src scripts/run-quality.sh:1113; labels literal (475-479).
+  - label: check-markdown
+    command:
+    - ./scripts/check-markdown.sh
+    lane: label-only
+    timing_layer: '**narrowed 2026-08-11 -> scoped commit-time + broad**'
+    note: src scripts/run-quality.sh:1114; labels literal (475-479).
+  - label: check-links-internal
+    command:
+    - ./scripts/check-links-internal.sh
+    lane: label-only
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1115; labels literal (475-479).
+  - label: check-links-external
+    command:
+    - ./scripts/check-links-external.sh
+    lane: label-only
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1116; labels literal (475-479).
+  - label: check-plugin-dir-references
+    command:
+    - python3
+    - scripts/native_gate_lib.py
+    - --repo-root
+    - $REPO_ROOT
+    - plugin-refs
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    native_preflight: true
+    timing_layer: '**pulled → commit-time**'
+    note: src scripts/run-quality.sh:1122; labels literal (475-479).
+  - label: check-plugin-asset-command-carriers
+    command:
+    - python3
+    - scripts/check_plugin_asset_command_carriers.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1123; labels literal (475-479).
+  - label: check-documented-command-flags
+    command:
+    - python3
+    - scripts/check_documented_command_flags.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1124; labels literal (475-479).
+  - label: check-documented-subcommands
+    command:
+    - python3
+    - scripts/check_documented_subcommands.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1129; labels literal (475-479).
+  - label: check-spec-evidence-durability
+    command:
+    - python3
+    - scripts/check_spec_evidence_durability.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: stays
+    docs_only: true
+    note: src scripts/run-quality.sh:1130; labels literal (475-479).
+  - label: check-artifact-referents
+    command:
+    - python3
+    - scripts/check_artifact_referents.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    unestablished_capable: true
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1131; labels literal (475-479).
+  - label: check-references-link-inventory
+    command:
+    - python3
+    - scripts/check_references_link_inventory.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: stays
+    docs_only: true
+    note: src scripts/run-quality.sh:1132; labels literal (475-479).
+  - label: check-secrets
+    command:
+    - ./scripts/check-secrets.sh
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1144; labels literal (475-479).
+  - label: check-supply-chain
+    command:
+    - python3
+    - scripts/check_supply_chain.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1145; labels literal (475-479).
+  - label: check-github-actions
+    command:
+    - python3
+    - scripts/check_github_actions.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1146; labels literal (475-479).
+  - label: check-supply-chain-online
+    command:
+    - python3
+    - scripts/check_supply_chain_online.py
+    - --repo-root
+    - $REPO_ROOT
+    - --triage-owner
+    - repo-maintainers
+    lane: opt-in
+    condition:
+      env:
+        CHARNESS_SUPPLY_CHAIN_ONLINE: '1'
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1148; labels literal (475-479).
+  - label: check-shell
+    command:
+    - ./scripts/check-shell.sh
+    lane: core
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1150; labels literal (475-479).
+  - label: check-rust
+    command:
+    - ./scripts/check-rust.sh
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1155; labels literal (475-479).
+  - label: py-compile
+    command:
+    - python3
+    - -m
+    - py_compile
+    - ${python_files[@]}
+    lane: core
+    timing_layer: already earlier
+    note: src scripts/run-quality.sh:1172; labels literal (475-479).
+  - label: ruff
+    command:
+    - ./scripts/check-python-lint.sh
+    lane: core
+    timing_layer: already earlier
+    note: src scripts/run-quality.sh:1173; labels literal (475-479).
+  - label: check-coverage
+    command:
+    - python3
+    - scripts/check_coverage.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    condition:
+      mode_in:
+      - full
+      - read-only
+      predicate: coverage_relevant_changes_present
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1180; labels literal (475-479).
+  - label: check-test-completeness
+    command:
+    - python3
+    - scripts/check_test_completeness.py
+    - --repo-root
+    - $REPO_ROOT
+    - --
+    - ${STANDING_PYTEST_TARGETS[@]}
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1185; labels literal (475-479).
+  - label: check-test-production-ratio
+    command:
+    - python3
+    - scripts/check_test_production_ratio.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    - --advisory
+    lane: release-only
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1199; labels literal (475-479).
+  - label: check-consumer-validator-catalog
+    command:
+    - python3
+    - scripts/check_consumer_validator_catalog.py
+    - --repo-root
+    - $REPO_ROOT
+    - --adoption-path
+    - .agents/consumer-validator-adoption.yaml
+    - --require-adoption
+    lane: standard
+    timing_layer: pulled to commit-time
+    note: src scripts/run-quality.sh:1204; labels literal (475-479).
+  - label: check-provenance-contract
+    command:
+    - python3
+    - $PROVENANCE_CONTRACT_CHECKER
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    condition:
+      predicate: provenance_contract_checker_available
+    timing_layer: pulled to commit-time
+    note: src scripts/run-quality.sh:1215; labels literal (475-479).
+  - label: check-provenance-contract
+    command:
+    - bash
+    - -c
+    - "\n    echo \"status: unestablished\"\n    echo \"proof_level: unavailable\"\n    echo \"non_claims: [provenance contract checker is not packaged in this consumer tree]\"\n    if [[ \"$RUN_QUALITY_INCLUDE_RELEASE_ONLY\" == \"1\" ]]; then\n      echo \"REFUSAL: release provenance proof is unavailable\"\n      exit 2\n    fi\n  "
+    lane: standard
+    condition:
+      predicate: provenance_contract_checker_unavailable
+    variant_of: check-provenance-contract
+    timing_layer: pulled to commit-time
+    note: src scripts/run-quality.sh:1224; labels literal (475-479).
+  - label: check-closeout-classification-parity
+    command:
+    - python3
+    - scripts/check_closeout_classification_parity.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    unestablished_capable: true
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1236; labels literal (475-479).
+  - label: specdown
+    command:
+    - bash
+    - -c
+    - command -v specdown >/dev/null || { echo "specdown is required for executable specs. Install from https://github.com/corca-ai/specdown or run charness tool doctor specdown for current readiness."; exit 1; }; specdown_config=\$(python3 "$REPO_ROOT/scripts/specdown_ephemeral_config.py" --repo-root "$REPO_ROOT" --out-dir "$RUN_QUALITY_TMPDIR/specdown-report") || exit 1; trap 'rm -f "\$specdown_config" || true' EXIT; specdown run -config "\$specdown_config" -jobs 4 -out "$RUN_QUALITY_TMPDIR/specdown-report"
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1240; labels literal (475-479).
+  - label: run-evals
+    command:
+    - python3
+    - scripts/run_evals.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: already earlier
+    note: src scripts/run-quality.sh:1241; labels literal (475-479).
+  - label: doc-duplicates
+    command:
+    - python3
+    - skills/public/quality/scripts/inventory_doc_duplicates.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-nose
+    - --json-out
+    - $RUN_QUALITY_TMPDIR/doc-duplicates.json
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1242; phase barrier (1134-1143); labels literal (475-479).
+- id: inventory-declaration
+  isolation: alone
+  fail_fast: false
+  gates:
+  - label: validate-inventory-consumption-declaration
+    command:
+    - python3
+    - scripts/validate_inventory_consumption_declaration.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1246; labels literal (475-479).
+- id: post-pytest-tree
+  isolation: concurrent
+  fail_fast: false
+  gates:
+  - label: dup-ratchet
+    command:
+    - python3
+    - skills/public/quality/scripts/check_dup_ratchet.py
+    - --repo-root
+    - $REPO_ROOT
+    - --doc-inventory
+    - $RUN_QUALITY_TMPDIR/doc-duplicates.json
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1258; phase barrier (1134-1143); labels literal (475-479).
+  - label: check-seed-fixture-budget
+    command:
+    - python3
+    - scripts/check_seed_fixture_budget.py
+    - ${seed_budget_args[@]}
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1279; pytest tree barrier (1260-1274); labels literal (475-479).
+  - label: inventory-ci-local-gate-parity
+    command:
+    - python3
+    - skills/public/quality/scripts/inventory_ci_local_gate_parity.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-empty-parity-issues
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: '**pulled → commit-time**'
+    note: src scripts/run-quality.sh:1281; labels literal (475-479).
+  - label: inventory-gitignore-scan-hygiene
+    command:
+    - python3
+    - skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-empty
+    - --require-git-file-listing
+    lane: standard
+    condition:
+      file_exists: skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1283; labels literal (475-479).
+  - label: inventory-gitignore-scan-hygiene
+    command:
+    - bash
+    - -c
+    - echo "inventory_gitignore_scan_hygiene.py unavailable; skipping optional advisory inventory."
+    lane: standard
+    condition:
+      predicate: inventory_gitignore_scan_hygiene_unavailable
+    variant_of: inventory-gitignore-scan-hygiene
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1285; labels literal (475-479).
+  - label: check-current-pointer-writes
+    command:
+    - python3
+    - scripts/check_current_pointer_writes.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-empty
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1287; labels literal (475-479).
+  - label: measure-startup-probes
+    command:
+    - python3
+    - skills/public/quality/scripts/measure_startup_probes.py
+    - --repo-root
+    - $REPO_ROOT
+    - --class
+    - standing
+    - --record-runtime-signals
+    - ${RUN_QUALITY_STATE_ROOT_ARGS[@]}
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1288; labels literal (475-479).
+  - label: inventory-sloc
+    command:
+    - python3
+    - skills/public/quality/scripts/inventory_sloc.py
+    - --repo-root
+    - $REPO_ROOT
+    - --output
+    - $RUN_QUALITY_TMPDIR/sloc-inventory.json
+    lane: standard
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1293; labels literal (475-479).
+  - label: inventory-cli-ergonomics
+    command:
+    - python3
+    - skills/public/quality/scripts/inventory_cli_ergonomics.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    condition:
+      file_exists: skills/public/quality/scripts/inventory_cli_ergonomics.py
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1295; labels literal (475-479).
+  - label: inventory-cli-ergonomics
+    command:
+    - bash
+    - -c
+    - echo "inventory_cli_ergonomics.py unavailable; skipping optional advisory inventory."
+    lane: standard
+    condition:
+      predicate: inventory_cli_ergonomics_unavailable
+    variant_of: inventory-cli-ergonomics
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1297; labels literal (475-479).
+  - label: inventory-nose-clones
+    command:
+    - python3
+    - skills/public/quality/scripts/inventory_nose_clones.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    condition:
+      file_exists: skills/public/quality/scripts/inventory_nose_clones.py
+    unestablished_capable: true
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1300; labels literal (475-479).
+  - label: inventory-nose-clones
+    command:
+    - bash
+    - -c
+    - 'echo "ADVISORY: inventory_nose_clones.py unavailable; clone-family inventory is unproven."; exit 3'
+    lane: standard
+    condition:
+      predicate: inventory_nose_clones_unavailable
+    variant_of: inventory-nose-clones
+    unestablished_capable: true
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1302; labels literal (475-479).
+- id: runtime-budget
+  isolation: alone
+  fail_fast: false
+  gates:
+  - label: check-runtime-budget
+    command:
+    - python3
+    - skills/public/quality/scripts/check_runtime_budget.py
+    - --repo-root
+    - $REPO_ROOT
+    - --runtime-profile
+    - $RUN_QUALITY_RUNTIME_PROFILE
+    - ${RUN_QUALITY_STATE_ROOT_ARGS[@]}
+    - --advisory
+    lane: standard
+    condition:
+      predicate: runtime_profile_present
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1307; labels literal (475-479).
+  - label: check-runtime-budget
+    command:
+    - python3
+    - skills/public/quality/scripts/check_runtime_budget.py
+    - --repo-root
+    - $REPO_ROOT
+    - ${RUN_QUALITY_STATE_ROOT_ARGS[@]}
+    - --advisory
+    lane: standard
+    condition:
+      predicate: runtime_profile_absent
+    variant_of: check-runtime-budget
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1309; labels literal (475-479).
+- id: agent-browser-hygiene
+  isolation: alone
+  fail_fast: false
+  gates:
+  - label: agent-browser-runtime-hygiene
+    command:
+    - env
+    - -u
+    - CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS
+    - python3
+    - scripts/agent_browser_runtime_guard.py
+    - --repo-root
+    - $REPO_ROOT
+    - --assert-no-orphans
+    lane: opt-in
+    condition:
+      env:
+        CHARNESS_AGENT_BROWSER_RUNTIME_HYGIENE: '1'
+    timing_layer: stays
+    note: src scripts/run-quality.sh:1314; labels literal (475-479).
+- id: release-final
+  isolation: alone
+  fail_fast: false
+  gates:
+  - label: release-changed-line-coverage
+    command:
+    - python3
+    - scripts/release_changed_line_coverage.py
+    - --repo-root
+    - $REPO_ROOT
+    - --base-sha
+    - $CHANGED_LINE_BASE_SHA
+    - --coverage-json
+    - $release_changed_line_coverage_json
+    - --refuse-unestablished
+    lane: release-only
+    condition:
+      predicate: release_final_base_sha_present
+    timing_layer: release-final owner
+    note: src scripts/run-quality.sh:1329; labels literal (475-479).
+  - label: release-changed-line-coverage
+    command:
+    - bash
+    - -c
+    - 'echo "release changed-line coverage: no resolved origin/main base SHA; proof is unestablished" >&2; exit 2'
+    lane: release-only
+    condition:
+      predicate: release_final_base_sha_absent
+    variant_of: release-changed-line-coverage
+    timing_layer: release-final owner
+    note: src scripts/run-quality.sh:1335; labels literal (475-479).
