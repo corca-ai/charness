@@ -179,6 +179,27 @@ classes seeded, one RCA event). Lane worktrees are all removed.
    lane brief should cite rows and treat the 22 conditional `ship` rows as
    the design's centre. Then #770, #772.
 
+## Third session, 2026-09-02
+
+Steps 1 and 2 of "Next session, in order" are done.
+
+- Step 1: the full read-only lane on the tree as handed over was NOT green
+  twice: the regenerable-facts gate flagged an as-of count in the sibling-search
+  reference (`e22bad8f6`), then validate-skill-ergonomics flagged two issue
+  anchors in the quality skill's attention-state declaration (the commit after
+  it). Both were last-session follow-up commits that only focused tests had
+  read. Third run: `80 passed, 0 failed`, pytest `8507 passed`, skip list empty.
+- Step 2: `reword-768-wip-subjects.sh` rewrote the three WIP subjects; the
+  rebase gave every commit after `a5002ffc9` a new SHA (P2 `256fdae90`, T2
+  `41066bae0`, T3 `ce852e337`). SHAs quoted in earlier sections of this record
+  for those commits are the pre-reword ones.
+- Step 3: acceptance figures re-measured on this tree for the #768 closeout:
+  subprocess form gate 767 production files, zero direct spawns; test files
+  naming `sys.executable` or `"python3"` 104, files carrying
+  `boundary_contract` 89, A minus B 36 (helpers and in-process CLI loaders),
+  B minus A 21; collection 8507 selected of 8638. The in-process rule the
+  second session paid for is now in `docs/development.md`.
+
 ## Lessons this session paid for
 
 - The default `run-quality.sh` lane ran five gates and the full lane ran only

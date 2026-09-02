@@ -67,6 +67,21 @@ python3 scripts/run_standing_pytest.py --repo-root .
 ./scripts/run-quality.sh --full --read-only
 ```
 
+Production code spawns only through
+[`subprocess_guard.py`](../scripts/subprocess_guard.py); the standing
+[form check](../scripts/check_subprocess_form.py) refuses a direct call. Tests
+import the script under test in-process through the loaders in
+[`tests/script_loader.py`](../tests/script_loader.py),
+[`script_main.py`](../tests/script_main.py), and
+[`script_closure.py`](../tests/script_closure.py), and keep a real spawn only
+where the process boundary is the claim, marked `boundary_contract(reason=...)`.
+An in-process run must emulate what a child interpreter gave for free: swap
+`argv` before the import, put the script's directory first on `sys.path`, evict
+a bare module name that would shadow a sibling file and restore it after, and
+capture import-time exits. Never load a module under a bare name that the code
+under test imports lazily; under xdist that rebinds `sys.modules` in every
+worker at collection time.
+
 When `skills/public/` changes, batch edits and run the canonical exporter once:
 
 ```bash
