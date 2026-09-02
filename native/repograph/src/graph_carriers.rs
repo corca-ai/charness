@@ -19,18 +19,22 @@ use crate::graph_model::{
 };
 use crate::inventory::FileInventory;
 
+#[path = "quality_gate_shell.rs"]
+mod quality_gate_shell;
+#[path = "quality_gate_yaml.rs"]
+mod quality_gate_yaml;
+
+use quality_gate_shell::{
+    function_open_name, literal_quality_label, logical_lines, queue_call, split_first_token,
+};
+use quality_gate_yaml::{parse_quality_gate_list, shell_quote};
+
 const QUALITY_QUEUE_FUNCTIONS: &[&str] = &[
     "queue_selected",
     "queue_timed",
     "queue_agent_browser_runtime_gate",
 ];
-const QUALITY_AGGREGATE_LABELS: &[&str] = &[
-    "run-quality-read-only",
-    "run-quality-read-only-release",
-    "run-quality-full",
-    "run-quality-full-release",
-];
-
+const QUALITY_GATE_LIST_PATH: &str = ".agents/quality-gates.yaml";
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CarrierReport {
     pub nodes: Vec<Node>,
@@ -72,6 +76,7 @@ pub fn scan(repo_root: &Path, inventory: &FileInventory, excludes: &[String]) ->
         unresolved_carriers: Vec::new(),
         carrier_path_references: Vec::new(),
         quality_labels: Vec::new(),
+        quality_gate_list_scanned: false,
     };
 
     let mut paths = selected.iter().cloned().collect::<Vec<_>>();
@@ -89,6 +94,8 @@ pub fn scan(repo_root: &Path, inventory: &FileInventory, excludes: &[String]) ->
             scanner.scan_surfaces(&path);
         } else if path.starts_with("integrations/tools/") && path.ends_with(".json") {
             scanner.scan_integration(&path);
+        } else if path == QUALITY_GATE_LIST_PATH {
+            scanner.scan_quality_gate_list(&path);
         } else if path == "scripts/run-quality.sh" {
             scanner.scan_quality_runner(&path);
         } else if path == ".agents/quality-adapter.yaml" {
@@ -225,6 +232,7 @@ struct Scanner<'a> {
     unresolved_carriers: Vec<UnresolvedCarrier>,
     carrier_path_references: Vec<CarrierPathReference>,
     quality_labels: Vec<QualityLabel>,
+    quality_gate_list_scanned: bool,
 }
 
 impl<'a> Scanner<'a> {
@@ -562,7 +570,69 @@ impl<'a> Scanner<'a> {
         }
     }
 
+    fn scan_quality_gate_list(&mut self, path: &str) {
+        if self.quality_gate_list_scanned {
+            return;
+        }
+        self.quality_gate_list_scanned = true;
+        let Some(text) = self.read(path, CarrierTier::StructuredUnparsed, "quality gate list")
+        else {
+            return;
+        };
+        let gates = match parse_quality_gate_list(&text) {
+            Ok(gates) => gates,
+            Err(reason) => {
+                self.add_unresolved(
+                    path,
+                    CarrierSourceKind::QualityGate,
+                    CarrierTier::StructuredUnparsed,
+                    "gate-list".to_string(),
+                    None,
+                    text,
+                    format!("quality gate list is not readable: {reason}"),
+                );
+                return;
+            }
+        };
+        for gate in gates {
+            if !self
+                .quality_labels
+                .iter()
+                .any(|entry| entry.label == gate.label)
+            {
+                self.quality_labels.push(QualityLabel {
+                    label: gate.label.clone(),
+                    source: "quality-gates.yaml:gate-row".to_string(),
+                    line: Some(gate.line),
+                });
+            }
+            let command = gate
+                .command
+                .iter()
+                .map(|argument| shell_quote(argument))
+                .collect::<Vec<_>>()
+                .join(" ");
+            let name = format!("gate:{}:line:{}", gate.label, gate.line);
+            self.add_command(
+                path,
+                CarrierSourceKind::QualityGate,
+                CarrierTier::Tokenizable,
+                name,
+                Some(gate.line),
+                gate.raw,
+                command,
+                Some(gate.label),
+                true,
+            );
+        }
+        quality_gate_shell::add_quality_aggregate_labels(&mut self.quality_labels);
+    }
+
     fn scan_quality_runner(&mut self, path: &str) {
+        if self.repo_root.join(QUALITY_GATE_LIST_PATH).is_file() {
+            self.scan_quality_gate_list(QUALITY_GATE_LIST_PATH);
+            return;
+        }
         let Some(text) = self.read(path, CarrierTier::Opaque, "quality runner") else {
             return;
         };
@@ -576,7 +646,7 @@ impl<'a> Scanner<'a> {
                 current_function = None;
                 continue;
             }
-            let Some((function, rest)) = queue_call(&raw) else {
+            let Some((function, rest)) = queue_call(&raw, QUALITY_QUEUE_FUNCTIONS) else {
                 continue;
             };
             let function = function.to_string();
@@ -631,19 +701,7 @@ impl<'a> Scanner<'a> {
                 true,
             );
         }
-        for label in QUALITY_AGGREGATE_LABELS {
-            if !self
-                .quality_labels
-                .iter()
-                .any(|entry| entry.label == *label)
-            {
-                self.quality_labels.push(QualityLabel {
-                    label: (*label).to_string(),
-                    source: "run-quality.sh:aggregate".to_string(),
-                    line: None,
-                });
-            }
-        }
+        quality_gate_shell::add_quality_aggregate_labels(&mut self.quality_labels);
     }
 
     fn record_yaml_gap(&mut self, path: &str) {
@@ -1071,85 +1129,6 @@ fn is_structured_plan(path: &str) -> bool {
     path.starts_with(".agents/")
         && path.ends_with(".json")
         && (path.contains("command_plan") || path.contains("command-plan"))
-}
-
-fn logical_lines(text: &str) -> Vec<(usize, String)> {
-    let mut result = Vec::new();
-    let mut pending = None::<String>;
-    let mut pending_line = 0;
-    for (index, raw) in text.lines().enumerate() {
-        let line = index + 1;
-        if pending.is_none() {
-            pending = Some(raw.to_string());
-            pending_line = line;
-        } else if let Some(value) = pending.as_mut() {
-            value.push(' ');
-            value.push_str(raw.trim());
-        }
-        if pending
-            .as_deref()
-            .is_some_and(|value| value.ends_with('\\') && !value.trim_start().starts_with('#'))
-        {
-            if let Some(value) = pending.as_mut() {
-                value.pop();
-                while value.ends_with(char::is_whitespace) {
-                    value.pop();
-                }
-            }
-            continue;
-        }
-        if let Some(value) = pending.take() {
-            result.push((pending_line, value));
-        }
-    }
-    if let Some(value) = pending {
-        result.push((pending_line, value));
-    }
-    result
-}
-
-fn function_open_name(line: &str) -> Option<String> {
-    let name = line.strip_suffix('{')?.trim_end();
-    let name = name.strip_suffix(")")?;
-    let name = name.strip_suffix('(')?;
-    (!name.is_empty()
-        && name.chars().enumerate().all(|(index, character)| {
-            character == '_'
-                || character.is_ascii_alphanumeric() && index > 0
-                || character.is_ascii_alphabetic() && index == 0
-        }))
-    .then_some(name.to_string())
-}
-
-fn queue_call(line: &str) -> Option<(&str, &str)> {
-    let line = line.trim_start();
-    QUALITY_QUEUE_FUNCTIONS.iter().find_map(|function| {
-        let rest = line.strip_prefix(function)?;
-        if !rest.chars().next().is_some_and(char::is_whitespace) {
-            return None;
-        }
-        Some((*function, rest.trim_start()))
-    })
-}
-
-fn split_first_token(text: &str) -> Option<(&str, &str)> {
-    let mut split = text.splitn(2, char::is_whitespace);
-    let first = split.next()?.trim();
-    let rest = split.next().unwrap_or("").trim();
-    (!first.is_empty()).then_some((first, rest))
-}
-
-fn literal_quality_label(token: &str) -> Option<String> {
-    let value = token.strip_prefix('"')?.strip_suffix('"')?;
-    (!value.is_empty()
-        && !value.contains('$')
-        && value.chars().enumerate().all(|(index, character)| {
-            (character.is_ascii_lowercase() || character.is_ascii_digit()) && index == 0
-                || character.is_ascii_lowercase()
-                || character.is_ascii_digit()
-                || matches!(character, '.' | '_' | '-')
-        }))
-    .then_some(value.to_string())
 }
 
 fn is_shell_structure(line: &str) -> bool {
