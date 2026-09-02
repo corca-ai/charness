@@ -510,14 +510,14 @@ def test_exact_local_context_declaration_is_visible_and_stale_checked(tmp_path: 
     artifact_rel = "charness-artifacts/goals/2026-08-30-local-context.md"
     artifact = repo / artifact_rel
     artifact.parent.mkdir(parents=True)
-    line = f"local lane `{local_sha[:10]}`"
+    line = f"local lane `{local_sha}`"
     artifact.write_text(f"{line}\n", encoding="utf-8")
     declarations = repo / "scripts" / "artifact-referent-local-context.json"
     declarations.parent.mkdir()
     entry = {
         "artifact": artifact_rel,
         "line": 1,
-        "token": local_sha[:10],
+        "token": local_sha,
         "line_sha256": hashlib.sha256(line.encode()).hexdigest(),
         "reason": "frozen local shaping context",
     }
@@ -530,7 +530,7 @@ def test_exact_local_context_declaration_is_visible_and_stale_checked(tmp_path: 
     assert "declared local context (reported, exact): 1" in accepted.stdout
     assert "declared-local-commit-ref" in accepted.stdout
 
-    artifact.write_text(f"changed context, same token `{local_sha[:10]}`\n", encoding="utf-8")
+    artifact.write_text(f"changed context, same token `{local_sha}`\n", encoding="utf-8")
     changed_line = run_script(*command)
     assert changed_line.returncode == 1
     assert "stale-local-context-declaration" in changed_line.stdout
@@ -569,14 +569,14 @@ def test_malformed_local_context_declarations_block(tmp_path: Path) -> None:
         artifact_rel = "charness-artifacts/goals/2026-08-30-local-context.md"
         artifact = repo / artifact_rel
         artifact.parent.mkdir(parents=True)
-        line = f"local lane `{local_sha[:10]}`"
+        line = f"local lane `{local_sha}`"
         artifact.write_text(f"{line}\n", encoding="utf-8")
         declarations = repo / "scripts" / "artifact-referent-local-context.json"
         declarations.parent.mkdir()
         entry: dict[str, object] = {
             "artifact": artifact_rel,
             "line": 1,
-            "token": local_sha[:10],
+            "token": local_sha,
             "line_sha256": hashlib.sha256(line.encode()).hexdigest(),
             "reason": "why",
         }
@@ -597,7 +597,7 @@ def test_untracked_local_context_declaration_cannot_change_the_verdict(tmp_path:
     artifact_rel = "charness-artifacts/goals/2026-08-30-local-context.md"
     artifact = repo / artifact_rel
     artifact.parent.mkdir(parents=True)
-    line = f"local lane `{local_sha[:10]}`"
+    line = f"local lane `{local_sha}`"
     artifact.write_text(f"{line}\n", encoding="utf-8")
     declarations = repo / "scripts" / "artifact-referent-local-context.json"
     declarations.parent.mkdir()
@@ -607,7 +607,7 @@ def test_untracked_local_context_declaration_cannot_change_the_verdict(tmp_path:
                 {
                     "artifact": artifact_rel,
                     "line": 1,
-                    "token": local_sha[:10],
+                    "token": local_sha,
                     "line_sha256": hashlib.sha256(line.encode()).hexdigest(),
                     "reason": "unreviewed local bytes",
                 }
