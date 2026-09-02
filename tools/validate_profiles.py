@@ -15,8 +15,8 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_eval_registry_module = import_repo_module(__file__, "scripts.eval_registry")
-scenario_ids = _scripts_eval_registry_module.scenario_ids
+_tools_eval_registry_module = import_repo_module(__file__, "tools.eval_registry")
+scenario_ids = _tools_eval_registry_module.scenario_ids
 _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
 

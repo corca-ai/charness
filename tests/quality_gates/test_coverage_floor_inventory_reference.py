@@ -74,7 +74,7 @@ def test_gate_discovery_honors_the_anchor_the_pattern_declares(tmp_path: Path) -
     cases = (
         ("*-quality-gate.sh", "scripts/repo-quality-gate.sh", "scripts/*-quality-gate.sh"),
         (".githooks/pre-commit", ".githooks/pre-commit", ".githooks/pre-commit"),
-        ("scripts/check_coverage.py", "scripts/check_coverage.py", "scripts/check_coverage.py"),
+        ("tools/check_coverage.py", "tools/check_coverage.py", "tools/check_coverage.py"),
         ("scripts/*/gate.sh", "scripts/ci/gate.sh", "scripts/*/gate.sh"),
         ("**/*-quality-gate.sh", "tools/nested/repo-quality-gate.sh", "**/*-quality-gate.sh"),
     )

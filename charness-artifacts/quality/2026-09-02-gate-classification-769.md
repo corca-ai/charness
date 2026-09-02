@@ -96,3 +96,15 @@ Running count of conditional `ship` rows (adapter-declared inputs required befor
   runner reads it. Rows in this table become that list.
 - The clean-export probe and distinct-observer review are the proof surface
   for the boundary; this table is their input, not their output.
+
+## Corrections applied by the move
+
+The rows above preserve their original recorded text. The following corrections
+are the decisions applied by lane T2:
+
+| Gate | Corrected ownership | Reason |
+| --- | --- | --- |
+| check-docs components | `check-plugin-doc-links` and `check-last-verified` are tools; the remaining composite is ship | The composite is split by ownership; `check-last-verified` had no script and was extracted from `scripts/check-docs.sh:24-35` (`map-769-export.md §2.5`). |
+| check-consumer-validator-catalog | the row without `--require-adoption` is ship; `check-consumer-validator-catalog-decisions` is tools | The catalog check splits by invocation, not file, and the tools row delegates to the retained script (`map-769-export.md §2.5`). |
+| check-provenance-contract | ship | It remains a shipped skill script because moving it changes the consumer-visible package (`map-769-export.md §2.5`). |
+| check-subprocess-form | ship | The missing table row is added here; it checks a consumer's own direct spawns and remains in `scripts/` (`map-769-export.md §2.5`, design-critique-769.md item 4). |

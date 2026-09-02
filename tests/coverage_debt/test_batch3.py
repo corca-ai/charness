@@ -39,14 +39,14 @@ def _executable(path: Path, body: str) -> Path:
 
 
 # ---------------------------------------------------------------------------
-# scripts/check_closeout_classification_parity.py
+# tools/check_closeout_classification_parity.py
 #
 # This gate's whole contract is that an UNOBSERVED site resolves to not-run and
 # never to a pass. Every refusal branch below was unread, which is precisely the
 # failure mode (#586) the gate exists to refuse: a check whose green says nothing.
 # ---------------------------------------------------------------------------
 
-_parity = import_repo_module(__file__, "scripts.check_closeout_classification_parity")
+_parity = import_repo_module(__file__, "tools.check_closeout_classification_parity")
 
 CANONICAL_REL = _parity.CANONICAL_REL
 
@@ -311,10 +311,10 @@ def test_resolver_payload_is_parsed_as_json_when_pyyaml_is_absent(
 
 
 # ---------------------------------------------------------------------------
-# scripts/check_export_self_sufficiency.py -- main() exit bytes
+# tools/check_export_self_sufficiency.py -- main() exit bytes
 # ---------------------------------------------------------------------------
 
-EXPORT_GATE = ROOT / "scripts" / "check_export_self_sufficiency.py"
+EXPORT_GATE = ROOT / "tools" / "check_export_self_sufficiency.py"
 _export_gate = load_script_module("coverage_debt_export_self_sufficiency", EXPORT_GATE)
 
 
@@ -481,10 +481,10 @@ def test_supply_chain_online_fails_when_an_audited_surface_fails(tmp_path: Path)
 
 
 # ---------------------------------------------------------------------------
-# scripts/run_evals.py -- checked-in quality adapter scenarios
+# tools/run_evals.py -- checked-in quality adapter scenarios
 # ---------------------------------------------------------------------------
 
-_run_evals = import_repo_module(__file__, "scripts.run_evals")
+_run_evals = import_repo_module(__file__, "tools.run_evals")
 
 
 def test_eval_scenario_reads_the_checked_in_quality_adapter_payload() -> None:

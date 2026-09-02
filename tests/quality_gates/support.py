@@ -49,7 +49,7 @@ def exported_plugin_tree(tmp_path_factory: pytest.TempPathFactory) -> Path:
     assert result.returncode == 0, result.stderr
     return output_root / "plugins" / "charness"
 EVAL_REGISTRY = load_script_module(
-    "tests.quality_gates.support_eval_registry", ROOT / "scripts" / "eval_registry.py"
+    "tests.quality_gates.support_eval_registry", ROOT / "tools" / "eval_registry.py"
 )
 
 ADAPTER_LIB_PATH = ROOT / "scripts" / "adapter_lib.py"
@@ -378,6 +378,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-test-production-ratio", "check_test_production_ratio.py"),
     ("check-unreferenced-scripts", "check_unreferenced_scripts.py"),
     ("check-consumer-validator-catalog", "check_consumer_validator_catalog.py"),
+    ("check-consumer-validator-catalog-decisions", "check_consumer_validator_catalog_decisions.py"),
     ("release-changed-line-coverage", "release_changed_line_coverage.py"),
     ("run-evals", "run_evals.py"),
 )
@@ -405,6 +406,23 @@ QUALITY_TOOL_PYTHON_FILENAMES = frozenset(
         "check_bootstrap_shim_consistency.py",
         "check_public_doc_coupling.py",
         "check_references_link_inventory.py",
+        "check_timing_layer_completeness.py",
+        "check_runtime_budget_universe.py",
+        "validate_current_pointer_freshness.py",
+        "check_current_pointer_writes.py",
+        "check_closeout_classification_parity.py",
+        "check_coverage.py",
+        "check_coverage_extra_lib.py",
+        "check_export_self_sufficiency.py",
+        "export_self_sufficiency_lib.py",
+        "check_plugin_asset_command_carriers.py",
+        "check_plugin_doc_links.py",
+        "check_plugin_import_smoke.py",
+        "run_evals.py",
+        "eval_setup.py",
+        "eval_registry.py",
+        "eval_issue_scenarios.py",
+        "check_consumer_validator_catalog_decisions.py",
     }
 )
 QUALITY_RUNTIME_STUBS = (

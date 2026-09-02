@@ -735,7 +735,7 @@ def _without_the_scripts_package(
     ("script", "bound", "flat_module"),
     [
         ("scripts/helper_provenance_lib.py", "env_bypass_enabled", "env_bypass"),
-        ("scripts/check_current_pointer_writes.py", "RepoFileSnapshot", "repo_file_listing"),
+        ("tools/check_current_pointer_writes.py", "RepoFileSnapshot", "repo_file_listing"),
         ("scripts/check_symbol_residue.py", "RepoFileSnapshot", "repo_file_listing"),
         ("scripts/dup_ratchet_edit_advisory.py", "head_oid_from_files", "git_checkout"),
     ],

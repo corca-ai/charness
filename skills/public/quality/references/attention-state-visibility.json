@@ -172,20 +172,6 @@
       ],
       "rationale": "Mutation skipped workers are rendered in the printed score summary."
     },
-    "scripts/check_plugin_doc_links.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "explicit_skip_summary",
-        "operator_summary"
-      ],
-      "evidence_terms": [
-        "skipped",
-        "skipped: none"
-      ],
-      "rationale": "This gate deliberately does not judge three things: a markdown file with no plugin package root (installed by nobody), a file with no live prose, and a link inside a fenced block or HTML comment (an EXAMPLE, not a reachability claim -- a doc teaching the broken shape must be able to show it). Each is counted by reason and appended to BOTH the success line and the refusal message, so a green run states how much of the mirror it did not judge instead of reading as full coverage. That visibility is the point: the class this gate exists for accumulated across three separate passes that each reported an honest \"0 remaining\" under a ruler narrower than the class, and none of them said so."
-    },
     "scripts/check_prescribed_skill_executed_lib.py": {
       "states": [
         "skipped"
@@ -527,6 +513,18 @@
         "SKIPPED"
       ],
       "rationale": "The state module defines the canonical skipped value consumed by worktree doctor renderers."
+    },
+    "tools/check_plugin_doc_links.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped"
+      ],
+      "rationale": "The repository-only plugin documentation link checker reports skipped checks explicitly when its export mirror is unavailable."
     },
     "skills/public/gather/scripts/advise_google_workspace_path.py": {
       "states": [

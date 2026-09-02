@@ -15,7 +15,7 @@ from pathlib import Path
 
 from .support import ROOT
 
-META = importlib.import_module("scripts.check_timing_layer_completeness")
+META = importlib.import_module("tools.check_timing_layer_completeness")
 
 
 def test_real_repo_table_is_complete() -> None:
@@ -31,7 +31,7 @@ def test_quality_core_runs_the_timing_completeness_gate_but_docs_pre_push_does_n
 
     assert re.search(
         r"^\s*- name: Validate timing-layer completeness\n"
-        r"\s+run: python3 scripts/check_timing_layer_completeness\.py --repo-root \.$",
+        r"\s+run: python3 -m tools\.check_timing_layer_completeness --repo-root \.$",
         workflow,
         re.MULTILINE,
     )

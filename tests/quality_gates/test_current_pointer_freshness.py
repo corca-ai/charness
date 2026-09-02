@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.validate_current_pointer_freshness import (
+from tools.validate_current_pointer_freshness import (
     ValidationError,
     _load_catalog_sanitizer,
     validate_capability_catalog_integration_claims,
@@ -51,7 +51,7 @@ def seed_repo(
     (repo / "skills" / "public" / "quality" / "scripts").mkdir(parents=True)
     queue_line = (
         'queue_selected "validate-current-pointer-freshness" '
-        'python3 scripts/validate_current_pointer_freshness.py --repo-root "$REPO_ROOT"\n'
+        'python3 tools/validate_current_pointer_freshness.py --repo-root "$REPO_ROOT"\n'
         if queued
         else ""
     )
@@ -67,7 +67,7 @@ def seed_repo(
             "      - label: validate-current-pointer-freshness\n"
             "        command:\n"
             "          - python3\n"
-            "          - scripts/validate_current_pointer_freshness.py\n"
+            "          - tools/validate_current_pointer_freshness.py\n"
             "          - --repo-root\n"
             "          - $REPO_ROOT\n"
             "        lane: standard\n",
@@ -103,7 +103,8 @@ def seed_repo(
         + "\n",
         encoding="utf-8",
     )
-    (repo / "scripts" / "check_coverage.py").write_text("# coverage\n", encoding="utf-8")
+    (repo / "tools").mkdir()
+    (repo / "tools" / "check_coverage.py").write_text("# coverage\n", encoding="utf-8")
     (repo / "scripts" / "check_test_production_ratio.py").write_text("# ratio\n", encoding="utf-8")
     (repo / "skills" / "public" / "quality" / "scripts" / "check_runtime_budget.py").write_text(
         "\n".join(
@@ -122,7 +123,7 @@ def seed_repo(
 def test_current_pointer_freshness_accepts_queued_non_stale_pointers(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path)
     result = run_script(
-        "scripts/validate_current_pointer_freshness.py",
+        "tools/validate_current_pointer_freshness.py",
         "--repo-root",
         str(repo),
         real_process=True,
@@ -133,7 +134,7 @@ def test_current_pointer_freshness_accepts_queued_non_stale_pointers(tmp_path: P
 
 def test_current_pointer_freshness_requires_run_quality_queue(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, queued=False)
-    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "must queue `validate-current-pointer-freshness`" in result.stderr
 
@@ -147,7 +148,7 @@ def test_current_pointer_freshness_rejects_stale_quality_missing_claim(tmp_path:
             "- No deterministic freshness check yet cross-validates current pointers.\n"
         ),
     )
-    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "charness-artifacts/quality/latest.md" in result.stderr
     assert "No deterministic freshness check yet" in result.stderr
@@ -162,7 +163,7 @@ def test_current_pointer_freshness_rejects_missing_command_script_claim(tmp_path
             "- `python3 scripts/missing_inventory.py --repo-root .`\n"
         ),
     )
-    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "quality pointer command claims are stale" in result.stderr
     assert "scripts/missing_inventory.py" in result.stderr
@@ -178,7 +179,7 @@ def test_current_pointer_freshness_rejects_runtime_smoothing_claim_drift(tmp_pat
         ),
     )
     (repo / ".gitignore").write_text("", encoding="utf-8")
-    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "runtime smoothing claim is stale" in result.stderr
     assert ".charness/quality/runtime-smoothing.json" in result.stderr
@@ -195,7 +196,7 @@ def test_current_pointer_freshness_accepts_matching_runtime_signal_claims(tmp_pa
         ),
     )
     write_runtime_signals(repo)
-    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -210,14 +211,14 @@ def test_current_pointer_freshness_ignores_volatile_runtime_signal_numbers(tmp_p
         ),
     )
     write_runtime_signals(repo)
-    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
 def test_current_pointer_freshness_rejects_stale_release_version_claim(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path)
     (repo / "packaging" / "charness.json").write_text('{"version": "1.2.4"}\n', encoding="utf-8")
-    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "release pointer version claim is stale" in result.stderr
     assert "packaging/charness.json" in result.stderr
@@ -267,7 +268,7 @@ def test_current_pointer_freshness_rejects_stale_capability_catalog_integration_
         encoding="utf-8",
     )
 
-    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "capability catalog pointer is stale" in result.stderr
     assert "integrations/tools/demo.json" in result.stderr
@@ -314,7 +315,7 @@ def test_release_version_claim_is_checked_in_every_rendering(tmp_path: Path) -> 
         repo = seed_repo(tmp_path / label)
         _write_release_pointer(repo, body)
         result = run_script(
-            "scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo)
+            "tools/validate_current_pointer_freshness.py", "--repo-root", str(repo)
         )
         assert result.returncode == 1, (label, result.stdout)
         assert "release pointer version claim is stale" in result.stderr, label
@@ -327,7 +328,7 @@ def test_release_version_claim_absent_from_an_existing_pointer_is_refused(tmp_pa
     repo = seed_repo(tmp_path)
     _write_release_pointer(repo, "nothing resembling a version claim here\n")
 
-    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "no parseable `target version:` claim" in result.stderr
@@ -342,7 +343,7 @@ def test_release_version_decoy_claim_cannot_shadow_a_stale_one(tmp_path: Path) -
         repo, "- target version: `1.2.3`\n\nthe real one:\n\n- target version: `9.9.9`\n"
     )
 
-    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "disagreeing target-version claims" in result.stderr
@@ -359,7 +360,7 @@ def test_release_version_claim_matching_the_manifests_still_passes(tmp_path: Pat
         repo = seed_repo(tmp_path / f"ok-{label}")
         _write_release_pointer(repo, body)
         result = run_script(
-            "scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo)
+            "tools/validate_current_pointer_freshness.py", "--repo-root", str(repo)
         )
         assert result.returncode == 0, (label, result.stderr)
 
@@ -385,7 +386,7 @@ def test_release_version_claim_survives_nested_markup_and_placeholders(tmp_path:
         repo = seed_repo(tmp_path / f"ok-{label}")
         _write_release_pointer(repo, body)
         result = run_script(
-            "scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo)
+            "tools/validate_current_pointer_freshness.py", "--repo-root", str(repo)
         )
         assert result.returncode == 0, (label, result.stderr)
 
@@ -393,7 +394,7 @@ def test_release_version_claim_survives_nested_markup_and_placeholders(tmp_path:
         repo = seed_repo(tmp_path / f"placeholder-{label}")
         _write_release_pointer(repo, body)
         result = run_script(
-            "scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo)
+            "tools/validate_current_pointer_freshness.py", "--repo-root", str(repo)
         )
         assert result.returncode == 1, label
         assert "no parseable `target version:` claim" in result.stderr, label
@@ -408,7 +409,7 @@ def test_release_version_claim_ignores_claim_shaped_lines_inside_a_fence(tmp_pat
     repo = seed_repo(tmp_path)
     _write_release_pointer(repo, "- target version: `1.2.3`\n\n```\ntarget version: 9.9.9\n```\n")
 
-    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    result = run_script("tools/validate_current_pointer_freshness.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
 
@@ -420,7 +421,7 @@ def test_capability_catalog_claims_refuse_an_unestablishable_scope(tmp_path: Pat
     corrupting the inventory shape flipped BLOCK to PASS — the comparison never
     ran and the absence of a complaint read as freshness. A missing directory is
     only benign when the catalog claims no integrations."""
-    from scripts.validate_current_pointer_freshness import (
+    from tools.validate_current_pointer_freshness import (
         CAPABILITY_CATALOG,
         INTEGRATIONS_DIR,
         ValidationError,
@@ -473,7 +474,7 @@ def test_capability_catalog_claims_name_unreadable_and_unknown_schema_apart(tmp_
     schema this validator does not read is a third case again: nothing was
     compared, and saying "malformed v1" sends the reader to fix the wrong file.
     """
-    from scripts.validate_current_pointer_freshness import CAPABILITY_CATALOG
+    from tools.validate_current_pointer_freshness import CAPABILITY_CATALOG
 
     repo = tmp_path / "repo"
     catalog = repo / CAPABILITY_CATALOG

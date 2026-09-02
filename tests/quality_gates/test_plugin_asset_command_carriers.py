@@ -12,8 +12,8 @@ from runtime_bootstrap import import_repo_module
 from .support import ROOT
 
 _gate = import_repo_module(
-    ROOT / "scripts" / "check_plugin_asset_command_carriers.py",
-    "scripts.check_plugin_asset_command_carriers",
+    ROOT / "tools" / "check_plugin_asset_command_carriers.py",
+    "tools.check_plugin_asset_command_carriers",
 )
 
 
@@ -199,5 +199,5 @@ def test_script_entrypoint_exits_with_main_status(tmp_path: Path, monkeypatch) -
     (clean_repo / "plugins").mkdir(parents=True)
     monkeypatch.setattr(sys, "argv", ["check_plugin_asset_command_carriers.py", "--repo-root", str(clean_repo)])
     with pytest.raises(SystemExit) as raised:
-        runpy.run_path(str(ROOT / "scripts" / "check_plugin_asset_command_carriers.py"), run_name="__main__")
+        runpy.run_path(str(ROOT / "tools" / "check_plugin_asset_command_carriers.py"), run_name="__main__")
     assert raised.value.code == 0

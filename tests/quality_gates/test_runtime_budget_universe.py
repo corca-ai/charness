@@ -21,7 +21,7 @@ sys.path.insert(0, str(REPO_ROOT))
 from runtime_bootstrap import import_repo_module  # noqa: E402
 
 _ADAPTER_LIB = import_repo_module(REPO_ROOT / "scripts/adapter_lib.py", "scripts.adapter_lib")
-GATE = REPO_ROOT / "scripts" / "check_runtime_budget_universe.py"
+GATE = REPO_ROOT / "tools" / "check_runtime_budget_universe.py"
 UNIVERSE = REPO_ROOT / "scripts" / "quality_label_universe.py"
 
 RUNNER_STUB = """#!/usr/bin/env bash

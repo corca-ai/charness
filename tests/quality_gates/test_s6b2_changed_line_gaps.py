@@ -39,7 +39,7 @@ INVENTORY_PATH = (
 DOMINANCE = load_path_module("command_dominance_lib_gaps", LIB_PATH)
 INVENTORY = load_path_module("inventory_command_dominance_gaps", INVENTORY_PATH)
 GATE = importlib.import_module("scripts.check_command_dominance")
-UNIVERSE = importlib.import_module("scripts.check_runtime_budget_universe")
+UNIVERSE = importlib.import_module("tools.check_runtime_budget_universe")
 SAMPLER = importlib.import_module("scripts.sample_mutation_files")
 
 REPLACEMENT = "python3 scripts/run_standing_pytest.py"

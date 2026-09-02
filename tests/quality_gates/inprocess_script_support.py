@@ -113,9 +113,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_spec_evidence_durability",
         ROOT / "scripts" / "check_spec_evidence_durability.py",
     ),
-    "scripts/validate_current_pointer_freshness.py": (
+    "tools/validate_current_pointer_freshness.py": (
         "tests.quality_gates.support_validate_current_pointer_freshness",
-        ROOT / "scripts" / "validate_current_pointer_freshness.py",
+        ROOT / "tools" / "validate_current_pointer_freshness.py",
     ),
     "skills/public/quality/scripts/check_changed_line_coverage.py": (
         "tests.quality_gates.support_check_changed_line_coverage",
@@ -149,9 +149,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_quality_label_universe",
         ROOT / "scripts" / "quality_label_universe.py",
     ),
-    "scripts/check_runtime_budget_universe.py": (
+    "tools/check_runtime_budget_universe.py": (
         "tests.quality_gates.support_check_runtime_budget_universe",
-        ROOT / "scripts" / "check_runtime_budget_universe.py",
+        ROOT / "tools" / "check_runtime_budget_universe.py",
     ),
     "scripts/validate_inventory_consumption.py": (
         "tests.quality_gates.support_validate_inventory_consumption",
@@ -401,9 +401,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_markdown_inline_code",
         ROOT / "scripts" / "check_markdown_inline_code.py",
     ),
-    "scripts/check_current_pointer_writes.py": (
+    "tools/check_current_pointer_writes.py": (
         "tests.quality_gates.support_check_current_pointer_writes",
-        ROOT / "scripts" / "check_current_pointer_writes.py",
+        ROOT / "tools" / "check_current_pointer_writes.py",
     ),
     "tools/validate_profiles.py": (
         "tests.quality_gates.support_validate_profiles",
@@ -441,9 +441,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_git_identity",
         ROOT / "scripts" / "check_git_identity.py",
     ),
-    "scripts/check_plugin_doc_links.py": (
+    "tools/check_plugin_doc_links.py": (
         "tests.quality_gates.support_check_plugin_doc_links",
-        ROOT / "scripts" / "check_plugin_doc_links.py",
+        ROOT / "tools" / "check_plugin_doc_links.py",
     ),
     "tools/check_public_doc_coupling.py": (
         "tests.quality_gates.support_check_public_doc_coupling",

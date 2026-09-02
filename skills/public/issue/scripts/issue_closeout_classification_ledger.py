@@ -66,7 +66,7 @@ def has_classification_row(classification: str) -> bool:
     caller asking "does this classification have a row" cannot answer it by
     comparing the returned list to DEFAULT_FIELDS: a row whose value happened to
     equal the default would read as absent. Exposed for
-    `scripts/check_closeout_classification_parity.py`, which must distinguish the
+    the authoring repository's closeout-parity gate, which must distinguish the
     two without reading the table as an attribute.
     """
     return classification in CLASSIFICATION_FIELDS

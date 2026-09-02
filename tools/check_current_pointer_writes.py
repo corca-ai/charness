@@ -14,7 +14,7 @@ try:
     )
     from scripts.repo_layout import support_dir
     from scripts.yaml_output import emit_yaml
-except ModuleNotFoundError:  # invoked as a script rather than a package module
+except ModuleNotFoundError:  # invoked directly with only the scripts directory importable
     from repo_file_listing import RepoFileSnapshot, iter_matching_repo_files, iter_repo_files
     from repo_layout import support_dir
 

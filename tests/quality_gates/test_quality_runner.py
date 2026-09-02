@@ -759,6 +759,12 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
 
     runner = RUN_QUALITY_SCRIPT_TEXT
     queued = set(re.findall(r'queue_selected "[^"]+" python3 scripts/([a-z0-9_]+\.py)', runner))
+    queued |= {
+        f"{module}.py"
+        for module in re.findall(
+            r'queue_selected "[^"]+" python3 -m tools\.([a-z0-9_]+)', runner
+        )
+    }
     # A gate wrapped in `bash -c` can still call a repo script, and the pattern above
     # cannot see it -- the specdown step is exactly that shape, and its seeding had to
     # be remembered by hand, which is the forgetting this guard exists to prevent.

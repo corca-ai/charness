@@ -24,9 +24,9 @@ import yaml
 from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
-GATE_REL = "scripts/check_closeout_classification_parity.py"
+GATE_REL = "tools/check_closeout_classification_parity.py"
 _gate = load_script_module(
-    "scripts.check_closeout_classification_parity",
+    "tools.check_closeout_classification_parity",
     ROOT / GATE_REL,
 )
 _QUALITY_ROWS = quality_label_universe.quality_gate_rows(ROOT) or []
@@ -84,7 +84,7 @@ def test_the_gate_is_queued_in_the_quality_run():
     """
     assert any(
         row["label"] == "check-closeout-classification-parity"
-        and "scripts/check_closeout_classification_parity.py" in row["command"]
+        and "tools.check_closeout_classification_parity" in row["command"]
         for row in _QUALITY_ROWS
     )
 

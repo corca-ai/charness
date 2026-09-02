@@ -165,6 +165,7 @@ def test_run_checks_reports_all_portable_package_gates_in_declared_order(
     repo = tmp_path / "repo"
     skill_path = _write_skill(repo, skill_lines=_skill_near_cap(12))
     repo_root = repo.resolve()
+    (repo_root / "tools").mkdir()  # the authoring shape: tools/ gates are declared and run
     declared = preflight._check_commands(repo_root)
     expected_ids = [check_id for check_id, _command in declared]
     expected_commands = [command for _check_id, command in declared]

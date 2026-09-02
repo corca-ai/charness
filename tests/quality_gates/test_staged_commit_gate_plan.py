@@ -14,6 +14,7 @@ from scripts.staged_commit_gate_plan import (
     fast_surface_verify_gates,
     staged_commit_gate_plan,
 )
+from scripts.staged_commit_gate_plan_helpers import present_tools_gate
 from scripts.surfaces_lib import load_surfaces, match_surfaces
 from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.quality_gates.repo_shapes import install_committed_repo
@@ -238,6 +239,58 @@ def test_staged_commit_plan_covers_domain_and_markdown_triggers() -> None:
     assert "check-markdown (staged)" in labels
 
 
+def test_every_pulled_moved_gate_is_still_scheduled_through_tools() -> None:
+    """The move must preserve the commit-time arms and their module carrier."""
+    paths = [
+        "scripts/new_helper.py",
+        "skills/public/demo/SKILL.md",
+        "profiles/default.yaml",
+        "presets/default.yaml",
+        "integrations/tool.json",
+        "docs/validator-timing-layers.md",
+        ".agents/quality-gates.yaml",
+        ".agents/consumer-validator-adoption.yaml",
+        "skills/public/quality/references/index.md",
+        "skills/public/quality/scripts/inventory_new.py",
+        "charness-artifacts/quality/latest.md",
+    ]
+    plan = staged_commit_gate_plan(ROOT, paths, ruff_path="")
+    by_label = {command.label: command for command in plan}
+    expected = {
+        "validate-attention-state-visibility",
+        "validate-skills",
+        "run-evals",
+        "validate-profiles",
+        "validate-presets",
+        "validate-integrations",
+        "check-plugin-doc-links",
+        "validate-inference-interpretation",
+        "check-bootstrap-shim-consistency",
+        "check-inventory-declaration-coverage",
+        "check-timing-layer-completeness",
+        "validate-current-pointer-freshness",
+        "validate-quality-reference-catalog",
+        "check-consumer-validator-catalog",
+        "check-consumer-validator-catalog-decisions",
+    }
+    assert expected <= by_label.keys()
+    moved_labels = expected - {"check-consumer-validator-catalog"}
+    for label in moved_labels:
+        assert by_label[label].argv[0:2] == ("python3", "-m")
+        assert by_label[label].argv[2].startswith("tools.")
+
+
+def test_present_tools_gate_builds_the_tools_module_carrier(tmp_path: Path) -> None:
+    (tmp_path / "tools").mkdir()
+    (tmp_path / "tools" / "demo_gate.py").write_text("\n", encoding="utf-8")
+
+    planned = present_tools_gate(tmp_path, "demo", "demo_gate.py", "--repo-root", str(tmp_path))
+
+    assert [command.argv for command in planned] == [
+        ("python3", "-m", "tools.demo_gate", "--repo-root", str(tmp_path))
+    ]
+
+
 # Timing-layer pulls (docs/validator-timing-layers.md): one test per
 # pulled guard — the favorable (cheap + changed-scoped + deterministic) subset
 # fires at commit time via this dispatcher, and not for unrelated change classes.
@@ -281,7 +334,7 @@ def test_timing_pull_current_pointer_freshness_fires_for_pointer_surfaces() -> N
         "scripts/run-quality.sh",
         ".agents/quality-gates.yaml",
         "scripts/any_quality_pointer_helper.py",
-        "scripts/validate_current_pointer_freshness.py",
+        "tools/validate_current_pointer_freshness.py",
         "scripts/record_quality_runtime.py",
         "skills/public/quality/scripts/check_runtime_budget.py",
         "skills/public/quality/scripts/runtime_budget_lib.py",
@@ -376,6 +429,7 @@ def test_consumer_validator_catalog_pull_covers_source_and_exported_paths() -> N
     ]
     for path in trigger_paths:
         assert "check-consumer-validator-catalog" in _labels([path]), path
+        assert "check-consumer-validator-catalog-decisions" in _labels([path]), path
     assert "check-consumer-validator-catalog" not in _labels(["docs/usage.md"])
     # And the dispatcher's predicate IS the checker's, not a copy that can drift.
     from scripts import check_consumer_validator_catalog as catalog_check

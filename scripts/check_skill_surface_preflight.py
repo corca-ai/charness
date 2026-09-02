@@ -370,8 +370,20 @@ def _check_result(check_id: str, command: list[str], completed) -> dict[str, Any
     }
 
 
+def _authoring_only(command: list[str] | str) -> bool:
+    """`python3 -m tools.<name>` gates live only in the charness authoring repo.
+
+    The export carries no `tools/` tree, so a consumer running this preflight
+    must not be told to run, or fail on, a command it cannot have.
+    """
+    text = command if isinstance(command, str) else " ".join(command)
+    return "-m tools." in text
+
+
 def _run_checks(repo_root: Path) -> list[dict[str, Any]]:
     commands = _check_commands(repo_root)
+    if not (repo_root / "tools").is_dir():
+        commands = [item for item in commands if not _authoring_only(item[1])]
     completed = run_processes_in_order(
         [command for _check_id, command in commands], cwd=repo_root, timeout_seconds=None
     )
@@ -436,7 +448,11 @@ def build_report(
         },
         "preview_delta": preview_delta,
         "headroom": headroom,
-        "couplings": _couplings(context["target_kind"], context["skill_kind"]),
+        "couplings": [
+            coupling
+            for coupling in _couplings(context["target_kind"], context["skill_kind"])
+            if (repo_root / "tools").is_dir() or not _authoring_only(coupling["command"])
+        ],
         "checks": checks,
     }
 

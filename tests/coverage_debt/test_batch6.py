@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parents[2]
 # sys.modules to a second copy at collection time, and every worker collects this
 # file, so a monkeypatch another test lands on the shared copy would miss the one
 # the code under test imports (test_artifact_validator_units.register_surface).
-EXPORT_LIB = importlib.import_module("scripts.export_self_sufficiency_lib")
+EXPORT_LIB = importlib.import_module("tools.export_self_sufficiency_lib")
 if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 ARTIFACT_PREFLIGHT = importlib.import_module("check_artifact_surface_preflight")

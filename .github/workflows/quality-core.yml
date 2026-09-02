@@ -112,13 +112,13 @@ jobs:
       # catches that case on a push. In the local gate graph via run-quality.sh
       # and the commit-time plan, so the subset-mirror marker above holds.
       - name: Validate plugin-mirror doc links
-        run: python3 scripts/check_plugin_doc_links.py --repo-root .
+        run: python3 -m tools.check_plugin_doc_links --repo-root .
 
       - name: Validate plugin-dir references
         run: python3 scripts/native_gate_lib.py --repo-root . plugin-refs --repo-root .
 
       - name: Validate timing-layer completeness
-        run: python3 scripts/check_timing_layer_completeness.py --repo-root .
+        run: python3 -m tools.check_timing_layer_completeness --repo-root .
 
       - name: Validate markdown
         run: ./scripts/check-markdown.sh

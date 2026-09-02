@@ -20,7 +20,7 @@ def test_run_quality_read_only_skips_check_coverage_without_control_plane_change
 
 def test_run_quality_read_only_runs_check_coverage_for_relevant_changes(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
-    (repo / "scripts" / "check_coverage.py").write_text(
+    (repo / "tools" / "check_coverage.py").write_text(
         "#!/usr/bin/env python3\nprint('quality success output from check-coverage')\n",
         encoding="utf-8",
     )

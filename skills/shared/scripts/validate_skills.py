@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Layout-independent entrypoint for `<authoring-repo>/tools/validate_skills.py` (#478 site 4).
+"""Layout-independent entrypoint for the authoring-repository skill validator (#478 site 4).
 
 Reachable as `$SKILL_DIR/../../shared/scripts/validate_skills.py` from any skill package, in
 both the authoring tree and an installed plugin. See `authoring_script_shim`

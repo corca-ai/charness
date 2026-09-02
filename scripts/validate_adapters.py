@@ -282,7 +282,7 @@ def validate_charness_quality_adapter_contract(path: Path, data: dict) -> None:
             f"{path}: coverage_floor_policy.warn_ceiling_pct must match check_coverage.py "
             f"({expected_warn_pct:.1f})"
         )
-    if coverage_policy.get("gate_script_pattern") != "scripts/check_coverage.py":
+    if coverage_policy.get("gate_script_pattern") != "tools/check_coverage.py":
         raise ValidationError(
             f"{path}: coverage_floor_policy.gate_script_pattern must name the actual coverage gate"
         )

@@ -25,7 +25,7 @@ creating a broad benchmark or a second evaluator inside Charness.
 Canonical runner:
 
 ```bash
-python3 scripts/run_evals.py
+python3 -m tools.run_evals
 ```
 
 The quality runner should call this script so eval drift becomes part of the

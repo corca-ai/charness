@@ -64,11 +64,6 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/check_closeout_classification_parity.py
-    id: closeout-classification-parity
-    consumer_facing: false
-    decision: exclude
-    reason: "authoring-repo closeout classification gate, not a consumer-authored artifact contract"
   - path: scripts/check_command_docs.py
     consumer_facing: false
     decision: exclude
@@ -77,19 +72,7 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/check_coverage.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/check_coverage_extra_lib.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/check_coverage_lib.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/check_current_pointer_writes.py
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
@@ -110,10 +93,6 @@ validators:
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/check_documented_subcommands.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/check_export_self_sufficiency.py
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
@@ -162,18 +141,6 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/check_plugin_asset_command_carriers.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/check_plugin_doc_links.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/check_plugin_import_smoke.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/check_premise_preflight.py
     consumer_facing: false
     decision: exclude
@@ -207,10 +174,6 @@ validators:
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/check_release_issue_ledger.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/check_runtime_budget_universe.py
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
@@ -282,10 +245,6 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/check_timing_layer_completeness.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/check_upstream_support_drift.py
     consumer_facing: false
     decision: exclude
@@ -303,10 +262,6 @@ validators:
     reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
     purpose: "validates a consumer-authored critique artifact"
     invocation: "python3 <plugin-root>/scripts/validate_critique_artifacts.py"
-  - path: scripts/validate_current_pointer_freshness.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/validate_debug_artifact.py
     id: debug-artifact
     consumer_facing: true

@@ -12,11 +12,6 @@ from runtime_bootstrap import import_repo_module
 from yaml_output import emit_yaml
 
 _surfaces_lib = import_repo_module(__file__, "scripts.surfaces_lib")
-# One owner for "is this packaged module a catalog candidate". The dispatcher used
-# to carry its own copy of the rule and went stale the moment the checker's copy was
-# repaired; see the trigger clause below.
-_catalog_check = import_repo_module(__file__, "scripts.check_consumer_validator_catalog")
-_is_catalog_candidate_name = _catalog_check._is_candidate_name
 _plan_helpers = import_repo_module(__file__, "scripts.staged_commit_gate_plan_helpers")
 
 GateCommand = _plan_helpers.GateCommand
@@ -25,6 +20,8 @@ _any_starts = _plan_helpers.any_starts
 _artifact_shape_gates = _plan_helpers.artifact_shape_gates
 _skill_core_headroom_gates = _plan_helpers.skill_core_headroom_gates
 _timing_pull_gate = _plan_helpers.timing_pull_gate
+_catalog_timing_layer_gates = _plan_helpers.catalog_timing_layer_gates
+_is_catalog_candidate_name = _plan_helpers._is_catalog_candidate_name
 _provenance_self_test_gate = _plan_helpers.provenance_contract_self_test_gate
 
 
@@ -121,7 +118,7 @@ def _timing_layer_gates(
             _timing_pull_gate(
                 repo_root,
                 "check-timing-layer-completeness",
-                "scripts/check_timing_layer_completeness.py",
+                "tools/check_timing_layer_completeness.py",
                 "--repo-root",
                 str(repo_root),
             )
@@ -148,42 +145,7 @@ def _timing_layer_gates(
         # and asserts executable fixture results, while the checker gate above
         # remains the operator-facing registry receipt.
         gates.extend(_provenance_self_test_gate(repo_root))
-    if any(
-        path
-        in {
-            ".agents/consumer-validator-adoption.yaml",
-            "scripts/check_consumer_validator_catalog.py",
-            "skills/public/quality/references/consumer-validator-catalog.yaml",
-            "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml",
-        }
-        or path.startswith("plugins/charness/scripts/")
-        or (
-            path.startswith(("scripts/", "tools/", "skills/public/", "plugins/charness/"))
-            # The CHECKER's own predicate, imported rather than restated. This line
-            # used to spell `startswith(("check_", "validate_"))`, and when the
-            # catalog's discovery predicate became position-independent this copy
-            # stayed positional -- so the one validator the widening exists to bring
-            # into scope, `issue_validate_closeout_draft.py`, was the one file whose
-            # edit did NOT fire this gate at commit time. A rule with two
-            # implementations drifts the moment one of them is repaired; #586's class,
-            # found by a bounded review of the widening slice itself.
-            and _is_catalog_candidate_name(Path(path).name)
-        )
-        for path in paths
-    ):
-        gates.extend(
-            _timing_pull_gate(
-                repo_root,
-                "check-consumer-validator-catalog",
-                "scripts/check_consumer_validator_catalog.py",
-                "--repo-root",
-                str(repo_root),
-                "--adoption-path",
-                ".agents/consumer-validator-adoption.yaml",
-                "--require-adoption",
-                "--require-staged-adoption",
-            )
-        )
+    gates.extend(_catalog_timing_layer_gates(repo_root, paths, present))
     if any(
         path == "tools/validate_quality_reference_catalog.py"
         or path.startswith("skills/public/quality/references/")
@@ -207,7 +169,7 @@ def _timing_layer_gates(
             _timing_pull_gate(
                 repo_root,
                 "validate-current-pointer-freshness",
-                "scripts/validate_current_pointer_freshness.py",
+                "tools/validate_current_pointer_freshness.py",
                 "--repo-root",
                 str(repo_root),
             )
@@ -245,7 +207,7 @@ def _touches_current_pointer_freshness_surface(paths: list[str]) -> bool:
         "charness-artifacts/capability-catalog/latest.json",
         "scripts/run-quality.sh",
         ".agents/quality-gates.yaml",
-        "scripts/validate_current_pointer_freshness.py",
+        "tools/validate_current_pointer_freshness.py",
         "scripts/record_quality_runtime.py",
         "skills/public/quality/scripts/check_runtime_budget.py",
         "skills/public/quality/scripts/runtime_budget_lib.py",
@@ -414,7 +376,7 @@ def staged_commit_gate_plan(
         for path in paths
     ):
         plan.extend(
-            _plan_helpers.present_gate(
+            _plan_helpers.present_tools_gate(
                 repo_root,
                 "validate-attention-state-visibility",
                 "tools/validate_attention_state_visibility.py",
@@ -436,7 +398,7 @@ def staged_commit_gate_plan(
     # the commit deletes and refuse its own commit with no route but `--no-verify`.
     if _any_starts(paths, "skills/"):
         plan.extend(
-            _plan_helpers.present_gate(
+            _plan_helpers.present_tools_gate(
                 repo_root,
                 "validate-skills",
                 "tools/validate_skills.py",
@@ -445,13 +407,13 @@ def staged_commit_gate_plan(
             )
         )
         plan.extend(
-            _plan_helpers.present_gate(
+            _plan_helpers.present_tools_gate(
                 repo_root, "run-evals", "run_evals.py", "--repo-root", str(repo_root)
             )
         )
     if _any_starts(paths, "profiles/"):
         plan.extend(
-            _plan_helpers.present_gate(
+            _plan_helpers.present_tools_gate(
                 repo_root,
                 "validate-profiles",
                 "tools/validate_profiles.py",
@@ -471,7 +433,7 @@ def staged_commit_gate_plan(
         )
     if _any_starts(paths, "presets/"):
         plan.extend(
-            _plan_helpers.present_gate(
+            _plan_helpers.present_tools_gate(
                 repo_root,
                 "validate-presets",
                 "tools/validate_presets.py",
@@ -481,7 +443,7 @@ def staged_commit_gate_plan(
         )
     if _any_starts(paths, "integrations/"):
         plan.extend(
-            _plan_helpers.present_gate(
+            _plan_helpers.present_tools_gate(
                 repo_root,
                 "validate-integrations",
                 "tools/validate_integrations.py",
@@ -506,11 +468,20 @@ def staged_commit_gate_plan(
         # is not done here unilaterally.
         for label, script in (
             ("check-doc-links", "check_doc_links.py"),
-            ("check-plugin-doc-links", "check_plugin_doc_links.py"),
+            ("check-plugin-doc-links", "tools/check_plugin_doc_links.py"),
         ):
-            plan.extend(
-                _plan_helpers.present_gate(repo_root, label, script, "--repo-root", str(repo_root))
-            )
+            if label == "check-plugin-doc-links":
+                plan.extend(
+                    _plan_helpers.present_tools_gate(
+                        repo_root, label, script, "--repo-root", str(repo_root)
+                    )
+                )
+            else:
+                plan.extend(
+                    _plan_helpers.present_gate(
+                        repo_root, label, script, "--repo-root", str(repo_root)
+                    )
+                )
         # The plugin-dir-references owner moved to the native core (#748); the
         # commit-time plan invokes the same canonical command as run-quality's
         # label, routed through the gate-side resolver shim.

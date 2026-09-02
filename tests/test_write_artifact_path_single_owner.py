@@ -161,7 +161,7 @@ _FACT_ROUTES = (
 
 
 # Roots scanned for producers. `skills/support` and `skills/shared` are included because the
-# repo's older sibling gate (`scripts/check_current_pointer_writes.py`) records that omitting
+# repo's older sibling gate (`tools/check_current_pointer_writes.py`) records that omitting
 # `skills/shared` once produced a clean report over a scope that excluded a real violation.
 _PRODUCER_ROOTS = ("scripts", "skills/public", "skills/support", "skills/shared")
 # How a module can emit the key. Both literal spellings, AND the delegation calls -- because

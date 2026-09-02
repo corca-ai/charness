@@ -6,7 +6,10 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from run_quality_engine_model import load_gate_list
+try:
+    from scripts.run_quality_engine_model import load_gate_list
+except ImportError:  # run by path from scripts/
+    from run_quality_engine_model import load_gate_list
 
 from runtime_bootstrap import repo_root_from_script
 

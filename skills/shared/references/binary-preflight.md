@@ -170,7 +170,7 @@ When migrating an existing skill to this contract:
    non-baseline call, or (b) guard with the `command -v` sentinel above.
 4. Add a pointer to this reference somewhere in the SKILL.md body
    (`## References`, a bullet, or an inline note).
-5. Run `python3 <authoring-repo>/tools/validate_skills.py --repo-root .` to confirm the new gate
+5. Run the authoring repository's skill validator to confirm the new gate
    accepts the change. **`No skill packages found.` is not a pass** — it exits 0
    having checked nothing, which happens when your skills are not under
    `<repo-root>/skills/` or `<repo-root>/support/`. Point `--repo-root` at the

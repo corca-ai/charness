@@ -21,18 +21,18 @@ REPO_ROOT = repo_root_from_script(__file__)
 usable_cpu_count = import_repo_module(__file__, "scripts.run_standing_pytest").usable_cpu_count
 _scripts_subprocess_guard_module = import_repo_module(__file__, "scripts.subprocess_guard")
 run_process = _scripts_subprocess_guard_module.run_process
-_scripts_eval_setup_module = import_repo_module(__file__, "scripts.eval_setup")
-run_setup_inspect_states = _scripts_eval_setup_module.run_setup_inspect_states
+_tools_eval_setup_module = import_repo_module(__file__, "tools.eval_setup")
+run_setup_inspect_states = _tools_eval_setup_module.run_setup_inspect_states
 run_setup_operator_acceptance_synthesis = (
-    _scripts_eval_setup_module.run_setup_operator_acceptance_synthesis
+    _tools_eval_setup_module.run_setup_operator_acceptance_synthesis
 )
-_scripts_eval_issue_scenarios_module = import_repo_module(__file__, "scripts.eval_issue_scenarios")
+_tools_eval_issue_scenarios_module = import_repo_module(__file__, "tools.eval_issue_scenarios")
 run_issue_sibling_search_concept_fixtures = (
-    _scripts_eval_issue_scenarios_module.run_issue_sibling_search_concept_fixtures
+    _tools_eval_issue_scenarios_module.run_issue_sibling_search_concept_fixtures
 )
-_scripts_eval_registry_module = import_repo_module(__file__, "scripts.eval_registry")
-SCENARIOS = _scripts_eval_registry_module.SCENARIOS
-Scenario = _scripts_eval_registry_module.Scenario
+_tools_eval_registry_module = import_repo_module(__file__, "tools.eval_registry")
+SCENARIOS = _tools_eval_registry_module.SCENARIOS
+Scenario = _tools_eval_registry_module.Scenario
 
 
 class EvalError(Exception):

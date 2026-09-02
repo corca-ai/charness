@@ -68,7 +68,10 @@ import sys
 from pathlib import Path
 from typing import Any, Callable, TypeVar
 
-import adapter_lib
+try:
+    from scripts import adapter_lib
+except ModuleNotFoundError:  # direct execution from the shipped scripts directory
+    import adapter_lib
 
 from runtime_bootstrap import repo_root_from_script
 from yaml_output import emit_yaml
@@ -501,11 +504,7 @@ def read_or_refuse(gate_name: str, compute: Callable[[], T]) -> tuple[int, T | N
 def main() -> int:
     parser = argparse.ArgumentParser(description="Print the run-quality label universe.")
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument(
-        "--labels-only",
-        action="store_true",
-        help="print resolved labels one per line instead of the YAML payload",
-    )
+    parser.add_argument("--labels-only", action="store_true", help="print labels one per line")
     parser.add_argument(
         "--parity",
         action="store_true",
@@ -519,9 +518,11 @@ def main() -> int:
         if comparison is None:
             return code
         emit_yaml(_parity_payload(comparison))
-        return 1 if (
-            comparison["symmetric_difference"] or comparison["pair_symmetric_difference"]
-        ) else 0
+        return (
+            1
+            if (comparison["symmetric_difference"] or comparison["pair_symmetric_difference"])
+            else 0
+        )
     code, universe = read_or_refuse(
         "quality label universe", lambda: label_universe(args.repo_root.resolve())
     )

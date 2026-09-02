@@ -22,20 +22,10 @@ source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
 run_component() {
   case "$1" in
     check-last-verified)
-      local status=0 path relative
-      for path in "$REPO_ROOT"/docs/*.md; do
-        [[ -f "$path" ]] || continue
-        if ! grep -Eq '^> Last verified: [0-9]{4}-[0-9]{2}-[0-9]{2}$' "$path"; then
-          relative="${path#"$REPO_ROOT"/}"
-          echo "FAIL check-last-verified: $relative is missing an exact Last verified header" >&2
-          status=1
-        fi
-      done
-      return "$status"
-      ;;
+      python3 -m tools.check_last_verified --repo-root "$REPO_ROOT" ;;
     check-markdown) "$CHARNESS_GATE_DIR/check-markdown.sh" ;;
     check-doc-links) python3 "$REPO_ROOT/scripts/check_doc_links.py" --repo-root "$REPO_ROOT" --require-git-file-listing ;;
-    check-plugin-doc-links) python3 "$REPO_ROOT/scripts/check_plugin_doc_links.py" --repo-root "$REPO_ROOT" ;;
+    check-plugin-doc-links) python3 -m tools.check_plugin_doc_links --repo-root "$REPO_ROOT" ;;
     check-command-docs) python3 "$REPO_ROOT/scripts/check_command_docs.py" --repo-root "$REPO_ROOT" ;;
     docs-graph)
       # Exit 3 is soft only when awiki is genuinely unavailable. Once awiki is
@@ -52,15 +42,16 @@ run_component() {
 }
 
 declare -a checks=(
-  check-last-verified
   check-markdown
   check-doc-links
-  check-plugin-doc-links
   check-command-docs
   docs-graph
   check-links-internal
   check-links-external
 )
+if [[ -d "$REPO_ROOT/tools" ]]; then
+  checks=(check-last-verified check-plugin-doc-links "${checks[@]}")
+fi
 
 status=0
 unproven=0

@@ -10,9 +10,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import quality_label_universe
-
 from runtime_bootstrap import repo_root_from_script
+from scripts import quality_label_universe
 from yaml_output import render_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)

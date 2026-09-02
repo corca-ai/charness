@@ -9,7 +9,7 @@ from runtime_bootstrap import import_repo_module
 from .support import ROOT, run_script
 
 _check_plugin_doc_links = import_repo_module(
-    ROOT / "scripts/check_plugin_doc_links.py", "scripts.check_plugin_doc_links"
+    ROOT / "tools/check_plugin_doc_links.py", "tools.check_plugin_doc_links"
 )
 
 # The two fixtures below are the REAL confirmed defects from
@@ -336,12 +336,12 @@ def test_the_script_entrypoint_reports_both_outcomes_as_a_subprocess(tmp_path: P
     """
     repo = tmp_path / "repo"
     write_doc(repo, "plugins/charness/shared/references/ok.md", "no links here\n")
-    clean = run_script("scripts/check_plugin_doc_links.py", "--repo-root", str(repo))
+    clean = run_script("tools/check_plugin_doc_links.py", "--repo-root", str(repo))
     assert clean.returncode == 0, clean.stderr
     assert "Validated relative links in 1 plugin-mirror doc(s)." in clean.stdout
 
     write_doc(repo, "plugins/charness/shared/references/bad.md", "[x](../../../scripts/a.py)\n")
-    refused = run_script("scripts/check_plugin_doc_links.py", "--repo-root", str(repo))
+    refused = run_script("tools/check_plugin_doc_links.py", "--repo-root", str(repo))
     assert refused.returncode == 1
     assert "escape" in refused.stderr
 

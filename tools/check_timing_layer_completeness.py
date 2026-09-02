@@ -26,10 +26,8 @@ import re
 import sys
 from pathlib import Path
 
-import quality_label_universe
-import render_validator_timing_layers
-
 from runtime_bootstrap import repo_root_from_script
+from scripts import quality_label_universe, render_validator_timing_layers
 
 REPO_ROOT = repo_root_from_script(__file__)
 

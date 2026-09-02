@@ -25,7 +25,7 @@ RELEASE_ARTIFACT = load_module(
 )
 SCANNER = load_module(
     "check_current_pointer_writes",
-    ROOT / "scripts" / "check_current_pointer_writes.py",
+    ROOT / "tools" / "check_current_pointer_writes.py",
     register=True,
 )
 
@@ -114,7 +114,7 @@ def test_current_pointer_write_shapes_are_caught_in_one_scan(tmp_path: Path) -> 
     )
 
     result = run_script(
-        "scripts/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty"
+        "tools/check_current_pointer_writes.py", "--repo-root", str(repo), "--require-empty"
     )
     findings = _scanner_findings(result.stdout)
     assert result.returncode == 1
@@ -131,7 +131,7 @@ def test_current_pointer_write_shapes_are_caught_in_one_scan(tmp_path: Path) -> 
 
     removed_flag = "--" + "json"
     rejected = run_script(
-        "scripts/check_current_pointer_writes.py", "--repo-root", str(repo), removed_flag
+        "tools/check_current_pointer_writes.py", "--repo-root", str(repo), removed_flag
     )
     assert rejected.returncode == 2
     assert removed_flag in rejected.stderr
@@ -151,7 +151,7 @@ def test_current_pointer_write_scanner_structured_output(tmp_path: Path) -> None
         },
     )
 
-    result = run_script("scripts/check_current_pointer_writes.py", "--repo-root", str(repo))
+    result = run_script("tools/check_current_pointer_writes.py", "--repo-root", str(repo))
 
     assert result.returncode == 0
     assert yaml.safe_load(result.stdout)["findings"][0]["path"] == "scripts/structured_writer.py"
@@ -166,7 +166,7 @@ def test_current_pointer_write_scanner_structured_output(tmp_path: Path) -> None
     # Commit 0a1a534 hit this exact trap once already.
     removed_flag = "--" + "json"
     rejected = run_script(
-        "scripts/check_current_pointer_writes.py", "--repo-root", str(repo), removed_flag
+        "tools/check_current_pointer_writes.py", "--repo-root", str(repo), removed_flag
     )
     assert rejected.returncode == 2
     assert removed_flag in rejected.stderr
@@ -216,7 +216,7 @@ def test_population_is_derived_by_the_shared_owner_not_hand_rolled() -> None:
     `repo_file_listing`, which 10+ validators already share.
     """
     source = (
-        Path(__file__).resolve().parents[2] / "scripts/check_current_pointer_writes.py"
+        Path(__file__).resolve().parents[2] / "tools/check_current_pointer_writes.py"
     ).read_text(encoding="utf-8")
     assert "iter_matching_repo_files" in source
     # Not merely imported — the hand-rolled listing is GONE, so no second

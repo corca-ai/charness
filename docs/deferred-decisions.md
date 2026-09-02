@@ -157,7 +157,7 @@ the evidence is sufficient for the boundary at hand.
 - Question: Where should Session 10+ gate proposals be implemented?
 - Current choice: Implement only deterministic, repo-owned gates in `charness`; keep evaluator/HITL-heavy checks in an explicit consumer-owned workflow.
 - Why now: Keeps `charness` guarantees honest and runnable in isolation.
-- Impact surfaces: [`scripts/run-quality.sh`](../scripts/run-quality.sh), [`scripts/run_evals.py`](../scripts/run_evals.py), [`docs/public-skill-validation.md`](./public-skill-validation.md)
+- Impact surfaces: [`scripts/run-quality.sh`](../scripts/run-quality.sh), [`tools/run_evals.py`](../tools/run_evals.py), [`docs/public-skill-validation.md`](./public-skill-validation.md)
 - Reopen trigger: If current repo-owned gates prove insufficient for regression containment.
 
 ### D15. `spec` Mode Strategy
@@ -188,10 +188,10 @@ the evidence is sufficient for the boundary at hand.
 
 ### D19. Current-Pointer Write Scanner Generalization
 
-- Question: Should [check_current_pointer_writes.py](../scripts/check_current_pointer_writes.py) detect adapter-resolved current-pointer writes via taint analysis, or rely on per-writer helper adoption?
+- Question: Should [check_current_pointer_writes.py](../tools/check_current_pointer_writes.py) detect adapter-resolved current-pointer writes via taint analysis, or rely on per-writer helper adoption?
 - Current choice: Defer scanner generalization; rely on helper-adoption convention for adapter-resolved writers. The static scanner continues to catch string-literal `latest.md` / `latest.json` writes only.
 - Why now: Only one adapter-resolved sibling ([hitl sync_review_artifact.py](../skills/public/hitl/scripts/sync_review_artifact.py)) was discovered, and it was closed in commit `0364886` by migrating to `write_current_pointer_text`. Adding taint analysis on a single sample is premature; the fixture matrix and false-positive surface are larger than the leak surface.
-- Impact surfaces: [scripts/check_current_pointer_writes.py](../scripts/check_current_pointer_writes.py), [scripts/current_pointer_writer_lib.py](../scripts/current_pointer_writer_lib.py), future skill writers that resolve their durable artifact path through an adapter dictionary.
+- Impact surfaces: [tools/check_current_pointer_writes.py](../tools/check_current_pointer_writes.py), [scripts/current_pointer_writer_lib.py](../scripts/current_pointer_writer_lib.py), future skill writers that resolve their durable artifact path through an adapter dictionary.
 - Reopen trigger: When a second adapter-resolved current-pointer sibling that bypasses the string-literal scanner appears, or when more than one new skill adds a `latest.md` / `latest.json` writer through adapter-resolved paths without the helper.
 
 ### D27. markdownlint-cli2 Verbose Banner Filter

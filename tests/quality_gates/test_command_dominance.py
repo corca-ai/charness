@@ -35,7 +35,7 @@ GATE = load_script_module(
 )
 UNIVERSE = load_script_module(
     "check_runtime_budget_universe_under_test",
-    ROOT / "scripts" / "check_runtime_budget_universe.py",
+    ROOT / "tools" / "check_runtime_budget_universe.py",
 )
 
 REPLACEMENT = "python3 scripts/run_standing_pytest.py"

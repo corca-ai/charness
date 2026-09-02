@@ -10,6 +10,8 @@ run_process = _subprocess_guard.run_process
 
 _PLAN_HELPERS_ROOT = repo_root_from_script(__file__)
 _artifact_preflight = import_repo_module(__file__, "scripts.check_artifact_surface_preflight")
+_catalog_check = import_repo_module(__file__, "scripts.check_consumer_validator_catalog")
+_is_catalog_candidate_name = _catalog_check._is_candidate_name
 
 
 @dataclass(frozen=True)
@@ -74,6 +76,38 @@ def timing_pull_gate(repo_root: Path, label: str, script: str, *args: str) -> li
     return [GateCommand(label, _script_argv(script, *args))]
 
 
+def catalog_timing_layer_gates(
+    repo_root: Path, paths: list[str], existing: list[str]
+) -> list[GateCommand]:
+    """Pull both catalog invocations when a candidate or catalog input changes."""
+    catalog_paths = {
+        ".agents/consumer-validator-adoption.yaml",
+        "scripts/check_consumer_validator_catalog.py",
+        "skills/public/quality/references/consumer-validator-catalog.yaml",
+        "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml",
+    }
+    candidate_touched = any(
+        path in catalog_paths
+        or (path.startswith(("scripts/", "tools/", "skills/public/", "plugins/charness/"))
+            and _is_catalog_candidate_name(Path(path).name))
+        for path in paths
+    )
+    if not candidate_touched:
+        return []
+    args = ("--repo-root", str(repo_root), "--adoption-path", ".agents/consumer-validator-adoption.yaml")
+    return [
+        *timing_pull_gate(repo_root, "check-consumer-validator-catalog", "scripts/check_consumer_validator_catalog.py", *args),
+        *timing_pull_gate(
+            repo_root,
+            "check-consumer-validator-catalog-decisions",
+            "tools/check_consumer_validator_catalog_decisions.py",
+            *args,
+            "--require-adoption",
+            "--require-staged-adoption",
+        ),
+    ]
+
+
 def provenance_contract_self_test_gate(repo_root: Path) -> list[GateCommand]:
     """Run the owning test as a second channel for the provenance checker."""
     if not (repo_root / "tests/test_provenance_contract.py").is_file():
@@ -108,6 +142,16 @@ def present_gate(repo_root: Path, label: str, script: str, *args: str) -> list[G
     if not path.exists():
         return []
     return [GateCommand(label, _script_argv(script, *args))]
+
+
+def present_tools_gate(repo_root: Path, label: str, script: str, *args: str) -> list[GateCommand]:
+    """Presence-guard and schedule a gate whose canonical home is ``tools/``."""
+    script_path = Path(script)
+    if script_path.parts[:1] == ("tools",):
+        tool_script = script_path.as_posix()
+    else:
+        tool_script = (Path("tools") / script_path.name).as_posix()
+    return present_gate(repo_root, label, tool_script, *args)
 
 
 def _script_argv(script: str, *args: str) -> tuple[str, ...]:

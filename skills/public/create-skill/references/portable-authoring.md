@@ -27,8 +27,8 @@ different clone or CI job may read later.
 
 Public-skill cites to authoring-repo-only docs, tests, or source-tree skill
 paths must be either skill-relative to files that ship with the vendored skill
-or explicitly marked `authoring-repo-internal` / `not vendored` near the cite
-— checked by `<authoring-repo>/tools/validate_skills.py`'s author-repo-cite scan.
+or explicitly marked `authoring-repo-internal` / `not vendored` near the cite.
+The authoring-repo-cite scan checks this boundary before export.
 
 ## Skill Brief
 

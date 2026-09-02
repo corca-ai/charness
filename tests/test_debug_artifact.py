@@ -87,8 +87,8 @@ def valid_current_artifact(
                 "## Sibling Search",
                 "",
                 "- Mental model: synthetic copy fixtures treat runtime roots as input",
-                "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
-                "- cross-file: scripts/check_coverage.py is outside the subject tests/repo_copy.py",
+                "- same layer: tests/repo_copy.py and tools/check_coverage.py",
+                "- cross-file: tools/check_coverage.py is outside the subject tests/repo_copy.py",
                 "",
                 "## Seam Risk",
                 "",
@@ -238,7 +238,7 @@ def test_validate_debug_artifact_rejects_followup_sibling_without_identifier(
     tmp_path: Path,
 ) -> None:
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: static scan only",
     )
     repo = seed_repo(tmp_path, artifact)
@@ -249,7 +249,7 @@ def test_validate_debug_artifact_rejects_followup_sibling_without_identifier(
 
 def test_validate_debug_artifact_accepts_followup_sibling_with_issue_url(tmp_path: Path) -> None:
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: static scan only | follow-up: https://example.com/issues/42",
     )
     repo = seed_repo(tmp_path, artifact)
@@ -261,7 +261,7 @@ def test_validate_debug_artifact_accepts_followup_sibling_with_handoff_anchor(
     tmp_path: Path,
 ) -> None:
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: static scan only | follow-up: deferred docs/index.md#cleanup-backlog",
     )
     repo = seed_repo(tmp_path, artifact)
@@ -273,9 +273,9 @@ def test_validate_debug_artifact_ignores_prose_mention_of_decision_phrase(tmp_pa
     # A prose paragraph (no leading `- ` bullet and no `decision:` token) that
     # quotes the decision phrase must not trip the validator.
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         (
-            "- same layer: tests/repo_copy.py and scripts/check_coverage.py\n"
+            "- same layer: tests/repo_copy.py and tools/check_coverage.py\n"
             "Authors may discuss the `valid follow-up outside the slice` rule "
             "in commentary without surfacing a fileable sibling."
         ),
@@ -288,7 +288,7 @@ def test_validate_debug_artifact_ignores_prose_mention_of_decision_phrase(tmp_pa
 def test_validate_debug_artifact_rejects_title_case_decision(tmp_path: Path) -> None:
     # Title-case must not silently bypass enforcement.
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         "- same layer: tests/repo_copy.py:12 | decision: Valid Follow-Up Outside The Slice | proof: static scan only",
     )
     repo = seed_repo(tmp_path, artifact)
@@ -300,7 +300,7 @@ def test_validate_debug_artifact_rejects_title_case_decision(tmp_path: Path) -> 
 def test_validate_debug_artifact_accepts_ascii_dash_short_circuit(tmp_path: Path) -> None:
     # The trivial-bug short-circuit must accept ASCII `-` as well as em-dash.
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         "- n/a - trivial fix; no plausible siblings",
     )
     repo = seed_repo(tmp_path, artifact)
@@ -311,7 +311,7 @@ def test_validate_debug_artifact_accepts_ascii_dash_short_circuit(tmp_path: Path
 def test_validate_debug_artifact_reports_first_invalid_with_offender_text(tmp_path: Path) -> None:
     # Mixed bullets: the validator should surface the offending bullet snippet.
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         (
             "- same layer: tests/repo_copy.py:12 | decision: same bug, fix now | proof: static scan only\n"
             "- abstraction up: lib/foo.py:42 | decision: valid follow-up outside the slice | proof: not inspected"
@@ -326,7 +326,7 @@ def test_validate_debug_artifact_reports_first_invalid_with_offender_text(tmp_pa
 def test_validate_debug_artifact_rejects_bare_deferred_followup(tmp_path: Path) -> None:
     # `follow-up: deferred` with no anchor must not satisfy the rule.
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: not inspected | follow-up: deferred",
     )
     repo = seed_repo(tmp_path, artifact)
@@ -339,7 +339,7 @@ def test_validate_debug_artifact_rejects_deferred_with_whitespace_only_anchor(
     tmp_path: Path,
 ) -> None:
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: not inspected | follow-up: deferred   ",
     )
     repo = seed_repo(tmp_path, artifact)
@@ -350,7 +350,7 @@ def test_validate_debug_artifact_rejects_deferred_with_whitespace_only_anchor(
 def test_validate_debug_artifact_rejects_deferred_with_trailing_punctuation(tmp_path: Path) -> None:
     # `deferred.` / `deferred,` are still a bare deferred with no anchor.
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: not inspected | follow-up: deferred.",
     )
     repo = seed_repo(tmp_path, artifact)
@@ -362,7 +362,7 @@ def test_validate_debug_artifact_rejects_deferred_with_trailing_punctuation(tmp_
 def test_validate_debug_artifact_accepts_short_non_deferred_identifier(tmp_path: Path) -> None:
     # A non-deferred identifier (e.g., a bare issue number) is acceptable.
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: not inspected | follow-up: #199",
     )
     repo = seed_repo(tmp_path, artifact)
@@ -374,7 +374,7 @@ def test_validate_debug_artifact_rejects_abstraction_up_diagnostic_only_unresolv
     tmp_path: Path,
 ) -> None:
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         (
             "- abstraction up: messenger side-effect durability | "
             "decision: same class, diagnostic-only for this slice | "
@@ -392,7 +392,7 @@ def test_validate_debug_artifact_rejects_abstraction_up_diagnostic_only_without_
     tmp_path: Path,
 ) -> None:
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         (
             "- abstraction-up axis: broad closeout posture | "
             "decision: same class, diagnostic-only for this slice | "
@@ -409,7 +409,7 @@ def test_validate_debug_artifact_accepts_abstraction_up_diagnostic_only_with_no_
     tmp_path: Path,
 ) -> None:
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         (
             "- abstraction up: broad closeout posture | "
             "decision: same class, diagnostic-only for this slice | "
@@ -426,7 +426,7 @@ def test_validate_debug_artifact_accepts_abstraction_up_diagnostic_only_with_fol
     tmp_path: Path,
 ) -> None:
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         (
             "- abstraction up: messenger side-effect durability | "
             "decision: same class, diagnostic-only for this slice | "
@@ -443,7 +443,7 @@ def test_validate_debug_artifact_preserves_same_layer_diagnostic_only_without_re
     tmp_path: Path,
 ) -> None:
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         (
             "- same layer: local helper naming | "
             "decision: same class, diagnostic-only for this slice | "
@@ -459,7 +459,7 @@ def test_validate_debug_artifact_does_not_read_next_star_bullet_as_abstraction_u
     tmp_path: Path,
 ) -> None:
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         (
             "- abstraction up: broad closeout posture | "
             "decision: same class, diagnostic-only for this slice | "
@@ -479,7 +479,7 @@ def test_validate_debug_artifact_rejects_star_abstraction_up_diagnostic_only_wit
     tmp_path: Path,
 ) -> None:
     artifact = valid_current_artifact().replace(
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py",
         (
             "* abstraction up: broad closeout posture | "
             "decision: same class, diagnostic-only for this slice | "
@@ -495,7 +495,7 @@ def test_validate_debug_artifact_rejects_star_abstraction_up_diagnostic_only_wit
 # --- #2b: cross-file sibling-scan marker (latest.md / forward-only) -----------
 
 CROSS_FILE_LINE = (
-    "- cross-file: scripts/check_coverage.py is outside the subject tests/repo_copy.py"
+    "- cross-file: tools/check_coverage.py is outside the subject tests/repo_copy.py"
 )
 
 
@@ -552,7 +552,7 @@ def test_validate_debug_artifact_trivial_short_circuit_satisfies_cross_file(tmp_
     # by the short-circuit alone, matching `validate_sibling_followups`.
     artifact = valid_current_artifact().replace(
         "- Mental model: synthetic copy fixtures treat runtime roots as input\n"
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py\n" + CROSS_FILE_LINE + "\n",
+        "- same layer: tests/repo_copy.py and tools/check_coverage.py\n" + CROSS_FILE_LINE + "\n",
         "- n/a — trivial fix; no plausible siblings\n",
     )
     repo = seed_repo(tmp_path, artifact)

@@ -125,7 +125,7 @@ Read first:
 - [skills/public/spec/SKILL.md](../skills/public/spec/SKILL.md) — the implementation-contract workflow and its bootstrap reads.
 - [docs/public-skill-dogfood.md](./public-skill-dogfood.md) — human-readable contract for the reviewed consumer-prompt registry.
 - [tools/check_skill_contracts.py](../tools/check_skill_contracts.py) — pinned SKILL.md contract phrases and the pin-deletion discipline.
-- [scripts/run_evals.py](../scripts/run_evals.py) — runner for the repo-owned deterministic skill and adapter scenarios.
+- [tools/run_evals.py](../tools/run_evals.py) — runner for the repo-owned deterministic skill and adapter scenarios.
 - [tools/validate_public_skill_dogfood.py](../tools/validate_public_skill_dogfood.py) — validator entrypoint for the dogfood registry JSON.
 
 Acceptance:

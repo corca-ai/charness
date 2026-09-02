@@ -226,7 +226,7 @@
       "sync_commands": [],
       "verify_commands": [
         "python3 -m pytest -q tests/test_capability_catalog.py",
-        "python3 scripts/validate_current_pointer_freshness.py --repo-root .",
+        "python3 -m tools.validate_current_pointer_freshness --repo-root .",
         "python3 -m json.tool .agents/surfaces.json"
       ],
       "notes": [
@@ -469,16 +469,14 @@
       "surface_id": "export-self-sufficiency",
       "description": "Whether the materialized plugin export can run on a machine that has only the export: shipped dependency contract, and repo-root paths exported modules read.",
       "source_paths": [
-        "scripts/check_export_self_sufficiency.py",
-        "scripts/export_self_sufficiency_lib.py",
+        "tools/check_export_self_sufficiency.py",
+        "tools/export_self_sufficiency_lib.py",
         "scripts/packaging_lib.py",
         "packaging/bootstrap-python.json",
         "packaging/bootstrap-requirements.txt",
         "skills/public/gather/scripts/gather_public_url.py"
       ],
       "derived_paths": [
-        "plugins/charness/scripts/check_export_self_sufficiency.py",
-        "plugins/charness/scripts/export_self_sufficiency_lib.py",
         "plugins/charness/scripts/packaging_lib.py",
         "plugins/charness/packaging/bootstrap-python.json",
         "plugins/charness/packaging/bootstrap-requirements.txt",
@@ -488,7 +486,7 @@
         "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
       ],
       "verify_commands": [
-        "python3 scripts/check_export_self_sufficiency.py --repo-root .",
+        "python3 -m tools.check_export_self_sufficiency --repo-root .",
         "python3 -m pytest -q tests/quality_gates/test_export_self_sufficiency.py"
       ],
       "notes": [

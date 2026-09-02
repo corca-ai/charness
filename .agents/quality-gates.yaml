@@ -381,7 +381,8 @@ phases:
   - label: validate-current-pointer-freshness
     command:
     - python3
-    - scripts/validate_current_pointer_freshness.py
+    - -m
+    - tools.validate_current_pointer_freshness
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -492,7 +493,8 @@ phases:
   - label: check-timing-layer-completeness
     command:
     - python3
-    - scripts/check_timing_layer_completeness.py
+    - -m
+    - tools.check_timing_layer_completeness
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -501,7 +503,8 @@ phases:
   - label: check-runtime-budget-universe
     command:
     - python3
-    - scripts/check_runtime_budget_universe.py
+    - -m
+    - tools.check_runtime_budget_universe
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -532,7 +535,8 @@ phases:
   - label: check-export-self-sufficiency
     command:
     - python3
-    - scripts/check_export_self_sufficiency.py
+    - -m
+    - tools.check_export_self_sufficiency
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -542,7 +546,8 @@ phases:
   - label: check-plugin-import-smoke
     command:
     - python3
-    - scripts/check_plugin_import_smoke.py
+    - -m
+    - tools.check_plugin_import_smoke
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -588,7 +593,8 @@ phases:
   - label: check-plugin-doc-links
     command:
     - python3
-    - scripts/check_plugin_doc_links.py
+    - -m
+    - tools.check_plugin_doc_links
     - --repo-root
     - $REPO_ROOT
     lane: label-only
@@ -628,7 +634,8 @@ phases:
   - label: check-plugin-asset-command-carriers
     command:
     - python3
-    - scripts/check_plugin_asset_command_carriers.py
+    - -m
+    - tools.check_plugin_asset_command_carriers
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -755,7 +762,8 @@ phases:
   - label: check-coverage
     command:
     - python3
-    - scripts/check_coverage.py
+    - -m
+    - tools.check_coverage
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -825,7 +833,8 @@ phases:
   - label: check-closeout-classification-parity
     command:
     - python3
-    - scripts/check_closeout_classification_parity.py
+    - -m
+    - tools.check_closeout_classification_parity
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -846,7 +855,8 @@ phases:
   - label: run-evals
     command:
     - python3
-    - scripts/run_evals.py
+    - -m
+    - tools.run_evals
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -938,7 +948,8 @@ phases:
   - label: check-current-pointer-writes
     command:
     - python3
-    - scripts/check_current_pointer_writes.py
+    - -m
+    - tools.check_current_pointer_writes
     - --repo-root
     - $REPO_ROOT
     - --require-empty

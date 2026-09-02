@@ -22,7 +22,7 @@ from yaml_output import emit_yaml
 _ROOT = Path(__file__).resolve().parents[1]
 _LISTING = import_repo_module(__file__, "scripts.repo_file_listing")
 _SKILL_REFS = import_repo_module(__file__, "tools.inventory_skill_script_references")
-_EXPORT = import_repo_module(__file__, "scripts.export_self_sufficiency_lib")
+_EXPORT = import_repo_module(__file__, "tools.export_self_sufficiency_lib")
 
 NODE_GLOBS = (
     "scripts/**",

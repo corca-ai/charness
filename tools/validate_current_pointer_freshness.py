@@ -8,7 +8,7 @@ import re
 import sys
 from pathlib import Path
 
-import quality_label_universe
+from scripts import quality_label_universe
 
 
 class ValidationError(Exception):
@@ -16,7 +16,8 @@ class ValidationError(Exception):
 
 
 FRESHNESS_LABEL = "validate-current-pointer-freshness"
-FRESHNESS_SCRIPT = Path("scripts/validate_current_pointer_freshness.py")
+FRESHNESS_SCRIPT = Path("tools/validate_current_pointer_freshness.py")
+FRESHNESS_MODULE = "tools.validate_current_pointer_freshness"
 RUN_QUALITY_SCRIPT = Path("scripts/run-quality.sh")
 CURRENT_POINTERS = (Path("charness-artifacts/quality/latest.md"),)
 QUALITY_POINTER = Path("charness-artifacts/quality/latest.md")
@@ -97,23 +98,27 @@ def validate_gate_is_queued(repo_root: Path) -> None:
         raise ValidationError(str(error)) from error
     if rows is not None:
         queued = any(
-            row.get("label") == FRESHNESS_LABEL and str(FRESHNESS_SCRIPT) in row.get("command", [])
+            row.get("label") == FRESHNESS_LABEL
+            and (
+                FRESHNESS_MODULE in row.get("command", [])
+                or str(FRESHNESS_SCRIPT) in row.get("command", [])
+            )
             for row in rows
         )
     else:
         run_quality = read_text(repo_root, RUN_QUALITY_SCRIPT)
         expected_label = f'queue_selected "{FRESHNESS_LABEL}"'
-        expected_script = str(FRESHNESS_SCRIPT)
-        queued = expected_label in run_quality and expected_script in run_quality
+        expected_command = f"python3 -m {FRESHNESS_MODULE}"
+        queued = expected_label in run_quality and expected_command in run_quality
         if not queued:
             raise ValidationError(
-                f"`scripts/run-quality.sh` must queue `{FRESHNESS_LABEL}` via `{FRESHNESS_SCRIPT}`"
+                f"`scripts/run-quality.sh` must queue `{FRESHNESS_LABEL}` via `{expected_command}`"
             )
         return
     if not queued:
         raise ValidationError(
             f"`{quality_label_universe.QUALITY_GATES_PATH}` must declare "
-            f"`{FRESHNESS_LABEL}` via `{FRESHNESS_SCRIPT}`"
+            f"`{FRESHNESS_LABEL}` via `{FRESHNESS_MODULE}`"
         )
 
 

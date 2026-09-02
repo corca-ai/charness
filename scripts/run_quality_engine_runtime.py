@@ -177,9 +177,9 @@ def coverage_relevant_changes_present(context: RuntimeContext, labels: str) -> b
         "scripts/sync_support.py",
         "scripts/update_tools.py",
         "scripts/upstream_release_lib.py",
-        "scripts/check_coverage.py",
+        "tools/check_coverage.py",
         "scripts/check_coverage_lib.py",
-        "scripts/check_coverage_extra_lib.py",
+        "tools/check_coverage_extra_lib.py",
         "tests/control_plane/",
         "tests/quality_gates/test_check_coverage_inventory.py",
     }

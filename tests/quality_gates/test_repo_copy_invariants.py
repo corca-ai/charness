@@ -8,8 +8,8 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from runtime_bootstrap import import_repo_module
-from scripts import check_coverage
 from tests import repo_copy
+from tools import check_coverage
 
 from .support import ROOT, run_script
 

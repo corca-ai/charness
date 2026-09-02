@@ -9,14 +9,14 @@ import yaml
 from .support import ROOT
 
 SPEC = importlib.util.spec_from_file_location(
-    "check_coverage_module", ROOT / "scripts" / "check_coverage.py"
+    "check_coverage_module", ROOT / "tools" / "check_coverage.py"
 )
 assert SPEC is not None and SPEC.loader is not None
 CHECK_COVERAGE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(CHECK_COVERAGE)
 
 EXTRA_SPEC = importlib.util.spec_from_file_location(
-    "check_coverage_extra_lib_under_test", ROOT / "scripts" / "check_coverage_extra_lib.py"
+    "check_coverage_extra_lib_under_test", ROOT / "tools" / "check_coverage_extra_lib.py"
 )
 assert EXTRA_SPEC is not None and EXTRA_SPEC.loader is not None
 CHECK_COVERAGE_EXTRA = importlib.util.module_from_spec(EXTRA_SPEC)
@@ -261,7 +261,7 @@ def test_per_file_floor_reports_the_population_it_exempts() -> None:
 
 def _coverage_module():
     spec = importlib.util.spec_from_file_location(
-        "check_coverage_test", ROOT / "scripts" / "check_coverage.py"
+        "check_coverage_test", ROOT / "tools" / "check_coverage.py"
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

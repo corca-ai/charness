@@ -56,7 +56,7 @@ _MODULES = {
         "skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py",
         "scripts/specdown_ephemeral_config.py",
         "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
-        "scripts/check_coverage.py",
+        "tools/check_coverage.py",
     )
 }
 
@@ -831,7 +831,7 @@ def test_per_file_floor_payload_names_the_unestablished_scope() -> None:
     `format_per_file_floor_line` was deleted with `--json` on 2026-08-14; the
     caveat it carried is now `per_file_floor_caveat` on the emitted payload, and
     `coverage_report` takes the WHOLE summary rather than the floor report alone."""
-    check_coverage = _MODULES["scripts/check_coverage.py"]
+    check_coverage = _MODULES["tools/check_coverage.py"]
     empty = {"measurement_scope": "empty", "files_received": 3, "files_evaluated": 0}
     caveat = check_coverage.coverage_report({"per_file_floor": empty})["per_file_floor_caveat"]
     assert "UNESTABLISHED" in caveat

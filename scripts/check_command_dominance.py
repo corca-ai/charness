@@ -40,8 +40,11 @@ import argparse
 import sys
 from pathlib import Path
 
-import adapter_lib
-import quality_label_universe
+try:
+    from scripts import adapter_lib, quality_label_universe
+except ModuleNotFoundError:  # invoked directly with only the scripts directory importable
+    import adapter_lib
+    import quality_label_universe
 
 from runtime_bootstrap import load_path_module, repo_root_from_script, skill_script
 from yaml_output import emit_yaml

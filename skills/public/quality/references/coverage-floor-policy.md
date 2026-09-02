@@ -38,8 +38,8 @@ Interpretation:
 - `gate_script_pattern` is anchored two ways. A bare filename glob
   (`"*-quality-gate.sh"`) is resolved under `scripts/`. A pattern containing a
   path separator is repo-root-relative, so a repo whose stop gate is
-  `<repo-root>/.githooks/pre-commit` or `<repo-root>/scripts/check_coverage.py`
-  names it directly. The
+  `<repo-root>/.githooks/pre-commit` or the authoring repository's coverage
+  gate names it directly. The
   meta-check that reconciles discovered gates against lefthook and CI derives
   its own scope from the same pattern, so moving the anchor moves both halves
   together.

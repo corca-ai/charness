@@ -387,11 +387,11 @@ def test_eval_registry_scenarios_are_immutable_contract_records() -> None:
     # never attributes the frozen-dataclass line to this kill test and the
     # `frozen=True -> False` mutant survives as a false coverage gap (#198). A
     # fresh module copy avoids mutating `sys.modules` and so cannot contaminate
-    # other tests that import `scripts.eval_registry`.
+    # other tests that import `tools.eval_registry`.
     import importlib.util
     import sys
 
-    source = ROOT / "scripts" / "eval_registry.py"
+    source = ROOT / "tools" / "eval_registry.py"
     spec = importlib.util.spec_from_file_location("_eval_registry_immutability_probe", source)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)

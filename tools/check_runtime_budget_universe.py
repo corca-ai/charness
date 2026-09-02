@@ -56,15 +56,13 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-import adapter_lib
-import quality_label_universe
-
 from runtime_bootstrap import (
     import_repo_module,
     load_path_module,
     repo_root_from_script,
     skill_script,
 )
+from scripts import adapter_lib, quality_label_universe
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)

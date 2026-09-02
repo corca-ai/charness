@@ -25,8 +25,8 @@ from runtime_bootstrap import import_repo_module
 from .support import ROOT
 
 _ANCHOR = str(ROOT / "scripts/x.py")
-_lib = import_repo_module(_ANCHOR, "scripts.export_self_sufficiency_lib")
-_gate = import_repo_module(_ANCHOR, "scripts.check_export_self_sufficiency")
+_lib = import_repo_module(_ANCHOR, "tools.export_self_sufficiency_lib")
+_gate = import_repo_module(_ANCHOR, "tools.check_export_self_sufficiency")
 
 
 # --- against the real export tree ---------------------------------------------
@@ -852,3 +852,39 @@ def test_an_undecodable_file_is_skipped_rather_than_crashing_the_arm(tmp_path: P
     findings = _lib.repo_root_instruction_findings(export_root)
 
     assert [f["doc"] for f in findings] == ["skills/demo/references/how.md"]
+
+
+def test_an_exported_tools_reference_is_a_shipping_gap(tmp_path: Path) -> None:
+    export_root = _instruction_export(
+        tmp_path,
+        doc_relative="skills/demo/references/how.md",
+        body=(
+            "Run `python3 tools/check_coverage.py --repo-root .` or "
+            "`python3 -m tools.check_coverage`.\n"
+        ),
+    )
+
+    findings = _lib.exported_tools_reference_findings(export_root)
+
+    assert findings == [
+        {
+            "path": "skills/demo/references/how.md",
+            "line": 1,
+            "references": ["-m tools.", "check_coverage.py"],
+        }
+    ]
+
+
+def test_exported_tools_references_are_reported_without_blocking_the_composed_gate(monkeypatch) -> None:
+    monkeypatch.setattr(_gate._lib, "unguarded_entrypoint_import_findings", lambda *_a, **_k: [])
+    monkeypatch.setattr(_gate._lib, "repo_root_instruction_findings", lambda *_a, **_k: [])
+    monkeypatch.setattr(_gate._lib, "exported_tools_reference_findings", lambda *_a, **_k: [
+        {"path": "scripts/run-quality.sh", "line": 1, "references": ["-m tools."]}
+    ])
+
+    payload = _gate.run_check(ROOT)
+
+    assert payload["status"] == "pass"
+    assert payload["advisory_exported_tools_references"] == [
+        {"path": "scripts/run-quality.sh", "line": 1, "references": ["-m tools."]}
+    ]

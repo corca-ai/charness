@@ -34,7 +34,7 @@ def _load_skill_module(relative: str, name: str):
 
 # --- a path outside every known root is returned as-is -----------------------
 
-_pointer_writes = import_repo_module(__file__, "scripts.check_current_pointer_writes")
+_pointer_writes = import_repo_module(__file__, "tools.check_current_pointer_writes")
 
 
 def test_a_path_outside_repo_and_support_is_returned_unchanged(tmp_path: Path) -> None:
