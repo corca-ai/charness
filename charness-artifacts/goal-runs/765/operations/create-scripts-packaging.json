@@ -1,0 +1,17 @@
+{
+ "kind": "charness.goal-run-operation/v1",
+ "repo": "corca-ai/charness",
+ "parent_number": 765,
+ "operation": "create-or-reuse-child",
+ "attempt_id": "bootstrap-create-scripts-packaging-1",
+ "draft_sha256": "129f065a28ce2c6a6a7fd7dc5f6ff2b63349b75ddf1ab62411ea4879ff8d2501",
+ "binding_sha256": "20fdaf7e9a3e1489a308b11041555a9249b2e826d93d951f294a565b24d161cf",
+ "observation_dir": "charness-artifacts/goal-runs/765/observations",
+ "target": {
+  "repo": "corca-ai/charness",
+  "work_item_key": "scripts-packaging",
+  "title": "Scripts packaging: concept packages under scripts/ with gate-universe parity"
+ },
+ "body_file": "charness-artifacts/goal-runs/765/bodies/scripts-packaging.md",
+ "binding_path": "charness-artifacts/goals/2026-09-02-north-star-realignment.binding.json"
+}

@@ -1,0 +1,100 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: created
+repo: corca-ai/charness
+parent_number: 765
+work_item_key: integrated-closeout
+number: 772
+url: https://github.com/corca-ai/charness/issues/772
+body_verified: true
+before:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  work_item_key: integrated-closeout
+  marker: '<!-- charness-work-item-key: integrated-closeout -->'
+  count: 0
+  matches: []
+readback:
+  ok: true
+  repo: corca-ai/charness
+  title: 'Integrated closeout: clean consumer install proof, release lane, guarded
+    parent close'
+  labels: []
+  milestone: null
+  body_bytes: 1175
+  body_preview: '<!-- charness-work-item-key: integrated-closeout -->
+
+
+    ## Objective
+
+
+    Prove the composition once and close the parent through its guarded readback path.
+
+
+    ## Owned scope
+
+
+    - Clean consumer install from the exported plugin on a throwaway repository: `charness
+    doctor`, `charness update`, and a `quality` run complete without referencing any
+    `tools/` file. Recorded by the operator or a task run, not asserted from the source
+    checkout.
+
+    - Release lane (`run-quality.sh --release`) green on the integrated tree with
+    the skip list read.
+
+    - Distinct-observer review of the export boundary and the gate classification,
+    recorded.
+
+    - Parent Goal Run closed only through `issue_tool.py goal-run-close` after exact
+    readback.
+
+
+    ## Acceptance
+
+
+    - The live install proof artifact exists and names the export commit.
+
+    - Every child is provider-closed with behavioural evidence before the parent close
+    is attempted.
+
+
+    ## Dependencies
+
+
+    docs-as-code, gate-scope-repair, subprocess-retroactive-removal, quality-boundary-and-run-quality,
+    scripts-packaging, rework-instrument.
+
+
+    ## Non-claims
+
+
+    Push, tag, release publish, and installed-host mutation on the operator''s machines
+    remain separately authorised.
+
+    '
+  number: 772
+  url: https://github.com/corca-ai/charness/issues/772
+  body_verified: true
+  verification:
+    command: verify-create
+    repo: corca-ai/charness
+    number: 772
+    body_file: /home/hwidong/codes/charness/charness-artifacts/goal-runs/765/bodies/integrated-closeout.md
+operation: create-or-reuse-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/765/observations/bootstrap-create-integrated-closeout-1.started.json
+  started_sha256: 8a323bde83fdd937fc55d50eb986e10fe3618dc32f7451f648e55ba467dacedd
+  terminal_path: charness-artifacts/goal-runs/765/observations/bootstrap-create-integrated-closeout-1.terminal.json
+  terminal_sha256: 7b19de6953a8da69b11e6599688a6272113c0e1a6811cb4bdd2cd66686cc0c2e
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-create-integrated-closeout-1

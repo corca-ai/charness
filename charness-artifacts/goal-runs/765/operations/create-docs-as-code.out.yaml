@@ -1,0 +1,80 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: created
+repo: corca-ai/charness
+parent_number: 765
+work_item_key: docs-as-code
+number: 766
+url: https://github.com/corca-ai/charness/issues/766
+body_verified: true
+before:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  work_item_key: docs-as-code
+  marker: '<!-- charness-work-item-key: docs-as-code -->'
+  count: 0
+  matches: []
+readback:
+  ok: true
+  repo: corca-ai/charness
+  title: 'Docs as code: retire records from docs/, enforce Last verified, principles
+    in AGENTS.md, README as user guide'
+  labels: []
+  milestone: null
+  body_bytes: 2386
+  body_preview: '<!-- charness-work-item-key: docs-as-code -->
+
+
+    ## Objective
+
+
+    Restore `docs/` to a single current-state wiki that is treated like code, and
+    make AGENTS.md and README serve their readers.
+
+
+    ## Owned scope
+
+
+    - Add the four docs-as-code principles to AGENTS.md (operator approval given 2026-09-02):
+    reduce duplication, link related pages like a wiki, keep README a minimal user
+    guide, keep AGENTS.md minimal and pointing at `docs/index.md`. Expand `docs/documentation-principles.md`
+    with the detail.
+
+    - Retire `docs/north-star-overhaul-roadmap.md` (complete since 2026-06-20), `docs/readme-proof.md`
+    (cites README sections that no longer exist), and the six self-described working
+    records (`testability-dsl-initiative.md`, `support-tool-followup.md`, `retro-self-improvement-spec.md`,
+    `duplicate-detection-strategy.md`, `capability-resolution.md`, `ai-ml-engineering-patterns.md`)
+    to `charness-artifacts/`. Fix `docs/index.md` and `docs/operator-acceptance.md`,
+    which call the roadmap active.
+
+    - Add `Last verified` to every `docs/` page and make `scripts/check-docs.sh` refuse
+    a page without it; prove with a seeded page.
+
+    - Keep the irreversible-boundary definition only in `docs/design-north-star.md`;
+    repl'
+  number: 766
+  url: https://github.com/corca-ai/charness/issues/766
+  body_verified: true
+  verification:
+    command: verify-create
+    repo: corca-ai/charness
+    number: 766
+    body_file: /home/hwidong/codes/charness/charness-artifacts/goal-runs/765/bodies/docs-as-code.md
+operation: create-or-reuse-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/765/observations/bootstrap-create-docs-as-code-1.started.json
+  started_sha256: df9e07e059a1b45b92571a19508dfc70beb5dae80ca0f8aef776ea691c10f493
+  terminal_path: charness-artifacts/goal-runs/765/observations/bootstrap-create-docs-as-code-1.terminal.json
+  terminal_sha256: 2e73e3069435715330813fd06765caed3584f4bbfed6803c6aa82261511218f2
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-create-docs-as-code-1

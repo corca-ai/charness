@@ -1,0 +1,78 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: created
+repo: corca-ai/charness
+parent_number: 765
+work_item_key: subprocess-retroactive-removal
+number: 768
+url: https://github.com/corca-ai/charness/issues/768
+body_verified: true
+before:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  work_item_key: subprocess-retroactive-removal
+  marker: '<!-- charness-work-item-key: subprocess-retroactive-removal -->'
+  count: 0
+  matches: []
+readback:
+  ok: true
+  repo: corca-ai/charness
+  title: 'Subprocess retroactive removal: one guarded spawn primitive, in-process
+    tests by default'
+  labels: []
+  milestone: null
+  body_bytes: 2061
+  body_preview: '<!-- charness-work-item-key: subprocess-retroactive-removal -->
+
+
+    ## Objective
+
+
+    Leave one spawn primitive in production code and no repo Python re-spawning repo
+    Python; leave subprocess in tests only where the process boundary is the claim.
+
+
+    ## Owned scope
+
+
+    Production (`scripts/`, `skills/`, `native/`): replace the 19 self-invocations
+    of this repo''s Python with `runtime_bootstrap.import_repo_module` (the two `-m
+    pytest`, the `-m coverage`, and the `python -c` clean-interpreter probe stay as
+    spawns); remove the 7 hardcoded `"python3"`; route the remaining ~105 external-binary
+    spawns (git, cargo, gh, rg, cosmic-ray) and the 9 config-driven `shell=True` sites
+    through `scripts/subprocess_guard.py`; add a form check that refuses a `subprocess.`
+    call outside the guard.
+
+
+    Tests: for each of the 193 files that spawn `python3` on a repo script, read its
+    recorded reason first (`scripts/boundary-bypass-exemptions.txt`, `boundary_contract`
+    reasons, docstrings). Keep one spawn where the boundary is the claim: `__main__`
+    dispatch smoke, exact exit/stderr contract, child-exit-on-parent-death, env-scrubbed
+    export self-sufficiency, targets that spawn git themselves. Migrate the rest to
+    `tests/script_'
+  number: 768
+  url: https://github.com/corca-ai/charness/issues/768
+  body_verified: true
+  verification:
+    command: verify-create
+    repo: corca-ai/charness
+    number: 768
+    body_file: /home/hwidong/codes/charness/charness-artifacts/goal-runs/765/bodies/subprocess-retroactive-removal.md
+operation: create-or-reuse-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/765/observations/bootstrap-create-subprocess-retroactive-removal-1.started.json
+  started_sha256: 21b11418cb67438a8bbf719fe36638f2de59c5decbc73d9876856bb42017213e
+  terminal_path: charness-artifacts/goal-runs/765/observations/bootstrap-create-subprocess-retroactive-removal-1.terminal.json
+  terminal_sha256: 0c1235fa82fc43329d9a1bd3270629f99865093f38560b600b98898d01b7bfee
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-create-subprocess-retroactive-removal-1

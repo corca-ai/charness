@@ -1,0 +1,91 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: created
+repo: corca-ai/charness
+parent_number: 765
+work_item_key: scripts-packaging
+number: 770
+url: https://github.com/corca-ai/charness/issues/770
+body_verified: true
+before:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  work_item_key: scripts-packaging
+  marker: '<!-- charness-work-item-key: scripts-packaging -->'
+  count: 0
+  matches: []
+readback:
+  ok: true
+  repo: corca-ai/charness
+  title: 'Scripts packaging: concept packages under scripts/ with gate-universe parity'
+  labels: []
+  milestone: null
+  body_bytes: 1327
+  body_preview: '<!-- charness-work-item-key: scripts-packaging -->
+
+
+    ## Objective
+
+
+    Organise `scripts/` into concept packages so a reader finds a script by what it
+    owns, with every gate reporting the same universe before and after.
+
+
+    ## Owned scope
+
+
+    - Add `scripts/__init__.py` and dotted-name support in `runtime_bootstrap.import_repo_module`.
+
+    - Move by concept: gates (check_/validate_, ~106), mutation (15), coverage (12),
+    worktree (14), review (14), lessons (14), hooks (10), packaging (7), and the `_lib`
+    core. One package per commit, with the universe-parity check from gate-scope-repair
+    as the blocking check.
+
+    - Update `check_export_self_sufficiency.py` path strings and every `python3 scripts/<name>`
+    carrier in SKILL.md, adapters, and hooks.
+
+    - Record that the 2026-08-07 critique''s "scripts/ has no subdirectories" premise
+    is invalidated as of this Work Item; do not edit the historical artifact.
+
+
+    ## Acceptance
+
+
+    - Every gate''s file set is identical before and after each package move.
+
+    - Clean export and installed-consumer import smoke green.
+
+    - No `scripts/<stdlib-name>.py` shadowing; `pyproject.toml` `pythonpath` comment
+    updated or removed.
+
+
+    ## Focused verification
+
+
+    Standing lane per package; release lane'
+  number: 770
+  url: https://github.com/corca-ai/charness/issues/770
+  body_verified: true
+  verification:
+    command: verify-create
+    repo: corca-ai/charness
+    number: 770
+    body_file: /home/hwidong/codes/charness/charness-artifacts/goal-runs/765/bodies/scripts-packaging.md
+operation: create-or-reuse-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/765/observations/bootstrap-create-scripts-packaging-1.started.json
+  started_sha256: 2a71ca15f17686769008b0fa9879096388a35ffa6221456eec2679771d14c7e8
+  terminal_path: charness-artifacts/goal-runs/765/observations/bootstrap-create-scripts-packaging-1.terminal.json
+  terminal_sha256: 5ea3ee65b6c8923f4c47b35c03b9cb194deffa075731868d10d28f5606d37527
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-create-scripts-packaging-1

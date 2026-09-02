@@ -1,0 +1,84 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: created
+repo: corca-ai/charness
+parent_number: 765
+work_item_key: gate-scope-repair
+number: 767
+url: https://github.com/corca-ai/charness/issues/767
+body_verified: true
+before:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  work_item_key: gate-scope-repair
+  marker: '<!-- charness-work-item-key: gate-scope-repair -->'
+  count: 0
+  matches: []
+readback:
+  ok: true
+  repo: corca-ai/charness
+  title: 'Gate scope repair: recursive script globs, .sh length cap, unreferenced-script
+    check'
+  labels: []
+  milestone: null
+  body_bytes: 1760
+  body_preview: '<!-- charness-work-item-key: gate-scope-repair -->
+
+
+    ## Objective
+
+
+    Make every gate''s file universe survive subdirectories and cover shell files,
+    and give the repo a file-level unreferenced-script check, before any file under
+    `scripts/` moves.
+
+
+    ## Owned scope
+
+
+    - Replace every single-star `scripts/*.py` glob (about 50, including `GATED_GLOBS`
+    in `scripts/check_code_lengths.py`) with a recursive form. Record the before/after
+    file set of each gate; a widened universe surfaces latent findings that are fixed
+    or exempted by name, never landed silently.
+
+    - Add `.sh` to `check_code_lengths.py` with a cap and a seeded failing fixture.
+    `scripts/run-quality.sh` at 1341 lines enters the gated universe as a named, dated
+    exemption that slice 4 retires.
+
+    - Add a standing file-level unreferenced-script check: a reference graph over
+    skills, adapters, hooks, presets, profiles, integrations, packaging, the CLI,
+    `scripts/`, and `tests/`. Delete `scripts/atomic_write_lib.py` and `scripts/setup_markdown_section_lib.py`
+    (referenced only by historical artifacts). Disposition the 12 tests-only scripts
+    by name: keep with a consumer, move to tests, or delete.
+
+
+    ## Acceptance
+
+
+    - For every glob-driven gate, `--list'
+  number: 767
+  url: https://github.com/corca-ai/charness/issues/767
+  body_verified: true
+  verification:
+    command: verify-create
+    repo: corca-ai/charness
+    number: 767
+    body_file: /home/hwidong/codes/charness/charness-artifacts/goal-runs/765/bodies/gate-scope-repair.md
+operation: create-or-reuse-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/765/observations/bootstrap-create-gate-scope-repair-1.started.json
+  started_sha256: 83af155447e56764e0c281eb159557e3a5be52c82a2e87f009a179b34e7a606d
+  terminal_path: charness-artifacts/goal-runs/765/observations/bootstrap-create-gate-scope-repair-1.terminal.json
+  terminal_sha256: 7d81232078093151d8f5f21f74530114da74e19b701626f5e37e52ba29307dc1
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-create-gate-scope-repair-1

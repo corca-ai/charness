@@ -1,0 +1,81 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: created
+repo: corca-ai/charness
+parent_number: 765
+work_item_key: quality-boundary-and-run-quality
+number: 769
+url: https://github.com/corca-ai/charness/issues/769
+body_verified: true
+before:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  work_item_key: quality-boundary-and-run-quality
+  marker: '<!-- charness-work-item-key: quality-boundary-and-run-quality -->'
+  count: 0
+  matches: []
+readback:
+  ok: true
+  repo: corca-ai/charness
+  title: 'Quality boundary: consumer-only export, root tools/ for repo gates, declarative
+    run-quality'
+  labels: []
+  milestone: null
+  body_bytes: 1821
+  body_preview: '<!-- charness-work-item-key: quality-boundary-and-run-quality -->
+
+
+    ## Objective
+
+
+    Make the `quality` skill export only what checks a consumer repo''s health via
+    gates and intelligence, move repo-only gates to a non-exported root `tools/` tree,
+    and turn `run-quality.sh` into a declarative gate list with a thin runner.
+
+
+    ## Owned scope
+
+
+    - Classify all 97 queued gates by one question: which consumer rework does this
+    prevent? Each answer names the consumer failure mode or the repo failure mode.
+    A fresh-eye reviewer reads the list before any move.
+
+    - Create root `tools/` for repo-only gates and dev tooling; the export rule becomes
+    "everything under `scripts/` ships" and `SOURCE_ONLY_PLUGIN_SCRIPTS` is retired.
+    The 32 quality-lane-only scripts are the first candidates.
+
+    - Replace the 1341-line `run-quality.sh` queue with a declarative gate list (label,
+    command, lane, budget) and a thin runner; retire the dated `.sh` length exemption
+    from gate-scope-repair.
+
+    - Re-scope `skills/public/quality/SKILL.md` and `.agents/quality-adapter.yaml`
+    to the consumer definition.
+
+    - Changing the export boundary is authoring a proof surface: distinct-observer
+    review recorded in a critique artifact, plus a clean-e'
+  number: 769
+  url: https://github.com/corca-ai/charness/issues/769
+  body_verified: true
+  verification:
+    command: verify-create
+    repo: corca-ai/charness
+    number: 769
+    body_file: /home/hwidong/codes/charness/charness-artifacts/goal-runs/765/bodies/quality-boundary-and-run-quality.md
+operation: create-or-reuse-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/765/observations/bootstrap-create-quality-boundary-and-run-quality-1.started.json
+  started_sha256: 4fc4fe7a6ecaeb5460fac25b1bfcad5004e31a8dc4df23c4a86daecf87146804
+  terminal_path: charness-artifacts/goal-runs/765/observations/bootstrap-create-quality-boundary-and-run-quality-1.terminal.json
+  terminal_sha256: f2f6162858c54ec26d77d55abe247191e89ecb3c4f9ba917559012e535c5a43b
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-create-quality-boundary-and-run-quality-1

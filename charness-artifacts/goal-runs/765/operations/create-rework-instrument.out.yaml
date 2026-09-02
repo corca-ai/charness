@@ -1,0 +1,101 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: created
+repo: corca-ai/charness
+parent_number: 765
+work_item_key: rework-instrument
+number: 771
+url: https://github.com/corca-ai/charness/issues/771
+body_verified: true
+before:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  work_item_key: rework-instrument
+  marker: '<!-- charness-work-item-key: rework-instrument -->'
+  count: 0
+  matches: []
+readback:
+  ok: true
+  repo: corca-ai/charness
+  title: 'Rework instrument: rework label and causing-skill line read by retro'
+  labels: []
+  milestone: null
+  body_bytes: 989
+  body_preview: '<!-- charness-work-item-key: rework-instrument -->
+
+
+    ## Objective
+
+
+    Let the repo observe consumer rework through the operator''s own issue filing,
+    without a new gate.
+
+
+    ## Owned scope
+
+
+    - Add a `rework` label convention and a `Causing skill:` line to the issue skill''s
+    filing shape (`skills/public/issue/references/issue-shaping.md` and the create
+    template).
+
+    - Teach `retro` to read `gh issue list --label rework` for the period and attribute
+    per skill in its packet.
+
+    - The operator files at least one real rework issue against this Goal Run to prove
+    the path end to end.
+
+
+    ## Acceptance
+
+
+    - A retro packet shows the per-skill rework attribution for a period containing
+    the operator''s instance.
+
+    - No new gate, validator, or artifact schema.
+
+
+    ## Focused verification
+
+
+    One retro run on the current period.
+
+
+    ## Dependencies
+
+
+    quality-boundary-and-run-quality.
+
+
+    ## Non-claims
+
+
+    No claim that this measures rework completely; it is the operator-side fact the
+    usage-episode instrument could not provide.
+
+    '
+  number: 771
+  url: https://github.com/corca-ai/charness/issues/771
+  body_verified: true
+  verification:
+    command: verify-create
+    repo: corca-ai/charness
+    number: 771
+    body_file: /home/hwidong/codes/charness/charness-artifacts/goal-runs/765/bodies/rework-instrument.md
+operation: create-or-reuse-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/765/observations/bootstrap-create-rework-instrument-1.started.json
+  started_sha256: 5ec850d1326f9284db0a9a0ef9401d3abca4c151a8851ae5411dc7a48d8e534e
+  terminal_path: charness-artifacts/goal-runs/765/observations/bootstrap-create-rework-instrument-1.terminal.json
+  terminal_sha256: dc02dd3070104b6a459d1e0ea8b5ccce97090c58ef5766af344b9d5cc37a8eaa
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-create-rework-instrument-1

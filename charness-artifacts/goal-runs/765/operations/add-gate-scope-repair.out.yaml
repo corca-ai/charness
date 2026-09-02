@@ -1,0 +1,47 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: linked
+mutation_performed: true
+repo: corca-ai/charness
+parent_number: 765
+sub_issue_number: 767
+sub_issue_id: 5319178869
+readback:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  parent_number: 765
+  count: 2
+  completed: 0
+  open: 2
+  percent_completed: 0
+  children:
+  - number: 766
+    title: 'Docs as code: retire records from docs/, enforce Last verified, principles
+      in AGENTS.md, README as user guide'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/766
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+  - number: 767
+    title: 'Gate scope repair: recursive script globs, .sh length cap, unreferenced-script
+      check'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/767
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+operation: add-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/765/observations/bootstrap-add-gate-scope-repair-1.started.json
+  started_sha256: 2010f2ca6904c145f143f06a3626708a1a2d1aaa2b3a183a8120c2bfd355e255
+  terminal_path: charness-artifacts/goal-runs/765/observations/bootstrap-add-gate-scope-repair-1.terminal.json
+  terminal_sha256: fd3c2792e3f55b44634a24586a15f1f22b5143247d9bc8d26b7c78f1dfd5a51e
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-add-gate-scope-repair-1

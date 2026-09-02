@@ -1,0 +1,70 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: linked
+mutation_performed: true
+repo: corca-ai/charness
+parent_number: 765
+sub_issue_number: 771
+sub_issue_id: 5319182629
+readback:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  parent_number: 765
+  count: 6
+  completed: 0
+  open: 6
+  percent_completed: 0
+  children:
+  - number: 766
+    title: 'Docs as code: retire records from docs/, enforce Last verified, principles
+      in AGENTS.md, README as user guide'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/766
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+  - number: 767
+    title: 'Gate scope repair: recursive script globs, .sh length cap, unreferenced-script
+      check'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/767
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+  - number: 768
+    title: 'Subprocess retroactive removal: one guarded spawn primitive, in-process
+      tests by default'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/768
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+  - number: 769
+    title: 'Quality boundary: consumer-only export, root tools/ for repo gates, declarative
+      run-quality'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/769
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+  - number: 770
+    title: 'Scripts packaging: concept packages under scripts/ with gate-universe
+      parity'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/770
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+  - number: 771
+    title: 'Rework instrument: rework label and causing-skill line read by retro'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/771
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/765
+operation: add-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/765/observations/bootstrap-add-rework-instrument-1.started.json
+  started_sha256: c5a86c317a81109730fa0efa61aee44717731fd7898ad69ef797b785ac76a50c
+  terminal_path: charness-artifacts/goal-runs/765/observations/bootstrap-add-rework-instrument-1.terminal.json
+  terminal_sha256: 9ecdba6c9dcfccf7594ed9f05bd264444f113a5ba0c8a5efae343e9c0bc28f17
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-add-rework-instrument-1
