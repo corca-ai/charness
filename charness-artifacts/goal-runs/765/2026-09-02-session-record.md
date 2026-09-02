@@ -198,7 +198,13 @@ Steps 1 and 2 of "Next session, in order" are done.
   naming `sys.executable` or `"python3"` 104, files carrying
   `boundary_contract` 89, A minus B 36 (helpers and in-process CLI loaders),
   B minus A 21; collection 8507 selected of 8638. The in-process rule the
-  second session paid for is now in `docs/development.md`.
+  second session paid for is now in `docs/development.md`. Carrier
+  `bff819a9a`, `carrier_verified` at commit time.
+- Step 4: #774 closeout re-proved on this tree: `recent-lessons.md` absent,
+  `summary_path: null`, `/goal #765` pickup `ok: true` with
+  `lessons.selection: bounded-ledger-preview`, selection-index `--check`
+  reads `summary_projection: not_configured`, focused ledger, lesson, and
+  pickup tests 243 passed.
 
 ## Lessons this session paid for
 
