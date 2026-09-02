@@ -309,6 +309,34 @@ def test_sc17_an_unexempt_dominated_literal_blocks(tmp_path: Path) -> None:
     assert REPLACEMENT in report["blocking"][0]
 
 
+def test_sc17_reads_consumer_registry_and_declared_src_literal(tmp_path: Path) -> None:
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / "src").mkdir()
+    (tmp_path / ".agents" / "command-dominance.yaml").write_text(
+        "version: 1\n"
+        "dominated_commands:\n"
+        "  - id: bare-pytest-whole-suite\n"
+        "    program: pytest\n"
+        "    broad_targets:\n"
+        "      - tests\n"
+        f"    replacement: {REPLACEMENT}\n"
+        "    reason: the standing runner covers the same scope\n"
+        "config_literals:\n"
+        "  - path: src/tool.toml\n"
+        "    key: test-command\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "src" / "tool.toml").write_text(
+        '[tool]\ntest-command = "python3 -m pytest -q tests"\n', encoding="utf-8"
+    )
+
+    report = GATE.evaluate(tmp_path)
+
+    assert report["armed"] is True
+    assert report["scanned_sites"]["config_literals"] == ["src/tool.toml:test-command"]
+    assert report["findings"][0]["site"] == "src/tool.toml:test-command"
+
+
 def test_sc17_refuses_a_registry_the_repo_reader_cannot_fully_read(tmp_path: Path) -> None:
     """A half-read registry is a rule that silently is not there.
 

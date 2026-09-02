@@ -24,13 +24,46 @@ Usage:
     trap 'rm -f "$config" || true' EXIT
     specdown run -config "$config" -jobs 4 -out "$tmpdir"
 """
+
 from __future__ import annotations
 
 import argparse
 import json
 from pathlib import Path
 
+from runtime_bootstrap import import_repo_module
+
 EPHEMERAL_CONFIG_NAME = ".specdown.ephemeral.json"
+try:
+    _quality_adapter_lib = import_repo_module(__file__, "scripts.quality_adapter_lib")
+    _quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
+except ModuleNotFoundError as exc:
+    if exc.name not in {"scripts.quality_adapter_lib", "scripts.quality_universes_lib"}:
+        raise
+    _quality_adapter_lib = None
+    _quality_universes = None
+
+
+def _source_config_path(repo_root: Path, configured: Path | None) -> Path:
+    if configured is not None:
+        source_path = configured.expanduser().resolve()
+    elif _quality_adapter_lib is not None and _quality_universes is not None:
+        adapter = _quality_adapter_lib.load_quality_adapter(repo_root)
+        universe = _quality_universes.resolve_universe(
+            adapter,
+            "specdown_config",
+            default=_quality_universes.DEFAULT_UNIVERSES["specdown_config"],
+        )
+        matches = _quality_universes.matching_files(repo_root, universe)
+        refusal = _quality_universes.refuse_if_declared_and_empty(universe, matches, "specdown")
+        if refusal:
+            raise SystemExit(refusal)
+        source_path = (matches[0] if matches else repo_root / universe.patterns[0]).resolve()
+    else:
+        source_path = (repo_root / "specdown.json").resolve()
+    if not source_path.is_file():
+        raise SystemExit(f"specdown: refusing missing config file: {source_path}")
+    return source_path
 
 
 def build_ephemeral_config(source: dict, out_dir: Path) -> dict:
@@ -67,7 +100,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    source_path = (args.config or (args.repo_root / "specdown.json")).resolve()
+    source_path = _source_config_path(args.repo_root.resolve(), args.config)
     source = json.loads(source_path.read_text(encoding="utf-8"))
     out_dir = args.out_dir.expanduser().resolve()
     out_dir.mkdir(parents=True, exist_ok=True)

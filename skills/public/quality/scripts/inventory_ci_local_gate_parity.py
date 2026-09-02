@@ -43,7 +43,14 @@ from typing import Any
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
@@ -51,8 +58,12 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
-_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.adapter_lib"
+_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
+_quality_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.quality_adapter_lib"
+)
+_quality_universes = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.quality_universes_lib"
 )
 load_yaml_file = _adapter_lib.load_yaml_file
 
@@ -82,10 +93,7 @@ def _print_text_summary(rendered: dict[str, Any]) -> None:
     for issue in rendered["parity_issues"]:
         run_text = issue.get("run") or issue.get("uses") or "<unknown>"
         suffix = f" (named {issue['name']!r})" if issue.get("name") else ""
-        print(
-            f"  parity-issue {issue['workflow']}::{issue['job']}: {run_text!r}"
-            f"{suffix}"
-        )
+        print(f"  parity-issue {issue['workflow']}::{issue['job']}: {run_text!r}{suffix}")
     for advisory in rendered["jobs_without_canonical_gate"]:
         jobs = ", ".join(advisory["jobs"])
         print(
@@ -101,9 +109,7 @@ def _print_text_summary(rendered: dict[str, Any]) -> None:
             "inside something it cannot open. Not a pass and not a violation."
         )
     for entry in rendered.get("exempt_workflows") or []:
-        print(
-            f"  exempt {entry['workflow']}: gate-policy={entry['gate_policy']}"
-        )
+        print(f"  exempt {entry['workflow']}: gate-policy={entry['gate_policy']}")
     if rendered["parity_issues"]:
         print(
             "  resolve each parity-issue by adding the step to the canonical "
@@ -129,23 +135,35 @@ def summarize(rendered: dict[str, Any], *, sample_limit: int = 10) -> dict[str, 
         # per-workflow entries under a `jobs_*` name, so a workflow with seven
         # unreadable jobs summarized as 1 — the denominator defect one register down.
         "jobs_gate_match_unestablished_count": sum(
-            len(entry.get("jobs") or []) for entry in rendered.get("jobs_gate_match_unestablished") or []
+            len(entry.get("jobs") or [])
+            for entry in rendered.get("jobs_gate_match_unestablished") or []
         ),
         "parity_issue_count": len(parity_issues) if isinstance(parity_issues, list) else 0,
         "jobs_without_canonical_gate_count": (
-            sum(len(entry.get("jobs") or []) for entry in missing) if isinstance(missing, list) else 0
+            sum(len(entry.get("jobs") or []) for entry in missing)
+            if isinstance(missing, list)
+            else 0
         ),
         "workflows_without_canonical_gate_count": len(missing) if isinstance(missing, list) else 0,
         "exempt_workflow_count": len(exempt) if isinstance(exempt, list) else 0,
-        "parity_issues_sample": parity_issues[:sample_limit] if isinstance(parity_issues, list) else [],
-        "jobs_without_canonical_gate_sample": missing[:sample_limit] if isinstance(missing, list) else [],
+        "parity_issues_sample": parity_issues[:sample_limit]
+        if isinstance(parity_issues, list)
+        else [],
+        "jobs_without_canonical_gate_sample": missing[:sample_limit]
+        if isinstance(missing, list)
+        else [],
         "exempt_workflows_sample": exempt[:sample_limit] if isinstance(exempt, list) else [],
     }
 
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
-    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT, help="Repo root for the CI/local gate parity inventory")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=REPO_ROOT,
+        help="Repo root for the CI/local gate parity inventory",
+    )
     plib.add_workflow_glob_arg(parser)
     parser.add_argument(
         "--canonical-gate-pattern",
@@ -187,13 +205,50 @@ def _build_parser() -> argparse.ArgumentParser:
             "absent), so a green cannot be cited as CI/local parity proof"
         ),
     )
-    parser.add_argument("--require-git-file-listing", action="store_true", help="Fail when git ls-files is unavailable for workflow discovery")
+    parser.add_argument(
+        "--require-git-file-listing",
+        action="store_true",
+        help="Fail when git ls-files is unavailable for workflow discovery",
+    )
     add_output_args(
         parser,
         summary_help="Emit compact YAML parity counts and bounded triage samples",
         detail_help="Emit the full CI/local gate parity inventory as YAML",
     )
     return parser
+
+
+def _resolve_gate_universe(root: Path, args):
+    if args.canonical_gate_pattern:
+        return _quality_universes.Universe(tuple(args.canonical_gate_pattern), True, "adapter")
+    adapter = _quality_adapter_lib.load_quality_adapter(root)
+    return _quality_universes.resolve_universe(
+        adapter,
+        "ci_gate_patterns",
+        default=_quality_universes.DEFAULT_UNIVERSES["ci_gate_patterns"],
+    )
+
+
+def _identity_summary(payload: dict[str, Any]) -> dict[str, Any]:
+    return payload
+
+
+def _refuse_empty_gate_universe(args, universe) -> bool:
+    if universe.patterns:
+        return False
+    reason = _quality_universes.refuse_if_declared_and_empty(
+        universe, [], "inventory-ci-local-gate-parity"
+    )
+    if not reason:
+        return False
+    refusal = {
+        "status": "declared-universe-empty",
+        "ci_gate_patterns": [],
+        "reason": reason,
+    }
+    if not emit_selected(refusal, args, summarize=_identity_summary):
+        print(f"CI/local gate parity inventory: {reason}", file=sys.stderr)
+    return True
 
 
 def main() -> int:
@@ -239,6 +294,7 @@ def main() -> int:
                 "correct the glob, or drop --workflow-glob to use the discovered default."
             ),
         }
+
         def _summarize_refusal(payload: dict[str, Any], **_: Any) -> dict[str, Any]:
             # Summary mode has its own key set; handing it the raw refusal made a
             # consumer keyed on `parity_issue_count` raise, which is the very
@@ -252,7 +308,10 @@ def main() -> int:
         if not emit_selected(refusal, args, summarize=_summarize_refusal):
             print(f"CI/local gate parity inventory: {refusal['reason']}", file=sys.stderr)
         return 1
-    raw_patterns = tuple(args.canonical_gate_pattern or plib.DEFAULT_CANONICAL_GATE_PATTERNS)
+    gate_universe = _resolve_gate_universe(root, args)
+    raw_patterns = gate_universe.patterns
+    if _refuse_empty_gate_universe(args, gate_universe):
+        return 1
     gate_patterns: tuple[re.Pattern[str], ...] = tuple(re.compile(p) for p in raw_patterns)
     report: list[dict[str, Any]] = []
     for path in workflow_files:
@@ -264,6 +323,8 @@ def main() -> int:
     if args.require_empty_parity_issues and rendered["parity_issues"]:
         return 1
     if args.require_canonical_gate_match and rendered["jobs_without_canonical_gate"]:
+        return 1
+    if gate_universe.declared and rendered["jobs_without_canonical_gate"]:
         return 1
     if args.require_established_gate_match and rendered.get("jobs_gate_match_unestablished"):
         return 1

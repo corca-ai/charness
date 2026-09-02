@@ -53,6 +53,8 @@ _MODULES = {
         "scripts/check_skill_surface_preflight.py",
         "scripts/check_test_repo_copy_invariants.py",
         "tools/validate_integrations.py",
+        "skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py",
+        "scripts/specdown_ephemeral_config.py",
         "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
         "scripts/check_coverage.py",
     )
@@ -101,6 +103,26 @@ def test_zero_scope_scan_refuses(tmp_path: Path) -> None:
         combined = (result.stdout + result.stderr).lower()
         assert result.returncode != 0, script
         assert expected_fragment.lower() in combined, script
+
+    scanner = run_gate(
+        "skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py",
+        "--repo-root",
+        root,
+        "--path-glob",
+        "missing/*.py",
+    )
+    assert scanner.returncode != 0
+    assert "refusing empty declared universe" in (scanner.stdout + scanner.stderr).lower()
+
+    specdown = run_gate(
+        "scripts/specdown_ephemeral_config.py",
+        "--repo-root",
+        root,
+        "--out-dir",
+        str(tmp_path / "out"),
+    )
+    assert specdown.returncode != 0
+    assert "specdown: refusing missing config file" in (specdown.stdout + specdown.stderr).lower()
 
 
 def test_declared_u2_universes_refuse_when_empty(tmp_path: Path) -> None:

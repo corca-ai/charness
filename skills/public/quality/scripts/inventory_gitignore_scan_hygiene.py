@@ -5,8 +5,33 @@ from __future__ import annotations
 import argparse
 import ast
 import fnmatch
+import runpy
 import sys
 from pathlib import Path
+from types import SimpleNamespace
+
+
+def _load_skill_runtime_bootstrap():
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
+    if bootstrap is None:
+        raise ImportError("skill_runtime_bootstrap.py not found")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))
+
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+_quality_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.quality_adapter_lib"
+)
+_quality_universes = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.quality_universes_lib"
+)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from git_inventory_lib import GitFileListingError, visible_repo_files  # noqa: E402
@@ -31,24 +56,9 @@ GIT_AWARE_MARKERS = (
     "check-ignore",
     "pathspec",
 )
-DEFAULT_PATH_GLOBS = (
-    "skills/public/quality/scripts/*.py",
-    "skills/public/quality/scripts/**/*.py",
-    "skills/public/quality/references/*.py",
-    "skills/public/quality/references/**/*.py",
-    "scripts/*inventory*.py",
-    "scripts/**/*inventory*.py",
-    "scripts/*quality*.py",
-    "scripts/**/*quality*.py",
-    "scripts/*scan*.py",
-    "scripts/**/*scan*.py",
-    "tools/*inventory*.py",
-    "tools/**/*inventory*.py",
-    "tools/*quality*.py",
-    "tools/**/*quality*.py",
-    "tools/*scan*.py",
-    "tools/**/*scan*.py",
-)
+# Back-compat for callers that imported the former gate constant. The source of
+# truth is the shared universes table; this alias intentionally owns no default.
+DEFAULT_PATH_GLOBS = tuple(_quality_universes.DEFAULT_UNIVERSES["scanner_globs"])
 REPO_ROOT_NAMES = {"repo_root", "root", "REPO_ROOT"}
 
 
@@ -62,39 +72,30 @@ def matches_any(path: str, patterns: tuple[str, ...]) -> bool:
 
 def candidate_files(
     repo_root: Path,
-    path_globs: tuple[str, ...],
+    universe,
     *,
     require_git: bool = False,
-    named_scope: bool = True,
 ) -> list[Path]:
-    try:
-        visible_files = visible_repo_files(
-            repo_root,
-            require_git=require_git,
-            context="gitignore scan hygiene file listing",
-        )
-    except GitFileListingError as exc:
-        raise InventoryError(str(exc)) from exc
-    candidates: list[Path] = []
-    seen: set[Path] = set()
-    for pattern in path_globs:
-        for path in repo_root.glob(pattern):
-            if not path.is_file() or path in seen:
-                continue
-            seen.add(path)
-            if visible_files is not None and path not in visible_files:
-                continue
-            candidates.append(path)
+    if require_git:
+        try:
+            visible_repo_files(
+                repo_root,
+                require_git=True,
+                context="gitignore scan hygiene file listing",
+            )
+        except GitFileListingError as exc:
+            raise InventoryError(str(exc)) from exc
+    candidates = _quality_universes.matching_files(repo_root, universe)
     # Two empties, two answers: a NAMED --path-glob that matches nothing is a
     # configured scope resolving to nothing and refuses; the default globs
     # matching nothing is a consumer repo with no scanners, a discovered empty
     # set the inventory reports in its payload.
-    if not candidates and named_scope:
-        raise InventoryError(
-            "refusing empty matched universe for inventory_gitignore_scan_hygiene "
-            f"(path globs: {', '.join(path_globs)})."
-        )
-    return sorted(candidates)
+    refusal = _quality_universes.refuse_if_declared_and_empty(
+        universe, candidates, "inventory-gitignore-scan-hygiene"
+    )
+    if refusal:
+        raise InventoryError(refusal)
+    return candidates
 
 
 def _is_repo_root_name(node: ast.AST) -> bool:
@@ -227,15 +228,19 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    path_globs = tuple(args.path_glob or DEFAULT_PATH_GLOBS)
+    if args.path_glob:
+        universe = _quality_universes.Universe(tuple(args.path_glob), True, "adapter")
+    else:
+        adapter = _quality_adapter_lib.load_quality_adapter(repo_root)
+        universe = _quality_universes.resolve_universe(
+            adapter,
+            "scanner_globs",
+            default=_quality_universes.DEFAULT_UNIVERSES["scanner_globs"],
+        )
+    path_globs = universe.patterns
     exclude_globs = tuple(args.exclude_glob or ())
     findings: list[dict[str, object]] = []
-    for path in candidate_files(
-        repo_root,
-        path_globs,
-        require_git=args.require_git_file_listing,
-        named_scope=bool(args.path_glob),
-    ):
+    for path in candidate_files(repo_root, universe, require_git=args.require_git_file_listing):
         rendered = str(path.relative_to(repo_root))
         if matches_any(rendered, exclude_globs):
             continue

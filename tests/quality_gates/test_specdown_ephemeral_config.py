@@ -215,6 +215,41 @@ def test_main_explicit_config_flag_overrides_the_repo_root_default(
     assert json.loads(written.read_text(encoding="utf-8"))["entry"] == "other.spec.md"
 
 
+def test_main_reads_consumer_specdown_config_universe(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    repo = tmp_path / "consumer"
+    config = _write_source(repo / "src", {"entry": "consumer.spec.md", "reporters": []})
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\nuniverses:\n  specdown_config: src/specdown.json\n",
+        encoding="utf-8",
+    )
+
+    assert _run_main(monkeypatch, "--repo-root", str(repo), "--out-dir", str(tmp_path / "out")) == 0
+
+    written = Path(capsys.readouterr().out.strip())
+    assert config == repo / "src" / "specdown.json"
+    assert written == config.parent / EPHEMERAL_CONFIG_NAME
+    assert json.loads(written.read_text(encoding="utf-8"))["entry"] == "consumer.spec.md"
+
+
+def test_main_refuses_missing_declared_specdown_config(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = tmp_path / "consumer"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\nuniverses:\n  specdown_config: src/specdown.json\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit) as excinfo:
+        _run_main(monkeypatch, "--repo-root", str(repo), "--out-dir", str(tmp_path / "out"))
+
+    assert "specdown: refusing empty declared universe" in str(excinfo.value)
+
+
 def test_main_defaults_the_source_config_to_the_cwd_repo_root(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:

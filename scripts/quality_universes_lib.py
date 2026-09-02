@@ -107,6 +107,12 @@ DEFAULT_UNIVERSES = {
         "scripts/**/*quality*.py",
         "scripts/*scan*.py",
         "scripts/**/*scan*.py",
+        "tools/*inventory*.py",
+        "tools/**/*inventory*.py",
+        "tools/*quality*.py",
+        "tools/**/*quality*.py",
+        "tools/*scan*.py",
+        "tools/**/*scan*.py",
     ],
     "ci_gate_patterns": [
         r"\bnpm\s+run\s+verify\b",

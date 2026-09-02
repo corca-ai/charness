@@ -15,7 +15,9 @@ SCRIPT = "skills/public/quality/scripts/validate_skill_ergonomics.py"
 
 def _load_validate_module() -> ModuleType:
     module_path = ROOT / SCRIPT
-    spec = importlib.util.spec_from_file_location("tests.quality_gates.validate_skill_ergonomics", module_path)
+    spec = importlib.util.spec_from_file_location(
+        "tests.quality_gates.validate_skill_ergonomics", module_path
+    )
     if spec is None or spec.loader is None:
         raise ImportError(f"Unable to load {module_path}")
     module = importlib.util.module_from_spec(spec)
@@ -99,7 +101,9 @@ def _seed_repo(tmp_path: Path, *, rules: list[str]) -> Path:
 
 def test_skill_ergonomics_gate_no_rules_passes(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, rules=[])
-    result = run_loaded_script_main("validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo))
+    result = run_loaded_script_main(
+        "validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo)
+    )
     assert result.returncode == 0, result.stderr
     payload = _emitted(result)
     assert payload["rules"] == []
@@ -111,12 +115,18 @@ def test_skill_ergonomics_gate_no_rules_passes(tmp_path: Path) -> None:
     # This run exits ZERO with no violations, so the payload has to say the gate was
     # never configured rather than reading as enforcement that passed.
     assert payload["verdict"] == "not-configured"
-    assert payload["verdict_detail"] == "No skill_ergonomics_gate_rules configured; nothing to check."
-    assert payload["warnings"][0]["attention"].startswith("WARNING: skill_ergonomics_gate_rules is empty")
+    assert (
+        payload["verdict_detail"] == "No skill_ergonomics_gate_rules configured; nothing to check."
+    )
+    assert payload["warnings"][0]["attention"].startswith(
+        "WARNING: skill_ergonomics_gate_rules is empty"
+    )
     assert payload["warnings"][0]["attention"].endswith("(2 skill(s) present)")
 
 
-def test_skill_ergonomics_gate_warns_when_empty_rules_have_broken_explicit_paths(tmp_path: Path) -> None:
+def test_skill_ergonomics_gate_warns_when_empty_rules_have_broken_explicit_paths(
+    tmp_path: Path,
+) -> None:
     repo = _seed_repo(tmp_path, rules=[])
     adapter = repo / ".agents" / "quality-adapter.yaml"
     adapter.write_text(
@@ -233,7 +243,9 @@ def test_skill_ergonomics_gate_fails_on_package_text_quality_rules(
         ],
         repo_name="testrepo",
     )
-    skill_path = write_skill(repo, ["Codex settings.json owns this host behavior."], description="Demo.")
+    skill_path = write_skill(
+        repo, ["Codex settings.json owns this host behavior."], description="Demo."
+    )
     write_text(
         skill_path.parent / "references" / "hidden.md",
         "# Hidden\n\nA 2026-05-28 incident note belongs outside portable prose.\n",
@@ -296,9 +308,14 @@ def test_skill_ergonomics_gate_fails_on_invalid_rule_adapter_error(tmp_path: Pat
         "verdict": "adapter-invalid",
         "verdict_detail": "quality adapter did not load; nothing was judged.",
     }
-    assert "skill_ergonomics_gate_rules contains unknown rule `typo_rule`" in payload["adapter_errors"][0]
+    assert (
+        "skill_ergonomics_gate_rules contains unknown rule `typo_rule`"
+        in payload["adapter_errors"][0]
+    )
 
-    wrapper = run_loaded_script_main("validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo))
+    wrapper = run_loaded_script_main(
+        "validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo)
+    )
     assert wrapper.returncode == 1
     wrapper_payload = _emitted(wrapper)
     assert "unknown rule `typo_rule`" in wrapper_payload["adapter_errors"][0]
@@ -343,7 +360,9 @@ def test_skill_ergonomics_gate_ignores_mode_option_terms_inside_fences(tmp_path:
 
 def test_skill_ergonomics_gate_rejects_removed_json_flag(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path, rules=[])
-    result = run_loaded_script_main("validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo), "--json")
+    result = run_loaded_script_main(
+        "validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo), "--json"
+    )
     assert result.returncode == 2
     assert "--json" in result.stderr
 
@@ -366,7 +385,9 @@ def test_skill_ergonomics_gate_fails_when_rules_check_no_skills(tmp_path: Path) 
     assert _returncode(payload) == 1
     assert "no skills were checked" in payload["discovery_errors"][0]["message"]
 
-    wrapper = run_loaded_script_main("validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo))
+    wrapper = run_loaded_script_main(
+        "validate_skill_ergonomics.py", VALIDATE, "--repo-root", str(repo)
+    )
     assert wrapper.returncode == 1
     wrapper_payload = _emitted(wrapper)
     # The renderer printed `skill discovery: <message> <skill_path>`; the payload keeps
@@ -398,6 +419,28 @@ def test_skill_ergonomics_gate_discovers_direct_skill_layout(tmp_path: Path) -> 
     payload = _evaluate(repo)
     assert _returncode(payload) == 0
     assert payload["checked_skills"][0]["skill_path"] == "skills/demo/SKILL.md"
+    assert payload["discovery_errors"] == []
+
+
+def test_skill_ergonomics_gate_reads_consumer_declared_skill_path(tmp_path: Path) -> None:
+    repo = tmp_path / "consumer"
+    (repo / ".agents").mkdir(parents=True)
+    skill = repo / "src" / "skills" / "demo" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text("---\nname: demo\n---\n\n# Demo\n\nA compact skill body.\n", encoding="utf-8")
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\n"
+        "skill_ergonomics_skill_paths:\n  - src/skills\n"
+        "skill_ergonomics_gate_rules:\n  - long_core\n",
+        encoding="utf-8",
+    )
+
+    payload = _evaluate(repo)
+
+    assert _returncode(payload) == 0
+    assert [item["skill_path"] for item in payload["checked_skills"]] == [
+        "src/skills/demo/SKILL.md"
+    ]
     assert payload["discovery_errors"] == []
 
 
@@ -493,7 +536,7 @@ def test_skill_ergonomics_gate_skips_vendored_skills(tmp_path: Path) -> None:
     ]
     (vendored / "SKILL.md").write_text("\n".join(body_lines) + "\n", encoding="utf-8")
     (own / "SKILL.md").write_text(
-        "---\nname: demo\ndescription: \"clean.\"\n---\n\n# Demo\n",
+        '---\nname: demo\ndescription: "clean."\n---\n\n# Demo\n',
         encoding="utf-8",
     )
     payload = _evaluate(repo)
@@ -503,7 +546,9 @@ def test_skill_ergonomics_gate_skips_vendored_skills(tmp_path: Path) -> None:
     assert paths == ["skills/public/demo/SKILL.md"]
 
 
-def test_skill_ergonomics_gate_fails_when_opted_in_progressive_disclosure_risk_matches(tmp_path: Path) -> None:
+def test_skill_ergonomics_gate_fails_when_opted_in_progressive_disclosure_risk_matches(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     write_quality_adapter(
         repo,
@@ -580,7 +625,9 @@ def test_skill_ergonomics_gate_fails_when_opted_in_code_fence_rule_matches(tmp_p
     assert payload["violations"][0]["rule"] == "code_fence_without_helper_script"
 
 
-def test_skill_ergonomics_gate_fails_when_opted_in_portable_helper_rule_matches(tmp_path: Path) -> None:
+def test_skill_ergonomics_gate_fails_when_opted_in_portable_helper_rule_matches(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     write_quality_adapter(
         repo,
@@ -607,7 +654,9 @@ def test_skill_ergonomics_gate_fails_when_opted_in_portable_helper_rule_matches(
     assert payload["violations"][0]["rule"] == "portable_helper_path_ambiguity"
 
 
-def test_skill_ergonomics_gate_fails_when_opted_in_argparse_missing_help_rule_matches(tmp_path: Path) -> None:
+def test_skill_ergonomics_gate_fails_when_opted_in_argparse_missing_help_rule_matches(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     write_quality_adapter(
         repo,
@@ -637,11 +686,15 @@ def test_skill_ergonomics_gate_fails_when_opted_in_argparse_missing_help_rule_ma
     payload = _evaluate(repo)
     assert _returncode(payload) == 1
     assert payload["violations"][0]["rule"] == "argparse_missing_help"
-    assert payload["violations"][0]["findings"][0]["path"] == "skills/public/demo/scripts/run_demo.py"
+    assert (
+        payload["violations"][0]["findings"][0]["path"] == "skills/public/demo/scripts/run_demo.py"
+    )
     assert payload["checked_skills"][0]["argparse_missing_help_count"] == 1
 
 
-def test_skill_ergonomics_gate_passes_argparse_missing_help_rule_when_all_args_documented(tmp_path: Path) -> None:
+def test_skill_ergonomics_gate_passes_argparse_missing_help_rule_when_all_args_documented(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     write_quality_adapter(
         repo,

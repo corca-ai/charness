@@ -889,6 +889,12 @@ universes:
     - scripts/**/*quality*.py
     - scripts/*scan*.py
     - scripts/**/*scan*.py
+    - tools/*inventory*.py
+    - tools/**/*inventory*.py
+    - tools/*quality*.py
+    - tools/**/*quality*.py
+    - tools/*scan*.py
+    - tools/**/*scan*.py
   mutation_pool:             # release-changed-line-coverage
     - charness
     - runtime_bootstrap.py

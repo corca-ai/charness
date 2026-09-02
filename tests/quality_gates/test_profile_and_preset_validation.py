@@ -524,6 +524,21 @@ def test_validate_adapters_rejects_invalid_quality_adapter_rule(tmp_path: Path) 
     assert "skill_ergonomics_gate_rules contains unknown rule `typo_rule`" in result.stderr
 
 
+def test_validate_adapters_allows_consumer_quality_gate_commands(tmp_path: Path) -> None:
+    repo = tmp_path / "consumer"
+    agents_dir = repo / ".agents"
+    agents_dir.mkdir(parents=True)
+    (agents_dir / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: my-repo\ngate_commands:\n  - ./tools/quality-gate.sh\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    assert "Validated" in result.stdout
+
+
 def test_validate_adapters_accepts_checked_in_charness_quality_coverage_floor() -> None:
     result = run_script(
         "scripts/validate_adapters.py", "--repo-root", str(Path(__file__).resolve().parents[2])

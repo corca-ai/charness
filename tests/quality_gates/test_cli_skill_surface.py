@@ -171,6 +171,46 @@ def test_cli_skill_surface_accepts_declared_combo_with_probes_and_docs(tmp_path:
     assert payload["probe_commands"] == ["./demo --help", "./demo doctor --json"]
 
 
+def test_cli_skill_surface_reads_consumer_declared_paths(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "consumer"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "src" / "skills" / "demo").mkdir(parents=True)
+    (repo / "src" / "skills" / "demo" / "SKILL.md").write_text(
+        "---\nname: demo\n---\n\n# Demo\n\nUse the CLI.\n", encoding="utf-8"
+    )
+    (repo / "src" / "command-docs.yaml").write_text(
+        "commands:\n  root:\n    help_command: ./src/demo --help\n", encoding="utf-8"
+    )
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\n"
+        "product_surfaces:\n  - installable_cli\n  - bundled_skill\n"
+        "cli_skill_surface_probe_commands:\n  - ./src/demo --help\n  - ./src/demo doctor --json\n"
+        "cli_skill_surface_command_docs:\n  - src/command-docs.yaml\n"
+        "cli_skill_surface_skill_paths:\n  - src/skills/demo/SKILL.md\n"
+        "cli_skill_surface_change_globs:\n  - src/**\n",
+        encoding="utf-8",
+    )
+
+    result = run_cli_skill_surface(
+        monkeypatch,
+        capsys,
+        "--repo-root",
+        str(repo),
+        "--changed-path",
+        "src/skills/demo/SKILL.md",
+    )
+
+    payload = yaml.safe_load(result.stdout)
+    assert result.returncode == 0
+    assert payload["product_surfaces"] == ["installable_cli", "bundled_skill"]
+    assert payload["skill_paths"] == ["src/skills/demo/SKILL.md"]
+    assert payload["command_docs"] == ["src/command-docs.yaml"]
+    assert payload["probe_commands"] == ["./src/demo --help", "./src/demo doctor --json"]
+    assert payload["changed_paths"] == ["src/skills/demo/SKILL.md"]
+
+
 def test_cli_skill_surface_reports_probe_timeout(tmp_path: Path) -> None:
     repo = seed_repo(
         tmp_path,

@@ -79,10 +79,18 @@ def test_gitignore_scan_hygiene_flags_raw_scan_in_mixed_file(tmp_path: Path) -> 
 
 def test_gitignore_scan_hygiene_require_empty_fails_on_findings(tmp_path: Path) -> None:
     script = tmp_path / "scan.py"
-    script.write_text("def scan(repo_root):\n    return list(repo_root.rglob('*'))\n", encoding="utf-8")
+    script.write_text(
+        "def scan(repo_root):\n    return list(repo_root.rglob('*'))\n", encoding="utf-8"
+    )
 
     result = run_script(
-        str(SCRIPT), "--repo-root", str(tmp_path), "--path-glob", "*.py", "--require-empty", cwd=ROOT
+        str(SCRIPT),
+        "--repo-root",
+        str(tmp_path),
+        "--path-glob",
+        "*.py",
+        "--require-empty",
+        cwd=ROOT,
     )
 
     assert result.returncode == 1
@@ -102,7 +110,7 @@ def test_gitignore_scan_hygiene_refuses_empty_configured_scope(tmp_path: Path) -
     )
 
     assert result.returncode == 1
-    assert "refusing empty matched universe" in result.stderr
+    assert "inventory-gitignore-scan-hygiene: refusing empty declared universe" in result.stderr
     assert "missing/*.py" in result.stderr
 
 
@@ -194,3 +202,38 @@ def test_a_snapshot_backed_fallback_is_not_flagged(tmp_path: Path) -> None:
     payload = _run_hygiene(tmp_path, "--path-glob", "*.py")
 
     assert payload["findings"] == []
+
+
+def test_gitignore_scan_hygiene_reads_consumer_scanner_universe(tmp_path: Path) -> None:
+    repo = tmp_path / "consumer"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "src").mkdir()
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\nuniverses:\n  scanner_globs:\n    - src/**/*.py\n",
+        encoding="utf-8",
+    )
+    (repo / "src" / "scan.py").write_text(
+        "from pathlib import Path\n"
+        "def scan(repo_root: Path):\n"
+        "    return list(repo_root.rglob('*'))\n",
+        encoding="utf-8",
+    )
+
+    payload = _run_hygiene(repo)
+
+    assert payload["path_globs"] == ["src/**/*.py"]
+    assert [finding["path"] for finding in payload["findings"]] == ["src/scan.py"]
+
+
+def test_gitignore_scan_hygiene_refuses_empty_declared_scanner_universe(tmp_path: Path) -> None:
+    repo = tmp_path / "consumer"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\nuniverses:\n  scanner_globs: []\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(str(SCRIPT), "--repo-root", str(repo), cwd=ROOT)
+
+    assert result.returncode == 1
+    assert "inventory-gitignore-scan-hygiene: refusing empty declared universe" in result.stderr

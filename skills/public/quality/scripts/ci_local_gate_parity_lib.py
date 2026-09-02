@@ -8,6 +8,18 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, Callable
 
+try:
+    from scripts.quality_universes_lib import DEFAULT_UNIVERSES
+except ModuleNotFoundError:
+    repo_root = next(
+        ancestor
+        for ancestor in Path(__file__).resolve().parents
+        if (ancestor / "scripts" / "quality_universes_lib.py").is_file()
+    )
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+    from scripts.quality_universes_lib import DEFAULT_UNIVERSES
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from git_inventory_lib import (  # noqa: E402
     GitFileListingError,
@@ -26,19 +38,9 @@ DEFAULT_WORKFLOW_GLOBS = (".github/workflows/*.yml", ".github/workflows/*.yaml")
 #: which is exactly what round 1 found `inventory_ci_recoverable_gates.py` doing.
 #: No in-repo caller reads it now; kept only so an external import does not break.
 DEFAULT_WORKFLOW_GLOB = DEFAULT_WORKFLOW_GLOBS[0]
-_SHELL_COMMAND_PREFIX = (
-    r"(?m)(?:^|(?:&&|\|\||[;|])\s*)\s*"
-    r"(?:[A-Za-z_][A-Za-z0-9_]*=(?:\"[^\"]*\"|'[^']*'|\S+)\s+)*"
-)
-DEFAULT_CANONICAL_GATE_PATTERNS = (
-    r"\bnpm\s+run\s+verify\b",
-    r"\bnpm\s+run\s+lint\s*&&\s*npm\s+run\s+test\b",
-    r"\bmake\s+verify\b",
-    _SHELL_COMMAND_PREFIX + r"bash\s+(?:\./)?scripts/run-quality\.sh(?=$|\s|[;&|])",
-    _SHELL_COMMAND_PREFIX + r"\./scripts/run-quality\.sh(?=$|\s|[;&|])",
-    r"\bbash\s+scripts/run-verify\.(?:mjs|sh)\b",
-    r"\bnode\s+scripts/run-verify\.mjs\b",
-)
+# Back-compat for out-of-repo imports. The shared universes table owns the
+# default, so this alias cannot drift from adapter resolution.
+DEFAULT_CANONICAL_GATE_PATTERNS = tuple(DEFAULT_UNIVERSES["ci_gate_patterns"])
 DEFAULT_CI_ONLY_MARKER = "CI-only"
 GATE_POLICY_MARKER_PREFIX = "# charness:gate-policy "
 SCHEDULED_DEEPER_CHECK_POLICY = "scheduled-deeper-check"
@@ -71,8 +73,17 @@ SETUP_RUN_PATTERNS = tuple(
     )
 )
 _STEP_KEY_PREFIXES = (
-    "run", "uses", "name", "id", "env", "with", "if", "shell",
-    "timeout-minutes", "continue-on-error", "working-directory",
+    "run",
+    "uses",
+    "name",
+    "id",
+    "env",
+    "with",
+    "if",
+    "shell",
+    "timeout-minutes",
+    "continue-on-error",
+    "working-directory",
 )
 
 
@@ -176,7 +187,9 @@ def _find_step_starts(lines: list[str]) -> list[int]:
     return starts
 
 
-def steps_with_leading_comments(raw_text: str, parsed_steps: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def steps_with_leading_comments(
+    raw_text: str, parsed_steps: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
     """Attach `__leading_comment` to each step using a lexical pass."""
     if not parsed_steps:
         return []
@@ -239,12 +252,13 @@ def read_gate_policy(raw_text: str, workflow_label: str | None = None) -> str | 
     the warning when supplied.
     """
     import sys
+
     for line in raw_text.splitlines():
         stripped = line.strip()
         if not stripped:
             continue
         if stripped.startswith(GATE_POLICY_MARKER_PREFIX):
-            keyword = stripped[len(GATE_POLICY_MARKER_PREFIX):].strip()
+            keyword = stripped[len(GATE_POLICY_MARKER_PREFIX) :].strip()
             if keyword in KNOWN_GATE_POLICIES:
                 return keyword
             label = workflow_label or "<workflow>"
@@ -349,16 +363,18 @@ def evaluate_workflow(
                 "if": step.get("if"),
                 "classification": _classify_subsequent(step, marker_re),
             }
-            for step in steps[gate_index + 1:]
+            for step in steps[gate_index + 1 :]
         ]
-        findings["jobs"].append({
-            "job_id": job_id,
-            "canonical_gate_step": {
-                "name": steps[gate_index].get("name"),
-                "run": steps[gate_index].get("run"),
-            },
-            "subsequent": subsequent,
-        })
+        findings["jobs"].append(
+            {
+                "job_id": job_id,
+                "canonical_gate_step": {
+                    "name": steps[gate_index].get("name"),
+                    "run": steps[gate_index].get("run"),
+                },
+                "subsequent": subsequent,
+            }
+        )
     return findings
 
 
@@ -370,23 +386,27 @@ def render_report(report: list[dict[str, Any]]) -> dict[str, Any]:
     jobs_evaluated = 0
     for workflow in report:
         if workflow.get("exempt"):
-            exempt_workflows.append({
-                "workflow": workflow["workflow"],
-                "gate_policy": workflow.get("gate_policy"),
-            })
+            exempt_workflows.append(
+                {
+                    "workflow": workflow["workflow"],
+                    "gate_policy": workflow.get("gate_policy"),
+                }
+            )
             continue
         for job in workflow.get("jobs", []):
             for entry in job.get("subsequent", []):
                 if entry.get("classification") not in {"parity-issue", "ci-only-violation"}:
                     continue
-                parity_issues.append({
-                    "workflow": workflow["workflow"],
-                    "job": job["job_id"],
-                    "name": entry.get("name"),
-                    "run": entry.get("run"),
-                    "uses": entry.get("uses"),
-                    "classification": entry.get("classification"),
-                })
+                parity_issues.append(
+                    {
+                        "workflow": workflow["workflow"],
+                        "job": job["job_id"],
+                        "name": entry.get("name"),
+                        "run": entry.get("run"),
+                        "uses": entry.get("uses"),
+                        "classification": entry.get("classification"),
+                    }
+                )
         without_gate = workflow.get("jobs_without_canonical_gate") or []
         if without_gate:
             misses.append({"workflow": workflow["workflow"], "jobs": list(without_gate)})

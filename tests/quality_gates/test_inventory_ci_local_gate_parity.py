@@ -430,6 +430,59 @@ jobs:
     assert [issue["run"] for issue in payload["parity_issues"]] == ["extra-required-check"]
 
 
+def test_ci_parity_reads_consumer_gate_patterns_and_refuses_unmatched_gate(tmp_path: Path) -> None:
+    repo = _write_workflow(
+        tmp_path,
+        """name: verify
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./consumer-gate.sh
+      - run: npm run extra-required
+""",
+    )
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\nuniverses:\n"
+        "  ci_gate_patterns:\n    - '\\./missing-gate\\.sh'\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
+
+    assert result.returncode == 1
+    payload = yaml.safe_load(result.stdout)
+    assert payload["jobs_without_canonical_gate"] == [
+        {"workflow": str(repo / ".github/workflows/verify.yml"), "jobs": ["verify"]}
+    ]
+
+
+def test_ci_parity_refuses_empty_declared_gate_patterns(tmp_path: Path) -> None:
+    repo = _write_workflow(
+        tmp_path,
+        """name: verify
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./consumer-gate.sh
+""",
+    )
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\nuniverses:\n  ci_gate_patterns: []\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--detail")
+
+    assert result.returncode == 1
+    assert "inventory-ci-local-gate-parity: refusing empty declared universe" in result.stdout
+
+
 def test_default_patterns_anchor_each_shipped_run_quality_invocation(tmp_path: Path) -> None:
     invocations = (
         "bash scripts/run-quality.sh",

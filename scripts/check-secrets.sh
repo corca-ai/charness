@@ -71,7 +71,56 @@ filter_existing_file_list() {
   done <"$input_path"
 }
 
+resolve_secrets_config() {
+  local universe_payload config_path
+
+  if ! config_path="$({
+    python3 "$REPO_ROOT/scripts/quality_universes_lib.py" \
+      --repo-root "$REPO_ROOT" \
+      --key secrets_config \
+      --format lines
+  } 2>/dev/null)"; then
+    # U0's landed CLI predates the keyed output flags required by the shared
+    # contract. Keep this fallback until that CLI grows the narrow form.
+    if ! universe_payload="$({
+      python3 "$REPO_ROOT/scripts/quality_universes_lib.py" \
+        --repo-root "$REPO_ROOT"
+    })"; then
+      echo "check-secrets: refusing to resolve the secrets_config universe." >&2
+      exit 1
+    fi
+    config_path="$(printf '%s' "$universe_payload" | python3 -c '
+import json
+import sys
+
+try:
+    import yaml
+except ImportError:
+    yaml = None
+
+payload_text = sys.stdin.read()
+payload = yaml.safe_load(payload_text) if yaml is not None else json.loads(payload_text)
+patterns = payload.get("secrets_config", {}).get("patterns", [])
+if patterns:
+    print(patterns[0])
+')"
+  fi
+  if [[ -z "$config_path" ]]; then
+    echo "check-secrets: refusing empty declared secrets_config universe." >&2
+    exit 1
+  fi
+  if [[ "$config_path" != /* ]]; then
+    config_path="$REPO_ROOT/$config_path"
+  fi
+  if [[ ! -f "$config_path" ]]; then
+    echo "check-secrets: refusing missing secrets config: $config_path" >&2
+    exit 1
+  fi
+  SECRETS_CONFIG_PATH="$config_path"
+}
+
 if command -v gitleaks >/dev/null 2>&1; then
+  resolve_secrets_config
   if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     scan_dir="$(mktemp -d)"
     tracked_files_path="$scan_dir/tracked-files.zlist"
@@ -89,7 +138,7 @@ if command -v gitleaks >/dev/null 2>&1; then
     fi
     if tar --null -T "$existing_files_path" -cf - | tar -xf - -C "$scan_dir"; then
       exec gitleaks dir \
-        --config "$REPO_ROOT/.gitleaks.toml" \
+        --config "$SECRETS_CONFIG_PATH" \
         --no-banner \
         --redact \
         "$scan_dir"
@@ -99,7 +148,7 @@ if command -v gitleaks >/dev/null 2>&1; then
   fi
 
   exec gitleaks dir \
-    --config "$REPO_ROOT/.gitleaks.toml" \
+    --config "$SECRETS_CONFIG_PATH" \
     --no-banner \
     --redact \
     "$REPO_ROOT"
