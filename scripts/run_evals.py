@@ -23,7 +23,9 @@ _scripts_subprocess_guard_module = import_repo_module(__file__, "scripts.subproc
 run_process = _scripts_subprocess_guard_module.run_process
 _scripts_eval_setup_module = import_repo_module(__file__, "scripts.eval_setup")
 run_setup_inspect_states = _scripts_eval_setup_module.run_setup_inspect_states
-run_setup_operator_acceptance_synthesis = _scripts_eval_setup_module.run_setup_operator_acceptance_synthesis
+run_setup_operator_acceptance_synthesis = (
+    _scripts_eval_setup_module.run_setup_operator_acceptance_synthesis
+)
 _scripts_eval_issue_scenarios_module = import_repo_module(__file__, "scripts.eval_issue_scenarios")
 run_issue_sibling_search_concept_fixtures = (
     _scripts_eval_issue_scenarios_module.run_issue_sibling_search_concept_fixtures
@@ -40,7 +42,9 @@ class EvalError(Exception):
 COMMAND_TIMEOUT_SECONDS = 60
 
 
-def run_command(command: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+def run_command(
+    command: list[str], *, cwd: Path, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
     return run_process(
         command,
         cwd=cwd,
@@ -51,7 +55,9 @@ def run_command(command: list[str], *, cwd: Path, env: dict[str, str] | None = N
 
 def expect_success(result: subprocess.CompletedProcess[str], context: str) -> None:
     if result.returncode != 0:
-        raise EvalError(f"{context}: exited with {result.returncode}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}")
+        raise EvalError(
+            f"{context}: exited with {result.returncode}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+        )
 
 
 def expect_adapter_bootstrap(
@@ -68,51 +74,101 @@ def expect_adapter_bootstrap(
         init_script = skill_dir / "init_adapter.py"
         resolve_script = skill_dir / "resolve_adapter.py"
 
-        init_result = run_command(["python3", str(init_script), "--repo-root", str(tmp)], cwd=root)
+        init_result = run_command(
+            [sys.executable, str(init_script), "--repo-root", str(tmp)], cwd=root
+        )
         expect_success(init_result, f"{skill_id} adapter init")
 
         adapter_path = tmp / ".agents" / adapter_name
         if not adapter_path.exists():
-            raise EvalError(f"{skill_id} adapter init: expected {adapter_path.relative_to(tmp)} to exist")
+            raise EvalError(
+                f"{skill_id} adapter init: expected {adapter_path.relative_to(tmp)} to exist"
+            )
 
-        resolve_result = run_command(["python3", str(resolve_script), "--repo-root", str(tmp)], cwd=root)
+        resolve_result = run_command(
+            [sys.executable, str(resolve_script), "--repo-root", str(tmp)], cwd=root
+        )
         expect_success(resolve_result, f"{skill_id} adapter resolve")
         payload = yaml.safe_load(resolve_result.stdout)
         if payload.get("found") is not True or payload.get("valid") is not True:
             raise EvalError(f"{skill_id} adapter resolve: unexpected payload {payload!r}")
-        if expected_artifact_path is not None and payload.get("artifact_path") != expected_artifact_path:
-            raise EvalError(f"{skill_id} adapter resolve: unexpected artifact_path {payload.get('artifact_path')!r}")
+        if (
+            expected_artifact_path is not None
+            and payload.get("artifact_path") != expected_artifact_path
+        ):
+            raise EvalError(
+                f"{skill_id} adapter resolve: unexpected artifact_path {payload.get('artifact_path')!r}"
+            )
         if expected_data is not None:
             data = payload.get("data", {})
             for key, expected in expected_data.items():
                 if data.get(key) != expected:
-                    raise EvalError(f"{skill_id} adapter resolve: unexpected {key} {data.get(key)!r}")
+                    raise EvalError(
+                        f"{skill_id} adapter resolve: unexpected {key} {data.get(key)!r}"
+                    )
+
+
 def scenario_skill_package_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "skill-valid"
-    result = run_command(["python3", "scripts/validate_skills.py", "--repo-root", str(fixture)], cwd=root)
+    result = run_command(
+        [sys.executable, "scripts/validate_skills.py", "--repo-root", str(fixture)], cwd=root
+    )
     expect_success(result, "skill-valid fixture")
+
+
 def scenario_profile_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "profile-valid"
-    result = run_command(["python3", "scripts/validate_profiles.py", "--repo-root", str(fixture)], cwd=root)
+    result = run_command(
+        [sys.executable, "scripts/validate_profiles.py", "--repo-root", str(fixture)], cwd=root
+    )
     expect_success(result, "profile-valid fixture")
+
+
 def scenario_doc_links_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "doc-links-valid"
-    result = run_command(["python3", "scripts/check_doc_links.py", "--repo-root", str(fixture)], cwd=root)
+    result = run_command(
+        [sys.executable, "scripts/check_doc_links.py", "--repo-root", str(fixture)], cwd=root
+    )
     expect_success(result, "doc-links-valid fixture")
+
+
 def scenario_quality_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="quality", adapter_name="quality-adapter.yaml", expected_artifact_path="charness-artifacts/quality/latest.md")
+    expect_adapter_bootstrap(
+        root,
+        skill_id="quality",
+        adapter_name="quality-adapter.yaml",
+        expected_artifact_path="charness-artifacts/quality/latest.md",
+    )
+
+
 def scenario_impl_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(
         root,
         skill_id="impl",
         adapter_name="impl-adapter.yaml",
-        expected_data={"output_dir": "charness-artifacts/impl", "verification_tools": [], "ui_verification_tools": [], "truth_surfaces": []},
+        expected_data={
+            "output_dir": "charness-artifacts/impl",
+            "verification_tools": [],
+            "ui_verification_tools": [],
+            "truth_surfaces": [],
+        },
     )
+
+
 def scenario_debug_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="debug", adapter_name="debug-adapter.yaml", expected_artifact_path="charness-artifacts/debug/latest.md")
+    expect_adapter_bootstrap(
+        root,
+        skill_id="debug",
+        adapter_name="debug-adapter.yaml",
+        expected_artifact_path="charness-artifacts/debug/latest.md",
+    )
+
+
 def scenario_quality_adapter_checked_in(root: Path) -> None:
     resolve_script = root / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py"
-    resolve_result = run_command(["python3", str(resolve_script), "--repo-root", str(root)], cwd=root)
+    resolve_result = run_command(
+        [sys.executable, str(resolve_script), "--repo-root", str(root)], cwd=root
+    )
     expect_success(resolve_result, "checked-in quality adapter resolve")
     payload = yaml.safe_load(resolve_result.stdout)
     if payload.get("found") is not True or payload.get("valid") is not True:
@@ -124,14 +180,25 @@ def scenario_quality_adapter_checked_in(root: Path) -> None:
     data = payload.get("data", {})
     gate_commands = data.get("gate_commands", [])
     if "./scripts/run-quality.sh" not in gate_commands:
-        raise EvalError(f"checked-in quality adapter resolve: missing canonical gate command in {gate_commands!r}")
+        raise EvalError(
+            f"checked-in quality adapter resolve: missing canonical gate command in {gate_commands!r}"
+        )
     if data.get("coverage_fragile_margin_pp") != 1.0:
-        raise EvalError(f"checked-in quality adapter resolve: unexpected coverage fragile margin {data!r}")
+        raise EvalError(
+            f"checked-in quality adapter resolve: unexpected coverage fragile margin {data!r}"
+        )
     floor_policy = data.get("coverage_floor_policy", {})
     if floor_policy.get("min_statements_threshold") != 30:
-        raise EvalError(f"checked-in quality adapter resolve: unexpected coverage floor policy {data!r}")
-    if data.get("spec_pytest_reference_format") != r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*":
-        raise EvalError(f"checked-in quality adapter resolve: unexpected pytest reference format {data!r}")
+        raise EvalError(
+            f"checked-in quality adapter resolve: unexpected coverage floor policy {data!r}"
+        )
+    if (
+        data.get("spec_pytest_reference_format")
+        != r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*"
+    ):
+        raise EvalError(
+            f"checked-in quality adapter resolve: unexpected pytest reference format {data!r}"
+        )
 
 
 def scenario_quality_bootstrap_posture(root: Path) -> None:
@@ -142,11 +209,20 @@ def scenario_quality_bootstrap_posture(root: Path) -> None:
         (tmp / "README.md").write_text("# Demo\n", encoding="utf-8")
         (tmp / "docs" / "index.md").write_text("# Documentation index\n", encoding="utf-8")
         (tmp / "pyproject.toml").write_text("[project]\nname='demo'\n", encoding="utf-8")
-        (tmp / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
-        (tmp / "scripts" / "check-secrets.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+        (tmp / "scripts" / "run-quality.sh").write_text(
+            "#!/usr/bin/env bash\nexit 0\n", encoding="utf-8"
+        )
+        (tmp / "scripts" / "check-secrets.sh").write_text(
+            "#!/usr/bin/env bash\nexit 0\n", encoding="utf-8"
+        )
 
         bootstrap_result = run_command(
-            ["python3", "skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(tmp)],
+            [
+                sys.executable,
+                "skills/public/quality/scripts/bootstrap_adapter.py",
+                "--repo-root",
+                str(tmp),
+            ],
             cwd=root,
         )
         expect_success(bootstrap_result, "quality bootstrap posture")
@@ -158,28 +234,62 @@ def scenario_quality_bootstrap_posture(root: Path) -> None:
         if payload["preset_lineage"] != ["python-quality"]:
             raise EvalError(f"quality bootstrap posture: unexpected preset lineage {payload!r}")
         if not payload["deferred_setup"]:
-            raise EvalError(f"quality bootstrap posture: expected deferred setup report {payload!r}")
+            raise EvalError(
+                f"quality bootstrap posture: expected deferred setup report {payload!r}"
+            )
 
         resolve_result = run_command(
-            ["python3", "skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(tmp)],
+            [
+                sys.executable,
+                "skills/public/quality/scripts/resolve_adapter.py",
+                "--repo-root",
+                str(tmp),
+            ],
             cwd=root,
         )
         expect_success(resolve_result, "quality bootstrap posture resolve")
         resolved = yaml.safe_load(resolve_result.stdout)
         if resolved["data"]["gate_commands"] != ["./scripts/run-quality.sh"]:
-            raise EvalError(f"quality bootstrap posture resolve: unexpected adapter payload {resolved!r}")
+            raise EvalError(
+                f"quality bootstrap posture resolve: unexpected adapter payload {resolved!r}"
+            )
         if resolved["data"]["coverage_fragile_margin_pp"] != 1.0:
-            raise EvalError(f"quality bootstrap posture resolve: unexpected fragile margin {resolved!r}")
+            raise EvalError(
+                f"quality bootstrap posture resolve: unexpected fragile margin {resolved!r}"
+            )
         if resolved["data"]["coverage_floor_policy"]["gate_script_pattern"] != "*-quality-gate.sh":
-            raise EvalError(f"quality bootstrap posture resolve: unexpected floor policy {resolved!r}")
+            raise EvalError(
+                f"quality bootstrap posture resolve: unexpected floor policy {resolved!r}"
+            )
+
+
 def scenario_narrative_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="narrative", adapter_name="narrative-adapter.yaml", expected_artifact_path="charness-artifacts/narrative/latest.md")
+    expect_adapter_bootstrap(
+        root,
+        skill_id="narrative",
+        adapter_name="narrative-adapter.yaml",
+        expected_artifact_path="charness-artifacts/narrative/latest.md",
+    )
+
 
 def scenario_release_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="release", adapter_name="release-adapter.yaml", expected_artifact_path="charness-artifacts/release/latest.md")
+    expect_adapter_bootstrap(
+        root,
+        skill_id="release",
+        adapter_name="release-adapter.yaml",
+        expected_artifact_path="charness-artifacts/release/latest.md",
+    )
+
 
 def scenario_gather_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="gather", adapter_name="gather-adapter.yaml", expected_artifact_path="charness-artifacts/gather/latest.md")
+    expect_adapter_bootstrap(
+        root,
+        skill_id="gather",
+        adapter_name="gather-adapter.yaml",
+        expected_artifact_path="charness-artifacts/gather/latest.md",
+    )
+
+
 def scenario_setup_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(
         root,
@@ -187,8 +297,12 @@ def scenario_setup_adapter_bootstrap(root: Path) -> None:
         adapter_name="setup-adapter.yaml",
         expected_artifact_path="charness-artifacts/setup/latest.md",
     )
+
+
 def scenario_setup_inspect_states(root: Path) -> None:
-    run_setup_inspect_states(root, run_command=run_command, expect_success=expect_success, error_type=EvalError)
+    run_setup_inspect_states(
+        root, run_command=run_command, expect_success=expect_success, error_type=EvalError
+    )
 
 
 def scenario_setup_operator_acceptance_synthesis(root: Path) -> None:
@@ -201,15 +315,25 @@ def scenario_setup_operator_acceptance_synthesis(root: Path) -> None:
 
 
 def scenario_representative_skill_contracts(root: Path) -> None:
-    result = run_command(["python3", "scripts/check_skill_contracts.py", "--repo-root", str(root)], cwd=root)
+    result = run_command(
+        [sys.executable, "scripts/check_skill_contracts.py", "--repo-root", str(root)], cwd=root
+    )
     expect_success(result, "representative skill contracts")
 
+
 def scenario_support_sync_contracts(root: Path) -> None:
-    result = run_command(["python3", "scripts/eval_support_sync_contracts.py", "--repo-root", str(root)], cwd=root)
+    result = run_command(
+        [sys.executable, "scripts/eval_support_sync_contracts.py", "--repo-root", str(root)],
+        cwd=root,
+    )
     expect_success(result, "support-sync dry-run contracts")
 
+
 def scenario_issue_sibling_search_concept_fixtures(root: Path) -> None:
-    run_issue_sibling_search_concept_fixtures(root, run_command=run_command, expect_success=expect_success)
+    run_issue_sibling_search_concept_fixtures(
+        root, run_command=run_command, expect_success=expect_success
+    )
+
 
 def run_scenario(root: Path, scenario: Scenario) -> None:
     handlers = {
@@ -266,11 +390,20 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run repo-owned smoke scenarios under evals/.")
     parser.add_argument("--repo-root", type=Path, default=repo_root_from_script(__file__))
     parser.add_argument("--scenario-id", action="append", default=[])
-    parser.add_argument("--jobs", type=int, default=0, help="Concurrent scenario jobs; default: min(4, selected scenarios).")
+    parser.add_argument(
+        "--jobs",
+        type=int,
+        default=0,
+        help="Concurrent scenario jobs; default: min(4, selected scenarios).",
+    )
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
-    selected = [scenario for scenario in SCENARIOS if not args.scenario_id or scenario.scenario_id in args.scenario_id]
+    selected = [
+        scenario
+        for scenario in SCENARIOS
+        if not args.scenario_id or scenario.scenario_id in args.scenario_id
+    ]
     if args.jobs < 0:
         raise EvalError("--jobs must be zero or a positive integer")
     if args.scenario_id:
@@ -278,7 +411,9 @@ def main() -> int:
         unknown = sorted(set(args.scenario_id) - known)
         if unknown:
             raise EvalError(f"unknown scenario id(s): {', '.join(unknown)}")
-    if not selected or any(scenario.scenario_id not in NO_FIXTURE_SCENARIOS for scenario in selected):
+    if not selected or any(
+        scenario.scenario_id not in NO_FIXTURE_SCENARIOS for scenario in selected
+    ):
         ensure_fixtures_present(root)
 
     # Affinity, not the box's total: under `taskset`/a cpuset this otherwise picks 4

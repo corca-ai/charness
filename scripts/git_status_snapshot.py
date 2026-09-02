@@ -222,4 +222,4 @@ def capture(
     if result.returncode != 0:
         detail = result.stderr.strip() or "git status failed"
         raise GitStatusError(detail)
-    return parse(result.stdout.encode("utf-8"))
+    return parse(result.stdout.encode("utf-8", "surrogateescape"))

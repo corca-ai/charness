@@ -135,6 +135,10 @@ def run_process(
             check=False,
             capture_output=True,
             text=True,
+            # A child's bytes are not always UTF-8 (git prints raw paths); a
+            # strict decode would turn one odd filename into a crashed probe.
+            # surrogateescape keeps every byte recoverable by the caller.
+            errors="surrogateescape",
             env=env,
             timeout=timeout_seconds,
             shell=shell,
@@ -260,6 +264,7 @@ def _install_spawn_interruptions(pending: list[int]) -> dict[int, object]:
     caller's existing signal policy rather than making launch fail for an
     unrelated reason.
     """
+
     def record(signum: int, _frame: object) -> None:
         pending.append(signum)
 
