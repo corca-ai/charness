@@ -1,4 +1,4 @@
-"""Refusals owned by `scripts/task_run_git.py`.
+"""Refusals owned by `scripts/task_run/task_run_git.py`.
 
 Split out of `test_task_run.py` when that file crossed its 800 code-line limit.
 The cohesive boundary is the module under test: every case here drives
@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import task_run, task_run_evidence, task_run_git
+from scripts.task_run import task_run, task_run_evidence, task_run_git
 
 from .test_task_run_fixtures import _repo
 

@@ -5058,7 +5058,7 @@ def _source_checkout_under_work(args: argparse.Namespace) -> Path | None:
         return None
     candidate = Path(parent).resolve()
     if (candidate / "packaging" / f"{PACKAGE_ID}.json").is_file() and (
-        candidate / "scripts" / "task_run.py"
+        candidate / "scripts" / "task_run" / "task_run.py"
     ).is_file():
         return candidate
     return None
@@ -5145,7 +5145,7 @@ def _load_task_run_lib(args: argparse.Namespace):
     repo_text = str(repo_root)
     if repo_text not in sys.path:
         sys.path.insert(0, repo_text)
-    from scripts import task_run
+    from scripts.task_run import task_run
 
     return task_run
 

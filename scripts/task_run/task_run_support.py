@@ -9,12 +9,26 @@ from __future__ import annotations
 
 from typing import Any
 
-from scripts import task_run_contract as _contract
-from scripts import task_run_evidence as _evidence
-from scripts import task_run_execution as _execution
-from scripts import task_run_git as _git_owner
-from scripts import task_run_runtime as _runtime
-from scripts import task_run_scope as _scope
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.task_run import task_run_contract as _contract  # noqa: E402
+from scripts.task_run import task_run_evidence as _evidence  # noqa: E402
+from scripts.task_run import task_run_execution as _execution  # noqa: E402
+from scripts.task_run import task_run_git as _git_owner  # noqa: E402
+from scripts.task_run import task_run_runtime as _runtime  # noqa: E402
+from scripts.task_run import task_run_scope as _scope  # noqa: E402
 
 FAIL = _contract.FAIL
 PASS = _contract.PASS

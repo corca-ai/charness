@@ -72,3 +72,27 @@ def test_strict_keeps_a_nested_dotted_import_reachable(tmp_path: Path) -> None:
     assert "scripts/pkg/consumer.py" not in payload["unreferenced"]
     assert "scripts/pkg/__init__.py" not in payload["unreferenced"]
     assert payload["verdict"] == "ok"
+
+
+def test_strict_keeps_a_subpackage_name_import_reachable(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    nested = repo / "scripts" / "pkg"
+    nested.mkdir(parents=True)
+    (nested / "__init__.py").write_text('"""Package."""\n', encoding="utf-8")
+    (nested / "entry.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (nested / "consumer.py").write_text(
+        "from scripts.pkg import entry\nassert entry.VALUE == 1\n", encoding="utf-8"
+    )
+    tests = repo / "tests"
+    tests.mkdir()
+    (tests / "test_consumer.py").write_text(
+        "from scripts.pkg import consumer\nassert consumer.entry.VALUE == 1\n",
+        encoding="utf-8",
+    )
+
+    result = _run("--repo-root", str(repo), "--strict")
+
+    assert result.returncode == 0
+    payload = yaml.safe_load(result.stdout)
+    assert "scripts/pkg/entry.py" not in payload["unreferenced"]
+    assert payload["verdict"] == "ok"

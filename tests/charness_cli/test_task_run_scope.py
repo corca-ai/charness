@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import task_run, task_run_git, task_run_scope
-from scripts.worktree import checkout_view
+from scripts import checkout_view
+from scripts.task_run import task_run, task_run_git, task_run_scope
 
 from .test_task_run_fixtures import _codex, _commit, _git, _repo, _run
 
@@ -64,16 +64,7 @@ def test_directory_scope_includes_descendants(tmp_path: Path) -> None:
     (repo / "pkg").mkdir()
     (repo / "pkg/base.py").write_text("BASE = 1\n", encoding="utf-8")
     _git(repo, "add", "pkg/base.py")
-    _git(
-        repo,
-        "-c",
-        "user.email=test@example.com",
-        "-c",
-        "user.name=test",
-        "commit",
-        "-m",
-        "add package",
-    )
+    _git(repo, "-c", "user.email=test@example.com", "-c", "user.name=test", "commit", "-m", "add package")
     executable = _codex(tmp_path, "printf 'CHILD = 1\n' > pkg/child.py")
 
     payload = _run(repo, tmp_path, executable, scopes=["pkg"])
@@ -332,7 +323,9 @@ def test_explicit_base_scope_resolution_uses_selected_tree_for_dry_run(tmp_path:
     assert not (tmp_path / "lane").exists()
 
 
-def test_task_creation_uses_the_preflight_resolved_base_sha(tmp_path: Path, monkeypatch) -> None:
+def test_task_creation_uses_the_preflight_resolved_base_sha(
+    tmp_path: Path, monkeypatch
+) -> None:
     repo = _repo(tmp_path)
     frozen_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
     _git(repo, "branch", "moving-base", frozen_sha)
@@ -566,8 +559,7 @@ def _lane_tree(tmp_path, kind: str):
     def git(*args: str) -> None:
         subprocess.run(
             ["git", "-c", "user.email=t@t", "-c", "user.name=t", "-C", str(tmp_path), *args],
-            check=True,
-            capture_output=True,
+            check=True, capture_output=True,
         )
 
     install_committed_repo(tmp_path, {"seed.txt": "s\n"}, message="base")

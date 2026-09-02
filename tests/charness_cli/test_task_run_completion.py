@@ -1,4 +1,4 @@
-"""The terminal `next_step` branches owned by `scripts/task_run_completion.py`.
+"""The terminal `next_step` branches owned by `scripts/task_run/task_run_completion.py`.
 
 `complete_task` takes every collaborator as a parameter, so the three-way
 `next_step` split can be driven directly instead of through a real Codex lane.
@@ -14,7 +14,7 @@ from typing import Any
 
 import pytest
 
-from scripts import task_run_completion
+from scripts.task_run import task_run_completion
 
 
 def _complete(tmp_path: Path, *, result_state: str, scope_verdict: str = "pass") -> dict[str, Any]:

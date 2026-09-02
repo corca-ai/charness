@@ -15,8 +15,8 @@ def _cli(name: str):
 def _source_checkout(root: Path) -> Path:
     (root / "packaging").mkdir(parents=True)
     (root / "packaging" / "charness.json").write_text("{}\n", encoding="utf-8")
-    (root / "scripts").mkdir()
-    (root / "scripts" / "task_run.py").write_text("", encoding="utf-8")
+    (root / "scripts" / "task_run").mkdir(parents=True)
+    (root / "scripts" / "task_run" / "task_run.py").write_text("", encoding="utf-8")
     return root
 
 

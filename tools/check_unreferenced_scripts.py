@@ -202,7 +202,15 @@ def _import_targets(path: Path, tree: ast.AST, nodes: dict[str, Path]) -> set[st
                 targets.add(target)
             elif module in {"scripts", "tools"}:
                 for alias in node.names:
-                    target = _path_target(f"{module}/{alias.name}.py", nodes)
+                    target = _path_target(f"{module}/{alias.name}.py", nodes) or _path_target(
+                        f"{module}/{alias.name}/__init__.py", nodes
+                    )
+                    if target:
+                        targets.add(target)
+            elif module.startswith(("scripts.", "tools.")):
+                package_path = module.replace(".", "/")
+                for alias in node.names:
+                    target = _path_target(f"{package_path}/{alias.name}.py", nodes)
                     if target:
                         targets.add(target)
             elif module and "." not in module:

@@ -46,19 +46,19 @@ def test_the_bare_flat_import_is_seen() -> None:
 
 
 def test_from_scripts_import_name_is_seen() -> None:
-    """`from scripts import task_run_completion` -- the NAMES carry the modules here.
+    """`from scripts.task_run import task_run_completion` -- the NAMES carry the modules here.
 
     Reading only `node.module` (which is just `"scripts"`) returned nothing, so
     `task_run.py`'s derived closure silently omitted `task_run_completion.py` --
     under-inclusion, the direction this module calls fatal.
     """
-    source = "from scripts import task_run_completion as _completion\n"
+    source = "from scripts.task_run import task_run_completion as _completion\n"
 
-    assert "task_run_completion" in _referenced(source)
+    assert "task_run/task_run_completion" in _referenced(source)
 
 
 def test_the_regression_cases_a_reviewer_traced_are_all_reached() -> None:
-    assert "task_run_completion.py" in script_import_closure("task_run.py")
+    assert "task_run/task_run_completion.py" in script_import_closure("task_run/task_run.py")
     assert "check_mutation_score_summary_lib.py" in script_import_closure("check_mutation_score.py")
     assert "claude_session_jsonl_audit.py" in script_import_closure(
         "evidence/host_log_probe_lib.py"

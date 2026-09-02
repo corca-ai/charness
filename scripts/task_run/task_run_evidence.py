@@ -5,15 +5,29 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
-from scripts.task_run_contract import FAIL, PASS, TaskRunError
-from scripts.task_run_git import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.task_run.task_run_contract import FAIL, PASS, TaskRunError  # noqa: E402
+from scripts.task_run.task_run_git import (  # noqa: E402
     _collect_populations_with_metadata,
     _git_output,
     _parse_nul_paths,
     _population_delta,
     _snapshot_payload,
 )
-from scripts.task_run_scope import (
+from scripts.task_run.task_run_scope import (  # noqa: E402
     _generated_files,
     _paths_in_scopes,
     _refresh_scope_specs,

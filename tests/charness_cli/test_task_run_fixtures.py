@@ -6,7 +6,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from scripts import task_run
+from scripts.task_run import task_run
 from tests.quality_gates.repo_shapes import install_committed_repo
 
 

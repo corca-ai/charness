@@ -11,14 +11,32 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from scripts.core.git_checkout import head_oid_from_files as _head_sha_from_checkout
-from scripts.core.git_checkout import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.core.git_checkout import head_oid_from_files as _head_sha_from_checkout  # noqa: E402
+from scripts.core.git_checkout import (  # noqa: E402
     identity_from_files,
     layout_from_files,
     worktree_root_from_files,
 )
-from scripts.core.git_status_snapshot import GitStatusError
-from scripts.worktree.checkout_view import CheckoutView, GitCheckout, moment_from_status
+from scripts.core.git_status_snapshot import GitStatusError  # noqa: E402
+from scripts.worktree.checkout_view import (  # noqa: E402
+    CheckoutView,
+    GitCheckout,
+    moment_from_status,
+)
 
 try:
     from scripts.core.subprocess_guard import run_process
@@ -31,7 +49,7 @@ except ImportError:  # flat layout: the script dir is on sys.path, the repo root
     if str(_scripts_dir) not in sys.path:
         sys.path.insert(0, str(_scripts_dir))
     from subprocess_guard import run_process
-from scripts.task_run_contract import (
+from scripts.task_run.task_run_contract import (  # noqa: E402
     _BRANCH_RE,
     _GIT_DISCOVERY_ENV,
     FAIL,
