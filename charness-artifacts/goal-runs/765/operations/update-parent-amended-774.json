@@ -1,0 +1,1 @@
+{"kind": "charness.goal-run-operation/v1", "repo": "corca-ai/charness", "parent_number": 765, "operation": "update-body", "attempt_id": "amend-parent-774-1", "observation_dir": "charness-artifacts/goal-runs/765/observations", "target": {"repo": "corca-ai/charness", "number": 765}, "body_file": "charness-artifacts/goal-runs/765/bodies/parent-amended-774.md"}

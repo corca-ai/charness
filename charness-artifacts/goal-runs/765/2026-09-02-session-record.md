@@ -77,13 +77,20 @@ was inside a repair lane's scope.
 3. Full standing pytest green, then the #768 closeout carrier (feature
    classification; template in the four earlier closeout commits), rewriting
    the three WIP subjects into it or into a squash.
-4. #769 quality-boundary-and-run-quality: the parent's design is
+4. #774 ledger-only-lessons (added by amendment on 2026-09-02, `rework`,
+   causing skills retro and achieve): apply `summary_path: null` to this
+   repo's retro adapter, delete `recent-lessons.md`, make `goal_run_pickup.py`
+   read the ledger preview, and drop the digest comparison from this lane.
+   Body: `bodies/ledger-only-lessons.md`; operation
+   `operations/amend-add-ledger-only-lessons.json` (verified-write). Small;
+   one lane or the parent directly.
+5. #769 quality-boundary-and-run-quality: the parent's design is
    `charness-artifacts/quality/2026-09-02-gate-classification-769.md`,
    reviewed twice by bounded reviewers; both reports were truncated by the
    host, so angles 2 to 4 beyond the recorded rows are unreviewed. The real
    finding: eight `ship` gates need adapter-declared inputs or they are a
    vacuous green in a consumer repo. Then #770, #772.
-5. Once the #768 tree is green and its closeout carrier is verified, ask the
+6. Once the #768 tree is green and its closeout carrier is verified, ask the
    operator for the push of the remaining commits (that push is NOT covered
    by the step-0 authorization), then verify #768 CLOSED and advance the
    cursor the same way as step 4 of "Session start".

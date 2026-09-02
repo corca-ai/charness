@@ -1,0 +1,7 @@
+{"kind":"charness.goal-run-operation/v1","repo":"corca-ai/charness","parent_number":765,
+ "operation":"add-child","attempt_id":"amend-add-ledger-only-lessons-1",
+ "observation_dir":"charness-artifacts/goal-runs/765/observations",
+ "target":{"repo":"corca-ai/charness","sub_issue_number":774,"work_item_key":"ledger-only-lessons"},
+ "amendment":{"rank":5,"dependencies":["subprocess-retroactive-removal"],
+   "reason":"Operator asked on 2026-09-02 to include the ledger-only lessons repair (#774) in this Goal Run: the 2026-08-29 opt-out (#750) was built for consumers and never applied to charness, and achieve pickup still reads the digest; the second recorded rework instance of this run.",
+   "approval":{"response":"승인. 완료 후에는 다음 세션 시작할 프롬프트도 다시 줘","session_id":"goal-765-2026-09-02","observed_at":"2026-09-02T07:51:20+00:00"}}}
