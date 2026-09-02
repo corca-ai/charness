@@ -29,7 +29,9 @@ _provenance_self_test_gate = _plan_helpers.provenance_contract_self_test_gate
 
 
 _registry_root = Path(__file__).resolve().parents[1]
-_registry_root /= "shared/scripts" if (_registry_root / "shared").is_dir() else "skills/shared/scripts"
+_registry_root /= (
+    "shared/scripts" if (_registry_root / "shared").is_dir() else "skills/shared/scripts"
+)
 sys.path.insert(0, str(_registry_root))
 import provenance_contract as _provenance_contract  # noqa: E402
 
@@ -39,7 +41,7 @@ import provenance_contract as _provenance_contract  # noqa: E402
 # and path-scoped -- never a broad pytest in the pre-commit path.
 FAST_SURFACE_VERIFY_COMMANDS: dict[str, str] = {
     "python3 scripts/validate_skill_ergonomics.py --repo-root .": "validate-skill-ergonomics",
-    "python3 scripts/check_boundary_bypass_ratchet.py --repo-root .": "check-boundary-bypass-ratchet",
+    "python3 scripts/check_subprocess_form.py --repo-root . --require-git-file-listing": "check-subprocess-form",
 }
 
 
@@ -48,7 +50,9 @@ def _any_exact(paths: list[str], *names: str) -> bool:
     return any(path in names for path in paths)
 
 
-def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] | None = None) -> list[GateCommand]:
+def _timing_layer_gates(
+    repo_root: Path, paths: list[str], existing: list[str] | None = None
+) -> list[GateCommand]:
     """The favorable pulled subset from the 2026-06-10 timing audit plus later
     pulls recorded in the same table — each is cheap (<0.3s), deterministic,
     changed-scoped (only its trigger class can flip the verdict), and runs the
@@ -64,34 +68,64 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
     if any(path.endswith(".py") for path in paths):
         gates.extend(
             _timing_pull_gate(
-                repo_root, "check-python-filenames", "scripts/check_python_filenames.py",
-                "--repo-root", str(repo_root), "--require-git-file-listing",
+                repo_root,
+                "check-python-filenames",
+                "scripts/check_python_filenames.py",
+                "--repo-root",
+                str(repo_root),
+                "--require-git-file-listing",
             )
         )
     if _any_starts(paths, "skills/"):
-        gates.extend(_timing_pull_gate(repo_root, "check-skill-contracts", "scripts/check_skill_contracts.py", "--repo-root", str(repo_root)))
         gates.extend(
             _timing_pull_gate(
-                repo_root, "check-skill-bootstrap-vars", "scripts/check_skill_bootstrap_vars.py",
-                "--repo-root", str(repo_root), "--require-git-file-listing",
+                repo_root,
+                "check-skill-contracts",
+                "scripts/check_skill_contracts.py",
+                "--repo-root",
+                str(repo_root),
+            )
+        )
+        gates.extend(
+            _timing_pull_gate(
+                repo_root,
+                "check-skill-bootstrap-vars",
+                "scripts/check_skill_bootstrap_vars.py",
+                "--repo-root",
+                str(repo_root),
+                "--require-git-file-listing",
             )
         )
     if _any_exact(present, ".agents/surfaces.json"):
         # A broken surfaces manifest degrades every surface-driven gate, so it
         # fails earliest.
-        gates.extend(_timing_pull_gate(repo_root, "validate-surfaces", "scripts/validate_surfaces.py", "--repo-root", str(repo_root)))
+        gates.extend(
+            _timing_pull_gate(
+                repo_root,
+                "validate-surfaces",
+                "scripts/validate_surfaces.py",
+                "--repo-root",
+                str(repo_root),
+            )
+        )
     if _any_exact(present, "scripts/run-quality.sh", "docs/validator-timing-layers.md"):
         # #368 meta-gate: a new run-quality validator (or a timing-doc edit) must keep
         # the classification table exhaustive, so the shift-left class cannot recur via
         # an unclassified broad-only check. Flips only on these two files.
-        gates.extend(_timing_pull_gate(repo_root, "check-timing-layer-completeness", "scripts/check_timing_layer_completeness.py", "--repo-root", str(repo_root)))
+        gates.extend(
+            _timing_pull_gate(
+                repo_root,
+                "check-timing-layer-completeness",
+                "scripts/check_timing_layer_completeness.py",
+                "--repo-root",
+                str(repo_root),
+            )
+        )
     # The registry owns the dependency/fixture closure.  Keeping this derived
     # rather than hand-maintained prevents a new helper from silently falling
     # outside the commit-time contract gate.
     provenance_paths = {
-        path
-        for contract in _provenance_contract.CONTRACTS
-        for path in contract.trigger_paths
+        path for contract in _provenance_contract.CONTRACTS for path in contract.trigger_paths
     }
     if any(path in provenance_paths for path in paths):
         gates.extend(
@@ -110,7 +144,8 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
         # remains the operator-facing registry receipt.
         gates.extend(_provenance_self_test_gate(repo_root))
     if any(
-        path in {
+        path
+        in {
             ".agents/consumer-validator-adoption.yaml",
             "scripts/check_consumer_validator_catalog.py",
             "skills/public/quality/references/consumer-validator-catalog.yaml",
@@ -165,9 +200,11 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
         # broad-gate command at the commit boundary for every surface it cross-checks.
         gates.extend(
             _timing_pull_gate(
-                repo_root, "validate-current-pointer-freshness",
+                repo_root,
+                "validate-current-pointer-freshness",
                 "scripts/validate_current_pointer_freshness.py",
-                "--repo-root", str(repo_root),
+                "--repo-root",
+                str(repo_root),
             )
         )
     if _any_starts(paths, ".github/workflows/"):
@@ -181,10 +218,14 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
         # `jobs_gate_match_unestablished == []`.
         gates.extend(
             _timing_pull_gate(
-                repo_root, "inventory-ci-local-gate-parity",
+                repo_root,
+                "inventory-ci-local-gate-parity",
                 "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
-                "--repo-root", str(repo_root), "--require-empty-parity-issues",
-                "--require-canonical-gate-match", "--require-established-gate-match",
+                "--repo-root",
+                str(repo_root),
+                "--require-empty-parity-issues",
+                "--require-canonical-gate-match",
+                "--require-established-gate-match",
                 "--require-git-file-listing",
             )
         )
@@ -268,28 +309,44 @@ def _leak_scan_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
     pytest, not these commands), so the cheap verdict precedes it. Each degrades to no
     gate when the validator is absent (seeded tmp repo / consumer repo)."""
     gates: list[GateCommand] = []
-    if any(path.endswith(".py") and not path.startswith(_INFERENCE_LEAK_SCAN_EXCLUDE) for path in paths):
+    if any(
+        path.endswith(".py") and not path.startswith(_INFERENCE_LEAK_SCAN_EXCLUDE) for path in paths
+    ):
         gates.extend(
             _timing_pull_gate(
-                repo_root, "validate-inference-interpretation",
+                repo_root,
+                "validate-inference-interpretation",
                 "scripts/validate_inference_interpretation.py",
-                "--repo-root", str(repo_root), "--require-git-file-listing",
+                "--repo-root",
+                str(repo_root),
+                "--require-git-file-listing",
             )
         )
-    if any(path.endswith(".py") and (path.startswith("scripts/") or path.startswith("skills/")) for path in paths):
+    if any(
+        path.endswith(".py") and (path.startswith("scripts/") or path.startswith("skills/"))
+        for path in paths
+    ):
         gates.extend(
             _timing_pull_gate(
-                repo_root, "check-bootstrap-shim-consistency",
+                repo_root,
+                "check-bootstrap-shim-consistency",
                 "scripts/check_bootstrap_shim_consistency.py",
-                "--repo-root", str(repo_root), "--require-git-file-listing",
+                "--repo-root",
+                str(repo_root),
+                "--require-git-file-listing",
             )
         )
-    if any(path.startswith("skills/public/quality/scripts/inventory_") and path.endswith(".py") for path in paths):
+    if any(
+        path.startswith("skills/public/quality/scripts/inventory_") and path.endswith(".py")
+        for path in paths
+    ):
         gates.extend(
             _timing_pull_gate(
-                repo_root, "check-inventory-declaration-coverage",
+                repo_root,
+                "check-inventory-declaration-coverage",
                 "scripts/check_inventory_declaration_coverage.py",
-                "--repo-root", str(repo_root),
+                "--repo-root",
+                str(repo_root),
             )
         )
     return gates
@@ -314,7 +371,11 @@ def staged_commit_gate_plan(
         if scope_paths is not None
         else (staged_paths if staged_paths is not None else collect_staged_scope_paths(repo_root))
     )
-    existing = [path for path in (staged_paths if staged_paths is not None else paths) if (repo_root / path).is_file()]
+    existing = [
+        path
+        for path in (staged_paths if staged_paths is not None else paths)
+        if (repo_root / path).is_file()
+    ]
     staged_py = [path for path in existing if path.endswith(".py")]
     ruff = shutil.which("ruff") if ruff_path is None else ruff_path
     plan: list[GateCommand] = []
@@ -340,7 +401,10 @@ def staged_commit_gate_plan(
             )
         )
 
-    if any(path.endswith(".py") and (path.startswith("scripts/") or path.startswith("skills/")) for path in paths):
+    if any(
+        path.endswith(".py") and (path.startswith("scripts/") or path.startswith("skills/"))
+        for path in paths
+    ):
         plan.extend(
             _plan_helpers.present_gate(
                 repo_root,
@@ -361,17 +425,52 @@ def staged_commit_gate_plan(
     # schedules gates, so retiring a validator would otherwise schedule the very script
     # the commit deletes and refuse its own commit with no route but `--no-verify`.
     if _any_starts(paths, "skills/"):
-        plan.extend(_plan_helpers.present_gate(repo_root, "validate-skills", "validate_skills.py", "--repo-root", str(repo_root)))
-        plan.extend(_plan_helpers.present_gate(repo_root, "run-evals", "run_evals.py", "--repo-root", str(repo_root)))
+        plan.extend(
+            _plan_helpers.present_gate(
+                repo_root, "validate-skills", "validate_skills.py", "--repo-root", str(repo_root)
+            )
+        )
+        plan.extend(
+            _plan_helpers.present_gate(
+                repo_root, "run-evals", "run_evals.py", "--repo-root", str(repo_root)
+            )
+        )
     if _any_starts(paths, "profiles/"):
-        plan.extend(_plan_helpers.present_gate(repo_root, "validate-profiles", "validate_profiles.py", "--repo-root", str(repo_root)))
+        plan.extend(
+            _plan_helpers.present_gate(
+                repo_root,
+                "validate-profiles",
+                "validate_profiles.py",
+                "--repo-root",
+                str(repo_root),
+            )
+        )
     if _any_starts(paths, ".agents/"):
-        plan.extend(_plan_helpers.present_gate(repo_root, "validate-adapters", "validate_adapters.py", "--repo-root", str(repo_root)))
+        plan.extend(
+            _plan_helpers.present_gate(
+                repo_root,
+                "validate-adapters",
+                "validate_adapters.py",
+                "--repo-root",
+                str(repo_root),
+            )
+        )
     if _any_starts(paths, "presets/"):
-        plan.extend(_plan_helpers.present_gate(repo_root, "validate-presets", "validate_presets.py", "--repo-root", str(repo_root)))
+        plan.extend(
+            _plan_helpers.present_gate(
+                repo_root, "validate-presets", "validate_presets.py", "--repo-root", str(repo_root)
+            )
+        )
     if _any_starts(paths, "integrations/"):
-        plan.extend(_plan_helpers.present_gate(repo_root, "validate-integrations", "validate_integrations.py", "--repo-root", str(repo_root)))
-
+        plan.extend(
+            _plan_helpers.present_gate(
+                repo_root,
+                "validate-integrations",
+                "validate_integrations.py",
+                "--repo-root",
+                str(repo_root),
+            )
+        )
 
     if any(path.endswith(".md") for path in paths):
         # `check-plugin-doc-links` takes the same `.md` trigger as `check-doc-links`
@@ -391,7 +490,9 @@ def staged_commit_gate_plan(
             ("check-doc-links", "check_doc_links.py"),
             ("check-plugin-doc-links", "check_plugin_doc_links.py"),
         ):
-            plan.extend(_plan_helpers.present_gate(repo_root, label, script, "--repo-root", str(repo_root)))
+            plan.extend(
+                _plan_helpers.present_gate(repo_root, label, script, "--repo-root", str(repo_root))
+            )
         # The plugin-dir-references owner moved to the native core (#748); the
         # commit-time plan invokes the same canonical command as run-quality's
         # label, routed through the gate-side resolver shim.
@@ -422,7 +523,9 @@ def staged_commit_gate_plan(
         staged_markdown = [path for path in existing if path.endswith(".md")]
         if staged_markdown and (repo_root / "scripts" / "check-markdown.sh").exists():
             plan.append(
-                GateCommand("check-markdown (staged)", ("./scripts/check-markdown.sh", *staged_markdown))
+                GateCommand(
+                    "check-markdown (staged)", ("./scripts/check-markdown.sh", *staged_markdown)
+                )
             )
 
     # Both hand file paths to a validator, so they take the existing-file list.
@@ -435,7 +538,8 @@ def staged_commit_gate_plan(
     # hazard, whatever the individual consumer happens to tolerate. Same reason
     # `_skill_core_headroom_gates` and `_artifact_shape_gates` take `existing`.
     if changed_modules := [
-        path for path in existing
+        path
+        for path in existing
         if path.endswith(".py")
         and not path.endswith("__init__.py")
         and (
@@ -458,10 +562,14 @@ def staged_commit_gate_plan(
         # in the standalone-import test.
         plan.extend(
             _timing_pull_gate(
-                repo_root, "check-standalone-imports",
+                repo_root,
+                "check-standalone-imports",
                 "scripts/check_standalone_imports.py",
-                "--repo-root", str(repo_root), "--require-git-file-listing",
-                "--changed", *changed_modules,
+                "--repo-root",
+                str(repo_root),
+                "--require-git-file-listing",
+                "--changed",
+                *changed_modules,
             )
         )
 

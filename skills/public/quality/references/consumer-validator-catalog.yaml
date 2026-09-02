@@ -56,10 +56,6 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
-  - path: scripts/check_boundary_bypass_ratchet.py
-    consumer_facing: false
-    decision: exclude
-    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/check_changed_line_mutation_coverage.py
     consumer_facing: false
     decision: exclude
@@ -513,10 +509,6 @@ validators:
     decision: exclude
     reason: "skill-internal implementation or maintenance gate, not a consumer-authored artifact contract"
   - path: skills/quality/scripts/check_standing_doc_provenance.py
-    consumer_facing: false
-    decision: exclude
-    reason: "skill-internal implementation or maintenance gate, not a consumer-authored artifact contract"
-  - path: skills/quality/scripts/validate_boundary_bypass_payload.py
     consumer_facing: false
     decision: exclude
     reason: "skill-internal implementation or maintenance gate, not a consumer-authored artifact contract"

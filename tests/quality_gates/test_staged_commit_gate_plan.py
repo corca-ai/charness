@@ -565,20 +565,18 @@ def test_skill_packages_surface_runs_fast_ergonomics_checker() -> None:
     ), skill_packages["verify_commands"]
 
 
-def test_repo_python_surface_runs_fast_boundary_bypass_ratchet_before_broad_pytest() -> None:
-    # #314 acceptance (1): the fast boundary-bypass ratchet must run in the
-    # repo-python surface and precede the broad pytest so a redundant boundary-
-    # spawning test fails at the commit boundary, not 172s into the broad gate.
+def test_repo_python_surface_runs_fast_subprocess_form_before_broad_pytest() -> None:
+    # #768 acceptance: the fast subprocess-form check must run in the repo-python
+    # surface and precede the broad pytest so a direct production spawn bypass
+    # fails at the commit boundary, not 172s into the broad gate.
     surfaces = json.loads(SURFACES_JSON)
     repo_python = next(s for s in surfaces["surfaces"] if s["surface_id"] == "repo-python")
     verify = repo_python["verify_commands"]
-    ratchet_idx = next(
-        (i for i, cmd in enumerate(verify) if "check_boundary_bypass_ratchet.py" in cmd), None
-    )
+    form_idx = next((i for i, cmd in enumerate(verify) if "check_subprocess_form.py" in cmd), None)
     broad_idx = next((i for i, cmd in enumerate(verify) if "run_standing_pytest.py" in cmd), None)
-    assert ratchet_idx is not None, verify
+    assert form_idx is not None, verify
     assert broad_idx is not None, verify
-    assert ratchet_idx < broad_idx, verify
+    assert form_idx < broad_idx, verify
 
 
 def test_fast_surface_verify_allowlist_keys_exist_in_some_surface() -> None:
@@ -612,18 +610,27 @@ def test_precommit_plan_agrees_with_fast_subset_for_skill_change() -> None:
 
 
 def test_precommit_plan_agrees_with_fast_subset_for_test_change() -> None:
-    # #314: a changed test file routes to the repo-python surface, whose
-    # verify_commands now include the boundary-bypass ratchet; the pre-commit
-    # plan must run the same ratchet.
+    # #768: a changed test file routes to the repo-python surface, whose
+    # verify_commands include the production subprocess-form check; the
+    # pre-commit plan must run the same check.
     paths = ["tests/quality_gates/test_example.py"]
     surface_verify = _surface_verify_commands_for(paths)
-    assert "python3 scripts/check_boundary_bypass_ratchet.py --repo-root ." in surface_verify
+    assert (
+        "python3 scripts/check_subprocess_form.py --repo-root . --require-git-file-listing"
+        in surface_verify
+    )
 
     gates = fast_surface_verify_gates(ROOT, paths)
     labels = {gate.label for gate in gates}
-    assert "check-boundary-bypass-ratchet" in labels
-    argv = next(gate.argv for gate in gates if gate.label == "check-boundary-bypass-ratchet")
-    assert argv == ("python3", "scripts/check_boundary_bypass_ratchet.py", "--repo-root", ".")
+    assert "check-subprocess-form" in labels
+    argv = next(gate.argv for gate in gates if gate.label == "check-subprocess-form")
+    assert argv == (
+        "python3",
+        "scripts/check_subprocess_form.py",
+        "--repo-root",
+        ".",
+        "--require-git-file-listing",
+    )
 
 
 def test_fast_surface_verify_gates_degrade_without_surfaces_manifest(tmp_path: Path) -> None:

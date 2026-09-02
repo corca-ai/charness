@@ -14,8 +14,7 @@ SEED_RETRO_MEMORY = load_script_module(
 )
 # In-process on purpose: the exit-code half of the trigger probe's contract is proven in
 # tests/quality_gates/test_retro_auto_trigger.py, so joining the two seams here needs the
-# payload only — and a fresh subprocess call site would add a new boundary-bypass
-# candidate for a fact an import already establishes.
+# payload only — an import already establishes this fact without a process boundary.
 CHECK_AUTO_TRIGGER = load_script_module(
     "tests.quality_gates.retro_check_auto_trigger",
     ROOT / "skills/public/retro/scripts/check_auto_trigger.py",
@@ -26,14 +25,18 @@ def test_setup_seed_retro_memory_writes_adapter_and_digest(tmp_path: Path) -> No
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    result = run_loaded_script_main("seed_retro_memory.py", SEED_RETRO_MEMORY, "--repo-root", str(repo))
+    result = run_loaded_script_main(
+        "seed_retro_memory.py", SEED_RETRO_MEMORY, "--repo-root", str(repo)
+    )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["created"] == {"adapter": True, "summary": True, "gitignore": True}
     assert "lesson_loop" not in payload
 
     adapter_text = (repo / ".agents" / "retro-adapter.yaml").read_text(encoding="utf-8")
-    summary_text = (repo / "charness-artifacts" / "retro" / "recent-lessons.md").read_text(encoding="utf-8")
+    summary_text = (repo / "charness-artifacts" / "retro" / "recent-lessons.md").read_text(
+        encoding="utf-8"
+    )
     gitignore_text = (repo / ".gitignore").read_text(encoding="utf-8")
     assert "summary_path: charness-artifacts/retro/recent-lessons.md" in adapter_text
     assert "repo: repo" in adapter_text
@@ -57,7 +60,9 @@ def test_seeded_adapter_leaves_the_trigger_question_open_end_to_end(tmp_path: Pa
     `not-established` instead of a `triggered: false` that reads as a judged answer."""
     repo = tmp_path / "repo"
     repo.mkdir()
-    seed = run_loaded_script_main("seed_retro_memory.py", SEED_RETRO_MEMORY, "--repo-root", str(repo))
+    seed = run_loaded_script_main(
+        "seed_retro_memory.py", SEED_RETRO_MEMORY, "--repo-root", str(repo)
+    )
     assert seed.returncode == 0, seed.stderr
 
     payload = CHECK_AUTO_TRIGGER.build_payload(repo, paths=["README.md"])
@@ -75,7 +80,9 @@ def test_setup_seed_retro_memory_preserves_existing_gitignore(tmp_path: Path) ->
     repo.mkdir()
     (repo / ".gitignore").write_text("node_modules/\n.charness/retro/\n", encoding="utf-8")
 
-    result = run_loaded_script_main("seed_retro_memory.py", SEED_RETRO_MEMORY, "--repo-root", str(repo))
+    result = run_loaded_script_main(
+        "seed_retro_memory.py", SEED_RETRO_MEMORY, "--repo-root", str(repo)
+    )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
 

@@ -30,9 +30,9 @@ def test_archive_and_resurrection_preserve_scores_and_refuse_invalid_transition(
         score_events=[_score_event(score=2, anchor="evidence")],
     )
     # In-process, not subprocess: the recorder is already imported above, and this
-    # repo ratchets the test-suite process boundary down. Driving the same `main()`
+    # repo uses in-process loaders for callable behavior. Driving the same `main()`
     # through argv keeps the CLI contract (exit code and emitted payload) under test
-    # without minting a new convertible bypass.
+    # without adding an unnecessary process boundary.
     command = run_loaded_script_main(
         "record_lesson_lifecycle.py",
         lifecycle_recorder,

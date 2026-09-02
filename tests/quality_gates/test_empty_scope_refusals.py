@@ -26,7 +26,7 @@ from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
 
-# In-process, not subprocess: this repo ratchets the test-suite process boundary
+# In-process, not subprocess: this repo keeps the test-suite process boundary
 # down (43% of test files drive a nested CLI, which is what makes the suite
 # subprocess-bound), so a new gate-behavior file must not add three more.
 _MODULES = {

@@ -48,7 +48,10 @@ def test_check_changed_surfaces_reports_expected_obligations_for_readme() -> Non
     assert "repo-markdown" in surface_ids
     assert "python3 scripts/sync_root_plugin_manifests.py --repo-root ." in payload["sync_commands"]
     assert "python3 scripts/validate_packaging.py --repo-root ." in payload["verify_commands"]
-    assert "python3 scripts/validate_packaging_committed.py --repo-root ." in payload["verify_commands"]
+    assert (
+        "python3 scripts/validate_packaging_committed.py --repo-root ."
+        in payload["verify_commands"]
+    )
     assert "./scripts/check-docs.sh" in payload["verify_commands"]
 
 
@@ -69,11 +72,12 @@ _GITIGNORE_SCAN = (
     "--repo-root . --require-empty --require-git-file-listing"
 )
 _RETRO_INDEX_CHECK = "python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check"
-_BOUNDARY_RATCHET = "python3 scripts/check_boundary_bypass_ratchet.py --repo-root ."
+_SUBPROCESS_FORM = (
+    "python3 scripts/check_subprocess_form.py --repo-root . --require-git-file-listing"
+)
 _STANDING_PYTEST = "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only"
 _SPEC_EVIDENCE = (
-    "python3 scripts/check_spec_evidence_durability.py --repo-root . "
-    "--require-git-file-listing"
+    "python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing"
 )
 
 
@@ -114,10 +118,10 @@ def test_sloc_inventory_refresh_is_sync_obligation_not_verify() -> None:
     assert command not in payload["verify_commands"]
 
 
-def test_boundary_bypass_ratchet_runs_for_new_test_file() -> None:
-    # The boundary-ratchet motivating case (a new tests/ file with subprocess
-    # calls) is covered by the repo-python surface, not only the git hook.
-    assert _BOUNDARY_RATCHET in _verify_commands_for("tests/quality_gates/test_new_thing.py")
+def test_subprocess_form_runs_for_repo_python_surface() -> None:
+    # A production spawn-form violation is covered by the repo-python surface,
+    # not only the standalone quality runner.
+    assert _SUBPROCESS_FORM in _verify_commands_for("tests/quality_gates/test_new_thing.py")
 
 
 def test_repo_markdown_surface_matches_top_level_packaging_readme() -> None:
@@ -130,15 +134,13 @@ def test_repo_markdown_surface_matches_top_level_packaging_readme() -> None:
 
 
 def test_repo_markdown_routes_durable_evidence_before_broad_pytest() -> None:
-    assert _SPEC_EVIDENCE in _verify_commands_for(
-        "charness-artifacts/quality/2026-07-18-review.md"
-    )
+    assert _SPEC_EVIDENCE in _verify_commands_for("charness-artifacts/quality/2026-07-18-review.md")
 
 
 def test_repo_python_surface_matches_top_level_scripts() -> None:
     # #331 regression guard: every scripts/ file is top-level, and the bare
     # scripts/**/*.py idiom (non-recursive fnmatch) matched none of them, silently
-    # keeping the whole repo-python verify set (boundary-ratchet, broad pytest) out
+    # keeping the whole repo-python verify set (subprocess form, broad pytest) out
     # of every scripts closeout. scripts/*.py matches top-level AND nested.
     result = run_script(
         "scripts/check_changed_surfaces.py",
@@ -151,7 +153,7 @@ def test_repo_python_surface_matches_top_level_scripts() -> None:
     payload = yaml.safe_load(result.stdout)
     assert "repo-python" in {surface["surface_id"] for surface in payload["matched_surfaces"]}
     verify = payload["verify_commands"]
-    assert _BOUNDARY_RATCHET in verify
+    assert _SUBPROCESS_FORM in verify
     assert _STANDING_PYTEST in verify
 
 
@@ -274,7 +276,9 @@ def test_select_verifiers_includes_public_skill_policy_for_public_skill_changes(
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
-    verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
+    verify_commands = {
+        item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"
+    }
     assert "python3 scripts/validate_skills.py --repo-root ." in verify_commands
     assert "python3 scripts/validate_public_skill_validation.py --repo-root ." in verify_commands
     assert "python3 scripts/validate_public_skill_dogfood.py --repo-root ." in verify_commands
@@ -290,7 +294,9 @@ def test_select_verifiers_includes_public_skill_policy_for_policy_json_changes()
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
-    verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
+    verify_commands = {
+        item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"
+    }
     assert "python3 scripts/validate_public_skill_validation.py --repo-root ." in verify_commands
 
 
@@ -304,7 +310,9 @@ def test_select_verifiers_includes_public_skill_dogfood_for_registry_changes() -
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
-    verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
+    verify_commands = {
+        item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"
+    }
     assert "python3 scripts/validate_public_skill_dogfood.py --repo-root ." in verify_commands
 
 
@@ -321,7 +329,9 @@ def test_select_verifiers_reports_missing_bundle_for_unmatched_paths() -> None:
     assert payload["bundle_status"] == "missing-bundle"
     assert payload["recommended_commands"] == []
     assert any("not covered by `.agents/surfaces.json`" in note for note in payload["notes"])
-    assert any("No repo-owned verifier bundle matched these changes" in note for note in payload["notes"])
+    assert any(
+        "No repo-owned verifier bundle matched these changes" in note for note in payload["notes"]
+    )
 
 
 def test_validate_surfaces_rejects_duplicate_ids(tmp_path: Path) -> None:

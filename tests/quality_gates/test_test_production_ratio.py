@@ -337,8 +337,8 @@ def test_test_production_ratio_advisory_warns_above_max_without_blocking(
     # (north-star P1: a LOC ratio is a smell sensor, not an irreversible-boundary
     # contract). The WARN: prefix is what run-quality.sh:294 surfaces non-blocking.
     # Tested in-process (main() return value + captured stdout) rather than via
-    # run_script: a second exit-contract subprocess assertion would flip this test
-    # file to a keep-boundary in inventory_boundary_bypass and trip its ratchet.
+    # run_script: a second exit-contract subprocess assertion would classify this
+    # test file as a keep-boundary in the live boundary inventory.
     monkeypatch.setattr(
         sys,
         "argv",

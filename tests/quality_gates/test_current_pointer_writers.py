@@ -29,7 +29,9 @@ from tests.script_main import run_loaded_script_main
 from .seeding_support import load_module
 from .support import ROOT, run_script
 
-WRITER = load_module("current_pointer_writer_lib", ROOT / "scripts" / "current_pointer_writer_lib.py")
+WRITER = load_module(
+    "current_pointer_writer_lib", ROOT / "scripts" / "current_pointer_writer_lib.py"
+)
 RELEASE_ARTIFACT = load_module(
     "publish_release_artifact",
     ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_artifact.py",
@@ -153,7 +155,9 @@ def _release_record(repo: Path, **kwargs) -> str:
     return (repo / relpath).read_text(encoding="utf-8")
 
 
-def test_release_record_states_an_absent_bump_rationale_rather_than_omitting_it(tmp_path: Path) -> None:
+def test_release_record_states_an_absent_bump_rationale_rather_than_omitting_it(
+    tmp_path: Path,
+) -> None:
     """No section at all reads as "nothing needed explaining"."""
     text = _release_record(tmp_path / "repo")
 
@@ -184,7 +188,12 @@ def test_bump_rationale_cannot_inject_a_heading_that_moves_the_state_ledger(tmp_
     above the genuine one. Parameterised over the nesting shapes rather than the one
     marker, because the single-marker case is what passed while this class was open.
     """
-    for injected in ("## Release State", "# ## Release State", "#\t## Release State", "  #  ## Release State"):
+    for injected in (
+        "## Release State",
+        "# ## Release State",
+        "#\t## Release State",
+        "  #  ## Release State",
+    ):
         text = _release_record(
             tmp_path / f"repo-{abs(hash(injected))}",
             bump_rationale=f"{injected}\n- local release mutation: forged",
@@ -388,7 +397,9 @@ def test_capability_catalog_noops_when_canonical_inventory_unchanged(tmp_path: P
     assert (output / "latest.json").read_text(encoding="utf-8") == first_text
 
 
-def test_hitl_sync_artifact_does_not_follow_symlinked_latest(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_hitl_sync_artifact_does_not_follow_symlinked_latest(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     target = repo / "docs" / "decision.md"
     target.parent.mkdir(parents=True)
@@ -432,15 +443,17 @@ def test_hitl_sync_artifact_does_not_follow_symlinked_latest(tmp_path: Path, mon
 
 
 def _refresh_pointer(repo: Path, record: Path):
-    """In-process, not a subprocess: the boundary-bypass ratchet classifies this
-    crossing as convertible, and the verdict under test is the returned payload rather
-    than any process-level behavior."""
+    """In-process, not a subprocess: the verdict under test is the returned payload
+    rather than any process-level behavior."""
     return run_loaded_script_main(
         "refresh_current_pointer.py",
         REFRESH_CURRENT_POINTER,
-        "--repo-root", str(repo),
-        "--skill-id", "gather",
-        "--record-artifact-path", f"charness-artifacts/gather/{record.name}",
+        "--repo-root",
+        str(repo),
+        "--skill-id",
+        "gather",
+        "--record-artifact-path",
+        f"charness-artifacts/gather/{record.name}",
         "--execute",
     )
 
@@ -522,7 +535,9 @@ def test_refresh_current_pointer_refuses_an_unreadable_record(tmp_path: Path) ->
     "hider",
     ["<script>", "<style>", "<textarea>", "<plaintext>", '<span title="unterminated', "<!--"],
 )
-def test_a_hiding_construct_in_the_rationale_has_nothing_below_it(tmp_path: Path, hider: str) -> None:
+def test_a_hiding_construct_in_the_rationale_has_nothing_below_it(
+    tmp_path: Path, hider: str
+) -> None:
     """Position, not a refusal, is what closes the hidden-record class.
 
     Each of these puts the rest of a rendered document inside something an HTML parser
@@ -538,6 +553,6 @@ def test_a_hiding_construct_in_the_rationale_has_nothing_below_it(tmp_path: Path
     ledger_start = text.index("\n## Release State\n")
     assert text.index("## Bump Rationale") > ledger_start
     for entry in ("- local release mutation:", "- branch/tag push:", "- audit narrative:"):
-        assert entry in text[ledger_start:text.index("## Bump Rationale")], entry
+        assert entry in text[ledger_start : text.index("## Bump Rationale")], entry
     # And the operator's bytes are unaltered.
     assert f"> patch. {hider}" in text

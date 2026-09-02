@@ -183,17 +183,14 @@ Use this distinction:
 stack-specific DSL as a public skill; consumer repos build their own helper
 APIs when the local language and runner warrant it.
 
-## Boundary-Bypass Ratchets
+## Process-Boundary Adjudication
 
-When a repo repeatedly tests import-safe or package-safe entrypoints through a
-subprocess, use a boundary-bypass inventory plus no-increase ratchet. The
-portable policy lives in [boundary-bypass-ratchet](./boundary-bypass-ratchet.md):
-the repo emits a stack-specific payload, validates the field contract, commits a
-baseline, and fails on new unexempt candidates.
-
-Treat the ratchet as a structural guard, not as a cleanup claim. A passing
-ratchet proves only that the boundary-bypass surface did not grow beyond the
-baseline; it does not prove the existing backlog is healthy.
+When a test must cross a real process or Git repository boundary, declare the
+reason with `pytest.mark.boundary_contract(reason="...")`. Ordinary behavior
+should use the repository's in-process loaders and test the smaller callable
+surface. The staged boundary advisory makes new direct crossings visible, while
+`check_subprocess_form.py` enforces the production rule that child processes go
+through `scripts/subprocess_guard.py`.
 
 ## Language Notes
 

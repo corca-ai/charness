@@ -5,8 +5,8 @@ Slice 1 built the reviewed-fixable overlay (``dup_review_lib`` / ``dup-review.js
 This module is the ratchet's teeth: given the current duplicate families, the
 accepted baselines, and the overlay classifications, it decides whether a push
 should block. It is the portable unit (a standalone gate script + payload
-contract, mirroring ``references/boundary-bypass-ratchet.md``); ``check_dup_ratchet.py``
-is one consumer (charness wires it into ``run-quality.sh`` + broad pre-push).
+contract); ``check_dup_ratchet.py`` is one consumer (charness wires it into
+``run-quality.sh`` + broad pre-push).
 
 Two arms (spec Fixed Decision 1 + Slice 2 D1–D3):
 
@@ -196,7 +196,8 @@ def scoped_rebaseline_exemptions(
             + ", ".join(ignored_intentional)
         )
     return {
-        "exempt_live_ids": set(ignored_intentional) | {r["new_fingerprint"] for r in unnamed_reductions},
+        "exempt_live_ids": set(ignored_intentional)
+        | {r["new_fingerprint"] for r in unnamed_reductions},
         "ignored_intentional": ignored_intentional,
         "unnamed_reductions": unnamed_reductions,
         "advisories": advisories,
@@ -256,8 +257,12 @@ def plan_scoped_rebaseline(
 # Policy
 # --------------------------------------------------------------------------- #
 def _boy_scout_arm(
-    *, above_floor: bool, anchor: str | None, anchor_is_ancestor: bool,
-    stagnation: int | None, escalation_K: int,
+    *,
+    above_floor: bool,
+    anchor: str | None,
+    anchor_is_ancestor: bool,
+    stagnation: int | None,
+    escalation_K: int,
 ) -> tuple[bool, str]:
     """Return ``(block, status)`` for the boy-scout arm. Block only when above the
     floor, the anchor is a live ancestor, and stagnation has reached K."""
@@ -321,11 +326,16 @@ def evaluate(
 
     hard_block = bool(new_code or new_doc)
     boy_scout_block, boy_scout_status = _boy_scout_arm(
-        above_floor=verdict["above_floor"], anchor=anchor,
-        anchor_is_ancestor=anchor_is_ancestor, stagnation=stagnation, escalation_K=escalation_K,
+        above_floor=verdict["above_floor"],
+        anchor=anchor,
+        anchor_is_ancestor=anchor_is_ancestor,
+        stagnation=stagnation,
+        escalation_K=escalation_K,
     )
     block = hard_block or boy_scout_block
-    verdict.update(ok=not block, block=block, hard_block=hard_block, boy_scout_block=boy_scout_block)
+    verdict.update(
+        ok=not block, block=block, hard_block=hard_block, boy_scout_block=boy_scout_block
+    )
 
     if hard_block:
         verdict["status"] = "hard-block"

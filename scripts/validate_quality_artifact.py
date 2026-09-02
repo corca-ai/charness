@@ -150,7 +150,9 @@ EXECUTED_DELEGATED_REVIEW_SUBSTANTIATION = (
 # A marker that the section itself negates is not substantiation: `executed (no
 # reviewer, no findings)` names the vocabulary while denying every word of it.
 NEGATED_MARKER_RE = re.compile(
-    r"\bno\s+(?:[\w-]+\s+){0,2}?(?:" + "|".join(re.escape(marker) for marker in EXECUTED_DELEGATED_REVIEW_SUBSTANTIATION) + r")"
+    r"\bno\s+(?:[\w-]+\s+){0,2}?(?:"
+    + "|".join(re.escape(marker) for marker in EXECUTED_DELEGATED_REVIEW_SUBSTANTIATION)
+    + r")"
 )
 # Language-neutral alternative to the vocabulary above: a section that cites the
 # review record itself (a backticked file path or a markdown link to one) has
@@ -224,12 +226,16 @@ CURRENT_POINTER_FILENAME = "latest.md"
 # prompt-bulk inventory. (Cited as a revision rather than as a VCS command line on
 # purpose: `inventory_boundary_bypass_lib.has_internal_boundary` scores this file's
 # TEXT, so a command literal in a comment reads as this validator shelling out
-# internally and moves the boundary-bypass ratchet for tests that only spawn it.) It is the same overwrite this rule refuses, found by the same
+# internally and changes the live test-boundary inventory for tests that only spawn
+# it.) It is the same overwrite this rule refuses, found by the same
 # signal, seven weeks before this rule existed — the displaced 06-25 record is
 # recoverable and should be refiled under its own dated path, at which point this entry
 # is deleted rather than kept.
 DATE_COHERENCE_GRANDFATHERED = {
-    "charness-artifacts/quality/2026-06-25-skill-ergonomics-yaml-summary-quality-review.md": ("2026-06-25", "2026-06-26"),
+    "charness-artifacts/quality/2026-06-25-skill-ergonomics-yaml-summary-quality-review.md": (
+        "2026-06-25",
+        "2026-06-26",
+    ),
 }
 
 
@@ -268,7 +274,11 @@ def validate_runtime_signals_section(lines: list[str]) -> None:
     start = find_index(lines, "## Runtime Signals") + 1
     end = find_index(lines, "## Healthy")
     section_lines = collect_bullets(lines[start:end])
-    missing = [prefix for prefix in RUNTIME_SIGNAL_PREFIXES if not any(line.startswith(prefix) for line in section_lines)]
+    missing = [
+        prefix
+        for prefix in RUNTIME_SIGNAL_PREFIXES
+        if not any(line.startswith(prefix) for line in section_lines)
+    ]
     if missing:
         raise ValidationError(
             "`## Runtime Signals` must explicitly state runtime hot spots, coverage-gate status, "
@@ -277,11 +287,15 @@ def validate_runtime_signals_section(lines: list[str]) -> None:
     source_line = next(line for line in section_lines if line.startswith("- runtime source:"))
     hot_spots_line = next(line for line in section_lines if line.startswith("- runtime hot spots:"))
     source_lowered = source_line.lower()
-    has_structured_source = any(marker in source_line for marker in STRUCTURED_RUNTIME_SOURCE_MARKERS) or bool(
-        GENERIC_STRUCTURED_RUNTIME_RE.search(source_lowered)
-    )
+    has_structured_source = any(
+        marker in source_line for marker in STRUCTURED_RUNTIME_SOURCE_MARKERS
+    ) or bool(GENERIC_STRUCTURED_RUNTIME_RE.search(source_lowered))
     has_missing_source = any(marker in source_lowered for marker in MISSING_RUNTIME_SOURCE_MARKERS)
-    if "`latest.md`" in source_line or "manual" in source_lowered or "hand-edited" in source_lowered:
+    if (
+        "`latest.md`" in source_line
+        or "manual" in source_lowered
+        or "hand-edited" in source_lowered
+    ):
         raise ValidationError("runtime source must not be markdown or hand-edited prose")
     if not has_structured_source and not has_missing_source:
         raise ValidationError(
@@ -292,7 +306,9 @@ def validate_runtime_signals_section(lines: list[str]) -> None:
     if RUNTIME_TIMING_RE.search(hot_spots_line) and not any(
         marker in source_lowered for marker in RUNTIME_SUMMARY_RENDER_MARKERS
     ):
-        raise ValidationError("runtime hot spot timings must cite the summary helper that rendered them")
+        raise ValidationError(
+            "runtime hot spot timings must cite the summary helper that rendered them"
+        )
 
 
 def normalized_recommended_heading_lines(lines: list[str]) -> list[str]:
@@ -306,12 +322,18 @@ def validate_recommended_next_moves_section(lines: list[str]) -> None:
     section_lines = [line.strip() for line in normalized_lines[start:end] if line.strip()]
     bullets = [line for line in section_lines if line.startswith("- ")]
     if not bullets:
-        raise ValidationError("`## Recommended Next Quality Moves` must contain at least one bullet")
+        raise ValidationError(
+            "`## Recommended Next Quality Moves` must contain at least one bullet"
+        )
     if any(not line.startswith(RECOMMENDED_MOVE_PREFIXES) for line in bullets):
-        raise ValidationError("recommended next quality moves must start with `- active ` or `- passive `")
+        raise ValidationError(
+            "recommended next quality moves must start with `- active ` or `- passive `"
+        )
     for line in bullets:
         if line.startswith("- passive ") and " because" not in line and " until" not in line:
-            raise ValidationError("passive recommended next quality moves must explain why they are passive")
+            raise ValidationError(
+                "passive recommended next quality moves must explain why they are passive"
+            )
 
 
 def validate_advisory_section(lines: list[str]) -> None:
@@ -323,15 +345,23 @@ def validate_advisory_section(lines: list[str]) -> None:
         raise ValidationError("`## Advisory` must contain at least one bullet")
     lowered = "\n".join(section_lines).lower()
     if "none" in lowered and "none found by inventory" not in lowered:
-        raise ValidationError("empty advisory claims must use `none found by inventory` evidence wording")
-    if "none found by inventory" in lowered and not any(token in lowered for token in ("command:", "artifact:", "`")):
-        raise ValidationError("empty advisory claims must cite inventory-backed command or artifact evidence")
+        raise ValidationError(
+            "empty advisory claims must use `none found by inventory` evidence wording"
+        )
+    if "none found by inventory" in lowered and not any(
+        token in lowered for token in ("command:", "artifact:", "`")
+    ):
+        raise ValidationError(
+            "empty advisory claims must cite inventory-backed command or artifact evidence"
+        )
     for bullet in bullets:
         bullet_lowered = bullet.lower()
         if "none found by inventory" in bullet_lowered:
             continue
         if not any(marker in bullet_lowered for marker in ADVISORY_EVIDENCE_MARKERS):
-            raise ValidationError("advisory bullets must cite inventory, command, artifact, or other explicit evidence")
+            raise ValidationError(
+                "advisory bullets must cite inventory, command, artifact, or other explicit evidence"
+            )
 
 
 def strip_html_comments(lines: list[str]) -> list[str]:
@@ -347,7 +377,11 @@ def strip_html_comments(lines: list[str]) -> list[str]:
     than to the whole artifact on purpose: `<!-- reproduction-source -->` on the runtime
     source line is a machine marker other checkers consume, and must survive.
     """
-    return [line.strip() for line in HTML_COMMENT_RE.sub("", "\n".join(lines)).splitlines() if line.strip()]
+    return [
+        line.strip()
+        for line in HTML_COMMENT_RE.sub("", "\n".join(lines)).splitlines()
+        if line.strip()
+    ]
 
 
 def declared_delegated_review_status(section_lines: list[str]) -> str | None:
@@ -359,7 +393,11 @@ def declared_delegated_review_status(section_lines: list[str]) -> str | None:
     """
     for line in section_lines:
         lowered = line.lower()
-        hits = [(lowered.index(status), status) for status in DELEGATED_REVIEW_STATUSES if status in lowered]
+        hits = [
+            (lowered.index(status), status)
+            for status in DELEGATED_REVIEW_STATUSES
+            if status in lowered
+        ]
         if hits:
             return min(hits)[1]
     return None
@@ -376,7 +414,8 @@ def validate_executed_delegated_review_substance(section_lines: list[str]) -> No
     section_text = "\n".join(section_lines)
     lowered = section_text.lower()
     contradiction = next(
-        (regex for regex in EXECUTED_DELEGATED_REVIEW_CONTRADICTION_RES if regex.search(lowered)), None
+        (regex for regex in EXECUTED_DELEGATED_REVIEW_CONTRADICTION_RES if regex.search(lowered)),
+        None,
     )
     if contradiction is not None:
         raise ValidationError(
@@ -400,7 +439,9 @@ def validate_delegated_review_section(lines: list[str]) -> None:
     end = find_index(lines, "## Commands Run")
     section_lines = strip_html_comments(lines[start:end])
     if not section_lines:
-        raise ValidationError("`## Delegated Review` must record executed, blocked, or not_applicable status")
+        raise ValidationError(
+            "`## Delegated Review` must record executed, blocked, or not_applicable status"
+        )
     lowered = "\n".join(section_lines).lower()
     # A forbidden status is refused wherever it appears, comment or not: stripping
     # guidance must never buy back a "not run" the author wrote down.
@@ -411,7 +452,9 @@ def validate_delegated_review_section(lines: list[str]) -> None:
             "host/tool signal, or not_applicable with a reason"
         )
     if not any(status in lowered for status in DELEGATED_REVIEW_STATUSES):
-        raise ValidationError("`## Delegated Review` must include executed, blocked, or not_applicable status")
+        raise ValidationError(
+            "`## Delegated Review` must include executed, blocked, or not_applicable status"
+        )
     # Trigger on the authored claim, but let the signal itself satisfy it from anywhere
     # in the section, so a host signal written inside a comment still counts.
     # `delegation signal:` is the third accepted heading. A user who DECLINES the
@@ -435,7 +478,9 @@ def validate_delegated_review_section(lines: list[str]) -> None:
     # slow-gate lenses, and unstripped it scoped every scaffolded artifact as a
     # runtime review that must name all three.
     artifact_text = "\n".join(strip_html_comments(lines)).lower()
-    slow_gate_scope = any(token in artifact_text for token in ("slow", "standing test", "fixture economics"))
+    slow_gate_scope = any(
+        token in artifact_text for token in ("slow", "standing test", "fixture economics")
+    )
     if slow_gate_scope and "executed" in lowered:
         missing = [lens for lens in SLOW_GATE_DELEGATED_LENSES if lens not in lowered]
         if missing:
@@ -465,11 +510,15 @@ def _count_files(path: Path) -> int:
 def _skill_ergonomics_counts(repo_root: Path, skill_id: str) -> dict[str, int]:
     skill_path = repo_root / "skills" / "public" / skill_id / "SKILL.md"
     if not skill_path.is_file():
-        raise ValidationError(f"quality artifact cites skill ergonomics counts for missing skill `{skill_id}`")
+        raise ValidationError(
+            f"quality artifact cites skill ergonomics counts for missing skill `{skill_id}`"
+        )
     skill_dir = skill_path.parent
     body_lines: list[str] = []
     active_section: str | None = None
-    for raw in _skill_markdown_lib.strip_frontmatter(skill_path.read_text(encoding="utf-8")).splitlines():
+    for raw in _skill_markdown_lib.strip_frontmatter(
+        skill_path.read_text(encoding="utf-8")
+    ).splitlines():
         stripped = raw.strip()
         if stripped.startswith("## "):
             active_section = stripped[3:].strip()
@@ -519,7 +568,9 @@ def validate_skill_ergonomics_count_claims(lines: list[str], repo_root: Path) ->
 # `## ` heading so a body line that happens to start with `Date:` can never become the
 # artifact's date channel.
 def preamble_date(lines: list[str]) -> str | None:
-    preamble_end = next((index for index, raw in enumerate(lines) if raw.strip().startswith("## ")), len(lines))
+    preamble_end = next(
+        (index for index, raw in enumerate(lines) if raw.strip().startswith("## ")), len(lines)
+    )
     matched = (QUALITY_BODY_DATE_RE.match(raw.strip()) for raw in lines[:preamble_end])
     return next((match.group(1) for match in matched if match), None)
 
@@ -584,7 +635,9 @@ def validate_surface_contract(lines: list[str]) -> None:
         raise ValidationError(str(exc)) from exc
 
 
-def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, collect_all: bool = False) -> None:
+def validate_quality_artifact(
+    path: Path, *, repo_root: Path | None = None, collect_all: bool = False
+) -> None:
     lines = read_lines(path)
     resolved_repo_root = repo_root or REPO_ROOT
 
@@ -601,13 +654,19 @@ def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, coll
             path,
             lines,
             max_words=resolve_adapter_line_budget(
-                load_adapter, resolved_repo_root, field=WORD_BUDGET_FIELD, default=MAX_ARTIFACT_WORDS
+                load_adapter,
+                resolved_repo_root,
+                field=WORD_BUDGET_FIELD,
+                default=MAX_ARTIFACT_WORDS,
             ),
-            artifact_label="quality artifact", artifact_type="quality",
+            artifact_label="quality artifact",
+            artifact_type="quality",
         ),
         lambda: validate_date_line(lines),
         lambda: validate_date_channel_coherence(path, lines, resolved_repo_root),
-        lambda: validate_section_order(normalized_recommended_heading_lines(lines), REQUIRED_SECTIONS),
+        lambda: validate_section_order(
+            normalized_recommended_heading_lines(lines), REQUIRED_SECTIONS
+        ),
         lambda: validate_surface_contract(lines),
         lambda: validate_runtime_signals_section(lines),
         lambda: validate_advisory_section(lines),

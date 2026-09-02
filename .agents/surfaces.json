@@ -867,7 +867,6 @@
         "python3 scripts/check_code_lengths.py --repo-root . --require-git-file-listing",
         "python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support",
         "python3 scripts/check_test_repo_copy_invariants.py --repo-root .",
-        "python3 scripts/check_boundary_bypass_ratchet.py --repo-root .",
         "./scripts/check-shell.sh",
         "python3 scripts/run_standing_pytest.py --repo-root . --mode read-only"
       ],
@@ -875,7 +874,6 @@
         "Use targeted tests when iterating, but close out on the strongest standing Python gates the slice touched.",
         "Release-only install/update lifecycle tests are excluded from the standing Python closeout gate and should run for release, packaging, or tool lifecycle changes.",
         "check_test_repo_copy_invariants.py is the fast standalone structural checker (#307): it runs before the broad pytest so test-fixture drift fails at the commit boundary in <1s, not 172s deep.",
-        "check_boundary_bypass_ratchet.py is the fast no-increase ratchet (#314): a redundant boundary-spawning test fails before the broad pytest, not only at the broad/bundle quality gate.",
         "Shell test fixtures are repo-test source and run the existing shell lint before broad pytest.",
         "scripts source pattern is scripts/*.py, NOT scripts/**/*.py: matching is fnmatch (* crosses /), so scripts/*.py matches both top-level and nested scripts; the bare **/ form matched zero of the all-top-level scripts and silently kept this whole verify set out of scripts closeouts (#331)."
       ]

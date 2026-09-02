@@ -263,8 +263,7 @@ free safety oracle checks, provenance, and concrete revisit conditions. Blanket,
 file-level, or retained policy-level lint ignores need provenance and revisit
 conditions.
 
-Boundary-bypass ratchets use `references/boundary-bypass-ratchet.md`; duplicate
-ratchets use `references/dup-ratchet.md` (the boy-scout duplicate ratchet
+Duplicate ratchets use `references/dup-ratchet.md` (the boy-scout duplicate ratchet
 `$SKILL_DIR/scripts/check_dup_ratchet.py --repo-root . --summary`): `quality` owns the portable
 payload/policy and exemption contract; consumer repos own stack-specific probes,
 scope, and artifacts.

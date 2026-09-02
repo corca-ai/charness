@@ -45,7 +45,7 @@ def test_authoring_preflight_lists_current_attention_vocabulary() -> None:
 
 # The headroom affordance the reference points at (check_code_lengths --headroom)
 # is exercised by tests/quality_gates/test_closeout_headroom_and_mirror_gate.py, so
-# it is not re-driven here (avoids a duplicate subprocess boundary-bypass candidate).
+# it is not re-driven here (avoids a duplicate subprocess process-boundary candidate).
 
 
 def test_authoring_preflight_names_skill_core_headroom_buffer() -> None:

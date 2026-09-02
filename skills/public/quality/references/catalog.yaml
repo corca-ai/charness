@@ -50,9 +50,6 @@ references:
   - path: references/bootstrap-posture.md
     role: on-demand
     trigger: quality adapter bootstrap or setup-state repair
-  - path: references/boundary-bypass-ratchet.md
-    role: on-demand
-    trigger: boundary-bypass inventory, ratchet, or exemption review
   - path: references/brittle-source-guards.md
     role: on-demand
     trigger: brittle source guard finding or matcher migration
@@ -228,7 +225,7 @@ brief:
           - agent-production-runtime.md
           - behavior-testing.md
       - area: source-hygiene
-        scope: dual implementations, clone families, brittle source guards, lint suppressions, dead code, gitignore hygiene, hardcoded polyglot discovery lists, or boundary-bypass ratchets are in scope
+        scope: dual implementations, clone families, brittle source guards, lint suppressions, dead code, gitignore hygiene, or hardcoded polyglot discovery lists are in scope
         inventories:
           - inventory_dual_implementation.py
           - inventory_brittle_source_guards.py
@@ -242,7 +239,6 @@ brief:
           - brittle-source-guards.md
           - lint-ignore-discipline.md
           - dup-ratchet.md
-          - boundary-bypass-ratchet.md
           - quality-signal-scorecard.md
       - area: adapter-gate-design
         scope: adapter policy or gate design is in scope

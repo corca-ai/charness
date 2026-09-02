@@ -45,13 +45,11 @@ as it exists now:
   mechanism is named for what is CHECKED (the copy names this script); the
   destination is not proven to be out of tree, and the operator text says so.
 
-Candidate tests come from two sources, because the ratchet baseline alone made this
-advisory inert. `scripts/boundary-bypass-baseline.json` is a no-increase RATCHET,
-not a current inventory: it records only 61 curated `test::script` pairs, and three
-of the four files that motivated #465 have no entry in it at all. So the recorded
-pairs are unioned with `suggest_mutation_coverage_command.tests_referencing_paths`
-— the test-to-module map the issue itself pointed at — and every candidate from
-either source is re-checked against the test file as it exists today.
+Candidate tests come from two sources. The live boundary inventory supplies
+current `test::script` pairs, and
+`suggest_mutation_coverage_command.tests_referencing_paths` supplies the
+test-to-module map the issue itself pointed at. Every candidate from either
+source is re-checked against the test file as it exists today.
 
 What it deliberately does NOT claim:
 
@@ -73,32 +71,24 @@ It is not a gate, not a blocking condition, and it never suppresses a blocker.
 from __future__ import annotations
 
 import ast
-import json
 import re
 from pathlib import Path
-
-BASELINE_REL = "scripts/boundary-bypass-baseline.json"
 
 #: `shutil` copy entrypoints that can put an executable copy outside `source =`.
 _COPY_FUNCS = frozenset({"copy", "copy2", "copyfile", "copytree"})
 
 
-def load_subprocess_boundary_pairs(
-    repo_root: Path, *, baseline_rel: str = BASELINE_REL
-) -> dict[str, list[str]]:
-    """`{script_path: [test_file, ...]}` from the boundary-bypass ratchet baseline.
-
-    Absent, unreadable, or malformed baseline -> `{}`. This is advisory-only, so a
-    missing baseline must degrade to "said nothing" and never to a blocked verdict
-    or a crash on a gate whose real job already ran.
-    """
+def _load_boundary_inventory(repo_root: Path) -> tuple[dict[str, list[str]], str]:
+    """Read the live boundary inventory as advisory candidate metadata."""
     try:
-        payload = json.loads((repo_root / baseline_rel).read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return {}
-    rows = payload.get("candidate_pairs") if isinstance(payload, dict) else None
+        from scripts.inventory_boundary_bypass_lib import find_boundary_bypass_candidates
+
+        payload = find_boundary_bypass_candidates(repo_root)
+    except Exception:
+        return {}, "unavailable"
+    rows = payload.get("candidates") if isinstance(payload, dict) else None
     if not isinstance(rows, list):
-        return {}
+        return {}, "malformed"
     pairs: dict[str, set[str]] = {}
     for row in rows:
         if not isinstance(row, dict):
@@ -110,7 +100,12 @@ def load_subprocess_boundary_pairs(
         for script in targets:
             if isinstance(script, str) and script:
                 pairs.setdefault(script, set()).add(test_file)
-    return {script: sorted(tests) for script, tests in sorted(pairs.items())}
+    return {script: sorted(tests) for script, tests in sorted(pairs.items())}, "read"
+
+
+def load_subprocess_boundary_pairs(repo_root: Path) -> dict[str, list[str]]:
+    """Return `{script_path: [test_file, ...]}` from the live inventory payload."""
+    return _load_boundary_inventory(repo_root)[0]
 
 
 def _referencing_tests(repo_root: Path, paths: list[str]) -> dict[str, list[str]]:
@@ -145,7 +140,7 @@ def unmeasured_spawn_mechanisms(repo_root: Path, test_file: str, script_path: st
     rather than trusted from a candidate list:
 
     * the test must still MENTION the script (a converted pair usually stops naming
-      it, and a ratchet baseline never prunes the stale entry);
+      it, and a candidate inventory may otherwise retain stale data);
     * some call in it must either pass an `env=` that REPLACES the environment, or
       copy this script out of the repo before running it.
 
@@ -331,7 +326,6 @@ def _note(path: str, mechanisms: dict[str, list[str]], lines: list[int]) -> str:
 def _advisory(
     repo_root: Path,
     blocking_targets: dict[str, list[dict[str, object]]],
-    baseline_rel: str,
     blocking: list[str] | None = None,
 ) -> tuple[dict[str, dict[str, object]], dict[str, object]]:
     # Union, not just the files WITH proof targets. A file that blocks but produced
@@ -342,12 +336,12 @@ def _advisory(
     # and keying on `blocking_targets` alone
     # examined it zero times while `scope` reported that as nothing to examine.
     blocked = sorted({*blocking_targets, *(blocking or [])})
-    baseline = load_subprocess_boundary_pairs(repo_root, baseline_rel=baseline_rel)
+    inventory, inventory_status = _load_boundary_inventory(repo_root)
     referenced = _referencing_tests(repo_root, blocked) if blocked else {}
     advisory: dict[str, dict[str, object]] = {}
     examined = 0
     for path in blocked:
-        candidates = sorted({*(baseline.get(path) or []), *(referenced.get(path) or [])})
+        candidates = sorted({*(inventory.get(path) or []), *(referenced.get(path) or [])})
         examined += len(candidates)
         mechanisms = {
             test: found
@@ -375,9 +369,9 @@ def _advisory(
     scope = {
         "blocked_files_examined": len(blocked),
         "candidate_tests_examined": examined,
-        "candidate_sources": ["boundary-bypass-baseline", "test-reference-map"],
-        "baseline": "read" if baseline else "absent-empty-or-unreadable",
-        "baseline_recorded_scripts": len(baseline),
+        "candidate_sources": ["boundary-bypass-inventory", "test-reference-map"],
+        "inventory": inventory_status,
+        "inventory_recorded_scripts": len(inventory),
         "reference_map": "read" if referenced else "empty-or-unavailable",
         "files_named": sorted(advisory),
         "silence_means": (
@@ -394,8 +388,6 @@ def _advisory(
 def subprocess_coverage_advisory(
     repo_root: Path,
     blocking_targets: dict[str, list[dict[str, object]]],
-    *,
-    baseline_rel: str = BASELINE_REL,
 ) -> dict[str, dict[str, object]]:
     """Per blocked file whose candidate tests exercise it where coverage was lost.
 
@@ -405,7 +397,7 @@ def subprocess_coverage_advisory(
     replacing a blocking verdict with a traceback.
     """
     try:
-        return _advisory(repo_root, blocking_targets, baseline_rel)[0]
+        return _advisory(repo_root, blocking_targets)[0]
     except Exception:
         return {}
 
@@ -413,12 +405,10 @@ def subprocess_coverage_advisory(
 def advisory_scope(
     repo_root: Path,
     blocking_targets: dict[str, list[dict[str, object]]],
-    *,
-    baseline_rel: str = BASELINE_REL,
 ) -> dict[str, object]:
     """What the advisory actually examined, so silence is a statement not an absence."""
     try:
-        return _advisory(repo_root, blocking_targets, baseline_rel)[1]
+        return _advisory(repo_root, blocking_targets)[1]
     except Exception:
         return {"error": "advisory scope could not be computed; treat silence as unexamined"}
 
@@ -427,7 +417,6 @@ def subprocess_coverage_advisory_report(
     repo_root: Path,
     blocking_targets: dict[str, list[dict[str, object]]],
     *,
-    baseline_rel: str = BASELINE_REL,
     blocking: list[str] | None = None,
 ) -> dict[str, object]:
     """Both report keys from ONE pass, so the gate does not build the reference map twice.
@@ -436,7 +425,7 @@ def subprocess_coverage_advisory_report(
     already exists must never lose it to an advisory.
     """
     try:
-        advisory, scope = _advisory(repo_root, blocking_targets, baseline_rel, blocking)
+        advisory, scope = _advisory(repo_root, blocking_targets, blocking)
     except Exception:
         advisory = {}
         scope = {"error": "advisory could not be computed; treat silence as unexamined"}
@@ -464,7 +453,7 @@ def advisory_scope_line(scope: dict[str, object] | None) -> str | None:
     return (
         f"subprocess-coverage advisory examined {scope.get('candidate_tests_examined', 0)} candidate "
         f"test file(s) across {scope.get('blocked_files_examined', 0)} blocked file(s) "
-        f"(baseline: {scope.get('baseline')}) and named none. That is NOT proof these blocks are "
+        f"(inventory: {scope.get('inventory')}) and named none. That is NOT proof these blocks are "
         "honest -- see subprocess_coverage_advisory_scope.silence_means for what it cannot see.\n"
     )
 

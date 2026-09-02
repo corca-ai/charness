@@ -12,7 +12,6 @@ entry from the one under test.
 
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
@@ -38,10 +37,6 @@ SKILL_PREFLIGHT = load_script_module(
 NARRATIVE_GATE = load_script_module(
     "publish_release_narrative_gate_batch6",
     ROOT / "skills/public/release/scripts/publish_release_narrative_gate.py",
-)
-BYPASS_VALIDATOR = load_script_module(
-    "validate_boundary_bypass_payload_batch6",
-    ROOT / "skills/public/quality/scripts/validate_boundary_bypass_payload.py",
 )
 QUALITY_RESOLVER_SCRIPT = ROOT / "skills/public/quality/scripts/resolve_quality_artifact.py"
 
@@ -316,7 +311,7 @@ def test_the_skill_preflight_emits_a_structured_payload_for_a_real_surface() -> 
     and exits 0 when nothing is blocked.
 
     This is the command an author runs BEFORE editing; if it stopped emitting a
-    machine-readable payload, the commit-boundary ratchet would be the first
+    machine-readable payload, the commit-boundary check would be the first
     thing to tell them the surface is out of room.
     """
     result = _run(
@@ -398,60 +393,6 @@ def test_a_blocked_cut_carries_the_blocked_remedy(tmp_path: Path, monkeypatch) -
     assert payload["remedy"] == csafety._BLOCKED_REMEDY
     assert payload["remedy"].strip(), "a blocked verdict must not carry an empty remedy"
     assert payload["kind_meaning"], "the blocking kinds must be explained, not left as bare ids"
-
-
-# --- validate_boundary_bypass_payload -------------------------------------------
-
-_BYPASS_EXAMPLE = ROOT / "skills/public/quality/references/boundary-bypass-payload.example.json"
-
-
-def test_the_bypass_validator_reports_ok_with_the_derived_summary(tmp_path: Path) -> None:
-    """A valid payload exits 0 and echoes the summary counts it verified.
-
-    Echoing the counts is what makes the pass auditable: a bare `ok: true` proves
-    the file parsed, not that the ratchet numbers were the ones checked.
-    """
-    payload_path = tmp_path / "payload.json"
-    payload_path.write_text(_BYPASS_EXAMPLE.read_text(encoding="utf-8"), encoding="utf-8")
-
-    result = _run(
-        ROOT / "skills/public/quality/scripts/validate_boundary_bypass_payload.py",
-        "--input",
-        str(payload_path),
-    )
-
-    assert result.returncode == 0, result.stderr
-    payload = yaml.safe_load(result.stdout)
-    assert payload["ok"] is True
-    assert payload["summary"] == BYPASS_VALIDATOR.validate_payload(
-        json.loads(_BYPASS_EXAMPLE.read_text(encoding="utf-8"))
-    )
-
-
-def test_the_bypass_validator_reports_the_failure_on_stdout_and_exits_one(
-    tmp_path: Path,
-) -> None:
-    """A drifted summary count exits 1 with the offending field named in the
-    structured payload.
-
-    The ratchet consumer reads stdout. A refusal that exited non-zero with an
-    empty payload would leave the caller unable to say WHICH count drifted.
-    """
-    payload = json.loads(_BYPASS_EXAMPLE.read_text(encoding="utf-8"))
-    payload["summary"]["convertible_count"] = 99
-    payload_path = tmp_path / "payload.json"
-    payload_path.write_text(json.dumps(payload), encoding="utf-8")
-
-    result = _run(
-        ROOT / "skills/public/quality/scripts/validate_boundary_bypass_payload.py",
-        "--input",
-        str(payload_path),
-    )
-
-    assert result.returncode == 1, result.stdout
-    reported = yaml.safe_load(result.stdout)
-    assert reported["ok"] is False
-    assert "summary.convertible_count" in reported["error"]
 
 
 # --- resolve_quality_artifact ---------------------------------------------------

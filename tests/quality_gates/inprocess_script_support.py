@@ -189,10 +189,6 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_artifact_referents",
         ROOT / "scripts" / "check_artifact_referents.py",
     ),
-    "scripts/check_boundary_bypass_ratchet.py": (
-        "tests.quality_gates.support_check_boundary_bypass_ratchet",
-        ROOT / "scripts" / "check_boundary_bypass_ratchet.py",
-    ),
     "scripts/check_cli_skill_surface.py": (
         "tests.quality_gates.support_check_cli_skill_surface",
         ROOT / "scripts" / "check_cli_skill_surface.py",

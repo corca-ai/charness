@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Low-cost, non-blocking advisory for new staged test process boundaries.
 
-The full ``check_boundary_bypass_ratchet.py`` remains the exact whole-tree
-no-increase layer. This hook-side probe answers a smaller question: did a staged
-Python test add or edit a direct process call or a Git repository-construction
-call, and did the call receive a structured boundary reason?
+This hook-side probe answers a smaller question: did a staged Python test add or
+edit a direct process call or a Git repository-construction call, and did the
+call receive a structured boundary reason?
 
 The staged diff is read once and all staged test blobs are read through one
 ``git cat-file --batch`` request. The probe deliberately does not follow helper
@@ -12,8 +11,8 @@ indirection, dynamic commands, or fixture functions. That creates false
 negatives, while ordinary wrappers and legitimate protocol/exit-code tests can
 create false positives. A non-empty ``pytest.mark.boundary_contract`` reason
 declares intent but is not proof and can be abused to silence this advisory;
-the full ratchet remains the stronger independent guard. Findings never block a
-commit, including when Git or AST parsing is unavailable.
+the in-process loaders remain the stronger test-side design choice. Findings
+never block a commit, including when Git or AST parsing is unavailable.
 """
 
 from __future__ import annotations
@@ -364,7 +363,7 @@ def scan_staged_tests(repo_root: Path) -> dict[str, object]:
         if undeclared
         else [],
         "notes": [
-            "The full boundary-bypass ratchet remains the exact whole-tree no-increase layer; this staged probe does not replace or weaken it.",
+            "The boundary_contract marker and in-process loaders are the test-side adjudication; this staged probe makes new direct crossings visible.",
             "False positives: legitimate protocol/exit-code tests and wrappers may still need a marker; marker reasons declare intent but are not proof and can be abused.",
             "False negatives: dynamic commands, aliases not statically visible, helper indirection, fixture builders, unparseable files, and calls outside added/modified hunk lines are deliberately not inferred.",
             "Git cost: one batched staged diff query plus one git cat-file --batch query, never one Git process per test file.",
@@ -399,7 +398,7 @@ def main() -> int:
             "findings": [],
             "warnings": [f"staged boundary advisory unavailable: {exc}"],
             "notes": [
-                "The advisory degraded to silence; the full boundary-bypass ratchet remains authoritative."
+                "The advisory degraded to silence; the boundary_contract marker and in-process loaders remain the test-side adjudication."
             ],
         }
     emit_yaml(payload)

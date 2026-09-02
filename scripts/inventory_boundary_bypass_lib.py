@@ -7,9 +7,9 @@ when the same logic is reachable in-process (``import X; X.main()`` or a
 that is a candidate testability smell: a delivery-boundary test compensating
 for behavior reachable through a smaller, statically-visible surface.
 
-This module owns ONLY the Python + charness-layout detection. The portable
-policy (advisory vs no-increase ratchet, exemptions) lives in the ``quality``
-skill; a non-Python repo ships its own probe with the same payload shape.
+This module owns the Python + charness-layout detection and emits the live
+advisory payload consumed by the subprocess-coverage advisory. A non-Python
+repo can ship its own probe with the same payload shape.
 
 Detection is a deliberately cheap heuristic: a test file that contains any
 spawn token is scanned for in-repo script-path literals. It over-reports
@@ -32,8 +32,9 @@ from collections.abc import Iterator
 from pathlib import Path
 
 # The payload contract (schema + fields) is conceptually quality-skill-owned — the
-# portable policy/ratchet consumes it; this scripts/ probe is one stack-specific
-# Python+charness-layout emitter. A non-Python repo emits the same shape from its own probe.
+# the subprocess-coverage advisory consumes it; this scripts/ probe is one
+# stack-specific Python+charness-layout emitter. A non-Python repo can emit the
+# same shape from its own probe.
 SCHEMA_VERSION = "charness.quality.boundary_bypass_inventory.v2"
 CALL_SITE_FINGERPRINT_ALGO_VERSION = "1"
 
@@ -52,7 +53,15 @@ _BEHAVIOR_RE = re.compile(
 _EXIT_RE = re.compile(r"returncode\s*[!=]=\s*[0-9]")
 _GIT_RE = re.compile(r"""['"]git['"]|(?:^|[^\w-])git\s+(?:[A-Za-z-])""")
 _IGNORE_DIRS = {"mutants", "__pycache__", ".git", "node_modules"}
-_SPAWN_FUNC_NAMES = {"run_script", "run_at", "spawnSync", "execFileSync", "execSync", "spawn", "execa"}
+_SPAWN_FUNC_NAMES = {
+    "run_script",
+    "run_at",
+    "spawnSync",
+    "execFileSync",
+    "execSync",
+    "spawn",
+    "execa",
+}
 _SUBPROCESS_ATTRS = {"run", "check_call", "check_output", "Popen"}
 
 
@@ -208,9 +217,7 @@ def analyze_test_file(
         return None
     import_safe_set = set(import_safe)
     call_site_member_hashes = [
-        fingerprint
-        for node_targets, fingerprint in spawn_calls
-        if node_targets & import_safe_set
+        fingerprint for node_targets, fingerprint in spawn_calls if node_targets & import_safe_set
     ]
     internal_boundary = [
         t
@@ -225,7 +232,9 @@ def analyze_test_file(
         "import_safe_targets": import_safe,
         "clean_inprocess_targets": clean_inprocess,
         "internal_boundary_targets": internal_boundary,
-        "has_lib": any(_cached_path_result(lib_cache, repo_root / t, _has_lib) for t in import_safe),
+        "has_lib": any(
+            _cached_path_result(lib_cache, repo_root / t, _has_lib) for t in import_safe
+        ),
         "behavior_assert": behavior,
         "likely_keep_boundary": exit_contract_only,
         "call_site_member_hashes": sorted(call_site_member_hashes),
@@ -253,7 +262,9 @@ def find_boundary_bypass_candidates(repo_root: Path | str) -> dict:
             candidates.append(row)
     keep_boundary = sum(1 for c in candidates if c["likely_keep_boundary"])
     internal_boundary = sum(1 for c in candidates if c["internal_boundary_targets"])
-    candidate_keys = {call_site_content_fingerprint(c["call_site_member_hashes"]) for c in candidates}
+    candidate_keys = {
+        call_site_content_fingerprint(c["call_site_member_hashes"]) for c in candidates
+    }
     convertible = sum(
         1
         for c in candidates
@@ -281,8 +292,8 @@ def find_boundary_bypass_candidates(repo_root: Path | str) -> dict:
             "and excludes likely keep-boundary rows. internal_boundary_targets flag import-safe targets "
             "that still spawn subprocesses/git internally, where conversion moves the boundary inward "
             "rather than removing it.",
-            "Portable policy/ratchet/exemptions live in the quality skill; this probe owns the "
-            "Python + charness-layout detection only.",
+            "This is a live measurement for the subprocess-coverage advisory; it does not "
+            "declare that every process boundary should be converted.",
         ],
     }
 

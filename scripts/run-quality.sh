@@ -1067,6 +1067,7 @@ queue_selected "validate-maintainer-setup" python3 scripts/validate_maintainer_s
 queue_selected "check-python-lengths" python3 scripts/check_code_lengths.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-python-filenames" python3 scripts/check_python_filenames.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-python-runtime-inheritance" python3 scripts/check_python_runtime_inheritance.py --repo-root "$REPO_ROOT" --require-git-file-listing
+queue_selected "check-subprocess-form" python3 scripts/check_subprocess_form.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-skill-contracts" python3 scripts/check_skill_contracts.py --repo-root "$REPO_ROOT"
 queue_selected "check-skill-bootstrap-vars" python3 scripts/check_skill_bootstrap_vars.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-bootstrap-shim-consistency" python3 scripts/check_bootstrap_shim_consistency.py --repo-root "$REPO_ROOT" --require-git-file-listing
@@ -1197,7 +1198,6 @@ queue_selected "check-test-completeness" python3 scripts/check_test_completeness
 if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]] || label_is_explicitly_selected "check-test-production-ratio"; then
   queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
 fi
-queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
 # Every packaged check_/validate_ script needs a consumer-facing decision, public
 # contract metadata, and an explicit consumer adoption decision. This is the
 # catalog's self-check; a new validator cannot become silent by omission.

@@ -85,7 +85,9 @@ def test_prose_pin_clean_when_pinned_prose_untouched(tmp_path: Path) -> None:
     _seed_repo(repo)
     # Edit the doc without touching the pinned rule line.
     guide = repo / "docs" / "guide.md"
-    guide.write_text(guide.read_text(encoding="utf-8") + "\nAn unrelated trailing note.\n", encoding="utf-8")
+    guide.write_text(
+        guide.read_text(encoding="utf-8") + "\nAn unrelated trailing note.\n", encoding="utf-8"
+    )
 
     report = prose_pin.build_report(repo.resolve(), paths=None, test_roots=[repo / "tests"])
     assert report["status"] == "clean"
@@ -95,10 +97,12 @@ def test_prose_pin_clean_when_pinned_prose_untouched(tmp_path: Path) -> None:
 def test_prose_pin_cli_strict_exits_nonzero(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     _seed_repo(repo)
-    (repo / "docs" / "guide.md").write_text("# Guide\n\nRule: reworded entirely.\n", encoding="utf-8")
+    (repo / "docs" / "guide.md").write_text(
+        "# Guide\n\nRule: reworded entirely.\n", encoding="utf-8"
+    )
 
-    # In-process (not a subprocess CLI spawn) so this stays off the boundary-bypass
-    # ratchet; the real git repo the checker reads is the only boundary it needs.
+    # In-process (not a subprocess CLI spawn): the real git repo the checker reads
+    # is the only boundary this behavior needs.
     monkeypatch.setattr(
         "sys.argv",
         ["check_prose_pin.py", "--repo-root", str(repo), "--tests-root", "tests", "--strict"],

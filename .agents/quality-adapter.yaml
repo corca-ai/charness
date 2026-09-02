@@ -116,7 +116,6 @@ runtime_budget_intent:
   # default quality run. It does not claim that a filtered invocation ran it.
   always:
     - charness-version
-    - check-boundary-bypass-ratchet
     - check-cli-skill-surface
     - check-documented-command-flags
     - check-export-safe-imports
@@ -616,7 +615,6 @@ runtime_budget_profiles:
       check-python-runtime-inheritance: 26500
       validate-packaging-committed: 24000
       validate-adapters: 23000
-      check-boundary-bypass-ratchet: 21000
       check-shell: 19000
       # The aggregate the per-gate bars above are backstopped by; observed max 134796.
       run-quality-read-only: 189000

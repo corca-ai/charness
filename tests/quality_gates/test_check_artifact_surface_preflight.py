@@ -192,7 +192,7 @@ def test_changed_artifacts_noop_for_unrelated_paths(monkeypatch) -> None:
 
 # --- in-process integration against the real repo -----------------------------
 # Called in-process (not via subprocess) on purpose: the dispatcher is import-safe,
-# so testing it in-process keeps it off the boundary-bypass ratchet. The dispatcher
+# so the test exercises its callable behavior directly. The dispatcher
 # still subprocesses the real scaffold/validator internally, so these remain honest
 # end-to-end checks of the shape source + the relocated verdict.
 
@@ -556,7 +556,7 @@ def test_main_requires_one_selector(monkeypatch) -> None:
 
 def test_module_main_guard_executes(monkeypatch) -> None:
     # cover `sys.exit(main())` (the __main__ guard) in-process via runpy, not a
-    # subprocess, so the dispatcher stays off the boundary-bypass ratchet.
+    # subprocess, so the dispatcher stays on its in-process callable path.
     monkeypatch.setattr(sys, "argv", ["x", "--type", "critique"])
     with pytest.raises(SystemExit) as exc:
         runpy.run_path(

@@ -7,9 +7,10 @@ by a spawn whose coverage was never attributed?
 
 The advisory is not a gate, so the load-bearing tests are the CONTROLS: a passing
 run must still pass, an env-inheriting spawn must NOT be advised on (this repo's
-producer does measure those children), and a stale ratchet entry must not be
+producer does measure those children), and a stale candidate entry must not be
 asserted as a present fact.
 """
+
 from __future__ import annotations
 
 import json
@@ -23,20 +24,6 @@ from .seeding_support import seed_two_changed_pool_files
 from .support import ROOT, run_script
 
 _TEETH = str(ROOT / "scripts" / "check_changed_line_mutation_coverage.py")
-
-
-def _write_boundary_baseline(repo: Path, keys: list[object]) -> None:
-    pairs: list[object] = []
-    for key in keys:
-        if isinstance(key, str):
-            test_file, marker, target = key.partition("::")
-            if marker and test_file.strip() and target.strip():
-                pairs.append({"test_file": test_file.strip(), "import_safe_targets": [target.strip()]})
-                continue
-        pairs.append(key)
-    (repo / "scripts" / "boundary-bypass-baseline.json").write_text(
-        json.dumps({"policy": "no_increase", "candidate_pairs": pairs}), encoding="utf-8"
-    )
 
 
 #: How a test file spawns the script under test. The keyword alone is NOT the
@@ -68,7 +55,7 @@ def _write_raw(source: str) -> Path:
     """A throwaway repo holding `tests/test_foo.py` with exactly this source.
 
     Used by the mechanism-level tests, which are about what the AST reader concludes
-    from one file and need no baseline, git history, or coverage fixture.
+    from one file and need no persisted inventory artifact, git history, or coverage fixture.
     """
     import tempfile
 
@@ -82,7 +69,7 @@ def test_blocked_file_with_recorded_subprocess_pairs_gets_an_advisory(tmp_path: 
     """#465: a BLOCK whose recorded test spawns the file with a scrubbed env says so.
 
     `scripts/bar.py` is the discriminating control in the same run: blocked by the
-    identical coverage fixture, and recorded in the same baseline, but its test
+    identical coverage fixture, and recorded in the same live inventory, but its test
     spawns without replacing the environment, so the child keeps
     COVERAGE_PROCESS_START and its lines really are attributed. Advising on it
     would be false reassurance printed onto a blocking gate — the class the gate
@@ -91,21 +78,30 @@ def test_blocked_file_with_recorded_subprocess_pairs_gets_an_advisory(tmp_path: 
     repo, base, head = seed_two_changed_pool_files(tmp_path)
     cov = repo / "coverage.json"
     cov.write_text(
-        json.dumps({"files": {
-            "scripts/foo.py": {"executed_lines": [1, 2], "missing_lines": [5, 6]},
-            "scripts/bar.py": {"executed_lines": [1, 2], "missing_lines": [5, 6]},
-        }}),
+        json.dumps(
+            {
+                "files": {
+                    "scripts/foo.py": {"executed_lines": [1, 2], "missing_lines": [5, 6]},
+                    "scripts/bar.py": {"executed_lines": [1, 2], "missing_lines": [5, 6]},
+                }
+            }
+        ),
         encoding="utf-8",
-    )
-    _write_boundary_baseline(
-        repo, ["tests/test_foo.py::scripts/foo.py", "tests/test_bar.py::scripts/bar.py"]
     )
     _write_test_file(repo, "tests/test_foo.py", "scripts/foo.py", shape="replaces-env")
     _write_test_file(repo, "tests/test_bar.py", "scripts/bar.py", shape="inherits-env")
 
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--coverage-json", str(cov),
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--coverage-json",
+        str(cov),
     )
 
     assert result.returncode == 1, result.stdout + result.stderr
@@ -113,12 +109,12 @@ def test_blocked_file_with_recorded_subprocess_pairs_gets_an_advisory(tmp_path: 
     assert payload["blocking"] == ["scripts/bar.py", "scripts/foo.py"]
     advisory = payload["subprocess_coverage_advisory"]
     assert list(advisory) == ["scripts/foo.py"], (
-        "the env-inheriting control is recorded in the same baseline and must not be named"
+        "the env-inheriting control is recorded in the same inventory and must not be named"
     )
     entry = advisory["scripts/foo.py"]
     assert entry["subprocess_tests"] == ["tests/test_foo.py"]
     assert entry["blocked_lines"] == [5, 6]
-    # The claim is bounded to what the baseline actually records.
+    # The claim is bounded to what the live inventory actually records.
     assert "FILE GRANULARITY ONLY" in entry["note"]
     assert "environment-REPLACING `env=`" in entry["note"]
     assert "does NOT establish that line(s) 5, 6 are reached" in entry["note"]
@@ -129,24 +125,34 @@ def test_blocked_file_with_recorded_subprocess_pairs_gets_an_advisory(tmp_path: 
 def test_advisory_does_not_add_or_remove_a_blocking_condition(tmp_path: Path) -> None:
     """Control for the above: the advisory is not a gate.
 
-    Same repo and same baseline, but coverage now reaches the changed lines. A run
+    Same repo and same live inventory, but coverage now reaches the changed lines. A run
     that would pass must still pass with exit 0 and an empty advisory — otherwise
     the feature could have degenerated into "a recorded pair blocks".
     """
     repo, base, head = seed_two_changed_pool_files(tmp_path)
     cov = repo / "coverage.json"
     cov.write_text(
-        json.dumps({"files": {
-            "scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []},
-            "scripts/bar.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []},
-        }}),
+        json.dumps(
+            {
+                "files": {
+                    "scripts/foo.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []},
+                    "scripts/bar.py": {"executed_lines": [1, 2, 5, 6], "missing_lines": []},
+                }
+            }
+        ),
         encoding="utf-8",
     )
-    _write_boundary_baseline(repo, ["tests/test_foo.py::scripts/foo.py"])
-
     result = run_script(
-        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
-        "--reuse-coverage", "--coverage-json", str(cov),
+        _TEETH,
+        "--repo-root",
+        str(repo),
+        "--base-sha",
+        base,
+        "--head-sha",
+        head,
+        "--reuse-coverage",
+        "--coverage-json",
+        str(cov),
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
@@ -156,16 +162,14 @@ def test_advisory_does_not_add_or_remove_a_blocking_condition(tmp_path: Path) ->
     assert "ADVISORY (not a blocker)" not in result.stderr
 
 
-def test_an_unusable_baseline_never_crashes_and_no_longer_silences_the_advisory(tmp_path: Path) -> None:
-    """In-process arm: an unusable ratchet degrades safely — and is survivable.
+def test_an_unavailable_inventory_never_crashes_or_silences_the_advisory(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """The live inventory is advisory input and must fail open if unavailable.
 
-    Two separate obligations. (1) Tolerance: the gate's real verdict has already been
-    computed by the time this runs, so a malformed baseline must never turn an
-    advisory into a lost blocking report. (2) The inertness repair: the ratchet is
-    hand-edited and holds only curated pairs, so it must not be the ONLY source. With
-    the baseline unreadable, the reference map still finds the test — the earlier
-    baseline-only cut went silent here, which is how it came to fire on 1 of 61
-    recorded pairs and 0 of the four files that motivated #465.
+    The gate's real verdict has already been computed by the time this runs, so
+    an inventory failure must not turn an advisory into a lost blocking report.
+    The reference map remains an independent candidate source.
     """
     lib = _advisory_lib()
     targets = {"scripts/foo.py": [{"line": 5, "source": "def b():"}]}
@@ -173,27 +177,25 @@ def test_an_unusable_baseline_never_crashes_and_no_longer_silences_the_advisory(
     (tmp_path / "scripts" / "foo.py").write_text("def a():\n    return 1\n", encoding="utf-8")
     _write_test_file(tmp_path, "tests/test_foo.py", "scripts/foo.py", shape="replaces-env")
 
-    for unusable in ("{not json", json.dumps({"candidate_pairs": "not-a-list"})):
-        (tmp_path / "scripts" / "boundary-bypass-baseline.json").write_text(unusable, encoding="utf-8")
-        assert lib.load_subprocess_boundary_pairs(tmp_path) == {}, "loader degrades to no pairs"
-        assert lib.advisory_scope(tmp_path, targets)["baseline"] == "absent-empty-or-unreadable"
-        # ...and the advisory survives on the second source rather than going silent.
-        assert list(lib.subprocess_coverage_advisory(tmp_path, targets)) == ["scripts/foo.py"]
+    import scripts.inventory_boundary_bypass_lib as inventory
+
+    def fail(_repo_root):
+        raise RuntimeError("inventory unavailable")
+
+    monkeypatch.setattr(inventory, "find_boundary_bypass_candidates", fail)
+    assert lib.load_subprocess_boundary_pairs(tmp_path) == {}, "loader degrades to no pairs"
+    assert lib.advisory_scope(tmp_path, targets)["inventory"] == "unavailable"
+    # ...and the advisory survives on the independent reference-map source.
+    assert list(lib.subprocess_coverage_advisory(tmp_path, targets)) == ["scripts/foo.py"]
 
     # Control for the control: with NEITHER source naming the file, it is silent.
-    # `scripts/other.py` is blocked, is in no baseline, and no test references it.
-    assert lib.subprocess_coverage_advisory(
-        tmp_path, {"scripts/other.py": [{"line": 5, "source": "def b():"}]}
-    ) == {}
-
-    # A well-formed baseline still parses, so the tolerance arms above are not
-    # passing because the loader can never return anything.
-    (tmp_path / "scripts" / "boundary-bypass-baseline.json").write_text(
-        json.dumps({"candidate_pairs": [{"test_file": "tests/test_foo.py", "import_safe_targets": ["scripts/foo.py"]}, "malformed", {}]}),
-        encoding="utf-8",
+    # `scripts/other.py` is blocked and no test references it.
+    assert (
+        lib.subprocess_coverage_advisory(
+            tmp_path, {"scripts/other.py": [{"line": 5, "source": "def b():"}]}
+        )
+        == {}
     )
-    assert lib.load_subprocess_boundary_pairs(tmp_path) == {"scripts/foo.py": ["tests/test_foo.py"]}
-    assert lib.advisory_scope(tmp_path, targets)["baseline"] == "read"
 
 
 def test_advisory_stderr_line_is_none_when_nothing_was_recorded() -> None:
@@ -209,20 +211,16 @@ def test_advisory_stderr_line_is_none_when_nothing_was_recorded() -> None:
     assert "is never named here" not in line
 
 
-def test_advisory_re_checks_the_ratchet_baseline_instead_of_trusting_it(tmp_path: Path) -> None:
-    """The baseline is a no-increase RATCHET, not a current inventory.
+def test_advisory_rechecks_live_inventory_instead_of_stale_candidate_data(tmp_path: Path) -> None:
+    """The live inventory must reflect the test files that exist now.
 
     It never prunes a pair whose test has since been converted to an in-process
-    one, and the live detector already derives more keys than the file records. So
-    a recorded pair whose test no longer names the script, or no longer spawns it
-    with a scrubbed env, must not produce an advisory — asserting a stale record as
-    a present fact is the class this gate exists to catch.
+    one. A test whose source no longer names the script, or no longer spawns it
+    with a scrubbed env, must not produce an advisory.
     """
     lib = _advisory_lib()
     targets = {"scripts/foo.py": [{"line": 5, "source": "def b():"}]}
     (tmp_path / "scripts").mkdir()
-    _write_boundary_baseline(tmp_path, ["tests/test_foo.py::scripts/foo.py"])
-
     # converted: still spawns something with env=, but no longer names this script
     _write_test_file(tmp_path, "tests/test_foo.py", "scripts/other.py", shape="replaces-env")
     assert lib.subprocess_coverage_advisory(tmp_path, targets) == {}
@@ -247,30 +245,29 @@ def test_an_environ_extending_spawn_is_measured_and_must_not_be_advised_on(tmp_p
     The first cut fired on any `env=` keyword and asserted the child was
     unattributed. `env={**os.environ, ...}` is this repo's house style (60+ uses
     under tests/) and carries COVERAGE_PROCESS_START and PYTHONPATH through, so
-    those children ARE measured — several of them under recorded baseline pairs.
+    those children ARE measured — including when the live inventory records them.
     Advising there tells the operator to doubt a TRUE block.
     """
     lib = _advisory_lib()
     targets = {"scripts/foo.py": [{"line": 5, "source": "def b():"}]}
     (tmp_path / "scripts").mkdir()
-    _write_boundary_baseline(tmp_path, ["tests/test_foo.py::scripts/foo.py"])
-
     _write_test_file(tmp_path, "tests/test_foo.py", "scripts/foo.py", shape="extends-env")
     assert lib.subprocess_coverage_advisory(tmp_path, targets) == {}
 
-    # control: the replacing shape, same file, same baseline, still fires.
+    # control: the replacing shape, same file, still fires.
     _write_test_file(tmp_path, "tests/test_foo.py", "scripts/foo.py", shape="replaces-env")
     assert list(lib.subprocess_coverage_advisory(tmp_path, targets)) == ["scripts/foo.py"]
 
 
 def test_a_basename_that_merely_appears_inside_another_name_does_not_count(tmp_path: Path) -> None:
     """`in source` containment matched far too much: `doctor.py` hit any file
-    mentioning `test_doctor.py`, and both are real recorded baseline entries."""
+    mentioning `test_doctor.py`; only the exact script path is a candidate."""
     lib = _advisory_lib()
     targets = {"scripts/doctor.py": [{"line": 5, "source": "def b():"}]}
     (tmp_path / "scripts").mkdir()
-    _write_boundary_baseline(tmp_path, ["tests/test_doctor.py::scripts/doctor.py"])
-    _write_test_file(tmp_path, "tests/test_doctor.py", "helpers/test_doctor.py", shape="replaces-env")
+    _write_test_file(
+        tmp_path, "tests/test_doctor.py", "helpers/test_doctor.py", shape="replaces-env"
+    )
 
     assert lib.subprocess_coverage_advisory(tmp_path, targets) == {}
 
@@ -278,7 +275,9 @@ def test_a_basename_that_merely_appears_inside_another_name_does_not_count(tmp_p
     assert list(lib.subprocess_coverage_advisory(tmp_path, targets)) == ["scripts/doctor.py"]
 
 
-def test_an_unreadable_or_binary_test_file_is_silence_not_a_lost_blocking_report(tmp_path: Path) -> None:
+def test_an_unreadable_or_binary_test_file_is_silence_not_a_lost_blocking_report(
+    tmp_path: Path,
+) -> None:
     """The gate's real verdict is already computed when this runs, so an exception
     here would replace the blocking report with a traceback. `read_text` raises
     UnicodeDecodeError (a ValueError, not an OSError) on non-UTF-8 bytes, and
@@ -287,7 +286,6 @@ def test_an_unreadable_or_binary_test_file_is_silence_not_a_lost_blocking_report
     lib = _advisory_lib()
     targets = {"scripts/foo.py": [{"line": 5, "source": "def b():"}]}
     (tmp_path / "scripts").mkdir()
-    _write_boundary_baseline(tmp_path, ["tests/test_foo.py::scripts/foo.py"])
     (tmp_path / "tests").mkdir()
 
     (tmp_path / "tests" / "test_foo.py").write_bytes(b"\xff\xfe scripts/foo.py env={}")
@@ -301,18 +299,6 @@ def test_an_unreadable_or_binary_test_file_is_silence_not_a_lost_blocking_report
     # control: a well-formed file in the same position does produce the advisory.
     _write_test_file(tmp_path, "tests/test_foo.py", "scripts/foo.py", shape="replaces-env")
     assert list(lib.subprocess_coverage_advisory(tmp_path, targets)) == ["scripts/foo.py"]
-
-
-def test_a_malformed_baseline_key_is_skipped_without_losing_the_others(tmp_path: Path) -> None:
-    """A ratchet file is hand-edited; one bad key must not drop the rest."""
-    lib = _advisory_lib()
-    (tmp_path / "scripts").mkdir()
-    _write_boundary_baseline(
-        tmp_path,
-        ["no-separator-here", "::scripts/only.py", "tests/t.py::", "  ::  ", 42, "tests/t.py::scripts/real.py"],
-    )
-
-    assert lib.load_subprocess_boundary_pairs(tmp_path) == {"scripts/real.py": ["tests/t.py"]}
 
 
 def test_only_a_literal_dict_can_replace_the_environment(tmp_path: Path) -> None:
@@ -332,12 +318,12 @@ def test_only_a_literal_dict_can_replace_the_environment(tmp_path: Path) -> None
         # case the child IS measured and firing is false reassurance on a true block.
         '{**base, "PATH": "/usr/bin"}': False,
         '{**os.environ, "PATH": "/usr/bin"}': False,
-        '{**environ}': False,
-        '{**os.environ.copy()}': False,
-        'env': False,
-        'None': False,
+        "{**environ}": False,
+        "{**os.environ.copy()}": False,
+        "env": False,
+        "None": False,
         'dict(os.environ, PATH="/usr/bin")': False,
-        'os.environ.copy()': False,
+        "os.environ.copy()": False,
         # A real repo shape the dict-literal-only reader used to miss entirely:
         # tests/quality_gates/test_python_and_security_gates.py passes this.
         'dict(PATH="/usr/bin", TEST_OUTPUT="x")': True,
@@ -420,9 +406,9 @@ def test_an_out_of_tree_copy_of_the_script_is_advised_on_even_with_an_inherited_
         '    subprocess.run([sys.executable, "scripts/foo.py"], cwd=tmp_path)\n'
     )
 
-    assert lib.unmeasured_spawn_mechanisms(_write_raw(source), "tests/test_foo.py", "scripts/foo.py") == [
-        "copies-this-script"
-    ]
+    assert lib.unmeasured_spawn_mechanisms(
+        _write_raw(source), "tests/test_foo.py", "scripts/foo.py"
+    ) == ["copies-this-script"]
 
     # Discriminating control: a copy of a DIFFERENT file, plus an in-repo
     # inherited-env spawn of the blocked script. Round 2 caught the absence of this
@@ -430,7 +416,10 @@ def test_an_out_of_tree_copy_of_the_script_is_advised_on_even_with_an_inherited_
     # copying anything out of `scripts/` was reported as copying whichever script it
     # mentioned — `scripts/check_supply_chain.py` really was named that way.
     other = source.replace('"scripts" / "foo.py", tmp_path', '"scripts" / "other.sh", tmp_path')
-    assert lib.unmeasured_spawn_mechanisms(_write_raw(other), "tests/test_foo.py", "scripts/foo.py") == []
+    assert (
+        lib.unmeasured_spawn_mechanisms(_write_raw(other), "tests/test_foo.py", "scripts/foo.py")
+        == []
+    )
 
 
 def test_an_in_tree_inherited_env_spawn_is_the_control_and_stays_silent() -> None:
@@ -447,7 +436,10 @@ def test_an_in_tree_inherited_env_spawn_is_the_control_and_stays_silent() -> Non
         '    subprocess.run([sys.executable, "scripts/foo.py"], cwd=ROOT)\n'
     )
 
-    assert lib.unmeasured_spawn_mechanisms(_write_raw(source), "tests/test_foo.py", "scripts/foo.py") == []
+    assert (
+        lib.unmeasured_spawn_mechanisms(_write_raw(source), "tests/test_foo.py", "scripts/foo.py")
+        == []
+    )
 
 
 def test_an_unreadable_env_splat_is_treated_as_inheriting_not_as_a_scrub() -> None:
@@ -473,26 +465,25 @@ def test_an_unreadable_env_splat_is_treated_as_inheriting_not_as_a_scrub() -> No
     assert verdict('dict(PATH="/usr/bin", TEST_OUTPUT="x")') is True, (
         "a real repo shape: tests/quality_gates/test_python_and_security_gates.py"
     )
-    assert verdict('dict(os.environ, PATH="/usr/bin")') is False, "positional environ carries through"
+    assert verdict('dict(os.environ, PATH="/usr/bin")') is False, (
+        "positional environ carries through"
+    )
 
 
-def test_candidate_tests_come_from_the_reference_map_not_only_the_ratchet_baseline(tmp_path: Path) -> None:
-    """The inertness repair. `scripts/boundary-bypass-baseline.json` is a no-increase
-    ratchet holding 61 curated pairs; three of #465's four motivating files have no
-    entry in it at all, so a baseline-only advisory could never fire on them. With no
-    baseline present whatsoever, the reference map must still find the test."""
+def test_candidate_tests_come_from_live_inventory_and_reference_map(tmp_path: Path) -> None:
+    """The live inventory and reference map both contribute candidate tests."""
     lib = _advisory_lib()
     (tmp_path / "scripts").mkdir()
     (tmp_path / "scripts" / "foo.py").write_text("def a():\n    return 1\n", encoding="utf-8")
     (tmp_path / "tests").mkdir()
     (tmp_path / "tests" / "test_foo.py").write_text(
-        'import subprocess\nimport sys\n\n\ndef test_it():\n'
+        "import subprocess\nimport sys\n\n\ndef test_it():\n"
         '    subprocess.run([sys.executable, "scripts/foo.py"], env={"PATH": "/usr/bin"})\n',
         encoding="utf-8",
     )
     targets = {"scripts/foo.py": [{"line": 5, "source": "def b():"}]}
 
-    assert lib.load_subprocess_boundary_pairs(tmp_path) == {}, "no baseline at all"
+    assert lib.load_subprocess_boundary_pairs(tmp_path) == {}, "the target is not import-safe"
     advisory = lib.subprocess_coverage_advisory(tmp_path, targets)
     assert list(advisory) == ["scripts/foo.py"]
     assert advisory["scripts/foo.py"]["mechanisms"] == {"tests/test_foo.py": ["env-replaces"]}
@@ -502,7 +493,7 @@ def test_advisory_scope_says_what_was_examined_so_silence_is_not_an_absence(tmp_
     """The class #465 named, applied to this surface: a proof surface that reports a
     gap without reporting the property that produced it makes the reader re-derive
     the diagnosis. Advisory SILENCE has the same problem — "nothing recorded",
-    "recorded but pruned by the re-check", and "baseline unreadable" were one
+    "recorded but no longer present", and "inventory unavailable" were one
     indistinguishable empty dict. `scope` separates them.
     """
     lib = _advisory_lib()
@@ -511,7 +502,7 @@ def test_advisory_scope_says_what_was_examined_so_silence_is_not_an_absence(tmp_
     targets = {"scripts/foo.py": [{"line": 5, "source": "def b():"}]}
 
     scope = lib.advisory_scope(tmp_path, targets)
-    assert scope["baseline"] == "absent-empty-or-unreadable"
+    assert scope["inventory"] == "read"
     assert scope["blocked_files_examined"] == 1
     assert scope["files_named"] == []
     assert "NOT proof" in scope["silence_means"]
@@ -564,16 +555,19 @@ def test_an_env_replacing_spawn_of_a_DIFFERENT_script_does_not_implicate_this_on
         '    subprocess.run([sys.executable, "scripts/foo.py"])\n'
     )
 
-    assert lib.unmeasured_spawn_mechanisms(_write_raw(source), "tests/test_foo.py", "scripts/foo.py") == []
+    assert (
+        lib.unmeasured_spawn_mechanisms(_write_raw(source), "tests/test_foo.py", "scripts/foo.py")
+        == []
+    )
 
     # Control: move the scrubbed env onto the spawn that DOES name this script.
     bound = source.replace(
         '    subprocess.run([sys.executable, "scripts/foo.py"])\n',
         '    subprocess.run([sys.executable, "scripts/foo.py"], env={"PATH": "/usr/bin"})\n',
     )
-    assert lib.unmeasured_spawn_mechanisms(_write_raw(bound), "tests/test_foo.py", "scripts/foo.py") == [
-        "env-replaces"
-    ]
+    assert lib.unmeasured_spawn_mechanisms(
+        _write_raw(bound), "tests/test_foo.py", "scripts/foo.py"
+    ) == ["env-replaces"]
 
 
 def test_a_blocked_file_with_no_proof_targets_is_still_examined(tmp_path: Path) -> None:
@@ -590,15 +584,18 @@ def test_a_blocked_file_with_no_proof_targets_is_still_examined(tmp_path: Path) 
     _write_test_file(tmp_path, "tests/test_foo.py", "scripts/foo.py", shape="replaces-env")
 
     # No entry in blocking_targets at all; the file is only in `blocking`.
-    advisory = lib.subprocess_coverage_advisory_report(
-        tmp_path, {}, blocking=["scripts/foo.py"]
-    )["subprocess_coverage_advisory"]
+    advisory = lib.subprocess_coverage_advisory_report(tmp_path, {}, blocking=["scripts/foo.py"])[
+        "subprocess_coverage_advisory"
+    ]
     assert list(advisory) == ["scripts/foo.py"]
     assert advisory["scripts/foo.py"]["blocked_lines"] == [], "no targets means no line claim"
     # ...and with neither source naming it, the old behaviour (silence) is unchanged.
-    assert lib.subprocess_coverage_advisory_report(tmp_path, {}, blocking=[])[
-        "subprocess_coverage_advisory"
-    ] == {}
+    assert (
+        lib.subprocess_coverage_advisory_report(tmp_path, {}, blocking=[])[
+            "subprocess_coverage_advisory"
+        ]
+        == {}
+    )
 
 
 def test_advisory_silence_is_narrated_to_the_operator_not_only_to_the_json(capsys) -> None:
@@ -612,13 +609,16 @@ def test_advisory_silence_is_narrated_to_the_operator_not_only_to_the_json(capsy
     scope = {
         "candidate_tests_examined": 7,
         "blocked_files_examined": 1,
-        "baseline": "read",
+        "inventory": "read",
         "files_named": [],
         "silence_means": "...",
     }
 
     trust.write_blocking_stderr(
-        ["scripts/foo.py"], {"scripts/foo.py": [{"line": 5, "source": "def b():"}]}, {}, scope,
+        ["scripts/foo.py"],
+        {"scripts/foo.py": [{"line": 5, "source": "def b():"}]},
+        {},
+        scope,
     )
     err = capsys.readouterr().err
     assert "ADVISORY SCOPE (not a blocker)" in err
@@ -642,7 +642,9 @@ def test_advisory_silence_is_narrated_to_the_operator_not_only_to_the_json(capsy
     assert "advisory did not run (boom); silence is unexamined" in capsys.readouterr().err
 
 
-def test_a_reference_map_returning_a_non_mapping_degrades_to_no_candidates(tmp_path: Path, monkeypatch) -> None:
+def test_a_reference_map_returning_a_non_mapping_degrades_to_no_candidates(
+    tmp_path: Path, monkeypatch
+) -> None:
     """The second candidate source is another module's function, so its return shape
     is an assumption. The advisory rides a gate whose verdict already exists, so a
     mapper that returns something unexpected must contribute no candidates rather
@@ -658,7 +660,7 @@ def test_a_reference_map_returning_a_non_mapping_degrades_to_no_candidates(tmp_p
     targets = {"scripts/foo.py": [{"line": 5, "source": "def b():"}]}
 
     # Control first: with the real mapper, this file IS found via the reference map
-    # (there is no baseline here at all), so the assertions below are about the
+    # (the live inventory has no matching row), so the assertions below are about the
     # degraded shape and not about a helper that never finds anything.
     assert list(lib.subprocess_coverage_advisory(tmp_path, targets)) == ["scripts/foo.py"]
 
@@ -667,7 +669,9 @@ def test_a_reference_map_returning_a_non_mapping_degrades_to_no_candidates(tmp_p
     monkeypatch.setitem(sys.modules, "scripts.suggest_mutation_coverage_command", stub)
 
     assert lib._referencing_tests(tmp_path, ["scripts/foo.py"]) == {}
-    assert lib.subprocess_coverage_advisory(tmp_path, targets) == {}, "no baseline, no map -> silent"
+    assert lib.subprocess_coverage_advisory(tmp_path, targets) == {}, (
+        "no inventory, no map -> silent"
+    )
     assert lib.advisory_scope(tmp_path, targets)["reference_map"] == "empty-or-unavailable"
 
     # ...and a mapper that RAISES is the same silence, not a lost verdict.

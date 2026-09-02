@@ -16,8 +16,8 @@ post-cutoff unless its filename is one of the named legacy exceptions.
 These run in-process rather than through the CLI. The behaviour under test is
 ordinary domain logic (which values a floor accepts), not a packaging, exit-code,
 or stderr-protocol contract, so it does not need a delivery-boundary crossing —
-the boundary-bypass ratchet's own review questions put this on the in-process
-side. The floor's *wiring* into the validator run is separately covered by the
+the test-side process-boundary policy puts this on the in-process side. The
+floor's *wiring* into the validator run is separately covered by the
 full-artifact fixtures in `test_critique_skill.py` and by the live-corpus sweep.
 """
 
@@ -56,7 +56,9 @@ def _artifact_text(delivery: str | None) -> str:
     return text
 
 
-def _check(delivery: str | None, *, observed_date: date | None, name: str = "2026-07-26-demo.md") -> None:
+def _check(
+    delivery: str | None, *, observed_date: date | None, name: str = "2026-07-26-demo.md"
+) -> None:
     validate_delivery_state(
         Path(name),
         _artifact_text(delivery),
@@ -139,7 +141,9 @@ def test_named_legacy_undatable_artifact_is_grandfathered() -> None:
         "- spawn-accepted-no-delivery",
     ],
 )
-def test_markup_cannot_smuggle_a_no_delivery_record_past_the_signal_requirement(delivery: str) -> None:
+def test_markup_cannot_smuggle_a_no_delivery_record_past_the_signal_requirement(
+    delivery: str,
+) -> None:
     """Release-critique finding: the typed check strips leading markup, so testing
     the raw string for the signal requirement let a bolded or backticked value
     satisfy the type and then skip the "name the channel" rule entirely — a typed
@@ -154,7 +158,9 @@ def test_markup_cannot_smuggle_a_no_delivery_record_past_the_signal_requirement(
 
 def test_marked_up_no_delivery_with_a_real_signal_still_passes() -> None:
     """The normalization must not over-reach into rejecting a real record."""
-    _check("**spawn-accepted-no-delivery** mailbox channel, no reader tool", observed_date=POST_CUTOFF)
+    _check(
+        "**spawn-accepted-no-delivery** mailbox channel, no reader tool", observed_date=POST_CUTOFF
+    )
 
 
 def test_transcript_recovery_is_not_recordable_as_a_clean_delivery() -> None:

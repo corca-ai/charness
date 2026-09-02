@@ -31,6 +31,7 @@ def _scaffold_module():
     spec.loader.exec_module(module)
     return module
 
+
 _ACTIVATED_RETRO = (
     "# Session Retro: Demo\nDate: 2026-08-14\nMode: session\n\n"
     "## North Star Alignment\n\n- P1 held: the slice stayed reversible.\n\n"
@@ -46,9 +47,8 @@ def _seed_retro(repo: Path, body: str = _ACTIVATED_RETRO) -> Path:
     return artifact
 
 
-# In-process, not subprocess: both entrypoints are import-safe, and this repo
-# ratchets the test-suite process boundary down (`scripts/check_boundary_bypass_
-# ratchet.py`). What these tests assert is the validator's own stdout/stderr and
+# In-process, not subprocess: both entrypoints are import-safe. What these tests
+# assert is the validator's own stdout/stderr and
 # exit code, which `run_loaded_script_main` reproduces from `main()` — none of it
 # needs a second interpreter. The scaffold below stays a subprocess: it is the
 # operator-facing emitter whose payload contract this test consumes end-to-end.
@@ -227,10 +227,10 @@ def test_date_activated_rules_announce_only_generic_retro_floors(tmp_path: Path)
     assert rules["persisted-form"]["rule_date"] == validator.PERSISTED_FORM_RULE_DATE.isoformat()
 
 
-_STUB_RESOLVER = '''
+_STUB_RESOLVER = """
 def load_adapter(repo_root):
     return {"valid": True, "data": {"output_dir": "artifacts/retros"}}
-'''
+"""
 
 
 def _repo_with_retro_output_dir(tmp_path: Path, output_dir: str) -> Path:
@@ -332,7 +332,11 @@ def test_an_untidy_output_dir_does_not_split_the_scaffold_from_the_validator(
     resolve_adapter = load_script_module(
         "retro_resolve_adapter_untidy", ROOT / "skills/public/retro/scripts/resolve_adapter.py"
     )
-    for untidy in ("charness-artifacts/retro/", "./charness-artifacts/retro", "charness-artifacts//retro"):
+    for untidy in (
+        "charness-artifacts/retro/",
+        "./charness-artifacts/retro",
+        "charness-artifacts//retro",
+    ):
         data, errors, _warnings = resolve_adapter.validate_adapter_data(
             {"version": 1, "output_dir": untidy}, tmp_path
         )
@@ -364,15 +368,18 @@ def test_prefix_resolution_returns_a_verdict_when_the_consumer_resolver_raises(
     repo = tmp_path / "broken"
     resolver = repo / "skills" / "public" / "retro" / "scripts" / "resolve_adapter.py"
     resolver.parent.mkdir(parents=True)
-    resolver.write_text("raise ImportError('skill_runtime_bootstrap.py not found')\n", encoding="utf-8")
+    resolver.write_text(
+        "raise ImportError('skill_runtime_bootstrap.py not found')\n", encoding="utf-8"
+    )
 
     assert (
-        output_dir_lib.retro_artifact_prefix(repo)
-        == output_dir_lib.DEFAULT_RETRO_ARTIFACT_PREFIX
+        output_dir_lib.retro_artifact_prefix(repo) == output_dir_lib.DEFAULT_RETRO_ARTIFACT_PREFIX
     )
 
 
-def test_the_adapter_loader_raises_when_no_resolver_is_reachable(tmp_path: Path, monkeypatch) -> None:
+def test_the_adapter_loader_raises_when_no_resolver_is_reachable(
+    tmp_path: Path, monkeypatch
+) -> None:
     """`load_retro_adapter` is the version preflight's loader, and its no-resolver arm is
     a RAISE where `retro_artifact_prefix` falls back.
 
@@ -423,8 +430,7 @@ def test_prefix_falls_back_when_a_resolver_hands_back_a_path_outside_the_repo(
     )
 
     assert (
-        output_dir_lib.retro_artifact_prefix(repo)
-        == output_dir_lib.DEFAULT_RETRO_ARTIFACT_PREFIX
+        output_dir_lib.retro_artifact_prefix(repo) == output_dir_lib.DEFAULT_RETRO_ARTIFACT_PREFIX
     )
 
 

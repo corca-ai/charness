@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """One reader for this repo's `#`-commented waiver and allowlist files.
 
-Three parsers had converged on the same four lines -- read the file, number the lines
+Two parsers had converged on the same four lines -- read the file, number the lines
 from 1, strip each, skip blanks and comments -- and the dup ratchet formed a family from
-them the moment the third one grew line numbers. They are validator reference
-waivers, `boundary_bypass_ratchet_lib`'s exemptions, and
+them. They are validator reference waivers and
 `check_skill_ownership_overlap`'s ownership allowlist.
 
 Deliberately does NOT parse or validate. The three callers disagree about what a
@@ -12,6 +11,7 @@ malformed entry means -- two raise, one collects the line numbers and publishes 
 and that disagreement is a real design difference, not duplication. Folding it in here
 would force one of those behaviours onto all three.
 """
+
 from __future__ import annotations
 
 from collections.abc import Iterator

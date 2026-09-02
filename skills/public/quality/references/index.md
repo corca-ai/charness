@@ -27,7 +27,6 @@ gates.
 - `references/bootstrap-escalations.md` — non-default bootstrap and proof paths.
 - `references/bootstrap-posture.md` — quality adapter setup posture.
 - `references/brittle-source-guards.md` — brittle guard taxonomy and migration order.
-- `references/boundary-bypass-ratchet.md` — boundary-bypass ratchet policy.
 - `references/behavior-testing.md` — agent/user behavior proof recommendations.
 - `references/ci-recoverable-gate-triage.md` — slow local gate move-off-local counterweight.
 - `references/cli-ergonomics-smells.md` — CLI ergonomics review questions.
@@ -59,7 +58,6 @@ gates.
 ## Script Contracts And Assets
 
 - `references/attention-state-visibility.json` — attention-state visibility declaration.
-- `references/boundary-bypass-payload.example.json` — boundary-bypass payload example.
 - `references/coverage-floor-exemptions.txt` — coverage floor exemption notes.
 - `references/coverage_floor_inventory.py` — coverage floor inventory helper.
 - `references/find_inline_prompt_bulk.py` — inline prompt/content inventory helper.

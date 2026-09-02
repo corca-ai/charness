@@ -23,11 +23,15 @@ def seed_repo(tmp_path: Path, artifact_body: str) -> Path:
         ),
         encoding="utf-8",
     )
-    (repo / "charness-artifacts" / "debug" / "latest.md").write_text(artifact_body, encoding="utf-8")
+    (repo / "charness-artifacts" / "debug" / "latest.md").write_text(
+        artifact_body, encoding="utf-8"
+    )
     return repo
 
 
-def valid_current_artifact(*, next_step: str = "impl", handoff_artifact: str = "none", risk_class: str = "none") -> str:
+def valid_current_artifact(
+    *, next_step: str = "impl", handoff_artifact: str = "none", risk_class: str = "none"
+) -> str:
     return (
         "\n".join(
             [
@@ -171,7 +175,9 @@ def test_validate_debug_artifact_requires_invariant_proof_fields(tmp_path: Path)
     assert "missing required line `- Final-Consumer Proof: ...`" in result.stderr
 
 
-def test_validate_debug_artifact_allows_legacy_extra_sections_for_dated_records(tmp_path: Path) -> None:
+def test_validate_debug_artifact_allows_legacy_extra_sections_for_dated_records(
+    tmp_path: Path,
+) -> None:
     repo = seed_repo(tmp_path, valid_current_artifact())
     latest = repo / "charness-artifacts" / "debug" / "latest.md"
     latest.unlink()
@@ -179,7 +185,9 @@ def test_validate_debug_artifact_allows_legacy_extra_sections_for_dated_records(
         "## Seam Risk\n\n- Interrupt ID: demo-interrupt\n- Risk Class: none\n- Seam: none\n- Disproving Observation: none\n- What Local Reasoning Cannot Prove: none\n- Generalization Pressure: none\n\n## Interrupt Decision\n\n- Critique Required: no\n- Next Step: impl\n- Handoff Artifact: none\n\n",
         "## Legacy Notes\n\nlegacy detail\n\n",
     )
-    (repo / "charness-artifacts" / "debug" / "2026-04-01-legacy.md").write_text(legacy, encoding="utf-8")
+    (repo / "charness-artifacts" / "debug" / "2026-04-01-legacy.md").write_text(
+        legacy, encoding="utf-8"
+    )
 
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
@@ -204,7 +212,9 @@ def test_validate_debug_artifact_rejects_latest_legacy_extra_sections(tmp_path: 
 def test_validate_debug_artifact_reports_failing_historical_artifact_path(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, valid_current_artifact())
     broken = valid_current_artifact().replace("## Candidate Causes", "## Candidates")
-    (repo / "charness-artifacts" / "debug" / "2026-04-01-broken.md").write_text(broken, encoding="utf-8")
+    (repo / "charness-artifacts" / "debug" / "2026-04-01-broken.md").write_text(
+        broken, encoding="utf-8"
+    )
 
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
@@ -215,14 +225,18 @@ def test_validate_debug_artifact_reports_failing_historical_artifact_path(tmp_pa
 def test_validate_debug_artifact_forced_interrupt_requires_spec_handoff(tmp_path: Path) -> None:
     repo = seed_repo(
         tmp_path,
-        valid_current_artifact(next_step="impl", handoff_artifact="none", risk_class="external-seam"),
+        valid_current_artifact(
+            next_step="impl", handoff_artifact="none", risk_class="external-seam"
+        ),
     )
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "forced risk interrupt" in result.stderr
 
 
-def test_validate_debug_artifact_rejects_followup_sibling_without_identifier(tmp_path: Path) -> None:
+def test_validate_debug_artifact_rejects_followup_sibling_without_identifier(
+    tmp_path: Path,
+) -> None:
     artifact = valid_current_artifact().replace(
         "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: static scan only",
@@ -243,7 +257,9 @@ def test_validate_debug_artifact_accepts_followup_sibling_with_issue_url(tmp_pat
     assert result.returncode == 0, result.stderr
 
 
-def test_validate_debug_artifact_accepts_followup_sibling_with_handoff_anchor(tmp_path: Path) -> None:
+def test_validate_debug_artifact_accepts_followup_sibling_with_handoff_anchor(
+    tmp_path: Path,
+) -> None:
     artifact = valid_current_artifact().replace(
         "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: static scan only | follow-up: deferred docs/index.md#cleanup-backlog",
@@ -319,7 +335,9 @@ def test_validate_debug_artifact_rejects_bare_deferred_followup(tmp_path: Path) 
     assert "follow-up:" in result.stderr
 
 
-def test_validate_debug_artifact_rejects_deferred_with_whitespace_only_anchor(tmp_path: Path) -> None:
+def test_validate_debug_artifact_rejects_deferred_with_whitespace_only_anchor(
+    tmp_path: Path,
+) -> None:
     artifact = valid_current_artifact().replace(
         "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: not inspected | follow-up: deferred   ",
@@ -352,7 +370,9 @@ def test_validate_debug_artifact_accepts_short_non_deferred_identifier(tmp_path:
     assert result.returncode == 0, result.stderr
 
 
-def test_validate_debug_artifact_rejects_abstraction_up_diagnostic_only_unresolved_work(tmp_path: Path) -> None:
+def test_validate_debug_artifact_rejects_abstraction_up_diagnostic_only_unresolved_work(
+    tmp_path: Path,
+) -> None:
     artifact = valid_current_artifact().replace(
         "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
         (
@@ -368,7 +388,9 @@ def test_validate_debug_artifact_rejects_abstraction_up_diagnostic_only_unresolv
     assert "follow-up:" in result.stderr
 
 
-def test_validate_debug_artifact_rejects_abstraction_up_diagnostic_only_without_reason(tmp_path: Path) -> None:
+def test_validate_debug_artifact_rejects_abstraction_up_diagnostic_only_without_reason(
+    tmp_path: Path,
+) -> None:
     artifact = valid_current_artifact().replace(
         "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
         (
@@ -383,7 +405,9 @@ def test_validate_debug_artifact_rejects_abstraction_up_diagnostic_only_without_
     assert "proof-backed no-action reason" in result.stderr
 
 
-def test_validate_debug_artifact_accepts_abstraction_up_diagnostic_only_with_no_action_reason(tmp_path: Path) -> None:
+def test_validate_debug_artifact_accepts_abstraction_up_diagnostic_only_with_no_action_reason(
+    tmp_path: Path,
+) -> None:
     artifact = valid_current_artifact().replace(
         "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
         (
@@ -398,7 +422,9 @@ def test_validate_debug_artifact_accepts_abstraction_up_diagnostic_only_with_no_
     assert result.returncode == 0, result.stderr
 
 
-def test_validate_debug_artifact_accepts_abstraction_up_diagnostic_only_with_followup(tmp_path: Path) -> None:
+def test_validate_debug_artifact_accepts_abstraction_up_diagnostic_only_with_followup(
+    tmp_path: Path,
+) -> None:
     artifact = valid_current_artifact().replace(
         "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
         (
@@ -413,7 +439,9 @@ def test_validate_debug_artifact_accepts_abstraction_up_diagnostic_only_with_fol
     assert result.returncode == 0, result.stderr
 
 
-def test_validate_debug_artifact_preserves_same_layer_diagnostic_only_without_reason(tmp_path: Path) -> None:
+def test_validate_debug_artifact_preserves_same_layer_diagnostic_only_without_reason(
+    tmp_path: Path,
+) -> None:
     artifact = valid_current_artifact().replace(
         "- same layer: tests/repo_copy.py and scripts/check_coverage.py",
         (
@@ -466,7 +494,9 @@ def test_validate_debug_artifact_rejects_star_abstraction_up_diagnostic_only_wit
 
 # --- #2b: cross-file sibling-scan marker (latest.md / forward-only) -----------
 
-CROSS_FILE_LINE = "- cross-file: scripts/check_coverage.py is outside the subject tests/repo_copy.py"
+CROSS_FILE_LINE = (
+    "- cross-file: scripts/check_coverage.py is outside the subject tests/repo_copy.py"
+)
 
 
 def test_validate_debug_artifact_rejects_latest_sibling_search_without_cross_file_marker(
@@ -509,7 +539,9 @@ def test_validate_debug_artifact_cross_file_marker_not_required_for_dated_record
     # marker still passes, so the historical corpus is never retro-regressed.
     repo = seed_repo(tmp_path, valid_current_artifact())
     dated = valid_current_artifact().replace(CROSS_FILE_LINE + "\n", "")
-    (repo / "charness-artifacts" / "debug" / "2026-04-01-dated.md").write_text(dated, encoding="utf-8")
+    (repo / "charness-artifacts" / "debug" / "2026-04-01-dated.md").write_text(
+        dated, encoding="utf-8"
+    )
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "Validated debug artifact charness-artifacts/debug/2026-04-01-dated.md" in result.stdout
@@ -520,9 +552,7 @@ def test_validate_debug_artifact_trivial_short_circuit_satisfies_cross_file(tmp_
     # by the short-circuit alone, matching `validate_sibling_followups`.
     artifact = valid_current_artifact().replace(
         "- Mental model: synthetic copy fixtures treat runtime roots as input\n"
-        "- same layer: tests/repo_copy.py and scripts/check_coverage.py\n"
-        + CROSS_FILE_LINE
-        + "\n",
+        "- same layer: tests/repo_copy.py and scripts/check_coverage.py\n" + CROSS_FILE_LINE + "\n",
         "- n/a — trivial fix; no plausible siblings\n",
     )
     repo = seed_repo(tmp_path, artifact)
@@ -543,9 +573,7 @@ def test_validate_debug_artifact_rejects_latest_hypothesis_without_disconfirmer(
 ) -> None:
     # A `## Hypothesis` with no `disconfirmer:` marker must FAIL on latest.md — the
     # static-only-RCA gap Plan A closes by internalizing the rule into structure.
-    artifact = valid_current_artifact().replace(
-        HYPOTHESIS_LINE, "- the gate skips volatile roots"
-    )
+    artifact = valid_current_artifact().replace(HYPOTHESIS_LINE, "- the gate skips volatile roots")
     repo = seed_repo(tmp_path, artifact)
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
@@ -584,7 +612,9 @@ def test_validate_debug_artifact_disconfirmer_marker_not_required_for_dated_reco
     # passes, so the historical corpus is never retro-regressed.
     repo = seed_repo(tmp_path, valid_current_artifact())
     dated = valid_current_artifact().replace(HYPOTHESIS_LINE, "- the gate skips volatile roots")
-    (repo / "charness-artifacts" / "debug" / "2026-04-01-dated.md").write_text(dated, encoding="utf-8")
+    (repo / "charness-artifacts" / "debug" / "2026-04-01-dated.md").write_text(
+        dated, encoding="utf-8"
+    )
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "Validated debug artifact charness-artifacts/debug/2026-04-01-dated.md" in result.stdout
@@ -623,7 +653,9 @@ def test_validate_debug_artifact_default_mode_lists_every_violation(tmp_path: Pa
 
 def test_validate_debug_artifact_fail_fast_stops_at_first_violation(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, _multi_violation_current_artifact())
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--fail-fast")
+    result = run_script(
+        "scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--fail-fast"
+    )
     assert result.returncode == 1
     assert "at least three plausible causes" in result.stderr
     assert "rule violation(s)" not in result.stderr
@@ -640,18 +672,26 @@ def test_validate_debug_artifact_rejects_dated_off_taxonomy_risk_class(tmp_path:
     # at the offending artifact.
     repo = seed_repo(tmp_path, valid_current_artifact())
     dated = valid_current_artifact(risk_class="host-state")
-    (repo / "charness-artifacts" / "debug" / "2026-06-14-dated.md").write_text(dated, encoding="utf-8")
+    (repo / "charness-artifacts" / "debug" / "2026-06-14-dated.md").write_text(
+        dated, encoding="utf-8"
+    )
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Invalid debug artifact charness-artifacts/debug/2026-06-14-dated.md" in result.stderr
     assert "host-state" in result.stderr
 
 
-def test_validate_debug_artifact_rejects_dated_off_taxonomy_generalization_pressure(tmp_path: Path) -> None:
+def test_validate_debug_artifact_rejects_dated_off_taxonomy_generalization_pressure(
+    tmp_path: Path,
+) -> None:
     # #366: same gap for an off-taxonomy `Generalization Pressure` prose value.
     repo = seed_repo(tmp_path, valid_current_artifact())
-    dated = valid_current_artifact().replace("- Generalization Pressure: none", "- Generalization Pressure: vibes")
-    (repo / "charness-artifacts" / "debug" / "2026-06-14-dated.md").write_text(dated, encoding="utf-8")
+    dated = valid_current_artifact().replace(
+        "- Generalization Pressure: none", "- Generalization Pressure: vibes"
+    )
+    (repo / "charness-artifacts" / "debug" / "2026-06-14-dated.md").write_text(
+        dated, encoding="utf-8"
+    )
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Invalid debug artifact charness-artifacts/debug/2026-06-14-dated.md" in result.stderr
@@ -663,7 +703,9 @@ def test_validate_debug_artifact_accepts_dated_in_taxonomy_seam_risk(tmp_path: P
     # corpus (all in-taxonomy) is not retro-regressed.
     repo = seed_repo(tmp_path, valid_current_artifact())
     dated = valid_current_artifact(risk_class="operator-visible-recovery")
-    (repo / "charness-artifacts" / "debug" / "2026-06-14-dated.md").write_text(dated, encoding="utf-8")
+    (repo / "charness-artifacts" / "debug" / "2026-06-14-dated.md").write_text(
+        dated, encoding="utf-8"
+    )
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "Validated debug artifact charness-artifacts/debug/2026-06-14-dated.md" in result.stdout
@@ -712,8 +754,8 @@ def test_marker_case_variant_is_named_and_reported_with_its_siblings(tmp_path: P
     missing marker surfaced one per run. The report must name the near-miss AS a
     case problem and carry the other missing marker in the same message.
     In-process on purpose: the CLI conversion is already pinned by the
-    subprocess tests above, and the boundary-bypass ratchet counts every new
-    subprocess call site.
+    subprocess tests above, and this case does not need another process-level
+    contract.
     """
     import pytest
 
@@ -776,7 +818,10 @@ def test_risk_and_resolution_enum_deviations_join_the_same_report(tmp_path: Path
         validate_debug_artifact(artifact, collect_all=True, current_pointer=artifact)
     message = str(excinfo.value)
     assert "`Risk Class: none` cannot be combined with other values" in message
-    assert "`Generalization Pressure` must be `none`, `monitor`, or `factor-now` (found `later`)" in message
+    assert (
+        "`Generalization Pressure` must be `none`, `monitor`, or `factor-now` (found `later`)"
+        in message
+    )
     assert "`Resolution` must be `open` or `resolved` (found `parked`)" in message
 
 
@@ -789,9 +834,7 @@ def test_marker_problems_from_both_interrupt_blocks_merge_into_one_report(tmp_pa
 
     repo = seed_repo(
         tmp_path,
-        valid_current_artifact()
-        .replace("- Seam: none\n", "")
-        .replace("- Next Step: impl\n", ""),
+        valid_current_artifact().replace("- Seam: none\n", "").replace("- Next Step: impl\n", ""),
     )
     artifact = repo / "charness-artifacts" / "debug" / "latest.md"
     with pytest.raises(ValidationError) as excinfo:
@@ -828,7 +871,9 @@ def test_extract_prefixed_values_reports_an_empty_value_beside_its_siblings() ->
     from scripts.validate_debug_artifact import ValidationError, extract_prefixed_values
 
     with pytest.raises(ValidationError) as excinfo:
-        extract_prefixed_values(["- Seam: ", "- Risk Class: none"], ("- Seam: ", "- Interrupt ID: "))
+        extract_prefixed_values(
+            ["- Seam: ", "- Risk Class: none"], ("- Seam: ", "- Interrupt ID: ")
+        )
     message = str(excinfo.value)
     assert "`- Seam: ...` must not be empty" in message
     assert "missing required line `- Interrupt ID: ...`" in message

@@ -11,7 +11,6 @@ from scripts import record_quality_runtime
 
 # In-process on purpose: this recorder is import-safe and its `main()` is the whole
 # CLI, so the 21 subprocess starts these cases used to pay bought no extra coverage.
-# The boundary-bypass ratchet flags exactly this shape.
 
 
 def _record(monkeypatch, repo: Path, *args: str) -> int:
@@ -23,7 +22,9 @@ def _record(monkeypatch, repo: Path, *args: str) -> int:
     return record_quality_runtime.main()
 
 
-def test_record_quality_runtime_writes_summary_and_archive(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_record_quality_runtime_writes_summary_and_archive(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
 
@@ -121,9 +122,19 @@ def test_record_quality_runtime_batch_matches_one_call_per_record(
     be a pure speedup: the state it leaves has to be byte-identical to replaying the
     same records one `--label` call at a time, in order."""
     records = [
-        {"label": "pytest", "elapsed_ms": 1234, "status": "pass", "timestamp": "2026-04-10T09:00:00Z"},
+        {
+            "label": "pytest",
+            "elapsed_ms": 1234,
+            "status": "pass",
+            "timestamp": "2026-04-10T09:00:00Z",
+        },
         {"label": "ruff", "elapsed_ms": 28, "status": "pass", "timestamp": "2026-04-10T09:00:01Z"},
-        {"label": "pytest", "elapsed_ms": 2345, "status": "fail", "timestamp": "2026-04-11T09:00:00Z"},
+        {
+            "label": "pytest",
+            "elapsed_ms": 2345,
+            "status": "fail",
+            "timestamp": "2026-04-11T09:00:00Z",
+        },
     ]
 
     sequential = tmp_path / "sequential"
@@ -154,7 +165,10 @@ def test_record_quality_runtime_batch_matches_one_call_per_record(
         "".join(json.dumps(record) + "\n" for record in records),
         encoding="utf-8",
     )
-    assert _record(monkeypatch, batched, "--batch", str(batch_path), "--runtime-profile", "default") == 0
+    assert (
+        _record(monkeypatch, batched, "--batch", str(batch_path), "--runtime-profile", "default")
+        == 0
+    )
     capsys.readouterr()
 
     for relative in (
@@ -178,9 +192,23 @@ def test_record_quality_runtime_batch_reports_a_malformed_record_without_losing_
     repo.mkdir()
     batch_path = tmp_path / "batch.jsonl"
     batch_path.write_text(
-        json.dumps({"label": "pytest", "elapsed_ms": 1, "status": "pass", "timestamp": "2026-04-10T09:00:00Z"})
+        json.dumps(
+            {
+                "label": "pytest",
+                "elapsed_ms": 1,
+                "status": "pass",
+                "timestamp": "2026-04-10T09:00:00Z",
+            }
+        )
         + '\n{"label":"ruff","elapsed_ms":,"status":"pass","timestamp":"2026-04-10T09:00:01Z"}\n'
-        + json.dumps({"label": "ruff", "elapsed_ms": 28, "status": "pass", "timestamp": "2026-04-10T09:00:02Z"})
+        + json.dumps(
+            {
+                "label": "ruff",
+                "elapsed_ms": 28,
+                "status": "pass",
+                "timestamp": "2026-04-10T09:00:02Z",
+            }
+        )
         + "\n",
         encoding="utf-8",
     )
@@ -189,7 +217,9 @@ def test_record_quality_runtime_batch_reports_a_malformed_record_without_losing_
     captured = capsys.readouterr()
     assert "line 2" in captured.err
 
-    summary = json.loads((repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8"))
+    summary = json.loads(
+        (repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8")
+    )
     commands = summary["profiles"][next(iter(summary["profiles"]))]["commands"]
     assert commands["pytest"]["latest"]["elapsed_ms"] == 1
     assert commands["ruff"]["latest"]["elapsed_ms"] == 28
@@ -200,7 +230,10 @@ def test_record_quality_runtime_batch_reports_a_malformed_record_without_losing_
     [
         ('["pytest", 1, "pass"]', "not a JSON object"),
         ('{"label": "pytest"}', "missing elapsed_ms, status"),
-        ('{"label": "pytest", "elapsed_ms": 1, "status": "skipped"}', "expected one of pass, fail, unestablished"),
+        (
+            '{"label": "pytest", "elapsed_ms": 1, "status": "skipped"}',
+            "expected one of pass, fail, unestablished",
+        ),
     ],
     ids=["not-an-object", "missing-keys", "bad-status"],
 )
@@ -220,7 +253,9 @@ def test_record_quality_runtime_batch_names_why_a_record_is_malformed(
     assert expected in captured.err
 
 
-def test_record_quality_runtime_batch_skips_blank_lines(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_record_quality_runtime_batch_skips_blank_lines(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     """A trailing newline or a blank separator is not a runner bug and must not be
     reported as a malformed record."""
     repo = tmp_path / "repo"
@@ -228,7 +263,14 @@ def test_record_quality_runtime_batch_skips_blank_lines(tmp_path: Path, monkeypa
     batch_path = tmp_path / "batch.jsonl"
     batch_path.write_text(
         "\n   \n"
-        + json.dumps({"label": "pytest", "elapsed_ms": 7, "status": "pass", "timestamp": "2026-04-10T09:00:00Z"})
+        + json.dumps(
+            {
+                "label": "pytest",
+                "elapsed_ms": 7,
+                "status": "pass",
+                "timestamp": "2026-04-10T09:00:00Z",
+            }
+        )
         + "\n\n",
         encoding="utf-8",
     )
@@ -303,7 +345,9 @@ def test_record_quality_runtime_batch_refuses_a_single_record_timestamp(
     batch_path.write_text("", encoding="utf-8")
 
     with pytest.raises(SystemExit):
-        _record(monkeypatch, repo, "--batch", str(batch_path), "--timestamp", "2026-04-10T09:00:00Z")
+        _record(
+            monkeypatch, repo, "--batch", str(batch_path), "--timestamp", "2026-04-10T09:00:00Z"
+        )
 
 
 def test_record_quality_runtime_batch_refuses_mixed_single_record_flags(
@@ -345,7 +389,9 @@ def test_record_quality_runtime_keeps_named_profiles_separate(
         )
     capsys.readouterr()
 
-    summary = json.loads((repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8"))
+    summary = json.loads(
+        (repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8")
+    )
     assert summary.get("commands", {}) == {}
     assert summary["profiles"]["local-fast"]["commands"]["pytest"]["latest"]["elapsed_ms"] == 1200
     assert summary["profiles"]["ci-slow"]["commands"]["pytest"]["latest"]["elapsed_ms"] == 9000
@@ -415,7 +461,9 @@ def test_rotate_archives_tolerates_concurrently_deleted_oldest(tmp_path: Path, m
 
 
 def _profile_median(repo: Path, profile_id: str, label: str) -> int | None:
-    payload = json.loads((repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8"))
+    payload = json.loads(
+        (repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8")
+    )
     entry = payload.get("profiles", {}).get(profile_id, {}).get("commands", {}).get(label)
     return entry["median_recent_elapsed_ms"] if entry else None
 
@@ -495,7 +543,9 @@ def test_an_absent_regime_records_into_the_enforced_profile_unchanged(
         )
     capsys.readouterr()
 
-    payload = json.loads((repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8"))
+    payload = json.loads(
+        (repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8")
+    )
     assert sorted(payload["profiles"]) == ["local-test-36cpu"]
     assert payload["profiles"]["local-test-36cpu"]["commands"]["pytest"]["samples"] == 2
 
@@ -528,5 +578,7 @@ def test_a_regime_slug_cannot_forge_a_second_separator(tmp_path: Path, monkeypat
     )
     capsys.readouterr()
 
-    payload = json.loads((repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8"))
+    payload = json.loads(
+        (repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8")
+    )
     assert sorted(payload["profiles"]) == ["local-test-36cpu.docs-only-weird"]

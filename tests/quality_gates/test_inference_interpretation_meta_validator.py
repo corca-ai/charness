@@ -1,8 +1,8 @@
 """Tests for the #330 advisory-interpretation meta-validator.
 
-Driven in-process (importlib + evaluate()/main()) rather than via subprocess so a
-new boundary-spawning candidate key is not introduced (check_boundary_bypass_ratchet;
-the #322 in-process convention). The negative guards are the load-bearing part:
+Driven in-process (importlib + evaluate()/main()) rather than via subprocess because
+the behavior under test is the callable contract, not a delivery-boundary contract.
+The negative guards are the load-bearing part:
 they prove that removing a declaration field, dropping the consumer pairing, or
 leaking a declaration onto an unregistered surface each turns the gate red.
 """
@@ -198,7 +198,9 @@ def test_registry_error_includes_unreadable_source_skip(tmp_path: Path) -> None:
     code, messages = _evaluate(repo, registry)
 
     assert code == 1
-    assert any("LEAK" in message and "scripts/check_exact_counts.py" in message for message in messages)
+    assert any(
+        "LEAK" in message and "scripts/check_exact_counts.py" in message for message in messages
+    )
     assert any(
         "status=skipped reason=unreadable-python-source count=1" in message
         and "scripts/non_utf8.py" in message
@@ -244,13 +246,20 @@ def test_prose_surface_missing_anchor_fails(tmp_path: Path) -> None:
         "surface_id": "prose-demo",
         "kind": "prose",
         "declaration_file": prose_rel,
-        "prose_anchors": ["It measures", "it proxies for", "blind to maintenance burden", "answer its interpretation question"],
+        "prose_anchors": [
+            "It measures",
+            "it proxies for",
+            "blind to maintenance burden",
+            "answer its interpretation question",
+        ],
         "consumer_reference": prose_rel,
         "consumer_anchor": "does the top-ranked gate genuinely",
     }
     code, messages = _evaluate(repo, _registry([surface]))
     assert code == 1
-    assert any("prose declaration anchor `blind to maintenance burden` missing" in m for m in messages)
+    assert any(
+        "prose declaration anchor `blind to maintenance burden` missing" in m for m in messages
+    )
 
 
 # --- portability + registry validation -------------------------------------------
@@ -281,7 +290,8 @@ def test_malformed_registry_raises(tmp_path: Path) -> None:
 def test_registry_field_drift_raises(tmp_path: Path) -> None:
     bad = tmp_path / "bad.json"
     bad.write_text(
-        json.dumps(_registry([])  # empty surfaces is itself invalid
+        json.dumps(
+            _registry([])  # empty surfaces is itself invalid
         ),
         encoding="utf-8",
     )
@@ -307,7 +317,9 @@ def _run_main(*args: str) -> tuple[int, str, str]:
 def test_live_repo_contract_holds() -> None:
     code, stdout, stderr = _run_main("--repo-root", str(ROOT), "--require-git-file-listing")
     assert code == 0, stderr
-    assert "Validated advisory-interpretation contract across 12 inference-layer surface(s)" in stdout
+    assert (
+        "Validated advisory-interpretation contract across 12 inference-layer surface(s)" in stdout
+    )
     assert "status=skipped reason=unreadable-python-source count=2" in stdout
 
 

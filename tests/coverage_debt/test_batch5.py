@@ -7,8 +7,8 @@ message about the behavior, not about a line number.
 
 The `charness` CLI cases load the entrypoint in process (the `test_managed_install`
 loader every other CLI test uses) rather than spawning it, because the contract under
-test is the payload/refusal the function returns, and this repo's boundary-bypass
-ratchet treats a fresh script spawn as a crossing that needs its own justification.
+test is the payload/refusal the function returns, so the in-process loader is the
+smallest honest surface for these cases.
 """
 
 from __future__ import annotations
@@ -39,9 +39,12 @@ def _refresh(repo: Path, record: Path, *extra: str) -> SimpleNamespace:
     return run_loaded_script_main(
         "refresh_current_pointer.py",
         REFRESH_CURRENT_POINTER,
-        "--repo-root", str(repo),
-        "--skill-id", "gather",
-        "--record-artifact-path", f"charness-artifacts/gather/{record.name}",
+        "--repo-root",
+        str(repo),
+        "--skill-id",
+        "gather",
+        "--record-artifact-path",
+        f"charness-artifacts/gather/{record.name}",
         *extra,
     )
 
@@ -184,7 +187,8 @@ def _seam_index(repo: Path, *args: str) -> SimpleNamespace:
     return run_loaded_script_main(
         "build_debug_seam_risk_index.py",
         DEBUG_SEAM_INDEX,
-        "--repo-root", str(repo),
+        "--repo-root",
+        str(repo),
         *args,
         cli_error_types=(DEBUG_SEAM_INDEX.ValidationError,),
     )
@@ -368,9 +372,12 @@ def test_a_stale_premise_refusal_lifts_its_reason_codes_onto_the_payload(tmp_pat
     result = run_loaded_script_main(
         "check_premise_preflight.py",
         PREMISE_CLI,
-        "--repo-root", str(repo),
-        "--premise", str(premise),
-        "--issue-readback", str(issue),
+        "--repo-root",
+        str(repo),
+        "--premise",
+        str(premise),
+        "--issue-readback",
+        str(issue),
     )
 
     assert result.returncode == 1
@@ -400,9 +407,7 @@ def test_an_unreadable_transcript_is_exit_two_with_no_fix_unit_count(tmp_path: P
     transcript = tmp_path / "transcript.json"
     transcript.write_text('{"events": []}', encoding="utf-8")
 
-    result = run_loaded_script_main(
-        "audit_brief.py", AUDIT_BRIEF, "--transcript", str(transcript)
-    )
+    result = run_loaded_script_main("audit_brief.py", AUDIT_BRIEF, "--transcript", str(transcript))
 
     assert result.returncode == 2
     payload = yaml.safe_load(result.stdout)
@@ -436,9 +441,7 @@ def test_a_readable_transcript_reports_both_counts_beside_its_verdict(tmp_path: 
         encoding="utf-8",
     )
 
-    result = run_loaded_script_main(
-        "audit_brief.py", AUDIT_BRIEF, "--transcript", str(transcript)
-    )
+    result = run_loaded_script_main("audit_brief.py", AUDIT_BRIEF, "--transcript", str(transcript))
 
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
@@ -620,9 +623,7 @@ def _script_repo(tmp_path: Path, name: str, source: str) -> Path:
 
 
 UNREADABLE_PAYLOAD_SCRIPT = (
-    "import sys\n"
-    "print('a: [1,\\n  b: {')\n"
-    "print('cannot reach the ledger', file=sys.stderr)\n"
+    "import sys\nprint('a: [1,\\n  b: {')\nprint('cannot reach the ledger', file=sys.stderr)\n"
 )
 
 
@@ -712,18 +713,25 @@ def test_tool_install_hands_sync_support_the_plugin_root_and_the_selected_tools(
 
     args = parser.parse_args(
         [
-            "tool", "install", "demo-tool",
-            "--repo-root", str(repo),
-            "--plugin-root", str(plugin_root),
+            "tool",
+            "install",
+            "demo-tool",
+            "--repo-root",
+            str(repo),
+            "--plugin-root",
+            str(plugin_root),
         ]
     )
     assert charness_cli.cmd_tool_install(args) == 0
     capsys.readouterr()
 
     assert calls["scripts/sync_support.py"] == (
-        "--repo-root", str(repo),
-        "--plugin-root", str(plugin_root),
-        "--tool-id", "demo-tool",
+        "--repo-root",
+        str(repo),
+        "--plugin-root",
+        str(plugin_root),
+        "--tool-id",
+        "demo-tool",
         "--execute",
     )
 
@@ -732,9 +740,13 @@ def test_tool_install_hands_sync_support_the_plugin_root_and_the_selected_tools(
     calls.clear()
     dry = parser.parse_args(
         [
-            "tool", "install", "demo-tool",
-            "--repo-root", str(repo),
-            "--plugin-root", str(plugin_root),
+            "tool",
+            "install",
+            "demo-tool",
+            "--repo-root",
+            str(repo),
+            "--plugin-root",
+            str(plugin_root),
             "--dry-run",
         ]
     )
@@ -745,9 +757,13 @@ def test_tool_install_hands_sync_support_the_plugin_root_and_the_selected_tools(
     calls.clear()
     skipped = parser.parse_args(
         [
-            "tool", "install", "demo-tool",
-            "--repo-root", str(repo),
-            "--plugin-root", str(plugin_root),
+            "tool",
+            "install",
+            "demo-tool",
+            "--repo-root",
+            str(repo),
+            "--plugin-root",
+            str(plugin_root),
             "--skip-sync-support",
         ]
     )

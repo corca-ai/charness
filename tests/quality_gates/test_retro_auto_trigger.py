@@ -20,9 +20,8 @@ from .support import ROOT, run_script
 #
 # The cases added for that fix run `main()` IN-PROCESS (`_run_main`) rather than through
 # a new subprocess call site: the exit byte is what they are proving, and the in-process
-# runner returns it without growing this file's boundary-bypass footprint. The existing
-# subprocess cases stay subprocess cases for the same reason — churning them would move
-# the ratchet for no added proof.
+# runner returns it without adding another process boundary. The existing subprocess
+# cases stay subprocess cases because their process-level contract is the claim.
 CHECK_AUTO_TRIGGER = load_script_module(
     "tests.quality_gates.retro_check_auto_trigger_main",
     ROOT / "skills/public/retro/scripts/check_auto_trigger.py",
@@ -36,7 +35,9 @@ def _run_main(*args: str):
 def _write_adapter(repo: Path, *lines: str) -> None:
     (repo / ".agents").mkdir(parents=True, exist_ok=True)
     (repo / ".agents" / "retro-adapter.yaml").write_text(
-        "\n".join(["version: 1", "repo: consumer", "output_dir: charness-artifacts/retro", *lines, ""]),
+        "\n".join(
+            ["version: 1", "repo: consumer", "output_dir: charness-artifacts/retro", *lines, ""]
+        ),
         encoding="utf-8",
     )
 

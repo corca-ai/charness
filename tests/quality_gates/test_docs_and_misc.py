@@ -19,7 +19,13 @@ def test_narrative_map_sources_reports_checked_in_docs() -> None:
     assert "README.md" in source_paths
     assert "docs/control-plane.md" in source_paths
     assert payload["artifact_path"] == "charness-artifacts/narrative/latest.md"
-    assert payload["freshness"]["status"] in {"ahead", "current", "missing-remote", "not-git", "unavailable"}
+    assert payload["freshness"]["status"] in {
+        "ahead",
+        "current",
+        "missing-remote",
+        "not-git",
+        "unavailable",
+    }
 
 
 def _write_release_repo(tmp_path: Path, *, with_sync: bool = True) -> tuple[Path, str]:
@@ -92,7 +98,9 @@ def _write_release_repo(tmp_path: Path, *, with_sync: bool = True) -> tuple[Path
 def test_release_bump_version_updates_manifest_and_runs_sync(tmp_path: Path) -> None:
     repo, _ = _write_release_repo(tmp_path)
 
-    result = run_script("skills/public/release/scripts/bump_version.py", "--repo-root", str(repo), "--part", "patch")
+    result = run_script(
+        "skills/public/release/scripts/bump_version.py", "--repo-root", str(repo), "--part", "patch"
+    )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     manifest = json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))
@@ -135,8 +143,8 @@ def test_release_bump_version_refuses_a_missing_sync_command_before_mutating(
     bump_version = load_release_script("bump_version")
 
     # In-process rather than through `run_script`: the refusal is a `SystemExit` from
-    # `main`, and a new subprocess call site here mints a boundary-bypass candidate the
-    # ratchet refuses -- for a boundary this assertion does not need.
+    # `main`; this assertion checks the returned refusal and does not need a
+    # second interpreter or delivery-boundary contract.
     result = run_loaded_script_main(
         "bump_version.py", bump_version, "--repo-root", str(repo), "--part", "patch"
     )
