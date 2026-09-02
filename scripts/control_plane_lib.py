@@ -15,6 +15,7 @@ import jsonschema
 from packaging.specifiers import InvalidSpecifier, SpecifierSet
 from packaging.version import InvalidVersion, Version
 
+from runtime_bootstrap import import_repo_module
 from scripts.repo_layout import (
     integrations_locks_dir,
     integrations_tools_dir,
@@ -24,17 +25,7 @@ from scripts.repo_layout import (
 from scripts.repo_path_display import display_path
 from scripts.runtime_bootstrap import repo_root_from_script
 
-try:
-    from scripts.subprocess_guard import run_process
-except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
-    _scripts_dir = next(
-        ancestor / "scripts"
-        for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "subprocess_guard.py").is_file()
-    )
-    if str(_scripts_dir) not in sys.path:
-        sys.path.insert(0, str(_scripts_dir))
-    from subprocess_guard import run_process
+run_process = import_repo_module(__file__, "scripts.subprocess_guard").run_process
 
 LOCKS_DIR = Path("integrations/locks")
 SEMVER_RE = re.compile(r"(?<!\d)\d+(?:\.\d+){1,}(?!\d)")
