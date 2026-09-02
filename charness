@@ -5088,7 +5088,7 @@ def _load_worktree_lib(args: argparse.Namespace):
     repo_text = str(repo_root)
     if repo_text not in sys.path:
         sys.path.insert(0, repo_text)
-    from scripts import worktree_doctor_lib
+    from scripts.worktree import worktree_doctor_lib
 
     return worktree_doctor_lib
 
@@ -5098,7 +5098,7 @@ def _load_worktree_audit_lib(args: argparse.Namespace):
     repo_text = str(repo_root)
     if repo_text not in sys.path:
         sys.path.insert(0, repo_text)
-    from scripts import worktree_audit_lib
+    from scripts.worktree import worktree_audit_lib
 
     return worktree_audit_lib
 
@@ -5108,7 +5108,7 @@ def _load_worktree_cleanup_lib(args: argparse.Namespace):
     repo_text = str(repo_root)
     if repo_text not in sys.path:
         sys.path.insert(0, repo_text)
-    from scripts import worktree_cleanup_lib
+    from scripts.worktree import worktree_cleanup_lib
 
     return worktree_cleanup_lib
 
@@ -5118,7 +5118,7 @@ def _load_worktree_create_lib(args: argparse.Namespace):
     repo_text = str(repo_root)
     if repo_text not in sys.path:
         sys.path.insert(0, repo_text)
-    from scripts import worktree_create_lib
+    from scripts.worktree import worktree_create_lib
 
     return worktree_create_lib
 
@@ -5135,7 +5135,7 @@ def _load_worktree_exec_lib(args: argparse.Namespace):
     target = _resolve_worktree_target(args)
     _configure_runtime_for_repo(target)
 
-    from scripts import worktree_exec_lib
+    from scripts.worktree import worktree_exec_lib
 
     return worktree_exec_lib
 

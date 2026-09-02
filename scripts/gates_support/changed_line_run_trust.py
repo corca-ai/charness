@@ -39,7 +39,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:  # pragma: no cover - import bootstrap
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.checkout_view import CheckoutView, GitCheckout  # noqa: E402
+from scripts.worktree.checkout_view import CheckoutView, GitCheckout  # noqa: E402
 from scripts.core.git_status_snapshot import GitStatusError  # noqa: E402
 from scripts.core.git_status_snapshot import parse as parse_git_status  # noqa: E402
 from scripts.mutation.mutation_changed_files_lib import changed_pool_fingerprint  # noqa: E402

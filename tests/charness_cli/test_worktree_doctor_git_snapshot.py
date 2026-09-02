@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import worktree_doctor_checks as checks
-from scripts import worktree_doctor_lib as lib
+from scripts.worktree import worktree_doctor_checks as checks
+from scripts.worktree import worktree_doctor_lib as lib
 from tests.charness_cli.worktree_fixtures import copy_worktree_seed
 
 
@@ -111,7 +111,9 @@ def test_effective_custom_hooks_path_preserves_relative_and_absolute_targets(
     assert str(hooks_dir.resolve()) in hooks["detail"]
 
 
-def test_malformed_hooks_snapshot_fails_closed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_malformed_hooks_snapshot_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setattr(checks, "_git_output", lambda *_args, **_kwargs: ".git\n.git\nfalse\n")
 
     facts = checks.git_checkout_facts(tmp_path)

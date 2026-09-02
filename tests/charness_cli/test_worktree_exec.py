@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import worktree_exec_lib as lib
+from scripts.worktree import worktree_exec_lib as lib
 from tests.charness_cli.worktree_fixtures import copy_worktree_seed
 
 from .support import run_cli_path
@@ -133,7 +133,16 @@ def test_cli_exec_in_linked_worktree_keeps_python_outputs_external(tmp_path: Pat
         encoding="utf-8",
     )
     _git("add", "module.py", "test_module.py", cwd=repo)
-    _git("-c", "user.email=test@example.com", "-c", "user.name=test", "commit", "-m", "tests", cwd=repo)
+    _git(
+        "-c",
+        "user.email=test@example.com",
+        "-c",
+        "user.name=test",
+        "commit",
+        "-m",
+        "tests",
+        cwd=repo,
+    )
     linked = tmp_path / "linked"
     _git("worktree", "add", "-b", "slice", str(linked), cwd=repo)
 

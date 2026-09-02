@@ -5,12 +5,12 @@ from pathlib import Path
 
 import yaml
 
-from scripts import worktree_cleanup_lib as lib
+from scripts.worktree import worktree_cleanup_lib as lib
 from tests.charness_cli.worktree_fixtures import copy_worktree_seed
 
 from .support import run_cli_path
 
-SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "worktree_cleanup.py"
+SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "worktree" / "worktree_cleanup.py"
 
 
 def _git(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
@@ -83,7 +83,9 @@ def test_cleanup_from_target_worktree_uses_primary_head_for_branch_safety(tmp_pa
     repo = _make_primary(tmp_path)
     feature_path = _add_feature_worktree(repo, tmp_path)
 
-    payload = lib.run_cleanup(feature_path, target_path=feature_path, delete_merged_branch=True, yes=True)
+    payload = lib.run_cleanup(
+        feature_path, target_path=feature_path, delete_merged_branch=True, yes=True
+    )
 
     assert payload["status"] == lib.FAIL
     assert payload["repo_root"] == str(repo.resolve())
@@ -97,7 +99,9 @@ def test_cleanup_from_target_worktree_executes_from_primary_after_merge(tmp_path
     feature_path = _add_feature_worktree(repo, tmp_path)
     _git("merge", "--no-ff", "feature", "-m", "merge feature", cwd=repo)
 
-    payload = lib.run_cleanup(feature_path, target_path=feature_path, delete_merged_branch=True, yes=True)
+    payload = lib.run_cleanup(
+        feature_path, target_path=feature_path, delete_merged_branch=True, yes=True
+    )
 
     assert payload["status"] == lib.PASS, payload
     assert payload["repo_root"] == str(repo.resolve())

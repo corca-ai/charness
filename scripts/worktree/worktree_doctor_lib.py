@@ -4,7 +4,21 @@ import time
 from pathlib import Path
 from typing import Any
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _adapter_lib_module = import_repo_module(__file__, "scripts.adapter_lib")
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
@@ -13,7 +27,7 @@ TIMEOUT_EXIT_CODE = _subprocess_guard.TIMEOUT_EXIT_CODE
 load_yaml_file = _adapter_lib_module.load_yaml_file
 validate_adapter_version = _adapter_lib_module.validate_adapter_version
 
-_state = import_repo_module(__file__, "scripts.worktree_doctor_state")
+_state = import_repo_module(__file__, "scripts.worktree.worktree_doctor_state")
 CANONICAL_CHECK_IDS = _state.CANONICAL_CHECK_IDS
 CheckResult = _state.CheckResult
 CommandResult = _state.CommandResult
@@ -28,7 +42,7 @@ aggregate_status = _state.aggregate_status
 now_iso = _state.now_iso
 tail = _state.tail
 
-_checks = import_repo_module(__file__, "scripts.worktree_doctor_checks")
+_checks = import_repo_module(__file__, "scripts.worktree.worktree_doctor_checks")
 run_canonical_checks = _checks.run_canonical_checks
 run_canonical_checks_with_facts = _checks.run_canonical_checks_with_facts
 run_manifest_doctor_checks = _checks.run_manifest_doctor_checks

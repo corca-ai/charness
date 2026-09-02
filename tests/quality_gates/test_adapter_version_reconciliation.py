@@ -121,7 +121,7 @@ EXEMPT_SITES: tuple[tuple[str, tuple[str, ...], tuple[str, ...], str], ...] = (
     ),
     (
         "worktree_doctor",
-        ("scripts/worktree_doctor_lib.py",),
+        ("scripts/worktree/worktree_doctor_lib.py",),
         ("tests/charness_cli/test_worktree_doctor.py::"
          "test_manifest_version_is_reconciled_by_the_shared_check",),
         "validates `.agents/worktree-adapter.yaml`, whose `prepare.commands[].argv` this "

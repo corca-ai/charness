@@ -6,12 +6,26 @@ import argparse
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_lib = import_repo_module(__file__, "scripts.worktree_cleanup_lib")
+_lib = import_repo_module(__file__, "scripts.worktree.worktree_cleanup_lib")
 run_cleanup = _lib.run_cleanup
 PASS = _lib.PASS
 
@@ -21,7 +35,9 @@ def main() -> int:
         description="Safely remove a registered git worktree and optionally delete its merged local branch."
     )
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--path", type=Path, required=True, help="Registered worktree path to remove.")
+    parser.add_argument(
+        "--path", type=Path, required=True, help="Registered worktree path to remove."
+    )
     parser.add_argument(
         "--delete-merged-branch",
         action="store_true",
@@ -32,8 +48,14 @@ def main() -> int:
         default="HEAD",
         help="Local ref that must contain the target branch before branch deletion; defaults to HEAD.",
     )
-    parser.add_argument("--yes", action="store_true", help="Execute the planned cleanup. Defaults to dry-run.")
-    parser.add_argument("--force", action="store_true", help="Pass --force to git worktree remove for dirty targets.")
+    parser.add_argument(
+        "--yes", action="store_true", help="Execute the planned cleanup. Defaults to dry-run."
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Pass --force to git worktree remove for dirty targets.",
+    )
     args = parser.parse_args()
 
     payload = run_cleanup(

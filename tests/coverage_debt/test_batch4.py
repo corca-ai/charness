@@ -31,7 +31,7 @@ DRIFT = load_script_module("batch4_check_upstream_support_drift", ROOT / "script
 CLASSIFY_PUSH_DIFF = load_script_module("batch4_classify_push_diff", ROOT / "scripts/classify_push_diff.py")
 GATHER = load_script_module("batch4_gather_public_url", ROOT / "skills/public/gather/scripts/gather_public_url.py")
 PRESCRIBED = load_script_module("batch4_check_prescribed_skill_executed", ROOT / "scripts/gates/check_prescribed_skill_executed.py")
-WORKTREE_AUDIT = load_script_module("batch4_worktree_audit", ROOT / "scripts/worktree_audit.py")
+WORKTREE_AUDIT = load_script_module("batch4_worktree_audit", ROOT / "scripts/worktree/worktree_audit.py")
 BOOTSTRAP_RUNTIME = load_script_module("batch4_bootstrap_runtime", ROOT / "scripts/core/bootstrap_runtime.py")
 UPDATE_TOOLS = load_script_module("batch4_update_tools", ROOT / "scripts/update_tools.py")
 BOOTSTRAP_PREVIEW = load_script_module(
@@ -414,7 +414,7 @@ def test_prescribed_gate_refuses_a_malformed_evidence_argument(tmp_path: Path) -
 
 
 # --------------------------------------------------------------------------- #
-# scripts/worktree_audit.py
+# scripts/worktree/worktree_audit.py
 # --------------------------------------------------------------------------- #
 
 

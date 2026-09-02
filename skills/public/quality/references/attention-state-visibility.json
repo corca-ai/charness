@@ -463,7 +463,7 @@
       ],
       "rationale": "The validator fails current artifacts missing prose-review engagement and explicitly reports grandfathered artifacts."
     },
-    "scripts/worktree_audit_lib.py": {
+    "scripts/worktree/worktree_audit_lib.py": {
       "states": [
         "skipped"
       ],
@@ -476,7 +476,7 @@
       ],
       "rationale": "Worktree audit includes skipped counts in summaries."
     },
-    "scripts/worktree_cleanup_lib.py": {
+    "scripts/worktree/worktree_cleanup_lib.py": {
       "states": [
         "skipped"
       ],
@@ -489,7 +489,7 @@
       ],
       "rationale": "Cleanup actions report skipped action state and reason in the action payload."
     },
-    "scripts/worktree_doctor_lib.py": {
+    "scripts/worktree/worktree_doctor_lib.py": {
       "states": [
         "skipped"
       ],
@@ -502,7 +502,7 @@
       ],
       "rationale": "Worktree doctor renders skipped checks in operator output."
     },
-    "scripts/worktree_doctor_state.py": {
+    "scripts/worktree/worktree_doctor_state.py": {
       "states": [
         "skipped"
       ],

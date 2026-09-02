@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import checkout_view
-from scripts.checkout_view import FactsCheckout, GitCheckout
+from scripts.worktree import checkout_view
+from scripts.worktree.checkout_view import FactsCheckout, GitCheckout
 from scripts.core.git_status_snapshot import GitStatusError
 from scripts.core.git_status_snapshot import capture as capture_status
 from scripts.core.git_status_snapshot import parse as parse_status

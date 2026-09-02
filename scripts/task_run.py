@@ -20,8 +20,8 @@ from scripts.task_run_state import (
     _execution_state,
 )
 
-_worktree = import_repo_module(__file__, "scripts.worktree_create_lib")
-_exec = import_repo_module(__file__, "scripts.worktree_exec_lib")
+_worktree = import_repo_module(__file__, "scripts.worktree.worktree_create_lib")
+_exec = import_repo_module(__file__, "scripts.worktree.worktree_exec_lib")
 
 PASS = _support.PASS
 FAIL = _support.FAIL

@@ -124,7 +124,7 @@ def test_worktree_validation_refuses_inside_and_existing_paths(tmp_path: Path) -
 def test_collect_populations_refuses_malformed_and_tracks_rename_destination(
     tmp_path: Path,
 ) -> None:
-    from scripts.checkout_view import FactsCheckout
+    from scripts.worktree.checkout_view import FactsCheckout
     from scripts.core.git_status_snapshot import GitStatusError
     from scripts.core.git_status_snapshot import parse as parse_status
 
@@ -154,7 +154,7 @@ def test_collect_populations_refuses_malformed_and_tracks_rename_destination(
 def test_terminal_population_snapshot_keeps_head_branch_and_rename_paths(
     tmp_path: Path,
 ) -> None:
-    from scripts.checkout_view import FactsCheckout
+    from scripts.worktree.checkout_view import FactsCheckout
     from scripts.core.git_status_snapshot import parse as parse_status
 
     view = FactsCheckout(

@@ -6,14 +6,31 @@ import argparse
 import sys
 from pathlib import Path
 
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 _EARLY_BYTECODE_GUARD = not sys.dont_write_bytecode
 if _EARLY_BYTECODE_GUARD:
     # The target is only known after argparse. Do not let an inherited local
     # prefix write the launcher/importer caches into that target in the meantime.
     sys.dont_write_bytecode = True
 
-from runtime_bootstrap import configure_runtime_environment, import_repo_module  # noqa: E402
-from yaml_output import emit_yaml  # noqa: E402
+from scripts.runtime_bootstrap import (  # noqa: E402
+    configure_runtime_environment,
+    import_repo_module,
+)
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 
 def main() -> int:
@@ -33,7 +50,7 @@ def main() -> int:
         command = command[1:]
     try:
         configure_runtime_environment(args.repo_root)
-        lib = import_repo_module(__file__, "scripts.worktree_exec_lib")
+        lib = import_repo_module(__file__, "scripts.worktree.worktree_exec_lib")
         return lib.run_exec(args.repo_root, command, allow_main=args.allow_main)
     except (RuntimeError, ImportError, OSError) as exc:
         emit_yaml(

@@ -21,7 +21,7 @@ from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from runtime_bootstrap import import_repo_module
-from scripts.checkout_view import GitCheckout
+from scripts.worktree.checkout_view import GitCheckout
 from scripts.core.git_status_snapshot import GitStatusError
 
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")

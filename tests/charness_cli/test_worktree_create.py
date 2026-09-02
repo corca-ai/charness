@@ -7,7 +7,7 @@ from pathlib import Path
 
 import yaml
 
-from scripts import worktree_create_lib as lib
+from scripts.worktree import worktree_create_lib as lib
 from tests.charness_cli.worktree_fixtures import copy_worktree_seed
 
 from .support import run_cli_path
@@ -113,7 +113,9 @@ def test_create_prepare_runs_adapter_and_returns_pass(tmp_path: Path, monkeypatc
     assert payload["doctor"]["status"] == "pass"
 
 
-def test_create_with_failing_prepare_carries_recovering_next_step(tmp_path: Path, monkeypatch) -> None:
+def test_create_with_failing_prepare_carries_recovering_next_step(
+    tmp_path: Path, monkeypatch
+) -> None:
     repo = _make_primary(tmp_path)
     target = tmp_path / "prep-fail"
     monkeypatch.setattr(
@@ -122,7 +124,9 @@ def test_create_with_failing_prepare_carries_recovering_next_step(tmp_path: Path
         lambda path, **_kwargs: {"status": "fail", "next_step": None, "doctor": {"status": "fail"}},
     )
 
-    payload = lib.run_create(repo, target_path=target, branch="prep-fail", base="main", prepare=True)
+    payload = lib.run_create(
+        repo, target_path=target, branch="prep-fail", base="main", prepare=True
+    )
 
     assert payload["status"] == lib.FAIL
     assert payload["next_step"] == "Fix prepare failures, then re-run `charness worktree prepare`."
@@ -231,15 +235,19 @@ def test_create_requires_isolation_of_the_worktree_it_just_made(
     monkeypatch.setattr(lib._doctor_lib, "run_doctor", recording_doctor)
 
     payload = lib.run_create(
-        repo_root=repo, target_path=tmp_path / "wt", branch="slice", base=None,
-        detach=False, prepare=False, dry_run=False, force=False,
+        repo_root=repo,
+        target_path=tmp_path / "wt",
+        branch="slice",
+        base=None,
+        detach=False,
+        prepare=False,
+        dry_run=False,
+        force=False,
     )
 
     assert payload["created"] is True
     assert asked == [True], "creation must assert isolation of the worktree it just made"
-    check = next(
-        item for item in payload["doctor"]["checks"] if item["id"] == "worktree_isolation"
-    )
+    check = next(item for item in payload["doctor"]["checks"] if item["id"] == "worktree_isolation")
     assert check["status"] == "pass"
 
 
@@ -260,8 +268,14 @@ def test_the_prepare_path_does_not_discard_the_isolation_requirement(
     monkeypatch.setattr(lib._doctor_lib, "run_doctor", recording_doctor)
 
     lib.run_create(
-        repo_root=repo, target_path=tmp_path / "wt", branch="slice", base=None,
-        detach=False, prepare=True, dry_run=False, force=False,
+        repo_root=repo,
+        target_path=tmp_path / "wt",
+        branch="slice",
+        base=None,
+        detach=False,
+        prepare=True,
+        dry_run=False,
+        force=False,
     )
 
     assert asked, "no doctor run was observed"

@@ -523,7 +523,7 @@ def test_unreadable_tracked_membership_reports_no_answer(
     would report a whole file as added for a file that is merely unchanged.
     """
     monkeypatch.setattr(
-        "scripts.checkout_view.path_is_tracked",
+        "scripts.worktree.checkout_view.path_is_tracked",
         lambda *_args, **_kwargs: None,
     )
     assert advisory.added_lines_vs_head(git_repo, "scripts/seed.py") is None

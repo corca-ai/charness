@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from scripts.worktree_doctor_state import (
+from scripts.worktree.worktree_doctor_state import (
     DEFAULT_DOCTOR_TIMEOUT_SECONDS,
     DEFAULT_PREPARE_TIMEOUT_SECONDS,
     FAIL,

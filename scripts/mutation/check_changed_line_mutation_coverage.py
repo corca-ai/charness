@@ -101,7 +101,7 @@ from scripts.gates_support.changed_line_verdict_codes import (  # noqa: E402
     UNESTABLISHED_EXIT,
     _verdict_exit_code,
 )
-from scripts.checkout_view import GitCheckout  # noqa: E402
+from scripts.worktree.checkout_view import GitCheckout  # noqa: E402
 from scripts.mutation.mutation_changed_files_lib import (  # noqa: E402
     changed_line_coverage_marker_path,
     changed_pool_fingerprint,

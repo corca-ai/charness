@@ -133,7 +133,7 @@ def test_git_output_returns_none_when_git_cannot_be_run(tmp_path: Path, monkeypa
     """`worktree_doctor_checks._git_output` — the
     `(FileNotFoundError, TimeoutExpired, NotADirectoryError)` arm. A doctor that
     raises instead of reporting `None` turns a missing git into a crash."""
-    checks = import_repo_module(_ANCHOR, "scripts.worktree_doctor_checks")
+    checks = import_repo_module(_ANCHOR, "scripts.worktree.worktree_doctor_checks")
 
     def explode(*_args, **_kwargs):
         raise FileNotFoundError("git")
@@ -149,7 +149,7 @@ def test_worktree_doctor_main_runs_and_its_require_isolation_flag_parses(
     """`worktree_doctor.main` — the `--require-isolation` argument and the
     `run_doctor` call. The flag is the mechanism the release contract names for
     handing a write-capable agent a checkout; nothing executed `main` at all."""
-    doctor = import_repo_module(_ANCHOR, "scripts.worktree_doctor")
+    doctor = import_repo_module(_ANCHOR, "scripts.worktree.worktree_doctor")
     seen: dict[str, object] = {}
 
     def fake_run_doctor(repo_root, *, require_isolation):
@@ -205,7 +205,7 @@ def test_the_gate_cli_module_puts_the_repo_root_on_the_path_when_absent(monkeypa
     assert callable(module.parse_args)
 
 
-@pytest.mark.parametrize("module_name", ["scripts.worktree_doctor_checks"])
+@pytest.mark.parametrize("module_name", ["scripts.worktree.worktree_doctor_checks"])
 def test_subprocess_is_reachable_for_the_arms_above(module_name: str) -> None:
     """Guards the fake seam: the module must bind the shared process primitive."""
     module = import_repo_module(_ANCHOR, module_name)

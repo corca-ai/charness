@@ -6,12 +6,26 @@ import argparse
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_lib = import_repo_module(__file__, "scripts.worktree_audit_lib")
+_lib = import_repo_module(__file__, "scripts.worktree.worktree_audit_lib")
 run_audit = _lib.run_audit
 run_prune = _lib.run_prune
 PASS = _lib.PASS
@@ -41,7 +55,9 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    audit_payload = run_audit(args.repo_root, stale_days=args.stale_days, include_doctor=args.doctor)
+    audit_payload = run_audit(
+        args.repo_root, stale_days=args.stale_days, include_doctor=args.doctor
+    )
     emit_yaml(audit_payload)
 
     if audit_payload.get("status") == PASS:

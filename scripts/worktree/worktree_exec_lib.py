@@ -4,13 +4,27 @@ import os
 from pathlib import Path
 from typing import MutableMapping
 
-from runtime_bootstrap import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import (  # noqa: E402
     MANAGED_RUNTIME_PATH_KEYS,
     configure_runtime_environment,
     import_repo_module,
 )
 
-_doctor_checks = import_repo_module(__file__, "scripts.worktree_doctor_checks")
+_doctor_checks = import_repo_module(__file__, "scripts.worktree.worktree_doctor_checks")
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 git_checkout_facts = _doctor_checks.git_checkout_facts

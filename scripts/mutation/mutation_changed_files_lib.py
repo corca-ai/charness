@@ -13,7 +13,7 @@ import sys
 from collections.abc import Mapping
 from pathlib import Path
 
-from scripts.checkout_view import CheckoutView, GitCheckout  # noqa: E402
+from scripts.worktree.checkout_view import CheckoutView, GitCheckout  # noqa: E402
 from scripts.core.git_status_snapshot import GitStatusError  # noqa: E402
 from scripts.mutation.mutation_changed_line_diff import (  # noqa: E402
     changed_line_numbers_for_paths as _batch_changed_line_numbers_for_paths,

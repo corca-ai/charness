@@ -6,12 +6,26 @@ import argparse
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_lib = import_repo_module(__file__, "scripts.worktree_create_lib")
+_lib = import_repo_module(__file__, "scripts.worktree.worktree_create_lib")
 run_create = _lib.run_create
 PASS = _lib.PASS
 WARN = _lib.WARN
@@ -26,8 +40,14 @@ def main() -> int:
     parser.add_argument("--branch", help="Create a new local branch for the worktree.")
     parser.add_argument("--base", help="Base ref passed to `git worktree add` after the path.")
     parser.add_argument("--detach", action="store_true", help="Create a detached-HEAD worktree.")
-    parser.add_argument("--prepare", action="store_true", help="Run `charness worktree prepare` after creation.")
-    parser.add_argument("--dry-run", action="store_true", help="Print the planned git command without creating the worktree.")
+    parser.add_argument(
+        "--prepare", action="store_true", help="Run `charness worktree prepare` after creation."
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the planned git command without creating the worktree.",
+    )
     parser.add_argument("--force", action="store_true", help="Pass --force to `git worktree add`.")
     args = parser.parse_args()
 

@@ -6,12 +6,12 @@ import sys
 import time
 from pathlib import Path
 
-from scripts import worktree_audit_lib as lib
+from scripts.worktree import worktree_audit_lib as lib
 from tests.charness_cli.worktree_fixtures import copy_worktree_seed
 
 from .support import run_cli_path
 
-SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "worktree_audit.py"
+SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "worktree" / "worktree_audit.py"
 
 
 def _git(*args: str, cwd: Path) -> None:
@@ -153,7 +153,9 @@ def test_audit_classifies_stale_detached_head(tmp_path: Path) -> None:
     os.utime(stale_path, (old_time, old_time))
 
     payload = lib.run_audit(repo, stale_days=14)
-    stale_entries = [e for e in payload["entries"] if e["classification"] == lib.CLASSIFICATION_STALE]
+    stale_entries = [
+        e for e in payload["entries"] if e["classification"] == lib.CLASSIFICATION_STALE
+    ]
     assert len(stale_entries) == 1
     assert stale_entries[0]["age_days"] >= 14
     assert payload["status"] == lib.WARN

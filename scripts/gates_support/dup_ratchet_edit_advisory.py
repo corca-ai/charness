@@ -206,7 +206,7 @@ def added_lines_vs_head(repo_root: Path, relpath: str) -> int | None:
     target = repo_root / relpath
     if not target.is_file():
         return None
-    from scripts.checkout_view import GitCheckout, path_is_tracked
+    from scripts.worktree.checkout_view import GitCheckout, path_is_tracked
 
     tracked = path_is_tracked(GitCheckout(repo_root), relpath)
     if tracked is None:
