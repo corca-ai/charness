@@ -23,7 +23,6 @@ import argparse
 import contextlib
 import inspect
 import io
-import json
 import os
 import subprocess
 import sys
@@ -40,6 +39,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 _path_portability = import_repo_module(__file__, "scripts.path_portability_lib")
 _artifact_run_scope = import_repo_module(__file__, "scripts.artifact_run_scope")
 _critique_paths = import_repo_module(__file__, "scripts.critique_artifact_paths")
+_shape_source = import_repo_module(__file__, "scripts.artifact_shape_source")
 safe_repo_relative_path = _artifact_run_scope.safe_repo_relative_path
 is_critique_round_record = _critique_paths.is_critique_round_record
 
@@ -275,114 +275,41 @@ def _validator_argv_path(validator: str) -> str:
 
 
 def _run_shape_command(repo_root: Path, surface: Surface, *, stub: bool) -> tuple[str, int]:
-    """Run a surface's ``shape_command`` (a skill script that prints the required
-    shape from the owning validator's live constants). ``--stub`` asks it for a
-    starter. Returns ``(text, returncode)``."""
-    source, error = _resolve_shape_source(surface.shape_command[0])
-    if source is None:
-        return (
-            f"(could not render shape source {surface.shape_command[0]}: {error})",
-            1,
-        )
-    script_args = [*surface.shape_command[1:], "--repo-root", str(repo_root)]
-    if stub:
-        script_args.append("--stub")
-    proc = _run_repo_script(repo_root, source, script_args)
-    if proc.returncode == 0 and proc.stdout.strip():
-        return proc.stdout, 0
-    return (
-        f"(could not render shape source {surface.shape_command[0]}: "
-        f"{proc.stderr.strip() or 'no output'})",
-        1,
+    return _shape_source.run_shape_command(
+        repo_root,
+        surface,
+        stub=stub,
+        resolve_shape_source=_resolve_shape_source,
+        run_repo_script=_run_repo_script,
     )
 
 
 def _parse_structured_stdout(text: str) -> Any:
-    """Parse a repo-owned script's structured envelope, or None when it is not one.
-
-    Repo-owned scripts emit YAML, so this reads YAML. JSON stays parseable through
-    the same call (it is a YAML subset), and the JSON branch below is the mirror of
-    `yaml_output.render_yaml`'s own no-PyYAML fallback: in an environment without
-    PyYAML the producer emits JSON, so the consumer has to be able to read it.
-    Anything that is not a structured document (a scaffold printing plain markdown)
-    returns a non-mapping or None and the caller falls through to the raw text.
-    """
-    try:
-        import yaml
-    except ImportError:
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError:
-            return None
-    try:
-        return yaml.safe_load(text)
-    except yaml.YAMLError:
-        return None
+    return _shape_source.parse_structured_stdout(text)
 
 
 def _run_scaffold_template(repo_root: Path, scaffold: str) -> tuple[str, int]:
-    """Run a scaffold script and return the rendered artifact text.
-
-    Most scaffolds (critique/ideation/retro/debug/quality) go through
-    ``scripts/scaffold_artifact_lib.emit_payload_main``, which emits one JSON
-    envelope with a `template` key holding the real markdown; unwrap that key
-    rather than treating the raw JSON as the artifact text (the prior behavior
-    here) — writing the JSON blob in place of markdown only round-tripped
-    through an owning validator by coincidence, as long as no enforced marker
-    string leaked into the JSON's structural text. Presence of the literal
-    string `parent-delegated` in a scaffolded placeholder exposed this. A
-    scaffold outside that convention (e.g. `goal_artifact_early_close_report.py`,
-    which prints plain markdown) does not parse to an enveloped mapping and falls
-    through to the raw stdout unchanged — this stays a strict improvement, never a
-    new failure mode.
-    """
-    source, error = _resolve_shape_source(scaffold)
-    if source is None:
-        return f"(could not render scaffold {scaffold}: {error})", 1
-    proc = _run_repo_script(repo_root, source, ["--repo-root", str(repo_root)])
-    if proc.returncode != 0 or not proc.stdout.strip():
-        return f"(could not render scaffold {scaffold}: {proc.stderr.strip() or 'no output'})", 1
-    payload = _parse_structured_stdout(proc.stdout)
-    template = payload.get("template") if isinstance(payload, dict) else None
-    return (template, 0) if isinstance(template, str) else (proc.stdout, 0)
+    return _shape_source.run_scaffold_template(
+        repo_root,
+        scaffold,
+        resolve_shape_source=_resolve_shape_source,
+        run_repo_script=_run_repo_script,
+    )
 
 
 def _shape_text(repo_root: Path, surface: Surface) -> str:
-    if surface.scaffold:
-        return _run_scaffold_template(repo_root, surface.scaffold)[0]
-    # Non-scaffold sources accumulate: a surface may pair a template block (the
-    # lines to author into) with a shape_command (the enforced FORMS read live
-    # from the owning validator). Each present source contributes one part.
-    parts: list[str] = []
-    if surface.template_section:
-        tpl_rel, _, heading = surface.template_section.partition("|")
-        tpl, error = _resolve_shape_source(tpl_rel)
-        parts.append(
-            _extract_section(tpl.read_text(encoding="utf-8"), heading)
-            if tpl is not None
-            else f"(template {tpl_rel} not found: {error})"
-        )
-    if surface.shape_command:
-        parts.append(_run_shape_command(repo_root, surface, stub=False)[0])
-    if not parts:
-        return "(no shape source registered)"
-    return "\n\n".join(part.rstrip() for part in parts)
+    return _shape_source.shape_text(
+        repo_root,
+        surface,
+        resolve_shape_source=_resolve_shape_source,
+        run_repo_script=_run_repo_script,
+        run_scaffold_template=_run_scaffold_template,
+        run_shape_command=_run_shape_command,
+    )
 
 
 def _extract_section(text: str, heading: str) -> str:
-    lines = text.splitlines()
-    out: list[str] = []
-    capturing = False
-    for line in lines:
-        if line.strip() == heading:
-            capturing = True
-            out.append(line)
-            continue
-        if capturing and line.startswith("## "):
-            break
-        if capturing:
-            out.append(line)
-    return "\n".join(out).rstrip() + "\n" if out else f"(section {heading} not found in template)"
+    return _shape_source.extract_section(text, heading)
 
 
 # Audit row C6's recorded residual, for BOTH arms below (`describe` and
