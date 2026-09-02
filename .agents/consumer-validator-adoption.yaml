@@ -21,7 +21,5 @@ validators:
     wired: true
   - id: quality-artifact
     wired: true
-  - id: quality-closeout-contract
-    wired: true
   - id: retro-artifact
     wired: true

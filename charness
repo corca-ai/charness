@@ -2600,7 +2600,7 @@ def install_surface(
     cli_path: Path | None,
     update: bool,
 ) -> dict[str, object]:
-    invoke_repo_script(repo_root, "tools/validate_packaging.py", "--repo-root", str(repo_root))
+    invoke_repo_script(repo_root, "scripts/validate_packaging.py", "--repo-root", str(repo_root))
     invoke_repo_script(repo_root, "scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo_root))
     install_output = invoke_repo_script(
         repo_root,
