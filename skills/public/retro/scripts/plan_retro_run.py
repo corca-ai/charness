@@ -61,7 +61,14 @@ ON_DEMAND_REFERENCE_READS = (
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
@@ -83,6 +90,7 @@ _state = SKILL_RUNTIME.load_local_skill_module(__file__, "retro_artifact_state")
 _artifact_summary = _state._artifact_summary
 _gate_builder = SKILL_RUNTIME.load_local_skill_module(__file__, "retro_plan_gates")
 _trigger = SKILL_RUNTIME.load_local_skill_module(__file__, "retro_plan_trigger")
+_READS = SKILL_RUNTIME.load_local_skill_module(__file__, "retro_plan_reads")
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(
         str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py")
@@ -95,27 +103,7 @@ def _read(path: str, kind: str, why: str, *, base: str) -> dict[str, str]:
 
 
 def _repo_evidence_read(repo_root: Path, path: str) -> dict[str, Any]:
-    """Describe optional adapter evidence without pretending directories are files.
-
-    Availability and path KIND only. This function used to stat and disclose a
-    measurement itself; layering the shared `measure_reads` over that produced an
-    item carrying BOTH `size_bytes` and an `unavailable_reason` whenever the two
-    resolvers disagreed -- an adapter naming an evidence path outside the repo root
-    made the whole planner raise instead of planning. One measurer, at the envelope.
-    Found by a bounded round-1 reviewer of the read-measurement mandate.
-    """
-    item: dict[str, Any] = _read(
-        path,
-        "evidence",
-        "adapter-declared local evidence; inspect when available, then apply its repo-owned contract",
-        base="repo",
-    )
-    candidate = repo_root / path
-    item["available"] = candidate.exists()
-    item["path_kind"] = (
-        "directory" if candidate.is_dir() else "file" if candidate.is_file() else "missing"
-    )
-    return item
+    return _READS.repo_evidence_read(repo_root, path, read=_read)
 
 
 _packet = ENVELOPE.gate_packet
@@ -226,58 +214,13 @@ def _required_reads(
     artifact: dict[str, Any],
     lens_brief: dict[str, str],
 ) -> list[dict[str, str]]:
-    reads: list[dict[str, str]] = []
-    # The counterfactual is mandatory in every retro and the lens catalog + domain
-    # triggers are not inlined in SKILL.md, so expert-lens.md is an unconditional
-    # floor. The why carries the work-class-specific lens brief.
-    reads.append(_read("references/expert-lens.md", "reference", lens_brief["why"], base="skill"))
-
-    if artifact["exists"]:
-        reads.append(
-            _read(
-                artifact["path"],
-                "artifact",
-                "today's retro already started; continue it",
-                base="repo",
-            )
-        )
-    else:
-        reads.append(
-            _read(
-                "scripts/scaffold_retro_artifact.py",
-                "script",
-                "no retro artifact yet; scaffold before writing",
-                base="skill",
-            )
-        )
-
-    if not adapter.get("found") or not adapter.get("valid") or adapter.get("errors"):
-        reads.append(
-            _read(
-                "references/adapter-contract.md",
-                "reference",
-                "adapter is missing or invalid; repair before relying on adapter paths",
-                base="skill",
-            )
-        )
-
-    already_named = {str(item["path"]) for item in reads}
-    for evidence_path in adapter["data"].get("evidence_paths", []):
-        path = str(evidence_path)
-        if path and path not in already_named:
-            reads.append(_repo_evidence_read(repo_root, path))
-            already_named.add(path)
-    summary_path = str(adapter["data"].get("summary_path") or "")
-    if summary_path and (repo_root / summary_path).is_file():
-        reads.append(
-            _read(
-                summary_path,
-                "artifact",
-                "recent-lessons digest to compare this retro's window against",
-                base="repo",
-            )
-        )
-    return reads
+    return _READS.required_reads(
+        repo_root=repo_root,
+        adapter=adapter,
+        artifact=artifact,
+        lens_brief=lens_brief,
+        read=_read,
+    )
 
 
 def _repo_module_payload(module_name: str, build, *, fallback: dict[str, Any]) -> dict[str, Any]:

@@ -105,6 +105,8 @@ _ISSUE_BACKEND = _load_local("issue_backend", "issue_verify_issue_backend")
 _ANSWER_REPO = _ISSUE_BACKEND.answer_repo
 _ISSUE_IDENTITY_MISMATCHES = _ISSUE_BACKEND.issue_identity_mismatches
 GIT_TIMEOUT_SECONDS = 10
+_CARRIER = _load_local("issue_verify_closeout_carrier")
+_AUTHORIZATION = _load_local("issue_verify_closeout_authorization")
 
 CARRIERS = ("direct-commit", "pr-body", "manual-fallback")
 # `consolidated` is here because a classification absent from THIS tuple is not a
@@ -151,38 +153,17 @@ strip_code_fences = _BODY._strip_code_fences
 def _read_carrier_body(
     repo_root: Path, *, carrier: str, commit_ref: str | None, body_file: Path | None
 ) -> str:
-    if carrier == "direct-commit":
-        if not commit_ref:
-            raise RuntimeError("direct-commit carrier requires --commit-ref")
-        result = run_process(
-            ["git", "show", "-s", "--format=%B", commit_ref],
-            cwd=repo_root,
-            timeout_seconds=GIT_TIMEOUT_SECONDS,
-        )
-        if result.returncode != 0:
-            raise RuntimeError(
-                f"unable to read commit body for {commit_ref!r}: {result.stderr.strip()!r}"
-            )
-        return result.stdout
-    if body_file is None:
-        raise RuntimeError(f"{carrier} carrier requires --body-file")
-    if not body_file.is_file():
-        raise RuntimeError(f"carrier body file not found: {body_file}")
-    return body_file.read_text(encoding="utf-8")
+    return _CARRIER.read_carrier_body(
+        repo_root,
+        carrier=carrier,
+        commit_ref=commit_ref,
+        body_file=body_file,
+        run_process=run_process,
+        timeout_seconds=GIT_TIMEOUT_SECONDS,
+    )
 
 
-def _manual_comment_found(body: str, state_payload: dict[str, Any]) -> bool:
-    expected = body.strip()
-    comments = state_payload.get("comments")
-    if not isinstance(comments, list):
-        return False
-    for comment in comments:
-        if not isinstance(comment, dict):
-            continue
-        comment_body = str(comment.get("body", "")).strip()
-        if comment_body == expected:
-            return True
-    return False
+_manual_comment_found = _CARRIER.manual_comment_found
 
 
 def _validate_verify_inputs(
@@ -213,40 +194,14 @@ def _validate_verify_inputs(
 def _authorization_record(
     repo_root: Path, repo: str, numbers: list[int], carrier: str
 ) -> dict[str, Any]:
-    """Attach the authorization record WITHOUT gating on it. Deliberate asymmetry.
-
-    Every pre-close ingress refuses on this record. This one does not, and the reason
-    is that `verify-closeout --expect-state CLOSED` is a post-publication READBACK: by
-    the time it runs, the close has already happened. Refusing here would suppress the
-    one channel that reports whether the irreversible act landed — trading a
-    protection that no longer has anything to protect for the loss of the confirmation
-    the closeout floor actually requires.
-
-    So the record is carried for the reader, and the teeth stay upstream where a
-    refusal can still prevent something. This is reported state, not a verdict.
-    """
-    bootstrap = _resolve_bootstrap()
-    if bootstrap is None:
-        return {
-            "applies": False,
-            "authorized": True,
-            "crosswalk_status": "authorization_module_unavailable",
-        }
-    runtime = SimpleNamespace(**runpy.run_path(str(bootstrap)))
-    module = runtime.load_local_skill_module(__file__, "issue_closeout_authorization")
-    record = module.authorize(
-        invoked_targets=[
-            {"repository": repo, "issue_number": number, "source": f"verify:{carrier}"}
-            for number in numbers
-        ],
-        carrier_targets=[],
-        carrier_source=f"verify-readback:{carrier}",
-        repo_root=repo_root,
+    return _AUTHORIZATION.authorization_record(
+        repo_root,
+        repo,
+        numbers,
+        carrier,
+        bootstrap=_resolve_bootstrap(),
+        caller_file=__file__,
     )
-    record["gating"] = (
-        "reported-only: a post-publication readback cannot prevent a close that already happened"
-    )
-    return record
 
 
 def _ledger_field_reasons(body: str, missing_fields: list[str]) -> list[str]:
