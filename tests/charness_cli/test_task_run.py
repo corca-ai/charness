@@ -786,7 +786,7 @@ def test_task_run_grants_the_worktree_agents_dir_when_it_exists(tmp_path: Path) 
         f"printf '%s\\n' \"$@\" > {shlex.quote(os.fspath(captured_args))}",
     )
 
-    payload = _run(repo, executable, require_change=False)
+    payload = _run(repo, tmp_path, executable, require_change=False)
 
     args = captured_args.read_text(encoding="utf-8").splitlines()
     granted_dirs = [Path(args[index + 1]) for index, arg in enumerate(args) if arg == "--add-dir"]
