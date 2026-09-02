@@ -32,6 +32,7 @@ def _load_changed_path_owner():
     if spec is None or spec.loader is None:
         raise ImportError(f"Unable to load changed-path owner from {sibling}")
     module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module  # dataclasses resolve a class's module through sys.modules
     spec.loader.exec_module(module)
     return module
 

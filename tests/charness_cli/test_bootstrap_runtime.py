@@ -366,6 +366,7 @@ def test_init_sh_falls_back_to_python_when_python3_is_missing(tmp_path: Path) ->
     fixture_repo = tmp_path / "fixture-repo"
     (fixture_repo / "scripts").mkdir(parents=True)
     (fixture_repo / "packaging").mkdir(parents=True)
+    (fixture_repo / "scripts" / "core").mkdir(parents=True, exist_ok=True)
     (fixture_repo / "scripts" / "core" / "bootstrap_runtime.py").write_text("# fixture\n", encoding="utf-8")
     (fixture_repo / "charness").write_text("# fixture\n", encoding="utf-8")
     init_copy = tmp_path / "init.sh"

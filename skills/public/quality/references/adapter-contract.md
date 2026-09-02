@@ -537,7 +537,7 @@ Valid opt-in review rules:
   Fail when checked-in `references/` files are not discoverable from `SKILL.md`.
 
 The canonical quality path runs these rules through
-`$SKILL_DIR/scripts/validate_skill_ergonomics.py`; a repo may wire that helper
+`$SKILL_DIR/scripts/gates/validate_skill_ergonomics.py`; a repo may wire that helper
 behind its own `<repo-root>/scripts/` entrypoint. Bootstrap also treats invalid explicit
 rule values as an error instead of silently rewriting them to `[]`. When rules
 are configured, an empty checked-skill set is a failure; use

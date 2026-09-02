@@ -61,7 +61,7 @@ canonical adapter when the repo should own topology terms.
    - cold start, warm start, error recovery, and concrete failure cases
    - source/principal binding drift or prescribed-path self-test concerns when relevant
 3. Freeze the current consumer contract before editing an existing public skill.
-   - read the current reviewed dogfood case or scaffold it first with `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --detail`
+   - read the current reviewed dogfood case or scaffold it first with `python3 "$SKILL_DIR/../quality/scripts/gates/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --detail`
    - decide whether the slice claims `preserve` or `improve`; if `improve`,
      name the capability failure before changing the core trigger or behavior contract
    - when the change touches adapters, examples, bootstrap, first-touch docs,
@@ -122,7 +122,7 @@ canonical adapter when the repo should own topology terms.
    - for public-skill changes, run one realistic consumer prompt instead of
      stopping at producer-side validators; include missing, stale, and thin
      adapter states when adapters or repo-local defaults shape the first run
-   - use `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` to scaffold prompt, repo shape, expected artifact, and acceptance evidence
+   - use `python3 "$SKILL_DIR/../quality/scripts/gates/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` to scaffold prompt, repo shape, expected artifact, and acceptance evidence
    - trigger collision check against adjacent skills
    - path check for every file named in the skill
    - schema or example validation for any profile, preset, or manifest touched

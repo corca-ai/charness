@@ -226,7 +226,7 @@ def test_exported_preflight_resolves_flattened_scaffold_and_refuses_invalid_layo
     )
     consumer = tmp_path / "consumer"
     consumer.mkdir()
-    dispatcher = plugin_root / "scripts" / "check_artifact_surface_preflight.py"
+    dispatcher = plugin_root / "scripts" / "gates" / "check_artifact_surface_preflight.py"
     dispatcher_module = load_script_module("exported_check_artifact_surface_preflight", dispatcher)
 
     def run_dispatcher():
@@ -560,7 +560,7 @@ def test_module_main_guard_executes(monkeypatch) -> None:
     monkeypatch.setattr(sys, "argv", ["x", "--type", "critique"])
     with pytest.raises(SystemExit) as exc:
         runpy.run_path(
-            str(ROOT / "scripts" / "check_artifact_surface_preflight.py"), run_name="__main__"
+            str(ROOT / "scripts" / "gates" / "check_artifact_surface_preflight.py"), run_name="__main__"
         )
     assert exc.value.code == 0
 

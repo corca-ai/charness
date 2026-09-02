@@ -24,19 +24,17 @@ from pathlib import Path
 
 import pytest
 
-from scripts import (
-    checkout_view,
-    lesson_ledger_lib,
-    sibling_module_loader,
-)
-from scripts import git_checkout as checkout
-from scripts import git_status_snapshot as status_snapshot
 from scripts import prepush_quality_receipt as receipt
-from scripts import reviewed_input_identity as reviewed_identity
-from scripts import reviewed_input_nonblob as reviewed_nonblob
-from scripts import reviewed_input_worktree as reviewed_worktree
+from scripts.core import git_checkout as checkout
+from scripts.core import git_status_snapshot as status_snapshot
+from scripts.core import sibling_module_loader
+from scripts.lessons import lesson_ledger_lib
+from scripts.review import reviewed_input_identity as reviewed_identity
+from scripts.review import reviewed_input_nonblob as reviewed_nonblob
+from scripts.review import reviewed_input_worktree as reviewed_worktree
 from scripts.setup import setup_inspect_quality_lib
-from scripts.task_run.task_run import task_run, task_run_git
+from scripts.task_run import task_run, task_run_git
+from scripts.worktree import checkout_view
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.script_loader import load_script_module
 
@@ -804,19 +802,18 @@ def test_the_identity_builder_binds_the_sibling_loader_flat(
             del sys.modules[name]
 
 
-def test_the_premise_tree_observation_lists_the_index_without_the_package(
+def test_the_premise_tree_observation_lists_the_index_through_the_package(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """The premise observer resolves its listing owner flat and still reads the
-    index.
+    """The premise observer, loaded by path, still reads the index.
 
-    This one degrades INSIDE a function, not at import, so a broken fallback
-    would not fail loudly at startup -- the preflight would run and report an
-    empty index, which reads as "no protected path is tracked" and lets a premise
-    be recorded against a tree nobody listed.
+    Since the scripts/ packaging a nested script reaches its listing owner
+    through the `scripts` package that its root-walking shim puts on `sys.path`;
+    the flat "without the package" layout no longer exists for it. The claim
+    kept here is the one that matters: a by-path load reports the tracked index
+    rather than an empty one, which would read as "no protected path is tracked".
     """
     repo = install_committed_repo(tmp_path / "repo", {"tracked.py": "base\n"})
-    _without_the_scripts_package(monkeypatch)
     before = set(sys.modules)
     try:
         observation = load_script_module(

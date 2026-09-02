@@ -8,7 +8,7 @@ repo root from `skills/public/<skill>` and OVERSHOOTS from
 the command resolved in the authoring tree and nowhere else, silently, because
 both call sites ended in `2>/dev/null || true`.
 
-Reachable as `$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py` from any
+Reachable as `$SKILL_DIR/../../shared/scripts/gates_support/plan_risk_interrupt.py` from any
 skill package, in both layouts. See `authoring_script_shim` for why.
 """
 from __future__ import annotations

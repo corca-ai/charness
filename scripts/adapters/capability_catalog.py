@@ -14,13 +14,12 @@ def _load_repo_runtime_bootstrap():
     marker = ("scripts", "adapter_lib.py")
     parents = pathlib.Path(__file__).resolve().parents
     root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is None:
-        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
-    if str(root) not in sys.path:
+    if root is not None and str(root) not in sys.path:
         sys.path.insert(0, str(root))
 
 
 _load_repo_runtime_bootstrap()
+
 
 def _script_root_from_file() -> Path:
     script_path = Path(__file__).resolve()
@@ -29,7 +28,8 @@ def _script_root_from_file() -> Path:
             return parent
         if (parent / ".codex-plugin" / "plugin.json").is_file():
             return parent
-    return script_path.parent.parent
+    # No marker: a flat copy sits at <root>/scripts/x.py, a nested one at <root>/scripts/<pkg>/x.py.
+    return script_path.parents[1] if script_path.parent.name == "scripts" else script_path.parents[2]
 
 
 _script_root = _script_root_from_file()
@@ -93,7 +93,9 @@ def _consumer_validator_catalog(
         catalog_path = owner_root / check_consumer_validator_catalog.DEFAULT_CATALOG_REL
     else:
         package_root = owner_root
-        catalog_path = owner_root / "skills" / "quality" / "references" / "consumer-validator-catalog.yaml"
+        catalog_path = (
+            owner_root / "skills" / "quality" / "references" / "consumer-validator-catalog.yaml"
+        )
     try:
         return check_consumer_validator_catalog.validate_catalog(
             owner_root,
@@ -228,9 +230,11 @@ def main(argv: list[str] | None = None) -> int:
         emit_yaml({"error": str(exc), "repo_root": str(exc.repo_root)})
         return 2
     emit_yaml(payload)
-    if args.command == "resolve-skill-path" and payload.get(
-        "admission_status", "admitted" if payload.get("resolved_path") else None
-    ) != "admitted":
+    if (
+        args.command == "resolve-skill-path"
+        and payload.get("admission_status", "admitted" if payload.get("resolved_path") else None)
+        != "admitted"
+    ):
         return 1
     if args.command == "list" and catalog_is_blocked(payload):
         return 1

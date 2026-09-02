@@ -39,9 +39,7 @@ def _load_repo_runtime_bootstrap():
     marker = ("scripts", "adapter_lib.py")
     parents = pathlib.Path(__file__).resolve().parents
     root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is None:
-        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
-    if str(root) not in sys.path:
+    if root is not None and str(root) not in sys.path:
         sys.path.insert(0, str(root))
 
 
@@ -394,7 +392,9 @@ def documents_the_vocabulary(text: str) -> bool:
     return forms >= 2 and has_slot
 
 
-def check_disposition_referents(text: str, repo_root: Path) -> list[dict[str, str]]:
+def check_disposition_referents(
+    text: str, repo_root: Path, record_path: Path | None = None
+) -> list[dict[str, str]]:
     """Every referent defect in one disposition line or block.
 
     Returns a list of findings rather than raising, so a caller can attach them
@@ -422,6 +422,22 @@ def check_disposition_referents(text: str, repo_root: Path) -> list[dict[str, st
             }
         )
     for path in missing_paths(text, repo_root):
+        if record_path is not None and path_existed_at_record_commit(path, record_path, repo_root):
+            # A frozen record names the file where it lived when the record was
+            # written; a later move (scripts/ packaging) does not unmake that
+            # fact, and rewriting history to make a checker green is the failure
+            # this repo keeps refusing. Reported, never blocking.
+            findings.append(
+                {
+                    "kind": "moved-path-referent",
+                    "token": path,
+                    "detail": (
+                        f"`{path}` is not on disk today but existed when this record was last "
+                        "committed; the disposition recorded a fact at its time."
+                    ),
+                }
+            )
+            continue
         findings.append(
             {
                 "kind": "missing-path-referent",
@@ -433,3 +449,32 @@ def check_disposition_referents(text: str, repo_root: Path) -> list[dict[str, st
             }
         )
     return findings
+
+
+def path_existed_at_record_commit(path: str, record_path: Path, repo_root: Path) -> bool:
+    """Whether `path` was tracked at the last commit that touched `record_path`.
+
+    A frozen record names the file where it lived when the record was written;
+    a later move does not unmake that fact. An uncommitted or freshly edited
+    record has no such alibi: the path must exist now.
+    """
+    try:
+        relative = record_path.resolve().relative_to(repo_root.resolve()).as_posix()
+    except ValueError:
+        return False
+    try:
+        head = run_process(
+            ["git", "log", "-1", "--format=%H", "--", relative], cwd=repo_root, timeout_seconds=None
+        )
+        dirty = run_process(
+            ["git", "status", "--porcelain", "--", relative], cwd=repo_root, timeout_seconds=None
+        )
+    except OSError:
+        return False
+    commit = (head.stdout or "").strip()
+    if head.returncode != 0 or not commit or (dirty.stdout or "").strip():
+        return False
+    probe = run_process(
+        ["git", "cat-file", "-e", f"{commit}:{path}"], cwd=repo_root, timeout_seconds=None
+    )
+    return probe.returncode == 0

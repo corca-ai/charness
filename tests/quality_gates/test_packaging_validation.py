@@ -560,7 +560,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert (
         exported_scripts / "plugin_export" / "validate_packaging.py"
     ).exists()  # export machinery ships
-    assert (exported_scripts / "public_skill_dogfood_lib.py").is_file()
+    assert (exported_scripts / "gates_support" / "public_skill_dogfood_lib.py").is_file()
     assert (
         claude_root
         / "plugins"
@@ -568,7 +568,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
         / "skills"
         / "quality"
         / "scripts"
-        / "suggest_public_skill_dogfood.py"
+        / "suggest_public_skill_dogfood.py"  # sweep-keep: the skill's own script
     ).is_file()
     assert not (claude_root / "plugins" / "charness" / "skills" / "public").exists()
     assert not (claude_root / "plugins" / "charness" / "support" / "generated").exists()
@@ -719,7 +719,7 @@ def test_install_surface_requires_the_parser_adapter_lib_loads_by_path(
     hard import dependency it is the only thing speaking about.
     """
     repo = make_clean_git_repo(tmp_path, seeded_charness_git_repo)
-    (repo / "plugins" / "charness" / "scripts" / "adapter_yaml_parse.py").unlink()
+    (repo / "plugins" / "charness" / "scripts" / "adapters" / "adapter_yaml_parse.py").unlink()
 
     result = run_loaded_script_main(
         "validate_packaging.py",

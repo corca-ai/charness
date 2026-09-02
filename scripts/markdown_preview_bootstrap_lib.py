@@ -9,9 +9,21 @@ from typing import Any
 
 import yaml
 
-from scripts.adapter_lib import plan_generated_write
-from scripts.adapters.adapter_yaml_render_lib import render_yaml_mapping
-from scripts.runtime_bootstrap import load_path_module
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.adapter_lib import plan_generated_write  # noqa: E402
+from scripts.adapters.adapter_yaml_render_lib import render_yaml_mapping  # noqa: E402
+from scripts.runtime_bootstrap import load_path_module  # noqa: E402
 
 LIB_REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_SEARCH_PATHS = (

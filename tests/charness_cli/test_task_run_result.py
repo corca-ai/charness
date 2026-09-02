@@ -15,10 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.task_run import (
-    task_run,
-    task_run_support,
-)
+from scripts.task_run import task_run, task_run_support
 from skills.shared.scripts import reviewer_lifecycle
 
 from .test_task_run_fixtures import _codex, _repo, _run

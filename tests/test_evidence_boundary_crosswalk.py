@@ -1002,7 +1002,7 @@ def test_the_validator_module_main_guard_executes(tmp_path, monkeypatch) -> None
     _crosswalk(tmp_path)
     monkeypatch.setattr(sys, "argv", ["x", "--repo-root", str(tmp_path), "--crosswalk", CROSSWALK_REL])
     with pytest.raises(SystemExit) as excinfo:
-        runpy.run_path(str(REPO_ROOT / "scripts" / "validate_evidence_boundary_crosswalk.py"), run_name="__main__")
+        runpy.run_path(str(REPO_ROOT / "scripts" / "gates" / "validate_evidence_boundary_crosswalk.py"), run_name="__main__")
 
     assert excinfo.value.code == 0
 

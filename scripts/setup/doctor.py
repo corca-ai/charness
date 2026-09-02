@@ -12,9 +12,7 @@ def _load_repo_runtime_bootstrap():
     marker = ("scripts", "adapter_lib.py")
     parents = pathlib.Path(__file__).resolve().parents
     root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is None:
-        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
-    if str(root) not in sys.path:
+    if root is not None and str(root) not in sys.path:
         sys.path.insert(0, str(root))
 
 
@@ -28,13 +26,13 @@ REPO_ROOT = repo_root_from_script(__file__)
 BLOCKING_DOCTOR_DISPOSITIONS = {"blocking-support-sync-needed", "blocking-install-needed", "blocking-failure"}
 LOCK_OUTPUT_LIMIT = 800
 
-_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
+_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.adapters.control_plane_lib")
 load_capabilities = _scripts_control_plane_lib_module.load_capabilities
 now_iso = _scripts_control_plane_lib_module.now_iso
 upsert_lock = _scripts_control_plane_lib_module.upsert_lock
 _scripts_doctor_lib_module = import_repo_module(__file__, "scripts.setup.doctor_lib")
 inspect_capability_state = _scripts_doctor_lib_module.inspect_capability_state
-_scripts_control_plane_lifecycle_lib_module = import_repo_module(__file__, "scripts.control_plane_lifecycle_lib")
+_scripts_control_plane_lifecycle_lib_module = import_repo_module(__file__, "scripts.adapters.control_plane_lifecycle_lib")
 print_update_advisories = _scripts_control_plane_lifecycle_lib_module.print_update_advisories
 _scripts_install_provenance_lib_module = import_repo_module(__file__, "scripts.install_provenance_lib")
 detect_install_provenance = _scripts_install_provenance_lib_module.detect_install_provenance

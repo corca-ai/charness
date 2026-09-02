@@ -7,6 +7,7 @@ match the package-owned expectation.  ``resolved_path`` is intentionally
 empty for a mismatch so callers cannot accidentally execute an unverified
 candidate.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -32,19 +33,33 @@ def _version_key(path: Path) -> tuple[int, ...]:
     return tuple(values) if values else (0,)
 
 
-def _cache_candidates(codex_home: Path, skill_id: str, marketplace: str, plugin: str) -> list[tuple[str, Path]]:
+def _cache_candidates(
+    codex_home: Path, skill_id: str, marketplace: str, plugin: str
+) -> list[tuple[str, Path]]:
     root = codex_home / "plugins" / "cache" / marketplace / plugin
     if not root.is_dir():
         return []
-    source = "codex-versioned-cache" if (marketplace, plugin) == ("local", "charness") else "codex-plugin-cache"
-    versions = sorted((item for item in root.iterdir() if item.is_dir()), key=lambda item: (_version_key(item), item.stat().st_mtime, item.name), reverse=True)
+    source = (
+        "codex-versioned-cache"
+        if (marketplace, plugin) == ("local", "charness")
+        else "codex-plugin-cache"
+    )
+    versions = sorted(
+        (item for item in root.iterdir() if item.is_dir()),
+        key=lambda item: (_version_key(item), item.stat().st_mtime, item.name),
+        reverse=True,
+    )
     return [(source, version / "skills" / skill_id / "SKILL.md") for version in versions]
 
 
 def _owner_root() -> Path:
     """Return the checkout/package root owning this resolver."""
 
-    return Path(__file__).resolve().parents[2]
+    # Marker walk, not a depth count: this file sits at scripts/adapters/ in the
+    # authoring tree and wherever an installed layout copies it.
+    return next(
+        p for p in Path(__file__).resolve().parents if (p / "scripts" / "adapter_lib.py").is_file()
+    )
 
 
 def _manifest_version(path: Path) -> str | None:
@@ -119,10 +134,7 @@ def _package_expectation(*, skill_id: str, marketplace: str, plugin: str) -> dic
         root / "plugins" / "charness" / ".codex-plugin" / "plugin.json",
         root / ".codex-plugin" / "plugin.json",
     ]
-    observations = {
-        path: _manifest_observation(path)
-        for path in manifest_candidates
-    }
+    observations = {path: _manifest_observation(path) for path in manifest_candidates}
     malformed = [
         (path, observation[2])
         for path, observation in observations.items()
@@ -140,7 +152,9 @@ def _package_expectation(*, skill_id: str, marketplace: str, plugin: str) -> dic
     source_path = root / "skills" / "public" / skill_id / "SKILL.md"
     plugin_path = root / "plugins" / "charness" / "skills" / skill_id / "SKILL.md"
     installed_path = root / "skills" / skill_id / "SKILL.md"
-    source_candidates = [path for path in (source_path, plugin_path, installed_path) if path.is_file()]
+    source_candidates = [
+        path for path in (source_path, plugin_path, installed_path) if path.is_file()
+    ]
     if not versions:
         return {
             "status": "unavailable",
@@ -221,6 +235,7 @@ def _candidate_version(path: Path, source: str) -> str | None:
                 return version
     return None
 
+
 def _candidate_record(source: str, path: Path, expectation: dict[str, Any]) -> dict[str, Any]:
     expanded = path.expanduser().resolve()
     exists = expanded.is_file()
@@ -254,30 +269,77 @@ def _candidate_record(source: str, path: Path, expectation: dict[str, Any]) -> d
     }
 
 
-def resolve_skill_path(*, skill_id: str, repo_root: Path, home: Path, codex_home: Path, reported_path: Path | None, marketplace: str = "local", plugin: str = "charness") -> dict[str, Any]:
+def resolve_skill_path(
+    *,
+    skill_id: str,
+    repo_root: Path,
+    home: Path,
+    codex_home: Path,
+    reported_path: Path | None,
+    marketplace: str = "local",
+    plugin: str = "charness",
+) -> dict[str, Any]:
     is_charness = (marketplace, plugin) == ("local", "charness")
     candidates: list[tuple[str, Path]] = []
     if reported_path is not None:
         candidates.append(("reported", reported_path))
     if is_charness:
-        candidates.extend([("codex-stable-plugin", codex_home / "plugins/charness/skills" / skill_id / "SKILL.md"), ("repo-plugin-export", repo_root / "plugins/charness/skills" / skill_id / "SKILL.md"), ("repo-public-skill", repo_root / "skills/public" / skill_id / "SKILL.md"), ("repo-support-skill", repo_root / "skills/support" / skill_id / "SKILL.md"), ("repo-synced-support-skill", repo_root / "skills/support/generated" / skill_id / "SKILL.md")])
+        candidates.extend(
+            [
+                (
+                    "codex-stable-plugin",
+                    codex_home / "plugins/charness/skills" / skill_id / "SKILL.md",
+                ),
+                (
+                    "repo-plugin-export",
+                    repo_root / "plugins/charness/skills" / skill_id / "SKILL.md",
+                ),
+                ("repo-public-skill", repo_root / "skills/public" / skill_id / "SKILL.md"),
+                ("repo-support-skill", repo_root / "skills/support" / skill_id / "SKILL.md"),
+                (
+                    "repo-synced-support-skill",
+                    repo_root / "skills/support/generated" / skill_id / "SKILL.md",
+                ),
+            ]
+        )
     candidates.extend(_cache_candidates(codex_home, skill_id, marketplace, plugin))
     if is_charness:
-        candidates.extend([("managed-checkout-plugin", home / ".agents/src/charness/plugins/charness/skills" / skill_id / "SKILL.md"), ("managed-checkout-public", home / ".agents/src/charness/skills/public" / skill_id / "SKILL.md")])
-    expectation = _package_expectation(
-        skill_id=skill_id, marketplace=marketplace, plugin=plugin
-    )
-    candidate_records = [_candidate_record(source, path, expectation) for source, path in candidates]
-    invalid_candidates = [record for record in candidate_records if record["mismatch"] == "package-manifest-invalid"]
+        candidates.extend(
+            [
+                (
+                    "managed-checkout-plugin",
+                    home / ".agents/src/charness/plugins/charness/skills" / skill_id / "SKILL.md",
+                ),
+                (
+                    "managed-checkout-public",
+                    home / ".agents/src/charness/skills/public" / skill_id / "SKILL.md",
+                ),
+            ]
+        )
+    expectation = _package_expectation(skill_id=skill_id, marketplace=marketplace, plugin=plugin)
+    candidate_records = [
+        _candidate_record(source, path, expectation) for source, path in candidates
+    ]
+    invalid_candidates = [
+        record for record in candidate_records if record["mismatch"] == "package-manifest-invalid"
+    ]
     admitted = [record for record in candidate_records if record["admissible"]]
     selected = None if invalid_candidates else (admitted[0] if admitted else None)
     resolved_source = selected["source"] if selected else None
     resolved = Path(selected["path"]) if selected else None
     reported_exists = reported_path.expanduser().is_file() if reported_path is not None else None
-    reported_record = next((item for item in candidate_records if item["source"] == "reported"), None)
+    reported_record = next(
+        (item for item in candidate_records if item["source"] == "reported"), None
+    )
     reported_admitted = bool(reported_record and reported_record["admissible"])
     if selected is not None:
-        status = "reported-ok" if reported_admitted else "stale-reported-path" if reported_path is not None else "ok"
+        status = (
+            "reported-ok"
+            if reported_admitted
+            else "stale-reported-path"
+            if reported_path is not None
+            else "ok"
+        )
         admission_status = "admitted"
         reason_code = "reported-path-admitted" if reported_admitted else "reported-path-recovered"
     elif invalid_candidates:
@@ -316,9 +378,13 @@ def resolve_skill_path(*, skill_id: str, repo_root: Path, home: Path, codex_home
         reason_code = "skill-missing"
     warnings: list[str] = []
     if reported_path is not None and not reported_admitted and resolved is not None:
-        warnings.append("Reported host skill path was not admitted; a current skill path was found.")
+        warnings.append(
+            "Reported host skill path was not admitted; a current skill path was found."
+        )
     if resolved_source in {"codex-versioned-cache", "codex-plugin-cache"}:
-        warnings.append("Resolved to a versioned cache path; prefer a stable plugin path when available.")
+        warnings.append(
+            "Resolved to a versioned cache path; prefer a stable plugin path when available."
+        )
     if resolved is None:
         warnings.append(
             "No installed or repo-local skill path was admitted for the requested skill id."

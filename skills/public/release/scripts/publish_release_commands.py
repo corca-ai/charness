@@ -28,7 +28,11 @@ except ImportError:  # flat layout: the script dir is on sys.path, the repo root
     )
     if str(_scripts_dir) not in sys.path:
         sys.path.insert(0, str(_scripts_dir))
-    from scripts.core.subprocess_guard import heartbeat_interval_from_env, run_monitored_phase, run_process
+    from scripts.core.subprocess_guard import (
+        heartbeat_interval_from_env,
+        run_monitored_phase,
+        run_process,
+    )
 
 RELEASE_VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"tag"})
 RELEASE_CREATE_PLACEHOLDERS: frozenset[str] = frozenset({"tag", "title"})

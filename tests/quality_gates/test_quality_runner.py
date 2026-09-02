@@ -304,7 +304,7 @@ def test_run_quality_seed_budget_uses_external_pytest_temp_root(
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     log_path = repo / "seed-budget-temproot.txt"
     write_executable(
-        repo / "scripts" / "check_seed_fixture_budget.py",
+        repo / "scripts" / "gates" / "check_seed_fixture_budget.py",
         "\n".join(
             [
                 "#!/usr/bin/env python3",
@@ -342,7 +342,7 @@ def test_run_quality_can_reach_the_seed_budget_escape_hatch(
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     log_path = repo / "seed-budget-argv.txt"
     write_executable(
-        repo / "scripts" / "check_seed_fixture_budget.py",
+        repo / "scripts" / "gates" / "check_seed_fixture_budget.py",
         "\n".join(
             [
                 "#!/usr/bin/env python3",
@@ -400,7 +400,7 @@ def test_run_quality_passes_expanded_targets_to_test_completeness(
     (repo / "tests" / "test_alpha.py").write_text("def test_alpha(): pass\n", encoding="utf-8")
     log_path = repo / "test-completeness-targets.json"
     write_executable(
-        repo / "scripts" / "check_test_completeness.py",
+        repo / "scripts" / "gates" / "check_test_completeness.py",
         "\n".join(
             [
                 "#!/usr/bin/env python3",
@@ -472,7 +472,7 @@ def test_run_quality_replays_passing_attention_logs(
         repo, env = clone_quality_runner_repo(
             tmp_path / attention_token.lower(), seeded_quality_runner_repo
         )
-        warning_script = repo / "scripts" / "validate_skill_ergonomics.py"
+        warning_script = repo / "scripts" / "gates" / "validate_skill_ergonomics.py"
         warning_script.write_text(
             "\n".join(
                 [
@@ -501,7 +501,7 @@ def test_run_quality_keeps_passing_non_attention_logs_quiet(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
-    warning_script = repo / "scripts" / "validate_skill_ergonomics.py"
+    warning_script = repo / "scripts" / "gates" / "validate_skill_ergonomics.py"
     warning_script.write_text(
         "\n".join(
             [

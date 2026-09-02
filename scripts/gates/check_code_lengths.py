@@ -14,9 +14,7 @@ def _load_repo_runtime_bootstrap():
     marker = ("scripts", "adapter_lib.py")
     parents = pathlib.Path(__file__).resolve().parents
     root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is None:
-        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
-    if str(root) not in sys.path:
+    if root is not None and str(root) not in sys.path:
         sys.path.insert(0, str(root))
 
 
@@ -307,12 +305,32 @@ def file_warn_for(path: Path, root: Path) -> int:
     return SKILL_HELPER_FILE_WARN
 
 
+# The canonical root-walking shim every NESTED repo script carries (enforced by
+# tools/check_bootstrap_shim_consistency.py): def line, eight body lines, and the
+# call. It is layout boilerplate, identical in every file, not the file's own
+# code, so the cap measures the file without it.
+_REPO_SHIM_MARKER = "def _load_repo_runtime_bootstrap():"
+_REPO_SHIM_CODE_LINES = 10
+
+
+def _shim_free_code_lines(path: Path, code_lines: int) -> int:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return code_lines
+    if _REPO_SHIM_MARKER in text:
+        return max(code_lines - _REPO_SHIM_CODE_LINES, 0)
+    return code_lines
+
+
 def validate_file_length(path: Path, root: Path, *, code_lines: int) -> str | None:
     """Hard-fail when a file exceeds its code-line limit; otherwise return an advisory
     ``WARN:`` line when the file sits in the ``[warn, limit]`` band, or ``None``.
     """
     relative = path.relative_to(root)
     limit = file_limit_for(path, root)
+    if relative.suffix == ".py":
+        code_lines = _shim_free_code_lines(path, code_lines)
     measurement = "physical lines" if relative.suffix == ".sh" else "tokei code lines"
     if code_lines > limit:
         # Operator-endorsed teeth (charness-artifacts/gather/2026-07-04-enforcing-

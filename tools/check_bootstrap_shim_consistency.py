@@ -40,14 +40,13 @@ CANONICAL_REPO_SHIM = """def _load_repo_runtime_bootstrap():
     marker = ("scripts", "adapter_lib.py")
     parents = pathlib.Path(__file__).resolve().parents
     root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is None:
-        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
-    if str(root) not in sys.path:
+    if root is not None and str(root) not in sys.path:
         sys.path.insert(0, str(root))"""
 SCAN_PATTERNS = ("skills/**/*.py", "scripts/**/*.py", "tools/**/*.py")
-# Flat scripts/*.py keep the bare sibling import (sys.path[0] is scripts/ when
-# they run); only a NESTED script needs the root-walking shim.
-REPO_SHIM_SCAN_PATTERN = ("scripts/*/**/*.py",)
+# Every repo script that imports runtime_bootstrap or yaml_output carries the
+# root-walking shim: nested scripts need it for their own package, and the flat
+# residue needs it because the siblings it imports now live in packages.
+REPO_SHIM_SCAN_PATTERN = ("scripts/**/*.py",)
 REPO_SHIM_TRIGGER = re.compile(
     r"^\s*(?:from scripts(?:\.|\s+import)|import scripts(?:\.|\s))", re.MULTILINE
 )

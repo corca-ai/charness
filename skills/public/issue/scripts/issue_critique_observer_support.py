@@ -7,8 +7,8 @@ parsing, and keeping that boundary explicit makes both sides easier to test.
 
 from __future__ import annotations
 
-import json
 import importlib.util
+import json
 import re
 import sys
 from datetime import date

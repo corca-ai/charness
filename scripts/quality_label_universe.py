@@ -68,13 +68,25 @@ import sys
 from pathlib import Path
 from typing import Any, Callable, TypeVar
 
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 try:
     from scripts import adapter_lib
 except ModuleNotFoundError:  # direct execution from the shipped scripts directory
     import adapter_lib
 
-from runtime_bootstrap import repo_root_from_script
-from yaml_output import emit_yaml
+from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 

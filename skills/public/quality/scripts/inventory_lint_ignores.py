@@ -41,10 +41,10 @@ def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str
 
 
 def main() -> int:
-    repo_root = next(parent for parent in Path(__file__).resolve().parents if (parent / "scripts" / "lint_ignore_inventory_lib.py").is_file())
+    repo_root = next(parent for parent in Path(__file__).resolve().parents if (parent / "scripts" / "gates_support" / "lint_ignore_inventory_lib.py").is_file())
     sys.path.insert(0, str(repo_root))
-    from scripts.gates_support.lint_ignore_inventory_lib import inventory_lint_ignores
     from scripts.adapters.quality_adapter_lib import load_quality_adapter_permissive
+    from scripts.gates_support.lint_ignore_inventory_lib import inventory_lint_ignores
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the lint-ignore inventory")

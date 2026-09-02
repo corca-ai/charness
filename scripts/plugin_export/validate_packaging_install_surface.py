@@ -14,9 +14,7 @@ def _load_repo_runtime_bootstrap():
     marker = ("scripts", "adapter_lib.py")
     parents = pathlib.Path(__file__).resolve().parents
     root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is None:
-        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
-    if str(root) not in sys.path:
+    if root is not None and str(root) not in sys.path:
         sys.path.insert(0, str(root))
 
 
@@ -159,22 +157,22 @@ def validate_materialized_plugin_export(
         # strictly earlier than the `adapter_yaml_render_lib` case below, which earned its
         # own entry for the same reason. Joined the list when the parser moved out.
         require_file(
-            plugin_root / "scripts" / "adapter_yaml_parse.py",
+            plugin_root / "scripts" / "adapters" / "adapter_yaml_parse.py",
             "materialized_plugin_export.scripts.adapters.adapter_yaml_parse",
         )
         # adapter_init_lib imports this at module level, so an installed plugin missing it
         # fails at import, not at first render. It joined the list when the YAML emitter
         # moved out of adapter_lib.
         require_file(
-            plugin_root / "scripts" / "adapter_yaml_render_lib.py",
+            plugin_root / "scripts" / "adapters" / "adapter_yaml_render_lib.py",
             "materialized_plugin_export.scripts.adapters.adapter_yaml_render_lib",
         )
         require_file(
-            plugin_root / "scripts" / "adapter_init_lib.py",
+            plugin_root / "scripts" / "adapters" / "adapter_init_lib.py",
             "materialized_plugin_export.scripts.adapters.adapter_init_lib",
         )
         require_file(
-            plugin_root / "scripts" / "control_plane_lib.py",
+            plugin_root / "scripts" / "adapters" / "control_plane_lib.py",
             "materialized_plugin_export.scripts.adapters.control_plane_lib",
         )
     validate_materialized_plugin_export_matches_generated(root, plugin_root, data)

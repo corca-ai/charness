@@ -12,37 +12,29 @@ def _load_repo_runtime_bootstrap():
     marker = ("scripts", "adapter_lib.py")
     parents = pathlib.Path(__file__).resolve().parents
     root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is None:
-        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
-    if str(root) not in sys.path:
+    if root is not None and str(root) not in sys.path:
         sys.path.insert(0, str(root))
 
 
 _load_repo_runtime_bootstrap()
 
+from scripts.adapters.quality_bootstrap_common import quality_resolver_path  # noqa: E402
 from scripts.runtime_bootstrap import (  # noqa: E402
     import_repo_module,
     load_path_module,
-    repo_root_from_script,
+    repo_root_from_script,  # noqa: E402
 )
 
 REPO_ROOT = repo_root_from_script(__file__)
 
 
-def _resolver_path(repo_root: Path) -> Path:
-    candidates = (
-        repo_root / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py",
-        repo_root / "skills" / "quality" / "scripts" / "resolve_adapter.py",
-    )
-    for candidate in candidates:
-        if candidate.is_file():
-            return candidate
-    raise FileNotFoundError("quality resolve_adapter.py not found")
-
-
-_quality_resolve_adapter = load_path_module("quality_resolve_adapter", _resolver_path(REPO_ROOT))
+_quality_resolve_adapter = load_path_module(
+    "quality_resolve_adapter", quality_resolver_path(REPO_ROOT)
+)
 load_adapter = _quality_resolve_adapter.load_adapter
-_scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifacts.artifact_validator")
+_scripts_artifact_validator_module = import_repo_module(
+    __file__, "scripts.artifacts.artifact_validator"
+)
 _adapter_version_verdict = import_repo_module(__file__, "scripts.adapters.adapter_version_verdict")
 _surface_contract = import_repo_module(__file__, "scripts.adapters.quality_surface_contract")
 # Shared with debug through the module that owns the measurement; see its docstring
@@ -60,14 +52,12 @@ validate_date_line = _scripts_artifact_validator_module.validate_date_line
 resolve_adapter_line_budget = _scripts_artifact_validator_module.resolve_adapter_line_budget
 validate_section_order = _scripts_artifact_validator_module.validate_section_order
 run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
-_skill_ergonomics = import_repo_module(__file__, "scripts.adapters.quality_artifact_skill_ergonomics")
-_skill_ergonomics_counts = _skill_ergonomics._skill_ergonomics_counts
+_ergo = import_repo_module(__file__, "scripts.adapters.quality_artifact_skill_ergonomics")
+_skill_ergonomics_counts = _ergo._skill_ergonomics_counts
 
 
 def validate_skill_ergonomics_count_claims(lines: list[str], repo_root: Path) -> None:
-    _skill_ergonomics.validate_skill_ergonomics_count_claims(
-        lines, repo_root, collect_bullets=collect_bullets
-    )
+    _ergo.validate_skill_ergonomics_count_claims(lines, repo_root, collect_bullets=collect_bullets)
 
 
 # The DEFAULT ceiling, in WORDS since 2026-08-19; a consuming repo raises or lowers it

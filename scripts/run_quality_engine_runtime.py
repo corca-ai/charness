@@ -17,7 +17,22 @@ from typing import Any
 
 from run_quality_engine_model import GateList, RunnerError
 
-from runtime_bootstrap import configure_runtime_environment, import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import (  # noqa: E402
+    configure_runtime_environment,
+    import_repo_module,
+)
 
 _guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _guard.run_process

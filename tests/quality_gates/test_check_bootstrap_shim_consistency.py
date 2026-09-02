@@ -216,8 +216,8 @@ def test_repo_script_shim_is_checked_separately(tmp_path: Path) -> None:
 
     target.write_text(
         target.read_text(encoding="utf-8").replace(
-            'raise ImportError("scripts/adapter_lib.py not found above " + __file__)',
-            'raise ImportError("repo marker not found")',
+            "sys.path.insert(0, str(root))",
+            "sys.path.append(str(root))",
         ),
         encoding="utf-8",
     )

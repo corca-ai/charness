@@ -176,7 +176,7 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
         # the core paraphrases it at the step-6 scripts bullet, and this is the pinned
         # verbatim wording.
         "If a skill needs the same bootstrap, adapter resolution, artifact upsert, or",
-        'python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>',
+        'python3 "$SKILL_DIR/../quality/scripts/gates/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>',
         # Binary Preflight Philosophy — preserves the lazy "declare, detect,
         # ask" contract while allowing the details to move into references.
         "## Binary Preflight Philosophy",
@@ -190,7 +190,7 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/spec/SKILL.md": (
         "public executable contract",
         "maintenance lint / implementation guard",
-        'python3 "$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py" --repo-root . --detail',
+        'python3 "$SKILL_DIR/../../shared/scripts/gates_support/plan_risk_interrupt.py" --repo-root . --detail',
         "risk interrupt planner reports a forced debug interrupt",
         "`Interrupt Source`, `Seam Summary`, `Chosen Next Step`, `Impl Status`",
     ),

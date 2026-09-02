@@ -24,7 +24,7 @@ def _ensure_scripts_package() -> None:
 
 
 _ensure_scripts_package()
-from scripts.core import subprocess_guard as _subprocess_guard
+from scripts.core import subprocess_guard as _subprocess_guard  # noqa: E402
 from scripts.core.git_checkout import discoverable as _git_metadata_is_discoverable  # noqa: E402
 from scripts.core.subprocess_guard import run_process  # noqa: E402
 

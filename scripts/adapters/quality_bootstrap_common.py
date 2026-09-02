@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+from pathlib import Path
 from typing import Any
 
 
@@ -30,3 +32,31 @@ def classify_command_deferral(field: str, preset_lineage: list[str]) -> dict[str
         families = ["secret scan", "dependency or supply-chain audit"]
         reason = "No repo-owned security helper was detected."
     return {"field": field, "status": "deferred", "reason": reason, "suggested_families": families}
+
+
+def quality_resolver_path(repo_root: Path) -> Path:
+    """The quality skill's `resolve_adapter.py` in the authoring or the exported layout."""
+    candidates = (
+        repo_root / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py",
+        repo_root / "skills" / "quality" / "scripts" / "resolve_adapter.py",
+    )
+    found = next((candidate for candidate in candidates if candidate.is_file()), None)
+    if found is None:
+        raise FileNotFoundError("quality resolve_adapter.py not found")
+    return found
+
+
+def load_adapter_validators(repo_root: Path):
+    """Import the quality skill's `adapter_validators` from whichever layout ships it."""
+    for candidate in (
+        repo_root / "skills" / "public" / "quality" / "scripts",
+        repo_root / "skills" / "quality" / "scripts",
+    ):
+        if not (candidate / "adapter_validators.py").is_file():
+            continue
+        if str(candidate) not in sys.path:
+            sys.path.insert(0, str(candidate))
+        import adapter_validators
+
+        return adapter_validators
+    raise FileNotFoundError("quality adapter_validators.py not found")

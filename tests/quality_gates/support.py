@@ -20,6 +20,7 @@ from tests.quality_gates.quality_runner_seed import (
 from tests.quality_gates.quality_runner_seed import (
     seeded_quality_runner_repo as seeded_quality_runner_repo,
 )
+from tests.quality_gates.seeding_support import _packaged_script, _seed_path
 from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -34,7 +35,8 @@ def exported_plugin_tree(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """
     output_root = tmp_path_factory.mktemp("quality-plugin-export")
     export_plugin = load_script_module(
-        "tests.quality_gates.support_export_plugin", ROOT / "scripts" / "export_plugin.py"
+        "tests.quality_gates.support_export_plugin",
+        ROOT / "scripts" / "plugin_export" / "export_plugin.py",
     )
     result = run_loaded_script_main(
         "export_plugin.py",
@@ -48,6 +50,8 @@ def exported_plugin_tree(tmp_path_factory: pytest.TempPathFactory) -> Path:
     )
     assert result.returncode == 0, result.stderr
     return output_root / "plugins" / "charness"
+
+
 EVAL_REGISTRY = load_script_module(
     "tests.quality_gates.support_eval_registry", ROOT / "tools" / "eval_registry.py"
 )
@@ -57,7 +61,7 @@ ADAPTER_LIB = load_script_module("adapter_lib", ADAPTER_LIB_PATH)
 
 # The YAML emitter now lives beside the parser rather than inside it. Round-trip tests
 # need both halves, so both are loaded here instead of one re-exporting the other.
-ADAPTER_RENDER_LIB_PATH = ROOT / "scripts" / "adapter_yaml_render_lib.py"
+ADAPTER_RENDER_LIB_PATH = ROOT / "scripts" / "adapters" / "adapter_yaml_render_lib.py"
 ADAPTER_RENDER_LIB = load_script_module("adapter_yaml_render_lib", ADAPTER_RENDER_LIB_PATH)
 
 
@@ -486,9 +490,7 @@ def quality_shell_stub(label: str) -> str:
 
 def seed_quality_python_stubs(target_dir: Path, stubs: tuple[tuple[str, str], ...]) -> None:
     for label, filename in stubs:
-        path = target_dir / filename
-        path.parent.mkdir(parents=True, exist_ok=True)
-        write_executable(path, quality_python_stub(label))
+        write_executable(_seed_path(target_dir, filename), quality_python_stub(label))
 
 
 def seed_quality_shell_stubs(target_dir: Path) -> None:
@@ -558,7 +560,7 @@ def seed_quality_python_binary_stub(target_dir: Path) -> None:
 
 def seed_quality_runtime_recorder(target_dir: Path) -> None:
     write_executable(
-        target_dir / "record_quality_runtime.py",
+        _seed_path(target_dir, "record_quality_runtime.py"),
         "\n".join(
             [
                 "#!/usr/bin/env python3",
@@ -663,10 +665,10 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     )
     (evidence_dir / "proof_receipt.py").chmod(0o755)
     shutil.copy2(
-        ROOT / "scripts" / "run_standing_pytest.py",
-        scripts_dir / "run_standing_pytest.py",
+        ROOT / "scripts" / "gates_support" / "run_standing_pytest.py",
+        _seed_path(scripts_dir, "run_standing_pytest.py"),
     )
-    (scripts_dir / "run_standing_pytest.py").chmod(0o755)
+    _seed_path(scripts_dir, "run_standing_pytest.py").chmod(0o755)
     # Copied rather than stubbed: the runner reads it at startup to build the label
     # universe it asserts every queued label against (#546). A stub returning nothing
     # would disable that assertion in every runner test -- the harness would then
@@ -724,8 +726,14 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         "inventory_nose_clones_unavailable.py",
         "release_changed_line_coverage_unavailable.py",
     ):
-        shutil.copy2(ROOT / "scripts" / real_name, scripts_dir / real_name)
-        (scripts_dir / real_name).chmod(0o755)
+        source = _packaged_script(real_name)
+        target = scripts_dir / source.relative_to(ROOT / "scripts")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        for package_dir in target.relative_to(scripts_dir).parents:
+            if str(package_dir) != ".":
+                (scripts_dir / package_dir / "__init__.py").touch()
+        shutil.copy2(source, target)
+        target.chmod(0o755)
     for real_name in ("adapter_validators.py", "runtime_budget_intent.py"):
         shutil.copy2(
             ROOT / "skills" / "public" / "quality" / "scripts" / real_name,
@@ -734,10 +742,10 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     # Copied rather than stubbed: the runner's specdown step calls it for real, and a
     # stub would let the runner keep passing if the redirect it produces ever broke.
     shutil.copy2(
-        ROOT / "scripts" / "specdown_ephemeral_config.py",
-        scripts_dir / "specdown_ephemeral_config.py",
+        ROOT / "scripts" / "plugin_export" / "specdown_ephemeral_config.py",
+        _seed_path(scripts_dir, "specdown_ephemeral_config.py"),
     )
-    (scripts_dir / "specdown_ephemeral_config.py").chmod(0o755)
+    _seed_path(scripts_dir, "specdown_ephemeral_config.py").chmod(0o755)
     (repo / "specdown.json").write_text(
         json.dumps(
             {

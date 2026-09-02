@@ -231,7 +231,7 @@ def resolve_github_mode(repo_root: Path | None) -> str:
     # gather skill. This guard fires only on the state where a declaration exists and was
     # not honored.
     verdict_path = _find_repo_script(
-        ("scripts", "adapter_version_verdict.py"),
+        ("scripts", "adapters", "adapter_version_verdict.py"),
         missing="__missing_adapter_version_verdict__.py",
     )
     if verdict_path.is_file():

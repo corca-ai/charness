@@ -12,6 +12,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 try:
     from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:  # executed directly from scripts/

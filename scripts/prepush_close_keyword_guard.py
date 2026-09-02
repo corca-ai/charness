@@ -105,6 +105,7 @@ it names a ref nothing can recover, so there is not even a statement to make abo
 went unjudged. That asymmetry is a DECISION, not a property, and the three exit-0 holes
 above are disclosed rather than closed.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -112,6 +113,18 @@ import sys
 import tempfile
 from pathlib import Path
 from typing import Any
+
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
 
 try:
     from scripts.prepush_close_keyword_scan import (
@@ -182,10 +195,20 @@ def no_verdict_payload(reason: str, *, dropped: int = 0) -> dict[str, Any]:
 def _load_sibling(module_name: str):
     """Load a sibling script BY PATH, because this runs as a git hook from an
     arbitrary working directory where ``scripts`` is not an importable package."""
-    return load_path_module(module_name, Path(__file__).resolve().with_name(f"{module_name}.py"))
+    here = Path(__file__).resolve()
+    # The closeout checker moved to scripts/gates/; a hook-mode copy of both into one
+    # directory keeps it beside this guard.
+    candidates = (here.parent, here.parent / "gates", here.parents[1] / "gates")
+    path = next(
+        (d / f"{module_name}.py" for d in candidates if (d / f"{module_name}.py").is_file()),
+        here.with_name(f"{module_name}.py"),
+    )
+    return load_path_module(module_name, path)
 
 
-def evaluate(repo_root: Path, push_refs: list[dict[str, str]], repo: str, remote: str) -> dict[str, Any]:
+def evaluate(
+    repo_root: Path, push_refs: list[dict[str, str]], repo: str, remote: str
+) -> dict[str, Any]:
     """Apply the carrier's floor to every close-keyword commit in the range.
 
     Fail-closed on a dropped stdin line HERE, not only in ``main``. This function is
@@ -274,10 +297,8 @@ def _judge(
             repo_root,
             issue_verify_closeout.iter_close_keyword_refs,
             issue_verify_closeout.strip_code_fences,
-            list_paths=list_paths
-            or (lambda root, _sha=sha: commit_paths(root, _sha)),
-            read_file=read_file
-            or (lambda root, path, _sha=sha: commit_file(root, _sha, path)),
+            list_paths=list_paths or (lambda root, _sha=sha: commit_paths(root, _sha)),
+            read_file=read_file or (lambda root, path, _sha=sha: commit_file(root, _sha, path)),
         )
         if set(artifact["numbers"]) & closable
     ]
@@ -341,11 +362,16 @@ def _reports(
     numbers and its declared classification, exactly as on the commit-msg path.
     """
     carriers = [
-        (artifact["numbers"], artifact["classification"], artifact["path"]) for artifact in artifacts
+        (artifact["numbers"], artifact["classification"], artifact["path"])
+        for artifact in artifacts
     ]
     if bare_numbers:
         carriers.append(
-            (bare_numbers, checker._bare_classification(body, issue_verify_closeout.strip_code_fences), None)
+            (
+                bare_numbers,
+                checker._bare_classification(body, issue_verify_closeout.strip_code_fences),
+                None,
+            )
         )
 
     reports: list[dict[str, Any]] = []
@@ -493,7 +519,9 @@ def main(argv: list[str] | None = None) -> int:
             "pipe rather than an empty push -- read stdin ONCE and replay it.",
             file=sys.stderr,
         )
-        emit_yaml({"ok": True, "status": "no-refs", "commits_scanned": 0, "close_keyword_commits": []})
+        emit_yaml(
+            {"ok": True, "status": "no-refs", "commits_scanned": 0, "close_keyword_commits": []}
+        )
         return 0
 
     try:

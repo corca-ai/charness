@@ -117,20 +117,38 @@ def test_a_named_path_that_exists_passes() -> None:
 
 
 def test_a_pre_move_reference_is_grandfathered_but_a_new_one_blocks(tmp_path: Path) -> None:
-    """Frozen records keep their historical flat paths; new records do not."""
-    moved = tmp_path / "scripts" / "artifacts" / "artifact_referents.py"
+    """A record committed while the flat path existed keeps it; a new record does not."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _git(repo, "config", "user.email", "t@example.com")
+    _git(repo, "config", "user.name", "t")
+    flat = repo / "scripts" / "artifact_referents.py"  # sweep-keep: the flat home
+    flat.parent.mkdir(parents=True)
+    flat.write_text("# flat home\n", encoding="utf-8")
+    old_record = repo / "charness-artifacts" / "goals" / "2026-08-22-path.md"
+    old_record.parent.mkdir(parents=True)
+    old_record.write_text(
+        "Disposition: applied: scripts/artifact_referents.py now owns it\n"  # sweep-keep: the pre-move flat path, encoding="utf-8"
+    )
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "record names the flat path while it exists")
+    moved = repo / "scripts" / "artifacts" / "artifact_referents.py"
     moved.parent.mkdir(parents=True)
-    moved.write_text("# moved destination\n", encoding="utf-8")
-    for artifact_date, expected_code in (("2026-08-22", 0), ("2026-09-03", 1)):
-        artifact = tmp_path / "charness-artifacts" / "goals" / f"{artifact_date}-path.md"
-        artifact.parent.mkdir(parents=True, exist_ok=True)
-        artifact.write_text(
-            "Disposition: applied: scripts/artifacts/artifact_referents.py now owns it\n",
-            encoding="utf-8",
-        )
-        result = run_script(str(GATE), "--repo-root", str(tmp_path), "--path", str(artifact))
-        assert result.returncode == expected_code, result.stdout
-        assert "missing-path-referent" in result.stdout
+    _git(repo, "mv", str(flat.relative_to(repo)), str(moved.relative_to(repo)))
+    _git(repo, "commit", "-q", "-m", "move into a package")
+
+    old = run_script(str(GATE), "--repo-root", str(repo), "--path", str(old_record))
+    assert old.returncode == 0, old.stdout
+    assert "moved-path-referent" in old.stdout
+
+    new_record = repo / "charness-artifacts" / "goals" / "2026-09-03-path.md"
+    new_record.write_text(
+        "Disposition: applied: scripts/artifact_referents.py now owns it\n"  # sweep-keep: the pre-move flat path, encoding="utf-8"
+    )
+    new = run_script(str(GATE), "--repo-root", str(repo), "--path", str(new_record))
+    assert new.returncode == 1, new.stdout
+    assert "missing-path-referent" in new.stdout
 
 
 def test_an_unresolvable_sha_is_reported() -> None:
@@ -835,7 +853,9 @@ def test_the_disposition_vocabulary_has_one_owner() -> None:
     'one grows and the other silently degrades' -- adding a keyword to the gate's
     copy would revert the library to whole-line scoping, reintroducing the M2 and
     M3 evasions at once."""
-    gate_source = (ROOT / "scripts" / "gates" / "check_artifact_referents.py").read_text(encoding="utf-8")
+    gate_source = (ROOT / "scripts" / "gates" / "check_artifact_referents.py").read_text(
+        encoding="utf-8"
+    )
 
     assert "DISPOSITION_LINE_RE = re.compile" not in gate_source
     assert "INLINE_DISPOSITION_RE = re.compile" not in gate_source

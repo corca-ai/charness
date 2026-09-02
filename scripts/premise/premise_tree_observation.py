@@ -15,9 +15,7 @@ def _load_repo_runtime_bootstrap():
     marker = ("scripts", "adapter_lib.py")
     parents = pathlib.Path(__file__).resolve().parents
     root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is None:
-        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
-    if str(root) not in sys.path:
+    if root is not None and str(root) not in sys.path:
         sys.path.insert(0, str(root))
 
 
@@ -29,7 +27,7 @@ try:
     _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 except ModuleNotFoundError:
     _subprocess_guard_spec = importlib.util.spec_from_file_location(
-        "subprocess_guard", Path(__file__).resolve().parent / "core" / "subprocess_guard.py"
+        "subprocess_guard", Path(__file__).resolve().parents[1] / "core" / "subprocess_guard.py"
     )
     if _subprocess_guard_spec is None or _subprocess_guard_spec.loader is None:
         raise
@@ -69,7 +67,7 @@ def _index_paths(repo_root: Path) -> set[bytes]:
         _repo_file_listing = import_repo_module(__file__, "scripts.core.repo_file_listing")
     except ModuleNotFoundError:
         _repo_file_listing_spec = importlib.util.spec_from_file_location(
-            "repo_file_listing", Path(__file__).resolve().parent / "core" / "repo_file_listing.py"
+            "repo_file_listing", Path(__file__).resolve().parents[1] / "core" / "repo_file_listing.py"
         )
         if _repo_file_listing_spec is None or _repo_file_listing_spec.loader is None:
             raise

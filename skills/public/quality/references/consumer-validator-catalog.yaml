@@ -42,7 +42,7 @@ validators:
     adoption_policy: wire-or-opt-out
     reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
     purpose: "preflights a consumer-authored artifact surface before writing it"
-    invocation: "python3 <plugin-root>/scripts/check_artifact_surface_preflight.py"
+    invocation: "python3 <plugin-root>/scripts/gates/check_artifact_surface_preflight.py"
   - path: scripts/gates/check_artifact_citations.py
     id: artifact-citations
     consumer_facing: true
@@ -51,7 +51,7 @@ validators:
     adoption_policy: wire-or-opt-out
     reason: "reports syntactic path-and-line citation integrity for consumer-authored durable artifacts"
     purpose: "checks selected durable Markdown citations without claiming semantic truth"
-    invocation: "python3 <plugin-root>/scripts/check_artifact_citations.py --repo-root <repo-root> --paths <artifact-path>"
+    invocation: "python3 <plugin-root>/scripts/gates/check_artifact_citations.py --repo-root <repo-root> --paths <artifact-path>"
   - path: scripts/mutation/check_changed_line_mutation_coverage.py
     consumer_facing: false
     decision: exclude
@@ -112,7 +112,7 @@ validators:
     adoption_policy: wire-or-opt-out
     reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
     purpose: "checks a commit message at the issue-closeout boundary"
-    invocation: "python3 <plugin-root>/scripts/check_issue_closeout_commit_msg.py"
+    invocation: "python3 <plugin-root>/scripts/gates/check_issue_closeout_commit_msg.py"
   - path: scripts/mutation/check_js_mutation_score.py
     consumer_facing: false
     decision: exclude
@@ -266,7 +266,7 @@ validators:
     adoption_policy: wire-or-opt-out
     reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
     purpose: "validates a consumer-authored debug artifact"
-    invocation: "python3 <plugin-root>/scripts/validate_debug_artifact.py"
+    invocation: "python3 <plugin-root>/scripts/gates/validate_debug_artifact.py"
   - path: scripts/gates/validate_evidence_boundary_crosswalk.py
     consumer_facing: false
     decision: exclude
@@ -279,7 +279,7 @@ validators:
     adoption_policy: wire-or-opt-out
     reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
     purpose: "validates a consumer-authored ideation artifact"
-    invocation: "python3 <plugin-root>/scripts/validate_ideation_artifact.py"
+    invocation: "python3 <plugin-root>/scripts/gates/validate_ideation_artifact.py"
   - path: scripts/gates/validate_inventory_consumption.py
     consumer_facing: false
     decision: exclude
@@ -300,7 +300,7 @@ validators:
     adoption_policy: wire-or-opt-out
     reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
     purpose: "validates a consumer-authored quality artifact"
-    invocation: "python3 <plugin-root>/scripts/validate_quality_artifact.py"
+    invocation: "python3 <plugin-root>/scripts/gates/validate_quality_artifact.py"
   - path: scripts/issue/validate_rca_ledger.py
     consumer_facing: false
     decision: exclude
@@ -313,7 +313,7 @@ validators:
     adoption_policy: wire-or-opt-out
     reason: "consumer-facing artifact or closeout contract; the packaged path is the source of truth for consuming repositories"
     purpose: "validates a consumer-authored retro artifact"
-    invocation: "python3 <plugin-root>/scripts/validate_retro_artifact.py"
+    invocation: "python3 <plugin-root>/scripts/gates/validate_retro_artifact.py"
   - path: scripts/gates/validate_skill_ergonomics.py
     consumer_facing: false
     decision: exclude

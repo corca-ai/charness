@@ -59,8 +59,10 @@ def test_from_scripts_import_name_is_seen() -> None:
 
 def test_the_regression_cases_a_reviewer_traced_are_all_reached() -> None:
     assert "task_run/task_run_completion.py" in script_import_closure("task_run/task_run.py")
-    assert "check_mutation_score_summary_lib.py" in script_import_closure("check_mutation_score.py")
-    assert "claude_session_jsonl_audit.py" in script_import_closure(
+    assert "mutation/check_mutation_score_summary_lib.py" in script_import_closure(
+        "mutation/check_mutation_score.py"
+    )
+    assert "gates_support/claude_session_jsonl_audit.py" in script_import_closure(
         "evidence/host_log_probe_lib.py"
     )
 
@@ -77,13 +79,13 @@ def test_the_portable_dual_path_fallback_is_seen() -> None:
 def test_the_dynamic_import_repo_module_string_is_seen() -> None:
     """Not optional: `build_retro_lesson_selection_index` reaches its deps ONLY here."""
     source = 'm = import_repo_module(__file__, "scripts.lessons.recent_lessons_lib")\n'
-    assert "recent_lessons_lib" in _referenced(source)
+    assert "lessons/recent_lessons_lib" in _referenced(source)
 
 
 def test_the_spec_from_file_location_filename_is_seen() -> None:
     """How `classify_push_diff.py` reaches its own lib."""
-    source = 'p = Path(__file__).with_name("classify_push_diff_lib.py")\n'
-    assert "classify_push_diff_lib" in _referenced(source)
+    source = 'p = Path(__file__).with_name("hooks/classify_push_diff_lib.py")\n'
+    assert "hooks/classify_push_diff_lib" in _referenced(source)
 
 
 def test_an_ordinary_english_string_is_not_mistaken_for_a_module() -> None:
@@ -100,17 +102,19 @@ def test_a_relative_import_is_not_treated_as_a_scripts_module() -> None:
 
 
 def test_the_closure_is_transitive_and_includes_the_entry() -> None:
-    closure = script_import_closure("build_retro_lesson_selection_index.py")
+    closure = script_import_closure("lessons/build_retro_lesson_selection_index.py")
 
-    assert "build_retro_lesson_selection_index.py" in closure
+    assert "lessons/build_retro_lesson_selection_index.py" in closure
     # Reached only through the dynamic spelling, two hops down.
-    assert "recent_lessons_lib.py" in closure
-    assert "helper_provenance_lib.py" in closure
+    assert "lessons/recent_lessons_lib.py" in closure
+    assert "core/helper_provenance_lib.py" in closure
 
 
 def test_the_regression_that_motivated_this_module() -> None:
     """`helper_provenance_lib` gained an `env_bypass` import; the hand list did not."""
-    assert "env_bypass.py" in script_import_closure("build_retro_lesson_selection_index.py")
+    assert "core/env_bypass.py" in script_import_closure(
+        "lessons/build_retro_lesson_selection_index.py"
+    )
 
 
 def test_a_misspelled_entry_refuses_instead_of_returning_a_short_closure() -> None:
@@ -142,7 +146,9 @@ def test_a_runtime_composed_module_name_is_a_known_blind_spot() -> None:
 
 def test_a_shelled_out_script_is_a_known_blind_spot() -> None:
     """A gate that SUBPROCESSES a sibling does not import it, so no closure reaches it."""
-    source = 'subprocess.run([sys.executable, "scripts/gates/check_issue_closeout_commit_msg.py"])\n'
+    source = (
+        'subprocess.run([sys.executable, "scripts/gates/check_issue_closeout_commit_msg.py"])\n'
+    )
 
     # The bare path string carries no `.py`-suffixed BASENAME and no `scripts.`
     # dotted form, so it is invisible here by construction.

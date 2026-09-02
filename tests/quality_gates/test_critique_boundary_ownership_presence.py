@@ -218,8 +218,8 @@ def test_boundary_scaffold_default_stub_fails_validation_post_cutoff(tmp_path: P
 
 def test_critique_validator_refuses_unreadable_cross_surface_adapter(tmp_path: Path) -> None:
     """The validator must not turn malformed probe config into an opt-out."""
-    from scripts import critique_adapter_lib, critique_enforcement_scope
     from scripts.evidence import boundary_probe_lib
+    from scripts.review import critique_adapter_lib, critique_enforcement_scope
 
     repo = tmp_path / "repo"
     adapter = repo / ".agents" / "critique-adapter.yaml"
@@ -248,8 +248,8 @@ def test_critique_validator_refuses_unreadable_cross_surface_adapter(tmp_path: P
 
 
 def test_charness_dogfoods_its_own_cross_surface_probe() -> None:
-    from scripts import critique_adapter_lib
     from scripts.evidence import boundary_probe_lib
+    from scripts.review import critique_adapter_lib
 
     probe = boundary_probe_lib.probe_config_from_adapter(
         critique_adapter_lib.load_adapter(ROOT)["data"]

@@ -14,6 +14,8 @@ from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from typing import Callable, Mapping, Sequence
 
+ROOT = Path(__file__).resolve().parents[2]
+
 
 def make_repo(tmp_path: Path, name: str = "repo", *, parents: bool = False) -> Path:
     """Create and return a fresh temporary repository directory."""
@@ -167,7 +169,9 @@ def write_python_executable(path: Path, body: Sequence[str]) -> Path:
     )
 
 
-def write_json_executable(path: Path, payload: Mapping[str, object], *, trigger: str = "view") -> Path:
+def write_json_executable(
+    path: Path, payload: Mapping[str, object], *, trigger: str = "view"
+) -> Path:
     """Write a fake command that emits a fixed JSON payload for one operation."""
     payload_text = json.dumps(payload)
     return write_python_executable(
@@ -270,10 +274,14 @@ def _build_empty_git_dir_seed(seed_root: Path) -> None:
 def _empty_git_dir_seed() -> Path:
     from tests.seed_cache import get_or_build
 
-    return get_or_build(
-        "quality-gates-empty-git-dir-seed",
-        _build_empty_git_dir_seed,
-    ) / "repo" / ".git"
+    return (
+        get_or_build(
+            "quality-gates-empty-git-dir-seed",
+            _build_empty_git_dir_seed,
+        )
+        / "repo"
+        / ".git"
+    )
 
 
 def _install_empty_git_dir(repo: Path, *, branch: str | None = None) -> None:
@@ -297,10 +305,14 @@ def _build_staged_readme_seed(seed_root: Path) -> None:
 def _staged_readme_seed() -> Path:
     from tests.seed_cache import get_or_build
 
-    return get_or_build(
-        "quality-gates-staged-readme-seed",
-        _build_staged_readme_seed,
-    ) / "repo" / ".git"
+    return (
+        get_or_build(
+            "quality-gates-staged-readme-seed",
+            _build_staged_readme_seed,
+        )
+        / "repo"
+        / ".git"
+    )
 
 
 def _install_staged_readme(repo: Path, *, branch: str | None = None) -> None:
@@ -438,3 +450,37 @@ def verify_closeout_args(
     if expect_state is not None:
         args.extend(["--expect-state", expect_state])
     return args
+
+
+def _packaged_script(real_name: str) -> Path:
+    """Where a repo script lives now: flat under scripts/ or inside a concept package."""
+    flat = ROOT / "scripts" / real_name
+    if flat.is_file():
+        return flat
+    found = sorted(p for p in (ROOT / "scripts").rglob(real_name) if p.is_file())
+    if not found:
+        raise FileNotFoundError(f"scripts/**/{real_name} is not in this checkout")
+    return found[0]
+
+
+def _seed_path(target_dir: Path, filename: str) -> Path:
+    """Where a seeded script goes: the packaged path its real twin has, else flat.
+
+    The declared gate rows spell `scripts/<pkg>/<name>.py` since the concept
+    packaging, so a stub must sit where the row points or the runner reports a
+    missing file instead of the stub's verdict.
+    """
+    real = ROOT / "scripts" / filename
+    if not real.is_file() and target_dir.name == "scripts":
+        found = sorted(p for p in (ROOT / "scripts").rglob(filename) if p.is_file())
+        if found:
+            relative = found[0].relative_to(ROOT / "scripts")
+            path = target_dir / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            for package_dir in relative.parents:
+                if str(package_dir) != ".":
+                    (target_dir / package_dir / "__init__.py").touch()
+            return path
+    path = target_dir / filename
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path

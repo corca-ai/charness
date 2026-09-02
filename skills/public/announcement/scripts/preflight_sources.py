@@ -19,7 +19,7 @@ arm_cli_timeout = _load_skill_runtime_bootstrap().arm_cli_timeout
 
 
 def _repo_root() -> Path:
-    return next(parent for parent in Path(__file__).resolve().parents if (parent / "scripts" / "announcement_preflight_lib.py").is_file())
+    return next(parent for parent in Path(__file__).resolve().parents if (parent / "scripts" / "gates_support" / "announcement_preflight_lib.py").is_file())
 
 
 def main() -> None:

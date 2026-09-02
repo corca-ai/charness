@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import checkout_view
 from scripts.task_run import task_run, task_run_git, task_run_scope
+from scripts.worktree import checkout_view
 
 from .test_task_run_fixtures import _codex, _commit, _git, _repo, _run
 

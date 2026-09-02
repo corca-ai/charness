@@ -12,9 +12,7 @@ def _load_repo_runtime_bootstrap():
     marker = ("scripts", "adapter_lib.py")
     parents = pathlib.Path(__file__).resolve().parents
     root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is None:
-        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
-    if str(root) not in sys.path:
+    if root is not None and str(root) not in sys.path:
         sys.path.insert(0, str(root))
 
 
@@ -26,7 +24,7 @@ from scripts.yaml_output import emit_yaml  # noqa: E402
 ROOT = repo_root_from_script(__file__)
 _preview = import_repo_module(__file__, "scripts.lessons.lesson_selection_preview_lib")
 build_lesson_selection_preview = _preview.build_lesson_selection_preview
-_retro = import_repo_module(__file__, "scripts.retro_output_dir_lib")
+_retro = import_repo_module(__file__, "scripts.retro_debug.retro_output_dir_lib")
 
 
 def main() -> int:

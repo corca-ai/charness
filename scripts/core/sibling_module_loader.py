@@ -62,6 +62,10 @@ def load_sibling(module_stem: str, *, anchor_file: str | Path | None = None):
         spec = importlib.util.spec_from_file_location(f"charness_{module_stem}", sibling)
         if spec is not None and spec.loader is not None:
             module = importlib.util.module_from_spec(spec)
+            # Registered before execution: dataclasses and typing resolve a
+            # class's module through sys.modules, and a by-path module that is
+            # absent there fails field resolution with an opaque NoneType error.
+            sys.modules[spec.name] = module
             spec.loader.exec_module(module)
             return module
     return importlib.import_module(canonical)

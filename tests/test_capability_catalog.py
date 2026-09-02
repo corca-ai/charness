@@ -307,7 +307,7 @@ def test_catalog_lists_local_and_synced_support_skills(tmp_path: Path) -> None:
 def test_consumer_validator_catalog_resolves_installed_layout(tmp_path: Path, monkeypatch) -> None:
     installed = tmp_path / "installed"
     (installed / "scripts").mkdir(parents=True)
-    monkeypatch.setattr(catalog, "__file__", str(installed / "scripts" / "capability_catalog.py"))
+    monkeypatch.setattr(catalog, "__file__", str(installed / "scripts" / "adapters" / "capability_catalog.py"))
     captured: dict[str, object] = {}
 
     def fake_validate(owner_root: Path, **kwargs: object) -> dict[str, object]:
@@ -605,7 +605,7 @@ def test_catalog_sources_cover_sibling_support_malformed_adapter_and_exported_ro
         "---\nname: plugin-skill\ndescription: test\n---\n", encoding="utf-8"
     )
     monkeypatch.setattr(
-        sources, "__file__", str(fake_root / "scripts" / "capability_catalog_sources.py")
+        sources, "__file__", str(fake_root / "scripts" / "adapters" / "capability_catalog_sources.py")
     )
     inventory = sources.build_inventory(repo)
     assert any(item["id"] == "plugin-skill" for item in inventory["public_skills"])

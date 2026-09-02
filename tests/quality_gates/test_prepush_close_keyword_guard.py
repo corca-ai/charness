@@ -646,7 +646,10 @@ def test_a_crash_exits_two_rather_than_the_refusal_code(repo: Path, tmp_path: Pa
         "runtime_bootstrap.py",
         "yaml_output.py",
     ):
-        shutil.copy2(ROOT / "scripts" / name, lonely / name)
+        source = ROOT / "scripts" / name
+        if not source.is_file():  # moved into a concept package; the lonely copy stays flat
+            source = sorted(p for p in (ROOT / "scripts").rglob(name) if p.is_file())[0]
+        shutil.copy2(source, lonely / name)
     shutil.copy2(
         ROOT / "scripts" / "hooks" / "commit_msg_closeout_authorization.py",
         hooks_dir / "commit_msg_closeout_authorization.py",

@@ -16,9 +16,7 @@ def _load_repo_runtime_bootstrap():
     marker = ("scripts", "adapter_lib.py")
     parents = pathlib.Path(__file__).resolve().parents
     root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is None:
-        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
-    if str(root) not in sys.path:
+    if root is not None and str(root) not in sys.path:
         sys.path.insert(0, str(root))
 
 
@@ -120,7 +118,7 @@ try:
 except ModuleNotFoundError:  # invoked as `python3 scripts/<name>.py`
     _sibling_loader_spec = importlib.util.spec_from_file_location(
         "sibling_module_loader",
-        Path(__file__).resolve().parent / "core" / "sibling_module_loader.py",
+        Path(__file__).resolve().parents[1] / "core" / "sibling_module_loader.py",  # scripts/core
     )
     if _sibling_loader_spec is None or _sibling_loader_spec.loader is None:
         raise
@@ -133,7 +131,7 @@ def _load_review_sibling(module_stem: str):
     return _load_sibling(module_stem, anchor_file=__file__)
 
 
-from scripts.core import (
+from scripts.core import (  # noqa: E402
     git_checkout as _checkout,  # noqa: E402  (moved to core; not a review sibling)
 )
 

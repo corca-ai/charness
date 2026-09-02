@@ -37,22 +37,19 @@ from pathlib import Path
 
 import pytest
 
-from scripts import (
-    changed_line_run_trust,
-    check_prose_pin,
-    checkout_view,
-    mutation_changed_files_lib,
-    surfaces_lib,
-    worktree_cleanup_lib,
-)
-from scripts import check_staged_worktree_consistency as staged_consistency
-from scripts import classify_t_signal as t_signal
-from scripts import git_checkout as checkout
-from scripts import git_status_snapshot as status_snapshot
-from scripts import worktree_doctor_checks as worktree_checks
+from scripts.adapters import surfaces_lib
+from scripts.core import git_checkout as checkout
+from scripts.core import git_status_snapshot as status_snapshot
+from scripts.gates import check_prose_pin
+from scripts.gates_support import changed_line_run_trust
+from scripts.gates_support import classify_t_signal as t_signal
+from scripts.hooks import check_staged_worktree_consistency as staged_consistency
+from scripts.mutation import mutation_changed_files_lib
 from scripts.premise import premise_git_snapshot as premise_snapshot
 from scripts.premise import premise_preflight_lib
-from scripts.task_run.task_run import task_run_state
+from scripts.task_run import task_run_state
+from scripts.worktree import checkout_view, worktree_cleanup_lib
+from scripts.worktree import worktree_doctor_checks as worktree_checks
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.script_loader import load_script_module
 

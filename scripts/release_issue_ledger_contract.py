@@ -7,6 +7,18 @@ from datetime import datetime
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 try:
     from scripts.release_issue_ledger_evidence import (
         CLASSIFICATIONS,

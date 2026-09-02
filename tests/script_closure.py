@@ -33,9 +33,19 @@ SCRIPTS = ROOT / "scripts"
 
 
 def _script_relative(stem: str) -> str:
-    """Normalize a flat stem, slash path, or dotted package name to a path."""
+    """Normalize a flat stem, slash path, or dotted package name to a path.
+
+    A bare stem whose module moved into a concept package resolves to that
+    package's path, because the flat spelling is how a still-flat caller (or
+    a `spec_from_file_location` string) names it.
+    """
     value = stem.removesuffix(".py")
-    return value.replace(".", "/") if "/" not in value else value
+    value = value.replace(".", "/") if "/" not in value else value
+    if "/" not in value and not (SCRIPTS / f"{value}.py").is_file():
+        packaged = sorted(p for p in SCRIPTS.rglob(f"{value}.py") if p.is_file())
+        if packaged:
+            return packaged[0].relative_to(SCRIPTS).with_suffix("").as_posix()
+    return value
 
 
 def _is_script(stem: str) -> bool:

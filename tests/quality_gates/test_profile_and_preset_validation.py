@@ -582,7 +582,7 @@ def test_exported_validate_adapters_runs_from_flattened_layout(tmp_path: Path) -
     result = subprocess.run(
         [
             sys.executable,
-            str(plugin_root / "scripts" / "validate_adapters.py"),
+            str(plugin_root / "scripts" / "gates" / "validate_adapters.py"),
             "--repo-root",
             str(plugin_root),
         ],

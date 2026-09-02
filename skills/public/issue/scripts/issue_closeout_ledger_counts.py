@@ -237,7 +237,7 @@ def rule_reason(siblings_value: str | None, finding_id: str) -> str | None:
     author stopped at the pre-commit boundary got one unexplained snake_case
     token -- on the one surface that can stop a commit. Round-1 review, and the
     same class is already commented as measured in
-    `<repo-root>/scripts/check_issue_closeout_commit_msg.py`.
+    `<repo-root>/scripts/gates/check_issue_closeout_commit_msg.py`.
     """
     if finding_id == "siblings_separate_population_and_removal_counts":
         report = evaluate(siblings_value)

@@ -1740,8 +1740,8 @@ def session_staleness_payload(
     removed = cache_diff.get("removed") or []
     if not rotated and not removed:
         return None
-    resolver_path = repo_root / "scripts" / "capability_catalog.py"
-    fallback_resolver_path = managed_checkout_root(home_root) / "scripts" / "capability_catalog.py"
+    resolver_path = repo_root / "scripts" / "adapters" / "capability_catalog.py"
+    fallback_resolver_path = managed_checkout_root(home_root) / "scripts" / "adapters" / "capability_catalog.py"
     resolver = str(resolver_path if resolver_path.is_file() else fallback_resolver_path)
     affected = [
         f"{record.get('marketplace')}/{record.get('plugin')} {record.get('old_version')} -> {record.get('new_version', '(removed)')}"

@@ -63,7 +63,7 @@ and executable specs use the rendered Specdown report.
 - skill ergonomics:
   `$SKILL_DIR/scripts/inventory_skill_ergonomics.py --repo-root . --summary`
 - public-skill dogfood:
-  `$SKILL_DIR/scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id <skill-id> --summary`
+  `$SKILL_DIR/scripts/gates/suggest_public_skill_dogfood.py --repo-root . --skill-id <skill-id> --summary`
 - skill quality lens:
   `references/skill-quality.md`
 - ergonomics policy:
@@ -72,7 +72,7 @@ and executable specs use the rendered Specdown report.
 Review concise core, progressive disclosure honesty, trigger overlap or
 undertrigger risk, unnecessary mode/option pressure, taste policing, and prose
 ritual that should become a helper script. When public-skill or durable artifact
-behavior is in scope, scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --summary`.
+behavior is in scope, scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/gates/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --summary`.
 If the repo stores skills outside `skills/public` or `skills/support`, record
 `skill_ergonomics_skill_paths` in the quality adapter so the default inventory
 does not return an empty scan.

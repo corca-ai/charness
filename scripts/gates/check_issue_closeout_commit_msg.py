@@ -16,9 +16,7 @@ def _load_repo_runtime_bootstrap():
     marker = ("scripts", "adapter_lib.py")
     parents = pathlib.Path(__file__).resolve().parents
     root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is None:
-        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
-    if str(root) not in sys.path:
+    if root is not None and str(root) not in sys.path:
         sys.path.insert(0, str(root))
 
 
@@ -72,8 +70,13 @@ def _load_sibling(module_name: str):
     By path rather than by package import because this file runs as a git hook from an
     arbitrary working directory, where `scripts` is not importable as a package.
     """
-    # This gate lives in scripts/gates/; the hook helper lives in scripts/hooks/.
-    sibling_dir = Path(__file__).resolve().parents[1] / "hooks"
+    # This gate lives in scripts/gates/ and the hook helper in scripts/hooks/; a
+    # hook-mode copy of both into one directory keeps the helper under hooks/ there.
+    here = Path(__file__).resolve()
+    candidates = (here.parents[1] / "hooks", here.parent / "hooks", here.parent)
+    sibling_dir = next(
+        (d for d in candidates if (d / f"{module_name}.py").is_file()), candidates[0]
+    )
     spec = importlib.util.spec_from_file_location(module_name, sibling_dir / f"{module_name}.py")
     if spec is None or spec.loader is None:
         raise RuntimeError(f"unable to load sibling module {module_name}")

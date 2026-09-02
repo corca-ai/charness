@@ -8,12 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.task_run import (
-    task_run,
-    task_run_execution,
-    task_run_plan,
-    task_run_runtime,
-)
+from scripts.task_run import task_run, task_run_execution, task_run_plan, task_run_runtime
 
 from .support import run_cli_path
 from .test_task_run_fixtures import _codex, _git, _repo, _run
