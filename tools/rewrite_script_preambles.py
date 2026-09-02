@@ -34,41 +34,18 @@ REPO_SCRIPT_SHIM = """def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()"""
 
-_FUNCTION_ONLY_REPO_SCRIPT_SHIM = """def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+_FUNCTION_ONLY_REPO_SCRIPT_SHIM = REPO_SCRIPT_SHIM
 
-
-_load_repo_runtime_bootstrap()"""
-
-_BARE_IMPORT = re.compile(r"^(?P<indent>\s*)from (?P<module>runtime_bootstrap|yaml_output) import\b")
+_BARE_IMPORT = re.compile(
+    r"^(?P<indent>\s*)from (?P<module>runtime_bootstrap|yaml_output) import\b"
+)
 _REPO_IMPORT = re.compile(
     r"^\s*from (?:scripts\.)?(?:runtime_bootstrap|yaml_output) import\b",
     re.MULTILINE,
 )
 
 
-def _rewrite_source(source: str) -> tuple[str, int]:
-    if REPO_SCRIPT_SHIM in source and not _BARE_IMPORT.search(source):
-        return source, 0
-    source = source.replace(REPO_SCRIPT_SHIM, "").replace(
-        _FUNCTION_ONLY_REPO_SCRIPT_SHIM, ""
-    )
-    lines = source.splitlines()
-    has_repo_import = _REPO_IMPORT.search(source) is not None
+def _replace_bare_imports(lines: list[str]) -> int:
     replacements = 0
     for index, line in enumerate(lines):
         match = _BARE_IMPORT.match(line)
@@ -80,22 +57,18 @@ def _rewrite_source(source: str) -> tuple[str, int]:
             1,
         )
         replacements += 1
-    if not has_repo_import:
-        return source, replacements
+    return replacements
 
-    import_index = next(
-        index
-        for index, line in enumerate(lines)
-        if _REPO_IMPORT.match(line)
-    )
-    while (
-        import_index >= 2
-        and lines[import_index - 1] == ""
-        and lines[import_index - 2] == ""
-    ):
-        del lines[import_index - 1]
-        import_index -= 1
-    source = "\n".join(lines) + ("\n" if source.endswith("\n") else "")
+
+def _trim_blank_lines_before(lines: list[str], index: int) -> int:
+    while index >= 2 and lines[index - 1] == "" and lines[index - 2] == "":
+        del lines[index - 1]
+        index -= 1
+    return index
+
+
+def _shim_insertion_index(lines: list[str], import_index: int) -> int:
+    source = "\n".join(lines) + "\n"
     tree = ast.parse(source)
     insertion_index = import_index
     for node in tree.body:
@@ -109,6 +82,11 @@ def _rewrite_source(source: str) -> tuple[str, int]:
         if not isinstance(node, (ast.Import, ast.ImportFrom)):
             insertion_index = node.lineno - 1
             break
+    return insertion_index
+
+
+def _insert_repo_shim(lines: list[str], insertion_index: int) -> None:
+    insertion_index = _trim_blank_lines_before(lines, insertion_index)
     while (
         insertion_index >= 2
         and lines[insertion_index - 1] == ""
@@ -130,6 +108,20 @@ def _rewrite_source(source: str) -> tuple[str, int]:
             lines[index] = f"{line}  # noqa: E402"
         elif "E402" not in line:
             lines[index] = line.replace("# noqa:", "# noqa: E402,", 1)
+
+
+def _rewrite_source(source: str) -> tuple[str, int]:
+    if REPO_SCRIPT_SHIM in source and not _BARE_IMPORT.search(source):
+        return source, 0
+    source = source.replace(REPO_SCRIPT_SHIM, "").replace(_FUNCTION_ONLY_REPO_SCRIPT_SHIM, "")
+    lines = source.splitlines()
+    replacements = _replace_bare_imports(lines)
+    if _REPO_IMPORT.search(source) is None and replacements == 0:
+        return source, 0
+    import_index = next(index for index, line in enumerate(lines) if _REPO_IMPORT.match(line))
+    import_index = _trim_blank_lines_before(lines, import_index)
+    insertion_index = _shim_insertion_index(lines, import_index)
+    _insert_repo_shim(lines, insertion_index)
     return "\n".join(lines) + ("\n" if source.endswith("\n") else ""), replacements
 
 

@@ -5,6 +5,7 @@ testpaths = ["tests"]
 # file re-doing a `sys.path.insert(...)` bootstrap (which forced `# noqa: E402`).
 # Caution: with scripts/ on the path, a scripts/<stdlib-name>.py would shadow
 # that stdlib module during tests — keep script basenames non-colliding.
+# Keep scripts/ on sys.path until P4 removes the last flat dependency.
 pythonpath = [".", "scripts", "tools"]
 tmp_path_retention_count = 1
 tmp_path_retention_policy = "failed"

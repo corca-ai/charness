@@ -19,6 +19,7 @@ from scripts.subprocess_guard import run_process
 from scripts.yaml_output import emit_yaml, render_yaml
 
 BASELINE_RELATIVE_PATH = "charness-artifacts/quality/2026-09-02-gate-universes-before-770.yaml"
+PREMISES_RELATIVE_PATH = "charness-artifacts/quality/2026-09-02-scripts-packaging-premises.md"
 
 
 def _python_command(*parts: str) -> list[str]:
@@ -125,7 +126,7 @@ def _files_from_output(name: str, stdout: str) -> list[str]:
 
 
 def _without_output_path(stdout: str, repo_root: Path, output: Path | None) -> str:
-    excluded = {BASELINE_RELATIVE_PATH}
+    excluded = {BASELINE_RELATIVE_PATH, PREMISES_RELATIVE_PATH}
     if output is not None:
         try:
             excluded.add(output.resolve().relative_to(repo_root).as_posix())
