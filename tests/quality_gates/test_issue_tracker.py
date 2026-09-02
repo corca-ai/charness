@@ -750,3 +750,82 @@ def test_add_success_with_absent_readback_is_unverified(
     assert result["ok"] is False
     assert result["outcome"] == "unverified-write"
     assert result["mutation_invoked"] is True
+
+
+def _discovery_row(number: int, key: str, *, parent: int | None, state: str = "open") -> dict:
+    row = {
+        "number": number,
+        "title": f"Item {number}",
+        "body": f"<!-- charness-work-item-key: {key} -->\nbody\n",
+        "state": state,
+        "html_url": f"https://github.com/corca-ai/charness/issues/{number}",
+        "url": f"https://api.github.com/repos/corca-ai/charness/issues/{number}",
+        "repository_url": "https://api.github.com/repos/corca-ai/charness",
+    }
+    if parent is not None:
+        row["parent_issue_url"] = f"https://api.github.com/repos/corca-ai/charness/issues/{parent}"
+    return row
+
+
+def test_discovery_scopes_a_work_item_key_to_its_goal_run_parent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The same slice key in an earlier run's closed child must not collide.
+
+    Observed 2026-09-03: `integrated-closeout` on #772 (parent #765) blocked the
+    seventh child of #775. An unlinked issue stays a match because a child
+    created by an interrupted run is unlinked until add-child runs.
+    """
+    rows = [
+        _discovery_row(772, "integrated-closeout", parent=765, state="closed"),
+        _discovery_row(790, "integrated-closeout", parent=None),
+        _discovery_row(791, "integrated-closeout", parent=775),
+        _discovery_row(792, "other-key", parent=775),
+    ]
+    monkeypatch.setattr(tracker.DISCOVERY, "_run_json", lambda *_a, **_k: rows)
+    monkeypatch.setattr(tracker.DISCOVERY, "_flatten_pages", lambda value: value)
+
+    scoped = tracker.DISCOVERY.discover_managed_issues(
+        "corca-ai/charness", "integrated-closeout", backend=BACKEND, parent_number=775
+    )
+    unscoped = tracker.DISCOVERY.discover_managed_issues(
+        "corca-ai/charness", "integrated-closeout", backend=BACKEND
+    )
+
+    assert [m["number"] for m in scoped["matches"]] == [790, 791]
+    assert [m["number"] for m in scoped["foreign_parent"]] == [772]
+    assert scoped["count"] == 2
+    assert [m["number"] for m in unscoped["matches"]] == [772, 790, 791]
+    assert unscoped["foreign_parent"] == []
+
+
+def test_create_passes_its_parent_to_discovery(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    body = tmp_path / "body.md"
+    body.write_text("<!-- charness-work-item-key: integrated-closeout -->\nbody\n", encoding="utf-8")
+    seen: list[int | None] = []
+
+    def fake_discover(*_args, **kwargs):
+        seen.append(kwargs.get("parent_number"))
+        return {"ok": True, "count": 0, "matches": [], "foreign_parent": []}
+
+    monkeypatch.setattr(tracker, "discover_managed_issues", fake_discover)
+    monkeypatch.setattr(
+        tracker.CREATE,
+        "create_issue",
+        lambda *_a, **_k: {
+            "ok": True,
+            "repo": "corca-ai/charness",
+            "number": 793,
+            "url": "https://github.com/corca-ai/charness/issues/793",
+            "body_verified": True,
+        },
+    )
+
+    result = tracker.create_or_reuse_child(
+        "corca-ai/charness", 775, "integrated-closeout", "Closeout", body, backend=BACKEND
+    )
+
+    assert result["action"] == "created"
+    assert seen == [775]

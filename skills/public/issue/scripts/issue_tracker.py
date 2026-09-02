@@ -87,7 +87,9 @@ def create_or_reuse_child(
             f"create-or-reuse body must contain its exact work item key marker once: {marker}"
         )
 
-    before = discover_managed_issues(repo, work_item_key, backend=backend)
+    before = discover_managed_issues(
+            repo, work_item_key, backend=backend, parent_number=parent_number
+        )
     reusable = _marker_reusable_match(before, work_item_key=work_item_key, title=title)
     if reusable is not None:
         return {
@@ -155,7 +157,9 @@ def create_or_reuse_child(
         }
 
     try:
-        after = discover_managed_issues(repo, work_item_key, backend=backend)
+        after = discover_managed_issues(
+            repo, work_item_key, backend=backend, parent_number=parent_number
+        )
     except RuntimeError as exc:
         return unverified_mutation(
             "create-child",

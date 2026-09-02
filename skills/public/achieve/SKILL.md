@@ -80,6 +80,16 @@ After explicit approval of the exact briefing and draft bytes:
 The binding is the frozen identity. The Goal Draft is not edited during
 execution, and no local status or progress mutation is authorized.
 
+Establishment then runs through the issue skill in this order, and the order
+is not optional: the parent's first metadata block is written with the direct
+`issue_tool.py update` command (the file-backed `goal-run-apply` refuses every
+operation, including `update-body`, on a parent that has no block yet); only
+then `create-or-reuse-child`, `add-child`, and the `update-body` that installs
+the progress cursor. Work Item keys are scoped to the parent by the provider's
+parent link, so a slice may reuse a name an earlier run used; a key already
+carried by an unlinked open issue is the one real collision, and discovery
+reports it before any write.
+
 ## Exact pickup
 
 The only issue-native resume input is trimmed text matching

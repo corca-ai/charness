@@ -30,6 +30,17 @@ WORK_ITEM_KEY_RE = re.compile(r"^[a-z0-9][a-z0-9._:/-]{0,127}$")
 WORK_ITEM_KEY_PREFIX = "<!-- charness-work-item-key: "
 
 
+def parent_url_matches(value: Any, repo: str, number: int) -> bool:
+    """True when a provider parent URL names exactly this repo and issue number."""
+    if not isinstance(value, str):
+        return False
+    normalized = value.rstrip("/").lower()
+    repo_lower = repo.lower()
+    return normalized.endswith(f"/repos/{repo_lower}/issues/{number}") or normalized.endswith(
+        f"/{repo_lower}/issues/{number}"
+    )
+
+
 def work_item_key_marker(work_item_key: str) -> str:
     if not WORK_ITEM_KEY_RE.fullmatch(work_item_key):
         raise RuntimeError("work item key must match [a-z0-9][a-z0-9._:/-]{0,127}")
@@ -75,8 +86,22 @@ def load_expected_child_set(path: Path, *, repo: str, parent_number: int) -> dic
 
 
 def discover_managed_issues(
-    repo: str, work_item_key: str, *, backend: dict[str, Any]
+    repo: str,
+    work_item_key: str,
+    *,
+    backend: dict[str, Any],
+    parent_number: int | None = None,
 ) -> dict[str, Any]:
+    """Find issues carrying one Work Item marker.
+
+    A Work Item key is scoped to its Goal Run parent, not to the repository:
+    consecutive runs legitimately reuse slice names such as ``integrated-closeout``.
+    When ``parent_number`` is given, an issue whose provider parent link names a
+    DIFFERENT parent is reported under ``foreign_parent`` and never counted as a
+    match. An issue with no parent link stays a match, because a child created
+    by an interrupted run is unlinked until ``add-child`` runs and must still be
+    rediscoverable.
+    """
     marker = work_item_key_marker(work_item_key)
     argv = resolve_op(
         backend,
@@ -88,6 +113,7 @@ def discover_managed_issues(
     )
     rows = _flatten_pages(_run_json(argv, context="managed issue discovery"))
     matches: list[dict[str, Any]] = []
+    foreign_parent: list[dict[str, Any]] = []
     for index, raw in enumerate(rows):
         if not isinstance(raw, dict):
             raise RuntimeError(f"managed issue discovery row {index} is not an object")
@@ -105,15 +131,23 @@ def discover_managed_issues(
             expected_number=issue_number,
             context=f"managed issue discovery row {index}",
         )
-        matches.append(
-            {
-                "number": issue_number,
-                "title": raw.get("title"),
-                "body": body,
-                "state": str(raw.get("state") or "").upper() or None,
-                "url": raw.get("html_url") or raw.get("url"),
-            }
-        )
+        parent_issue_url = raw.get("parent_issue_url")
+        match = {
+            "number": issue_number,
+            "title": raw.get("title"),
+            "body": body,
+            "state": str(raw.get("state") or "").upper() or None,
+            "url": raw.get("html_url") or raw.get("url"),
+            "parent_issue_url": parent_issue_url if isinstance(parent_issue_url, str) else None,
+        }
+        if (
+            parent_number is not None
+            and match["parent_issue_url"] is not None
+            and not parent_url_matches(match["parent_issue_url"], repo, parent_number)
+        ):
+            foreign_parent.append(match)
+            continue
+        matches.append(match)
     return {
         "ok": True,
         "status": "verified-read",
@@ -122,8 +156,10 @@ def discover_managed_issues(
         "repo": repo,
         "work_item_key": work_item_key,
         "marker": marker,
+        "parent_number": parent_number,
         "count": len(matches),
         "matches": matches,
+        "foreign_parent": foreign_parent,
     }
 
 

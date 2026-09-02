@@ -47,14 +47,7 @@ RESOLVE_ISSUE_ID_PLACEHOLDERS = frozenset({"repo", "sub_issue_number"})
 MUTATE_SUB_ISSUE_PLACEHOLDERS = frozenset({"repo", "number", "sub_issue_id", "sub_issue_number"})
 
 
-def _parent_url_matches(value: Any, repo: str, number: int) -> bool:
-    if not isinstance(value, str):
-        return False
-    normalized = value.rstrip("/").lower()
-    repo_lower = repo.lower()
-    return normalized.endswith(f"/repos/{repo_lower}/issues/{number}") or normalized.endswith(
-        f"/{repo_lower}/issues/{number}"
-    )
+_parent_url_matches = _load_local("issue_tracker_discovery", "issue_tracker_relationships_discovery").parent_url_matches
 
 
 def list_sub_issues(repo: str, number: int, *, backend: dict[str, Any]) -> dict[str, Any]:
