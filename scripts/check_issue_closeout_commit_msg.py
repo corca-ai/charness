@@ -10,7 +10,28 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
 run_process = _subprocess_guard.run_process
@@ -18,7 +39,7 @@ run_process = _subprocess_guard.run_process
 try:
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:  # git-hook execution: `scripts/` is sys.path[0], not a package
-    from yaml_output import emit_yaml
+    from scripts.yaml_output import emit_yaml
 
 _CLASSIFICATION_RE = re.compile(
     r"(?im)^\s*(?:[-*]\s*)?(?:\*\*)?classification(?:\*\*)?\s*:\s*"

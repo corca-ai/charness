@@ -18,7 +18,28 @@ imported from ``risk_interrupt_lib`` — the closeout consumer — never hand-co
 
 from __future__ import annotations
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _scripts_artifact_validator_module.ValidationError
@@ -127,7 +148,9 @@ def _forced_interrupt_problems(
     interrupt_values: dict[str, str],
 ) -> list[str]:
     """The forced-interrupt floor, reported as a batch beside the enum checks."""
-    forced = bool(set(risk_classes) & FORCED_RISK_CLASSES or generalization_pressure == "factor-now")
+    forced = bool(
+        set(risk_classes) & FORCED_RISK_CLASSES or generalization_pressure == "factor-now"
+    )
     if not forced:
         return []
     problems: list[str] = []
@@ -138,16 +161,24 @@ def _forced_interrupt_problems(
     handoff = interrupt_values.get("- Handoff Artifact: ", "")
     # A missing Handoff marker is already in the report from extraction; only a
     # PRESENT value with the wrong shape earns its own line.
-    if handoff and (not handoff.startswith("charness-artifacts/spec/") or not handoff.endswith(".md")):
-        problems.append("forced risk interrupt must point `Handoff Artifact` at `charness-artifacts/spec/*.md`")
+    if handoff and (
+        not handoff.startswith("charness-artifacts/spec/") or not handoff.endswith(".md")
+    ):
+        problems.append(
+            "forced risk interrupt must point `Handoff Artifact` at `charness-artifacts/spec/*.md`"
+        )
     return problems
 
 
 def validate_current_interrupt_sections(lines: list[str]) -> None:
     if "## Seam Risk" not in lines or "## Interrupt Decision" not in lines:
-        raise ValidationError("current debug artifact must include `## Seam Risk` and `## Interrupt Decision`")
+        raise ValidationError(
+            "current debug artifact must include `## Seam Risk` and `## Interrupt Decision`"
+        )
 
-    seam_lines = section_lines(lines, "## Seam Risk", ("## Seam Risk", "## Interrupt Decision", "## Prevention"))
+    seam_lines = section_lines(
+        lines, "## Seam Risk", ("## Seam Risk", "## Interrupt Decision", "## Prevention")
+    )
     interrupt_lines = section_lines(
         lines,
         "## Interrupt Decision",
@@ -193,7 +224,9 @@ def validate_current_interrupt_sections(lines: list[str]) -> None:
     # continue. When the author DOES declare it, constrain it to the lifecycle
     # enum the planner consumes (`open` to continue, `resolved` to demote the
     # pointer to a prior incident so it stops hijacking a fresh bug).
-    resolution_line = next((line for line in interrupt_lines if line.startswith("- Resolution: ")), None)
+    resolution_line = next(
+        (line for line in interrupt_lines if line.startswith("- Resolution: ")), None
+    )
     if resolution_line is not None:
         # Match the planner's case-folding (plan_debug_run.py lowercases before the
         # `== "resolved"` compare) so the validator never rejects a value the
@@ -235,7 +268,9 @@ def validate_dated_seam_risk_enums(lines: list[str]) -> None:
     """
     if "## Seam Risk" not in lines:
         return
-    seam_lines = section_lines(lines, "## Seam Risk", ("## Seam Risk", "## Interrupt Decision", "## Prevention"))
+    seam_lines = section_lines(
+        lines, "## Seam Risk", ("## Seam Risk", "## Interrupt Decision", "## Prevention")
+    )
     seam_values = extract_prefixed_values(
         seam_lines,
         (

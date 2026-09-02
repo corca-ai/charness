@@ -19,7 +19,28 @@ import argparse
 import json
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -66,15 +87,22 @@ def load_inputs(repo_root: Path, snapshot_rel: str, inspection_rel: str):
 def run_validate(
     repo_root: Path, snapshot_rel: str, inspection_rel: str, freeze_rel: str, required: list[int]
 ) -> dict[str, object]:
-    snapshot, capture_rel, capture, inspection = load_inputs(repo_root, snapshot_rel, inspection_rel)
+    snapshot, capture_rel, capture, inspection = load_inputs(
+        repo_root, snapshot_rel, inspection_rel
+    )
     verify_issue_coverage(snapshot, required)
     capture_identity = verify_capture(repo_root, snapshot, capture)
     verify_inspection(repo_root, inspection)
     freeze = load_json(repo_root, freeze_rel, FREEZE_RECEIPT_SCHEMA)
-    verify_freeze_receipt(freeze=freeze, snapshot=snapshot, capture_receipt=capture, inspection=inspection)
+    verify_freeze_receipt(
+        freeze=freeze, snapshot=snapshot, capture_receipt=capture, inspection=inspection
+    )
     declared = sorted(freeze.get("issues") or [])
     if declared != sorted(required):
-        raise FreezeError("freeze_issue_set_mismatch", f"freeze receipt covers {declared}, required {sorted(required)}")
+        raise FreezeError(
+            "freeze_issue_set_mismatch",
+            f"freeze receipt covers {declared}, required {sorted(required)}",
+        )
     return {
         "ok": True,
         "snapshot_path": snapshot_rel,
@@ -118,7 +146,9 @@ def preflight(
     silently: a retired pin, an escaping path, or a missing file must stop the run before
     it launders them into a freshly stamped identity.
     """
-    snapshot, capture_rel, capture, inspection = load_inputs(repo_root, snapshot_rel, inspection_rel)
+    snapshot, capture_rel, capture, inspection = load_inputs(
+        repo_root, snapshot_rel, inspection_rel
+    )
     verify_issue_coverage(snapshot, required)
     verify_capture(repo_root, snapshot, capture)
     if require_inspection_identity:
@@ -137,7 +167,9 @@ def preflight(
 def run_freeze(
     repo_root: Path, snapshot_rel: str, inspection_rel: str, freeze_rel: str, required: list[int]
 ) -> dict[str, object]:
-    snapshot, capture_rel, capture, inspection = preflight(repo_root, snapshot_rel, inspection_rel, required)
+    snapshot, capture_rel, capture, inspection = preflight(
+        repo_root, snapshot_rel, inspection_rel, required
+    )
     receipt = build_freeze_receipt(
         snapshot_path=snapshot_rel,
         snapshot=snapshot,
@@ -149,7 +181,9 @@ def run_freeze(
     )
     path = repo_root / freeze_rel
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return {"ok": True, "written": freeze_rel, "freeze_identity": receipt["freeze_identity"]}
 
 
@@ -169,8 +203,15 @@ def stamp_inspection(repo_root: Path, inspection_rel: str) -> dict[str, object]:
     inspection = _freeze_lib.load_inspection(repo_root, inspection_rel)
     _freeze_lib.verify_locators(repo_root, inspection)
     inspection["inspection_identity"] = inspection_identity(inspection)
-    path.write_text(json.dumps(inspection, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return {"ok": True, "stamped": inspection_rel, "inspection_identity": inspection["inspection_identity"]}
+    path.write_text(
+        json.dumps(inspection, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return {
+        "ok": True,
+        "stamped": inspection_rel,
+        "inspection_identity": inspection["inspection_identity"],
+    }
 
 
 def run_refreeze(
@@ -231,7 +272,9 @@ def rebind_crosswalk(repo_root: Path, freeze_rel: str, crosswalk_rel: str) -> di
         if identity.get(field) != freeze[field]:
             changed[field] = freeze[field]
         identity[field] = freeze[field]
-    path.write_text(json.dumps(crosswalk, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(crosswalk, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return {"rebound": True, "path": crosswalk_rel, "changed_fields": sorted(changed)}
 
 
@@ -239,29 +282,47 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("validate", "freeze", "stamp-inspection", "refreeze"))
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--snapshot", default="charness-artifacts/spec/2026-08-07-issue-514-515-518-source.json")
     parser.add_argument(
-        "--inspection", default="charness-artifacts/spec/2026-08-07-issue-514-515-518-owner-inspection.json"
+        "--snapshot", default="charness-artifacts/spec/2026-08-07-issue-514-515-518-source.json"
     )
     parser.add_argument(
-        "--freeze-receipt", default="charness-artifacts/spec/2026-08-07-issue-514-515-518-freeze-receipt.json"
+        "--inspection",
+        default="charness-artifacts/spec/2026-08-07-issue-514-515-518-owner-inspection.json",
+    )
+    parser.add_argument(
+        "--freeze-receipt",
+        default="charness-artifacts/spec/2026-08-07-issue-514-515-518-freeze-receipt.json",
     )
     parser.add_argument("--require-issues", type=int, nargs="+", default=list(DEFAULT_PROTECTED))
-    parser.add_argument("--crosswalk", default=DEFAULT_CROSSWALK, help="Crosswalk rebound by `refreeze`")
+    parser.add_argument(
+        "--crosswalk", default=DEFAULT_CROSSWALK, help="Crosswalk rebound by `refreeze`"
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     commands = {
         "stamp-inspection": lambda: stamp_inspection(repo_root, args.inspection),
         "freeze": lambda: run_freeze(
-            repo_root, args.snapshot, args.inspection, args.freeze_receipt, list(args.require_issues)
+            repo_root,
+            args.snapshot,
+            args.inspection,
+            args.freeze_receipt,
+            list(args.require_issues),
         ),
         "validate": lambda: run_validate(
-            repo_root, args.snapshot, args.inspection, args.freeze_receipt, list(args.require_issues)
+            repo_root,
+            args.snapshot,
+            args.inspection,
+            args.freeze_receipt,
+            list(args.require_issues),
         ),
         "refreeze": lambda: run_refreeze(
-            repo_root, args.snapshot, args.inspection, args.freeze_receipt,
-            list(args.require_issues), args.crosswalk,
+            repo_root,
+            args.snapshot,
+            args.inspection,
+            args.freeze_receipt,
+            list(args.require_issues),
+            args.crosswalk,
         ),
     }
     return _refusal_lib.run_cli(

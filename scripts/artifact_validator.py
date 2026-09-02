@@ -7,7 +7,28 @@ import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 # The sibling scope module is resolved the same way every other repo script
 # resolves a sibling: a bare `from artifact_run_scope import ...` binds only when
@@ -197,11 +218,7 @@ def is_sibling_decision_bullet(line: str) -> bool:
 def is_trivial_short_circuit(line: str) -> bool:
     """`n/a — trivial fix; no plausible siblings` short-circuit, dash-agnostic."""
     lowered = line.lower()
-    return (
-        "n/a" in lowered
-        and "trivial fix" in lowered
-        and "no plausible siblings" in lowered
-    )
+    return "n/a" in lowered and "trivial fix" in lowered and "no plausible siblings" in lowered
 
 
 def is_valid_followup_tail(tail: str) -> bool:
@@ -290,7 +307,9 @@ def validate_sibling_followups(
         continuations = continuation_lines(section, index)
         full_entry = " ".join([line, *continuations])
         if is_abstraction_up_diagnostic_only(line):
-            has_followup = line_has_valid_followup(line) or any(line_has_valid_followup(cont) for cont in continuations)
+            has_followup = line_has_valid_followup(line) or any(
+                line_has_valid_followup(cont) for cont in continuations
+            )
             if UNRESOLVED_STRUCTURAL_RE.search(full_entry) and not has_followup:
                 offender = line.strip().lstrip("- ").strip()
                 raise ValidationError(
@@ -442,7 +461,9 @@ def run_changed_artifact_validator(
         # missing nicety -- for any validator whose emitted command NAMES a path. A
         # resolver returning None owns nothing, which is the previous behavior.
         resolved_prefix = owned_prefix(repo_root) if callable(owned_prefix) else owned_prefix
-        unresolvable = unresolvable_named_paths(repo_root, list(args.paths or []), owned_prefix=resolved_prefix)
+        unresolvable = unresolvable_named_paths(
+            repo_root, list(args.paths or []), owned_prefix=resolved_prefix
+        )
         if unresolvable:
             # A DISCOVERED empty set is legitimate (this commit touched no artifact
             # of this family) and stays the cheap no-op below. A named path that
@@ -485,7 +506,11 @@ def run_changed_artifact_validator(
                 repo_root=repo_root,
                 error_cls=error_cls,
                 on_success=(
-                    (lambda artifact: print(f"Validated {artifact_label} {_artifact_label(artifact, repo_root)}."))
+                    (
+                        lambda artifact: print(
+                            f"Validated {artifact_label} {_artifact_label(artifact, repo_root)}."
+                        )
+                    )
                     if per_artifact_success
                     else None
                 ),

@@ -6,7 +6,32 @@ import sys
 from functools import partial
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import (  # noqa: E402
+    import_repo_module,
+    load_path_module,
+    repo_root_from_script,
+)
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -69,11 +94,17 @@ _parse_risk_classes = _scripts_risk_interrupt_lib_module._parse_risk_classes
 # The interrupt/seam grammar lives in its own module (split at the length cap
 # during #636's one-pass reporting work); re-exported here so callers and tests
 # keep one import surface for debug validation.
-_scripts_debug_interrupt_grammar_module = import_repo_module(__file__, "scripts.debug_interrupt_grammar")
+_scripts_debug_interrupt_grammar_module = import_repo_module(
+    __file__, "scripts.debug_interrupt_grammar"
+)
 section_lines = _scripts_debug_interrupt_grammar_module.section_lines
 extract_prefixed_values = _scripts_debug_interrupt_grammar_module.extract_prefixed_values
-validate_current_interrupt_sections = _scripts_debug_interrupt_grammar_module.validate_current_interrupt_sections
-validate_dated_seam_risk_enums = _scripts_debug_interrupt_grammar_module.validate_dated_seam_risk_enums
+validate_current_interrupt_sections = (
+    _scripts_debug_interrupt_grammar_module.validate_current_interrupt_sections
+)
+validate_dated_seam_risk_enums = (
+    _scripts_debug_interrupt_grammar_module.validate_dated_seam_risk_enums
+)
 
 SIBLING_BOUNDARY_HEADINGS = (
     "## Seam Risk",
@@ -358,12 +389,16 @@ def validate_debug_artifact(
             + ("## Prevention",)
         )
         checks = base_checks + (
-            lambda: validate_exact_h2_sections(lines, required_sections, optional_sections=OPTIONAL_SECTIONS),
+            lambda: validate_exact_h2_sections(
+                lines, required_sections, optional_sections=OPTIONAL_SECTIONS
+            ),
             lambda: validate_nonempty_sections(lines, required_sections),
             lambda: validate_candidate_causes(lines),
             lambda: validate_current_invariant_proof(lines),
             lambda: validate_sibling_followups(
-                lines, boundary_headings=SIBLING_BOUNDARY_HEADINGS, source_reference=SIBLING_SOURCE_REFERENCE
+                lines,
+                boundary_headings=SIBLING_BOUNDARY_HEADINGS,
+                source_reference=SIBLING_SOURCE_REFERENCE,
             ),
             lambda: validate_cross_file_sibling_marker(lines),
             lambda: validate_falsifiable_hypothesis_marker(lines),
@@ -375,7 +410,9 @@ def validate_debug_artifact(
             lambda: validate_nonempty_sections(lines, REQUIRED_SECTIONS),
             lambda: validate_candidate_causes(lines),
             lambda: validate_sibling_followups(
-                lines, boundary_headings=SIBLING_BOUNDARY_HEADINGS, source_reference=SIBLING_SOURCE_REFERENCE
+                lines,
+                boundary_headings=SIBLING_BOUNDARY_HEADINGS,
+                source_reference=SIBLING_SOURCE_REFERENCE,
             ),
             lambda: validate_dated_seam_risk_enums(lines),
         )
@@ -508,12 +545,16 @@ def _debug_artifacts(run) -> list[Path] | None:
     """
     output_dir = run.repo_root / load_adapter(run.repo_root)["data"]["output_dir"]
     if not output_dir.is_dir():
-        _exit_not_a_violation(f"No debug output directory at {output_dir.relative_to(run.repo_root)}.")
+        _exit_not_a_violation(
+            f"No debug output directory at {output_dir.relative_to(run.repo_root)}."
+        )
     artifacts = _selected_artifacts(run.args, run.repo_root, output_dir)
     if artifacts is None:
         return None
     if not artifacts:
-        _exit_not_a_violation(f"No debug artifacts found in {output_dir.relative_to(run.repo_root)}.")
+        _exit_not_a_violation(
+            f"No debug artifacts found in {output_dir.relative_to(run.repo_root)}."
+        )
     return artifacts
 
 

@@ -21,7 +21,28 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 _sections = import_repo_module(__file__, "scripts.markdown_sections")
@@ -66,7 +87,11 @@ def validate_structured_entries(
         entry_id = entry.get("id", f"<entry {index}>")
         for field in required:
             if not entry.get(field):
-                detail = f"; every entry needs all of {list(required)} — target form: `{form_hint}`" if form_hint else ""
+                detail = (
+                    f"; every entry needs all of {list(required)} — target form: `{form_hint}`"
+                    if form_hint
+                    else ""
+                )
                 raise ValidationError(
                     f"{path}: `{heading}` entry {entry_id} missing required field `{field}`{detail}"
                 )

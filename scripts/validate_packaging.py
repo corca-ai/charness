@@ -10,31 +10,66 @@ from pathlib import Path
 
 import jsonschema
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
-_scripts_packaging_policy_validators_module = import_repo_module(__file__, "scripts.packaging_policy_validators")
-PackagingPolicyValidationError = _scripts_packaging_policy_validators_module.PackagingPolicyValidationError
-validate_optional_public_skill_policy = _scripts_packaging_policy_validators_module.validate_optional_public_skill_policy
-_scripts_validate_packaging_install_surface_module = import_repo_module(__file__, "scripts.validate_packaging_install_surface")
-validate_materialized_plugin_export = _scripts_validate_packaging_install_surface_module.validate_materialized_plugin_export
+_scripts_packaging_policy_validators_module = import_repo_module(
+    __file__, "scripts.packaging_policy_validators"
+)
+PackagingPolicyValidationError = (
+    _scripts_packaging_policy_validators_module.PackagingPolicyValidationError
+)
+validate_optional_public_skill_policy = (
+    _scripts_packaging_policy_validators_module.validate_optional_public_skill_policy
+)
+_scripts_validate_packaging_install_surface_module = import_repo_module(
+    __file__, "scripts.validate_packaging_install_surface"
+)
+validate_materialized_plugin_export = (
+    _scripts_validate_packaging_install_surface_module.validate_materialized_plugin_export
+)
 
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
 VERSION_RE = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$")
 PACKAGING_SCHEMA_PATH = REPO_ROOT / "packaging" / "plugin.schema.json"
 
+
 class ValidationError(Exception):
     pass
+
 
 def validate_slug(value: object, field: str) -> str:
     if not isinstance(value, str) or not SLUG_RE.fullmatch(value):
         raise ValidationError(f"`{field}` must be a slug string")
     return value
 
+
 def validate_string(value: object, field: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValidationError(f"`{field}` must be a non-empty string")
     return value
+
 
 def validate_version(value: object, field: str) -> str:
     value = validate_string(value, field)
@@ -42,19 +77,23 @@ def validate_version(value: object, field: str) -> str:
         raise ValidationError(f"`{field}` must be a semver-like string")
     return value
 
+
 def validate_relative_path(value: object, field: str) -> str:
     value = validate_string(value, field)
     if value.startswith("/") or value.startswith("../") or "/../" in value:
         raise ValidationError(f"`{field}` must stay within the repo")
     return value
 
+
 def require_file(path: Path, field: str) -> None:
     if not path.is_file():
         raise ValidationError(f"`{field}` references missing file `{path}`")
 
+
 def require_dir(path: Path, field: str) -> None:
     if not path.is_dir():
         raise ValidationError(f"`{field}` references missing directory `{path}`")
+
 
 def require_json_matches(path: Path, expected: dict, field: str) -> None:
     if not path.is_file():
@@ -68,8 +107,10 @@ def require_json_matches(path: Path, expected: dict, field: str) -> None:
             f"`{field}` does not match generated content from the shared packaging manifest"
         )
 
+
 def load_packaging_schema() -> dict[str, object]:
     return json.loads(PACKAGING_SCHEMA_PATH.read_text(encoding="utf-8"))
+
 
 def validate_source_paths(root: Path, source: object) -> None:
     if not isinstance(source, dict):
@@ -139,7 +180,9 @@ def _validate_manifest_author(
         f"`{manifest_prefix}.author.name` must match top-level `author.name`",
     )
     for field in ("url", "email"):
-        _validate_optional_author_field(author, expected_author, manifest_prefix=manifest_prefix, field=field)
+        _validate_optional_author_field(
+            author, expected_author, manifest_prefix=manifest_prefix, field=field
+        )
 
 
 def _validate_keyword_list(keywords: object, field: str) -> None:
@@ -149,7 +192,9 @@ def _validate_keyword_list(keywords: object, field: str) -> None:
         validate_string(keyword, f"{field}[{index}]")
 
 
-def _validate_codex_interface(interface: object, expected_author: dict[str, object], homepage: str) -> None:
+def _validate_codex_interface(
+    interface: object, expected_author: dict[str, object], homepage: str
+) -> None:
     if not isinstance(interface, dict):
         raise ValidationError("`codex.manifest.interface` must be an object")
     for field in ("displayName", "shortDescription", "longDescription", "category"):
@@ -183,18 +228,23 @@ def _validate_codex_interface(interface: object, expected_author: dict[str, obje
 def _validate_codex_marketplace(marketplace: object, package_id: str) -> None:
     if not isinstance(marketplace, dict):
         raise ValidationError("`codex.repo_marketplace` must be an object")
-    if validate_string(marketplace.get("path"), "codex.repo_marketplace.path") != ".agents/plugins/marketplace.json":
-        raise ValidationError("`codex.repo_marketplace.path` must be `.agents/plugins/marketplace.json`")
+    if (
+        validate_string(marketplace.get("path"), "codex.repo_marketplace.path")
+        != ".agents/plugins/marketplace.json"
+    ):
+        raise ValidationError(
+            "`codex.repo_marketplace.path` must be `.agents/plugins/marketplace.json`"
+        )
     default_source_path = validate_string(
         marketplace.get("default_source_path"), "codex.repo_marketplace.default_source_path"
     )
     if default_source_path != f"./plugins/{package_id}":
         raise ValidationError(
-            "`codex.repo_marketplace.default_source_path` must point at "
-            f"`./plugins/{package_id}`"
+            f"`codex.repo_marketplace.default_source_path` must point at `./plugins/{package_id}`"
         )
     materialized_source_path = validate_string(
-        marketplace.get("materialized_source_path"), "codex.repo_marketplace.materialized_source_path"
+        marketplace.get("materialized_source_path"),
+        "codex.repo_marketplace.materialized_source_path",
     )
     if materialized_source_path != default_source_path:
         raise ValidationError(
@@ -244,7 +294,9 @@ def validate_codex(
         version=version,
         summary=summary,
     )
-    _validate_manifest_author(manifest.get("author"), expected_author, manifest_prefix="codex.manifest")
+    _validate_manifest_author(
+        manifest.get("author"), expected_author, manifest_prefix="codex.manifest"
+    )
     _validate_matching_string(
         manifest.get("homepage"),
         "codex.manifest.homepage",
@@ -264,6 +316,7 @@ def validate_codex(
         raise ValidationError("`codex.manifest.skills` must be `./skills/`")
     _validate_codex_interface(manifest.get("interface"), expected_author, homepage)
     _validate_codex_marketplace(data.get("repo_marketplace"), package_id)
+
 
 def validate_root_install_artifacts(
     root: Path, data: dict[str, object], *, validate_export: bool = False
@@ -332,6 +385,7 @@ def validate_root_install_artifacts(
         except RuntimeError as exc:
             raise ValidationError(str(exc)) from exc
 
+
 def validate_claude(
     package_id: str,
     version: str,
@@ -352,7 +406,9 @@ def validate_claude(
         version=version,
         summary=summary,
     )
-    _validate_manifest_author(manifest.get("author"), expected_author, manifest_prefix="claude.manifest")
+    _validate_manifest_author(
+        manifest.get("author"), expected_author, manifest_prefix="claude.manifest"
+    )
     _validate_matching_string(
         manifest.get("repository"),
         "claude.manifest.repository",
@@ -363,13 +419,20 @@ def validate_claude(
     marketplace = data.get("marketplace")
     if not isinstance(marketplace, dict):
         raise ValidationError("`claude.marketplace` must be an object")
-    if validate_string(marketplace.get("path"), "claude.marketplace.path") != ".claude-plugin/marketplace.json":
+    if (
+        validate_string(marketplace.get("path"), "claude.marketplace.path")
+        != ".claude-plugin/marketplace.json"
+    ):
         raise ValidationError("`claude.marketplace.path` must be `.claude-plugin/marketplace.json`")
     validate_slug(marketplace.get("name"), "claude.marketplace.name")
-    if validate_string(marketplace.get("source_path"), "claude.marketplace.source_path") != f"./plugins/{package_id}":
+    if (
+        validate_string(marketplace.get("source_path"), "claude.marketplace.source_path")
+        != f"./plugins/{package_id}"
+    ):
         raise ValidationError(
             "`claude.marketplace.source_path` must point at the materialized plugin export"
         )
+
 
 def validate_packaging_manifest(
     path: Path,
@@ -402,7 +465,9 @@ def validate_packaging_manifest(
     homepage = validate_string(data.get("homepage"), "homepage")
     repository = validate_string(data.get("repository"), "repository")
     if homepage != repository:
-        raise ValidationError("`homepage` should match `repository` until a separate package homepage exists")
+        raise ValidationError(
+            "`homepage` should match `repository` until a separate package homepage exists"
+        )
 
     validate_source_paths(root, data.get("source"))
     validate_codex(package_id, version, summary, author, homepage, repository, data.get("codex"))
@@ -418,11 +483,7 @@ def validate_packaging_manifest(
 def iter_packaging_files(root: Path) -> list[Path]:
     packaging_dir = root / "packaging"
     excluded = {"plugin.schema.json", "bootstrap-python.json"}
-    return sorted(
-        path
-        for path in packaging_dir.glob("*.json")
-        if path.name not in excluded
-    )
+    return sorted(path for path in packaging_dir.glob("*.json") if path.name not in excluded)
 
 
 def main() -> int:

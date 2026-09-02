@@ -52,11 +52,15 @@ def _bootstrap_pycache_prefix() -> None:
     repo_root = Path(__file__).resolve().parent.parent
     if configured and not _is_inside(Path(configured).expanduser().resolve(), repo_root):
         return
-    base = Path(
-        os.environ.get("XDG_CACHE_HOME", "").strip()
-        or os.environ.get("TMPDIR", "").strip()
-        or tempfile.gettempdir()
-    ).expanduser().resolve()
+    base = (
+        Path(
+            os.environ.get("XDG_CACHE_HOME", "").strip()
+            or os.environ.get("TMPDIR", "").strip()
+            or tempfile.gettempdir()
+        )
+        .expanduser()
+        .resolve()
+    )
     if _is_inside(base, repo_root):
         base = Path(tempfile.gettempdir()).resolve()
     if _is_inside(base, repo_root):
@@ -187,9 +191,7 @@ def configure_runtime_environment(
     # the override at the one Python execution boundary so every Charness-owned
     # Python entrypoint gives its children the same external cache. A later
     # explicit command-line option remains the caller's choice.
-    pytest_cache_option = shlex.join(
-        ["-o", f"cache_dir={target['CHARNESS_PYTEST_CACHE_DIR']}"]
-    )
+    pytest_cache_option = shlex.join(["-o", f"cache_dir={target['CHARNESS_PYTEST_CACHE_DIR']}"])
     existing_addopts = target.get("PYTEST_ADDOPTS", "").strip()
     if pytest_cache_option not in existing_addopts:
         target["PYTEST_ADDOPTS"] = f"{existing_addopts} {pytest_cache_option}".strip()
@@ -211,7 +213,20 @@ def repo_root_from_script(script_file: str | Path) -> Path:
     if override:
         root = Path(override).expanduser().resolve()
     else:
-        root = Path(script_file).resolve().parent.parent
+        script_path = Path(script_file).resolve()
+        root = next(
+            (
+                ancestor
+                for ancestor in script_path.parents
+                if (ancestor / "scripts" / "adapter_lib.py").is_file()
+            ),
+            None,
+        )
+        if root is None:
+            raise RuntimeError(
+                f"cannot resolve a repository root for script {script_path}: "
+                "no ancestor contains `scripts/adapter_lib.py`"
+            )
     configure_runtime_environment(root)
     return root
 

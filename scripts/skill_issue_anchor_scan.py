@@ -8,6 +8,7 @@ in skill_text_quality_lib) so the per-file verdict matches the commit sweep
 exactly. The sweep stays the backstop; this is the additive author-time surface.
 Driven through `check_skill_surface_preflight.py --scan-issue-anchors`.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -15,7 +16,28 @@ from typing import Any
 
 from skill_gate_report_render import render_gate_report
 
-from runtime_bootstrap import load_path_module, repo_root_from_script
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import load_path_module, repo_root_from_script  # noqa: E402
 
 # The canonical anchor-rule lib ships beside this script, so resolve it from the
 # script's own tree (not the scanned --repo-root) -- a seeded test repo or an
@@ -71,7 +93,9 @@ def scan_issue_anchors(repo_root: Path, paths: list[str]) -> dict[str, Any]:
     for raw in paths:
         target = _scan_target(repo_root, raw)
         file_findings = tqlib.issue_anchor_findings_for_file(repo_root, target)
-        checked.append({"path": target.relative_to(repo_root).as_posix(), "findings": len(file_findings)})
+        checked.append(
+            {"path": target.relative_to(repo_root).as_posix(), "findings": len(file_findings)}
+        )
         findings.extend(file_findings)
     return {
         "status": "blocked" if findings else "ok",
@@ -83,8 +107,7 @@ def scan_issue_anchors(repo_root: Path, paths: list[str]) -> dict[str, Any]:
 
 def format_human(report: dict[str, Any]) -> str:
     rows = [
-        f"- {row['path']}: {row['findings']} anchor(s) "
-        f"[{'BLOCK' if row['findings'] else 'ok'}]"
+        f"- {row['path']}: {row['findings']} anchor(s) [{'BLOCK' if row['findings'] else 'ok'}]"
         for row in report["checked"]
     ]
     rows.extend(

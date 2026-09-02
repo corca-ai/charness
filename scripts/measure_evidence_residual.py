@@ -14,6 +14,7 @@ supplies one or two), and reports the minimum.
 
     python3 scripts/measure_evidence_residual.py --repo-root .
 """
+
 from __future__ import annotations
 
 import argparse
@@ -21,8 +22,29 @@ import re
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 _lib = import_repo_module(__file__, "scripts.check_prescribed_skill_executed_lib")
 
@@ -52,9 +74,7 @@ def measure(repo_root: Path, pattern: str) -> dict[str, object]:
         "files": len(scored),
         "min_residual": scored[0][0] if scored else None,
         "min_residual_path": scored[0][1] if scored else None,
-        "smallest_five": [
-            {"residual": residual, "path": name} for residual, name in scored[:5]
-        ],
+        "smallest_five": [{"residual": residual, "path": name} for residual, name in scored[:5]],
     }
 
 
@@ -75,9 +95,9 @@ def main() -> int:
     ]
     # Reported, never inferred: an empty corpus must not read as "the floor clears
     # every artifact", which is the empty-scope PASS this repo keeps finding.
-    payload["floor_below_every_measured_minimum"] = (
-        bool(minimums) and _lib.MIN_BOUND_RESIDUAL_CHARS < min(minimums)
-    )
+    payload["floor_below_every_measured_minimum"] = bool(
+        minimums
+    ) and _lib.MIN_BOUND_RESIDUAL_CHARS < min(minimums)
     payload["corpus_established"] = bool(minimums)
     emit_yaml(payload)
     return 0 if payload["floor_below_every_measured_minimum"] else 1

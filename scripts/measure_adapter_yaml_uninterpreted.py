@@ -27,21 +27,53 @@ The identity assertion compares `load_yaml_report` against `load_yaml` — both 
 CURRENT module, so it proves the sink is observation-only. It is NOT evidence that this
 parser matches an earlier one; that comparison is a separate run against a checkout.
 """
+
 from __future__ import annotations
 
 import argparse
 import sys
 from pathlib import Path
 
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import adapter_lib  # noqa: E402
 
-from yaml_output import emit_yaml  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 # Where this repo keeps adapters, presets, and profiles. `plugins/` is absent on purpose:
 # it is a generated mirror, so counting it would double every finding. `.` scans the repo
 # root's own top-level YAML and nothing deeper.
-DEFAULT_ROOTS = (".", ".agents", "presets", "profiles", "skills", "docs", ".claude", ".codex", "integrations")
+DEFAULT_ROOTS = (
+    ".",
+    ".agents",
+    "presets",
+    "profiles",
+    "skills",
+    "docs",
+    ".claude",
+    ".codex",
+    "integrations",
+)
 # Generated mirrors and vendored trees: counting them would double every finding or
 # report a dependency's YAML as this repo's.
 _EXCLUDED = {"plugins", "node_modules", "mutants", ".git"}
@@ -57,7 +89,9 @@ def scan(repo_root: Path, roots: tuple[str, ...]) -> dict[str, object]:
             # neither of which any adapter reads.
             walk = root.glob if name == "." else root.rglob
             files += [
-                path for pattern in ("*.yaml", "*.yml") for path in walk(pattern)
+                path
+                for pattern in ("*.yaml", "*.yml")
+                for path in walk(pattern)
                 if not _EXCLUDED.intersection(path.relative_to(repo_root).parts)
             ]
 
@@ -75,7 +109,9 @@ def scan(repo_root: Path, roots: tuple[str, ...]) -> dict[str, object]:
         except ValueError as exc:
             # The parser raises on an unsupported block-scalar header; that is a refusal
             # it already makes loudly, so it is reported rather than counted as a drop.
-            unreadable.append({"path": str(path.relative_to(repo_root)), "error": f"parser refused: {exc}"})
+            unreadable.append(
+                {"path": str(path.relative_to(repo_root)), "error": f"parser refused: {exc}"}
+            )
             continue
         scanned += 1
         if parsed != adapter_lib.load_yaml(text):
@@ -99,7 +135,9 @@ def scan(repo_root: Path, roots: tuple[str, ...]) -> dict[str, object]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--repo-root", type=Path, default=Path("."))
     parser.add_argument("--roots", nargs="*", default=list(DEFAULT_ROOTS))
     args = parser.parse_args()

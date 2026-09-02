@@ -41,13 +41,35 @@ BLIND CLASS -- what this measure CANNOT see:
   Entry-shaped pressure budgets are owned by their skill-specific density checks;
   this module intentionally measures prose artifacts in words.
 """
+
 from __future__ import annotations
 
 import datetime as _dt
 from pathlib import Path
 from typing import Sequence
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 # Sibling resolution, not a bare import: `from artifact_run_scope import ...` binds
 # only where `scripts/` happens to be on sys.path -- true in the repo, false in the

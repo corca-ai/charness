@@ -7,8 +7,29 @@ import shutil
 from collections.abc import Callable
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -28,7 +49,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skill-id", required=True)
     parser.add_argument("--record-artifact-path", type=Path, required=True)
     parser.add_argument("--strategy", choices=("auto", "copy", "symlink"), default="auto")
-    parser.add_argument("--execute", action="store_true", help="Apply the pointer refresh. Defaults to dry-run.")
+    parser.add_argument(
+        "--execute", action="store_true", help="Apply the pointer refresh. Defaults to dry-run."
+    )
     return parser.parse_args()
 
 
@@ -51,7 +74,11 @@ def _current_path(repo_root: Path, skill_id: str, adapter: dict[str, object]) ->
     if not isinstance(data, dict) or not isinstance(data.get("output_dir"), str):
         raise SystemExit("adapter data must include output_dir")
     artifact_filename = adapter.get("artifact_filename")
-    filename = artifact_filename if isinstance(artifact_filename, str) else current_artifact_filename(skill_id)
+    filename = (
+        artifact_filename
+        if isinstance(artifact_filename, str)
+        else current_artifact_filename(skill_id)
+    )
     return repo_root / Path(data["output_dir"]) / filename
 
 
@@ -111,7 +138,9 @@ def _copy_pointer(
     payload: dict[str, object],
 ) -> int:
     if current_path.is_symlink():
-        return _blocked(payload, "copy strategy would follow an existing symlink; use symlink strategy")
+        return _blocked(
+            payload, "copy strategy would follow an existing symlink; use symlink strategy"
+        )
     if current_path.exists() and current_path.is_dir():
         return _blocked(payload, "current pointer path is a directory")
     if current_path.exists() and current_path.read_bytes() == record_path.read_bytes():
@@ -210,7 +239,9 @@ def main() -> int:
     }
 
     if not record_artifact_supported(artifact_class):
-        return _blocked(payload, f"artifact_class `{artifact_class}` does not support dated records")
+        return _blocked(
+            payload, f"artifact_class `{artifact_class}` does not support dated records"
+        )
     nominal_current_parent = current_path.parent.resolve()
     if not _is_relative_to(nominal_current_parent, repo_root):
         return _blocked(payload, "current pointer path is outside repo_root")

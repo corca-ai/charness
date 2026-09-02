@@ -6,12 +6,33 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
 try:
     from scripts.run_quality_engine_model import load_gate_list
 except ImportError:  # run by path from scripts/
     from run_quality_engine_model import load_gate_list
 
-from runtime_bootstrap import repo_root_from_script
+from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 DOC_PATH = Path("docs/validator-timing-layers.md")
@@ -35,10 +56,7 @@ def rendered_classification_section(repo_root: Path) -> str:
         "| Check (broad-gate label) | Timing layer |\n",
         "| --- | --- |\n",
     ]
-    lines.extend(
-        f"| {', '.join(labels)} | {timing} |\n"
-        for timing, labels in grouped.items()
-    )
+    lines.extend(f"| {', '.join(labels)} | {timing} |\n" for timing, labels in grouped.items())
     lines.extend([f"{END_MARKER}\n", ""])
     return "".join(lines)
 

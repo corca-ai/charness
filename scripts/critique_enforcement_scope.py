@@ -33,7 +33,28 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 # One home for "the lines of a markdown section"; this module carried three copies.
 _sections = import_repo_module(__file__, "scripts.markdown_sections")
@@ -74,7 +95,9 @@ PACKET_ABSENT_VALUES = frozenset({"n/a", "na", "none", "no", "-", "–", "—", 
 # because a HEADING cannot be a mid-line prose mention of this surface. The
 # declared value is still read (not just the heading's presence), so the corpus's
 # `n/a` negative keeps the floor off exactly as it does on the line form.
-PACKET_CONSUMED_HEADING_RE = re.compile(r"(?im)^[ \t]*\#{2,}[ \t]*\*{0,2}packet consumed\*{0,2}[ \t]*:?[ \t]*$")
+PACKET_CONSUMED_HEADING_RE = re.compile(
+    r"(?im)^[ \t]*\#{2,}[ \t]*\*{0,2}packet consumed\*{0,2}[ \t]*:?[ \t]*$"
+)
 _CRITIQUE_DATE_LINE = re.compile(r"^date:\s*(\d{4}-\d{2}-\d{2})\b")
 _MARKUP = " `*_\"'>-.:"
 
@@ -119,10 +142,7 @@ def packet_consumed(text: str) -> bool:
             value = tail.split("\n", 1)[0].strip().strip(_MARKUP).lower()
         if value and value not in PACKET_ABSENT_VALUES:
             return True
-    return any(
-        value not in PACKET_ABSENT_VALUES
-        for value in (_packet_heading_values(fenceless))
-    )
+    return any(value not in PACKET_ABSENT_VALUES for value in (_packet_heading_values(fenceless)))
 
 
 #: A declared packet is a PATH, and only a path counts as a declaration. Reading
@@ -155,7 +175,9 @@ def _packet_heading_values(fenceless_text: str) -> list[str]:
     values: list[str] = []
     for match in PACKET_CONSUMED_HEADING_RE.finditer(fenceless_text):
         tail = fenceless_text[match.end() :].splitlines()
-        first = next(iter(_sections.leading_nonempty(_sections.lines_until_next_section(tail), 1)), "")
+        first = next(
+            iter(_sections.leading_nonempty(_sections.lines_until_next_section(tail), 1)), ""
+        )
         # Bulleted section bodies write `- <path>`; the line form's own marker rule.
         first = re.sub(r"^[-*][ \t]+", "", first)
         value = first.split()[0].strip(_MARKUP) if first.split() else ""
@@ -222,14 +244,19 @@ def _fresh_eye_line_status(text: str) -> str | None:
     lines = text.splitlines()
     for index, raw in enumerate(lines):
         lowered = raw.strip().lower()
-        if "fresh-eye satisfaction" not in lowered and "fresh-eye satisfaction" not in lowered.replace("_", "-"):
+        if (
+            "fresh-eye satisfaction" not in lowered
+            and "fresh-eye satisfaction" not in lowered.replace("_", "-")
+        ):
             continue
         if ":" in lowered:
             return lowered.split(":", 1)[1].strip()
         # A bare mention with no colon: the status wrapped onto the following lines.
         # Bounded to the same 3 as the section reader, and stopping at the next `## `
         # for the same reason — the next section's prose is not this status.
-        return " ".join(_sections.leading_nonempty(_sections.lines_until_next_section(lines[index + 1 :]), 3))
+        return " ".join(
+            _sections.leading_nonempty(_sections.lines_until_next_section(lines[index + 1 :]), 3)
+        )
     return None
 
 
@@ -283,7 +310,9 @@ def observed_date(path: Path, text: str) -> date | None:
     fail-open by default: only the explicit legacy allowlists are grandfathered on
     absence; every other undatable artifact is enforced as if post-cutoff.
     """
-    channels = [value for value in (date_from_body(text), date_from_filename(path)) if value is not None]
+    channels = [
+        value for value in (date_from_body(text), date_from_filename(path)) if value is not None
+    ]
     return max(channels) if channels else None
 
 
@@ -403,12 +432,8 @@ def resolve_cross_surface_scope(
         # the condition moved off the flags. `overrides` is False either way, so
         # this changes no verdict -- only whether the report makes a claim it
         # cannot support.
-        return CrossSurfaceScope(
-            CROSS_SURFACE_NOT_ESTABLISHED, False, 0, include_worktree, None
-        )
-    return CrossSurfaceScope(
-        CROSS_SURFACE_EVALUATED, hit, len(changed), include_worktree, matched
-    )
+        return CrossSurfaceScope(CROSS_SURFACE_NOT_ESTABLISHED, False, 0, include_worktree, None)
+    return CrossSurfaceScope(CROSS_SURFACE_EVALUATED, hit, len(changed), include_worktree, matched)
 
 
 _CROSS_SURFACE_NOTE = {
@@ -437,9 +462,8 @@ def _cross_surface_note(cross_surface: CrossSurfaceScope | None) -> str:
         # Hit and miss are different facts, and only the hit changes a verdict
         # (it rejects a bare `single-surface`). Rendering both as `evaluated`
         # hides the one state that does something.
-        scope_note = (
-            f"{cross_surface.scanned_paths} path(s)"
-            + (", worktree included" if cross_surface.worktree_included else ", committed scope only")
+        scope_note = f"{cross_surface.scanned_paths} path(s)" + (
+            ", worktree included" if cross_surface.worktree_included else ", committed scope only"
         )
         if cross_surface.hit:
             return (
@@ -479,7 +503,9 @@ def add_cross_surface_args(parser) -> None:
     )
 
 
-def report_enforcement_scope(run, artifacts, cross_surface: CrossSurfaceScope | None, disagreements) -> None:
+def report_enforcement_scope(
+    run, artifacts, cross_surface: CrossSurfaceScope | None, disagreements
+) -> None:
     """Name what the run evaluated, so `Validated N critique artifact(s).` stops
     reading as coverage it never claimed.
 

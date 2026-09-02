@@ -91,7 +91,28 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _boundary_probe = import_repo_module(__file__, "scripts.boundary_probe_lib")
 
@@ -171,6 +192,7 @@ RESIDUAL_JUDGMENT = (
     "transcribed is not observable from the record",
 )
 
+
 def _missing_fields(fields: dict[str, str], sections: dict[str, str]) -> list[str]:
     missing = [name for name in REQUIRED_FIELDS if not _substantive(fields.get(name))]
     # `Call sites unproven: none` is a real answer, so the placeholder filter above --
@@ -185,7 +207,9 @@ def _missing_fields(fields: dict[str, str], sections: dict[str, str]) -> list[st
         (fields.get("call_sites_unproven") or "").strip("`*").strip()
     ):
         missing.remove("call_sites_unproven")
-    missing += [f"{name} (section)" for name in REQUIRED_SECTIONS if not _substantive(sections.get(name))]
+    missing += [
+        f"{name} (section)" for name in REQUIRED_SECTIONS if not _substantive(sections.get(name))
+    ]
     return missing
 
 
@@ -272,7 +296,9 @@ def _observable_lines(text: str) -> list[str]:
     # label is gone. The symmetric case the strip was written for worked; the asymmetric
     # paste, which is the likelier one, manufactured exactly the disagreement the strip
     # exists to prevent.
-    return [stripped for line in _normalized_lines(text) if (stripped := _ARM_LABEL_RE.sub("", line))]
+    return [
+        stripped for line in _normalized_lines(text) if (stripped := _ARM_LABEL_RE.sub("", line))
+    ]
 
 
 def resolve_probe_record(record: dict, *, repo_root: Path) -> dict:
@@ -293,14 +319,18 @@ def resolve_probe_record(record: dict, *, repo_root: Path) -> dict:
     covers_all_call_sites = bool(_NO_UNPROVEN_SITES_RE.match(unproven.strip("`*").strip()))
 
     if missing := _missing_fields(fields, sections):
-        reasons.append("the record is incomplete; missing: " + ", ".join(f"`{name}`" for name in missing))
+        reasons.append(
+            "the record is incomplete; missing: " + ", ".join(f"`{name}`" for name in missing)
+        )
     if duplicated := record.get("duplicated_fields") or []:
         reasons.append(
             "the record states these fields more than once, so which value the verdict rests on is "
             "ambiguous: " + ", ".join(f"`{name}`" for name in duplicated)
         )
     if claim_kind and claim_kind not in CLAIM_KINDS:
-        reasons.append(f"unknown claim kind `{claim_kind}`; expected one of {', '.join(CLAIM_KINDS)}")
+        reasons.append(
+            f"unknown claim kind `{claim_kind}`; expected one of {', '.join(CLAIM_KINDS)}"
+        )
 
     quote = verify_source_quote(
         repo_root,

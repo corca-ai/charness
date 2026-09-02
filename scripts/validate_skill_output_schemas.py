@@ -17,8 +17,29 @@ import argparse
 import re
 from pathlib import Path
 
-from runtime_bootstrap import repo_root_from_script
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -26,7 +47,9 @@ REPO_ROOT = repo_root_from_script(__file__)
 # bullet carrying one of these keys is the signal the rule targets; generic
 # backtick lists and prose bullets are intentionally NOT flagged.
 CLASSIFIER_KEYS = ("bin", "severity", "urgency", "decision", "evidence", "action")
-_SCHEMA_BULLET_RE = re.compile(r"^\s*-\s+.*\|.*\b(" + "|".join(CLASSIFIER_KEYS) + r")\s*:", re.IGNORECASE)
+_SCHEMA_BULLET_RE = re.compile(
+    r"^\s*-\s+.*\|.*\b(" + "|".join(CLASSIFIER_KEYS) + r")\s*:", re.IGNORECASE
+)
 _VALIDATOR_MENTION_RE = re.compile(r"validate_[a-z0-9_]+_(artifacts?|outputs?)\.py", re.IGNORECASE)
 _VALIDATOR_SUFFIXES = ("_artifact", "_artifacts", "_output", "_outputs")
 

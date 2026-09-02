@@ -4,7 +4,28 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from runtime_bootstrap import (
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import (  # noqa: E402
     import_repo_module,
     load_path_module,
     repo_root_from_script,
@@ -37,8 +58,12 @@ REQUIRED_FIELDS = (
     "retry disposition",
     "retry key",
 )
-FAILURE_CLASSIFICATIONS = frozenset({"scope-too-broad", "verifier-defect", "subject-defect", "none"})
-RETRY_DISPOSITIONS = frozenset({"first-attempt", "retry-new-identity", "stop-no-progress", "non-claim"})
+FAILURE_CLASSIFICATIONS = frozenset(
+    {"scope-too-broad", "verifier-defect", "subject-defect", "none"}
+)
+RETRY_DISPOSITIONS = frozenset(
+    {"first-attempt", "retry-new-identity", "stop-no-progress", "non-claim"}
+)
 PLACEHOLDERS = {"", "todo", "tbd", "missing", "n/a", "na", "blocked"}
 
 
@@ -74,7 +99,9 @@ def validate(path: Path, text: str) -> None:
     negative_control = fields["negative control"].strip().lower()
     if not (
         negative_control.startswith("none with rationale:")
-        or all(marker in negative_control for marker in ("command", "expected", "observed", "receipt"))
+        or all(
+            marker in negative_control for marker in ("command", "expected", "observed", "receipt")
+        )
     ):
         raise ValidationError(
             f"{path}: negative control must record command/expected refusal/observed result/receipt "
@@ -95,4 +122,6 @@ def validate(path: Path, text: str) -> None:
     except ValueError as exc:
         raise ValidationError(f"{path}: invalid verification scope identity: {exc}") from exc
     if fields["retry key"].strip().lower() != expected_key:
-        raise ValidationError(f"{path}: retry key does not match subject/verifier/input/failure identities")
+        raise ValidationError(
+            f"{path}: retry key does not match subject/verifier/input/failure identities"
+        )

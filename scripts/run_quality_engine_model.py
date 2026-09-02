@@ -8,7 +8,28 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _adapter_lib.load_yaml_file
@@ -124,7 +145,12 @@ def _condition(value: Any, label: str) -> dict[str, Any]:
             or any(not isinstance(branch, dict) for branch in branches)
         ):
             raise RunnerError(f"{label}.{verb} must be a non-empty list of mappings")
-        return {verb: [_condition(branch, f"{label}.{verb}[{index}]") for index, branch in enumerate(branches)]}
+        return {
+            verb: [
+                _condition(branch, f"{label}.{verb}[{index}]")
+                for index, branch in enumerate(branches)
+            ]
+        }
     for verb, branch in condition.items():
         if verb == "env":
             if not isinstance(branch, dict) or any(
@@ -133,8 +159,10 @@ def _condition(value: Any, label: str) -> dict[str, Any]:
             ):
                 raise RunnerError(f"{label}.env must map non-empty names to strings")
         elif verb == "mode_in":
-            if not isinstance(branch, list) or not branch or any(
-                not isinstance(item, str) for item in branch
+            if (
+                not isinstance(branch, list)
+                or not branch
+                or any(not isinstance(item, str) for item in branch)
             ):
                 raise RunnerError(f"{label}.mode_in must be a non-empty list of strings")
         elif verb in {"file_exists", "predicate", "non_claim_absent"}:

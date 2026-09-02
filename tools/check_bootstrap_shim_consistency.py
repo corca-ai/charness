@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import ast
 import builtins
+import re
 from pathlib import Path
 
 try:
@@ -34,7 +35,28 @@ CANONICAL_SHIM = """def _load_skill_runtime_bootstrap():
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))"""
+REPO_SHIM_NAME = "_load_repo_runtime_bootstrap"
+CANONICAL_REPO_SHIM = """def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)"""
 SCAN_PATTERNS = ("skills/**/*.py", "scripts/**/*.py", "tools/**/*.py")
+REPO_SHIM_SCAN_PATTERN = ("scripts/**/*.py",)
+REPO_SHIM_TRIGGER = re.compile(
+    r"^\s*from (?:scripts\.)?(?:runtime_bootstrap|yaml_output) import\b", re.MULTILINE
+)
 
 
 def _shim_nodes(source: str) -> list[ast.FunctionDef]:
@@ -63,6 +85,31 @@ def find_shim_files(
     return files
 
 
+def _repo_shim_nodes(source: str) -> list[ast.FunctionDef]:
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return []
+    return [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef) and node.name == REPO_SHIM_NAME
+    ]
+
+
+def find_repo_shim_files(
+    repo_root: Path, *, require_git: bool = False
+) -> dict[Path, list[ast.FunctionDef]]:
+    files: dict[Path, list[ast.FunctionDef]] = {}
+    for path in iter_matching_repo_files(
+        repo_root, REPO_SHIM_SCAN_PATTERN, require_git=require_git
+    ):
+        source = path.read_text(encoding="utf-8")
+        if REPO_SHIM_TRIGGER.search(source):
+            files[path] = _repo_shim_nodes(source)
+    return files
+
+
 def drifted_copies(source: str, nodes: list[ast.FunctionDef]) -> list[ast.FunctionDef]:
     return [node for node in nodes if ast.get_source_segment(source, node) != CANONICAL_SHIM]
 
@@ -75,7 +122,15 @@ def _shim_required_names() -> set[str]:
     stale the moment someone takes this gate's own documented "edit CANONICAL_SHIM
     first, then --fix to propagate" path.
     """
-    function = ast.parse(CANONICAL_SHIM).body[0]
+    return _required_names(CANONICAL_SHIM)
+
+
+def _repo_shim_required_names() -> set[str]:
+    return _required_names(CANONICAL_REPO_SHIM)
+
+
+def _required_names(canonical: str) -> set[str]:
+    function = ast.parse(canonical).body[0]
     stored = {
         node.id
         for node in ast.walk(function)
@@ -131,9 +186,15 @@ def _module_level_names(source: str) -> set[str]:
     return names
 
 
-def missing_shim_dependencies(source: str) -> list[str]:
+def missing_shim_dependencies(source: str, canonical: str = CANONICAL_SHIM) -> list[str]:
     """Canonical-shim names `source` never binds, so the spliced block would crash."""
-    return sorted(_shim_required_names() - _module_level_names(source))
+    return sorted(_required_names(canonical) - _module_level_names(source))
+
+
+def repo_shim_drift(source: str, nodes: list[ast.FunctionDef]) -> bool:
+    return not nodes or any(
+        ast.get_source_segment(source, node) != CANONICAL_REPO_SHIM for node in nodes
+    )
 
 
 def fix_file(path: Path, source: str, nodes: list[ast.FunctionDef]) -> bool:
@@ -173,10 +234,13 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     shim_files = find_shim_files(repo_root, require_git=args.require_git_file_listing)
+    repo_shim_files = find_repo_shim_files(repo_root, require_git=args.require_git_file_listing)
     drifted: list[str] = []
     fixed: list[str] = []
     unfixable: list[str] = []
     unfixable_reasons: dict[str, str] = {}
+    repo_drifted: list[str] = []
+    repo_missing_dependencies: dict[str, list[str]] = {}
     for path, nodes in sorted(shim_files.items()):
         source = path.read_text(encoding="utf-8")
         rel = path.relative_to(repo_root).as_posix()
@@ -205,11 +269,22 @@ def main() -> int:
         else:
             drifted.append(rel)
 
+    for path, nodes in sorted(repo_shim_files.items()):
+        source = path.read_text(encoding="utf-8")
+        if not repo_shim_drift(source, nodes):
+            missing = missing_shim_dependencies(source, CANONICAL_REPO_SHIM)
+            if missing:
+                repo_missing_dependencies[path.relative_to(repo_root).as_posix()] = missing
+            if not missing:
+                continue
+        repo_drifted.append(path.relative_to(repo_root).as_posix())
     # A scan that found no shim copies established no scope: it cannot distinguish
     # "every copy matches" from "the root is wrong / the listing came back empty".
     # Report it as its own state so a green line never stands for zero comparisons.
     status = (
-        "empty-scope" if not shim_files else ("ok" if not drifted and not unfixable else "drift")
+        "empty-scope"
+        if not shim_files and not repo_shim_files
+        else ("ok" if not drifted and not unfixable and not repo_drifted else "drift")
     )
     payload: dict[str, object] = {
         "status": status,
@@ -219,6 +294,9 @@ def main() -> int:
         "fixed": fixed,
         "unfixable": unfixable,
         "unfixable_reasons": unfixable_reasons,
+        "repo_checked_files": len(repo_shim_files),
+        "repo_drifted": repo_drifted,
+        "repo_missing_dependencies": repo_missing_dependencies,
     }
     # Output is unconditionally YAML, so the remedies have to live in the payload.
     # Each of these existed only inside the human branches, and a non-ok status
@@ -233,6 +311,10 @@ def main() -> int:
             "Run: python3 -m tools.check_bootstrap_shim_consistency --repo-root . --fix",
             "To evolve the shim deliberately, edit CANONICAL_SHIM in this gate first, then --fix to propagate.",
         ]
+        if repo_drifted:
+            payload["remedies"].append(
+                "Run: python3 -m tools.rewrite_script_preambles --repo-root ."
+            )
     emit_yaml(payload)
     return 0 if status == "ok" else 1
 

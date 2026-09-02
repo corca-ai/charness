@@ -7,7 +7,28 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 iter_doc_lines = _markdown_doc_scan.iter_doc_lines
@@ -55,9 +76,7 @@ def iter_unresolved_command_targets(
 
     for lineno, line, in_fence in iter_doc_lines(doc):
         carriers = (
-            [line]
-            if in_fence
-            else [span.group(1) for span in BACKTICK_CONTENT_RE.finditer(line)]
+            [line] if in_fence else [span.group(1) for span in BACKTICK_CONTENT_RE.finditer(line)]
         )
         for carrier in carriers:
             for match in COMMAND_TARGET_RE.finditer(carrier):
@@ -112,9 +131,7 @@ def iter_unportable_command_targets(
     matches: list[tuple[int, str, str, bool]] = []
     for lineno, line, in_fence in iter_doc_lines(doc):
         carriers = (
-            [line]
-            if in_fence
-            else [span.group(1) for span in BACKTICK_CONTENT_RE.finditer(line)]
+            [line] if in_fence else [span.group(1) for span in BACKTICK_CONTENT_RE.finditer(line)]
         )
         for carrier in carriers:
             for match in COMMAND_TARGET_RE.finditer(carrier):
@@ -129,8 +146,6 @@ def iter_unportable_command_targets(
                 )
                 if not source_exists:
                     continue
-                shipped_exists = any(
-                    (package / shipped).is_file() for package in plugin_packages
-                )
+                shipped_exists = any((package / shipped).is_file() for package in plugin_packages)
                 matches.append((lineno, candidate, shipped, shipped_exists))
     return matches

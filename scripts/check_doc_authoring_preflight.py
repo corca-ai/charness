@@ -23,6 +23,7 @@ existing gates (``check_doc_links.py``, ``check-markdown.sh``, the artifact
 length validators) stay the enforcement. It is intentionally absent from the
 blocking commit-gate plan; a non-blocking guard test keeps it that way.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -32,8 +33,29 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -69,7 +91,6 @@ def _doc_link_indices(repo_root: Path) -> tuple[Path, set[str], dict[str, str], 
 
 
 # --- per-class collectors (each reuses the owning validator, no fork) --------
-
 
 
 def collect_wrapped_inline_code(doc: Path) -> list[dict[str, Any]]:
@@ -143,11 +164,7 @@ class Report:
 
     @property
     def blocked(self) -> bool:
-        return bool(
-            self.markdownlint["findings"]
-            or self.wrapped_inline_code
-            or self.doc_links
-        )
+        return bool(self.markdownlint["findings"] or self.wrapped_inline_code or self.doc_links)
 
     @property
     def unforecast_classes(self) -> list[str]:

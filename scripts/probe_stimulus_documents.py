@@ -31,7 +31,28 @@ from __future__ import annotations
 import re
 from pathlib import PurePosixPath
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 
@@ -80,6 +101,7 @@ _INT_RE = re.compile(r"-?\d+")
 _FLOAT_RE = re.compile(r"-?\d+\.\d+")
 _BLOCK_SCALAR_PREFIXES = ("|", ">")
 
+
 def extract_adapter_documents(stimulus: str) -> list[dict]:
     """Every adapter document the stimulus block writes, in order.
 
@@ -94,10 +116,16 @@ def extract_adapter_documents(stimulus: str) -> list[dict]:
         match = _HEREDOC_RE.match(lines[index])
         if match is None:
             if _CAT_LINE_RE.match(lines[index]):
-                documents.append({
-                    "filename": lines[index].strip(), "skill": None, "text": "",
-                    "expanded": False, "directory": _ADAPTER_DIRECTORY, "unreadable_command": True,
-                })
+                documents.append(
+                    {
+                        "filename": lines[index].strip(),
+                        "skill": None,
+                        "text": "",
+                        "expanded": False,
+                        "directory": _ADAPTER_DIRECTORY,
+                        "unreadable_command": True,
+                    }
+                )
             index += 1
             continue
         delimiter = match.group("delim")
@@ -115,7 +143,15 @@ def extract_adapter_documents(stimulus: str) -> list[dict]:
             # not dropped. Dropping it renders `not-configured`, which does not demote the
             # record -- so silence here is the cheapest escape in the whole module.
             if _ADAPTER_ISH_RE.search(filename):
-                documents.append({"filename": filename, "skill": None, "text": "", "expanded": False, "directory": written_to.parent.name})
+                documents.append(
+                    {
+                        "filename": filename,
+                        "skill": None,
+                        "text": "",
+                        "expanded": False,
+                        "directory": written_to.parent.name,
+                    }
+                )
             continue
         documents.append(
             {
@@ -193,9 +229,7 @@ def with_supported_version(text: str) -> str:
     A document that declares no version is returned unchanged: there is nothing to make
     speakable, and inventing one would resolve a document the record never wrote.
     """
-    return _VERSION_LINE_RE.sub(
-        f"version: {_adapter_lib.SUPPORTED_ADAPTER_VERSION}", text, count=1
-    )
+    return _VERSION_LINE_RE.sub(f"version: {_adapter_lib.SUPPORTED_ADAPTER_VERSION}", text, count=1)
 
 
 _MUTATION_TOKEN = "probe-mutation"
@@ -321,4 +355,3 @@ def without_line(text: str, index: int) -> str:
     while end < len(lines) and (not lines[end].strip() or _indent_of(lines[end]) > indent):
         end += 1
     return "\n".join(lines[:index] + lines[end:]) + "\n"
-

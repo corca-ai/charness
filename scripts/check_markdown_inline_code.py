@@ -17,7 +17,28 @@ import re
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -75,7 +96,7 @@ def find_inline_code_violations(text: str) -> list[tuple[int, str, str]]:
                 continue
             if open_line is None:
                 open_line = index
-                open_snippet = line[max(0, run_start - 20): min(len(line), run_start + 60)]
+                open_snippet = line[max(0, run_start - 20) : min(len(line), run_start + 60)]
             else:
                 if open_line != index:
                     violations.append((open_line, open_snippet, WRAPPED_REASON))
@@ -125,7 +146,10 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     if args.path:
-        targets = [(repo_root / candidate).resolve() if not candidate.is_absolute() else candidate for candidate in args.path]
+        targets = [
+            (repo_root / candidate).resolve() if not candidate.is_absolute() else candidate
+            for candidate in args.path
+        ]
     else:
         targets = _candidate_files(repo_root)
 
@@ -135,7 +159,11 @@ def main() -> int:
             continue
         text = path.read_text(encoding="utf-8")
         for line_num, snippet, reason in find_inline_code_violations(text):
-            rel = path.relative_to(repo_root).as_posix() if path.is_relative_to(repo_root) else str(path)
+            rel = (
+                path.relative_to(repo_root).as_posix()
+                if path.is_relative_to(repo_root)
+                else str(path)
+            )
             if reason == UNTERMINATED_REASON:
                 # Reporting the WRAP message here would point an operator at a line where
                 # nothing wraps: the leftover is the tail of a shifted pairing, and the
@@ -147,9 +175,15 @@ def main() -> int:
                 # a stray backtick on its own line, the stray pairs with the real opener
                 # and a WRAPPED finding is emitted at the stray's line. Correct pairing
                 # needs a stack this checker does not keep.
-                print(f"{rel}:{line_num}: unterminated inline code span; an odd number of single backticks makes every later span in this file unreliable, so audit the pairing rather than this line: ...{snippet}...", file=sys.stderr)
+                print(
+                    f"{rel}:{line_num}: unterminated inline code span; an odd number of single backticks makes every later span in this file unreliable, so audit the pairing rather than this line: ...{snippet}...",
+                    file=sys.stderr,
+                )
             else:
-                print(f"{rel}:{line_num}: inline code span wraps across line; collapse so the literal text stays on one line: ...{snippet}...", file=sys.stderr)
+                print(
+                    f"{rel}:{line_num}: inline code span wraps across line; collapse so the literal text stays on one line: ...{snippet}...",
+                    file=sys.stderr,
+                )
             violation_count += 1
 
     if violation_count:

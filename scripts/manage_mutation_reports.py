@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Inventory managed mutation outputs and explicitly prune old unmanaged files."""
+
 from __future__ import annotations
 
 import argparse
@@ -10,8 +11,29 @@ import stat
 import time
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 _quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
 load_quality_adapter_strict = _quality_adapter.load_quality_adapter_strict
@@ -93,14 +115,23 @@ def inventory(repo_root: Path, *, older_than_days: int) -> dict[str, object]:
             except OSError:
                 continue
             is_managed = path.resolve() in managed
-            candidate = path.is_file() and not path.is_symlink() and not is_managed and info.st_mtime < cutoff
+            candidate = (
+                path.is_file()
+                and not path.is_symlink()
+                and not is_managed
+                and info.st_mtime < cutoff
+            )
             records.append(
                 {
                     "path": path.relative_to(repo_root).as_posix(),
                     "bytes": info.st_size if path.is_file() else None,
                     "mtime_ns": info.st_mtime_ns,
                     "managed": is_managed,
-                    "kind": "symlink" if path.is_symlink() else "directory" if path.is_dir() else "file",
+                    "kind": "symlink"
+                    if path.is_symlink()
+                    else "directory"
+                    if path.is_dir()
+                    else "file",
                     "prune_candidate": candidate,
                 }
             )
@@ -173,7 +204,9 @@ def execute_prune(
                 continue
             path = repo_root / str(record["path"])
             if path.parent != report_root:
-                raise SystemExit(f"mutation-report-retention: candidate escaped report root: {path}")
+                raise SystemExit(
+                    f"mutation-report-retention: candidate escaped report root: {path}"
+                )
             _validate_candidate(root_fd, path.name, path, record, current_managed)
             candidates.append(record)
         removed: list[str] = []
@@ -197,7 +230,9 @@ def _validate_candidate(
     try:
         current = os.stat(name, dir_fd=root_fd, follow_symlinks=False)
     except OSError as exc:
-        raise SystemExit(f"mutation-report-retention: candidate changed after inventory: {path}") from exc
+        raise SystemExit(
+            f"mutation-report-retention: candidate changed after inventory: {path}"
+        ) from exc
     if (
         not stat.S_ISREG(current.st_mode)
         or current.st_size != record["bytes"]
@@ -205,7 +240,9 @@ def _validate_candidate(
     ):
         raise SystemExit(f"mutation-report-retention: candidate changed after inventory: {path}")
     if path.resolve() in current_managed:
-        raise SystemExit(f"mutation-report-retention: candidate became managed after inventory: {path}")
+        raise SystemExit(
+            f"mutation-report-retention: candidate became managed after inventory: {path}"
+        )
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

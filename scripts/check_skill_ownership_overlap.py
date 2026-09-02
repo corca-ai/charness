@@ -21,6 +21,7 @@ vendored paths are unreachable too and are reported beside them under
 move with whether a tool last ran. Both fields are additive-only: they never change
 `findings`, `status`, or the exit code.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -28,10 +29,31 @@ import re
 import sys
 from pathlib import Path
 
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
 try:
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:
-    from yaml_output import emit_yaml
+    from scripts.yaml_output import emit_yaml
 
 try:
     from scripts.waiver_file_lines import iter_waiver_lines
@@ -192,7 +214,9 @@ def _unwalked_payload(
         # real measurement of a tree with nothing to miss. (Today the dict is always
         # non-empty and so always truthy, which makes this defensive rather than a live
         # repair -- stated so nobody reads it as a bug that was found.)
-        "uncovered": _uncovered_payload(_EMPTY_BUCKETS if uncovered_totals is None else uncovered_totals),
+        "uncovered": _uncovered_payload(
+            _EMPTY_BUCKETS if uncovered_totals is None else uncovered_totals
+        ),
         "stale_allowlist": [],
     }
 
@@ -252,8 +276,7 @@ def _readable_files(skill_dir: Path) -> list[Path]:
         sub_dir = skill_dir / sub
         if sub_dir.is_dir():
             files.extend(
-                p for p in sorted(sub_dir.iterdir())
-                if p.is_file() and p.suffix in {".py", ".md"}
+                p for p in sorted(sub_dir.iterdir()) if p.is_file() and p.suffix in {".py", ".md"}
             )
     return files
 
@@ -312,7 +335,9 @@ def scan(repo_root: Path, allowlist: set[tuple[str, str, str]]) -> dict:
     # file -- the exact shape this withhold exists to remove. `scanned_files == 0`
     # subsumes the directory case and is the invariant the test asserts.
     if scanned_files == 0:
-        return _unwalked_payload(findings, skill_count=skill_count, uncovered_totals=uncovered_totals)
+        return _unwalked_payload(
+            findings, skill_count=skill_count, uncovered_totals=uncovered_totals
+        )
     stale = sorted(entry for entry in allowlist if entry not in consumed)
     return {
         "findings": findings,

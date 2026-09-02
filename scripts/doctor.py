@@ -6,12 +6,37 @@ import argparse
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-BLOCKING_DOCTOR_DISPOSITIONS = {"blocking-support-sync-needed", "blocking-install-needed", "blocking-failure"}
+BLOCKING_DOCTOR_DISPOSITIONS = {
+    "blocking-support-sync-needed",
+    "blocking-install-needed",
+    "blocking-failure",
+}
 LOCK_OUTPUT_LIMIT = 800
 
 _scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
@@ -20,11 +45,17 @@ now_iso = _scripts_control_plane_lib_module.now_iso
 upsert_lock = _scripts_control_plane_lib_module.upsert_lock
 _scripts_doctor_lib_module = import_repo_module(__file__, "scripts.doctor_lib")
 inspect_capability_state = _scripts_doctor_lib_module.inspect_capability_state
-_scripts_control_plane_lifecycle_lib_module = import_repo_module(__file__, "scripts.control_plane_lifecycle_lib")
+_scripts_control_plane_lifecycle_lib_module = import_repo_module(
+    __file__, "scripts.control_plane_lifecycle_lib"
+)
 print_update_advisories = _scripts_control_plane_lifecycle_lib_module.print_update_advisories
-_scripts_install_provenance_lib_module = import_repo_module(__file__, "scripts.install_provenance_lib")
+_scripts_install_provenance_lib_module = import_repo_module(
+    __file__, "scripts.install_provenance_lib"
+)
 detect_install_provenance = _scripts_install_provenance_lib_module.detect_install_provenance
-detect_package_manager_prefixes = _scripts_install_provenance_lib_module.detect_package_manager_prefixes
+detect_package_manager_prefixes = (
+    _scripts_install_provenance_lib_module.detect_package_manager_prefixes
+)
 _scripts_upstream_release_lib_module = import_repo_module(__file__, "scripts.upstream_release_lib")
 probe_release = _scripts_upstream_release_lib_module.probe_release
 upgrade_advisory = _scripts_upstream_release_lib_module.upgrade_advisory
@@ -119,7 +150,9 @@ def inspect_manifest(
     if release is not None:
         payload["release"] = release
         version_block = payload.get("version")
-        observed = version_block.get("observed_version") if isinstance(version_block, dict) else None
+        observed = (
+            version_block.get("observed_version") if isinstance(version_block, dict) else None
+        )
         advisory = upgrade_advisory(observed, release)
         if advisory is not None:
             payload["update_advisory"] = advisory
@@ -131,7 +164,11 @@ def inspect_manifest(
             release=release,
             provenance=provenance_result,
         )
-    return {**payload, "tool_id": manifest["tool_id"], "previous_lock_present": state["previous_lock_present"]}
+    return {
+        **payload,
+        "tool_id": manifest["tool_id"],
+        "previous_lock_present": state["previous_lock_present"],
+    }
 
 
 def main() -> int:
@@ -154,7 +191,11 @@ def main() -> int:
     repo_root = args.repo_root.resolve()
     plugin_root = args.plugin_root.resolve() if args.plugin_root else None
     capabilities = load_capabilities(repo_root)
-    selected = [capability for capability in capabilities if not args.tool_id or capability["tool_id"] in args.tool_id]
+    selected = [
+        capability
+        for capability in capabilities
+        if not args.tool_id or capability["tool_id"] in args.tool_id
+    ]
     available_prefixes = detect_package_manager_prefixes() if selected else {}
     results = [
         inspect_manifest(

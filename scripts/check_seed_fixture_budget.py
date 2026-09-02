@@ -6,10 +6,31 @@ import argparse
 import importlib.util
 from pathlib import Path
 
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
 try:
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:
-    from yaml_output import emit_yaml
+    from scripts.yaml_output import emit_yaml
 
 DEFAULT_TOTAL_BUDGET_BYTES = 10 * 1024 * 1024 * 1024
 DEFAULT_PER_SEED_BUDGET_BYTES = 3 * 1024 * 1024 * 1024
@@ -116,36 +137,42 @@ def classify_scan(footprint: dict, advisory_on_scan_failure: bool) -> str:
     return "blocking_pytest_temp_scan_failed"
 
 
-def collect_breaches(footprint: dict, args: argparse.Namespace) -> tuple[list[dict[str, object]], int]:
+def collect_breaches(
+    footprint: dict, args: argparse.Namespace
+) -> tuple[list[dict[str, object]], int]:
     # `pytest_temp_footprint_quick` is the only producer here and it reports
     # `total_disk_bytes`; the old `total_bytes` fallback belonged to the slow
     # scan and could never fire from this call site.
     total_disk_bytes = int(footprint.get("total_disk_bytes") or 0)
     breaches: list[dict[str, object]] = []
     if total_disk_bytes > args.total_budget_bytes:
-        breaches.append({
-            "type": "total_budget_exceeded",
-            "observed_bytes": total_disk_bytes,
-            "budget_bytes": args.total_budget_bytes,
-            "remediation": (
-                "Reduce pytest tmp retention or clean stale `pytest-of-*/pytest-*` sessions; "
-                "see inventory_standing_test_economics.py for the per-session breakdown."
-            ),
-        })
+        breaches.append(
+            {
+                "type": "total_budget_exceeded",
+                "observed_bytes": total_disk_bytes,
+                "budget_bytes": args.total_budget_bytes,
+                "remediation": (
+                    "Reduce pytest tmp retention or clean stale `pytest-of-*/pytest-*` sessions; "
+                    "see inventory_standing_test_economics.py for the per-session breakdown."
+                ),
+            }
+        )
     for prefix, totals in (footprint.get("seed_totals") or {}).items():
         disk = int(totals.get("disk_bytes") or 0)
         if disk > args.per_seed_budget_bytes:
-            breaches.append({
-                "type": "per_seed_budget_exceeded",
-                "seed_prefix": prefix,
-                "observed_bytes": disk,
-                "budget_bytes": args.per_seed_budget_bytes,
-                "session_count": int(totals.get("count") or 0),
-                "remediation": (
-                    f"Stop materializing `{prefix}-*` per session; share via a content-addressed cache or "
-                    f"reduce pytest tmp retention."
-                ),
-            })
+            breaches.append(
+                {
+                    "type": "per_seed_budget_exceeded",
+                    "seed_prefix": prefix,
+                    "observed_bytes": disk,
+                    "budget_bytes": args.per_seed_budget_bytes,
+                    "session_count": int(totals.get("count") or 0),
+                    "remediation": (
+                        f"Stop materializing `{prefix}-*` per session; share via a content-addressed cache or "
+                        f"reduce pytest tmp retention."
+                    ),
+                }
+            )
     return breaches, total_disk_bytes
 
 

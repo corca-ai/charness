@@ -13,8 +13,29 @@ from pathlib import Path
 from statistics import median
 from typing import Any, Callable
 
-from runtime_bootstrap import load_path_module, repo_root_from_script
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import load_path_module, repo_root_from_script  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 # `unestablished` is the runner's third status: a gate that ran and judged no
 # scope. It was rejected here, so the sample was dropped and every affected run
@@ -104,12 +125,21 @@ def parse_args() -> argparse.Namespace:
     if args.batch is None:
         missing = [
             name
-            for name, value in (("--label", args.label), ("--elapsed-ms", args.elapsed_ms), ("--status", args.status))
+            for name, value in (
+                ("--label", args.label),
+                ("--elapsed-ms", args.elapsed_ms),
+                ("--status", args.status),
+            )
             if value is None
         ]
         if missing:
             parser.error(f"the following arguments are required: {', '.join(missing)}")
-    elif args.label is not None or args.elapsed_ms is not None or args.status is not None or args.timestamp is not None:
+    elif (
+        args.label is not None
+        or args.elapsed_ms is not None
+        or args.status is not None
+        or args.timestamp is not None
+    ):
         parser.error("--batch cannot be combined with --label/--elapsed-ms/--status/--timestamp")
     return args
 
@@ -123,7 +153,9 @@ def _read_batch_line(line: str) -> dict[str, Any]:
     if missing:
         raise ValueError(f"missing {', '.join(missing)}")
     if parsed["status"] not in VALID_STATUSES:
-        raise ValueError(f"status {parsed['status']!r}; expected one of {', '.join(VALID_STATUSES)}")
+        raise ValueError(
+            f"status {parsed['status']!r}; expected one of {', '.join(VALID_STATUSES)}"
+        )
     return {
         "label": str(parsed["label"]),
         "elapsed_ms": int(parsed["elapsed_ms"]),
@@ -384,6 +416,7 @@ def main() -> int:
     archive_paths = [append_archive(state_dir / "history", record) for record in records]
     update_summary(summary_path, records)
     update_smoothing(smoothing_path, records)
+
     def rendered_path(path: Path) -> str:
         try:
             return str(path.relative_to(repo_root))

@@ -6,8 +6,29 @@ import argparse
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -17,7 +38,9 @@ add_dependency = _scripts_control_plane_lib_module.add_dependency
 load_manifests = _scripts_control_plane_lib_module.load_manifests
 now_iso = _scripts_control_plane_lib_module.now_iso
 upsert_lock = _scripts_control_plane_lib_module.upsert_lock
-_scripts_install_provenance_lib_module = import_repo_module(__file__, "scripts.install_provenance_lib")
+_scripts_install_provenance_lib_module = import_repo_module(
+    __file__, "scripts.install_provenance_lib"
+)
 detect_install_provenance = _scripts_install_provenance_lib_module.detect_install_provenance
 _scripts_upstream_release_lib_module = import_repo_module(__file__, "scripts.upstream_release_lib")
 probe_release = _scripts_upstream_release_lib_module.probe_release
@@ -26,7 +49,18 @@ Payload = dict[str, object]
 CommandList = list[Payload] | list[str]
 
 
-def base_result(repo_root: Path, manifest: Payload, install_action: Payload, *, status: str, mode: str, commands: CommandList, detect: Payload | None = None, healthcheck: Payload | None = None, readiness: Payload | None = None) -> Payload:
+def base_result(
+    repo_root: Path,
+    manifest: Payload,
+    install_action: Payload,
+    *,
+    status: str,
+    mode: str,
+    commands: CommandList,
+    detect: Payload | None = None,
+    healthcheck: Payload | None = None,
+    readiness: Payload | None = None,
+) -> Payload:
     result = {
         "tool_id": manifest["tool_id"],
         "status": status,
@@ -52,7 +86,20 @@ def capture_provenance(manifest: Payload) -> Payload:
     return provenance
 
 
-def persist_install_lock(repo_root: Path, manifest: Payload, install_action: Payload, *, status: str, mode: str, commands: list[Payload], detect: Payload, healthcheck: Payload, readiness: Payload, release: Payload | None, provenance: Payload) -> None:
+def persist_install_lock(
+    repo_root: Path,
+    manifest: Payload,
+    install_action: Payload,
+    *,
+    status: str,
+    mode: str,
+    commands: list[Payload],
+    detect: Payload,
+    healthcheck: Payload,
+    readiness: Payload,
+    release: Payload | None,
+    provenance: Payload,
+) -> None:
     upsert_lock(
         repo_root,
         manifest,
@@ -67,14 +114,18 @@ def persist_install_lock(repo_root: Path, manifest: Payload, install_action: Pay
             "healthcheck": healthcheck,
             "readiness": readiness,
             "docs_url": install_action.get("docs_url"),
-            "package_manager": provenance.get("install_method") if provenance.get("install_method") in {"npm", "cargo", "go"} else None,
+            "package_manager": provenance.get("install_method")
+            if provenance.get("install_method") in {"npm", "cargo", "go"}
+            else None,
             "package_name": provenance.get("package_name"),
             "notes": install_action.get("notes", []),
         },
     )
 
 
-def readiness_after_successful_checks(repo_root: Path, manifest: Payload, detect_result: Payload, healthcheck_result: Payload) -> Payload:
+def readiness_after_successful_checks(
+    repo_root: Path, manifest: Payload, detect_result: Payload, healthcheck_result: Payload
+) -> Payload:
     if detect_result["ok"] and healthcheck_result["ok"]:
         return lifecycle.evaluate_readiness(manifest, repo_root)
     return {
@@ -84,7 +135,9 @@ def readiness_after_successful_checks(repo_root: Path, manifest: Payload, detect
     }
 
 
-def passive_install_status(mode: str, detect_result: Payload, healthcheck_result: Payload, readiness_result: Payload) -> str:
+def passive_install_status(
+    mode: str, detect_result: Payload, healthcheck_result: Payload, readiness_result: Payload
+) -> str:
     status = "noop" if mode == "none" else "manual"
     if not (detect_result["ok"] and healthcheck_result["ok"]):
         return status
@@ -104,7 +157,9 @@ def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload
         detect_result, healthcheck_result = lifecycle.detect_and_healthcheck(
             repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
         )
-        readiness_result = readiness_after_successful_checks(repo_root, manifest, detect_result, healthcheck_result)
+        readiness_result = readiness_after_successful_checks(
+            repo_root, manifest, detect_result, healthcheck_result
+        )
         status = passive_install_status(mode, detect_result, healthcheck_result, readiness_result)
         if execute:
             persist_install_lock(
@@ -133,14 +188,18 @@ def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload
         )
         return lifecycle.attach_release_metadata(result, provenance=provenance, release=release)
     if not execute:
-        result = base_result(repo_root, manifest, install_action, status="dry-run", mode=mode, commands=commands)
+        result = base_result(
+            repo_root, manifest, install_action, status="dry-run", mode=mode, commands=commands
+        )
         return lifecycle.attach_release_metadata(result, provenance=provenance, release=release)
 
     command_results = lifecycle.run_command_payloads(commands, repo_root)
     detect_result, healthcheck_result = lifecycle.detect_and_healthcheck(
         repo_root, manifest, failure_reason="detect failed after install"
     )
-    readiness_result = readiness_after_successful_checks(repo_root, manifest, detect_result, healthcheck_result)
+    readiness_result = readiness_after_successful_checks(
+        repo_root, manifest, detect_result, healthcheck_result
+    )
     provenance = capture_provenance(manifest)
     command_ok = all(result["exit_code"] == 0 for result in command_results)
     if command_ok and detect_result["ok"] and healthcheck_result["ok"]:

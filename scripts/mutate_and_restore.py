@@ -77,15 +77,36 @@ from mutation_recovery import (
     termination_handlers,
 )
 
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
 try:
     from scripts.subprocess_guard import run_monitored_phase
 except ModuleNotFoundError:
     from subprocess_guard import run_monitored_phase
 
-from yaml_output import emit_yaml
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 try:
-    from runtime_bootstrap import import_repo_module
+    from scripts.runtime_bootstrap import import_repo_module
 except ModuleNotFoundError:
     from scripts.runtime_bootstrap import import_repo_module
 

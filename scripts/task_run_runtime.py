@@ -11,8 +11,29 @@ import tempfile
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from runtime_bootstrap import runtime_root
-from scripts.task_run_contract import (
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import runtime_root  # noqa: E402
+from scripts.task_run_contract import (  # noqa: E402
     _TASK_ID_RE,
     FAIL,
     SCHEMA_VERSION,

@@ -9,13 +9,35 @@ envelope. Exit 0 even when the working set is empty.
 See `skills/public/critique/references/prepare-packet.md` and the retro
 prepare-packet sibling.
 """
+
 from __future__ import annotations
 
 import argparse
 import os
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -66,13 +88,9 @@ def _render(payload: dict[str, object]) -> str:
         for surface in matched:
             lines.append(f"- {surface['surface_id']}: {surface['description']}")
             if surface["matched_source_paths"]:
-                lines.append(
-                    f"  source matches: {', '.join(surface['matched_source_paths'])}"
-                )
+                lines.append(f"  source matches: {', '.join(surface['matched_source_paths'])}")
             if surface["matched_derived_paths"]:
-                lines.append(
-                    f"  derived matches: {', '.join(surface['matched_derived_paths'])}"
-                )
+                lines.append(f"  derived matches: {', '.join(surface['matched_derived_paths'])}")
             if surface["sync_commands"]:
                 lines.append(f"  sync: {', '.join(surface['sync_commands'])}")
             if surface["verify_commands"]:

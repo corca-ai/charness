@@ -6,8 +6,29 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 _preflight = import_repo_module(__file__, "scripts.premise_preflight_lib")
@@ -24,9 +45,18 @@ def main(argv: list[str] | None = None) -> int:
         )
     )
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--premise", type=Path, required=True, help="Candidate premise JSON inside the repository.")
-    parser.add_argument("--issue-readback", type=Path, required=True, help="Captured issue_tool.py read JSON inside the repository.")
-    parser.add_argument("--decision-log", help="Optional repo-relative JSONL path overriding premise.decision_log.")
+    parser.add_argument(
+        "--premise", type=Path, required=True, help="Candidate premise JSON inside the repository."
+    )
+    parser.add_argument(
+        "--issue-readback",
+        type=Path,
+        required=True,
+        help="Captured issue_tool.py read JSON inside the repository.",
+    )
+    parser.add_argument(
+        "--decision-log", help="Optional repo-relative JSONL path overriding premise.decision_log."
+    )
     args = parser.parse_args(argv)
     repo_root = args.repo_root.resolve()
     try:

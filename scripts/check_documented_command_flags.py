@@ -56,7 +56,28 @@ from collections import Counter
 from collections.abc import Iterator
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
+
+def _load_repo_runtime_bootstrap():
+    _repo_bootstrap_pathlib = __import__("pathlib")
+    _repo_bootstrap_sys = __import__("sys")
+    repo_root = next(
+        (
+            ancestor
+            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
+            if (ancestor / "scripts" / "adapter_lib.py").is_file()
+        ),
+        None,
+    )
+    if repo_root is None:
+        raise ImportError("scripts/adapter_lib.py not found")
+    repo_root_text = str(repo_root)
+    if repo_root_text not in _repo_bootstrap_sys.path:
+        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -204,7 +225,9 @@ def resolve_script(
         # tree's to prove. `HelpProbe` runs `python3 charness --help`, the same
         # argv prefix `check_documented_subcommands.py` already probes.
         if known_repo_paths is None:
-            return (CLI_NAME, None) if (root / CLI_NAME).is_file() else (None, "cli-not-in-this-tree")
+            return (
+                (CLI_NAME, None) if (root / CLI_NAME).is_file() else (None, "cli-not-in-this-tree")
+            )
         return (CLI_NAME, None) if CLI_NAME in known_repo_paths else (None, "cli-not-in-this-tree")
     skill_relative = match.group("skill")
     bare = match.group("bare")
@@ -290,7 +313,9 @@ def iter_documented_invocations(
     return found, skipped
 
 
-def _cli_name_used_as_a_value(carrier: str, match: re.Match[str], previous_end: int | None) -> str | None:
+def _cli_name_used_as_a_value(
+    carrier: str, match: re.Match[str], previous_end: int | None
+) -> str | None:
     """Reject a bare `charness` that is an ARGUMENT of the command in front of it.
 
     `charness` is this repo's product name as well as its CLI, so it is a live
@@ -320,7 +345,9 @@ def _resolve_paths(probe, invocations: list[tuple]) -> list[tuple[str, ...]]:
     """Walk every invocation down the subparser tree, one probe round per depth."""
     paths = [() for _ in invocations]
     for _ in range(MAX_SUBCOMMAND_DEPTH):
-        probe.prime({(script, *paths[index]) for index, (_, _, script, _, _) in enumerate(invocations)})
+        probe.prime(
+            {(script, *paths[index]) for index, (_, _, script, _, _) in enumerate(invocations)}
+        )
         changed = False
         for index, (_, _, script, tokens, _) in enumerate(invocations):
             resolved = resolve_subcommands(
@@ -358,7 +385,9 @@ def build_report(
         found, doc_skipped = iter_documented_invocations(
             root, doc, known_repo_paths, basename_index, carriers=carriers
         )
-        invocations.extend((doc, lineno, script, bare, flags) for lineno, script, bare, flags in found)
+        invocations.extend(
+            (doc, lineno, script, bare, flags) for lineno, script, bare, flags in found
+        )
         skipped.update(doc_skipped)
 
     probe = HelpProbe(root, runner=help_runner)
@@ -371,7 +400,9 @@ def build_report(
         documented = " ".join([script, *path])
         result = probe.result((script, *path))
         if result.returncode != 0:
-            findings.append(f"{where}: `{documented} --help` exits {result.returncode}; the documented command is not runnable")
+            findings.append(
+                f"{where}: `{documented} --help` exits {result.returncode}; the documented command is not runnable"
+            )
             continue
         # Scoped by POSITION, not unioned along the path. Measured on a two-level
         # parser: argparse hands everything after a subcommand token to that
@@ -395,7 +426,9 @@ def build_report(
             if token not in accepted_by_depth[depth]:
                 missing.append(token)
         if missing:
-            findings.append(f"{where}: `{documented}` does not accept documented flag(s) {', '.join(f'`{flag}`' for flag in missing)}")
+            findings.append(
+                f"{where}: `{documented}` does not accept documented flag(s) {', '.join(f'`{flag}`' for flag in missing)}"
+            )
 
     return {
         "status": "fail" if findings else "pass",
