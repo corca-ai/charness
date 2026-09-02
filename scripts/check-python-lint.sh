@@ -48,7 +48,11 @@ source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
 # Runtime/cache isolation is owned by the same shell primitive as the hooks and
 # quality runner. Ruff is only one consumer of that environment.
 # shellcheck source=.githooks/runtime-env.sh
-source "$REPO_ROOT/.githooks/runtime-env.sh"
+# The export carries no .githooks/; an installed tree runs without the shared
+# runtime environment instead of dying on a bash "No such file or directory".
+if [[ -f "$REPO_ROOT/.githooks/runtime-env.sh" ]]; then
+  source "$REPO_ROOT/.githooks/runtime-env.sh"
+fi
 
 # Hard failure, not the `check-shell.sh` skip. ruff is a pinned, installed dependency
 # (`integrations/tools/ruff.json` records the lint phase cannot honestly complete

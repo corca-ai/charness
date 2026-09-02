@@ -270,25 +270,26 @@ def _file_variables(context: RuntimeContext) -> dict[str, str]:
 
 
 def _python_files(context: RuntimeContext) -> list[str]:
-    patterns = (
-        "scripts/*.py",
-        "scripts/**/*.py",
-        "skills/public/*/scripts/*.py",
-        "skills/public/*/scripts/**/*.py",
-        "skills/support/*/scripts/*.py",
-        "skills/support/*/scripts/**/*.py",
-        "skills/shared/scripts/*.py",
-        "skills/shared/scripts/**/*.py",
-        "skills/support/*/vendor/*.py",
+    """py-compile's universe is the adapter's `python_sources` family, not a literal.
+
+    The engine used to carry a second glob list that omitted tools/ and read no
+    adapter; the universes family owns this scope for ruff, check-python-lengths,
+    and runtime inheritance too, so the four cannot drift apart again.
+    """
+    universes = import_repo_module(__file__, "scripts.quality_universes_lib")
+    adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+    payload = adapter.load_quality_adapter(context.repo_root)
+    universe = universes.resolve_universe(
+        payload, "python_sources", default=universes.DEFAULT_UNIVERSES["python_sources"]
     )
     files = sorted(
-        {
-            path.relative_to(context.repo_root).as_posix()
-            for pattern in patterns
-            for path in context.repo_root.glob(pattern)
-            if path.is_file()
-        }
+        path.relative_to(context.repo_root).as_posix()
+        for path in universes.matching_files(context.repo_root, universe)
+        if path.suffix == ".py"
     )
+    refusal = universes.refuse_if_declared_and_empty(universe, files, "py-compile")
+    if refusal:
+        raise RunnerError(refusal)
     if not files:
         raise RunnerError("py-compile: refusing empty matched universe")
     return files

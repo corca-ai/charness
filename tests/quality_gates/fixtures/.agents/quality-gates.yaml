@@ -187,6 +187,7 @@ phases:
     - $REPO_ROOT
     - --require-git-file-listing
     lane: standard
+    ownership: repo-only
     timing_layer: already earlier
     note: src scripts/run-quality.sh:1013; labels literal (475-479).
   - label: validate-adapters
@@ -216,6 +217,7 @@ phases:
     - --repo-root
     - $REPO_ROOT
     lane: core
+    ownership: repo-only
     timing_layer: already earlier
     note: src scripts/run-quality.sh:1016; labels literal (475-479).
   - label: validate-packaging-committed
@@ -226,6 +228,7 @@ phases:
     - --repo-root
     - $REPO_ROOT
     lane: release-only
+    ownership: repo-only
     timing_layer: moved to release boundary
     note: src scripts/run-quality.sh:1020; labels literal (475-479).
   - label: validate-debug-artifact
@@ -808,6 +811,7 @@ phases:
     - .agents/consumer-validator-adoption.yaml
     - --require-adoption
     lane: standard
+    ownership: repo-only
     timing_layer: pulled to commit-time
     note: src scripts/run-quality.sh:1204; labels literal (475-479).
   - label: check-provenance-contract

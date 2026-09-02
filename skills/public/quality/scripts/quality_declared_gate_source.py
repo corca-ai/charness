@@ -50,7 +50,7 @@ def _is_consumer_gate(row: dict[str, Any]) -> bool:
     ownership = next(
         (
             str(row[field]).strip().lower()
-            for field in ("scope", "classification", "consumer_scope")
+            for field in ("ownership", "scope", "classification", "consumer_scope")
             if row.get(field) is not None
         ),
         "",
