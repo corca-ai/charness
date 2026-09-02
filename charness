@@ -5038,11 +5038,37 @@ def cmd_tool_update(args: argparse.Namespace) -> int:
     return 1 if failed else 0
 
 
+def _source_checkout_under_work(args: argparse.Namespace) -> Path | None:
+    """The parent repo itself, when it is a charness source checkout.
+
+    `charness task run --repo-root .` inside this repository must run THIS
+    checkout's task runner, not the managed checkout under `~/.agents/src`:
+    on 2026-09-02 a runner fix (the worktree `.agents/` sandbox grant) sat
+    unused for a session because the installed CLI loaded the stale managed
+    copy. An explicit `--charness-checkout` still wins; a parent that is not a
+    source checkout falls through to the managed resolution.
+    """
+    parent = getattr(args, "repo_root", None)
+    if parent is None:
+        return None
+    candidate = Path(parent).resolve()
+    if (candidate / "packaging" / f"{PACKAGE_ID}.json").is_file() and (
+        candidate / "scripts" / "task_run.py"
+    ).is_file():
+        return candidate
+    return None
+
+
 def _resolve_worktree_lib_root(args: argparse.Namespace) -> Path:
     if EMBEDDED_REPO_ROOT is not None:
         return EMBEDDED_REPO_ROOT
+    explicit = getattr(args, "charness_checkout", None)
+    if explicit is None:
+        own = _source_checkout_under_work(args)
+        if own is not None:
+            return own
     home_root = getattr(args, "home_root", default_home_root()).resolve()
-    repo_root, _managed = resolve_repo_root(home_root, getattr(args, "charness_checkout", None))
+    repo_root, _managed = resolve_repo_root(home_root, explicit)
     if not (repo_root / "packaging" / f"{PACKAGE_ID}.json").is_file():
         raise CharnessError(
             "`charness worktree` could not locate a charness source checkout. "
