@@ -1,6 +1,6 @@
 """Goal Run operation catalogue and the backend capability report.
 
-Split from `issue_goal_run_contract.py` (#773 follow-up): the contract module
+Split from `issue_goal_run_contract.py`: the contract module
 owns file-backed input validation; this module owns which backend operations a
 Goal Run needs and whether the selected backend declares them.
 """

@@ -1,6 +1,6 @@
 """Goal Run parent-body validation: metadata identity against the immutable binding.
 
-Split from `issue_goal_run_binding.py` (#773 follow-up): the binding module owns
+Split from `issue_goal_run_binding.py`: the binding module owns
 Work Item identity; this module owns what a parent body update may change.
 """
 

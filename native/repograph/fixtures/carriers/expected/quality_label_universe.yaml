@@ -29,6 +29,7 @@ labels:
 - validate-inventory-consumption
 - check-inventory-declaration-coverage
 - inventory-skill-script-references
+- check-unreferenced-scripts
 - validate-quality-closeout-contract
 - validate-critique-artifacts
 - validate-ideation-artifact
@@ -130,6 +131,7 @@ sources:
   - validate-inventory-consumption
   - check-inventory-declaration-coverage
   - inventory-skill-script-references
+  - check-unreferenced-scripts
   - validate-quality-closeout-contract
   - validate-critique-artifacts
   - validate-ideation-artifact

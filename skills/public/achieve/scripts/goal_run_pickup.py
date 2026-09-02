@@ -14,14 +14,7 @@ from typing import Any
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next(
-        (
-            ancestor / "skill_runtime_bootstrap.py"
-            for ancestor in Path(__file__).resolve().parents
-            if (ancestor / "skill_runtime_bootstrap.py").is_file()
-        ),
-        None,
-    )
+    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
@@ -363,7 +356,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Select one executable child from an issue-native Goal Run"
     )
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repository root that owns the Goal Run adapter and artifacts",
+    )
     parser.add_argument("--objective", required=True, help="Exact `/goal #N` objective")
     args = parser.parse_args(argv)
     try:
