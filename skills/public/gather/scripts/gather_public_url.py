@@ -9,6 +9,7 @@ import io
 import runpy
 import sys
 from pathlib import Path
+from types import ModuleType
 from urllib.parse import unquote, urlparse
 
 try:
@@ -106,6 +107,21 @@ _render_record = gather_record_rendering.render_record
 _trace_payload = gather_record_rendering.trace_payload
 
 
+def _evict_shadowing_siblings(sibling_dir: str) -> dict[str, ModuleType]:
+    """Snapshot sys.modules and drop bare names that shadow a sibling file.
+
+    Returns the snapshot so the caller can restore the table after the run.
+    """
+    saved_modules = dict(sys.modules)
+    for name, loaded in list(sys.modules.items()):
+        loaded_file = getattr(loaded, "__file__", None)
+        if "." in name or not loaded_file or not (Path(sibling_dir) / f"{name}.py").is_file():
+            continue
+        if not str(Path(loaded_file).resolve()).startswith(sibling_dir):
+            del sys.modules[name]
+    return saved_modules
+
+
 def _run_json(command: list[str], *, input_text: str | None = None) -> dict[str, object]:
     self_script = Path(command[1]) if len(command) > 1 and command[0] == sys.executable else None
     if self_script is not None and self_script.resolve() in {
@@ -116,9 +132,18 @@ def _run_json(command: list[str], *, input_text: str | None = None) -> dict[str,
         added_sibling_dir = sibling_dir not in sys.path
         if added_sibling_dir:
             sys.path.insert(0, sibling_dir)
+        # A child interpreter started with an empty module table; this in-process run
+        # does not. The sibling imports bare names (`resolve_adapter`, `gather_writer_lib`)
+        # and fifteen skills ship a `resolve_adapter.py`, so a process that already
+        # imported another skill's copy would hand gather that skill's adapter and write
+        # the record under its output directory. Evict any bare-name entry that shadows
+        # a sibling file, and restore the table afterwards so the run leaves no trace.
+        saved_modules = _evict_shadowing_siblings(sibling_dir)
         try:
             module = runpy.run_path(str(self_script))
         except Exception as exc:
+            sys.modules.clear()
+            sys.modules.update(saved_modules)
             if added_sibling_dir:
                 sys.path.remove(sibling_dir)
             raise SystemExit(str(exc)) from exc
@@ -137,6 +162,8 @@ def _run_json(command: list[str], *, input_text: str | None = None) -> dict[str,
         finally:
             sys.argv = old_argv
             sys.stdin = old_stdin
+            sys.modules.clear()
+            sys.modules.update(saved_modules)
             if added_sibling_dir:
                 sys.path.remove(sibling_dir)
         completed_stdout = stdout.getvalue()
