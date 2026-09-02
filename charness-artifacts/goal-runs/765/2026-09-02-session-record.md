@@ -226,6 +226,23 @@ Steps 1 and 2 of "Next session, in order" are done.
   launched with a single-file scope before that was read (their commits
   still land on their branches), every later lane uses `--scope '**/*'`.
 
+- #769 progress at the third session's end of lane integration: U0 to U3,
+  R1, R2a, R2b, R3, and T1 are on main; T2 and S are in flight. The thin
+  `run-quality.sh` is under the shell cap with its exemption deleted; the
+  declared list `.agents/quality-gates.yaml` is the runner's source; `tools/`
+  holds batch A; the export probe shows zero `tools/` files. Lane outcomes:
+  R2a, R3, U1 to U3 committed clean; U0, R1 hit the read-only `.agents/`
+  (installed CLI loading the managed checkout's stale runner, fixed in
+  `32992a701`); T1 and R2b timed out at 60 minutes with WIP commits that were
+  integrated by the parent (T1: three export-machinery modules restored to
+  `scripts/`; R2b: seven conflicts, four test seams, the engine's changed-path
+  diagnostics). Every integration was followed by the full pytest and the
+  full read-only lane; the reds each found are in the commit bodies.
+- The seed-fixture budget gate went red on the parent machine alone: pytest
+  temp retention reached 18.8 GB after the session's repeated full runs. The
+  gate's own remediation (delete stale `pytest-*` sessions older than ten
+  minutes) brought it to 137 MB.
+
 ## Lessons this session paid for
 
 - The default `run-quality.sh` lane ran five gates and the full lane ran only
