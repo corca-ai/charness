@@ -26,6 +26,23 @@ same producer contract as critique packets. For committed-diff retros, pass
 `--changed-ref`, `--commit`, or `--range`; script sections receive the value as
 `CHARNESS_RETRO_CHANGED_REF`.
 
+## Rework Issues Section
+
+`<plugin-dir>/scripts/render_retro_section_rework_issues.py` is the section producer that
+turns the operator's rework filings into evidence. It runs
+`gh issue list --label rework --state all` for the repository, keeps the issues
+created inside the window (default: the last 30 days, or `--since YYYY-MM-DD`),
+and attributes each to the skills named on its first `Causing skill:` line;
+an issue without that line is `unattributed`. The body is a per-skill count
+table followed by one line per issue. Declare it as a `packet_sections` entry
+with `content_kind: script` and pass `--repo <owner/repo>` when the checkout's
+`gh` default is not the repository under review.
+
+When `gh` is absent or fails the body starts with `Rework issues UNAVAILABLE:`
+and the producer still exits 0, so a retro without provider access proceeds but
+cannot claim a rework count. It is a read of what the operator filed, never a
+measure of all rework.
+
 ## Consumer Contract
 
 - Read the packet before writing the retro when sections exist.

@@ -27,6 +27,11 @@ _CAUSING_SKILL = re.compile(
     r"^\s*(?:[-*]\s+)?(?:\*\*Causing skill:\*\*|\**Causing skill\**\s*:)\s*(.+?)\s*$",
     re.IGNORECASE,
 )
+# Operators annotate the line the way they write prose: the first live instance
+# (#773) reads `Causing skill: achieve, issue (goal-run provider operations).`,
+# and a comma split alone turned the parenthetical and the full stop into a
+# third "skill". The annotation is context for a human reader, not an identity.
+_PARENTHETICAL = re.compile(r"\([^()]*\)")
 
 
 def parse_causing_skills(body: str) -> list[str]:
@@ -35,8 +40,8 @@ def parse_causing_skills(body: str) -> list[str]:
         match = _CAUSING_SKILL.match(line)
         if match:
             skills: list[str] = []
-            for raw_skill in match.group(1).split(","):
-                skill = raw_skill.strip().strip("`").strip()
+            for raw_skill in _PARENTHETICAL.sub("", match.group(1)).split(","):
+                skill = raw_skill.strip(" \t`*.;")
                 if skill and skill not in skills:
                     skills.append(skill)
             return skills

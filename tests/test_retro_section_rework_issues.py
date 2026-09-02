@@ -20,6 +20,16 @@ def test_parse_causing_skills_variants() -> None:
     assert producer_module.parse_causing_skills("No attribution") == []
 
 
+def test_parse_causing_skills_drops_prose_annotation() -> None:
+    # The first live instance, #773, verbatim: a parenthetical and a full stop
+    # rendered as a third skill row before this was handled.
+    line = "Causing skill: achieve, issue (goal-run provider operations)."
+    assert producer_module.parse_causing_skills(line) == ["achieve", "issue"]
+    assert producer_module.parse_causing_skills("Causing skill: `retro` (packet read); ") == [
+        "retro"
+    ]
+
+
 def _runner(payload: object, code: int = 0, stderr: str = ""):
     def run(command, **kwargs):
         return subprocess.CompletedProcess(command, code, payload, stderr)

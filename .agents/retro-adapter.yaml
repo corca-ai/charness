@@ -16,6 +16,10 @@ packet_sections:
     title: Changed Files And Owning Surfaces
     content_kind: script
     command: "python3 scripts/render_critique_section_changed_surfaces.py"
+  - id: rework-issues-by-causing-skill
+    title: Rework Issues By Causing Skill
+    content_kind: script
+    command: "python3 scripts/render_retro_section_rework_issues.py --repo corca-ai/charness"
 auto_session_trigger_surfaces:
   - materialized-plugin-export
   - integrations-and-control-plane

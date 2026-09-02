@@ -65,6 +65,14 @@ Adapter policy:
    - if the adapter declares `packet_sections`, run
      `$SKILL_DIR/scripts/prepare_packet.py` once and read the markdown packet
      before writing lessons; see `references/prepare-packet.md`
+   - consumer rework is observed through the operator's own issue filing, not a
+     gate: issues labelled `rework` carry a `Causing skill:` line
+     (`../issue/references/issue-shaping.md` owns that filing shape). When the
+     adapter declares the `rework-issues-by-causing-skill` packet section, the
+     packet already holds the per-skill attribution for the period; read it
+     and name the causing skills in `Evidence Summary` and `Trends vs Last
+     Retro`. A section body that starts with `Rework issues UNAVAILABLE` means
+     the read did not happen; say so instead of reporting zero rework
 3. Write the core retro.
    - `Context`: what unit of work is being reviewed and what matters next
    - `Window`: the span of work being reviewed

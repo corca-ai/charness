@@ -44,7 +44,9 @@ closing anything.
 1. Resolve the target and selected backend once.
 2. Shape the body problem-first: situation, experience, evidence, impact, target
    labels, milestone handling, source identity/preservation when external, and
-   only a weak optional solution direction.
+   only a weak optional solution direction. When the issue records rework
+   caused by a charness skill, add the `rework` label and a `Causing skill:`
+   line per `references/issue-shaping.md`.
 3. Assign only existing repository labels and milestones. Gate requested
    milestones with `issue_tool.py resolve-milestone`; never invent one.
 4. Before creation, materialize image evidence from private provider URLs at a

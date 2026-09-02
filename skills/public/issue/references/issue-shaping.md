@@ -11,6 +11,17 @@ The receiver should understand what happened before seeing any proposed fix:
 - labels: pick from the target repo's existing label vocabulary; check
   `gh label list --repo <org/repo>` if unfamiliar, and add `--label <name>`
   on the create call
+- rework attribution (required when the issue records work that had to be
+  redone, re-decided, or worked around because a charness skill's output was
+  wrong or insufficient): add `--label rework` and put one
+  `Causing skill: <skill>[, <skill>]` line in the body, naming the public skill
+  or skills whose contract produced the rework (for example
+  `Causing skill: achieve, issue`). The label is the period filter and the line
+  is the attribution; `retro` reads both through
+  `gh issue list --label rework` and reports rework per skill. Create the
+  `rework` label once per repository if it does not exist yet; this is the
+  one label the convention may add, because without it the instrument has no
+  filter. Do not label ordinary bugs or feature requests `rework`
 - milestone: assign only a milestone the repository already has. List existing
   milestones through the selected backend first (for the `gh` backend:
   `gh api repos/<org/repo>/milestones --jq '.[].title'`), then gate the request
