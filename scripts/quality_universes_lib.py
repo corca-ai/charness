@@ -245,6 +245,9 @@ def resolve_universe(adapter_payload: Any, key: str, *, default: Any) -> Univers
 
 
 def _raw_glob(repo_root: Path, patterns: tuple[str, ...]) -> list[Path]:
+    """Fallback used only when `git ls-files --cached --others --exclude-standard`
+    is unavailable (no git binary or not a repository); `matching_files` prefers
+    the gitignore-aware listing and intersects with these patterns otherwise."""
     matches: set[Path] = set()
     for pattern in patterns:
         for path in repo_root.glob(pattern):
