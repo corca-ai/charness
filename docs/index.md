@@ -39,6 +39,7 @@ is the composite docs receipt.
 - [External integrations](./external-integrations.md) — provider boundary.
 - [Gather provider ownership](./gather-provider-ownership.md) — public/credentialed split.
 - [Host packaging](./host-packaging.md) — exported install layout.
+- [Export boundary](./export-boundary.md) — shipped root trees and the repo-only `tools/` rule.
 - [Artifact policy](./artifact-policy.md) — durable state ownership.
 
 ## Skills, quality, and proof

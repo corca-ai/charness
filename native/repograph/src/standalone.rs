@@ -9,6 +9,7 @@ use crate::selection::matching_files;
 pub const SCAN_PATTERNS: &[&str] = &[
     "*.py",
     "scripts/*.py",
+    "tools/*.py",
     "skills/*/*/scripts/*.py",
     "skills/*/scripts/*.py",
     "skills/*/*/references/*.py",

@@ -26,14 +26,15 @@ _EXPORT = import_repo_module(__file__, "scripts.export_self_sufficiency_lib")
 
 NODE_GLOBS = (
     "scripts/**",
+    "tools/**",
     "skills/public/*/scripts/**",
     "skills/support/*/scripts/**",
     "skills/shared/scripts/**",
 )
 _PATH_RE = re.compile(
-    r"(?<![A-Za-z0-9_./-])((?:scripts|skills)/[A-Za-z0-9_./-]+\.(?:py|sh|mjs|json|txt))(?![A-Za-z0-9_./-])"
+    r"(?<![A-Za-z0-9_./-])((?:scripts|tools|skills)/[A-Za-z0-9_./-]+\.(?:py|sh|mjs|json|txt))(?![A-Za-z0-9_./-])"
 )
-_MODULE_RE = re.compile(r"^scripts\.([A-Za-z0-9_]+)$")
+_MODULE_RE = re.compile(r"^(scripts|tools)\.([A-Za-z0-9_]+)$")
 _SURFACE_PREFIXES = (
     ".agents/",
     ".claude/",
@@ -63,6 +64,8 @@ def _relative(root: Path, path: Path) -> str | None:
 def _is_node(relative: str) -> bool:
     parts = relative.split("/")
     if parts[0] == "scripts":
+        return len(parts) > 1
+    if parts[0] == "tools":
         return len(parts) > 1
     if len(parts) >= 4 and parts[:2] in (["skills", "public"], ["skills", "support"]):
         return parts[2] != "" and parts[3] == "scripts"
@@ -106,7 +109,7 @@ def _node_relative(path: Path, nodes: dict[str, Path]) -> str:
 def _module_target(value: str, nodes: dict[str, Path]) -> str | None:
     match = _MODULE_RE.fullmatch(value)
     if match:
-        return _path_target(f"scripts/{match.group(1)}.py", nodes)
+        return _path_target(f"{match.group(1)}/{match.group(2)}.py", nodes)
     return None
 
 
@@ -152,7 +155,7 @@ def _local_targets(path: Path, text: str, nodes: dict[str, Path]) -> set[str]:
             matches = by_name.get(value, [])
             if len(matches) == 1:
                 targets.add(matches[0])
-    for value in re.findall(r"['\"]((?:scripts|skills)/[A-Za-z0-9_./-]+)['\"]", text):
+    for value in re.findall(r"['\"]((?:scripts|tools|skills)/[A-Za-z0-9_./-]+)['\"]", text):
         target = _path_target(value, nodes)
         if target:
             targets.add(target)
@@ -184,8 +187,10 @@ def _import_targets(path: Path, tree: ast.AST, nodes: dict[str, Path]) -> set[st
                 target = _module_target(alias.name, nodes)
                 if target is None and "." not in alias.name:
                     sibling = f"{Path(relative).parent}/{alias.name}.py"
-                    target = _path_target(sibling, nodes) or _path_target(
-                        f"scripts/{alias.name}.py", nodes
+                    target = (
+                        _path_target(sibling, nodes)
+                        or _path_target(f"scripts/{alias.name}.py", nodes)
+                        or _path_target(f"tools/{alias.name}.py", nodes)
                     )
                 if target:
                     targets.add(target)
@@ -194,9 +199,9 @@ def _import_targets(path: Path, tree: ast.AST, nodes: dict[str, Path]) -> set[st
             target = _module_target(module, nodes)
             if target:
                 targets.add(target)
-            elif module == "scripts":
+            elif module in {"scripts", "tools"}:
                 for alias in node.names:
-                    target = _path_target(f"scripts/{alias.name}.py", nodes)
+                    target = _path_target(f"{module}/{alias.name}.py", nodes)
                     if target:
                         targets.add(target)
             elif module and "." not in module:
@@ -242,7 +247,11 @@ def _python_targets(path: Path, nodes: dict[str, Path]) -> set[str]:
 
 
 def _text_targets(text: str, nodes: dict[str, Path]) -> set[str]:
-    text = text.replace("./scripts/", "scripts/").replace("./skills/", "skills/")
+    text = (
+        text.replace("./scripts/", "scripts/")
+        .replace("./tools/", "tools/")
+        .replace("./skills/", "skills/")
+    )
     return {
         target
         for token in _PATH_RE.findall(text)
@@ -269,6 +278,8 @@ def _source_class(relative: str) -> str:
     if relative.startswith("skills/"):
         return "skill"
     if relative.startswith("scripts/"):
+        return "quality-lane"
+    if relative.startswith("tools/"):
         return "quality-lane"
     return "surface"
 
@@ -297,7 +308,7 @@ def _seed_intrinsic_edges(nodes: dict[str, Path]) -> dict[str, set[str]]:
             edges[relative].add("skill")
         elif not relative.endswith((".py", ".sh")):
             edges[relative].add("surface")
-        elif relative.startswith("scripts/") and "__name__" in _read_text(path):
+        elif relative.startswith(("scripts/", "tools/")) and "__name__" in _read_text(path):
             edges[relative].add("surface")
     return edges
 
@@ -308,15 +319,16 @@ def _scan_file(
     text = _read_text(path)
     if relative.endswith(".py") and (
         relative.startswith("scripts/")
+        or relative.startswith("tools/")
         or relative.startswith("skills/")
         or relative.startswith("tests/")
     ):
         _add_edges(edges, relative, _python_targets(path, nodes) | _text_targets(text, nodes))
     if relative == "charness":
         _add_edges(edges, relative, _python_targets(path, nodes))
-    if relative.startswith("scripts/") or relative.startswith("skills/"):
+    if relative.startswith(("scripts/", "tools/", "skills/")):
         _add_edges(edges, relative, _relative_targets(relative, text, nodes))
-    if relative.endswith(".sh") and relative.startswith("scripts/"):
+    if relative.endswith(".sh") and relative.startswith(("scripts/", "tools/")):
         _add_edges(edges, relative, _text_targets(text, nodes))
     if relative.startswith("tests/") or relative.startswith("skills/") or _surface_file(relative):
         _add_edges(edges, relative, _text_targets(text, nodes))
@@ -336,7 +348,7 @@ def _add_parser_edges(repo_root: Path, nodes: dict[str, Path], edges: dict[str, 
         name = row.get("script")
         doc = row.get("doc")
         if isinstance(name, str) and isinstance(doc, str):
-            target = _path_target(f"scripts/{name}", nodes)
+            target = _path_target(f"scripts/{name}", nodes) or _path_target(f"tools/{name}", nodes)
             if target:
                 edges[target].add(_source_class(doc))
 

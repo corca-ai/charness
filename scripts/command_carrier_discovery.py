@@ -94,7 +94,13 @@ COMMAND_CONFIG_GLOBS = (".agents/**/*.json", ".agents/**/*.yaml", ".agents/**/*.
 # repo's executable Python live", plus the repo-root CLI itself. `tests/**` is in
 # scope deliberately: a `release_only` test carried one of the seven live defects,
 # and a test that cannot run is exactly as broken as a doc that cannot run.
-ARGV_SOURCE_GLOBS = (CLI_NAME, "scripts/**/*.py", "skills/**/scripts/**/*.py", "tests/**/*.py")
+ARGV_SOURCE_GLOBS = (
+    CLI_NAME,
+    "scripts/**/*.py",
+    "tools/**/*.py",
+    "skills/**/scripts/**/*.py",
+    "tests/**/*.py",
+)
 # What an argv element that is not a literal renders as. Deliberately a plain word
 # rather than a flag or a path: it has to hold the POSITION (a `str(repo_root)`
 # after `--repo-root` is that option's value, and dropping it re-routes every

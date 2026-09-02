@@ -569,6 +569,9 @@ fn package_ids_for_path(path: &str) -> Vec<(String, PackageKind)> {
     if path == "scripts" || path.starts_with("scripts/") {
         packages.push(("scripts".to_string(), PackageKind::Scripts));
     }
+    if path == "tools" || path.starts_with("tools/") {
+        packages.push(("tools".to_string(), PackageKind::Scripts));
+    }
     if path == "tests" || path.starts_with("tests/") {
         packages.push(("tests".to_string(), PackageKind::Tests));
     }

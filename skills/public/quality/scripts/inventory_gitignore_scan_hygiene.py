@@ -42,6 +42,12 @@ DEFAULT_PATH_GLOBS = (
     "scripts/**/*quality*.py",
     "scripts/*scan*.py",
     "scripts/**/*scan*.py",
+    "tools/*inventory*.py",
+    "tools/**/*inventory*.py",
+    "tools/*quality*.py",
+    "tools/**/*quality*.py",
+    "tools/*scan*.py",
+    "tools/**/*scan*.py",
 )
 REPO_ROOT_NAMES = {"repo_root", "root", "REPO_ROOT"}
 

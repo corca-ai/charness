@@ -58,6 +58,7 @@ pub fn resolve_imports(
     for reference in references {
         let mut roots = vec![PathBuf::from(".")];
         roots.push(PathBuf::from("scripts"));
+        roots.push(PathBuf::from("tools"));
         roots.extend(inserted_paths.iter().map(PathBuf::from));
         if let Some(target) =
             resolve_reference(repo_root, source_path, reference, &roots, snapshot_paths)

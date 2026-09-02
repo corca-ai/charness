@@ -29,12 +29,12 @@ except ModuleNotFoundError:
     from yaml_output import emit_yaml
 
 SHIM_NAME = "_load_skill_runtime_bootstrap"
-CANONICAL_SHIM = '''def _load_skill_runtime_bootstrap():
+CANONICAL_SHIM = """def _load_skill_runtime_bootstrap():
     bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
-    return SimpleNamespace(**runpy.run_path(str(bootstrap)))'''
-SCAN_PATTERNS = ("skills/**/*.py", "scripts/**/*.py")
+    return SimpleNamespace(**runpy.run_path(str(bootstrap)))"""
+SCAN_PATTERNS = ("skills/**/*.py", "scripts/**/*.py", "tools/**/*.py")
 
 
 def _shim_nodes(source: str) -> list[ast.FunctionDef]:
@@ -49,7 +49,9 @@ def _shim_nodes(source: str) -> list[ast.FunctionDef]:
     ]
 
 
-def find_shim_files(repo_root: Path, *, require_git: bool = False) -> dict[Path, list[ast.FunctionDef]]:
+def find_shim_files(
+    repo_root: Path, *, require_git: bool = False
+) -> dict[Path, list[ast.FunctionDef]]:
     files: dict[Path, list[ast.FunctionDef]] = {}
     for path in iter_matching_repo_files(repo_root, SCAN_PATTERNS, require_git=require_git):
         source = path.read_text(encoding="utf-8")
@@ -62,11 +64,7 @@ def find_shim_files(repo_root: Path, *, require_git: bool = False) -> dict[Path,
 
 
 def drifted_copies(source: str, nodes: list[ast.FunctionDef]) -> list[ast.FunctionDef]:
-    return [
-        node
-        for node in nodes
-        if ast.get_source_segment(source, node) != CANONICAL_SHIM
-    ]
+    return [node for node in nodes if ast.get_source_segment(source, node) != CANONICAL_SHIM]
 
 
 def _shim_required_names() -> set[str]:
@@ -166,7 +164,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--require-git-file-listing", action="store_true")
-    parser.add_argument("--fix", action="store_true", help="rewrite drifted module-level copies to the canonical block")
+    parser.add_argument(
+        "--fix",
+        action="store_true",
+        help="rewrite drifted module-level copies to the canonical block",
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -206,7 +208,9 @@ def main() -> int:
     # A scan that found no shim copies established no scope: it cannot distinguish
     # "every copy matches" from "the root is wrong / the listing came back empty".
     # Report it as its own state so a green line never stands for zero comparisons.
-    status = "empty-scope" if not shim_files else ("ok" if not drifted and not unfixable else "drift")
+    status = (
+        "empty-scope" if not shim_files else ("ok" if not drifted and not unfixable else "drift")
+    )
     payload: dict[str, object] = {
         "status": status,
         "scanned_repo_root": str(repo_root),

@@ -58,7 +58,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 _parity = import_repo_module(__file__, "scripts.parity_harness")
 baseline_source = _parity.baseline_source
 
-SCAN_GLOBS = ("scripts/**/*.py", "skills/**/scripts/**/*.py", "tests/**/*.py")
+SCAN_GLOBS = ("scripts/**/*.py", "tools/**/*.py", "skills/**/scripts/**/*.py", "tests/**/*.py")
 SKIP_DIR_NAMES = {"__pycache__", "plugins", "mutants", "node_modules", ".git"}
 
 

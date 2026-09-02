@@ -165,7 +165,7 @@ SUBCOMMAND_TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*\Z")
 SPEC_DOC_GLOBS = ("specs/**/*.md",)
 # The retired `domain_language_contract`'s own non-markdown `surface_globs`,
 # carried over verbatim so the replacement is a superset of what it scanned.
-SOURCE_GLOBS = (CLI_NAME, "scripts/**/*.py")
+SOURCE_GLOBS = (CLI_NAME, "scripts/**/*.py", "tools/**/*.py")
 
 
 def iter_command_carriers(doc: Path) -> Iterator[tuple[int, str]]:
@@ -267,9 +267,14 @@ def _iter_runtime_strings(tree: ast.Module) -> Iterator[tuple[int, str]]:
         if not isinstance(node, ast.JoinedStr):
             continue
         joined.update(id(part) for part in node.values)
-        yield node.lineno, "".join(
-            part.value if isinstance(part, ast.Constant) and isinstance(part.value, str) else " <value> "
-            for part in node.values
+        yield (
+            node.lineno,
+            "".join(
+                part.value
+                if isinstance(part, ast.Constant) and isinstance(part.value, str)
+                else " <value> "
+                for part in node.values
+            ),
         )
     for node in ast.walk(tree):
         if (
@@ -281,7 +286,9 @@ def _iter_runtime_strings(tree: ast.Module) -> Iterator[tuple[int, str]]:
             yield node.lineno, node.value
 
 
-def iter_documented_invocations(carriers: Iterator[tuple[int, str]]) -> Iterator[tuple[int, tuple[tuple[str, str], ...]]]:
+def iter_documented_invocations(
+    carriers: Iterator[tuple[int, str]],
+) -> Iterator[tuple[int, tuple[tuple[str, str], ...]]]:
     """Yield ``(lineno, ordered_tokens)`` for each documented `charness` invocation."""
     for lineno, carrier in carriers:
         for _match, tokens, _flags in iter_invocation_tails(carrier, INVOCATION_RE):
@@ -297,7 +304,9 @@ def _values_for(probe: HelpProbe):
     return lambda path: probe.options_with_values((CLI_NAME, *path))
 
 
-def _walk_all(probe: HelpProbe, invocations: list[tuple]) -> list[tuple[tuple[str, ...], str | None]]:
+def _walk_all(
+    probe: HelpProbe, invocations: list[tuple]
+) -> list[tuple[tuple[str, ...], str | None]]:
     """Walk every invocation down the subcommand tree, one probe round per depth.
 
     An unprobed depth answers "no subcommands here", so each round descends
@@ -319,7 +328,9 @@ def _walk_all(probe: HelpProbe, invocations: list[tuple]) -> list[tuple[tuple[st
     return walked
 
 
-def iter_scanned_files(root: Path, *, require_git: bool = False) -> Iterator[tuple[Path, Iterator[tuple[int, str]]]]:
+def iter_scanned_files(
+    root: Path, *, require_git: bool = False
+) -> Iterator[tuple[Path, Iterator[tuple[int, str]]]]:
     """Yield ``(path, carriers)`` for every surface this gate reads.
 
     Markdown comes from `check_doc_links.DOC_GLOBS` plus `specs/**/*.md`, which
@@ -365,7 +376,9 @@ def build_report(
             "validated": 0,
             "probes": probe.clean_count(),
             "skipped": {},
-            "findings": [f"`{CLI_NAME} --help` declares no subcommands; the derived surface is unreadable"],
+            "findings": [
+                f"`{CLI_NAME} --help` declares no subcommands; the derived surface is unreadable"
+            ],
         }
     walked = _walk_all(probe, invocations)
 

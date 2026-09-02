@@ -185,6 +185,10 @@ GATED_GLOBS = (
     "scripts/**/*.py",
     "scripts/*.sh",
     "scripts/**/*.sh",
+    "tools/*.py",
+    "tools/**/*.py",
+    "tools/*.sh",
+    "tools/**/*.sh",
     "skills/public/*/scripts/*.py",
     "skills/public/*/scripts/**/*.py",
     "skills/public/*/scripts/*.sh",
@@ -239,7 +243,7 @@ def file_limit_for(path: Path, root: Path) -> int:
         return SHELL_FILE_MAX
     if relative.parts[:1] == ("native",):
         return NATIVE_TEST_FILE_MAX if _is_native_test(relative) else NATIVE_SOURCE_FILE_MAX
-    if relative.parts[:1] == ("scripts",):
+    if relative.parts[:1] in (("scripts",), ("tools",)):
         return REPO_SCRIPT_FILE_MAX
     if relative.parts[:1] == ("tests",):
         return TEST_FILE_MAX
@@ -252,7 +256,7 @@ def file_warn_for(path: Path, root: Path) -> int:
         return SHELL_FILE_WARN
     if relative.parts[:1] == ("native",):
         return NATIVE_TEST_FILE_WARN if _is_native_test(relative) else NATIVE_SOURCE_FILE_WARN
-    if relative.parts[:1] == ("scripts",):
+    if relative.parts[:1] in (("scripts",), ("tools",)):
         return REPO_SCRIPT_FILE_WARN
     if relative.parts[:1] == ("tests",):
         return TEST_FILE_WARN

@@ -66,6 +66,7 @@ fi
 ruff check \
   charness \
   scripts \
+  tools \
   tests \
   skills/public/*/scripts \
   skills/support/*/scripts \

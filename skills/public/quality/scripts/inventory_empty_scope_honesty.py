@@ -70,7 +70,14 @@ from typing import Any
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
@@ -88,6 +95,8 @@ from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 DETECTOR_GLOBS = (
     "scripts/check_*.py",
     "scripts/validate_*.py",
+    "tools/check_*.py",
+    "tools/validate_*.py",
     "skills/public/*/scripts/inventory_*.py",
     "skills/public/*/scripts/check_*.py",
     "skills/public/*/scripts/validate_*.py",

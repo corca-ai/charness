@@ -57,6 +57,7 @@ MUTATION_POOLS = {
         "skill_runtime_bootstrap.py",
         "scripts/*.py",
         "scripts/**/*.py",
+        "tools/**/*.py",
     ),
     "public-skill-python": (
         "skills/public/*/scripts/*.py",
@@ -94,6 +95,8 @@ def pool_for_path(path: str) -> str:
     if path in {"charness", "runtime_bootstrap.py", "skill_runtime_bootstrap.py"}:
         return "core-python"
     if len(parts) == 2 and parts[0] == "scripts" and candidate.suffix == ".py":
+        return "core-python"
+    if len(parts) == 2 and parts[0] == "tools" and candidate.suffix == ".py":
         return "core-python"
     if (
         len(parts) == 5

@@ -18,6 +18,7 @@ between does not silence). This is a lexical advisory: it forces the
 adapter-vs-boundary question to be answered in code; a marked boundary is
 trusted here, never verified.
 """
+
 from __future__ import annotations
 
 import ast
@@ -25,7 +26,7 @@ import re
 from pathlib import Path
 from typing import Any, Iterator
 
-DEFAULT_SCAN_ROOTS = ("skills/public", "scripts")
+DEFAULT_SCAN_ROOTS = ("skills/public", "scripts", "tools")
 # The scanner itself is excluded so its own family map does not self-flag.
 SELF_EXCLUDED_NAMES = {"discovery_filter_scan_lib.py", "inventory_hardcoded_discovery.py"}
 IGNORED_PARTS = {".git", "__pycache__", "mutants", "node_modules", ".venv", "plugins"}
@@ -52,18 +53,27 @@ _EXT_TOKEN_RE = re.compile(r"\.[A-Za-z0-9]+")
 def _string_members(node: ast.AST) -> list[str]:
     if not isinstance(node, (ast.Tuple, ast.List, ast.Set)):
         return []
-    return [element.value for element in node.elts if isinstance(element, ast.Constant) and isinstance(element.value, str)]
+    return [
+        element.value
+        for element in node.elts
+        if isinstance(element, ast.Constant) and isinstance(element.value, str)
+    ]
 
 
 def _code_families(members: list[str]) -> list[str]:
     extensions: set[str] = set()
     for member in members:
         extensions.update(_EXT_TOKEN_RE.findall(member))
-    return sorted(family for family, family_exts in CODE_LANGUAGE_FAMILIES.items() if extensions & family_exts)
+    return sorted(
+        family for family, family_exts in CODE_LANGUAGE_FAMILIES.items() if extensions & family_exts
+    )
 
 
 def _marker_reason(lines: list[str], lineno: int) -> str | None:
-    for candidate in (lines[lineno - 1] if lineno - 1 < len(lines) else "", lines[lineno - 2] if lineno >= 2 else ""):
+    for candidate in (
+        lines[lineno - 1] if lineno - 1 < len(lines) else "",
+        lines[lineno - 2] if lineno >= 2 else "",
+    ):
         match = MARKER_RE.search(candidate)
         if match:
             return match.group("reason").strip()
@@ -78,7 +88,11 @@ def _scan_text(rel_path: str, text: str, lines: list[str]) -> Iterator[dict[str,
     for node in ast.walk(tree):
         if not isinstance(node, ast.Assign):
             continue
-        names = [target.id for target in node.targets if isinstance(target, ast.Name) and DISCOVERY_NAME_RE.match(target.id)]
+        names = [
+            target.id
+            for target in node.targets
+            if isinstance(target, ast.Name) and DISCOVERY_NAME_RE.match(target.id)
+        ]
         if not names:
             continue
         members = _string_members(node.value)

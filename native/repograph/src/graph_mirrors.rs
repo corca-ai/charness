@@ -98,7 +98,7 @@ pub const MIRROR_RULES: &[MirrorRuleSpec] = &[
     },
     MirrorRuleSpec {
         id: "scripts-subtract-source-only",
-        source: "scripts/* minus SOURCE_ONLY_PLUGIN_SCRIPTS",
+        source: "scripts/*",
         destination: "plugins/charness/scripts/*",
         transform: MirrorTransform::FilteredCopy,
         content_transformed: false,

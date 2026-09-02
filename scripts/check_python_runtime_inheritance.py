@@ -14,6 +14,8 @@ iter_matching_repo_files = _repo_file_listing_module.iter_matching_repo_files
 DEFAULT_SCAN_GLOBS = (
     "scripts/*.py",
     "scripts/**/*.py",
+    "tools/*.py",
+    "tools/**/*.py",
     "skills/public/*/scripts/*.py",
     "skills/public/*/scripts/**/*.py",
     "skills/support/*/scripts/*.py",
@@ -95,7 +97,9 @@ def check_file(repo_root: Path, path: Path) -> list[str]:
     try:
         tree = ast.parse(text)
     except SyntaxError as exc:
-        return [f"{path.relative_to(repo_root)}:{exc.lineno}: cannot parse Python source: {exc.msg}"]
+        return [
+            f"{path.relative_to(repo_root)}:{exc.lineno}: cannot parse Python source: {exc.msg}"
+        ]
 
     lines = text.splitlines()
     failures: list[str] = []

@@ -5,7 +5,7 @@ testpaths = ["tests"]
 # file re-doing a `sys.path.insert(...)` bootstrap (which forced `# noqa: E402`).
 # Caution: with scripts/ on the path, a scripts/<stdlib-name>.py would shadow
 # that stdlib module during tests — keep script basenames non-colliding.
-pythonpath = [".", "scripts"]
+pythonpath = [".", "scripts", "tools"]
 tmp_path_retention_count = 1
 tmp_path_retention_policy = "failed"
 markers = [
@@ -56,6 +56,6 @@ max-statements = 80
 "charness" = ["PLR0915"]
 
 [tool.vulture]
-paths = ["runtime_bootstrap.py", "skill_runtime_bootstrap.py", "scripts", "skills", "tests"]
+paths = ["runtime_bootstrap.py", "skill_runtime_bootstrap.py", "scripts", "tools", "skills", "tests"]
 min_confidence = 80
 sort_by_size = true

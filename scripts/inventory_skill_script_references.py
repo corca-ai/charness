@@ -44,18 +44,15 @@ Output is unconditionally YAML, so every sentence a reader needs has to live in
 the payload -- ``report()`` folds in the advisories, the per-finding hints, and
 the two non-finding notes that used to exist only inside the human renderer.
 """
+
 from __future__ import annotations
 
 import argparse
 import re
-import sys
 from pathlib import Path
 from typing import NamedTuple
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from check_doc_links import PORTABLE_SKILL_KINDS  # noqa: E402
-
+from scripts.check_doc_links import PORTABLE_SKILL_KINDS
 from yaml_output import emit_yaml  # noqa: E402
 
 # ANY extension, not just `.py`. A `.py`-only regex cannot report that it is
@@ -207,7 +204,9 @@ def iter_skill_packages(repo_root: Path) -> list[SkillPackage]:
                 if package.is_dir():
                     packages.append(SkillPackage(package, AUTHORING, True, repo_root, repo_root))
         if (skills_root / "shared").is_dir():
-            packages.append(SkillPackage(skills_root / "shared", AUTHORING, False, repo_root, repo_root))
+            packages.append(
+                SkillPackage(skills_root / "shared", AUTHORING, False, repo_root, repo_root)
+            )
 
     # Each shipped package carries its OWN plugin root, taken from the
     # `plugins/<pkg>` path that produced it rather than counted backwards.
@@ -217,7 +216,9 @@ def iter_skill_packages(repo_root: Path) -> list[SkillPackage]:
         for kind, resolves in (("skills", True), ("support", True)):
             for package_dir in sorted((plugin_root / kind).glob("*")):
                 if package_dir.is_dir():
-                    packages.append(SkillPackage(package_dir, SHIPPED, resolves, plugin_root, repo_root))
+                    packages.append(
+                        SkillPackage(package_dir, SHIPPED, resolves, plugin_root, repo_root)
+                    )
         shared_dir = plugin_root / "shared"
         if shared_dir.is_dir():
             packages.append(SkillPackage(shared_dir, SHIPPED, False, plugin_root, repo_root))
@@ -309,11 +310,7 @@ def classify_references(repo_root: Path) -> list[dict[str, object]]:
 
     packages = iter_skill_packages(repo_root)
     script_index = _package_script_index(packages)
-    docs = [
-        (doc, package)
-        for package in packages
-        for doc in sorted(package.root.rglob("*.md"))
-    ]
+    docs = [(doc, package) for package in packages for doc in sorted(package.root.rglob("*.md"))]
 
     for doc, package in docs:
         package_root, layout, resolves_skill_dir = (
@@ -376,10 +373,11 @@ def classify_references(repo_root: Path) -> list[dict[str, object]]:
                             "reference": f"{placeholder}/{reference_prefix}{name}",
                             "form": form,
                             "status": AUTHORING_MARKED if resolved else UNRESOLVED,
-                            "found_at": _repo_relative(repo_root, target_path) if resolved else None,
+                            "found_at": _repo_relative(repo_root, target_path)
+                            if resolved
+                            else None,
                         }
                     )
-
 
             bullet = REFERENCES_BULLET_RE.match(line)
             if bullet is not None:
@@ -520,7 +518,9 @@ def report(payload: dict[str, object], *, strict: bool) -> dict[str, object]:
         elif not packages:
             detail = f"no skill packages found under {payload['repo_root']}"
         else:
-            detail = f"{packages} skill package(s) under {payload['repo_root']} name no script paths"
+            detail = (
+                f"{packages} skill package(s) under {payload['repo_root']} name no script paths"
+            )
         advisories.append(
             f"{detail}; nothing was checked. Point --repo-root at a repo that carries "
             "`skills/` or `plugins/*/skills/`."
@@ -541,7 +541,9 @@ def report(payload: dict[str, object], *, strict: bool) -> dict[str, object]:
         {
             **row,
             "hint": (
-                f"file is at {row['found_at']}" if row["status"] == BROKEN else "resolves in no layout"
+                f"file is at {row['found_at']}"
+                if row["status"] == BROKEN
+                else "resolves in no layout"
             ),
         }
         for row in findings

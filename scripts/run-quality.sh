@@ -1157,6 +1157,8 @@ shopt -s nullglob globstar
 python_files=(
   scripts/*.py
   scripts/**/*.py
+  tools/*.py
+  tools/**/*.py
   skills/public/*/scripts/*.py
   skills/public/*/scripts/**/*.py
   skills/support/*/scripts/*.py
@@ -1166,7 +1168,7 @@ python_files=(
   skills/support/*/vendor/*.py
 )
 if [[ "${#python_files[@]}" -eq 0 ]]; then
-  echo "py-compile: refusing empty matched universe (globs: scripts/*.py, scripts/**/*.py, skills/public/*/scripts/*.py, skills/public/*/scripts/**/*.py, skills/support/*/scripts/*.py, skills/support/*/scripts/**/*.py, skills/shared/scripts/*.py, skills/shared/scripts/**/*.py, skills/support/*/vendor/*.py)." >&2
+  echo "py-compile: refusing empty matched universe (globs: scripts/*.py, scripts/**/*.py, tools/*.py, tools/**/*.py, skills/public/*/scripts/*.py, skills/public/*/scripts/**/*.py, skills/support/*/scripts/*.py, skills/support/*/scripts/**/*.py, skills/shared/scripts/*.py, skills/shared/scripts/**/*.py, skills/support/*/vendor/*.py)." >&2
   exit 1
 fi
 queue_selected "py-compile" python3 -m py_compile "${python_files[@]}"

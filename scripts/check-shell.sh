@@ -52,6 +52,9 @@ listing_stderr_path="$listing_dir/shell-files.stderr"
 collect_shell_files() {
   find . -maxdepth 1 -type f -name '*.sh' || return "$?"
   find scripts -maxdepth 1 -type f -name '*.sh' || return "$?"
+  if [[ -d tools ]]; then
+    find tools -maxdepth 1 -type f -name '*.sh' || return "$?"
+  fi
   if [[ -d tests ]]; then
     find tests -type f -name '*.sh' || return "$?"
   fi
@@ -65,7 +68,7 @@ if collect_shell_files 2>"$listing_stderr_path" | sort >"$listing_path"; then
 else
   rc=$?
   echo "check-shell: shell file discovery failed." >&2
-  echo "command: { find . -maxdepth 1 -type f -name '*.sh'; find scripts -maxdepth 1 -type f -name '*.sh'; find tests -type f -name '*.sh' when present; find .githooks -maxdepth 1 -type f when present; } | sort" >&2
+  echo "command: { find . -maxdepth 1 -type f -name '*.sh'; find scripts -maxdepth 1 -type f -name '*.sh'; find tools -maxdepth 1 -type f -name '*.sh' when tools/ is present; find tests -type f -name '*.sh' when present; find .githooks -maxdepth 1 -type f when present; } | sort" >&2
   printf 'exit_code: %s\n' "$rc" >&2
   echo "STDOUT:" >&2
   cat "$listing_path" >&2

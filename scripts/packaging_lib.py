@@ -39,12 +39,6 @@ PLUGIN_README_SOURCE_ONLY_PREFIXES = (
     "./tests/",
 )
 
-SOURCE_ONLY_PLUGIN_SCRIPTS = (
-    "suggest_public_skill_validation.py",
-    "validate_public_skill_dogfood.py",
-    "validate_public_skill_validation.py",
-)
-
 
 def load_manifest(repo_root: Path, package_id: str) -> dict:
     manifest_path = repo_root / "packaging" / f"{package_id}.json"
@@ -179,7 +173,9 @@ def rewrite_exported_consumer_validator_catalog(plugin_root: Path) -> None:
     catalog shape it owns changes underneath the exporter.
     """
 
-    catalog_path = plugin_root / "skills" / "quality" / "references" / "consumer-validator-catalog.yaml"
+    catalog_path = (
+        plugin_root / "skills" / "quality" / "references" / "consumer-validator-catalog.yaml"
+    )
     if not catalog_path.is_file():
         return
     contents = catalog_path.read_text(encoding="utf-8")
@@ -298,8 +294,6 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
     scripts_root = repo_root / "scripts"
     exported_scripts_root = plugin_root / "scripts"
     replace_tree_if_present(scripts_root, exported_scripts_root)
-    for script_name in SOURCE_ONLY_PLUGIN_SCRIPTS:
-        (exported_scripts_root / script_name).unlink(missing_ok=True)
     runtime_bootstrap_path = repo_root / "runtime_bootstrap.py"
     if runtime_bootstrap_path.is_file():
         copy_file(runtime_bootstrap_path, plugin_root / "runtime_bootstrap.py")
@@ -377,6 +371,8 @@ def expected_root_artifacts(manifest: dict) -> list[tuple[str, dict]]:
         ),
         (
             codex_marketplace["path"],
-            build_codex_marketplace(manifest, source_path=codex_marketplace["materialized_source_path"]),
+            build_codex_marketplace(
+                manifest, source_path=codex_marketplace["materialized_source_path"]
+            ),
         ),
     ]
