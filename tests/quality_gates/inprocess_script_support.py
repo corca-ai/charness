@@ -451,7 +451,7 @@ _IN_PROCESS_SCRIPT_MODULES = {
     ),
     "scripts/hooks/check_staged_reversion.py": (
         "tests.quality_gates.support_check_staged_reversion",
-        ROOT / "scripts" / "check_staged_reversion.py",
+        ROOT / "scripts" / "hooks" / "check_staged_reversion.py",
     ),
     "scripts/gates/check_documented_command_flags.py": (
         "tests.quality_gates.support_check_documented_command_flags",

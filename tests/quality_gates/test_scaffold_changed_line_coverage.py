@@ -32,8 +32,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-from mutation_changed_files_lib import classify_changed_line_scope_gap  # noqa: E402
-from mutation_sampling_lib import (  # noqa: E402
+from scripts.mutation.mutation_changed_files_lib import classify_changed_line_scope_gap  # noqa: E402
+from scripts.mutation.mutation_sampling_lib import (  # noqa: E402
     load_file_statement_lines,
     run_test_coverage,
 )
@@ -117,7 +117,7 @@ def test_changed_line_gate_still_blocks_genuinely_uncovered_line(tmp_path: Path)
         # Changed line 5 is a real statement that coverage marks as missing.
         return {5} if target == path else set()
 
-    import mutation_changed_files_lib as lib
+    import scripts.mutation.mutation_changed_files_lib as lib
 
     original = lib.changed_line_numbers
     lib.changed_line_numbers = _fake_changed_lines

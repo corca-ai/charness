@@ -719,7 +719,7 @@ def test_commit_and_quality_consumers_refuse_pending_recovery_then_unblock(tmp_p
 
     commit_repo = tmp_path / "commit-consumer"
     (commit_repo / ".githooks").mkdir(parents=True)
-    (commit_repo / "scripts").mkdir()
+    (commit_repo / "scripts" / "hooks").mkdir(parents=True)
     subprocess.run(["git", "init", "-q"], cwd=commit_repo, check=True)
     shutil.copy2(ROOT / ".githooks" / "pre-commit", commit_repo / ".githooks" / "pre-commit")
     # Both hook-invoked gates are stubbed clean: this test's subject is the
@@ -727,8 +727,13 @@ def test_commit_and_quality_consumers_refuse_pending_recovery_then_unblock(tmp_p
     # They stay UNGUARDED in the hook itself -- a `[[ -f ]]` around a refusal gate
     # is a disarm vector, so the absent-script case is a stub here rather than a
     # skip there.
-    for gate in ("check_git_identity.py", "check_staged_router_change.py"):
-        (commit_repo / "scripts" / gate).write_text("raise SystemExit(0)\n", encoding="utf-8")
+    for gate in (
+        "check_git_identity.py",
+        "hooks/check_staged_router_change.py",
+        "hooks/check_staged_test_boundaries.py",
+    ):
+        gate_path = commit_repo / "scripts" / gate
+        gate_path.write_text("raise SystemExit(0)\n", encoding="utf-8")
     commit_state = commit_repo / ".git" / "charness-mutation-recovery"
     commit_state.mkdir()
 
