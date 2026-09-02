@@ -5,6 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import yaml
+
 from scripts.quality_adapter_lib import load_quality_adapter
 from scripts.quality_universes_lib import (
     DEFAULT_UNIVERSES,
@@ -13,6 +15,8 @@ from scripts.quality_universes_lib import (
     refuse_if_declared_and_empty,
     resolve_universe,
 )
+
+from .support import run_script
 
 
 def _adapter(tmp_path: Path, block: str = "") -> dict:
@@ -130,3 +134,29 @@ def test_unconfigured_empty_is_reported_not_refused() -> None:
     universe = Universe(("src/**/*.py",), False, "default")
 
     assert refuse_if_declared_and_empty(universe, [], "ruff") is None
+
+
+def test_files_cli_lists_nested_matches_for_a_family(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: testrepo\nlanguage: en\noutput_dir: charness-artifacts/quality\n",
+        encoding="utf-8",
+    )
+    (repo / "scripts" / "nested").mkdir(parents=True)
+    (repo / "scripts" / "one.py").write_text("", encoding="utf-8")
+    (repo / "scripts" / "nested" / "two.py").write_text("", encoding="utf-8")
+
+    result = run_script(
+        "scripts/quality_universes_lib.py",
+        "--repo-root",
+        str(repo),
+        "--files",
+        "--key",
+        "python_sources",
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert yaml.safe_load(result.stdout) == {
+        "files": {"python_sources": ["scripts/nested/two.py", "scripts/one.py"]}
+    }

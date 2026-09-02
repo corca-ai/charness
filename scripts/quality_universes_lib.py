@@ -327,6 +327,20 @@ def refuse_if_declared_and_empty(
 
 
 def _cli_payload(repo_root: Path) -> dict[str, Any]:
+    adapter = _load_quality_adapter(repo_root)
+    resolved: dict[str, Any] = {}
+    for key, default in DEFAULT_UNIVERSES.items():
+        if key == "artifact_roots":
+            resolved[key] = {
+                family: resolve_universe(adapter, f"artifact_roots.{family}", default=path).__dict__
+                for family, path in default.items()
+            }
+        else:
+            resolved[key] = resolve_universe(adapter, key, default=default).__dict__
+    return resolved
+
+
+def _load_quality_adapter(repo_root: Path) -> Any:
     carrier_root = Path(__file__).resolve().parent.parent
     if str(carrier_root) not in sys.path:
         sys.path.insert(0, str(carrier_root))
@@ -339,18 +353,43 @@ def _cli_payload(repo_root: Path) -> dict[str, Any]:
         # exports, where the sibling scripts directory—not the consumer root—is
         # the import carrier.
         from quality_adapter_lib import load_quality_adapter
+    return load_quality_adapter(repo_root)
 
-    adapter = load_quality_adapter(repo_root)
-    resolved: dict[str, Any] = {}
-    for key, default in DEFAULT_UNIVERSES.items():
-        if key == "artifact_roots":
-            resolved[key] = {
-                family: resolve_universe(adapter, f"artifact_roots.{family}", default=path).__dict__
-                for family, path in default.items()
-            }
-        else:
-            resolved[key] = resolve_universe(adapter, key, default=default).__dict__
-    return resolved
+
+def _file_payload(repo_root: Path, key: str | None) -> dict[str, list[str]]:
+    adapter = _load_quality_adapter(repo_root)
+    if adapter.get("valid") is False:
+        errors = "; ".join(str(error) for error in adapter.get("errors", []))
+        raise ValueError(f"quality adapter is invalid{f': {errors}' if errors else '.'}")
+
+    requested: list[tuple[str, Any]] = []
+    if key is None:
+        for universe_key, default in DEFAULT_UNIVERSES.items():
+            if universe_key == "artifact_roots":
+                requested.extend(
+                    (f"artifact_roots.{family}", path) for family, path in default.items()
+                )
+            else:
+                requested.append((universe_key, default))
+    elif key == "artifact_roots":
+        raise ValueError("--files requires an artifact_roots family, such as artifact_roots.spec")
+    else:
+        default = DEFAULT_UNIVERSES.get(key)
+        if default is None and key.startswith("artifact_roots."):
+            default = DEFAULT_ARTIFACT_ROOTS.get(key.split(".", 1)[1])
+        if default is None:
+            raise ValueError(f"unknown universe key: {key}")
+        requested.append((key, default))
+
+    files: dict[str, list[str]] = {}
+    for universe_key, default in requested:
+        resolved = resolve_universe(adapter, universe_key, default=default)
+        matches = matching_files(repo_root, resolved)
+        refusal = refuse_if_declared_and_empty(resolved, matches, universe_key)
+        if refusal is not None:
+            raise ValueError(refusal)
+        files[universe_key] = [path.relative_to(repo_root).as_posix() for path in matches]
+    return files
 
 
 def main() -> int:
@@ -364,11 +403,25 @@ def main() -> int:
         help="Output the resolved universe payload as YAML or its matching paths, one per line.",
     )
     parser.add_argument(
+        "--files",
+        action="store_true",
+        help="Output the matched repository files for each universe family as YAML.",
+    )
+    parser.add_argument(
         "--gate-label",
         help="Operator-facing gate label for empty-universe diagnostics (defaults to the key).",
     )
     args = parser.parse_args()
     repo_root = args.repo_root.resolve()
+    if args.files:
+        if args.format != "yaml":
+            parser.error("--files cannot be combined with --format lines")
+        try:
+            emit_yaml({"files": _file_payload(repo_root, args.key)})
+        except ValueError as error:
+            print(str(error), file=sys.stderr)
+            return 1
+        return 0
     if args.format == "yaml":
         emit_yaml(_cli_payload(repo_root))
         return 0
@@ -385,19 +438,7 @@ def main() -> int:
             default = DEFAULT_ARTIFACT_ROOTS.get(family)
         if default is None:
             parser.error(f"unknown universe key: {args.key}")
-    carrier_root = Path(__file__).resolve().parent.parent
-    if str(carrier_root) not in sys.path:
-        sys.path.insert(0, str(carrier_root))
-    if str(repo_root) not in sys.path:
-        sys.path.insert(0, str(repo_root))
-    try:
-        from scripts.quality_adapter_lib import load_quality_adapter
-    except ModuleNotFoundError:
-        # The resolver is also a standalone CLI in source and collapsed plugin
-        # exports, where the sibling scripts directory is the import carrier.
-        from quality_adapter_lib import load_quality_adapter
-
-    adapter = load_quality_adapter(repo_root)
+    adapter = _load_quality_adapter(repo_root)
     if adapter.get("valid") is False:
         errors = "; ".join(str(error) for error in adapter.get("errors", []))
         print(
