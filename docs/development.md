@@ -75,7 +75,15 @@ that owns it, is answered only by the resolver in
 [`repo_layout.py`](../scripts/core/repo_layout.py) (`repo_script`,
 `find_repo_script`; a miss is typed, two owners is an ambiguity); the standing
 [lookup form check](../scripts/gates/check_script_lookup_form.py) refuses a
-by-name `glob` or `rglob` under `scripts/` anywhere else, tests included. Tests
+by-name `glob` or `rglob` under `scripts/` anywhere else, tests included. A
+test's claim never depends on wall-clock time: no sleep as synchronisation, no
+deadline poll for something the child could signal, no assertion on elapsed
+time. The standing
+[wall-clock form check](../scripts/gates/check_wall_clock_form.py) refuses a
+new `time.sleep`, `time.monotonic`, or `time.perf_counter` call in `tests/`
+and holds the recorded sites in
+[`wall-clock-baseline.json`](../charness-artifacts/quality/wall-clock-baseline.json)
+to a count that only shrinks. Tests
 import the script under test in-process through the loaders in
 [`tests/script_loader.py`](../tests/script_loader.py),
 [`script_main.py`](../tests/script_main.py), and

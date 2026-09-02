@@ -233,6 +233,10 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
+  - path: scripts/gates/check_wall_clock_form.py
+    consumer_facing: false
+    decision: exclude
+    reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
   - path: scripts/gates/check_test_completeness.py
     consumer_facing: false
     decision: exclude

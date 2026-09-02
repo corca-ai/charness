@@ -452,6 +452,16 @@ phases:
     lane: standard
     timing_layer: stays
     note: one layout resolver (#777); refuses a by-name glob/rglob under scripts/ outside it.
+  - label: check-wall-clock-form
+    command:
+    - python3
+    - scripts/gates/check_wall_clock_form.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: stays
+    note: no wall-clock claim in tests/ (#779); the recorded baseline only shrinks.
   - label: check-skill-contracts
     command:
     - python3

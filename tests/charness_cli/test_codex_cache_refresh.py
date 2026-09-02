@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.repo_copy import REPO_COPY_IGNORE
+from tests.repo_copy import repo_copy_ignore_for
 
 from .support import (
     CLI,
@@ -537,10 +537,15 @@ def test_installed_cli_catalog_list_loads_backend_from_managed_checkout(tmp_path
     """A copied CLI must use its managed checkout, not its bin directory."""
     home_root = tmp_path / "home"
     managed_checkout = home_root / ".agents" / "src" / "charness"
+    # Path-anchored, not the basename set: this copies the WHOLE checkout, and the
+    # basename set keeps `native/repograph/target`, so a sibling xdist worker's
+    # `cargo build` writing intermediates raced the copy and `copytree` raised on a
+    # vanished `.o` in the CI-shape baseline (#779). The anchored rule keeps only
+    # the built binary, which is the one file under `target/` any test reads.
     shutil.copytree(
         CLI.parent,
         managed_checkout,
-        ignore=REPO_COPY_IGNORE,
+        ignore=repo_copy_ignore_for(CLI.parent),
         symlinks=True,
     )
     installed_cli = home_root / ".local" / "bin" / "charness"

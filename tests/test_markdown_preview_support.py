@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib
 import os
+import shutil
 import stat
 import subprocess
 import sys
@@ -82,7 +83,23 @@ def test_markdown_preview_parse_args_help_includes_argument_help(monkeypatch, ca
 
 
 def _isolated_path() -> str:
-    return str(Path(sys.executable).resolve().parent)
+    """A PATH holding only the interpreter and the tools the helper itself calls.
+
+    The interpreter's directory alone looked isolated and was not: locally that
+    directory is `/usr/bin`, which also carries `git` and `script`, so the helper's
+    change detection and file-stdout retry worked by coincidence. On a hosted
+    runner the interpreter lives in a toolcache directory, both tools vanished,
+    and two tests failed in four of six scheduled runs (#764, #779). Naming the
+    tools makes the dependency explicit and the PATH the same shape everywhere.
+    """
+    dirs = [str(Path(sys.executable).resolve().parent)]
+    for tool in ("git", "script"):
+        found = shutil.which(tool)
+        if found is not None:
+            parent = str(Path(found).resolve().parent)
+            if parent not in dirs:
+                dirs.append(parent)
+    return os.pathsep.join(dirs)
 
 
 def _write_fake_glow(bin_dir: Path) -> None:

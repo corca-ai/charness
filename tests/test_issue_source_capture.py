@@ -18,7 +18,6 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-import scripts.issue.issue_source_capture_lib as capture_lib
 from scripts.issue.capture_issue_source import resolve_adapter_module, run_capture
 from scripts.issue.issue_source_capture_lib import (
     CaptureRefusal,
@@ -467,8 +466,10 @@ def test_cli_resolves_a_relative_snapshot_against_the_repo_root_it_was_given(
     repo root — would then name a file that is not there.
     """
     repo_root = _adapter_repo(tmp_path)
+    # The CLI resolves its runner from ITS module's `run_gh`, so that is the object
+    # to control; patching the lib left the real `gh` in place (#779).
     monkeypatch.setattr(
-        capture_lib,
+        capture_module,
         "run_gh",
         _runner([_page([_node("c1")], total=1, has_next=False, cursor=None)]),
     )

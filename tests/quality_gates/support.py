@@ -357,6 +357,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-python-runtime-inheritance", "check_python_runtime_inheritance.py"),
     ("check-subprocess-form", "check_subprocess_form.py"),
     ("check-script-lookup-form", "check_script_lookup_form.py"),
+    ("check-wall-clock-form", "check_wall_clock_form.py"),
     ("check-skill-contracts", "check_skill_contracts.py"),
     ("check-skill-bootstrap-vars", "check_skill_bootstrap_vars.py"),
     ("check-bootstrap-shim-consistency", "check_bootstrap_shim_consistency.py"),

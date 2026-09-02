@@ -41,6 +41,7 @@ labels:
 - check-python-runtime-inheritance
 - check-subprocess-form
 - check-script-lookup-form
+- check-wall-clock-form
 - check-skill-contracts
 - check-skill-bootstrap-vars
 - check-bootstrap-shim-consistency
@@ -145,6 +146,7 @@ sources:
   - check-python-runtime-inheritance
   - check-subprocess-form
   - check-script-lookup-form
+  - check-wall-clock-form
   - check-skill-contracts
   - check-skill-bootstrap-vars
   - check-bootstrap-shim-consistency

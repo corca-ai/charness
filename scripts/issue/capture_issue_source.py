@@ -87,8 +87,13 @@ def _write(path: Path, text: str) -> None:
 
 
 def run_capture(
-    *, repo_root: Path, repo: str, numbers: list[int], snapshot_path: Path, runner=run_gh
+    *, repo_root: Path, repo: str, numbers: list[int], snapshot_path: Path, runner=None
 ) -> dict[str, object]:
+    # Resolved at CALL time, not bound as a default at definition time: a default
+    # captures the `run_gh` object that existed when this module was imported, so a
+    # test patching this module's `run_gh` never reached `main`'s call and the real,
+    # locally authenticated `gh` answered instead (#779; green here, exit 4 in CI).
+    runner = run_gh if runner is None else runner
     resolver = resolve_adapter_module()
     adapter = resolver.load_adapter(repo_root)
     if not adapter["valid"]:
@@ -169,7 +174,10 @@ def main() -> int:
     return _refusal_lib.run_cli(
         "capture_issue_source",
         lambda: run_capture(
-            repo_root=repo_root, repo=args.repo, numbers=list(args.numbers), snapshot_path=snapshot_path
+            repo_root=repo_root,
+            repo=args.repo,
+            numbers=list(args.numbers),
+            snapshot_path=snapshot_path,
         ),
         refusals=(CaptureRefusal,),
         code_key="refusal",
