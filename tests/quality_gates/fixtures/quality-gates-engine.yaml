@@ -1,0 +1,127 @@
+schema: charness/quality-gates/v1
+runner_variables:
+  PYTEST_FLAGS: standing pytest flags are computed by the engine
+phases:
+  - id: prerequisite
+    isolation: alone
+    fail_fast: true
+    fail_message: standing prerequisite failed; stopping before later quality checks.
+    gates:
+      - label: core
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - core
+        lane: core
+      - label: pytest-release
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - pytest-release
+          - ${PYTEST_FLAGS[@]}
+        lane: release-only
+        variant_of: pytest
+      - label: pytest
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - pytest
+          - ${PYTEST_FLAGS[@]}
+        lane: standard
+        variant_of: pytest
+  - id: concurrent
+    isolation: concurrent
+    fail_fast: false
+    gates:
+      - label: standard
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - standard
+        lane: standard
+      - label: slow
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - slow
+        lane: standard
+      - label: fast
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - fast
+        lane: standard
+      - label: warning
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - warning
+        lane: standard
+      - label: unproven
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - unproven
+        lane: standard
+        unestablished_capable: true
+      - label: partial
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - partial
+        lane: standard
+        unestablished_capable: true
+      - label: ordinary-exit-three
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - ordinary-exit-three
+        lane: label-only
+      - label: opt-in
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - opt-in
+        lane: opt-in
+        condition:
+          env:
+            QUALITY_OPT_IN: "1"
+      - label: label-only
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - label-only
+        lane: label-only
+      - label: native
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - native
+        lane: label-only
+        native_preflight: true
+      - label: checker
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - checker
+        lane: standard
+        condition:
+          file_exists: scripts/optional-checker.py
+        variant_of: checker-family
+      - label: checker-fallback
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - checker-fallback
+        lane: standard
+        variant_of: checker-family
+  - id: release-final
+    isolation: alone
+    fail_fast: false
+    gates:
+      - label: release-changed-line-coverage
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - release-changed-line-coverage
+        lane: release-only
