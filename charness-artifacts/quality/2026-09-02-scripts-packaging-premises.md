@@ -46,3 +46,34 @@ when measuring later diffs.
   [`2026-09-02-gate-universes-before-770.yaml`](./2026-09-02-gate-universes-before-770.yaml);
   the current snapshot is byte-identical, so later package lanes have a
   diffable file-set baseline.
+
+## P4 package measurements and flat residue
+
+Measured at the P4 lane tip (`ccb861a2e`) from the six package commits. Counts
+exclude each package's `__init__.py` marker; the issue package also carries its
+`rca_event.schema.json` sibling data file.
+
+| Package | Moved Python modules | Commit |
+| --- | ---: | --- |
+| evidence | 13 | `b38093b59` |
+| task_run | 11 | `30b439223` |
+| issue | 10 | `33eb4eed0` |
+| setup | 9 | `07b4720f5` |
+| retro_debug | 7 | `4459692ca` |
+| premise | 5 | `ccb861a2e` |
+| **Total** | **55** | 6 package markers |
+
+The intended integrated flat residue under `scripts/` is:
+
+- `scripts/adapter_lib.py` (pinned flat carrier)
+- `scripts/runtime_bootstrap.py` (pinned flat carrier)
+- `scripts/skill_runtime_bootstrap.py` (pinned flat carrier)
+- `scripts/yaml_output.py` (pinned flat carrier)
+- `scripts/doctor.py` (root compatibility shim delegating to `scripts.setup.doctor`)
+
+This P4 branch is based on P0 while the independent P1–P3 lanes remain
+unmerged. The measured lane-tip inventory therefore still contains 309
+top-level `scripts/*.py` files; the five-file list above is the post-integration
+residue target, not a claim that those companion lane moves are present here.
+The `pyproject.toml` `pythonpath` comment is retained because flat dependencies
+remain at this lane tip.

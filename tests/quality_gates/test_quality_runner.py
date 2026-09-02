@@ -34,7 +34,7 @@ def test_quality_runner_seed_uses_the_cross_worker_cache(tmp_path: Path) -> None
 
     seed = quality_runner_seed(cache_get_or_build=fake_cache)
 
-    assert cache_calls == ["quality-runner-repo-seed-r2b"]
+    assert cache_calls == ["quality-runner-repo-seed-r2c"]
     assert (seed / "scripts" / "run-quality.sh").is_file()
 
 

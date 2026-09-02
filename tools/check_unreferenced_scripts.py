@@ -179,44 +179,53 @@ def _call_name(node: ast.Call) -> str:
     return ""
 
 
-def _import_targets(path: Path, tree: ast.AST, nodes: dict[str, Path]) -> set[str]:
+def _import_alias_targets(relative: str, node: ast.Import, nodes: dict[str, Path]) -> set[str]:
     targets: set[str] = set()
+    for alias in node.names:
+        target = _module_target(alias.name, nodes)
+        if target is None and "." not in alias.name:
+            sibling = f"{Path(relative).parent}/{alias.name}.py"
+            target = (
+                _path_target(sibling, nodes)
+                or _path_target(f"scripts/{alias.name}.py", nodes)
+                or _path_target(f"tools/{alias.name}.py", nodes)
+            )
+        if target:
+            targets.add(target)
+    return targets
+
+
+def _import_from_targets(relative: str, node: ast.ImportFrom, nodes: dict[str, Path]) -> set[str]:
+    module = node.module or ""
+    target = _module_target(module, nodes)
+    if target:
+        return {target}
+    if module in {"scripts", "tools"}:
+        candidates = (
+            _path_target(f"{module}/{alias.name}.py", nodes)
+            or _path_target(f"{module}/{alias.name}/__init__.py", nodes)
+            for alias in node.names
+        )
+    elif module.startswith(("scripts.", "tools.")):
+        package_path = module.replace(".", "/")
+        candidates = (
+            _path_target(f"{package_path}/{alias.name}.py", nodes) for alias in node.names
+        )
+    elif module and "." not in module:
+        candidates = (_path_target(f"{Path(relative).parent}/{module}.py", nodes),)
+    else:
+        candidates = ()
+    return {candidate for candidate in candidates if candidate}
+
+
+def _import_targets(path: Path, tree: ast.AST, nodes: dict[str, Path]) -> set[str]:
     relative = _node_relative(path, nodes)
+    targets: set[str] = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
-            for alias in node.names:
-                target = _module_target(alias.name, nodes)
-                if target is None and "." not in alias.name:
-                    sibling = f"{Path(relative).parent}/{alias.name}.py"
-                    target = (
-                        _path_target(sibling, nodes)
-                        or _path_target(f"scripts/{alias.name}.py", nodes)
-                        or _path_target(f"tools/{alias.name}.py", nodes)
-                    )
-                if target:
-                    targets.add(target)
+            targets.update(_import_alias_targets(relative, node, nodes))
         elif isinstance(node, ast.ImportFrom) and not node.level:
-            module = node.module or ""
-            target = _module_target(module, nodes)
-            if target:
-                targets.add(target)
-            elif module in {"scripts", "tools"}:
-                for alias in node.names:
-                    target = _path_target(f"{module}/{alias.name}.py", nodes) or _path_target(
-                        f"{module}/{alias.name}/__init__.py", nodes
-                    )
-                    if target:
-                        targets.add(target)
-            elif module.startswith(("scripts.", "tools.")):
-                package_path = module.replace(".", "/")
-                for alias in node.names:
-                    target = _path_target(f"{package_path}/{alias.name}.py", nodes)
-                    if target:
-                        targets.add(target)
-            elif module and "." not in module:
-                target = _path_target(f"{Path(relative).parent}/{module}.py", nodes)
-                if target:
-                    targets.add(target)
+            targets.update(_import_from_targets(relative, node, nodes))
     return targets
 
 

@@ -78,7 +78,7 @@ def detect_concept_paths(repo_root: Path) -> list[str]:
 
 def detect_preflight_commands(repo_root: Path) -> list[str]:
     return [cmd for exists, cmd in (
-        ((repo_root / "scripts" / "validate_maintainer_setup.py").is_file(), "python3 scripts/setup/validate_maintainer_setup.py --repo-root ."),
+        ((repo_root / "scripts" / "setup" / "validate_maintainer_setup.py").is_file(), "python3 scripts/setup/validate_maintainer_setup.py --repo-root ."),
         ((repo_root / "scripts" / "doctor.py").is_file(), "python3 scripts/doctor.py"),
     ) if exists]
 

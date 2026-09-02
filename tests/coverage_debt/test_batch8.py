@@ -26,18 +26,17 @@ import pytest
 
 from scripts import (
     checkout_view,
-    setup_inspect_quality_lib,
+    lesson_ledger_lib,
     sibling_module_loader,
-    task_run,
-    task_run_git,
 )
+from scripts import git_checkout as checkout
+from scripts import git_status_snapshot as status_snapshot
 from scripts import prepush_quality_receipt as receipt
-from scripts.core import git_checkout as checkout
-from scripts.core import git_status_snapshot as status_snapshot
-from scripts.lessons import lesson_ledger_lib
-from scripts.review import reviewed_input_identity as reviewed_identity
-from scripts.review import reviewed_input_nonblob as reviewed_nonblob
-from scripts.review import reviewed_input_worktree as reviewed_worktree
+from scripts import reviewed_input_identity as reviewed_identity
+from scripts import reviewed_input_nonblob as reviewed_nonblob
+from scripts import reviewed_input_worktree as reviewed_worktree
+from scripts.setup import setup_inspect_quality_lib
+from scripts.task_run.task_run import task_run, task_run_git
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.script_loader import load_script_module
 

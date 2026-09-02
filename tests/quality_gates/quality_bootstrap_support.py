@@ -103,6 +103,7 @@ def seed_quality_repo(tmp_path: Path) -> Path:
     (repo / ".agents").mkdir(parents=True)
     (repo / "docs").mkdir(parents=True)
     (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "setup").mkdir(parents=True)
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
     (repo / "docs" / "status.md").write_text("# Status\n", encoding="utf-8")
     (repo / "pyproject.toml").write_text("[project]\nname = 'demo'\n", encoding="utf-8")
@@ -110,7 +111,9 @@ def seed_quality_repo(tmp_path: Path) -> Path:
     (repo / "package.json").write_text('{"name":"demo","workspaces":["packages/*"]}\n', encoding="utf-8")
     (repo / "pnpm-workspace.yaml").write_text("packages:\n  - packages/*\n", encoding="utf-8")
     (repo / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
-    (repo / "scripts" / "validate_maintainer_setup.py").write_text("print('ok')\n", encoding="utf-8")
+    (repo / "scripts" / "setup" / "validate_maintainer_setup.py").write_text(
+        "print('ok')\n", encoding="utf-8"
+    )
     (repo / "scripts" / "check-secrets.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
     plugin_export_dir = repo / "scripts" / "plugin_export"
     plugin_export_dir.mkdir()

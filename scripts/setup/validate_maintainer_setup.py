@@ -24,8 +24,15 @@ _load_repo_runtime_bootstrap()
 
 try:
     from scripts.core.subprocess_guard import run_process
-except ModuleNotFoundError:  # executed directly from scripts/
-    from scripts.core.subprocess_guard import run_process
+except ModuleNotFoundError:  # executed directly from scripts/ or scripts/setup/
+    _scripts_dir = next(
+        ancestor / "scripts"
+        for ancestor in Path(__file__).resolve().parents
+        if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+    )
+    if str(_scripts_dir) not in sys.path:
+        sys.path.insert(0, str(_scripts_dir))
+    from subprocess_guard import run_process
 
 CLOSE_KEYWORD_GUARD_BASENAME = "prepush_close_keyword_guard.py"
 # The interpreter is required: `scripts/prepush_close_keyword_guard.py` alone would

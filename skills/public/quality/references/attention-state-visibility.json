@@ -275,7 +275,7 @@
       ],
       "rationale": "This module exists to stop exactly this failure on the critique evidence surface: a conditional floor that is off emits nothing by construction, so `Validated N critique artifact(s).` read as coverage it never claimed. Every state it names is printed on stdout in the enforcement-scope record on BOTH passing and failing runs — `binding-currency-check=disabled` when a full sweep deliberately skips re-reading historical bindings, and the typed cross-surface states `not-configured` / `not-established` / `not-resolved`, which the bare boolean previously collapsed into an indistinguishable `False`. None of them is a pass verdict; each names a scope the run did not establish."
     },
-    "scripts/doctor.py": {
+    "scripts/setup/doctor.py": {
       "states": [
         "disabled",
         "skipped"
@@ -287,7 +287,7 @@
         "install_method",
         "disabled"
       ],
-      "rationale": "Doctor output reports disabled tool installs and skipped release probes as structured JSON."
+      "rationale": "The setup package's consumer doctor reports disabled tool installs and skipped release probes as structured JSON. The root scripts/doctor.py compatibility shim delegates to this module and remains the documented consumer entrypoint."
     },
     "scripts/mutation/filter_cosmic_ray_mutants.py": {
       "states": [

@@ -57,7 +57,7 @@ ADAPTER_LIB = load_script_module("adapter_lib", ADAPTER_LIB_PATH)
 
 # The YAML emitter now lives beside the parser rather than inside it. Round-trip tests
 # need both halves, so both are loaded here instead of one re-exporting the other.
-ADAPTER_RENDER_LIB_PATH = ROOT / "scripts" / "adapters" / "adapter_yaml_render_lib.py"
+ADAPTER_RENDER_LIB_PATH = ROOT / "scripts" / "adapter_yaml_render_lib.py"
 ADAPTER_RENDER_LIB = load_script_module("adapter_yaml_render_lib", ADAPTER_RENDER_LIB_PATH)
 
 
@@ -235,7 +235,6 @@ def assert_quality_receipt(
 
 
 def write_executable(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
     path.chmod(0o755)
 
@@ -330,9 +329,9 @@ QUALITY_PYTHON_STUBS = (
     ("validate-packaging", "validate_packaging.py"),
     ("validate-packaging-committed", "validate_packaging_committed.py"),
     ("validate-debug-artifact", "validate_debug_artifact.py"),
-    ("validate-debug-seam-index", "build_debug_seam_risk_index.py"),
-    ("validate-retro-lesson-index", "lessons/build_retro_lesson_selection_index.py"),
-    ("validate-lesson-ledger", "lessons/check_lesson_ledger.py"),
+    ("validate-debug-seam-index", "retro_debug/build_debug_seam_risk_index.py"),
+    ("validate-retro-lesson-index", "build_retro_lesson_selection_index.py"),
+    ("validate-lesson-ledger", "check_lesson_ledger.py"),
     ("validate-quality-artifact", "validate_quality_artifact.py"),
     ("validate-attention-state-visibility", "validate_attention_state_visibility.py"),
     ("validate-inventory-consumption", "validate_inventory_consumption.py"),
@@ -347,7 +346,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-current-pointer-freshness", "validate_current_pointer_freshness.py"),
     ("check-current-pointer-writes", "check_current_pointer_writes.py"),
     ("inventory-skill-script-references", "inventory_skill_script_references.py"),
-    ("validate-maintainer-setup", "validate_maintainer_setup.py"),
+    ("validate-maintainer-setup", "setup/validate_maintainer_setup.py"),
     ("check-python-lengths", "check_code_lengths.py"),
     ("check-python-filenames", "check_python_filenames.py"),
     ("check-python-runtime-inheritance", "check_python_runtime_inheritance.py"),
@@ -487,7 +486,9 @@ def quality_shell_stub(label: str) -> str:
 
 def seed_quality_python_stubs(target_dir: Path, stubs: tuple[tuple[str, str], ...]) -> None:
     for label, filename in stubs:
-        write_executable(target_dir / filename, quality_python_stub(label))
+        path = target_dir / filename
+        path.parent.mkdir(parents=True, exist_ok=True)
+        write_executable(path, quality_python_stub(label))
 
 
 def seed_quality_shell_stubs(target_dir: Path) -> None:
@@ -681,58 +682,13 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     # rather than stubbed BECAUSE a stub is exactly the wrong repair here -- the
     # runner would fall back to an unmonitored child and the harness would keep
     # passing over the untracked process tree this slice exists to fix.
-    adapter_names = {
-        "adapter_yaml_parse.py",
-        "quality_adapter_lib.py",
-        "quality_universes_lib.py",
-        "quality_bootstrap_absence.py",
-        "quality_bootstrap_lib.py",
-        "quality_bootstrap_common.py",
-        "quality_bootstrap_detect.py",
-        "quality_dup_ratchet_policy.py",
-        "quality_policy_defaults.py",
-        "quality_policy_merge.py",
-    }
-    artifact_names = {
-        "artifact_naming_lib.py",
-        "artifact_quantities.py",
-        "artifact_referents.py",
-        "artifact_run_scope.py",
-        "artifact_shape_source.py",
-        "artifact_size_budget.py",
-        "artifact_subject_identity.py",
-        "artifact_validator.py",
-        "artifact_violation_report.py",
-        "current_pointer_writer_lib.py",
-        "inventory_current_pointer_layouts.py",
-        "refresh_current_pointer.py",
-        "resolve_artifact_path.py",
-    }
-    adapter_dir = scripts_dir / "adapters"
-    adapter_dir.mkdir()
-    shutil.copy2(ROOT / "scripts" / "adapters" / "__init__.py", adapter_dir / "__init__.py")
-    artifact_dir = scripts_dir / "artifacts"
-    artifact_dir.mkdir()
-    shutil.copy2(ROOT / "scripts" / "artifacts" / "__init__.py", artifact_dir / "__init__.py")
     for real_name in (
         "quality_label_universe.py",
         "runtime_bootstrap.py",
         "adapter_lib.py",
-        "artifact_naming_lib.py",
-        "artifact_quantities.py",
-        "artifact_referents.py",
-        "artifact_run_scope.py",
-        "artifact_shape_source.py",
-        "artifact_size_budget.py",
-        "artifact_subject_identity.py",
-        "artifact_validator.py",
-        "artifact_violation_report.py",
-        "current_pointer_writer_lib.py",
-        "inventory_current_pointer_layouts.py",
-        "refresh_current_pointer.py",
-        "resolve_artifact_path.py",
         "quality_adapter_lib.py",
         "quality_universes_lib.py",
+        "artifact_naming_lib.py",
         "quality_bootstrap_absence.py",
         "quality_bootstrap_lib.py",
         "quality_bootstrap_common.py",
@@ -768,15 +724,8 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         "inventory_nose_clones_unavailable.py",
         "release_changed_line_coverage_unavailable.py",
     ):
-        source = ROOT / "scripts" / (
-            "adapters" if real_name in adapter_names else "artifacts" if real_name in artifact_names else ""
-        ) / real_name
-        destination = scripts_dir / (
-            "adapters" if real_name in adapter_names else "artifacts" if real_name in artifact_names else ""
-        ) / real_name
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, destination)
-        destination.chmod(0o755)
+        shutil.copy2(ROOT / "scripts" / real_name, scripts_dir / real_name)
+        (scripts_dir / real_name).chmod(0o755)
     for real_name in ("adapter_validators.py", "runtime_budget_intent.py"):
         shutil.copy2(
             ROOT / "skills" / "public" / "quality" / "scripts" / real_name,
