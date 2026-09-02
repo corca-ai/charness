@@ -126,8 +126,8 @@ mutation) lands in all workers regardless of runtime order. Two consequences:
   preceded the victim on its worker) will never find it.
 - Bisect the collected FILE list by halves with the victim appended and `-k
   <victim>`; each run costs one collection (about 20 seconds here). Nine runs
-  found `<authoring-repo>/tests/coverage_debt/test_batch6.py` among 563 files on 2026-09-02
-  after three runtime-prefix rounds had found nothing.
+  found `<authoring-repo>/tests/coverage_debt/test_batch6.py` in the full
+  collection set after three runtime-prefix rounds had found nothing.
 
 Fix at the polluter (import the shared module by name so there is one copy),
 not at the victim, and say so in the commit body.
