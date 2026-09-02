@@ -54,4 +54,42 @@ were lost.
 
 ## Export boundary angle
 
-(appended when the reviewer reports)
+Findings 9 onward and the `NOT READ` line were lost to the host truncation.
+
+1. Exported `packaging_lib` hard-depends on a batch A move:
+   `scripts/packaging_lib.py:13-14` loads `validate_packaging.py` by path at
+   import time; `export_plugin.py:15`, `sync_root_plugin_manifests.py:16`,
+   the plugin import smoke, and every test importing `packaging_lib` would
+   fail. Disposition: ACCEPTED. `validate_packaging`,
+   `packaging_policy_validators`, and `validate_packaging_install_surface`
+   STAY in `scripts/` as export machinery; applied at T1 integration (the
+   lane cannot be redirected mid-flight) and in the T2 brief.
+2. The consumer CLI spawns `scripts/validate_packaging.py` by path
+   (`charness:2598`, `install_surface`). Disposition: ACCEPTED, resolved by 1.
+3. Commit-time gates vanish silently: `staged_commit_gate_plan_helpers.py:95-99`
+   `present_gate` returns `[]` when `scripts/<script>` is absent, so the
+   moved validators drop out of every commit plan. Disposition: ACCEPTED.
+   T1 integration adds `present_tools_gate` in the helpers module plus a plan
+   test asserting the moved labels are still scheduled; R1's callers are
+   re-pointed at R1 integration.
+4. Shell edges were excluded from the closure: `run-quality.sh:228` runs
+   `scripts/quality_label_universe.py` and `:668` probes
+   `scripts/native_gate_lib.py`; `support.py:591-611` seeds the former.
+   Disposition: ACCEPTED. `quality_label_universe` and `native_gate_lib`
+   STAY-SHARED; T2 brief updated.
+5. The runner test harness (`support.py:545-611`, `QUALITY_PYTHON_STUBS`
+   `:277`) has no `tools/` and writes MOVE stubs under `scripts/`.
+   Disposition: ACCEPTED. The harness creates `tools/__init__.py` and places
+   stubs by the row spelling; checked at T1 integration.
+6. The clean-export probe `-path '*tools*'` matches shipped
+   `install_tools.py` and `update_tools.py`. Disposition: ACCEPTED. Probe is
+   `-path '*/tools/*'` plus an absent-basename check per moved module.
+7. Non-file leakage: shipped prose names moved files
+   (`skills/public/create-skill/references/portable-authoring.md:31`,
+   `skills/public/quality/references/attention-state-visibility.json:175`);
+   `check_export_self_sufficiency.py:68,74` matches only the
+   `python3 scripts/X` spelling. Disposition: ACCEPTED. The new
+   self-sufficiency arm scans exported `.md/.json/.yaml/.py/.sh` for any moved
+   basename or `-m tools.`.
+8. `validate_packaging_install_surface.py:217` reads a shipped template
+   beside itself. Disposition: resolved by 1 (it stays).

@@ -13,10 +13,15 @@ Outcome: batch B is in `tools/`: `check_timing_layer_completeness`,
 `check_coverage` with `check_coverage_extra_lib` (`check_coverage_lib` STAYS:
 `validate_adapters.py:44` imports it), `check_export_self_sufficiency` with
 `export_self_sufficiency_lib`, `check_plugin_asset_command_carriers`,
-`check_plugin_doc_links`, `check_plugin_import_smoke`, `native_gate_lib`,
+`check_plugin_doc_links`, `check_plugin_import_smoke`,
 `run_evals` with `eval_setup`, `eval_registry`, `eval_issue_scenarios`,
-`quality_label_universe`, `quality_gates_extract`, and the engine's
-repo-only helpers only if R2b marked them repo-only. Rows in
+`quality_gates_extract`, and the engine's repo-only helpers only if R2b
+marked them repo-only. STAY in `scripts/` (design critique, export angle,
+items 1 and 4 in `briefs/design-critique-769.md`): `native_gate_lib`,
+`quality_label_universe` (the shipped runner and its test harness run them
+by path), `validate_packaging`, `packaging_policy_validators`,
+`validate_packaging_install_surface` (export machinery `packaging_lib`
+loads at import time; the consumer CLI spawns `validate_packaging.py`). Rows in
 `.agents/quality-gates.yaml` use `python3 -m tools.<name>`. Every moved gate
 has a seeded-failure test.
 
@@ -48,6 +53,17 @@ Scope: the modules above, their tests (map 3.3 for the string references),
 `charness-artifacts/quality/2026-09-02-gate-classification-769.md` (append a
 "Corrections applied by the move" section; never rewrite a row's original
 text). Do not touch `plugins/**`. Do not spawn descendant agents.
+
+Also from the critique (items 3, 5, 6, 7): `staged_commit_gate_plan_helpers.py`
+`present_gate` must schedule a `tools/` gate (a `present_tools_gate` arm and
+a plan test asserting every moved label is still scheduled); the runner test
+harness in `tests/quality_gates/support.py` creates `tools/__init__.py` and
+places stubs by the row spelling; the clean-export probe is
+`find <export> -path '*/tools/*'` plus an absent-basename check per moved
+module; the export self-sufficiency arm scans exported `.md/.json/.yaml/.py/.sh`
+for any moved basename or `-m tools.` (shipped prose already names moved
+files: `skills/public/create-skill/references/portable-authoring.md:31`,
+`skills/public/quality/references/attention-state-visibility.json:175`).
 
 Rules and verification: as in the T1 brief, plus `python3 -m tools.<name> --help`
 for every moved module from the repo root, the clean-export probe with the
