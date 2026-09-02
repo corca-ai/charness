@@ -44,6 +44,7 @@ BACKEND_REQUIREMENTS = {
 }
 GoalRunInputError = INPUT.GoalRunInputError
 GoalRunInputErrors = (GoalRunInputError, CLOSE_CONTRACT.GoalRunInputError)
+OPERATION_IDENTITY_FIELDS = ("binding_path", "draft_sha256", "binding_sha256")
 ATTEMPT_RE = INPUT.ATTEMPT_RE
 _error = INPUT.error
 _read_json = INPUT.read_json
@@ -109,11 +110,6 @@ def _validate_bound_inputs(
             "schema-invalid",
             "amendment_authorization_file is only valid for update-body",
         )
-    bound = {"update-body", "create-or-reuse-child", "list-children", "add-child", "remove-child"}
-    if operation in bound and (
-        not isinstance(value.get("binding_path"), str) or not value["binding_path"].strip()
-    ):
-        raise _error("input-missing", f"{operation} requires binding_path")
     if operation == "list-children" and not isinstance(value.get("expected_child_file"), str):
         raise _error(
             "input-missing", "list-children requires expected_child_file for binding enforcement"
@@ -149,6 +145,31 @@ def operation_name(value: dict[str, Any]) -> Any:
     return value.get("operation")
 
 
+def require_record_observation_identity(operation: dict[str, Any]) -> None:
+    missing = [field for field in OPERATION_IDENTITY_FIELDS if not operation.get(field)]
+    if missing:
+        raise _error(
+            "identity-required",
+            "record-observation cannot read the parent metadata; explicit Goal Run "
+            f"identities are required: {missing!r}",
+        )
+
+
+def _validate_amendment_input(value: dict[str, Any]) -> None:
+    amendment = value.get("amendment")
+    if amendment is None:
+        return
+    if value.get("operation") != "add-child":
+        raise _error("schema-invalid", "amendment is only valid for add-child")
+    if not isinstance(amendment, dict) or set(amendment) != {
+        "rank",
+        "dependencies",
+        "reason",
+        "approval",
+    }:
+        raise _error("schema-invalid", "amendment must carry rank, dependencies, reason, approval")
+
+
 def load_operation(path: Path, *, repo: str, parent_number: int) -> dict[str, Any]:
     value, digest = _read_json(path, kind=OPERATION_KIND)
     _fields(
@@ -173,14 +194,11 @@ def load_operation(path: Path, *, repo: str, parent_number: int) -> dict[str, An
         },
         "operation",
     )
-    amendment = value.get("amendment")
-    if amendment is not None:
-        if operation_name(value) not in {"add-child"}:
-            raise _error("schema-invalid", "amendment is only valid for add-child")
-        if not isinstance(amendment, dict) or set(amendment) != {"rank", "dependencies", "reason", "approval"}:
-            raise _error("schema-invalid", "amendment must carry rank, dependencies, reason, approval")
+    _validate_amendment_input(value)
     if value.get("parent_metadata") is not None and not isinstance(value["parent_metadata"], dict):
-        raise _error("schema-invalid", "parent_metadata must be the parent's Goal Run metadata object")
+        raise _error(
+            "schema-invalid", "parent_metadata must be the parent's Goal Run metadata object"
+        )
     if _repo(value.get("repo"), "operation.repo").lower() != repo.lower():
         raise _error(
             "parent-mismatch", "operation repository differs from the requested repository"
@@ -193,8 +211,9 @@ def load_operation(path: Path, *, repo: str, parent_number: int) -> dict[str, An
     attempt_id = value.get("attempt_id")
     if not isinstance(attempt_id, str) or not ATTEMPT_RE.fullmatch(attempt_id):
         raise _error("identity-invalid", "operation.attempt_id has unsupported syntax")
-    _sha(value.get("draft_sha256"), "operation.draft_sha256")
-    _sha(value.get("binding_sha256"), "operation.binding_sha256")
+    for field in ("draft_sha256", "binding_sha256"):
+        if value.get(field) is not None:
+            _sha(value[field], f"operation.{field}")
     if not isinstance(value.get("observation_dir"), str) or not value["observation_dir"].strip():
         raise _error("path-invalid", "operation.observation_dir must be non-empty text")
     target = _target(value.get("target", {}), repo=repo, parent_number=parent_number)
@@ -215,10 +234,19 @@ load_close_proof = CLOSE_CONTRACT.load_close_proof
 load_final_proof_index = CLOSE_CONTRACT.load_final_proof_index
 
 
-def validate_operation_binding(operation: dict[str, Any], repo_root: Path) -> dict[str, Any] | None:
+def validate_operation_binding(
+    operation: dict[str, Any],
+    repo_root: Path,
+    *,
+    parent_metadata: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
     try:
         return BINDING.validate_operation_binding(
-            operation, repo_root, repo_file=repo_file, tracker=TRACKER
+            operation,
+            repo_root,
+            repo_file=repo_file,
+            tracker=TRACKER,
+            parent_metadata=parent_metadata,
         )
     except BINDING.BindingError as exc:
         raise _error(exc.code, str(exc)) from exc

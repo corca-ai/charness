@@ -15,7 +15,10 @@ ceiling applies to the whole bounded interview. If it is reached with an
 unanswered decision, return `interview-cap-reached`, preserve that decision,
 and wait; do not create a Goal Binding or provider parent.
 
-After explicit approval of the exact briefing and draft bytes, read the exact
-parent identity, hash the draft, and create the immutable Goal Binding. The
-binding records the parent and approved Work Item manifest. No provider
-mutation occurs before that identity is established.
+After explicit approval of the briefing and draft, read the exact parent
+identity, hash the draft, and create the immutable Goal Binding. The binding
+freezes the plan by draft hash and the approved Work Item manifest by stable
+KEY. Children are later identified by their Work Item marker. Provider
+membership is established by the provider's sub-issue graph plus parent
+metadata `amendments`; prose edits never invalidate a run. No provider mutation
+occurs before that identity is established.

@@ -49,11 +49,24 @@ unverified_mutation = OUTCOME.unverified_mutation
 work_item_key_marker = DISCOVERY.work_item_key_marker
 load_expected_child_set = DISCOVERY.load_expected_child_set
 discover_managed_issues = DISCOVERY.discover_managed_issues
-_exact_reusable_match = DISCOVERY._exact_reusable_match
 list_sub_issues = RELATIONSHIPS.list_sub_issues
 _resolve_issue_id = RELATIONSHIPS._resolve_issue_id
 add_sub_issue = RELATIONSHIPS.add_sub_issue
 remove_sub_issue = RELATIONSHIPS.remove_sub_issue
+
+
+def _marker_reusable_match(
+    discovery: dict[str, Any], *, work_item_key: str, title: str
+) -> dict[str, Any] | None:
+    """Reuse a child by its stable marker and title, not by mutable prose."""
+    matches = discovery["matches"]
+    if len(matches) != 1:
+        return None
+    match = matches[0]
+    if match["title"] != title or match["body"].count(work_item_key_marker(work_item_key)) != 1:
+        return None
+    return match
+
 
 def create_or_reuse_child(
     repo: str,
@@ -75,7 +88,7 @@ def create_or_reuse_child(
         )
 
     before = discover_managed_issues(repo, work_item_key, backend=backend)
-    reusable = _exact_reusable_match(before, title=title, body_text=body_text)
+    reusable = _marker_reusable_match(before, work_item_key=work_item_key, title=title)
     if reusable is not None:
         return {
             "ok": True,
@@ -94,7 +107,7 @@ def create_or_reuse_child(
     if before["count"]:
         raise RuntimeError(
             "work item key is already present but does not identify exactly one issue "
-            "with the requested title and byte-identical body"
+            "with the requested title and stable marker"
         )
     if prior_unresolved_observation is not None:
         raise RuntimeError(
@@ -153,7 +166,7 @@ def create_or_reuse_child(
             error=f"post-create discovery failed: {exc}",
             exit_code=create_error.exit_code if create_error else None,
         )
-    created = _exact_reusable_match(after, title=title, body_text=body_text)
+    created = _marker_reusable_match(after, work_item_key=work_item_key, title=title)
     if created is None:
         detail = (
             str(create_error)
@@ -200,6 +213,8 @@ def update_issue_body(
     pre_write_validator: Any | None = None,
     parent_amendment_validator: Any | None = None,
 ) -> dict[str, Any]:
+    # expected_body_sha256 is retained for primitive tracker callers. Goal Run
+    # operations deliberately omit it and bind updates to marker/parent identity.
     if not body_file.is_file():
         raise RuntimeError(f"tracker body file not found: {body_file}")
     before = VERIFY_CREATE.verify_created_issue(

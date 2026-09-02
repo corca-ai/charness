@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import runpy
 from pathlib import Path
 from typing import Any
@@ -17,6 +16,7 @@ TRACKER = _load_local("issue_tracker", "issue_goal_run_tracker")
 OBSERVATION = _load_local("issue_tracker_observation", "issue_goal_run_observation")
 GUARD = _load_local("issue_goal_run_guard", "issue_goal_run_apply_guard")
 OPERATIONS = _load_local("issue_goal_run_operations")
+
 
 def _refusal(code: str, message: str, *, repo: str, parent_number: int) -> dict[str, Any]:
     return {
@@ -44,9 +44,6 @@ def _parent_summary(issue: dict[str, Any], *, repo: str, number: int) -> dict[st
         "url": issue.get("url"),
         "updated_at": issue.get("updatedAt"),
         "body": body,
-        "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest()
-        if isinstance(body, str)
-        else None,
         "comment_count": len(issue.get("comments", []))
         if isinstance(issue.get("comments"), list)
         else None,
@@ -54,6 +51,19 @@ def _parent_summary(issue: dict[str, Any], *, repo: str, number: int) -> dict[st
     if summary is not None:
         result["sub_issues_summary"] = summary
     return result
+
+
+def _read_parent_metadata(
+    repo: str, parent_number: int, *, backend: dict[str, Any]
+) -> dict[str, Any]:
+    try:
+        issue = READ.read_issue_with_comments(repo, parent_number, backend=backend)["issue"]
+        metadata = GUARD.parse_goal_run_metadata(issue.get("body"), context="Goal Run parent body")
+    except RuntimeError as exc:
+        raise RuntimeError(f"could not read Goal Run parent identity: {exc}") from exc
+    if metadata is None:
+        raise RuntimeError("Goal Run parent body has no managed metadata identity")
+    return metadata
 
 
 def _read_graph(repo: str, parent_number: int, backend: dict[str, Any]) -> dict[str, Any]:
@@ -192,17 +202,18 @@ def command_apply(args: Any, *, resolve_backend: Any, emit: Any) -> int:
     except CONTRACT.GoalRunInputError as exc:
         emit(_refusal(exc.code, str(exc), repo=args.repo, parent_number=args.number))
         return 2
-    try:
-        binding = CONTRACT.validate_operation_binding(operation, args.repo_root.resolve())
-    except CONTRACT.GoalRunInputError as exc:
-        emit(_refusal(exc.code, str(exc), repo=args.repo, parent_number=args.number))
-        return 2
     name = operation["operation"]
     if name == "record-observation":
         # This operation is deliberately provider-free. It records a local fact and
         # must not make a remote readiness probe just because it shares the file
         # envelope with remote operations.
         backend = {"id": "local"}
+        try:
+            CONTRACT.require_record_observation_identity(operation)
+        except CONTRACT.GoalRunInputError as exc:
+            emit(_refusal(exc.code, str(exc), repo=args.repo, parent_number=args.number))
+            return 2
+        binding = None
     else:
         try:
             resolved = resolve_backend(args.repo_root.resolve(), target_repo=args.repo)
@@ -227,11 +238,19 @@ def command_apply(args: Any, *, resolve_backend: Any, emit: Any) -> int:
             emit(result)
             return 2
         backend = resolved["backend"]
-    body_path = None
-    if isinstance(operation.get("body_file"), str):
-        body_path = CONTRACT.repo_file(
-            args.repo_root.resolve(), operation["body_file"], context="body_file"
-        )
+        try:
+            parent_metadata = _read_parent_metadata(args.repo, args.number, backend=backend)
+            binding = CONTRACT.validate_operation_binding(
+                operation,
+                args.repo_root.resolve(),
+                parent_metadata=parent_metadata,
+            )
+        except (CONTRACT.GoalRunInputError, RuntimeError) as exc:
+            code = exc.code if isinstance(exc, CONTRACT.GoalRunInputError) else "parent-unverified"
+            result = _refusal(code, str(exc), repo=args.repo, parent_number=args.number)
+            result["selected_backend"] = backend
+            emit(result)
+            return 2
     try:
         started = OBSERVATION.begin(
             repo_root=args.repo_root.resolve(),
@@ -243,9 +262,9 @@ def command_apply(args: Any, *, resolve_backend: Any, emit: Any) -> int:
             parent_number=args.number,
             operation=name,
             target=operation["target"],
-            submitted_body_sha256=hashlib.sha256(body_path.read_bytes()).hexdigest()
-            if body_path
-            else None,
+            # Goal Run Work Item prose is not an operation identity; closeout
+            # comments use this separate field for terminal proof.
+            submitted_body_sha256=None,
             backend=backend,
         )
     except (RuntimeError, OSError) as exc:

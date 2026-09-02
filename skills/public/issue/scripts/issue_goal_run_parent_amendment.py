@@ -1,8 +1,7 @@
-"""Authorization and byte-preservation checks for Goal Run parent amendments."""
+"""Authorization and identity checks for Goal Run parent amendments."""
 
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 from typing import Any, Callable
@@ -13,8 +12,6 @@ PARENT_AMENDMENT_AUTHORIZATION_FIELDS = frozenset(
         "kind",
         "parent",
         "binding_sha256",
-        "current_body_sha256",
-        "desired_body_sha256",
         "approval",
         "reason",
     }
@@ -40,7 +37,7 @@ def load_authorization(
     desired_body: str,
     canonical_json_bytes: Callable[[Any], bytes],
 ) -> dict[str, Any]:
-    """Validate a canonical receipt against the exact parent amendment bytes."""
+    """Validate a canonical receipt against the parent and binding identities."""
     if not path.is_file():
         raise RuntimeError(f"parent amendment authorization file not found: {path}")
     try:
@@ -50,7 +47,10 @@ def load_authorization(
         raise RuntimeError("parent amendment authorization must be canonical UTF-8 JSON") from exc
     if not isinstance(value, dict):
         raise RuntimeError("parent amendment authorization must be a JSON object")
-    if set(value) != PARENT_AMENDMENT_AUTHORIZATION_FIELDS:
+    if (
+        not PARENT_AMENDMENT_AUTHORIZATION_FIELDS.issubset(value)
+        or set(value) - PARENT_AMENDMENT_AUTHORIZATION_FIELDS
+    ):
         raise RuntimeError("parent amendment authorization has the wrong fields")
     if canonical_json_bytes(value) != raw:
         raise RuntimeError("parent amendment authorization bytes are not canonical JSON")
@@ -62,15 +62,6 @@ def load_authorization(
         raise RuntimeError(
             "parent amendment authorization binding differs from the immutable Goal Binding"
         )
-    expected_hashes = {
-        "current_body_sha256": hashlib.sha256(current_body.encode("utf-8")).hexdigest(),
-        "desired_body_sha256": hashlib.sha256(desired_body.encode("utf-8")).hexdigest(),
-    }
-    for field, expected in expected_hashes.items():
-        if value[field] != expected:
-            raise RuntimeError(
-                f"parent amendment authorization {field} does not match the body bytes"
-            )
     approval = value["approval"]
     if not isinstance(approval, dict) or set(approval) != PARENT_AMENDMENT_APPROVAL_FIELDS:
         raise RuntimeError("parent amendment authorization approval has the wrong fields")
@@ -124,17 +115,14 @@ def validate_parent_body_update(
     desired_matches = list(guard.BLOCK_RE.finditer(desired_body))
     if len(desired_matches) != 1 or len(current_matches) > 1:
         raise RuntimeError("Goal Run parent metadata must have one replaceable block")
-    desired_match = desired_matches[0]
     if not current_matches:
         if amendment_authorization_file is not None:
-            raise RuntimeError("parent amendment authorization is not valid during metadata bootstrap")
-        # Bootstrap adds the block; the human body is the live body, modulo whitespace.
-        if _human_text(desired_body, desired_match) != current_body.strip():
             raise RuntimeError(
-                "initial parent metadata must be added to the live human-readable body, not replace it"
+                "parent amendment authorization is not valid during metadata bootstrap"
             )
         return
     current_match = current_matches[0]
+    desired_match = desired_matches[0]
     if _human_text(current_body, current_match) == _human_text(desired_body, desired_match):
         return
     # The human-readable body is reversible prose with provider edit history; an

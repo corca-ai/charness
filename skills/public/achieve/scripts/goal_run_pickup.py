@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import importlib.util
 import runpy
 import subprocess
@@ -15,7 +14,14 @@ from typing import Any
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
+    bootstrap = next(
+        (
+            ancestor / "skill_runtime_bootstrap.py"
+            for ancestor in Path(__file__).resolve().parents
+            if (ancestor / "skill_runtime_bootstrap.py").is_file()
+        ),
+        None,
+    )
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
@@ -104,8 +110,10 @@ def _read_lesson_projection(repo_root: Path) -> dict[str, Any]:
 
     def finish_item() -> None:
         nonlocal item
-        if current in _LESSON_SECTIONS and item and not any(
-            entry["section"] == current for entry in selected
+        if (
+            current in _LESSON_SECTIONS
+            and item
+            and not any(entry["section"] == current for entry in selected)
         ):
             lesson = " ".join(part.strip() for part in item if part.strip())
             if len(lesson) > _LESSON_MAX_CHARS:
@@ -132,10 +140,14 @@ def _resolve_repository(repo_root: Path, adapter: dict[str, Any], runtime: Any) 
     data = adapter["data"]
     configured = data.get("default_repo")
     if isinstance(configured, str) and configured.strip():
-        owner, repo, _ = runtime.parse_target(configured, str(data["default_org"]), source_prefix="adapter-default-repo")
+        owner, repo, _ = runtime.parse_target(
+            configured, str(data["default_org"]), source_prefix="adapter-default-repo"
+        )
         return {"full_name": f"{owner}/{repo}", "source": "adapter-default-repo"}
     remote_name = str(data.get("remote_name") or "origin")
-    names = subprocess.run(["git", "remote"], cwd=repo_root, check=False, capture_output=True, text=True, timeout=10).stdout.splitlines()
+    names = subprocess.run(
+        ["git", "remote"], cwd=repo_root, check=False, capture_output=True, text=True, timeout=10
+    ).stdout.splitlines()
     urls: list[tuple[str, str]] = []
     ordered = [remote_name] + [name for name in names if name != remote_name]
     for name in ordered:
@@ -145,10 +157,22 @@ def _resolve_repository(repo_root: Path, adapter: dict[str, Any], runtime: Any) 
             urls.append(parsed)
     if len(urls) == 1:
         owner, repo = urls[0]
-        return {"full_name": f"{owner}/{repo}", "source": f"git-remote:{remote_name}" if ordered and ordered[0] == remote_name else "git-remote"}
+        return {
+            "full_name": f"{owner}/{repo}",
+            "source": f"git-remote:{remote_name}"
+            if ordered and ordered[0] == remote_name
+            else "git-remote",
+        }
     if not urls:
-        raise PickupError("repository-unresolved", "no compatible configured git remote or adapter repository was found")
-    raise PickupError("repository-ambiguous", "multiple compatible git remotes resolve to different repositories", details={"repositories": sorted(f"{owner}/{repo}" for owner, repo in urls)})
+        raise PickupError(
+            "repository-unresolved",
+            "no compatible configured git remote or adapter repository was found",
+        )
+    raise PickupError(
+        "repository-ambiguous",
+        "multiple compatible git remotes resolve to different repositories",
+        details={"repositories": sorted(f"{owner}/{repo}" for owner, repo in urls)},
+    )
 
 
 def _read_goal_parent(
@@ -167,7 +191,9 @@ def _read_goal_parent(
     except RuntimeError as exc:
         raise PickupError("provider-selection-invalid", str(exc)) from exc
     if not resolved.get("adapter_ok"):
-        raise PickupError("adapter-invalid", "issue adapter is invalid", details=resolved.get("adapter"))
+        raise PickupError(
+            "adapter-invalid", "issue adapter is invalid", details=resolved.get("adapter")
+        )
     reader = _load_path(_issue_script("issue_read"), "issue_pickup_read")
     try:
         issue = reader.read_issue_with_comments(
@@ -185,9 +211,6 @@ def _read_goal_parent(
             "url": issue.get("url"),
             "updated_at": issue.get("updatedAt"),
             "body": body,
-            "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest()
-            if isinstance(body, str)
-            else None,
             "comment_count": len(issue.get("comments", []))
             if isinstance(issue.get("comments"), list)
             else None,
@@ -220,7 +243,9 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
         raise PickupError("not-a-goal-run", "target issue has no Goal Run metadata")
     if parent.get("state") != "OPEN":
         raise PickupError("parent-closed", "a closed Goal Run parent cannot be picked up")
-    metadata = validate_metadata(metadata, repo=repo, parent_number=number, parent_url=parent["url"])
+    metadata = validate_metadata(
+        metadata, repo=repo, parent_number=number, parent_url=parent["url"]
+    )
     binding_module = _load_path(_achieve_script("goal_binding"), "issue_pickup_binding")
     try:
         binding = binding_module.validate_binding(
@@ -234,7 +259,9 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
     except (ValueError, OSError) as exc:
         raise PickupError("binding-invalid", str(exc)) from exc
     if metadata["initial_graph_sha256"] != binding["approved_work_items_sha256"]:
-        raise PickupError("graph-digest-mismatch", "parent initial graph hash differs from the immutable binding")
+        raise PickupError(
+            "graph-digest-mismatch", "parent initial graph hash differs from the immutable binding"
+        )
     progress = validate_progress(
         metadata,
         binding["approved_work_items"],
@@ -277,7 +304,9 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
     if isinstance(summary, dict):
         count_status = (
             "matched"
-            if all(summary.get(field) == progress[field] for field in ("total", "completed", "open"))
+            if all(
+                summary.get(field) == progress[field] for field in ("total", "completed", "open")
+            )
             else "parent-count-stale"
         )
     lessons = _read_lesson_projection(repo_root)
@@ -301,7 +330,9 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
         "sub_issues_summary": summary,
         "graph": {
             "count": progress["total"],
-            "amended_work_items": [item["key"] for item in work_items if item.get("intent") == "amended"],
+            "amended_work_items": [
+                item["key"] for item in work_items if item.get("intent") == "amended"
+            ],
             "source": "parent-progress",
             "reconciliation": "explicit-sync-only",
             "provider_summary": summary,
@@ -329,7 +360,9 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Select one executable child from an issue-native Goal Run")
+    parser = argparse.ArgumentParser(
+        description="Select one executable child from an issue-native Goal Run"
+    )
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--objective", required=True, help="Exact `/goal #N` objective")
     args = parser.parse_args(argv)

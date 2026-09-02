@@ -20,6 +20,7 @@ PROVIDER_PATH = ROOT / "skills/public/issue/scripts/issue_goal_run.py"
 CLOSE_PATH = ROOT / "skills/public/issue/scripts/issue_goal_run_close.py"
 REPO = "corca-ai/charness"
 BINDING_PATH = ROOT / "skills/public/issue/scripts/issue_goal_run_binding.py"
+CONTRACT_PATH = ROOT / "skills/public/issue/scripts/issue_goal_run_contract.py"
 
 
 def _provider() -> dict[str, object]:
@@ -54,11 +55,24 @@ def _bound_operation(
 
 def _apply_without_provider(tmp_path: Path, operation: Path) -> tuple[int, dict[str, object]]:
     emitted: list[dict[str, object]] = []
-    rc = _provider()["command_apply"](
+    module = _provider()
+    module["command_apply"].__globals__["READ"] = SimpleNamespace(
+        read_issue_with_comments=lambda *_args, **_kwargs: {
+            "issue": {
+                "number": 724,
+                "state": "OPEN",
+                "url": f"https://github.com/{REPO}/issues/724",
+                "body": parent_body(tmp_path),
+                "comments": [],
+            }
+        }
+    )
+    rc = module["command_apply"](
         Namespace(repo=REPO, number=724, operation_file=operation, repo_root=tmp_path),
-        resolve_backend=lambda *_args, **_kwargs: (_ for _ in ()).throw(
-            AssertionError("binding mismatch must refuse before provider selection")
-        ),
+        resolve_backend=lambda *_args, **_kwargs: {
+            "adapter_ok": True,
+            "backend": {"id": "fixture"},
+        },
         emit=emitted.append,
     )
     return rc, emitted[0]
@@ -74,8 +88,6 @@ def _amendment_authorization(tmp_path: Path, current: str, desired: str) -> Path
             "url": f"https://github.com/{REPO}/issues/724",
         },
         "binding_sha256": metadata["binding_sha256"],
-        "current_body_sha256": hashlib.sha256(current.encode("utf-8")).hexdigest(),
-        "desired_body_sha256": hashlib.sha256(desired.encode("utf-8")).hexdigest(),
         "approval": {
             "response": "approved",
             "session_id": "amendment-session",
@@ -88,6 +100,149 @@ def _amendment_authorization(tmp_path: Path, current: str, desired: str) -> Path
         (json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
     )
     return path
+
+
+def test_live_goal_765_binding_loader_accepts_legacy_body_fields_without_editing_file() -> None:
+    binding_path = ROOT / "charness-artifacts/goals/2026-09-02-north-star-realignment.binding.json"
+    metadata = json.loads(
+        (ROOT / "charness-artifacts/goal-runs/765/parent-metadata.json").read_text(encoding="utf-8")
+    )
+    before = binding_path.read_bytes()
+    module = runpy.run_path(str(BINDING_PATH))
+
+    binding = module["load_binding"](
+        ROOT,
+        binding_path,
+        repo=REPO,
+        parent_number=765,
+        draft_sha256=metadata["draft_sha256"],
+        binding_sha256=metadata["binding_sha256"],
+    )
+
+    assert binding["binding_sha256"] == metadata["binding_sha256"]
+    assert binding_path.read_bytes() == before
+
+
+def test_new_binding_can_omit_legacy_body_policy_and_digest_fields(tmp_path: Path) -> None:
+    module = runpy.run_path(str(ROOT / "skills/public/achieve/scripts/goal_binding.py"))
+    issue_module = runpy.run_path(str(BINDING_PATH))
+    draft = tmp_path / "goal.md"
+    draft.write_text("# Goal\n", encoding="utf-8")
+    payload = module["build_binding"](
+        draft_path="goal.md",
+        draft_sha256=module["sha256_file"](draft),
+        briefing_sha256=hashlib.sha256(b"briefing").hexdigest(),
+        approval_response="approved",
+        approval_session_id="session",
+        approval_observed_at="2026-09-02T00:00:00+00:00",
+        parent={"repo": REPO, "number": 724, "url": f"https://github.com/{REPO}/issues/724"},
+        approved_work_items=[
+            {
+                "key": "new-item",
+                "intent": "create",
+                "issue": None,
+                "dependencies": [],
+                "rank": 1,
+                "observed": None,
+            }
+        ],
+    )
+    path = tmp_path / "goal.binding.json"
+    path.write_bytes(module["canonical_json_bytes"](payload))
+
+    loaded = issue_module["load_binding"](
+        tmp_path,
+        path,
+        repo=REPO,
+        parent_number=724,
+        draft_sha256=payload["draft"]["sha256"],
+        binding_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+    )
+
+    assert loaded["approved_work_items"][0]["key"] == "new-item"
+
+
+def test_existing_goal_765_operation_files_still_load_with_repeated_identity() -> None:
+    contract = runpy.run_path(str(CONTRACT_PATH))
+    paths = sorted((ROOT / "charness-artifacts/goal-runs/765/operations").glob("*.json"))
+
+    loaded = [contract["load_operation"](path, repo=REPO, parent_number=765) for path in paths]
+
+    # The 21 bootstrap-era files repeat the identity; later probe files omit it
+    # on purpose (#773) and must load beside them, not be counted as legacy.
+    legacy = [operation for operation in loaded if operation.get("binding_path") is not None]
+    assert len(legacy) == 21
+    assert all(
+        operation["binding_path"]
+        == "charness-artifacts/goals/2026-09-02-north-star-realignment.binding.json"
+        for operation in legacy
+    )
+    assert len(loaded) > len(legacy)
+
+
+def test_provider_operation_identity_is_resolved_and_repetition_is_checked(tmp_path: Path) -> None:
+    close_inputs(tmp_path)
+    module = _provider()
+    module["command_apply"].__globals__["READ"] = SimpleNamespace(
+        read_issue_with_comments=lambda *_args, **_kwargs: {
+            "issue": {
+                "number": 724,
+                "state": "OPEN",
+                "url": f"https://github.com/{REPO}/issues/724",
+                "body": parent_body(tmp_path),
+                "comments": [],
+            }
+        }
+    )
+    operation = _bound_operation(
+        tmp_path,
+        "read-state",
+        {"repo": REPO, "number": 724},
+    )
+    payload = json.loads(operation.read_text(encoding="utf-8"))
+    payload.pop("binding_path")
+    payload.pop("draft_sha256")
+    payload.pop("binding_sha256")
+    operation.write_text(json.dumps(payload), encoding="utf-8")
+    emitted: list[dict[str, object]] = []
+
+    rc = module["command_apply"](
+        Namespace(repo=REPO, number=724, operation_file=operation, repo_root=tmp_path),
+        resolve_backend=lambda *_args, **_kwargs: {
+            "adapter_ok": True,
+            "backend": {"id": "fixture"},
+        },
+        emit=emitted.append,
+    )
+
+    assert rc == 0
+    started = json.loads(
+        (tmp_path / "observations/attempt-read-state.started.json").read_text(encoding="utf-8")
+    )
+    assert started["draft_sha256"] == _fixture_metadata(tmp_path)["draft_sha256"]
+    assert started["binding_sha256"] == _fixture_metadata(tmp_path)["binding_sha256"]
+
+    mismatch = _bound_operation(
+        tmp_path,
+        "read-state",
+        {"repo": REPO, "number": 724},
+        attempt_id="attempt-read-state-mismatch",
+    )
+    mismatch_payload = json.loads(mismatch.read_text(encoding="utf-8"))
+    mismatch_payload["draft_sha256"] = "f" * 64
+    mismatch.write_text(json.dumps(mismatch_payload), encoding="utf-8")
+    emitted.clear()
+    rc = module["command_apply"](
+        Namespace(repo=REPO, number=724, operation_file=mismatch, repo_root=tmp_path),
+        resolve_backend=lambda *_args, **_kwargs: {
+            "adapter_ok": True,
+            "backend": {"id": "fixture"},
+        },
+        emit=emitted.append,
+    )
+    assert rc == 2
+    assert emitted[0]["error_code"] == "identity-mismatch"
+    assert "draft_sha256" in emitted[0]["error"]
 
 
 @pytest.mark.parametrize(
@@ -111,21 +266,19 @@ def test_update_refuses_wrong_bound_child_identity_before_provider(
     assert result["mutation_invoked"] is False
 
 
-def test_update_refuses_changed_submitted_body_before_provider(tmp_path: Path) -> None:
+def test_update_accepts_changed_submitted_body_when_marker_is_kept(tmp_path: Path) -> None:
     close_inputs(tmp_path)
-    (tmp_path / "body.md").write_bytes(b"changed child body\n")
-    operation = _bound_operation(
+    body = b"<!-- charness-work-item-key: child-725 -->\nchanged child prose\n"
+    module = runpy.run_path(str(BINDING_PATH))
+    binding = module["load_binding"](
         tmp_path,
-        "update-body",
-        {"repo": REPO, "number": 725, "work_item_key": "child-725"},
-        body_file="body.md",
+        "goal.binding.json",
+        repo=REPO,
+        parent_number=724,
+        draft_sha256=_fixture_metadata(tmp_path)["draft_sha256"],
+        binding_sha256=_fixture_metadata(tmp_path)["binding_sha256"],
     )
-
-    rc, result = _apply_without_provider(tmp_path, operation)
-
-    assert rc == 2
-    assert result["error_code"] == "binding-mismatch"
-    assert result["mutation_invoked"] is False
+    module["validate_managed_body"](binding, key="child-725", number=725, body=body)
 
 
 @pytest.mark.parametrize("operation", ["add-child", "remove-child"])
@@ -184,7 +337,9 @@ def test_created_child_identity_is_its_marker_not_its_prose() -> None:
     )
     module["require_created_children"](binding, [{"number": 900, "body": body}])
     # prose may be corrected after creation; the marker is the identity
-    module["require_created_children"](binding, [{"number": 900, "body": body + "corrected scope\n"}])
+    module["require_created_children"](
+        binding, [{"number": 900, "body": body + "corrected scope\n"}]
+    )
 
     with pytest.raises(RuntimeError, match="does not map to one live child"):
         module["require_created_children"](binding, [{"number": 900, "body": "no marker\n"}])
@@ -195,26 +350,48 @@ def test_amended_work_item_joins_the_graph_by_number() -> None:
     binding = {
         "parent": {"repo": REPO, "number": 724},
         "approved_work_items": [
-            {"key": "first", "intent": "create", "issue": None, "rank": 1, "dependencies": [],
-             "body_sha256": hashlib.sha256(b"x").hexdigest()},
+            {
+                "key": "first",
+                "intent": "create",
+                "issue": None,
+                "rank": 1,
+                "dependencies": [],
+                "body_sha256": hashlib.sha256(b"x").hexdigest(),
+            },
         ],
     }
     metadata = {
-        "parent_identity": {"repo": REPO, "number": 724, "url": f"https://github.com/{REPO}/issues/724"},
-        "amendments": [{
-            "key": "late", "repo": REPO, "number": 901, "url": f"https://github.com/{REPO}/issues/901",
-            "rank": 2, "dependencies": ["first"], "reason": "added after binding",
-            "approval": {"response": "approve", "session_id": "s", "observed_at": "t"},
-        }],
+        "parent_identity": {
+            "repo": REPO,
+            "number": 724,
+            "url": f"https://github.com/{REPO}/issues/724",
+        },
+        "amendments": [
+            {
+                "key": "late",
+                "repo": REPO,
+                "number": 901,
+                "url": f"https://github.com/{REPO}/issues/901",
+                "rank": 2,
+                "dependencies": ["first"],
+                "reason": "added after binding",
+                "approval": {"response": "approve", "session_id": "s", "observed_at": "t"},
+            }
+        ],
     }
     first = {"number": 900, "body": "<!-- charness-work-item-key: first -->\n"}
     late = {"number": 901, "body": "no marker needed; identity is the amendment number\n"}
     module["require_expected_children"](
-        binding, [{"repo": REPO, "number": 900}, {"repo": REPO, "number": 901}],
-        context="amended graph", metadata=metadata,
+        binding,
+        [{"repo": REPO, "number": 900}, {"repo": REPO, "number": 901}],
+        context="amended graph",
+        metadata=metadata,
     )
     module["require_created_children"](binding, [first, late], metadata)
-    assert module["work_item_for_target"](binding, "late", number=901, metadata=metadata)["intent"] == "amended"
+    assert (
+        module["work_item_for_target"](binding, "late", number=901, metadata=metadata)["intent"]
+        == "amended"
+    )
     with pytest.raises(RuntimeError, match="not an approved Work Item"):
         module["work_item_for_target"](binding, "late")
     with pytest.raises(RuntimeError, match="differ from the Goal Run's approved Work Items"):
@@ -237,6 +414,17 @@ def test_parent_update_allows_human_body_amendment_with_verified_provider_readba
     _amendment_authorization(tmp_path, current, desired)
     (tmp_path / "body.md").write_text(desired, encoding="utf-8")
     module = _provider()
+    module["command_apply"].__globals__["READ"] = SimpleNamespace(
+        read_issue_with_comments=lambda *_args, **_kwargs: {
+            "issue": {
+                "number": 724,
+                "state": "OPEN",
+                "url": f"https://github.com/{REPO}/issues/724",
+                "body": current,
+                "comments": [],
+            }
+        }
+    )
     tracker = module["TRACKER"]
     readbacks = iter(
         [
@@ -289,7 +477,10 @@ def test_parent_human_body_may_change_without_an_authorization_receipt(
     close_inputs(tmp_path)
     module = runpy.run_path(str(BINDING_PATH))
     binding = module["load_binding"](
-        tmp_path, "goal.binding.json", repo=REPO, parent_number=724,
+        tmp_path,
+        "goal.binding.json",
+        repo=REPO,
+        parent_number=724,
         draft_sha256=_fixture_metadata(tmp_path)["draft_sha256"],
         binding_sha256=_fixture_metadata(tmp_path)["binding_sha256"],
     )
@@ -297,8 +488,13 @@ def test_parent_human_body_may_change_without_an_authorization_receipt(
     current = "original prefix\n" + parent_body(tmp_path) + "original suffix\n"
     desired = "changed prefix\n" + parent_body(tmp_path) + "original suffix\n"
     module["validate_parent_body_update"](
-        current, desired, binding=binding, repo=REPO, parent_number=724,
-        parent_url=f"https://github.com/{REPO}/issues/724", guard=SimpleNamespace(**guard),
+        current,
+        desired,
+        binding=binding,
+        repo=REPO,
+        parent_number=724,
+        parent_url=f"https://github.com/{REPO}/issues/724",
+        guard=SimpleNamespace(**guard),
     )
 
 
@@ -307,8 +503,6 @@ def test_parent_human_body_may_change_without_an_authorization_receipt(
     [
         ("parent", "parent differs"),
         ("binding", "binding differs"),
-        ("current", "current_body_sha256"),
-        ("desired", "desired_body_sha256"),
         ("approval", "approval fields must be non-empty"),
     ],
 )
@@ -324,10 +518,6 @@ def test_parent_update_refuses_authorization_not_bound_to_exact_amendment(
         payload["parent"]["number"] = 725
     elif case == "binding":
         payload["binding_sha256"] = "f" * 64
-    elif case == "current":
-        payload["current_body_sha256"] = "f" * 64
-    elif case == "desired":
-        payload["desired_body_sha256"] = "f" * 64
     else:
         payload["approval"]["session_id"] = ""
     authorization.write_text(
@@ -336,6 +526,17 @@ def test_parent_update_refuses_authorization_not_bound_to_exact_amendment(
     )
     (tmp_path / "body.md").write_text(desired, encoding="utf-8")
     module = _provider()
+    module["command_apply"].__globals__["READ"] = SimpleNamespace(
+        read_issue_with_comments=lambda *_args, **_kwargs: {
+            "issue": {
+                "number": 724,
+                "state": "OPEN",
+                "url": f"https://github.com/{REPO}/issues/724",
+                "body": current,
+                "comments": [],
+            }
+        }
+    )
     tracker = module["TRACKER"]
     tracker.VERIFY_CREATE = SimpleNamespace(
         verify_created_issue=lambda *_args, **_kwargs: {
@@ -368,41 +569,31 @@ def test_parent_update_refuses_authorization_not_bound_to_exact_amendment(
     assert error in emitted[0]["error"]
 
 
-def test_initial_parent_metadata_append_cannot_overwrite_live_human_body(
+def test_initial_parent_metadata_append_preserves_live_human_body(
     tmp_path: Path,
 ) -> None:
     close_inputs(tmp_path)
     current = "original human body\n"
     desired = parent_body(tmp_path)
-    (tmp_path / "body.md").write_text(desired, encoding="utf-8")
-    module = _provider()
-    tracker = module["TRACKER"]
-    tracker.VERIFY_CREATE = SimpleNamespace(
-        verify_created_issue=lambda *_args, **_kwargs: {
-            "body_verified": False,
-            "body": current,
-            "url": f"https://github.com/{REPO}/issues/724",
-        }
+    module = runpy.run_path(str(BINDING_PATH))
+    binding = module["load_binding"](
+        tmp_path,
+        "goal.binding.json",
+        repo=REPO,
+        parent_number=724,
+        draft_sha256=_fixture_metadata(tmp_path)["draft_sha256"],
+        binding_sha256=_fixture_metadata(tmp_path)["binding_sha256"],
     )
-    tracker.resolve_op = lambda *_args, **_kwargs: ["update"]
-    tracker.run_backend = lambda *_args, **_kwargs: (_ for _ in ()).throw(
-        AssertionError("initial metadata append must refuse before provider mutation")
+    guard = runpy.run_path(str(ROOT / "skills/public/issue/scripts/issue_goal_run_guard.py"))
+    module["validate_parent_body_update"](
+        current,
+        desired,
+        binding=binding,
+        repo=REPO,
+        parent_number=724,
+        parent_url=f"https://github.com/{REPO}/issues/724",
+        guard=SimpleNamespace(**guard),
     )
-    operation = _bound_operation(
-        tmp_path, "update-body", {"repo": REPO, "number": 724}, body_file="body.md"
-    )
-    emitted: list[dict[str, object]] = []
-
-    rc = module["command_apply"](
-        Namespace(repo=REPO, number=724, operation_file=operation, repo_root=tmp_path),
-        resolve_backend=lambda *_args, **_kwargs: {"adapter_ok": True, "backend": {"id": "gh"}},
-        emit=emitted.append,
-    )
-
-    assert rc == 2
-    assert emitted[0]["status"] == "provider-refused"
-    assert emitted[0]["mutation_invoked"] is False
-    assert "not replace it" in emitted[0]["error"]
 
 
 def test_parent_metadata_identity_mutation_still_refuses_before_provider(
@@ -419,6 +610,17 @@ def test_parent_metadata_identity_mutation_still_refuses_before_provider(
     )
     (tmp_path / "body.md").write_text(desired, encoding="utf-8")
     module = _provider()
+    module["command_apply"].__globals__["READ"] = SimpleNamespace(
+        read_issue_with_comments=lambda *_args, **_kwargs: {
+            "issue": {
+                "number": 724,
+                "state": "OPEN",
+                "url": f"https://github.com/{REPO}/issues/724",
+                "body": current,
+                "comments": [],
+            }
+        }
+    )
     tracker = module["TRACKER"]
     tracker.VERIFY_CREATE = SimpleNamespace(
         verify_created_issue=lambda *_args, **_kwargs: {

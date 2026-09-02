@@ -95,9 +95,11 @@ anchor. It contains:
 
 Each approved work item declares a stable key, create-or-reuse intent, existing
 issue identity when known, dependency keys, execution rank, and body ownership.
-Charness-owned new child bodies carry an expected digest. Reused issues carry a
-readiness disposition and observed title/body fingerprint; `preserve` means no
-body rewrite and makes no managed-body-equality claim.
+Optional body-policy fields are retained only for compatibility with older
+bindings. A child is identified by its Work Item marker and issue identity;
+prose may be corrected without invalidating the run. Reused closed issues
+retain `preserve-closed-evidence`, which protects state-owned evidence rather
+than prose bytes.
 
 A valid binding contains no observation references, progress, percentage,
 current-child pointer, host-goal identity, provider-state cache, or copied
@@ -111,7 +113,7 @@ initial-graph mismatch are typed refusals.
 
 Provider observations are separate immutable
 `charness.goal-run-observation/v1` receipts. Each binds the binding/draft/parent,
-operation and attempt, target key/digest, before state, returned identity,
+operation and attempt, target key/identity, before state, returned identity,
 readback, outcome, and next action. This is bounded proof of one provider
 attempt, not an event-sourced progress ledger.
 
@@ -123,27 +125,23 @@ with:
 
 - binding schema, repository-relative binding path, and complete binding SHA-256
 - frozen draft path and SHA-256
-- initial graph SHA-256 and current membership revision/SHA-256
-- mutable `progress` cursor: schema, revision, reconciled counts, membership
-  SHA-256, and one exact next-child identity
+- initial graph SHA-256 and current provider membership
+- mutable `progress` cursor: schema, revision, reconciled counts, and one exact
+  next-child identity
 - establishment and optional terminal observation path/SHA-256; terminal
   fields are written only after the immutable terminal receipt exists
 - a planning-reset note when a provisional parent is being reconciled
 
 The rest of the body is normal human-readable Markdown. During bootstrap, the
-metadata block is appended to the exact live human-readable body that was
-read; an initial write cannot replace that body. After the block exists,
-parent `update-body` preserves the human-readable Markdown by default. A
-consumer may request an amendment with the optional
-`amendment_authorization_file`; this repo-contained canonical
-`charness.goal-run-parent-amendment/v1` receipt binds the parent identity,
-binding hash, current and desired complete-body hashes, and the explicit
-approval response/session/timestamp plus a non-empty reason. The bound
-validator checks that receipt only after reading the live body and before
-provider mutation. Duplicate, malformed, foreign-version, stripped, or
-identity-mutated blocks refuse before provider mutation. Exact provider
-readback must agree with the complete desired body, including any authorized
-human amendment.
+metadata block establishes the parent identity without binding surrounding
+prose bytes. After the block exists, parent `update-body` preserves the
+machine-managed identity and cursor; provider edit history owns reversible
+prose changes. A consumer may carry the optional
+`amendment_authorization_file` for a parent/binding identity, reason, and
+explicit approval response/session/timestamp. The bound validator checks that
+receipt only after reading the live body and before provider mutation. Duplicate,
+malformed, foreign-version, stripped, or identity-mutated blocks refuse before
+provider mutation.
 
 ## Activation And Pickup
 
@@ -252,9 +250,9 @@ neither parent nor binding is created, and activation, implementation, child
 progress, and completion may not.
 
 After establishment the GitHub parent owns current graph membership. An in-scope
-new Work Item or deferral updates the real relationships and parent membership
-revision/hash with an exact reason, successor mapping when applicable, and
-provider observation. The immutable binding remains the initial approved
+new Work Item or deferral updates the real relationships and records an
+approved parent-metadata amendment with an exact reason, successor mapping when
+applicable, and provider observation. The immutable binding remains the initial approved
 baseline. Objective, non-goal, success-criterion, or proof-policy changes require
 explicit operator approval before the parent contract changes.
 
@@ -266,13 +264,12 @@ not behavioral proof; the child issue's closeout comment/provider receipt names
 and binds the required evidence. The parent cursor advances with the published
 transition; there is no second local child-acceptance ledger.
 
-Parent body updates preserve the machine-managed identity and cursor contract
-and preserve the human-readable Markdown by default. An authorized bound
-update may amend that Markdown only with a canonical amendment receipt whose
-body hashes match the live and submitted bytes. The bootstrap append rule
-protects the live body while the first block is added; later updates validate
-both current and desired metadata against the immutable binding and then
-require complete-body provider readback. One agent owns those updates;
+Parent body updates preserve the machine-managed identity and cursor contract;
+prose edits are reversible and do not invalidate a run. An authorized bound
+update may record a parent-metadata amendment with its identity, reason, and
+approval. Bootstrap and later updates validate current and desired metadata
+against the immutable binding, while provider readback proves the target
+identity. One agent owns those updates;
 optimistic concurrency is not part of the default model. Full graph
 reconciliation remains explicit rather than running on every ordinary pickup.
 

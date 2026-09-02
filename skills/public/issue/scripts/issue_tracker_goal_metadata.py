@@ -64,16 +64,8 @@ def guard_goal_run_metadata(
             return
         if allow_human_amendment:
             return
-        desired_matches = list(GOAL_RUN_BLOCK_RE.finditer(desired_body))
-        if len(desired_matches) != 1:
-            raise RuntimeError("desired Goal Run metadata must have one replaceable block")
-        desired_match = desired_matches[0]
-        if desired_body[: desired_match.start()] != current_body or desired_body[
-            desired_match.end() :
-        ] not in {"", "\n"}:
-            raise RuntimeError(
-                "tracker update refused to replace the live human-readable body during metadata bootstrap"
-            )
+        # The metadata block establishes identity; bootstrap does not bind the
+        # surrounding human prose to its original bytes.
         return
     if desired is None:
         return

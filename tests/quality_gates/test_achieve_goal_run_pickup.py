@@ -6,6 +6,10 @@ from types import SimpleNamespace
 
 import pytest
 
+from .issue_goal_run_test_support import (
+    _fixture_metadata,
+    close_inputs,
+)
 from .seeding_support import load_module
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -217,7 +221,9 @@ def test_missing_lesson_projection_is_advisory(tmp_path: Path) -> None:
     assert result["status"] == "unavailable"
 
 
-def test_pickup_refuses_closed_parent_before_binding_or_mutation(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_pickup_refuses_closed_parent_before_binding_or_mutation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     metadata = _metadata()
     parent = {
         "repo": REPO,
@@ -239,8 +245,12 @@ def test_pickup_refuses_closed_parent_before_binding_or_mutation(monkeypatch: py
             else SimpleNamespace()
         ),
     )
-    monkeypatch.setattr(pickup, "_resolve_repository", lambda *_args: {"full_name": REPO, "source": "fixture"})
-    monkeypatch.setattr(pickup, "_read_goal_parent", lambda *_args: (graph, {"adapter_ok": True, "backend": {}}))
+    monkeypatch.setattr(
+        pickup, "_resolve_repository", lambda *_args: {"full_name": REPO, "source": "fixture"}
+    )
+    monkeypatch.setattr(
+        pickup, "_read_goal_parent", lambda *_args: (graph, {"adapter_ok": True, "backend": {}})
+    )
 
     with pytest.raises(pickup.PickupError) as exc_info:
         pickup.pickup(ROOT, "/goal #724")
@@ -324,7 +334,9 @@ def test_pickup_reads_only_cursor_child_and_refuses_closed_cursor(
         raise AssertionError(name)
 
     monkeypatch.setattr(pickup, "_load_path", fake_load)
-    monkeypatch.setattr(pickup, "_resolve_repository", lambda *_args: {"full_name": REPO, "source": "fixture"})
+    monkeypatch.setattr(
+        pickup, "_resolve_repository", lambda *_args: {"full_name": REPO, "source": "fixture"}
+    )
     monkeypatch.setattr(
         pickup,
         "_read_goal_parent",
@@ -366,7 +378,11 @@ def test_metadata_amendment_shape_and_effective_items() -> None:
         "rank": 2,
         "dependencies": ["provider"],
         "reason": "operator asked to include it after binding",
-        "approval": {"response": "approve", "session_id": "s", "observed_at": "2026-09-02T00:00:00+00:00"},
+        "approval": {
+            "response": "approve",
+            "session_id": "s",
+            "observed_at": "2026-09-02T00:00:00+00:00",
+        },
     }
     metadata["amendments"] = [amendment]
     validated = contract.validate_metadata(
@@ -379,21 +395,31 @@ def test_metadata_amendment_shape_and_effective_items() -> None:
     assert items[1]["issue"]["number"] == 773
 
     metadata["progress"]["next"] = {
-        "key": "late-item", "repo": REPO, "number": 773,
-        "url": f"https://github.com/{REPO}/issues/773", "state": "OPEN",
+        "key": "late-item",
+        "repo": REPO,
+        "number": 773,
+        "url": f"https://github.com/{REPO}/issues/773",
+        "state": "OPEN",
     }
-    progress = contract.validate_progress(metadata, binding_items, repo=REPO, parent_number=PARENT_NUMBER)
+    progress = contract.validate_progress(
+        metadata, binding_items, repo=REPO, parent_number=PARENT_NUMBER
+    )
     assert progress["next"]["key"] == "late-item"
 
     with pytest.raises(contract.PickupError, match="collides"):
-        contract.effective_work_items(binding_items, {**metadata, "amendments": [{**amendment, "key": "provider"}]})
+        contract.effective_work_items(
+            binding_items, {**metadata, "amendments": [{**amendment, "key": "provider"}]}
+        )
     for bad in (
         {**amendment, "repo": "other/repo"},
         {**amendment, "approval": {"response": "", "session_id": "s", "observed_at": "t"}},
     ):
         with pytest.raises(contract.PickupError, match="metadata-invalid|amendments"):
             contract.validate_metadata(
-                {**metadata, "amendments": [bad]}, repo=REPO, parent_number=PARENT_NUMBER, parent_url=PARENT_URL
+                {**metadata, "amendments": [bad]},
+                repo=REPO,
+                parent_number=PARENT_NUMBER,
+                parent_url=PARENT_URL,
             )
 
 
@@ -405,7 +431,322 @@ def test_membership_hash_is_neither_required_nor_compared() -> None:
     metadata = _metadata()
     metadata.pop("current_membership_sha256")
     metadata["progress"]["membership_sha256"] = _sha("e")  # stale leftover from an older parent
-    contract.validate_metadata(metadata, repo=REPO, parent_number=PARENT_NUMBER, parent_url=PARENT_URL)
-    contract.validate_progress(
-        metadata, [{"key": "provider", "rank": 1, "dependencies": []}], repo=REPO, parent_number=PARENT_NUMBER
+    contract.validate_metadata(
+        metadata, repo=REPO, parent_number=PARENT_NUMBER, parent_url=PARENT_URL
     )
+    contract.validate_progress(
+        metadata,
+        [{"key": "provider", "rank": 1, "dependencies": []}],
+        repo=REPO,
+        parent_number=PARENT_NUMBER,
+    )
+
+
+def test_seeded_run_reestablishes_by_identity_after_amendment_and_prose_edits(  # noqa: C901, PLR0915 -- one seeded scenario covers the full re-establishment loop
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A run survives reversible prose edits while cursor and marker identities hold."""
+    close_inputs(tmp_path)
+    metadata = _fixture_metadata(tmp_path)
+    metadata["progress"] = {
+        "schema": "charness.goal-progress/v1",
+        "revision": 1,
+        "total": 1,
+        "completed": 0,
+        "open": 1,
+        "next": {
+            "key": "child-725",
+            "repo": REPO,
+            "number": 725,
+            "url": f"https://github.com/{REPO}/issues/725",
+            "state": "OPEN",
+        },
+    }
+    amendment = {
+        "key": "late-item",
+        "repo": REPO,
+        "number": 773,
+        "url": f"https://github.com/{REPO}/issues/773",
+        "rank": 2,
+        "dependencies": ["child-725"],
+        "reason": "operator-approved late Work Item",
+        "approval": {
+            "response": "approved",
+            "session_id": "seeded-session",
+            "observed_at": "2026-09-02T00:00:00+00:00",
+        },
+    }
+
+    def render_parent() -> str:
+        return (
+            "<!-- charness-goal-run:v1\n"
+            + json.dumps(metadata, sort_keys=True, separators=(",", ":"))
+            + "\n-->\n"
+        )
+
+    children: dict[int, dict[str, object]] = {
+        725: {
+            "number": 725,
+            "title": "Child 725",
+            "state": "OPEN",
+            "url": f"https://github.com/{REPO}/issues/725",
+            "body": "<!-- charness-work-item-key: child-725 -->\noriginal prose\n",
+            "comments": [],
+        },
+        773: {
+            "number": 773,
+            "title": "Late Item",
+            "state": "OPEN",
+            "url": f"https://github.com/{REPO}/issues/773",
+            "body": "<!-- charness-work-item-key: late-item -->\nlate prose\n",
+            "comments": [],
+        },
+    }
+    parent = {
+        "number": PARENT_NUMBER,
+        "title": "Goal Run",
+        "state": "OPEN",
+        "url": PARENT_URL,
+        "body": render_parent(),
+        "comments": [],
+    }
+    state: dict[str, object] = {"parent": parent, "children": children}
+
+    provider = load_module(
+        "goal_run_apply_identity_seed", ROOT / "skills/public/issue/scripts/issue_goal_run.py"
+    )
+
+    class Reader:
+        @staticmethod
+        def read_issue_with_comments(
+            _repo: str, number: int, *, backend: dict[str, object], **_kwargs: object
+        ) -> dict[str, object]:
+            assert backend["id"] == "fixture"
+            if number == PARENT_NUMBER:
+                return {"issue": state["parent"]}
+            return {"issue": state["children"][number]}
+
+    def update_body(
+        _repo: str,
+        number: int,
+        body_file: Path,
+        *,
+        backend: dict[str, object],
+        parent_amendment_validator: object | None = None,
+        **_kwargs: object,
+    ) -> dict[str, object]:
+        assert backend["id"] == "fixture"
+        current = (
+            state["parent"]["body"]
+            if number == PARENT_NUMBER
+            else state["children"][number]["body"]
+        )
+        desired = body_file.read_text(encoding="utf-8")
+        if parent_amendment_validator is not None:
+            parent_amendment_validator(current, desired)
+        if number == PARENT_NUMBER:
+            state["parent"]["body"] = desired
+        else:
+            state["children"][number]["body"] = desired
+        return {
+            "ok": True,
+            "status": "verified-write",
+            "outcome": "verified-write",
+            "mutation_invoked": True,
+            "body_verified": True,
+            "number": number,
+            "url": f"https://github.com/{REPO}/issues/{number}",
+        }
+
+    def add_child(
+        _repo: str, _parent: int, number: int, *, backend: dict[str, object]
+    ) -> dict[str, object]:
+        assert backend["id"] == "fixture"
+        assert number == amendment["number"]
+        metadata["amendments"] = [amendment]
+        metadata["progress"]["total"] = 2
+        metadata["progress"]["open"] = 2
+        metadata["progress"]["next"] = {
+            "key": "child-725",
+            "repo": REPO,
+            "number": 725,
+            "url": f"https://github.com/{REPO}/issues/725",
+            "state": "OPEN",
+        }
+        state["parent"]["body"] = render_parent()
+        return {
+            "ok": True,
+            "status": "verified-write",
+            "outcome": "verified-write",
+            "mutation_invoked": True,
+            "number": number,
+        }
+
+    provider.command_apply.__globals__["READ"] = Reader
+    provider.command_apply.__globals__["TRACKER"] = SimpleNamespace(
+        update_issue_body=update_body,
+        add_sub_issue=add_child,
+    )
+
+    def write_operation(
+        name: str, target: dict[str, object], *, attempt: str, **extra: object
+    ) -> Path:
+        path = tmp_path / f"{attempt}.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "kind": "charness.goal-run-operation/v1",
+                    "repo": REPO,
+                    "parent_number": PARENT_NUMBER,
+                    "operation": name,
+                    "attempt_id": attempt,
+                    "observation_dir": "observations",
+                    "target": target,
+                    **extra,
+                }
+            ),
+            encoding="utf-8",
+        )
+        return path
+
+    def apply(path: Path) -> dict[str, object]:
+        emitted: list[dict[str, object]] = []
+        rc = provider.command_apply(
+            SimpleNamespace(
+                repo=REPO, number=PARENT_NUMBER, operation_file=path, repo_root=tmp_path
+            ),
+            resolve_backend=lambda *_args, **_kwargs: {
+                "adapter_ok": True,
+                "backend": {"id": "fixture"},
+            },
+            emit=emitted.append,
+        )
+        assert rc == 0
+        return emitted[0]
+
+    add_result = apply(
+        write_operation(
+            "add-child",
+            {"repo": REPO, "sub_issue_number": 773, "work_item_key": "late-item"},
+            attempt="seed-add-amendment",
+            amendment={
+                "rank": amendment["rank"],
+                "dependencies": amendment["dependencies"],
+                "reason": amendment["reason"],
+                "approval": amendment["approval"],
+            },
+        )
+    )
+    assert add_result["outcome"] == "verified-write"
+    assert metadata["amendments"] == [amendment]
+
+    # Child prose may change; losing its marker must still refuse.
+    child_body = tmp_path / "child-corrected.md"
+    child_body.write_text(
+        "<!-- charness-work-item-key: child-725 -->\ncorrected prose\n", encoding="utf-8"
+    )
+    apply(
+        write_operation(
+            "update-body",
+            {"repo": REPO, "number": 725, "work_item_key": "child-725"},
+            attempt="seed-child-prose",
+            body_file="child-corrected.md",
+        )
+    )
+
+    real_guard = load_module(
+        "goal_run_seed_pickup_guard", ROOT / "skills/public/issue/scripts/issue_goal_run_guard.py"
+    )
+    real_binding = load_module(
+        "goal_run_seed_pickup_binding", ROOT / "skills/public/achieve/scripts/goal_binding.py"
+    )
+
+    def fake_pickup_load(_path: Path, name: str) -> object:
+        if name == "issue_pickup_adapter":
+            return SimpleNamespace(
+                load_adapter=lambda _root: {
+                    "valid": True,
+                    "data": {"default_repo": REPO, "default_org": "corca-ai"},
+                }
+            )
+        if name == "issue_pickup_runtime":
+            return SimpleNamespace()
+        if name == "issue_pickup_guard":
+            return real_guard
+        if name == "issue_pickup_binding":
+            return real_binding
+        if name == "issue_pickup_child_read":
+            return Reader
+        raise AssertionError(name)
+
+    monkeypatch.setattr(pickup, "_load_path", fake_pickup_load)
+    monkeypatch.setattr(
+        pickup,
+        "_resolve_repository",
+        lambda *_args, **_kwargs: {"full_name": REPO, "source": "fixture"},
+    )
+    monkeypatch.setattr(
+        pickup,
+        "_read_goal_parent",
+        lambda *_args, **_kwargs: (
+            {"parent": state["parent"]},
+            {"adapter_ok": True, "backend": {"id": "fixture"}},
+        ),
+    )
+
+    # Corrected child prose re-establishes by parent cursor and marker identity.
+    selected = pickup.pickup(tmp_path, "/goal #724")
+    assert selected["outcome"] == "verified-read"
+    assert selected["selected_child"]["key"] == "child-725"
+
+    # Cursor movement is a parent identity update; pickup follows the amended key.
+    metadata["progress"]["revision"] = 2
+    metadata["progress"]["next"] = {
+        "key": "late-item",
+        "repo": REPO,
+        "number": 773,
+        "url": f"https://github.com/{REPO}/issues/773",
+        "state": "OPEN",
+    }
+    parent_body_file = tmp_path / "parent-cursor.md"
+    parent_body_file.write_text(render_parent(), encoding="utf-8")
+    apply(
+        write_operation(
+            "update-body",
+            {"repo": REPO, "number": PARENT_NUMBER},
+            attempt="seed-parent-cursor",
+            body_file="parent-cursor.md",
+        )
+    )
+    selected = pickup.pickup(tmp_path, "/goal #724")
+    assert selected["outcome"] == "verified-read"
+    assert selected["selected_child"]["key"] == "late-item"
+
+    # Swapping draft_path breaks the immutable plan identity, not child content.
+    metadata["draft_path"] = "other-goal.md"
+    state["parent"]["body"] = render_parent()
+    with pytest.raises(pickup.PickupError) as exc_info:
+        pickup.pickup(tmp_path, "/goal #724")
+    assert exc_info.value.code == "binding-invalid"
+    metadata["draft_path"] = "goal.md"
+
+    # An unapproved cursor key is a graph identity refusal.
+    metadata["progress"]["next"]["key"] = "unapproved"
+    state["parent"]["body"] = render_parent()
+    with pytest.raises(pickup.PickupError) as exc_info:
+        pickup.pickup(tmp_path, "/goal #724")
+    assert exc_info.value.code == "graph-work-item-mismatch"
+
+    # A CLOSED cursor child is a state refusal requiring explicit sync.
+    metadata["progress"]["next"] = {
+        "key": "late-item",
+        "repo": REPO,
+        "number": 773,
+        "url": f"https://github.com/{REPO}/issues/773",
+        "state": "OPEN",
+    }
+    state["parent"]["body"] = render_parent()
+    state["children"][773]["state"] = "CLOSED"
+    with pytest.raises(pickup.PickupError) as exc_info:
+        pickup.pickup(tmp_path, "/goal #724")
+    assert exc_info.value.code == "cursor-child-closed"

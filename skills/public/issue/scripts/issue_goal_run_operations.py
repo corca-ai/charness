@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 from pathlib import Path
 from typing import Any
 
@@ -17,7 +16,9 @@ OUTCOMES = {
 }
 
 
-def _read_one(repo: str, number: int, backend: dict[str, Any], operation: str, *, read: Any) -> dict[str, Any]:
+def _read_one(
+    repo: str, number: int, backend: dict[str, Any], operation: str, *, read: Any
+) -> dict[str, Any]:
     issue = read.read_issue_with_comments(repo, number, backend=backend)["issue"]
     result: dict[str, Any] = {
         "ok": True,
@@ -34,7 +35,7 @@ def _read_one(repo: str, number: int, backend: dict[str, Any], operation: str, *
         body = issue.get("body")
         if not isinstance(body, str):
             raise RuntimeError("Goal Run body readback did not return a string body")
-        result.update(body=body, body_sha256=hashlib.sha256(body.encode("utf-8")).hexdigest())
+        result["body"] = body
     return result
 
 
@@ -60,7 +61,9 @@ def _expected_graph(
     result["missing_children"] = [number for number in expected if number not in actual]
     result["unexpected_children"] = [number for number in actual if number not in expected]
     if result["missing_children"] or result["unexpected_children"]:
-        result.update(ok=False, status="graph-mismatch", next_action="reconcile-exact-child-identities")
+        result.update(
+            ok=False, status="graph-mismatch", next_action="reconcile-exact-child-identities"
+        )
     return result
 
 
@@ -114,19 +117,19 @@ def execute(
             target["number"],
             body_file,
             backend=backend,
-            expected_body_sha256=operation["observed_body_sha256"],
         )
     if name == "create-or-reuse-child":
         body_file = contract.repo_file(repo_root, operation["body_file"], context="body_file")
-        body_sha = hashlib.sha256(body_file.read_bytes()).hexdigest()
         unresolved = observation.find_unresolved_create(
             repo_root=repo_root,
             observation_dir=Path(operation["observation_dir"]),
             repo=repo,
             parent_number=parent,
             work_item_key=target["work_item_key"],
-            submitted_body_sha256=body_sha,
+            submitted_body_sha256=None,
             exclude_attempt_id=operation["attempt_id"],
+            # Goal Run create recovery is marker/issue identity based.
+            compare_submitted_body=False,
         )
         return tracker.create_or_reuse_child(
             repo,

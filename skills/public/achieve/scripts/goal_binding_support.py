@@ -23,11 +23,13 @@ TOP_LEVEL_FIELDS = frozenset(
 DRAFT_FIELDS = frozenset({"path", "sha256"})
 APPROVAL_FIELDS = frozenset({"briefing_sha256", "response", "session_id", "observed_at"})
 PARENT_FIELDS = frozenset({"repo", "number", "url"})
-ITEM_FIELDS = frozenset(
-    {"key", "intent", "issue", "dependencies", "rank", "body_policy", "body_sha256", "observed"}
-)
+WORK_ITEM_FIELDS = frozenset({"key", "intent", "issue", "dependencies", "rank", "observed"})
+OPTIONAL_WORK_ITEM_FIELDS = frozenset({"body_policy", "body_sha256"})
+# Compatibility alias for callers that imported the old complete field set.
+ITEM_FIELDS = WORK_ITEM_FIELDS | OPTIONAL_WORK_ITEM_FIELDS
 ISSUE_FIELDS = frozenset({"repo", "number", "url"})
-OBSERVED_FIELDS = frozenset({"state", "title_sha256", "body_sha256"})
+OBSERVED_FIELDS = frozenset({"state", "title_sha256"})
+OPTIONAL_OBSERVED_FIELDS = frozenset({"body_sha256"})
 BODY_POLICIES = frozenset({"managed", "managed-addendum", "preserve-closed-evidence"})
 FORBIDDEN_STATE_FIELDS = frozenset(
     {
@@ -79,16 +81,24 @@ def _require_object(value: Any, code: str, context: str) -> dict[str, Any]:
     return value
 
 
-def _require_fields(value: Mapping[str, Any], expected: frozenset[str], context: str) -> None:
+def _require_fields(
+    value: Mapping[str, Any],
+    expected: frozenset[str],
+    context: str,
+    *,
+    optional: frozenset[str] = frozenset(),
+) -> None:
     fields = set(value)
     missing = sorted(expected - fields)
-    extra = sorted(fields - expected)
+    extra = sorted(fields - expected - optional)
     if missing:
         raise BindingError("schema-invalid", f"{context} is missing fields {missing!r}")
     if extra:
         forbidden = sorted(set(extra) & FORBIDDEN_STATE_FIELDS)
         if forbidden:
-            raise BindingError("state-field-forbidden", f"{context} contains state fields {forbidden!r}")
+            raise BindingError(
+                "state-field-forbidden", f"{context} contains state fields {forbidden!r}"
+            )
         raise BindingError("schema-invalid", f"{context} has unknown fields {extra!r}")
 
 
@@ -117,7 +127,9 @@ def _validate_identity(
     number = identity["number"]
     url = identity["url"]
     if not isinstance(repo, str) or not REPO_RE.fullmatch(repo):
-        raise BindingError("schema-invalid", f"{context}.repo is not a canonical owner/repository slug")
+        raise BindingError(
+            "schema-invalid", f"{context}.repo is not a canonical owner/repository slug"
+        )
     if expected_repo is not None and repo != expected_repo:
         raise BindingError("parent-mismatch", f"{context}.repo is not {expected_repo!r}")
     if type(number) is not int or number <= 0:
@@ -144,7 +156,9 @@ def _validate_identity(
 
 def _validate_relative_text_path(value: Any, *, context: str, suffix: str) -> str:
     if not isinstance(value, str) or not value:
-        raise BindingError("path-invalid", f"{context} must be a non-empty repository-relative path")
+        raise BindingError(
+            "path-invalid", f"{context} must be a non-empty repository-relative path"
+        )
     if "\x00" in value:
         raise BindingError("path-invalid", f"{context} contains an invalid NUL character")
     if "\\" in value:
@@ -196,7 +210,9 @@ def _repo_path(
         try:
             relative = raw_path.relative_to(root)
         except ValueError as exc:
-            raise BindingError("path-invalid", f"{context} must stay inside the repository") from exc
+            raise BindingError(
+                "path-invalid", f"{context} must stay inside the repository"
+            ) from exc
         relative_text = relative.as_posix()
     else:
         relative_text = raw
@@ -238,7 +254,12 @@ def _relative_repo_path(root: Path, value: Any, *, context: str, suffix: str) ->
 
 def _validate_item(item: Any, *, parent: dict[str, Any]) -> dict[str, Any]:  # noqa: C901 -- item validation owns the complete cross-field contract
     value = _require_object(item, "schema-invalid", "approved work item")
-    _require_fields(value, ITEM_FIELDS, "approved work item")
+    _require_fields(
+        value,
+        WORK_ITEM_FIELDS,
+        "approved work item",
+        optional=OPTIONAL_WORK_ITEM_FIELDS,
+    )
     key = value["key"]
     if not isinstance(key, str) or not KEY_RE.fullmatch(key):
         raise BindingError("schema-invalid", "work item key has invalid form")
@@ -257,49 +278,63 @@ def _validate_item(item: Any, *, parent: dict[str, Any]) -> dict[str, Any]:  # n
     if type(rank) is not int or rank <= 0:
         raise BindingError("schema-invalid", f"work item {key!r} rank must be positive")
 
-    policy = value["body_policy"]
-    if not isinstance(policy, str) or policy not in BODY_POLICIES:
+    policy = value.get("body_policy")
+    if policy is not None and (not isinstance(policy, str) or policy not in BODY_POLICIES):
         raise BindingError("body-policy-invalid", f"work item {key!r} body policy is invalid")
-    body_sha = value["body_sha256"]
+    body_sha = value.get("body_sha256")
     if body_sha is not None and not isinstance(body_sha, str):
-        raise BindingError("schema-invalid", f"work item {key!r}.body_sha256 must be a hash or null")
+        raise BindingError(
+            "schema-invalid", f"work item {key!r}.body_sha256 must be a hash or null"
+        )
     if body_sha is not None:
         _require_sha(body_sha, "schema-invalid", f"work item {key!r}.body_sha256")
 
     issue = value["issue"]
     observed = value["observed"]
     if intent == "create":
-        if policy != "managed" or body_sha is None:
+        if policy == "preserve-closed-evidence":
             raise BindingError(
                 "body-policy-invalid",
-                f"new item {key!r} requires managed ownership and a body digest",
+                f"new item {key!r} cannot preserve closed evidence",
             )
         if issue is not None or observed is not None:
-            raise BindingError("schema-invalid", f"new item {key!r} cannot carry observed issue state")
+            raise BindingError(
+                "schema-invalid", f"new item {key!r} cannot carry observed issue state"
+            )
         return value
 
     if issue is None or observed is None:
         raise BindingError("schema-invalid", f"reused item {key!r} needs issue and observation")
-    issue_value = _validate_identity(issue, context=f"work item {key!r}.issue", expected_repo=parent["repo"])
+    issue_value = _validate_identity(
+        issue, context=f"work item {key!r}.issue", expected_repo=parent["repo"]
+    )
     if issue_value["number"] == parent["number"]:
         raise BindingError("parent-mismatch", f"work item {key!r} cannot reuse the Goal Run parent")
     observed_value = _require_object(observed, "schema-invalid", f"work item {key!r}.observed")
-    _require_fields(observed_value, OBSERVED_FIELDS, f"work item {key!r}.observed")
+    _require_fields(
+        observed_value,
+        OBSERVED_FIELDS,
+        f"work item {key!r}.observed",
+        optional=OPTIONAL_OBSERVED_FIELDS,
+    )
     state = observed_value["state"]
     if not isinstance(state, str) or state not in {"OPEN", "CLOSED"}:
         raise BindingError("schema-invalid", f"work item {key!r} has invalid observed state")
-    _require_sha(observed_value["title_sha256"], "schema-invalid", f"work item {key!r}.title_sha256")
-    _require_sha(observed_value["body_sha256"], "schema-invalid", f"work item {key!r}.body_sha256")
-    if state == "OPEN":
-        if policy != "managed-addendum" or body_sha is None:
-            raise BindingError(
-                "body-policy-invalid",
-                f"open reused item {key!r} requires a managed-addendum digest",
-            )
-    elif policy != "preserve-closed-evidence" or body_sha is not None:
+    _require_sha(
+        observed_value["title_sha256"], "schema-invalid", f"work item {key!r}.title_sha256"
+    )
+    observed_body_sha = observed_value.get("body_sha256")
+    if observed_body_sha is not None:
+        _require_sha(observed_body_sha, "schema-invalid", f"work item {key!r}.observed.body_sha256")
+    if policy == "preserve-closed-evidence" and state != "CLOSED":
         raise BindingError(
             "body-policy-invalid",
-            f"closed reused item {key!r} requires preserve-closed-evidence and no managed digest",
+            f"work item {key!r} may preserve evidence only for a closed reused issue",
+        )
+    if state == "CLOSED" and policy != "preserve-closed-evidence":
+        raise BindingError(
+            "body-policy-invalid",
+            f"closed reused item {key!r} requires preserve-closed-evidence",
         )
     return value
 
@@ -315,7 +350,9 @@ def _validate_manifest(items: Any, *, parent: dict[str, Any]) -> list[dict[str, 
     for item in validated:
         unknown_deps = sorted(set(item["dependencies"]) - key_set)
         if unknown_deps:
-            raise BindingError("schema-invalid", f"work item {item['key']!r} has unknown dependencies")
+            raise BindingError(
+                "schema-invalid", f"work item {item['key']!r} has unknown dependencies"
+            )
 
     by_key = {item["key"]: item for item in validated}
     visit_state: dict[str, int] = {}

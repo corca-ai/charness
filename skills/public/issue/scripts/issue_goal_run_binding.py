@@ -28,8 +28,11 @@ PICKUP = _load_achieve("goal_run_pickup_contract", "issue_goal_run_pickup_contra
 _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))[
     "sibling_loader"
 ](__file__)
-AMENDMENT = _load_local("issue_goal_run_parent_amendment", "issue_goal_run_parent_amendment_contract")
+AMENDMENT = _load_local(
+    "issue_goal_run_parent_amendment", "issue_goal_run_parent_amendment_contract"
+)
 BindingError = BINDING.BindingError
+OPERATION_IDENTITY_FIELDS = ("binding_path", "draft_sha256", "binding_sha256")
 
 
 def _parent_identity(repo: str, number: int) -> dict[str, Any]:
@@ -49,7 +52,7 @@ def load_binding(
     draft_sha256: str,
     binding_sha256: str,
 ) -> dict[str, Any]:
-    """Validate one complete binding, including its frozen draft bytes."""
+    """Validate one complete binding, including its frozen draft identity."""
     root = repo_root.resolve()
     try:
         path = Path(binding_path)
@@ -97,7 +100,9 @@ def amended_items(metadata: dict[str, Any] | None) -> list[dict[str, Any]]:
     return PICKUP.amendment_items(metadata)
 
 
-def all_work_items(binding: dict[str, Any], metadata: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+def all_work_items(
+    binding: dict[str, Any], metadata: dict[str, Any] | None = None
+) -> list[dict[str, Any]]:
     return PICKUP.effective_work_items(binding["approved_work_items"], metadata or {})
 
 
@@ -113,7 +118,8 @@ def require_expected_children(
         for child in children
     }
     known = approved_issue_identities(binding) | {
-        (item["issue"]["repo"].casefold(), item["issue"]["number"]) for item in amended_items(metadata)
+        (item["issue"]["repo"].casefold(), item["issue"]["number"])
+        for item in amended_items(metadata)
     }
     expected_count = len(all_work_items(binding, metadata))
     if len(actual) != len(children) or not known.issubset(actual) or len(actual) != expected_count:
@@ -168,19 +174,62 @@ def validate_managed_body(
     number: int,
     body: bytes,
     metadata: dict[str, Any] | None = None,
-) -> tuple[dict[str, Any], str | None]:
+) -> None:
     """A child body may change; only its identity marker is enforced.
 
     Prose is reversible and visible in the provider's edit history, so it is not
-    hashed. The returned observed digest, when the binding recorded one, lets the
-    tracker compare-and-set against a stale read.
+    hashed. The marker is the only child-body identity this operation enforces.
     """
     item = work_item_for_target(binding, key, number=number, metadata=metadata)
-    if item["intent"] == "reuse" and item["body_policy"] == "preserve-closed-evidence":
-        raise RuntimeError(f"Work Item {key!r} preserves closed evidence and does not accept a body update")
+    if item["intent"] == "reuse" and item.get("body_policy") == "preserve-closed-evidence":
+        raise RuntimeError(
+            f"Work Item {key!r} preserves closed evidence and does not accept a body update"
+        )
     require_marker(key, body, context=f"submitted body for Work Item {key!r}")
-    observed = item.get("observed")
-    return item, observed["body_sha256"] if isinstance(observed, dict) else None
+
+
+def resolve_operation_identity(
+    operation: dict[str, Any], parent_metadata: dict[str, Any] | None = None
+) -> dict[str, Any] | None:
+    """Fill operation identity from live parent metadata and check repetitions."""
+    metadata = parent_metadata
+    if metadata is None and isinstance(operation.get("parent_metadata"), dict):
+        metadata = operation["parent_metadata"]
+    if metadata is None:
+        if all(operation.get(field) is not None for field in OPERATION_IDENTITY_FIELDS):
+            return None
+        raise BindingError(
+            "identity-required",
+            "provider-backed Goal Run operation needs parent metadata to resolve "
+            "binding_path, draft_sha256, and binding_sha256",
+        )
+    try:
+        PICKUP.validate_metadata(
+            metadata,
+            repo=operation["repo"],
+            parent_number=operation["parent_number"],
+            parent_url=metadata.get("parent_identity", {}).get("url"),
+        )
+    except (PICKUP.PickupError, AttributeError, KeyError, TypeError, ValueError) as exc:
+        raise BindingError("identity-invalid", f"parent metadata is invalid: {exc}") from exc
+    missing = [field for field in OPERATION_IDENTITY_FIELDS if field not in metadata]
+    if missing:
+        raise BindingError(
+            "identity-required",
+            f"parent metadata is missing Goal Run identities {missing!r}",
+        )
+    for field in OPERATION_IDENTITY_FIELDS:
+        expected = metadata[field]
+        carried = operation.get(field)
+        if carried is not None and carried != expected:
+            raise BindingError(
+                "identity-mismatch",
+                f"operation {field} differs from parent metadata: "
+                f"operation={carried!r}, parent={expected!r}",
+            )
+        operation[field] = expected
+    operation["parent_metadata"] = metadata
+    return metadata
 
 
 def require_issue_matches_item(
@@ -190,7 +239,7 @@ def require_issue_matches_item(
     number: int,
     issue: dict[str, Any],
 ) -> None:
-    """Bind a provider-resolved create identity to its approved body bytes."""
+    """Bind a provider-resolved create identity to its approved Work Item."""
     item = work_item_for_target(binding, key)
     if item["intent"] == "reuse":
         work_item_for_target(binding, key, number=number)
@@ -318,9 +367,15 @@ def parent_body_validator(
 
 
 def validate_operation_binding(
-    operation: dict[str, Any], repo_root: Path, *, repo_file: Any, tracker: Any
+    operation: dict[str, Any],
+    repo_root: Path,
+    *,
+    repo_file: Any,
+    tracker: Any,
+    parent_metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any] | None:
     """Validate immutable inputs before provider selection or mutation."""
+    resolve_operation_identity(operation, parent_metadata)
     name = operation["operation"]
     bound = {"update-body", "create-or-reuse-child", "list-children", "add-child", "remove-child"}
     if name not in bound:
@@ -347,10 +402,13 @@ def validate_operation_binding(
     metadata = operation.get("parent_metadata")
     if name == "update-body" and target["number"] != operation["parent_number"]:
         body = repo_file(repo_root, operation["body_file"], context="body_file").read_bytes()
-        _, observed_sha256 = validate_managed_body(
-            binding, key=target["work_item_key"], number=target["number"], body=body, metadata=metadata
+        validate_managed_body(
+            binding,
+            key=target["work_item_key"],
+            number=target["number"],
+            body=body,
+            metadata=metadata,
         )
-        operation["observed_body_sha256"] = observed_sha256
     elif name == "create-or-reuse-child":
         body = repo_file(repo_root, operation["body_file"], context="body_file").read_bytes()
         item = work_item_for_target(binding, target["work_item_key"])
@@ -374,12 +432,18 @@ def validate_operation_binding(
         amendment = operation.get("amendment")
         if amendment is not None:
             # Graph amendment: an operator-approved Work Item appended to a live run.
-            entry = {**amendment, "key": target["work_item_key"], "repo": operation["repo"],
-                     "number": target["sub_issue_number"],
-                     "url": f"https://github.com/{operation['repo']}/issues/{target['sub_issue_number']}"}
+            entry = {
+                **amendment,
+                "key": target["work_item_key"],
+                "repo": operation["repo"],
+                "number": target["sub_issue_number"],
+                "url": f"https://github.com/{operation['repo']}/issues/{target['sub_issue_number']}",
+            }
             PICKUP.validate_amendments([entry], repo=operation["repo"])
             if any(item["key"] == entry["key"] for item in all_work_items(binding, metadata)):
-                raise RuntimeError(f"amendment key {entry['key']!r} is already an approved Work Item")
+                raise RuntimeError(
+                    f"amendment key {entry['key']!r} is already an approved Work Item"
+                )
             operation["amendment_entry"] = entry
             return binding
         item = work_item_for_target(binding, target["work_item_key"], metadata=metadata)

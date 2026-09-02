@@ -184,9 +184,7 @@ def _open_plan(
     }
 
 
-def _mutation_lineage(
-    prior: list[dict[str, Any]], *, comment_sha256: str
-) -> list[dict[str, Any]]:
+def _mutation_lineage(prior: list[dict[str, Any]], *, comment_sha256: str) -> list[dict[str, Any]]:
     mutations: list[dict[str, Any]] = []
     for attempt in prior:
         terminal_ref = attempt.get("terminal")
@@ -202,6 +200,7 @@ def _mutation_lineage(
             raise RuntimeError("a prior Goal Run close terminal result is malformed")
         if terminal.get("mutation_invoked") is not True:
             continue
+        # This digest is terminal close-comment evidence, not Work Item prose.
         if started.get("submitted_body_sha256") != comment_sha256:
             raise RuntimeError(
                 "a prior Goal Run close mutation used different comment bytes; "

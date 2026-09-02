@@ -1,0 +1,1 @@
+{"kind":"charness.goal-run-operation/v1","repo":"corca-ai/charness","parent_number":765,"operation":"list-children","attempt_id":"list-children-773-identity-probe-1","observation_dir":"charness-artifacts/goal-runs/765/observations","target":{"repo":"corca-ai/charness","number":765},"expected_child_file":"charness-artifacts/goal-runs/765/expected-graph-amended-773.json"}

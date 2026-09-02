@@ -16,9 +16,9 @@ SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 def _canonical_bytes(payload: dict[str, Any]) -> bytes:
-    return (json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode(
-        "utf-8"
-    )
+    return (
+        json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+    ).encode("utf-8")
 
 
 def _with_receipt_hash(payload: dict[str, Any]) -> dict[str, Any]:
@@ -37,7 +37,9 @@ def _write_immutable(path: Path, payload: dict[str, Any]) -> None:
     rendered = _canonical_bytes(payload)
     temporary: str | None = None
     try:
-        with tempfile.NamedTemporaryFile(dir=path.parent, prefix=f".{path.name}.", delete=False) as handle:
+        with tempfile.NamedTemporaryFile(
+            dir=path.parent, prefix=f".{path.name}.", delete=False
+        ) as handle:
             temporary = handle.name
             handle.write(rendered)
             handle.flush()
@@ -78,7 +80,10 @@ def _read_receipt(path: Path) -> dict[str, Any] | None:
     if not isinstance(payload, dict):
         return None
     expected = payload.get("receipt_sha256")
-    if not isinstance(expected, str) or _with_receipt_hash(payload).get("receipt_sha256") != expected:
+    if (
+        not isinstance(expected, str)
+        or _with_receipt_hash(payload).get("receipt_sha256") != expected
+    ):
         return None
     return payload
 
@@ -106,6 +111,14 @@ def read_attempt(
         or terminal.get("attempt_id") != attempt_id
         or terminal.get("started_sha256") != started.get("receipt_sha256")
         or terminal.get("started_path") != str(started_path.relative_to(root))
+        or (
+            terminal.get("draft_sha256") is not None
+            and terminal.get("draft_sha256") != started.get("draft_sha256")
+        )
+        or (
+            terminal.get("binding_sha256") is not None
+            and terminal.get("binding_sha256") != started.get("binding_sha256")
+        )
     ):
         return None
     return {
@@ -181,10 +194,11 @@ def find_unresolved_create(
     repo: str,
     parent_number: int,
     work_item_key: str,
-    submitted_body_sha256: str,
+    submitted_body_sha256: str | None,
     exclude_attempt_id: str,
+    compare_submitted_body: bool = True,
 ) -> dict[str, Any] | None:
-    """Return the first matching create whose external effect is still unresolved."""
+    """Return an unresolved create; body digest comparison is legacy-only."""
     directory = _validated_dir(repo_root, observation_dir)
     if not directory.is_dir():
         return None
@@ -206,11 +220,9 @@ def find_unresolved_create(
         unresolved_reason: str | None = None
         if terminal is None:
             unresolved_reason = "terminal-observation-missing-or-invalid"
-        elif (
-            terminal.get("started_sha256") != started.get("receipt_sha256")
-            or terminal.get("started_path")
-            != str(started_path.relative_to(repo_root.resolve()))
-        ):
+        elif terminal.get("started_sha256") != started.get("receipt_sha256") or terminal.get(
+            "started_path"
+        ) != str(started_path.relative_to(repo_root.resolve())):
             unresolved_reason = "terminal-observation-does-not-bind-started-receipt"
         elif terminal.get("mutation_invoked") and terminal.get("outcome") != "verified-write":
             unresolved_reason = "prior-mutation-outcome-unverified"
@@ -224,10 +236,16 @@ def find_unresolved_create(
                     else None
                 ),
                 "reason": unresolved_reason,
-                "prior_submitted_body_sha256": started.get("submitted_body_sha256"),
-                "requested_submitted_body_sha256": submitted_body_sha256,
-                "submitted_body_changed": (
-                    started.get("submitted_body_sha256") != submitted_body_sha256
+                **(
+                    {
+                        "prior_submitted_body_sha256": started.get("submitted_body_sha256"),
+                        "requested_submitted_body_sha256": submitted_body_sha256,
+                        "submitted_body_changed": (
+                            started.get("submitted_body_sha256") != submitted_body_sha256
+                        ),
+                    }
+                    if compare_submitted_body
+                    else {}
                 ),
             }
     return None
@@ -287,6 +305,8 @@ def finish(
             "phase": "terminal",
             "observed_at": datetime.now(timezone.utc).isoformat(),
             "attempt_id": attempt_id,
+            "draft_sha256": started["payload"]["draft_sha256"],
+            "binding_sha256": started["payload"]["binding_sha256"],
             "started_path": started["path"],
             "started_sha256": started["payload"]["receipt_sha256"],
             "outcome": result.get("outcome"),

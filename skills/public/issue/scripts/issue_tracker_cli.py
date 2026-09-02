@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import runpy
 import sys
 from pathlib import Path
@@ -49,16 +48,6 @@ def _tracker_target(args: argparse.Namespace, repo: str | None = None) -> dict[s
     return target
 
 
-def _tracker_body_sha256(args: argparse.Namespace) -> str | None:
-    body_file = getattr(args, "body_file", None)
-    if body_file is None:
-        return None
-    path = body_file.resolve()
-    if not path.is_file():
-        raise RuntimeError(f"tracker body file not found: {path}")
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
 def _run_tracker_backend_command(args: argparse.Namespace, operation: str, call: Any) -> int:
     try:
         resolved = _resolve_backend(args.repo_root.resolve(), args.repo)
@@ -89,7 +78,7 @@ def _run_tracker_backend_command(args: argparse.Namespace, operation: str, call:
             parent_number=parent_number,
             operation=operation,
             target=_tracker_target(args, target_repo),
-            submitted_body_sha256=_tracker_body_sha256(args),
+            submitted_body_sha256=None,
             backend=resolved["backend"],
         )
     except RuntimeError as exc:
@@ -196,14 +185,15 @@ def command_update(args: argparse.Namespace) -> int:
         args,
         "update-body",
         lambda resolved: TRACKER.update_issue_body(
-            str(resolved.get("target_repo") or args.repo), args.number,
-            args.body_file.resolve(), backend=resolved["backend"]
+            str(resolved.get("target_repo") or args.repo),
+            args.number,
+            args.body_file.resolve(),
+            backend=resolved["backend"],
         ),
     )
 
 
 def command_create_or_reuse_child(args: argparse.Namespace) -> int:
-    body_sha256 = _tracker_body_sha256(args)
     return _run_tracker_backend_command(
         args,
         "create-child",
@@ -220,8 +210,9 @@ def command_create_or_reuse_child(args: argparse.Namespace) -> int:
                 repo=str(resolved.get("target_repo") or args.repo),
                 parent_number=args.parent_number,
                 work_item_key=args.work_item_key,
-                submitted_body_sha256=body_sha256,
+                submitted_body_sha256=None,
                 exclude_attempt_id=args.attempt_id,
+                compare_submitted_body=False,
             ),
         ),
     )
@@ -269,8 +260,10 @@ def command_add_sub_issue(args: argparse.Namespace) -> int:
         args,
         "add-sub-issue",
         lambda resolved: TRACKER.add_sub_issue(
-            str(resolved.get("target_repo") or args.repo), args.number,
-            args.sub_issue_number, backend=resolved["backend"]
+            str(resolved.get("target_repo") or args.repo),
+            args.number,
+            args.sub_issue_number,
+            backend=resolved["backend"],
         ),
     )
 
@@ -280,8 +273,10 @@ def command_remove_sub_issue(args: argparse.Namespace) -> int:
         args,
         "remove-sub-issue",
         lambda resolved: TRACKER.remove_sub_issue(
-            str(resolved.get("target_repo") or args.repo), args.number,
-            args.sub_issue_number, backend=resolved["backend"]
+            str(resolved.get("target_repo") or args.repo),
+            args.number,
+            args.sub_issue_number,
+            backend=resolved["backend"],
         ),
     )
 

@@ -258,7 +258,9 @@ def validate_metadata_receipt(
     try:
         terminal_path.relative_to(expected_dir)
     except ValueError as exc:
-        raise RuntimeError("terminal observation metadata escapes the bound observation directory") from exc
+        raise RuntimeError(
+            "terminal observation metadata escapes the bound observation directory"
+        ) from exc
     suffix = ".terminal.json"
     if not terminal_path.name.endswith(suffix):
         raise RuntimeError("terminal observation metadata does not name a terminal receipt")
@@ -274,6 +276,7 @@ def validate_metadata_receipt(
     terminal = attempt["terminal"]["payload"]
     result = terminal.get("result")
     operation = started.get("operation")
+    # This digest is terminal close-comment evidence, not Work Item prose.
     if (
         terminal.get("receipt_sha256") != digest
         or not isinstance(result, dict)

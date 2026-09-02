@@ -1,0 +1,17 @@
+ok: false
+kind: charness.goal-run-provider/v1
+status: identity-mismatch
+outcome: refused
+mutation_invoked: false
+repo: corca-ai/charness
+parent_number: 765
+error_code: identity-mismatch
+error: 'identity-mismatch: operation binding_sha256 differs from parent metadata:
+  operation=''0000000000000000000000000000000000000000000000000000000000000000'',
+  parent=''20fdaf7e9a3e1489a308b11041555a9249b2e826d93d951f294a565b24d161cf'''
+next_action: repair-input-or-provider-readiness-before-retry
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

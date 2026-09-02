@@ -170,14 +170,13 @@ through to another backend.
 `<!-- charness-work-item-key: <key> -->` once in the body. It discovers before
 create and after any invoked create; duplicate, mismatched, or undiscoverable
 outcomes stop without a blind second create. `update` returns without mutation
-when bytes are already current, refuses stripped/malformed or identity-mutated
-Goal Run metadata, and performs byte-identical body readback after a write.
-Existing Goal Run parent Markdown is byte-preserving by default. A bound parent
-amendment must provide the optional repo-contained canonical
+when the child identity is already current, refuses stripped/malformed or
+identity-mutated Goal Run metadata, and confirms the provider's target identity
+after a write. Existing Goal Run parent prose is reversible provider history. A
+bound parent amendment may carry the optional repo-contained canonical
 `charness.goal-run-parent-amendment/v1` authorization receipt, whose
-parent/binding/current-body/desired-body hashes and explicit approval fields are
-checked before mutation; the initial metadata write must append to the exact
-live body. `list-sub-issues` proves exact
+parent/binding identity, reason, and explicit approval fields are checked before
+mutation; metadata bootstrap does not bind surrounding prose. `list-sub-issues` proves exact
 issue and parent identities; Markdown links never count. `add-sub-issue` is
 idempotent: an existing relationship returns `already-linked` without mutation.
 Before parent close, `list-sub-issues --expect-all-closed` refuses while any
@@ -193,8 +192,12 @@ complete input-byte SHA-256. Target mismatch, duplicate numbers, unknown fields,
 and malformed JSON refuse before comparison. Repeated `--expect-child` remains
 only for short ad hoc reads and is mutually exclusive with the file input.
 
-Mutating tracker commands require `--attempt-id`, `--draft-sha256`,
-`--binding-sha256`, and a repo-contained `--observation-dir`. A
+Primitive mutating tracker commands retain their explicit `--draft-sha256` and
+`--binding-sha256` arguments because they have no Goal Run parent reader. Goal
+Run provider operations instead resolve those optional identity fields from the
+live parent metadata; a provider-free `record-observation` must carry them
+explicitly. All mutation paths require `--attempt-id` and a repo-contained
+`--observation-dir`. A
 `charness.goal-run-observation/v1` started receipt is atomically made immutable
 before the provider call; a terminal receipt binds its hash and the structured
 result. A started receipt with no terminal pair is an unresolved attempt, not a
@@ -214,11 +217,13 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" goal-run-apply \
   --repo <owner/repo> --number <parent> --operation-file <operation.json>
 ```
 
-The plan and operation files are strict `v1` contracts. Each operation carries
-the parent, draft/binding hashes, a unique attempt id, and a repo-contained
-observation directory; body and expected-graph paths are also required to stay
-inside the repository. The provider routes every operation through the selected
-adapter, persists started/terminal observations, and returns typed
+The plan and operation files are strict `v1` contracts. Each operation names the
+parent, a unique attempt id, and a repo-contained observation directory. A
+provider operation may repeat binding path and draft/binding identity; when
+omitted, those identities are resolved from the live parent metadata. Body and
+expected-graph paths are required to stay inside the repository. The provider
+routes every operation through the selected adapter, persists
+started/terminal observations, and returns typed
 `verified-read`, `verified-write`, `unverified-write`, or refusal outcomes.
 Create recovery performs exact discovery before any retry, so a provider/index
 race can be read back and reused without a second create.
