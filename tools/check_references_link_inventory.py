@@ -11,7 +11,6 @@ try:
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:
     from scripts.core.repo_file_listing import iter_matching_repo_files
-
     from yaml_output import emit_yaml
 
 BULLET_RE = re.compile(r"^[-*]\s+")

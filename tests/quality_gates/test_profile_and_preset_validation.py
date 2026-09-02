@@ -9,9 +9,9 @@ from pathlib import Path
 
 import pytest
 
+from scripts import validate_presets as VALIDATE_PRESETS
 from scripts.gates import validate_adapters as VALIDATE_ADAPTERS
 from tests.quality_gates.repo_shapes import install_committed_repo
-from scripts import validate_presets as VALIDATE_PRESETS
 from tools import validate_profiles as VALIDATE_PROFILES
 
 from .support import run_script

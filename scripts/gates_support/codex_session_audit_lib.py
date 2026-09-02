@@ -24,8 +24,15 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-from scripts.gates_support.codex_session_audit_sources import choose_source, source_status, tail_text_lines  # noqa: E402
-from scripts.gates_support.codex_session_audit_tokens import cost_signal_status, token_summary  # noqa: E402
+from scripts.gates_support.codex_session_audit_sources import (  # noqa: E402
+    choose_source,
+    source_status,
+    tail_text_lines,
+)
+from scripts.gates_support.codex_session_audit_tokens import (  # noqa: E402
+    cost_signal_status,
+    token_summary,
+)
 
 TIMESTAMP_RE = re.compile(r"^(?P<ts>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)")
 THREAD_RE = re.compile(r"\b(?:thread(?:\.id|_id)|conversation\.id)=(?:\"(?P<q>[0-9A-Za-z_-]+)\"|(?P<u>[0-9A-Za-z_-]+))")

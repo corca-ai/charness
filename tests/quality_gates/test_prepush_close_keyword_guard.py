@@ -637,15 +637,20 @@ def test_a_crash_exits_two_rather_than_the_refusal_code(repo: Path, tmp_path: Pa
     """
     lonely = tmp_path.parent / "guard-lonely" / "scripts"
     lonely.mkdir(parents=True, exist_ok=True)
+    hooks_dir = lonely / "hooks"
+    hooks_dir.mkdir()
     for name in (
         "prepush_close_keyword_guard.py",
         "prepush_close_keyword_scan.py",
         "check_issue_closeout_commit_msg.py",
-        "commit_msg_closeout_authorization.py",
         "runtime_bootstrap.py",
         "yaml_output.py",
     ):
         shutil.copy2(ROOT / "scripts" / name, lonely / name)
+    shutil.copy2(
+        ROOT / "scripts" / "hooks" / "commit_msg_closeout_authorization.py",
+        hooks_dir / "commit_msg_closeout_authorization.py",
+    )
     base = _head(repo)
     head = _commit(repo, "chore: extra commit\n", "work.txt")
 

@@ -6,11 +6,11 @@ import hashlib
 from pathlib import Path
 from typing import Callable, NamedTuple
 
-from scripts.worktree.checkout_view import CheckoutView
 from scripts.core.git_checkout import head_oid_from_files, local_checkout
 from scripts.core.git_status_snapshot import GitStatusError, GitStatusSnapshot
 from scripts.core.git_status_snapshot import capture as capture_git_status
 from scripts.reviewed_input_path_selection import checked_path, lexical_path
+from scripts.worktree.checkout_view import CheckoutView
 
 GitBytes = Callable[..., bytes]
 

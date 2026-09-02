@@ -26,7 +26,6 @@ try:
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:
     from scripts.core.repo_file_listing import iter_matching_repo_files
-
     from yaml_output import emit_yaml
 
 SHIM_NAME = "_load_skill_runtime_bootstrap"

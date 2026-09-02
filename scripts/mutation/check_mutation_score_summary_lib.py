@@ -3,7 +3,21 @@ from __future__ import annotations
 from collections import Counter
 from pathlib import Path
 
-from scripts.mutation.mutation_baseline_abort_lib import verdict_token
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.mutation.mutation_baseline_abort_lib import verdict_token  # noqa: E402
 
 SURVIVED_DETAIL_LIMIT = 10
 PARTIAL_RUN_COMPLETION_FLOOR = 0.75

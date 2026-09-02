@@ -28,7 +28,7 @@ from .seeding_support import git
 
 ROOT = Path(__file__).resolve().parents[2]
 
-cswc = importlib.import_module("scripts.check_staged_worktree_consistency")
+cswc = importlib.import_module("scripts.hooks.check_staged_worktree_consistency")
 
 
 def _repo(tmp_path: Path) -> Path:

@@ -16,8 +16,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.core import git_status_snapshot as status
 from scripts import render_critique_section_changed_surfaces as producer_module
+from scripts.core import git_status_snapshot as status
 from tests.quality_gates.repo_shapes import install_two_commit_repo, replace_with_committed_repo
 from tests.quality_gates.support import run_script
 

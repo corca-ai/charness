@@ -18,13 +18,21 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-try:
-    import host_hook_install_lib as install_lib
-except ImportError:  # pragma: no cover - used when invoked as a module from elsewhere
-    import sys
 
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
-    import host_hook_install_lib as install_lib  # type: ignore[no-redef]
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.hooks import host_hook_install_lib as install_lib  # noqa: E402
 
 INTENT_SECTION = "skill_anchor_edit_guard"
 GUARD_SCRIPT_RELATIVE = Path("scripts/post_edit_skill_anchor_guard.py")
@@ -55,26 +63,55 @@ def install_skill_anchor_guard_claude_hook(repo_root: Path, *, home: Path) -> di
     )
     if result["action"] == "installed":
         install_lib._record_state_entry(
-            repo_root, state_key=_state_key("claude"), settings_path=settings_path,
-            kind="claude-json", command=command,
+            repo_root,
+            state_key=_state_key("claude"),
+            settings_path=settings_path,
+            kind="claude-json",
+            command=command,
         )
-    result.update(host="claude", kind="claude-json", command=command, intent_section=INTENT_SECTION, event=GUARD_EVENT)
+    result.update(
+        host="claude",
+        kind="claude-json",
+        command=command,
+        intent_section=INTENT_SECTION,
+        event=GUARD_EVENT,
+    )
     return result
 
 
 def uninstall_skill_anchor_guard_claude_hook(repo_root: Path, *, home: Path) -> dict[str, Any]:
     state = install_lib.read_state(repo_root)
-    entry = state.get(_state_key("claude")) if isinstance(state.get(_state_key("claude")), dict) else None
-    command = entry["command"] if isinstance(entry, dict) and isinstance(entry.get("command"), str) else _command(repo_root, "claude")
-    settings_path = Path(entry["settings_path"]) if isinstance(entry, dict) and isinstance(entry.get("settings_path"), str) else install_lib.default_claude_settings_path(home)
+    entry = (
+        state.get(_state_key("claude"))
+        if isinstance(state.get(_state_key("claude")), dict)
+        else None
+    )
+    command = (
+        entry["command"]
+        if isinstance(entry, dict) and isinstance(entry.get("command"), str)
+        else _command(repo_root, "claude")
+    )
+    settings_path = (
+        Path(entry["settings_path"])
+        if isinstance(entry, dict) and isinstance(entry.get("settings_path"), str)
+        else install_lib.default_claude_settings_path(home)
+    )
     result = install_lib._uninstall_json_event(settings_path, command=command, event=GUARD_EVENT)
     if result["action"] in {"removed", "absent", "not_installed"}:
         install_lib._clear_state_entry(repo_root, _state_key("claude"))
-    result.update(host="claude", kind="claude-json", command=command, intent_section=INTENT_SECTION, event=GUARD_EVENT)
+    result.update(
+        host="claude",
+        kind="claude-json",
+        command=command,
+        intent_section=INTENT_SECTION,
+        event=GUARD_EVENT,
+    )
     return result
 
 
-def reconcile_skill_anchor_guard_hooks(repo_root: Path, *, adapter: dict[str, Any], home: Path) -> dict[str, Any]:
+def reconcile_skill_anchor_guard_hooks(
+    repo_root: Path, *, adapter: dict[str, Any], home: Path
+) -> dict[str, Any]:
     """Install (intent enabled) or uninstall (default disabled) the edit-time
     anchor-guard hook. Opt-in: an adapter with no `skill_anchor_edit_guard`
     section leaves it disabled, so consumer repos inherit nothing new."""
@@ -83,9 +120,13 @@ def reconcile_skill_anchor_guard_hooks(repo_root: Path, *, adapter: dict[str, An
     actions["claude"] = {"intent": claude_intent}
     try:
         if claude_intent == "enabled":
-            actions["claude"]["result"] = install_skill_anchor_guard_claude_hook(repo_root, home=home)
+            actions["claude"]["result"] = install_skill_anchor_guard_claude_hook(
+                repo_root, home=home
+            )
         else:
-            actions["claude"]["result"] = uninstall_skill_anchor_guard_claude_hook(repo_root, home=home)
+            actions["claude"]["result"] = uninstall_skill_anchor_guard_claude_hook(
+                repo_root, home=home
+            )
     except install_lib.HostHookError as exc:
         actions["claude"]["error"] = str(exc)
     codex_intent = install_lib._intent_for(adapter, "codex", section=INTENT_SECTION)
@@ -97,7 +138,9 @@ def reconcile_skill_anchor_guard_hooks(repo_root: Path, *, adapter: dict[str, An
     return actions
 
 
-def skill_anchor_guard_status(repo_root: Path, *, adapter: dict[str, Any] | None, home: Path) -> dict[str, Any]:
+def skill_anchor_guard_status(
+    repo_root: Path, *, adapter: dict[str, Any] | None, home: Path
+) -> dict[str, Any]:
     intents = {"claude": install_lib._intent_for(adapter or {}, "claude", section=INTENT_SECTION)}
     detect_kwargs = {
         "claude": {
@@ -110,6 +153,10 @@ def skill_anchor_guard_status(repo_root: Path, *, adapter: dict[str, Any] | None
         }
     }
     return install_lib._hook_sync_status(
-        repo_root, intents=intents, home=home, noun="PostToolUse anchor-guard hook",
-        drift_prefix="skill_anchor_edit_guard ", detect_kwargs=detect_kwargs,
+        repo_root,
+        intents=intents,
+        home=home,
+        noun="PostToolUse anchor-guard hook",
+        drift_prefix="skill_anchor_edit_guard ",
+        detect_kwargs=detect_kwargs,
     )

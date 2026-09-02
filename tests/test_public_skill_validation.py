@@ -9,7 +9,11 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from scripts.gates_support.public_skill_validation_lib import ValidationError, load_policy, validate_policy
+from scripts.gates_support.public_skill_validation_lib import (
+    ValidationError,
+    load_policy,
+    validate_policy,
+)
 from tools import suggest_public_skill_validation as _suggest_public_skill_validation
 from tools import validate_public_skill_validation as _validate_public_skill_validation
 from tools.suggest_public_skill_validation import build_report

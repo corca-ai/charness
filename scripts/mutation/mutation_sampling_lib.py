@@ -32,11 +32,11 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
+from scripts.core.subprocess_guard import run_monitored_phase, run_process  # noqa: E402
 from scripts.runtime_bootstrap import (  # noqa: E402
     configure_runtime_environment,
     import_repo_module,
 )
-from scripts.core.subprocess_guard import run_monitored_phase, run_process  # noqa: E402
 
 DEFAULT_SAMPLE_COVERAGE_JSON = Path("reports/mutation/sample-coverage.json")
 

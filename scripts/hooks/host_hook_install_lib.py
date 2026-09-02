@@ -16,23 +16,26 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-try:
-    from host_hook_entry_identity import (
-        entries_match_command,
-        entry_carries_foreign_command,
-        event_entry,
-        matcher_covers,
-    )
-except ImportError:  # pragma: no cover - used when invoked as a module from elsewhere
-    import sys
 
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from host_hook_entry_identity import (  # type: ignore[no-redef]
-        entries_match_command,
-        entry_carries_foreign_command,
-        event_entry,
-        matcher_covers,
-    )
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.hooks.host_hook_entry_identity import (  # noqa: E402
+    entries_match_command,
+    entry_carries_foreign_command,
+    event_entry,
+    matcher_covers,
+)
 
 HOST_HOOKS_STATE_RELATIVE = Path(".charness/host-hooks/state.json")
 HOOK_SCRIPT_RELATIVE = Path("scripts/host-hook.py")
@@ -51,7 +54,9 @@ def default_claude_settings_path(home: Path) -> Path:
     return home / ".claude" / "settings.json"
 
 
-def build_command(repo_root: Path, host: str, *, script_relative: Path = HOOK_SCRIPT_RELATIVE) -> str:
+def build_command(
+    repo_root: Path, host: str, *, script_relative: Path = HOOK_SCRIPT_RELATIVE
+) -> str:
     script_path = (repo_root / script_relative).resolve()
     return f"python3 {shlex.quote(str(script_path))} --host {host}"
 
@@ -74,7 +79,9 @@ def write_state(repo_root: Path, state: dict[str, Any]) -> None:
     path = repo_root / HOST_HOOKS_STATE_RELATIVE
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(f".{path.name}.tmp.{os.getpid()}")
-    tmp.write_text(json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    tmp.write_text(
+        json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     os.replace(tmp, path)
 
 
@@ -224,13 +231,8 @@ def reconcile_host_hooks(
 ) -> dict[str, Any]:
     # Only explicitly declared sibling intents are reconciled. There is no
     # default telemetry hook hidden in this common layer.
-    try:
-        from host_hook_registry import reconcile_sibling_hooks
-    except ImportError:  # pragma: no cover - module-from-elsewhere fallback
-        import sys
+    from scripts.hooks.host_hook_registry import reconcile_sibling_hooks
 
-        sys.path.insert(0, str(Path(__file__).resolve().parent))
-        from host_hook_registry import reconcile_sibling_hooks  # type: ignore[no-redef]
     return reconcile_sibling_hooks(repo_root, adapter=adapter, home=home)
 
 
@@ -307,8 +309,12 @@ def _hook_sync_status(
     drift: list[str] = []
     per_host: dict[str, Any] = {}
     for host, intent in intents.items():
-        actual = detect_host_hook_actual(repo_root, host, home=home, **(detect_kwargs or {}).get(host, {}))
-        in_sync = (intent == "enabled" and actual["present"]) or (intent == "disabled" and not actual["present"])
+        actual = detect_host_hook_actual(
+            repo_root, host, home=home, **(detect_kwargs or {}).get(host, {})
+        )
+        in_sync = (intent == "enabled" and actual["present"]) or (
+            intent == "disabled" and not actual["present"]
+        )
         if not actual.get("settings_readable", True):
             # Reported for BOTH intent directions: `present: False` over an
             # unreadable file happens to agree with a `disabled` intent, and
@@ -320,12 +326,18 @@ def _hook_sync_status(
             )
         elif not in_sync:
             detail = f"no {noun} found" if intent == "enabled" else f"{noun} still present"
-            drift.append(f"{host}: {drift_prefix}intent={intent} but {detail} at {actual['settings_path']}")
+            drift.append(
+                f"{host}: {drift_prefix}intent={intent} but {detail} at {actual['settings_path']}"
+            )
         per_host[host] = {"intent": intent, "actual": actual, "in_sync": in_sync}
     return {"in_sync": not drift, "drift": drift, "hosts": per_host}
 
 
-def skill_anchor_guard_status(repo_root: Path, *, adapter: dict[str, Any] | None, home: Path) -> dict[str, Any]:
-    from host_hook_skill_anchor_guard import skill_anchor_guard_status as _skill_anchor_guard_status
+def skill_anchor_guard_status(
+    repo_root: Path, *, adapter: dict[str, Any] | None, home: Path
+) -> dict[str, Any]:
+    from scripts.hooks.host_hook_skill_anchor_guard import (
+        skill_anchor_guard_status as _skill_anchor_guard_status,
+    )
 
     return _skill_anchor_guard_status(repo_root, adapter=adapter, home=home)

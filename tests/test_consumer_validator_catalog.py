@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.gates import check_consumer_validator_catalog as catalog_check
 from scripts import packaging_lib
+from scripts.gates import check_consumer_validator_catalog as catalog_check
 from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.script_main import run_loaded_script_main
 

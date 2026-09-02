@@ -60,7 +60,11 @@ except ModuleNotFoundError:  # invoked directly with only the scripts directory 
     import adapter_lib
     import quality_label_universe
 
-from scripts.runtime_bootstrap import load_path_module, repo_root_from_script, skill_script  # noqa: E402
+from scripts.runtime_bootstrap import (  # noqa: E402
+    load_path_module,
+    repo_root_from_script,
+    skill_script,
+)
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)

@@ -59,7 +59,9 @@ def test_from_scripts_import_name_is_seen() -> None:
 
 def test_the_regression_cases_a_reviewer_traced_are_all_reached() -> None:
     assert "task_run_completion.py" in script_import_closure("task_run.py")
-    assert "check_mutation_score_summary_lib.py" in script_import_closure("check_mutation_score.py")
+    assert "mutation/check_mutation_score_summary_lib.py" in script_import_closure(
+        "mutation/check_mutation_score.py"
+    )
     assert "claude_session_jsonl_audit.py" in script_import_closure("host_log_probe_lib.py")
 
 
@@ -81,7 +83,7 @@ def test_the_dynamic_import_repo_module_string_is_seen() -> None:
 def test_the_spec_from_file_location_filename_is_seen() -> None:
     """How `classify_push_diff.py` reaches its own lib."""
     source = 'p = Path(__file__).with_name("classify_push_diff_lib.py")\n'
-    assert "classify_push_diff_lib" in _referenced(source)
+    assert "hooks/classify_push_diff_lib" in _referenced(source)
 
 
 def test_an_ordinary_english_string_is_not_mistaken_for_a_module() -> None:

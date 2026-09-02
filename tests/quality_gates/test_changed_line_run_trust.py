@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from scripts import changed_line_run_trust as trust
-from scripts.worktree.checkout_view import FactsCheckout
 from scripts.core.git_status_snapshot import parse as parse_status
+from scripts.worktree.checkout_view import FactsCheckout
 
 
 def test_git_lines_empty_outside_git_repo(tmp_path: Path) -> None:

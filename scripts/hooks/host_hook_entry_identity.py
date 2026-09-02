@@ -17,6 +17,7 @@ Split out of `host_hook_install_lib` because both questions are pure predicates 
 one settings entry, shared by the installer and the presence detector, and neither
 needs the state file, the settings path, or any host I/O.
 """
+
 from __future__ import annotations
 
 import re
@@ -89,7 +90,8 @@ def _entry_holds(entry: Any, command: str, *, ours: bool) -> bool:
     """True when `entry` holds at least one command whose our-hook-ness is `ours`."""
     target_identity = script_basename(command)
     return any(
-        _is_same_hook(existing, command, target_identity) is ours for existing in _entry_commands(entry)
+        _is_same_hook(existing, command, target_identity) is ours
+        for existing in _entry_commands(entry)
     )
 
 

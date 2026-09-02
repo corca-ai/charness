@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.mutation import suggest_mutation_coverage_command as sugg
 from scripts.core.git_checkout import head_oid_from_files
+from scripts.mutation import suggest_mutation_coverage_command as sugg
 
 from .repo_shapes import install_committed_repo
 

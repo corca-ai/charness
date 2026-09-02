@@ -46,8 +46,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 # only the field under test, so a line naming three declared fields engaged all three with
 # zero observations. `_bound_residual_chars` counts alphanumerics only and removes every
 # token longest-first, which is what closes both.
-from scripts.gates import check_prescribed_skill_executed_lib as _residual_lib  # noqa: E402
 from scripts.core.repo_path_display import display_path as _display_path  # noqa: E402
+from scripts.gates import check_prescribed_skill_executed_lib as _residual_lib  # noqa: E402
 
 try:
     from scripts.core.subprocess_guard import run_process

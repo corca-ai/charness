@@ -9,7 +9,7 @@ from tests.script_loader import load_script_module
 ROOT = Path(__file__).resolve().parents[2]
 CHECKER = load_script_module(
     "check_staged_test_boundaries_for_test",
-    ROOT / "scripts" / "check_staged_test_boundaries.py",
+    ROOT / "scripts" / "hooks" / "check_staged_test_boundaries.py",
 )
 
 

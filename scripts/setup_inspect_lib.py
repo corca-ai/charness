@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from scripts import setup_inspect_quality_lib as quality_helpers
+from scripts.hooks.setup_hook_failure_visibility_lib import inspect_hook_failure_visibility
 from scripts.setup_agent_docs_lib import (
     FINDING_RECOMMENDATION_PRIORITIES,
     RECOMMENDATION_FINDING_TYPES,
@@ -12,7 +13,6 @@ from scripts.setup_agent_docs_lib import (
     finding_recommendation,
     sort_recommendations,
 )
-from scripts.setup_hook_failure_visibility_lib import inspect_hook_failure_visibility
 
 DEFAULT_SURFACES = {
     "readme": Path("README.md"),

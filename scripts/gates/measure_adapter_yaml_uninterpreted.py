@@ -49,7 +49,6 @@ _load_repo_runtime_bootstrap()
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from scripts import adapter_lib  # noqa: E402
-
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 # Where this repo keeps adapters, presets, and profiles. `plugins/` is absent on purpose:

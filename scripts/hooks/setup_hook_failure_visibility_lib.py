@@ -27,7 +27,14 @@ def _relative(path: Path, repo_root: Path) -> str:
 
 
 def _config_path(repo_root: Path) -> Path | None:
-    return next((repo_root / candidate for candidate in LEFTHOOK_CANDIDATES if (repo_root / candidate).is_file()), None)
+    return next(
+        (
+            repo_root / candidate
+            for candidate in LEFTHOOK_CANDIDATES
+            if (repo_root / candidate).is_file()
+        ),
+        None,
+    )
 
 
 def _match_values(pattern: re.Pattern[str], text: str) -> list[str]:
@@ -244,7 +251,9 @@ def inspect_hook_failure_visibility(repo_root: Path) -> dict[str, object]:
             "commands": [],
             "summary": {"command_count": 0, "commands_with_gaps": 0, "gap_count": 0},
             "live_verification": {"required": False, "checks": manual_checks},
-            "non_claims": ["Husky and simple-git-hooks, pre-commit, and Overcommit configurations were not inspected"],
+            "non_claims": [
+                "Husky and simple-git-hooks, pre-commit, and Overcommit configurations were not inspected"
+            ],
         }
 
     try:

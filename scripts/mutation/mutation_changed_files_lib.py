@@ -13,12 +13,26 @@ import sys
 from collections.abc import Mapping
 from pathlib import Path
 
-from scripts.worktree.checkout_view import CheckoutView, GitCheckout  # noqa: E402
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 from scripts.core.git_status_snapshot import GitStatusError  # noqa: E402
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 from scripts.mutation.mutation_changed_line_diff import (  # noqa: E402
     changed_line_numbers_for_paths as _batch_changed_line_numbers_for_paths,
 )
-from scripts.core.subprocess_guard import run_process
+from scripts.worktree.checkout_view import CheckoutView, GitCheckout  # noqa: E402
 
 _IMMUTABLE_REF = re.compile(r"[0-9a-f]{40}")
 _CHANGED_LINE_CACHE: dict[tuple[str, str, str, str], frozenset[int]] = {}

@@ -28,7 +28,6 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.core.skill_gate_report_render import render_gate_report  # noqa: E402
-
 from scripts.runtime_bootstrap import load_path_module, repo_root_from_script  # noqa: E402
 
 # The canonical anchor-rule lib ships beside this script, so resolve it from the

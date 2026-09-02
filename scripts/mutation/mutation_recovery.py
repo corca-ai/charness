@@ -22,7 +22,21 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Callable
 
-from scripts.core.subprocess_guard import run_monitored_phase, run_process
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.core.subprocess_guard import run_monitored_phase, run_process  # noqa: E402
 
 
 class RecoveryError(Exception):
@@ -349,10 +363,10 @@ def termination_handlers():
 
 
 _CHILD_WRAPPER = """
-import os
-import sys
-import time
-from pathlib import Path
+import os  # noqa: E402
+import sys  # noqa: E402
+import time  # noqa: E402
+from pathlib import Path  # noqa: E402
 
 marker, start, expected_parent, *command = sys.argv[1:]
 # Published by rename, not by write_text. The parent polls the marker for EXISTENCE and

@@ -26,9 +26,9 @@ from scripts.evidence_boundary_crosswalk import (
     verify_frozen_source,
 )
 from scripts.evidence_boundary_crosswalk import main as crosswalk_main
-from scripts.issue_source_capture_lib import build_snapshot_and_receipt, capture_issues
 from scripts.gates.validate_evidence_boundary_crosswalk import main as validate_main
 from scripts.gates.validate_evidence_boundary_crosswalk import run as validate_crosswalk
+from scripts.issue_source_capture_lib import build_snapshot_and_receipt, capture_issues
 from scripts.validate_issue_source_freeze import run_freeze, stamp_inspection
 
 REPO_ROOT = Path(__file__).resolve().parent.parent

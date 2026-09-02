@@ -2,8 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.gates_support.public_skill_validation_lib import POLICY_PATH as PUBLIC_SKILL_POLICY_PATH
-from scripts.gates_support.public_skill_validation_lib import ValidationError as PublicSkillPolicyValidationError
+from scripts.gates_support.public_skill_validation_lib import (
+    POLICY_PATH as PUBLIC_SKILL_POLICY_PATH,
+)
+from scripts.gates_support.public_skill_validation_lib import (
+    ValidationError as PublicSkillPolicyValidationError,
+)
 from scripts.gates_support.public_skill_validation_lib import load_policy, validate_policy
 
 

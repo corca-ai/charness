@@ -75,8 +75,8 @@ def _run_setup(repo: Path) -> subprocess.CompletedProcess[str]:
 
 
 def test_precommit_keeps_staged_test_boundary_feedback_advisory() -> None:
-    assert "scripts/check_staged_test_boundaries.py" in PRE_COMMIT_HOOK_TEXT
-    assert "if ! python3 -B scripts/check_staged_test_boundaries.py" in PRE_COMMIT_HOOK_TEXT
+    assert "scripts/hooks/check_staged_test_boundaries.py" in PRE_COMMIT_HOOK_TEXT
+    assert "if ! python3 -B scripts/hooks/check_staged_test_boundaries.py" in PRE_COMMIT_HOOK_TEXT
     assert "commit was not blocked" in PRE_COMMIT_HOOK_TEXT
 
 

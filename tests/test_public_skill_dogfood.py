@@ -8,7 +8,9 @@ import pytest
 import yaml
 
 from scripts.gates_support.public_skill_dogfood_lib import build_matrix
-from scripts.gates_support.public_skill_validation_lib import ValidationError as PolicyValidationError
+from scripts.gates_support.public_skill_validation_lib import (
+    ValidationError as PolicyValidationError,
+)
 from tests.script_main import load_script_module, run_loaded_script_main
 from tools.public_skill_dogfood_validation_lib import (
     ValidationError,

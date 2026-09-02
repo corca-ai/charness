@@ -28,7 +28,10 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-from scripts.gates_support.codex_session_audit_lib import classify_phase, command_family  # noqa: E402
+from scripts.gates_support.codex_session_audit_lib import (  # noqa: E402
+    classify_phase,
+    command_family,
+)
 
 SCHEMA_VERSION = 1
 _SUBAGENT_TOKENS = ("spawn_agent", "wait_agent", "close_agent", "multi_agent")

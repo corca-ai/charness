@@ -72,15 +72,9 @@ def _load_sibling(module_name: str):
     By path rather than by package import because this file runs as a git hook from an
     arbitrary working directory, where `scripts` is not importable as a package.
     """
-    local_path = Path(__file__).resolve().with_name(f"{module_name}.py")
-    repo_root = next(
-        (ancestor for ancestor in Path(__file__).resolve().parents if (ancestor / "scripts" / "adapter_lib.py").is_file()),
-        None,
-    )
-    sibling_path = (
-        repo_root / "scripts" / f"{module_name}.py" if repo_root is not None else local_path
-    )
-    spec = importlib.util.spec_from_file_location(module_name, sibling_path)
+    # This gate lives in scripts/gates/; the hook helper lives in scripts/hooks/.
+    sibling_dir = Path(__file__).resolve().parents[1] / "hooks"
+    spec = importlib.util.spec_from_file_location(module_name, sibling_dir / f"{module_name}.py")
     if spec is None or spec.loader is None:
         raise RuntimeError(f"unable to load sibling module {module_name}")
     module = importlib.util.module_from_spec(spec)
@@ -92,7 +86,7 @@ _AUTHZ = _load_sibling("commit_msg_closeout_authorization")
 
 
 def _load_issue_verify_closeout():
-    root = Path(__file__).resolve().parents[2]
+    root = Path(__file__).resolve().parents[2]  # scripts/gates/<file> -> repo root
     candidates = [
         root / "skills" / "public" / "issue" / "scripts" / "issue_verify_closeout.py",
         root / "skills" / "issue" / "scripts" / "issue_verify_closeout.py",

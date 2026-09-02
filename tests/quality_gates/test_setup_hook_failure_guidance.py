@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import setup_hook_failure_visibility_lib as visibility
-from scripts.setup_hook_failure_visibility_lib import inspect_hook_failure_visibility
+from scripts.hooks import setup_hook_failure_visibility_lib as visibility
+from scripts.hooks.setup_hook_failure_visibility_lib import inspect_hook_failure_visibility
 
 from .support import run_script
 
@@ -32,9 +32,13 @@ def _run_inspector(script: Path, repo: Path) -> dict[str, object]:
     return yaml.safe_load(result.stdout)["hook_failure_visibility"]
 
 
-def test_hook_failure_guidance_is_mirrored_and_names_the_contract(exported_plugin_tree: Path) -> None:
+def test_hook_failure_guidance_is_mirrored_and_names_the_contract(
+    exported_plugin_tree: Path,
+) -> None:
     source = SOURCE_REF.read_text(encoding="utf-8")
-    plugin_ref = exported_plugin_tree / "skills" / "setup" / "references" / "hook-failure-visibility.md"
+    plugin_ref = (
+        exported_plugin_tree / "skills" / "setup" / "references" / "hook-failure-visibility.md"
+    )
     assert plugin_ref.read_text(encoding="utf-8") == source
     assert "pre-commit" in source and "pre-push" in source
     for marker in (

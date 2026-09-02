@@ -67,6 +67,14 @@ def _from_string(value: str) -> set[str]:
     # stem is ordinary English (`support`, `quality`) out of every closure.
     if value.endswith(".py") and _is_script(value.removesuffix(".py")):
         return {_script_relative(value)}
+    if value.endswith(".py"):
+        matches = sorted(
+            path.relative_to(SCRIPTS).with_suffix("").as_posix()
+            for path in SCRIPTS.rglob(value)
+            if path.is_file()
+        )
+        if len(matches) == 1:
+            return {matches[0]}
     return set()
 
 

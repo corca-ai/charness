@@ -1,10 +1,11 @@
 """Tests for the #258 staged-reversion pre-commit gate.
 
-The gate (`scripts/check_staged_reversion.py`) flags only the unambiguous
+The gate (`scripts/hooks/check_staged_reversion.py`) flags only the unambiguous
 phantom: ``index != HEAD`` while ``worktree == HEAD`` (a staged blob present in
 neither the commit nor the working copy). It must NOT flag a legitimate full
 stage, a mode-only stage, a new-file add, or a genuine deletion.
 """
+
 from __future__ import annotations
 
 import importlib
@@ -20,7 +21,7 @@ from tests.quality_gates.repo_shapes import install_committed_repo
 from .git_fixture_support import init_git_repo
 from .support import run_script
 
-csr = importlib.import_module("scripts.check_staged_reversion")
+csr = importlib.import_module("scripts.hooks.check_staged_reversion")
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -60,38 +61,34 @@ def _stage_phantom(tmp_path: Path) -> Path:
 
 
 def test_classify_reversion_reads_the_three_blob_fingerprint() -> None:
-    modified = csr.classify_reversion(
-        "f.py", head_blob="h", index_blob="i", worktree_blob="h"
-    )
+    modified = csr.classify_reversion("f.py", head_blob="h", index_blob="i", worktree_blob="h")
     assert modified is not None
     assert modified.case == "modified-reversion-phantom"
     assert "--cached" not in modified.recovery
 
-    deletion = csr.classify_reversion(
-        "f.py", head_blob="h", index_blob=None, worktree_blob="h"
-    )
+    deletion = csr.classify_reversion("f.py", head_blob="h", index_blob=None, worktree_blob="h")
     assert deletion is not None
     assert deletion.case == "staged-deletion-phantom"
     assert "--cached" in deletion.recovery
 
-    assert csr.classify_reversion(
-        "f.py", head_blob="h", index_blob="w", worktree_blob="w"
-    ) is None
-    assert csr.classify_reversion(
-        "f.py", head_blob="h", index_blob="h", worktree_blob="h"
-    ) is None
-    assert csr.classify_reversion(
-        "f.py", head_blob="h", index_blob=None, worktree_blob=None
-    ) is None
-    assert csr.classify_reversion(
-        "b.py", head_blob=None, index_blob="n", worktree_blob="n"
-    ) is None
-    assert csr.classify_reversion(
-        "f.py", head_blob="h", index_blob="i", worktree_blob="h", unmerged=True
-    ) is None
-    assert csr.classify_reversion(
-        "sub", head_blob="h", index_blob="i", worktree_blob="h", gitlink=True
-    ) is None
+    assert csr.classify_reversion("f.py", head_blob="h", index_blob="w", worktree_blob="w") is None
+    assert csr.classify_reversion("f.py", head_blob="h", index_blob="h", worktree_blob="h") is None
+    assert (
+        csr.classify_reversion("f.py", head_blob="h", index_blob=None, worktree_blob=None) is None
+    )
+    assert csr.classify_reversion("b.py", head_blob=None, index_blob="n", worktree_blob="n") is None
+    assert (
+        csr.classify_reversion(
+            "f.py", head_blob="h", index_blob="i", worktree_blob="h", unmerged=True
+        )
+        is None
+    )
+    assert (
+        csr.classify_reversion(
+            "sub", head_blob="h", index_blob="i", worktree_blob="h", gitlink=True
+        )
+        is None
+    )
 
 
 def test_find_staged_reversions_classifies_injected_triples_without_git(
@@ -129,7 +126,7 @@ def test_phantom_modified_reversion_is_flagged_and_blocks_cli(tmp_path: Path) ->
     assert findings[0].path == "f.py"
     assert "git add" in findings[0].recovery
     assert "--cached" not in findings[0].recovery
-    result = run_script("scripts/check_staged_reversion.py", "--repo-root", str(repo))
+    result = run_script("scripts/hooks/check_staged_reversion.py", "--repo-root", str(repo))
     assert result.returncode == 1, result.stdout
     payload = yaml.safe_load(result.stdout)
     assert payload["state"] == "blocked"
@@ -190,16 +187,14 @@ def test_dubious_ownership_does_not_report_clean_over_a_real_phantom(
     """
     repo = _stage_phantom(tmp_path)
     # Sanity: the phantom is genuinely there when git can read the repo.
-    assert [f.case for f in csr.find_staged_reversions(str(repo))] == [
-        "modified-reversion-phantom"
-    ]
+    assert [f.case for f in csr.find_staged_reversions(str(repo))] == ["modified-reversion-phantom"]
 
     env = {**os.environ, "GIT_TEST_ASSUME_DIFFERENT_OWNER": "1"}
     if _git_probe(repo, env).returncode == 0:
         pytest.skip("this git build does not honor GIT_TEST_ASSUME_DIFFERENT_OWNER")
 
     result = run_script(
-        "scripts/check_staged_reversion.py", "--repo-root", str(repo), env=env
+        "scripts/hooks/check_staged_reversion.py", "--repo-root", str(repo), env=env
     )
     assert result.returncode == 1, result.stdout + result.stderr
     assert yaml.safe_load(result.stdout)["state"] == "unestablished"

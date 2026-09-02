@@ -79,6 +79,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
+from scripts.core.subprocess_guard import run_monitored_phase  # noqa: E402
 from scripts.mutation import mutation_test_reporters as _reporters  # noqa: E402
 from scripts.mutation.mutation_plan_semantics import (  # noqa: E402
     MutationPlanError,
@@ -96,7 +97,6 @@ from scripts.mutation.mutation_recovery import (  # noqa: E402
     termination_handlers,
 )
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
-from scripts.core.subprocess_guard import run_monitored_phase  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 _sweep_report = import_repo_module(__file__, "scripts.mutation.mutation_sweep_report")

@@ -94,14 +94,16 @@ from scripts.gates_support.changed_line_run_trust import (  # noqa: E402
 from scripts.gates_support.changed_line_scope_counts import (  # noqa: E402
     apply_file_limit as _apply_file_limit,
 )
-from scripts.gates_support.changed_line_scope_counts import scope_counts, scope_counts_not_computed  # noqa: E402
+from scripts.gates_support.changed_line_scope_counts import (  # noqa: E402
+    scope_counts,
+    scope_counts_not_computed,
+)
 from scripts.gates_support.changed_line_verdict_codes import (  # noqa: E402
     PARTIAL_EXIT,
     REFUSED_EXIT,
     UNESTABLISHED_EXIT,
     _verdict_exit_code,
 )
-from scripts.worktree.checkout_view import GitCheckout  # noqa: E402
 from scripts.mutation.mutation_changed_files_lib import (  # noqa: E402
     changed_line_coverage_marker_path,
     changed_pool_fingerprint,
@@ -122,6 +124,7 @@ from scripts.mutation.sample_mutation_files import list_changed, list_eligible  
 from scripts.mutation.subprocess_only_coverage_advisory import (  # noqa: E402
     subprocess_coverage_advisory_report,
 )
+from scripts.worktree.checkout_view import GitCheckout  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 #: Re-export surface. These names moved to `changed_line_run_trust` when this file

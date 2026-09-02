@@ -6,6 +6,7 @@ scan stays the repo-owned single source. The guard is additive and fail-open:
 the commit-time validate_skill_ergonomics sweep stays the backstop, and a repo
 or machine without the adapter intent inherits no hook at all.
 """
+
 from __future__ import annotations
 
 import io
@@ -14,11 +15,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-import host_hook_install_lib as lib
-import host_hook_skill_anchor_guard as guard
 import pytest
 
 import scripts.gates_support.skill_issue_anchor_scan as anchor_scan
+from scripts.hooks import host_hook_install_lib as lib
+from scripts.hooks import host_hook_skill_anchor_guard as guard
 from scripts.post_edit_skill_anchor_guard import main as guard_main
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,7 +44,9 @@ def _claude_settings(home: Path) -> dict:
     return json.loads(lib.default_claude_settings_path(home).read_text(encoding="utf-8"))
 
 
-def test_install_adds_post_tool_use_entry_and_records_state(fake_repo: Path, fake_home: Path) -> None:
+def test_install_adds_post_tool_use_entry_and_records_state(
+    fake_repo: Path, fake_home: Path
+) -> None:
     result = guard.install_skill_anchor_guard_claude_hook(fake_repo, home=fake_home)
 
     assert result["action"] == "installed"
@@ -57,11 +60,21 @@ def test_install_adds_post_tool_use_entry_and_records_state(fake_repo: Path, fak
     assert "claude:skill_anchor_edit_guard" in state
 
 
-def test_install_does_not_touch_foreign_post_tool_use_entries(fake_repo: Path, fake_home: Path) -> None:
+def test_install_does_not_touch_foreign_post_tool_use_entries(
+    fake_repo: Path, fake_home: Path
+) -> None:
     settings_path = lib.default_claude_settings_path(fake_home)
     settings_path.parent.mkdir(parents=True)
     settings_path.write_text(
-        json.dumps({"hooks": {"PostToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": "foreign"}]}]}}),
+        json.dumps(
+            {
+                "hooks": {
+                    "PostToolUse": [
+                        {"matcher": "Bash", "hooks": [{"type": "command", "command": "foreign"}]}
+                    ]
+                }
+            }
+        ),
         encoding="utf-8",
     )
 
@@ -84,7 +97,9 @@ def test_uninstall_removes_entry_and_state(fake_repo: Path, fake_home: Path) -> 
     assert "claude:skill_anchor_edit_guard" not in lib.read_state(fake_repo)
 
 
-def test_reconcile_honors_intent_and_reports_codex_unsupported(fake_repo: Path, fake_home: Path) -> None:
+def test_reconcile_honors_intent_and_reports_codex_unsupported(
+    fake_repo: Path, fake_home: Path
+) -> None:
     enabled = {"skill_anchor_edit_guard": {"claude": "enabled"}}
     actions = guard.reconcile_skill_anchor_guard_hooks(fake_repo, adapter=enabled, home=fake_home)
     assert actions["claude"]["result"]["action"] == "installed"
@@ -95,7 +110,9 @@ def test_reconcile_honors_intent_and_reports_codex_unsupported(fake_repo: Path, 
     assert actions["claude"]["result"]["action"] in {"removed", "absent", "not_installed"}
 
     misdeclared = {"skill_anchor_edit_guard": {"claude": "enabled", "codex": "enabled"}}
-    actions = guard.reconcile_skill_anchor_guard_hooks(fake_repo, adapter=misdeclared, home=fake_home)
+    actions = guard.reconcile_skill_anchor_guard_hooks(
+        fake_repo, adapter=misdeclared, home=fake_home
+    )
     assert "error" in actions["codex"]
 
 
@@ -114,7 +131,9 @@ def test_reconcile_surfaces_host_hook_error(fake_repo: Path, fake_home: Path) ->
     assert "result" not in actions["claude"]
 
 
-def test_reconcile_host_hooks_carries_anchor_guard_section(fake_repo: Path, fake_home: Path) -> None:
+def test_reconcile_host_hooks_carries_anchor_guard_section(
+    fake_repo: Path, fake_home: Path
+) -> None:
     adapter = {"skill_anchor_edit_guard": {"claude": "enabled"}}
     actions = lib.reconcile_host_hooks(fake_repo, adapter=adapter, home=fake_home)
     assert actions["skill_anchor_edit_guard"]["claude"]["result"]["action"] == "installed"
@@ -137,7 +156,15 @@ def _write_guard_entry_with_matcher(fake_repo: Path, fake_home: Path, matcher: s
     settings_path.parent.mkdir(parents=True, exist_ok=True)
     command = guard._command(fake_repo, "claude")
     settings_path.write_text(
-        json.dumps({"hooks": {guard.GUARD_EVENT: [{"matcher": matcher, "hooks": [{"type": "command", "command": command}]}]}}),
+        json.dumps(
+            {
+                "hooks": {
+                    guard.GUARD_EVENT: [
+                        {"matcher": matcher, "hooks": [{"type": "command", "command": command}]}
+                    ]
+                }
+            }
+        ),
         encoding="utf-8",
     )
     return settings_path
@@ -158,14 +185,19 @@ def test_reconcile_repairs_drifted_matcher_in_place(fake_repo: Path, fake_home: 
     settings_path = _write_guard_entry_with_matcher(fake_repo, fake_home, "Bash")
     adapter = {"skill_anchor_edit_guard": {"claude": "enabled"}}
 
-    result = guard.reconcile_skill_anchor_guard_hooks(fake_repo, adapter=adapter, home=fake_home)["claude"]["result"]
+    result = guard.reconcile_skill_anchor_guard_hooks(fake_repo, adapter=adapter, home=fake_home)[
+        "claude"
+    ]["result"]
 
     assert result["action"] == "installed"
     assert result["repaired_matcher"] is True
     entries = json.loads(settings_path.read_text(encoding="utf-8"))["hooks"][guard.GUARD_EVENT]
     assert len(entries) == 1
     assert entries[0]["matcher"] == guard.GUARD_MATCHER
-    assert guard.skill_anchor_guard_status(fake_repo, adapter=adapter, home=fake_home)["in_sync"] is True
+    assert (
+        guard.skill_anchor_guard_status(fake_repo, adapter=adapter, home=fake_home)["in_sync"]
+        is True
+    )
 
 
 def test_install_is_noop_when_matcher_already_correct(fake_repo: Path, fake_home: Path) -> None:
@@ -179,8 +211,24 @@ def test_install_is_noop_when_matcher_already_correct(fake_repo: Path, fake_home
 
 @pytest.mark.parametrize(
     "matcher",
-    ["Edit|Write|MultiEdit|NotebookEdit", "Write|Edit|MultiEdit", "", None, "*", ".*", "Edit.*|Write|MultiEdit"],
-    ids=["widened", "reordered", "empty-matches-all", "absent-matches-all", "star", "regex-any", "regex-prefix"],
+    [
+        "Edit|Write|MultiEdit|NotebookEdit",
+        "Write|Edit|MultiEdit",
+        "",
+        None,
+        "*",
+        ".*",
+        "Edit.*|Write|MultiEdit",
+    ],
+    ids=[
+        "widened",
+        "reordered",
+        "empty-matches-all",
+        "absent-matches-all",
+        "star",
+        "regex-any",
+        "regex-prefix",
+    ],
 )
 def test_a_matcher_that_still_fires_is_present_and_is_never_rewritten(
     fake_repo: Path, fake_home: Path, matcher: str | None
@@ -213,7 +261,9 @@ def test_a_matcher_that_still_fires_is_present_and_is_never_rewritten(
     result = guard.install_skill_anchor_guard_claude_hook(fake_repo, home=fake_home)
     assert result["action"] == "noop"
     assert result["repaired_matcher"] is False
-    assert json.loads(settings_path.read_text(encoding="utf-8"))["hooks"][guard.GUARD_EVENT] == [entry]
+    assert json.loads(settings_path.read_text(encoding="utf-8"))["hooks"][guard.GUARD_EVENT] == [
+        entry
+    ]
 
 
 def test_install_refuses_to_rewrite_a_matcher_shared_with_a_foreign_command(
@@ -241,7 +291,9 @@ def test_install_refuses_to_rewrite_a_matcher_shared_with_a_foreign_command(
 
     assert "non-charness command" in str(excinfo.value)
     # ...and the operator's file is untouched by the refusal.
-    assert json.loads(settings_path.read_text(encoding="utf-8"))["hooks"][guard.GUARD_EVENT] == [shared]
+    assert json.loads(settings_path.read_text(encoding="utf-8"))["hooks"][guard.GUARD_EVENT] == [
+        shared
+    ]
 
 
 def test_an_unreadable_settings_file_is_drift_for_a_disabled_intent(
@@ -272,12 +324,16 @@ def _seed_skill_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "skill-repo"
     skill_dir = repo / "skills" / "public" / "demo"
     skill_dir.mkdir(parents=True)
-    (skill_dir / "SKILL.md").write_text("# Demo\n\nsee #123 for the recurring trap\n", encoding="utf-8")
+    (skill_dir / "SKILL.md").write_text(
+        "# Demo\n\nsee #123 for the recurring trap\n", encoding="utf-8"
+    )
     (skill_dir / "CLEAN.md").write_text("# Demo\n\nno anchors here\n", encoding="utf-8")
     return repo
 
 
-def test_guard_flags_disallowed_anchor_in_edited_skill_file(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+def test_guard_flags_disallowed_anchor_in_edited_skill_file(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
     repo = _seed_skill_repo(tmp_path)
     target = repo / "skills" / "public" / "demo" / "SKILL.md"
 
@@ -302,11 +358,19 @@ def test_guard_fail_open_paths(tmp_path: Path) -> None:
     # non-skill file, outside-repo file, missing file, bad payloads: all silent
     assert guard_main(["--repo-root", str(repo)], stdin=_payload(str(tmp_path / "other.md"))) == 0
     assert guard_main(["--repo-root", str(repo)], stdin=_payload("README.md")) == 0
-    assert guard_main(["--repo-root", str(repo)], stdin=_payload(str(repo / "skills/public/demo/GONE.md"))) == 0
+    assert (
+        guard_main(
+            ["--repo-root", str(repo)], stdin=_payload(str(repo / "skills/public/demo/GONE.md"))
+        )
+        == 0
+    )
     assert guard_main(["--repo-root", str(repo)], stdin=io.StringIO("not json")) == 0
     assert guard_main(["--repo-root", str(repo)], stdin=io.StringIO("")) == 0
     assert guard_main(["--repo-root", str(repo)], stdin=io.StringIO("[]")) == 0
-    assert guard_main(["--repo-root", str(repo)], stdin=io.StringIO(json.dumps({"tool_input": {}}))) == 0
+    assert (
+        guard_main(["--repo-root", str(repo)], stdin=io.StringIO(json.dumps({"tool_input": {}})))
+        == 0
+    )
 
 
 def test_guard_reports_unestablished_when_rule_library_is_missing(
@@ -350,7 +414,12 @@ def test_guard_process_contract_exit_codes(tmp_path: Path) -> None:
     target = repo / "skills" / "public" / "demo" / "SKILL.md"
 
     proc = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "post_edit_skill_anchor_guard.py"), "--repo-root", str(repo)],
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "post_edit_skill_anchor_guard.py"),
+            "--repo-root",
+            str(repo),
+        ],
         input=json.dumps({"tool_name": "Edit", "tool_input": {"file_path": str(target)}}),
         capture_output=True,
         text=True,

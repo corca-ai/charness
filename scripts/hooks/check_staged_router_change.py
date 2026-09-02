@@ -46,15 +46,32 @@ import os
 import sys
 from pathlib import Path
 
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 try:
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:
-    from yaml_output import emit_yaml
+    from scripts.yaml_output import emit_yaml
 
-from runtime_bootstrap import import_repo_module
+try:
+    from scripts.core.env_bypass import env_bypass_enabled
+except ModuleNotFoundError:
+    from env_bypass import env_bypass_enabled
 
-_env_bypass = import_repo_module(__file__, "scripts.core.env_bypass")
-env_bypass_enabled = _env_bypass.env_bypass_enabled
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 

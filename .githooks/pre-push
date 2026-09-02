@@ -76,7 +76,7 @@ if [[ "$saw_new_or_delete" == "1" || "$saw_ref" == "0" || "$force_full" == "1" ]
   classification="full-gate-required"
   reason="new/deleted ref, no refs on stdin, or CHARNESS_FORCE_FULL_GATE=1"
 else
-  classification_payload="$(printf '%s\n' "$classify_input" | python3 scripts/classify_push_diff.py --paths-stdin --repo-root "$REPO_ROOT")"
+  classification_payload="$(printf '%s\n' "$classify_input" | python3 scripts/hooks/classify_push_diff.py --paths-stdin --repo-root "$REPO_ROOT")"
   # JSON first, then YAML -- the same tolerance the Python readers carry, because
   # `render_yaml` emits compact JSON on an interpreter without PyYAML. A yaml-only
   # parse here would abort the push with a traceback on exactly that interpreter.

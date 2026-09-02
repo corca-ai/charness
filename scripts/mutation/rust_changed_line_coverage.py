@@ -64,8 +64,8 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
 from scripts.core.subprocess_guard import run_monitored_phase, run_process  # noqa: E402
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)

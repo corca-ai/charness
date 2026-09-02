@@ -28,9 +28,9 @@ from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
+from scripts.gates_support.run_standing_pytest import expand_targets  # noqa: E402
 from scripts.mutation.mutation_changed_files_lib import changed_pool_files_vs_base  # noqa: E402
 from scripts.mutation.mutation_coverage_producer import default_mutation_base_sha  # noqa: E402
-from scripts.gates_support.run_standing_pytest import expand_targets  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 HELP_EPILOG = """\

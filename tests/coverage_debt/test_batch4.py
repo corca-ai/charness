@@ -27,18 +27,32 @@ ROOT = Path(__file__).resolve().parents[2]
 LINT_RELEASE_NARRATIVE_PATH = ROOT / "skills/public/release/scripts/lint_release_narrative.py"
 
 LINT = load_script_module("batch4_lint_release_narrative", LINT_RELEASE_NARRATIVE_PATH)
-DRIFT = load_script_module("batch4_check_upstream_support_drift", ROOT / "scripts/gates/check_upstream_support_drift.py")
-CLASSIFY_PUSH_DIFF = load_script_module("batch4_classify_push_diff", ROOT / "scripts/classify_push_diff.py")
-GATHER = load_script_module("batch4_gather_public_url", ROOT / "skills/public/gather/scripts/gather_public_url.py")
-PRESCRIBED = load_script_module("batch4_check_prescribed_skill_executed", ROOT / "scripts/gates/check_prescribed_skill_executed.py")
-WORKTREE_AUDIT = load_script_module("batch4_worktree_audit", ROOT / "scripts/worktree/worktree_audit.py")
-BOOTSTRAP_RUNTIME = load_script_module("batch4_bootstrap_runtime", ROOT / "scripts/core/bootstrap_runtime.py")
+DRIFT = load_script_module(
+    "batch4_check_upstream_support_drift", ROOT / "scripts/gates/check_upstream_support_drift.py"
+)
+CLASSIFY_PUSH_DIFF = load_script_module(
+    "batch4_classify_push_diff", ROOT / "scripts/hooks/classify_push_diff.py"
+)
+GATHER = load_script_module(
+    "batch4_gather_public_url", ROOT / "skills/public/gather/scripts/gather_public_url.py"
+)
+PRESCRIBED = load_script_module(
+    "batch4_check_prescribed_skill_executed", ROOT / "scripts/gates/check_prescribed_skill_executed.py"
+)
+WORKTREE_AUDIT = load_script_module(
+    "batch4_worktree_audit", ROOT / "scripts/worktree/worktree_audit.py"
+)
+BOOTSTRAP_RUNTIME = load_script_module(
+    "batch4_bootstrap_runtime", ROOT / "scripts/core/bootstrap_runtime.py"
+)
 UPDATE_TOOLS = load_script_module("batch4_update_tools", ROOT / "scripts/update_tools.py")
 BOOTSTRAP_PREVIEW = load_script_module(
-    "batch4_bootstrap_markdown_preview", ROOT / "skills/public/quality/scripts/bootstrap_markdown_preview.py"
+    "batch4_bootstrap_markdown_preview",
+    ROOT / "skills/public/quality/scripts/bootstrap_markdown_preview.py",
 )
 RENDER_PREVIEW = load_script_module(
-    "batch4_render_markdown_preview", ROOT / "skills/support/markdown-preview/scripts/render_markdown_preview.py"
+    "batch4_render_markdown_preview",
+    ROOT / "skills/support/markdown-preview/scripts/render_markdown_preview.py",
 )
 
 
@@ -89,7 +103,9 @@ def test_release_lint_refuses_to_load_without_its_runtime_bootstrap(
     module), and once by pointing the shipped module's own anchor at that same
     directory (proving THIS file's resolver, not the copy's, is what refuses)."""
     with pytest.raises(ImportError, match="skill_runtime_bootstrap.py not found"):
-        _load_copy_of(LINT_RELEASE_NARRATIVE_PATH, tmp_path, "batch4_lint_release_narrative_stranded")
+        _load_copy_of(
+            LINT_RELEASE_NARRATIVE_PATH, tmp_path, "batch4_lint_release_narrative_stranded"
+        )
 
     monkeypatch.setattr(LINT, "__file__", str(tmp_path / "lint_release_narrative.py"))
     with pytest.raises(ImportError, match="skill_runtime_bootstrap.py not found"):
@@ -106,7 +122,9 @@ def test_release_lint_ignores_a_bare_v_version_exemption() -> None:
     assert LINT._version_patterns(("",)) == []
     assert [pattern.pattern for pattern in LINT._version_patterns(("v1.2.3",))] == [r"v?1\.2\.3"]
 
-    kinds = [finding["kind"] for finding in LINT.lint_text("We fixed twelve bugs.\n", versions=("v",))]
+    kinds = [
+        finding["kind"] for finding in LINT.lint_text("We fixed twelve bugs.\n", versions=("v",))
+    ]
     assert "bare-quantity" in kinds
 
 
@@ -197,7 +215,10 @@ def test_drift_record_label_names_a_probe_block_as_skipped_not_drift() -> None:
     `skipped` never hides which block occurred."""
     assert DRIFT.record_label({"status": "exists"}) == "ok"
     assert DRIFT.record_label({"status": "missing"}) == "DRIFT"
-    assert DRIFT.record_label({"status": "error", "reason": "github-forbidden"}) == "skipped (github-forbidden)"
+    assert (
+        DRIFT.record_label({"status": "error", "reason": "github-forbidden"})
+        == "skipped (github-forbidden)"
+    )
     assert DRIFT.record_label({"status": "error"}) == "skipped (unknown)"
     # An unmodelled status passes through rather than being laundered into a word.
     assert DRIFT.record_label({"status": "surprising"}) == "surprising"
@@ -258,7 +279,7 @@ def test_drift_main_fails_when_a_pinned_support_path_is_gone(
 
 
 # --------------------------------------------------------------------------- #
-# scripts/classify_push_diff.py
+# scripts/hooks/classify_push_diff.py
 # --------------------------------------------------------------------------- #
 
 
@@ -453,9 +474,12 @@ def test_bootstrap_runtime_main_emits_the_runtime_payload_as_yaml(tmp_path: Path
     is the human/pipe shorthand and must stay a strict projection of the same value."""
     repo = tmp_path / "repo"
     (repo / "packaging").mkdir(parents=True)
-    shutil.copy2(ROOT / "packaging" / "bootstrap-python.json", repo / "packaging" / "bootstrap-python.json")
     shutil.copy2(
-        ROOT / "packaging" / "bootstrap-requirements.txt", repo / "packaging" / "bootstrap-requirements.txt"
+        ROOT / "packaging" / "bootstrap-python.json", repo / "packaging" / "bootstrap-python.json"
+    )
+    shutil.copy2(
+        ROOT / "packaging" / "bootstrap-requirements.txt",
+        repo / "packaging" / "bootstrap-requirements.txt",
     )
 
     result = run_loaded_script_main(

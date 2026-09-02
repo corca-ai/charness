@@ -329,7 +329,7 @@
       ],
       "rationale": "Skipped workflow steps are parsed as source facts for downstream gates, not closeout proof."
     },
-    "scripts/host_hook_install_lib.py": {
+    "scripts/hooks/host_hook_install_lib.py": {
       "states": [
         "disabled"
       ],

@@ -74,8 +74,8 @@ from scripts.artifact_referents import (  # noqa: E402
     sha_candidates,
     unresolvable_shas,
 )
-from scripts.critique_enforcement_scope import date_from_filename  # noqa: E402
 from scripts.core.repo_path_display import display_path as _display_path  # noqa: E402
+from scripts.critique_enforcement_scope import date_from_filename  # noqa: E402
 
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process

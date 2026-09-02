@@ -8,8 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-import quality_label_universe
 import pytest
+import quality_label_universe
 import yaml
 
 from tests.quality_gates.repo_shapes import install_committed_repo

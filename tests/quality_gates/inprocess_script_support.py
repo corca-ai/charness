@@ -449,7 +449,7 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_public_doc_coupling",
         ROOT / "tools" / "check_public_doc_coupling.py",
     ),
-    "scripts/check_staged_reversion.py": (
+    "scripts/hooks/check_staged_reversion.py": (
         "tests.quality_gates.support_check_staged_reversion",
         ROOT / "scripts" / "check_staged_reversion.py",
     ),

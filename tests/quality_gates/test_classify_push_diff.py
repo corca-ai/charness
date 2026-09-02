@@ -10,8 +10,8 @@ import yaml
 from tests.script_main import load_script_module, run_loaded_script_main
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-LIB_PATH = REPO_ROOT / "scripts/classify_push_diff_lib.py"
-CLI_PATH = REPO_ROOT / "scripts/classify_push_diff.py"
+LIB_PATH = REPO_ROOT / "scripts/hooks/classify_push_diff_lib.py"
+CLI_PATH = REPO_ROOT / "scripts/hooks/classify_push_diff.py"
 
 _spec = importlib.util.spec_from_file_location("classify_push_diff_lib", LIB_PATH)
 lib = importlib.util.module_from_spec(_spec)

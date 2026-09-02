@@ -11,8 +11,8 @@ import json
 import sys
 from pathlib import Path
 
-import host_hook_install_lib as lib
-import host_hook_registry as registry
+from scripts.hooks import host_hook_install_lib as lib
+from scripts.hooks import host_hook_registry as registry
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -55,7 +55,7 @@ def test_fourth_intent_is_a_table_row(tmp_path: Path) -> None:
     home = _fake_home(tmp_path)
     fourth = registry.SiblingHookIntent(
         key="hypothetical_fourth",
-        module="host_hook_skill_anchor_guard",
+        module="scripts.hooks.host_hook_skill_anchor_guard",
         reconcile_function="reconcile_skill_anchor_guard_hooks",
         status_function="skill_anchor_guard_status",
         script_relative_attr="GUARD_SCRIPT_RELATIVE",
@@ -66,16 +66,10 @@ def test_fourth_intent_is_a_table_row(tmp_path: Path) -> None:
     assert list(actions) == ["skill_anchor_edit_guard", "hypothetical_fourth"]
 
 
-def test_import_module_fallback_inserts_scripts_dir(monkeypatch) -> None:
-    # The lazy-import fallback fires when scripts/ is absent from sys.path
-    # (module invoked from elsewhere): the first import raises ImportError,
-    # then the registry inserts its own parent dir and retries.
-    scripts_dir = (REPO_ROOT / "scripts").resolve()
-    cleaned = [p for p in sys.path if Path(p or ".").resolve() != scripts_dir]
-    monkeypatch.setattr(sys, "path", cleaned)
-    monkeypatch.delitem(sys.modules, "host_hook_skill_anchor_guard", raising=False)
-    module = registry._import_module("host_hook_skill_anchor_guard")
-    assert module.__name__ == "host_hook_skill_anchor_guard"
+def test_import_module_loads_a_nested_package_module(monkeypatch) -> None:
+    monkeypatch.delitem(sys.modules, "scripts.hooks.host_hook_skill_anchor_guard", raising=False)
+    module = registry._import_module("scripts.hooks.host_hook_skill_anchor_guard")
+    assert module.__name__ == "scripts.hooks.host_hook_skill_anchor_guard"
 
 
 def test_liveness_flags_missing_script(tmp_path: Path) -> None:
@@ -120,7 +114,9 @@ def test_liveness_passes_existing_script_and_skips_non_hook_keys(tmp_path: Path)
 
 def test_liveness_flags_command_without_script_path(tmp_path: Path) -> None:
     repo = _fake_repo(tmp_path)
-    _seed_state(repo, {"claude": {"settings_path": "x", "kind": "claude-json", "command": "echo hi"}})
+    _seed_state(
+        repo, {"claude": {"settings_path": "x", "kind": "claude-json", "command": "echo hi"}}
+    )
     liveness = registry.hook_state_liveness(repo)
     assert len(liveness["dangling"]) == 1
     assert "no script path found" in liveness["dangling"][0]
@@ -136,19 +132,28 @@ def test_liveness_skips_entry_without_command(tmp_path: Path) -> None:
 
 def test_liveness_flags_unparseable_command(tmp_path: Path) -> None:
     repo = _fake_repo(tmp_path)
-    _seed_state(repo, {"claude": {"settings_path": "x", "kind": "claude-json", "command": "python3 'unclosed"}})
+    _seed_state(
+        repo,
+        {"claude": {"settings_path": "x", "kind": "claude-json", "command": "python3 'unclosed"}},
+    )
     liveness = registry.hook_state_liveness(repo)
     assert len(liveness["dangling"]) == 1
 
 
 def _claude_settings_payload(commands: list[str], event: str = "PostToolUse") -> dict[str, object]:
-    return {"hooks": {event: [{"matcher": "", "hooks": [{"type": "command", "command": cmd} for cmd in commands]}]}}
+    return {
+        "hooks": {
+            event: [
+                {"matcher": "", "hooks": [{"type": "command", "command": cmd} for cmd in commands]}
+            ]
+        }
+    }
 
 
 def test_known_basenames_derive_from_owning_module_constants() -> None:
     # Pin the derived set against the live constants; a forked literal list
     # or a renamed script constant fails here, not in a consumer.
-    import host_hook_skill_anchor_guard as guard
+    from scripts.hooks import host_hook_skill_anchor_guard as guard
 
     assert registry.known_hook_script_basenames() == {
         guard.GUARD_SCRIPT_RELATIVE.name,
@@ -219,7 +224,12 @@ def test_settings_scan_walks_malformed_json_shapes_tolerantly(tmp_path: Path) ->
                     "Stop": "not-a-list",
                     "PreToolUse": ["not-a-dict", {"hooks": "not-a-list"}],
                     "PostToolUse": [
-                        {"hooks": [{"type": "command"}, {"type": "command", "command": f"python3 {leftover}"}]}
+                        {
+                            "hooks": [
+                                {"type": "command"},
+                                {"type": "command", "command": f"python3 {leftover}"},
+                            ]
+                        }
                     ],
                 }
             }

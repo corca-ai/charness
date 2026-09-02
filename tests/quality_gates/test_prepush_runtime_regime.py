@@ -12,6 +12,7 @@ hook body. `test_quality_runtime_recorder.py` proves what the recorder then does
 with it; neither test is sufficient alone, because a regime that is derived
 correctly and never passed is indistinguishable from no fix at all.
 """
+
 from __future__ import annotations
 
 import json
@@ -93,9 +94,7 @@ def _seed_prepush_repo(tmp_path: Path) -> Path:
     # synthetic repo without it fails at import and never reaches classification.
     # A literal list restates the import graph and goes stale on the next such
     # import; deriving it removes the restatement rather than repairing it again.
-    for name in script_import_closure(
-        "classify_push_diff.py", "prepush_quality_receipt.py"
-    ):
+    for name in script_import_closure("hooks/classify_push_diff.py", "prepush_quality_receipt.py"):
         files[f"scripts/{name}"] = (ROOT / "scripts" / name).read_text(encoding="utf-8")
 
     return install_committed_repo(
@@ -250,9 +249,7 @@ def test_release_receipt_reuses_quality_but_still_runs_the_irreversible_guard(
         f"refs/heads/main {head} refs/heads/main {base}\n"
         f"refs/tags/v1 {base} refs/tags/v1 {'0' * 40}\n"
     )
-    result = _run_hook(
-        prepush_repo, base, head, log, receipt=receipt, push_input=multi_ref_input
-    )
+    result = _run_hook(prepush_repo, base, head, log, receipt=receipt, push_input=multi_ref_input)
 
     assert result.returncode == 0, result.stderr
     assert not log.exists(), "a valid release receipt must omit the duplicate broad gate"
@@ -288,9 +285,7 @@ def test_release_receipt_reuses_quality_but_still_runs_the_irreversible_guard(
     export_fallback = _run_hook(prepush_repo, base, head, log, receipt=export_receipt)
     assert export_fallback.returncode == 0, export_fallback.stderr
     assert "materialized plugin export changed" in export_fallback.stderr
-    (prepush_repo / "plugins" / "charness" / "plugin.txt").write_text(
-        "seed\n", encoding="utf-8"
-    )
+    (prepush_repo / "plugins" / "charness" / "plugin.txt").write_text("seed\n", encoding="utf-8")
 
     stale_receipt = tmp_path / "stale-quality-receipt.json"
     subprocess.run(

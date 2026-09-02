@@ -10,9 +10,9 @@ from pathlib import Path
 
 import yaml
 
-from scripts.gates import check_release_issue_ledger as gate
 from scripts import release_issue_ledger_contract as contract
 from scripts import release_issue_ledger_evidence as evidence
+from scripts.gates import check_release_issue_ledger as gate
 
 
 def _write(repo: Path, relative: str, content: str) -> str:

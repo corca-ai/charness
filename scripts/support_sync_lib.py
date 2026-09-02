@@ -15,7 +15,11 @@ from pathlib import Path
 from typing import Any
 
 from scripts.control_plane_render import render_generated_wrapper
-from scripts.core.repo_layout import discovery_stub_dir, generated_support_dir, support_skill_cache_dir
+from scripts.core.repo_layout import (
+    discovery_stub_dir,
+    generated_support_dir,
+    support_skill_cache_dir,
+)
 
 SUPPORT_FIXTURES_ENV = "CHARNESS_SUPPORT_SYNC_FIXTURES"
 GITHUB_ARCHIVE_URL = "https://codeload.github.com/{repo}/tar.gz/{ref}"

@@ -21,7 +21,7 @@ fi
 # commit. A non-empty pytest.mark.boundary_contract(reason="...") records why a
 # delivery boundary is intentional; this staged advisory makes new direct
 # crossings visible without blocking the commit.
-if ! python3 -B scripts/check_staged_test_boundaries.py --repo-root "$REPO_ROOT"; then
+if ! python3 -B scripts/hooks/check_staged_test_boundaries.py --repo-root "$REPO_ROOT"; then
   echo "ADVISORY: staged test boundary review unavailable; commit was not blocked." >&2
 fi
 
@@ -44,4 +44,4 @@ python3 -B scripts/gates/check_git_identity.py --repo-root "$REPO_ROOT"
 # the prose rule asking an agent to stop before editing it did not hold on its
 # own. This refusal makes stopping the default; CHARNESS_ALLOW_ROUTER_CHANGE=1 is
 # how the operator's approval takes effect.
-python3 -B scripts/check_staged_router_change.py --repo-root "$REPO_ROOT"
+python3 -B scripts/hooks/check_staged_router_change.py --repo-root "$REPO_ROOT"

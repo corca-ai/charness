@@ -46,8 +46,8 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
-from skill_runtime_bootstrap import load_repo_module_from_skill_script  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
+from skill_runtime_bootstrap import load_repo_module_from_skill_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 _path_portability = import_repo_module(__file__, "scripts.core.path_portability_lib")

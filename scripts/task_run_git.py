@@ -11,10 +11,14 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from scripts.worktree.checkout_view import CheckoutView, GitCheckout, moment_from_status
 from scripts.core.git_checkout import head_oid_from_files as _head_sha_from_checkout
-from scripts.core.git_checkout import identity_from_files, layout_from_files, worktree_root_from_files
+from scripts.core.git_checkout import (
+    identity_from_files,
+    layout_from_files,
+    worktree_root_from_files,
+)
 from scripts.core.git_status_snapshot import GitStatusError
+from scripts.worktree.checkout_view import CheckoutView, GitCheckout, moment_from_status
 
 try:
     from scripts.core.subprocess_guard import run_process

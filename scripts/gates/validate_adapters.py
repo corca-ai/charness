@@ -24,7 +24,11 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-from scripts.runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script  # noqa: E402
+from scripts.runtime_bootstrap import (  # noqa: E402
+    import_repo_module,
+    load_path_module,
+    repo_root_from_script,
+)
 
 REPO_ROOT = repo_root_from_script(__file__)
 

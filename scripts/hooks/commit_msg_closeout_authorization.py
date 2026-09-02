@@ -35,7 +35,9 @@ def load_authorization_module(root: Path):
         candidate = root / rel
         if not candidate.is_file():
             continue
-        spec = importlib.util.spec_from_file_location("commit_msg_closeout_authorization_impl", candidate)
+        spec = importlib.util.spec_from_file_location(
+            "commit_msg_closeout_authorization_impl", candidate
+        )
         if spec is None or spec.loader is None:
             continue
         module = importlib.util.module_from_spec(spec)
@@ -64,15 +66,23 @@ def authorize_commit_carrier(
     commit aimed at an unrelated repository — throwing away, at the call site, exactly
     the information the gate's foreign-ref branch exists to use.
     """
-    module = load_authorization_module(Path(__file__).resolve().parents[1])
+    module = load_authorization_module(Path(__file__).resolve().parents[2])
     if module is None:
-        return {"authorized": True, "applies": False, "crosswalk_status": "authorization_module_unavailable"}
+        return {
+            "authorized": True,
+            "applies": False,
+            "crosswalk_status": "authorization_module_unavailable",
+        }
     invoked: list[dict[str, Any]] = [
         {"repository": repo, "issue_number": number, "source": "commit-message-close-keyword"}
         for repo, number in sorted(message_refs, key=lambda item: (item[0] or "", item[1]))
     ]
     carrier = [
-        {"repository": repo, "issue_number": number, "source": f"staged-artifact:{artifact['path']}"}
+        {
+            "repository": repo,
+            "issue_number": number,
+            "source": f"staged-artifact:{artifact['path']}",
+        }
         for artifact in artifacts
         for repo, number in artifact["qualified_numbers"]
     ]
@@ -83,7 +93,10 @@ def authorize_commit_carrier(
         if number not in seen_numbers
     )
     return module.authorize(
-        invoked_targets=invoked, carrier_targets=carrier, carrier_source="commit-msg", repo_root=repo_root
+        invoked_targets=invoked,
+        carrier_targets=carrier,
+        carrier_source="commit-msg",
+        repo_root=repo_root,
     )
 
 

@@ -46,7 +46,7 @@ class SiblingHookIntent:
 SIBLING_HOOK_INTENTS: tuple[SiblingHookIntent, ...] = (
     SiblingHookIntent(
         key="skill_anchor_edit_guard",
-        module="host_hook_skill_anchor_guard",
+        module="scripts.hooks.host_hook_skill_anchor_guard",
         reconcile_function="reconcile_skill_anchor_guard_hooks",
         status_function="skill_anchor_guard_status",
         script_relative_attr="GUARD_SCRIPT_RELATIVE",
@@ -72,7 +72,9 @@ def reconcile_sibling_hooks(
     actions: dict[str, Any] = {}
     for intent in intents:
         module = _import_module(intent.module)
-        actions[intent.key] = getattr(module, intent.reconcile_function)(repo_root, adapter=adapter, home=home)
+        actions[intent.key] = getattr(module, intent.reconcile_function)(
+            repo_root, adapter=adapter, home=home
+        )
     return actions
 
 
@@ -86,7 +88,9 @@ def sibling_hook_statuses(
     statuses: dict[str, Any] = {}
     for intent in intents:
         module = _import_module(intent.module)
-        statuses[intent.key] = getattr(module, intent.status_function)(repo_root, adapter=adapter, home=home)
+        statuses[intent.key] = getattr(module, intent.status_function)(
+            repo_root, adapter=adapter, home=home
+        )
     return statuses
 
 
@@ -109,7 +113,7 @@ def hook_state_liveness(repo_root: Path) -> dict[str, Any]:
     path must still exist. A deleted or moved checkout leaves the host settings
     invoking a missing script — for a PostToolUse hook that is loud exit-2
     noise on every matching event. Status/doctor surfacing only, not a gate."""
-    install_lib = _import_module("host_hook_install_lib")
+    install_lib = _import_module("scripts.hooks.host_hook_install_lib")
     state = install_lib.read_state(repo_root)
     entries: list[dict[str, Any]] = []
     dangling: list[str] = []
@@ -178,7 +182,11 @@ def _json_settings_commands(path: Path) -> list[str]:
             if not isinstance(inner, list):
                 continue
             for item in inner:
-                if isinstance(item, dict) and item.get("type") == "command" and isinstance(item.get("command"), str):
+                if (
+                    isinstance(item, dict)
+                    and item.get("type") == "command"
+                    and isinstance(item.get("command"), str)
+                ):
                     commands.append(item["command"])
     return commands
 
@@ -197,12 +205,14 @@ def settings_file_scan(
     are never flagged; missing/unreadable settings degrade to silence. A
     dangling entry that IS state-tracked here is also reported by
     hook_state_liveness; both point at the same leftover."""
-    install_lib = _import_module("host_hook_install_lib")
-    identity = _import_module("host_hook_entry_identity")
+    install_lib = _import_module("scripts.hooks.host_hook_install_lib")
+    identity = _import_module("scripts.hooks.host_hook_entry_identity")
     known = known_hook_script_basenames(intents)
     entries: list[dict[str, Any]] = []
     dangling: list[str] = []
-    sources = ((install_lib.default_claude_settings_path(home), "claude-json", _json_settings_commands),)
+    sources = (
+        (install_lib.default_claude_settings_path(home), "claude-json", _json_settings_commands),
+    )
     for path, kind, read_commands in sources:
         for command in read_commands(path):
             if identity.script_basename(command) not in known:
@@ -219,7 +229,11 @@ def settings_file_scan(
             )
             if exists:
                 continue
-            where = f"missing charness hook script {script}" if script is not None else f"no script path found in command {command!r}"
+            where = (
+                f"missing charness hook script {script}"
+                if script is not None
+                else f"no script path found in command {command!r}"
+            )
             dangling.append(
                 f"{path}: settings entry invokes {where} — likely a deleted "
                 "checkout's leftover; remove the entry or reinstall from a live checkout"

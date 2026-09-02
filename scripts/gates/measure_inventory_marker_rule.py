@@ -58,7 +58,6 @@ _load_repo_runtime_bootstrap()
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from scripts.gates import inventory_measurement_lib as corpus_lib  # noqa: E402
 from scripts.gates import validate_inventory_consumption as gate  # noqa: E402
-
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 DEFAULT_CORPUS = corpus_lib.DEFAULT_CORPUS

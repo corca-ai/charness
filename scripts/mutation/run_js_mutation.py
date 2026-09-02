@@ -24,8 +24,8 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
 from scripts.core.subprocess_guard import run_monitored_phase  # noqa: E402
+from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 DEFAULT_CONFIG = Path("stryker.config.mjs")

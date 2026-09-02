@@ -76,8 +76,8 @@ def test_staged_worktree_consistency_blocks_edit_after_stage(tmp_path: Path, mon
     # stale staged blob, while pre-commit gates validate the (newer) worktree. The
     # gate fails when a staged path also carries unstaged edits; a clean full-stage
     # passes; CHARNESS_ALLOW_PARTIAL_STAGE escapes a deliberate partial commit.
-    from scripts.check_staged_worktree_consistency import find_stale_staged
-    from scripts.check_staged_worktree_consistency import main as gate_main
+    from scripts.hooks.check_staged_worktree_consistency import find_stale_staged
+    from scripts.hooks.check_staged_worktree_consistency import main as gate_main
 
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -431,8 +431,8 @@ def test_consumer_validator_catalog_pull_covers_source_and_exported_paths() -> N
         assert "check-consumer-validator-catalog-decisions" in _labels([path]), path
     assert "check-consumer-validator-catalog" not in _labels(["docs/usage.md"])
     # And the dispatcher's predicate IS the checker's, not a copy that can drift.
-    from scripts.gates import check_consumer_validator_catalog as catalog_check
     from scripts import staged_commit_gate_plan as gate_plan
+    from scripts.gates import check_consumer_validator_catalog as catalog_check
 
     assert gate_plan._is_catalog_candidate_name is catalog_check._is_candidate_name
 
@@ -526,7 +526,9 @@ def test_staged_commit_gate_plan_plugin_mirror_matches_source(exported_plugin_tr
     # taking the source-CLI assertions down with it.
     args = ("--repo-root", str(ROOT), "--paths", "README.md")
     source_result = run_script("scripts/staged_commit_gate_plan.py", *args)
-    plugin_result = run_script(str(exported_plugin_tree / "scripts" / "staged_commit_gate_plan.py"), *args)
+    plugin_result = run_script(
+        str(exported_plugin_tree / "scripts" / "staged_commit_gate_plan.py"), *args
+    )
     assert source_result.returncode == 0, source_result.stderr
     assert plugin_result.returncode == 0, plugin_result.stderr
     assert yaml.safe_load(plugin_result.stdout) == yaml.safe_load(source_result.stdout)

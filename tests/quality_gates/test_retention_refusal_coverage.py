@@ -10,9 +10,9 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from scripts.mutation import manage_mutation_reports as reports
 from scripts import run_standing_pytest as runner
 from scripts import standing_pytest_basetemp as basetemp_lib
+from scripts.mutation import manage_mutation_reports as reports
 
 ROOT = Path(__file__).resolve().parents[2]
 

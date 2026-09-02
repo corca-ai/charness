@@ -10,9 +10,23 @@ from __future__ import annotations
 from pathlib import Path
 from typing import NamedTuple, Protocol
 
-from scripts.core.git_status_snapshot import GitStatusError, GitStatusSnapshot
-from scripts.core.git_status_snapshot import capture as capture_status
-from scripts.core.repo_file_listing import RepoFileSnapshot
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.core.git_status_snapshot import GitStatusError, GitStatusSnapshot  # noqa: E402
+from scripts.core.git_status_snapshot import capture as capture_status  # noqa: E402
+from scripts.core.repo_file_listing import RepoFileSnapshot  # noqa: E402
 
 
 class WorktreeMoment(NamedTuple):

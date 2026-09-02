@@ -5,7 +5,24 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from scripts.mutation.mutation_sampling_lib import mutation_workload, test_nodeid_count
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.mutation.mutation_sampling_lib import (  # noqa: E402
+    mutation_workload,
+    test_nodeid_count,
+)
 
 
 def display_path(repo_root: Path, path: Path) -> str:

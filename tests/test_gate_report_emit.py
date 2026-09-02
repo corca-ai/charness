@@ -36,10 +36,11 @@ from pathlib import Path
 import pytest
 import yaml
 
+from scripts.core import gate_report_emit
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-import scripts.core.gate_report_emit  # noqa: E402
 
 # --- stream routing ---------------------------------------------------------
 

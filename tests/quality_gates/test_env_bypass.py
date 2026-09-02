@@ -15,6 +15,7 @@ per-gate cases below are deliberately not a fourth copy of the table: each one
 asks only "does this gate route through the shared helper", which is the wiring a
 future rewrite could break without touching this file's table.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -28,9 +29,9 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 
 env_bypass = importlib.import_module("scripts.core.env_bypass")
-csr = importlib.import_module("scripts.check_staged_reversion")
-csrc = importlib.import_module("scripts.check_staged_router_change")
-cswc = importlib.import_module("scripts.check_staged_worktree_consistency")
+csr = importlib.import_module("scripts.hooks.check_staged_reversion")
+csrc = importlib.import_module("scripts.hooks.check_staged_router_change")
+cswc = importlib.import_module("scripts.hooks.check_staged_worktree_consistency")
 
 # The spellings an operator reaches for to say "keep the gate ON". Every one of
 # them must leave the bypass off. `"  "` and the unset case are here because a

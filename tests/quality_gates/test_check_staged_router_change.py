@@ -1,6 +1,6 @@
 """Tests for the router-change pre-commit refusal.
 
-The gate (`scripts/check_staged_router_change.py`) refuses a commit that stages
+The gate (`scripts/hooks/check_staged_router_change.py`) refuses a commit that stages
 `AGENTS.md` or `CLAUDE.md` until the operator has approved it. What these pin:
 
 - the refusal fires on a router edit and NOT on ordinary work, so the boundary is
@@ -13,6 +13,7 @@ The gate (`scripts/check_staged_router_change.py`) refuses a commit that stages
   must be the operator's, because a silent bypass is the failure this gate exists
   to make impossible.
 """
+
 from __future__ import annotations
 
 import importlib
@@ -24,7 +25,7 @@ import yaml
 
 from tests.script_main import run_loaded_script_main
 
-csrc = importlib.import_module("scripts.check_staged_router_change")
+csrc = importlib.import_module("scripts.hooks.check_staged_router_change")
 
 
 def run_gate(*args: str, env: dict[str, str] | None = None):
@@ -183,5 +184,5 @@ def test_pre_commit_hook_arms_the_refusal() -> None:
     hook = (Path(__file__).resolve().parents[2] / ".githooks" / "pre-commit").read_text(
         encoding="utf-8"
     )
-    assert 'scripts/check_staged_router_change.py --repo-root "$REPO_ROOT"' in hook
-    assert "check_staged_router_change.py --repo-root \"$REPO_ROOT\" || true" not in hook
+    assert 'scripts/hooks/check_staged_router_change.py --repo-root "$REPO_ROOT"' in hook
+    assert 'check_staged_router_change.py --repo-root "$REPO_ROOT" || true' not in hook
