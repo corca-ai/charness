@@ -12,7 +12,7 @@ import scripts.doctor as doctor_module
 from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNTIME_GUARD_PATH = ROOT / "scripts" / "agent_browser_runtime_guard.py"
+RUNTIME_GUARD_PATH = ROOT / "scripts" / "evidence" / "agent_browser_runtime_guard.py"
 pytestmark = pytest.mark.boundary_contract(
     reason="tests create real marker processes to verify checkout-owned process cleanup"
 )

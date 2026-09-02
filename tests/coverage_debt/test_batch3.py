@@ -651,11 +651,12 @@ def test_skill_ergonomics_entrypoint_emits_the_helper_report_and_its_verdict(tmp
 
 
 # ---------------------------------------------------------------------------
-# scripts/agent_browser_runtime_guard.py -- default inspect mode
+# scripts/evidence/agent_browser_runtime_guard.py -- default inspect mode
 # ---------------------------------------------------------------------------
 
 _browser_guard = load_script_module(
-    "coverage_debt_agent_browser_runtime_guard", ROOT / "scripts" / "agent_browser_runtime_guard.py"
+    "coverage_debt_agent_browser_runtime_guard",
+    ROOT / "scripts" / "evidence" / "agent_browser_runtime_guard.py",
 )
 
 

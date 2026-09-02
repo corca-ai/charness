@@ -69,7 +69,7 @@ from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_parity = import_repo_module(__file__, "scripts.parity_harness")
+_parity = import_repo_module(__file__, "scripts.evidence.parity_harness")
 baseline_source = _parity.baseline_source
 
 SCAN_GLOBS = ("scripts/**/*.py", "tools/**/*.py", "skills/**/scripts/**/*.py", "tests/**/*.py")

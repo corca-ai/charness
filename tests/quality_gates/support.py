@@ -600,7 +600,7 @@ def seed_quality_runtime_recorder(target_dir: Path) -> None:
 
 def seed_agent_browser_runtime_guard_stub(target_dir: Path) -> None:
     write_executable(
-        target_dir / "agent_browser_runtime_guard.py",
+        target_dir / "evidence" / "agent_browser_runtime_guard.py",
         "\n".join(
             [
                 "#!/usr/bin/env python3",
@@ -654,8 +654,13 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     # incomplete synthetic checkout.
     shutil.copy2(ROOT / ".githooks" / "runtime-env.sh", hooks_dir / "runtime-env.sh")
     shutil.copy2(ROOT / "tools" / "__init__.py", tools_dir / "__init__.py")
-    shutil.copy2(ROOT / "scripts" / "proof_receipt.py", scripts_dir / "proof_receipt.py")
-    (scripts_dir / "proof_receipt.py").chmod(0o755)
+    evidence_dir = scripts_dir / "evidence"
+    evidence_dir.mkdir()
+    shutil.copy2(
+        ROOT / "scripts" / "evidence" / "proof_receipt.py",
+        evidence_dir / "proof_receipt.py",
+    )
+    (evidence_dir / "proof_receipt.py").chmod(0o755)
     shutil.copy2(
         ROOT / "scripts" / "run_standing_pytest.py",
         scripts_dir / "run_standing_pytest.py",

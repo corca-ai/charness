@@ -3,7 +3,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-from scripts import probe_record_lib
+from scripts.evidence import probe_record_lib
 from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]

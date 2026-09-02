@@ -49,13 +49,13 @@
     },
     "healthcheck": {
       "commands": [
-        "python3 scripts/agent_browser_runtime_guard.py --repo-root . --doctor-check"
+        "python3 scripts/evidence/agent_browser_runtime_guard.py --repo-root . --doctor-check"
       ],
       "success_criteria": [
         "exit_code:0",
         "stdout_contains:agent-browser runtime healthy"
       ],
-      "failure_hint": "The CLI exists but the runtime is not healthy. Run `python3 <plugin-dir>/scripts/agent_browser_runtime_guard.py --repo-root . --cleanup-orphans --execute` to remove orphan daemon trees, then reinstall or run `agent-browser install --with-deps` if the CLI itself is still unhealthy."
+      "failure_hint": "The CLI exists but the runtime is not healthy. Run `python3 <plugin-dir>/scripts/evidence/agent_browser_runtime_guard.py --repo-root . --cleanup-orphans --execute` to remove orphan daemon trees, then reinstall or run `agent-browser install --with-deps` if the CLI itself is still unhealthy."
     }
   },
   "access_modes": [

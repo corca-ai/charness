@@ -51,8 +51,8 @@ _load_repo_runtime_bootstrap()
 
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
-_probe_record = import_repo_module(__file__, "scripts.probe_record_lib")
-_stimulus_replay = import_repo_module(__file__, "scripts.probe_stimulus_replay")
+_probe_record = import_repo_module(__file__, "scripts.evidence.probe_record_lib")
+_stimulus_replay = import_repo_module(__file__, "scripts.evidence.probe_stimulus_replay")
 _yaml_output = import_repo_module(__file__, "scripts.yaml_output")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]

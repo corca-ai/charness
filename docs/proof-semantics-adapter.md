@@ -144,7 +144,7 @@ acceptance class:
 | safety           | smoke         | accepted-risk: low traffic   |
 ```
 
-[`scripts/proof_mismatch.py`](../scripts/proof_mismatch.py) checks each row
+[`scripts/evidence/proof_mismatch.py`](../scripts/evidence/proof_mismatch.py) checks each row
 against the adapter and BLOCKS the closeout when a row has a proof gap left
 undispositioned:
 

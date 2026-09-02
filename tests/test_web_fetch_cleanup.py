@@ -219,7 +219,7 @@ def test_gather_reaches_acquire_and_bundled_guard_in_exported_layout(tmp_path: P
     _bundle_yaml_output(plugin)
     _bundle_subprocess_guard(plugin)
     # A bundled guard that FAILS proves it was actually run (reached), not skipped.
-    (plugin / "scripts" / "agent_browser_runtime_guard.py").write_text(
+    (plugin / "scripts" / "evidence" / "agent_browser_runtime_guard.py").write_text(
         "#!/usr/bin/env python3\nimport sys\nprint('reparented chromium residue remains', file=sys.stderr)\nsys.exit(1)\n",
         encoding="utf-8",
     )
@@ -318,7 +318,7 @@ def test_acquire_preserves_render_error_when_cleanup_also_fails(tmp_path: Path) 
     _make_logging_agent_browser(bin_dir, log, render_fails=True)
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
-    (repo / "scripts" / "agent_browser_runtime_guard.py").write_text(
+    (repo / "scripts" / "evidence" / "agent_browser_runtime_guard.py").write_text(
         "#!/usr/bin/env python3\nimport sys\nprint('orphan daemon remains', file=sys.stderr)\nsys.exit(1)\n",
         encoding="utf-8",
     )
@@ -363,7 +363,7 @@ def test_acquire_public_url_degrades_when_close_leaves_dirty_runtime(tmp_path: P
     (bin_dir / "agent-browser").chmod(0o755)
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
-    (repo / "scripts" / "agent_browser_runtime_guard.py").write_text(
+    (repo / "scripts" / "evidence" / "agent_browser_runtime_guard.py").write_text(
         "#!/usr/bin/env python3\nimport sys\nprint('orphan daemon remains', file=sys.stderr)\nsys.exit(1)\n",
         encoding="utf-8",
     )

@@ -612,7 +612,7 @@ def test_run_quality_cleans_agent_browser_runtime_after_hygiene_failure(
 ) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     cleanup_log = repo / "cleanup.log"
-    guard = repo / "scripts" / "agent_browser_runtime_guard.py"
+    guard = repo / "scripts" / "evidence" / "agent_browser_runtime_guard.py"
     guard.write_text(
         "\n".join(
             [

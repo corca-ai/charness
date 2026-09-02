@@ -276,7 +276,7 @@ def test_a_placeholder_line_is_skipped_by_both_readers() -> None:
 
 
 def test_the_issue_floor_refuses_when_the_probe_library_is_unresolvable(monkeypatch) -> None:
-    # A tree whose `scripts/probe_record_lib.py` cannot be resolved: the floor REFUSES and
+    # A tree whose `scripts/evidence/probe_record_lib.py` cannot be resolved: the floor REFUSES and
     # names why. A check that could not run has not run, and reporting it as satisfied is
     # the class of silence this floor exists to close.
     monkeypatch.setattr(_FLOOR_MOD, "_load_probe_record_lib", lambda: None)

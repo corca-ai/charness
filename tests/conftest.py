@@ -344,7 +344,7 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
     # test-command is serial, so under the scheduled mutation baseline it was not.
     if os.environ.get("PYTEST_XDIST_WORKER") or os.environ.get(NESTED_PYTEST_ENV):
         return
-    guard = _REPO_ROOT / "scripts" / "agent_browser_runtime_guard.py"
+    guard = _REPO_ROOT / "scripts" / "evidence" / "agent_browser_runtime_guard.py"
     if not guard.is_file():
         return
     guard_module = load_script_module("agent_browser_runtime_guard_session_cleanup", guard)

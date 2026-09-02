@@ -47,7 +47,10 @@ def load_charness_module(module_name: str = "charness_tool_lifecycle_under_test"
 
 
 def load_agent_browser_runtime_guard_module(module_name: str = "agent_browser_runtime_guard_under_test"):
-    loader = importlib.machinery.SourceFileLoader(module_name, str(ROOT / "scripts" / "agent_browser_runtime_guard.py"))
+    loader = importlib.machinery.SourceFileLoader(
+        module_name,
+        str(ROOT / "scripts" / "evidence" / "agent_browser_runtime_guard.py"),
+    )
     spec = importlib.util.spec_from_loader(module_name, loader)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -466,7 +469,7 @@ def test_tool_next_step_prefers_agent_browser_repair_for_cleanup_runtime_drift()
                 {
                     "stdout": json.dumps(
                         {
-                            "next_step": "python3 scripts/agent_browser_runtime_guard.py --repo-root . --cleanup-orphans --execute",
+                            "next_step": "python3 scripts/evidence/agent_browser_runtime_guard.py --repo-root . --cleanup-orphans --execute",
                             "next_step_kind": "cleanup_command",
                         }
                     ),

@@ -33,7 +33,7 @@ _CROSSWALK_CACHE: dict[str, Any] = {}
 _QUALIFIED_DECLARATION_RE = re.compile(r"^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+#\d+$")
 
 def _load_crosswalk_module():
-    """Locate `scripts/evidence_boundary_crosswalk.py` from either layout.
+    """Locate `scripts/evidence/evidence_boundary_crosswalk.py` from either layout.
 
     Root layout puts it at `<repo>/scripts/`; the exported plugin at
     `plugins/charness/scripts/`. Both sit beside a `runtime_bootstrap.py`, which the
@@ -44,7 +44,7 @@ def _load_crosswalk_module():
     import importlib.util
 
     for ancestor in Path(__file__).resolve().parents:
-        candidate = ancestor / "scripts" / "evidence_boundary_crosswalk.py"
+        candidate = ancestor / "scripts" / "evidence" / "evidence_boundary_crosswalk.py"
         if not candidate.is_file():
             continue
         if str(ancestor) not in sys.path:

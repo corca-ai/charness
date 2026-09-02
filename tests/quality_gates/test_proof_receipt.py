@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.proof_receipt import (
+from scripts.evidence.proof_receipt import (
     ReceiptContractError,
     _parse_recovery_spec,
     _recovery,
@@ -116,7 +116,7 @@ def test_quality_cli_writes_explicit_opt_in_receipt(tmp_path: Path) -> None:
     result = subprocess.run(
         [
             sys.executable,
-            str(ROOT / "scripts" / "proof_receipt.py"),
+            str(ROOT / "scripts" / "evidence" / "proof_receipt.py"),
             "quality",
             "--status",
             "pass",
@@ -157,7 +157,7 @@ def test_quality_cli_write_failure_precedes_final_human_line(tmp_path: Path) -> 
     result = subprocess.run(
         [
             sys.executable,
-            str(ROOT / "scripts" / "proof_receipt.py"),
+            str(ROOT / "scripts" / "evidence" / "proof_receipt.py"),
             "quality",
             "--status",
             "pass",

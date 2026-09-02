@@ -312,9 +312,11 @@ def _read_text(path: Path) -> str:
 def _seed_intrinsic_edges(nodes: dict[str, Path]) -> dict[str, set[str]]:
     edges: dict[str, set[str]] = defaultdict(set)
     for relative, path in nodes.items():
-        if relative.startswith(("scripts/", "tools/")) and path.name == "__init__.py":
-            # Package markers are required by their module carriers; they are not
-            # themselves runnable or referenceable gates.
+        if relative == "tools/__init__.py" or (
+            relative.startswith("scripts/") and relative.endswith("/__init__.py")
+        ):
+            # Package markers are required by their package carriers; they are
+            # not themselves runnable or referenceable gates.
             edges[relative].add("surface")
         elif relative.startswith("skills/"):
             edges[relative].add("skill")

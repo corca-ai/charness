@@ -20,7 +20,7 @@ load_dependencies = _scripts_control_plane_lib_module.load_dependencies
 load_support_capabilities = _scripts_control_plane_lib_module.load_support_capabilities
 lock_paths = _scripts_control_plane_lib_module.lock_paths
 validate_lock_data = _scripts_control_plane_lib_module.validate_lock_data
-_agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browser_probe_policy")
+_agent_browser_probe_policy = import_repo_module(__file__, "scripts.evidence.agent_browser_probe_policy")
 unsafe_agent_browser_probe_reason = _agent_browser_probe_policy.unsafe_agent_browser_probe_reason
 
 

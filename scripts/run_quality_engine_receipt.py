@@ -36,7 +36,7 @@ def finish(
         record_runtime_single(context, aggregate, elapsed_ms, status, timestamp())
     args = [
         "python3",
-        "scripts/proof_receipt.py",
+        "scripts/evidence/proof_receipt.py",
         "quality",
         "--status",
         status,

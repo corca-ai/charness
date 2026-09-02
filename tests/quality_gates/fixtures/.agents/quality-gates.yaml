@@ -52,7 +52,7 @@ phases:
     - -u
     - CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS
     - python3
-    - scripts/agent_browser_runtime_guard.py
+    - scripts/evidence/agent_browser_runtime_guard.py
     - --repo-root
     - $REPO_ROOT
     - --cleanup-orphans
@@ -1073,7 +1073,7 @@ phases:
     - -u
     - CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS
     - python3
-    - scripts/agent_browser_runtime_guard.py
+    - scripts/evidence/agent_browser_runtime_guard.py
     - --repo-root
     - $REPO_ROOT
     - --assert-no-orphans

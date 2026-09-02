@@ -115,7 +115,21 @@ import tempfile
 from functools import lru_cache
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 try:
     from scripts.core.subprocess_guard import run_process
@@ -130,7 +144,7 @@ except ImportError:  # flat layout: the repo root is not on sys.path
     from scripts.core.subprocess_guard import run_process
 
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
-_documents = import_repo_module(__file__, "scripts.probe_stimulus_documents")
+_documents = import_repo_module(__file__, "scripts.evidence.probe_stimulus_documents")
 
 # Re-exported so the split stays an implementation detail: `probe_stimulus_replay` remains
 # the one import site for anything that replays a stimulus.
@@ -148,7 +162,7 @@ _RESTATED_DEFAULT = _documents._RESTATED_DEFAULT
 
 # Borrowed from the same vocabulary `probe_record_lib` borrows, for the same reason: a
 # fourth private spelling of "we could not tell" is how the concept drifts apart.
-_boundary_probe = import_repo_module(__file__, "scripts.boundary_probe_lib")
+_boundary_probe = import_repo_module(__file__, "scripts.evidence.boundary_probe_lib")
 STIMULUS_EVALUATED = _boundary_probe.PROBE_EVALUATED
 STIMULUS_NOT_CONFIGURED = _boundary_probe.PROBE_NOT_CONFIGURED
 STIMULUS_NOT_ESTABLISHED = _boundary_probe.PROBE_NOT_ESTABLISHED

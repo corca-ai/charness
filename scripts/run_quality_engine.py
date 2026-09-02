@@ -211,7 +211,7 @@ def _run_phases(
             run_process(
                 [
                     "python3",
-                    "scripts/agent_browser_runtime_guard.py",
+                    "scripts/evidence/agent_browser_runtime_guard.py",
                     "--repo-root",
                     str(context.repo_root),
                     "--cleanup-orphans",

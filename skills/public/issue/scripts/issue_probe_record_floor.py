@@ -14,7 +14,7 @@ unfixed baseline, and the "verified" that results is indistinguishable from a re
 
 WHY THIS IS A SEPARATE MODULE. ``issue_closeout_rung1_floors``'s docstring states it
 never imports repo-internal ``scripts/``, and that property is worth keeping intact.
-This floor MUST read ``scripts.probe_record_lib`` -- the record's grammar and its typed
+This floor MUST read ``scripts.evidence.probe_record_lib`` -- the record's grammar and its typed
 outcome live there and must not be respelled. ``issue_resolution_critique`` is the
 precedent for a sibling that reaches a repo module; this follows it rather than eroding
 the neighbour's stated property.
@@ -77,7 +77,7 @@ _IMPOSSIBILITY_LEAD = re.compile(
 
 
 def _load_probe_record_lib() -> SimpleNamespace | None:
-    """``scripts.probe_record_lib``, or ``None`` when this tree does not ship it.
+    """``scripts.evidence.probe_record_lib``, or ``None`` when this tree does not ship it.
 
     Resolved through the skill runtime bootstrap, which returns the repo root in an
     authoring tree and ``plugins/<package>`` in an installed one, so the same call finds
@@ -97,7 +97,7 @@ def _load_probe_record_lib() -> SimpleNamespace | None:
         return None
     try:
         runtime = SimpleNamespace(**runpy.run_path(str(bootstrap)))
-        return runtime.load_repo_module_from_skill_script(__file__, "scripts.probe_record_lib")
+        return runtime.load_repo_module_from_skill_script(__file__, "scripts.evidence.probe_record_lib")
     except Exception:  # pragma: no cover - a tree without the repo module
         return None
 
@@ -269,7 +269,7 @@ def evaluate_probe_record(
             "failed": [],
             "records": [],
             "library_unavailable": (
-                "`scripts/probe_record_lib.py` could not be resolved from this tree, so no "
+                "`scripts/evidence/probe_record_lib.py` could not be resolved from this tree, so no "
                 "named probe record can be read. This floor refuses rather than passing: a "
                 "check that cannot run has not run, and reporting it as satisfied is the "
                 "class of silence this floor exists to close."

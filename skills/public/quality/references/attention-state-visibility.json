@@ -27,7 +27,7 @@
       ],
       "rationale": "resolve_manual_disposition returns a TYPED, RECORDED `skipped` disposition -- the fallback path when no adapter `post_delivery_readback_probe` is declared for `human-backend` announcement delivery. record_announcement.py writes it into the delivery record's `verification` field in `.charness/announcement/announcements.jsonl`. This satisfies the rung-1 presence floor (a confirmation or a typed non-`verified` disposition pass equally, mirroring the release skill's WS-1 rung-1/rung-2 split) but is never a silent clean pass -- the disposition and its `reason` are legible in the persisted ledger record that announcement closeout renders from."
     },
-    "scripts/boundary_probe_lib.py": {
+    "scripts/evidence/boundary_probe_lib.py": {
       "states": [
         "not_configured"
       ],
@@ -369,7 +369,7 @@
       ],
       "rationale": "`skipped` is a verdict-critical count read from one structurally complete Node TAP summary, not an internal clean-pass branch. The reporter validates pass/fail/cancelled/skipped/todo arithmetic against the selected run's tests total and retains the complete summary as RunCounts evidence; mutation classification therefore cannot silently zero-fill or drop a skipped count while calling a malformed run a kill."
     },
-    "scripts/parity_harness.py": {
+    "scripts/evidence/parity_harness.py": {
       "states": [
         "skipped"
       ],
@@ -591,7 +591,7 @@
         "skipped_classification",
         "library_unavailable"
       ],
-      "rationale": "Two typed skips, both rendered into the closeout report the carrier prints, neither silent. (1) `skipped_classification`: a `question`/`decision-needed` close has no user-facing behavior to confirm, so no verification claim exists for a probe record to back -- the same gate and the same reason as the sibling behavioral-verdict floor, checked against this floor's own subject rather than inherited, and reported as `applies: false` with the classification named. (2) `library_unavailable`: when `scripts/probe_record_lib.py` cannot be resolved from this tree the floor returns `ok: false` with the reason text -- it REFUSES rather than skipping, because a check that could not run has not run, and reporting it as satisfied is the class of silence this floor exists to close. Both reach the operator through `probe_record_problems`, which every carrier renders."
+      "rationale": "Two typed skips, both rendered into the closeout report the carrier prints, neither silent. (1) `skipped_classification`: a `question`/`decision-needed` close has no user-facing behavior to confirm, so no verification claim exists for a probe record to back -- the same gate and the same reason as the sibling behavioral-verdict floor, checked against this floor's own subject rather than inherited, and reported as `applies: false` with the classification named. (2) `library_unavailable`: when `scripts/evidence/probe_record_lib.py` cannot be resolved from this tree the floor returns `ok: false` with the reason text -- it REFUSES rather than skipping, because a check that could not run has not run, and reporting it as satisfied is the class of silence this floor exists to close. Both reach the operator through `probe_record_problems`, which every carrier renders."
     },
     "skills/public/issue/scripts/issue_resolution_critique.py": {
       "states": [

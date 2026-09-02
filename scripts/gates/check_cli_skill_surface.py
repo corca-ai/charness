@@ -48,7 +48,7 @@ PROBE_TIMEOUT_ENV = "CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _adapter_lib.load_yaml_file
 validate_adapter_version = _adapter_lib.validate_adapter_version
-_agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browser_probe_policy")
+_agent_browser_probe_policy = import_repo_module(__file__, "scripts.evidence.agent_browser_probe_policy")
 unsafe_agent_browser_probe_reason = _agent_browser_probe_policy.unsafe_agent_browser_probe_reason
 
 

@@ -28,7 +28,7 @@ emit_yaml = _yaml_output.emit_yaml
 HELP_TIMEOUT_SECONDS = 10
 PS_TIMEOUT_SECONDS = 10
 DEFAULT_TERM_GRACE_SECONDS = 2.0
-CLEANUP_COMMAND = "python3 scripts/agent_browser_runtime_guard.py --repo-root . --cleanup-orphans --execute"
+CLEANUP_COMMAND = "python3 scripts/evidence/agent_browser_runtime_guard.py --repo-root . --cleanup-orphans --execute"
 # Guidance for residue the cleanup command cannot fix: reparented (PPID=1, owning
 # daemon already gone) or zombie (<defunct>) browser processes are not part of any
 # orphan-daemon tree, so `--cleanup-orphans` targets nothing and the operator who

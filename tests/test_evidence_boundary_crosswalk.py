@@ -18,14 +18,14 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.evidence_boundary_crosswalk import (
+from scripts.evidence.evidence_boundary_crosswalk import (
     CrosswalkError,
     authorize_closeout,
     load_crosswalk,
     normalize_target,
     verify_frozen_source,
 )
-from scripts.evidence_boundary_crosswalk import main as crosswalk_main
+from scripts.evidence.evidence_boundary_crosswalk import main as crosswalk_main
 from scripts.gates.validate_evidence_boundary_crosswalk import main as validate_main
 from scripts.gates.validate_evidence_boundary_crosswalk import run as validate_crosswalk
 from scripts.issue_source_capture_lib import build_snapshot_and_receipt, capture_issues
@@ -954,7 +954,10 @@ def test_the_crosswalk_module_main_guard_executes(monkeypatch) -> None:
     # cover `raise SystemExit(main())` (the __main__ guard) in-process via runpy.
     monkeypatch.setattr(sys, "argv", ["x", "--carrier-source", "commit-msg", "--invoked", "999"])
     with pytest.raises(SystemExit) as excinfo:
-        runpy.run_path(str(REPO_ROOT / "scripts" / "evidence_boundary_crosswalk.py"), run_name="__main__")
+        runpy.run_path(
+            str(REPO_ROOT / "scripts" / "evidence" / "evidence_boundary_crosswalk.py"),
+            run_name="__main__",
+        )
 
     assert excinfo.value.code == 0
 
@@ -999,7 +1002,7 @@ def test_the_validator_module_main_guard_executes(tmp_path, monkeypatch) -> None
     _crosswalk(tmp_path)
     monkeypatch.setattr(sys, "argv", ["x", "--repo-root", str(tmp_path), "--crosswalk", CROSSWALK_REL])
     with pytest.raises(SystemExit) as excinfo:
-        runpy.run_path(str(REPO_ROOT / "scripts" / "gates" / "validate_evidence_boundary_crosswalk.py"), run_name="__main__")
+        runpy.run_path(str(REPO_ROOT / "scripts" / "validate_evidence_boundary_crosswalk.py"), run_name="__main__")
 
     assert excinfo.value.code == 0
 
@@ -1053,9 +1056,11 @@ def test_the_installed_plugin_projection_exposes_the_same_authorization_entrypoi
     A gate that exists only in the source tree is not a gate for anyone running the
     plugin, which is every consumer.
     """
-    projection = exported_plugin_tree / "scripts" / "evidence_boundary_crosswalk.py"
+    projection = exported_plugin_tree / "scripts" / "evidence" / "evidence_boundary_crosswalk.py"
 
     assert projection.is_file(), "export_plugin.py must carry the authorization projection"
     source = projection.read_text(encoding="utf-8")
     assert "def authorize_closeout(" in source
-    assert source == (REPO_ROOT / "scripts" / "evidence_boundary_crosswalk.py").read_text(encoding="utf-8")
+    assert source == (
+        REPO_ROOT / "scripts" / "evidence" / "evidence_boundary_crosswalk.py"
+    ).read_text(encoding="utf-8")

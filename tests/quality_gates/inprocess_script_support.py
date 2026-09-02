@@ -385,9 +385,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_verify_packet",
         ROOT / "skills" / "public" / "critique" / "scripts" / "verify_packet.py",
     ),
-    "scripts/parity_harness.py": (
+    "scripts/evidence/parity_harness.py": (
         "tests.quality_gates.support_parity_harness",
-        ROOT / "scripts" / "parity_harness.py",
+        ROOT / "scripts" / "evidence" / "parity_harness.py",
     ),
     "skills/public/setup/scripts/seed_dependencies.py": (
         "tests.quality_gates.support_setup_seed_dependencies",

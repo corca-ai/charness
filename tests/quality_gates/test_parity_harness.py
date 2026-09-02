@@ -48,7 +48,7 @@ def write_review_snapshot(repo: Path, *, captured: dict[str, str] | None = None)
     return snapshot_path
 
 
-_parity = import_repo_module(ROOT / "scripts/parity_harness.py", "scripts.parity_harness")
+_parity = import_repo_module(ROOT / "scripts/evidence/parity_harness.py", "scripts.evidence.parity_harness")
 
 # The real narrowing this harness exists for, reduced to its two versions.
 # `LINK_RE`'s character classes match newlines, so scanning the joined text finds
@@ -185,7 +185,7 @@ def test_uncomparable_paths_are_reported_rather_than_dropped(tmp_path: Path) -> 
     (repo / "scripts" / "fresh.py").write_text("def a():\n    return 1\n", encoding="utf-8")
 
     result = run_script(
-        "scripts/parity_harness.py",
+        "scripts/evidence/parity_harness.py",
         "--repo-root",
         str(repo),
         "--against",
@@ -225,7 +225,7 @@ def test_the_snapshot_captures_python_source_so_a_repair_has_a_baseline(tmp_path
     target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
 
     result = run_script(
-        "scripts/parity_harness.py",
+        "scripts/evidence/parity_harness.py",
         "--repo-root",
         str(repo),
         "--against",
@@ -357,7 +357,7 @@ def test_a_file_clean_at_snapshot_time_is_reported_uncomparable_not_clean(tmp_pa
     write_review_snapshot(repo)
 
     target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
-    result = run_script("scripts/parity_harness.py", "--repo-root", str(repo))
+    result = run_script("scripts/evidence/parity_harness.py", "--repo-root", str(repo))
 
     payload = yaml.safe_load(result.stdout)
     assert payload["files"] == {}
@@ -432,7 +432,7 @@ def test_a_destroyed_baseline_is_reported_as_lost_not_as_never_captured(tmp_path
     target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
 
     payload = yaml.safe_load(
-        run_script("scripts/parity_harness.py", "--repo-root", str(repo)).stdout
+        run_script("scripts/evidence/parity_harness.py", "--repo-root", str(repo)).stdout
     )
 
     assert "LOST baseline" in payload["uncomparable"]["scripts/gate.py"]
@@ -692,7 +692,7 @@ def test_the_entrypoint_reports_a_parity_error_on_stderr(tmp_path: Path) -> None
     (repo / "scripts" / "broken.py").write_text("def broken(:\n", encoding="utf-8")
 
     result = run_script(
-        "scripts/parity_harness.py",
+        "scripts/evidence/parity_harness.py",
         "--repo-root",
         str(repo),
         "--against",

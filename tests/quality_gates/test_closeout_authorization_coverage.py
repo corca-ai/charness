@@ -142,7 +142,7 @@ def test_an_undeclared_exception_keeps_its_traceback_instead_of_becoming_a_refus
     refusal channel is noisy and start reading past it — and the one refusal that
     mattered would be read past with the rest.
     """
-    refusal_lib = _load(SCRIPTS / "review" / "closeout_refusal_lib.py", "coverage_refusal_lib")
+    refusal_lib = _load(SCRIPTS / "closeout_refusal_lib.py", "coverage_refusal_lib")
 
     def _boom() -> dict:
         raise ValueError("not a declared refusal")
@@ -166,9 +166,7 @@ def test_the_commit_carrier_finds_the_authorization_module_in_the_exported_layou
     install would silently take the module-absent path and authorize protected closes
     it should refuse — the loader is the difference between a gate and a no-op.
     """
-    authz = _load(
-        SCRIPTS / "hooks" / "commit_msg_closeout_authorization.py", "coverage_commit_authz"
-    )
+    authz = _load(SCRIPTS / "commit_msg_closeout_authorization.py", "coverage_commit_authz")
     exported = tmp_path / "skills" / "issue" / "scripts"
     exported.mkdir(parents=True)
     shutil.copy2(ISSUE_SCRIPTS / "issue_closeout_authorization.py", exported)
@@ -190,9 +188,7 @@ def test_an_install_without_the_issue_skill_reports_the_gate_as_unavailable(
     record carries `authorization_module_unavailable` and `applies: False` rather than
     a bare `authorized: True` a reader could mistake for a verdict.
     """
-    authz = _load(
-        SCRIPTS / "hooks" / "commit_msg_closeout_authorization.py", "coverage_commit_authz_2"
-    )
+    authz = _load(SCRIPTS / "commit_msg_closeout_authorization.py", "coverage_commit_authz_2")
     assert authz.load_authorization_module(tmp_path) is None
 
     _relocate(monkeypatch, authz, tmp_path / "install" / "scripts")
@@ -216,9 +212,7 @@ def test_an_unloadable_authorization_candidate_is_skipped_not_half_loaded(
     put a broken object in front of an irreversible close, where the first attribute
     access decides whether the close is refused or crashes past the check.
     """
-    authz = _load(
-        SCRIPTS / "hooks" / "commit_msg_closeout_authorization.py", "coverage_commit_authz_3"
-    )
+    authz = _load(SCRIPTS / "commit_msg_closeout_authorization.py", "coverage_commit_authz_3")
     present = tmp_path / "skills" / "public" / "issue" / "scripts"
     present.mkdir(parents=True)
     shutil.copy2(ISSUE_SCRIPTS / "issue_closeout_authorization.py", present)
@@ -292,14 +286,14 @@ def test_without_the_crosswalk_module_every_carrier_is_permissive_and_labelled(
     which carrier you used decide whether a close went through. `enforce` returning the
     same permissive record it was given is what keeps the raising variant honest.
     """
-    module = _load(ISSUE_SCRIPTS / "issue_closeout_authorization.py", "coverage_issue_authz_absent")
+    module = _load(
+        ISSUE_SCRIPTS / "issue_closeout_authorization.py", "coverage_issue_authz_absent"
+    )
     _relocate(monkeypatch, module, tmp_path / "elsewhere")
 
     record = module.authorize(
         invoked_targets=[{"repository": "corca-ai/charness", "issue_number": 514}],
-        carrier_targets=[],
-        carrier_source="close-with-comment",
-        repo_root=tmp_path,
+        carrier_targets=[], carrier_source="close-with-comment", repo_root=tmp_path,
     )
     assert record["applies"] is False
     assert record["authorized"] is True
@@ -308,9 +302,7 @@ def test_without_the_crosswalk_module_every_carrier_is_permissive_and_labelled(
 
     enforced = module.enforce(
         invoked_targets=[{"repository": "corca-ai/charness", "issue_number": 514}],
-        carrier_targets=[],
-        carrier_source="close-with-comment",
-        repo_root=tmp_path,
+        carrier_targets=[], carrier_source="close-with-comment", repo_root=tmp_path,
     )
     assert enforced == record
 
@@ -327,7 +319,9 @@ def test_a_bare_manual_declaration_is_refused_because_it_cannot_disagree(
     and the escape is an operator who supplies `514`, sees the gate accept it, and
     believes an independent confirmation happened.
     """
-    module = _load(ISSUE_SCRIPTS / "issue_closeout_authorization.py", "coverage_issue_authz_bare")
+    module = _load(
+        ISSUE_SCRIPTS / "issue_closeout_authorization.py", "coverage_issue_authz_bare"
+    )
 
     with pytest.raises(RuntimeError, match="repository-qualified"):
         module.parse_manual_declaration("514", "corca-ai/charness", 514)
@@ -348,9 +342,13 @@ def test_an_unloadable_crosswalk_candidate_does_not_stop_the_search(
     a caller already knows how to read.
     """
     monkeypatch.setattr(sys, "path", list(sys.path))
-    (tmp_path / "scripts").mkdir()
-    (tmp_path / "scripts" / "evidence_boundary_crosswalk.py").write_text("", encoding="utf-8")
-    module = _load(ISSUE_SCRIPTS / "issue_closeout_authorization.py", "coverage_issue_authz_skip")
+    (tmp_path / "scripts" / "evidence").mkdir(parents=True)
+    (tmp_path / "scripts" / "evidence" / "evidence_boundary_crosswalk.py").write_text(
+        "", encoding="utf-8"
+    )
+    module = _load(
+        ISSUE_SCRIPTS / "issue_closeout_authorization.py", "coverage_issue_authz_skip"
+    )
     _relocate(monkeypatch, module, tmp_path / "skills" / "issue" / "scripts")
     monkeypatch.setattr(importlib.util, "spec_from_file_location", _null_spec)
 
@@ -369,9 +367,7 @@ class BackendSpy:
 
     def __call__(self, argv):
         self.calls.append(list(argv))
-        return subprocess.CompletedProcess(
-            argv, 0, json.dumps({"number": 1, "state": "CLOSED"}), ""
-        )
+        return subprocess.CompletedProcess(argv, 0, json.dumps({"number": 1, "state": "CLOSED"}), "")
 
 
 def test_a_definitive_refusal_is_reported_instead_of_a_missing_flag(tmp_path: Path) -> None:
@@ -413,7 +409,9 @@ def test_draft_validation_without_its_authorization_sibling_stays_permissive(
     so the record reports the gate as unavailable and contributes no refusal — the
     draft still faces its ordinary ledger floors, which is the bar it had before.
     """
-    draft = _load(ISSUE_SCRIPTS / "issue_validate_closeout_draft.py", "coverage_draft_absent")
+    draft = _load(
+        ISSUE_SCRIPTS / "issue_validate_closeout_draft.py", "coverage_draft_absent"
+    )
     _relocate(monkeypatch, draft, tmp_path / "lonely")
 
     assert draft._authorization_module() is None

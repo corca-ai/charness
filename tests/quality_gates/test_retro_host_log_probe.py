@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import yaml
 
 from runtime_bootstrap import import_repo_module
-from scripts import host_log_probe_lib
+from scripts.evidence import host_log_probe_lib
 
 from .support import ROOT
 

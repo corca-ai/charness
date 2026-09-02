@@ -41,7 +41,7 @@ validate_adversarial_evidence = partial(
 )
 
 # Cross-surface probe (#408): consulted only when --changed-ref/--changed-path is passed.
-_boundary_probe_lib = import_repo_module(__file__, "scripts.boundary_probe_lib")
+_boundary_probe_lib = import_repo_module(__file__, "scripts.evidence.boundary_probe_lib")
 _critique_adapter_lib = import_repo_module(__file__, "scripts.review.critique_adapter_lib")
 _reviewed_input_binding = import_repo_module(__file__, "scripts.review.critique_reviewed_input_binding")
 _reviewer_evidence = import_repo_module(__file__, "scripts.review.critique_reviewer_evidence")

@@ -6,13 +6,13 @@ testable. Owns the ephemeral ``charness-gather-*`` session name, the render and
 network recon calls, locating the runtime guard, and asserting the runtime is
 clean after close.
 
-The runtime guard ships at ``<repo>/scripts/agent_browser_runtime_guard.py`` in
+The runtime guard ships at ``<repo>/scripts/evidence/agent_browser_runtime_guard.py`` in
 the repo-root layout and at ``plugins/charness/scripts/...`` in the exported
 plugin layout; the acquire helper sits at ``skills/support/web-fetch/scripts``
 (repo-root) or ``plugins/charness/support/web-fetch/scripts`` (export), so a
 single relative offset does not reach the guard in both. We therefore search the
 caller's ``repo_root/scripts`` first, then every ancestor of the acquire script
-for a ``scripts/agent_browser_runtime_guard.py`` sibling. When the guard cannot
+for a ``scripts/evidence/agent_browser_runtime_guard.py`` sibling. When the guard cannot
 be found anywhere, callers surface a fail-visible ``guard_unavailable`` signal
 rather than reporting an unrun proof as a clean close.
 """
@@ -23,9 +23,9 @@ import sys
 from pathlib import Path
 from typing import Callable
 
-GUARD_FILENAME = "agent_browser_runtime_guard.py"
+GUARD_RELATIVE_PATH = Path("evidence") / "agent_browser_runtime_guard.py"
 GUARD_UNAVAILABLE = (
-    "guard_unavailable:agent_browser_runtime_guard.py not reachable from repo_root/scripts "
+    "guard_unavailable:scripts/evidence/agent_browser_runtime_guard.py not reachable from repo_root/scripts "
     "or any bundled support layout; post-close runtime proof was not run"
 )
 
@@ -71,8 +71,10 @@ def close_session(url: str, *, timeout: int, run_command: RunCommand) -> str | N
 
 def resolve_runtime_guard(script_dir: Path, repo_root: Path) -> Path | None:
     """Return the first reachable runtime-guard path, or None if none exists."""
-    candidates = [repo_root / "scripts" / GUARD_FILENAME]
-    candidates.extend(ancestor / "scripts" / GUARD_FILENAME for ancestor in script_dir.parents)
+    candidates = [repo_root / "scripts" / GUARD_RELATIVE_PATH]
+    candidates.extend(
+        ancestor / "scripts" / GUARD_RELATIVE_PATH for ancestor in script_dir.parents
+    )
     seen: set[Path] = set()
     for candidate in candidates:
         if candidate in seen:

@@ -17,7 +17,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 host_log_probe = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.host_log_probe_lib"
+    __file__, "scripts.evidence.host_log_probe_lib"
 )
 render_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.yaml_output"

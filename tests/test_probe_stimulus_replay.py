@@ -36,8 +36,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import probe_record_lib
-from scripts import probe_stimulus_replay as replay
+from scripts.evidence import probe_record_lib
+from scripts.evidence import probe_stimulus_replay as replay
 from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -467,7 +467,7 @@ _RECORD_FIELDS = """\
 Claim: the reader refuses instead of returning a charness default
 Claim kind: change
 Observable: the process exit status
-Source ref: scripts/probe_stimulus_replay.py
+Source ref: scripts/evidence/probe_stimulus_replay.py
 Source conditions: the adapter declares a version the reader cannot speak
 Base ref: aaaaaaa
 Head ref: bbbbbbb

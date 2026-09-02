@@ -82,7 +82,8 @@ def test_c6_worktree_scope_arms_the_cross_surface_tooth(tmp_path: Path, monkeypa
         "critique_enforcement_scope_dates_under_test", ROOT / "scripts" / "review" / "critique_enforcement_scope.py"
     )
     probe = load_script_module(
-        "boundary_probe_lib_dates_under_test", ROOT / "scripts" / "boundary_probe_lib.py"
+        "boundary_probe_lib_dates_under_test",
+        ROOT / "scripts" / "evidence" / "boundary_probe_lib.py",
     )
 
     class _Adapter:
@@ -139,7 +140,8 @@ def test_an_empty_resolved_scope_is_not_established_even_with_the_flag(
         "critique_enforcement_scope_dates_under_test", ROOT / "scripts" / "review" / "critique_enforcement_scope.py"
     )
     probe = load_script_module(
-        "boundary_probe_lib_dates_under_test", ROOT / "scripts" / "boundary_probe_lib.py"
+        "boundary_probe_lib_dates_under_test",
+        ROOT / "scripts" / "evidence" / "boundary_probe_lib.py",
     )
 
     class _Adapter:

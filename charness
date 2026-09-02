@@ -4823,7 +4823,7 @@ def _repair_agent_browser(repo_root: Path, plugin_root: Path, *, execute: bool) 
     python_executable = resolve_repo_python(repo_root)
     repair_command = [
         python_executable,
-        "scripts/agent_browser_runtime_guard.py",
+        "scripts/evidence/agent_browser_runtime_guard.py",
         "--repo-root",
         str(repo_root),
         "--cleanup-orphans",

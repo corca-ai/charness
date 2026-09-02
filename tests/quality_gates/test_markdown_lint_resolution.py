@@ -243,4 +243,4 @@ def test_no_repo_owned_source_reaches_the_npm_registry_through_exec() -> None:
     # above, this anchor now means what it says: an EXECUTABLE npm-exec line exists in
     # the Python lane. Deleting the real tier while leaving the prose that describes it
     # fails here, which is the rot this anchor guards.
-    assert "scripts/markdownlint_probe.py" in " ".join(scanned)
+    assert "scripts/evidence/markdownlint_probe.py" in " ".join(scanned)

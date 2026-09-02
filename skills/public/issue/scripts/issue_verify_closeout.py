@@ -34,7 +34,7 @@ def _resolve_bootstrap() -> Path | None:
 
 
 def _load_proof_mismatch():
-    """Load the portable proof-mismatch floor (``scripts/proof_mismatch.py``) via
+    """Load the portable proof-mismatch floor (``scripts/evidence/proof_mismatch.py``) via
     the skill-runtime repo-module loader, so its ``from scripts.`` imports resolve
     in the issue skill context. Cached; reuses the same module the achieve closeout
     wires."""
@@ -45,7 +45,7 @@ def _load_proof_mismatch():
             raise ImportError("skill_runtime_bootstrap.py not found")
         runtime = SimpleNamespace(**runpy.run_path(str(bootstrap)))
         _PROOF_MISMATCH = runtime.load_repo_module_from_skill_script(
-            __file__, "scripts.proof_mismatch"
+            __file__, "scripts.evidence.proof_mismatch"
         )
     return _PROOF_MISMATCH
 

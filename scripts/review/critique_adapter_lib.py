@@ -272,7 +272,7 @@ def validate_adapter_data(
 
     # Repo-owned cross-surface probe for the boundary-ownership checkpoint
     # (#408). The critique validator's severity upgrade reads these through this
-    # one adapter. Keys mirror scripts/boundary_probe_lib.py
+    # one adapter. Keys mirror scripts/evidence/boundary_probe_lib.py
     # (BOUNDARY_GLOBS_KEY / BOUNDARY_SURFACES_KEY).
     for key in ("boundary_cross_surface_globs", "boundary_cross_surface_surfaces"):
         raw_list = data.get(key)

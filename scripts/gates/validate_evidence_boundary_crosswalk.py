@@ -42,7 +42,7 @@ _load_repo_runtime_bootstrap()
 from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
-_crosswalk = import_repo_module(__file__, "scripts.evidence_boundary_crosswalk")
+_crosswalk = import_repo_module(__file__, "scripts.evidence.evidence_boundary_crosswalk")
 _freeze_lib = import_repo_module(__file__, "scripts.issue_source_freeze_lib")
 _refusal_lib = import_repo_module(__file__, "scripts.review.closeout_refusal_lib")
 

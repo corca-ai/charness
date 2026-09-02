@@ -25,7 +25,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import probe_record_lib, probe_stimulus_replay
+from scripts.evidence import probe_record_lib, probe_stimulus_replay
 
 ROOT = Path(__file__).resolve().parents[2]
 RECORDS = sorted((ROOT / "charness-artifacts" / "probe").glob("*.md"))

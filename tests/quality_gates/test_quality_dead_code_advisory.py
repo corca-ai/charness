@@ -674,7 +674,7 @@ def test_dead_code_advisory_marks_structured_output_fields() -> None:
     spec.loader.exec_module(module)
 
     findings = module.parse_findings(
-        "scripts/agent_browser_runtime_guard.py:44: "
+        "scripts/evidence/agent_browser_runtime_guard.py:44: "
         "unused variable 'rss_kib' (60% confidence, 1 line)\n"
     )
 
