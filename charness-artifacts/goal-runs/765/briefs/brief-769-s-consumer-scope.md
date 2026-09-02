@@ -62,3 +62,13 @@ python3 scripts/run_standing_pytest.py --repo-root . --pytest-target tests/quali
 Commit in ONE commit with subject
 `quality: re-scope the skill, example adapter, catalogs, and planner to the consumer definition (#769 S lane candidate)`.
 No close keyword. Stop after the commit and report the hash.
+
+Base note (parent, launch time): lane R2b (the thin runner) may NOT be on
+your base. If `scripts/run-quality.sh` still carries the `queue_selected`
+lines, edit those rows there and regenerate the declared list with
+`python3 scripts/quality_gates_extract.py --repo-root . --write` (then
+`--check` and `python3 scripts/quality_label_universe.py --repo-root . --parity`
+must be clean); the parent re-applies your row edits onto R2b's wrapper.
+Also on your base: `tools/` exists with batch A moved, `validate_packaging`,
+`packaging_policy_validators`, and `validate_packaging_install_surface`
+STAY in `scripts/` (export machinery), and the universes lanes landed.
