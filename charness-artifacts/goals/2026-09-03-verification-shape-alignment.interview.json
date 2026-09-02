@@ -1,0 +1,332 @@
+{
+  "version": 1,
+  "questions": [
+    {
+      "decision": "Cadence for the release lane (run-quality.sh --release, ~298 s) in standing evidence",
+      "options": [
+        {
+          "id": "prepush-clone",
+          "summary": "Run --release in the pre-push clean-clone lane on every push",
+          "tradeoff": "About five minutes per push; last local read before the boundary"
+        },
+        {
+          "id": "session-start",
+          "summary": "Run --release once at session start",
+          "tradeoff": "Cheap; a regression made mid-session hides until the next session"
+        },
+        {
+          "id": "hosted-ci",
+          "summary": "Add a release_only job to quality-core.yml on push to main",
+          "tradeoff": "No local cost; reads after the push, past the boundary"
+        }
+      ],
+      "recommendation": {
+        "option": "prepush-clone",
+        "reason": "The clean-clone push lane already exists and is the last local read before an irreversible boundary"
+      },
+      "answer": {
+        "option": "prepush-clone",
+        "reason": "Operator chose the recommendation"
+      },
+      "rejected_alternatives": [
+        {
+          "option": "session-start",
+          "reason": "Mid-session regressions would still hide, which is the #768 failure repeated"
+        },
+        {
+          "option": "hosted-ci",
+          "reason": "Second observer at best; it cannot stop the push it reads"
+        }
+      ]
+    },
+    {
+      "decision": "Scope of the #764 hosted-mutation slice",
+      "options": [
+        {
+          "id": "fix-deterministic",
+          "summary": "Reproduce in the CI shape and make the failing timing tests deterministic",
+          "tradeoff": "Real work per test; closes the class for those tests"
+        },
+        {
+          "id": "dispatch-observe",
+          "summary": "Dispatch a run on the new tree and record only",
+          "tradeoff": "No fix; workflow_dispatch cannot report recovery (#358)"
+        },
+        {
+          "id": "deselect",
+          "summary": "Deselect timing-sensitive tests from the sampler baseline",
+          "tradeoff": "Fastest; violates skipped-is-not-passed"
+        }
+      ],
+      "recommendation": {
+        "option": "fix-deterministic",
+        "reason": "A deselected test is a skipped-is-passed and a dispatch run cannot report recovery"
+      },
+      "answer": {
+        "option": "fix-deterministic",
+        "reason": "Operator sharpened it: a nondeterministic timing test should not exist at all"
+      },
+      "rejected_alternatives": [
+        {
+          "option": "dispatch-observe",
+          "reason": "Cannot close #764 and fixes nothing"
+        },
+        {
+          "option": "deselect",
+          "reason": "Skipped is not passed"
+        }
+      ]
+    },
+    {
+      "decision": "How the lesson-ledger archive selection is decided",
+      "options": [
+        {
+          "id": "slice-table",
+          "summary": "Slice presents a candidate table; operator picks",
+          "tradeoff": "Operator signs each lifecycle event; one checkpoint inside the slice"
+        },
+        {
+          "id": "age-rule",
+          "summary": "Archive the oldest three score-0/0 lessons now by rule",
+          "tradeoff": "No checkpoint; may archive a lesson this goal cites as a boundary"
+        },
+        {
+          "id": "drop",
+          "summary": "Leave the ledger item out of this goal",
+          "tradeoff": "Three recurred classes stay unreadable next session"
+        }
+      ],
+      "recommendation": {
+        "option": "slice-table",
+        "reason": "The archive is a lifecycle event the operator signs and the six pre-2026-08-17 candidates are the obvious shortlist"
+      },
+      "answer": {
+        "option": "slice-table",
+        "reason": "Operator chose it and required promotion and exclusion both in the same slice"
+      },
+      "rejected_alternatives": [
+        {
+          "option": "age-rule",
+          "reason": "The operator signs each event; a rule would archive skipped-is-not-passed, which this goal cites"
+        },
+        {
+          "option": "drop",
+          "reason": "The three classes recurred this session"
+        }
+      ]
+    },
+    {
+      "decision": "Scope of the wall-clock-dependent test rewrite",
+      "options": [
+        {
+          "id": "failing-union",
+          "summary": "Rewrite only the union of tests that failed in the six #764 runs",
+          "tradeoff": "Bounded; leaves the class present elsewhere in tests/"
+        },
+        {
+          "id": "repo-census",
+          "summary": "Census all of tests/ for wall-clock claims, rewrite or delete each, add a form check",
+          "tradeoff": "Larger slice; removes the class and stops its growth"
+        }
+      ],
+      "recommendation": {
+        "option": "failing-union",
+        "reason": "Keeps slice 4 bounded; census as a separate child"
+      },
+      "answer": {
+        "option": "repo-census",
+        "reason": "Operator: a wall-clock-dependent test existing at all is the smell"
+      },
+      "rejected_alternatives": [
+        {
+          "option": "failing-union",
+          "reason": "Leaves the class in the tree and no guard against the next one"
+        }
+      ]
+    },
+    {
+      "decision": "What 'promotion' means for the lesson ledger",
+      "options": [
+        {
+          "id": "seed-only",
+          "summary": "Seed the three recurred classes as active lessons",
+          "tradeoff": "Cheap; the ledger stays the only memory of a proven lesson"
+        },
+        {
+          "id": "graduate-to-docs",
+          "summary": "Add a graduate lifecycle action: compress a proven lesson into its owning docs page (adding and pruning), event points at that commit",
+          "tradeoff": "Builds the mechanism D38 deferred; docs stay current"
+        }
+      ],
+      "recommendation": {
+        "option": "graduate-to-docs",
+        "reason": "SCORE_OUTCOMES already maps changed-an-action to graduate with nothing behind it, and this session's third recurrence is D38's reopen trigger"
+      },
+      "answer": {
+        "option": "graduate-to-docs",
+        "reason": "Operator: promotion is compressing into the standing docs, removing what the page no longer needs; the per-lesson decision is made jointly in conversation from the agent's drafted disposition, not by rule, automation, or commit inspection"
+      },
+      "rejected_alternatives": [
+        {
+          "option": "seed-only",
+          "reason": "The ledger would stay the only memory; the operator expects docs to carry proven lessons"
+        }
+      ]
+    },
+    {
+      "decision": "Whether slice 4 waits for a scheduled mutation run",
+      "options": [
+        {
+          "id": "no-wait",
+          "summary": "Push and read the next scheduled cycle when it has happened",
+          "tradeoff": "No blocking; #764 may close in slice 6 or later"
+        },
+        {
+          "id": "wait",
+          "summary": "Block slice 4 until one scheduled run is green",
+          "tradeoff": "Up to 12 hours idle per attempt"
+        },
+        {
+          "id": "push-trigger",
+          "summary": "Let a push-triggered run report recovery",
+          "tradeoff": "Changes the #358 proof-surface rule"
+        }
+      ],
+      "recommendation": {
+        "option": "no-wait",
+        "reason": "The schedule is the observer; the slice's claim is the tree, not the run"
+      },
+      "answer": {
+        "option": "no-wait",
+        "reason": "Operator: no waiting; check on the next cycle"
+      },
+      "rejected_alternatives": [
+        {
+          "option": "wait",
+          "reason": "Idle time for no extra evidence"
+        },
+        {
+          "option": "push-trigger",
+          "reason": "Changes a proof-surface rule for convenience"
+        }
+      ]
+    },
+    {
+      "decision": "Whether this goal builds a repo-owned rename-sweep tool that consumes the layout resolver, or only the resolver",
+      "options": [
+        {
+          "id": "resolver-only",
+          "summary": "Build the resolver and fold the three ad hoc lookups onto it; no sweep tool. The next path migration writes its sweep then, calling the resolver.",
+          "tradeoff": "Smallest slice. The sweep-overreach lesson stays a lesson, not a tool; the next migration must remember to consult the resolver."
+        },
+        {
+          "id": "resolver-and-sweep",
+          "summary": "Also build a repo-owned sweep tool (tools/) that rewrites path strings only when the resolver recognises the string as a repo script and knows its new home; skill-tree, $SKILL_DIR, and hash-bound artifact strings are refused by construction.",
+          "tradeoff": "Makes the 2026-09-03 retro's structural fix real now, but builds a tool with no planned migration to use it; risk of a tool that rots before its first use."
+        }
+      ],
+      "recommendation": {
+        "option": "resolver-only",
+        "reason": "No migration is planned; a tool without a consumer is speculative, and the resolver is what makes a future sweep safe either way."
+      },
+      "answer": {
+        "option": "resolver-only",
+        "reason": "Operator approved the recommendation on 2026-09-03 after the sweep explanation"
+      },
+      "rejected_alternatives": [
+        {
+          "option": "resolver-and-sweep",
+          "reason": "No planned migration would use the tool"
+        }
+      ]
+    },
+    {
+      "decision": "Whether a hosted GitHub Actions job runs the release_only tests on push to main as a second observer, in addition to the pre-push clean-clone lane",
+      "options": [
+        {
+          "id": "local-only",
+          "summary": "One observer: the pre-push clean-clone lane runs --release; nothing hosted changes.",
+          "tradeoff": "Closes the #768 failure mode (nobody ran the lane before pushing). Does not catch a push that bypassed the hook or came from a machine without the procedure."
+        },
+        {
+          "id": "local-and-hosted",
+          "summary": "Add a release_only pytest job to quality-core.yml so GitHub runs it on every push to main; it reads after the push and files or comments on failure.",
+          "tradeoff": "A distinct channel (north star P4) that survives hook bypass; costs about five CI minutes per push and the hosted runner must carry the same preconditions the mutation workflow needed (mirror, PATH, env flag), which is where #764 went wrong."
+        }
+      ],
+      "recommendation": {
+        "option": "local-only",
+        "reason": "One observer closes the recorded failure; the hosted job inherits the same precondition fragility that broke the mutation baseline and is better decided after slice 4 makes that baseline green."
+      },
+      "answer": {
+        "option": "local-only",
+        "reason": "Operator approved the recommendation on 2026-09-03 after the observer explanation"
+      },
+      "rejected_alternatives": [
+        {
+          "option": "local-and-hosted",
+          "reason": "Inherits the precondition fragility that broke the mutation baseline; decide after slice 4"
+        }
+      ]
+    },
+    {
+      "decision": "Where the docs-graph-awiki FAIL echo is fixed",
+      "options": [
+        {
+          "id": "local",
+          "summary": "In check_docs_graph.py's awiki call only",
+          "tradeoff": "Other phases keep echoing child exit codes"
+        },
+        {
+          "id": "guard",
+          "summary": "In run_monitored_phase for every phase",
+          "tradeoff": "Changes the semantics of every monitored phase"
+        }
+      ],
+      "recommendation": {
+        "option": "local",
+        "reason": "Only this caller judges by metrics rather than exit code"
+      },
+      "answer": {
+        "option": "local",
+        "reason": "Operator: good"
+      },
+      "rejected_alternatives": [
+        {
+          "option": "guard",
+          "reason": "Every other phase relies on the exit-code echo"
+        }
+      ]
+    },
+    {
+      "decision": "Identity of the Goal Run parent",
+      "options": [
+        {
+          "id": "new-parent",
+          "summary": "Create a new parent issue; #764 stays a child-closed issue",
+          "tradeoff": "Standard shape; #764 closes through its own observer"
+        },
+        {
+          "id": "764-parent",
+          "summary": "Reuse #764 as the parent",
+          "tradeoff": "Mixes a mutation-regression tracker with a goal graph"
+        }
+      ],
+      "recommendation": {
+        "option": "new-parent",
+        "reason": "#764 has its own recovery-observer close path"
+      },
+      "answer": {
+        "option": "new-parent",
+        "reason": "Operator: of course"
+      },
+      "rejected_alternatives": [
+        {
+          "option": "764-parent",
+          "reason": "Would mix the recovery-observer contract with the Goal Run cursor"
+        }
+      ]
+    }
+  ],
+  "remaining_consequential_decisions": []
+}

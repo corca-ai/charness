@@ -1,0 +1,52 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: linked
+mutation_performed: true
+repo: corca-ai/charness
+parent_number: 775
+sub_issue_number: 778
+sub_issue_id: 5329854756
+readback:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  parent_number: 775
+  count: 3
+  completed: 0
+  open: 3
+  percent_completed: 0
+  children:
+  - number: 776
+    title: 'awiki phase echo: stop the docs-graph gate printing a FAIL no aggregate
+      reads'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/776
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/775
+  - number: 777
+    title: 'Layout resolver: one flat-or-packaged script lookup beside repo_layout.py'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/777
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/775
+  - number: 778
+    title: 'Release lane in standing evidence: run --release in the pre-push clean-clone
+      lane'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/778
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/775
+operation: add-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/775/observations/bootstrap-add-release-lane-standing-evidence-1.started.json
+  started_sha256: c7077d8925180d79866672df07bdd085c07e3a8a7d417810d1883fad7b862316
+  terminal_path: charness-artifacts/goal-runs/775/observations/bootstrap-add-release-lane-standing-evidence-1.terminal.json
+  terminal_sha256: 9beaa4d77ca46deb7c71411516d4e3e952725a6975b70a59efb3a0d929af02f7
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-add-release-lane-standing-evidence-1

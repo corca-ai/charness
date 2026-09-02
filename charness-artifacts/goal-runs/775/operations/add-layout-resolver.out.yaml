@@ -1,0 +1,46 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: linked
+mutation_performed: true
+repo: corca-ai/charness
+parent_number: 775
+sub_issue_number: 777
+sub_issue_id: 5329853264
+readback:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  parent_number: 775
+  count: 2
+  completed: 0
+  open: 2
+  percent_completed: 0
+  children:
+  - number: 776
+    title: 'awiki phase echo: stop the docs-graph gate printing a FAIL no aggregate
+      reads'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/776
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/775
+  - number: 777
+    title: 'Layout resolver: one flat-or-packaged script lookup beside repo_layout.py'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/777
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/775
+operation: add-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/775/observations/bootstrap-add-layout-resolver-1.started.json
+  started_sha256: 2177570c31cac61182e1e58fdd0eab1b73dbe25013c090df5f60d0e397771548
+  terminal_path: charness-artifacts/goal-runs/775/observations/bootstrap-add-layout-resolver-1.terminal.json
+  terminal_sha256: fadd6927a1d0a036994c69b8e7a567874f406f58045ba6d60247f770c7ab2ce1
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-add-layout-resolver-1

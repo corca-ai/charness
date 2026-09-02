@@ -1,0 +1,85 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: created
+repo: corca-ai/charness
+parent_number: 775
+work_item_key: awiki-phase-echo
+number: 776
+url: https://github.com/corca-ai/charness/issues/776
+body_verified: true
+before:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  work_item_key: awiki-phase-echo
+  marker: '<!-- charness-work-item-key: awiki-phase-echo -->'
+  count: 0
+  matches: []
+readback:
+  ok: true
+  repo: corca-ai/charness
+  title: 'awiki phase echo: stop the docs-graph gate printing a FAIL no aggregate
+    reads'
+  labels: []
+  milestone: null
+  body_bytes: 1460
+  body_preview: '<!-- charness-work-item-key: awiki-phase-echo -->
+
+
+    ## Objective
+
+
+    Stop the `docs-graph` gate from printing `FAIL [docs-graph-awiki]` for awiki''s
+    lint exit 1, a line no aggregate reads, while keeping every real failure path.
+
+
+    ## Owned scope
+
+
+    - `scripts/gates/check_docs_graph.py::_run_awiki`: awiki exit 1 (lint findings)
+    is an observed outcome the gate judges by named metrics, not a phase failure.
+    Fix locally in this caller: pass a `stream` of its own to `run_monitored_phase`
+    and render the lifecycle line from the gate''s verdict, or call `run_process`
+    with the same timeout and emit the line itself. `scripts/core/subprocess_guard.py`
+    is outside scope; a diff touching it fails this item.
+
+    - Timeout stays NOT-RUN; an exit code outside `OBSERVED_EXIT_CODES` stays UNESTABLISHED.
+
+    - Tests: a seeded docs fixture with one lint finding produces the metric verdict
+    and no `FAIL [docs-graph-awiki]` line; a seeded timeout and a seeded unknown exit
+    code keep their paths.
+
+
+    ## Acceptance
+
+
+    - `./scripts/run-quality.sh --full --read-only` on a tree with awiki findings
+    prints no `FAIL [docs-graph-awiki]`; the `docs-graph` verdict is byte-identical
+    to before.
+
+    - The three seeded tests pass in the standing la'
+  number: 776
+  url: https://github.com/corca-ai/charness/issues/776
+  body_verified: true
+  verification:
+    command: verify-create
+    repo: corca-ai/charness
+    number: 776
+    body_file: /home/hwidong/codes/charness/charness-artifacts/goal-runs/775/bodies/awiki-phase-echo.md
+operation: create-or-reuse-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/775/observations/bootstrap-create-awiki-phase-echo-1.started.json
+  started_sha256: ca3ba444034f20da3dc4a062e8f1f21f94adf26effeeccdbcf11b26be5b4b924
+  terminal_path: charness-artifacts/goal-runs/775/observations/bootstrap-create-awiki-phase-echo-1.terminal.json
+  terminal_sha256: 4d8be3511879515c32c2d04ec6d8eeb1f1b716279bbec903d65f865175015f1e
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-create-awiki-phase-echo-1

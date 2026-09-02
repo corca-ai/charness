@@ -1,0 +1,81 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: created
+repo: corca-ai/charness
+parent_number: 775
+work_item_key: layout-resolver
+number: 777
+url: https://github.com/corca-ai/charness/issues/777
+body_verified: true
+before:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  work_item_key: layout-resolver
+  marker: '<!-- charness-work-item-key: layout-resolver -->'
+  count: 0
+  matches: []
+readback:
+  ok: true
+  repo: corca-ai/charness
+  title: 'Layout resolver: one flat-or-packaged script lookup beside repo_layout.py'
+  labels: []
+  milestone: null
+  body_bytes: 1675
+  body_preview: '<!-- charness-work-item-key: layout-resolver -->
+
+
+    ## Objective
+
+
+    One resolver beside `scripts/core/repo_layout.py` answers "where does repo script
+    X live" for the flat and packaged layouts, and the three independent lookups are
+    gone.
+
+
+    ## Owned scope
+
+
+    - Add the resolver (flat name in, path out; packaged subdirectory search; missing
+    script is a typed miss, never a silent fallback).
+
+    - Fold and delete: `scripts/core/scaffold_artifact_lib.py::_repo_script` (glob),
+    `tests/quality_gates/seeding_support.py::_packaged_script` and `_seed_path` (rglob),
+    `skills/public/quality/scripts/public_spec_adapter_policy.py::load_repo_script_module`
+    (glob). `scripts/core` ships with the export, so the skill imports the resolver;
+    the native `export-safe` gate forbids only `skills.public` imports.
+
+    - `scripts/staged_commit_gate_plan_helpers.py::present_gate` is not a layout search
+    (it chooses `tools/` versus `scripts/` for a relative path); it calls the resolver
+    for the existence check and is otherwise unchanged.
+
+    - A form check refusing any `glob`/`rglob` search for a script name under `scripts/`
+    outside the resolver module.
+
+    - Tests: flat layout, packaged layout, missing script, seeded duplicate lookup
+    refu'
+  number: 777
+  url: https://github.com/corca-ai/charness/issues/777
+  body_verified: true
+  verification:
+    command: verify-create
+    repo: corca-ai/charness
+    number: 777
+    body_file: /home/hwidong/codes/charness/charness-artifacts/goal-runs/775/bodies/layout-resolver.md
+operation: create-or-reuse-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/775/observations/bootstrap-create-layout-resolver-1.started.json
+  started_sha256: 1f9c0cc93efb777e8cf53dd4a99158c30a893a9c4dcde9d7a5352fe6dfef6cba
+  terminal_path: charness-artifacts/goal-runs/775/observations/bootstrap-create-layout-resolver-1.terminal.json
+  terminal_sha256: e19639c1cf7aed1be907572445acb1d35158a43f57904681e3517dd81d26101d
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-create-layout-resolver-1

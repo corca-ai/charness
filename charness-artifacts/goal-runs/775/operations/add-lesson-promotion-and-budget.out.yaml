@@ -1,0 +1,68 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: linked
+mutation_performed: true
+repo: corca-ai/charness
+parent_number: 775
+sub_issue_number: 781
+sub_issue_id: 5329858799
+readback:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  parent_number: 775
+  count: 6
+  completed: 0
+  open: 6
+  percent_completed: 0
+  children:
+  - number: 776
+    title: 'awiki phase echo: stop the docs-graph gate printing a FAIL no aggregate
+      reads'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/776
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/775
+  - number: 777
+    title: 'Layout resolver: one flat-or-packaged script lookup beside repo_layout.py'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/777
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/775
+  - number: 778
+    title: 'Release lane in standing evidence: run --release in the pre-push clean-clone
+      lane'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/778
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/775
+  - number: 779
+    title: 'Wall-clock test census, form check, #764 union rewrite, CI-shape baseline'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/779
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/775
+  - number: 780
+    title: 'Wall-clock test rewrite: the remainder of the census to zero'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/780
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/775
+  - number: 781
+    title: 'Lesson promotion and budget: graduate action, joint per-lesson review,
+      seed the three recurred classes'
+    state: OPEN
+    url: https://github.com/corca-ai/charness/issues/781
+    parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/775
+operation: add-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/775/observations/bootstrap-add-lesson-promotion-and-budget-1.started.json
+  started_sha256: 6eb88d97c18d5f1b7ef075204e71874f7ab331a8a164023b1a015475f643a6d5
+  terminal_path: charness-artifacts/goal-runs/775/observations/bootstrap-add-lesson-promotion-and-budget-1.terminal.json
+  terminal_sha256: 13d5c0beeba4a2f7804d2bf943e5eecb9e2250e5a846d7a4c40461162e0713ab
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-add-lesson-promotion-and-budget-1

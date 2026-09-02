@@ -1,0 +1,20 @@
+{
+  "kind": "charness.expected-sub-issue-set/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 775,
+  "children": [
+    776,
+    777,
+    778,
+    779,
+    780,
+    781,
+    782
+  ],
+  "source": {
+    "status": "operator-approved-initial-graph",
+    "frozen_draft_sha256": "6f2f63ecd8264a4502f7feeb9884a2e2cbb5e3f288be22536fd93a2eed010898",
+    "binding_sha256": "ea389dd26293eb3deff01bf502073c6d242dd84bb3a1df42b245fcac729d46b0",
+    "approved_work_items_sha256": "6f5b883dd9bc8cb8f0a6721be9f672a6fef06f13f66f1a01124b56b062de4b48"
+  }
+}

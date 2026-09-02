@@ -1,0 +1,16 @@
+{
+ "kind": "charness.goal-run-operation/v1",
+ "repo": "corca-ai/charness",
+ "parent_number": 775,
+ "draft_sha256": "6f2f63ecd8264a4502f7feeb9884a2e2cbb5e3f288be22536fd93a2eed010898",
+ "binding_sha256": "ea389dd26293eb3deff01bf502073c6d242dd84bb3a1df42b245fcac729d46b0",
+ "binding_path": "charness-artifacts/goals/2026-09-03-verification-shape-alignment.binding.json",
+ "observation_dir": "charness-artifacts/goal-runs/775/observations",
+ "operation": "update-body",
+ "attempt_id": "bootstrap-parent-metadata-1",
+ "target": {
+  "repo": "corca-ai/charness",
+  "number": 775
+ },
+ "body_file": "charness-artifacts/goal-runs/775/bodies/parent-bootstrap.md"
+}

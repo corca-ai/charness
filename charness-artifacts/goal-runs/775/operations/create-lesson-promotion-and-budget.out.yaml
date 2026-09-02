@@ -1,0 +1,76 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: created
+repo: corca-ai/charness
+parent_number: 775
+work_item_key: lesson-promotion-and-budget
+number: 781
+url: https://github.com/corca-ai/charness/issues/781
+body_verified: true
+before:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  work_item_key: lesson-promotion-and-budget
+  marker: '<!-- charness-work-item-key: lesson-promotion-and-budget -->'
+  count: 0
+  matches: []
+readback:
+  ok: true
+  repo: corca-ai/charness
+  title: 'Lesson promotion and budget: graduate action, joint per-lesson review, seed
+    the three recurred classes'
+  labels: []
+  milestone: null
+  body_bytes: 2537
+  body_preview: '<!-- charness-work-item-key: lesson-promotion-and-budget -->
+
+
+    ## Objective
+
+
+    The lesson ledger can promote a proven lesson into its owning standing docs page,
+    and the three recurrence classes hit again in the #770 session are active lessons
+    within the 50 budget.
+
+
+    ## Owned scope
+
+
+    - Add `graduate` with a new `graduated` state as one coordinated change: `LIFECYCLE_TRANSITIONS`
+    gains `("graduate", "active"): "graduated"` and `("resurrect", "graduated"): "active"`
+    in `scripts/lessons/lesson_ledger_lib.py` and replay honours it; `_materialize`
+    and the argparse choices in `scripts/lessons/record_lesson_lifecycle.py` stop
+    hardcoding the archive-or-active ternary; the literal refusal message pinned by
+    `tests/test_lesson_lifecycle_refusals.py` is updated. A graduate event requires
+    a decision ref to a commit that touches a `docs/` page. Graduated lessons leave
+    the active budget and stay readable in the ledger. Record that `docs/deferred-decisions.md`
+    D38 is reopened by its own trigger (third recurrence) and resolved by this action.
+
+    - Joint review, lesson by lesson, of the 15 active score-0 lessons. For each the
+    agent drafts: the disposition in the ledger''s own vocabulary (helped, contradicted,'
+  number: 781
+  url: https://github.com/corca-ai/charness/issues/781
+  body_verified: true
+  verification:
+    command: verify-create
+    repo: corca-ai/charness
+    number: 781
+    body_file: /home/hwidong/codes/charness/charness-artifacts/goal-runs/775/bodies/lesson-promotion-and-budget.md
+operation: create-or-reuse-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/775/observations/bootstrap-create-lesson-promotion-and-budget-1.started.json
+  started_sha256: 52c8de0b96c86f49657ab610bb5767f3933d2c72c58028729df3b6bebae8263b
+  terminal_path: charness-artifacts/goal-runs/775/observations/bootstrap-create-lesson-promotion-and-budget-1.terminal.json
+  terminal_sha256: 4fbd446fbd2fd67bb3e2ddbd72f098d47a4a5e9ac24a3365301ba9a13e215e78
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-create-lesson-promotion-and-budget-1

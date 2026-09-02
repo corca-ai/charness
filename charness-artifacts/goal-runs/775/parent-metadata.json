@@ -1,0 +1,29 @@
+{
+  "amendments": [],
+  "binding_path": "charness-artifacts/goals/2026-09-03-verification-shape-alignment.binding.json",
+  "binding_schema": "charness.goal-binding/v1",
+  "binding_sha256": "ea389dd26293eb3deff01bf502073c6d242dd84bb3a1df42b245fcac729d46b0",
+  "bootstrap_verification": "verified-target-roundtrip",
+  "draft_path": "charness-artifacts/goals/2026-09-03-verification-shape-alignment.md",
+  "draft_sha256": "6f2f63ecd8264a4502f7feeb9884a2e2cbb5e3f288be22536fd93a2eed010898",
+  "initial_graph_sha256": "6f5b883dd9bc8cb8f0a6721be9f672a6fef06f13f66f1a01124b56b062de4b48",
+  "parent_identity": {
+    "number": 775,
+    "repo": "corca-ai/charness",
+    "url": "https://github.com/corca-ai/charness/issues/775"
+  },
+  "progress": {
+    "completed": 0,
+    "next": {
+      "key": "awiki-phase-echo",
+      "number": 776,
+      "repo": "corca-ai/charness",
+      "state": "OPEN",
+      "url": "https://github.com/corca-ai/charness/issues/776"
+    },
+    "open": 7,
+    "revision": 1,
+    "schema": "charness.goal-progress/v1",
+    "total": 7
+  }
+}

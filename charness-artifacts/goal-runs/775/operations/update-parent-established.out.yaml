@@ -1,0 +1,33 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+operation: update-body
+action: updated
+repo: corca-ai/charness
+number: 775
+url: https://github.com/corca-ai/charness/issues/775
+body_verified: true
+before:
+  ok: true
+  repo: corca-ai/charness
+  number: 775
+  url: https://github.com/corca-ai/charness/issues/775
+  readback_verified: true
+  body_verified: false
+  body_verification: byte-identical
+  stored_body_bytes: 6219
+  body_sha256: 92722f885b7c83783ce115bc1a56602b0d774e328e4cf03fa6d650cca12bb9e7
+single_updater_assumption: true
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/775/observations/bootstrap-parent-established-1.started.json
+  started_sha256: e91225954f380ce1c81de4b788435a410b38c55fc32c80305dfd4d2fb19c38f1
+  terminal_path: charness-artifacts/goal-runs/775/observations/bootstrap-parent-established-1.terminal.json
+  terminal_sha256: 4e8a90eee777f694126d1a65650b0075ae55d6b2c227bd3353160018293c3f93
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-parent-established-1

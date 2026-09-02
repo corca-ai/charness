@@ -1,0 +1,100 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: created
+repo: corca-ai/charness
+parent_number: 775
+work_item_key: release-lane-standing-evidence
+number: 778
+url: https://github.com/corca-ai/charness/issues/778
+body_verified: true
+before:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  work_item_key: release-lane-standing-evidence
+  marker: '<!-- charness-work-item-key: release-lane-standing-evidence -->'
+  count: 0
+  matches: []
+readback:
+  ok: true
+  repo: corca-ai/charness
+  title: 'Release lane in standing evidence: run --release in the pre-push clean-clone
+    lane'
+  labels: []
+  milestone: null
+  body_bytes: 1101
+  body_preview: '<!-- charness-work-item-key: release-lane-standing-evidence -->
+
+
+    ## Objective
+
+
+    A release-only regression cannot cross a push unnoticed: the pre-push clean-clone
+    lane runs `run-quality.sh --release` on every push.
+
+
+    ## Owned scope
+
+
+    - The clean-clone push procedure (the shape used for the #768, #769, #770 closeouts)
+    runs `--release`; the hook or wrapper that procedure uses is changed, not the
+    standing lane''s marker selection.
+
+    - `docs/development.md` states the procedure, the cadence, and the measured runtime.
+
+    - Proof: a seeded `release_only` failure in a clean clone is refused by the procedure;
+    the same clone passes once the seed is removed.
+
+
+    ## Acceptance
+
+
+    - `docs/development.md` names the pre-push release run with its measured runtime.
+
+    - The seeded refusal and the clean pass are both recorded with their command output.
+
+
+    ## Focused verification
+
+
+    `./scripts/run-quality.sh --release` in a clean clone; `scripts/check-docs.sh`.
+
+
+    ## Dependencies
+
+
+    awiki-phase-echo (order only).
+
+
+    ## Non-claims
+
+
+    `release_only` and `slow_corpus` stay deselected from the standing pytest lane.
+    No hosted observer.
+
+    '
+  number: 778
+  url: https://github.com/corca-ai/charness/issues/778
+  body_verified: true
+  verification:
+    command: verify-create
+    repo: corca-ai/charness
+    number: 778
+    body_file: /home/hwidong/codes/charness/charness-artifacts/goal-runs/775/bodies/release-lane-standing-evidence.md
+operation: create-or-reuse-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/775/observations/bootstrap-create-release-lane-standing-evidence-1.started.json
+  started_sha256: 48906c6f2c130f7cd192cb0fc539d51f696e74c12da4ef56444f3d7ef74192a2
+  terminal_path: charness-artifacts/goal-runs/775/observations/bootstrap-create-release-lane-standing-evidence-1.terminal.json
+  terminal_sha256: 469e4273f41b4aa32e296be39833381c1ceff2260c77f096079bba148c6836d8
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-create-release-lane-standing-evidence-1
