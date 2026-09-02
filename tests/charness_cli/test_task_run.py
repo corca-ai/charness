@@ -770,3 +770,26 @@ def test_non_delivery_with_scoped_candidate_is_validated_partial_result(tmp_path
     assert payload["status"] == "validated-partial-result"
     assert payload["execution"]["status"] == "non-delivery"
     assert payload["result_delivery"]["bytes"] == 0
+
+
+def test_task_run_grants_the_worktree_agents_dir_when_it_exists(tmp_path: Path) -> None:
+    """Codex's workspace-write sandbox holds `.agents/` read-only; a lane scoped to an
+    adapter must still be able to write it, so the worktree's copy is granted."""
+    repo = _repo(tmp_path)
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "x-adapter.yaml").write_text("version: 1\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "agents")
+    captured_args = tmp_path / "codex-args.txt"
+    executable = _codex(
+        tmp_path,
+        f"printf '%s\\n' \"$@\" > {shlex.quote(os.fspath(captured_args))}",
+    )
+
+    payload = _run(repo, executable, require_change=False)
+
+    args = captured_args.read_text(encoding="utf-8").splitlines()
+    granted_dirs = [Path(args[index + 1]) for index, arg in enumerate(args) if arg == "--add-dir"]
+    assert granted_dirs[-1] == Path(payload["worktree_path"]) / ".agents"
+    assert payload["codex"]["command"].count("--add-dir") == 4
+    assert payload["writable_dirs"][-1] == str(Path(payload["worktree_path"]) / ".agents")

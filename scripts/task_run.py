@@ -119,14 +119,6 @@ def _terminal(
     return payload
 
 
-
-
-
-
-
-
-
-
 def _complete_task(
     payload: dict[str, Any],
     *,
@@ -170,6 +162,27 @@ def _complete_task(
         git_output=_git_output,
         pass_value=PASS,
     )
+
+
+def _codex_writable_dirs(
+    payload: dict[str, Any],
+    resolved: dict[str, Any],
+    git_worktree_dir: Path,
+    execution_runtime_path: Path,
+) -> list[Path]:
+    """Directories Codex may write beyond the worktree itself.
+
+    Codex's workspace-write sandbox holds a workdir's `.agents/` read-only (measured
+    2026-09-02: two lanes scoped to an adapter ended uncommitted with "read-only").
+    The scope guard decides what a lane may change; the sandbox should not silently
+    veto one directory of it, so the worktree's `.agents/` is granted when present.
+    """
+    writable_dirs = [resolved["git_common_dir"], git_worktree_dir, execution_runtime_path]
+    worktree_agents_dir = Path(payload["worktree_path"]) / ".agents"
+    if worktree_agents_dir.is_dir():
+        writable_dirs.append(worktree_agents_dir)
+    payload["writable_dirs"] = [str(path) for path in writable_dirs]
+    return writable_dirs
 
 
 def run_task(
@@ -275,7 +288,9 @@ def run_task(
     if dry_run:
         payload["status"] = PASS
         payload["approval_eligibility"] = "not-applicable"
-        payload["next_step"] = "Re-run without --dry-run to create the named worktree and execute Codex."
+        payload["next_step"] = (
+            "Re-run without --dry-run to create the named worktree and execute Codex."
+        )
         payload["actions"] = [
             {"id": "create-worktree", "status": "planned"},
             {"id": "codex-exec", "status": "planned", "cwd": str(resolved_target)},
@@ -331,14 +346,13 @@ def run_task(
             os.environ.copy(),
             runtime_root=execution_runtime_path,
         )
+        writable_dirs = _codex_writable_dirs(
+            payload, resolved, git_worktree_dir, execution_runtime_path
+        )
         command = build_codex_command(
             codex_path,
             effort=resolved["effort"],
-            writable_dirs=[
-                resolved["git_common_dir"],
-                git_worktree_dir,
-                execution_runtime_path,
-            ],
+            writable_dirs=writable_dirs,
         )
         payload["git_worktree_dir"] = str(git_worktree_dir)
         payload["codex"]["command"] = command
@@ -348,10 +362,7 @@ def run_task(
         payload["before_exec"] = _snapshot_payload(before_exec)
         preflight_populations = _population_delta({}, before_exec, preflight=True)
         payload["preflight_populations"] = preflight_populations
-        if any(
-            preflight_populations[name]["verdict"] == FAIL
-            for name in ("tracked", "untracked")
-        ):
+        if any(preflight_populations[name]["verdict"] == FAIL for name in ("tracked", "untracked")):
             return _terminal(
                 payload,
                 runtime_path,
@@ -382,7 +393,13 @@ def run_task(
         if abnormal is not None:
             try:
                 candidate_commit = _support._commit_wip_candidate(resolved_target)
-            except (OSError, RuntimeError, TypeError, TaskRunError, subprocess.SubprocessError) as exc:
+            except (
+                OSError,
+                RuntimeError,
+                TypeError,
+                TaskRunError,
+                subprocess.SubprocessError,
+            ) as exc:
                 payload["execution"] = {**execution, "status": abnormal}
                 payload["candidate"] = {
                     "status": "wip",
