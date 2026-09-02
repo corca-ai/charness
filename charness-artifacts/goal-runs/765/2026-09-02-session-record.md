@@ -137,18 +137,21 @@ or surfaces edit must say the parent applies it, or the lane ends uncommitted.
 
 ## Next session, in order (written at the end of the second session)
 
-State: local `main` is 40+ commits ahead of `origin/main` (`a5002ffc9`), all
-unpushed. #768 is integrated and every gate but one was green at the last full
-lane; #774 is integrated and verified. Nothing is closed on GitHub yet.
+State at the end of the second session: local `main` is 41 commits ahead of
+`origin/main` (`a5002ffc9`), all unpushed. #768 and #774 are integrated; the
+last full read-only lane on the tree before the final two follow-ups read
+`78 passed, 2 failed` with pytest green (`8504 passed`), and the two reds
+(a stale attention-state declaration, three reformatted shims) were fixed in
+the two commits that follow. L4 landed (`800c6dbad`): every length overage is
+gone except the named run-quality.sh exemption. Retro:
+`charness-artifacts/retro/2026-09-02-session-retro.md` (four recurrence
+classes seeded, one RCA event). Lane worktrees are all removed.
 
 1. Read "#768 ... integrated and green" and "#774 ... integrated" below, then
    confirm the tree: `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
    (the generated mirror MUST be regenerated after any skill or script edit or
    two mirror tests go red), then `./scripts/run-quality.sh --full --read-only`.
-   The only expected red is `check-python-lengths` naming the L4 files if the
-   L4 lane (`length-768-L4`, scope: goal_run_pickup.py,
-   publish_release_helpers.py, check_artifact_surface_preflight.py,
-   recent_lessons_lib.py) did not land; see the "L4" note below for its state.
+   Expect green; if not, the reds are the tree's, not the procedure's.
 2. Reword the three WIP lane subjects with `/tmp/reword-768.sh` if it still
    exists, else by hand (`git rebase -i a5002ffc9`): b646c21f6 is the P2
    production lane (skill and worktree spawns through the guard), 697975921 is
