@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
+> Last verified: 2026-09-02
 
 `charness worktree` is the structural answer to "agent created a git worktree, hooks went silent, and node_modules was never installed" — and to "eval/bench tools created dozens of throwaway worktrees and never cleaned up."
 

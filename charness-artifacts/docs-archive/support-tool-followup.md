@@ -1,7 +1,7 @@
 # Support Tool Follow-Up
 
-> Status: current
-> Source of truth: this page and its linked executable surfaces
+> Status: retired 2026-09-02
+> Current owner: [Support Skill Policy](../../docs/support-skill-policy.md) owns the current support boundary.
 
 This document captures the next `charness` workstream after the support-skill
 materialization redesign and the resulting support-tool cleanup.
@@ -93,7 +93,7 @@ even if the next session only skims this document.
 
 - `corca-ai/charness#11`
   Landed. `setup` now points installable-surface repos at an explicit probe
-  surface, keeps that guidance narrow, and teaches [`README.md`](../README.md)
+  surface, keeps that guidance narrow, and teaches [`README.md`](../../README.md)
   to name install, healthcheck, discovery, readiness, and local
   discoverability semantics without forcing boilerplate onto repos that do not
   ship installable surfaces.
@@ -160,7 +160,7 @@ Required shape:
 
 Expected repo changes:
 
-- update [skills/public/create-cli/SKILL.md](../skills/public/create-cli/SKILL.md)
+- update [skills/public/create-cli/SKILL.md](../../skills/public/create-cli/SKILL.md)
 - strengthen the relevant `create-cli` references, especially command-surface
   and quality-gate guidance
 - add or tighten a repo-owned smoke/eval check if `charness` now expects this
@@ -168,7 +168,7 @@ Expected repo changes:
 
 Dogfood requirement:
 
-- re-read the root [charness](../charness) CLI and the `tool` subcommands
+- re-read the root [charness](../../charness) CLI and the `tool` subcommands
   through the updated `create-cli` contract
 - if the strengthened skill exposes an honesty gap, fix the repo surface in the
   same slice instead of leaving the gap as theory
@@ -191,14 +191,14 @@ Required shape:
 
 Expected repo changes:
 
-- update [skills/public/quality/SKILL.md](../skills/public/quality/SKILL.md)
+- update [skills/public/quality/SKILL.md](../../skills/public/quality/SKILL.md)
 - strengthen or add `quality` references that encode this posture explicitly
 - add a cheap repo-owned gate only when the next deterministic move is clear
 
 Dogfood requirement:
 
 - run `quality` against `charness` after the skill update
-- update [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
+- update [charness-artifacts/quality/latest.md](../../charness-artifacts/quality/latest.md)
   with the new findings or confirmation that the new lens passes cleanly
 
 ### 2a. `quality`: Executable-Spec And Coverage Fragility Follow-On
@@ -250,7 +250,7 @@ Current ownership:
   integration availability without ranking workflows.
 - Installed skill metadata and model judgment own ordinary workflow selection.
 - `quality` consumes the structured recommendation payload through
-  [`skills/public/quality/scripts/list_tool_recommendations.py`](../skills/public/quality/scripts/list_tool_recommendations.py) when a missing
+  [`skills/public/quality/scripts/list_tool_recommendations.py`](../../skills/public/quality/scripts/list_tool_recommendations.py) when a missing
   validation tool blocks stronger local proof.
 - Integration manifests may now declare:
   - `supports_public_skills`
@@ -273,9 +273,9 @@ Required payload fields:
 
 Likely touch points:
 
-- [scripts/capability_catalog.py](../scripts/capability_catalog.py) — CLI that reads and refreshes the deterministic capability catalog.
+- [scripts/capability_catalog.py](../../scripts/capability_catalog.py) — CLI that reads and refreshes the deterministic capability catalog.
 - shared control-plane helpers under `scripts/`
-- possibly [docs/control-plane.md](./control-plane.md) if the operator-facing
+- possibly [docs/control-plane.md](../../docs/control-plane.md) if the operator-facing
   contract needs one small addition
 
 Dogfood requirement:
@@ -312,7 +312,7 @@ attached to the support-tool follow-up context.
 
 Current honest state:
 
-- validation choice still depends partly on operator judgment plus [`AGENTS.md`](../AGENTS.md)
+- validation choice still depends partly on operator judgment plus [`AGENTS.md`](../../AGENTS.md)
   conventions
 - this is better than ad hoc guessing, but it is not yet a strongly
   repo-owned verifier-selection seam
@@ -321,8 +321,8 @@ Current honest state:
 
 Status:
 
-- landed on 2026-04-14 as [`scripts/select_verifiers.py`](../scripts/select_verifiers.py)
-- the helper now maps changed paths through [`.agents/surfaces.json`](../.agents/surfaces.json), returns
+- landed on 2026-04-14 as [`scripts/select_verifiers.py`](../../scripts/select_verifiers.py)
+- the helper now maps changed paths through [`.agents/surfaces.json`](../../.agents/surfaces.json), returns
   the smallest repo-owned sync/verify bundle, and names uncovered paths as a
   real missing-bundle gap instead of silently re-deciding verification in chat
 

@@ -1,10 +1,10 @@
 # North-Star Overhaul Roadmap
 
-> Status: current
-> Source of truth: this page and its linked executable surfaces
+> Status: retired 2026-09-02
+> Current owner: [operator acceptance](../../docs/operator-acceptance.md) records Goal Run parent issue #765 as the active plan of record.
 
 Plan of record for realigning the charness harness to
-[`docs/design-north-star.md`](./design-north-star.md). Authored 2026-06-18 after
+[`docs/design-north-star.md`](../../docs/design-north-star.md). Authored 2026-06-18 after
 the #386 pilot (v0.52.4). **Execution is post-compaction**; this is the durable
 pickup so the next session continues without re-deriving it.
 
@@ -33,7 +33,7 @@ concept get clearer.
 > **Result (2026-06-20): PARTIALLY CONFIRMED → proceed to Phase 1.** Back-test
 > run as a dynamic workflow (7 per-issue classifiers + bloat test + synthesis +
 > adversarial verify); full note:
-> [phase0 diagnosis back-test](../charness-artifacts/audit/2026-06-20-north-star-phase0-diagnosis-backtest.md).
+> [phase0 diagnosis back-test](../../charness-artifacts/audit/2026-06-20-north-star-phase0-diagnosis-backtest.md).
 > The diagnosis is **not contradicted** (0/7) and is supported by the
 > irreversible-boundary cases (firm base: #359/#363/#386 high-conf; #381 med;
 > #385 reversible mirror-image; #376/#382 neutral-reversible). Two corrections the

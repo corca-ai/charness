@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
+> Last verified: 2026-09-02
 
 This document owns the detail behind the parallel-work rule in
 [AGENTS.md](../AGENTS.md). The root file states the default; this one states

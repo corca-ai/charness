@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import argparse
+import re
 import runpy
 import shlex
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
@@ -75,6 +77,26 @@ def run_help(repo_root: Path, command: tuple[str, ...]) -> str:
     return (result.stdout + result.stderr).rstrip()
 
 
+_LAST_VERIFIED_RE = re.compile(r"^> Last verified: (\d{4}-\d{2}-\d{2})$", re.MULTILINE)
+
+
+def last_verified_date(repo_root: Path) -> str:
+    """Carry the checked-in page's `Last verified` date so regeneration is deterministic.
+
+    Every `docs/` page owes the line (`check-docs.sh` refuses one without it),
+    and a generated page cannot stamp today's date without making the
+    command-docs gate disagree with the checkout on every other day. The date
+    is therefore read from the page as checked in; a first render, with no page
+    to read, stamps the current UTC date once.
+    """
+    page = repo_root / "docs" / "cli-reference.md"
+    if page.is_file():
+        match = _LAST_VERIFIED_RE.search(page.read_text(encoding="utf-8"))
+        if match:
+            return match.group(1)
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+
 def render_cli_reference(repo_root: Path) -> str:
     commands = commands_from_contract(repo_root)
     with ThreadPoolExecutor(max_workers=len(commands)) as executor:
@@ -89,6 +111,7 @@ def render_cli_reference(repo_root: Path) -> str:
         "",
         "> Status: generated",
         "> Source of truth: `charness` parser and command-doc contract",
+        f"> Last verified: {last_verified_date(repo_root)}",
         "",
         "This file is generated from `./charness --help` and subcommand help output in the current checkout.",
         "Operational command payloads, including structured command failures, are emitted as a single YAML document on stdout; progress and unstructured fatal errors use stderr. Default operational responses are compact summaries: aggregate tool operations report counts and attention tool ids, not every tool record. This replaces the former aggregate `results` payload: automation that consumes individual tool records must request `--detail`. Commands with aggregated host or tool diagnostics expose the full evidence only through `--detail`, which still emits one YAML document.",

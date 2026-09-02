@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and the executable commands it names
+> Last verified: 2026-09-02
 
 This page answers one question: how do we make a change, learn whether it
 worked, and leave the next change easy to start? It is intentionally short.

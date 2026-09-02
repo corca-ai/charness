@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and the executable commands it links
+> Last verified: 2026-09-02
 
 This page answers one question: what is the shortest safe path for changing and
 dogfooding Charness itself? Detailed contracts stay with their owners.

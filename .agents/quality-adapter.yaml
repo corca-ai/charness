@@ -789,7 +789,6 @@ standing_doc_provenance:
     - docs/provenance-placement.md
     - docs/prescribed-skill-closeout-contract.md
   tracking_allowlist:
-    - docs/support-tool-followup.md
     - docs/deferred-decisions.md
     - docs/artifact-policy.md
   inline_allow_marker: provenance-allow
@@ -815,15 +814,8 @@ regenerable_facts:
     docs/validator-timing-layers.md: >-
       each row cites the commit that MOVED a gate between timing layers; the sha is
       provenance for a past decision, not a claim about today's tree.
-    docs/duplicate-detection-strategy.md: >-
-      pins the jscpd version the documented thresholds were calibrated against.
     docs/docs-graph-checks.md: >-
       pins the awiki version the documented behaviour was observed against.
-    docs/north-star-overhaul-roadmap.md: >-
-      a dated planning record kept for its reasoning; its counts describe the state
-      the roadmap was written from.
-    docs/testability-dsl-initiative.md: >-
-      a dated initiative record; its counts describe the state it was scoped from.
     docs/prescribed-skill-closeout-contract.md: >-
       quotes the corpus size a contract clause was sized against.
     skills/public/create-cli/references/intent-first-grammar.md: >-

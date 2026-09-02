@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
+> Last verified: 2026-09-02
 
 This document explains where `charness` should keep different kinds of
 knowledge. The goal is not one perfect file pattern. The goal is a stable

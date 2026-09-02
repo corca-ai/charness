@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
+> Last verified: 2026-09-02
 
 Two tools look at the same markdown and answer different questions. This page
 says which, so neither is promoted, trusted, or retired on a guess about what the
@@ -29,7 +30,7 @@ question, honestly, and nobody was asking this one.
 | Does a markdown link resolve to a real file? | **YES — hard fail.** `broken relative link` | **NO.** Reports `ok` with a link to a page that does not exist. Surfaced only by the separate `awiki wanted`, and framed as a page you might want to create rather than as an error. |
 | Is the link form right (`./` prefix, no absolute paths)? | **YES — hard fail.** | No opinion. |
 | Is a repo path backticked instead of linked? | **YES — hard fail**, with a reason tag (`pathy`, `prefix`, `unique-basename`, `unmarked-tree`, `portable-absolute`). | No opinion. |
-| Does a documented command name a script that exists? | **YES — hard fail**, in fences and inline spans alike. | No opinion. Treats `../scripts/tool.py` as a wanted wiki page even when the file exists, because it only models markdown pages inside its root. |
+| Does a documented command name a script that exists? | **YES — hard fail**, in fences and inline spans alike. | No opinion. A hypothetical `scripts/<name>.py` is outside its model because it only treats Markdown pages inside its root as wiki pages. |
 | Is a page reachable from the rest of the docs? | **NO.** It validates each link where it is written; reachability is never computed. | **YES — hard fail.** `orphans=N`, and names each page. |
 | Is a cluster of pages cut off from the main component? | **NO.** | **YES — hard fail.** `islands=N`, plus `largest_component_ratio`. |
 | Is a page an empty stub? | No opinion. | **Metric only.** `content_coverage` drops; lint still reports `ok`. |

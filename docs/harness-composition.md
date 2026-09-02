@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
+> Last verified: 2026-09-02
 
 This document is the short boundary map for how `charness` composes repo-owned
 guidance. It does not replace the owning docs. It points to them.

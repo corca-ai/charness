@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
+> Last verified: 2026-09-02
 
 This document defines the first host-packaging contract for exporting the
 host-neutral `charness` repo into Claude-compatible, Codex-compatible, and

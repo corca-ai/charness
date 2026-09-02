@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: the linked executable observers and shared checker
+> Last verified: 2026-09-02
 
 This contract covers the two remaining places where a workflow requires proof
 that a named review actually ran. It does not make every recommendation a gate,

@@ -30,7 +30,8 @@ goal navigation; the parent issue is the resume state.
 
 When the user requests autonomous continuation, carry on across local
 checkpoints and take the next locally decidable slice. Pause only for a real
-product/policy decision, an irreversible external side effect, unavailable
+product/policy decision, an irreversible external side effect (the boundary
+definition is owned by `<authoring-repo>/docs/design-north-star.md`), unavailable
 stronger proof, or conflicting evidence.
 
 ## Change
@@ -67,7 +68,8 @@ guidance in `../../shared/references/prescribed-path-self-test.md` and
 additional universal gates.
 
 Additional proof is conditional. A change to verdict logic, a proof surface,
-an irreversible external mutation, a release surface, or a deletion with
+an irreversible external mutation as the north star defines it, a release
+surface, or a deletion with
 uncertain consumers needs that surface's owner and readback. Ordinary
 reversible local work does not require a fresh-eye review, changed-line proof,
 or a separate closeout ledger. Use `prove` when the user or the boundary

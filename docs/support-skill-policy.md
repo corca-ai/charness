@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
+> Last verified: 2026-09-02
 
 This document defines when `charness` should ship a support skill, when it
 should consume an upstream one, and when a capability should stay an external

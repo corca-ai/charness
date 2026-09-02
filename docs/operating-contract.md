@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and the executable surfaces it names
+> Last verified: 2026-09-02
 
 Charness exists to help an agent reach a correct result with less rediscovery.
 Every contract below must either prevent a real escape or make the next action
@@ -39,7 +40,7 @@ start is not proof of a clean finish, so the runner reports both.
 - Changed-line mutation proof, full-suite proof, and artifact ledgers are not
   universal implementation requirements. Use them when a verdict/proof surface,
   release, or claim actually depends on them.
-- A proof-surface or irreversible external change gets the narrow additional
+- A proof-surface or [irreversible external change](./design-north-star.md#the-boundary-load-bearing) gets the narrow additional
   evidence that can catch its failure. A routine reversible code/doc change may
   finish with deterministic focused proof; it does not need a fresh-eye review
   merely because it is large.
@@ -51,8 +52,9 @@ start is not proof of a clean finish, so the runner reports both.
 Issue writes are allowed only through the issue provider and must read the exact
 target back after mutation. A close must state whether the issue was completed,
 not planned, or superseded; external-repository confirmation is not a reason to
-keep an issue open. Additional review is reserved for a material, irreversible,
-security, release, or uncertain deletion boundary.
+keep an issue open. Additional review is reserved for a material,
+[irreversible](./design-north-star.md#the-boundary-load-bearing), security,
+release, or uncertain deletion boundary.
 
 Push, pull request creation, reopening, tagging, version changes, release
 publication, installation, and evaluator execution require an explicit request

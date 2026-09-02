@@ -1,7 +1,7 @@
 # Retro Self-Improvement Spec
 
-> Status: current
-> Source of truth: this page and its linked executable surfaces
+> Status: retired 2026-09-02
+> No successor; dated record.
 
 ## Problem
 
@@ -27,13 +27,13 @@ explicitly ask for it or when a maintainer manually persists the lesson.
 
 The first implementation batch has landed:
 
-- [`probe_host_logs.py`](../skills/public/retro/scripts/probe_host_logs.py) reports honest Claude/Codex metric availability
-- [`refresh_recent_lessons.py`](../skills/public/retro/scripts/refresh_recent_lessons.py) refreshes [`recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) from the latest
+- [`probe_host_logs.py`](../../skills/public/retro/scripts/probe_host_logs.py) reports honest Claude/Codex metric availability
+- [`refresh_recent_lessons.py`](../../skills/public/retro/scripts/refresh_recent_lessons.py) refreshes [`recent-lessons.md`](../../charness-artifacts/retro/recent-lessons.md) from the latest
   durable retro artifact
-- [`persist_retro_artifact.py`](../skills/public/retro/scripts/persist_retro_artifact.py) now auto-refreshes the digest when a durable
+- [`persist_retro_artifact.py`](../../skills/public/retro/scripts/persist_retro_artifact.py) now auto-refreshes the digest when a durable
   retro artifact is written
-- `setup` can seed [`.agents/retro-adapter.yaml`](../.agents/retro-adapter.yaml) and
-  [`charness-artifacts/retro/recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) for repos that opt into durable retro
+- `setup` can seed [`.agents/retro-adapter.yaml`](../../.agents/retro-adapter.yaml) and
+  [`charness-artifacts/retro/recent-lessons.md`](../../charness-artifacts/retro/recent-lessons.md) for repos that opt into durable retro
   memory
 - `quality` now treats skill ergonomics as an explicit lens with an advisory
   inventory helper
@@ -49,7 +49,7 @@ repos, or deepening the ergonomics and trigger seams already described.
 - Keep retrospective memory local-first and explicit. No mandatory remote
   telemetry, no hidden background services, and no host-specific global writes
   outside declared adapter paths.
-- Keep [`charness-artifacts/retro/recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) as the stable compact digest path
+- Keep [`charness-artifacts/retro/recent-lessons.md`](../../charness-artifacts/retro/recent-lessons.md) as the stable compact digest path
   when a repo opts into this pattern.
 - Implement the host-log probe as a standalone helper first. `retro` may
   consume it later, but this slice should not make host-log collection an
@@ -70,9 +70,9 @@ repos, or deepening the ergonomics and trigger seams already described.
   expose them, `retro` must say so plainly and fall back to portable proxies.
 - Before labeling broad exploration as waste, `retro` must first identify phase
   intent and the triage lock. Portable interpretation rules live in
-  [`phase-aware-efficiency.md`](../skills/public/retro/references/phase-aware-efficiency.md);
+  [`phase-aware-efficiency.md`](../../skills/public/retro/references/phase-aware-efficiency.md);
   Codex-specific cost maps such as
-  [`audit_codex_session.py`](../skills/public/retro/scripts/audit_codex_session.py)
+  [`audit_codex_session.py`](../../skills/public/retro/scripts/audit_codex_session.py)
   remain host-specific evidence producers and must not define the public waste
   rule.
 - Expand `quality` so skill ergonomics are an explicit review lens when a repo
@@ -112,7 +112,7 @@ If this work is implemented badly, the likely failure modes are:
 - Should `impl` trigger a short session retro only on explicit misses and
   corrections, or also after bounded slice closeout when the repo opted into
   automatic retrospective accumulation?
-- Should [`recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) be rewritten entirely from the latest retro, or
+- Should [`recent-lessons.md`](../../charness-artifacts/retro/recent-lessons.md) be rewritten entirely from the latest retro, or
   updated as a bounded rolling digest that preserves a small set of recurring
   traps?
 - How much of skill ergonomics should live in `quality` versus
@@ -161,10 +161,10 @@ If this work is implemented badly, the likely failure modes are:
   declared local script returns real data, and can explicitly report
   `unavailable` when the host does not expose that data.
 - The first implementation slice ships a standalone helper at
-  [`skills/public/retro/scripts/probe_host_logs.py`](../skills/public/retro/scripts/probe_host_logs.py).
+  [`skills/public/retro/scripts/probe_host_logs.py`](../../skills/public/retro/scripts/probe_host_logs.py).
 - The second implementation slice ships a standalone helper at
-  [`skills/public/retro/scripts/refresh_recent_lessons.py`](../skills/public/retro/scripts/refresh_recent_lessons.py).
-- The third implementation slice ships [`skills/public/setup/scripts/seed_retro_memory.py`](../skills/public/setup/scripts/seed_retro_memory.py)
+  [`skills/public/retro/scripts/refresh_recent_lessons.py`](../../skills/public/retro/scripts/refresh_recent_lessons.py).
+- The third implementation slice ships [`skills/public/setup/scripts/seed_retro_memory.py`](../../skills/public/setup/scripts/seed_retro_memory.py)
   so new repos can opt into the same seam without hand-writing it.
 - A repo-owned helper can probe Claude/Codex local logs and return structured
   availability status for:
@@ -181,7 +181,7 @@ If this work is implemented badly, the likely failure modes are:
 - `setup` tests prove that the retro memory seam can be scaffolded into a
   fresh repo.
 - `retro` tests prove that the digest refresh helper updates
-  [`recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) deterministically from a bounded source artifact.
+  [`recent-lessons.md`](../../charness-artifacts/retro/recent-lessons.md) deterministically from a bounded source artifact.
 - Host-log probe tests prove honest degradation:
   unavailable metrics return structured `unavailable`, not fake zeros.
 - `python3 skills/public/retro/scripts/probe_host_logs.py --home <fixture-home>`
@@ -200,12 +200,12 @@ If this work is implemented badly, the likely failure modes are:
    scope, using existing `skill-quality` and `public-skill-validation`
    posture as the base. Landed.
 2. Decide whether a thin retro orchestration helper should call
-   [`refresh_recent_lessons.py`](../skills/public/retro/scripts/refresh_recent_lessons.py) automatically when durable retro artifacts are
+   [`refresh_recent_lessons.py`](../../skills/public/retro/scripts/refresh_recent_lessons.py) automatically when durable retro artifacts are
    updated, or whether the current explicit script boundary is the intended
    product posture. Landed in favor of auto-refresh through
-   [`persist_retro_artifact.py`](../skills/public/retro/scripts/persist_retro_artifact.py).
+   [`persist_retro_artifact.py`](../../skills/public/retro/scripts/persist_retro_artifact.py).
 3. Decide whether `setup` should also wire the recent-lessons seam into
-   scaffolded [`AGENTS.md`](../AGENTS.md) memory by default when retro memory is enabled.
+   scaffolded [`AGENTS.md`](../../AGENTS.md) memory by default when retro memory is enabled.
    Landed in favor of keeping the root file minimal and leaving selection to
    `retro`.
 

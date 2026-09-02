@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
+> Last verified: 2026-09-02
 
 Know the deterministic constraint *before* you author into a gated surface, so an
 existing gate (or a fresh-eye reviewer) does not catch an avoidable rework cycle
@@ -225,7 +226,7 @@ These are **not** synonyms, and the distinction is load-bearing.
   refuses it. That is the counted defect this whole convention exists to stop,
   and it is the only shape of `<repo-root>/` that can fail a gate. Absence alone
   never fails — a skill may correctly say "point your gate at
-  `<repo-root>/scripts/run_pre_push.py`" about a file only the consumer has.
+  a hypothetical `scripts/<name>.py` about a file only the consumer has.
   When the basename exists BOTH in a package and at the authoring root the
   reference is genuinely ambiguous, and ambiguous is not blockable.
 - `<authoring-repo>/` means *the charness repo itself* — "this is mine, not

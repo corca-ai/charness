@@ -2,6 +2,7 @@
 
 > Status: conditional — approved design target, not current implementation
 > Source of truth: the active issue-native achieve goal and planning contract
+> Last verified: 2026-09-02
 > Last reviewed: 2026-08-26
 
 This page answers one question: how should Charness model a long-running goal

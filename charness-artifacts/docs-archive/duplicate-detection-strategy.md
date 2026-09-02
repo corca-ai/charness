@@ -1,7 +1,7 @@
 # Duplicate Detection Strategy
 
-> Status: current
-> Source of truth: this page and its linked executable surfaces
+> Status: retired 2026-09-02
+> Current owner: the [quality skill](../../skills/public/quality/SKILL.md) owns the current duplicate-signal policy.
 
 This note records the intended duplicate-detection posture for Charness and for
 repos that consume the `quality` skill.
@@ -13,7 +13,7 @@ repos that consume the `quality` skill.
 Document near-duplicate review is owned by nose's Markdown duplication engine
 (same-language char-n-gram MinHash + line-level witnesses, nose >= 0.13.0),
 surfaced as the advisory
-[`inventory_doc_duplicates.py`](../skills/public/quality/scripts/inventory_doc_duplicates.py)
+[`inventory_doc_duplicates.py`](../../skills/public/quality/scripts/inventory_doc_duplicates.py)
 quality phase (`doc-duplicates`). It replaced the bespoke difflib whole-file
 guard, which only caught ~0.98 whole-file similarity and missed per-line drift
 that nose's tiered families and span witnesses surface.
@@ -28,13 +28,13 @@ that nose's tiered families and span witnesses surface.
   so an absent or pre-Markdown scanner is never a silent all-clear.
 - Drift baseline: nose's native `--baseline` filters only the code-clone view, not
   the top-level `markdown` array, so the advisory keeps its own signature baseline
-  ([`charness-artifacts/quality/doc-nose-baseline.json`](../charness-artifacts/quality/doc-nose-baseline.json),
+  ([`charness-artifacts/quality/doc-nose-baseline.json`](../../charness-artifacts/quality/doc-nose-baseline.json),
   sorted member `path#heading` tuples — line-number stable) and reports only
   new/changed families. Re-baseline with `--write-baseline`; never treat the
   accepted count as a reduction target without a reviewed-candidate classification.
 
 nose is a REQUIRED install (see
-[`integrations/tools/nose.json`](../integrations/tools/nose.json)): there is no
+[`integrations/tools/nose.json`](../../integrations/tools/nose.json)): there is no
 difflib fallback, so a healthy nose >= 0.13.0 must be present for doc
 near-duplicate review to run, in Charness and in consumer repos alike.
 
@@ -52,7 +52,7 @@ code-clone backlog.
 If adopted, `jscpd` should start as a separate validation support binary, not as
 a replacement for either nose surface:
 
-- add a `jscpd` manifest under [`integrations/tools/`](../integrations/tools/)
+- add a `jscpd` manifest under [`integrations/tools/`](../../integrations/tools/)
   with `quality` as the supported public skill and `validation` as the
   recommendation role
 - expose install, update, doctor, and degradation through `charness tool`
@@ -85,12 +85,12 @@ code-only advisory or baseline/no-increase wrapper.
 The same required `nose` binary that backs document near-duplicate review in
 layer 1 also ranks semantic and near-structural code clone families as
 refactoring proposals, surfaced as the advisory
-[`inventory_nose_clones.py`](../skills/public/quality/scripts/inventory_nose_clones.py)
+[`inventory_nose_clones.py`](../../skills/public/quality/scripts/inventory_nose_clones.py)
 quality phase (`inventory-nose-clones`).
 
 - Code clones (`nose query`, advisory `inventory-nose-clones`) rank refactoring
   candidates with their own
-  [`charness-artifacts/quality/nose-baseline.json`](../charness-artifacts/quality/nose-baseline.json)
+  [`charness-artifacts/quality/nose-baseline.json`](../../charness-artifacts/quality/nose-baseline.json)
   drift baseline (an id-set of accepted `family_id`s; nose 0.13.3 removed
   `nose scan`, so both the advisory and the dup-ratchet gate now run `nose query`).
 - Document near-duplicates (`nose query` Markdown families, advisory
@@ -112,7 +112,7 @@ nose query --root scripts --root skills/public --root skills/support \
   --mode syntax,semantic,near --min-size 24 --format json
 ```
 
-Prefer the wrapper [`inventory_nose_clones.py`](../skills/public/quality/scripts/inventory_nose_clones.py)
+Prefer the wrapper [`inventory_nose_clones.py`](../../skills/public/quality/scripts/inventory_nose_clones.py)
 over a hand-run query: it resolves scope, applies the id-set drift baseline, and
 refuses to represent an incomplete scope as a completed scan. Use repeatable `--exclude <glob>` (for example,
 `--exclude '**/resolve_adapter.py'`) or a structured `--ignore-file <file>` for

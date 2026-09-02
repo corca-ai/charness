@@ -1,7 +1,7 @@
 # AI/ML Engineering Patterns For Charness
 
-> Status: current
-> Source of truth: this page and its linked executable surfaces
+> Status: retired 2026-09-02
+> No successor; dated record.
 
 This page records the engineering patterns that are current in Charness. It
 does not claim product-success measurement; consuming products own that data.

@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this index plus the linked owning page
-> Last verified: 2026-08-27
+> Last verified: 2026-09-02
 
 This is the flat documentation wiki. Start with the smallest page that answers
 the current question; dated evidence, proposals, and retrospectives belong in
@@ -11,6 +11,7 @@ is the composite docs receipt.
 
 ## Orientation
 
+- [README](../README.md) — user guide for installing and using Charness.
 - [Documentation principles](./documentation-principles.md) — how current docs are written.
 - [Design north star](./design-north-star.md) — the governing product/workflow standard.
 - [Workflow routes](./workflow-routes.md) — map intent to a public skill.
@@ -48,8 +49,6 @@ is the composite docs receipt.
 - [Prescribed skill closeout](./prescribed-skill-closeout-contract.md) — closeout floor.
 - [Narrative and announcement boundary](./narrative-announcement-boundary.md) — story/communication split.
 - [Proof semantics](./proof-semantics-adapter.md) — verdict and non-claim vocabulary.
-- [README proof ledger](./readme-proof.md) — claim evidence.
-- [Duplicate detection](./duplicate-detection-strategy.md) — duplication checks.
 - [Docs graph checks](./docs-graph-checks.md) — reachability evidence and limits.
 
 ## Operator and product surfaces
@@ -58,12 +57,6 @@ is the composite docs receipt.
 - [Progressive operator path](./operator-progressive-path.md) — capability horizons.
 - [CLI reference](./cli-reference.md) — generated command reference.
 
-## Current records
+## Current contracts
 
 - [Deferred decisions](./deferred-decisions.md) — open decision register.
-- [North-star overhaul roadmap](./north-star-overhaul-roadmap.md) — active roadmap.
-- [Evergreen documentation architecture](../charness-artifacts/spec/2026-08-25-docs-architecture-evergreen.md) — migration contract.
-- [Support tool follow-up](./support-tool-followup.md) — support workstream.
-- [Testability DSL initiative](./testability-dsl-initiative.md) — quality work record.
-- [Retro self-improvement](./retro-self-improvement-spec.md) — memory design.
-- [AI/ML engineering patterns](./ai-ml-engineering-patterns.md) — engineering research.

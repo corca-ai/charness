@@ -61,7 +61,7 @@ def test_retro_auto_trigger_skips_non_matching_slice() -> None:
         "--repo-root",
         str(ROOT),
         "--paths",
-        "docs/retro-self-improvement-spec.md",
+        "charness-artifacts/docs-archive/retro-self-improvement-spec.md",
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)

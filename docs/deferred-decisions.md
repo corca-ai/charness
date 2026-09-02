@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
+> Last verified: 2026-09-02
 
 This document is the canonical closure surface for deferred product-boundary
 decisions that were previously carried in session state.

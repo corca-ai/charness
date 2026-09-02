@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
+> Last verified: 2026-09-02
 
 When a Charness skill gates work on "did the current change touch a repo
 seam that matters here", express that gate as **subscription to declared

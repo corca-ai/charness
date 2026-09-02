@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
+> Last verified: 2026-09-02
 
 This document fixes the deeper-validation policy for current `charness` public
 skills without making a standalone evaluator part of the normal local bar.

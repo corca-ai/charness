@@ -2,10 +2,10 @@
 
 > Status: conditional (operator takeover path)
 > Source of truth: functional checks, the active Goal Run parent/cursor, and the active plan
-> Last verified: 2026-08-25
+> Last verified: 2026-09-02
 
 This document translates active work into operator-owned acceptance runs. The
-current plan of record is [north-star-overhaul-roadmap.md](./north-star-overhaul-roadmap.md).
+current plan of record is the active [Goal Run parent issue #765](https://github.com/corca-ai/charness/issues/765).
 Use this page when you want to take over one item directly instead of asking an
 agent to rediscover the whole repo state. A consumer may add an optional
 roadmap surface when active ordered work requires it.
@@ -17,7 +17,6 @@ Run these first at the repo root:
 
 ```bash
 git status --short
-sed -n '1,260p' docs/north-star-overhaul-roadmap.md
 ./scripts/run-quality.sh
 ```
 

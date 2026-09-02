@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and the linked executable surfaces
+> Last verified: 2026-09-02
 
 This page describes the smallest useful operating path as familiarity grows.
 It is guidance, not a certification ladder.

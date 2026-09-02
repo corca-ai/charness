@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
+> Last verified: 2026-09-02
 
 This document defines the control-plane contract for external tools,
 support-owned runtime capability metadata, and upstream support-skill reuse in

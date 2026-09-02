@@ -20,7 +20,7 @@ Relation: this refines the already-portable spawn-smell that
 ``skills/public/quality/scripts/standing_test_economics_lib.py`` detects
 multi-language (``nested_cli_fanout``). The genuine stack-specific delta added
 here is ``is_import_safe`` + in-repo target resolution — deciding which spawns
-are in-process-convertible. See ``docs/testability-dsl-initiative.md``.
+are in-process-convertible. See ``skills/public/quality/references/testability-and-selection.md``.
 """
 
 from __future__ import annotations

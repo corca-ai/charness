@@ -1,12 +1,12 @@
 # Testability + Test-DSL Initiative
 
-> Status: current
-> Source of truth: this page and its linked executable surfaces
+> Status: retired 2026-09-02
+> Current owner: [the quality testability reference](../../skills/public/quality/references/testability-and-selection.md) owns the portable guidance.
 
 Working record for the test-quality effort started 2026-06-03. Tracks the
 original intent, the decisions taken, what shipped, and the remaining
 obligations. Update this doc as slices land; link it from
-[docs/index.md](./index.md).
+[docs/index.md](../../docs/index.md).
 
 ## Original Intent
 
@@ -36,7 +36,7 @@ Two different "goods" were being conflated:
 The DSL improves **B, not A**. A subprocess test stays a subprocess test after
 you prettify it; type/mutation tools still cannot see across the process
 boundary (coverage CAN: corrected 2026-07-30 while closing #465, by measurement —
-[mutation_sampling_lib.py](../scripts/mutation_sampling_lib.py) writes a `sitecustomize` calling
+[mutation_sampling_lib.py](../../scripts/mutation_sampling_lib.py) writes a `sitecustomize` calling
 `coverage.process_startup()` and exports `COVERAGE_PROCESS_START`, so a child
 that inherits the environment and runs an in-repo script IS attributed. This
 document previously claimed that hook did not exist. Coverage is still lost when
@@ -48,7 +48,7 @@ coverage measurement just overturned, so treat it as unverified rather than as
 established.
 So **DSL usefulness is roughly the inverse of testability**: the heavy
 `seed_repo` + subprocess tests it helps most are exactly the lower-testability
-zone the [testability lens](../skills/public/quality/references/testability-and-selection.md)
+zone the [testability lens](../../skills/public/quality/references/testability-and-selection.md)
 flags as `Weak`. The DSL is an accelerator that must not *comfort-pave* that
 structure — hence pairing it with a testability sensor.
 
@@ -69,26 +69,26 @@ structure — hence pairing it with a testability sensor.
 
 ## Done
 
-- **Slice 1 — test DSL** (commit `1e857cf0`): [`tests/dsl.py`](../tests/dsl.py)
+- **Slice 1 — test DSL** (commit `1e857cf0`): [`tests/dsl.py`](../../tests/dsl.py)
   `Repo` (frozen, lazy, composable tmp-repo spec) + `Result` (chainable
   assertions) + `run_at`/`run_raw`; self-test
-  [`tests/test_dsl.py`](../tests/test_dsl.py); migrated
-  [`test_retro_lesson_selection_index.py`](../tests/quality_gates/test_retro_lesson_selection_index.py)
+  [`tests/test_dsl.py`](../../tests/test_dsl.py); migrated
+  [`test_retro_lesson_selection_index.py`](../../tests/quality_gates/test_retro_lesson_selection_index.py)
   (4 tests) + one `validate_integrations` function. Verified (ruff/lengths/attention + 2094-pass subset). Critique:
-  [test-dsl-first-slice](../charness-artifacts/critique/2026-06-03-test-dsl-first-slice-critique.md).
+  [test-dsl-first-slice](../../charness-artifacts/critique/2026-06-03-test-dsl-first-slice-critique.md).
 - **Slice 2 — boundary-bypass advisory probe** (this commit):
-  [`scripts/inventory_boundary_bypass_lib.py`](../scripts/inventory_boundary_bypass_lib.py)
+  [`scripts/inventory_boundary_bypass_lib.py`](../../scripts/inventory_boundary_bypass_lib.py)
   plus a thin CLI and an in-process test (dogfoods the principle: it tests the
   probe by importing the `_lib`, building synthetic repos via the DSL's
   `build()`). Detects
   tests that spawn an import-safe entrypoint when in-process reachable. Advisory
   only. **Baseline on this repo: 134 candidates (121 "convertible", 13 likely
   keep-boundary) across 235 test files.** Critique:
-  [boundary-bypass-probe](../charness-artifacts/critique/2026-06-03-boundary-bypass-probe-critique.md).
+  [boundary-bypass-probe](../../charness-artifacts/critique/2026-06-03-boundary-bypass-probe-critique.md).
 - **Slice 3 — the ratchet** (commit `43e70e4c`, delivers goal 2): committed
-  baseline [`scripts/boundary-bypass-baseline.json`](../scripts/boundary-bypass-baseline.json)
+  baseline [`scripts/boundary-bypass-baseline.json`](../../scripts/boundary-bypass-baseline.json)
   under a `no_increase` policy, a `# why:`-rationale exemption list
-  [`scripts/boundary-bypass-exemptions.txt`](../scripts/boundary-bypass-exemptions.txt),
+  [`scripts/boundary-bypass-exemptions.txt`](../../scripts/boundary-bypass-exemptions.txt),
   and the standing `check-boundary-bypass-ratchet` gate wired in `run-quality.sh`.
   The ratchet-correctness fixes landed with it (separate internally-spawning
   targets, drop the `.read_text(` over-match, rename "candidate"), which is why
@@ -104,7 +104,7 @@ structure — hence pairing it with a testability sensor.
   line, not a reduction: 57 convertible candidates remain. Lowering it requires
   real in-process conversions (goal 1, below), not exemptions.
 - **Placement honesty:** boundary-spawn detection is *not* inherently
-  un-portable — [`standing_test_economics_lib.py`](../skills/public/quality/scripts/standing_test_economics_lib.py)
+  un-portable — [`standing_test_economics_lib.py`](../../skills/public/quality/scripts/standing_test_economics_lib.py)
   already ships a multi-language spawn detector (`nested_cli_fanout`) inside the
   public skill. This probe is the *stack-specific refinement* of that smell
   (`is_import_safe` + in-repo target resolution), which is the genuine
@@ -120,29 +120,29 @@ structure — hence pairing it with a testability sensor.
 
 1. **Convert the backlog** (goal 1, raises A): the import-safe `inventory_*`
    cluster (subprocess → in-process `*_lib`/`main()` calls, like
-   [`test_check_coverage_inventory.py`](../tests/quality_gates/test_check_coverage_inventory.py)
+   [`test_check_coverage_inventory.py`](../../tests/quality_gates/test_check_coverage_inventory.py)
    already does). Use `Repo().build()` for the
    on-disk fixture without `run_at`. Skip targets that shell out internally.
    *Done (2026-06-05):* the prior slice converted
-   [`test_quality_standing_gate_verbosity.py`](../tests/quality_gates/test_quality_standing_gate_verbosity.py)
+   [`test_quality_standing_gate_verbosity.py`](../../tests/quality_gates/test_quality_standing_gate_verbosity.py)
    (direct `inventory()` lib call) and
-   [`test_quality_lint_ignores.py`](../tests/quality_gates/test_quality_lint_ignores.py)
+   [`test_quality_lint_ignores.py`](../../tests/quality_gates/test_quality_lint_ignores.py)
    (in-process `main()` with captured stdout) — the two documented patterns
    (baseline convertible 57→55). This slice converted the five remaining
    import-safe `inventory_*` tests — `inventory_adapter_gate_design` (the
-   [`test_quality_bootstrap.py`](../tests/quality_gates/test_quality_bootstrap.py)
+   [`test_quality_bootstrap.py`](../../tests/quality_gates/test_quality_bootstrap.py)
    call site only; its other spawns stay at the boundary),
    `_brittle_source_guards`, `_cli_side_effect_probes`,
    `_public_spec_quality`, `_skill_ergonomics` — all via the captured-`main()`
    pattern, skipping the internally-spawning `_entrypoint_docs_ergonomics` and
    `_ubiquitous_language` per the boundary rule.
-   [`inventory_public_spec_quality.py`](../skills/public/quality/scripts/inventory_public_spec_quality.py) and [`inventory_cli_side_effect_probes.py`](../skills/public/quality/scripts/inventory_cli_side_effect_probes.py)
+   [`inventory_public_spec_quality.py`](../../skills/public/quality/scripts/inventory_public_spec_quality.py) and [`inventory_cli_side_effect_probes.py`](../../skills/public/quality/scripts/inventory_cli_side_effect_probes.py)
    gained the sibling-`*_lib` `__file__` `sys.path` bootstrap their peers already
    carried, so they are now genuinely in-process importable (goal A). Baseline:
    convertible 55→51, candidate 94→90, keys 157→152 — five real conversions, no
    exemptions.
    *Per conversion:* review the structured delta, then regenerate the
-   [boundary-bypass baseline](../scripts/boundary-bypass-baseline.json) to canonical
+   [boundary-bypass baseline](../../scripts/boundary-bypass-baseline.json) to canonical
    form with `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .
    --write-baseline --confirm-baseline-delta` (the canonical writer remains
    `inventory_boundary_bypass_lib.find_boundary_bypass_candidates` →
@@ -150,14 +150,14 @@ structure — hence pairing it with a testability sensor.
    plugin mirror — the `no_increase` ratchet tolerates decreases silently, so skipping
    the regen leaves a stale baseline that never records the convertible-count drop.
 2. **`quality` lens boost** (goal 3, portable): extend
-   [testability-and-selection](../skills/public/quality/references/testability-and-selection.md)
+   [testability-and-selection](../../skills/public/quality/references/testability-and-selection.md)
    to name (a) DSL ergonomics signals — lazy / composable / implementation-simple —
    and (b) "a test needing the heavy repo-builder DSL is a prompt to ask whether
    the behavior is in-process reachable." Write against the now-validated concrete
    shapes, not speculation.
 3. **Portable skillification** (goal 3): a `quality` adapter block + reference
    defining the boundary-bypass payload contract + ratchet policy stack-neutrally
-   (mirror [mutation-testing](../skills/public/quality/references/mutation-testing.md)).
+   (mirror [mutation-testing](../../skills/public/quality/references/mutation-testing.md)).
    A Go/TS repo then ships its own one-screen probe emitting the same payload.
 4. **DSL follow-ups** (from slice-1 critique): `env=` merge semantics (when the
    first explicit-`env` control_plane test migrates), broad `seed_repo` sweep.
