@@ -69,7 +69,7 @@ python3 scripts/gates_support/run_standing_pytest.py --repo-root .
 
 Production code spawns only through
 [`subprocess_guard.py`](../scripts/core/subprocess_guard.py); the standing
-[form check](../scripts/check_subprocess_form.py) refuses a direct call. Tests
+[form check](../scripts/gates/check_subprocess_form.py) refuses a direct call. Tests
 import the script under test in-process through the loaders in
 [`tests/script_loader.py`](../tests/script_loader.py),
 [`script_main.py`](../tests/script_main.py), and

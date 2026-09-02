@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import check_spec_evidence_durability as gate
+from scripts.gates import check_spec_evidence_durability as gate
 
 from .support import run_script
 
@@ -68,7 +68,7 @@ def test_citation_grammar_is_judged_in_one_ignore_query(tmp_path: Path) -> None:
             "# Demo\n\nProof: `artifacts/eval-summary.json`.\n", encoding="utf-8"
         )
 
-    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_spec_evidence_durability.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "gitignored target" in result.stderr
     for name in failing:
@@ -82,7 +82,7 @@ def test_citation_grammar_is_judged_in_one_ignore_query(tmp_path: Path) -> None:
 @pytest.mark.slow_corpus
 def test_real_repo_passes(tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[2]
-    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo_root))
+    result = run_script("scripts/gates/check_spec_evidence_durability.py", "--repo-root", str(repo_root))
     assert result.returncode == 0, result.stderr
 
 
@@ -94,7 +94,7 @@ def test_skips_when_repo_has_no_git_directory(tmp_path: Path) -> None:
         "# Demo Spec\n\nProof: `artifacts/eval-summary.json`.\n",
         encoding="utf-8",
     )
-    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_spec_evidence_durability.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "no git work tree" in result.stdout
 
@@ -174,7 +174,7 @@ def test_late_family_enforcement_and_grandfathering_share_one_ignore_query(
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_spec_evidence_durability.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_spec_evidence_durability.py", "--repo-root", str(repo))
     assert result.returncode == 1
     for family in families:
         assert f"charness-artifacts/{family}/2999-01-01-wired.md" in result.stderr, family

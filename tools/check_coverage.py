@@ -22,7 +22,7 @@ from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_check_coverage_lib_module = import_repo_module(__file__, "scripts.check_coverage_lib")
+_scripts_check_coverage_lib_module = import_repo_module(__file__, "scripts.gates.check_coverage_lib")
 _tools_check_coverage_extra_lib_module = import_repo_module(__file__, "tools.check_coverage_extra_lib")
 _scripts_mutation_line_coverage_lib_module = import_repo_module(__file__, "scripts.mutation_line_coverage_lib")
 PER_FILE_WARN_BELOW = _scripts_check_coverage_lib_module.PER_FILE_WARN_BELOW

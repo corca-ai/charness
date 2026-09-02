@@ -37,7 +37,7 @@ def _repo(tmp_path: Path, *, quality_universes: str, files: dict[str, str]) -> P
 
 
 def test_doc_links_uses_declared_doc_surfaces_and_refuses_empty(tmp_path: Path) -> None:
-    gate = _load("scripts/check_doc_links.py", "u2_check_doc_links")
+    gate = _load("scripts/gates/check_doc_links.py", "u2_check_doc_links")
     repo = _repo(
         tmp_path / "seeded",
         quality_universes="  doc_surfaces:\n    - src/**/*.md",
@@ -60,7 +60,7 @@ def test_doc_links_uses_declared_doc_surfaces_and_refuses_empty(tmp_path: Path) 
 
 
 def test_docs_graph_uses_declared_doc_root_and_refuses_empty(tmp_path: Path, monkeypatch) -> None:
-    gate = _load("scripts/check_docs_graph.py", "u2_check_docs_graph")
+    gate = _load("scripts/gates/check_docs_graph.py", "u2_check_docs_graph")
     repo = _repo(
         tmp_path / "seeded",
         quality_universes="  doc_surfaces:\n    - src/**/*.md",
@@ -149,7 +149,7 @@ def test_doc_duplicates_builds_nose_roots_from_declared_doc_surfaces(
 
 
 def test_spec_evidence_uses_declared_artifact_root_and_refuses_empty(tmp_path: Path) -> None:
-    gate = _load("scripts/check_spec_evidence_durability.py", "u2_check_spec_evidence")
+    gate = _load("scripts/gates/check_spec_evidence_durability.py", "u2_check_spec_evidence")
     repo = _repo(
         tmp_path / "seeded",
         quality_universes="  artifact_roots:\n    spec: src/spec",
@@ -184,7 +184,7 @@ def test_spec_evidence_uses_declared_artifact_root_and_refuses_empty(tmp_path: P
 def test_artifact_referents_uses_declared_roots_and_keeps_local_context_charness_only(
     tmp_path: Path,
 ) -> None:
-    gate = _load("scripts/check_artifact_referents.py", "u2_check_artifact_referents")
+    gate = _load("scripts/gates/check_artifact_referents.py", "u2_check_artifact_referents")
     repo = _repo(
         tmp_path / "seeded",
         quality_universes="  artifact_roots:\n    goals: src/goals",
@@ -262,7 +262,7 @@ def test_critique_default_is_derived_from_critique_adapter_and_refuses_empty(
 
 
 def test_ideation_uses_declared_artifact_root_and_refuses_empty(tmp_path: Path) -> None:
-    gate = _load("scripts/validate_ideation_artifact.py", "u2_validate_ideation")
+    gate = _load("scripts/gates/validate_ideation_artifact.py", "u2_validate_ideation")
     body = (
         "# Ideation\n\n## Structured Questions\n\n"
         "- Q1 | urgency: defer | depends-on: null | action: hold | note: later\n"

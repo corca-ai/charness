@@ -39,7 +39,7 @@ sys.exit(3)
 @pytest.fixture(scope="module")
 def gate():
     spec = importlib.util.spec_from_file_location(
-        "check_documented_subcommands", ROOT / "scripts" / "check_documented_subcommands.py"
+        "check_documented_subcommands", ROOT / "scripts" / "gates" / "check_documented_subcommands.py"
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -337,7 +337,7 @@ def test_main_guard_executes(tmp_path: Path, monkeypatch) -> None:
     root = _repo(tmp_path, _fence("charness update"))
     monkeypatch.setattr(sys, "argv", ["check_documented_subcommands.py", "--repo-root", str(root)])
     with pytest.raises(SystemExit) as exc:
-        runpy.run_path(str(ROOT / "scripts" / "check_documented_subcommands.py"), run_name="__main__")
+        runpy.run_path(str(ROOT / "scripts" / "gates" / "check_documented_subcommands.py"), run_name="__main__")
     assert exc.value.code == 0
 
 

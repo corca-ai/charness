@@ -147,7 +147,7 @@ def consumers_of(repo_root: Path, module_path: str, names: list[str]) -> dict[st
 
     Two conditions, both required, because either alone is far too broad: the file
     must mention the module (by stem, which catches `import_repo_module(__file__,
-    "scripts.check_doc_links")` as well as a plain import), AND it must contain an
+    "scripts.gates.check_doc_links")` as well as a plain import), AND it must contain an
     attribute access `.<name>`. The module itself is excluded.
     """
     stem = Path(module_path).stem

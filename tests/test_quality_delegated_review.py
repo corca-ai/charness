@@ -14,7 +14,7 @@ import pytest
 from runtime_bootstrap import import_repo_module
 from tests.test_quality_artifact import seed_repo
 
-_validate_quality_artifact = import_repo_module(__file__, "scripts.validate_quality_artifact")
+_validate_quality_artifact = import_repo_module(__file__, "scripts.gates.validate_quality_artifact")
 ValidationError = _validate_quality_artifact.ValidationError
 
 

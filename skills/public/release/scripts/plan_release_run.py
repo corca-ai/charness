@@ -42,7 +42,7 @@ current_branch = _publish_helpers.current_branch
 update_instructions_version_blocker = _preflight.update_instructions_version_blocker
 release_binding_tokens = _preflight.release_binding_tokens
 _closeout_evidence = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.check_prescribed_skill_executed_lib"
+    __file__, "scripts.gates.check_prescribed_skill_executed_lib"
 )
 required_reads = _planner_packets.required_reads
 gate_packets = _planner_packets.gate_packets

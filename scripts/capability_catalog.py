@@ -11,7 +11,7 @@ from pathlib import Path
 if str(Path(__file__).resolve().parent.parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from scripts import check_consumer_validator_catalog
+from scripts.gates import check_consumer_validator_catalog
 from scripts.capability_catalog_artifact import persist_catalog, read_only_result
 from scripts.capability_catalog_resolver import resolve_skill_path
 from scripts.capability_catalog_sources import build_inventory

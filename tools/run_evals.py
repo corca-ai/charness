@@ -127,7 +127,7 @@ def scenario_profile_valid(root: Path) -> None:
 def scenario_doc_links_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "doc-links-valid"
     result = run_command(
-        [sys.executable, "scripts/check_doc_links.py", "--repo-root", str(fixture)], cwd=root
+        [sys.executable, "scripts/gates/check_doc_links.py", "--repo-root", str(fixture)], cwd=root
     )
     expect_success(result, "doc-links-valid fixture")
 

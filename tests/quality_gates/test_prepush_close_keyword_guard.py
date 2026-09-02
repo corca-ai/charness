@@ -54,7 +54,7 @@ GUARD = load_script_module(
 SCAN = importlib.import_module("scripts.prepush_close_keyword_scan")
 CARRIER = load_script_module(
     "check_issue_closeout_commit_msg_for_guard_tests",
-    ROOT / "scripts" / "check_issue_closeout_commit_msg.py",
+    ROOT / "scripts" / "gates" / "check_issue_closeout_commit_msg.py",
 )
 ZERO = "0" * 40
 
@@ -369,7 +369,7 @@ def test_a_git_comment_block_alone_does_not_trigger_the_carrier(tmp_path: Path) 
         "#\n"
         "# On branch main\n"
         "# Changes to be committed:\n"
-        "#\tmodified:   scripts/check_issue_closeout_commit_msg.py\n",
+        "#\tmodified:   scripts/gates/check_issue_closeout_commit_msg.py\n",
         encoding="utf-8",
     )
     report = CARRIER.evaluate(

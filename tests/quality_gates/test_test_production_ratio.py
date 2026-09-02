@@ -18,7 +18,7 @@ from tests.quality_gates.seeding_support import write_quality_adapter
 from .support import ROOT, init_git_repo, run_script
 
 SPEC = importlib.util.spec_from_file_location(
-    "check_test_production_ratio", ROOT / "scripts" / "check_test_production_ratio.py"
+    "check_test_production_ratio", ROOT / "scripts" / "gates" / "check_test_production_ratio.py"
 )
 assert SPEC is not None and SPEC.loader is not None
 RATIO = importlib.util.module_from_spec(SPEC)
@@ -107,7 +107,7 @@ def test_ratio_gate_stays_advisory_in_the_runner() -> None:
     # Negative control: the reader must FAIL a blocking invocation, or it pins nothing.
     blocking = [
         "python3",
-        "scripts/check_test_production_ratio.py",
+        "scripts/gates/check_test_production_ratio.py",
         "--repo-root",
         "$REPO_ROOT",
         "--require-git-file-listing",
@@ -250,7 +250,7 @@ def test_test_production_ratio_typed_skips_unreadable_python(tmp_path: Path, mon
         "paths": ["scripts/bad.py", "scripts/null_byte.py"],
     }
     result = run_script(
-        "scripts/check_test_production_ratio.py",
+        "scripts/gates/check_test_production_ratio.py",
         "--repo-root",
         str(repo),
         "--max-ratio",
@@ -353,7 +353,7 @@ def test_test_production_ratio_fails_above_max() -> None:
     """Covers the `__main__` block: a RatioError must exit 1 with a message, not a
     traceback, so this one stays a real spawn."""
     result = run_script(
-        "scripts/check_test_production_ratio.py",
+        "scripts/gates/check_test_production_ratio.py",
         "--repo-root",
         str(ROOT),
         "--max-ratio",
@@ -426,7 +426,7 @@ def test_cli_tokei_engine_returns_two_when_binary_missing(tmp_path: Path) -> Non
     nobin = tmp_path / "nobin"
     nobin.mkdir()
     result = run_script(
-        "scripts/check_test_production_ratio.py",
+        "scripts/gates/check_test_production_ratio.py",
         "--repo-root",
         str(ROOT),
         "--engine",

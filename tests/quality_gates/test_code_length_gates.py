@@ -16,8 +16,8 @@ from tests.script_main import run_loaded_script_main
 from .seeding_support import write_quality_adapter
 from .support import run_script
 
-PYTHON_LENGTHS = importlib.import_module("scripts.check_code_lengths")
-RUNTIME_INHERITANCE = importlib.import_module("scripts.check_python_runtime_inheritance")
+PYTHON_LENGTHS = importlib.import_module("scripts.gates.check_code_lengths")
+RUNTIME_INHERITANCE = importlib.import_module("scripts.gates.check_python_runtime_inheritance")
 
 
 def test_check_code_lengths_uses_adapter_python_sources(tmp_path: Path) -> None:
@@ -89,7 +89,7 @@ def test_check_code_lengths_strict_listing_fails_closed_outside_git(tmp_path: Pa
     (scripts_dir / "short.py").write_text("def short():\n    return 1\n", encoding="utf-8")
 
     result = run_script(
-        "scripts/check_code_lengths.py",
+        "scripts/gates/check_code_lengths.py",
         "--repo-root",
         str(repo),
         "--require-git-file-listing",
@@ -110,7 +110,7 @@ def test_check_python_runtime_inheritance_strict_listing_fails_closed_outside_gi
     (scripts_dir / "short.py").write_text("def short():\n    return 1\n", encoding="utf-8")
 
     result = run_script(
-        "scripts/check_python_runtime_inheritance.py",
+        "scripts/gates/check_python_runtime_inheritance.py",
         "--repo-root",
         str(repo),
         "--require-git-file-listing",
@@ -128,7 +128,7 @@ def test_check_code_lengths_rejects_too_long_skill_helper_file(tmp_path: Path) -
     (helper_dir / "helper.py").write_text(
         "\n".join(f"print({i})" for i in range(361)) + "\n", encoding="utf-8"
     )
-    result = run_script("scripts/check_code_lengths.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_code_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "tokei code lines 361 exceed limit 360" in result.stderr
 
@@ -142,7 +142,7 @@ def test_check_code_lengths_rejects_an_oversize_shell_file(tmp_path: Path) -> No
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_code_lengths.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_code_lengths.py", "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "scripts/too-long.sh: physical lines 206 exceed limit 205" in result.stderr
@@ -183,7 +183,7 @@ def test_check_code_lengths_uses_tokei_code_lines_not_comments_or_blanks(tmp_pat
     physical_lines.extend(["", "", "print(1)", "print(2)"])
     (helper_dir / "comment_heavy.py").write_text("\n".join(physical_lines) + "\n", encoding="utf-8")
 
-    result = run_script("scripts/check_code_lengths.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_code_lengths.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
     assert "comment_heavy.py" not in result.stderr
@@ -208,7 +208,7 @@ def test_check_code_lengths_fails_when_tokei_missing_instead_of_falling_back(
     (bin_dir / "git").symlink_to(git_path)
 
     result = run_script(
-        "scripts/check_code_lengths.py",
+        "scripts/gates/check_code_lengths.py",
         "--repo-root",
         str(repo),
         env={**os.environ, "PATH": str(bin_dir)},
@@ -280,7 +280,7 @@ def test_check_code_lengths_ignores_gitignored_python_files(tmp_path: Path) -> N
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_code_lengths.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_code_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -291,7 +291,7 @@ def test_check_code_lengths_rejects_too_long_test_file(tmp_path: Path) -> None:
     (tests_dir / "test_big.py").write_text(
         "\n".join(f"VALUE_{i} = {i}" for i in range(801)) + "\n", encoding="utf-8"
     )
-    result = run_script("scripts/check_code_lengths.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_code_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "tokei code lines 801 exceed limit 800" in result.stderr
 
@@ -316,7 +316,7 @@ def test_check_code_lengths_warns_for_in_band_files_across_classes(tmp_path: Pat
         "\n".join(f"VALUE_{i} = {i}" for i in range(730)) + "\n", encoding="utf-8"
     )
 
-    result = run_script("scripts/check_code_lengths.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_code_lengths.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
     warn_lines = [line for line in result.stdout.splitlines() if line.startswith("WARN: ")]
@@ -343,7 +343,7 @@ def test_check_code_lengths_does_not_warn_just_below_band(tmp_path: Path) -> Non
     (helper_dir / "helper.py").write_text(
         "\n".join(f"print({i})" for i in range(329)) + "\n", encoding="utf-8"
     )
-    result = run_script("scripts/check_code_lengths.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_code_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "WARN:" not in result.stdout
 
@@ -356,7 +356,7 @@ def test_check_code_lengths_paths_mode_rejects_over_limit_staged_file(tmp_path: 
         "\n".join(f"print({i})" for i in range(361)) + "\n", encoding="utf-8"
     )
     result = run_script(
-        "scripts/check_code_lengths.py",
+        "scripts/gates/check_code_lengths.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -375,7 +375,7 @@ def test_check_code_lengths_paths_mode_warns_for_in_band_staged_file(tmp_path: P
         "\n".join(f"print({i})" for i in range(340)) + "\n", encoding="utf-8"
     )
     result = run_script(
-        "scripts/check_code_lengths.py",
+        "scripts/gates/check_code_lengths.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -401,7 +401,7 @@ def test_check_code_lengths_paths_mode_checks_only_listed_paths(tmp_path: Path) 
     )
     (helper_dir / "small.py").write_text("print(1)\n", encoding="utf-8")
     result = run_script(
-        "scripts/check_code_lengths.py",
+        "scripts/gates/check_code_lengths.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -425,7 +425,7 @@ def test_check_code_lengths_over_limit_message_teaches_split_or_delete(tmp_path:
         "\n".join(f"print({i})" for i in range(361)) + "\n", encoding="utf-8"
     )
     result = run_script(
-        "scripts/check_code_lengths.py",
+        "scripts/gates/check_code_lengths.py",
         "--repo-root",
         str(repo),
         "--paths",

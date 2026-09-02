@@ -11,7 +11,7 @@ from runtime_bootstrap import repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 QUALITY_SKILL = Path("skills/public/quality/SKILL.md")
 PROMPT_POLICY = Path("skills/public/quality/references/prompt-asset-policy.md")
-QUALITY_ARTIFACT_VALIDATOR = Path("scripts/validate_quality_artifact.py")
+QUALITY_ARTIFACT_VALIDATOR = Path("scripts/gates/validate_quality_artifact.py")
 
 
 class ValidationError(Exception):

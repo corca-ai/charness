@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import check_artifact_surface_preflight as preflight
+from scripts.gates import check_artifact_surface_preflight as preflight
 from scripts import export_plugin as export_plugin_module
 from skills.public.critique.scripts.verification_retry import build_retry_key
 from tests.script_main import load_script_module, run_loaded_script_main
@@ -134,9 +134,9 @@ def test_changed_artifacts_groups_by_validator_and_passes(monkeypatch) -> None:
         "charness-artifacts/critique/b.md",
         "charness-artifacts/critique/release-packet.md",
     ]
-    assert "scripts/validate_ideation_artifact.py" in checked
+    assert "scripts/gates/validate_ideation_artifact.py" in checked
     # recent-lessons + scripts produced no group
-    assert "scripts/validate_retro_artifact.py" not in checked
+    assert "scripts/gates/validate_retro_artifact.py" not in checked
 
 
 def test_changed_artifacts_refuses_malformed_paths_instead_of_silently_omitting() -> None:
@@ -226,7 +226,7 @@ def test_exported_preflight_resolves_flattened_scaffold_and_refuses_invalid_layo
     )
     consumer = tmp_path / "consumer"
     consumer.mkdir()
-    dispatcher = plugin_root / "scripts" / "check_artifact_surface_preflight.py"
+    dispatcher = plugin_root / "scripts" / "gates" / "check_artifact_surface_preflight.py"
     dispatcher_module = load_script_module("exported_check_artifact_surface_preflight", dispatcher)
 
     def run_dispatcher():
@@ -278,7 +278,7 @@ def test_describe_quality_binds_artifact_path_never_paths() -> None:
     # The verdict is about the file the author is holding.
     target = "charness-artifacts/quality/2026-07-25-quality-review.md"
     out = preflight.describe(ROOT, preflight.surface_for_type("quality"), target_rel=target)
-    assert "owning validator: python3 scripts/validate_quality_artifact.py --repo-root ." in out
+    assert "owning validator: python3 scripts/gates/validate_quality_artifact.py --repo-root ." in out
     assert "--paths" not in out
     assert f"--artifact-path {target}" in out
     assert f"current verdict on {target}:" in out
@@ -560,7 +560,7 @@ def test_module_main_guard_executes(monkeypatch) -> None:
     monkeypatch.setattr(sys, "argv", ["x", "--type", "critique"])
     with pytest.raises(SystemExit) as exc:
         runpy.run_path(
-            str(ROOT / "scripts" / "check_artifact_surface_preflight.py"), run_name="__main__"
+            str(ROOT / "scripts" / "gates" / "check_artifact_surface_preflight.py"), run_name="__main__"
         )
     assert exc.value.code == 0
 

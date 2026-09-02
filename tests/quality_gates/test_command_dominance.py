@@ -31,7 +31,7 @@ DOMINANCE = load_script_module(
     ROOT / "skills" / "public" / "quality" / "scripts" / "command_dominance_lib.py",
 )
 GATE = load_script_module(
-    "check_command_dominance_under_test", ROOT / "scripts" / "check_command_dominance.py"
+    "check_command_dominance_under_test", ROOT / "scripts" / "gates" / "check_command_dominance.py"
 )
 UNIVERSE = load_script_module(
     "check_runtime_budget_universe_under_test",

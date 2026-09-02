@@ -17,8 +17,8 @@ from runtime_bootstrap import import_repo_module
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 LIB = import_repo_module(
-    REPO_ROOT / "scripts" / "inventory_measurement_lib.py",
-    "scripts.inventory_measurement_lib",
+    REPO_ROOT / "scripts" / "gates" / "inventory_measurement_lib.py",
+    "scripts.gates.inventory_measurement_lib",
 )
 
 _PRE_CONTRACT = "Date: 2026-01-01\n"

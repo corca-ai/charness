@@ -86,7 +86,7 @@ def detect_preflight_commands(repo_root: Path) -> list[str]:
 def detect_gate_commands(repo_root: Path) -> list[str]:
     return [cmd for exists, cmd in (
         ((repo_root / "scripts" / "run-quality.sh").is_file(), "./scripts/run-quality.sh"),
-        ((repo_root / "scripts" / "check_github_actions.py").is_file(), "python3 scripts/check_github_actions.py --repo-root ."),
+        ((repo_root / "scripts" / "gates" / "check_github_actions.py").is_file(), "python3 scripts/gates/check_github_actions.py --repo-root ."),
     ) if exists]
 
 

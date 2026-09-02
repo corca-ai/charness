@@ -9,8 +9,8 @@ import yaml
 from tests.script_main import load_script_module, run_loaded_script_main
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-LIB_PATH = REPO_ROOT / "scripts/check_prescribed_skill_executed_lib.py"
-CLI_PATH = REPO_ROOT / "scripts/check_prescribed_skill_executed.py"
+LIB_PATH = REPO_ROOT / "scripts/gates/check_prescribed_skill_executed_lib.py"
+CLI_PATH = REPO_ROOT / "scripts/gates/check_prescribed_skill_executed.py"
 
 _spec = importlib.util.spec_from_file_location("check_prescribed_skill_executed_lib", LIB_PATH)
 lib = importlib.util.module_from_spec(_spec)
@@ -497,7 +497,7 @@ def test_a_stub_that_cites_its_context_is_refused(tmp_path: Path) -> None:
 
     The rule that closed it is not a size number: evidence must say something
     BEYOND the identity it was checked against. Measured before it was written,
-    by a checked-in script (`scripts/measure_evidence_residual.py`) rather than a
+    by a checked-in script (`scripts/gates/measure_evidence_residual.py`) rather than a
     comment: the stub's residual is 0, markdown artifacts floor at 337 over 2168
     files, and real JSON host-log probes at 530 over 83. The floor sits at 8,
     below every measured minimum rather than between two of them.

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import check_artifact_citations as checker
+from scripts.gates import check_artifact_citations as checker
 
 
 def _repo(tmp_path: Path) -> Path:

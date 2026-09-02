@@ -8,7 +8,7 @@ from .support import ROOT, run_script
 
 
 def test_python_filenames_use_snake_case() -> None:
-    result = run_script("scripts/check_python_filenames.py", "--repo-root", str(ROOT))
+    result = run_script("scripts/gates/check_python_filenames.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
 
 
@@ -23,7 +23,7 @@ def test_python_filenames_ignore_gitignored_files(tmp_path: Path) -> None:
     )
     (repo / "scripts" / "GeneratedName.py").write_text("print('ignored')\n", encoding="utf-8")
 
-    result = run_script("scripts/check_python_filenames.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_python_filenames.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
 
@@ -37,7 +37,7 @@ def test_python_filename_gate_rejects_a_colliding_script_directory(tmp_path: Pat
         },
     )
 
-    result = run_script("scripts/check_python_filenames.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_python_filenames.py", "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "scripts/packaging" in result.stderr

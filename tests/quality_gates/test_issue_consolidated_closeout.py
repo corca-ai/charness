@@ -215,7 +215,7 @@ def test_consolidated_is_accepted_by_the_carrier_that_actually_runs() -> None:
 def test_the_commit_message_reader_recognizes_it_rather_than_inferring_bug() -> None:
     """The stale alternation did not fail loudly; it fell through to a `bug` default."""
     check = runpy.run_path(
-        str(Path(__file__).resolve().parents[2] / "scripts/check_issue_closeout_commit_msg.py")
+        str(Path(__file__).resolve().parents[2] / "scripts/gates/check_issue_closeout_commit_msg.py")
     )
     match = check["_CLASSIFICATION_RE"].search("Classification: consolidated\n")
     assert match is not None

@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-import scripts.check_consumer_validator_catalog as consumer_validator_catalog_module
+import scripts.gates.check_consumer_validator_catalog as consumer_validator_catalog_module
 import scripts.export_plugin as export_plugin_module
 import scripts.packaging_lib as packaging_lib
 import scripts.sync_root_plugin_manifests as sync_root_plugin_manifests_module

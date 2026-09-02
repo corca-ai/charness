@@ -17,9 +17,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_charness_cli",
         ROOT / "charness",
     ),
-    "scripts/check_docs_graph.py": (
+    "scripts/gates/check_docs_graph.py": (
         "tests.quality_gates.support_check_docs_graph",
-        ROOT / "scripts" / "check_docs_graph.py",
+        ROOT / "scripts" / "gates" / "check_docs_graph.py",
     ),
     "scripts/check_skill_script_references.py": (
         "tests.quality_gates.support_check_skill_script_references",
@@ -33,9 +33,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_list_external_links",
         ROOT / "scripts" / "gates_support" / "list_external_links.py",
     ),
-    "scripts/measure_inventory_marker_rule.py": (
+    "scripts/gates/measure_inventory_marker_rule.py": (
         "tests.quality_gates.support_measure_inventory_marker_rule",
-        ROOT / "scripts" / "measure_inventory_marker_rule.py",
+        ROOT / "scripts" / "gates" / "measure_inventory_marker_rule.py",
     ),
     "scripts/post_edit_skill_anchor_guard.py": (
         "tests.quality_gates.support_post_edit_skill_anchor_guard",
@@ -57,9 +57,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_plan_quality_run",
         ROOT / "skills" / "public" / "quality" / "scripts" / "plan_quality_run.py",
     ),
-    "scripts/check_changed_surfaces.py": (
+    "scripts/gates/check_changed_surfaces.py": (
         "tests.quality_gates.support_check_changed_surfaces",
-        ROOT / "scripts" / "check_changed_surfaces.py",
+        ROOT / "scripts" / "gates" / "check_changed_surfaces.py",
     ),
     "scripts/gates_support/command_plan_preflight.py": (
         "tests.quality_gates.support_command_plan_preflight",
@@ -73,9 +73,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_reviewer_boundary_fingerprint",
         ROOT / "skills" / "shared" / "scripts" / "reviewer_boundary_fingerprint.py",
     ),
-    "scripts/validate_adapters.py": (
+    "scripts/gates/validate_adapters.py": (
         "tests.quality_gates.support_validate_adapters",
-        ROOT / "scripts" / "validate_adapters.py",
+        ROOT / "scripts" / "gates" / "validate_adapters.py",
     ),
     "skills/public/quality/scripts/render_runtime_summary.py": (
         "tests.quality_gates.support_render_runtime_summary",
@@ -85,13 +85,13 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_inventory_sloc",
         ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_sloc.py",
     ),
-    "scripts/check_code_lengths.py": (
+    "scripts/gates/check_code_lengths.py": (
         "tests.quality_gates.support_check_code_lengths",
-        ROOT / "scripts" / "check_code_lengths.py",
+        ROOT / "scripts" / "gates" / "check_code_lengths.py",
     ),
-    "scripts/validate_retro_artifact.py": (
+    "scripts/gates/validate_retro_artifact.py": (
         "tests.quality_gates.support_validate_retro_artifact",
-        ROOT / "scripts" / "validate_retro_artifact.py",
+        ROOT / "scripts" / "gates" / "validate_retro_artifact.py",
     ),
     "skills/public/retro/scripts/audit_codex_session.py": (
         "tests.quality_gates.support_audit_codex_session",
@@ -101,17 +101,17 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_dup_ratchet",
         ROOT / "skills" / "public" / "quality" / "scripts" / "check_dup_ratchet.py",
     ),
-    "scripts/check_issue_closeout_commit_msg.py": (
+    "scripts/gates/check_issue_closeout_commit_msg.py": (
         "tests.quality_gates.support_check_issue_closeout_commit_msg",
-        ROOT / "scripts" / "check_issue_closeout_commit_msg.py",
+        ROOT / "scripts" / "gates" / "check_issue_closeout_commit_msg.py",
     ),
     "tools/validate_skills.py": (
         "tests.quality_gates.support_validate_skills",
         ROOT / "tools" / "validate_skills.py",
     ),
-    "scripts/check_spec_evidence_durability.py": (
+    "scripts/gates/check_spec_evidence_durability.py": (
         "tests.quality_gates.support_check_spec_evidence_durability",
-        ROOT / "scripts" / "check_spec_evidence_durability.py",
+        ROOT / "scripts" / "gates" / "check_spec_evidence_durability.py",
     ),
     "tools/validate_current_pointer_freshness.py": (
         "tests.quality_gates.support_validate_current_pointer_freshness",
@@ -133,13 +133,13 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_changed_line_mutation_coverage",
         ROOT / "scripts" / "check_changed_line_mutation_coverage.py",
     ),
-    "scripts/validate_debug_artifact.py": (
+    "scripts/gates/validate_debug_artifact.py": (
         "tests.quality_gates.support_validate_debug_artifact",
-        ROOT / "scripts" / "validate_debug_artifact.py",
+        ROOT / "scripts" / "gates" / "validate_debug_artifact.py",
     ),
-    "scripts/validate_quality_artifact.py": (
+    "scripts/gates/validate_quality_artifact.py": (
         "tests.quality_gates.support_validate_quality_artifact",
-        ROOT / "scripts" / "validate_quality_artifact.py",
+        ROOT / "scripts" / "gates" / "validate_quality_artifact.py",
     ),
     "tools/check_quality_tool_fixtures.py": (
         "tests.quality_gates.support_check_quality_tool_fixtures",
@@ -153,9 +153,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_runtime_budget_universe",
         ROOT / "tools" / "check_runtime_budget_universe.py",
     ),
-    "scripts/validate_inventory_consumption.py": (
+    "scripts/gates/validate_inventory_consumption.py": (
         "tests.quality_gates.support_validate_inventory_consumption",
-        ROOT / "scripts" / "validate_inventory_consumption.py",
+        ROOT / "scripts" / "gates" / "validate_inventory_consumption.py",
     ),
     "skills/public/release/scripts/audit_public_release_narrative.py": (
         "tests.quality_gates.support_audit_public_release_narrative",
@@ -181,17 +181,17 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_regenerable_facts",
         ROOT / "skills" / "public" / "quality" / "scripts" / "check_regenerable_facts.py",
     ),
-    "scripts/validate_ideation_artifact.py": (
+    "scripts/gates/validate_ideation_artifact.py": (
         "tests.quality_gates.support_validate_ideation_artifact",
-        ROOT / "scripts" / "validate_ideation_artifact.py",
+        ROOT / "scripts" / "gates" / "validate_ideation_artifact.py",
     ),
-    "scripts/check_artifact_referents.py": (
+    "scripts/gates/check_artifact_referents.py": (
         "tests.quality_gates.support_check_artifact_referents",
-        ROOT / "scripts" / "check_artifact_referents.py",
+        ROOT / "scripts" / "gates" / "check_artifact_referents.py",
     ),
-    "scripts/check_cli_skill_surface.py": (
+    "scripts/gates/check_cli_skill_surface.py": (
         "tests.quality_gates.support_check_cli_skill_surface",
-        ROOT / "scripts" / "check_cli_skill_surface.py",
+        ROOT / "scripts" / "gates" / "check_cli_skill_surface.py",
     ),
     "scripts/gates_support/select_verifiers.py": (
         "tests.quality_gates.support_select_verifiers",
@@ -241,9 +241,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_propose_mutation_testing",
         ROOT / "skills" / "public" / "quality" / "scripts" / "propose_mutation_testing.py",
     ),
-    "scripts/check_probe_record.py": (
+    "scripts/gates/check_probe_record.py": (
         "tests.quality_gates.support_check_probe_record",
-        ROOT / "scripts" / "check_probe_record.py",
+        ROOT / "scripts" / "gates" / "check_probe_record.py",
     ),
     "skills/public/quality/scripts/scaffold_quality_artifact.py": (
         "tests.quality_gates.support_scaffold_quality_artifact",
@@ -341,17 +341,17 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_render_critique_section_changed_surfaces",
         ROOT / "scripts" / "render_critique_section_changed_surfaces.py",
     ),
-    "scripts/measure_evidence_residual.py": (
+    "scripts/gates/measure_evidence_residual.py": (
         "tests.quality_gates.support_measure_evidence_residual",
-        ROOT / "scripts" / "measure_evidence_residual.py",
+        ROOT / "scripts" / "gates" / "measure_evidence_residual.py",
     ),
     "skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py": (
         "tests.quality_gates.support_inventory_gitignore_scan_hygiene",
         ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_gitignore_scan_hygiene.py",
     ),
-    "scripts/check_upstream_support_drift.py": (
+    "scripts/gates/check_upstream_support_drift.py": (
         "tests.quality_gates.support_check_upstream_support_drift",
-        ROOT / "scripts" / "check_upstream_support_drift.py",
+        ROOT / "scripts" / "gates" / "check_upstream_support_drift.py",
     ),
     "scripts/resolve_artifact_path.py": (
         "tests.quality_gates.support_resolve_artifact_path",
@@ -377,9 +377,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_validate_attention_state_visibility",
         ROOT / "tools" / "validate_attention_state_visibility.py",
     ),
-    "scripts/check_doc_links.py": (
+    "scripts/gates/check_doc_links.py": (
         "tests.quality_gates.support_check_doc_links",
-        ROOT / "scripts" / "check_doc_links.py",
+        ROOT / "scripts" / "gates" / "check_doc_links.py",
     ),
     "skills/public/critique/scripts/verify_packet.py": (
         "tests.quality_gates.support_verify_packet",
@@ -397,9 +397,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_refresh_recent_lessons",
         ROOT / "skills" / "public" / "retro" / "scripts" / "refresh_recent_lessons.py",
     ),
-    "scripts/check_markdown_inline_code.py": (
+    "scripts/gates/check_markdown_inline_code.py": (
         "tests.quality_gates.support_check_markdown_inline_code",
-        ROOT / "scripts" / "check_markdown_inline_code.py",
+        ROOT / "scripts" / "gates" / "check_markdown_inline_code.py",
     ),
     "tools/check_current_pointer_writes.py": (
         "tests.quality_gates.support_check_current_pointer_writes",
@@ -413,13 +413,13 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_supply_chain",
         ROOT / "scripts" / "check_supply_chain.py",
     ),
-    "scripts/check_command_docs.py": (
+    "scripts/gates/check_command_docs.py": (
         "tests.quality_gates.support_check_command_docs",
-        ROOT / "scripts" / "check_command_docs.py",
+        ROOT / "scripts" / "gates" / "check_command_docs.py",
     ),
-    "scripts/suggest_public_skill_dogfood.py": (
+    "scripts/gates/suggest_public_skill_dogfood.py": (
         "tests.quality_gates.support_suggest_public_skill_dogfood",
-        ROOT / "scripts" / "suggest_public_skill_dogfood.py",
+        ROOT / "scripts" / "gates" / "suggest_public_skill_dogfood.py",
     ),
     "skills/public/quality/scripts/suggest_public_skill_dogfood.py": (
         "tests.quality_gates.support_quality_suggest_public_skill_dogfood",
@@ -433,13 +433,13 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_standing_doc_provenance",
         ROOT / "skills" / "public" / "quality" / "scripts" / "check_standing_doc_provenance.py",
     ),
-    "scripts/check_test_production_ratio.py": (
+    "scripts/gates/check_test_production_ratio.py": (
         "tests.quality_gates.support_check_test_production_ratio",
-        ROOT / "scripts" / "check_test_production_ratio.py",
+        ROOT / "scripts" / "gates" / "check_test_production_ratio.py",
     ),
-    "scripts/check_git_identity.py": (
+    "scripts/gates/check_git_identity.py": (
         "tests.quality_gates.support_check_git_identity",
-        ROOT / "scripts" / "check_git_identity.py",
+        ROOT / "scripts" / "gates" / "check_git_identity.py",
     ),
     "tools/check_plugin_doc_links.py": (
         "tests.quality_gates.support_check_plugin_doc_links",
@@ -453,9 +453,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_staged_reversion",
         ROOT / "scripts" / "check_staged_reversion.py",
     ),
-    "scripts/check_documented_command_flags.py": (
+    "scripts/gates/check_documented_command_flags.py": (
         "tests.quality_gates.support_check_documented_command_flags",
-        ROOT / "scripts" / "check_documented_command_flags.py",
+        ROOT / "scripts" / "gates" / "check_documented_command_flags.py",
     ),
     "skills/public/quality/scripts/seed_dup_review.py": (
         "tests.quality_gates.support_seed_dup_review",
@@ -469,25 +469,25 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_inventory_ci_local_gate_parity",
         ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_ci_local_gate_parity.py",
     ),
-    "scripts/check_python_filenames.py": (
+    "scripts/gates/check_python_filenames.py": (
         "tests.quality_gates.support_check_python_filenames",
-        ROOT / "scripts" / "check_python_filenames.py",
+        ROOT / "scripts" / "gates" / "check_python_filenames.py",
     ),
-    "scripts/check_github_actions.py": (
+    "scripts/gates/check_github_actions.py": (
         "tests.quality_gates.support_check_github_actions",
-        ROOT / "scripts" / "check_github_actions.py",
+        ROOT / "scripts" / "gates" / "check_github_actions.py",
     ),
-    "scripts/check_skill_ownership_overlap.py": (
+    "scripts/gates/check_skill_ownership_overlap.py": (
         "tests.quality_gates.support_check_skill_ownership_overlap",
-        ROOT / "scripts" / "check_skill_ownership_overlap.py",
+        ROOT / "scripts" / "gates" / "check_skill_ownership_overlap.py",
     ),
-    "scripts/check_symbol_residue.py": (
+    "scripts/gates/check_symbol_residue.py": (
         "tests.quality_gates.support_check_symbol_residue",
-        ROOT / "scripts" / "check_symbol_residue.py",
+        ROOT / "scripts" / "gates" / "check_symbol_residue.py",
     ),
-    "scripts/check_python_runtime_inheritance.py": (
+    "scripts/gates/check_python_runtime_inheritance.py": (
         "tests.quality_gates.support_check_python_runtime_inheritance",
-        ROOT / "scripts" / "check_python_runtime_inheritance.py",
+        ROOT / "scripts" / "gates" / "check_python_runtime_inheritance.py",
     ),
     "scripts/gates_support/render_cli_reference.py": (
         "tests.quality_gates.support_render_cli_reference",
@@ -513,9 +513,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_removed_name_consumers",
         ROOT / "scripts" / "gates_support" / "removed_name_consumers.py",
     ),
-    "scripts/check_test_repo_copy_invariants.py": (
+    "scripts/gates/check_test_repo_copy_invariants.py": (
         "tests.quality_gates.support_check_test_repo_copy_invariants",
-        ROOT / "scripts" / "check_test_repo_copy_invariants.py",
+        ROOT / "scripts" / "gates" / "check_test_repo_copy_invariants.py",
     ),
     "skills/public/setup/scripts/inspect_repo.py": (
         "tests.quality_gates.support_setup_inspect_repo_cli",

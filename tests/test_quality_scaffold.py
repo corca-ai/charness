@@ -12,7 +12,7 @@ from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
 _export_plugin = import_repo_module(__file__, "scripts.export_plugin")
-_validate_quality_artifact = import_repo_module(__file__, "scripts.validate_quality_artifact")
+_validate_quality_artifact = import_repo_module(__file__, "scripts.gates.validate_quality_artifact")
 _scaffold_quality_artifact = import_repo_module(
     __file__,
     "skills.public.quality.scripts.scaffold_quality_artifact",
@@ -21,7 +21,7 @@ _scaffold_quality_artifact = import_repo_module(
 SCAFFOLD = "skills/public/quality/scripts/scaffold_quality_artifact.py"
 
 # Headings the scaffold must emit so an author starts from a validator-passing
-# skeleton instead of rediscovering scripts/validate_quality_artifact.py by
+# skeleton instead of rediscovering scripts/gates/validate_quality_artifact.py by
 # trial-and-error.
 REQUIRED_HEADINGS = (
     "## Scope",
@@ -64,7 +64,7 @@ def test_quality_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     assert payload["write_artifact_path"] == "charness-artifacts/quality/latest.md"
     assert payload["write_artifact_role"] == "current_pointer"
     assert payload["current_pointer_symlink_target"] is None
-    assert payload["validator_command"].endswith("scripts/validate_quality_artifact.py --repo-root .")
+    assert payload["validator_command"].endswith("scripts/gates/validate_quality_artifact.py --repo-root .")
 
     template = payload["template"]
     assert template.startswith("# Quality Review\n")

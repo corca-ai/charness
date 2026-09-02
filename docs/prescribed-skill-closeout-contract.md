@@ -17,9 +17,9 @@ and it no longer participates in Achieve Goal Draft lifecycle or completion.
   [`publish_release_preflight.py`](../skills/public/release/scripts/publish_release_preflight.py)
   to verify the standalone critique carrier before publish.
 - Both call
-  [`check_prescribed_skill_executed_lib.py`](../scripts/check_prescribed_skill_executed_lib.py)
+  [`check_prescribed_skill_executed_lib.py`](../scripts/gates/check_prescribed_skill_executed_lib.py)
   for the shared carrier and typed-skip vocabulary. The thin
-  [`check_prescribed_skill_executed.py`](../scripts/check_prescribed_skill_executed.py)
+  [`check_prescribed_skill_executed.py`](../scripts/gates/check_prescribed_skill_executed.py)
   command exposes the same verdict for direct diagnostics.
 
 These owners keep one shared fact: executed evidence is distinct from a stated

@@ -32,7 +32,7 @@ ARTIFACT_REFERENTS = load_script_module(
     "artifact_referents_under_test", ROOT / "scripts" / "artifact_referents.py"
 )
 ARTIFACT_GATE = load_script_module(
-    "artifact_referents_gate_under_test", ROOT / "scripts" / "check_artifact_referents.py"
+    "artifact_referents_gate_under_test", ROOT / "scripts" / "gates" / "check_artifact_referents.py"
 )
 
 inconsistent_quantities = ARTIFACT_QUANTITIES.inconsistent_quantities
@@ -49,7 +49,7 @@ reachable_head_commits = ARTIFACT_REFERENTS.reachable_head_commits
 sha_candidates = ARTIFACT_REFERENTS.sha_candidates
 load_local_context_declarations = ARTIFACT_GATE.load_local_context_declarations
 
-GATE = ROOT / "scripts" / "check_artifact_referents.py"
+GATE = ROOT / "scripts" / "gates" / "check_artifact_referents.py"
 
 
 # --------------------------------------------------------------------------
@@ -818,7 +818,7 @@ def test_the_disposition_vocabulary_has_one_owner() -> None:
     'one grows and the other silently degrades' -- adding a keyword to the gate's
     copy would revert the library to whole-line scoping, reintroducing the M2 and
     M3 evasions at once."""
-    gate_source = (ROOT / "scripts" / "check_artifact_referents.py").read_text(encoding="utf-8")
+    gate_source = (ROOT / "scripts" / "gates" / "check_artifact_referents.py").read_text(encoding="utf-8")
 
     assert "DISPOSITION_LINE_RE = re.compile" not in gate_source
     assert "INLINE_DISPOSITION_RE = re.compile" not in gate_source

@@ -170,7 +170,7 @@ markdownlint_stderr_log="$listing_dir/markdownlint.stderr.log"
 # blocking, per the P1 note above), and the unscoped broad-gate and CI runs still carry it —
 # so skipping costs no verdict, only an earlier warning.
 if [ "${#scoped_paths[@]}" -eq 0 ]; then
-  python3 "$REPO_ROOT/scripts/check_markdown_inline_code.py" --repo-root "$REPO_ROOT" >"$inline_code_log" 2>&1 &
+  python3 "$REPO_ROOT/scripts/gates/check_markdown_inline_code.py" --repo-root "$REPO_ROOT" >"$inline_code_log" 2>&1 &
   inline_code_pid=$!
 fi
 "${MARKDOWNLINT_CMD[@]}" --no-globs "${markdown_files[@]}" >"$markdownlint_stdout_log" 2>"$markdownlint_stderr_log" &

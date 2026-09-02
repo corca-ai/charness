@@ -434,7 +434,7 @@ def test_quality_resolve_rejects_invalid_review_fields(tmp_path: Path) -> None:
 def test_quality_bootstrap_detects_repo_owned_github_actions_check(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
     (repo / "scripts" / "run-quality.sh").unlink()
-    (repo / "scripts" / "check_github_actions.py").write_text("print('ok')\n", encoding="utf-8")
+    (repo / "scripts" / "gates" / "check_github_actions.py").write_text("print('ok')\n", encoding="utf-8")
 
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
@@ -442,7 +442,7 @@ def test_quality_bootstrap_detects_repo_owned_github_actions_check(tmp_path: Pat
     resolve_result = _run_quality_resolve_adapter("--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
     resolved = yaml.safe_load(resolve_result.stdout)
-    assert resolved["data"]["gate_commands"] == ["python3 scripts/check_github_actions.py --repo-root ."]
+    assert resolved["data"]["gate_commands"] == ["python3 scripts/gates/check_github_actions.py --repo-root ."]
 
 
 def test_quality_bootstrap_infers_specdown_defaults(tmp_path: Path) -> None:

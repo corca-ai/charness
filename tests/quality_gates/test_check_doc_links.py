@@ -9,7 +9,7 @@ from tests.quality_gates.repo_shapes import install_committed_repo
 
 from .support import ROOT, run_script
 
-_check_doc_links = import_repo_module(ROOT / "scripts/check_doc_links.py", "scripts.check_doc_links")
+_check_doc_links = import_repo_module(ROOT / "scripts/gates/check_doc_links.py", "scripts.gates.check_doc_links")
 _portable_command_carrier = load_path_module(
     "scripts.gates_support.portable_command_carrier_test_surface",
     ROOT / "scripts" / "gates_support" / "portable_command_carrier.py",
@@ -93,7 +93,7 @@ def test_check_doc_links_allows_runnable_commands_and_concept_tokens_in_backtick
     (docs_dir / "SKILL.md").write_text("# One\n", encoding="utf-8")
     (repo / "docs2").mkdir()
     (repo / "docs2" / "SKILL.md").write_text("# Two\n", encoding="utf-8")
-    result = run_script("scripts/check_doc_links.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_doc_links.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -227,7 +227,7 @@ def test_check_doc_links_rejects_backticked_non_markdown_file_reference(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
     repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "gates").mkdir(parents=True)
     (repo / "scripts" / "run.py").write_text("print('hi')\n", encoding="utf-8")
     (repo / "README.md").write_text(
         "Run `scripts/run.py` for a demo.\n",
@@ -310,7 +310,7 @@ def test_check_doc_links_rejects_fenced_command_naming_a_missing_script(
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / "README.md").write_text(
-        "\n".join(["# Demo", "", "```bash", "python3 scripts/check_prose_pin.py --repo-root .", "```", ""]),
+        "\n".join(["# Demo", "", "```bash", "python3 scripts/gates/check_prose_pin.py --repo-root .", "```", ""]),
         encoding="utf-8",
     )
 
@@ -318,7 +318,7 @@ def test_check_doc_links_rejects_fenced_command_naming_a_missing_script(
 
     assert result.returncode == 1
     assert "fenced command target" in result.stderr
-    assert "scripts/check_prose_pin.py" in result.stderr
+    assert "scripts/gates/check_prose_pin.py" in result.stderr
 
 
 def test_check_doc_links_accepts_fenced_command_naming_an_existing_script(
@@ -326,9 +326,9 @@ def test_check_doc_links_accepts_fenced_command_naming_an_existing_script(
 ) -> None:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
-    (repo / "scripts" / "check_prose_pin.py").write_text("print('hi')\n", encoding="utf-8")
+    (repo / "scripts" / "gates" / "check_prose_pin.py").write_text("print('hi')\n", encoding="utf-8")
     (repo / "README.md").write_text(
-        "\n".join(["# Demo", "", "```bash", "python3 scripts/check_prose_pin.py --repo-root .", "```", ""]),
+        "\n".join(["# Demo", "", "```bash", "python3 scripts/gates/check_prose_pin.py --repo-root .", "```", ""]),
         encoding="utf-8",
     )
 
@@ -366,7 +366,7 @@ def test_check_doc_links_allows_placeholder_bearing_fenced_command_target(
                 "# Demo",
                 "",
                 "```bash",
-                "python3 scripts/check_skill_surface_preflight.py --path skills/public/<skill>/SKILL.md",
+                "python3 scripts/gates/check_skill_surface_preflight.py --path skills/public/<skill>/SKILL.md",
                 "python3 <repo-root>/scripts/local_only.py",
                 "```",
                 "",
@@ -374,8 +374,8 @@ def test_check_doc_links_allows_placeholder_bearing_fenced_command_target(
         ),
         encoding="utf-8",
     )
-    (repo / "scripts").mkdir()
-    (repo / "scripts" / "check_skill_surface_preflight.py").write_text("print('hi')\n", encoding="utf-8")
+    (repo / "scripts" / "gates").mkdir(parents=True)
+    (repo / "scripts" / "gates" / "check_skill_surface_preflight.py").write_text("print('hi')\n", encoding="utf-8")
 
     result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
 
@@ -407,7 +407,7 @@ def test_check_doc_links_rejects_inline_command_naming_a_missing_script(
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / "README.md").write_text(
-        "Run `python3 scripts/check_prose_pin.py --repo-root .` before authoring.\n",
+        "Run `python3 scripts/gates/check_prose_pin.py --repo-root .` before authoring.\n",
         encoding="utf-8",
     )
 
@@ -415,7 +415,7 @@ def test_check_doc_links_rejects_inline_command_naming_a_missing_script(
 
     assert result.returncode == 1
     assert "fenced command target" in result.stderr
-    assert "scripts/check_prose_pin.py" in result.stderr
+    assert "scripts/gates/check_prose_pin.py" in result.stderr
 
 
 def test_check_doc_links_resolves_command_targets_against_the_git_listing(
@@ -439,7 +439,7 @@ def test_check_doc_links_resolves_command_targets_against_the_git_listing(
     local_only.parent.mkdir(parents=True)
     local_only.write_text("print('hi')\n", encoding="utf-8")
 
-    result = run_script("scripts/check_doc_links.py", "--repo-root", str(repo), "--require-git-file-listing")
+    result = run_script("scripts/gates/check_doc_links.py", "--repo-root", str(repo), "--require-git-file-listing")
 
     assert result.returncode == 1
     assert "scripts/local_only.py" in result.stderr
@@ -474,7 +474,7 @@ def test_check_doc_links_ignores_gitignored_markdown(tmp_path: Path) -> None:
     )
     (repo / "docs" / "generated-bad.md").write_text("[bad](/tmp/not-in-repo.md)\n", encoding="utf-8")
 
-    result = run_script("scripts/check_doc_links.py", "--repo-root", str(repo), "--require-git-file-listing")
+    result = run_script("scripts/gates/check_doc_links.py", "--repo-root", str(repo), "--require-git-file-listing")
     assert result.returncode == 0, result.stderr
 
 
@@ -602,7 +602,7 @@ def _portable_repo(tmp_path: Path, body: str, *, extra: dict[str, str] | None = 
 
 
 def test_an_unmarked_repo_path_in_a_shipped_skill_doc_is_refused(tmp_path: Path, monkeypatch, capsys) -> None:
-    repo = _portable_repo(tmp_path, "Run `scripts/check_docs_graph.py` first.\n")
+    repo = _portable_repo(tmp_path, "Run `scripts/gates/check_docs_graph.py` first.\n")
 
     result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
 

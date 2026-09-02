@@ -7,7 +7,7 @@ from scripts import probe_record_lib
 from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
-CLI = ROOT / "scripts" / "check_probe_record.py"
+CLI = ROOT / "scripts" / "gates" / "check_probe_record.py"
 
 # The source every record in this module quotes from, so `verify_source_quote` has
 # something real to read. Written into `tmp_path`, never into the repo.

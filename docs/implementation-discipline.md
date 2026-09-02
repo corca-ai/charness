@@ -34,9 +34,9 @@ worked, and leave the next change easy to start? It is intentionally short.
    external issue unless that phase was explicitly requested.
 
 When a documentation change is unusually broad, [authoring-preflight](./authoring-preflight.md)
-and [check_doc_authoring_preflight.py](../scripts/check_doc_authoring_preflight.py)
+and [check_doc_authoring_preflight.py](../scripts/gates/check_doc_authoring_preflight.py)
 are authoring affordances that forecast the relevant checks. When deleting a
-wrapper or symbol in `docs/` or `skills/`, [check_symbol_residue.py](../scripts/check_symbol_residue.py)
+wrapper or symbol in `docs/` or `skills/`, [check_symbol_residue.py](../scripts/gates/check_symbol_residue.py)
 remains advisory by design
 (#259): use it to find consumers, then let the owning focused test decide.
 

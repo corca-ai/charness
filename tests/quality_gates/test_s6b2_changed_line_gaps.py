@@ -38,7 +38,7 @@ INVENTORY_PATH = (
 
 DOMINANCE = load_path_module("command_dominance_lib_gaps", LIB_PATH)
 INVENTORY = load_path_module("inventory_command_dominance_gaps", INVENTORY_PATH)
-GATE = importlib.import_module("scripts.check_command_dominance")
+GATE = importlib.import_module("scripts.gates.check_command_dominance")
 UNIVERSE = importlib.import_module("tools.check_runtime_budget_universe")
 SAMPLER = importlib.import_module("scripts.sample_mutation_files")
 
@@ -315,7 +315,7 @@ def test_the_module_runs_as_a_script(tmp_path, monkeypatch) -> None:
     repo = _repo_with_registry(tmp_path, literal=REPLACEMENT)
     monkeypatch.setattr(sys, "argv", ["check_command_dominance.py", "--repo-root", str(repo)])
     with pytest.raises(SystemExit) as excinfo:
-        runpy.run_path(str(ROOT / "scripts" / "check_command_dominance.py"), run_name="__main__")
+        runpy.run_path(str(ROOT / "scripts" / "gates" / "check_command_dominance.py"), run_name="__main__")
     assert excinfo.value.code == 0
 
 

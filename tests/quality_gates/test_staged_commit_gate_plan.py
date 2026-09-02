@@ -60,7 +60,7 @@ def test_staged_commit_plan_gates_git_identity_when_script_present() -> None:
     assert gate is not None
     assert gate.argv == (
         "python3",
-        "scripts/check_git_identity.py",
+        "scripts/gates/check_git_identity.py",
         "--repo-root",
         str(ROOT),
     )
@@ -117,7 +117,7 @@ def test_staged_commit_plan_gates_changed_skill_md_core_headroom() -> None:
     assert gate is not None
     assert gate.argv == (
         "python3",
-        "scripts/check_skill_surface_preflight.py",
+        "scripts/gates/check_skill_surface_preflight.py",
         "--repo-root",
         str(ROOT),
         "--changed-skill-md",
@@ -168,7 +168,7 @@ def test_staged_commit_plan_gates_changed_artifact_shape() -> None:
     # repo IS the charness source tree.
     assert gate.argv == (
         "python3",
-        str(ROOT / "scripts" / "check_artifact_surface_preflight.py"),
+        str(ROOT / "scripts" / "gates" / "check_artifact_surface_preflight.py"),
         "--repo-root",
         str(ROOT),
         "--changed-artifacts",
@@ -413,7 +413,7 @@ def test_timing_layer_completeness_fires_for_run_quality_or_timing_doc_edits_onl
 def test_consumer_validator_catalog_pull_covers_source_and_exported_paths() -> None:
     trigger_paths = [
         ".agents/consumer-validator-adoption.yaml",
-        "scripts/check_consumer_validator_catalog.py",
+        "scripts/gates/check_consumer_validator_catalog.py",
         "skills/public/quality/references/consumer-validator-catalog.yaml",
         "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml",
         "scripts/check_demo.py",
@@ -431,7 +431,7 @@ def test_consumer_validator_catalog_pull_covers_source_and_exported_paths() -> N
         assert "check-consumer-validator-catalog-decisions" in _labels([path]), path
     assert "check-consumer-validator-catalog" not in _labels(["docs/usage.md"])
     # And the dispatcher's predicate IS the checker's, not a copy that can drift.
-    from scripts import check_consumer_validator_catalog as catalog_check
+    from scripts.gates import check_consumer_validator_catalog as catalog_check
     from scripts import staged_commit_gate_plan as gate_plan
 
     assert gate_plan._is_catalog_candidate_name is catalog_check._is_candidate_name
@@ -607,7 +607,7 @@ def test_skill_packages_surface_runs_fast_ergonomics_checker() -> None:
     surfaces = json.loads(SURFACES_JSON)
     skill_packages = next(s for s in surfaces["surfaces"] if s["surface_id"] == "skill-packages")
     assert (
-        "python3 scripts/validate_skill_ergonomics.py --repo-root ."
+        "python3 scripts/gates/validate_skill_ergonomics.py --repo-root ."
         in skill_packages["verify_commands"]
     ), skill_packages["verify_commands"]
 
@@ -646,7 +646,7 @@ def test_precommit_plan_agrees_with_fast_subset_for_skill_change() -> None:
     expected_fast = {
         command for command in FAST_SURFACE_VERIFY_COMMANDS if command in surface_verify
     }
-    assert "python3 scripts/validate_skill_ergonomics.py --repo-root ." in expected_fast
+    assert "python3 scripts/gates/validate_skill_ergonomics.py --repo-root ." in expected_fast
 
     precommit_labels = {
         command.label for command in staged_commit_gate_plan(ROOT, paths, ruff_path="")
@@ -663,7 +663,7 @@ def test_precommit_plan_agrees_with_fast_subset_for_test_change() -> None:
     paths = ["tests/quality_gates/test_example.py"]
     surface_verify = _surface_verify_commands_for(paths)
     assert (
-        "python3 scripts/check_subprocess_form.py --repo-root . --require-git-file-listing"
+        "python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing"
         in surface_verify
     )
 
@@ -673,7 +673,7 @@ def test_precommit_plan_agrees_with_fast_subset_for_test_change() -> None:
     argv = next(gate.argv for gate in gates if gate.label == "check-subprocess-form")
     assert argv == (
         "python3",
-        "scripts/check_subprocess_form.py",
+        "scripts/gates/check_subprocess_form.py",
         "--repo-root",
         ".",
         "--require-git-file-listing",

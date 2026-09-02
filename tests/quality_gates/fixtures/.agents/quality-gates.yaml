@@ -89,7 +89,7 @@ phases:
   - label: validate-skill-ergonomics
     command:
     - python3
-    - scripts/validate_skill_ergonomics.py
+    - scripts/gates/validate_skill_ergonomics.py
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -120,7 +120,7 @@ phases:
   - label: check-cli-skill-surface
     command:
     - python3
-    - scripts/check_cli_skill_surface.py
+    - scripts/gates/check_cli_skill_surface.py
     - --repo-root
     - $REPO_ROOT
     - --run-probes
@@ -193,7 +193,7 @@ phases:
   - label: validate-adapters
     command:
     - python3
-    - scripts/validate_adapters.py
+    - scripts/gates/validate_adapters.py
     - --repo-root
     - $REPO_ROOT
     - --require-git-file-listing
@@ -234,7 +234,7 @@ phases:
   - label: validate-debug-artifact
     command:
     - python3
-    - scripts/validate_debug_artifact.py
+    - scripts/gates/validate_debug_artifact.py
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -273,7 +273,7 @@ phases:
   - label: validate-quality-artifact
     command:
     - python3
-    - scripts/validate_quality_artifact.py
+    - scripts/gates/validate_quality_artifact.py
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -301,7 +301,7 @@ phases:
   - label: validate-inventory-consumption
     command:
     - python3
-    - scripts/validate_inventory_consumption.py
+    - scripts/gates/validate_inventory_consumption.py
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -365,7 +365,7 @@ phases:
   - label: validate-ideation-artifact
     command:
     - python3
-    - scripts/validate_ideation_artifact.py
+    - scripts/gates/validate_ideation_artifact.py
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -375,7 +375,7 @@ phases:
   - label: validate-retro-artifact
     command:
     - python3
-    - scripts/validate_retro_artifact.py
+    - scripts/gates/validate_retro_artifact.py
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -405,7 +405,7 @@ phases:
   - label: check-python-lengths
     command:
     - python3
-    - scripts/check_code_lengths.py
+    - scripts/gates/check_code_lengths.py
     - --repo-root
     - $REPO_ROOT
     - --require-git-file-listing
@@ -415,7 +415,7 @@ phases:
   - label: check-python-filenames
     command:
     - python3
-    - scripts/check_python_filenames.py
+    - scripts/gates/check_python_filenames.py
     - --repo-root
     - $REPO_ROOT
     - --require-git-file-listing
@@ -425,7 +425,7 @@ phases:
   - label: check-python-runtime-inheritance
     command:
     - python3
-    - scripts/check_python_runtime_inheritance.py
+    - scripts/gates/check_python_runtime_inheritance.py
     - --repo-root
     - $REPO_ROOT
     - --require-git-file-listing
@@ -435,7 +435,7 @@ phases:
   - label: check-subprocess-form
     command:
     - python3
-    - scripts/check_subprocess_form.py
+    - scripts/gates/check_subprocess_form.py
     - --repo-root
     - $REPO_ROOT
     - --require-git-file-listing
@@ -517,7 +517,7 @@ phases:
   - label: check-command-dominance
     command:
     - python3
-    - scripts/check_command_dominance.py
+    - scripts/gates/check_command_dominance.py
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -560,7 +560,7 @@ phases:
   - label: check-command-docs
     command:
     - python3
-    - scripts/check_command_docs.py
+    - scripts/gates/check_command_docs.py
     - --repo-root
     - $REPO_ROOT
     lane: release-only
@@ -577,7 +577,7 @@ phases:
   - label: check-doc-links
     command:
     - python3
-    - scripts/check_doc_links.py
+    - scripts/gates/check_doc_links.py
     - --repo-root
     - $REPO_ROOT
     - --require-git-file-listing
@@ -587,7 +587,7 @@ phases:
   - label: docs-graph
     command:
     - python3
-    - scripts/check_docs_graph.py
+    - scripts/gates/check_docs_graph.py
     - --repo-root
     - $REPO_ROOT
     lane: label-only
@@ -648,7 +648,7 @@ phases:
   - label: check-documented-command-flags
     command:
     - python3
-    - scripts/check_documented_command_flags.py
+    - scripts/gates/check_documented_command_flags.py
     - --repo-root
     - $REPO_ROOT
     - --require-git-file-listing
@@ -658,7 +658,7 @@ phases:
   - label: check-documented-subcommands
     command:
     - python3
-    - scripts/check_documented_subcommands.py
+    - scripts/gates/check_documented_subcommands.py
     - --repo-root
     - $REPO_ROOT
     - --require-git-file-listing
@@ -668,7 +668,7 @@ phases:
   - label: check-spec-evidence-durability
     command:
     - python3
-    - scripts/check_spec_evidence_durability.py
+    - scripts/gates/check_spec_evidence_durability.py
     - --repo-root
     - $REPO_ROOT
     - --require-git-file-listing
@@ -679,7 +679,7 @@ phases:
   - label: check-artifact-referents
     command:
     - python3
-    - scripts/check_artifact_referents.py
+    - scripts/gates/check_artifact_referents.py
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -716,7 +716,7 @@ phases:
   - label: check-github-actions
     command:
     - python3
-    - scripts/check_github_actions.py
+    - scripts/gates/check_github_actions.py
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -782,7 +782,7 @@ phases:
   - label: check-test-completeness
     command:
     - python3
-    - scripts/check_test_completeness.py
+    - scripts/gates/check_test_completeness.py
     - --repo-root
     - $REPO_ROOT
     - --
@@ -793,7 +793,7 @@ phases:
   - label: check-test-production-ratio
     command:
     - python3
-    - scripts/check_test_production_ratio.py
+    - scripts/gates/check_test_production_ratio.py
     - --repo-root
     - $REPO_ROOT
     - --require-git-file-listing
@@ -804,7 +804,7 @@ phases:
   - label: check-consumer-validator-catalog
     command:
     - python3
-    - scripts/check_consumer_validator_catalog.py
+    - scripts/gates/check_consumer_validator_catalog.py
     - --repo-root
     - $REPO_ROOT
     - --adoption-path
@@ -911,7 +911,7 @@ phases:
   - label: check-seed-fixture-budget
     command:
     - python3
-    - scripts/check_seed_fixture_budget.py
+    - scripts/gates/check_seed_fixture_budget.py
     - ${seed_budget_args[@]}
     lane: standard
     timing_layer: stays

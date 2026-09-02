@@ -35,7 +35,7 @@ _REDIRECTED_RECORD_KEYS = (
     "refresh_current_pointer_argv",
 )
 
-# Mirrors REQUIRED_SECTIONS in scripts/validate_quality_artifact.py. The scaffold
+# Mirrors REQUIRED_SECTIONS in scripts/gates/validate_quality_artifact.py. The scaffold
 # emits a skeleton that passes that validator out of the box so an author fills
 # slots instead of rediscovering the contract by trial-and-error.
 
@@ -45,7 +45,7 @@ _REDIRECTED_RECORD_KEYS = (
 # cannot load, degrade to no budget rather than break the scaffold — the field is
 # additive guidance, never load-bearing.
 try:
-    _quality_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.validate_quality_artifact")
+    _quality_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.gates.validate_quality_artifact")
     _MAX_ARTIFACT_WORDS: int | None = int(_quality_validator.MAX_ARTIFACT_WORDS)
 except Exception:
     _quality_validator = None

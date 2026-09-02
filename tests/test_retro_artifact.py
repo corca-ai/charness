@@ -23,7 +23,7 @@ def test_retro_sibling_search_accepts_followup(tmp_path: Path) -> None:
         + "## Persisted\n\nPersisted: yes path\n"
     )
     _seed(repo, body)
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
 
 
@@ -36,7 +36,7 @@ def test_retro_sibling_search_accepts_trivial_short_circuit(tmp_path: Path) -> N
         + "## Persisted\n\nPersisted: yes path\n"
     )
     _seed(repo, body)
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
 
 
@@ -49,7 +49,7 @@ def test_retro_sibling_search_rejects_followup_without_identifier(tmp_path: Path
         + "## Persisted\n\nPersisted: yes path\n"
     )
     _seed(repo, body)
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     assert "follow-up:" in result.stderr
     assert "abstraction up: scripts/foo.py:1" in result.stderr
@@ -64,7 +64,7 @@ def test_retro_sibling_search_rejects_bare_deferred(tmp_path: Path) -> None:
         + "## Persisted\n\nPersisted: yes path\n"
     )
     _seed(repo, body)
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     assert "follow-up:" in result.stderr
 
@@ -73,7 +73,7 @@ def test_retro_sibling_search_is_opt_in(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     body = _PRELUDE + "## Next Improvements\n\n- workflow: do better\n\n## Persisted\n\nPersisted: yes path\n"
     _seed(repo, body)
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
 
 
@@ -85,7 +85,7 @@ def test_retro_validator_skips_generated_digest(tmp_path: Path) -> None:
         + "- same layer: a:1 | decision: valid follow-up outside the slice | proof: x\n"
     )
     _seed(repo, body, name="recent-lessons.md")
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
     assert "Validated 0 retro artifact(s)." in result.stdout
 
@@ -93,7 +93,7 @@ def test_retro_validator_skips_generated_digest(tmp_path: Path) -> None:
 def test_retro_validator_no_artifacts_passes(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "charness-artifacts" / "retro").mkdir(parents=True)
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
 
 
@@ -105,7 +105,7 @@ def test_retro_persisted_form_rejects_future_legacy_shape(tmp_path: Path) -> Non
         "## Persisted\n\nPersisted: yes path\n"
     )
     _seed(repo, body, name="2026-06-25-demo.md")
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     assert "`## Persisted` has invalid persisted status" in result.stderr
 
@@ -117,7 +117,7 @@ def test_retro_persisted_form_rejects_future_missing_section(tmp_path: Path) -> 
         "## Next Improvements\n\n- workflow: do better\n"
     )
     _seed(repo, body, name="2026-06-25-demo.md")
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     assert "`## Persisted` must state" in result.stderr
 
@@ -130,7 +130,7 @@ def test_retro_persisted_form_accepts_future_canonical_shape(tmp_path: Path) -> 
         "## Persisted\n\nPersisted: yes: charness-artifacts/retro/2026-06-25-demo.md\n"
     )
     _seed(repo, body, name="2026-06-25-demo.md")
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
 
 
@@ -152,7 +152,7 @@ def test_retro_north_star_section_is_required_after_the_rule_date(tmp_path: Path
         "## Next Improvements\n\n- workflow: do better\n\n" + _NORTH_STAR_TAIL
     )
     _seed(repo, body, name="2026-08-05-demo.md")
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     assert "`## North Star Alignment`" in result.stderr
 
@@ -166,7 +166,7 @@ def test_retro_north_star_section_rejects_an_untouched_placeholder(tmp_path: Pat
         "## Next Improvements\n\n- workflow: do better\n\n" + _NORTH_STAR_TAIL
     )
     _seed(repo, body, name="2026-08-05-demo.md")
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     assert "`## North Star Alignment`" in result.stderr
 
@@ -179,7 +179,7 @@ def test_retro_north_star_section_accepts_real_content(tmp_path: Path) -> None:
         "## Next Improvements\n\n- workflow: do better\n\n" + _NORTH_STAR_TAIL
     )
     _seed(repo, body, name="2026-08-05-demo.md")
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
 
 
@@ -196,7 +196,7 @@ def test_retro_north_star_section_grandfathers_earlier_retros(tmp_path: Path) ->
         "## Persisted\n\nPersisted: yes: charness-artifacts/retro/2026-08-02-demo.md\n"
     )
     _seed(repo, body, name="2026-08-02-demo.md")
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
 
 
@@ -212,7 +212,7 @@ def test_retro_validator_uses_changed_path_discovery(tmp_path: Path) -> None:
         name="2026-06-25-demo.md",
     )
 
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
     assert "Validated 1 retro artifact(s)." in result.stdout
@@ -234,7 +234,7 @@ def test_retro_reports_every_rule_violation_in_one_pass(tmp_path: Path) -> None:
         "## Persisted\n\nPersisted: yes\n"
     )
     _seed(repo, body, name="2026-06-25-demo.md")
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     # Pin the COUNT, not just the phrase: "rule violation(s):" is emitted for a
     # count of 1 too, so a bare substring assert passes vacuously the moment one
@@ -258,7 +258,7 @@ def test_retro_reports_every_failing_artifact_in_one_pass(tmp_path: Path) -> Non
     )
     _seed(repo, bad, name="2026-06-25-first.md")
     _seed(repo, bad.replace("2026-06-25", "2026-06-26"), name="2026-06-26-second.md")
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     assert "2026-06-25-first.md" in result.stderr
     assert "2026-06-26-second.md" in result.stderr
@@ -275,7 +275,7 @@ def test_retro_fail_fast_stops_at_the_first_failing_artifact(tmp_path: Path) -> 
     _seed(repo, bad, name="2026-06-25-first.md")
     _seed(repo, bad.replace("2026-06-25", "2026-06-26"), name="2026-06-26-second.md")
     result = run_script(
-        "scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all", "--fail-fast"
+        "scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all", "--fail-fast"
     )
     assert result.returncode == 1
     assert "2026-06-26-second.md" not in result.stderr
@@ -300,7 +300,7 @@ def test_retro_rejects_a_malformed_recurrence_class_slug(tmp_path: Path) -> None
         "## Persisted\n\nPersisted: yes: charness-artifacts/retro/2026-07-27-demo.md\n",
         name="2026-07-27-demo.md",
     )
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     assert "malformed `recurrence-class:` tag(s)" in result.stderr
     assert "Bad_Slug!" in result.stderr
@@ -318,7 +318,7 @@ def test_retro_accepts_a_well_formed_recurrence_class_and_ignores_prose(tmp_path
         "## Persisted\n\nPersisted: yes: charness-artifacts/retro/2026-07-27-demo.md\n",
         name="2026-07-27-demo.md",
     )
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
 
 
@@ -342,7 +342,7 @@ def test_retro_body_date_cannot_backdate_a_currently_dated_file(tmp_path: Path) 
     )
     _seed(repo, body, name="2026-07-27-backdated.md")
 
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
 
     # Under the old body-first `or`, the 2026-01-01 line put this file before every
     # RULE_DATE and the run exited 0 over a malformed `Persisted:` line.
@@ -365,6 +365,6 @@ def test_retro_genuinely_old_on_both_channels_stays_grandfathered(tmp_path: Path
           name="2026-01-01-both-old.md")
     _seed(repo, "# Session Retro: Demo\nMode: session\n\n" + loose, name="2026-01-02-filename-only.md")
 
-    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
 
     assert result.returncode == 0, result.stdout + result.stderr

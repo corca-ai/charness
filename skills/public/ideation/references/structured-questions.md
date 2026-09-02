@@ -47,7 +47,7 @@ token (any short stable handle, e.g. `Q1`) is optional but recommended so
 
 ## Enforcement
 
-`<plugin-dir>/scripts/validate_ideation_artifact.py` validates the enum values and required
+`<plugin-dir>/scripts/gates/validate_ideation_artifact.py` validates the enum values and required
 fields when the `## Structured Questions` heading is present. The section is
 opt-in: artifacts without it pass unchanged. This reuses the same
 section-gated, fail-when-present discipline as

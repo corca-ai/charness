@@ -145,7 +145,7 @@ def run_requested_review_gate(repo_root: Path) -> dict[str, Any]:
 
 def run_cli_skill_surface_gate(repo_root: Path, adapter_data: dict[str, Any]) -> None:
     if {"installable_cli", "bundled_skill"}.issubset(set(adapter_data.get("product_surfaces", []))):
-        command = ["python3", "scripts/check_cli_skill_surface.py", "--repo-root", str(repo_root)]
+        command = ["python3", "scripts/gates/check_cli_skill_surface.py", "--repo-root", str(repo_root)]
         command.extend(["--adapter-path", ".agents/release-adapter.yaml", "--run-probes"])
         for path in changed_paths(repo_root):
             command.extend(["--changed-path", path])

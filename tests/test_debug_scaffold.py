@@ -18,8 +18,8 @@ _scaffold_debug = import_repo_module(
     "skills.public.debug.scripts.scaffold_debug_artifact",
 )
 _debug_validator = import_repo_module(
-    ROOT / "scripts" / "validate_debug_artifact.py",
-    "scripts.validate_debug_artifact",
+    ROOT / "scripts" / "gates" / "validate_debug_artifact.py",
+    "scripts.gates.validate_debug_artifact",
 )
 
 
@@ -63,7 +63,7 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     # against write_artifact_path so a payload that routes the write elsewhere cannot
     # leave the command pointed at a file nothing writes.
     assert payload["validator_command"].endswith(
-        f"scripts/validate_debug_artifact.py --repo-root . --paths {payload['write_artifact_path']}"
+        f"scripts/gates/validate_debug_artifact.py --repo-root . --paths {payload['write_artifact_path']}"
     )
     assert "# Debug Review" in payload["template"]
     assert "## Reproduction" in payload["template"]

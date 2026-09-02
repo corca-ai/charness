@@ -10,8 +10,8 @@ from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[1]
 _validate_skill_output_schemas = import_repo_module(
-    ROOT / "scripts" / "validate_skill_output_schemas.py",
-    "scripts.validate_skill_output_schemas",
+    ROOT / "scripts" / "gates" / "validate_skill_output_schemas.py",
+    "scripts.gates.validate_skill_output_schemas",
 )
 
 

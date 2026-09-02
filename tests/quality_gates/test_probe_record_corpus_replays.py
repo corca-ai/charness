@@ -14,7 +14,7 @@ corpus changes rarely and a dead control is expensive to find any other way.
 
 WHAT A FAILURE HERE MEANS: the named record's `## Stimulus` declares something the owning
 reader does not honor, so the polarity control it contrasts against could not have failed.
-Run `python3 scripts/check_probe_record.py --record <path> --replay-stimulus` for the
+Run `python3 scripts/gates/check_probe_record.py --record <path> --replay-stimulus` for the
 reason. It does NOT mean the record's conclusion is wrong -- it means the reproduction
 steps as published do not reproduce, which is a claim defect on a proof artifact.
 """

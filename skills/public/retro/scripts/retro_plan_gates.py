@@ -49,7 +49,7 @@ def build_gate_packets(
             run_when="after the retro artifact is written; this validates that artifact",
             **relative_script_command(
                 repo_root,
-                "scripts/validate_retro_artifact.py",
+                "scripts/gates/validate_retro_artifact.py",
                 "--repo-root",
                 ".",
                 "--paths",

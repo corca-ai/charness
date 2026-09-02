@@ -11,10 +11,10 @@ from pathlib import Path
 # fixed default directory. The validator is opt-in and only enforces the
 # `## Structured Questions` schema, so the emitted skeleton carries a valid
 # structured block (the part most easily hand-typed wrong) and exercises
-# scripts/validate_ideation_artifact.py via `--paths` out of the box.
+# scripts/gates/validate_ideation_artifact.py via `--paths` out of the box.
 DEFAULT_OUTPUT_DIR = "charness-artifacts/ideation"
 
-# Mirrors the enums in scripts/validate_ideation_artifact.py so the emitted
+# Mirrors the enums in scripts/gates/validate_ideation_artifact.py so the emitted
 # `## Structured Questions` block validates unedited.
 STRUCTURED_QUESTIONS = (
     "- Q1 | urgency: must-resolve | depends-on: null | action: spec"

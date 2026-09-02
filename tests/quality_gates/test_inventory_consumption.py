@@ -19,7 +19,7 @@ from tests.quality_gates.support import run_script
 from tools import validate_inventory_consumption_declaration as declaration
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts" / "validate_inventory_consumption.py"
+SCRIPT = ROOT / "scripts" / "gates" / "validate_inventory_consumption.py"
 
 
 def _run(repo_root: Path) -> subprocess.CompletedProcess[str]:

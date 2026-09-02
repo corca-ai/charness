@@ -115,11 +115,11 @@ gate (late) catches it.
 
 ```bash
 # emit the starter stub (rendered template) for a new critique record
-python3 <plugin-dir>/scripts/check_artifact_surface_preflight.py --type critique --emit-stub
+python3 <plugin-dir>/scripts/gates/check_artifact_surface_preflight.py --type critique --emit-stub
 # or the full scaffold contract as a JSON payload (template + write path + validator command):
 python3 "$SKILL_DIR/scripts/scaffold_critique_artifact.py" --repo-root .
 # inspect required shape for an existing file + its current verdict:
-python3 <plugin-dir>/scripts/check_artifact_surface_preflight.py --path <critique-artifact>
+python3 <plugin-dir>/scripts/gates/check_artifact_surface_preflight.py --path <critique-artifact>
 ```
 
 The same `check_artifact_surface_preflight.py` runs the owning validator at the

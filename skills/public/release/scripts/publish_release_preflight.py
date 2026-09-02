@@ -92,7 +92,7 @@ def _load_shared_closeout_helper() -> Any:
     runtime = SimpleNamespace(**runpy.run_path(str(bootstrap)))
     return runtime.load_repo_module_from_skill_script(
         __file__,
-        "scripts.check_prescribed_skill_executed_lib",
+        "scripts.gates.check_prescribed_skill_executed_lib",
     )
 
 

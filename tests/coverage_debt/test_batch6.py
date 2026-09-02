@@ -33,8 +33,8 @@ ROOT = Path(__file__).resolve().parents[2]
 EXPORT_LIB = importlib.import_module("tools.export_self_sufficiency_lib")
 if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
-ARTIFACT_PREFLIGHT = importlib.import_module("check_artifact_surface_preflight")
-SKILL_PREFLIGHT = importlib.import_module("check_skill_surface_preflight")
+ARTIFACT_PREFLIGHT = importlib.import_module("scripts.gates.check_artifact_surface_preflight")
+SKILL_PREFLIGHT = importlib.import_module("scripts.gates.check_skill_surface_preflight")
 
 NARRATIVE_GATE = load_script_module(
     "publish_release_narrative_gate_batch6",
@@ -317,7 +317,7 @@ def test_the_skill_preflight_emits_a_structured_payload_for_a_real_surface() -> 
     thing to tell them the surface is out of room.
     """
     result = _run(
-        ROOT / "scripts" / "check_skill_surface_preflight.py",
+        ROOT / "scripts" / "gates" / "check_skill_surface_preflight.py",
         "--path",
         "skills/public/quality/SKILL.md",
     )

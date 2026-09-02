@@ -188,7 +188,7 @@ def _dominance_gate():
     if "gate" not in _DOMINANCE_GATE_CACHE:
         _DOMINANCE_GATE_CACHE["gate"] = load_path_module(
             "check_command_dominance_for_universe",
-            REPO_ROOT / "scripts" / "check_command_dominance.py",
+            REPO_ROOT / "scripts" / "gates" / "check_command_dominance.py",
         )
     return _DOMINANCE_GATE_CACHE["gate"]
 

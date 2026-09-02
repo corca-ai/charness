@@ -39,14 +39,14 @@ def _flatten(*runs: str) -> list[dict[str, object]]:
 
 
 def test_gate_is_candidate_when_ci_reruns_its_script(tmp_path: Path) -> None:
-    corpus = _flatten("python3 scripts/check_doc_links.py --repo-root .")
+    corpus = _flatten("python3 scripts/gates/check_doc_links.py --repo-root .")
     result = lens.classify_gates([{"label": "check-doc-links", "wall_clock_ms": 5000}], corpus)
     assert [c["label"] for c in result["candidates"]] == ["check-doc-links"]
     assert result["keep_local"] == []
 
 
 def test_gate_is_keep_local_when_ci_does_not_rerun(tmp_path: Path) -> None:
-    corpus = _flatten("python3 scripts/check_doc_links.py")
+    corpus = _flatten("python3 scripts/gates/check_doc_links.py")
     result = lens.classify_gates([{"label": "specdown", "wall_clock_ms": 30000}], corpus)
     assert result["candidates"] == []
     assert [g["label"] for g in result["keep_local"]] == ["specdown"]
@@ -55,7 +55,7 @@ def test_gate_is_keep_local_when_ci_does_not_rerun(tmp_path: Path) -> None:
 def test_mixed_gates_split_correctly() -> None:
     corpus = _flatten(
         "ruff check charness scripts tests",
-        "python3 scripts/check_doc_links.py",
+        "python3 scripts/gates/check_doc_links.py",
         "./scripts/check-markdown.sh",
     )
     gates = [
@@ -70,7 +70,7 @@ def test_mixed_gates_split_correctly() -> None:
 
 
 def test_candidates_ranked_by_wall_clock_desc_unknown_last() -> None:
-    corpus = _flatten("python3 scripts/check_doc_links.py", "python3 scripts/check_markdown.py", "ruff check .")
+    corpus = _flatten("python3 scripts/gates/check_doc_links.py", "python3 scripts/check_markdown.py", "ruff check .")
     gates = [
         {"label": "check-doc-links", "wall_clock_ms": 1000},
         {"label": "check-markdown", "wall_clock_ms": 9000},
@@ -101,7 +101,7 @@ def test_gate_policy_surfaced_on_candidate() -> None:
             {
                 "workflow": ".github/workflows/quality-core.yml",
                 "gate_policy": "local-gate-subset-mirror",
-                "data": {"jobs": {"core": {"steps": [{"run": "python3 scripts/check_doc_links.py"}]}}},
+                "data": {"jobs": {"core": {"steps": [{"run": "python3 scripts/gates/check_doc_links.py"}]}}},
             }
         ]
     )
@@ -155,7 +155,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Validate doc links
-        run: python3 scripts/check_doc_links.py --repo-root .
+        run: python3 scripts/gates/check_doc_links.py --repo-root .
       - name: Lint
         run: ruff check charness scripts tests
 """

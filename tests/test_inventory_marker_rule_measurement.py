@@ -21,8 +21,8 @@ import yaml
 from tests.script_main import load_script_module, run_loaded_script_main
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SCRIPT = REPO_ROOT / "scripts" / "measure_inventory_marker_rule.py"
-MEASURE = load_script_module("scripts.measure_inventory_marker_rule", SCRIPT)
+SCRIPT = REPO_ROOT / "scripts" / "gates" / "measure_inventory_marker_rule.py"
+MEASURE = load_script_module("scripts.gates.measure_inventory_marker_rule", SCRIPT)
 
 
 def run_measure(*args: str):
@@ -170,10 +170,10 @@ def test_d47_uses_a_hash_bound_dated_measurement_snapshot():
     assert snapshot["captured_at"] == "2026-08-12"
     assert "immutable historical evidence" in snapshot["scope"]
     assert snapshot["measurement_command"] == (
-        "python3 scripts/measure_inventory_marker_rule.py --repo-root . --json"
+        "python3 scripts/gates/measure_inventory_marker_rule.py --repo-root . --json"
     )
     assert snapshot["recursive_measurement_command"] == (
-        "python3 scripts/measure_inventory_marker_rule.py --repo-root . --recursive --json"
+        "python3 scripts/gates/measure_inventory_marker_rule.py --repo-root . --recursive --json"
     )
     source_commit = snapshot["source_commit"]
     assert re.fullmatch(r"[0-9a-f]{40}", source_commit)

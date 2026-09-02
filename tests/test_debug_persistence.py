@@ -17,8 +17,8 @@ PERSIST = import_repo_module(
     "skills.public.debug.scripts.persist_debug_artifact",
 )
 VALIDATOR = import_repo_module(
-    ROOT / "scripts/validate_debug_artifact.py",
-    "scripts.validate_debug_artifact",
+    ROOT / "scripts/gates/validate_debug_artifact.py",
+    "scripts.gates.validate_debug_artifact",
 )
 SCAFFOLD = import_repo_module(
     ROOT / "skills/public/debug/scripts/scaffold_debug_artifact.py",

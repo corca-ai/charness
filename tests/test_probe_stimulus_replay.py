@@ -41,7 +41,7 @@ from scripts import probe_stimulus_replay as replay
 from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
-CLI = ROOT / "scripts" / "check_probe_record.py"
+CLI = ROOT / "scripts" / "gates" / "check_probe_record.py"
 
 
 def _stimulus(filename: str, body: str, *, quote: str = "'", directory: str = ".agents") -> str:
@@ -452,7 +452,7 @@ def test_a_heredoc_that_writes_something_other_than_an_adapter_is_passed_over():
     ("stimulus", "why"),
     [
         pytest.param("", "no stimulus", id="absent"),
-        pytest.param("python3 scripts/check_probe_record.py --record x.md\n", "no adapter", id="no-adapter-document"),
+        pytest.param("python3 scripts/gates/check_probe_record.py --record x.md\n", "no adapter", id="no-adapter-document"),
     ],
 )
 def test_a_stimulus_this_module_cannot_read_says_not_configured_rather_than_passing(stimulus, why):

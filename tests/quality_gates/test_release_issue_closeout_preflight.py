@@ -34,7 +34,7 @@ def _load_release_closeout_message_module():
 
 
 def _load_commit_msg_checker():
-    path = ROOT / "scripts" / "check_issue_closeout_commit_msg.py"
+    path = ROOT / "scripts" / "gates" / "check_issue_closeout_commit_msg.py"
     return load_module("check_issue_closeout_commit_msg_test", path)
 
 

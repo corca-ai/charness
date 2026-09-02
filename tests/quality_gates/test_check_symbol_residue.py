@@ -8,7 +8,7 @@ import yaml
 from .repo_shapes import replace_with_committed_repo
 from .support import run_script
 
-csr = importlib.import_module("scripts.check_symbol_residue")
+csr = importlib.import_module("scripts.gates.check_symbol_residue")
 
 
 def _repo(tmp_path: Path) -> Path:
@@ -51,7 +51,7 @@ def test_symbol_residue_cli_is_advisory_exit_zero(tmp_path: Path) -> None:
 
     (repo / "scripts" / "rules.py").write_text("", encoding="utf-8")
 
-    result = run_script("scripts/check_symbol_residue.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_symbol_residue.py", "--repo-root", str(repo))
     assert result.returncode == 0
     payload = yaml.safe_load(result.stdout)
     assert payload["finding_count"] == 1

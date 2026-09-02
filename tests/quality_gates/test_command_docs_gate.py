@@ -124,7 +124,7 @@ def seed_command_docs_repo(tmp_path: Path) -> Path:
 
 
 def test_check_command_docs_passes_current_repo_contract() -> None:
-    result = run_script("scripts/check_command_docs.py", "--repo-root", str(ROOT))
+    result = run_script("scripts/gates/check_command_docs.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
     # "Validated command docs for N command surface(s)" was the renderer's line;
     # `status` plus the command list is what carries the same claim AND its
@@ -139,7 +139,7 @@ def test_check_command_docs_reports_missing_required_doc_phrase(tmp_path: Path) 
     repo = seed_command_docs_repo(tmp_path)
     (repo / "docs" / "demo.md").write_text("Run `demo` for text output.\n", encoding="utf-8")
 
-    result = run_script("scripts/check_command_docs.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_command_docs.py", "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "docs/demo.md missing `demo --json`" in result.stderr
@@ -149,7 +149,7 @@ def test_check_command_docs_skips_repos_without_contract(tmp_path: Path) -> None
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    result = run_script("scripts/check_command_docs.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_command_docs.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
     # A skip has to say it skipped and WHY: an empty findings list alone reads as
@@ -394,7 +394,7 @@ def test_run_help_raises_systemexit_on_signal_death(tmp_path: Path) -> None:
 # from the filesystem -- is only reachable through the collector itself.
 FLAG_GATE = load_script_module(
     "tests.quality_gates.command_docs_flag_gate",
-    ROOT / "scripts" / "check_documented_command_flags.py",
+    ROOT / "scripts" / "gates" / "check_documented_command_flags.py",
 )
 
 

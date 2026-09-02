@@ -52,7 +52,7 @@ import re
 from pathlib import Path
 from typing import NamedTuple
 
-from scripts.check_doc_links import PORTABLE_SKILL_KINDS
+from scripts.gates.check_doc_links import PORTABLE_SKILL_KINDS
 from yaml_output import emit_yaml  # noqa: E402
 
 # ANY extension, not just `.py`. A `.py`-only regex cannot report that it is

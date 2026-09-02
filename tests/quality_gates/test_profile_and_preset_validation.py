@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import validate_adapters as VALIDATE_ADAPTERS
+from scripts.gates import validate_adapters as VALIDATE_ADAPTERS
 from tests.quality_gates.repo_shapes import install_committed_repo
 from scripts import validate_presets as VALIDATE_PRESETS
 from tools import validate_profiles as VALIDATE_PROFILES
@@ -250,7 +250,7 @@ def test_validate_adapters_rejects_charness_quality_coverage_floor_drift(tmp_pat
         encoding="utf-8",
     )
 
-    result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_adapters.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert (
         "coverage_floor_policy.fail_below_pct must match check_coverage.py (85.0)" in result.stderr
@@ -395,7 +395,7 @@ def test_validate_adapters_ignores_gitignored_skills(tmp_path: Path) -> None:
     ignored.parent.mkdir(parents=True)
     ignored.write_text("#!/usr/bin/env python3\nraise SystemExit(1)\n", encoding="utf-8")
 
-    result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_adapters.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -420,7 +420,7 @@ def test_validate_adapters_rejects_charness_quality_adapter_with_missing_mature_
         encoding="utf-8",
     )
 
-    result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_adapters.py", "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "mature charness quality adapter must explicitly declare" in result.stderr
@@ -489,7 +489,7 @@ def test_validate_adapters_accepts_charness_quality_adapter_mature_fields(tmp_pa
         encoding="utf-8",
     )
 
-    result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_adapters.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
 
@@ -518,7 +518,7 @@ def test_validate_adapters_rejects_invalid_quality_adapter_rule(tmp_path: Path) 
         encoding="utf-8",
     )
 
-    result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_adapters.py", "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "skill_ergonomics_gate_rules contains unknown rule `typo_rule`" in result.stderr
@@ -533,7 +533,7 @@ def test_validate_adapters_allows_consumer_quality_gate_commands(tmp_path: Path)
         encoding="utf-8",
     )
 
-    result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_adapters.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
     assert "Validated" in result.stdout
@@ -541,7 +541,7 @@ def test_validate_adapters_allows_consumer_quality_gate_commands(tmp_path: Path)
 
 def test_validate_adapters_accepts_checked_in_charness_quality_coverage_floor() -> None:
     result = run_script(
-        "scripts/validate_adapters.py", "--repo-root", str(Path(__file__).resolve().parents[2])
+        "scripts/gates/validate_adapters.py", "--repo-root", str(Path(__file__).resolve().parents[2])
     )
 
     assert result.returncode == 0, result.stderr
@@ -577,7 +577,7 @@ def test_exported_validate_adapters_runs_from_flattened_layout(tmp_path: Path) -
     result = subprocess.run(
         [
             sys.executable,
-            str(plugin_root / "scripts" / "validate_adapters.py"),
+            str(plugin_root / "scripts" / "gates" / "validate_adapters.py"),
             "--repo-root",
             str(plugin_root),
         ],
@@ -666,7 +666,7 @@ def test_validate_adapters_rejects_charness_quality_command_drift(tmp_path: Path
         encoding="utf-8",
     )
 
-    result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_adapters.py", "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "gate_commands must exactly name the standing quality gate" in result.stderr
@@ -756,6 +756,6 @@ def test_validate_adapters_rejects_charness_quality_coverage_floor_threshold_dri
             encoding="utf-8",
         )
 
-        result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
+        result = run_script("scripts/gates/validate_adapters.py", "--repo-root", str(repo))
         assert result.returncode == 1
         assert expected_error in result.stderr

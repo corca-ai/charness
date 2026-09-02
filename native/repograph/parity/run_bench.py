@@ -42,7 +42,7 @@ def load_owners(root: Path) -> tuple[Any, Any]:
     sys.path.insert(0, str(root))
     return (
         importlib.import_module("scripts.check_export_safe_imports"),
-        importlib.import_module("scripts.check_standalone_imports"),
+        importlib.import_module("scripts.gates.check_standalone_imports"),
     )
 
 
@@ -149,7 +149,7 @@ def comparison_commands(root: Path, binary: Path) -> list[dict[str, Any]]:
                 sys.executable,
                 "-c",
                 "import sys; from pathlib import Path; sys.path.insert(0, sys.argv[1]); "
-                "from scripts.check_standalone_imports import discover_modules; "
+                "from scripts.gates.check_standalone_imports import discover_modules; "
                 "discover_modules(Path(sys.argv[1]))",
                 str(root),
             ],
@@ -160,7 +160,7 @@ def comparison_commands(root: Path, binary: Path) -> list[dict[str, Any]]:
             "command": "match-surfaces",
             "python_command": [
                 sys.executable,
-                "scripts/check_changed_surfaces.py",
+                "scripts/gates/check_changed_surfaces.py",
                 "--repo-root",
                 str(root),
                 "--paths",

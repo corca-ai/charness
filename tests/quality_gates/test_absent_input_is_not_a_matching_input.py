@@ -435,7 +435,7 @@ def test_s35_the_codex_marketplace_is_declarable_and_absence_shows(tmp_path):
 def _measure():
     return _load_script_module(
         "measure_adapter_yaml_uninterpreted_test",
-        ROOT / "scripts" / "measure_adapter_yaml_uninterpreted.py",
+        ROOT / "scripts" / "gates" / "measure_adapter_yaml_uninterpreted.py",
     )
 
 
@@ -677,7 +677,7 @@ def test_the_measurement_runs_as_a_script(tmp_path):
     result = subprocess.run(
         [
             sys.executable,
-            str(ROOT / "scripts" / "measure_adapter_yaml_uninterpreted.py"),
+            str(ROOT / "scripts" / "gates" / "measure_adapter_yaml_uninterpreted.py"),
             "--repo-root",
             str(tmp_path),
             "--roots",

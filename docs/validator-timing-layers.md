@@ -14,8 +14,8 @@ author learns the verdict closer to the keystroke that caused it.
 Timings, ordered by feedback latency (earliest first):
 
 1. **Author-time preflight** — explicit, scoped to the artifact being authored
-   ([check_skill_surface_preflight.py](../scripts/check_skill_surface_preflight.py),
-   [check_artifact_surface_preflight.py](../scripts/check_artifact_surface_preflight.py)).
+   ([check_skill_surface_preflight.py](../scripts/gates/check_skill_surface_preflight.py),
+   [check_artifact_surface_preflight.py](../scripts/gates/check_artifact_surface_preflight.py)).
 2. **Edit-time hook** — automatic per-edit firing, adapter-declared and
    host-specific (the `skill_anchor_edit_guard` PostToolUse hook; see
    [authoring-preflight.md](./authoring-preflight.md)).

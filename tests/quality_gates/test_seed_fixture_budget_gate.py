@@ -14,7 +14,7 @@ from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
 
-SCRIPT = ROOT / "scripts" / "check_seed_fixture_budget.py"
+SCRIPT = ROOT / "scripts" / "gates" / "check_seed_fixture_budget.py"
 SCAN_LIB = ROOT / "skills" / "public" / "quality" / "scripts" / "pytest_temp_scan_lib.py"
 
 
@@ -304,7 +304,7 @@ def test_load_inventory_resolves_both_layouts(monkeypatch, tmp_path: Path, layou
     module = _gate()
     repo_root = tmp_path / "repo"
     _write_lib_stub(repo_root, layout)
-    monkeypatch.setattr(module, "__file__", str(repo_root / "scripts" / "check_seed_fixture_budget.py"))
+    monkeypatch.setattr(module, "__file__", str(repo_root / "scripts" / "gates" / "check_seed_fixture_budget.py"))
 
     assert module._load_inventory().MARKER == "loaded"
 
@@ -314,7 +314,7 @@ def test_load_inventory_names_both_layouts_when_neither_exists(monkeypatch, tmp_
     module = _gate()
     repo_root = tmp_path / "repo"
     (repo_root / "scripts").mkdir(parents=True)
-    monkeypatch.setattr(module, "__file__", str(repo_root / "scripts" / "check_seed_fixture_budget.py"))
+    monkeypatch.setattr(module, "__file__", str(repo_root / "scripts" / "gates" / "check_seed_fixture_budget.py"))
 
     with pytest.raises(ImportError) as excinfo:
         module._load_inventory()

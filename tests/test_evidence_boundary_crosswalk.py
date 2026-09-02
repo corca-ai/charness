@@ -27,8 +27,8 @@ from scripts.evidence_boundary_crosswalk import (
 )
 from scripts.evidence_boundary_crosswalk import main as crosswalk_main
 from scripts.issue_source_capture_lib import build_snapshot_and_receipt, capture_issues
-from scripts.validate_evidence_boundary_crosswalk import main as validate_main
-from scripts.validate_evidence_boundary_crosswalk import run as validate_crosswalk
+from scripts.gates.validate_evidence_boundary_crosswalk import main as validate_main
+from scripts.gates.validate_evidence_boundary_crosswalk import run as validate_crosswalk
 from scripts.validate_issue_source_freeze import run_freeze, stamp_inspection
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -999,7 +999,7 @@ def test_the_validator_module_main_guard_executes(tmp_path, monkeypatch) -> None
     _crosswalk(tmp_path)
     monkeypatch.setattr(sys, "argv", ["x", "--repo-root", str(tmp_path), "--crosswalk", CROSSWALK_REL])
     with pytest.raises(SystemExit) as excinfo:
-        runpy.run_path(str(REPO_ROOT / "scripts" / "validate_evidence_boundary_crosswalk.py"), run_name="__main__")
+        runpy.run_path(str(REPO_ROOT / "scripts" / "gates" / "validate_evidence_boundary_crosswalk.py"), run_name="__main__")
 
     assert excinfo.value.code == 0
 

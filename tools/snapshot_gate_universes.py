@@ -30,6 +30,8 @@ def _bespoke_commands() -> list[tuple[str, Sequence[str] | str]]:
     detector_patterns = (
         "scripts/check_*.py",
         "scripts/validate_*.py",
+        "scripts/*/check_*.py",
+        "scripts/*/validate_*.py",
         "skills/public/*/scripts/inventory_*.py",
         "skills/public/*/scripts/check_*.py",
         "skills/public/*/scripts/validate_*.py",
@@ -45,7 +47,7 @@ def _bespoke_commands() -> list[tuple[str, Sequence[str] | str]]:
         ),
         (
             "code_lengths_headroom",
-            _python_command("scripts/check_code_lengths.py", "--repo-root", ".", "--headroom"),
+            _python_command("scripts/gates/check_code_lengths.py", "--repo-root", ".", "--headroom"),
         ),
         (
             "adapter_gate_design",

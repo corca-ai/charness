@@ -67,7 +67,7 @@
       ],
       "rationale": "`summary_path: null` is the retro adapter's declared opt-out of the Markdown digest. The command still writes or validates the source-linked selection index and validates the ledger; its payload names the digest comparison as `summary_projection: not_configured` so a reader can tell a declared absence from a comparison that ran."
     },
-    "scripts/check_cli_skill_surface.py": {
+    "scripts/gates/check_cli_skill_surface.py": {
       "states": [
         "skipped"
       ],
@@ -80,7 +80,7 @@
       ],
       "rationale": "The release/quality CLI surface check returns an explicit skipped status and reason when no relevant surface changed."
     },
-    "scripts/check_command_docs.py": {
+    "scripts/gates/check_command_docs.py": {
       "states": [
         "skipped"
       ],
@@ -92,7 +92,7 @@
       ],
       "rationale": "Repos without command-doc contracts get an explicit skipped status and reason."
     },
-    "scripts/check_consumer_validator_catalog.py": {
+    "scripts/gates/check_consumer_validator_catalog.py": {
       "states": [
         "not_configured"
       ],
@@ -106,7 +106,7 @@
       ],
       "rationale": "An inventory target without the consumer-validator adoption declaration is explicit `not_configured` state, not a clean catalog pass; the CLI payload and nonzero result keep the missing adoption contract visible."
     },
-    "scripts/check_coverage_lib.py": {
+    "scripts/gates/check_coverage_lib.py": {
       "states": [
         "not_configured",
         "skipped"
@@ -120,7 +120,7 @@
       ],
       "rationale": "Coverage scenarios preserve the explicit absent-healthcheck state and skipped marker in the lifecycle payload."
     },
-    "scripts/check_documented_command_flags.py": {
+    "scripts/gates/check_documented_command_flags.py": {
       "states": [
         "skipped"
       ],
@@ -133,7 +133,7 @@
       ],
       "rationale": "A documented invocation this gate cannot resolve to a runnable script -- a <placeholder> path for a consuming repo, or a path check_doc_links.py owns -- is counted by reason instead of dropped. render_report delegates to gate_report_emit.render_findings_with_skipped, which appends the \"Not proven\" count and every reason to the PASS output as well as the fail output; the same map rides in the YAML payload as skipped, so a green run states how much of the documented command surface it did not prove rather than reading as full coverage."
     },
-    "scripts/check_documented_subcommands.py": {
+    "scripts/gates/check_documented_subcommands.py": {
       "states": [
         "skipped"
       ],
@@ -172,7 +172,7 @@
       ],
       "rationale": "Mutation skipped workers are rendered in the printed score summary."
     },
-    "scripts/check_prescribed_skill_executed_lib.py": {
+    "scripts/gates/check_prescribed_skill_executed_lib.py": {
       "states": [
         "skipped"
       ],
@@ -188,7 +188,7 @@
       ],
       "rationale": "Shared closeout helper library carries the same enum-bounded skip semantics into structured ok/blockers payloads consumed by achieve/issue/release closeout gates."
     },
-    "scripts/check_seed_fixture_budget.py": {
+    "scripts/gates/check_seed_fixture_budget.py": {
       "states": [
         "advisory-only"
       ],
@@ -205,7 +205,7 @@
       ],
       "rationale": "Seed fixture budget gate reports advisory-only for the three states where no measurement is possible or the block was explicitly waived (no pytest tmp directory yet, a `du` this box cannot run, or --advisory-on-scan-failure). A scan that failed for any other reason is BLOCKING, not advisory: a run that measured nothing must not read as a pass. The payload exposes the classification, the scan reason, and the attempt count."
     },
-    "scripts/check_test_production_ratio.py": {
+    "scripts/gates/check_test_production_ratio.py": {
       "states": [
         "skipped"
       ],
@@ -218,7 +218,7 @@
       ],
       "rationale": "The ratio gate reports undecodable Python sources (the committed malformed repograph parser fixtures) as TYPED skipped paths with counts in its output instead of crashing; the paths are listed so the exclusion is visible, and the gate's pass/fail verdict is computed over the decodable corpus only."
     },
-    "scripts/check_upstream_support_drift.py": {
+    "scripts/gates/check_upstream_support_drift.py": {
       "states": [
         "skipped"
       ],
@@ -342,7 +342,7 @@
       ],
       "rationale": "Host-hook install/uninstall library exposes per-host intent (enabled/disabled) in reconcile and status payloads so adapter-driven no-op runs cannot read as silent install."
     },
-    "scripts/measure_inventory_marker_rule.py": {
+    "scripts/gates/measure_inventory_marker_rule.py": {
       "states": [
         "skipped"
       ],
@@ -448,7 +448,7 @@
       ],
       "rationale": "Support sync returns explicit skipped status for non-materialized or irrelevant sync work."
     },
-    "scripts/validate_inventory_consumption.py": {
+    "scripts/gates/validate_inventory_consumption.py": {
       "states": [
         "prose_review_status",
         "skipped"

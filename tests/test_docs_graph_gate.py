@@ -23,8 +23,8 @@ import yaml
 from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[1]
-GATE = "scripts/check_docs_graph.py"
-_gate = import_repo_module(__file__, "scripts.check_docs_graph")
+GATE = "scripts/gates/check_docs_graph.py"
+_gate = import_repo_module(__file__, "scripts.gates.check_docs_graph")
 _QUALITY_ROWS = quality_label_universe.quality_gate_rows(ROOT) or []
 
 # CAPTURED from awiki 0.5.0, not hand-written. The passing line is the one that
@@ -394,7 +394,7 @@ def test_the_completeness_guard_runs_at_import() -> None:
     # durable.
     import ast
 
-    source = (ROOT / "scripts" / "check_docs_graph.py").read_text(encoding="utf-8")
+    source = (ROOT / "scripts" / "gates" / "check_docs_graph.py").read_text(encoding="utf-8")
     module = ast.parse(source)
     calls = [
         node.value
@@ -760,7 +760,7 @@ def test_the_not_run_exit_code_is_the_runners_unestablished_byte() -> None:
 
 def test_the_gate_is_wired_into_the_quality_runner() -> None:
     assert any(
-        row["label"] == "docs-graph" and "scripts/check_docs_graph.py" in row["command"]
+        row["label"] == "docs-graph" and "scripts/gates/check_docs_graph.py" in row["command"]
         for row in _QUALITY_ROWS
     )
 
@@ -851,7 +851,7 @@ def test_the_gate_does_not_print_a_live_link_only_count() -> None:
     # measurement inside it is a proof surface stating a number that drifts with
     # every docs edit. The bar belongs in code as a required value, where the
     # ratchet governs it; a snapshot of the current tree belongs in neither.
-    source = (ROOT / "scripts" / "check_docs_graph.py").read_text(encoding="utf-8")
+    source = (ROOT / "scripts" / "gates" / "check_docs_graph.py").read_text(encoding="utf-8")
     docstring = _gate.__doc__ or ""
     assert docstring, "the module docstring is the --help text; it must not be empty"
     # Three digits or more: every count this docstring has ever carried is that

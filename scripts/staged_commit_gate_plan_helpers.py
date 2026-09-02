@@ -9,8 +9,8 @@ _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard"
 run_process = _subprocess_guard.run_process
 
 _PLAN_HELPERS_ROOT = repo_root_from_script(__file__)
-_artifact_preflight = import_repo_module(__file__, "scripts.check_artifact_surface_preflight")
-_catalog_check = import_repo_module(__file__, "scripts.check_consumer_validator_catalog")
+_artifact_preflight = import_repo_module(__file__, "scripts.gates.check_artifact_surface_preflight")
+_catalog_check = import_repo_module(__file__, "scripts.gates.check_consumer_validator_catalog")
 _is_catalog_candidate_name = _catalog_check._is_candidate_name
 
 
@@ -82,7 +82,7 @@ def catalog_timing_layer_gates(
     """Pull both catalog invocations when a candidate or catalog input changes."""
     catalog_paths = {
         ".agents/consumer-validator-adoption.yaml",
-        "scripts/check_consumer_validator_catalog.py",
+        "scripts/gates/check_consumer_validator_catalog.py",
         "skills/public/quality/references/consumer-validator-catalog.yaml",
         "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml",
     }
@@ -106,7 +106,7 @@ def catalog_timing_layer_gates(
         *timing_pull_gate(
             repo_root,
             "check-consumer-validator-catalog",
-            "scripts/check_consumer_validator_catalog.py",
+            "scripts/gates/check_consumer_validator_catalog.py",
             *args,
         ),
         *timing_pull_gate(
@@ -216,7 +216,7 @@ def skill_core_headroom_gates(repo_root: Path, paths: list[str]) -> list[GateCom
             "check-skill-core-headroom (staged)",
             (
                 "python3",
-                "scripts/check_skill_surface_preflight.py",
+                "scripts/gates/check_skill_surface_preflight.py",
                 "--repo-root",
                 str(repo_root),
                 "--changed-skill-md",
@@ -244,7 +244,7 @@ def artifact_shape_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]
     # when the target repo IS the charness source tree. Mirrors
     # `check_artifact_surface_preflight._validator_argv_path`; falls back to the
     # relative form so an unusual layout keeps the old behavior.
-    preflight_rel = "scripts/check_artifact_surface_preflight.py"
+    preflight_rel = "scripts/gates/check_artifact_surface_preflight.py"
     preflight_local = _PLAN_HELPERS_ROOT / preflight_rel
     preflight = str(preflight_local) if preflight_local.is_file() else preflight_rel
     return [

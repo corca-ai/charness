@@ -28,7 +28,7 @@ from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script 
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_command_docs = import_repo_module(__file__, "scripts.check_command_docs")
+_command_docs = import_repo_module(__file__, "scripts.gates.check_command_docs")
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 

@@ -354,7 +354,7 @@ Reuse the shared grammar in `<plugin-dir>/scripts/artifact_validator.py` (e.g.
 `validate_sibling_followups`) instead of re-implementing follow-up or enum
 parsing per skill.
 
-`scripts/validate_skill_output_schemas.py --report` surveys
+`scripts/gates/validate_skill_output_schemas.py --report` surveys
 `skills/public/*/SKILL.md` for classifier-bearing `Output Shape` fields that
 lack a matching `validate_*_artifact.py` / `validate_*_output.py`. It is
 advisory by design: the "does this field need a validator?" judgment is
@@ -419,7 +419,7 @@ Before stopping:
   skill, decide which skill owns the write and document the boundary in
   both SKILL.md files; silent overlap creates drift the next operator
   will hit. The runtime validator
-  `scripts/check_skill_ownership_overlap.py --repo-root .` flags any
+  `scripts/gates/check_skill_ownership_overlap.py --repo-root .` flags any
   cross-namespace mention of `charness-artifacts/<other>/` or
   `.agents/<other>-adapter.yaml`; declare intentional cross-skill cites
   (read-only spill targets, setup seeds) in

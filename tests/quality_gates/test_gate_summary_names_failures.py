@@ -60,7 +60,7 @@ def _seed_gate(repo: Path, body: str) -> None:
     validator with opinions of its own about artifacts.
     """
 
-    validator = repo / "scripts" / "validate_retro_artifact.py"
+    validator = repo / "scripts" / "gates" / "validate_retro_artifact.py"
     validator.parent.mkdir(parents=True, exist_ok=True)
     validator.write_text(body, encoding="utf-8")
 

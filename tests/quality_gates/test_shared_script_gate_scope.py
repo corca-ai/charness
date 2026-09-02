@@ -14,9 +14,9 @@ import quality_label_universe
 
 from .support import ROOT
 
-CHECK_PYTHON_LENGTHS = importlib.import_module("scripts.check_code_lengths")
+CHECK_PYTHON_LENGTHS = importlib.import_module("scripts.gates.check_code_lengths")
 CHECK_PYTHON_RUNTIME_INHERITANCE = importlib.import_module(
-    "scripts.check_python_runtime_inheritance"
+    "scripts.gates.check_python_runtime_inheritance"
 )
 
 REPO_ROOT = ROOT

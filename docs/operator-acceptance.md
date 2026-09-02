@@ -150,7 +150,7 @@ Useful local commands:
 
 ```bash
 for d in skills/public/*; do [ -f "$d/adapter.example.yaml" ] && echo "adapter $d" || echo "no-adapter $d"; done
-python3 scripts/validate_adapters.py --repo-root .
+python3 scripts/gates/validate_adapters.py --repo-root .
 ```
 
 Acceptance:

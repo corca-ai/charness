@@ -19,7 +19,7 @@ from tests.dsl import Repo
 
 ROOT = Path(__file__).resolve().parents[1]
 _SPEC = importlib.util.spec_from_file_location(
-    "inventory_boundary_bypass_lib", ROOT / "scripts" / "inventory_boundary_bypass_lib.py"
+    "inventory_boundary_bypass_lib", ROOT / "scripts" / "gates" / "inventory_boundary_bypass_lib.py"
 )
 assert _SPEC is not None and _SPEC.loader is not None
 LIB = importlib.util.module_from_spec(_SPEC)
@@ -372,7 +372,7 @@ def test_inventory_boundary_bypass_cli_summary_omits_full_candidates(tmp_path: P
     monkeypatch.syspath_prepend(str(ROOT / "scripts"))
     spec = importlib.util.spec_from_file_location(
         "inventory_boundary_bypass_cli_under_test",
-        ROOT / "scripts" / "inventory_boundary_bypass.py",
+        ROOT / "scripts" / "gates" / "inventory_boundary_bypass.py",
     )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)

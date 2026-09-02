@@ -83,7 +83,7 @@ SITES: tuple[tuple[str, str, str], ...] = (
     ("quality", "scripts/quality_adapter_lib.py", "validate_quality_adapter_data"),
     ("release", "skills/public/release/scripts/resolve_adapter.py", "validate_adapter_data"),
     ("retro", "skills/public/retro/scripts/resolve_adapter.py", "validate_adapter_data"),
-    ("validate_adapters_gate", "scripts/validate_adapters.py", "validate_adapter_yaml"),
+    ("validate_adapters_gate", "scripts/gates/validate_adapters.py", "validate_adapter_yaml"),
 )
 
 # Sites that DO reconcile a version but cannot be driven by `_resolve`'s call shapes: each
@@ -111,7 +111,7 @@ EXEMPT_SITES: tuple[tuple[str, tuple[str, ...], tuple[str, ...], str], ...] = (
     ),
     (
         "cli_skill_surface_gate",
-        ("scripts/check_cli_skill_surface.py",),
+        ("scripts/gates/check_cli_skill_surface.py",),
         ("tests/quality_gates/test_cli_skill_surface.py::"
          "test_cli_skill_surface_refuses_an_adapter_version_it_does_not_speak",),
         "is a gate, not a resolver: it returns a blocked verdict payload rather than "
@@ -442,7 +442,7 @@ def test_the_commit_gate_requires_a_declared_version_for_every_adapter_name(adap
     absent version as legal, correctly for a resolver, so nothing else refused it either.
     A probe file with a generic name cannot see that: it matches no branch.
     """
-    gate = _module("scripts/validate_adapters.py")
+    gate = _module("scripts/gates/validate_adapters.py")
     probe = tmp_path / ".agents" / adapter_name
     probe.parent.mkdir(parents=True, exist_ok=True)
     probe.write_text("repo: probe\n", encoding="utf-8")

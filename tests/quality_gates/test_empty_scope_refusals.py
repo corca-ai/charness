@@ -35,23 +35,23 @@ _MODULES = {
     for name in (
         "scripts/validate_packaging.py",
         "tools/check_bootstrap_shim_consistency.py",
-        "scripts/check_doc_links.py",
-        "scripts/check_docs_graph.py",
+        "scripts/gates/check_doc_links.py",
+        "scripts/gates/check_docs_graph.py",
         "skills/public/quality/scripts/inventory_doc_duplicates.py",
-        "scripts/check_spec_evidence_durability.py",
-        "scripts/check_artifact_referents.py",
+        "scripts/gates/check_spec_evidence_durability.py",
+        "scripts/gates/check_artifact_referents.py",
         "scripts/validate_critique_artifacts.py",
-        "scripts/validate_retro_artifact.py",
-        "scripts/validate_ideation_artifact.py",
+        "scripts/gates/validate_retro_artifact.py",
+        "scripts/gates/validate_ideation_artifact.py",
         "scripts/check_lesson_ledger.py",
         "scripts/check_mutation_run_proof.py",
-        "scripts/check_code_lengths.py",
-        "scripts/check_python_runtime_inheritance.py",
+        "scripts/gates/check_code_lengths.py",
+        "scripts/gates/check_python_runtime_inheritance.py",
         "tools/check_skill_bootstrap_vars.py",
-        "scripts/check_test_production_ratio.py",
+        "scripts/gates/check_test_production_ratio.py",
         "tools/check_skill_cut_safety.py",
-        "scripts/check_skill_surface_preflight.py",
-        "scripts/check_test_repo_copy_invariants.py",
+        "scripts/gates/check_skill_surface_preflight.py",
+        "scripts/gates/check_test_repo_copy_invariants.py",
         "tools/validate_integrations.py",
         "skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py",
         "scripts/specdown_ephemeral_config.py",
@@ -61,7 +61,7 @@ _MODULES = {
 }
 
 
-_CODE_LENGTHS = _MODULES["scripts/check_code_lengths.py"]
+_CODE_LENGTHS = _MODULES["scripts/gates/check_code_lengths.py"]
 
 
 def run_gate(script: str, *args: str):
@@ -95,7 +95,7 @@ def test_zero_scope_scan_refuses(tmp_path: Path) -> None:
         ("scripts/validate_packaging.py", "no packaging manifests found"),
         ("tools/check_bootstrap_shim_consistency.py", "nothing was compared"),
         ("tools/check_skill_bootstrap_vars.py", "no public/support SKILL.md files found"),
-        ("scripts/check_test_repo_copy_invariants.py", "no test Python files found"),
+        ("scripts/gates/check_test_repo_copy_invariants.py", "no test Python files found"),
         ("tools/validate_integrations.py", "no integration manifests found"),
     )
     for script, expected_fragment in cases:
@@ -128,11 +128,11 @@ def test_zero_scope_scan_refuses(tmp_path: Path) -> None:
 def test_declared_u2_universes_refuse_when_empty(tmp_path: Path) -> None:
     """Every adapter-declared U2 scope must establish at least one input."""
     cases = (
-        ("doc_surfaces", None, "scripts/check_doc_links.py", ()),
-        ("doc_surfaces", None, "scripts/check_docs_graph.py", ()),
+        ("doc_surfaces", None, "scripts/gates/check_doc_links.py", ()),
+        ("doc_surfaces", None, "scripts/gates/check_docs_graph.py", ()),
         ("doc_surfaces", None, "skills/public/quality/scripts/inventory_doc_duplicates.py", ()),
-        ("artifact_roots", "spec", "scripts/check_spec_evidence_durability.py", ()),
-        ("artifact_roots", "goals", "scripts/check_artifact_referents.py", ()),
+        ("artifact_roots", "spec", "scripts/gates/check_spec_evidence_durability.py", ()),
+        ("artifact_roots", "goals", "scripts/gates/check_artifact_referents.py", ()),
         (
             "artifact_roots",
             "critique",
@@ -142,7 +142,7 @@ def test_declared_u2_universes_refuse_when_empty(tmp_path: Path) -> None:
         (
             "artifact_roots",
             "ideation",
-            "scripts/validate_ideation_artifact.py",
+            "scripts/gates/validate_ideation_artifact.py",
             ("--all",),
         ),
         ("artifact_roots", "retro", "scripts/check_lesson_ledger.py", ()),
@@ -207,8 +207,8 @@ def test_named_path_that_resolves_to_nothing_refuses(tmp_path: Path) -> None:
     another family is the tool saying "none of this is yours"."""
     cases = (
         ("scripts/validate_critique_artifacts.py", "charness-artifacts/critique/typo.md"),
-        ("scripts/validate_retro_artifact.py", "charness-artifacts/retro/typo.md"),
-        ("scripts/validate_ideation_artifact.py", "charness-artifacts/ideation/typo.md"),
+        ("scripts/gates/validate_retro_artifact.py", "charness-artifacts/retro/typo.md"),
+        ("scripts/gates/validate_ideation_artifact.py", "charness-artifacts/ideation/typo.md"),
     )
     for script, named in cases:
         (tmp_path / named).parent.mkdir(parents=True, exist_ok=True)
@@ -399,7 +399,7 @@ def test_skill_core_headroom_absolute_path_refuses() -> None:
     """S44: `_is_skill_core_path` requires exactly four REPO-RELATIVE parts, so the
     ABSOLUTE path of a real SKILL.md was dropped and reported `status: ok`."""
     result = run_gate(
-        "scripts/check_skill_surface_preflight.py",
+        "scripts/gates/check_skill_surface_preflight.py",
         "--repo-root",
         str(ROOT),
         "--changed-skill-md",
@@ -415,7 +415,7 @@ def test_skill_core_headroom_empty_list_stays_a_pass() -> None:
     """The asymmetry, at this gate: `--changed-skill-md` with NO values is the hook
     reporting an empty changed set -- a real answer that must stay a cheap pass."""
     result = run_gate(
-        "scripts/check_skill_surface_preflight.py", "--repo-root", str(ROOT), "--changed-skill-md"
+        "scripts/gates/check_skill_surface_preflight.py", "--repo-root", str(ROOT), "--changed-skill-md"
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert yaml.safe_load(result.stdout)["status"] == "ok"
@@ -425,7 +425,7 @@ def test_skill_core_headroom_relative_path_still_passes() -> None:
     """Control for the refusal above: the same file, named the way the commit-gate
     caller names it, is really ratcheted."""
     result = run_gate(
-        "scripts/check_skill_surface_preflight.py",
+        "scripts/gates/check_skill_surface_preflight.py",
         "--repo-root",
         str(ROOT),
         "--changed-skill-md",
@@ -441,11 +441,11 @@ def test_code_lengths_headroom_without_paths_reports_every_gated_file() -> None:
     """S39: `args.paths or []` turned an OMITTED --paths into an explicit EMPTY
     selection, so the advisory whose --help promises per-gated-file headroom
     printed `{"headroom": []}`."""
-    result = run_gate("scripts/check_code_lengths.py", "--repo-root", str(ROOT), "--headroom")
+    result = run_gate("scripts/gates/check_code_lengths.py", "--repo-root", str(ROOT), "--headroom")
     assert result.returncode == 0, result.stdout + result.stderr
     rows = yaml.safe_load(result.stdout)["headroom"]
     assert len(rows) > 1
-    assert "scripts/check_code_lengths.py" in {row["path"] for row in rows}
+    assert "scripts/gates/check_code_lengths.py" in {row["path"] for row in rows}
 
 
 def test_code_lengths_unresolvable_named_path_refuses() -> None:
@@ -453,7 +453,7 @@ def test_code_lengths_unresolvable_named_path_refuses() -> None:
     relative to a subdirectory) measured zero files and printed `Validated ... 0
     file(s).` -- a hard length gate passing over nothing."""
     result = run_gate(
-        "scripts/check_code_lengths.py",
+        "scripts/gates/check_code_lengths.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -466,7 +466,7 @@ def test_code_lengths_unresolvable_named_path_refuses() -> None:
 def test_code_lengths_named_ungated_paths_refuse_empty_universe() -> None:
     """S40: a named path outside the gate's universe must not become a green zero."""
     result = run_gate(
-        "scripts/check_code_lengths.py", "--repo-root", str(ROOT), "--paths", "runtime_bootstrap.py"
+        "scripts/gates/check_code_lengths.py", "--repo-root", str(ROOT), "--paths", "runtime_bootstrap.py"
     )
     assert result.returncode != 0, result.stdout + result.stderr
     assert "refusing empty matched universe" in (result.stdout + result.stderr)
@@ -475,14 +475,14 @@ def test_code_lengths_named_ungated_paths_refuse_empty_universe() -> None:
 
 def test_code_lengths_undeclared_empty_universe_is_reported(tmp_path: Path) -> None:
     (tmp_path / "top_level.py").write_text("VALUE = 1\n", encoding="utf-8")
-    result = run_gate("scripts/check_code_lengths.py", "--repo-root", str(tmp_path))
+    result = run_gate("scripts/gates/check_code_lengths.py", "--repo-root", str(tmp_path))
     assert result.returncode == 0, result.stdout + result.stderr
     assert "discovered empty source universe" in (result.stdout + result.stderr)
 
 
 def test_python_runtime_inheritance_undeclared_empty_universe_is_reported(tmp_path: Path) -> None:
     (tmp_path / "top_level.py").write_text("VALUE = 1\n", encoding="utf-8")
-    result = run_gate("scripts/check_python_runtime_inheritance.py", "--repo-root", str(tmp_path))
+    result = run_gate("scripts/gates/check_python_runtime_inheritance.py", "--repo-root", str(tmp_path))
     assert result.returncode == 0, result.stdout + result.stderr
     assert "discovered empty python_sources universe" in (result.stdout + result.stderr)
 
@@ -494,7 +494,7 @@ def test_test_production_ratio_refuses_declared_empty_test_roots(tmp_path: Path)
     write_quality_adapter(repo, ["universes:", "  test_roots: []"])
 
     result = run_gate(
-        "scripts/check_test_production_ratio.py", "--repo-root", str(repo), "--engine", "splitlines"
+        "scripts/gates/check_test_production_ratio.py", "--repo-root", str(repo), "--engine", "splitlines"
     )
 
     assert result.returncode == 1
@@ -504,11 +504,11 @@ def test_test_production_ratio_refuses_declared_empty_test_roots(tmp_path: Path)
 def test_code_lengths_named_gated_path_still_validates() -> None:
     """Control: the ordinary staged-file invocation still measures and passes."""
     result = run_gate(
-        "scripts/check_code_lengths.py",
+        "scripts/gates/check_code_lengths.py",
         "--repo-root",
         str(ROOT),
         "--paths",
-        "scripts/check_code_lengths.py",
+        "scripts/gates/check_code_lengths.py",
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert _CODE_LENGTHS.validated_verdict(1) in result.stdout
@@ -565,7 +565,7 @@ def test_per_file_floor_over_zero_files_is_not_enforced() -> None:
     that matched nothing, or a failed producer. The sibling summary in the same
     subsystem already answered this with `measurement_scope`; the floor now does.
     """
-    lib = load_script_module("scripts_check_coverage_lib", ROOT / "scripts/check_coverage_lib.py")
+    lib = load_script_module("scripts_check_coverage_lib", ROOT / "scripts/gates/check_coverage_lib.py")
 
     empty = lib.build_per_file_floor_report([])
     assert empty["status"] == "unestablished"
@@ -796,7 +796,7 @@ def test_per_file_floor_over_an_all_exempt_population_is_not_enforced() -> None:
     statement threshold still self-declared `enforced` with an empty `violations`
     list — the same green, one bucket over.
     """
-    lib = load_script_module("scripts_check_coverage_lib", ROOT / "scripts/check_coverage_lib.py")
+    lib = load_script_module("scripts_check_coverage_lib", ROOT / "scripts/gates/check_coverage_lib.py")
 
     all_exempt = lib.build_per_file_floor_report(
         [{"path": "a.py", "covered": 0, "total": 5, "coverage": 0.0}]

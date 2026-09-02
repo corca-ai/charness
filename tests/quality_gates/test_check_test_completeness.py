@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts import check_test_completeness as checker
+from scripts.gates import check_test_completeness as checker
 
 from .seeding_support import write_quality_adapter
 

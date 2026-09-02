@@ -135,7 +135,7 @@ def test_install_git_hooks_materializes_consumer_commit_msg_hook(tmp_path: Path)
     shutil.copy2(
         ROOT / "scripts" / "install-git-hooks.sh", source / "scripts" / "install-git-hooks.sh"
     )
-    checker = source / "scripts" / "check_issue_closeout_commit_msg.py"
+    checker = source / "scripts" / "gates" / "check_issue_closeout_commit_msg.py"
     checker.write_text("#!/usr/bin/env python3\nprint('checker')\n", encoding="utf-8")
     checker.chmod(0o755)
     init_git_repo(consumer)
@@ -242,7 +242,7 @@ def test_pre_push_keeps_release_boundary_and_drops_mutation_arm(tmp_path: Path) 
 
 def test_pre_commit_keeps_the_irreversible_identity_guard() -> None:
     assert (
-        'python3 -B scripts/check_git_identity.py --repo-root "$REPO_ROOT"' in PRE_COMMIT_HOOK_TEXT
+        'python3 -B scripts/gates/check_git_identity.py --repo-root "$REPO_ROOT"' in PRE_COMMIT_HOOK_TEXT
     )
     assert 'check_git_identity.py --repo-root "$REPO_ROOT" || true' not in PRE_COMMIT_HOOK_TEXT
     assert "runtime-env.sh" not in PRE_COMMIT_HOOK_TEXT

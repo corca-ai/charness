@@ -31,7 +31,7 @@ def test_debug_ceiling_follows_the_adapter_in_gate_and_forecast(tmp_path: Path) 
     base = ["version: 1", "repo: demo", "output_dir: charness-artifacts/debug"]
     write_adapter(repo, "debug-adapter.yaml", base)
 
-    default_gate = run_main("scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--all")
+    default_gate = run_main("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo), "--all")
     default_forecast = run_main(
         "skills/public/debug/scripts/scaffold_debug_artifact.py",
         "--repo-root", str(repo), "--title", "probe",
@@ -40,7 +40,7 @@ def test_debug_ceiling_follows_the_adapter_in_gate_and_forecast(tmp_path: Path) 
     assert "max_words: 1200\n" in default_forecast.stdout
 
     write_adapter(repo, "debug-adapter.yaml", [*base, "max_artifact_words: 1300"])
-    raised_gate = run_main("scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--all")
+    raised_gate = run_main("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo), "--all")
     raised_forecast = run_main(
         "skills/public/debug/scripts/scaffold_debug_artifact.py",
         "--repo-root", str(repo), "--title", "probe",
@@ -58,7 +58,7 @@ def test_quality_ceiling_follows_the_adapter_in_gate_and_forecast(tmp_path: Path
     base = ["version: 1", "repo: demo", "output_dir: charness-artifacts/quality"]
     write_adapter(repo, "quality-adapter.yaml", base)
 
-    default_gate = run_main("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    default_gate = run_main("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     default_forecast = run_main(
         "skills/public/quality/scripts/scaffold_quality_artifact.py",
         "--repo-root", str(repo), "--title", "probe",
@@ -67,7 +67,7 @@ def test_quality_ceiling_follows_the_adapter_in_gate_and_forecast(tmp_path: Path
     assert "max_words: 1100\n" in default_forecast.stdout
 
     write_adapter(repo, "quality-adapter.yaml", [*base, "max_artifact_words: 1300"])
-    raised_gate = run_main("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    raised_gate = run_main("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     raised_forecast = run_main(
         "skills/public/quality/scripts/scaffold_quality_artifact.py",
         "--repo-root", str(repo), "--title", "probe",
@@ -86,7 +86,7 @@ def test_refused_ceiling_keeps_the_debug_default(tmp_path: Path) -> None:
     write_adapter(repo, "debug-adapter.yaml", [*base, "max_artifact_words: yes"])
 
     resolved = run_main("skills/public/debug/scripts/resolve_adapter.py", "--repo-root", str(repo))
-    gate = run_main("scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--all")
+    gate = run_main("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo), "--all")
 
     assert "valid: false" in resolved.stdout
     assert "max_artifact_words must be an integer" in resolved.stdout

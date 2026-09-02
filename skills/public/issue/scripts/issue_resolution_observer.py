@@ -30,7 +30,7 @@ def _load_critique_shape():
 def _load_shared_helper():
     here = Path(__file__).resolve()
     for ancestor in here.parents:
-        candidate = ancestor / "scripts" / "check_prescribed_skill_executed_lib.py"
+        candidate = ancestor / "scripts" / "gates" / "check_prescribed_skill_executed_lib.py"
         if candidate.is_file():
             spec = importlib.util.spec_from_file_location(
                 "check_prescribed_skill_executed_lib", candidate
@@ -39,7 +39,7 @@ def _load_shared_helper():
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
                 return module
-    raise ImportError("scripts/check_prescribed_skill_executed_lib.py not found")
+    raise ImportError("scripts/gates/check_prescribed_skill_executed_lib.py not found")
 
 
 _load_local = runpy.run_path(

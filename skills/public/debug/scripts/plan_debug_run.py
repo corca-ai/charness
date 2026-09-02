@@ -192,7 +192,7 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
             run_when="after the artifact is written; the command names it by path",
             **_relative_script_command(
                 repo_root,
-                "scripts/validate_debug_artifact.py",
+                "scripts/gates/validate_debug_artifact.py",
                 "--repo-root",
                 ".",
                 "--paths",

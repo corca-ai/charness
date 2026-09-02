@@ -19,7 +19,7 @@ from .support import (
     write_executable,
 )
 
-PYTHON_LENGTHS = importlib.import_module("scripts.check_code_lengths")
+PYTHON_LENGTHS = importlib.import_module("scripts.gates.check_code_lengths")
 
 
 def _copy_script(repo: Path, script_name: str) -> Path:
@@ -632,7 +632,7 @@ def test_check_github_actions_passes_against_repo_workflows() -> None:
     keeps action majors at or above the Node 24 floor. With no workflows
     present the helper says so; with workflows present it validates them.
     """
-    result = run_script("scripts/check_github_actions.py", "--repo-root", str(ROOT))
+    result = run_script("scripts/gates/check_github_actions.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
     assert (
         "No GitHub Actions workflows detected." in result.stdout
@@ -664,7 +664,7 @@ def test_check_github_actions_flags_outdated_node24_baselines(tmp_path: Path) ->
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check_github_actions.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_github_actions.py", "--repo-root", str(repo))
     assert result.returncode == 1
     payload = yaml.safe_load(result.stderr)
     assert [finding["category"] for finding in payload["findings"]] == [
@@ -690,7 +690,7 @@ def test_check_github_actions_yaml_output_is_stable_and_utf8(
 ) -> None:
     spec = importlib.util.spec_from_file_location(
         "check_github_actions_under_test",
-        ROOT / "scripts" / "check_github_actions.py",
+        ROOT / "scripts" / "gates" / "check_github_actions.py",
     )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)

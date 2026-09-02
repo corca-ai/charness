@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from scripts.artifact_validator import ValidationError
-from scripts.validate_ideation_artifact import validate_structured_questions
+from scripts.gates.validate_ideation_artifact import validate_structured_questions
 from tests.quality_gates.support import run_script
 
 _PRELUDE = "# Demo Ideation\n\n"
@@ -55,7 +55,7 @@ def test_validate_ideation_structured_questions() -> None:
 def test_validate_ideation_artifact_no_artifacts_passes(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "charness-artifacts" / "ideation").mkdir(parents=True)
-    result = run_script("scripts/validate_ideation_artifact.py", "--repo-root", str(repo), "--all")
+    result = run_script("scripts/gates/validate_ideation_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 0, result.stderr
     assert "Validated 0 ideation artifact(s)." in result.stdout
 
@@ -71,7 +71,7 @@ def test_validate_ideation_artifact_uses_changed_path_discovery(tmp_path: Path) 
         + "- Q1 | urgency: defer | depends-on: null | action: hold | note: later\n",
     )
 
-    result = run_script("scripts/validate_ideation_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_ideation_artifact.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
     assert "Validated 1 ideation artifact(s)." in result.stdout
@@ -95,7 +95,7 @@ def test_validate_ideation_reports_every_failing_artifact_in_one_pass(tmp_path: 
         artifact.parent.mkdir(parents=True, exist_ok=True)
         artifact.write_text(bad, encoding="utf-8")
     result = run_script(
-        "scripts/validate_ideation_artifact.py",
+        "scripts/gates/validate_ideation_artifact.py",
         "--repo-root",
         str(repo),
         "--all",
@@ -119,7 +119,7 @@ def test_validate_ideation_fail_fast_stops_at_the_first_failing_artifact(tmp_pat
         artifact.parent.mkdir(parents=True, exist_ok=True)
         artifact.write_text(bad, encoding="utf-8")
     result = run_script(
-        "scripts/validate_ideation_artifact.py", "--repo-root", str(repo), "--all", "--fail-fast"
+        "scripts/gates/validate_ideation_artifact.py", "--repo-root", str(repo), "--all", "--fail-fast"
     )
     assert result.returncode == 1
     assert "second.md" not in result.stderr

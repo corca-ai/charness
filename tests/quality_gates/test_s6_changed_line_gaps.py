@@ -33,7 +33,7 @@ def test_a_ratchet_row_with_a_non_integer_bar_refuses_the_whole_record(tmp_path:
     The comment beside it says the WHOLE record is refused rather than the row
     skipped, because a skipped row is a missing history entry and monotonicity
     cannot be checked against a subset. Nothing asserted it."""
-    gate = import_repo_module(_ANCHOR, "scripts.check_docs_graph")
+    gate = import_repo_module(_ANCHOR, "scripts.gates.check_docs_graph")
     record = tmp_path / gate.RATCHET_RECORD_PATH
     record.parent.mkdir(parents=True, exist_ok=True)
     header = f"{gate.RATCHET_SECTION_HEADING}\n\n| Date | Bar |\n| --- | --- |\n"

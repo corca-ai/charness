@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.validate_adapters import (
+from scripts.gates.validate_adapters import (
     ValidationError,
     integration_schema_path,
     validate_adapter_integration_schema,
@@ -97,7 +97,7 @@ def test_unparseable_adapter_yaml_rejected_with_schema_present(tmp_path: Path) -
     [
         "jsonschema",
         # `yaml` was strict-xfail here while the YAML output migration had hoisted
-        # `import yaml` to module scope in scripts/validate_adapters.py, which turned
+        # `import yaml` to module scope in scripts/gates/validate_adapters.py, which turned
         # this gate from degrades-to-no-gate into dies-at-IMPORT on a PyYAML-less
         # interpreter. The import is back under the same `except ImportError: return`
         # guard as jsonschema, so both dependencies are asserted the same way again.
@@ -117,7 +117,7 @@ def test_cli_main_rejects_schema_violating_adapter(tmp_path: Path) -> None:
     # call, this tmp repo passes the generic shape checks and exits 0.
     _seed_pair(tmp_path, "worktree", "version: 1\nrepo: tmp\nenabled: false\nnot_in_schema_342: true\n")
     completed = run_repo_script(
-        "scripts/validate_adapters.py",
+        "scripts/gates/validate_adapters.py",
         "--repo-root",
         str(tmp_path),
     )
@@ -142,7 +142,7 @@ packet_sections:
     )
 
     completed = run_repo_script(
-        "scripts/validate_adapters.py",
+        "scripts/gates/validate_adapters.py",
         "--repo-root",
         str(tmp_path),
     )
@@ -157,7 +157,7 @@ def test_cli_main_preserves_generic_floor_for_retro_adapter(tmp_path: Path) -> N
     (agents / "retro-adapter.yaml").write_text("packet_sections: []\n", encoding="utf-8")
 
     completed = run_repo_script(
-        "scripts/validate_adapters.py",
+        "scripts/gates/validate_adapters.py",
         "--repo-root",
         str(tmp_path),
     )

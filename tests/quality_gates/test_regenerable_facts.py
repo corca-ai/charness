@@ -407,7 +407,7 @@ def test_pre_commit_arms_the_advisory_without_a_silent_drop() -> None:
     )
 
     assert invocation in hook
-    assert hook.index(invocation) < hook.index("python3 -B scripts/check_git_identity.py")
+    assert hook.index(invocation) < hook.index("python3 -B scripts/gates/check_git_identity.py")
     assert "|| true" not in hook
     assert "|| :" not in hook
     assert "2>/dev/null" not in hook

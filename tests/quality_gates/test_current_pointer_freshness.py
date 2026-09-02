@@ -41,7 +41,7 @@ def seed_repo(
     queued: bool = True,
 ) -> Path:
     repo = tmp_path / "repo"
-    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "gates_support").mkdir(parents=True)
     (repo / ".agents").mkdir(parents=True)
     (repo / "charness-artifacts" / "quality").mkdir(parents=True)
     (repo / "charness-artifacts" / "release").mkdir(parents=True)
@@ -105,7 +105,7 @@ def seed_repo(
     )
     (repo / "tools").mkdir()
     (repo / "tools" / "check_coverage.py").write_text("# coverage\n", encoding="utf-8")
-    (repo / "scripts" / "check_test_production_ratio.py").write_text("# ratio\n", encoding="utf-8")
+    (repo / "scripts" / "gates" / "check_test_production_ratio.py").write_text("# ratio\n", encoding="utf-8")
     (repo / "skills" / "public" / "quality" / "scripts" / "check_runtime_budget.py").write_text(
         "\n".join(
             [

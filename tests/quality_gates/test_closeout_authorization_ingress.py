@@ -29,7 +29,7 @@ ISSUE_SCRIPTS = REPO_ROOT / "skills" / "public" / "issue" / "scripts"
 RELEASE_SCRIPTS = REPO_ROOT / "skills" / "public" / "release" / "scripts"
 COMMIT_HOOK = load_script_module(
     "closeout_authorization_commit_hook",
-    REPO_ROOT / "scripts" / "check_issue_closeout_commit_msg.py",
+    REPO_ROOT / "scripts" / "gates" / "check_issue_closeout_commit_msg.py",
 )
 
 
@@ -232,7 +232,7 @@ def _run_commit_hook(repo: Path, message: str):
     message_file = repo / "COMMIT_EDITMSG"
     message_file.write_text(message, encoding="utf-8")
     result = run_loaded_script_main(
-        "scripts/check_issue_closeout_commit_msg.py",
+        "scripts/gates/check_issue_closeout_commit_msg.py",
         COMMIT_HOOK,
         "--repo-root",
         str(repo),

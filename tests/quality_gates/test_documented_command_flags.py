@@ -74,7 +74,7 @@ parser.parse_args()
 @pytest.fixture(scope="module")
 def gate():
     spec = importlib.util.spec_from_file_location(
-        "check_documented_command_flags", ROOT / "scripts" / "check_documented_command_flags.py"
+        "check_documented_command_flags", ROOT / "scripts" / "gates" / "check_documented_command_flags.py"
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -732,14 +732,14 @@ def test_module_entrypoint_exits_with_the_gate_verdict(gate, tmp_path: Path) -> 
         doc="Run `python3 scripts/log.py --gone`.\n",
     )
     failing = run_script(
-        str(ROOT / "scripts" / "check_documented_command_flags.py"), "--repo-root", str(root)
+        str(ROOT / "scripts" / "gates" / "check_documented_command_flags.py"), "--repo-root", str(root)
     )
     assert failing.returncode == 1
     assert "`--gone`" in failing.stderr
 
     (root / "docs" / "guide.md").write_text("Run `python3 scripts/log.py --path X`.\n", encoding="utf-8")
     clean = run_script(
-        str(ROOT / "scripts" / "check_documented_command_flags.py"), "--repo-root", str(root)
+        str(ROOT / "scripts" / "gates" / "check_documented_command_flags.py"), "--repo-root", str(root)
     )
     assert clean.returncode == 0
     # The `Validated N documented command invocation(s)` sentence was deleted with

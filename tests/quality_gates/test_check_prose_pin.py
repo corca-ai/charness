@@ -3,7 +3,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-from scripts import check_prose_pin as prose_pin
+from scripts.gates import check_prose_pin as prose_pin
 
 from .repo_shapes import install_committed_repo
 

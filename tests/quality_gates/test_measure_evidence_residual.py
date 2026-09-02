@@ -16,7 +16,7 @@ from tests.quality_gates.support import run_script
 from tests.residual_floor_support import residual_floor_message
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = REPO_ROOT / "scripts" / "measure_evidence_residual.py"
+SCRIPT = REPO_ROOT / "scripts" / "gates" / "measure_evidence_residual.py"
 
 
 def _run(repo_root: Path) -> tuple[int, dict]:

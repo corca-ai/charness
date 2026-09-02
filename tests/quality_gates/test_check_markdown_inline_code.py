@@ -6,7 +6,7 @@ from .support import run_script
 
 
 def _run(repo: Path, *paths: str) -> tuple[int, str, str]:
-    args = ["scripts/check_markdown_inline_code.py", "--repo-root", str(repo)]
+    args = ["scripts/gates/check_markdown_inline_code.py", "--repo-root", str(repo)]
     for path in paths:
         args.extend(["--path", path])
     result = run_script(*args)

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.validate_quality_artifact import ValidationError, _skill_ergonomics_counts
+from scripts.gates.validate_quality_artifact import ValidationError, _skill_ergonomics_counts
 from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -133,7 +133,7 @@ def test_validate_quality_artifact_accepts_generic_structured_runtime_source(tmp
             ),
         ),
     )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -150,7 +150,7 @@ def test_validate_quality_artifact_rejects_legacy_artifact_without_surface_contr
     legacy_body = "\n".join(lines[:start] + lines[end:]) + "\n"
     repo = seed_repo(tmp_path, legacy_body, ensure_surface_contract=False)
 
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "missing required section `## Surface Contract Review`" in result.stderr
@@ -165,7 +165,7 @@ def test_validate_quality_artifact_accepts_legacy_recommended_next_gates_heading
     ).replace("## Recommended Next Quality Moves", "## Recommended Next Gates")
     repo = seed_repo(tmp_path, body)
 
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
 
@@ -175,7 +175,7 @@ def test_validate_quality_artifact_rejects_markdown_runtime_source(tmp_path: Pat
         tmp_path,
         valid_quality_artifact(runtime_source="manual timing copied from `charness-artifacts/quality/latest.md`."),
     )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "runtime source must not be markdown" in result.stderr
 
@@ -185,7 +185,7 @@ def test_validate_quality_artifact_rejects_numeric_hotspots_without_renderer(tmp
         tmp_path,
         valid_quality_artifact(runtime_source="structured metrics from `artifacts/runtime-timing.jsonl`."),
     )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "must cite the summary helper" in result.stderr
 
@@ -208,7 +208,7 @@ def test_validate_quality_artifact_rejects_stale_skill_ergonomics_counts(tmp_pat
     repo = seed_repo(tmp_path, body)
     seed_skill(repo)
 
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "stale skill ergonomics counts for `retro`" in result.stderr
@@ -231,7 +231,7 @@ def test_validate_quality_artifact_rejects_differently_worded_stale_count_claim(
     repo = seed_repo(tmp_path, body)
     seed_skill(repo)
 
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "stale skill ergonomics counts for `retro`" in result.stderr
@@ -253,7 +253,7 @@ def test_validate_quality_artifact_rejects_count_claim_without_public_skill_id(t
     )
     repo = seed_repo(tmp_path, body)
 
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "no backticked public skill id" in result.stderr
@@ -283,7 +283,7 @@ def test_validate_quality_artifact_accepts_counts_when_skill_has_no_refs_or_scri
     shutil.rmtree(repo / "skills" / "public" / "retro" / "references")
     shutil.rmtree(repo / "skills" / "public" / "retro" / "scripts")
 
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
 
@@ -306,7 +306,7 @@ def test_validate_quality_artifact_accepts_current_skill_ergonomics_counts(tmp_p
     repo = seed_repo(tmp_path, body)
     seed_skill(repo)
 
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
 
@@ -319,7 +319,7 @@ def test_validate_quality_artifact_allows_missing_runtime_source_without_numbers
             runtime_hotspots="unavailable until structured runtime metrics have samples.",
         ),
     )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -331,7 +331,7 @@ def test_validate_quality_artifact_rejects_missing_runtime_source_with_numbers(t
             runtime_hotspots="`pytest` 10s",
         ),
     )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "runtime hot spot timings require a structured runtime source" in result.stderr
 def test_validate_quality_artifact_rejects_missing_history_section(tmp_path: Path) -> None:
@@ -370,7 +370,7 @@ def test_validate_quality_artifact_rejects_missing_history_section(tmp_path: Pat
         )
         + "\n",
     )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing required section `## History`" in result.stderr
 
@@ -413,7 +413,7 @@ def test_validate_quality_artifact_rejects_missing_history_link(tmp_path: Path) 
         )
         + "\n",
     )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "history/*.md" in result.stderr
 
@@ -457,7 +457,7 @@ def test_validate_quality_artifact_accepts_dot_slash_history_link(tmp_path: Path
         + "\n",
     )
 
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
 
@@ -498,7 +498,7 @@ def test_validate_quality_artifact_requires_runtime_closeout_fields(tmp_path: Pa
         )
         + "\n",
     )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Runtime Signals" in result.stderr
 
@@ -541,7 +541,7 @@ def test_validate_quality_artifact_rejects_explicit_allowance_as_subagent_blocke
         )
         + "\n",
     )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "must not treat missing explicit subagent allowance" in result.stderr
 
@@ -580,7 +580,7 @@ def test_validate_quality_artifact_requires_advisory_and_delegated_review(tmp_pa
         )
         + "\n",
     )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing required section `## Advisory`" in result.stderr
 
@@ -623,7 +623,7 @@ def test_validate_quality_artifact_requires_inventory_backed_empty_advisory(tmp_
         )
         + "\n",
     )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "none found by inventory" in result.stderr
 
@@ -666,7 +666,7 @@ def test_validate_quality_artifact_rejects_unevidenced_advisory_bullets(tmp_path
         )
         + "\n",
     )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "advisory bullets must cite inventory" in result.stderr
 
@@ -709,7 +709,7 @@ def test_validate_quality_artifact_requires_blocked_delegated_review_signal(tmp_
         )
         + "\n",
     )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "concrete host signal, tool signal, or delegation signal" in result.stderr
 
@@ -752,6 +752,6 @@ def test_validate_quality_artifact_rejects_missed_delegated_review(tmp_path: Pat
         )
         + "\n",
     )
-    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "must not report a missed review" in result.stderr

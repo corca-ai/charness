@@ -24,7 +24,7 @@ def test_public_skill_dogfood_matrix_reports_prompt_artifact_and_evidence() -> N
 
 def test_public_skill_dogfood_wrappers_match_root_script() -> None:
     commands = [
-        "scripts/suggest_public_skill_dogfood.py",
+        "scripts/gates/suggest_public_skill_dogfood.py",
         "skills/public/quality/scripts/suggest_public_skill_dogfood.py",
     ]
     payloads = []
@@ -49,7 +49,7 @@ def test_public_skill_dogfood_wrappers_report_missing_policy_without_a_traceback
     consumer = tmp_path / "consumer"
     (consumer / "skills" / "support" / "x").mkdir(parents=True)
     commands = [
-        "scripts/suggest_public_skill_dogfood.py",
+        "scripts/gates/suggest_public_skill_dogfood.py",
         "skills/public/quality/scripts/suggest_public_skill_dogfood.py",
         "plugins/charness/skills/quality/scripts/suggest_public_skill_dogfood.py",
     ]

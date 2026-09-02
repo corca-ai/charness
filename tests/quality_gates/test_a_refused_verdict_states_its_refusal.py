@@ -22,7 +22,7 @@ VERIFY = _load_script_module(
 )
 INLINE = _load_script_module(
     "check_markdown_inline_code_under_test",
-    ROOT / "scripts" / "check_markdown_inline_code.py",
+    ROOT / "scripts" / "gates" / "check_markdown_inline_code.py",
 )
 
 _LEDGER_GAP = """Close #123
@@ -249,7 +249,7 @@ def test_the_preflight_keeps_the_unterminated_class_distinguishable(tmp_path):
     # documented way the token gets LOST is a shim dropping it in transit.
     preflight = _load_script_module(
         "check_doc_authoring_preflight_under_test",
-        ROOT / "scripts" / "check_doc_authoring_preflight.py",
+        ROOT / "scripts" / "gates" / "check_doc_authoring_preflight.py",
     )
     (tmp_path / "docs").mkdir()
     (tmp_path / "docs" / "unterminated.md").write_text("Use `foo to run.\n", encoding="utf-8")

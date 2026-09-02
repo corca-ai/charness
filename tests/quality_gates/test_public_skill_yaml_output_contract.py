@@ -90,22 +90,22 @@ _OWNED_SOURCE_ROOTS = ("scripts", "skills", "hooks")
 # `--json` is rejected during parsing, before any of these does work, which is why a
 # closeout runner and a release-adjacent tool are safe to probe here.
 JSON_FLAG_MUST_BE_UNRECOGNIZED = (
-    ("scripts/check_cli_skill_surface.py", "--repo-root", "."),
-    ("scripts/check_command_docs.py", "--repo-root", "."),
-    ("scripts/check_github_actions.py", "--repo-root", "."),
+    ("scripts/gates/check_cli_skill_surface.py", "--repo-root", "."),
+    ("scripts/gates/check_command_docs.py", "--repo-root", "."),
+    ("scripts/gates/check_github_actions.py", "--repo-root", "."),
     (
-        "scripts/check_issue_closeout_commit_msg.py",
+        "scripts/gates/check_issue_closeout_commit_msg.py",
         "--repo-root",
         ".",
         "--commit-msg-file",
         "README.md",
     ),
     ("tools/check_public_doc_coupling.py", "--repo-root", "."),
-    ("scripts/check_skill_ownership_overlap.py", "--repo-root", "."),
+    ("scripts/gates/check_skill_ownership_overlap.py", "--repo-root", "."),
     ("scripts/gates_support/dup_ratchet_edit_advisory.py", "--repo-root", ".", "--path", "README.md"),
     ("scripts/init_lesson_ledger.py", "--repo-root", "."),
     ("tools/inventory_skill_script_references.py", "--repo-root", ".", "--strict"),
-    ("scripts/measure_inventory_consumption_floor.py", "--repo-root", "."),
+    ("scripts/gates/measure_inventory_consumption_floor.py", "--repo-root", "."),
     ("scripts/render_lesson_selection_preview.py", "--repo-root", ".", "--seed", "contract-probe"),
     ("skills/public/setup/scripts/seed_dependencies.py", "--repo-root", ".", "--tool-id", "ruff"),
     ("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", "."),
@@ -116,16 +116,16 @@ JSON_FLAG_MUST_BE_UNRECOGNIZED = (
 # rather than repo-wide: a same-named helper elsewhere may be a legitimate payload
 # builder, and a repo-wide ban would be a rule this contract cannot honestly make.
 DELETED_RENDERERS = (
-    ("scripts/check_command_docs.py", ("render_report",), None),
+    ("scripts/gates/check_command_docs.py", ("render_report",), None),
     (
-        "scripts/check_issue_closeout_commit_msg.py",
+        "scripts/gates/check_issue_closeout_commit_msg.py",
         ("_emit_human_output", "_format_failure", "_stub_evidence_lines", "_ledger_field_lines"),
         "report_payload",
     ),
-    ("scripts/check_github_actions.py", ("render_github_actions_report",), "report"),
+    ("scripts/gates/check_github_actions.py", ("render_github_actions_report",), "report"),
     ("tools/inventory_skill_script_references.py", ("render_text", "print_text"), "report"),
-    ("scripts/check_documented_command_flags.py", ("render_report",), "report_payload"),
-    ("scripts/check_documented_subcommands.py", ("render_report",), "report_payload"),
+    ("scripts/gates/check_documented_command_flags.py", ("render_report",), "report_payload"),
+    ("scripts/gates/check_documented_subcommands.py", ("render_report",), "report_payload"),
 )
 
 

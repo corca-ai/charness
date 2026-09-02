@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from scripts import check_consumer_validator_catalog
+from scripts.gates import check_consumer_validator_catalog
 
 
 def main(argv: list[str] | None = None) -> int:

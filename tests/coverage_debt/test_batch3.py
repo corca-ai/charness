@@ -247,10 +247,10 @@ def test_over_permissive_site_remedy_says_narrow_rather_than_add(tmp_path: Path)
 
 
 # ---------------------------------------------------------------------------
-# scripts/validate_adapters.py -- resolver payload parsing
+# scripts/gates/validate_adapters.py -- resolver payload parsing
 # ---------------------------------------------------------------------------
 
-_validate_adapters = import_repo_module(__file__, "scripts.validate_adapters")
+_validate_adapters = import_repo_module(__file__, "scripts.gates.validate_adapters")
 
 
 def _resolver(tmp_path: Path, skill_id: str, body: str) -> Path:
@@ -507,10 +507,10 @@ def test_eval_scenario_reads_bootstrap_and_resolve_payloads_for_a_fresh_repo() -
 
 
 # ---------------------------------------------------------------------------
-# scripts/check_github_actions.py
+# scripts/gates/check_github_actions.py
 # ---------------------------------------------------------------------------
 
-_github_actions = import_repo_module(__file__, "scripts.check_github_actions")
+_github_actions = import_repo_module(__file__, "scripts.gates.check_github_actions")
 
 
 def test_github_actions_report_states_that_no_workflows_were_found() -> None:
@@ -622,11 +622,11 @@ def test_mutant_filter_main_refuses_a_missing_session(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# scripts/validate_skill_ergonomics.py -- the thin repo entrypoint
+# scripts/gates/validate_skill_ergonomics.py -- the thin repo entrypoint
 # ---------------------------------------------------------------------------
 
 _ergonomics_entrypoint = load_script_module(
-    "coverage_debt_validate_skill_ergonomics", ROOT / "scripts" / "validate_skill_ergonomics.py"
+    "coverage_debt_validate_skill_ergonomics", ROOT / "scripts" / "gates" / "validate_skill_ergonomics.py"
 )
 
 
@@ -683,11 +683,11 @@ def test_runtime_guard_without_flags_inspects_and_never_refuses(tmp_path: Path) 
 
 
 # ---------------------------------------------------------------------------
-# scripts/inventory_boundary_bypass.py -- --output
+# scripts/gates/inventory_boundary_bypass.py -- --output
 # ---------------------------------------------------------------------------
 
 _boundary_inventory = load_script_module(
-    "coverage_debt_inventory_boundary_bypass", ROOT / "scripts" / "inventory_boundary_bypass.py"
+    "coverage_debt_inventory_boundary_bypass", ROOT / "scripts" / "gates" / "inventory_boundary_bypass.py"
 )
 
 

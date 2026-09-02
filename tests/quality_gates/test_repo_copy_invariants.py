@@ -14,8 +14,8 @@ from tools import check_coverage
 from .support import ROOT, run_script
 
 _repo_copy_invariants = import_repo_module(
-    ROOT / "scripts/check_test_repo_copy_invariants.py",
-    "scripts.check_test_repo_copy_invariants",
+    ROOT / "scripts/gates/check_test_repo_copy_invariants.py",
+    "scripts.gates.check_test_repo_copy_invariants",
 )
 
 
@@ -42,7 +42,7 @@ REQUIRED_VOLATILE_COPY_EXCLUDES = {
 
 
 def test_test_repo_copy_ignore_lives_in_canonical_module() -> None:
-    result = run_script("scripts/check_test_repo_copy_invariants.py", "--repo-root", str(ROOT))
+    result = run_script("scripts/gates/check_test_repo_copy_invariants.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
 
 

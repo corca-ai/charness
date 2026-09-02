@@ -85,7 +85,7 @@ def repo_with_the_real_cycle(clean_repo: Path) -> Path:
 def _load_check_module():
     import importlib.util
 
-    check = ROOT / "scripts" / "check_standalone_imports.py"
+    check = ROOT / "scripts" / "gates" / "check_standalone_imports.py"
     spec = importlib.util.spec_from_file_location("check_standalone_imports", check)
     module = importlib.util.module_from_spec(spec)
     sys.path.insert(0, str(ROOT / "scripts"))
@@ -101,7 +101,7 @@ def _run_check_at(repo: Path, *args: str) -> subprocess.CompletedProcess:
     return subprocess.run(
         [
             sys.executable,
-            str(ROOT / "scripts" / "check_standalone_imports.py"),
+            str(ROOT / "scripts" / "gates" / "check_standalone_imports.py"),
             "--repo-root",
             str(repo),
             *args,
@@ -115,7 +115,7 @@ def _run_check(repo: Path, *args: str) -> subprocess.CompletedProcess:
     return subprocess.run(
         [
             sys.executable,
-            str(repo / "scripts" / "check_standalone_imports.py"),
+            str(repo / "scripts" / "gates" / "check_standalone_imports.py"),
             "--repo-root",
             str(repo),
             *args,
@@ -281,7 +281,7 @@ def test_changed_paths_resolve_against_the_repo_root_not_the_cwd(clean_repo: Pat
     result = subprocess.run(
         [
             sys.executable,
-            str(clean_repo / "scripts" / "check_standalone_imports.py"),
+            str(clean_repo / "scripts" / "gates" / "check_standalone_imports.py"),
             "--repo-root",
             str(clean_repo),
             "--changed",

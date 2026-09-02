@@ -205,7 +205,7 @@ the evidence is sufficient for the boundary at hand.
 ### D28. Template-First Fill Guards And Report-All For Sibling Artifact Validators — POLARITY RESOLVED, FILL GUARDS STILL DEFERRED (2026-07-27)
 
 - Question: Should the fill-time guard comments added to the quality scaffold be generalized to the other scaffold families (debug, critique, retro, handoff, ideation), should the sibling artifact validators share ONE one-pass control instead of per-family flag polarity, and should `emit_payload_main` in [scaffold_artifact_lib.py](../scripts/core/scaffold_artifact_lib.py) grow a `--write` mode so scaffold-first becomes the path of least resistance?
-- Current choice (operator-decided, A+B+C): **the one-pass half is fully resolved and the polarity split is closed.** (A) [`validate_debug_artifact.py`](../scripts/validate_debug_artifact.py) and [`validate_critique_artifacts.py`](../scripts/validate_critique_artifacts.py) default to one-pass, matching handoff/retro/ideation/quality. (B) `--fail-fast` is the only control across the family; the obsolete `--report-all` no-op has been removed. (C) The control is declared once in `add_one_pass_args`, and the four changed-path validators (critique, debug, retro, ideation) route their whole `main()` through `run_changed_artifact_validator` in [artifact_validator.py](../scripts/artifact_validator.py) — the two that previously justified a private `main()` now fit through hooks that model the real work: `extra_args` for critique's `--changed-ref` / `--changed-path` cross-surface probe, a `ChangedArtifactRun` context for its per-path `require_tier_evidence`, and `artifacts_fn` for debug's adapter-resolved output directory. The fill-guard and `--write` halves stay deferred on their original reasoning.
+- Current choice (operator-decided, A+B+C): **the one-pass half is fully resolved and the polarity split is closed.** (A) [`validate_debug_artifact.py`](../scripts/gates/validate_debug_artifact.py) and [`validate_critique_artifacts.py`](../scripts/validate_critique_artifacts.py) default to one-pass, matching handoff/retro/ideation/quality. (B) `--fail-fast` is the only control across the family; the obsolete `--report-all` no-op has been removed. (C) The control is declared once in `add_one_pass_args`, and the four changed-path validators (critique, debug, retro, ideation) route their whole `main()` through `run_changed_artifact_validator` in [artifact_validator.py](../scripts/artifact_validator.py) — the two that previously justified a private `main()` now fit through hooks that model the real work: `extra_args` for critique's `--changed-ref` / `--changed-path` cross-surface probe, a `ChangedArtifactRun` context for its per-path `require_tier_evidence`, and `artifacts_fn` for debug's adapter-resolved output directory. The fill-guard and `--write` halves stay deferred on their original reasoning.
 - Why now: **The original "report-all there is ceremony" premise was refuted by measurement, which is exactly this entry's reopen trigger.** The [lesson-recurrence retro](../charness-artifacts/retro/2026-07-26-lesson-recurrence-mechanism.md) measured ~8 validator rounds on a single handoff artifact — the one-rule-per-run report manufactured the retry loop that a separate checked-in lesson ("a counted limit is a planning input, not a retry loop") blames on the reader. Cost is not the rule count; it is that each round is a full gate run and the author re-reads the artifact each time. The flip reverses the explicit operator narrowing recorded in `a930cc5f`; that reversal is the operator's own call, made on this measurement. C is what stops the split re-forming: while each validator owned its own `main()`, matching defaults were a convention that the next artifact family could silently break.
 - Impact surfaces: [scripts/artifact_validator.py](../scripts/artifact_validator.py), the debug/critique/retro/ideation/handoff/quality validators, [scripts/run-quality.sh](../scripts/run-quality.sh), [scripts/core/scaffold_artifact_lib.py](../scripts/core/scaffold_artifact_lib.py) and the five sibling scaffolds.
 - Non-claims: `--fail-fast` on debug and critique stops at the first failing artifact, not only the first rule; previously those two always collected across artifacts. That is the shared runner's semantics, adopted deliberately.
@@ -284,13 +284,13 @@ the evidence is sufficient for the boundary at hand.
 
 ### D36. Surface the question/decision-needed exemption on the commit-msg close carrier
 
-- Question: Should [`check_issue_closeout_commit_msg.py`](../scripts/check_issue_closeout_commit_msg.py) surface a non-blocking REVIEW advisory when a close self-classifies `question`/`decision-needed` (mirroring [`issue_close_comment_floor.review_advisory_for_classification`](../skills/public/issue/scripts/issue_close_comment_floor.py)), so the floor exemption is not the silent path on the commit-message carrier the way it already is not on `close-with-comment`?
+- Question: Should [`check_issue_closeout_commit_msg.py`](../scripts/gates/check_issue_closeout_commit_msg.py) surface a non-blocking REVIEW advisory when a close self-classifies `question`/`decision-needed` (mirroring [`issue_close_comment_floor.review_advisory_for_classification`](../skills/public/issue/scripts/issue_close_comment_floor.py)), so the floor exemption is not the silent path on the commit-message carrier the way it already is not on `close-with-comment`?
 - Resolution: RESOLVED (2026-07-04, this session) exactly as the deferral named.
   `review_advisory_for_classification` now has a single carrier-neutral owner in
   [`issue_closeout_rung1_floors.py`](../skills/public/issue/scripts/issue_closeout_rung1_floors.py) (`FLOOR_EXEMPT_CLASSIFICATIONS` + a unified
   `(classification, *, numbers=None, source=None)` signature), re-exported through
   [`issue_verify_closeout.py`](../skills/public/issue/scripts/issue_verify_closeout.py), with [`issue_close_comment_floor.py`](../skills/public/issue/scripts/issue_close_comment_floor.py) reduced to a
-  re-export (no duplicated body). [`check_issue_closeout_commit_msg.py`](../scripts/check_issue_closeout_commit_msg.py) surfaces the
+  re-export (no duplicated body). [`check_issue_closeout_commit_msg.py`](../scripts/gates/check_issue_closeout_commit_msg.py) surfaces the
   advisory via `_exemption_advisories` + `_emit_human_output` and a `review_advisory`
   JSON field — non-blocking, exit stays 0. The classification-only close-with-comment
   call is byte-identical to before (scope suffix empty when `numbers` is None). No new
@@ -304,7 +304,7 @@ the evidence is sufficient for the boundary at hand.
 - Why deferral was right at the time: doing it as a pre-release ride-along on PR #419 would
   have shipped either the dup-ratchet-blocked copy or a rushed shared-owner refactor at an
   irreversible boundary; the shared-owner seam + its fresh-eye pass earned their own slice.
-- Impact surfaces (migrated in lockstep): [check_issue_closeout_commit_msg.py](../scripts/check_issue_closeout_commit_msg.py), [issue_close_comment_floor.py](../skills/public/issue/scripts/issue_close_comment_floor.py), [issue_verify_closeout_body.py](../skills/public/issue/scripts/issue_verify_closeout_body.py), [issue_verify_closeout.py](../skills/public/issue/scripts/issue_verify_closeout.py), their plugin mirrors, and tests ([test_issue_close_exemption_advisory.py](../tests/test_issue_close_exemption_advisory.py), the commit-msg in-process + hook suites). The former local duplicate-ratchet baseline was an incidental collateral surface and is no longer maintained here.
+- Impact surfaces (migrated in lockstep): [check_issue_closeout_commit_msg.py](../scripts/gates/check_issue_closeout_commit_msg.py), [issue_close_comment_floor.py](../skills/public/issue/scripts/issue_close_comment_floor.py), [issue_verify_closeout_body.py](../skills/public/issue/scripts/issue_verify_closeout_body.py), [issue_verify_closeout.py](../skills/public/issue/scripts/issue_verify_closeout.py), their plugin mirrors, and tests ([test_issue_close_exemption_advisory.py](../tests/test_issue_close_exemption_advisory.py), the commit-msg in-process + hook suites). The former local duplicate-ratchet baseline was an incidental collateral surface and is no longer maintained here.
 - Residual reopen trigger: a commit-message close self-classifies `question`/`decision-needed`
   and skips the behavioral/critique floors with no reviewer noticing, or the shared close
   advisory is touched for another reason. Orphan baseline fingerprints (`3d4af4`, `d38941`)
@@ -450,7 +450,7 @@ check.
 
 ### D47. Should inventory-field engagement require a value marker?
 
-- Question: `_engages` in [validate_inventory_consumption.py](../scripts/validate_inventory_consumption.py)
+- Question: `_engages` in [validate_inventory_consumption.py](../scripts/gates/validate_inventory_consumption.py)
   now requires a field mention to carry ≥5 alphanumerics beyond every declared field name.
   That closes the stub shapes, but a field whose NAME is an ordinary English word —
   `scope`, `status`, `notes`, `paths`, `ranking`, `advisory`, `command`, `families` — is
@@ -544,15 +544,15 @@ check.
   code blocks are unmodelled; and marker attribution is per LINE, not per occurrence.
   The gate's pre-contract skip is modelled but is measured-zero in both modes. Nothing was
   armed, and no frozen artifact was rewritten.
-- Impact surfaces: [validate_inventory_consumption.py](../scripts/validate_inventory_consumption.py),
-  [measure_inventory_consumption_floor.py](../scripts/measure_inventory_consumption_floor.py),
+- Impact surfaces: [validate_inventory_consumption.py](../scripts/gates/validate_inventory_consumption.py),
+  [measure_inventory_consumption_floor.py](../scripts/gates/measure_inventory_consumption_floor.py),
   [inventory-consumer-fields.json](../skills/public/quality/references/inventory-consumer-fields.json).
 - Reopen trigger: a quality artifact passing the floor on incidental prose and later found
   not to have consumed the inventory; or the declaration file gaining per-field
   distinctiveness; or the currently-refused artifacts being rewritten for another reason.
   **The dated snapshot is output of the recorded probe command** — the hand-measurement
   caveat this line used to carry is retired. A new decision must run
-  [measure_inventory_marker_rule.py](../scripts/measure_inventory_marker_rule.py) on its
+  [measure_inventory_marker_rule.py](../scripts/gates/measure_inventory_marker_rule.py) on its
   then-current corpus and record a new dated snapshot with its own SHA-256; it must not
   overwrite or recompute this immutable snapshot.
 
@@ -650,7 +650,7 @@ check.
 ### D50. Should `<plugin-dir>/` get a real user, or a bootstrap variable, or neither? — RESOLVED (2026-08-04)
 
 - Question: `<plugin-dir>/` is a recognised portable placeholder in
-  [check_doc_links.py](../scripts/check_doc_links.py), and it has **zero usage** —
+  [check_doc_links.py](../scripts/gates/check_doc_links.py), and it has **zero usage** —
   it appears only in the placeholder list in
   [authoring-preflight.md](./authoring-preflight.md), never in a skill.
   #478 considered it for seven sites and rejected it. Should it be adopted, upgraded,

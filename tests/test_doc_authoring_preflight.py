@@ -13,7 +13,7 @@ import pytest
 from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[1]
-_pf = import_repo_module(__file__, "scripts.check_doc_authoring_preflight")
+_pf = import_repo_module(__file__, "scripts.gates.check_doc_authoring_preflight")
 _rules = import_repo_module(__file__, "scripts.gates_support.doc_authoring_rules")
 
 

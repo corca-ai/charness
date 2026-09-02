@@ -57,7 +57,7 @@ Before a large addition to a `scripts/*.py` or skill-helper file, check how much
 room is left:
 
 ```bash
-python3 scripts/check_code_lengths.py --repo-root . --headroom --paths <file>
+python3 scripts/gates/check_code_lengths.py --repo-root . --headroom --paths <file>
 ```
 
 It prints `limit − current` (tokei Python code lines) per gated file and flags
@@ -89,10 +89,10 @@ import the repo module — and that copy exempts only `## Load-Bearing Anchors` 
 there). The two numbers therefore
 diverge on any skill carrying a `## Closeout Vocabulary` block or an over-budget
 exempt section. Quote the **inventory's** number in a quality artifact:
-[validate_quality_artifact.py](../scripts/validate_quality_artifact.py)
+[validate_quality_artifact.py](../scripts/gates/validate_quality_artifact.py)
 recomputes it and hard-fails a mismatch.
 
-[check_skill_surface_preflight.py](../scripts/check_skill_surface_preflight.py)
+[check_skill_surface_preflight.py](../scripts/gates/check_skill_surface_preflight.py)
 gates this buffer at the commit boundary for *changed* SKILL.md files (it runs in
 [staged_commit_gate_plan.py](../scripts/staged_commit_gate_plan.py) and so in
 the pre-commit dispatcher), instead of only in the broad gate. It
@@ -105,7 +105,7 @@ is fine; stashing overflow there just to fit is not). Procedural detail can stil
 move to a helper `scripts/` file when that is its natural home:
 
 ```bash
-python3 scripts/check_skill_surface_preflight.py --path skills/public/<skill>/SKILL.md
+python3 scripts/gates/check_skill_surface_preflight.py --path skills/public/<skill>/SKILL.md
 ```
 
 ## Artifact-shape preflight (charness-artifacts/**)
@@ -113,7 +113,7 @@ python3 scripts/check_skill_surface_preflight.py --path skills/public/<skill>/SK
 The skill-surface preflight above covers `skills/**` edits. The hand-authored
 **artifact** family (`charness-artifacts/critique/*.md`, retro, ideation, plus
 the adapter-scoped debug/quality) is covered by
-[check_artifact_surface_preflight.py](../scripts/check_artifact_surface_preflight.py).
+[check_artifact_surface_preflight.py](../scripts/gates/check_artifact_surface_preflight.py).
 It generalizes the same author-time idea to the recurring "authoring-preflight
 skip" class (issues 284 → 308 → 325 → 329 → 332 → 334): an author should learn an
 artifact's required shape at author time, not by failing the broad gate (the 334
@@ -124,9 +124,9 @@ Before authoring an artifact, surface its required shape (the dispatcher reads i
 from the owning scaffold/template/validator — it never re-declares it):
 
 ```bash
-python3 scripts/check_artifact_surface_preflight.py --type critique          # required shape
-python3 scripts/check_artifact_surface_preflight.py --type critique --emit-stub  # starter stub
-python3 scripts/check_artifact_surface_preflight.py --path <artifact>         # shape + current verdict
+python3 scripts/gates/check_artifact_surface_preflight.py --type critique          # required shape
+python3 scripts/gates/check_artifact_surface_preflight.py --type critique --emit-stub  # starter stub
+python3 scripts/gates/check_artifact_surface_preflight.py --path <artifact>         # shape + current verdict
 ```
 
 This is not merely a doc: the dispatcher's `--changed-artifacts` mode is wired
@@ -146,7 +146,7 @@ The same author-time idea covers the issue closeout surface whose required
 shape an author otherwise discovers by failing the validator several times:
 
 ```bash
-python3 scripts/check_artifact_surface_preflight.py --type closeout-draft   # issue closeout body shape
+python3 scripts/gates/check_artifact_surface_preflight.py --type closeout-draft   # issue closeout body shape
 ```
 
 - `closeout-draft` surfaces what `issue_tool.py validate-closeout-draft` (which
@@ -166,7 +166,7 @@ The skill-surface and artifact-shape preflights above cover `skills/**` and
 author there discovers
 markdownlint rules (the `MD004` list-marker style, a wrapped inline-code span,
 trailing space), the
-[check_doc_links.py](../scripts/check_doc_links.py) pathy-ref / link form,
+[check_doc_links.py](../scripts/gates/check_doc_links.py) pathy-ref / link form,
 one commit-gate failure at a time. `check_doc_links` also resolves the repo-owned script a documented command
 names — in a fenced block or an inline span — so a `python3 scripts/…` example
 cannot outlive the script it names. See
@@ -174,11 +174,11 @@ cannot outlive the script it names. See
 one pass — and, before a single line exists, ask it for the rules instead:
 
 ```bash
-python3 scripts/check_doc_authoring_preflight.py --path docs/index.md # a real target against them
+python3 scripts/gates/check_doc_authoring_preflight.py --path docs/index.md # a real target against them
 ```
 
 The rules mode is what makes this surface match its sibling
-([`check_skill_surface_preflight.py`](../scripts/check_skill_surface_preflight.py),
+([`check_skill_surface_preflight.py`](../scripts/gates/check_skill_surface_preflight.py),
 which describes by default). Every other
 check here is content-driven, so without it an author got the rules only *after*
 writing the thing that breaks them and one rework cycle was structurally
@@ -186,7 +186,7 @@ guaranteed. The rules are rendered, never restated: each line is
 the owning validator's own constant, or the verdict that validator returns when
 the preflight probes it with a sample.
 
-[check_doc_authoring_preflight.py](../scripts/check_doc_authoring_preflight.py)
+[check_doc_authoring_preflight.py](../scripts/gates/check_doc_authoring_preflight.py)
 reuses the real validators — `check_markdown_inline_code`, `check_doc_links`,
 and markdownlint-cli2 with the repo config — so the forecast cannot drift from
 what the gate enforces WHEN EACH CLASS RUNS. A class
@@ -264,7 +264,7 @@ prefix.
 
 A file under `skills/public/**` or `skills/support/**` ships as a *portable*
 package, so
-[validate_skill_ergonomics.py](../scripts/validate_skill_ergonomics.py)
+[validate_skill_ergonomics.py](../scripts/gates/validate_skill_ergonomics.py)
 flags package text (SKILL.md,
 references, **and helper scripts — including their comments**) that embeds
 origin-repo-specific anchors. Authoring a fix into a skill-package helper is the
@@ -283,7 +283,7 @@ Run the ergonomics validator after touching a skill package; it is fast and
 catches these before the broad gate:
 
 ```bash
-python3 scripts/validate_skill_ergonomics.py --repo-root .
+python3 scripts/gates/validate_skill_ergonomics.py --repo-root .
 ```
 
 ### Edit-time issue-anchor scan
@@ -293,7 +293,7 @@ The package sweep above runs over the whole skill surface at the commit boundary
 directly:
 
 ```bash
-python3 scripts/check_skill_surface_preflight.py --scan-issue-anchors skills/public/<skill>/scripts/<file>.py
+python3 scripts/gates/check_skill_surface_preflight.py --scan-issue-anchors skills/public/<skill>/scripts/<file>.py
 ```
 
 It reuses the exact `validate_skill_ergonomics` rule (`ISSUE_ANCHOR_RE` plus the
@@ -335,7 +335,7 @@ issue-anchor, a cross-namespace ownership overlap, and a new exit-zero
 attention-state term. Run them all at once instead:
 
 ```bash
-python3 scripts/check_skill_surface_preflight.py --path skills/public/<skill>/SKILL.md --run-checks
+python3 scripts/gates/check_skill_surface_preflight.py --path skills/public/<skill>/SKILL.md --run-checks
 ```
 
 `--run-checks` reports `validate_skills`, `validate_skill_ergonomics`,
@@ -351,7 +351,7 @@ file — and the broad pytest only surfaces it minutes later. Before paying for
 that cycle, check which test pins your changed surfaces:
 
 ```bash
-python3 scripts/check_prose_pin.py --repo-root .
+python3 scripts/gates/check_prose_pin.py --repo-root .
 ```
 
 It reads the working-tree diff and reports the likely-broken pins (the test file,

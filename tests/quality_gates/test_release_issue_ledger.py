@@ -10,7 +10,7 @@ from pathlib import Path
 
 import yaml
 
-from scripts import check_release_issue_ledger as gate
+from scripts.gates import check_release_issue_ledger as gate
 from scripts import release_issue_ledger_contract as contract
 from scripts import release_issue_ledger_evidence as evidence
 

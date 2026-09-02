@@ -23,7 +23,7 @@ CHECK_COVERAGE_EXTRA = importlib.util.module_from_spec(EXTRA_SPEC)
 EXTRA_SPEC.loader.exec_module(CHECK_COVERAGE_EXTRA)
 
 LIB_SPEC = importlib.util.spec_from_file_location(
-    "check_coverage_lib_under_test", ROOT / "scripts" / "check_coverage_lib.py"
+    "check_coverage_lib_under_test", ROOT / "scripts" / "gates" / "check_coverage_lib.py"
 )
 assert LIB_SPEC is not None and LIB_SPEC.loader is not None
 CHECK_COVERAGE_LIB = importlib.util.module_from_spec(LIB_SPEC)
@@ -236,7 +236,7 @@ def test_per_file_floor_reports_the_population_it_exempts() -> None:
     violations among the files we chose to look at". The threshold stays; the
     population it excuses is now named."""
     spec = importlib.util.spec_from_file_location(
-        "check_coverage_lib_test", ROOT / "scripts" / "check_coverage_lib.py"
+        "check_coverage_lib_test", ROOT / "scripts" / "gates" / "check_coverage_lib.py"
     )
     lib = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(lib)
@@ -295,7 +295,7 @@ def test_unmeasured_files_are_not_recorded_as_perfectly_covered() -> None:
     list documented as the population the threshold hides. Unmeasured is its own
     bucket."""
     spec = importlib.util.spec_from_file_location(
-        "check_coverage_lib_unmeasured", ROOT / "scripts" / "check_coverage_lib.py"
+        "check_coverage_lib_unmeasured", ROOT / "scripts" / "gates" / "check_coverage_lib.py"
     )
     lib = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(lib)

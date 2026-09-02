@@ -80,7 +80,7 @@ if [[ "$TARGET_REPO" == "$SOURCE_ROOT" ]]; then
     esac
   done
 else
-  checker="$SOURCE_ROOT/scripts/check_issue_closeout_commit_msg.py"
+  checker="$SOURCE_ROOT/scripts/gates/check_issue_closeout_commit_msg.py"
   if [[ ! -f "$checker" ]]; then
     echo "Missing issue closeout commit-msg checker: $checker" >&2
     exit 1

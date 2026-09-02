@@ -7,15 +7,15 @@ invariant, the rule, or the recorded file itself is wrong.
 from __future__ import annotations
 
 RESIDUAL_PROBE = "charness-artifacts/probe/2026-08-01-evidence-residual-floor.json"
-RESIDUAL_COMMAND = "python3 scripts/measure_evidence_residual.py --repo-root ."
+RESIDUAL_COMMAND = "python3 scripts/gates/measure_evidence_residual.py --repo-root ."
 RESIDUAL_RECORD_COMMAND = (
     f"{RESIDUAL_COMMAND}"
     " | python3 -c 'import json,sys,yaml; json.dump(yaml.safe_load(sys.stdin), sys.stdout,"
     " indent=2, sort_keys=True); print()'"
     f" > {RESIDUAL_PROBE}"
 )
-RESIDUAL_MEASURE_SCRIPT = "scripts/measure_evidence_residual.py"
-RESIDUAL_FLOOR_HOME = "scripts/check_prescribed_skill_executed_lib.py"
+RESIDUAL_MEASURE_SCRIPT = "scripts/gates/measure_evidence_residual.py"
+RESIDUAL_FLOOR_HOME = "scripts/gates/check_prescribed_skill_executed_lib.py"
 RESIDUAL_FLOOR_SYMBOL = "MIN_BOUND_RESIDUAL_CHARS"
 RESIDUAL_FLOOR_MIRROR = "plugins/charness/scripts/check_prescribed_skill_executed_lib.py"
 MIRROR_SYNC_COMMAND = "python3 scripts/sync_root_plugin_manifests.py"

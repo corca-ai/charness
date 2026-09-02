@@ -35,10 +35,10 @@ artifact_validator = load_script_module(
 )
 preflight = load_script_module(
     "check_doc_authoring_preflight_degradation_test",
-    ROOT / "scripts" / "check_doc_authoring_preflight.py",
+    ROOT / "scripts" / "gates" / "check_doc_authoring_preflight.py",
 )
 check_doc_links = load_script_module(
-    "check_doc_links_degradation_test", ROOT / "scripts" / "check_doc_links.py"
+    "check_doc_links_degradation_test", ROOT / "scripts" / "gates" / "check_doc_links.py"
 )
 
 # `from scripts import ...`, not a bare `import artifact_violation_report`: the
@@ -178,7 +178,7 @@ def test_unresolved_command_message_truncates_after_three(tmp_path) -> None:
         "# D\n\n" + "\n".join(f"run `python3 scripts/absent{n}.py`" for n in range(5)) + "\n",
         encoding="utf-8",
     )
-    result = _run("scripts/check_doc_links.py", "--repo-root", str(root))
+    result = _run("scripts/gates/check_doc_links.py", "--repo-root", str(root))
     assert result.returncode == 1, result.stdout
     assert ", ..." in result.stderr, result.stderr
     # Exactly three offenders are named before the ellipsis.
@@ -199,7 +199,7 @@ def test_unresolved_command_message_lists_all_when_three_or_fewer(tmp_path) -> N
         "# D\n\n" + "\n".join(f"run `python3 scripts/absent{n}.py`" for n in range(2)) + "\n",
         encoding="utf-8",
     )
-    result = _run("scripts/check_doc_links.py", "--repo-root", str(root))
+    result = _run("scripts/gates/check_doc_links.py", "--repo-root", str(root))
     assert result.returncode == 1
     assert ", ..." not in result.stderr, result.stderr
     assert result.stderr.count("scripts/absent") == 2
@@ -299,7 +299,7 @@ def test_debug_validator_treats_no_artifacts_in_scope_as_success(tmp_path) -> No
     (repo / "charness-artifacts" / "debug").mkdir(parents=True)
     (repo / ".agents").mkdir(parents=True)
     result = _run(
-        "scripts/validate_debug_artifact.py",
+        "scripts/gates/validate_debug_artifact.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -315,7 +315,7 @@ def test_debug_validator_reports_a_validation_error_through_the_scaffold_path(tm
     debug_dir = repo / "charness-artifacts" / "debug"
     debug_dir.mkdir(parents=True)
     (debug_dir / "2026-07-27-broken.md").write_text("# not a debug artifact\n", encoding="utf-8")
-    result = _run("scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--all")
+    result = _run("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo), "--all")
     assert result.returncode == 1
     # `returncode == 1` plus non-empty stderr is ALSO what an uncaught traceback
     # produces, so those two assertions cannot tell graceful handling from a crash.
@@ -610,12 +610,12 @@ def test_read_lines_names_the_missing_artifact_rather_than_raising_oserror(tmp_p
     [
         (
             "skills/public/debug/scripts/scaffold_debug_artifact.py",
-            "scripts.validate_debug_artifact",
+            "scripts.gates.validate_debug_artifact",
             "_debug_validator",
         ),
         (
             "skills/public/quality/scripts/scaffold_quality_artifact.py",
-            "scripts.validate_quality_artifact",
+            "scripts.gates.validate_quality_artifact",
             "_quality_validator",
         ),
     ],

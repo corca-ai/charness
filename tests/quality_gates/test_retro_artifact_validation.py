@@ -14,7 +14,7 @@ import pytest
 import yaml
 
 from scripts import init_lesson_ledger
-from scripts import validate_retro_artifact as retro_validator
+from scripts.gates import validate_retro_artifact as retro_validator
 from tests.quality_gates.support import ROOT, run_script
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
@@ -111,7 +111,7 @@ def test_north_star_reference_resolves_per_repo_and_never_writes_a_placeholder(
     seeds the section, and the refusal message the author hits when they fail -- and
     neither writes a placeholder in either branch.
     """
-    import scripts.validate_retro_artifact as validator
+    import scripts.gates.validate_retro_artifact as validator
 
     # The root is derived from the ARTIFACT's location, not from this script's: an
     # exported copy validating a consuming repo's retro would otherwise resolve against
@@ -209,7 +209,7 @@ def test_scaffolded_retro_validates_without_a_lesson_ledger(tmp_path: Path) -> N
 
 def test_date_activated_rules_announce_only_generic_retro_floors(tmp_path: Path) -> None:
     """Lesson-ledger state does not add a dated retro obligation."""
-    import scripts.validate_retro_artifact as validator
+    import scripts.gates.validate_retro_artifact as validator
 
     repo = tmp_path / "repo"
     (repo / "charness-artifacts" / "retro").mkdir(parents=True)
@@ -288,7 +288,7 @@ def test_a_named_missing_retro_is_refused_under_a_custom_output_dir(tmp_path: Pa
     repo = _repo_with_retro_output_dir(tmp_path, "artifacts/retros")
 
     result = run_script(
-        str(ROOT / "scripts" / "validate_retro_artifact.py"),
+        str(ROOT / "scripts" / "gates" / "validate_retro_artifact.py"),
         "--repo-root",
         str(repo),
         "--paths",
@@ -314,7 +314,7 @@ def test_a_sweep_over_a_missing_output_directory_is_refused_not_reported_clean(
     (repo / "artifacts" / "retros").rmdir()
 
     result = run_script(
-        str(ROOT / "scripts" / "validate_retro_artifact.py"), "--repo-root", str(repo), "--all"
+        str(ROOT / "scripts" / "gates" / "validate_retro_artifact.py"), "--repo-root", str(repo), "--all"
     )
 
     assert result.returncode != 0, result.stdout

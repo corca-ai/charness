@@ -20,7 +20,7 @@ from .support import ROOT, _load_script_module, run_script
 
 INVENTORY = _load_script_module(
     "validate_inventory_consumption_under_test",
-    ROOT / "scripts" / "validate_inventory_consumption.py",
+    ROOT / "scripts" / "gates" / "validate_inventory_consumption.py",
 )
 _CITED = "`python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root .`"
 
@@ -53,7 +53,7 @@ def _write_repo(
 
 def _run(repo: Path, artifact: Path) -> subprocess.CompletedProcess:
     return run_script(
-        "scripts/validate_inventory_consumption.py",
+        "scripts/gates/validate_inventory_consumption.py",
         "--repo-root",
         str(repo),
         "--artifact-path",
@@ -270,7 +270,7 @@ def test_the_validator_reports_a_path_outside_the_repo_instead_of_crashing(tmp_p
 
 MEASURE = _load_script_module(
     "measure_inventory_consumption_floor_under_test",
-    ROOT / "scripts" / "measure_inventory_consumption_floor.py",
+    ROOT / "scripts" / "gates" / "measure_inventory_consumption_floor.py",
 )
 PROBE = ROOT / "charness-artifacts" / "probe" / "2026-08-01-inventory-consumption-floor.json"
 
@@ -514,7 +514,7 @@ def test_the_floor_measurement_payload_and_exit_code(tmp_path, monkeypatch, caps
     )
     measure = _load_script_module(
         "measure_inventory_consumption_floor_cli",
-        ROOT / "scripts" / "measure_inventory_consumption_floor.py",
+        ROOT / "scripts" / "gates" / "measure_inventory_consumption_floor.py",
     )
     fields = (
         ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
@@ -552,7 +552,7 @@ def test_the_floor_measurement_emits_a_structured_payload(tmp_path, monkeypatch,
     (corpus / "a.md").write_text(_artifact("- nothing cited."), encoding="utf-8")
     measure = _load_script_module(
         "measure_inventory_consumption_floor_json",
-        ROOT / "scripts" / "measure_inventory_consumption_floor.py",
+        ROOT / "scripts" / "gates" / "measure_inventory_consumption_floor.py",
     )
     fields = (
         ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
@@ -586,7 +586,7 @@ def test_the_floor_measurement_names_a_citation_it_lowers(tmp_path, monkeypatch,
     )
     measure = _load_script_module(
         "measure_inventory_consumption_floor_lowered",
-        ROOT / "scripts" / "measure_inventory_consumption_floor.py",
+        ROOT / "scripts" / "gates" / "measure_inventory_consumption_floor.py",
     )
     fields = (
         ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
@@ -631,7 +631,7 @@ def test_the_floor_measurement_runs_as_a_script(tmp_path):
     result = subprocess.run(
         [
             sys.executable,
-            str(ROOT / "scripts" / "measure_inventory_consumption_floor.py"),
+            str(ROOT / "scripts" / "gates" / "measure_inventory_consumption_floor.py"),
             "--repo-root",
             str(tmp_path),
             "--corpus",

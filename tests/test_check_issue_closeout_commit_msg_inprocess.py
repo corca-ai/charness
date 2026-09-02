@@ -1,4 +1,4 @@
-"""In-process pins for `scripts/check_issue_closeout_commit_msg.py`'s pure
+"""In-process pins for `scripts/gates/check_issue_closeout_commit_msg.py`'s pure
 helpers, complementing the subprocess CLI suite in
 `tests/quality_gates/test_issue_closeout_commit_msg_hook.py`. Note the
 subprocess suite IS coverage-traced here (children inherit os.environ, so
@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-import scripts.check_issue_closeout_commit_msg as checker
+import scripts.gates.check_issue_closeout_commit_msg as checker
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 

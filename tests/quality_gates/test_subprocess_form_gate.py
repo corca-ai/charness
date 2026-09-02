@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import check_subprocess_form as gate
+from scripts.gates import check_subprocess_form as gate
 from tests.quality_gates.support import ROOT
 
 

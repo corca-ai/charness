@@ -243,12 +243,12 @@ SITES: tuple[dict[str, Any], ...] = (
     {
         "id": "commit-msg-hook-regex",
         "arity": "exact",
-        "surface": "scripts/check_issue_closeout_commit_msg.py:_CLASSIFICATION_RE",
+        "surface": "scripts/gates/check_issue_closeout_commit_msg.py:_CLASSIFICATION_RE",
         "why": (
             "a classification missing here does not fail loudly -- it falls through to "
             "`_infer_classification`, which defaults to `bug`"
         ),
-        "build": _regex_probe("scripts/check_issue_closeout_commit_msg.py", "_CLASSIFICATION_RE"),
+        "build": _regex_probe("scripts/gates/check_issue_closeout_commit_msg.py", "_CLASSIFICATION_RE"),
     },
     {
         "id": "release-closeout-message-regex",

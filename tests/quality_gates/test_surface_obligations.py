@@ -35,7 +35,7 @@ def run_validate_surfaces(*args: str) -> SimpleNamespace:
 
 def test_check_changed_surfaces_reports_expected_obligations_for_readme() -> None:
     result = run_script(
-        "scripts/check_changed_surfaces.py",
+        "scripts/gates/check_changed_surfaces.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -68,7 +68,7 @@ def test_adapter_surface_pattern_covers_a_nested_helper() -> None:
 
 def _verify_commands_for(*paths: str) -> list[str]:
     result = run_script(
-        "scripts/check_changed_surfaces.py",
+        "scripts/gates/check_changed_surfaces.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -84,11 +84,11 @@ _GITIGNORE_SCAN = (
 )
 _RETRO_INDEX_CHECK = "python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check"
 _SUBPROCESS_FORM = (
-    "python3 scripts/check_subprocess_form.py --repo-root . --require-git-file-listing"
+    "python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing"
 )
 _STANDING_PYTEST = "python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only"
 _SPEC_EVIDENCE = (
-    "python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing"
+    "python3 scripts/gates/check_spec_evidence_durability.py --repo-root . --require-git-file-listing"
 )
 
 
@@ -114,7 +114,7 @@ def test_sloc_inventory_refresh_is_sync_obligation_not_verify() -> None:
         "--output charness-artifacts/quality/sloc-inventory/latest.json"
     )
     result = run_script(
-        "scripts/check_changed_surfaces.py",
+        "scripts/gates/check_changed_surfaces.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -154,7 +154,7 @@ def test_repo_python_surface_matches_top_level_scripts() -> None:
     # keeping the whole repo-python verify set (subprocess form, broad pytest) out
     # of every scripts closeout. scripts/*.py matches top-level AND nested.
     result = run_script(
-        "scripts/check_changed_surfaces.py",
+        "scripts/gates/check_changed_surfaces.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -177,7 +177,7 @@ def test_repo_python_surface_matches_shell_test_fixtures() -> None:
 
 def test_check_changed_surfaces_treats_charness_artifacts_as_repo_markdown() -> None:
     result = run_script(
-        "scripts/check_changed_surfaces.py",
+        "scripts/gates/check_changed_surfaces.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -192,7 +192,7 @@ def test_check_changed_surfaces_treats_charness_artifacts_as_repo_markdown() -> 
 
 def test_retro_prepare_packet_pair_matches_retro_surface() -> None:
     result = run_script(
-        "scripts/check_changed_surfaces.py",
+        "scripts/gates/check_changed_surfaces.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -210,7 +210,7 @@ def test_retro_prepare_packet_pair_matches_retro_surface() -> None:
 
 def test_check_changed_surfaces_verifies_mutation_workflow_actions() -> None:
     result = run_script(
-        "scripts/check_changed_surfaces.py",
+        "scripts/gates/check_changed_surfaces.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -220,12 +220,12 @@ def test_check_changed_surfaces_verifies_mutation_workflow_actions() -> None:
     payload = yaml.safe_load(result.stdout)
     surface_ids = {surface["surface_id"] for surface in payload["matched_surfaces"]}
     assert "mutation-testing-workflow" in surface_ids
-    assert "python3 scripts/check_github_actions.py --repo-root ." in payload["verify_commands"]
+    assert "python3 scripts/gates/check_github_actions.py --repo-root ." in payload["verify_commands"]
 
 
 def test_check_changed_surfaces_routes_agent_runtime_js_to_native_tests() -> None:
     result = run_script(
-        "scripts/check_changed_surfaces.py",
+        "scripts/gates/check_changed_surfaces.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -242,7 +242,7 @@ def test_check_changed_surfaces_routes_agent_runtime_js_to_native_tests() -> Non
 
 def test_check_changed_surfaces_reports_unmatched_paths() -> None:
     result = run_script(
-        "scripts/check_changed_surfaces.py",
+        "scripts/gates/check_changed_surfaces.py",
         "--repo-root",
         str(ROOT),
         "--paths",

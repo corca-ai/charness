@@ -60,7 +60,7 @@ python3 "$SKILL_DIR/scripts/scaffold_debug_artifact.py" --repo-root .
 ```
 
 Use the returned `validator_command` instead of assuming the consumer repo has a
-local `<plugin-dir>/scripts/validate_debug_artifact.py`. Installed Charness layouts keep that
+local `<plugin-dir>/scripts/gates/validate_debug_artifact.py`. Installed Charness layouts keep that
 validator under the plugin or managed checkout, not under every target repo.
 
 ## Validator Contract

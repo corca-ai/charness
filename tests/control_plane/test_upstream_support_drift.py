@@ -1,4 +1,4 @@
-"""Regression tests for scripts/check_upstream_support_drift.py.
+"""Regression tests for scripts/gates/check_upstream_support_drift.py.
 
 The drift gate catches a maintainer who bumps `support_skill_source.ref` to a
 sibling release where the declared
@@ -18,7 +18,7 @@ import yaml
 from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts" / "check_upstream_support_drift.py"
+SCRIPT = ROOT / "scripts" / "gates" / "check_upstream_support_drift.py"
 
 
 def _run(repo_root: Path, fixture_path: Path, *extra: str) -> subprocess.CompletedProcess[str]:

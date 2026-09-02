@@ -37,8 +37,8 @@ import provenance_contract as _provenance_contract  # noqa: E402
 # verify_commands. Entries MUST be cheap (<1s), deterministic,
 # and path-scoped -- never a broad pytest in the pre-commit path.
 FAST_SURFACE_VERIFY_COMMANDS: dict[str, str] = {
-    "python3 scripts/validate_skill_ergonomics.py --repo-root .": "validate-skill-ergonomics",
-    "python3 scripts/check_subprocess_form.py --repo-root . --require-git-file-listing": "check-subprocess-form",
+    "python3 scripts/gates/validate_skill_ergonomics.py --repo-root .": "validate-skill-ergonomics",
+    "python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing": "check-subprocess-form",
 }
 
 
@@ -67,7 +67,7 @@ def _timing_layer_gates(
             _timing_pull_gate(
                 repo_root,
                 "check-python-filenames",
-                "scripts/check_python_filenames.py",
+                "scripts/gates/check_python_filenames.py",
                 "--repo-root",
                 str(repo_root),
                 "--require-git-file-listing",
@@ -362,7 +362,7 @@ def staged_commit_gate_plan(
                 "check-python-lengths (staged)",
                 (
                     "python3",
-                    "scripts/check_code_lengths.py",
+                    "scripts/gates/check_code_lengths.py",
                     "--repo-root",
                     str(repo_root),
                     "--paths",
@@ -557,7 +557,7 @@ def staged_commit_gate_plan(
             _timing_pull_gate(
                 repo_root,
                 "check-standalone-imports",
-                "scripts/check_standalone_imports.py",
+                "scripts/gates/check_standalone_imports.py",
                 "--repo-root",
                 str(repo_root),
                 "--require-git-file-listing",

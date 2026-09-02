@@ -240,7 +240,7 @@ def _repo_module_payload(module_name: str, build, *, fallback: dict[str, Any]) -
 def _date_activated_rules(repo_root: Path) -> dict[str, Any]:
     """Announce the generic retro floors that switch on by artifact date."""
     return _repo_module_payload(
-        "scripts.validate_retro_artifact",
+        "scripts.gates.validate_retro_artifact",
         lambda validator: {"rules": validator.date_activated_rules(repo_root)},
         fallback={"rules": []},
     )

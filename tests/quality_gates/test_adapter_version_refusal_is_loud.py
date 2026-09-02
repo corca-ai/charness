@@ -97,13 +97,13 @@ def _seeded_repo(tmp_path: Path, version: str) -> Path:
 # argv, because the guard's whole point is where it sits in that entrypoint's order --
 # calling the helper directly would pass on a surface that never wired it in.
 SURFACES = (
-    ("debug_gate", "scripts/validate_debug_artifact.py", lambda repo: ("--repo-root", str(repo), "--all")),
+    ("debug_gate", "scripts/gates/validate_debug_artifact.py", lambda repo: ("--repo-root", str(repo), "--all")),
     (
         "retro_gate",
-        "scripts/validate_retro_artifact.py",
+        "scripts/gates/validate_retro_artifact.py",
         lambda repo: ("--repo-root", str(repo), "--paths", "docs/retros/2026-08-18-probe.md"),
     ),
-    ("quality_gate", "scripts/validate_quality_artifact.py", lambda repo: ("--repo-root", str(repo))),
+    ("quality_gate", "scripts/gates/validate_quality_artifact.py", lambda repo: ("--repo-root", str(repo))),
     (
         "gather_writer",
         "skills/public/gather/scripts/write_record.py",

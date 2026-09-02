@@ -87,7 +87,7 @@ def test_a_lane_refusal_names_itself_on_both_channels_and_exits_nonzero(
     becomes invisible to whichever consumer was not anticipated — and an operator who
     sees no complaint reads the run as a pass and proceeds to the close.
     """
-    from scripts.validate_evidence_boundary_crosswalk import main as validate_main
+    from scripts.gates.validate_evidence_boundary_crosswalk import main as validate_main
 
     monkeypatch.setattr(
         sys, "argv", ["validate", "--repo-root", str(tmp_path), "--crosswalk", CROSSWALK_REL]
@@ -114,7 +114,7 @@ def test_a_verified_crosswalk_returns_its_payload_with_a_silent_stderr(
     skip. The payload still reports every protected issue as unauthorized — this is a
     verified ARTIFACT, not an authorized close.
     """
-    from scripts.validate_evidence_boundary_crosswalk import main as validate_main
+    from scripts.gates.validate_evidence_boundary_crosswalk import main as validate_main
 
     build_protected_world(tmp_path)
     monkeypatch.setattr(

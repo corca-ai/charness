@@ -9,13 +9,13 @@ says which, so neither is promoted, trusted, or retired on a guess about what th
 other already covers.
 
 Every row below was MEASURED against awiki 0.5.0 and this repo's own
-[check_doc_links.py](../scripts/check_doc_links.py), not read off either tool's
+[check_doc_links.py](../scripts/gates/check_doc_links.py), not read off either tool's
 description. The reproductions are at the bottom; run them rather than trusting
 this table.
 
 ## The one-sentence split
 
-[`check_doc_links.py`](../scripts/check_doc_links.py) asks **"does this reference resolve?"**, per link, and
+[`check_doc_links.py`](../scripts/gates/check_doc_links.py) asks **"does this reference resolve?"**, per link, and
 refuses the ones that do not. `awiki lint` asks **"is this page reachable?"**,
 per graph, and cannot see a broken link at all.
 
@@ -25,7 +25,7 @@ question, honestly, and nobody was asking this one.
 
 ## Command-level matrix
 
-| Question | [`check_doc_links.py`](../scripts/check_doc_links.py) | `awiki lint -root docs -recursive` |
+| Question | [`check_doc_links.py`](../scripts/gates/check_doc_links.py) | `awiki lint -root docs -recursive` |
 | --- | --- | --- |
 | Does a markdown link resolve to a real file? | **YES — hard fail.** `broken relative link` | **NO.** Reports `ok` with a link to a page that does not exist. Surfaced only by the separate `awiki wanted`, and framed as a page you might want to create rather than as an error. |
 | Is the link form right (`./` prefix, no absolute paths)? | **YES — hard fail.** | No opinion. |
@@ -43,7 +43,7 @@ The repo gates on NAMED METRICS against declared bars, and never on awiki's exit
 code. Three points, all measured:
 
 1. **Nothing else answers the connectivity question.** Before the docs index hub
-   existed, seven pages were unreachable while [`check_doc_links.py`](../scripts/check_doc_links.py) was green —
+   existed, seven pages were unreachable while [`check_doc_links.py`](../scripts/gates/check_doc_links.py) was green —
    correctly green, because every link in the repo resolved. That is the exact
    shape of a gate reporting a verdict it never observed, and it is why awiki is
    worth a lane of its own rather than being folded into the existing one.
@@ -59,7 +59,7 @@ code. Three points, all measured:
    against a bar takes the count without the exit code, and can sit above zero
    where the rule over-reports. The bar is a required value that may only ever
    decrease; since S6 it lives in the ratchet record below, which
-   [check_docs_graph.py](../scripts/check_docs_graph.py) reads.
+   [check_docs_graph.py](../scripts/gates/check_docs_graph.py) reads.
 3. **The residual under that bar is the wrapping population, and the sweep
    decision still stands.** Recount rather than trusting a number here —
    `awiki lint -root docs -recursive` prints it and it moves with every docs
@@ -85,7 +85,7 @@ zero-work move the release contract's Fixed Decision names. This table is the
 second surface.
 
 **This record is now the bar's only home (S6, 2026-08-15).**
-[check_docs_graph.py](../scripts/check_docs_graph.py) READS the last row below
+[check_docs_graph.py](../scripts/gates/check_docs_graph.py) READS the last row below
 rather than carrying its own literal, through `ratchet_rows`; when no record is
 present it falls to `DEFAULT_LINK_ONLY_LINES_BAR`, which is `0`. That matters
 because the gate is exported to consuming repos and this page is not: before the

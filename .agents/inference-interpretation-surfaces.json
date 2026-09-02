@@ -64,7 +64,7 @@
     {
       "surface_id": "python-lengths",
       "kind": "python",
-      "declaration_file": "scripts/check_code_lengths.py",
+      "declaration_file": "scripts/gates/check_code_lengths.py",
       "declaration_symbol": "INTERPRETATION",
       "consumer_reference": "skills/public/quality/references/automation-promotion.md",
       "consumer_anchor": "is a warn-band file an honest cohesive unit near its limit",

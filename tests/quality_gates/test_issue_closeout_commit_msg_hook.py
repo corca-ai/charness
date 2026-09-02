@@ -14,8 +14,8 @@ from tests.quality_gates.seeding_support import _install_empty_git_dir
 from tests.quality_gates.support import run_script
 from tests.script_main import load_script_module, run_loaded_script_main
 
-SCRIPT = "scripts/check_issue_closeout_commit_msg.py"
-hook = importlib.import_module("scripts.check_issue_closeout_commit_msg")
+SCRIPT = "scripts/gates/check_issue_closeout_commit_msg.py"
+hook = importlib.import_module("scripts.gates.check_issue_closeout_commit_msg")
 
 
 def _init_git_repo(repo: Path) -> None:
@@ -500,7 +500,7 @@ def test_commit_msg_checker_resolves_exported_plugin_skill_layout(tmp_path: Path
     message = repo / "message.txt"
     message.write_text(_bug_closeout_body(), encoding="utf-8")
 
-    script = plugin / "scripts" / "check_issue_closeout_commit_msg.py"
+    script = plugin / "scripts" / "gates" / "check_issue_closeout_commit_msg.py"
     module = load_script_module("exported_issue_closeout_commit_msg", script)
     result = run_loaded_script_main(
         str(script),

@@ -123,7 +123,7 @@ def test_validate_debug_artifact_rejects_extra_top_level_section(tmp_path: Path)
             "## Verification\n\nverification\n\n## Session Log\n\n- log\n\n",
         ),
     )
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "canonical sections" in result.stderr
 
@@ -133,7 +133,7 @@ def test_validate_debug_artifact_requires_three_candidate_causes(tmp_path: Path)
         tmp_path,
         valid_current_artifact().replace("- three\n", ""),
     )
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "at least three plausible causes" in result.stderr
 
@@ -146,7 +146,7 @@ def test_validate_debug_artifact_requires_interrupt_sections_for_latest(tmp_path
             "",
         ),
     )
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing required section `## Seam Risk`" in result.stderr
     assert "Invalid debug artifact charness-artifacts/debug/latest.md" in result.stderr
@@ -160,7 +160,7 @@ def test_validate_debug_artifact_requires_invariant_proof_for_latest(tmp_path: P
             "",
         ),
     )
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing required section `## Invariant Proof`" in result.stderr
 
@@ -170,7 +170,7 @@ def test_validate_debug_artifact_requires_invariant_proof_fields(tmp_path: Path)
         tmp_path,
         valid_current_artifact().replace("- Final-Consumer Proof: n/a\n", ""),
     )
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing required line `- Final-Consumer Proof: ...`" in result.stderr
 
@@ -189,7 +189,7 @@ def test_validate_debug_artifact_allows_legacy_extra_sections_for_dated_records(
         legacy, encoding="utf-8"
     )
 
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "Validated debug artifact charness-artifacts/debug/2026-04-01-legacy.md" in result.stdout
 
@@ -203,7 +203,7 @@ def test_validate_debug_artifact_rejects_latest_legacy_extra_sections(tmp_path: 
         ),
     )
 
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Invalid debug artifact charness-artifacts/debug/latest.md" in result.stderr
     assert "canonical sections" in result.stderr
@@ -216,7 +216,7 @@ def test_validate_debug_artifact_reports_failing_historical_artifact_path(tmp_pa
         broken, encoding="utf-8"
     )
 
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Invalid debug artifact charness-artifacts/debug/2026-04-01-broken.md" in result.stderr
     assert "missing required section `## Candidate Causes`" in result.stderr
@@ -229,7 +229,7 @@ def test_validate_debug_artifact_forced_interrupt_requires_spec_handoff(tmp_path
             next_step="impl", handoff_artifact="none", risk_class="external-seam"
         ),
     )
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "forced risk interrupt" in result.stderr
 
@@ -242,7 +242,7 @@ def test_validate_debug_artifact_rejects_followup_sibling_without_identifier(
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: static scan only",
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "follow-up:" in result.stderr
 
@@ -253,7 +253,7 @@ def test_validate_debug_artifact_accepts_followup_sibling_with_issue_url(tmp_pat
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: static scan only | follow-up: https://example.com/issues/42",
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -265,7 +265,7 @@ def test_validate_debug_artifact_accepts_followup_sibling_with_handoff_anchor(
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: static scan only | follow-up: deferred docs/index.md#cleanup-backlog",
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -281,7 +281,7 @@ def test_validate_debug_artifact_ignores_prose_mention_of_decision_phrase(tmp_pa
         ),
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -292,7 +292,7 @@ def test_validate_debug_artifact_rejects_title_case_decision(tmp_path: Path) -> 
         "- same layer: tests/repo_copy.py:12 | decision: Valid Follow-Up Outside The Slice | proof: static scan only",
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "follow-up:" in result.stderr
 
@@ -304,7 +304,7 @@ def test_validate_debug_artifact_accepts_ascii_dash_short_circuit(tmp_path: Path
         "- n/a - trivial fix; no plausible siblings",
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -318,7 +318,7 @@ def test_validate_debug_artifact_reports_first_invalid_with_offender_text(tmp_pa
         ),
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "abstraction up: lib/foo.py:42" in result.stderr
 
@@ -330,7 +330,7 @@ def test_validate_debug_artifact_rejects_bare_deferred_followup(tmp_path: Path) 
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: not inspected | follow-up: deferred",
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "follow-up:" in result.stderr
 
@@ -343,7 +343,7 @@ def test_validate_debug_artifact_rejects_deferred_with_whitespace_only_anchor(
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: not inspected | follow-up: deferred   ",
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
 
 
@@ -354,7 +354,7 @@ def test_validate_debug_artifact_rejects_deferred_with_trailing_punctuation(tmp_
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: not inspected | follow-up: deferred.",
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "follow-up:" in result.stderr
 
@@ -366,7 +366,7 @@ def test_validate_debug_artifact_accepts_short_non_deferred_identifier(tmp_path:
         "- same layer: tests/repo_copy.py:12 | decision: valid follow-up outside the slice | proof: not inspected | follow-up: #199",
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -382,7 +382,7 @@ def test_validate_debug_artifact_rejects_abstraction_up_diagnostic_only_unresolv
         ),
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "abstraction-up diagnostic-only" in result.stderr
     assert "follow-up:" in result.stderr
@@ -400,7 +400,7 @@ def test_validate_debug_artifact_rejects_abstraction_up_diagnostic_only_without_
         ),
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "proof-backed no-action reason" in result.stderr
 
@@ -418,7 +418,7 @@ def test_validate_debug_artifact_accepts_abstraction_up_diagnostic_only_with_no_
         ),
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -435,7 +435,7 @@ def test_validate_debug_artifact_accepts_abstraction_up_diagnostic_only_with_fol
         ),
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -451,7 +451,7 @@ def test_validate_debug_artifact_preserves_same_layer_diagnostic_only_without_re
         ),
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -470,7 +470,7 @@ def test_validate_debug_artifact_does_not_read_next_star_bullet_as_abstraction_u
         ),
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "proof-backed no-action reason" in result.stderr
 
@@ -487,7 +487,7 @@ def test_validate_debug_artifact_rejects_star_abstraction_up_diagnostic_only_wit
         ),
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "proof-backed no-action reason" in result.stderr
 
@@ -506,7 +506,7 @@ def test_validate_debug_artifact_rejects_latest_sibling_search_without_cross_fil
     # on the current `latest.md` form — the gap #2b closes.
     artifact = valid_current_artifact().replace(CROSS_FILE_LINE + "\n", "")
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "cross-file" in result.stderr
     assert "Invalid debug artifact charness-artifacts/debug/latest.md" in result.stderr
@@ -519,7 +519,7 @@ def test_validate_debug_artifact_accepts_no_cross_file_sibling_escape(tmp_path: 
         "- no cross-file sibling: the fixture-root logic lives only in this test module",
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -527,7 +527,7 @@ def test_validate_debug_artifact_rejects_empty_cross_file_marker(tmp_path: Path)
     # `cross-file:` with no value is not a declaration.
     artifact = valid_current_artifact().replace(CROSS_FILE_LINE, "- cross-file:")
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "cross-file" in result.stderr
 
@@ -542,7 +542,7 @@ def test_validate_debug_artifact_cross_file_marker_not_required_for_dated_record
     (repo / "charness-artifacts" / "debug" / "2026-04-01-dated.md").write_text(
         dated, encoding="utf-8"
     )
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "Validated debug artifact charness-artifacts/debug/2026-04-01-dated.md" in result.stdout
 
@@ -556,7 +556,7 @@ def test_validate_debug_artifact_trivial_short_circuit_satisfies_cross_file(tmp_
         "- n/a — trivial fix; no plausible siblings\n",
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -575,7 +575,7 @@ def test_validate_debug_artifact_rejects_latest_hypothesis_without_disconfirmer(
     # static-only-RCA gap Plan A closes by internalizing the rule into structure.
     artifact = valid_current_artifact().replace(HYPOTHESIS_LINE, "- the gate skips volatile roots")
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "disconfirmer" in result.stderr
     assert "Invalid debug artifact charness-artifacts/debug/latest.md" in result.stderr
@@ -590,7 +590,7 @@ def test_validate_debug_artifact_accepts_disconfirmer_na_escape(tmp_path: Path) 
         "disconfirmer: n/a — only reproduces in CI, no cheap local refutation",
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -600,7 +600,7 @@ def test_validate_debug_artifact_rejects_empty_disconfirmer_marker(tmp_path: Pat
         HYPOTHESIS_LINE, "- falsifiable claim: the gate skips volatile roots | disconfirmer:"
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "disconfirmer" in result.stderr
 
@@ -615,7 +615,7 @@ def test_validate_debug_artifact_disconfirmer_marker_not_required_for_dated_reco
     (repo / "charness-artifacts" / "debug" / "2026-04-01-dated.md").write_text(
         dated, encoding="utf-8"
     )
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "Validated debug artifact charness-artifacts/debug/2026-04-01-dated.md" in result.stdout
 
@@ -629,7 +629,7 @@ def test_validate_debug_artifact_trivial_short_circuit_satisfies_disconfirmer(
         HYPOTHESIS_LINE, "- n/a — trivial fix; no plausible siblings"
     )
     repo = seed_repo(tmp_path, artifact)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -644,7 +644,7 @@ def test_validate_debug_artifact_default_mode_lists_every_violation(tmp_path: Pa
     # D28 polarity unification: one-pass is now the DEFAULT here, matching the
     # handoff/retro/ideation/quality siblings.
     repo = seed_repo(tmp_path, _multi_violation_current_artifact())
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "rule violation(s)" in result.stderr
     assert "at least three plausible causes" in result.stderr
@@ -654,7 +654,7 @@ def test_validate_debug_artifact_default_mode_lists_every_violation(tmp_path: Pa
 def test_validate_debug_artifact_fail_fast_stops_at_first_violation(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, _multi_violation_current_artifact())
     result = run_script(
-        "scripts/validate_debug_artifact.py", "--repo-root", str(repo), "--fail-fast"
+        "scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo), "--fail-fast"
     )
     assert result.returncode == 1
     assert "at least three plausible causes" in result.stderr
@@ -675,7 +675,7 @@ def test_validate_debug_artifact_rejects_dated_off_taxonomy_risk_class(tmp_path:
     (repo / "charness-artifacts" / "debug" / "2026-06-14-dated.md").write_text(
         dated, encoding="utf-8"
     )
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Invalid debug artifact charness-artifacts/debug/2026-06-14-dated.md" in result.stderr
     assert "host-state" in result.stderr
@@ -692,7 +692,7 @@ def test_validate_debug_artifact_rejects_dated_off_taxonomy_generalization_press
     (repo / "charness-artifacts" / "debug" / "2026-06-14-dated.md").write_text(
         dated, encoding="utf-8"
     )
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Invalid debug artifact charness-artifacts/debug/2026-06-14-dated.md" in result.stderr
     assert "Generalization Pressure" in result.stderr
@@ -706,7 +706,7 @@ def test_validate_debug_artifact_accepts_dated_in_taxonomy_seam_risk(tmp_path: P
     (repo / "charness-artifacts" / "debug" / "2026-06-14-dated.md").write_text(
         dated, encoding="utf-8"
     )
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "Validated debug artifact charness-artifacts/debug/2026-06-14-dated.md" in result.stdout
 
@@ -721,7 +721,7 @@ def test_validate_debug_artifact_seam_risk_enums_are_single_source_of_truth() ->
     if scripts_dir not in sys.path:
         sys.path.insert(0, scripts_dir)
     spec = importlib.util.spec_from_file_location(
-        "validate_debug_artifact_sst", ROOT / "scripts" / "validate_debug_artifact.py"
+        "validate_debug_artifact_sst", ROOT / "scripts" / "gates" / "validate_debug_artifact.py"
     )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -741,7 +741,7 @@ def test_missing_output_directory_reports_no_misleading_scaffold_hint(tmp_path: 
     """
     repo = tmp_path / "repo"
     (repo / "charness-artifacts").mkdir(parents=True)
-    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "No debug output directory" in result.stderr
     assert "scaffold" not in result.stderr
@@ -759,7 +759,7 @@ def test_marker_case_variant_is_named_and_reported_with_its_siblings(tmp_path: P
     """
     import pytest
 
-    from scripts.validate_debug_artifact import ValidationError, validate_debug_artifact
+    from scripts.gates.validate_debug_artifact import ValidationError, validate_debug_artifact
 
     repo = seed_repo(
         tmp_path,
@@ -780,7 +780,7 @@ def test_enum_violations_report_together_with_observed_values(tmp_path: Path) ->
     """Two enum deviations cost one gate run, not two, and each names its value."""
     import pytest
 
-    from scripts.validate_debug_artifact import ValidationError, validate_debug_artifact
+    from scripts.gates.validate_debug_artifact import ValidationError, validate_debug_artifact
 
     repo = seed_repo(
         tmp_path,
@@ -801,7 +801,7 @@ def test_risk_and_resolution_enum_deviations_join_the_same_report(tmp_path: Path
     all land in ONE report with observed values (#636)."""
     import pytest
 
-    from scripts.validate_debug_artifact import ValidationError, validate_debug_artifact
+    from scripts.gates.validate_debug_artifact import ValidationError, validate_debug_artifact
 
     repo = seed_repo(
         tmp_path,
@@ -830,7 +830,7 @@ def test_marker_problems_from_both_interrupt_blocks_merge_into_one_report(tmp_pa
     the first block's raise no longer hides the second block's problems."""
     import pytest
 
-    from scripts.validate_debug_artifact import ValidationError, validate_debug_artifact
+    from scripts.gates.validate_debug_artifact import ValidationError, validate_debug_artifact
 
     repo = seed_repo(
         tmp_path,
@@ -848,7 +848,7 @@ def test_an_empty_risk_class_list_is_reported_when_all_markers_extract(tmp_path:
     """`- Risk Class: ,` extracts (non-empty raw value) but parses to zero classes."""
     import pytest
 
-    from scripts.validate_debug_artifact import ValidationError, validate_debug_artifact
+    from scripts.gates.validate_debug_artifact import ValidationError, validate_debug_artifact
 
     repo = seed_repo(
         tmp_path,
@@ -868,7 +868,7 @@ def test_extract_prefixed_values_reports_an_empty_value_beside_its_siblings() ->
     """
     import pytest
 
-    from scripts.validate_debug_artifact import ValidationError, extract_prefixed_values
+    from scripts.gates.validate_debug_artifact import ValidationError, extract_prefixed_values
 
     with pytest.raises(ValidationError) as excinfo:
         extract_prefixed_values(

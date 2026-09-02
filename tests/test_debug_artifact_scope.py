@@ -53,7 +53,7 @@ def _load_validator(name: str):
     module object would let one test's probe change another's answer.
     """
     spec = importlib.util.spec_from_file_location(
-        name, ROOT / "scripts" / "validate_debug_artifact.py"
+        name, ROOT / "scripts" / "gates" / "validate_debug_artifact.py"
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

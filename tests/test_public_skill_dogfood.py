@@ -19,7 +19,7 @@ from tools.public_skill_dogfood_validation_lib import (
 ROOT = Path(__file__).resolve().parents[1]
 _suggest_public_skill_dogfood = load_script_module(
     "suggest_public_skill_dogfood_under_test",
-    ROOT / "scripts" / "suggest_public_skill_dogfood.py",
+    ROOT / "scripts" / "gates" / "suggest_public_skill_dogfood.py",
 )
 
 

@@ -56,7 +56,7 @@ def test_the_size_budget_module_is_exercised_through_the_validator_reexports() -
 # import resolves rather than on a second copy loaded from a different sys.path entry.
 if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
-PREFLIGHT = importlib.import_module("check_artifact_surface_preflight")
+PREFLIGHT = importlib.import_module("scripts.gates.check_artifact_surface_preflight")
 
 
 @pytest.fixture

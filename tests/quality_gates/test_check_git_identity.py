@@ -1,6 +1,6 @@
 """Tests for the #432 lingering `.invalid` git identity refusal gate.
 
-The gate (`scripts/check_git_identity.py`) resolves the EFFECTIVE commit
+The gate (`scripts/gates/check_git_identity.py`) resolves the EFFECTIVE commit
 identity the way git itself would (`git var GIT_AUTHOR_IDENT` / `git var
 GIT_COMMITTER_IDENT`, which honor config AND environment overrides) and refuses
 when either resolved email's domain is the RFC 2606 `.invalid` placeholder TLD.
@@ -17,7 +17,7 @@ import pytest
 
 from .support import run_script
 
-cgi = importlib.import_module("scripts.check_git_identity")
+cgi = importlib.import_module("scripts.gates.check_git_identity")
 
 _RELEASE_PREFLIGHT_PATH = (
     Path(__file__).resolve().parents[2]
@@ -109,7 +109,7 @@ def test_cli_blocks_local_invalid_config(tmp_path: Path, no_ambient_git_identity
     _git(repo, "config", "user.email", "x@example.invalid")
     _git(repo, "config", "user.name", "hotl proof")
 
-    result = run_script("scripts/check_git_identity.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_git_identity.py", "--repo-root", str(repo))
 
     assert result.returncode == 1, result.stdout
     assert "BLOCKED" in result.stdout
@@ -121,7 +121,7 @@ def test_cli_passes_clean_identity(tmp_path: Path) -> None:
     _git(repo, "config", "user.email", "dev@example.com")
     _git(repo, "config", "user.name", "Dev")
 
-    result = run_script("scripts/check_git_identity.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_git_identity.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stdout
     assert "clean" in result.stdout

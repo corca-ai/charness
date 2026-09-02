@@ -171,9 +171,9 @@
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json",
-        "python3 scripts/validate_quality_artifact.py --repo-root .",
-        "python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing",
+        "python3 scripts/gates/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json",
+        "python3 scripts/gates/validate_quality_artifact.py --repo-root .",
+        "python3 scripts/gates/check_spec_evidence_durability.py --repo-root . --require-git-file-listing",
         "./scripts/check-markdown.sh",
         "./scripts/check-secrets.sh"
       ],
@@ -200,8 +200,8 @@
       "verify_commands": [
         "python3 -m tools.validate_skills --repo-root .",
         "python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py",
-        "python3 scripts/check_skill_ownership_overlap.py --repo-root .",
-        "python3 scripts/validate_skill_ergonomics.py --repo-root ."
+        "python3 scripts/gates/check_skill_ownership_overlap.py --repo-root .",
+        "python3 scripts/gates/validate_skill_ergonomics.py --repo-root ."
       ],
       "notes": [
         "Skill trigger contracts stay source-owned under skills/, not under plugins/.",
@@ -238,7 +238,7 @@
       "description": "Explicit packaged consumer-validator inventory, adoption decisions, and the installed/source-layout checker that enforces the contract.",
       "source_paths": [
         ".agents/consumer-validator-adoption.yaml",
-        "scripts/check_consumer_validator_catalog.py",
+        "scripts/gates/check_consumer_validator_catalog.py",
         "scripts/capability_catalog.py",
         "scripts/packaging_lib.py",
         "scripts/run-quality.sh",
@@ -257,7 +257,7 @@
         "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
       ],
       "verify_commands": [
-        "python3 scripts/check_consumer_validator_catalog.py --repo-root . --adoption-path .agents/consumer-validator-adoption.yaml --require-adoption",
+        "python3 scripts/gates/check_consumer_validator_catalog.py --repo-root . --adoption-path .agents/consumer-validator-adoption.yaml --require-adoption",
         "python3 -m pytest -q tests/test_consumer_validator_catalog.py tests/test_capability_catalog.py"
       ],
       "notes": [
@@ -296,7 +296,7 @@
         "docs/public-skill-dogfood.json",
         "docs/public-skill-dogfood.md",
         "scripts/gates_support/public_skill_dogfood_lib.py",
-        "scripts/suggest_public_skill_dogfood.py",
+        "scripts/gates/suggest_public_skill_dogfood.py",
         "tools/validate_public_skill_dogfood.py"
       ],
       "derived_paths": [],
@@ -341,7 +341,7 @@
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_adapters.py --repo-root ."
+        "python3 scripts/gates/validate_adapters.py --repo-root ."
       ],
       "notes": [
         "Adapter contracts should stay machine-readable and loadable."
@@ -537,8 +537,8 @@
       "verify_commands": [
         "python3 -m pytest -q tests/quality_gates/test_quality_mutation_testing.py",
         "python3 -m pytest -q tests/quality_gates/test_coverage_builder_policy_parity.py",
-        "python3 scripts/check_github_actions.py --repo-root .",
-        "python3 scripts/validate_adapters.py --repo-root .",
+        "python3 scripts/gates/check_github_actions.py --repo-root .",
+        "python3 scripts/gates/validate_adapters.py --repo-root .",
         "python3 scripts/validate_packaging.py --repo-root .",
         "python3 -m tools.validate_packaging_committed --repo-root ."
       ],
@@ -556,7 +556,7 @@
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/check_github_actions.py --repo-root ."
+        "python3 scripts/gates/check_github_actions.py --repo-root ."
       ],
       "notes": [
         "Each CI step invokes a repo-owned validator so rules stay single-source; see docs/validator-timing-layers.md.",
@@ -864,10 +864,10 @@
       "sync_commands": [],
       "verify_commands": [
         "./scripts/check-python-lint.sh",
-        "python3 scripts/check_code_lengths.py --repo-root . --require-git-file-listing",
+        "python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing",
         "python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support",
-        "python3 scripts/check_test_repo_copy_invariants.py --repo-root .",
-        "python3 scripts/check_subprocess_form.py --repo-root . --require-git-file-listing",
+        "python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root .",
+        "python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing",
         "./scripts/check-shell.sh",
         "python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only"
       ],
@@ -892,7 +892,7 @@
         "skills/public/quality/scripts/inventory_standing_test_economics.py",
         "skills/public/quality/scripts/render_runtime_summary.py",
         "scripts/gates_support/lint_ignore_inventory_lib.py",
-        "scripts/check_code_lengths.py",
+        "scripts/gates/check_code_lengths.py",
         "scripts/capability_catalog_sources.py",
         "skills/public/quality/references/automation-promotion.md",
         "scripts/capability_catalog_artifact.py",
@@ -948,7 +948,7 @@
       "description": "The registry of commands this repo has measured as dominated by a cheaper one, and the gates that read it.",
       "source_paths": [
         ".agents/command-dominance.yaml",
-        "scripts/check_command_dominance.py",
+        "scripts/gates/check_command_dominance.py",
         "skills/public/quality/scripts/command_dominance_carriers.py",
         "skills/public/quality/scripts/command_dominance_lib.py",
         "skills/public/quality/scripts/command_dominance_registry.py",
@@ -964,7 +964,7 @@
         "python3 scripts/sync_root_plugin_manifests.py"
       ],
       "verify_commands": [
-        "python3 scripts/check_command_dominance.py --repo-root .",
+        "python3 scripts/gates/check_command_dominance.py --repo-root .",
         "python3 -m pytest -q tests/quality_gates/test_command_dominance.py"
       ],
       "notes": [

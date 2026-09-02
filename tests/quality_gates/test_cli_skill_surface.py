@@ -17,8 +17,8 @@ from runtime_bootstrap import import_repo_module
 from .support import ROOT, run_script, write_executable
 
 _check_cli_skill_surface = import_repo_module(
-    ROOT / "scripts/check_cli_skill_surface.py",
-    "scripts.check_cli_skill_surface",
+    ROOT / "scripts/gates/check_cli_skill_surface.py",
+    "scripts.gates.check_cli_skill_surface",
 )
 
 
@@ -56,7 +56,7 @@ def test_cli_skill_surface_is_not_applicable_without_product_combo_or_inferred_s
         "version: 1\nproduct_surfaces:\n- installable_cli\n",
         encoding="utf-8",
     )
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo))
+    result = run_script("scripts/gates/check_cli_skill_surface.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert yaml.safe_load(result.stdout)["status"] == "not_applicable"
 
@@ -163,7 +163,7 @@ def test_cli_skill_surface_accepts_declared_combo_with_probes_and_docs(tmp_path:
         "commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8"
     )
     result = run_script(
-        "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes"
+        "scripts/gates/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes"
     )
     payload = yaml.safe_load(result.stdout)
     assert result.returncode == 0, result.stderr
@@ -238,7 +238,7 @@ def test_cli_skill_surface_reports_probe_timeout(tmp_path: Path) -> None:
     env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.1"
 
     result = run_script(
-        "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env
+        "scripts/gates/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env
     )
     payload = yaml.safe_load(result.stdout)
 
@@ -357,7 +357,7 @@ def test_cli_skill_surface_keeps_an_observed_failure_out_of_unobserved(tmp_path:
     )
 
     result = run_script(
-        "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes"
+        "scripts/gates/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes"
     )
     payload = yaml.safe_load(result.stdout)
 
@@ -623,7 +623,7 @@ def test_cli_skill_surface_separates_a_real_124_exit_from_an_unobserved_probe(
     )
 
     result = run_script(
-        "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes"
+        "scripts/gates/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes"
     )
     payload = yaml.safe_load(result.stdout)
 
@@ -668,7 +668,7 @@ def test_cli_skill_surface_survives_a_probe_whose_grandchild_holds_the_pipe(tmp_
 
     try:
         result = _run_bounded_in_own_session(
-            "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env
+            "scripts/gates/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env
         )
         recorded_pids = _recorded_pids(pid_log)
         production_survivors = [
@@ -727,7 +727,7 @@ def test_cli_skill_surface_bounds_the_drain_when_the_grandchild_escapes_the_grou
     started = time.monotonic()
     try:
         result = _run_bounded_in_own_session(
-            "scripts/check_cli_skill_surface.py",
+            "scripts/gates/check_cli_skill_surface.py",
             "--repo-root",
             str(repo),
             "--run-probes",
@@ -840,7 +840,7 @@ def test_cli_skill_surface_keeps_partial_output_when_even_the_drain_times_out(
     env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.5"
     try:
         result = _run_bounded_in_own_session(
-            "scripts/check_cli_skill_surface.py",
+            "scripts/gates/check_cli_skill_surface.py",
             "--repo-root",
             str(repo),
             "--run-probes",
@@ -880,7 +880,7 @@ def test_cli_skill_surface_names_the_unobserved_probe_in_its_only_output(tmp_pat
     env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.2"
 
     result = run_script(
-        "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env
+        "scripts/gates/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env
     )
 
     assert result.returncode == 1

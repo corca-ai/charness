@@ -6,9 +6,9 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.validate_retro_artifact import ValidationError as RetroValidationError
-from scripts.validate_retro_artifact import candidate_paths as retro_candidate_paths
-from scripts.validate_retro_artifact import validate_retro_artifact
+from scripts.gates.validate_retro_artifact import ValidationError as RetroValidationError
+from scripts.gates.validate_retro_artifact import candidate_paths as retro_candidate_paths
+from scripts.gates.validate_retro_artifact import validate_retro_artifact
 from skills.public.retro.scripts import prepare_packet
 from skills.public.retro.scripts.resolve_adapter import load_adapter, validate_adapter_data
 from tests.quality_gates.support import run_script

@@ -17,7 +17,7 @@ from .support import ROOT
 # must NEVER carry the declaration — these tests guard that cardinal-error
 # boundary in both directions. Driven in-process via main() (not a
 # subprocess) to stay on the testability-dsl-initiative in-process convention.
-PYTHON_LENGTHS = importlib.import_module("scripts.check_code_lengths")
+PYTHON_LENGTHS = importlib.import_module("scripts.gates.check_code_lengths")
 
 
 class _Result(NamedTuple):

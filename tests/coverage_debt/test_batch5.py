@@ -124,7 +124,7 @@ def test_a_symlink_pointer_already_aimed_at_the_record_is_a_noop_and_keeps_its_l
 
 
 # ---------------------------------------------------------------------------
-# scripts/check_seed_fixture_budget.py -- the exported-layout import fallback
+# scripts/gates/check_seed_fixture_budget.py -- the exported-layout import fallback
 # ---------------------------------------------------------------------------
 
 
@@ -146,7 +146,7 @@ def test_the_seed_budget_gate_still_finds_its_emitter_without_the_scripts_packag
     monkeypatch.delitem(sys.modules, "scripts.yaml_output", raising=False)
     monkeypatch.delitem(sys.modules, "check_seed_fixture_budget_flat_layout", raising=False)
 
-    path = ROOT / "scripts" / "check_seed_fixture_budget.py"
+    path = ROOT / "scripts" / "gates" / "check_seed_fixture_budget.py"
     module = load_script_module("check_seed_fixture_budget_flat_layout", path)
 
     # Loaded is not enough: the name it bound has to be a live emitter, so the gate

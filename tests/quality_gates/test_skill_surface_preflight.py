@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import check_skill_surface_preflight as preflight
+from scripts.gates import check_skill_surface_preflight as preflight
 
 ROOT = Path(__file__).resolve().parents[2]
 

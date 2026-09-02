@@ -34,9 +34,9 @@ _load_repo_runtime_bootstrap()
 
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
-_preflight = import_repo_module(__file__, "scripts.check_doc_authoring_preflight")
-_doc_links = import_repo_module(__file__, "scripts.check_doc_links")
-_inline_code = import_repo_module(__file__, "scripts.check_markdown_inline_code")
+_preflight = import_repo_module(__file__, "scripts.gates.check_doc_authoring_preflight")
+_doc_links = import_repo_module(__file__, "scripts.gates.check_doc_links")
+_inline_code = import_repo_module(__file__, "scripts.gates.check_markdown_inline_code")
 _markdown_scan = import_repo_module(__file__, "scripts.core.markdown_doc_scan")
 
 # Re-exported so a caller catches the class THIS module actually raises. Run as

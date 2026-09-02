@@ -29,7 +29,7 @@ def test_headroom_reports_limit_minus_current_and_flags_near_limit(tmp_path: Pat
     near = _skill_helper(repo, "near.py", 340)  # warn 330 / limit 360 -> near-limit
     short = _skill_helper(repo, "short.py", 10)
     result = run_script(
-        "scripts/check_code_lengths.py",
+        "scripts/gates/check_code_lengths.py",
         "--repo-root",
         str(repo),
         "--headroom",
@@ -58,7 +58,7 @@ def test_headroom_payload_shape(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     near = _skill_helper(repo, "near.py", 340)
     result = run_script(
-        "scripts/check_code_lengths.py",
+        "scripts/gates/check_code_lengths.py",
         "--repo-root",
         str(repo),
         "--headroom",
@@ -85,7 +85,7 @@ def test_headroom_ignores_non_gated_paths(tmp_path: Path) -> None:
     top = repo / "top_level.py"
     top.write_text("x = 1\n", encoding="utf-8")
     result = run_script(
-        "scripts/check_code_lengths.py", "--repo-root", str(repo), "--headroom", "--paths", str(top)
+        "scripts/gates/check_code_lengths.py", "--repo-root", str(repo), "--headroom", "--paths", str(top)
     )
     assert result.returncode == 1
     assert "refusing empty matched universe" in result.stderr

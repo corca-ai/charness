@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import check_consumer_validator_catalog as catalog_check
+from scripts.gates import check_consumer_validator_catalog as catalog_check
 from scripts import packaging_lib
 from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.script_main import run_loaded_script_main
@@ -69,7 +69,7 @@ def _write_catalog(repo: Path, entries: list[dict[str, object]]) -> Path:
                 "candidate_patterns:",
                 *[f"  - '{pattern}'" for pattern in catalog_check.EXPECTED_CANDIDATE_PATTERNS],
                 "scanner_exclusions:",
-                "  - path: scripts/check_consumer_validator_catalog.py",
+                "  - path: scripts/gates/check_consumer_validator_catalog.py",
                 "    reason: the checker is the fixed source-side scanner and is not a product validator",
                 "consumer_contract:",
                 "  source: packaged",
@@ -191,7 +191,7 @@ def test_the_scanner_exclusion_list_is_exactly_the_checker_itself(tmp_path: Path
     on purpose instead.
     """
     assert catalog_check.EXPECTED_SCANNER_EXCLUSIONS == (
-        "scripts/check_consumer_validator_catalog.py",
+        "scripts/gates/check_consumer_validator_catalog.py",
     ), "the scanner may exclude only itself; a new exclusion shrinks the enforced set"
 
 
@@ -255,7 +255,7 @@ def test_live_catalog_has_a_decision_for_every_packaged_candidate(tmp_path: Path
     report = catalog_check.validate_catalog(_export_live_catalog_repo(tmp_path))
 
     assert report["status"] == "pass"
-    assert "scripts/validate_adapters.py" not in report["consumer_facing_validators"]
+    assert "scripts/gates/validate_adapters.py" not in report["consumer_facing_validators"]
     assert "scripts/check_closeout_classification_parity.py" not in report["consumer_facing_validators"]
     assert "quality-artifact" in report["consumer_validator_ids"]
     quality = next(
@@ -366,7 +366,7 @@ def test_catalog_must_explain_the_self_scanner_exclusion(tmp_path: Path) -> None
     repo = _fixture_repo(tmp_path)
     path = _write_catalog(repo, [_entry("scripts/check_demo.py")])
     text = path.read_text(encoding="utf-8").replace(
-        "  - path: scripts/check_consumer_validator_catalog.py\n"
+        "  - path: scripts/gates/check_consumer_validator_catalog.py\n"
         "    reason: the checker is the fixed source-side scanner and is not a product validator\n",
         "",
     )
@@ -449,7 +449,7 @@ def test_script_entrypoint_calls_main_when_loaded_as_main(
 
     with pytest.raises(SystemExit) as raised:
         runpy.run_path(
-            str(ROOT / "scripts/check_consumer_validator_catalog.py"), run_name="__main__"
+            str(ROOT / "scripts/gates/check_consumer_validator_catalog.py"), run_name="__main__"
         )
 
     assert raised.value.code == 0

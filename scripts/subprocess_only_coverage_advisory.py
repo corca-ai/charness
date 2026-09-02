@@ -81,7 +81,7 @@ _COPY_FUNCS = frozenset({"copy", "copy2", "copyfile", "copytree"})
 def _load_boundary_inventory(repo_root: Path) -> tuple[dict[str, list[str]], str]:
     """Read the live boundary inventory as advisory candidate metadata."""
     try:
-        from scripts.inventory_boundary_bypass_lib import find_boundary_bypass_candidates
+        from scripts.gates.inventory_boundary_bypass_lib import find_boundary_bypass_candidates
 
         payload = find_boundary_bypass_candidates(repo_root)
     except Exception:
@@ -173,7 +173,7 @@ def _names_script(node: ast.expr, script_path: str) -> bool:
     this expression carry" for this repo, and the dup ratchet caught the copy.
     """
     try:
-        from scripts.inventory_boundary_bypass_lib import _iter_string_constants
+        from scripts.gates.inventory_boundary_bypass_lib import _iter_string_constants
     except Exception:  # pragma: no cover - import-shape drift must not break a gate
         return False
     return any(_mentions_script(value, script_path) for value in _iter_string_constants(node))
@@ -194,7 +194,7 @@ def _spawn_of_this_script_replaces_env(tree: ast.AST, script_path: str) -> bool:
     command is built from a variable does not bind, and is silence by design.
     """
     try:
-        from scripts.inventory_boundary_bypass_lib import (
+        from scripts.gates.inventory_boundary_bypass_lib import (
             _is_spawn_call,
             _iter_spawn_command_strings,
         )

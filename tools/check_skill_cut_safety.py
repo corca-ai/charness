@@ -38,7 +38,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
-_prose_pin = import_repo_module(__file__, "scripts.check_prose_pin")
+_prose_pin = import_repo_module(__file__, "scripts.gates.check_prose_pin")
 _contracts = import_repo_module(__file__, "tools.check_skill_contracts")
 
 # A removed line is "prose worth a reference home" only when it carries a human

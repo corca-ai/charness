@@ -140,7 +140,7 @@ def test_a_runtime_composed_module_name_is_a_known_blind_spot() -> None:
 
 def test_a_shelled_out_script_is_a_known_blind_spot() -> None:
     """A gate that SUBPROCESSES a sibling does not import it, so no closure reaches it."""
-    source = 'subprocess.run([sys.executable, "scripts/check_issue_closeout_commit_msg.py"])\n'
+    source = 'subprocess.run([sys.executable, "scripts/gates/check_issue_closeout_commit_msg.py"])\n'
 
     # The bare path string carries no `.py`-suffixed BASENAME and no `scripts.`
     # dotted form, so it is invisible here by construction.

@@ -296,7 +296,7 @@ def test_subcommand_choices_still_ignores_a_braced_group_with_spaces() -> None:
 # A command carrier's own invocation regex, so these cases exercise the real boundary
 # classes rather than a simplified stand-in. The trailing-quote consumption below is a
 # property OF this regex, and a hand-written pattern would not reproduce it.
-_INVOCATION_RE = __import__("runpy").run_path("scripts/check_documented_command_flags.py")[
+_INVOCATION_RE = __import__("runpy").run_path("scripts/gates/check_documented_command_flags.py")[
     "INVOCATION_RE"
 ]
 

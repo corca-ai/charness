@@ -21,7 +21,7 @@ MODULE_BEFORE = 'import re\nLINK_RE = re.compile(r"x")\n\n\ndef other():\n    re
 MODULE_AFTER = "import re\n\n\ndef other():\n    return 1\n"
 CONSUMER = (
     "from runtime_bootstrap import import_repo_module\n"
-    '_doc_links = import_repo_module(__file__, "scripts.check_doc_links")\n\n\n'
+    '_doc_links = import_repo_module(__file__, "scripts.gates.check_doc_links")\n\n\n'
     "def collect(text):\n    return _doc_links.LINK_RE.findall(text)\n"
 )
 
@@ -34,8 +34,8 @@ def test_removed_name_consumers_on_one_tree(tmp_path: Path) -> None:
     repo = seeded_repo(
         tmp_path / "repo",
         {
-            "scripts/check_doc_links.py": MODULE_BEFORE,
-            "scripts/check_doc_authoring_preflight.py": CONSUMER,
+            "scripts/gates/check_doc_links.py": MODULE_BEFORE,
+            "scripts/gates/check_doc_authoring_preflight.py": CONSUMER,
             "scripts/lonely.py": "VALUE = 1\n",
             "scripts/owner_token.py": "TOKEN = 1\n",
             "scripts/unrelated.py": "class X:\n    TOKEN = 2\n\n\ndef f(x):\n    return x.TOKEN\n",
@@ -56,7 +56,7 @@ def test_removed_name_consumers_on_one_tree(tmp_path: Path) -> None:
             "scripts/reader_typed.py": "import typed\n\n\ndef f():\n    return typed.COUNT\n",
         },
     )
-    (repo / "scripts" / "check_doc_links.py").write_text(MODULE_AFTER, encoding="utf-8")
+    (repo / "scripts" / "gates" / "check_doc_links.py").write_text(MODULE_AFTER, encoding="utf-8")
     (repo / "scripts" / "lonely.py").write_text("", encoding="utf-8")
     (repo / "scripts" / "owner_token.py").write_text("", encoding="utf-8")
     (repo / "scripts" / "state.py").write_text("", encoding="utf-8")
@@ -77,7 +77,7 @@ def test_removed_name_consumers_on_one_tree(tmp_path: Path) -> None:
     (repo / "scripts" / "typed.py").write_text("", encoding="utf-8")
 
     paths = [
-        "scripts/check_doc_links.py",
+        "scripts/gates/check_doc_links.py",
         "scripts/lonely.py",
         "scripts/owner_token.py",
         "scripts/state.py",
@@ -91,9 +91,9 @@ def test_removed_name_consumers_on_one_tree(tmp_path: Path) -> None:
     ]
     report = _removed.build_report(repo, paths, "HEAD")
 
-    assert report["removed"]["scripts/check_doc_links.py"] == ["LINK_RE"]
-    assert report["consumers"]["scripts/check_doc_links.py"] == {
-        "scripts/check_doc_authoring_preflight.py": ["LINK_RE"]
+    assert report["removed"]["scripts/gates/check_doc_links.py"] == ["LINK_RE"]
+    assert report["consumers"]["scripts/gates/check_doc_links.py"] == {
+        "scripts/gates/check_doc_authoring_preflight.py": ["LINK_RE"]
     }
     assert report["removed"]["scripts/lonely.py"] == ["VALUE"]
     assert "scripts/lonely.py" not in report["consumers"]
@@ -133,13 +133,13 @@ def test_the_advisory_writes_to_stderr_and_names_the_readers(tmp_path: Path, cap
     repo = seeded_repo(
         tmp_path / "repo",
         {
-            "scripts/check_doc_links.py": MODULE_BEFORE,
-            "scripts/check_doc_authoring_preflight.py": CONSUMER,
+            "scripts/gates/check_doc_links.py": MODULE_BEFORE,
+            "scripts/gates/check_doc_authoring_preflight.py": CONSUMER,
         },
     )
-    (repo / "scripts" / "check_doc_links.py").write_text(MODULE_AFTER, encoding="utf-8")
+    (repo / "scripts" / "gates" / "check_doc_links.py").write_text(MODULE_AFTER, encoding="utf-8")
 
-    _removed.advise_removed_name_consumers(repo, ["scripts/check_doc_links.py"], against="HEAD")
+    _removed.advise_removed_name_consumers(repo, ["scripts/gates/check_doc_links.py"], against="HEAD")
 
     captured = capsys.readouterr()
     assert "check_doc_authoring_preflight.py" in captured.err

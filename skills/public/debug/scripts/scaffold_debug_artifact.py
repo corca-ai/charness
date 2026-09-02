@@ -30,7 +30,7 @@ _followup_routing = SKILL_RUNTIME.load_local_skill_module(__file__, "debug_follo
 # enforces. If the validator module cannot load, degrade to no budget rather
 # than break the scaffold — the field is additive guidance, never load-bearing.
 try:
-    _debug_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.validate_debug_artifact")
+    _debug_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.gates.validate_debug_artifact")
     _MAX_ARTIFACT_WORDS: int | None = int(_debug_validator.MAX_ARTIFACT_WORDS)
 except Exception:
     _debug_validator = None

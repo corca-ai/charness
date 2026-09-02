@@ -96,7 +96,7 @@ def test_the_same_quantity_inside_a_claim_marker_is_accepted() -> None:
 
 def test_a_number_inside_a_code_span_or_fence_is_accepted() -> None:
     """Paths, flags, and line citations are identifiers, not claims."""
-    assert LINT.lint_text("See `scripts/check_docs_graph.py:52` for the gated set.\n") == []
+    assert LINT.lint_text("See `scripts/gates/check_docs_graph.py:52` for the gated set.\n") == []
     assert LINT.lint_text("```yaml\ncount: 27\nquantifier: only\n```\n") == []
 
 

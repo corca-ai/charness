@@ -177,7 +177,7 @@ def test_an_unavailable_inventory_never_crashes_or_silences_the_advisory(
     (tmp_path / "scripts" / "foo.py").write_text("def a():\n    return 1\n", encoding="utf-8")
     _write_test_file(tmp_path, "tests/test_foo.py", "scripts/foo.py", shape="replaces-env")
 
-    import scripts.inventory_boundary_bypass_lib as inventory
+    import scripts.gates.inventory_boundary_bypass_lib as inventory
 
     def fail(_repo_root):
         raise RuntimeError("inventory unavailable")

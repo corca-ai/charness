@@ -75,7 +75,7 @@ with a single bullet rather than omitting the section reasoning:
 
 ## Enforcement
 
-`<plugin-dir>/scripts/validate_retro_artifact.py` enforces the follow-up grammar when a
+`<plugin-dir>/scripts/gates/validate_retro_artifact.py` enforces the follow-up grammar when a
 `## Sibling Search` section is present in a per-session retro artifact. The
 section is opt-in: artifacts without it pass unchanged, so historical retros and
 narrowly-local sessions are not retroactively gated. The validator shares

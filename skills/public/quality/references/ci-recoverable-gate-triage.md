@@ -27,7 +27,7 @@ only (always exit-zero, no blocking floor) and it never edits a gate.
    `ci_local_gate_parity_lib` for workflow discovery and gate-policy reading).
 3. For each ranked gate, matches its distinctive label token (word-boundary; a
    `ruff-check` label matches a CI `ruff check` step, a `check-doc-links` label
-   matches `<plugin-dir>/scripts/check_doc_links.py`; over-generic single words such as `node`
+   matches `<plugin-dir>/scripts/gates/check_doc_links.py`; over-generic single words such as `node`
    are skipped) against the CI proof index.
 4. Classifies each gate:
    - **candidate** — a CI step re-runs its proof. Reported with the matching CI

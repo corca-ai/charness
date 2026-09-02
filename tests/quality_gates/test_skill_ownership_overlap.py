@@ -9,8 +9,8 @@ import yaml
 from runtime_bootstrap import import_repo_module
 from tests.quality_gates.support import ROOT, run_script
 
-SCRIPT = "scripts/check_skill_ownership_overlap.py"
-_ownership_overlap = import_repo_module(ROOT / SCRIPT, "scripts.check_skill_ownership_overlap")
+SCRIPT = "scripts/gates/check_skill_ownership_overlap.py"
+_ownership_overlap = import_repo_module(ROOT / SCRIPT, "scripts.gates.check_skill_ownership_overlap")
 
 
 def run_ownership_overlap(monkeypatch, capsys, *args: str) -> SimpleNamespace:

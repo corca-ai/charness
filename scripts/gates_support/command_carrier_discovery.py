@@ -85,7 +85,7 @@ from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 # carries a comment recording the same trap from the other direction.
 _markdown_doc_scan = import_repo_module(__file__, "scripts.core.markdown_doc_scan")
 iter_doc_lines = _markdown_doc_scan.iter_doc_lines
-_check_doc_links = import_repo_module(__file__, "scripts.check_doc_links")
+_check_doc_links = import_repo_module(__file__, "scripts.gates.check_doc_links")
 BACKTICK_CONTENT_RE = _check_doc_links.BACKTICK_CONTENT_RE
 iter_docs = _check_doc_links.iter_docs
 _repo_file_listing = import_repo_module(__file__, "scripts.core.repo_file_listing")
@@ -312,7 +312,7 @@ def _render_argv(elements: list[ast.expr]) -> str | None:
     1. The command must be at the head, and the scan STOPS at the first element
        that could not precede it. Only placeholders and interpreter words may,
        because that is what `[sys.executable, "-u", script]` looks like. Without
-       this rule, `run_script("scripts/check_doc_links.py", ..., "--paths",
+       this rule, `run_script("scripts/gates/check_doc_links.py", ..., "--paths",
        "charness", ...)` read its `--paths` VALUE as a second command and reported
        five false flag drifts against the CLI. Stopping early is also what keeps
        this affordable: the gate reads every `ast.List`, `ast.Tuple` and

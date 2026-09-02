@@ -50,7 +50,7 @@ def iter_close_keyword_refs(text: str) -> list[tuple[str | None, int]]:
     in ``text``. This is the canonical close-keyword scanner for every BLOCKING
     surface. Issue-owned validators may keep narrower private grammars, so
     "canonical" does not mean "the only one"; the
-    commit-msg checker (``scripts/check_issue_closeout_commit_msg.py``) reuses
+    commit-msg checker (``scripts/gates/check_issue_closeout_commit_msg.py``) reuses
     it through the loaded ``issue_verify_closeout`` module rather than keeping
     a second copy, so the two surfaces cannot drift.
 

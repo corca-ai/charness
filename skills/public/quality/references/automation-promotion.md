@@ -149,7 +149,7 @@ in ~1s, not after a ~4-min broad-pytest run.
   consumer prompt and acceptance evidence in the authoring repo's canonical
   `<authoring-repo>/docs/public-skill-dogfood.json` registry.
 - **Touching a `SKILL.md`?** Check its headroom first
-  (the `<plugin-dir>/scripts/check_skill_surface_preflight.py`, shipped
+  (the `<plugin-dir>/scripts/gates/check_skill_surface_preflight.py`, shipped
   to consumers at `<plugin>/scripts/`, with `--path <SKILL.md>`; the
   `check-skill-core-headroom` ratchet gates changed cores at the commit boundary).
   When it blocks, separate a concept into its own surface or delete one — never

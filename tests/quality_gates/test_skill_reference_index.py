@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts import check_skill_surface_preflight as preflight
+from scripts.gates import check_skill_surface_preflight as preflight
 from skills.public.quality.scripts import inventory_skill_ergonomics
 from tools import validate_skills
 
