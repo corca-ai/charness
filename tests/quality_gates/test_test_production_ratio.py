@@ -11,6 +11,7 @@ import pytest
 import yaml
 
 from tests.quality_gates.repo_shapes import install_committed_repo
+from tests.quality_gates.seeding_support import write_quality_adapter
 
 from .support import ROOT, init_git_repo, run_script
 
@@ -44,6 +45,39 @@ def test_test_production_ratio_counts_source_truth_without_plugin_exports() -> N
     assert summary["skipped"]["status"] == "skipped"
     assert summary["skipped"]["count"] == 0
     assert summary["skipped"]["paths"] == []
+
+
+def test_test_production_ratio_uses_adapter_test_roots(tmp_path: Path) -> None:
+    repo = install_committed_repo(
+        tmp_path / "repo",
+        {
+            "src/app.py": "print('source')\n",
+            "fixtures/test_app.py": "def test_app():\n    assert True\n",
+        },
+    )
+    write_quality_adapter(repo, ["universes:", "  test_roots:", "    - fixtures"])
+
+    summary = RATIO.summarize(repo, engine="splitlines")
+
+    assert summary["test_roots"] == {
+        "patterns": ["fixtures"],
+        "source": "adapter",
+        "matched_files": 1,
+        "status": "configured",
+    }
+    assert RATIO._splitlines_summary(repo)["surface_file_buckets"]["tests-python"] == [
+        "fixtures/test_app.py"
+    ]
+
+
+def test_test_production_ratio_refuses_declared_empty_test_roots(tmp_path: Path) -> None:
+    repo = install_committed_repo(tmp_path / "repo", {"src/app.py": "print('source')\n"})
+    write_quality_adapter(repo, ["universes:", "  test_roots: []"])
+
+    with pytest.raises(
+        SystemExit, match="check-test-production-ratio: refusing empty declared universe"
+    ):
+        RATIO.summarize(repo, engine="splitlines")
 
 
 def _ratio_invocation(runner_text: str) -> str:

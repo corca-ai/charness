@@ -30,6 +30,7 @@ from scripts.mutation_baseline_abort_lib import (  # noqa: E402
 from scripts.mutation_changed_files_lib import (  # noqa: E402
     classify_changed_sample_scope,
     invalidate_changed_line_coverage_marker,
+    resolved_mutation_pool,
 )
 from scripts.mutation_manifest_lib import build_manifest_from_state, write_manifest  # noqa: E402
 from scripts.mutation_sampling_lib import (  # noqa: E402
@@ -48,27 +49,9 @@ from scripts.mutation_sampling_lib import (  # noqa: E402
     select_budgeted_sample,
     select_test_nodeids,
 )
+from scripts.quality_universes_lib import DEFAULT_UNIVERSES  # noqa: E402
 from scripts.subprocess_guard import run_process  # noqa: E402
 
-MUTATION_POOLS = {
-    "core-python": (
-        "charness",
-        "runtime_bootstrap.py",
-        "skill_runtime_bootstrap.py",
-        "scripts/*.py",
-        "scripts/**/*.py",
-        "tools/**/*.py",
-    ),
-    "public-skill-python": (
-        "skills/public/*/scripts/*.py",
-        "skills/public/*/scripts/**/*.py",
-    ),
-    "support-skill-python": (
-        "skills/support/*/scripts/*.py",
-        "skills/support/*/scripts/**/*.py",
-    ),
-}
-EXCLUDED_NAMES = {"__init__.py"}
 DEFAULT_MAX_FILES = 10
 DEFAULT_CHANGED_QUOTA = 5
 DEFAULT_COVERAGE_JSON = DEFAULT_SAMPLE_COVERAGE_JSON
@@ -78,15 +61,9 @@ DEFAULT_MAX_EXECUTABLE_MUTANTS_PER_FILE = 80
 DEFAULT_MAX_TEST_NODEIDS = 40
 
 
-def list_eligible(repo_root: Path) -> list[str]:
-    paths: set[str] = set()
-    for patterns in MUTATION_POOLS.values():
-        for pattern in patterns:
-            for path in repo_root.glob(pattern):
-                if not path.is_file() or path.name in EXCLUDED_NAMES:
-                    continue
-                paths.add(path.relative_to(repo_root).as_posix())
-    return sorted(paths)
+def list_eligible(repo_root: Path, *, gate_label: str = "mutation-sampling") -> list[str]:
+    _universe, files = resolved_mutation_pool(repo_root, gate_label=gate_label)
+    return sorted(path.relative_to(repo_root).as_posix() for path in files)
 
 
 def pool_for_path(path: str) -> str:
@@ -95,8 +72,6 @@ def pool_for_path(path: str) -> str:
     if path in {"charness", "runtime_bootstrap.py", "skill_runtime_bootstrap.py"}:
         return "core-python"
     if len(parts) == 2 and parts[0] == "scripts" and candidate.suffix == ".py":
-        return "core-python"
-    if len(parts) == 2 and parts[0] == "tools" and candidate.suffix == ".py":
         return "core-python"
     if (
         len(parts) == 5
@@ -117,12 +92,16 @@ def pool_for_path(path: str) -> str:
     return "unknown"
 
 
-def mutation_pathspecs() -> list[str]:
+def mutation_pathspecs(repo_root: Path | None = None) -> list[str]:
+    patterns = (
+        tuple(DEFAULT_UNIVERSES["mutation_pool"])
+        if repo_root is None
+        else resolved_mutation_pool(repo_root)[0].patterns
+    )
     pathspecs: list[str] = []
-    for patterns in MUTATION_POOLS.values():
-        for pattern in patterns:
-            root = pattern.split("*", 1)[0].rstrip("/")
-            pathspecs.append(root or pattern)
+    for pattern in patterns:
+        root = pattern.split("*", 1)[0].rstrip("/")
+        pathspecs.append(root or pattern)
     return sorted(set(pathspecs))
 
 
@@ -130,7 +109,14 @@ def list_changed(repo_root: Path, base_sha: str, head_sha: str) -> list[str]:
     if not base_sha:
         return []
     head = head_sha or "HEAD"
-    command = ["git", "diff", "--name-only", f"{base_sha}..{head}", "--", *mutation_pathspecs()]
+    command = [
+        "git",
+        "diff",
+        "--name-only",
+        f"{base_sha}..{head}",
+        "--",
+        *mutation_pathspecs(repo_root),
+    ]
     result = run_process(command, cwd=repo_root, timeout_seconds=None)
     if result.returncode != 0:
         raise SystemExit(
@@ -316,8 +302,11 @@ def output_paths(args: argparse.Namespace, repo_root: Path) -> tuple[Path, Path]
     return manifest_json, manifest_md
 
 
-def report_no_eligible(coverage_enabled: bool, test_command: str) -> None:
-    pools = ", ".join(pattern for patterns in MUTATION_POOLS.values() for pattern in patterns)
+def report_no_eligible(
+    coverage_enabled: bool, test_command: str, patterns: tuple[str, ...] | None = None
+) -> None:
+    resolved_patterns = tuple(DEFAULT_UNIVERSES["mutation_pool"]) if patterns is None else patterns
+    pools = ", ".join(resolved_patterns)
     if coverage_enabled:
         sys.stderr.write(
             f"refusing empty matched mutation universe; no eligible mutation pool files "
@@ -443,7 +432,8 @@ def main() -> int:
         not args.skip_coverage and (os.environ.get("MUTATION_SAMPLE_COVERAGE") or "1") != "0"
     )
 
-    all_eligible = list_eligible(repo_root)
+    pool_universe, pool_files = resolved_mutation_pool(repo_root)
+    all_eligible = sorted(path.relative_to(repo_root).as_posix() for path in pool_files)
     eligible, coverage_eligible, line_contexts, mutation_line_coverage = (
         select_eligible_for_mutation(
             repo_root=repo_root,
@@ -457,7 +447,11 @@ def main() -> int:
         )
     )
     if not eligible:
-        report_no_eligible(coverage_enabled, coverage_test_command)
+        report_no_eligible(
+            coverage_enabled,
+            coverage_test_command,
+            patterns=pool_universe.patterns,
+        )
         return 1
     statement_lines = (
         load_file_statement_lines(repo_root, coverage_json) if coverage_enabled else {}

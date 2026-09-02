@@ -13,10 +13,16 @@ from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
-iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
 _subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
 run_process = _subprocess_guard.run_process
+_quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
+_quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+DEFAULT_UNIVERSES = _quality_universes.DEFAULT_UNIVERSES
+Universe = _quality_universes.Universe
+matching_files = _quality_universes.matching_files
+refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty
+resolve_universe = _quality_universes.resolve_universe
+load_quality_adapter = _quality_adapter.load_quality_adapter
 
 REPO_SCRIPT_FILE_MAX = 480
 SHELL_FILE_MAX = 205
@@ -179,26 +185,18 @@ def tokei_code_counts(paths: list[Path]) -> dict[Path, int]:
 #: Spans two code families on purpose: Python and Rust are measured by the SAME tokei
 #: code-line rule with per-class limits, so splitting the set per language would give
 #: one file-length policy two owners that could drift apart.
-# discovery-boundary: one tokei code-line policy owns both Python and Rust here
-GATED_GLOBS = (
-    "scripts/*.py",
-    "scripts/**/*.py",
+# discovery-boundary: one tokei code-line policy owns Python, shell, and Rust here.
+# Python source globs are adapter-owned; these are the non-Python families that U0 did
+# not define as separate universes and therefore remain literal here.
+NON_PYTHON_GLOBS = (  # discovery-boundary: U0 has no separate shell/test/Rust universes
     "scripts/*.sh",
     "scripts/**/*.sh",
-    "tools/*.py",
-    "tools/**/*.py",
     "tools/*.sh",
     "tools/**/*.sh",
-    "skills/public/*/scripts/*.py",
-    "skills/public/*/scripts/**/*.py",
     "skills/public/*/scripts/*.sh",
     "skills/public/*/scripts/**/*.sh",
-    "skills/support/*/scripts/*.py",
-    "skills/support/*/scripts/**/*.py",
     "skills/support/*/scripts/*.sh",
     "skills/support/*/scripts/**/*.sh",
-    "skills/shared/scripts/*.py",
-    "skills/shared/scripts/**/*.py",
     "skills/shared/scripts/*.sh",
     "skills/shared/scripts/**/*.sh",
     "tests/*.py",
@@ -209,6 +207,7 @@ GATED_GLOBS = (
     "native/*/tests/**/*.rs",
     "native/*/build.rs",
 )
+GATED_GLOBS = tuple(DEFAULT_UNIVERSES["python_sources"]) + NON_PYTHON_GLOBS
 
 #: The validated verdict, as ONE source. The tests that pin it format this rather
 #: than re-spelling the sentence: renaming the message used to mean chasing string
@@ -221,16 +220,47 @@ def validated_verdict(count: int) -> str:
     return VALIDATED_VERDICT_TEMPLATE.format(count=count)
 
 
-def gated_globs_summary() -> str:
+def gated_globs_summary(python_patterns: tuple[str, ...] | None = None) -> str:
     """Operator-facing rendering of the gated universe, derived from GATED_GLOBS."""
 
-    roots = sorted({glob.split("/", 1)[0] + "/" for glob in GATED_GLOBS})
-    suffixes = sorted({"." + glob.rsplit(".", 1)[1] for glob in GATED_GLOBS})
+    resolved_python = (
+        tuple(DEFAULT_UNIVERSES["python_sources"]) if python_patterns is None else python_patterns
+    )
+    globs = resolved_python + NON_PYTHON_GLOBS
+    roots = sorted({glob.split("/", 1)[0] + "/" for glob in globs})
+    suffixes = sorted({"." + glob.rsplit(".", 1)[1] for glob in globs})
     return f"{', '.join(roots)} for {', '.join(suffixes)}"
 
 
+def _resolved_python_universe(
+    root: Path, *, require_git: bool = False
+) -> tuple[Universe, list[Path]]:
+    adapter = load_quality_adapter(root)
+    if adapter.get("valid") is False:
+        errors = "; ".join(str(error) for error in adapter.get("errors", []))
+        raise ValidationError(
+            f"check-python-lengths: quality adapter is invalid{f': {errors}' if errors else '.'}"
+        )
+    universe = resolve_universe(
+        adapter,
+        "python_sources",
+        default=DEFAULT_UNIVERSES["python_sources"],
+    )
+    files = matching_files(root, universe, require_git=require_git)
+    refusal = refuse_if_declared_and_empty(universe, files, "check-python-lengths")
+    if refusal is not None:
+        raise ValidationError(refusal)
+    return universe, files
+
+
 def iter_python_targets(root: Path, *, require_git: bool = False) -> list[Path]:
-    return iter_matching_repo_files(root, GATED_GLOBS, require_git=require_git)
+    _python_universe, python_files = _resolved_python_universe(root, require_git=require_git)
+    non_python = matching_files(
+        root,
+        Universe(tuple(NON_PYTHON_GLOBS), False, "default"),
+        require_git=require_git,
+    )
+    return sorted(set(python_files) | set(non_python))
 
 
 def _is_native_test(relative: Path) -> bool:
@@ -433,8 +463,17 @@ def main() -> int:
             )
         emit_yaml(payload)
         return 0
-    targets = select_targets(root, paths=args.paths, require_git=args.require_git_file_listing)
+    try:
+        targets = select_targets(root, paths=args.paths, require_git=args.require_git_file_listing)
+    except RuntimeError as exc:
+        raise ValidationError(str(exc)) from exc
     if not targets:
+        if args.paths is None:
+            print(
+                "WARN: check-python-lengths: discovered empty source universe; "
+                "nothing was measured."
+            )
+            return 0
         scope = (
             "named --paths (they resolve to nothing)"
             if args.paths is not None

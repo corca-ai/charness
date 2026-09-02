@@ -72,6 +72,8 @@ DEFAULT_UNIVERSES = {
     "python_sources": [
         "scripts/*.py",
         "scripts/**/*.py",
+        "tools/*.py",
+        "tools/**/*.py",
         "skills/public/*/scripts/*.py",
         "skills/public/*/scripts/**/*.py",
         "skills/support/*/scripts/*.py",
@@ -80,7 +82,7 @@ DEFAULT_UNIVERSES = {
         "skills/shared/scripts/**/*.py",
         "skills/support/*/vendor/*.py",
     ],
-    "shell_sources": ["*.sh", "scripts/*.sh", "tests/**/*.sh", ".githooks/*"],
+    "shell_sources": ["*.sh", "scripts/*.sh", "tools/*.sh", "tests/**/*.sh", ".githooks/*"],
     "test_roots": ["tests"],
     "doc_surfaces": [
         "README.md",
@@ -120,6 +122,8 @@ DEFAULT_UNIVERSES = {
         "skill_runtime_bootstrap.py",
         "scripts/*.py",
         "scripts/**/*.py",
+        "tools/*.py",
+        "tools/**/*.py",
         "skills/public/*/scripts/*.py",
         "skills/public/*/scripts/**/*.py",
         "skills/support/*/scripts/*.py",
@@ -258,7 +262,13 @@ def _git_listing(repo_root: Path) -> set[Path] | None:
     return {repo_root / relative for relative in result.stdout.split("\0") if relative}
 
 
-def matching_files(repo_root: Path, universe: Universe, *, git_listing: bool = True) -> list[Path]:
+def matching_files(
+    repo_root: Path,
+    universe: Universe,
+    *,
+    git_listing: bool = True,
+    require_git: bool = False,
+) -> list[Path]:
     """Return files matching a universe, filtering Git-ignored files when possible."""
     root = repo_root.resolve()
     raw_matches = _raw_glob(root, universe.patterns)
@@ -266,6 +276,12 @@ def matching_files(repo_root: Path, universe: Universe, *, git_listing: bool = T
         return raw_matches
     allowed = _git_listing(root)
     if allowed is None:
+        if require_git:
+            raise RuntimeError(
+                "repo file listing failed\n"
+                "command: git ls-files -z --cached --others --exclude-standard\n"
+                "exit_code: 128"
+            )
         return raw_matches
     return sorted(path for path in raw_matches if path in allowed)
 
@@ -280,9 +296,18 @@ def refuse_if_declared_and_empty(
 
 
 def _cli_payload(repo_root: Path) -> dict[str, Any]:
+    carrier_root = Path(__file__).resolve().parent.parent
+    if str(carrier_root) not in sys.path:
+        sys.path.insert(0, str(carrier_root))
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
-    from scripts.quality_adapter_lib import load_quality_adapter
+    try:
+        from scripts.quality_adapter_lib import load_quality_adapter
+    except ModuleNotFoundError:
+        # The resolver is also a standalone CLI in source and collapsed plugin
+        # exports, where the sibling scripts directory—not the consumer root—is
+        # the import carrier.
+        from quality_adapter_lib import load_quality_adapter
 
     adapter = load_quality_adapter(repo_root)
     resolved: dict[str, Any] = {}
@@ -300,8 +325,74 @@ def _cli_payload(repo_root: Path) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Resolve quality adapter scan universes.")
     parser.add_argument("--repo-root", type=Path, default=Path("."))
+    parser.add_argument("--key", help="Resolve one universe key to matching repository files.")
+    parser.add_argument(
+        "--format",
+        choices=("yaml", "lines"),
+        default="yaml",
+        help="Output the resolved universe payload as YAML or its matching paths, one per line.",
+    )
+    parser.add_argument(
+        "--gate-label",
+        help="Operator-facing gate label for empty-universe diagnostics (defaults to the key).",
+    )
     args = parser.parse_args()
-    emit_yaml(_cli_payload(args.repo_root.resolve()))
+    repo_root = args.repo_root.resolve()
+    if args.format == "yaml":
+        emit_yaml(_cli_payload(repo_root))
+        return 0
+    if not args.key:
+        parser.error("--key is required with --format lines")
+    if args.key == "artifact_roots":
+        parser.error(
+            "--format lines requires an artifact_roots family, such as artifact_roots.spec"
+        )
+    default = DEFAULT_UNIVERSES.get(args.key)
+    if default is None:
+        if args.key.startswith("artifact_roots."):
+            family = args.key.split(".", 1)[1]
+            default = DEFAULT_ARTIFACT_ROOTS.get(family)
+        if default is None:
+            parser.error(f"unknown universe key: {args.key}")
+    carrier_root = Path(__file__).resolve().parent.parent
+    if str(carrier_root) not in sys.path:
+        sys.path.insert(0, str(carrier_root))
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+    try:
+        from scripts.quality_adapter_lib import load_quality_adapter
+    except ModuleNotFoundError:
+        # The resolver is also a standalone CLI in source and collapsed plugin
+        # exports, where the sibling scripts directory is the import carrier.
+        from quality_adapter_lib import load_quality_adapter
+
+    adapter = load_quality_adapter(repo_root)
+    if adapter.get("valid") is False:
+        errors = "; ".join(str(error) for error in adapter.get("errors", []))
+        print(
+            f"{args.key}: quality adapter is invalid{f': {errors}' if errors else '.'}",
+            file=sys.stderr,
+        )
+        return 1
+    resolved = resolve_universe(
+        adapter,
+        args.key,
+        default=default,
+    )
+    files = matching_files(repo_root, resolved)
+    label = args.gate_label or args.key
+    refusal = refuse_if_declared_and_empty(resolved, files, label)
+    if refusal is not None:
+        print(refusal, file=sys.stderr)
+        return 1
+    if not files and not resolved.declared:
+        patterns = ", ".join(resolved.patterns) or "<empty>"
+        print(
+            f"{label}: discovered empty {args.key} universe (patterns: {patterns}).",
+            file=sys.stderr,
+        )
+    for path in files:
+        print(path.relative_to(repo_root).as_posix())
     return 0
 
 

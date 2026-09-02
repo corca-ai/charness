@@ -8,21 +8,15 @@ from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
 
-_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
-iter_matching_repo_files = _repo_file_listing_module.iter_matching_repo_files
+_quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
+_quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+DEFAULT_UNIVERSES = _quality_universes.DEFAULT_UNIVERSES
+matching_files = _quality_universes.matching_files
+refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty
+resolve_universe = _quality_universes.resolve_universe
+load_quality_adapter = _quality_adapter.load_quality_adapter
 
-DEFAULT_SCAN_GLOBS = (
-    "scripts/*.py",
-    "scripts/**/*.py",
-    "tools/*.py",
-    "tools/**/*.py",
-    "skills/public/*/scripts/*.py",
-    "skills/public/*/scripts/**/*.py",
-    "skills/support/*/scripts/*.py",
-    "skills/support/*/scripts/**/*.py",
-    "skills/shared/scripts/*.py",
-    "skills/shared/scripts/**/*.py",
-)
+DEFAULT_SCAN_GLOBS = tuple(DEFAULT_UNIVERSES["python_sources"])
 SKIP_PATH_PARTS = {"__pycache__", "vendor", "generated"}
 
 
@@ -77,7 +71,25 @@ def _path_is_scannable(path: Path) -> bool:
 
 
 def _iter_scan_paths(repo_root: Path, *, require_git: bool = False) -> list[Path]:
-    candidates = iter_matching_repo_files(repo_root, DEFAULT_SCAN_GLOBS, require_git=require_git)
+    adapter = load_quality_adapter(repo_root)
+    if adapter.get("valid") is False:
+        errors = "; ".join(str(error) for error in adapter.get("errors", []))
+        raise SystemExit(
+            "check-python-runtime-inheritance: quality adapter is invalid"
+            f"{f': {errors}' if errors else '.'}"
+        )
+    universe = resolve_universe(
+        adapter,
+        "python_sources",
+        default=DEFAULT_UNIVERSES["python_sources"],
+    )
+    try:
+        candidates = matching_files(repo_root, universe, require_git=require_git)
+    except RuntimeError as exc:
+        raise SystemExit(str(exc)) from exc
+    refusal = refuse_if_declared_and_empty(universe, candidates, "check-python-runtime-inheritance")
+    if refusal is not None:
+        raise SystemExit(refusal)
     return sorted(
         path
         for path in candidates
@@ -130,10 +142,11 @@ def main() -> int:
     repo_root = args.repo_root.resolve()
     scan_paths = _iter_scan_paths(repo_root, require_git=args.require_git_file_listing)
     if not scan_paths:
-        raise SystemExit(
-            "refusing empty matched universe for check_python_runtime_inheritance "
-            f"(scan globs: {', '.join(DEFAULT_SCAN_GLOBS)})."
+        print(
+            "WARN: check-python-runtime-inheritance: discovered empty python_sources "
+            f"universe (globs: {', '.join(DEFAULT_SCAN_GLOBS)}); nothing was scanned."
         )
+        return 0
     failures: list[str] = []
     for path in scan_paths:
         failures.extend(check_file(repo_root, path))

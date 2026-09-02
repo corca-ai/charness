@@ -4,6 +4,8 @@ from pathlib import Path
 
 from scripts import check_test_completeness as checker
 
+from .seeding_support import write_quality_adapter
+
 
 def _write(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -26,9 +28,29 @@ def test_check_test_completeness_accepts_directory_and_glob_targets(
     _write(repo / "tests" / "test_top.py")
     _write(repo / "tests" / "charness_cli" / "test_cli.py")
 
-    result = _run_checker(repo, ["tests/quality_gates", "tests/test_*.py", "tests/charness_cli"], monkeypatch)
+    result = _run_checker(
+        repo, ["tests/quality_gates", "tests/test_*.py", "tests/charness_cli"], monkeypatch
+    )
 
     assert result == 0
+
+
+def test_completeness_accepts_targets_expanded_from_the_adapter(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from scripts import run_standing_pytest as runner
+
+    repo = tmp_path / "consumer"
+    _write(repo / "src" / "tests" / "test_selected.py")
+    write_quality_adapter(
+        repo,
+        ["universes:", "  pytest_targets:", "    - src/tests/test_*.py"],
+    )
+
+    targets = runner.expand_targets(repo)
+
+    assert targets == ["src/tests/test_selected.py"]
+    assert _run_checker(repo, targets, monkeypatch) == 0
 
 
 def test_check_test_completeness_reports_missing_test_files(

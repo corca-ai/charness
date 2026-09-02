@@ -41,6 +41,14 @@ if _EARLY_BYTECODE_GUARD:
 heartbeat_interval_from_env = _subprocess_guard.heartbeat_interval_from_env
 run_monitored_phase = _subprocess_guard.run_monitored_phase
 
+_quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
+_quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+DEFAULT_UNIVERSES = _quality_universes.DEFAULT_UNIVERSES
+matching_files = _quality_universes.matching_files
+refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty
+resolve_universe = _quality_universes.resolve_universe
+load_quality_adapter = _quality_adapter.load_quality_adapter
+
 # The basetemp lifecycle moved out whole (S6) when this file crossed its length
 # cap; `standing_pytest_basetemp` owns where a run's scratch tree lives and what
 # survives it.
@@ -262,9 +270,33 @@ def choose_sched_chunk(env: dict[str, str] | None = None) -> tuple[str | None, s
     return "1", None
 
 
-def expand_targets(
-    repo_root: Path, targets: tuple[str, ...] = STANDING_PYTEST_TARGETS
-) -> list[str]:
+def _resolved_standing_targets(repo_root: Path) -> tuple[str, ...]:
+    adapter = load_quality_adapter(repo_root)
+    if adapter.get("valid") is False:
+        errors = "; ".join(str(error) for error in adapter.get("errors", []))
+        raise SystemExit(f"pytest: quality adapter is invalid{f': {errors}' if errors else '.'}")
+    universe = resolve_universe(
+        adapter,
+        "pytest_targets",
+        default=DEFAULT_UNIVERSES["pytest_targets"],
+    )
+    files = matching_files(repo_root, universe)
+    refusal = refuse_if_declared_and_empty(universe, files, "pytest")
+    if refusal is not None:
+        raise SystemExit(refusal)
+    if not files and not universe.declared:
+        patterns = ", ".join(universe.patterns) or "<empty>"
+        print(
+            f"pytest: discovered empty pytest_targets universe (patterns: {patterns}); "
+            "the standing target set is unestablished.",
+            file=sys.stderr,
+        )
+    return universe.patterns
+
+
+def expand_targets(repo_root: Path, targets: tuple[str, ...] | None = None) -> list[str]:
+    if targets is None:
+        targets = _resolved_standing_targets(repo_root)
     expanded: list[str] = []
     for target in targets:
         if any(char in target for char in "*?["):

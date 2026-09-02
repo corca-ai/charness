@@ -35,6 +35,31 @@ _IMMUTABLE_REF = re.compile(r"[0-9a-f]{40}")
 _CHANGED_LINE_CACHE: dict[tuple[str, str, str, str], frozenset[int]] = {}
 
 
+def resolved_mutation_pool(repo_root: Path, *, gate_label: str = "mutation-sampling"):
+    from scripts.quality_adapter_lib import load_quality_adapter
+    from scripts.quality_universes_lib import (
+        DEFAULT_UNIVERSES,
+        matching_files,
+        refuse_if_declared_and_empty,
+        resolve_universe,
+    )
+
+    adapter = load_quality_adapter(repo_root)
+    if adapter.get("valid") is False:
+        errors = "; ".join(str(error) for error in adapter.get("errors", []))
+        raise SystemExit(
+            f"{gate_label}: quality adapter is invalid{f': {errors}' if errors else '.'}"
+        )
+    universe = resolve_universe(
+        adapter, "mutation_pool", default=DEFAULT_UNIVERSES["mutation_pool"]
+    )
+    files = [path for path in matching_files(repo_root, universe) if path.name != "__init__.py"]
+    refusal = refuse_if_declared_and_empty(universe, files, gate_label)
+    if refusal is not None:
+        raise SystemExit(refusal)
+    return universe, files
+
+
 def _is_immutable_ref(value: str) -> bool:
     """Whether a ref names an immutable Git object rather than a moving ref."""
     return bool(_IMMUTABLE_REF.fullmatch(value))
@@ -334,10 +359,21 @@ def changed_pool_files_vs_base(
     """
     if not base_sha:
         return []
-    from scripts.sample_mutation_files import list_eligible, mutation_pathspecs  # noqa: E402
+    from scripts.sample_mutation_files import mutation_pathspecs  # noqa: E402
 
-    eligible = list_eligible(repo_root)
-    command = ["git", "diff", "--name-only", base_sha, "--", *mutation_pathspecs()]
+    universe, pool_files = resolved_mutation_pool(
+        repo_root,
+        gate_label="release-changed-line-coverage",
+    )
+    eligible = [path.relative_to(repo_root).as_posix() for path in pool_files]
+    if not pool_files and not universe.declared:
+        patterns = ", ".join(universe.patterns) or "<empty>"
+        print(
+            "release-changed-line-coverage: discovered empty mutation_pool universe "
+            f"(patterns: {patterns}); no mutation-pool files can be analyzed.",
+            file=sys.stderr,
+        )
+    command = ["git", "diff", "--name-only", base_sha, "--", *mutation_pathspecs(repo_root)]
     result = run_process(command, cwd=repo_root, timeout_seconds=None)
     if result.returncode != 0:
         raise RuntimeError(

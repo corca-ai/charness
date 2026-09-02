@@ -41,6 +41,7 @@ _MODULES = {
         "scripts/check_code_lengths.py",
         "scripts/check_python_runtime_inheritance.py",
         "tools/check_skill_bootstrap_vars.py",
+        "scripts/check_test_production_ratio.py",
         "scripts/check_skill_cut_safety.py",
         "scripts/check_skill_surface_preflight.py",
         "scripts/check_test_repo_copy_invariants.py",
@@ -400,20 +401,32 @@ def test_code_lengths_named_ungated_paths_refuse_empty_universe() -> None:
     assert "gated globs" in (result.stdout + result.stderr)
 
 
-def test_code_lengths_empty_out_of_glob_root_refuses(tmp_path: Path) -> None:
+def test_code_lengths_undeclared_empty_universe_is_reported(tmp_path: Path) -> None:
     (tmp_path / "top_level.py").write_text("VALUE = 1\n", encoding="utf-8")
     result = run_gate("scripts/check_code_lengths.py", "--repo-root", str(tmp_path))
-    assert result.returncode != 0, result.stdout + result.stderr
-    assert "refusing empty matched universe" in (result.stdout + result.stderr)
-    assert "scripts/*.py" in (result.stdout + result.stderr)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "discovered empty source universe" in (result.stdout + result.stderr)
 
 
-def test_python_runtime_inheritance_empty_out_of_glob_root_refuses(tmp_path: Path) -> None:
+def test_python_runtime_inheritance_undeclared_empty_universe_is_reported(tmp_path: Path) -> None:
     (tmp_path / "top_level.py").write_text("VALUE = 1\n", encoding="utf-8")
     result = run_gate("scripts/check_python_runtime_inheritance.py", "--repo-root", str(tmp_path))
-    assert result.returncode != 0, result.stdout + result.stderr
-    assert "refusing empty matched universe" in (result.stdout + result.stderr)
-    assert "scripts/*.py" in (result.stdout + result.stderr)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "discovered empty python_sources universe" in (result.stdout + result.stderr)
+
+
+def test_test_production_ratio_refuses_declared_empty_test_roots(tmp_path: Path) -> None:
+    from .seeding_support import write_quality_adapter
+
+    repo = _empty_root(tmp_path)
+    write_quality_adapter(repo, ["universes:", "  test_roots: []"])
+
+    result = run_gate(
+        "scripts/check_test_production_ratio.py", "--repo-root", str(repo), "--engine", "splitlines"
+    )
+
+    assert result.returncode == 1
+    assert "check-test-production-ratio: refusing empty declared universe" in result.stderr
 
 
 def test_code_lengths_named_gated_path_still_validates() -> None:

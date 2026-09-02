@@ -636,6 +636,16 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         "quality_label_universe.py",
         "runtime_bootstrap.py",
         "adapter_lib.py",
+        "quality_adapter_lib.py",
+        "quality_universes_lib.py",
+        "artifact_naming_lib.py",
+        "quality_bootstrap_absence.py",
+        "quality_bootstrap_lib.py",
+        "quality_bootstrap_common.py",
+        "quality_bootstrap_detect.py",
+        "quality_dup_ratchet_policy.py",
+        "quality_policy_defaults.py",
+        "quality_policy_merge.py",
         # `adapter_lib` re-exports this repo's YAML dialect from it since the resolver
         # half crossed the length cap; the module is imported at `adapter_lib` scope, so a
         # seeded repo without it fails at IMPORT rather than on behavior. Same rule as the
@@ -653,6 +663,11 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     ):
         shutil.copy2(ROOT / "scripts" / real_name, scripts_dir / real_name)
         (scripts_dir / real_name).chmod(0o755)
+    for real_name in ("adapter_validators.py", "runtime_budget_intent.py"):
+        shutil.copy2(
+            ROOT / "skills" / "public" / "quality" / "scripts" / real_name,
+            quality_scripts_dir / real_name,
+        )
     # Copied rather than stubbed: the runner's specdown step calls it for real, and a
     # stub would let the runner keep passing if the redirect it produces ever broke.
     shutil.copy2(

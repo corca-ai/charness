@@ -25,6 +25,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from .seeding_support import write_quality_adapter
 from .support import (
     GUARD_SCRIPT,
     MIRROR_RELATIVE,
@@ -44,13 +45,13 @@ TRACKED_MARKDOWN_ARGV = [
 ]
 
 
-
-
 def _argv_logging_bin(tmp_path: Path, name: str) -> tuple[Path, Path]:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir(exist_ok=True)
     log = tmp_path / f"{name}-argv.txt"
-    write_executable(bin_dir / name, '#!/usr/bin/env bash\nprintf \'%s\\n\' "$@" > "$TEST_OUTPUT"\n')
+    write_executable(
+        bin_dir / name, '#!/usr/bin/env bash\nprintf \'%s\\n\' "$@" > "$TEST_OUTPUT"\n'
+    )
     return bin_dir, log
 
 
@@ -123,7 +124,9 @@ def test_check_markdown_honors_charness_repo_root_from_the_mirror(tmp_path: Path
     repo, _source, mirror = charness_shaped_repo(tmp_path, "check-markdown.sh")
     bin_dir, log = _argv_logging_bin(tmp_path, "markdownlint-cli2")
 
-    result = run_shell_script(mirror, cwd=repo, env=_env(bin_dir, log, CHARNESS_REPO_ROOT=str(repo)))
+    result = run_shell_script(
+        mirror, cwd=repo, env=_env(bin_dir, log, CHARNESS_REPO_ROOT=str(repo))
+    )
 
     assert result.returncode == 0, result.stdout + result.stderr
     assert "AGENTS.md" in log.read_text(encoding="utf-8").splitlines()
@@ -137,7 +140,9 @@ def _shell_gate_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
         "#!/usr/bin/env bash\nexit 0\n", encoding="utf-8"
     )
     (repo / ".githooks").mkdir()
-    (repo / ".githooks" / "pre-commit").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    (repo / ".githooks" / "pre-commit").write_text(
+        "#!/usr/bin/env bash\nexit 0\n", encoding="utf-8"
+    )
     return repo, source, mirror
 
 
@@ -145,14 +150,38 @@ def test_check_shell_lints_root_hook_and_test_files_from_the_repo_root(tmp_path:
     repo, source, _mirror = _shell_gate_repo(tmp_path)
     bin_dir, log = _argv_logging_bin(tmp_path, "shellcheck")
 
-    result = run_shell_script(source, cwd=repo, env=_env(bin_dir, log))
+    result = run_shell_script(
+        ROOT / "scripts" / "check-shell.sh",
+        cwd=repo,
+        env=_env(bin_dir, log, CHARNESS_REPO_ROOT=str(repo)),
+    )
 
     assert result.returncode == 0, result.stderr
     linted = log.read_text(encoding="utf-8").splitlines()
-    assert "./init.sh" in linted
+    assert "init.sh" in linted
     assert "tests/fixtures/fake-tool.sh" in linted
     assert ".githooks/pre-commit" in linted
     assert "scripts/check-shell.sh" in linted
+
+
+def test_check_shell_uses_adapter_shell_sources(tmp_path: Path) -> None:
+    repo, _source, _mirror = _shell_gate_repo(tmp_path)
+    (repo / "bin").mkdir()
+    (repo / "bin" / "declared.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    write_quality_adapter(repo, ["universes:", "  shell_sources:", "    - bin/*.sh"])
+    bin_dir, log = _argv_logging_bin(tmp_path, "shellcheck")
+
+    result = run_shell_script(
+        ROOT / "scripts" / "check-shell.sh",
+        cwd=repo,
+        env=_env(bin_dir, log, CHARNESS_REPO_ROOT=str(repo)),
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    linted = log.read_text(encoding="utf-8").splitlines()
+    assert "bin/declared.sh" in linted
+    assert "init.sh" not in linted
+    assert "scripts/check-shell.sh" not in linted
 
 
 def test_check_shell_refuses_from_the_generated_mirror(tmp_path: Path) -> None:
@@ -174,22 +203,27 @@ def test_check_shell_refuses_from_the_generated_mirror(tmp_path: Path) -> None:
     assert not log.exists()
 
 
-def test_check_shell_fails_when_a_verified_root_discovers_nothing(tmp_path: Path) -> None:
-    """An empty population is green only while the root is unconfirmed.
+def test_check_shell_fails_when_a_declared_root_discovers_nothing(tmp_path: Path) -> None:
+    """A declared empty adapter universe refuses before shellcheck is invoked."""
 
-    From a root we know, discovery cannot honestly come back empty -- the gate is itself a
-    `scripts/*.sh` file -- so exiting 0 there would restate the false green the root guard closes.
-    """
-
-    repo, source, _mirror = _shell_gate_repo(tmp_path)
+    repo, _source, _mirror = _shell_gate_repo(tmp_path)
     bin_dir, log = _argv_logging_bin(tmp_path, "shellcheck")
-    write_executable(bin_dir / "find", "#!/usr/bin/env bash\nexit 0\n")
+    (repo / ".agents").mkdir(exist_ok=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: test\nlanguage: en\noutput_dir: quality\nuniverses:\n"
+        "  shell_sources: []\n",
+        encoding="utf-8",
+    )
 
-    result = run_shell_script(source, cwd=repo, env=_env(bin_dir, log, CHARNESS_REPO_ROOT=str(repo)))
+    result = run_shell_script(
+        ROOT / "scripts" / "check-shell.sh",
+        cwd=repo,
+        env=_env(bin_dir, log, CHARNESS_REPO_ROOT=str(repo)),
+    )
 
     assert result.returncode == 1
-    assert "check-shell: no shell files discovered under" in result.stderr
-    assert "it is wrong, not the tree" in result.stderr
+    assert "check-shell: shell universe resolution failed." in result.stderr
+    assert "check-shell: refusing empty declared universe" in result.stderr
     assert not log.exists()
 
 
@@ -217,7 +251,9 @@ def _hookspath(repo: Path) -> str:
     return result.stdout.strip()
 
 
-def test_install_git_hooks_refuses_from_the_mirror_without_touching_hookspath(tmp_path: Path) -> None:
+def test_install_git_hooks_refuses_from_the_mirror_without_touching_hookspath(
+    tmp_path: Path,
+) -> None:
     """`git config` is repo-scoped, not directory-scoped.
 
     Run bare from the mirror, the installer took its same-root branch and ran
@@ -228,7 +264,9 @@ def test_install_git_hooks_refuses_from_the_mirror_without_touching_hookspath(tm
 
     repo, _source, mirror = charness_shaped_repo(tmp_path, "install-git-hooks.sh")
     (repo / ".githooks").mkdir()
-    (repo / ".githooks" / "pre-commit").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    (repo / ".githooks" / "pre-commit").write_text(
+        "#!/usr/bin/env bash\nexit 0\n", encoding="utf-8"
+    )
     subprocess.run(
         ["git", "config", "core.hooksPath", str(repo / ".githooks")],
         cwd=repo,
@@ -365,7 +403,7 @@ def test_the_guard_refuses_a_caller_that_forgot_to_name_itself(tmp_path: Path) -
     shutil.copy2(ROOT / "scripts" / GUARD_SCRIPT, repo / "scripts" / GUARD_SCRIPT)
     caller = repo / "scripts" / "nameless.sh"
     caller.write_text(
-        '#!/usr/bin/env bash\nset -euo pipefail\n'
+        "#!/usr/bin/env bash\nset -euo pipefail\n"
         'source "$(dirname "${BASH_SOURCE[0]}")/exported-copy-guard.sh"\n',
         encoding="utf-8",
     )

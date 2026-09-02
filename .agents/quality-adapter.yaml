@@ -838,6 +838,8 @@ universes:
   python_sources:            # py-compile, ruff, check-python-lengths, check-python-runtime-inheritance
     - scripts/*.py
     - scripts/**/*.py
+    - tools/*.py
+    - tools/**/*.py
     - skills/public/*/scripts/*.py
     - skills/public/*/scripts/**/*.py
     - skills/support/*/scripts/*.py
@@ -848,6 +850,7 @@ universes:
   shell_sources:             # check-shell
     - "*.sh"
     - scripts/*.sh
+    - tools/*.sh
     - tests/**/*.sh
     - .githooks/*
   test_roots:                # check-test-production-ratio
@@ -892,6 +895,8 @@ universes:
     - skill_runtime_bootstrap.py
     - scripts/*.py
     - scripts/**/*.py
+    - tools/*.py
+    - tools/**/*.py
     - skills/public/*/scripts/*.py
     - skills/public/*/scripts/**/*.py
     - skills/support/*/scripts/*.py

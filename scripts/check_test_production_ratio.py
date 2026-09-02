@@ -13,11 +13,19 @@ from yaml_output import emit_yaml
 
 _subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
 run_process = _subprocess_guard.run_process
+_quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
+_quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+DEFAULT_UNIVERSES = _quality_universes.DEFAULT_UNIVERSES
+Universe = _quality_universes.Universe
+matching_files = _quality_universes.matching_files
+refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty
+resolve_universe = _quality_universes.resolve_universe
+load_quality_adapter = _quality_adapter.load_quality_adapter
 
 try:
-    from scripts.repo_file_listing import iter_matching_repo_files, iter_repo_files
+    from scripts.repo_file_listing import iter_repo_files
 except ModuleNotFoundError:
-    from repo_file_listing import iter_matching_repo_files, iter_repo_files
+    from repo_file_listing import iter_repo_files
 
 IGNORED_DIRS = {
     ".artifacts",
@@ -30,7 +38,6 @@ IGNORED_DIRS = {
     "evals",
     "node_modules",
     "plugins",
-    "tests",
 }
 DEFAULT_MAX_RATIO = 1.0
 SUPPORTED_ENGINES = ("auto", "splitlines", "tokei")
@@ -52,18 +59,6 @@ class RatioError(Exception):
 
 class TokeiUnavailableError(RuntimeError):
     pass
-
-
-def python_files(root: Path, *, exclude_dirs: set[str], require_git: bool = False) -> list[Path]:
-    files: list[Path] = []
-    repo_root = root
-    patterns = ("**/*.py",)
-    for path in iter_matching_repo_files(repo_root, patterns, require_git=require_git):
-        relative_parts = path.relative_to(root).parts
-        if any(part in exclude_dirs for part in relative_parts[:-1]):
-            continue
-        files.append(path)
-    return sorted(files)
 
 
 def _relative_parts(path: Path, repo_root: Path) -> tuple[str, ...]:
@@ -105,7 +100,37 @@ def _is_python_shebang(path: Path) -> bool:
     )
 
 
-def _surface_files(repo_root: Path, *, require_git: bool = False) -> dict[str, list[Path]]:
+def _resolved_test_universe(
+    repo_root: Path, *, require_git: bool = False
+) -> tuple[Universe, list[Path]]:
+    adapter = load_quality_adapter(repo_root)
+    if adapter.get("valid") is False:
+        errors = "; ".join(str(error) for error in adapter.get("errors", []))
+        raise SystemExit(
+            "check-test-production-ratio: quality adapter is invalid"
+            f"{f': {errors}' if errors else '.'}"
+        )
+    universe = resolve_universe(
+        adapter,
+        "test_roots",
+        default=DEFAULT_UNIVERSES["test_roots"],
+    )
+    try:
+        files = matching_files(repo_root, universe, require_git=require_git)
+    except RuntimeError as exc:
+        raise SystemExit(str(exc)) from exc
+    refusal = refuse_if_declared_and_empty(universe, files, "check-test-production-ratio")
+    if refusal is not None:
+        raise SystemExit(refusal)
+    return universe, files
+
+
+def _surface_files(
+    repo_root: Path,
+    *,
+    require_git: bool = False,
+    test_paths: set[Path] | None = None,
+) -> dict[str, list[Path]]:
     """Return the one shared file inventory used by both line-counting engines.
 
     Python keeps the historical repository listing, including non-ignored
@@ -115,6 +140,9 @@ def _surface_files(repo_root: Path, *, require_git: bool = False) -> dict[str, l
     crate fixtures are also absent in every bucket, including their Python files.
     """
 
+    if test_paths is None:
+        _test_universe, test_files = _resolved_test_universe(repo_root, require_git=require_git)
+        test_paths = set(test_files)
     all_files = iter_repo_files(repo_root, include_untracked=True, require_git=require_git)
     tracked_files = iter_repo_files(repo_root, include_untracked=False, require_git=require_git)
 
@@ -123,7 +151,7 @@ def _surface_files(repo_root: Path, *, require_git: bool = False) -> dict[str, l
     for path in all_files:
         relative_parts = _relative_parts(path, repo_root)
         if path.suffix == ".py":
-            if relative_parts and relative_parts[0] == "tests":
+            if path in test_paths:
                 test_python.append(path)
             elif not _is_ignored_source_path(relative_parts):
                 source_python.append(path)
@@ -189,8 +217,10 @@ def count_lines(paths: list[Path], *, skipped_paths: list[Path] | None = None) -
     return lines
 
 
-def _splitlines_summary(repo_root: Path, *, require_git: bool = False) -> dict[str, object]:
-    surface_files = _surface_files(repo_root, require_git=require_git)
+def _splitlines_summary(
+    repo_root: Path, *, require_git: bool = False, test_paths: set[Path] | None = None
+) -> dict[str, object]:
+    surface_files = _surface_files(repo_root, require_git=require_git, test_paths=test_paths)
     skipped_paths: list[Path] = []
     line_counts = {
         bucket: count_lines(paths, skipped_paths=skipped_paths)
@@ -290,9 +320,11 @@ def _tokei_bucket_code(
     }
 
 
-def _tokei_summary(repo_root: Path, *, require_git: bool = False) -> dict[str, object]:
+def _tokei_summary(
+    repo_root: Path, *, require_git: bool = False, test_paths: set[Path] | None = None
+) -> dict[str, object]:
     _ensure_tokei_available()
-    surface_files = _surface_files(repo_root, require_git=require_git)
+    surface_files = _surface_files(repo_root, require_git=require_git, test_paths=test_paths)
     languages = {
         "python": "Python",
         "python-shebang": "Python",
@@ -337,11 +369,12 @@ def _resolve_engine(engine: str) -> tuple[str, str]:
 def summarize(
     repo_root: Path, *, engine: str = "auto", require_git: bool = False
 ) -> dict[str, object]:
+    test_universe, test_files = _resolved_test_universe(repo_root, require_git=require_git)
     resolved_engine, engine_selection = _resolve_engine(engine)
     if resolved_engine == "tokei":
-        counts = _tokei_summary(repo_root, require_git=require_git)
+        counts = _tokei_summary(repo_root, require_git=require_git, test_paths=set(test_files))
     else:
-        counts = _splitlines_summary(repo_root, require_git=require_git)
+        counts = _splitlines_summary(repo_root, require_git=require_git, test_paths=set(test_files))
     source_lines = int(counts["source_lines"])
     test_lines = int(counts["test_lines"])
     ratio = test_lines / source_lines if source_lines else 0.0
@@ -356,6 +389,12 @@ def summarize(
         "surface_breakdown": counts["surface_breakdown"],
         "source_file_count": counts["source_file_count"],
         "test_file_count": counts["test_file_count"],
+        "test_roots": {
+            "patterns": list(test_universe.patterns),
+            "source": test_universe.source,
+            "matched_files": len(test_files),
+            "status": "configured" if test_files else "discovered-empty",
+        },
         "excluded_source_dirs": sorted(IGNORED_DIRS),
         "skipped": {
             "status": "skipped",

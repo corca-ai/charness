@@ -30,7 +30,9 @@ def _copy_script(repo: Path, script_name: str) -> Path:
     # Every repo-root gate sources the one export-copy guard, so it travels with each
     # copied script. Omitting it makes these tests fail on a missing file rather than
     # on the discovery and listing behavior they are about.
-    shutil.copy2(ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh")
+    shutil.copy2(
+        ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh"
+    )
     return script_path
 
 
@@ -188,23 +190,8 @@ def test_check_shell_fails_when_file_discovery_is_partial(tmp_path: Path) -> Non
     bin_dir.mkdir()
     shellcheck_called = repo / "shellcheck-called"
     write_executable(
-        bin_dir / "find",
-        "\n".join(
-            [
-                "#!/usr/bin/env bash",
-                "set -euo pipefail",
-                'if [[ "$1" == "." ]]; then',
-                '  echo "./root.sh"',
-                "  exit 0",
-                "fi",
-                'if [[ "$1" == "scripts" ]]; then',
-                '  echo "forced find failure" >&2',
-                "  exit 42",
-                "fi",
-                'exec /usr/bin/find "$@"',
-                "",
-            ]
-        ),
+        bin_dir / "python3",
+        "#!/usr/bin/env bash\necho 'forced universe resolution failure' >&2\nexit 42\n",
     )
     write_executable(
         bin_dir / "shellcheck",
@@ -222,11 +209,10 @@ def test_check_shell_fails_when_file_discovery_is_partial(tmp_path: Path) -> Non
     result = run_shell_script(script_path, cwd=repo, env=env)
 
     assert result.returncode == 1
-    assert "check-shell: shell file discovery failed." in result.stderr
-    assert "command: { find . -maxdepth 1 -type f -name '*.sh'" in result.stderr
+    assert "check-shell: shell universe resolution failed." in result.stderr
+    assert "--key shell_sources --gate-label check-shell --format lines" in result.stderr
     assert "exit_code: 42" in result.stderr
-    assert "./root.sh" in result.stderr
-    assert "forced find failure" in result.stderr
+    assert "forced universe resolution failure" in result.stderr
     assert not shellcheck_called.exists()
 
 
@@ -237,19 +223,8 @@ def test_check_shell_fails_when_root_file_discovery_fails(tmp_path: Path) -> Non
     bin_dir.mkdir()
     shellcheck_called = repo / "shellcheck-called"
     write_executable(
-        bin_dir / "find",
-        "\n".join(
-            [
-                "#!/usr/bin/env bash",
-                "set -euo pipefail",
-                'if [[ "$1" == "." ]]; then',
-                '  echo "forced root find failure" >&2',
-                "  exit 42",
-                "fi",
-                'exec /usr/bin/find "$@"',
-                "",
-            ]
-        ),
+        bin_dir / "python3",
+        "#!/usr/bin/env bash\necho 'forced root universe failure' >&2\nexit 42\n",
     )
     write_executable(
         bin_dir / "shellcheck",
@@ -267,19 +242,20 @@ def test_check_shell_fails_when_root_file_discovery_fails(tmp_path: Path) -> Non
     result = run_shell_script(script_path, cwd=repo, env=env)
 
     assert result.returncode == 1
-    assert "check-shell: shell file discovery failed." in result.stderr
+    assert "check-shell: shell universe resolution failed." in result.stderr
+    assert "--key shell_sources --gate-label check-shell --format lines" in result.stderr
     assert "exit_code: 42" in result.stderr
-    assert "forced root find failure" in result.stderr
+    assert "forced root universe failure" in result.stderr
     assert not shellcheck_called.exists()
 
 
 def test_check_shell_skips_shellcheck_when_successful_discovery_is_empty(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    script_path = _copy_script(repo, "check-shell.sh")
+    repo.mkdir()
+    script_path = ROOT / "scripts" / "check-shell.sh"
     bin_dir = repo / "bin"
     bin_dir.mkdir()
     shellcheck_called = repo / "shellcheck-called"
-    write_executable(bin_dir / "find", "#!/usr/bin/env bash\nexit 0\n")
     write_executable(
         bin_dir / "shellcheck",
         "\n".join(
@@ -292,26 +268,31 @@ def test_check_shell_skips_shellcheck_when_successful_discovery_is_empty(tmp_pat
         ),
     )
 
-    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin")
+    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin", CHARNESS_REPO_ROOT=str(repo))
     result = run_shell_script(script_path, cwd=repo, env=env)
 
     assert result.returncode == 0, result.stderr
     assert not shellcheck_called.exists()
+    assert "discovered empty shell_sources universe" in result.stdout
 
 
 def test_check_shell_treats_missing_githooks_as_optional(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    script_path = _copy_script(repo, "check-shell.sh")
+    _copy_script(repo, "check-shell.sh")
     bin_dir = repo / "bin"
     bin_dir.mkdir()
     output_path = repo / "shellcheck-args.txt"
     write_executable(
         bin_dir / "shellcheck",
-        "#!/usr/bin/env bash\nprintf '%s\\n' \"$@\" > \"$TEST_OUTPUT\"\n",
+        '#!/usr/bin/env bash\nprintf \'%s\\n\' "$@" > "$TEST_OUTPUT"\n',
     )
 
-    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin", TEST_OUTPUT=str(output_path))
-    result = run_shell_script(script_path, cwd=repo, env=env)
+    env = dict(
+        PATH=f"{bin_dir}:/usr/bin:/bin",
+        TEST_OUTPUT=str(output_path),
+        CHARNESS_REPO_ROOT=str(repo),
+    )
+    result = run_shell_script(ROOT / "scripts" / "check-shell.sh", cwd=repo, env=env)
 
     assert result.returncode == 0, result.stderr
     args = output_path.read_text(encoding="utf-8").splitlines()
@@ -320,7 +301,7 @@ def test_check_shell_treats_missing_githooks_as_optional(tmp_path: Path) -> None
 
 def test_check_shell_discovers_nested_test_fixtures(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    script_path = _copy_script(repo, "check-shell.sh")
+    _copy_script(repo, "check-shell.sh")
     fixture = repo / "tests" / "fixtures" / "fake-tool.sh"
     fixture.parent.mkdir(parents=True)
     fixture.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
@@ -329,13 +310,17 @@ def test_check_shell_discovers_nested_test_fixtures(tmp_path: Path) -> None:
     output_path = repo / "shellcheck-args.txt"
     write_executable(
         bin_dir / "shellcheck",
-        "#!/usr/bin/env bash\nprintf '%s\\n' \"$@\" > \"$TEST_OUTPUT\"\n",
+        '#!/usr/bin/env bash\nprintf \'%s\\n\' "$@" > "$TEST_OUTPUT"\n',
     )
 
     result = run_shell_script(
-        script_path,
+        ROOT / "scripts" / "check-shell.sh",
         cwd=repo,
-        env=dict(PATH=f"{bin_dir}:/usr/bin:/bin", TEST_OUTPUT=str(output_path)),
+        env=dict(
+            PATH=f"{bin_dir}:/usr/bin:/bin",
+            TEST_OUTPUT=str(output_path),
+            CHARNESS_REPO_ROOT=str(repo),
+        ),
     )
 
     assert result.returncode == 0, result.stderr
@@ -352,14 +337,16 @@ def test_check_secrets_prefers_gitleaks_when_available(tmp_path: Path) -> None:
     scripts_dir = repo / "scripts"
     scripts_dir.mkdir(parents=True)
     shutil.copy2(ROOT / "scripts" / "check-secrets.sh", scripts_dir / "check-secrets.sh")
-    shutil.copy2(ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh")
+    shutil.copy2(
+        ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh"
+    )
     shutil.copy2(ROOT / ".gitleaks.toml", repo / ".gitleaks.toml")
 
     bin_dir = repo / "bin"
     bin_dir.mkdir()
     output_path = repo / "gitleaks-args.txt"
     gitleaks = bin_dir / "gitleaks"
-    gitleaks.write_text("#!/bin/bash\nprintf '%s\\n' \"$@\" > \"$TEST_OUTPUT\"\n", encoding="utf-8")
+    gitleaks.write_text('#!/bin/bash\nprintf \'%s\\n\' "$@" > "$TEST_OUTPUT"\n', encoding="utf-8")
     gitleaks.chmod(0o755)
 
     env = dict(PATH=f"{bin_dir}:/usr/bin:/bin", TEST_OUTPUT=str(output_path))
@@ -399,14 +386,21 @@ def test_check_secrets_falls_back_to_secretlint_via_npm(tmp_path: Path) -> None:
     bin_dir.mkdir()
     output_path = repo / "npm-args.txt"
     npm = bin_dir / "npm"
-    npm.write_text("#!/bin/bash\nprintf '%s\\n' \"$@\" > \"$TEST_OUTPUT\"\n", encoding="utf-8")
+    npm.write_text('#!/bin/bash\nprintf \'%s\\n\' "$@" > "$TEST_OUTPUT"\n', encoding="utf-8")
     npm.chmod(0o755)
 
     env = dict(PATH=f"{bin_dir}:/usr/bin:/bin", TEST_OUTPUT=str(output_path))
     result = run_shell_script(repo / "scripts" / "check-secrets.sh", cwd=repo, env=env)
     assert result.returncode == 0, result.stderr
     args = output_path.read_text(encoding="utf-8").splitlines()
-    assert args[:6] == ["exec", "--no-install", "--", "secretlint", "--secretlintignore", ".secretlintignore"]
+    assert args[:6] == [
+        "exec",
+        "--no-install",
+        "--",
+        "secretlint",
+        "--secretlintignore",
+        ".secretlintignore",
+    ]
     assert "README.md" in args
     assert "scripts/check-secrets.sh" in args
     assert "integrations/locks/agent-browser.json" not in args
@@ -531,7 +525,8 @@ def test_check_supply_chain_requires_javascript_lockfile(tmp_path: Path) -> None
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "package.json").write_text(
-        json.dumps({"private": True, "devDependencies": {"markdownlint-cli2": "0.22.0"}}, indent=2) + "\n",
+        json.dumps({"private": True, "devDependencies": {"markdownlint-cli2": "0.22.0"}}, indent=2)
+        + "\n",
         encoding="utf-8",
     )
     result = run_script("scripts/check_supply_chain.py", "--repo-root", str(repo))
@@ -544,7 +539,11 @@ def test_check_supply_chain_requires_declared_pnpm_lockfile(tmp_path: Path) -> N
     repo.mkdir()
     (repo / "package.json").write_text(
         json.dumps(
-            {"private": True, "packageManager": "pnpm@9.0.0", "dependencies": {"left-pad": "1.3.0"}},
+            {
+                "private": True,
+                "packageManager": "pnpm@9.0.0",
+                "dependencies": {"left-pad": "1.3.0"},
+            },
             indent=2,
         )
         + "\n",
@@ -560,7 +559,15 @@ def test_check_supply_chain_requires_uv_lock_when_dependencies_exist(tmp_path: P
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "pyproject.toml").write_text(
-        "\n".join(["[project]", 'name = "demo"', 'version = "0.1.0"', 'dependencies = ["requests>=2.0"]', ""]),
+        "\n".join(
+            [
+                "[project]",
+                'name = "demo"',
+                'version = "0.1.0"',
+                'dependencies = ["requests>=2.0"]',
+                "",
+            ]
+        ),
         encoding="utf-8",
     )
     result = run_script("scripts/check_supply_chain.py", "--repo-root", str(repo))
@@ -572,7 +579,15 @@ def test_check_supply_chain_accepts_uv_lock_for_python_dependencies(tmp_path: Pa
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "pyproject.toml").write_text(
-        "\n".join(["[project]", 'name = "demo"', 'version = "0.1.0"', 'dependencies = ["requests>=2.0"]', ""]),
+        "\n".join(
+            [
+                "[project]",
+                'name = "demo"',
+                'version = "0.1.0"',
+                'dependencies = ["requests>=2.0"]',
+                "",
+            ]
+        ),
         encoding="utf-8",
     )
     (repo / "uv.lock").write_text("version = 1\n", encoding="utf-8")
@@ -639,7 +654,9 @@ def test_check_github_actions_flags_outdated_node24_baselines(tmp_path: Path) ->
     assert any("escape hatch" in line for line in payload["guidance"])
 
 
-def test_check_github_actions_yaml_output_is_stable_and_utf8(monkeypatch, capsys, tmp_path: Path) -> None:
+def test_check_github_actions_yaml_output_is_stable_and_utf8(
+    monkeypatch, capsys, tmp_path: Path
+) -> None:
     spec = importlib.util.spec_from_file_location(
         "check_github_actions_under_test",
         ROOT / "scripts" / "check_github_actions.py",

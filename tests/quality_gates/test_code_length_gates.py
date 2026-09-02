@@ -13,9 +13,70 @@ import pytest
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.script_main import run_loaded_script_main
 
+from .seeding_support import write_quality_adapter
 from .support import run_script
 
 PYTHON_LENGTHS = importlib.import_module("scripts.check_code_lengths")
+RUNTIME_INHERITANCE = importlib.import_module("scripts.check_python_runtime_inheritance")
+
+
+def test_check_code_lengths_uses_adapter_python_sources(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    selected = repo / "src" / "selected.py"
+    selected.parent.mkdir(parents=True)
+    selected.write_text("print(1)\n", encoding="utf-8")
+    outside = repo / "scripts" / "outside.py"
+    outside.parent.mkdir(parents=True)
+    outside.write_text("print(2)\n", encoding="utf-8")
+    write_quality_adapter(repo, ["universes:", "  python_sources:", "    - src/**/*.py"])
+
+    assert PYTHON_LENGTHS.iter_python_targets(repo) == [selected]
+
+
+def test_check_code_lengths_refuses_declared_empty_python_sources(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    write_quality_adapter(repo, ["universes:", "  python_sources: []"])
+
+    result = run_loaded_script_main(
+        "check_code_lengths.py", PYTHON_LENGTHS, "--repo-root", str(repo)
+    )
+
+    assert result.returncode == 1
+    assert "check-python-lengths: refusing empty declared universe" in result.stderr
+
+
+def test_runtime_inheritance_uses_and_refuses_adapter_python_sources(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    selected = repo / "src" / "selected.py"
+    selected.parent.mkdir(parents=True)
+    selected.write_text(
+        "import subprocess\nsubprocess.run(['/bin/bash', '-lc', 'python3 -c print(1)'])\n",
+        encoding="utf-8",
+    )
+    write_quality_adapter(repo, ["universes:", "  python_sources:", "    - src/**/*.py"])
+
+    assert RUNTIME_INHERITANCE._iter_scan_paths(repo) == [selected]
+    result = run_loaded_script_main(
+        "check_python_runtime_inheritance.py",
+        RUNTIME_INHERITANCE,
+        "--repo-root",
+        str(repo),
+    )
+    assert result.returncode == 1
+    assert "src/selected.py" in result.stderr
+
+    empty_repo = tmp_path / "empty-repo"
+    empty_repo.mkdir()
+    write_quality_adapter(empty_repo, ["universes:", "  python_sources: []"])
+    empty = run_loaded_script_main(
+        "check_python_runtime_inheritance.py",
+        RUNTIME_INHERITANCE,
+        "--repo-root",
+        str(empty_repo),
+    )
+    assert empty.returncode == 1
+    assert "check-python-runtime-inheritance: refusing empty declared universe" in empty.stderr
 
 
 @pytest.mark.boundary_contract(

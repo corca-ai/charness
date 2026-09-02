@@ -17,17 +17,14 @@
 # So: change the path list HERE and nowhere else. Callers invoke this script by name.
 #
 # Not runnable from the plugin export, and now it SAYS so. The exported copy self-locates
-# to `plugins/charness/`, which has no `charness/`, `tests/`, or `skills/shared/scripts`,
-# so it dies on absent paths -- loud, but naming missing directories rather than the
-# reason they are missing. This comment claimed the condition was "noted"; noting it in a
-# comment is not telling the operator, and the same was true of `run-quality.sh` and
-# `self-validate-install-update.sh`. All three now share the guard the other five carry.
+# to `plugins/charness/`; when the verified repository root is available, the ruff file
+# population comes from the adapter-owned `python_sources` universe rather than a second
+# hardcoded path list.
 set -euo pipefail
 
 GATE_NAME="check-python-lint"
-GATE_CONSEQUENCE="This gate lints a fixed path list rooted at its own root, and the export has no
-charness/, tests/ or skills/shared/scripts, so from a package root that is not the git
-root it reports absent directories instead of the reason they are absent."
+GATE_CONSEQUENCE="This gate resolves the adapter-owned python_sources universe at the verified
+repository root before invoking ruff, so a package root cannot silently narrow lint scope."
 # Builtin-only, no `dirname`: this is the FIRST thing every gate does, and a run with
 # an empty PATH (a real fixture shape) would otherwise die on a missing external
 # command before the gate could report anything of its own. The existence check is
@@ -63,11 +60,31 @@ if ! command -v ruff >/dev/null 2>&1; then
   exit 1
 fi
 
-ruff check \
-  charness \
-  scripts \
-  tools \
-  tests \
-  skills/public/*/scripts \
-  skills/support/*/scripts \
-  skills/shared/scripts
+universe_dir="$(mktemp -d)"
+trap 'rm -rf "$universe_dir" || true' EXIT
+universe_path="$universe_dir/python-files.txt"
+universe_stderr_path="$universe_dir/python-files.stderr"
+if python3 scripts/quality_universes_lib.py \
+  --repo-root "$REPO_ROOT" \
+  --key python_sources \
+  --gate-label check-python-lint \
+  --format lines >"$universe_path" 2>"$universe_stderr_path"; then
+  :
+else
+  rc=$?
+  echo "check-python-lint: Python source universe resolution failed." >&2
+  echo "command: python3 scripts/quality_universes_lib.py --repo-root '$REPO_ROOT' --key python_sources --gate-label check-python-lint --format lines" >&2
+  printf 'exit_code: %s\n' "$rc" >&2
+  echo "STDOUT:" >&2
+  cat "$universe_path" >&2
+  echo "STDERR:" >&2
+  cat "$universe_stderr_path" >&2
+  exit 1
+fi
+mapfile -t python_files <"$universe_path"
+if [[ "${#python_files[@]}" -eq 0 ]]; then
+  echo "WARN: check-python-lint: discovered empty python_sources universe; nothing was checked."
+  exit 0
+fi
+
+ruff check "${python_files[@]}"

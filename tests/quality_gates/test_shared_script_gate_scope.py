@@ -52,6 +52,9 @@ def test_run_quality_ruff_and_py_compile_cover_shared_scripts() -> None:
 
     lint = (REPO_ROOT / LINT_SCRIPT_REL).read_text(encoding="utf-8")
     assert "skills/shared/scripts" in lint
+    assert "--key python_sources" in lint
+    assert "--format lines" in lint
+    assert 'ruff check "${python_files[@]}"' in lint
 
     compile_rows = [row for row in rows if row["label"] == "py-compile"]
     assert compile_rows

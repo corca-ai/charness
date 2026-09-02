@@ -37,6 +37,7 @@ from scripts.sample_mutation_files import (
     pool_for_path,
     write_manifest,
 )
+from tests.quality_gates.seeding_support import write_quality_adapter
 from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -59,6 +60,31 @@ def test_list_changed_returns_stripped_paths_from_git_diff(
     monkeypatch.setattr(sample_mutation_files, "run_process", succeed_diff)
 
     assert list_changed(ROOT, "base-sha", "") == ["scripts/a.py", "scripts/b.py"]
+
+
+def test_mutation_pool_uses_adapter_patterns(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "src").mkdir(parents=True)
+    (repo / "src" / "selected.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "scripts").mkdir()
+    (repo / "scripts" / "outside.py").write_text("VALUE = 2\n", encoding="utf-8")
+    write_quality_adapter(repo, ["universes:", "  mutation_pool:", "    - src/**/*.py"])
+
+    assert list_eligible(repo) == ["src/selected.py"]
+
+
+def test_release_changed_line_coverage_refuses_declared_empty_mutation_pool(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    write_quality_adapter(repo, ["universes:", "  mutation_pool: []"])
+
+    with pytest.raises(
+        SystemExit,
+        match="release-changed-line-coverage: refusing empty declared universe",
+    ):
+        mutation_changed_files_lib.changed_pool_files_vs_base(repo, "base-sha")
 
 
 def test_list_changed_skips_git_when_base_sha_is_empty(monkeypatch: pytest.MonkeyPatch) -> None:
