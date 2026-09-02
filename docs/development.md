@@ -105,6 +105,34 @@ the on-disk mirror.
 When docs change, run [`check-docs.sh`](../scripts/check-docs.sh). The source
 tree is authoritative; the plugin tree is a generated install surface.
 
+### Pushing
+
+Every push goes through the pre-push hook installed by
+[`install-git-hooks.sh`](../scripts/install-git-hooks.sh). After the
+irreversible close-keyword scan, a push that touches anything beyond docs and
+artifacts runs `./scripts/run-quality.sh --full --read-only --release`: the
+standing lane deselects `release_only` and `slow_corpus`, so without
+`--release` a release-only regression crosses the push unseen (#768 carried
+three for four days). A docs-artifact-only push runs the docs subset instead;
+the release lane is indivisible and cannot narrow to it. Measured on the #778
+closeout in a clean clone, the hook lane took about 260 s for a passing code push (the release pytest alone about 100 s); a seeded release-only failure was refused in about 120 s because the lane stops at the failing release pytest.
+
+The hook reads the working tree it runs in, so push from a clean tree. The
+shape the Goal Run closeouts use: clone the tip, install the hooks, regenerate
+the mirror, and push from there, so the lane judges exactly the bytes that
+leave.
+
+```bash
+git clone --quiet . /tmp/charness-push && cd /tmp/charness-push
+./scripts/install-git-hooks.sh
+python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .
+git remote set-url origin <origin-url> && git push origin HEAD:main
+```
+
+Proof that the hook refuses what it should: seed one `release_only` test that
+fails, commit, push to a scratch remote, and read the refusal; drop the seed
+and the same push passes. The #778 closeout records both runs.
+
 ## Optional records
 
 Use [artifact policy](./artifact-policy.md) for durable evidence and

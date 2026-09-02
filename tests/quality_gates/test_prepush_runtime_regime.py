@@ -158,6 +158,9 @@ def test_the_docs_only_subset_names_its_regime_so_its_samples_stay_out_of_the_fu
         "window the full-queue budgets are enforced against -- the #544 defect"
     )
     assert "--read-only" in payload["argv"]
+    # The release lane is indivisible and cannot narrow to a label subset, so a
+    # docs-only push keeps its subset rather than paying the whole lane (#778).
+    assert "--release" not in payload["argv"]
 
 
 def test_release_receipt_reuses_quality_but_still_runs_the_irreversible_guard(
@@ -317,7 +320,11 @@ def test_release_receipt_reuses_quality_but_still_runs_the_irreversible_guard(
 
     assert fallback.returncode == 0, fallback.stderr
     assert "receipt was not reusable" in fallback.stderr
-    assert json.loads(log.read_text(encoding="utf-8"))["argv"][-2:] == ["--full", "--read-only"]
+    assert json.loads(log.read_text(encoding="utf-8"))["argv"][-3:] == [
+        "--full",
+        "--read-only",
+        "--release",
+    ]
 
 
 def test_a_full_gate_push_leaves_the_regime_empty(prepush_repo: Path, tmp_path: Path) -> None:
@@ -342,6 +349,9 @@ def test_a_full_gate_push_leaves_the_regime_empty(prepush_repo: Path, tmp_path: 
     payload = json.loads(log.read_text(encoding="utf-8"))
     assert payload["labels"] == "", "a code push must run the full queue, unfiltered"
     assert payload["regime"] == ""
+    # A code push runs the release lane too (#778): the standing lane deselects
+    # `release_only`, and this hook is the last local read before the push.
+    assert "--release" in payload["argv"]
 
 
 def test_both_stdin_consumers_receive_the_push_range(prepush_repo: Path, tmp_path: Path) -> None:

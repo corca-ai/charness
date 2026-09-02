@@ -114,8 +114,15 @@ if [[ "$classification" == "docs-artifact-only" ]]; then
   CHARNESS_RUNTIME_REGIME=docs-only \
     CHARNESS_QUALITY_LABELS="$DOCS_ONLY_LABELS" ./scripts/run-quality.sh --read-only
 else
-  echo "charness pre-push: running full ./scripts/run-quality.sh --read-only ($reason)"
-  ./scripts/run-quality.sh --full --read-only
+  # `--release` on every non-docs push (#778). The standing pytest lane deselects
+  # `release_only` and `slow_corpus`, so a release-only regression that landed in
+  # code stayed invisible to this hook and crossed the push boundary; #768 carried
+  # three of them for four days. This is the last local read before a push, and
+  # the release lane is indivisible, so it runs whole here. A docs-artifact-only
+  # push keeps its subset above: it cannot change what a `release_only` test
+  # measures, and the release lane would cost it the whole subset's saving.
+  echo "charness pre-push: running full ./scripts/run-quality.sh --read-only --release ($reason)"
+  ./scripts/run-quality.sh --full --read-only --release
 fi
 
 if ! git diff --quiet -- charness-artifacts; then
