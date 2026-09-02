@@ -127,10 +127,7 @@ def test_inventory_standing_gate_verbosity_recognizes_shell_runner_thin_launcher
 
     payload = INVENTORY(repo)
     assert payload["axes"]["orchestrator_output_mode"]["status"] == "healthy"
-    assert any(
-        finding["type"] == "lefthook_thin_launcher"
-        for finding in payload["findings"]
-    )
+    assert any(finding["type"] == "lefthook_thin_launcher" for finding in payload["findings"])
     assert not any(
         finding["type"] == "lefthook_parallel_output_unconfigured"
         for finding in payload["findings"]
@@ -162,10 +159,7 @@ def test_inventory_standing_gate_verbosity_recognizes_node_runner_thin_launcher(
 
     payload = INVENTORY(repo)
     assert payload["axes"]["orchestrator_output_mode"]["status"] == "healthy"
-    assert any(
-        finding["type"] == "lefthook_thin_launcher"
-        for finding in payload["findings"]
-    )
+    assert any(finding["type"] == "lefthook_thin_launcher" for finding in payload["findings"])
 
 
 def test_inventory_standing_gate_verbosity_recognizes_charness_quiet_default() -> None:
@@ -177,7 +171,9 @@ def test_inventory_standing_gate_verbosity_recognizes_charness_quiet_default() -
     assert payload["axes"]["failure_detail"]["status"] == "healthy"
 
 
-def test_inventory_standing_gate_verbosity_recognizes_queued_specdown_output(tmp_path: Path) -> None:
+def test_inventory_standing_gate_verbosity_recognizes_queued_specdown_output(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     (repo / ".githooks").mkdir(parents=True)
     (repo / "scripts").mkdir()
@@ -193,6 +189,23 @@ def test_inventory_standing_gate_verbosity_recognizes_queued_specdown_output(tmp
                 "",
             ]
         ),
+        encoding="utf-8",
+    )
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "quality-gates.yaml").write_text(
+        "schema: charness/quality-gates/v1\n"
+        "phases:\n"
+        "  - id: main\n"
+        "    isolation: concurrent\n"
+        "    fail_fast: false\n"
+        "    gates:\n"
+        "      - label: specdown\n"
+        "        command:\n"
+        "          - specdown\n"
+        "          - run\n"
+        "          - -jobs\n"
+        "          - '4'\n"
+        "        lane: standard\n",
         encoding="utf-8",
     )
 
@@ -318,7 +331,7 @@ def test_an_env_prefixed_command_is_a_command_not_an_assignment(tmp_path: Path) 
     hooks = tmp_path / ".githooks"
     hooks.mkdir()
     (hooks / "pre-push").write_text(
-        "#!/usr/bin/env bash\nFOO=1 BAR=\"two words\" ./scripts/run-quality.sh --read-only\n",
+        '#!/usr/bin/env bash\nFOO=1 BAR="two words" ./scripts/run-quality.sh --read-only\n',
         encoding="utf-8",
     )
     scripts = tmp_path / "scripts"

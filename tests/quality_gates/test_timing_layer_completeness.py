@@ -55,6 +55,45 @@ def test_run_quality_labels_dedupes_in_first_seen_order() -> None:
     assert META.run_quality_labels(text) == ["b", "a"]
 
 
+def test_declared_rows_replace_shell_text_for_timing_completeness(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "docs").mkdir()
+    (repo / ".agents").mkdir()
+    (repo / "scripts" / "run-quality.sh").write_text(
+        'queue_selected "shell-only" foo\n', encoding="utf-8"
+    )
+    (repo / ".agents" / "quality-gates.yaml").write_text(
+        "schema: charness/quality-gates/v1\n"
+        "phases:\n"
+        "  - id: main\n"
+        "    isolation: concurrent\n"
+        "    fail_fast: false\n"
+        "    gates:\n"
+        "      - label: declared-only\n"
+        "        command:\n"
+        "          - python3\n"
+        "          - gate.py\n"
+        "        lane: standard\n",
+        encoding="utf-8",
+    )
+    (repo / "docs" / "validator-timing-layers.md").write_text(
+        "## Classification table\n\n| Check | Ran | Verdict | Reason |\n"
+        "| --- | --- | --- | --- |\n"
+        "| declared-only | broad | stays | x |\n",
+        encoding="utf-8",
+    )
+    (repo / ".githooks").mkdir()
+    (repo / ".githooks" / "pre-push").write_text(
+        'DOCS_ONLY_LABELS="shell-only"\n', encoding="utf-8"
+    )
+
+    missing, checked = META.unclassified_labels(repo)
+    assert checked == ["declared-only"]
+    assert missing == []
+    assert META.stale_docs_only_labels(repo) == []
+
+
 def test_classification_region_is_table_only() -> None:
     doc = "# Title\n\nintro mentions ghost-label\n\n## Classification table\n\n| x | y |\nreal-label here\n\n## Next\nafter-label\n"
     region = META.classification_region(doc)
@@ -69,10 +108,12 @@ def test_unclassified_label_is_detected(tmp_path: Path) -> None:
     (repo / "scripts").mkdir(parents=True)
     (repo / "docs").mkdir(parents=True)
     (repo / "scripts/run-quality.sh").write_text(
-        'queue_selected "check-classified" foo\nqueue_selected "check-orphan" bar\n', encoding="utf-8"
+        'queue_selected "check-classified" foo\nqueue_selected "check-orphan" bar\n',
+        encoding="utf-8",
     )
     (repo / "docs/validator-timing-layers.md").write_text(
-        "## Classification table\n\n| check-classified | broad only | stays | reason |\n", encoding="utf-8"
+        "## Classification table\n\n| check-classified | broad only | stays | reason |\n",
+        encoding="utf-8",
     )
     missing, checked = META.unclassified_labels(repo)
     assert checked == ["check-classified", "check-orphan"]
@@ -101,7 +142,9 @@ def test_a_label_mentioned_only_in_another_rows_prose_is_not_classified() -> Non
 
     for prose_only in ("check-links", "check-doc", "validate-surface", "validate-skill"):
         assert prose_only not in classified, prose_only
-        assert prose_only in region, f"{prose_only} must still be a substring, or this test is vacuous"
+        assert prose_only in region, (
+            f"{prose_only} must still be a substring, or this test is vacuous"
+        )
 
     # real rows still resolve, including the one the substring test would alias onto
     for real in ("check-links-internal", "pytest", "dup-ratchet"):
@@ -140,7 +183,9 @@ def test_a_docs_only_push_label_that_names_no_gate_is_refused(tmp_path: Path) ->
 
     # Subset direction ONLY: a run-quality label absent from the curated docs-only set
     # is a deliberate judgment, not drift, so completeness here would be a false refusal.
-    (repo / ".githooks" / "pre-push").write_text('DOCS_ONLY_LABELS="check-doc-links"\n', encoding="utf-8")
+    (repo / ".githooks" / "pre-push").write_text(
+        'DOCS_ONLY_LABELS="check-doc-links"\n', encoding="utf-8"
+    )
     assert META.stale_docs_only_labels(repo) == []
 
     # Degrades where the hook is not vendored.
@@ -172,11 +217,15 @@ def test_a_pre_push_without_the_docs_only_assignment_is_not_a_finding(tmp_path: 
     assert META.stale_docs_only_labels(_seed(tmp_path, None)) == []
 
 
-def test_main_reports_the_stale_label_and_exits_nonzero(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_main_reports_the_stale_label_and_exits_nonzero(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     """The reporting branch is what the operator actually reads; asserting only the
     helper leaves the message that names the fix unproven."""
     repo = _seed(tmp_path, 'DOCS_ONLY_LABELS="check-doc-links,check-gone"')
-    monkeypatch.setattr(sys, "argv", ["check_timing_layer_completeness.py", "--repo-root", str(repo)])
+    monkeypatch.setattr(
+        sys, "argv", ["check_timing_layer_completeness.py", "--repo-root", str(repo)]
+    )
 
     assert META.main() == 1
 
@@ -188,7 +237,9 @@ def test_main_reports_the_stale_label_and_exits_nonzero(tmp_path: Path, monkeypa
 
 def test_main_is_silent_when_the_subset_matches(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = _seed(tmp_path, 'DOCS_ONLY_LABELS="check-doc-links"')
-    monkeypatch.setattr(sys, "argv", ["check_timing_layer_completeness.py", "--repo-root", str(repo)])
+    monkeypatch.setattr(
+        sys, "argv", ["check_timing_layer_completeness.py", "--repo-root", str(repo)]
+    )
 
     assert META.main() == 0
     assert "carry a timing verdict" in capsys.readouterr().out
@@ -219,12 +270,7 @@ def test_dispatcher_forwarding_is_not_read_as_a_gate_label(tmp_path: Path) -> No
     """`queue_selected` forwards `queue_timed "$label"`; reading that as a label
     would put the literal string `$label` in the table's required set, which no
     row can ever satisfy -- a permanent red on a correct table."""
-    text = (
-        "queue_selected() {\n"
-        '  queue_timed "$label" "$@"\n'
-        "}\n"
-        'queue_selected "real-gate" foo\n'
-    )
+    text = 'queue_selected() {\n  queue_timed "$label" "$@"\n}\nqueue_selected "real-gate" foo\n'
     assert META.run_quality_labels(text) == ["real-gate"]
 
 

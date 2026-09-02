@@ -29,6 +29,7 @@ RETRO_LESSON_RE = re.compile(r"^charness-artifacts/retro/\d{4}-\d{2}-\d{2}-.*-se
 DEBUG_RCA_RE = re.compile(r"^charness-artifacts/debug/\d{4}-\d{2}-\d{2}-.*\.md$")
 GATE_SCRIPT_RE = re.compile(r"^scripts/(check|validate)_[A-Za-z0-9_]+\.py$")
 QUALITY_RUNNER_PATH = "scripts/run-quality.sh"
+QUALITY_GATE_LIST_PATH = ".agents/quality-gates.yaml"
 CONVENTION_DOC_PATHS = frozenset(
     {
         "docs/operating-contract.md",
@@ -186,7 +187,7 @@ DIFF_RULES = (
         "confidence": "medium",
         "diff_kind": None,
         "statuses": None,
-        "predicate": lambda p: p == QUALITY_RUNNER_PATH,
+        "predicate": lambda p: p in {QUALITY_RUNNER_PATH, QUALITY_GATE_LIST_PATH},
     },
     {
         "rule_id": "convention-doc-modified",

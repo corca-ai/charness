@@ -40,7 +40,7 @@ DOCS_ONLY_RE = re.compile(r'^DOCS_ONLY_LABELS="([^"]*)"', re.MULTILINE)
 TABLE_HEADING = "## Classification table"
 
 
-def run_quality_labels(text: str) -> list[str]:
+def run_quality_labels(text: str, repo_root: Path | None = None) -> list[str]:
     """The de-duplicated set of queued gate labels, in first-seen order.
 
     Delegates to `quality_label_universe`, which reads every `queue_*` wrapper
@@ -54,7 +54,7 @@ def run_quality_labels(text: str) -> list[str]:
     Call-site labels only: the aggregate and startup-probe halves of the universe
     are not `run-quality.sh` gate entries and owe no timing verdict.
     """
-    return list(quality_label_universe.queue_call_labels(text))
+    return list(quality_label_universe.queue_call_labels(text, repo_root=repo_root))
 
 
 def classification_region(doc_text: str) -> str:
@@ -63,7 +63,7 @@ def classification_region(doc_text: str) -> str:
     start = doc_text.find(TABLE_HEADING)
     if start == -1:
         return ""
-    rest = doc_text[start + len(TABLE_HEADING):]
+    rest = doc_text[start + len(TABLE_HEADING) :]
     nxt = rest.find("\n## ")
     return rest if nxt == -1 else rest[:nxt]
 
@@ -103,9 +103,12 @@ def unclassified_labels(repo_root: Path) -> tuple[list[str], list[str]]:
     recorded in the timing-doc classification table."""
     run_quality = repo_root / RUN_QUALITY_PATH
     timing_doc = repo_root / TIMING_DOC_PATH
-    if not run_quality.is_file() or not timing_doc.is_file():
+    labels = run_quality_labels(
+        run_quality.read_text(encoding="utf-8") if run_quality.is_file() else "",
+        repo_root,
+    )
+    if not timing_doc.is_file():
         return [], []
-    labels = run_quality_labels(run_quality.read_text(encoding="utf-8"))
     region = classification_region(timing_doc.read_text(encoding="utf-8"))
     classified = classified_labels(region)
     missing = [label for label in labels if label not in classified]
@@ -128,12 +131,26 @@ def stale_docs_only_labels(repo_root: Path) -> list[str]:
     """
     run_quality = repo_root / RUN_QUALITY_PATH
     pre_push = repo_root / PRE_PUSH_PATH
-    if not run_quality.is_file() or not pre_push.is_file():
+    data_file = repo_root / quality_label_universe.QUALITY_GATES_PATH
+    if data_file.is_file():
+        # `docs_only` moved with the queue declaration. The old hook assignment
+        # remains only as migration-era shell input and must not become a second
+        # source of truth once the rows are present.
+        quality_label_universe.quality_gate_rows(repo_root)
+        return []
+    if not run_quality.is_file() and not data_file.is_file():
+        return []
+    known = set(
+        run_quality_labels(
+            run_quality.read_text(encoding="utf-8") if run_quality.is_file() else "",
+            repo_root,
+        )
+    )
+    if not pre_push.is_file():
         return []
     match = DOCS_ONLY_RE.search(pre_push.read_text(encoding="utf-8"))
     if match is None:
         return []
-    known = set(run_quality_labels(run_quality.read_text(encoding="utf-8")))
     named = [item.strip() for item in match.group(1).split(",") if item.strip()]
     return [label for label in named if label not in known]
 
@@ -185,7 +202,9 @@ def main() -> int:
         print("Rename or drop each to match a queued gate label.", file=sys.stderr)
         return 1
 
-    print(f"timing-layer completeness: all {len(checked)} run-quality validators carry a timing verdict.")
+    print(
+        f"timing-layer completeness: all {len(checked)} run-quality validators carry a timing verdict."
+    )
     return 0
 
 

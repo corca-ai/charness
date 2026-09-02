@@ -97,6 +97,7 @@ def test_a_gate_label_the_universe_reader_cannot_see_refuses_the_run(
     a call site is unresolvable rather than invisible.
     """
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    (repo / ".agents" / "quality-gates.yaml").unlink()
     runner = repo / "scripts" / "run-quality.sh"
     text = runner.read_text(encoding="utf-8")
     marker = 'queue_selected "validate-skills"'
@@ -117,6 +118,7 @@ def test_a_runner_the_reader_cannot_parse_stops_before_any_gate(
     """The reader raises on a call site it cannot resolve. The runner surfaces the
     reader's OWN message rather than a traceback or a second, different failure."""
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    (repo / ".agents" / "quality-gates.yaml").unlink()
     runner = repo / "scripts" / "run-quality.sh"
     runner.write_text(
         runner.read_text(encoding="utf-8") + '\nqueue_selected "$computed" true\n',

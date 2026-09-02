@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import quality_label_universe
 
 from tests.quality_gates.repo_shapes import install_two_commit_repo
 
@@ -53,13 +54,28 @@ def _run(repo: Path, relpath: str, *extra: str) -> object:
 @pytest.mark.parametrize(
     "body, errors",
     [
-        ((_FRESH_EYE_OK,), ("no `## Boundary Ownership` section", "single-surface", "escalated-to-issue-spec")),
         (
-            (_FRESH_EYE_OK, "", "## Boundary Ownership", "", "- Verdict: reviewed carefully, seems fine."),
+            (_FRESH_EYE_OK,),
+            ("no `## Boundary Ownership` section", "single-surface", "escalated-to-issue-spec"),
+        ),
+        (
+            (
+                _FRESH_EYE_OK,
+                "",
+                "## Boundary Ownership",
+                "",
+                "- Verdict: reviewed carefully, seems fine.",
+            ),
             ("does not open with one of", "Boundary Ownership"),
         ),
         (
-            (_FRESH_EYE_OK, "", "## Boundary Ownership", "", "- Verdict: single-surface (TODO confirm no producer-owned state is touched)."),
+            (
+                _FRESH_EYE_OK,
+                "",
+                "## Boundary Ownership",
+                "",
+                "- Verdict: single-surface (TODO confirm no producer-owned state is touched).",
+            ),
             ("unedited `todo`",),
         ),
     ],
@@ -75,11 +91,22 @@ def test_boundary_validator_rejects_post_cutoff(tmp_path: Path, body: tuple, err
     "body",
     [
         (
-            _FRESH_EYE_OK, "", "## Boundary Ownership", "",
-            "- Producer: the request handler.", "- Consumer: the renderer.",
-            "- Owning surface: request-layer.", "- Verdict: single-surface",
+            _FRESH_EYE_OK,
+            "",
+            "## Boundary Ownership",
+            "",
+            "- Producer: the request handler.",
+            "- Consumer: the renderer.",
+            "- Owning surface: request-layer.",
+            "- Verdict: single-surface",
         ),
-        (_FRESH_EYE_OK, "", "## Boundary Ownership", "", "- Verdict: `moved-to-owner`; relocated the fact to its producer plus generic rendering."),
+        (
+            _FRESH_EYE_OK,
+            "",
+            "## Boundary Ownership",
+            "",
+            "- Verdict: `moved-to-owner`; relocated the fact to its producer plus generic rendering.",
+        ),
     ],
 )
 def test_boundary_validator_accepts_post_cutoff(tmp_path: Path, body: tuple) -> None:
@@ -197,7 +224,7 @@ def test_critique_validator_refuses_unreadable_cross_surface_adapter(tmp_path: P
     adapter = repo / ".agents" / "critique-adapter.yaml"
     adapter.parent.mkdir(parents=True)
     adapter.write_text(
-        "version: 1\nrepo: demo\nboundary_cross_surface_globs: \"docs/**\"\n",
+        'version: 1\nrepo: demo\nboundary_cross_surface_globs: "docs/**"\n',
         encoding="utf-8",
     )
 
@@ -225,25 +252,32 @@ def test_charness_dogfoods_its_own_cross_surface_probe() -> None:
     probe = boundary_probe_lib.probe_config_from_adapter(
         critique_adapter_lib.load_adapter(ROOT)["data"]
     )
-    assert probe["globs"], "charness must configure its own boundary_cross_surface_globs (DBD-4 dogfood)"
+    assert probe["globs"], (
+        "charness must configure its own boundary_cross_surface_globs (DBD-4 dogfood)"
+    )
     # A change to a root shared lib must hit; a doc/test change must not.
-    assert boundary_probe_lib.cross_surface_hit(ROOT, ["scripts/surfaces_lib.py"], globs=probe["globs"])
+    assert boundary_probe_lib.cross_surface_hit(
+        ROOT, ["scripts/surfaces_lib.py"], globs=probe["globs"]
+    )
     assert not boundary_probe_lib.cross_surface_hit(ROOT, ["docs/index.md"], globs=probe["globs"])
     assert not boundary_probe_lib.cross_surface_hit(ROOT, ["tests/test_x.py"], globs=probe["globs"])
 
 
 def test_run_quality_wires_changed_ref_range_for_cross_surface_probe() -> None:
-    run_quality = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
-    critique_line = next(
-        line for line in run_quality.splitlines() if "validate-critique-artifacts" in line
-    )
-    assert "--changed-ref" in critique_line, (
-        "run-quality.sh must pass --changed-ref to validate-critique-artifacts so the "
+    rows = quality_label_universe.quality_gate_rows(ROOT) or []
+    critique_row = next(row for row in rows if row["label"] == "validate-critique-artifacts")
+    command = critique_row["command"]
+    assert "--changed-ref" in command, (
+        "quality-gates.yaml must pass --changed-ref to validate-critique-artifacts so the "
         "cross-surface 5b tooth fires in charness CI, not just unit fixtures (DBD-4)"
     )
     # A BARE ref resolves to that one commit's diff-tree (the fork point), not the
     # unpushed range — silently mis-targeting the tooth. Require the RANGE form.
-    assert "..HEAD" in critique_line or "..HEAD" in run_quality, (
+    assert "$CRITIQUE_CHANGED_REF" in command, (
+        "the --changed-ref value must come from the runner-computed range variable"
+    )
+    run_quality = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+    assert "..HEAD" in run_quality, (
         "the --changed-ref value must be a range (base..HEAD); a bare sha resolves to "
         "the fork-point commit's own diff, not the change under review (DBD-4 wiring bug)"
     )
@@ -270,8 +304,7 @@ def test_changed_ref_range_fires_tooth_end_to_end(tmp_path: Path) -> None:
         tmp_path / "repo",
         {
             ".agents/critique-adapter.yaml": (
-                "version: 1\nrepo: demo\n"
-                'boundary_cross_surface_globs:\n  - "scripts/*_lib.py"\n'
+                'version: 1\nrepo: demo\nboundary_cross_surface_globs:\n  - "scripts/*_lib.py"\n'
             ),
             "scripts/keep.py": "x = 1\n",
         },

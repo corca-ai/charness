@@ -14,7 +14,9 @@ from scripts.validate_current_pointer_freshness import (
 from .support import run_script
 
 
-def write_runtime_signals(repo: Path, *, pytest_latest: int = 37638, pytest_median: int = 36544) -> None:
+def write_runtime_signals(
+    repo: Path, *, pytest_latest: int = 37638, pytest_median: int = 36544
+) -> None:
     runtime_dir = repo / ".charness" / "quality"
     runtime_dir.mkdir(parents=True)
     (runtime_dir / "runtime-signals.json").write_text(
@@ -54,7 +56,26 @@ def seed_repo(
         else ""
     )
     (repo / "scripts" / "run-quality.sh").write_text(queue_line, encoding="utf-8")
-    (repo / "charness-artifacts" / "quality" / "latest.md").write_text(quality_text, encoding="utf-8")
+    if queued:
+        (repo / ".agents" / "quality-gates.yaml").write_text(
+            "schema: charness/quality-gates/v1\n"
+            "phases:\n"
+            "  - id: main\n"
+            "    isolation: concurrent\n"
+            "    fail_fast: false\n"
+            "    gates:\n"
+            "      - label: validate-current-pointer-freshness\n"
+            "        command:\n"
+            "          - python3\n"
+            "          - scripts/validate_current_pointer_freshness.py\n"
+            "          - --repo-root\n"
+            "          - $REPO_ROOT\n"
+            "        lane: standard\n",
+            encoding="utf-8",
+        )
+    (repo / "charness-artifacts" / "quality" / "latest.md").write_text(
+        quality_text, encoding="utf-8"
+    )
     (repo / "charness-artifacts" / "release" / "latest.md").write_text(
         "# Release Surface Check\n\n## Current Version\n\n- target version: `1.2.3`\n",
         encoding="utf-8",
@@ -202,7 +223,9 @@ def test_current_pointer_freshness_rejects_stale_release_version_claim(tmp_path:
     assert "packaging/charness.json" in result.stderr
 
 
-def test_current_pointer_freshness_rejects_stale_capability_catalog_integration_snapshot(tmp_path: Path) -> None:
+def test_current_pointer_freshness_rejects_stale_capability_catalog_integration_snapshot(
+    tmp_path: Path,
+) -> None:
     repo = seed_repo(tmp_path)
     integrations = repo / "integrations" / "tools"
     integrations.mkdir(parents=True)
@@ -264,7 +287,9 @@ def test_current_pointer_freshness_loads_catalog_sanitizer_in_process() -> None:
     alias_path, sanitize = _load_catalog_sanitizer(Path(__file__).resolve().parents[2])
     assert alias_path is not None
     assert sanitize is not None
-    assert alias_path("integrations/tools/github-gh.json") == "integrations/tools/github-worker.json"
+    assert (
+        alias_path("integrations/tools/github-gh.json") == "integrations/tools/github-worker.json"
+    )
 
 
 def _write_release_pointer(repo: Path, body: str) -> None:
@@ -288,7 +313,9 @@ def test_release_version_claim_is_checked_in_every_rendering(tmp_path: Path) -> 
     ):
         repo = seed_repo(tmp_path / label)
         _write_release_pointer(repo, body)
-        result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+        result = run_script(
+            "scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo)
+        )
         assert result.returncode == 1, (label, result.stdout)
         assert "release pointer version claim is stale" in result.stderr, label
 
@@ -311,7 +338,9 @@ def test_release_version_decoy_claim_cannot_shadow_a_stale_one(tmp_path: Path) -
     manifests shadowed a genuinely stale claim below it and the comparison never
     ran on the real one. Disagreeing claims are now refused outright."""
     repo = seed_repo(tmp_path)
-    _write_release_pointer(repo, "- target version: `1.2.3`\n\nthe real one:\n\n- target version: `9.9.9`\n")
+    _write_release_pointer(
+        repo, "- target version: `1.2.3`\n\nthe real one:\n\n- target version: `9.9.9`\n"
+    )
 
     result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
 
@@ -329,7 +358,9 @@ def test_release_version_claim_matching_the_manifests_still_passes(tmp_path: Pat
     ):
         repo = seed_repo(tmp_path / f"ok-{label}")
         _write_release_pointer(repo, body)
-        result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+        result = run_script(
+            "scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo)
+        )
         assert result.returncode == 0, (label, result.stderr)
 
 
@@ -346,17 +377,24 @@ def test_release_version_claim_survives_nested_markup_and_placeholders(tmp_path:
         ("bold wrapping backticks", "- target version: **`1.2.3`**\n"),
         ("backticks wrapping bold", "- target version: `**1.2.3**`\n"),
         ("trailing period", "- target version: 1.2.3.\n"),
-        ("previous and target siblings", "- previous version: `1.2.2`\n- target version: `1.2.3`\n"),
+        (
+            "previous and target siblings",
+            "- previous version: `1.2.2`\n- target version: `1.2.3`\n",
+        ),
     ):
         repo = seed_repo(tmp_path / f"ok-{label}")
         _write_release_pointer(repo, body)
-        result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+        result = run_script(
+            "scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo)
+        )
         assert result.returncode == 0, (label, result.stderr)
 
     for label, body in (("TBD", "- target version: TBD\n"), ("N/A", "- target version: N/A\n")):
         repo = seed_repo(tmp_path / f"placeholder-{label}")
         _write_release_pointer(repo, body)
-        result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+        result = run_script(
+            "scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo)
+        )
         assert result.returncode == 1, label
         assert "no parseable `target version:` claim" in result.stderr, label
         assert "is stale" not in result.stderr, label
@@ -394,13 +432,20 @@ def test_capability_catalog_claims_refuse_an_unestablishable_scope(tmp_path: Pat
     catalog.parent.mkdir(parents=True)
 
     # Inventory present but not an object: the catalog exists and was never read.
-    catalog.write_text(json.dumps({"schema_version": 1, "inventory": "not-a-dict"}), encoding="utf-8")
+    catalog.write_text(
+        json.dumps({"schema_version": 1, "inventory": "not-a-dict"}), encoding="utf-8"
+    )
     with pytest.raises(ValidationError, match="not an object"):
         validate_capability_catalog_integration_claims(repo)
 
     # Claims integrations, but the tree they describe is gone.
     catalog.write_text(
-        json.dumps({"schema_version": 1, "inventory": {"integrations": [{"path": "integrations/tools/tool.json"}]}}),
+        json.dumps(
+            {
+                "schema_version": 1,
+                "inventory": {"integrations": [{"path": "integrations/tools/tool.json"}]},
+            }
+        ),
         encoding="utf-8",
     )
     with pytest.raises(ValidationError, match="does not exist"):
@@ -408,7 +453,9 @@ def test_capability_catalog_claims_refuse_an_unestablishable_scope(tmp_path: Pat
 
     # Falsifiable counterpart: no claims and no directory is genuinely
     # not-configured, and must stay a pass.
-    catalog.write_text(json.dumps({"schema_version": 1, "inventory": {"integrations": []}}), encoding="utf-8")
+    catalog.write_text(
+        json.dumps({"schema_version": 1, "inventory": {"integrations": []}}), encoding="utf-8"
+    )
     validate_capability_catalog_integration_claims(repo)
 
     # And a repo with no catalog at all is still exempt.

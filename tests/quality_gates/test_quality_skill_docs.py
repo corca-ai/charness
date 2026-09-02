@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import quality_label_universe
+
 ROOT = Path(__file__).resolve().parents[2]
 
 DISPATCH = (
@@ -17,10 +19,12 @@ AGENT_PRODUCTION_RUNTIME = (
 AUTOMATION_PROMOTION = (
     ROOT / "skills" / "public" / "quality" / "references" / "automation-promotion.md"
 ).read_text(encoding="utf-8")
-CREATE_CLI_SKILL = (ROOT / "skills" / "public" / "create-cli" / "SKILL.md").read_text(encoding="utf-8")
-CATALOG = (
-    ROOT / "skills" / "public" / "quality" / "references" / "catalog.yaml"
-).read_text(encoding="utf-8")
+CREATE_CLI_SKILL = (ROOT / "skills" / "public" / "create-cli" / "SKILL.md").read_text(
+    encoding="utf-8"
+)
+CATALOG = (ROOT / "skills" / "public" / "quality" / "references" / "catalog.yaml").read_text(
+    encoding="utf-8"
+)
 PUBLIC_SPEC_LAYERING = (
     ROOT / "skills" / "public" / "quality" / "references" / "public-spec-layering.md"
 ).read_text(encoding="utf-8")
@@ -81,12 +85,12 @@ def test_quality_skill_carries_explicit_skill_ergonomics_lens() -> None:
 
 
 def test_quality_runner_has_no_retired_usage_episode_gates() -> None:
-    run_quality = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+    labels = {row["label"] for row in quality_label_universe.quality_gate_rows(ROOT) or []}
 
     assert "Run applicable `gate_packets` as report-first evidence" in QUALITY_SKILL
     assert "id: read-only-quality" in CATALOG
-    assert "validate-usage-episodes" not in run_quality
-    assert "report-usage-episodes" not in run_quality
+    assert "validate-usage-episodes" not in labels
+    assert "report-usage-episodes" not in labels
     assert "when `.agents/usage-episodes-adapter.yaml` exists" not in QUALITY_SKILL
 
 
@@ -188,7 +192,9 @@ def test_quality_skill_prefers_structure_over_heuristic_chasing() -> None:
     assert "SECTIONS = (" in scaffold
     assert "## Current Gates" in scaffold
     assert "gate_packets" in QUALITY_SKILL
-    assert "delete, merge, split ownership, extract a helper, or narrow an interface" in QUALITY_SKILL
+    assert (
+        "delete, merge, split ownership, extract a helper, or narrow an interface" in QUALITY_SKILL
+    )
     assert "Length, duplicate, and pressure heuristics are smell sensors" in QUALITY_SKILL
     assert "routing default, not a veto against good deterministic enforcement" in DISPATCH
     assert "standing threshold gates such as coverage floors, runtime budgets" in DISPATCH
@@ -210,7 +216,10 @@ def test_quality_skill_and_create_cli_carry_language_lint_defaults() -> None:
     assert "For JavaScript/TypeScript, default to `eslint`" in DISPATCH
     assert "`complexity` rule" in DISPATCH
     assert "Python CLI: `ruff check` with `C90` enabled" in CREATE_CLI_QUALITY_GATES
-    assert "JavaScript/TypeScript CLI: `eslint` with a standing `complexity` rule" in CREATE_CLI_QUALITY_GATES
+    assert (
+        "JavaScript/TypeScript CLI: `eslint` with a standing `complexity` rule"
+        in CREATE_CLI_QUALITY_GATES
+    )
 
 
 def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
@@ -272,7 +281,10 @@ def test_quality_agent_runtime_lens_keeps_positive_runtime_triggers() -> None:
     assert "model routing, fallback, or provider configuration" in AGENT_PRODUCTION_RUNTIME
     assert "streaming response endpoints or event processors" in AGENT_PRODUCTION_RUNTIME
     assert "tool/action queues driven by model output" in AGENT_PRODUCTION_RUNTIME
-    assert "runtime telemetry for model calls, tokens, retries, costs, or fallbacks" in AGENT_PRODUCTION_RUNTIME
+    assert (
+        "runtime telemetry for model calls, tokens, retries, costs, or fallbacks"
+        in AGENT_PRODUCTION_RUNTIME
+    )
 
 
 def test_quality_agent_runtime_lens_requires_runtime_evidence_for_docs() -> None:
@@ -280,13 +292,18 @@ def test_quality_agent_runtime_lens_requires_runtime_evidence_for_docs() -> None
 
     assert (
         "user-facing agent product docs only when paired with serving-path code, "
-        "runtime configuration, telemetry, or concrete incident/runtime evidence"
-        in runtime_words
+        "runtime configuration, telemetry, or concrete incident/runtime evidence" in runtime_words
     )
-    assert "operator runbooks that describe an actual incident or runtime procedure" in AGENT_PRODUCTION_RUNTIME
+    assert (
+        "operator runbooks that describe an actual incident or runtime procedure"
+        in AGENT_PRODUCTION_RUNTIME
+    )
     assert "without corroborating runtime evidence" in AGENT_PRODUCTION_RUNTIME
     assert "docs-only\nagent product descriptions" in AGENT_PRODUCTION_RUNTIME
-    assert "not\nproduction runtime evidence until paired with a concrete runtime seam" in AGENT_PRODUCTION_RUNTIME
+    assert (
+        "not\nproduction runtime evidence until paired with a concrete runtime seam"
+        in AGENT_PRODUCTION_RUNTIME
+    )
 
 
 def test_quality_agent_runtime_dispatch_mirrors_canonical_boundary() -> None:
@@ -297,8 +314,7 @@ def test_quality_agent_runtime_dispatch_mirrors_canonical_boundary() -> None:
     assert "docs-only agent product descriptions" in dispatch_words
     assert (
         "product docs paired with serving-path code, runtime configuration, telemetry, "
-        "or concrete incident/runtime evidence"
-        in dispatch_words
+        "or concrete incident/runtime evidence" in dispatch_words
     )
     assert "operator runbooks that describe an actual incident or runtime procedure" in DISPATCH
     assert "deterministic proof, behavior-proof recommendation" in DISPATCH
@@ -306,7 +322,9 @@ def test_quality_agent_runtime_dispatch_mirrors_canonical_boundary() -> None:
 
 
 def test_quality_skill_routes_spec_markdown_to_specdown_report() -> None:
-    markdown_preview = (ROOT / "skills" / "support" / "markdown-preview" / "SKILL.md").read_text(encoding="utf-8")
+    markdown_preview = (ROOT / "skills" / "support" / "markdown-preview" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
     runtime_contract = (
         ROOT / "skills" / "support" / "markdown-preview" / "references" / "runtime-contract.md"
     ).read_text(encoding="utf-8")
@@ -455,9 +473,7 @@ def test_the_scaffold_is_never_the_thing_step_eight_says_to_write_to() -> None:
     """
     step = _workflow_step(QUALITY_SKILL, 8)
 
-    scaffold_clause = next(
-        part for part in step.split(".") if "scaffold payload" in part
-    )
+    scaffold_clause = next(part for part in step.split(".") if "scaffold payload" in part)
     assert "Do NOT" in scaffold_clause, (
         "the clause naming the scaffold's write path must forbid trusting it unconditionally, "
         f"not merely mention it: {scaffold_clause.strip()!r}"

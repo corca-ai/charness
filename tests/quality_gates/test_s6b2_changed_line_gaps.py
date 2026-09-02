@@ -219,8 +219,21 @@ def test_the_standing_gate_arm_reports_a_dominated_command_inside_a_runner(tmp_p
     (hooks / "pre-push").write_text(
         "#!/usr/bin/env bash\n./scripts/run-quality.sh\n", encoding="utf-8"
     )
-    (repo / ".agents" / "command-dominance.yaml").write_text(
-        REGISTRY_YAML + "wrapper_programs:\n  - program: queue_selected\n    skip_args: 1\n",
+    (repo / ".agents" / "quality-gates.yaml").write_text(
+        "schema: charness/quality-gates/v1\n"
+        "phases:\n"
+        "  - id: main\n"
+        "    isolation: concurrent\n"
+        "    fail_fast: false\n"
+        "    gates:\n"
+        "      - label: suite\n"
+        "        command:\n"
+        "          - python3\n"
+        "          - -m\n"
+        "          - pytest\n"
+        "          - -q\n"
+        "          - tests\n"
+        "        lane: standard\n",
         encoding="utf-8",
     )
     report = GATE.evaluate(repo)
@@ -556,44 +569,25 @@ def test_a_finding_carries_the_line_it_was_found_on() -> None:
     assert findings[0].as_payload()["line"] == 3
 
 
-def test_the_wrapped_snippet_ratio_this_repo_documents_is_the_measured_one() -> None:
-    """The false quantity, now asserted instead of asserted about.
+def test_declared_gate_commands_are_the_discovered_runner_commands() -> None:
+    """The standing inventory must expose the declarative rows, not shell text.
 
-    Four surfaces carried "13 of 14 snippets are wrapped". A bounded reviewer
-    counted the tree by hand and refuted it; running the discovery confirms 8
-    wrapped and 6 unwrapped. The figure justifies the whole `wrapper_programs`
-    mechanism, so it is pinned here rather than left as prose that drifts.
+    The old inventory needed a wrapper-program registry to recover queue labels
+    from shell snippets. The gate list already carries both identity and argv, so
+    the source tree should expose one command snippet per declared row with no
+    wrapper heuristic involved.
     """
-    import adapter_lib
-
     discovery = load_path_module(
         "standing_gate_discovery_for_ratio",
         ROOT / "skills" / "public" / "quality" / "scripts" / "standing_gate_discovery_lib.py",
     )
-    registry = DOMINANCE.parse_registry(
-        adapter_lib.load_yaml_file(ROOT / ".agents" / "command-dominance.yaml")
-    )
     snippets = discovery.iter_snippets(discovery.discover_surfaces(ROOT))
-
-    def _is_wrapped(snippet: str) -> bool:
-        """The MECHANISM's notion of wrapped, not a lookalike.
-
-        A round-2 reviewer measured that first-token matching disagrees with the
-        resolver, which strips `VAR=value`, `env`, interpreters, and `bash -c`
-        before consulting wrappers. `env FOO=1 queue_selected "x" ...` is wrapped
-        by the mechanism and unwrapped by a first-token test, so the number being
-        pinned was not the number being justified.
-        """
-        without = DOMINANCE.resolve_invocations(snippet, ())
-        with_wrappers = DOMINANCE.resolve_invocations(snippet, registry.wrappers)
-        return without != with_wrappers
-
-    wrapped = sum(1 for s in snippets if _is_wrapped(s["snippet"]))
-    assert (len(snippets), wrapped) == (16, 10), (
-        "the wrapped/total ratio documented in command_dominance_lib.Wrapper and in "
-        ".agents/command-dominance.yaml has drifted; re-measure BOTH files and this "
-        "assertion together"
-    )
+    rows = UNIVERSE.quality_label_universe.quality_gate_rows(ROOT) or []
+    runner_snippets = [
+        snippet for snippet in snippets if snippet["path"] == "scripts/run-quality.sh"
+    ]
+    assert len(runner_snippets) == len(rows)
+    assert all(snippet["origin"] == "quality-gate-declaration" for snippet in runner_snippets)
 
 
 def test_a_focused_run_with_no_path_target_is_not_dominated() -> None:

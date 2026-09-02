@@ -61,6 +61,8 @@ explicitly the revisit-first items if the commit path starts tempting
 
 ## Classification table
 
+The `timing_layer` field in [.agents/quality-gates.yaml](../.agents/quality-gates.yaml) is now the source for this classification, and R2 will generate the table.
+
 Started as the 2026-06-10 audit and has been appended to continuously since; the heading
 carried that date until 2026-08-11, which read as a closed snapshot and cost a session a
 wrong call about whether editing it was in-bounds. It is a LIVE registry, and the contract

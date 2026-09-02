@@ -108,7 +108,12 @@ def _timing_layer_gates(
                 str(repo_root),
             )
         )
-    if _any_exact(present, "scripts/run-quality.sh", "docs/validator-timing-layers.md"):
+    if _any_exact(
+        present,
+        "scripts/run-quality.sh",
+        ".agents/quality-gates.yaml",
+        "docs/validator-timing-layers.md",
+    ):
         # #368 meta-gate: a new run-quality validator (or a timing-doc edit) must keep
         # the classification table exhaustive, so the shift-left class cannot recur via
         # an unclassified broad-only check. Flips only on these two files.
@@ -239,6 +244,7 @@ def _touches_current_pointer_freshness_surface(paths: list[str]) -> bool:
         "charness-artifacts/release/latest.md",
         "charness-artifacts/capability-catalog/latest.json",
         "scripts/run-quality.sh",
+        ".agents/quality-gates.yaml",
         "scripts/validate_current_pointer_freshness.py",
         "scripts/record_quality_runtime.py",
         "skills/public/quality/scripts/check_runtime_budget.py",

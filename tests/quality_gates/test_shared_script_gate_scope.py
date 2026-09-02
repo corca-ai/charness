@@ -5,14 +5,19 @@ consuming-repo-facing Python) escaped the ruff, py-compile, length,
 and runtime-inheritance gate scopes that already covered
 public and support skill scripts.
 """
+
 from __future__ import annotations
 
 import importlib
 
+import quality_label_universe
+
 from .support import ROOT
 
 CHECK_PYTHON_LENGTHS = importlib.import_module("scripts.check_code_lengths")
-CHECK_PYTHON_RUNTIME_INHERITANCE = importlib.import_module("scripts.check_python_runtime_inheritance")
+CHECK_PYTHON_RUNTIME_INHERITANCE = importlib.import_module(
+    "scripts.check_python_runtime_inheritance"
+)
 
 REPO_ROOT = ROOT
 SHARED_GLOB = "skills/shared/scripts/*.py"
@@ -28,7 +33,7 @@ def test_shared_scripts_in_runtime_inheritance_scope() -> None:
     assert SHARED_GLOB in CHECK_PYTHON_RUNTIME_INHERITANCE.DEFAULT_SCAN_GLOBS
 
 
-LINT_SCRIPT_REL = "scripts/check-python-lint.sh"
+LINT_SCRIPT_REL = "./scripts/check-python-lint.sh"
 
 
 def test_run_quality_ruff_and_py_compile_cover_shared_scripts() -> None:
@@ -40,16 +45,17 @@ def test_run_quality_ruff_and_py_compile_cover_shared_scripts() -> None:
     runner must invoke the owning entrypoint, and that entrypoint must cover the shared
     scripts. Deleting either half restores the gap this module is the regression pin for.
     """
-    text = (REPO_ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
-    ruff_lines = [ln for ln in text.splitlines() if ln.startswith('queue_selected "ruff"')]
-    assert ruff_lines
-    assert all(LINT_SCRIPT_REL in ln for ln in ruff_lines)
+    rows = quality_label_universe.quality_gate_rows(REPO_ROOT) or []
+    ruff_rows = [row for row in rows if row["label"] == "ruff"]
+    assert ruff_rows
+    assert all(LINT_SCRIPT_REL in row["command"] for row in ruff_rows)
 
     lint = (REPO_ROOT / LINT_SCRIPT_REL).read_text(encoding="utf-8")
     assert "skills/shared/scripts" in lint
 
-    py_files_block = text.split("python_files=(", 1)[1].split(")", 1)[0]
-    assert "skills/shared/scripts/*.py" in py_files_block
+    compile_rows = [row for row in rows if row["label"] == "py-compile"]
+    assert compile_rows
+    assert "${python_files[@]}" in compile_rows[0]["command"]
 
 
 def test_ci_invokes_the_lint_entrypoint_rather_than_retyping_its_path_list() -> None:
@@ -62,7 +68,9 @@ def test_ci_invokes_the_lint_entrypoint_rather_than_retyping_its_path_list() -> 
     was found. The workflow's own parity validator could not catch it: the file grants
     itself the exemption, so the parity lane evaluates zero jobs here (D45/S31).
     """
-    workflow = (REPO_ROOT / ".github" / "workflows" / "quality-core.yml").read_text(encoding="utf-8")
+    workflow = (REPO_ROOT / ".github" / "workflows" / "quality-core.yml").read_text(
+        encoding="utf-8"
+    )
 
     assert LINT_SCRIPT_REL in workflow
     # No CI step may spell out a ruff path list again, whatever paths it happens to name.

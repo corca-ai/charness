@@ -142,6 +142,13 @@ def test_quality_runner_modified(module) -> None:
     assert result["confidence"] == "medium"
 
 
+def test_quality_gate_list_modified(module) -> None:
+    result = _observe(module, [("M", ".agents/quality-gates.yaml")])
+    assert result["rule_id"] == "quality-runner-modified"
+    assert result["t_status"] == "quality_runner_modified"
+    assert result["confidence"] == "medium"
+
+
 def test_convention_doc_modified(module) -> None:
     result = _observe(module, [("M", "docs/operating-contract.md")])
     assert result["rule_id"] == "convention-doc-modified"
@@ -157,9 +164,7 @@ def test_skill_or_reference_modified(module) -> None:
 
 
 def test_deferred_decision_ids_come_from_headings(module) -> None:
-    before = module._deferred_decision_ids_from_text(
-        "# Deferred Decisions\n\n## D1 — first\n"
-    )
+    before = module._deferred_decision_ids_from_text("# Deferred Decisions\n\n## D1 — first\n")
     added = module._deferred_decision_ids_from_text(
         "# Deferred Decisions\n\n## D1 — first\n\n## D2 — second\n"
     )
@@ -313,12 +318,12 @@ def test_normal_classification_uses_one_metadata_and_one_diff_call(
     def run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
         calls.append(args)
         if args == metadata_args:
-            stdout = f"{head}\0{first_parent} {second_parent}\0Implement feature\n\nCloses #123\n\0\n"
+            stdout = (
+                f"{head}\0{first_parent} {second_parent}\0Implement feature\n\nCloses #123\n\0\n"
+            )
             return subprocess.CompletedProcess(["git", *args], 0, stdout, "")
         if args == ("diff", "--name-status", f"{first_parent}..{head}"):
-            return subprocess.CompletedProcess(
-                ["git", *args], 0, "M\tsrc/feature.py\n", ""
-            )
+            return subprocess.CompletedProcess(["git", *args], 0, "M\tsrc/feature.py\n", "")
         raise AssertionError(f"unexpected git call: {args}")
 
     monkeypatch.setattr(module, "_run_git", run_git)

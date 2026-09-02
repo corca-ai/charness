@@ -17,6 +17,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import quality_label_universe
 import yaml
 
 from runtime_bootstrap import import_repo_module
@@ -24,7 +25,7 @@ from runtime_bootstrap import import_repo_module
 ROOT = Path(__file__).resolve().parents[1]
 GATE = "scripts/check_docs_graph.py"
 _gate = import_repo_module(__file__, "scripts.check_docs_graph")
-_RUN_QUALITY_SCRIPT = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+_QUALITY_ROWS = quality_label_universe.quality_gate_rows(ROOT) or []
 
 # CAPTURED from awiki 0.5.0, not hand-written. The passing line is the one that
 # matters: it OMITS `orphans`/`islands` entirely, which is what forced the
@@ -750,18 +751,18 @@ def test_every_run_names_what_it_did_not_judge(monkeypatch: pytest.MonkeyPatch) 
 def test_the_not_run_exit_code_is_the_runners_unestablished_byte() -> None:
     # Drift guard: the runner renders UNPROVEN off this exact byte. If they
     # disagree, a not-run reports as a hard failure or, worse, as a pass.
-    runner = _RUN_QUALITY_SCRIPT
-    assert f"UNESTABLISHED_EXIT={_gate.UNESTABLISHED_EXIT}" in runner
-    assert "docs-graph" in runner
-    unestablished_line = next(
-        line for line in runner.splitlines() if line.startswith("UNESTABLISHED_CAPABLE_LABELS=")
+    assert _gate.UNESTABLISHED_EXIT == 3
+    assert any(
+        row["label"] == "docs-graph" and row.get("unestablished_capable") is True
+        for row in _QUALITY_ROWS
     )
-    assert "docs-graph" in unestablished_line
 
 
 def test_the_gate_is_wired_into_the_quality_runner() -> None:
-    runner = _RUN_QUALITY_SCRIPT
-    assert 'queue_selected "docs-graph" python3 scripts/check_docs_graph.py' in runner
+    assert any(
+        row["label"] == "docs-graph" and "scripts/check_docs_graph.py" in row["command"]
+        for row in _QUALITY_ROWS
+    )
 
 
 @pytest.mark.boundary_contract(

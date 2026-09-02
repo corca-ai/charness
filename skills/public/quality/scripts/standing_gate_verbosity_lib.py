@@ -35,7 +35,11 @@ QUIET_FAILURE_TOOLS = (
 
 
 def _quiet_status(findings: list[dict[str, Any]], quiet_state: str = "quiet") -> str:
-    return "not_applicable" if not findings else ("healthy" if all(item["state"] == quiet_state for item in findings) else "weak")
+    return (
+        "not_applicable"
+        if not findings
+        else ("healthy" if all(item["state"] == quiet_state for item in findings) else "weak")
+    )
 
 
 def _is_pytest_runner(snippet: str) -> bool:
@@ -43,7 +47,9 @@ def _is_pytest_runner(snippet: str) -> bool:
 
 
 def _is_quiet_pytest_runner(snippet: str) -> bool:
-    return "run_standing_pytest.py" in snippet or bool(re.search(r"(^|\s)(-q|--quiet)(\s|$)", snippet))
+    return "run_standing_pytest.py" in snippet or bool(
+        re.search(r"(^|\s)(-q|--quiet)(\s|$)", snippet)
+    )
 
 
 def _tool_findings(
@@ -75,14 +81,46 @@ def _tool_findings(
 
 def _runner_axis(snippets: list[dict[str, str]]) -> dict[str, Any]:
     specs = [
-        ("node --test", lambda s: "node" in s and "--test" in s, lambda s: "--test-reporter=dot" in s and "--test-reporter-destination=stdout" in s, "Pin `node --test --test-reporter=dot --test-reporter-destination=stdout` for standing gates."),
-        ("pytest", _is_pytest_runner, _is_quiet_pytest_runner, "Use `pytest -q` for standing-gate runs; add `--tb=short` if traceback bulk dominates."),
-        ("jest", lambda s: bool(re.search(r"\bjest\b", s)), lambda s: "--reporter=dot" in s or "--reporters=dot" in s, "Prefer `jest --reporter=dot` in standing gates."),
-        ("vitest", lambda s: bool(re.search(r"\bvitest\b", s)), lambda s: "--reporter=dot" in s, "Prefer `vitest --reporter=dot` in standing gates."),
-        ("go test", lambda s: bool(re.search(r"\bgo\s+test\b", s)), lambda s: not bool(re.search(r"(^|\s)-v(\s|$)", s)), "Drop `go test -v` from the standing gate unless the extra stream is required."),
-        ("cargo test", lambda s: bool(re.search(r"\bcargo\s+test\b", s)), lambda s: "-- --nocapture" not in s, "Avoid `cargo test -- --nocapture` in the default standing gate."),
+        (
+            "node --test",
+            lambda s: "node" in s and "--test" in s,
+            lambda s: "--test-reporter=dot" in s and "--test-reporter-destination=stdout" in s,
+            "Pin `node --test --test-reporter=dot --test-reporter-destination=stdout` for standing gates.",
+        ),
+        (
+            "pytest",
+            _is_pytest_runner,
+            _is_quiet_pytest_runner,
+            "Use `pytest -q` for standing-gate runs; add `--tb=short` if traceback bulk dominates.",
+        ),
+        (
+            "jest",
+            lambda s: bool(re.search(r"\bjest\b", s)),
+            lambda s: "--reporter=dot" in s or "--reporters=dot" in s,
+            "Prefer `jest --reporter=dot` in standing gates.",
+        ),
+        (
+            "vitest",
+            lambda s: bool(re.search(r"\bvitest\b", s)),
+            lambda s: "--reporter=dot" in s,
+            "Prefer `vitest --reporter=dot` in standing gates.",
+        ),
+        (
+            "go test",
+            lambda s: bool(re.search(r"\bgo\s+test\b", s)),
+            lambda s: not bool(re.search(r"(^|\s)-v(\s|$)", s)),
+            "Drop `go test -v` from the standing gate unless the extra stream is required.",
+        ),
+        (
+            "cargo test",
+            lambda s: bool(re.search(r"\bcargo\s+test\b", s)),
+            lambda s: "-- --nocapture" not in s,
+            "Avoid `cargo test -- --nocapture` in the default standing gate.",
+        ),
     ]
-    findings = _tool_findings(snippets, specs, "test_runner_reporter", lambda _tool, quiet, _item, lowered: quiet(lowered))
+    findings = _tool_findings(
+        snippets, specs, "test_runner_reporter", lambda _tool, quiet, _item, lowered: quiet(lowered)
+    )
     return {"status": _quiet_status(findings), "findings": findings}
 
 
@@ -91,11 +129,35 @@ def _orchestrator_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
     for surface in surfaces:
         if surface["surface_type"] != "lefthook":
             continue
-        if surface["commands"] and all(RUNNER_REF_RE.search(command["snippet"]) for command in surface["commands"]):
-            findings.append({"type": "lefthook_thin_launcher", "path": surface["path"], "surface_type": surface["surface_type"], "state": "quiet", "suggestion": ""})
+        if surface["commands"] and all(
+            RUNNER_REF_RE.search(command["snippet"]) for command in surface["commands"]
+        ):
+            findings.append(
+                {
+                    "type": "lefthook_thin_launcher",
+                    "path": surface["path"],
+                    "surface_type": surface["surface_type"],
+                    "state": "quiet",
+                    "suggestion": "",
+                }
+            )
             continue
-        quiet = not bool(surface["metadata"].get("parallel")) or bool(surface["metadata"].get("output_configured"))
-        findings.append({"type": "lefthook_output_mode" if quiet else "lefthook_parallel_output_unconfigured", "path": surface["path"], "surface_type": surface["surface_type"], "state": "quiet" if quiet else "interleaving_risk", "suggestion": "" if quiet else "Prefer delegating `lefthook` `pre-push` to a repo-owned runner (e.g. `scripts/run-pre-push.sh` or `scripts/run-pre-push.mjs`) that owns quiet-default success output, failure replay, and verbose-on-demand. Configuring `lefthook` grouped output (`output:` / `skip_output:`) is an acceptable fallback when the orchestrator still fans out commands directly."})
+        quiet = not bool(surface["metadata"].get("parallel")) or bool(
+            surface["metadata"].get("output_configured")
+        )
+        findings.append(
+            {
+                "type": "lefthook_output_mode"
+                if quiet
+                else "lefthook_parallel_output_unconfigured",
+                "path": surface["path"],
+                "surface_type": surface["surface_type"],
+                "state": "quiet" if quiet else "interleaving_risk",
+                "suggestion": ""
+                if quiet
+                else "Prefer delegating `lefthook` `pre-push` to a repo-owned runner (e.g. `scripts/run-pre-push.sh` or `scripts/run-pre-push.mjs`) that owns quiet-default success output, failure replay, and verbose-on-demand. Configuring `lefthook` grouped output (`output:` / `skip_output:`) is an acceptable fallback when the orchestrator still fans out commands directly.",
+            }
+        )
     return {"status": _quiet_status(findings), "findings": findings}
 
 
@@ -103,7 +165,10 @@ def _quiet_queue_paths(surfaces: list[dict[str, Any]]) -> set[str]:
     return {
         surface["path"]
         for surface in surfaces
-        if "queue_selected" in surface["text"]
+        if (
+            "queue_selected" in surface["text"]
+            or surface["metadata"].get("quality_gate_declaration")
+        )
         and 'if "$@" >"$log_path" 2>&1' in surface["text"]
         and "print_phase_output" in surface["text"]
     }
@@ -112,16 +177,41 @@ def _quiet_queue_paths(surfaces: list[dict[str, Any]]) -> set[str]:
 def _chatter_axis(surfaces: list[dict[str, Any]], snippets: list[dict[str, str]]) -> dict[str, Any]:
     quiet_queue_paths = _quiet_queue_paths(surfaces)
     specs = [
-        ("pylint", lambda s: bool(re.search(r"\bpylint\b", s)), lambda s: "--score=n" in s or "--score=no" in s or bool(re.search(r"(^|\s)-sn(\s|$)", s)), "Run `pylint` with `-sn --score=n` or equivalent quiet defaults in the standing gate."),
-        ("coverage report", lambda s: "coverage report" in s, lambda s: "--skip-covered" in s or "--skip-empty" in s, "Prefer `coverage report --skip-covered` or another bounded summary in the default gate."),
-        ("specdown", lambda s: bool(re.search(r"(^|&&\s*|\|\|\s*|;\s*|\(\s*|\s)specdown\b", s)), lambda s: bool(re.search(r"(^|\s)(-q|-quiet|--quiet)(\s|$)", s)), "Gate `specdown` behind a quieter default or a repo-owned `VERBOSE=1` escape hatch."),
+        (
+            "pylint",
+            lambda s: bool(re.search(r"\bpylint\b", s)),
+            lambda s: (
+                "--score=n" in s or "--score=no" in s or bool(re.search(r"(^|\s)-sn(\s|$)", s))
+            ),
+            "Run `pylint` with `-sn --score=n` or equivalent quiet defaults in the standing gate.",
+        ),
+        (
+            "coverage report",
+            lambda s: "coverage report" in s,
+            lambda s: "--skip-covered" in s or "--skip-empty" in s,
+            "Prefer `coverage report --skip-covered` or another bounded summary in the default gate.",
+        ),
+        (
+            "specdown",
+            lambda s: bool(re.search(r"(^|&&\s*|\|\|\s*|;\s*|\(\s*|\s)specdown\b", s)),
+            lambda s: bool(re.search(r"(^|\s)(-q|-quiet|--quiet)(\s|$)", s)),
+            "Gate `specdown` behind a quieter default or a repo-owned `VERBOSE=1` escape hatch.",
+        ),
     ]
     findings = _tool_findings(
         snippets,
         specs,
         "per_gate_chatter",
-        lambda tool, quiet, item, lowered: quiet(lowered)
-        or (tool == "specdown" and "queue_selected" in lowered and item["path"] in quiet_queue_paths),
+        lambda tool, quiet, item, lowered: (
+            quiet(lowered)
+            or (
+                tool == "specdown"
+                and (
+                    item.get("origin") == "quality-gate-declaration" or "queue_selected" in lowered
+                )
+                and item["path"] in quiet_queue_paths
+            )
+        ),
     )
     return {"status": _quiet_status(findings), "findings": findings}
 
@@ -132,12 +222,35 @@ def _phase_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
         if surface["surface_type"] not in {"git_hook", "husky_hook", "shell_script"}:
             continue
         text = surface["text"]
-        structured = any(token in text for token in ("elapsed_ms", "format_elapsed", "date +%s%N")) and any(token in text for token in ("summary", "PASS", "FAIL", "print_phase_output"))
+        structured = any(
+            token in text for token in ("elapsed_ms", "format_elapsed", "date +%s%N")
+        ) and any(token in text for token in ("summary", "PASS", "FAIL", "print_phase_output"))
         if structured:
-            findings.append({"type": "phase_level_signal", "path": surface["path"], "surface_type": surface["surface_type"], "state": "structured", "suggestion": ""})
+            findings.append(
+                {
+                    "type": "phase_level_signal",
+                    "path": surface["path"],
+                    "surface_type": surface["surface_type"],
+                    "state": "structured",
+                    "suggestion": "",
+                }
+            )
         elif surface["commands"]:
-            findings.append({"type": "phase_level_signal", "path": surface["path"], "surface_type": surface["surface_type"], "state": "minimal", "suggestion": "Print per-phase labels and elapsed time so success answers which gate ran and failure answers where to look first."})
-    return {"status": "not_applicable" if not findings else ("healthy" if any(item["state"] == "structured" for item in findings) else "weak"), "findings": findings}
+            findings.append(
+                {
+                    "type": "phase_level_signal",
+                    "path": surface["path"],
+                    "surface_type": surface["surface_type"],
+                    "state": "minimal",
+                    "suggestion": "Print per-phase labels and elapsed time so success answers which gate ran and failure answers where to look first.",
+                }
+            )
+    return {
+        "status": "not_applicable"
+        if not findings
+        else ("healthy" if any(item["state"] == "structured" for item in findings) else "weak"),
+        "findings": findings,
+    }
 
 
 def _escape_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
@@ -146,11 +259,32 @@ def _escape_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
         verbose_vars = sorted(set(VERBOSE_VAR_RE.findall(surface["text"])))
         verbose_scripts = sorted(set(surface["metadata"].get("verbose_scripts", [])))
         if verbose_vars or verbose_scripts:
-            findings.append({"type": "escape_hatch", "path": surface["path"], "surface_type": surface["surface_type"], "state": "present", "evidence": ", ".join([*verbose_vars, *verbose_scripts]), "suggestion": ""})
+            findings.append(
+                {
+                    "type": "escape_hatch",
+                    "path": surface["path"],
+                    "surface_type": surface["surface_type"],
+                    "state": "present",
+                    "evidence": ", ".join([*verbose_vars, *verbose_scripts]),
+                    "suggestion": "",
+                }
+            )
     if findings:
         return {"status": "healthy", "findings": findings}
     if any(surface["commands"] for surface in surfaces):
-        return {"status": "missing", "findings": [{"type": "escape_hatch_missing", "path": "", "surface_type": "standing_gate", "state": "missing", "evidence": "", "suggestion": "Keep a verbose-on-demand seam such as `VERBOSE=1`, `CI=1`, or a sibling `*:verbose` script."}]}
+        return {
+            "status": "missing",
+            "findings": [
+                {
+                    "type": "escape_hatch_missing",
+                    "path": "",
+                    "surface_type": "standing_gate",
+                    "state": "missing",
+                    "evidence": "",
+                    "suggestion": "Keep a verbose-on-demand seam such as `VERBOSE=1`, `CI=1`, or a sibling `*:verbose` script.",
+                }
+            ],
+        }
     return {"status": "not_applicable", "findings": []}
 
 
@@ -174,7 +308,9 @@ def _failure_detail_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
                     "surface_type": surface["surface_type"],
                     "tool": tool,
                     "state": "actionable" if actionable else "needs_failure_detail",
-                    "evidence": "failure detail marker present" if has_failure_detail else ("native failure detail kept" if actionable else ""),
+                    "evidence": "failure detail marker present"
+                    if has_failure_detail
+                    else ("native failure detail kept" if actionable else ""),
                     "suggestion": ""
                     if actionable
                     else (
@@ -205,8 +341,21 @@ def inventory(repo_root: Path) -> dict[str, Any]:
         for finding in axis["findings"]:
             finding["axis"] = axis_name
             findings.append(finding)
-    surface_rows = [{"path": surface["path"], "surface_type": surface["surface_type"], "command_count": len(surface["commands"]), "metadata": surface["metadata"]} for surface in surfaces]
-    return {"repo_root": str(repo_root), "surfaces": surface_rows, "axes": axes, "findings": findings}
+    surface_rows = [
+        {
+            "path": surface["path"],
+            "surface_type": surface["surface_type"],
+            "command_count": len(surface["commands"]),
+            "metadata": surface["metadata"],
+        }
+        for surface in surfaces
+    ]
+    return {
+        "repo_root": str(repo_root),
+        "surfaces": surface_rows,
+        "axes": axes,
+        "findings": findings,
+    }
 
 
 def summarize_payload(payload: dict[str, Any], *, sample_limit: int = 10) -> dict[str, Any]:

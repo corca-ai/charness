@@ -140,7 +140,11 @@ def _runtime_budget_intent(adapter: dict, budgeted: dict[str, list[str]]) -> dic
         "errors": [],
         "conditional_non_claims": [],
     }
-    if not labels or "runtime_budget_intent" not in adapter or adapter.get("runtime_budget_intent") is None:
+    if (
+        not labels
+        or "runtime_budget_intent" not in adapter
+        or adapter.get("runtime_budget_intent") is None
+    ):
         return empty
 
     errors: list[str] = []
@@ -149,13 +153,14 @@ def _runtime_budget_intent(adapter: dict, budgeted: dict[str, list[str]]) -> dic
     )
     if normalized is None:
         normalized = {"always": [], "conditional": {}, "external": {}}
-    declared = set(normalized["always"]) | set(normalized["conditional"]) | set(normalized["external"])
+    declared = (
+        set(normalized["always"]) | set(normalized["conditional"]) | set(normalized["external"])
+    )
     missing = sorted(labels - declared)
     extra = sorted(declared - labels)
     if missing:
         errors.append(
-            "runtime_budget_intent does not classify budgeted label(s): "
-            + ", ".join(missing)
+            "runtime_budget_intent does not classify budgeted label(s): " + ", ".join(missing)
         )
     if extra:
         errors.append(
@@ -184,7 +189,8 @@ def _dominance_gate():
     """Cached: `load_path_module` execs a fresh module per call."""
     if "gate" not in _DOMINANCE_GATE_CACHE:
         _DOMINANCE_GATE_CACHE["gate"] = load_path_module(
-            "check_command_dominance_for_universe", REPO_ROOT / "scripts" / "check_command_dominance.py"
+            "check_command_dominance_for_universe",
+            REPO_ROOT / "scripts" / "check_command_dominance.py",
         )
     return _DOMINANCE_GATE_CACHE["gate"]
 
@@ -264,7 +270,9 @@ def _findings_to_unbudgeted(
     return reported
 
 
-def unbudgeted_expensive_commands(repo_root: Path, budgeted_label_set: set[str]) -> list[dict[str, object]]:
+def unbudgeted_expensive_commands(
+    repo_root: Path, budgeted_label_set: set[str]
+) -> list[dict[str, object]]:
     """The direction this gate did not have: universe -> prescription (SC15).
 
     The recorded defect was one-directional. This gate asked "does every budgeted
@@ -331,13 +339,11 @@ def evaluate(repo_root: Path) -> dict[str, object]:
             "unknown_labels": [],
             "checked": 0,
         }
-    # Presence of the runner is not the same as a derivable universe. A repo whose
-    # `run-quality.sh` drives its gates from a list file has zero literal call
-    # sites, so the universe would be the four aggregate labels alone and EVERY
-    # other budget would read as orphaned -- a blocking red whose remedy tells the
-    # operator to delete correct bars. That is the reverted repair's defect one
-    # layer out, so an empty call-site set is "no universe", never "an empty one".
-    if not universe["sources"]["queue_call_sites"]:
+    # A shell reader with no literal call sites cannot reconcile budgets. A
+    # declarative reader is different: its non-empty declaration has already been
+    # validated by `quality_label_universe`, and its rows are the authority even
+    # though the shell is still carrying the old queue during this migration.
+    if universe.get("source") != "data" and not universe["sources"]["queue_call_sites"]:
         return {
             "armed": False,
             "reason": (
@@ -384,9 +390,8 @@ def evaluate(repo_root: Path) -> dict[str, object]:
         "unreachable_by_selected_profile_reason": unreachable_by_selected_profile_reason,
         "checked": len(budgeted),
         "universe_size": len(known),
-        "universe_sources": {
-            name: len(labels) for name, labels in universe["sources"].items()
-        },
+        "source": universe.get("source", "shell"),
+        "universe_sources": {name: len(labels) for name, labels in universe["sources"].items()},
     }
 
 
@@ -434,23 +439,29 @@ def report_payload(report: dict[str, object]) -> dict[str, object]:
     payload["did_not_judge"] = list(NOT_JUDGED)
     intent = report.get("runtime_budget_intent") or {}
     if intent.get("status") == "not-declared":
-        _append_advisory(payload, (
-            "WARN: runtime budget intent is not declared for the budgeted labels; "
-            "conditional execution remains unproven. Add `runtime_budget_intent` "
-            "to the adapter when migrating it."
-        ))
+        _append_advisory(
+            payload,
+            (
+                "WARN: runtime budget intent is not declared for the budgeted labels; "
+                "conditional execution remains unproven. Add `runtime_budget_intent` "
+                "to the adapter when migrating it."
+            ),
+        )
     elif intent.get("status") == "invalid":
         errors = "; ".join(str(error) for error in intent.get("errors", []))
         _append_advisory(payload, f"WARN: runtime budget intent is invalid: {errors}")
     unreachable = report.get("unreachable_by_selected_profile") or []
     if unreachable:
         labels = ", ".join(str(entry.get("label")) for entry in unreachable)
-        _append_advisory(payload, (
-            f"WARN: runtime budget universe: {len(unreachable)} budgeted label(s) "
-            f"are unreachable by selected profile {report.get('selected_runtime_profile')!r} "
-            f"in this run ({labels}); this is profile-scoped, not a claim that they "
-            "never run under another profile."
-        ))
+        _append_advisory(
+            payload,
+            (
+                f"WARN: runtime budget universe: {len(unreachable)} budgeted label(s) "
+                f"are unreachable by selected profile {report.get('selected_runtime_profile')!r} "
+                f"in this run ({labels}); this is profile-scoped, not a claim that they "
+                "never run under another profile."
+            ),
+        )
     unknown = report["unknown_labels"]
     if unknown:
         payload["summary"] = (
@@ -488,13 +499,16 @@ def report_payload(report: dict[str, object]) -> dict[str, object]:
         # implement. Each entry carries its own `basis`; the summary must not
         # collapse the two into one claim.
         no_label = sum(1 for entry in unbudgeted if not entry.get("queue_label"))
-        _append_advisory(payload, (
-            f"WARN: {len(unbudgeted)} registered expensive command(s) are named by no "
-            f"budgeted LABEL ({no_label} carry no queue label at all, "
-            f"{len(unbudgeted) - no_label} carry a label with no budget entry). This is "
-            "not a claim that nothing bounds their runtime; see "
-            "`unbudgeted_expensive_commands`, where each entry states its own basis."
-        ))
+        _append_advisory(
+            payload,
+            (
+                f"WARN: {len(unbudgeted)} registered expensive command(s) are named by no "
+                f"budgeted LABEL ({no_label} carry no queue label at all, "
+                f"{len(unbudgeted) - no_label} carry a label with no budget entry). This is "
+                "not a claim that nothing bounds their runtime; see "
+                "`unbudgeted_expensive_commands`, where each entry states its own basis."
+            ),
+        )
     return payload
 
 

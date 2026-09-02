@@ -8,6 +8,8 @@ import re
 import sys
 from pathlib import Path
 
+import quality_label_universe
+
 
 class ValidationError(Exception):
     pass
@@ -16,9 +18,7 @@ class ValidationError(Exception):
 FRESHNESS_LABEL = "validate-current-pointer-freshness"
 FRESHNESS_SCRIPT = Path("scripts/validate_current_pointer_freshness.py")
 RUN_QUALITY_SCRIPT = Path("scripts/run-quality.sh")
-CURRENT_POINTERS = (
-    Path("charness-artifacts/quality/latest.md"),
-)
+CURRENT_POINTERS = (Path("charness-artifacts/quality/latest.md"),)
 QUALITY_POINTER = Path("charness-artifacts/quality/latest.md")
 RELEASE_POINTER = Path("charness-artifacts/release/latest.md")
 PACKAGING_MANIFEST = Path("packaging/charness.json")
@@ -91,12 +91,28 @@ def read_text(repo_root: Path, relative_path: Path) -> str:
 
 
 def validate_gate_is_queued(repo_root: Path) -> None:
-    run_quality = read_text(repo_root, RUN_QUALITY_SCRIPT)
-    expected_label = f'queue_selected "{FRESHNESS_LABEL}"'
-    expected_script = str(FRESHNESS_SCRIPT)
-    if expected_label not in run_quality or expected_script not in run_quality:
+    try:
+        rows = quality_label_universe.quality_gate_rows(repo_root)
+    except quality_label_universe.UniverseError as error:
+        raise ValidationError(str(error)) from error
+    if rows is not None:
+        queued = any(
+            row.get("label") == FRESHNESS_LABEL and str(FRESHNESS_SCRIPT) in row.get("command", [])
+            for row in rows
+        )
+    else:
+        run_quality = read_text(repo_root, RUN_QUALITY_SCRIPT)
+        expected_label = f'queue_selected "{FRESHNESS_LABEL}"'
+        expected_script = str(FRESHNESS_SCRIPT)
+        queued = expected_label in run_quality and expected_script in run_quality
+        if not queued:
+            raise ValidationError(
+                f"`scripts/run-quality.sh` must queue `{FRESHNESS_LABEL}` via `{FRESHNESS_SCRIPT}`"
+            )
+        return
+    if not queued:
         raise ValidationError(
-            "`scripts/run-quality.sh` must queue "
+            f"`{quality_label_universe.QUALITY_GATES_PATH}` must declare "
             f"`{FRESHNESS_LABEL}` via `{FRESHNESS_SCRIPT}`"
         )
 
@@ -159,9 +175,17 @@ def validate_runtime_smoothing_claim(repo_root: Path) -> None:
         (RUNTIME_RECORDER, recorder, "SMOOTHING_ALPHA_BASE = 0.35"),
         (RUNTIME_RECORDER, recorder, "SMOOTHING_WARMUP_N = 5"),
         (RUNTIME_RECORDER, recorder, '"advisory": True'),
-        (RUNTIME_BUDGET_CHECKER, runtime_budget_sources, 'SMOOTHING_PATH = Path(".charness") / "quality" / "runtime-smoothing.json"'),
+        (
+            RUNTIME_BUDGET_CHECKER,
+            runtime_budget_sources,
+            'SMOOTHING_PATH = Path(".charness") / "quality" / "runtime-smoothing.json"',
+        ),
         (RUNTIME_BUDGET_CHECKER, runtime_budget_sources, "ewma_advisory_elapsed_ms"),
-        (RUNTIME_BUDGET_CHECKER, runtime_budget_sources, "ewma {entry['ewma_advisory_elapsed_ms']:.1f}ms advisory"),
+        (
+            RUNTIME_BUDGET_CHECKER,
+            runtime_budget_sources,
+            "ewma {entry['ewma_advisory_elapsed_ms']:.1f}ms advisory",
+        ),
     )
     for relative_path, text, fragment in required_fragments:
         if fragment not in text:
@@ -222,8 +246,7 @@ def validate_release_version_claim(repo_root: Path) -> None:
     ]
     if stale:
         raise ValidationError(
-            "release pointer version claim is stale:\n"
-            + "\n".join(f"- {item}" for item in stale)
+            "release pointer version claim is stale:\n" + "\n".join(f"- {item}" for item in stale)
         )
 
 
@@ -240,6 +263,7 @@ def _load_catalog_sanitizer(repo_root: Path):
     and the caller falls back to verbatim comparison.
     """
     import importlib.util
+
     candidate = repo_root / "scripts/capability_catalog_sources.py"
     if not candidate.is_file():
         return None, None
@@ -317,7 +341,11 @@ def validate_capability_catalog_integration_claims(repo_root: Path) -> None:
     }
     stale: list[str] = []
     for manifest_path in sorted(integrations_dir.glob("*.json")):
-        if manifest_path.name in {"manifest.schema.json", "dependencies.json", "dependencies.schema.json"}:
+        if manifest_path.name in {
+            "manifest.schema.json",
+            "dependencies.json",
+            "dependencies.schema.json",
+        }:
             continue
         manifest = _load_json(manifest_path)
         relative_path = str(manifest_path.relative_to(repo_root))
@@ -328,13 +356,14 @@ def validate_capability_catalog_integration_claims(repo_root: Path) -> None:
             continue
         for field in ("intent_triggers", "supports_public_skills", "recommendation_role"):
             manifest_value = manifest.get(field, _manifest_default(field))
-            expected = sanitize_value(manifest_value) if sanitize_value is not None else manifest_value
+            expected = (
+                sanitize_value(manifest_value) if sanitize_value is not None else manifest_value
+            )
             if artifact_entry.get(field) != expected:
                 stale.append(f"`{relative_path}` `{field}` differs from `{CAPABILITY_CATALOG}`")
     if stale:
         raise ValidationError(
-            "capability catalog pointer is stale:\n"
-            + "\n".join(f"- {item}" for item in stale)
+            "capability catalog pointer is stale:\n" + "\n".join(f"- {item}" for item in stale)
         )
 
 

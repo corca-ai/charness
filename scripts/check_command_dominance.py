@@ -41,6 +41,7 @@ import sys
 from pathlib import Path
 
 import adapter_lib
+import quality_label_universe
 
 from runtime_bootstrap import load_path_module, repo_root_from_script, skill_script
 from yaml_output import emit_yaml
@@ -118,16 +119,39 @@ def scan_standing_gates(repo_root: Path, registry, dominance, discovery) -> list
         if not command.strip():
             continue
         site = snippet.get("path") or "<unknown>"
-        # The queue LABEL, carried through rather than thrown away. The runtime
-        # budget seam needs it to ask whether a spawned command sits under a bar,
-        # and its first version reconstructed a fake label from the tail of the
-        # site string instead. Two independent bounded reviewers found that.
         context = {"seam": "standing-gate", "origin": snippet.get("origin", "")}
+        # Consumer repos without the declaration retain the historical shell
+        # fallback. The in-tree data branch below carries labels directly, so
+        # this compatibility heuristic is never used for the checked-in gate list.
         label = dominance.wrapper_label(command, registry.wrappers)
         if label:
             context["queue_label"] = label
         finding = dominance.classify_site(
             command, registry, site=site, line=snippet.get("line"), context=context
+        )
+        if finding is not None:
+            findings.append(finding)
+    return findings
+
+
+def scan_declared_gate_commands(repo_root: Path, registry, dominance) -> list:
+    """Classify commands from the declarative rows, preserving their labels."""
+    rows = quality_label_universe.quality_gate_rows(repo_root)
+    if rows is None:
+        return []
+    findings = []
+    for row in rows:
+        command = " ".join(row["command"])
+        context = {
+            "seam": "standing-gate",
+            "origin": "quality-gate-declaration",
+            "queue_label": row["label"],
+        }
+        finding = dominance.classify_site(
+            command,
+            registry,
+            site=f"{quality_label_universe.QUALITY_GATES_PATH}:{row['label']}",
+            context=context,
         )
         if finding is not None:
             findings.append(finding)
@@ -181,17 +205,24 @@ def evaluate(repo_root: Path) -> dict[str, object]:
             + "\n  ".join(adapter_lib.uninterpreted_warnings(uninterpreted))
         )
     registry = dominance.parse_registry(data)
-    discovery = _load_discovery_lib()
-
     findings = scan_config_literals(repo_root, registry, dominance)
-    findings.extend(scan_standing_gates(repo_root, registry, dominance, discovery))
+    if (repo_root / quality_label_universe.QUALITY_GATES_PATH).is_file():
+        try:
+            findings.extend(scan_declared_gate_commands(repo_root, registry, dominance))
+        except quality_label_universe.UniverseError as error:
+            raise dominance.RegistryError(str(error)) from error
+    else:
+        discovery = _load_discovery_lib()
+        findings.extend(scan_standing_gates(repo_root, registry, dominance, discovery))
     blocking = [finding for finding in findings if not finding.exempt]
     return {
         "armed": True,
         "reason": None,
         "registry_rules": len(registry.rules),
         "scanned_sites": {
-            "config_literals": [f"{item['path']}:{item['key']}" for item in registry.config_literals],
+            "config_literals": [
+                f"{item['path']}:{item['key']}" for item in registry.config_literals
+            ],
             "standing_gate_surfaces": True,
         },
         "findings": [finding.as_payload() for finding in findings],
@@ -220,7 +251,9 @@ def report_payload(report: dict[str, object], dominance) -> dict[str, object]:
             "measured reason. An exemption keeps the site in this report."
         )
         return payload
-    summary = "command dominance: no spawned or queued command matches a registered dominated shape."
+    summary = (
+        "command dominance: no spawned or queued command matches a registered dominated shape."
+    )
     if exempt:
         # Riding the WARN marker deliberately: a run whose only findings are
         # exempt is NOT the same as a run with no findings, and `print_phase_output`

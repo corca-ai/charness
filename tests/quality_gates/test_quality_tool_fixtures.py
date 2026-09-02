@@ -8,6 +8,7 @@ characters dropped -- and no gate could see it. So every test here drives a refu
 the live tree deliberately, because a repaired digest that silently re-rots is the failure
 this file exists to catch.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -16,6 +17,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import quality_label_universe
 
 from tests.script_loader import load_script_module
 
@@ -54,14 +56,16 @@ def test_the_quality_runner_queues_this_gate_in_the_default_battery() -> None:
     running. `queue_selected` (not `queue_timed` behind an env opt-in) is the assertion:
     it is what puts the gate in the default battery rather than in a lane an operator
     must ask for."""
-    runner = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
-    expected = (
-        'queue_selected "quality-tool-fixtures" python3 scripts/check_quality_tool_fixtures.py '
-        '--repo-root "$REPO_ROOT"'
-    )
-    assert runner.count(expected) == 1, (
-        "run-quality.sh must queue check_quality_tool_fixtures.py in the default battery"
-    )
+    rows = quality_label_universe.quality_gate_rows(ROOT)
+    matches = [row for row in rows or [] if row["label"] == "quality-tool-fixtures"]
+    assert [row["command"] for row in matches] == [
+        [
+            "python3",
+            "scripts/check_quality_tool_fixtures.py",
+            "--repo-root",
+            "$REPO_ROOT",
+        ]
+    ], "quality-gates.yaml must declare check_quality_tool_fixtures.py"
 
 
 def test_the_checked_in_corpus_passes() -> None:
@@ -95,10 +99,14 @@ def test_a_malformed_digest_is_refused(tmp_path: Path, stream: str) -> None:
     """
     directory = _fixture_dir(tmp_path)
     (directory / "out.txt").write_text("captured\n", encoding="utf-8")
-    _write(directory, "f.json", {
-        f"{stream}_path": "charness-artifacts/quality/fixtures/out.txt",
-        f"{stream}_sha256": EMPTY_SHA256[:62],
-    })
+    _write(
+        directory,
+        "f.json",
+        {
+            f"{stream}_path": "charness-artifacts/quality/fixtures/out.txt",
+            f"{stream}_sha256": EMPTY_SHA256[:62],
+        },
+    )
     result = _run(tmp_path)
     assert result.returncode == 1
     assert f"{stream}_sha256 is not 64 lowercase hex characters" in result.stderr
@@ -123,7 +131,9 @@ def test_a_stream_path_without_a_digest_is_refused(tmp_path: Path, stream: str) 
     "escape",
     ["/etc/hostname", "../../../outside.txt", "charness-artifacts/quality/other.txt"],
 )
-def test_a_stream_path_outside_the_fixture_directory_is_refused(tmp_path: Path, escape: str) -> None:
+def test_a_stream_path_outside_the_fixture_directory_is_refused(
+    tmp_path: Path, escape: str
+) -> None:
     """`repo_root / "/etc/hostname"` is `/etc/hostname`; `../` climbs out. Either would
     let a fixture verify against a file nobody reviewed."""
     directory = _fixture_dir(tmp_path)
@@ -153,10 +163,14 @@ def test_an_empty_stream_needs_no_path(tmp_path: Path) -> None:
     directory = _fixture_dir(tmp_path)
     (directory / "out.txt").write_text("captured\n", encoding="utf-8")
     _write(directory, "empty-stderr.json", {"stderr_sha256": EMPTY_SHA256})
-    _write(directory, "real.json", {
-        "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
-        "stdout_sha256": hashlib.sha256(b"captured\n").hexdigest(),
-    })
+    _write(
+        directory,
+        "real.json",
+        {
+            "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+            "stdout_sha256": hashlib.sha256(b"captured\n").hexdigest(),
+        },
+    )
     assert _run(tmp_path).returncode == 0
 
 
@@ -164,10 +178,14 @@ def test_an_empty_stream_needs_no_path(tmp_path: Path) -> None:
 def test_digest_drift_is_refused(tmp_path: Path, stream: str) -> None:
     directory = _fixture_dir(tmp_path)
     (directory / "out.txt").write_text("captured\n", encoding="utf-8")
-    _write(directory, "f.json", {
-        f"{stream}_path": "charness-artifacts/quality/fixtures/out.txt",
-        f"{stream}_sha256": "b" * 64,
-    })
+    _write(
+        directory,
+        "f.json",
+        {
+            f"{stream}_path": "charness-artifacts/quality/fixtures/out.txt",
+            f"{stream}_sha256": "b" * 64,
+        },
+    )
     result = _run(tmp_path)
     assert result.returncode == 1
     assert f"{stream}_sha256 drift" in result.stderr
@@ -180,10 +198,14 @@ def test_a_nested_fixture_is_not_skipped(tmp_path: Path) -> None:
     (directory / "out.txt").write_text("captured\n", encoding="utf-8")
     nested = directory / "awiki"
     nested.mkdir()
-    _write(nested, "run.json", {
-        "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
-        "stdout_sha256": "c" * 64,
-    })
+    _write(
+        nested,
+        "run.json",
+        {
+            "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+            "stdout_sha256": "c" * 64,
+        },
+    )
     result = _run(tmp_path)
     assert result.returncode == 1
     assert "awiki/run.json" in result.stderr
@@ -191,10 +213,14 @@ def test_a_nested_fixture_is_not_skipped(tmp_path: Path) -> None:
 
 def test_a_missing_stream_file_is_refused(tmp_path: Path) -> None:
     directory = _fixture_dir(tmp_path)
-    _write(directory, "f.json", {
-        "stdout_path": "charness-artifacts/quality/fixtures/gone.txt",
-        "stdout_sha256": "d" * 64,
-    })
+    _write(
+        directory,
+        "f.json",
+        {
+            "stdout_path": "charness-artifacts/quality/fixtures/gone.txt",
+            "stdout_sha256": "d" * 64,
+        },
+    )
     result = _run(tmp_path)
     assert result.returncode == 1
     assert "does not exist" in result.stderr
@@ -223,7 +249,9 @@ def test_containment_is_exercised_in_process(tmp_path: Path) -> None:
     fixtures.mkdir(parents=True)
     inside = fixtures / "out.txt"
     inside.write_text("x\n", encoding="utf-8")
-    (tmp_path / "charness-artifacts" / "quality" / "sibling.txt").write_text("x\n", encoding="utf-8")
+    (tmp_path / "charness-artifacts" / "quality" / "sibling.txt").write_text(
+        "x\n", encoding="utf-8"
+    )
 
     contained = module._contained(tmp_path, "charness-artifacts/quality/fixtures/out.txt")
     assert contained == inside.resolve()
@@ -248,10 +276,14 @@ def test_a_fixture_with_no_digests_is_not_invented_into_a_failure(tmp_path: Path
     """
     directory = _fixture_dir(tmp_path)
     (directory / "out.txt").write_text("captured\n", encoding="utf-8")
-    _write(directory, "pinned.json", {
-        "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
-        "stdout_sha256": hashlib.sha256(b"captured\n").hexdigest(),
-    })
+    _write(
+        directory,
+        "pinned.json",
+        {
+            "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+            "stdout_sha256": hashlib.sha256(b"captured\n").hexdigest(),
+        },
+    )
     _write(directory, "unpinned.json", {})
     result = _run(tmp_path)
     assert result.returncode == 0, result.stderr
@@ -291,11 +323,15 @@ def test_the_success_line_reports_comparisons_not_only_files(tmp_path: Path) -> 
     directory = _fixture_dir(tmp_path)
     (directory / "out.txt").write_text("captured\n", encoding="utf-8")
     digest = hashlib.sha256(b"captured\n").hexdigest()
-    _write(directory, "f.json", {
-        "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
-        "stdout_sha256": digest,
-        "stderr_sha256": EMPTY_SHA256,
-    })
+    _write(
+        directory,
+        "f.json",
+        {
+            "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+            "stdout_sha256": digest,
+            "stderr_sha256": EMPTY_SHA256,
+        },
+    )
     result = _run(tmp_path)
     assert result.returncode == 0, result.stderr
     assert (
@@ -317,13 +353,28 @@ def test_a_refused_comparison_is_never_counted_as_one(tmp_path: Path) -> None:
     directory = _fixture_dir(tmp_path)
     (directory / "out.txt").write_text("captured\n", encoding="utf-8")
     for name, payload in (
-        ("drift.json", {"stdout_path": "charness-artifacts/quality/fixtures/out.txt",
-                        "stdout_sha256": "b" * 64}),
-        ("gone.json", {"stdout_path": "charness-artifacts/quality/fixtures/gone.txt",
-                       "stdout_sha256": "d" * 64}),
+        (
+            "drift.json",
+            {
+                "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+                "stdout_sha256": "b" * 64,
+            },
+        ),
+        (
+            "gone.json",
+            {
+                "stdout_path": "charness-artifacts/quality/fixtures/gone.txt",
+                "stdout_sha256": "d" * 64,
+            },
+        ),
         ("escape.json", {"stdout_path": "/etc/hostname", "stdout_sha256": "a" * 64}),
-        ("bad-digest.json", {"stdout_path": "charness-artifacts/quality/fixtures/out.txt",
-                             "stdout_sha256": EMPTY_SHA256[:62]}),
+        (
+            "bad-digest.json",
+            {
+                "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+                "stdout_sha256": EMPTY_SHA256[:62],
+            },
+        ),
         ("unproven.json", {"stdout_sha256": "a" * 64}),
     ):
         _write(directory, name, payload)
@@ -337,11 +388,15 @@ def test_a_fixture_without_a_final_consumer_can_still_be_recorded_evidence(tmp_p
     # Pins a FILE-backed stream so the corpus floor is satisfied; `final_consumer` is
     # the subject.
     (directory / "out.txt").write_text("captured\n", encoding="utf-8")
-    _write(directory, "f.json", {
-        "final_consumer": None,
-        "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
-        "stdout_sha256": hashlib.sha256(b"captured\n").hexdigest(),
-    })
+    _write(
+        directory,
+        "f.json",
+        {
+            "final_consumer": None,
+            "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+            "stdout_sha256": hashlib.sha256(b"captured\n").hexdigest(),
+        },
+    )
     assert _run(tmp_path).returncode == 0
 
 
@@ -387,11 +442,15 @@ def test_the_summary_separates_digest_checks_from_file_backed_ones(tmp_path: Pat
     """A reader of a green gate must be able to tell how much of it touched disk."""
     directory = _fixture_dir(tmp_path)
     (directory / "out.txt").write_text("captured\n", encoding="utf-8")
-    _write(directory, "f.json", {
-        "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
-        "stdout_sha256": hashlib.sha256(b"captured\n").hexdigest(),
-        "stderr_sha256": EMPTY_SHA256,
-    })
+    _write(
+        directory,
+        "f.json",
+        {
+            "stdout_path": "charness-artifacts/quality/fixtures/out.txt",
+            "stdout_sha256": hashlib.sha256(b"captured\n").hexdigest(),
+            "stderr_sha256": EMPTY_SHA256,
+        },
+    )
     result = _run(tmp_path)
     assert result.returncode == 0, result.stderr
     assert "2 stream digest(s) checked, 1 against checked-in capture file(s)" in result.stdout

@@ -11,12 +11,14 @@ The reachability tests matter for the same reason. This gate was written for the
 issue reporting "a check that passes its own direct-call test while never firing
 on the wired path"; shipping it unqueued would make it the seventh instance.
 """
+
 from __future__ import annotations
 
 import re
 from pathlib import Path
 
 import pytest
+import quality_label_universe
 import yaml
 
 from tests.script_main import load_script_module, run_loaded_script_main
@@ -27,7 +29,7 @@ _gate = load_script_module(
     "scripts.check_closeout_classification_parity",
     ROOT / GATE_REL,
 )
-_RUN_QUALITY = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+_QUALITY_ROWS = quality_label_universe.quality_gate_rows(ROOT) or []
 
 # The value the measurement runs assume. It is deliberately NOT a plausible
 # disposition name a future author might really add, so a real addition can never
@@ -37,7 +39,9 @@ ASSUMED = "__assumed-seventh-disposition__"
 
 def _canonical() -> tuple[str, ...]:
     return tuple(
-        _gate._attr(_gate._load(ROOT, _gate.CANONICAL_REL), _gate.CANONICAL_ATTR, _gate.CANONICAL_REL)
+        _gate._attr(
+            _gate._load(ROOT, _gate.CANONICAL_REL), _gate.CANONICAL_ATTR, _gate.CANONICAL_REL
+        )
     )
 
 
@@ -76,14 +80,12 @@ EXPECTED_SITE_IDS = [
 def test_the_gate_is_queued_in_the_quality_run():
     """#586's shape is a check nobody reaches. An unqueued parity gate is instance seven.
 
-    Matches a LIVE `queue_selected` line: an earlier version asserted only that the
-    filename appeared somewhere in the script, which a commented-out queue line
-    satisfies.
+    Matches the declared gate row so a commented-out shell line cannot satisfy it.
     """
-    assert re.search(
-        r"^queue_selected \"check-closeout-classification-parity\" .*check_closeout_classification_parity\.py",
-        _RUN_QUALITY,
-        re.MULTILINE,
+    assert any(
+        row["label"] == "check-closeout-classification-parity"
+        and "scripts/check_closeout_classification_parity.py" in row["command"]
+        for row in _QUALITY_ROWS
     )
 
 
@@ -158,7 +160,7 @@ def test_a_site_accepting_anything_at_all_fails_rather_than_reading_as_parity():
         "arity": "exact",
         "surface": "nowhere",
         "why": "test",
-        "build": lambda _repo_root, _canonical: (lambda _value: True),
+        "build": lambda _repo_root, _canonical: lambda _value: True,
     }
     original = _gate.SITES
     _gate.SITES = (site,)
@@ -190,7 +192,9 @@ def test_the_gate_carries_no_copy_of_the_vocabulary_it_is_judging():
 def test_a_stale_declared_absence_is_not_run_rather_than_silently_permissive():
     """A declared absence naming a value the vocabulary lost must not keep passing."""
     ledger = _site("closeout-classification-fields")
-    assert _verdict([{**ledger, "absent_by_design": ("question", "retired-disposition")}]) == "not-run"
+    assert (
+        _verdict([{**ledger, "absent_by_design": ("question", "retired-disposition")}]) == "not-run"
+    )
 
 
 @pytest.mark.parametrize("site", _gate.SITES, ids=lambda site: site["id"])
@@ -219,8 +223,10 @@ def test_a_subset_site_may_omit_only_the_absences_it_declared():
     falls through to DEFAULT_FIELDS silently.
     """
     ledger = _site("closeout-classification-fields")
-    assert "question" in ledger["absent_by_design"], "the permitted absences must be declared, not implied"
-    deleted_bug = {**ledger, "build": lambda _r, _c: (lambda v: v in {"feature", "consolidated"})}
+    assert "question" in ledger["absent_by_design"], (
+        "the permitted absences must be declared, not implied"
+    )
+    deleted_bug = {**ledger, "build": lambda _r, _c: lambda v: v in {"feature", "consolidated"}}
     assert _verdict([deleted_bug]) == "fail"
 
 
@@ -281,10 +287,12 @@ def test_assuming_a_classification_the_tree_already_has_is_refused():
 
 def test_the_runner_maps_this_gates_not_run_byte_to_unproven_not_to_a_pass():
     """Repair 7 had no test: reverting the label was invisible to this suite."""
-    labels = re.search(r'^UNESTABLISHED_CAPABLE_LABELS="([^"]*)"', _RUN_QUALITY, re.MULTILINE)
-    assert labels, "the runner no longer declares an unestablished-capable label list"
-    assert "check-closeout-classification-parity" in labels.group(1).split()
-    assert re.search(r"^UNESTABLISHED_EXIT=3\b", _RUN_QUALITY, re.MULTILINE) or _gate.UNESTABLISHED_EXIT == 3
+    assert _gate.UNESTABLISHED_EXIT == 3
+    assert any(
+        row["label"] == "check-closeout-classification-parity"
+        and row.get("unestablished_capable") is True
+        for row in _QUALITY_ROWS
+    )
 
 
 def test_a_site_that_dropped_one_classification_FAILS_rather_than_reporting_not_run():
@@ -311,7 +319,10 @@ def test_a_site_that_dropped_one_classification_FAILS_rather_than_reporting_not_
 def test_a_declared_absence_that_is_no_longer_absent_is_not_a_standing_exemption():
     """Otherwise the declaration silently licenses a later deletion of that row."""
     ledger = _site("closeout-classification-fields")
-    everything_present = {**ledger, "build": lambda _r, _c: (lambda v: v not in _gate.NON_CLASSIFICATIONS)}
+    everything_present = {
+        **ledger,
+        "build": lambda _r, _c: lambda v: v not in _gate.NON_CLASSIFICATIONS,
+    }
     assert _verdict([everything_present]) == "not-run"
 
 

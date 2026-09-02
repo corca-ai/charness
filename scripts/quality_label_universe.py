@@ -252,7 +252,7 @@ def _logical_lines(text: str) -> list[tuple[int, str]]:
     return joined
 
 
-def queue_call_labels(text: str, *, repo_root: Path | None = None) -> list[str]:
+def queue_call_labels(text: str, repo_root: Path | None = None) -> list[str]:
     """Literal labels from `queue_*` call sites outside dispatcher bodies.
 
     First-seen order, de-duplicated. Raises `UniverseError` for a call site whose
@@ -380,11 +380,13 @@ def standing_probe_labels(adapter_text: str) -> list[str]:
 def label_universe(repo_root: Path) -> dict[str, object]:
     """The union of the three sources, with each source reported separately.
 
-    `resolved` is false when the runner is absent -- a consumer repo that installs
-    the quality skill without vendoring `run-quality.sh`. Callers must treat that
-    as "no universe to check against", never as an empty universe: refusing every
-    budget in a repo whose runner this module cannot see would be a blocking false
-    red whose remedy tells the operator to delete correct bars.
+    A present gate declaration resolves the queue even when the legacy runner is
+    absent. Otherwise `resolved` is false when the runner is absent -- a consumer
+    repo that installs the quality skill without vendoring `run-quality.sh`.
+    Callers must treat that as "no universe to check against", never as an empty
+    universe: refusing every budget in a repo whose runner this module cannot see
+    would be a blocking false red whose remedy tells the operator to delete
+    correct bars.
     """
     rows = quality_gate_rows(repo_root)
     if rows is not None:

@@ -48,6 +48,7 @@ def _write_repo(
     *,
     runner: str | None = RUNNER_STUB,
     adapter: str | None = None,
+    quality_gates: str | None = None,
 ) -> Path:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
@@ -56,6 +57,8 @@ def _write_repo(
         (repo / "scripts" / "run-quality.sh").write_text(runner, encoding="utf-8")
     if adapter is not None:
         (repo / ".agents" / "quality-adapter.yaml").write_text(adapter, encoding="utf-8")
+    if quality_gates is not None:
+        (repo / ".agents" / "quality-gates.yaml").write_text(quality_gates, encoding="utf-8")
     return repo
 
 
@@ -78,6 +81,28 @@ def test_universe_reads_every_queue_wrapper_not_only_queue_selected(tmp_path: Pa
     assert "alpha-gate" in sources["queue_call_sites"]
 
 
+def test_universe_prefers_declared_rows_when_the_data_file_is_present(tmp_path: Path) -> None:
+    declaration = (
+        "schema: charness/quality-gates/v1\n"
+        "phases:\n"
+        "  - id: main\n"
+        "    isolation: concurrent\n"
+        "    fail_fast: false\n"
+        "    gates:\n"
+        "      - label: declared-gate\n"
+        "        command:\n"
+        "          - python3\n"
+        "          - declared.py\n"
+        "        lane: standard\n"
+    )
+    repo = _write_repo(tmp_path, quality_gates=declaration)
+    result = _run(UNIVERSE, "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    payload = _payload(result)
+    assert payload["source"] == "data"
+    assert payload["sources"]["queue_call_sites"] == ["declared-gate"]
+
+
 def test_universe_excludes_dispatcher_bodies_but_not_other_functions(
     tmp_path: Path,
 ) -> None:
@@ -90,12 +115,15 @@ def test_universe_excludes_dispatcher_bodies_but_not_other_functions(
     case for the function tracker, and it is what fails if the exclusion is widened
     from "dispatchers" to "any function".
     """
-    runner = RUNNER_STUB + """
+    runner = (
+        RUNNER_STUB
+        + """
 phase_two() {
   queue_selected "inside-a-plain-function" python3 c.py
 }
 phase_two
 """
+    )
     repo = _write_repo(tmp_path, runner=runner)
     result = _run(UNIVERSE, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
@@ -109,10 +137,13 @@ def test_universe_reads_a_label_across_a_line_continuation(tmp_path: Path) -> No
     joined, the label landed on a line whose head was the previous one, so the
     reader either dropped the gate silently or refused a correct file with a
     remedy ("spell the label literally") that did not apply."""
-    runner = RUNNER_STUB + '''
+    runner = (
+        RUNNER_STUB
+        + """
 queue_selected \\
   "wrapped-gate" python3 wrapped.py
-'''
+"""
+    )
     repo = _write_repo(tmp_path, runner=runner)
     result = _run(UNIVERSE, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
@@ -156,9 +187,7 @@ def test_universe_enumerates_all_four_aggregate_labels(tmp_path: Path) -> None:
     can observe more than one. Enumerating the cross-product is what stops the
     other three from reading as renamed."""
     repo = _write_repo(tmp_path)
-    aggregate = _payload(_run(UNIVERSE, "--repo-root", str(repo)))["sources"][
-        "aggregate"
-    ]
+    aggregate = _payload(_run(UNIVERSE, "--repo-root", str(repo)))["sources"]["aggregate"]
     assert sorted(aggregate) == [
         "run-quality-full",
         "run-quality-full-release",
@@ -242,6 +271,24 @@ def test_gate_is_not_armed_when_the_runner_names_no_gate_labels(
     assert _payload(result)["armed"] is False
 
 
+def test_gate_refuses_a_present_but_empty_declaration(tmp_path: Path) -> None:
+    repo = _write_repo(
+        tmp_path,
+        adapter="runtime_budgets:\n  alpha-gate: 1000\n",
+        quality_gates=(
+            "schema: charness/quality-gates/v1\n"
+            "phases:\n"
+            "  - id: main\n"
+            "    isolation: concurrent\n"
+            "    fail_fast: false\n"
+            "    gates:\n"
+        ),
+    )
+    result = _run(GATE, "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "declares zero gates" in result.stderr
+
+
 def test_gate_tolerates_a_profile_without_a_budgets_mapping(tmp_path: Path) -> None:
     adapter = (
         "runtime_budgets:\n"
@@ -305,7 +352,7 @@ def test_gate_does_not_refuse_a_conditional_label_that_never_runs(tmp_path: Path
         "  opt-in-gate: 1000\n"
         "runtime_budget_intent:\n"
         "  conditional:\n"
-        "    opt-in-gate: \"OPT_IN=1\"\n"
+        '    opt-in-gate: "OPT_IN=1"\n'
     )
     repo = _write_repo(tmp_path, adapter=adapter)
     result = _run(GATE, "--repo-root", str(repo))
@@ -359,7 +406,7 @@ def test_gate_rejects_an_intent_label_without_a_budget(tmp_path: Path) -> None:
         "  always:\n"
         "    - alpha-gate\n"
         "  external:\n"
-        "    ghost-gate: \"consumer-owned\"\n"
+        '    ghost-gate: "consumer-owned"\n'
     )
     repo = _write_repo(tmp_path, adapter=adapter)
     result = _run(GATE, "--repo-root", str(repo))
@@ -481,7 +528,9 @@ def test_an_unparseable_adapter_is_a_named_refusal_not_a_traceback(
     for an edit to a block scalar elsewhere in the adapter. Before this reader
     existed, the same adapter defect surfaced as one red gate with an accurate
     message; a repair must not make the diagnostic worse than what it replaced."""
-    repo = _write_repo(tmp_path, adapter="startup_probes:\n  - label: x\n    note: >+\n      bad header\n")
+    repo = _write_repo(
+        tmp_path, adapter="startup_probes:\n  - label: x\n    note: >+\n      bad header\n"
+    )
     result = _run(UNIVERSE, "--repo-root", str(repo), *flags)
     assert result.returncode == 1
     assert "could not be parsed" in result.stderr
@@ -689,7 +738,9 @@ def test_second_direction_status_names_why_it_did_not_run(tmp_path: Path) -> Non
     assert "absent" in status["reason"]
 
 
-def test_unreachable_by_selected_profile_names_a_block_this_run_cannot_select(tmp_path: Path) -> None:
+def test_unreachable_by_selected_profile_names_a_block_this_run_cannot_select(
+    tmp_path: Path,
+) -> None:
     """The module docstring's own example: a profile block nobody on THIS machine
     selects reaches no sample from THIS run. `feasible=false` covers 'never runs
     under any condition'; this is the narrower, honestly computable neighbor --
@@ -730,8 +781,8 @@ def test_malformed_block_classifier_covers_every_shape_it_discriminates() -> Non
     )
     adapter = {
         "runtime_budget_profiles": {
-            "empty-stub": None,                      # tolerated: an empty block
-            "not-a-mapping": ["budgets"],            # malformed: block is not a dict
+            "empty-stub": None,  # tolerated: an empty block
+            "not-a-mapping": ["budgets"],  # malformed: block is not a dict
             "no-budgets-key": {"note": "docs only"},  # tolerated: no budgets key
             "budgets-not-a-mapping": {"budgets": ["x"]},  # malformed: budgets not a dict
             "healthy": {"budgets": {"label": 1.0}},  # fine

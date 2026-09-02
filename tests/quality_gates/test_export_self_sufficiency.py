@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import quality_label_universe
 
 from runtime_bootstrap import import_repo_module
 
@@ -384,8 +385,8 @@ def test_unestablished_exits_3_and_the_runner_knows_that_label(monkeypatch) -> N
 
     assert _gate.main() == _gate.UNESTABLISHED_EXIT == 3
 
-    runner = (ROOT / "scripts/run-quality.sh").read_text(encoding="utf-8")
-    labels = re.search(r'UNESTABLISHED_CAPABLE_LABELS="([^"]+)"', runner).group(1).split()
+    rows = quality_label_universe.quality_gate_rows(ROOT) or []
+    labels = {row["label"] for row in rows if row.get("unestablished_capable") is True}
     assert "check-export-self-sufficiency" in labels
 
 

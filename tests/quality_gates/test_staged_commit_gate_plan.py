@@ -287,6 +287,7 @@ def test_timing_pull_current_pointer_freshness_fires_for_pointer_surfaces() -> N
         "charness-artifacts/release/latest.md",
         "charness-artifacts/capability-catalog/latest.json",
         "scripts/run-quality.sh",
+        ".agents/quality-gates.yaml",
         "scripts/any_quality_pointer_helper.py",
         "scripts/validate_current_pointer_freshness.py",
         "scripts/record_quality_runtime.py",
@@ -358,6 +359,7 @@ def test_timing_layer_completeness_fires_for_run_quality_or_timing_doc_edits_onl
     # #368 meta-gate: flips only when scripts/run-quality.sh or the timing doc
     # changes, so a newly added validator cannot sit unclassified.
     assert "check-timing-layer-completeness" in _labels(["scripts/run-quality.sh"])
+    assert "check-timing-layer-completeness" in _labels([".agents/quality-gates.yaml"])
     assert "check-timing-layer-completeness" in _labels(["docs/validator-timing-layers.md"])
     assert "check-timing-layer-completeness" not in _labels(["scripts/new_helper.py"])
     assert "check-timing-layer-completeness" not in _labels(["docs/usage.md"])

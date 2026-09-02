@@ -4,6 +4,8 @@ import json
 import sys
 from pathlib import Path
 
+import quality_label_universe
+
 from .support import (
     assert_quality_receipt,
     clone_quality_runner_repo,
@@ -85,8 +87,8 @@ def _capture_run_quality_runtime_records(repo: Path) -> Path:
                 'if [[ "${1:-}" == "scripts/record_quality_runtime.py" ]]; then',
                 "  shift",
                 '  label="" elapsed_ms="" status="" timestamp="" batch="" regime="" state_root="" saw_regime=0',
-                "  while [[ \"$#\" -gt 0 ]]; do",
-                "    case \"$1\" in",
+                '  while [[ "$#" -gt 0 ]]; do',
+                '    case "$1" in',
                 "      --batch)",
                 '        [[ "$#" -ge 2 ]] || exit 2',
                 '        batch="$2"',
@@ -124,7 +126,7 @@ def _capture_run_quality_runtime_records(repo: Path) -> Path:
                 # replays them line for line so per-label assertions keep working.
                 '    [[ -r "$batch" ]] || exit 2',
                 '    cat "$batch" >> ' + repr(str(log_path)),
-                '    printf \'%s\\n\' "$state_root" >> ' + repr(str(state_root_path)),
+                "    printf '%s\\n' \"$state_root\" >> " + repr(str(state_root_path)),
                 '    if [[ "$saw_regime" == "1" ]]; then',
                 '      printf \'"%s"\' "$regime" > ' + repr(str(regime_path)),
                 "    else",
@@ -140,12 +142,13 @@ def _capture_run_quality_runtime_records(repo: Path) -> Path:
                 # against the real bar while its per-gate siblings went elsewhere.
                 '  printf \'{"label":"%s","regime":"%s"}\\n\' "$label" "${CHARNESS_RUNTIME_REGIME-<unset>}" >> '
                 + repr(str(aggregate_regime_path)),
-                '  printf \'%s\\n\' "$state_root" >> ' + repr(str(state_root_path)),
+                "  printf '%s\\n' \"$state_root\" >> " + repr(str(state_root_path)),
                 '  [[ "$elapsed_ms" =~ ^-?[0-9]+$ ]] || exit 2',
                 '  if [[ "${QUALITY_RUNTIME_FAIL_AGGREGATE:-}" == "1" && "$label" == run-quality-* ]]; then',
                 "    exit 73",
                 "  fi",
-                '  printf \'{"elapsed_ms":%s,"label":"%s","status":"%s","timestamp":"%s"}\\n\' "$elapsed_ms" "$label" "$status" "$timestamp" >> ' + repr(str(log_path)),
+                '  printf \'{"elapsed_ms":%s,"label":"%s","status":"%s","timestamp":"%s"}\\n\' "$elapsed_ms" "$label" "$status" "$timestamp" >> '
+                + repr(str(log_path)),
                 "  exit 0",
                 "fi",
                 'if [[ "${1:-}" == "-m" && "${2:-}" == "pytest" ]]; then',
@@ -159,7 +162,7 @@ def _capture_run_quality_runtime_records(repo: Path) -> Path:
                 '  echo "quality success output from pytest"',
                 "  exit 0",
                 "fi",
-                f"exec {real_python!r} \"$@\"",
+                f'exec {real_python!r} "$@"',
                 "",
             ]
         ),
@@ -261,15 +264,23 @@ def test_inventory_declaration_gate_runs_after_first_phase_drains(
         "validate-inventory-consumption-declaration",
         "dup-ratchet",
     ]
-    runner = (repo / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
-    declaration_queue = runner.index(
-        'queue_selected "validate-inventory-consumption-declaration"'
+    rows = quality_label_universe.quality_gate_rows(repo) or []
+    phases = quality_label_universe._quality_gate_declaration(repo)["phases"]
+    declaration_phase = next(
+        index
+        for index, phase in enumerate(phases)
+        if any(
+            row["label"] == "validate-inventory-consumption-declaration" for row in phase["gates"]
+        )
     )
-    first_flush = runner.rfind("flush_phase || OVERALL_RC=$?", 0, declaration_queue)
-    second_flush = runner.index("flush_phase || OVERALL_RC=$?", declaration_queue)
-    next_gate = runner.index('queue_selected "dup-ratchet"', declaration_queue)
-    assert first_flush >= 0
-    assert declaration_queue < second_flush < next_gate
+    post_tree_phase = next(
+        index
+        for index, phase in enumerate(phases)
+        if any(row["label"] == "dup-ratchet" for row in phase["gates"])
+    )
+    assert rows
+    assert phases[declaration_phase]["isolation"] == "alone"
+    assert declaration_phase < post_tree_phase
 
 
 def test_inventory_declaration_failure_remains_a_quality_failure(
@@ -529,7 +540,9 @@ def test_explicit_runtime_root_is_threaded_to_all_quality_state_consumers(
     assert budget_argv[budget_argv.index("--state-root") + 1] == str(quality_root)
     state_roots = {
         line
-        for line in (repo / "quality-runtime-state-roots.jsonl").read_text(encoding="utf-8").splitlines()
+        for line in (repo / "quality-runtime-state-roots.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
         if line
     }
     assert state_roots == {str(quality_root)}

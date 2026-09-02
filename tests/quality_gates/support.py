@@ -555,6 +555,11 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
 
     shutil.copy2(ROOT / "scripts" / "run-quality.sh", scripts_dir / "run-quality.sh")
     (scripts_dir / "run-quality.sh").chmod(0o755)
+    (repo / ".agents").mkdir()
+    shutil.copy2(
+        ROOT / ".agents" / "quality-gates.yaml",
+        repo / ".agents" / "quality-gates.yaml",
+    )
     # The runner SOURCES this, so a seeded repo without it fails at line 8 with a
     # missing-file error rather than on runner behavior -- the same "copied rather
     # than stubbed" rule as the Python modules below, for the same reason: a stub
