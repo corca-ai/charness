@@ -20,10 +20,10 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _quality_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.quality_adapter_lib"
+    __file__, "scripts.adapters.quality_adapter_lib"
 )
 _quality_universes = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.quality_universes_lib"
+    __file__, "scripts.adapters.quality_universes_lib"
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))

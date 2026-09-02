@@ -17,8 +17,8 @@ from scripts.adapter_lib import (
     optional_string,
     optional_string_list,
 )
-from scripts.quality_policy_defaults import validate_skill_ergonomics_gate_rules
-from scripts.quality_universes_lib import validate_universes as _validate_universes
+from scripts.adapters.quality_policy_defaults import validate_skill_ergonomics_gate_rules
+from scripts.adapters.quality_universes_lib import validate_universes as _validate_universes
 
 _RESOLVER_DIR = Path(__file__).resolve().parent
 if str(_RESOLVER_DIR) not in sys.path:

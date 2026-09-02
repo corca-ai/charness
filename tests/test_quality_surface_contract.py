@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from scripts.quality_surface_contract import SurfaceContractError, validate_surface_contract_section
+from scripts.adapters.quality_surface_contract import (
+    SurfaceContractError,
+    validate_surface_contract_section,
+)
 
 VALID = [
     "## Surface Contract Review",

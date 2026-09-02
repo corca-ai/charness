@@ -22,7 +22,7 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from scripts.capability_catalog_artifact import persist_catalog
+from scripts.adapters.capability_catalog_artifact import persist_catalog
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
 

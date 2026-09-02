@@ -19,7 +19,7 @@ arm_cli_timeout = _load_skill_runtime_bootstrap().arm_cli_timeout
 
 
 def _repo_root() -> Path:
-    return next(parent for parent in Path(__file__).resolve().parents if (parent / "scripts" / "gates_support" / "announcement_preflight_lib.py").is_file())
+    return next(parent for parent in Path(__file__).resolve().parents if (parent / "scripts" / "announcement_preflight_lib.py").is_file())
 
 
 def main() -> None:
@@ -31,8 +31,8 @@ def main() -> None:
         args = parser.parse_args()
         repo_root = args.repo_root.resolve()
         sys.path.insert(0, str(_repo_root()))
-        from scripts.adapter_version_verdict import unspeakable_version_message
-        from scripts.announcement_adapter_lib import load_announcement_adapter
+        from scripts.adapters.adapter_version_verdict import unspeakable_version_message
+        from scripts.adapters.announcement_adapter_lib import load_announcement_adapter
         from scripts.gates_support.announcement_preflight_lib import preflight_sources
         from scripts.yaml_output import emit_yaml
 

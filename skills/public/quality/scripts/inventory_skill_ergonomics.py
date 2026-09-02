@@ -24,7 +24,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _scripts_skill_markdown_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.core.skill_markdown_lib")
-_scripts_quality_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
+_scripts_quality_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.quality_adapter_lib")
 _scripts_vendored_path_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.core.vendored_path_lib")
 load_quality_adapter = _scripts_quality_adapter_lib_module.load_quality_adapter_permissive
 vendored_prefixes = _scripts_vendored_path_lib_module.vendored_prefixes

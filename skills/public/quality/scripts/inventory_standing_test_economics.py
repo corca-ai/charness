@@ -25,14 +25,18 @@ dump_yaml = _summary_output.dump_yaml
 
 def _load_quality_adapter_permissive(repo_root: Path) -> dict[str, object]:
     lib_root = next(
-        (parent for parent in Path(__file__).resolve().parents if (parent / "scripts" / "quality_adapter_lib.py").is_file()),
+        (
+            parent
+            for parent in Path(__file__).resolve().parents
+            if (parent / "scripts" / "adapters" / "quality_adapter_lib.py").is_file()
+        ),
         None,
     )
     if lib_root is None:
         return {"data": {}, "path": None, "valid": True, "errors": [], "warnings": [], "load_mode": "permissive"}
     if str(lib_root) not in sys.path:
         sys.path.insert(0, str(lib_root))
-    from scripts.quality_adapter_lib import load_quality_adapter_permissive
+    from scripts.adapters.quality_adapter_lib import load_quality_adapter_permissive
 
     return load_quality_adapter_permissive(repo_root)
 

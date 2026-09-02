@@ -20,7 +20,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
 _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.adapter_version_verdict"
+    __file__, "scripts.adapters.adapter_version_verdict"
 )
 _artifact_naming = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.artifact_naming_lib")
 _refresh_current_pointer = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.refresh_current_pointer")

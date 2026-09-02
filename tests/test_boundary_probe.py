@@ -36,7 +36,7 @@ def test_glob_no_match_misses(tmp_path: Path) -> None:
 
 
 def _first_real_surface() -> tuple[str, str]:
-    from scripts import surfaces_lib
+    from scripts.adapters import surfaces_lib
 
     manifest = surfaces_lib.load_surfaces(ROOT, required=False)
     assert manifest, "charness ships .agents/surfaces.json"

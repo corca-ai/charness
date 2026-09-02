@@ -54,7 +54,7 @@ _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resol
 load_adapter = _resolve_adapter_module.load_adapter
 
 _scripts_surfaces_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.surfaces_lib"
+    __file__, "scripts.adapters.surfaces_lib"
 )
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
 load_surfaces = _scripts_surfaces_lib_module.load_surfaces
@@ -96,7 +96,7 @@ def parse_args() -> argparse.Namespace:
 # strings rather than a shared constant module, matching that precedent: three words are
 # not worth a dependency, and the critique/release ADAPTER stack in particular stays
 # unimported here. That rule is about adapter stacks, not about every repo module -- this
-# script already imports `scripts.surfaces_lib` below, and now `scripts.adapter_lib`,
+# script already imports `scripts.adapters.surfaces_lib` below, and now `scripts.adapter_lib`,
 # which is the loader whose own output these states describe.
 STATE_EVALUATED = "evaluated"
 STATE_NOT_CONFIGURED = "not-configured"

@@ -14,7 +14,7 @@ def _load_skill_runtime_bootstrap():
 
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
-_adapter_init = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_init_lib")
+_adapter_init = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.adapter_init_lib")
 run_init_adapter = _adapter_init.run_init_adapter
 
 

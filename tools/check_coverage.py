@@ -47,8 +47,8 @@ executable_statement_lines = _scripts_mutation_line_coverage_lib_module.executab
 # If this is ever narrowed to changed files, scope the floor to changed lines as
 # scripts/mutation/mutation_changed_files_lib.py:classify_changed_line_scope_gap does.
 TARGET_FILES = (
-    Path("scripts/control_plane_lib.py"),
-    Path("scripts/control_plane_lifecycle_lib.py"),
+    Path("scripts/adapters/control_plane_lib.py"),
+    Path("scripts/adapters/control_plane_lifecycle_lib.py"),
     Path("scripts/doctor.py"),
     Path("scripts/install_provenance_lib.py"),
     Path("scripts/install_tools.py"),

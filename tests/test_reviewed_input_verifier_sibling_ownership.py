@@ -124,14 +124,14 @@ def test_the_nonblob_owner_is_the_same_object_whichever_loads_first(monkeypatch)
 
 def test_identity_resolves_the_repository_changed_path_owner(monkeypatch) -> None:
     """A consumer's same-named module cannot replace the changed-path owner."""
-    fake = types.ModuleType("scripts.surfaces_lib")
-    fake.__file__ = "/tmp/consumer/scripts/surfaces_lib.py"
-    monkeypatch.setitem(sys.modules, "scripts.surfaces_lib", fake)
+    fake = types.ModuleType("scripts.adapters.surfaces_lib")
+    fake.__file__ = "/tmp/consumer/scripts/adapters/surfaces_lib.py"
+    monkeypatch.setitem(sys.modules, "scripts.adapters.surfaces_lib", fake)
 
     module = _load_identity_by_path()
 
     assert Path(module._changed_path_owner.__file__).resolve() == (
-        ROOT / "scripts" / "surfaces_lib.py"
+        ROOT / "scripts" / "adapters" / "surfaces_lib.py"
     ).resolve()
 
 

@@ -39,8 +39,8 @@ _CHANGED_LINE_CACHE: dict[tuple[str, str, str, str], frozenset[int]] = {}
 
 
 def resolved_mutation_pool(repo_root: Path, *, gate_label: str = "mutation-sampling"):
-    from scripts.quality_adapter_lib import load_quality_adapter
-    from scripts.quality_universes_lib import (
+    from scripts.adapters.quality_adapter_lib import load_quality_adapter
+    from scripts.adapters.quality_universes_lib import (
         DEFAULT_UNIVERSES,
         matching_files,
         refuse_if_declared_and_empty,

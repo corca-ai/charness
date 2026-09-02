@@ -1,7 +1,7 @@
 # Shared Adapter Bootstrap
 
 > Status: current
-> Source of truth: `<plugin-dir>/scripts/adapter_init_lib.py`.
+> Source of truth: `<plugin-dir>/scripts/adapters/adapter_init_lib.py`.
 
 All skill adapters that use the shared initializer expose the same first-use
 contract. The skill wrapper declares only its own low-risk scaffold fields; the

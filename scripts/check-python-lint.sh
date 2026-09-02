@@ -68,7 +68,7 @@ universe_dir="$(mktemp -d)"
 trap 'rm -rf "$universe_dir" || true' EXIT
 universe_path="$universe_dir/python-files.txt"
 universe_stderr_path="$universe_dir/python-files.stderr"
-if python3 scripts/quality_universes_lib.py \
+if python3 scripts/adapters/quality_universes_lib.py \
   --repo-root "$REPO_ROOT" \
   --key python_sources \
   --gate-label check-python-lint \
@@ -77,7 +77,7 @@ if python3 scripts/quality_universes_lib.py \
 else
   rc=$?
   echo "check-python-lint: Python source universe resolution failed." >&2
-  echo "command: python3 scripts/quality_universes_lib.py --repo-root '$REPO_ROOT' --key python_sources --gate-label check-python-lint --format lines" >&2
+  echo "command: python3 scripts/adapters/quality_universes_lib.py --repo-root '$REPO_ROOT' --key python_sources --gate-label check-python-lint --format lines" >&2
   printf 'exit_code: %s\n' "$rc" >&2
   echo "STDOUT:" >&2
   cat "$universe_path" >&2

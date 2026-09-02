@@ -183,7 +183,7 @@ def test_load_support_capability_schema_uses_override(tmp_path, monkeypatch):
 
     monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(support_root))
 
-    from scripts import control_plane_lib
+    from scripts.adapters import control_plane_lib
 
     schema = control_plane_lib.load_support_capability_schema(public_root)
     assert isinstance(schema, dict)

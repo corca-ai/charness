@@ -43,9 +43,9 @@ listing_dir="$(mktemp -d)"
 trap 'rm -rf "$listing_dir" || true' EXIT
 listing_path="$listing_dir/shell-files.txt"
 listing_stderr_path="$listing_dir/shell-files.stderr"
-universe_script="scripts/quality_universes_lib.py"
+universe_script="scripts/adapters/quality_universes_lib.py"
 if [[ ! -f "$universe_script" ]]; then
-  universe_script="$CHARNESS_GATE_DIR/quality_universes_lib.py"
+  universe_script="$CHARNESS_GATE_DIR/adapters/quality_universes_lib.py"
 fi
 
 if python3 "$universe_script" \

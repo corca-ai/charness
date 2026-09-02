@@ -17,7 +17,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
-_adapter_init_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_init_lib")
+_adapter_init_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.adapter_init_lib")
 base_adapter_items = _adapter_init_lib.base_adapter_items
 run_init_adapter = _adapter_init_lib.run_init_adapter
 resolve_existing_adapter_state = _adapter_init_lib.resolve_existing_adapter_state

@@ -28,7 +28,7 @@ _load_repo_runtime_bootstrap()
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
-_quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+_quality_adapter = import_repo_module(__file__, "scripts.adapters.quality_adapter_lib")
 load_quality_adapter_strict = _quality_adapter.load_quality_adapter_strict
 _mutation_sampling = import_repo_module(__file__, "scripts.mutation.mutation_sampling_lib")
 DEFAULT_SAMPLE_COVERAGE_JSON = _mutation_sampling.DEFAULT_SAMPLE_COVERAGE_JSON

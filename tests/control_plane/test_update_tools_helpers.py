@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import scripts.control_plane_lib as control_plane_lib
+import scripts.adapters.control_plane_lib as control_plane_lib
 from scripts.update_tools import previous_observed_version
 
 

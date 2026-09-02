@@ -2,6 +2,20 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 DEFAULT_COVERAGE_FRAGILE_MARGIN_PP = 1.0
 DEFAULT_SPECDOWN_SMOKE_PATTERNS = [
     r"\bgrep\s+-q\b",
@@ -139,7 +153,7 @@ def default_specdown_smoke_patterns(preset_lineage: list[str]) -> list[str]:
 # the failure is loud -- which is why no separate guard test exists for it. The failure
 # that WAS silent is the import CYCLE these two modules form; see the comment in
 # `quality_policy_merge` and `tests/quality_gates/test_quality_policy_merge_import.py`.
-from scripts.quality_policy_merge import (  # noqa: E402,F401
+from scripts.adapters.quality_policy_merge import (  # noqa: E402,F401
     merge_coverage_floor_policy,
     merge_prompt_asset_policy,
     refilled_policy_subkeys,

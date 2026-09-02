@@ -52,7 +52,7 @@ def _load_retro_resolver_module():
 
 _skills_public_retro_resolve_adapter_module = _load_retro_resolver_module()
 load_retro_adapter = _skills_public_retro_resolve_adapter_module.load_adapter
-_scripts_quality_adapter_lib_module = import_repo_module(__file__, "scripts.quality_adapter_lib")
+_scripts_quality_adapter_lib_module = import_repo_module(__file__, "scripts.adapters.quality_adapter_lib")
 load_quality_adapter_strict = _scripts_quality_adapter_lib_module.load_quality_adapter_strict
 _scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.artifact_naming_lib")
 current_artifact_filename = _scripts_artifact_naming_lib_module.current_artifact_filename

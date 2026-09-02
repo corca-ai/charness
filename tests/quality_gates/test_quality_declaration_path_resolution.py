@@ -105,7 +105,7 @@ def test_preset_reconciliation_distinguishes_applied_missing_and_metadata_only(
     )
     modules = {
         "scripts.validate_presets": LIFECYCLE._repo_module("scripts.validate_presets"),
-        "scripts.quality_bootstrap_detect": SimpleNamespace(
+        "scripts.adapters.quality_bootstrap_detect": SimpleNamespace(
             detect_preset_lineage=lambda _repo: ["strict"]
         ),
     }
@@ -288,7 +288,7 @@ def test_preset_reconciliation_reports_unavailable_contract_shapes(
     )
     modules = {
         "scripts.validate_presets": validator,
-        "scripts.quality_bootstrap_detect": SimpleNamespace(
+        "scripts.adapters.quality_bootstrap_detect": SimpleNamespace(
             detect_preset_lineage=lambda _repo: ["strict"]
         ),
     }
@@ -409,7 +409,7 @@ def test_declaration_lifecycle_treats_non_mapping_yaml_as_empty(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     modules = {
-        "scripts.quality_adapter_lib": SimpleNamespace(
+        "scripts.adapters.quality_adapter_lib": SimpleNamespace(
             load_quality_adapter_permissive=lambda _repo: {
                 "found": True,
                 "valid": True,
@@ -419,7 +419,7 @@ def test_declaration_lifecycle_treats_non_mapping_yaml_as_empty(
             }
         ),
         "scripts.adapter_lib": SimpleNamespace(load_yaml_file=lambda _path: []),
-        "scripts.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: []),
+        "scripts.adapters.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: []),
     }
     monkeypatch.setattr(LIFECYCLE, "_repo_module", modules.__getitem__)
 
@@ -436,7 +436,7 @@ def test_declaration_lifecycle_keeps_catalog_gates_when_no_adapter_exists(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     modules = {
-        "scripts.quality_adapter_lib": SimpleNamespace(
+        "scripts.adapters.quality_adapter_lib": SimpleNamespace(
             load_quality_adapter_permissive=lambda _repo: {
                 "found": False,
                 "valid": True,
@@ -446,7 +446,7 @@ def test_declaration_lifecycle_keeps_catalog_gates_when_no_adapter_exists(
             }
         ),
         "scripts.adapter_lib": SimpleNamespace(load_yaml_file=lambda _path: {}),
-        "scripts.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: []),
+        "scripts.adapters.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: []),
     }
     monkeypatch.setattr(LIFECYCLE, "_repo_module", modules.__getitem__)
     catalog_gates = [{"id": "repo-native", "command": "./scripts/run-quality.sh"}]
@@ -465,7 +465,7 @@ def test_declaration_lifecycle_reports_unavailable_catalog_gates(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     modules = {
-        "scripts.quality_adapter_lib": SimpleNamespace(
+        "scripts.adapters.quality_adapter_lib": SimpleNamespace(
             load_quality_adapter_permissive=lambda _repo: {
                 "found": True,
                 "valid": True,
@@ -475,7 +475,7 @@ def test_declaration_lifecycle_reports_unavailable_catalog_gates(
             }
         ),
         "scripts.adapter_lib": SimpleNamespace(load_yaml_file=lambda _path: {}),
-        "scripts.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: []),
+        "scripts.adapters.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: []),
     }
     unavailable = {"id": "repo-native", "reason": "runner is absent"}
     monkeypatch.setattr(LIFECYCLE, "_repo_module", modules.__getitem__)

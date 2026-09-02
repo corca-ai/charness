@@ -27,8 +27,8 @@ from scripts.yaml_output import emit_yaml  # noqa: E402
 
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
-_quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
-_quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+_quality_universes = import_repo_module(__file__, "scripts.adapters.quality_universes_lib")
+_quality_adapter = import_repo_module(__file__, "scripts.adapters.quality_adapter_lib")
 DEFAULT_UNIVERSES = _quality_universes.DEFAULT_UNIVERSES
 Universe = _quality_universes.Universe
 matching_files = _quality_universes.matching_files

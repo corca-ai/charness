@@ -10,9 +10,23 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-from scripts.core.git_status_snapshot import GitStatusError
-from scripts.core.git_status_snapshot import capture as capture_git_status
-from scripts.core.git_status_snapshot import parse as parse_git_status
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.core.git_status_snapshot import GitStatusError  # noqa: E402
+from scripts.core.git_status_snapshot import capture as capture_git_status  # noqa: E402
+from scripts.core.git_status_snapshot import parse as parse_git_status  # noqa: E402
 
 try:
     from scripts.core.subprocess_guard import run_process

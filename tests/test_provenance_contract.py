@@ -53,7 +53,7 @@ def test_registry_trigger_paths_cover_runtime_dependency_closures() -> None:
             "skills/public/quality/scripts/nose_report_lib.py",
             "skills/public/quality/scripts/nose_fingerprint_lib.py",
             "skills/public/quality/scripts/nose_tool_lib.py",
-            "scripts/quality_adapter_lib.py",
+            "scripts/adapters/quality_adapter_lib.py",
         },
     }
     for contract_id, paths in expected.items():

@@ -201,7 +201,7 @@ def test_sample_rewrites_cosmic_ray_module_path(tmp_path: Path) -> None:
         dedent(
             """\
             [cosmic-ray]
-            module-path = ["scripts/control_plane_lib.py"]
+            module-path = ["scripts/adapters/control_plane_lib.py"]
             timeout = 30.0
             test-command = "python3 -m pytest -q tests"
             """
@@ -227,7 +227,7 @@ def test_sample_script_rewrites_config_and_manifest(tmp_path: Path) -> None:
         dedent(
             """\
             [cosmic-ray]
-            module-path = ["scripts/control_plane_lib.py"]
+            module-path = ["scripts/adapters/control_plane_lib.py"]
             timeout = 30.0
             test-command = "python3 -m pytest -q tests"
             """
@@ -269,7 +269,7 @@ def test_sample_script_rewrites_config_and_manifest(tmp_path: Path) -> None:
     assert "module-path = [\n" in text
     for path in manifest["sample"]:
         assert f'    "{path}",' in text
-    assert "scripts/control_plane_lib.py" not in manifest["sample"]
+    assert "scripts/adapters/control_plane_lib.py" not in manifest["sample"]
 
 
 def test_sample_pool_includes_core_and_skill_helper_python(tmp_path: Path) -> None:

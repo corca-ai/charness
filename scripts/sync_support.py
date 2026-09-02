@@ -11,9 +11,9 @@ from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-lifecycle = import_repo_module(__file__, "scripts.control_plane_lifecycle_lib")
+lifecycle = import_repo_module(__file__, "scripts.adapters.control_plane_lifecycle_lib")
 support_sync = import_repo_module(__file__, "scripts.support_sync_lib")
-_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
+_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.adapters.control_plane_lib")
 load_manifests = _scripts_control_plane_lib_module.load_manifests
 now_iso = _scripts_control_plane_lib_module.now_iso
 upsert_lock = _scripts_control_plane_lib_module.upsert_lock

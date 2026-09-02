@@ -30,7 +30,7 @@ _drafted_notes = SKILL_RUNTIME.load_local_skill_module(__file__, "drafted_releas
 _prepared_stop = SKILL_RUNTIME.load_local_skill_module(__file__, "plan_release_prepared_stop")
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.adapter_version_verdict"
+    __file__, "scripts.adapters.adapter_version_verdict"
 )
 
 load_adapter = _resolve_adapter.load_adapter

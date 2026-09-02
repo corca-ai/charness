@@ -79,9 +79,9 @@ from scripts.review.critique_enforcement_scope import date_from_filename  # noqa
 
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
-_quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+_quality_adapter = import_repo_module(__file__, "scripts.adapters.quality_adapter_lib")
 load_quality_adapter = _quality_adapter.load_quality_adapter
-_quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
+_quality_universes = import_repo_module(__file__, "scripts.adapters.quality_universes_lib")
 DEFAULT_ARTIFACT_ROOTS = _quality_universes.DEFAULT_ARTIFACT_ROOTS
 matching_files = _quality_universes.matching_files
 refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty

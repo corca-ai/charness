@@ -49,7 +49,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _gate_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "changed_line_coverage_gate_lib")
-_quality_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
+_quality_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.quality_adapter_lib")
 _changed_files_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.mutation.mutation_changed_files_lib")
 _sampling_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.mutation.mutation_sampling_lib")
 

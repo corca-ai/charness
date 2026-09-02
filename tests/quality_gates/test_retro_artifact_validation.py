@@ -397,7 +397,8 @@ def test_the_adapter_loader_raises_when_no_resolver_is_reachable(
         "retro_output_dir_lib_no_resolver", ROOT / "scripts" / "retro_output_dir_lib.py"
     )
     verdict = load_script_module(
-        "adapter_version_verdict_no_resolver", ROOT / "scripts" / "adapter_version_verdict.py"
+        "adapter_version_verdict_no_resolver",
+        ROOT / "scripts" / "adapters" / "adapter_version_verdict.py",
     )
     monkeypatch.setattr(output_dir_lib, "_retro_resolver_path", lambda _repo_root: None)
 

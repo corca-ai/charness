@@ -14,6 +14,20 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 try:
     from scripts.runtime_bootstrap import import_repo_module
 except ModuleNotFoundError:  # executed directly from scripts/
@@ -25,7 +39,7 @@ run_process = _subprocess_guard.run_process
 try:
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:  # loaded as a standalone sibling module
-    from yaml_output import emit_yaml
+    from scripts.yaml_output import emit_yaml
 
 UniverseSource = Literal["adapter", "default", "deliberately-absent"]
 
@@ -323,13 +337,13 @@ def _cli_payload(repo_root: Path) -> dict[str, Any]:
 
 
 def _load_quality_adapter(repo_root: Path) -> Any:
-    carrier_root = Path(__file__).resolve().parent.parent
+    carrier_root = Path(__file__).resolve().parents[2]
     if str(carrier_root) not in sys.path:
         sys.path.insert(0, str(carrier_root))
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
     try:
-        from scripts.quality_adapter_lib import load_quality_adapter
+        from scripts.adapters.quality_adapter_lib import load_quality_adapter
     except ModuleNotFoundError:
         # The resolver is also a standalone CLI in source and collapsed plugin
         # exports, where the sibling scripts directory—not the consumer root—is

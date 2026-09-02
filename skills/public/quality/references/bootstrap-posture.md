@@ -144,7 +144,7 @@ rule names, and markers assert nothing about the filesystem and are left alone.
 **A consumer about to premise anything on a resolved value asks first:**
 
 ```python
-from scripts.quality_adapter_lib import is_deliberately_absent
+from scripts.adapters.quality_adapter_lib import is_deliberately_absent
 
 if not is_deliberately_absent(data, "coverage_floor_policy"):
     ...  # safe to treat the resolved paths as this repo's real surface

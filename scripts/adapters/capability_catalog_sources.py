@@ -11,16 +11,37 @@ import re
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.adapter_lib import (  # noqa: E402
     load_yaml_file,
     optional_bool,
     optional_string,
     optional_string_list,
     validate_adapter_version,
 )
-from scripts.control_plane_lib import load_manifests_for_discovery, load_support_capabilities
-from scripts.core.repo_layout import generated_support_dir, public_skills_dir, support_dir
-from scripts.support_sync_lib import support_link_name, support_state_for_manifest
+from scripts.adapters.control_plane_lib import (  # noqa: E402
+    load_manifests_for_discovery,
+    load_support_capabilities,
+)
+from scripts.core.repo_layout import (  # noqa: E402
+    generated_support_dir,
+    public_skills_dir,
+    support_dir,
+)
+from scripts.support_sync_lib import support_link_name, support_state_for_manifest  # noqa: E402
 
 PROVIDER_ID_ALIASES = {"github-gh": "github-worker"}
 TEXT_REPLACEMENTS = {
@@ -243,7 +264,16 @@ def build_inventory(repo_root: Path) -> dict[str, Any]:
     # When the catalog is running from an installed plugin checkout, preserve
     # the old consumer-repo behavior: local surfaces win, while plugin-owned
     # public/support surfaces remain visible as fallback facts.
-    source_root = Path(__file__).resolve().parent.parent
+    source_path = Path(__file__).resolve()
+    source_root = next(
+        (
+            parent
+            for parent in source_path.parents
+            if (parent / "scripts" / "adapter_lib.py").is_file()
+            or (parent / ".codex-plugin" / "plugin.json").is_file()
+        ),
+        source_path.parent.parent,
+    )
     plugin_roots = [source_root / "skills"]
     exported_root = source_root / "plugins" / "charness"
     if (source_root / ".codex-plugin" / "plugin.json").is_file():

@@ -30,7 +30,7 @@ from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
 
-_surfaces_lib = import_repo_module(__file__, "scripts.surfaces_lib")
+_surfaces_lib = import_repo_module(__file__, "scripts.adapters.surfaces_lib")
 _critique_adapter_lib = import_repo_module(__file__, "scripts.review.critique_adapter_lib")
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 

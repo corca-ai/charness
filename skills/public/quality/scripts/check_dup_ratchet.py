@@ -84,7 +84,7 @@ _lineage = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_family_lineage")
 _review = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_review_lib")
 # The three baseline-writing modes and their refusals live together in their own module.
 _rebaseline = SKILL_RUNTIME.load_local_skill_module(__file__, "dup_ratchet_rebaseline")
-_quality_adapter = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
+_quality_adapter = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.quality_adapter_lib")
 
 DEFAULT_REVIEW_REL = "charness-artifacts/quality/dup-review.json"
 DEFAULT_GATE_BASELINE_REL = "charness-artifacts/quality/dup-ratchet-baseline.json"

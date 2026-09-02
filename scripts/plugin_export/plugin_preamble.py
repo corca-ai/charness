@@ -26,7 +26,7 @@ from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
+_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.adapters.control_plane_lib")
 load_capabilities = _scripts_control_plane_lib_module.load_capabilities
 read_lock = _scripts_control_plane_lib_module.read_lock
 

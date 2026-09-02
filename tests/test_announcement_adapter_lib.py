@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.announcement_adapter_lib import (
+from scripts.adapters.announcement_adapter_lib import (
     delivery_contract,
     load_announcement_adapter,
     validate_announcement_adapter_data,

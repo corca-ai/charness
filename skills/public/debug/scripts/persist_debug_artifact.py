@@ -20,7 +20,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
 _version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.adapter_version_verdict"
+    __file__, "scripts.adapters.adapter_version_verdict"
 )
 _persistence = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.debug_persistence_lib"

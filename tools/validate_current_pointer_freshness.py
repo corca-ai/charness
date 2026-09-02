@@ -269,7 +269,7 @@ def _load_catalog_sanitizer(repo_root: Path):
     """
     import importlib.util
 
-    candidate = repo_root / "scripts/capability_catalog_sources.py"
+    candidate = repo_root / "scripts/adapters/capability_catalog_sources.py"
     if not candidate.is_file():
         return None, None
     repo_root_str = str(repo_root)

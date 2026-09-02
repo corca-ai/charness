@@ -27,13 +27,13 @@ import re
 from pathlib import Path
 from typing import Any
 
-from scripts.core.disposition_form import evaluate_residual_disposition_form
-from scripts.proof_semantics_adapter_lib import (
+from scripts.adapters.proof_semantics_adapter_lib import (
     acceptance_map_available,
     level_satisfies,
     load_adapter,
     min_level_for_acceptance,
 )
+from scripts.core.disposition_form import evaluate_residual_disposition_form
 
 _PROOF_LEDGER_HEADING = re.compile(r"(?im)^(#{2,6})[ \t]+Proof[ \t]+Ledger\b[^\n]*$")
 _TABLE_ROW = re.compile(r"^[ \t]*\|(.+)\|[ \t]*$")

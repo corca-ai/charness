@@ -13,12 +13,12 @@ from pathlib import Path
 import yaml
 
 from scripts.adapter_lib import load_yaml
-from scripts.adapter_yaml_render_lib import render_yaml_mapping
-from scripts.quality_adapter_lib import (
+from scripts.adapters.adapter_yaml_render_lib import render_yaml_mapping
+from scripts.adapters.quality_adapter_lib import (
     is_deliberately_absent,
     load_quality_adapter_permissive,
 )
-from scripts.quality_bootstrap_absence import remove_nested_absences
+from scripts.adapters.quality_bootstrap_absence import remove_nested_absences
 
 from .quality_bootstrap_support import _run_quality_bootstrap_adapter, seed_quality_repo
 
@@ -386,7 +386,7 @@ def test_a_fully_specified_block_is_still_preserved_and_claims_nothing(tmp_path:
     """The false-refusal control. An operator who writes every sub-key out gets
     `preserved` and no sub-key claim — otherwise the new status would fire on every
     adapter that spells its policy out, and the word would stop meaning anything."""
-    from scripts.quality_policy_defaults import DEFAULT_COVERAGE_FLOOR_POLICY
+    from scripts.adapters.quality_policy_defaults import DEFAULT_COVERAGE_FLOOR_POLICY
 
     repo = seed_quality_repo(tmp_path)
     block = "\n".join(

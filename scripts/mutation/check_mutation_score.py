@@ -37,6 +37,7 @@ from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
+from scripts.adapters.quality_adapter_lib import load_quality_adapter  # noqa: E402
 from scripts.mutation import (  # noqa: E402
     check_mutation_score_summary_lib as mutation_score_summary,  # noqa: E402
 )
@@ -52,7 +53,6 @@ from scripts.mutation.mutation_sample_manifest_score_lib import (  # noqa: E402
     changed_scope_gap_section_lines,
     sample_manifest_scope_gap_details,
 )
-from scripts.quality_adapter_lib import load_quality_adapter  # noqa: E402
 
 PARTIAL_RUN_COMPLETION_FLOOR = mutation_score_summary.PARTIAL_RUN_COMPLETION_FLOOR
 SURVIVED_DETAIL_LIMIT = mutation_score_summary.SURVIVED_DETAIL_LIMIT

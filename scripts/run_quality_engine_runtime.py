@@ -168,8 +168,8 @@ def coverage_relevant_changes_present(context: RuntimeContext, labels: str) -> b
         )
         return True
     prefixes = {
-        "scripts/control_plane_lib.py",
-        "scripts/control_plane_lifecycle_lib.py",
+        "scripts/adapters/control_plane_lib.py",
+        "scripts/adapters/control_plane_lifecycle_lib.py",
         "scripts/doctor.py",
         "scripts/install_provenance_lib.py",
         "scripts/install_tools.py",
@@ -276,8 +276,8 @@ def _python_files(context: RuntimeContext) -> list[str]:
     adapter; the universes family owns this scope for ruff, check-python-lengths,
     and runtime inheritance too, so the four cannot drift apart again.
     """
-    universes = import_repo_module(__file__, "scripts.quality_universes_lib")
-    adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+    universes = import_repo_module(__file__, "scripts.adapters.quality_universes_lib")
+    adapter = import_repo_module(__file__, "scripts.adapters.quality_adapter_lib")
     payload = adapter.load_quality_adapter(context.repo_root)
     universe = universes.resolve_universe(
         payload, "python_sources", default=universes.DEFAULT_UNIVERSES["python_sources"]

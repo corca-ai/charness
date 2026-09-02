@@ -3,21 +3,41 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.adapter_lib import (  # noqa: E402
     load_yaml_file_report,
     uninterpreted_warnings,
     validate_adapter_version,
 )
-from scripts.quality_bootstrap_absence import load_deliberately_absent, remove_nested_absences
-from scripts.quality_bootstrap_common import classify_command_deferral, merge_unique
-from scripts.quality_bootstrap_detect import (
+from scripts.adapters.quality_bootstrap_absence import (  # noqa: E402
+    load_deliberately_absent,
+    remove_nested_absences,
+)
+from scripts.adapters.quality_bootstrap_common import (  # noqa: E402
+    classify_command_deferral,
+    merge_unique,
+)
+from scripts.adapters.quality_bootstrap_detect import (  # noqa: E402
     detect_concept_paths,
     detect_gate_commands,
     detect_preflight_commands,
     detect_preset_lineage,
     detect_security_commands,
 )
-from scripts.quality_policy_defaults import (
+from scripts.adapters.quality_policy_defaults import (  # noqa: E402
     DEFAULT_COVERAGE_FLOOR_POLICY,
     DEFAULT_COVERAGE_FRAGILE_MARGIN_PP,
     DEFAULT_MUTATION_TESTING,

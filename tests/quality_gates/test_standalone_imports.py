@@ -1,7 +1,7 @@
 """The repo-wide standalone-import check, proven against the REAL cycle.
 
 A guard that only passes on a healthy tree has established nothing. The measured
-instance is `scripts/quality_policy_merge.py`, extracted from
+instance is `scripts/adapters/quality_policy_merge.py`, extracted from
 `quality_policy_defaults.py` on 2026-08-06 with a module-level import in both
 directions: a cycle that resolves in exactly ONE order, invisible to 4979 passing
 tests because every existing importer reached `defaults` first.
@@ -31,7 +31,7 @@ from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.repo_copy import clone_seeded_charness_repo
 
 ROOT = Path(__file__).resolve().parents[2]
-MERGE_REL = "scripts/quality_policy_merge.py"
+MERGE_REL = "scripts/adapters/quality_policy_merge.py"
 pytestmark = pytest.mark.boundary_contract(
     reason="prove standalone-import checks and their module-order probe run in a fresh interpreter"
 )
@@ -44,7 +44,7 @@ def _reconstruct_the_cycle(source: str) -> str:
     hoisted = re.sub(r"[ \t]+from scripts\.quality_policy_defaults import \w+\n", "", source)
     return hoisted.replace(
         "from __future__ import annotations",
-        "from __future__ import annotations\n\nfrom scripts.quality_policy_defaults import "
+        "from __future__ import annotations\n\nfrom scripts.adapters.quality_policy_defaults import "
         + ", ".join(names),
         1,
     )
@@ -176,14 +176,14 @@ def test_the_reconstruction_really_is_the_issues_cycle(repo_with_the_real_cycle:
     """Before asking whether the check catches it, prove the fixture reproduces the
     defect and not something that merely fails to import."""
     result = subprocess.run(
-        [sys.executable, "-c", "import scripts.quality_policy_merge"],
+        [sys.executable, "-c", "import scripts.adapters.quality_policy_merge"],
         cwd=repo_with_the_real_cycle,
         capture_output=True,
         text=True,
     )
 
     assert result.returncode != 0
-    assert "partially initialized module 'scripts.quality_policy_merge'" in result.stderr
+    assert "partially initialized module 'scripts.adapters.quality_policy_merge'" in result.stderr
     assert "circular import" in result.stderr
 
 
@@ -200,8 +200,8 @@ def test_the_check_catches_the_real_cycle(repo_with_the_real_cycle: Path) -> Non
     # the same cycle, so the collateral entries are the defect too. The claim is that
     # the module carrying the defect is named as a CYCLE, with the issue's own text.
     cycles = {item["path"]: item["detail"] for item in payload["cycles"]}
-    assert "scripts/quality_policy_merge.py" in cycles, payload
-    assert "partially initialized" in cycles["scripts/quality_policy_merge.py"]
+    assert "scripts/adapters/quality_policy_merge.py" in cycles, payload
+    assert "partially initialized" in cycles["scripts/adapters/quality_policy_merge.py"]
 
 
 @pytest.mark.release_only
@@ -223,7 +223,7 @@ def test_a_changed_scope_run_catches_the_cycle_in_the_module_it_was_given(
 
     assert result.returncode == 1, result.stdout
     assert [item["path"] for item in _report(result)["cycles"]] == [
-        "scripts/quality_policy_merge.py"
+        "scripts/adapters/quality_policy_merge.py"
     ]
 
 

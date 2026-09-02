@@ -8,8 +8,26 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import ADAPTER_RESULT_STATES, load_yaml_file_report, write_adapter_scaffold
-from scripts.adapter_yaml_render_lib import render_yaml_mapping
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.adapter_lib import (  # noqa: E402
+    ADAPTER_RESULT_STATES,
+    load_yaml_file_report,
+    write_adapter_scaffold,
+)
+from scripts.adapters.adapter_yaml_render_lib import render_yaml_mapping  # noqa: E402
 
 SCHEMA_VERSION = "charness.adapter-bootstrap/v1"
 SUPPORTED_ADAPTER_VERSION = 1

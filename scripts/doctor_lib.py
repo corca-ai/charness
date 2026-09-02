@@ -5,8 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from scripts.control_plane_lib import evaluate_version, read_lock, run_check
-from scripts.control_plane_lifecycle_lib import (
+from scripts.adapters.control_plane_lib import evaluate_version, read_lock, run_check
+from scripts.adapters.control_plane_lifecycle_lib import (
     evaluate_readiness,
     render_repo_followup,
     skipped_healthcheck,

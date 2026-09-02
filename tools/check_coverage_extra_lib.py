@@ -214,10 +214,10 @@ def _exercise_control_plane_runtime_paths(control: object, repo: Path) -> None:
 
 
 def exercise_control_plane_helper_scenarios() -> None:
-    import scripts.control_plane_lib as control
+    import scripts.adapters.control_plane_lib as control
 
     importlib.reload(control)
-    _run_module_top_level("scripts/control_plane_lib.py")
+    _run_module_top_level("scripts/adapters/control_plane_lib.py")
     with tempfile.TemporaryDirectory(prefix="charness-control-plane-extra-") as temp_dir:
         repo = Path(temp_dir)
         tools_dir, capability_path = _seed_control_plane_repo(repo)

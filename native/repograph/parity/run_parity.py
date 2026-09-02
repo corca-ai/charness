@@ -40,7 +40,7 @@ def load_owners(repo_root: Path) -> Any:
     """
 
     sys.path.insert(0, str(repo_root))
-    return importlib.import_module("scripts.surfaces_lib")
+    return importlib.import_module("scripts.adapters.surfaces_lib")
 
 
 def rust_binary(repo_root: Path) -> Path:
@@ -110,7 +110,7 @@ def whole_repo_surface(owner: Any, root: Path, binary: Path) -> dict[str, Any]:
     sample = [
         "README.md",
         "AGENTS.md",
-        "scripts/surfaces_lib.py",
+        "scripts/adapters/surfaces_lib.py",
         "docs/index.md",
     ]
     python_manifest = owner.load_surfaces(root)

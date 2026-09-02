@@ -34,8 +34,7 @@ def exported_plugin_tree(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """
     output_root = tmp_path_factory.mktemp("quality-plugin-export")
     export_plugin = load_script_module(
-        "tests.quality_gates.support_export_plugin",
-        ROOT / "scripts" / "plugin_export" / "export_plugin.py",
+        "tests.quality_gates.support_export_plugin", ROOT / "scripts" / "export_plugin.py"
     )
     result = run_loaded_script_main(
         "export_plugin.py",
@@ -49,8 +48,6 @@ def exported_plugin_tree(tmp_path_factory: pytest.TempPathFactory) -> Path:
     )
     assert result.returncode == 0, result.stderr
     return output_root / "plugins" / "charness"
-
-
 EVAL_REGISTRY = load_script_module(
     "tests.quality_gates.support_eval_registry", ROOT / "tools" / "eval_registry.py"
 )
@@ -60,7 +57,7 @@ ADAPTER_LIB = load_script_module("adapter_lib", ADAPTER_LIB_PATH)
 
 # The YAML emitter now lives beside the parser rather than inside it. Round-trip tests
 # need both halves, so both are loaded here instead of one re-exporting the other.
-ADAPTER_RENDER_LIB_PATH = ROOT / "scripts" / "adapter_yaml_render_lib.py"
+ADAPTER_RENDER_LIB_PATH = ROOT / "scripts" / "adapters" / "adapter_yaml_render_lib.py"
 ADAPTER_RENDER_LIB = load_script_module("adapter_yaml_render_lib", ADAPTER_RENDER_LIB_PATH)
 
 
@@ -330,7 +327,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-presets", "validate_presets.py"),
     ("validate-adapters", "validate_adapters.py"),
     ("validate-integrations", "validate_integrations.py"),
-    ("validate-packaging", "plugin_export/validate_packaging.py"),
+    ("validate-packaging", "validate_packaging.py"),
     ("validate-packaging-committed", "validate_packaging_committed.py"),
     ("validate-debug-artifact", "validate_debug_artifact.py"),
     ("validate-debug-seam-index", "build_debug_seam_risk_index.py"),
@@ -374,9 +371,9 @@ QUALITY_PYTHON_STUBS = (
     ("check-artifact-referents", "check_artifact_referents.py"),
     ("check-references-link-inventory", "check_references_link_inventory.py"),
     ("check-seed-fixture-budget", "check_seed_fixture_budget.py"),
-    ("check-supply-chain", "plugin_export/check_supply_chain.py"),
+    ("check-supply-chain", "check_supply_chain.py"),
     ("check-github-actions", "check_github_actions.py"),
-    ("check-supply-chain-online", "plugin_export/check_supply_chain_online.py"),
+    ("check-supply-chain-online", "check_supply_chain_online.py"),
     ("check-coverage", "check_coverage.py"),
     ("check-test-completeness", "check_test_completeness.py"),
     ("check-test-production-ratio", "check_test_production_ratio.py"),
@@ -490,9 +487,7 @@ def quality_shell_stub(label: str) -> str:
 
 def seed_quality_python_stubs(target_dir: Path, stubs: tuple[tuple[str, str], ...]) -> None:
     for label, filename in stubs:
-        target_path = target_dir / filename
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        write_executable(target_path, quality_python_stub(label))
+        write_executable(target_dir / filename, quality_python_stub(label))
 
 
 def seed_quality_shell_stubs(target_dir: Path) -> None:
@@ -635,7 +630,6 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     bin_dir = repo / "bin"
     quality_scripts_dir = repo / "skills" / "public" / "quality" / "scripts"
     scripts_dir.mkdir(parents=True)
-    (scripts_dir / "gates_support").mkdir()
     tools_dir.mkdir()
     hooks_dir.mkdir()
     bin_dir.mkdir()
@@ -663,10 +657,10 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     shutil.copy2(ROOT / "scripts" / "proof_receipt.py", scripts_dir / "proof_receipt.py")
     (scripts_dir / "proof_receipt.py").chmod(0o755)
     shutil.copy2(
-        ROOT / "scripts" / "gates_support" / "run_standing_pytest.py",
-        scripts_dir / "gates_support" / "run_standing_pytest.py",
+        ROOT / "scripts" / "run_standing_pytest.py",
+        scripts_dir / "run_standing_pytest.py",
     )
-    (scripts_dir / "gates_support" / "run_standing_pytest.py").chmod(0o755)
+    (scripts_dir / "run_standing_pytest.py").chmod(0o755)
     # Copied rather than stubbed: the runner reads it at startup to build the label
     # universe it asserts every queued label against (#546). A stub returning nothing
     # would disable that assertion in every runner test -- the harness would then
@@ -682,12 +676,21 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     # rather than stubbed BECAUSE a stub is exactly the wrong repair here -- the
     # runner would fall back to an unmonitored child and the harness would keep
     # passing over the untracked process tree this slice exists to fix.
-    support_names = {
-        "standing_pytest_basetemp.py",
-        "standing_pytest_run_record.py",
-        "standing_pytest_environment.py",
-        "run_standing_pytest.py",
+    adapter_names = {
+        "adapter_yaml_parse.py",
+        "quality_adapter_lib.py",
+        "quality_universes_lib.py",
+        "quality_bootstrap_absence.py",
+        "quality_bootstrap_lib.py",
+        "quality_bootstrap_common.py",
+        "quality_bootstrap_detect.py",
+        "quality_dup_ratchet_policy.py",
+        "quality_policy_defaults.py",
+        "quality_policy_merge.py",
     }
+    adapter_dir = scripts_dir / "adapters"
+    adapter_dir.mkdir()
+    shutil.copy2(ROOT / "scripts" / "adapters" / "__init__.py", adapter_dir / "__init__.py")
     for real_name in (
         "quality_label_universe.py",
         "runtime_bootstrap.py",
@@ -730,15 +733,8 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         "inventory_nose_clones_unavailable.py",
         "release_changed_line_coverage_unavailable.py",
     ):
-        if real_name == "subprocess_guard.py":
-            source = ROOT / "scripts" / "core" / real_name
-            destination = scripts_dir / "core" / real_name
-        elif real_name in support_names:
-            source = ROOT / "scripts" / "gates_support" / real_name
-            destination = scripts_dir / "gates_support" / real_name
-        else:
-            source = ROOT / "scripts" / real_name
-            destination = scripts_dir / real_name
+        source = ROOT / "scripts" / ("adapters" if real_name in adapter_names else "") / real_name
+        destination = scripts_dir / ("adapters" if real_name in adapter_names else "") / real_name
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
         destination.chmod(0o755)
@@ -749,12 +745,11 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         )
     # Copied rather than stubbed: the runner's specdown step calls it for real, and a
     # stub would let the runner keep passing if the redirect it produces ever broke.
-    specdown_config = scripts_dir / "plugin_export" / "specdown_ephemeral_config.py"
-    specdown_config.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(
-        ROOT / "scripts" / "plugin_export" / "specdown_ephemeral_config.py", specdown_config
+        ROOT / "scripts" / "specdown_ephemeral_config.py",
+        scripts_dir / "specdown_ephemeral_config.py",
     )
-    specdown_config.chmod(0o755)
+    (scripts_dir / "specdown_ephemeral_config.py").chmod(0o755)
     (repo / "specdown.json").write_text(
         json.dumps(
             {

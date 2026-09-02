@@ -7,7 +7,7 @@ from pathlib import Path
 import yaml
 
 import scripts.sync_support as sync_support_module
-from scripts.control_plane_lib import load_capabilities
+from scripts.adapters.control_plane_lib import load_capabilities
 from scripts.doctor import inspect_manifest
 from scripts.sync_support import sync_one
 from scripts.update_tools import _version_transition_changed, update_one

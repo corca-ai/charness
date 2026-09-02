@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 _MUTATION_SOURCES = (
     "charness",
     "scripts/review/adversarial_evidence.py",
-    "scripts/capability_catalog_resolver.py",
+    "scripts/adapters/capability_catalog_resolver.py",
     "scripts/review/critique_packet_lib.py",
     "scripts/review/reviewed_input_identity.py",
     "scripts/staged_commit_gate_plan_helpers.py",

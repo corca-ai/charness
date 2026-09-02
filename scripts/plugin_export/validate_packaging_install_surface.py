@@ -160,22 +160,22 @@ def validate_materialized_plugin_export(
         # own entry for the same reason. Joined the list when the parser moved out.
         require_file(
             plugin_root / "scripts" / "adapter_yaml_parse.py",
-            "materialized_plugin_export.scripts.adapter_yaml_parse",
+            "materialized_plugin_export.scripts.adapters.adapter_yaml_parse",
         )
         # adapter_init_lib imports this at module level, so an installed plugin missing it
         # fails at import, not at first render. It joined the list when the YAML emitter
         # moved out of adapter_lib.
         require_file(
             plugin_root / "scripts" / "adapter_yaml_render_lib.py",
-            "materialized_plugin_export.scripts.adapter_yaml_render_lib",
+            "materialized_plugin_export.scripts.adapters.adapter_yaml_render_lib",
         )
         require_file(
             plugin_root / "scripts" / "adapter_init_lib.py",
-            "materialized_plugin_export.scripts.adapter_init_lib",
+            "materialized_plugin_export.scripts.adapters.adapter_init_lib",
         )
         require_file(
             plugin_root / "scripts" / "control_plane_lib.py",
-            "materialized_plugin_export.scripts.control_plane_lib",
+            "materialized_plugin_export.scripts.adapters.control_plane_lib",
         )
     validate_materialized_plugin_export_matches_generated(root, plugin_root, data)
 

@@ -368,8 +368,8 @@ def quality_setup_snapshot(repo_root: Path) -> dict[str, object]:
         "verify": "python3 $SKILL_DIR/../quality/scripts/plan_quality_run.py --repo-root . --detail",
     }
     try:
-        from scripts.quality_adapter_lib import load_quality_adapter
-        from scripts.quality_bootstrap_lib import build_bootstrap_state
+        from scripts.adapters.quality_adapter_lib import load_quality_adapter
+        from scripts.adapters.quality_bootstrap_lib import build_bootstrap_state
 
         resolved = load_quality_adapter(repo_root)
         state, field_statuses, deferred_setup = build_bootstrap_state(repo_root)

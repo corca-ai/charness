@@ -6,7 +6,7 @@ test suite happens to use, and the suite cannot observe any other order. That is
 gap in the tests; it is a property a test suite structurally cannot measure. The whole
 suite imports everything exactly once, in one order, as a side effect of collection.
 
-The measured instance: `scripts/quality_policy_merge.py` was extracted from
+The measured instance: `scripts/adapters/quality_policy_merge.py` was extracted from
 `quality_policy_defaults.py` and the two referenced each other at module level. The
 cycle resolved in exactly ONE order, every existing importer reached `defaults` first,
 and **4979 tests passed with a module that could not be imported on its own**. It was
@@ -253,7 +253,7 @@ def probe_module(repo_root: Path, target: dict, *, timeout: int = 60) -> dict:
         if _is_cycle(stderr) or not _is_wrong_shape(stderr, path):
             # STOP unless the failure is the one wrong-shape signal the fallback exists
             # for. Measured twice: with the fallback unguarded the check reported `ok` for
-            # `--changed scripts/quality_policy_merge.py` against the exact reconstructed
+            # `--changed scripts/adapters/quality_policy_merge.py` against the exact reconstructed
             # cycle from the issue -- the pre-push lane clearing the one module carrying
             # the defect the check was built for. Guarding it on `_is_cycle` alone was
             # still too narrow, because a module that catches ImportError can turn a cycle

@@ -141,7 +141,7 @@ def _without_output_path(stdout: str, repo_root: Path, output: Path | None) -> s
 
 def snapshot(repo_root: Path, *, output: Path | None = None) -> dict[str, object]:
     generic_command = _python_command(
-        "scripts/quality_universes_lib.py", "--repo-root", ".", "--files"
+        "scripts/adapters/quality_universes_lib.py", "--repo-root", ".", "--files"
     )
     commands: list[tuple[str, Sequence[str] | str]] = [
         ("quality_universes", generic_command),

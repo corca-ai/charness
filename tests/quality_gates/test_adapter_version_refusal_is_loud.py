@@ -33,7 +33,7 @@ from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ADAPTER_LIB, ROOT
 
-VERDICT = load_script_module("adapter_version_verdict", ROOT / "scripts/adapter_version_verdict.py")
+VERDICT = load_script_module("adapter_version_verdict", ROOT / "scripts/adapters/adapter_version_verdict.py")
 
 
 class _Raised:
@@ -261,7 +261,7 @@ def test_a_renamed_version_field_is_the_predicate_s_pinned_blind_spot() -> None:
     assert errors == ["schema_version must be 1"], errors
     assert VERDICT.version_refused(errors) is False, (
         "the renamed-field blind spot closed; update the comment in "
-        "scripts/adapter_version_verdict.py and this test together"
+        "scripts/adapters/adapter_version_verdict.py and this test together"
     )
 
 

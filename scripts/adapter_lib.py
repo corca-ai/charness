@@ -15,11 +15,11 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
-_YAML_PATH = Path(__file__).resolve().parent / "adapter_yaml_parse.py"
+_YAML_PATH = Path(__file__).resolve().parent / "adapters" / "adapter_yaml_parse.py"
 
 
 def _load_yaml_module(path: Path):
-    """Load the parser beside this file, once per PATH, and fail clean.
+    """Load the parser from the adapter package, once per PATH, and fail clean.
 
     A FUNCTION rather than inline module-level code so the failure arm is reachable from a
     test against THIS file. Written inline first, its `except` arm was uncovered by
@@ -33,7 +33,7 @@ def _load_yaml_module(path: Path):
     different tree gets its own, which is what it should get.
 
     NOT one instance per PROCESS, and a test written to claim that found the difference:
-    `from scripts import adapter_yaml_parse` produces a second module object beside this
+    `from scripts.adapters import adapter_yaml_parse` produces a second module object beside this
     one, so two `_UNINTERPRETED_SINK` ContextVars can exist at once. That is harmless
     because arming and recording are CO-LOCATED -- `load_yaml_report` and `_parse_block`
     are always the same instance's -- so no caller can arm one sink and record into the

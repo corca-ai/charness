@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from scripts.adapters.surfaces_lib import load_surfaces, match_surfaces
 from scripts.staged_commit_gate_plan import (
     FAST_SURFACE_VERIFY_COMMANDS,
     GateCommand,
@@ -15,7 +16,6 @@ from scripts.staged_commit_gate_plan import (
     staged_commit_gate_plan,
 )
 from scripts.staged_commit_gate_plan_helpers import present_tools_gate
-from scripts.surfaces_lib import load_surfaces, match_surfaces
 from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.quality_gates.repo_shapes import install_committed_repo
 
@@ -337,7 +337,7 @@ def test_timing_pull_current_pointer_freshness_fires_for_pointer_surfaces() -> N
         "scripts/gates_support/record_quality_runtime.py",
         "skills/public/quality/scripts/check_runtime_budget.py",
         "skills/public/quality/scripts/runtime_budget_lib.py",
-        "scripts/capability_catalog_sources.py",
+        "scripts/adapters/capability_catalog_sources.py",
         "packaging/charness.json",
         "plugins/charness/.codex-plugin/plugin.json",
         "plugins/charness/.claude-plugin/plugin.json",

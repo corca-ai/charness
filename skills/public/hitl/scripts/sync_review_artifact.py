@@ -25,7 +25,7 @@ _current_pointer_writer = SKILL_RUNTIME.load_repo_module_from_skill_script(__fil
 _render_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").render_yaml
 load_adapter = _resolve_adapter.load_adapter
 _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.adapter_version_verdict"
+    __file__, "scripts.adapters.adapter_version_verdict"
 )
 write_current_pointer_text = _current_pointer_writer.write_current_pointer_text
 

@@ -256,7 +256,7 @@ def verify_source_quote(
     this docstring crediting itself with `#528`. It is NOT `#528`'s countermeasure --
     the base/HEAD arm rule is, per the goal's own refutation table. Walk `#528` through
     this check and it does not fire: the vocabulary is defined in a docstring in
-    `scripts/quality_bootstrap_absence.py` carrying the mapping shape verbatim, so the
+    `scripts/adapters/quality_bootstrap_absence.py` carrying the mapping shape verbatim, so the
     author quotes those real lines into `Source text:` and writes the invented
     list-shaped YAML into `Stimulus:`, and nothing here compares the two. A correct
     quote paired with a contradicting stimulus is `verified`.

@@ -20,7 +20,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
-_control_plane_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.control_plane_lib")
+_control_plane_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.control_plane_lib")
 load_manifests_for_discovery = _control_plane_lib.load_manifests_for_discovery
 dependencies_path = _control_plane_lib.dependencies_path
 dependencies_schema_path = _control_plane_lib.dependencies_schema_path

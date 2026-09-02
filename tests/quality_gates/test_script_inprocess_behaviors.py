@@ -6,7 +6,7 @@ from pathlib import Path
 
 import yaml
 
-from scripts import capability_catalog as CAPABILITY_CATALOG
+from scripts.adapters import capability_catalog as CAPABILITY_CATALOG
 from scripts.gates_support.operator_acceptance_lib import (
     SHARED_START_CANDIDATES,
     synthesize_operator_acceptance,

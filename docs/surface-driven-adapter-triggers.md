@@ -50,7 +50,7 @@ contract**, not a normal non-match. The runtime must distinguish the two:
   `unresolved_trigger_surfaces: [<unresolved ids>]`, JSON on stderr, exit `1`.
 
 This is enforced by `resolve_trigger_surfaces` in
-[scripts/surfaces_lib.py](../scripts/surfaces_lib.py), which returns
+[scripts/adapters/surfaces_lib.py](../scripts/adapters/surfaces_lib.py), which returns
 `{"declared": [...], "unresolved": [...]}`. Call sites must bail with the
 broken-config payload before doing any change-path matching.
 
@@ -91,7 +91,7 @@ When you add or change a trigger consumer:
 - subscribe to surface ids via the consumer's adapter field; reserve
   raw-glob fields for narrow exceptions
 - resolve configured ids via `resolve_trigger_surfaces` in
-  [scripts/surfaces_lib.py](../scripts/surfaces_lib.py) and emit the
+  [scripts/adapters/surfaces_lib.py](../scripts/adapters/surfaces_lib.py) and emit the
   broken-config payload before path matching when `unresolved` is non-empty
 - treat `--paths` with zero values as explicit empty changeset
 - land all four fixtures from the shape above; do not skip the
@@ -99,6 +99,6 @@ When you add or change a trigger consumer:
 
 ## References
 
-- [scripts/surfaces_lib.py](../scripts/surfaces_lib.py) — `resolve_trigger_surfaces` and `match_surfaces`
+- [scripts/adapters/surfaces_lib.py](../scripts/adapters/surfaces_lib.py) — `resolve_trigger_surfaces` and `match_surfaces`
 - [skills/public/retro/scripts/check_auto_trigger.py](../skills/public/retro/scripts/check_auto_trigger.py) — the auto-retro trigger probe and its `state`/exit contract
 - [tests/quality_gates/test_retro_auto_trigger.py](../tests/quality_gates/test_retro_auto_trigger.py) — retro probe fixtures: hits, non-matches, undetermined, unresolved id

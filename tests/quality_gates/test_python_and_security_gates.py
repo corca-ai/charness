@@ -22,6 +22,13 @@ from .support import (
 PYTHON_LENGTHS = importlib.import_module("scripts.gates.check_code_lengths")
 
 
+def _copy_quality_universe_support(repo: Path) -> None:
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / "scripts" / "adapter_lib.py", scripts_dir / "adapter_lib.py")
+    shutil.copytree(ROOT / "scripts" / "adapters", scripts_dir / "adapters", dirs_exist_ok=True)
+
+
 def _copy_script(repo: Path, script_name: str) -> Path:
     scripts_dir = repo / "scripts"
     scripts_dir.mkdir(parents=True, exist_ok=True)
@@ -34,9 +41,7 @@ def _copy_script(repo: Path, script_name: str) -> Path:
         ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh"
     )
     if script_name == "check-secrets.sh":
-        shutil.copy2(
-            ROOT / "scripts" / "quality_universes_lib.py", scripts_dir / "quality_universes_lib.py"
-        )
+        _copy_quality_universe_support(repo)
     (repo / "packaging").mkdir(exist_ok=True)
     shutil.copy2(ROOT / "packaging" / "charness.json", repo / "packaging" / "charness.json")
     return script_path
@@ -348,9 +353,7 @@ def test_check_secrets_prefers_gitleaks_when_available(tmp_path: Path) -> None:
     shutil.copy2(
         ROOT / "scripts" / "exported-copy-guard.sh", scripts_dir / "exported-copy-guard.sh"
     )
-    shutil.copy2(
-        ROOT / "scripts" / "quality_universes_lib.py", scripts_dir / "quality_universes_lib.py"
-    )
+    _copy_quality_universe_support(repo)
     (repo / "packaging").mkdir(exist_ok=True)
     shutil.copy2(ROOT / "packaging" / "charness.json", repo / "packaging" / "charness.json")
     (repo / ".agents").mkdir()
@@ -522,12 +525,10 @@ def test_check_secrets_gitleaks_skips_deleted_tracked_files(tmp_path: Path) -> N
             "scripts/exported-copy-guard.sh": (
                 ROOT / "scripts" / "exported-copy-guard.sh"
             ).read_text(encoding="utf-8"),
-            "scripts/quality_universes_lib.py": (
-                ROOT / "scripts" / "quality_universes_lib.py"
-            ).read_text(encoding="utf-8"),
         },
         executable=("scripts/check-secrets.sh", "scripts/exported-copy-guard.sh"),
     )
+    _copy_quality_universe_support(repo)
     (repo / "secret.txt").unlink()
 
     bin_dir = repo / "bin"

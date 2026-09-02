@@ -66,11 +66,11 @@ sys.path.insert(0, str(ROOT))
 # total was never either sum. On the file whose own thesis is "a count is only as honest
 # as its denominator", the denominator had rotted with nothing to catch it.
 SITES: tuple[tuple[str, str, str], ...] = (
-    ("announcement", "scripts/announcement_adapter_lib.py", "validate_announcement_adapter_data"),
+    ("announcement", "scripts/adapters/announcement_adapter_lib.py", "validate_announcement_adapter_data"),
     ("critique", "scripts/review/critique_adapter_lib.py", "validate_adapter_data"),
-    ("narrative", "scripts/narrative_adapter_lib.py", "validate_narrative_adapter_data"),
-    ("proof_semantics", "scripts/proof_semantics_adapter_lib.py", "validate_adapter_data"),
-    ("simple_skill", "scripts/simple_skill_adapter_lib.py", "validate_simple_adapter_data"),
+    ("narrative", "scripts/adapters/narrative_adapter_lib.py", "validate_narrative_adapter_data"),
+    ("proof_semantics", "scripts/adapters/proof_semantics_adapter_lib.py", "validate_adapter_data"),
+    ("simple_skill", "scripts/adapters/simple_skill_adapter_lib.py", "validate_simple_adapter_data"),
     ("achieve", "skills/public/achieve/scripts/achieve_adapter_policy.py", "validate_adapter_data"),
     ("create-skill", "skills/public/create-skill/scripts/resolve_adapter.py", "validate_adapter_data"),
     ("debug", "skills/public/debug/scripts/resolve_adapter.py", "validate_adapter_data"),
@@ -79,8 +79,8 @@ SITES: tuple[tuple[str, str, str], ...] = (
     ("hotl", "skills/public/hotl/scripts/resolve_adapter.py", "validate_adapter_data"),
     ("impl", "skills/public/impl/scripts/resolve_adapter.py", "validate_adapter_data"),
     ("issue", "skills/public/issue/scripts/resolve_adapter.py", "load_adapter"),
-    ("capability_catalog", "scripts/capability_catalog_sources.py", "load_adapter"),
-    ("quality", "scripts/quality_adapter_lib.py", "validate_quality_adapter_data"),
+    ("capability_catalog", "scripts/adapters/capability_catalog_sources.py", "load_adapter"),
+    ("quality", "scripts/adapters/quality_adapter_lib.py", "validate_quality_adapter_data"),
     ("release", "skills/public/release/scripts/resolve_adapter.py", "validate_adapter_data"),
     ("retro", "skills/public/retro/scripts/resolve_adapter.py", "validate_adapter_data"),
     ("validate_adapters_gate", "scripts/gates/validate_adapters.py", "validate_adapter_yaml"),
@@ -104,7 +104,7 @@ EXEMPT_SITES: tuple[tuple[str, tuple[str, ...], tuple[str, ...], str], ...] = (
     ),
     (
         "quality_bootstrap",
-        ("scripts/quality_bootstrap_lib.py",),
+        ("scripts/adapters/quality_bootstrap_lib.py",),
         ("tests/quality_gates/test_quality_bootstrap.py::"
          "test_quality_bootstrap_refuses_unsupported_adapter_without_rewriting_it",),
         "raises BootstrapValidationError instead of returning a payload.",
@@ -258,7 +258,7 @@ def test_unsupported_integer_version_is_refused_and_not_echoed(label, path, entr
 
 
 def test_simple_adapter_does_not_honor_sibling_fields_after_version_refusal(tmp_path: Path) -> None:
-    simple = _module("scripts/simple_skill_adapter_lib.py")
+    simple = _module("scripts/adapters/simple_skill_adapter_lib.py")
 
     resolved, errors, _warnings = simple.validate_simple_adapter_data(
         {

@@ -23,7 +23,7 @@ from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _artifact_run_scope = import_repo_module(__file__, "scripts.artifact_run_scope")
 safe_repo_relative_path = _artifact_run_scope.safe_repo_relative_path
-_quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
+_quality_universes = import_repo_module(__file__, "scripts.adapters.quality_universes_lib")
 DEFAULT_CRITIQUE_ROOT = _quality_universes.DEFAULT_ARTIFACT_ROOTS["critique"]
 
 CRITIQUE_ARTIFACT_PREFIX = f"{DEFAULT_CRITIQUE_ROOT}/"

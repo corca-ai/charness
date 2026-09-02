@@ -613,7 +613,7 @@ The portable defaults are the literals carried by Charness's standing pytest
 targets, Python compile array, shell discovery, test-production ratio, document
 population, artifact validators, gitignore scanner, CI parity scanner, mutation
 pool, specdown wrapper, and secrets gate. They are defined in the exported
-`<plugin-dir>/scripts/quality_universes_lib.py` module so a gate and the adapter resolver use
+`<plugin-dir>/scripts/adapters/quality_universes_lib.py` module so a gate and the adapter resolver use
 the same values.
 
 An undeclared family resolves to its portable default and an empty match is a

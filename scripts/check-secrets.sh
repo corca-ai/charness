@@ -75,7 +75,7 @@ resolve_secrets_config() {
   local universe_payload config_path
 
   if ! config_path="$({
-    python3 "$REPO_ROOT/scripts/quality_universes_lib.py" \
+    python3 "$REPO_ROOT/scripts/adapters/quality_universes_lib.py" \
       --repo-root "$REPO_ROOT" \
       --key secrets_config \
       --format lines
@@ -83,7 +83,7 @@ resolve_secrets_config() {
     # U0's landed CLI predates the keyed output flags required by the shared
     # contract. Keep this fallback until that CLI grows the narrow form.
     if ! universe_payload="$({
-      python3 "$REPO_ROOT/scripts/quality_universes_lib.py" \
+      python3 "$REPO_ROOT/scripts/adapters/quality_universes_lib.py" \
         --repo-root "$REPO_ROOT"
     })"; then
       echo "check-secrets: refusing to resolve the secrets_config universe." >&2

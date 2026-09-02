@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.control_plane_lifecycle_lib import (
+from scripts.adapters.control_plane_lifecycle_lib import (
     print_tool_statuses,
     update_advisory_line,
     version_transition_suffix,

@@ -12,13 +12,13 @@ from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
+_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.adapters.control_plane_lib")
 load_manifests = _scripts_control_plane_lib_module.load_manifests
 now_iso = _scripts_control_plane_lib_module.now_iso
 read_lock = _scripts_control_plane_lib_module.read_lock
 run_shell = _scripts_control_plane_lib_module.run_shell
 upsert_lock = _scripts_control_plane_lib_module.upsert_lock
-_scripts_control_plane_lifecycle_lib_module = import_repo_module(__file__, "scripts.control_plane_lifecycle_lib")
+_scripts_control_plane_lifecycle_lib_module = import_repo_module(__file__, "scripts.adapters.control_plane_lifecycle_lib")
 attach_release_metadata = _scripts_control_plane_lifecycle_lib_module.attach_release_metadata
 command_result_payload = _scripts_control_plane_lifecycle_lib_module.command_result_payload
 detect_and_healthcheck = _scripts_control_plane_lifecycle_lib_module.detect_and_healthcheck

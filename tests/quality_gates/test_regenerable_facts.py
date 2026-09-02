@@ -576,7 +576,10 @@ def test_gitignored_files_are_not_this_repos_prose(tmp_path: Path) -> None:
 def _validate(block: object) -> tuple[list[str], dict]:
     from runtime_bootstrap import import_repo_module
 
-    qlib = import_repo_module(ROOT / "scripts" / "quality_adapter_lib.py", "scripts.quality_adapter_lib")
+    qlib = import_repo_module(
+        ROOT / "scripts" / "adapters" / "quality_adapter_lib.py",
+        "scripts.adapters.quality_adapter_lib",
+    )
     validated: dict = {}
     errors: list[str] = []
     qlib._apply_regenerable_facts({"regenerable_facts": block}, validated, errors, [])

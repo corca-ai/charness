@@ -242,7 +242,7 @@
       ],
       "rationale": "T-signal classifier exposes skipped reasons (no_parent, shallow_clone, diff_unavailable) in its structured result so callers can attach classification_skipped to the durable episode record instead of silently emitting t_status none."
     },
-    "scripts/control_plane_lifecycle_lib.py": {
+    "scripts/adapters/control_plane_lifecycle_lib.py": {
       "states": [
         "not_configured",
         "skipped"

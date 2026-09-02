@@ -94,7 +94,7 @@ def _adapter_prompt_policy(repo_root: Path) -> tuple[dict[str, object], dict[str
     # reported `findings: []`. At a speakable version the same repo has findings. A
     # scanner told to use the repo's declared policy scanned NOTHING and reported clean --
     # the emptiest possible answer presented as a result.
-    verdict = _load_repo_module("scripts.adapter_version_verdict")
+    verdict = _load_repo_module("scripts.adapters.adapter_version_verdict")
     if verdict is not None:
         refusal = verdict.unspeakable_version_message(
             _load_quality_adapter, repo_root, adapter_name="quality-adapter.yaml"

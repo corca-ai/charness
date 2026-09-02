@@ -36,7 +36,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _lib = SKILL_RUNTIME.load_local_skill_module(__file__, "standing_doc_provenance_lib")
 scan_standing_docs = _lib.scan_standing_docs
-_quality_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
+_quality_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.quality_adapter_lib")
 load_quality_adapter_strict = _quality_adapter_lib.load_quality_adapter_strict
 
 

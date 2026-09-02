@@ -5356,7 +5356,7 @@ def _load_catalog_lib():
         repo_root, _managed_checkout = resolve_repo_root(default_home_root(), None)
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
-    from scripts import capability_catalog
+    from scripts.adapters import capability_catalog
     return capability_catalog
 
 

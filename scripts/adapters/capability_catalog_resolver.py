@@ -44,7 +44,7 @@ def _cache_candidates(codex_home: Path, skill_id: str, marketplace: str, plugin:
 def _owner_root() -> Path:
     """Return the checkout/package root owning this resolver."""
 
-    return Path(__file__).resolve().parent.parent
+    return Path(__file__).resolve().parents[2]
 
 
 def _manifest_version(path: Path) -> str | None:

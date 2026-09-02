@@ -9,16 +9,16 @@ from pathlib import Path
 from typing import Any, Callable
 
 try:
-    from scripts.quality_universes_lib import DEFAULT_UNIVERSES
+    from scripts.adapters.quality_universes_lib import DEFAULT_UNIVERSES
 except ModuleNotFoundError:
     repo_root = next(
         ancestor
         for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "quality_universes_lib.py").is_file()
+        if (ancestor / "scripts" / "adapters" / "quality_universes_lib.py").is_file()
     )
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
-    from scripts.quality_universes_lib import DEFAULT_UNIVERSES
+    from scripts.adapters.quality_universes_lib import DEFAULT_UNIVERSES
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from git_inventory_lib import (  # noqa: E402

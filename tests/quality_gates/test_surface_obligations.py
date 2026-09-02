@@ -9,7 +9,7 @@ from types import SimpleNamespace
 
 import yaml
 
-from scripts.surfaces_lib import SurfaceError, load_surfaces, path_matches_patterns
+from scripts.adapters.surfaces_lib import SurfaceError, load_surfaces, path_matches_patterns
 from tools import validate_surfaces
 
 from .seeding_support import write_json, write_surface

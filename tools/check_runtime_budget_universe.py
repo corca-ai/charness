@@ -89,7 +89,7 @@ def _adapter_validators():
         # Reuse the quality resolver's loaded validator so its sibling schema
         # modules stay on the same import path in source and exported layouts.
         _ADAPTER_VALIDATORS_CACHE["module"] = import_repo_module(
-            __file__, "scripts.quality_adapter_lib"
+            __file__, "scripts.adapters.quality_adapter_lib"
         ).adapter_validators
     return _ADAPTER_VALIDATORS_CACHE["module"]
 

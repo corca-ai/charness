@@ -79,7 +79,7 @@ this can use the previous value (including an unset value and `/scripts/...`).
 
 For Codex plugin caches the path is host-defined and rotates on
 `charness update`. When a documented path goes stale, use
-`charness catalog resolve-skill-path` (`<plugin-dir>/scripts/capability_catalog.py`)
+`charness catalog resolve-skill-path` (`<plugin-dir>/scripts/adapters/capability_catalog.py`)
 from any directory whose `$SKILL_DIR` is known to discover the current
 location:
 

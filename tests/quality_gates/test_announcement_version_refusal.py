@@ -290,7 +290,7 @@ def test_the_parse_arm_carries_every_key_the_success_arm_does(tmp_path: Path) ->
     import sys as _sys
 
     _sys.path.insert(0, str(ROOT))
-    from scripts.announcement_adapter_lib import load_announcement_adapter
+    from scripts.adapters.announcement_adapter_lib import load_announcement_adapter
 
     parse_repo = _repo(tmp_path / "p", "version: !!int 9\nrepo: demo\n")
     ok_repo = _repo(tmp_path / "o", "version: 1\nrepo: demo\n")

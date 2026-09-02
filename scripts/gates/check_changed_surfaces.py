@@ -25,7 +25,7 @@ from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_lib")
+_scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.adapters.surfaces_lib")
 SURFACES_PATH = _scripts_surfaces_lib_module.SURFACES_PATH
 SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths

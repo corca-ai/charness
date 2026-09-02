@@ -245,7 +245,7 @@ def build_declaration_lifecycle(
     skills: list[str],
     catalog_gates: list[dict[str, Any]],
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    adapter_lib = _repo_module("scripts.quality_adapter_lib")
+    adapter_lib = _repo_module("scripts.adapters.quality_adapter_lib")
     yaml_lib = _repo_module("scripts.adapter_lib")
     adapter = adapter_lib.load_quality_adapter_permissive(repo_root)
     report: dict[str, Any] = {

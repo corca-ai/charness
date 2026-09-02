@@ -49,7 +49,7 @@ _adversarial_evidence = import_repo_module(__file__, "scripts.review.adversarial
 # because nothing forced them to agree, and the role test below is where a seventh
 # would have gone.
 _scaffold_artifact_lib = import_repo_module(__file__, "scripts.core.scaffold_artifact_lib")
-_adapter_version_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
+_adapter_version_verdict = import_repo_module(__file__, "scripts.adapters.adapter_version_verdict")
 # The rule-date scope for the word ceiling, owned by the module that owns the
 # measurement so debug and quality cannot drift apart (they shipped as byte-identical
 # copies for one commit, and the duplicate gate caught it).

@@ -9,6 +9,7 @@ from pathlib import Path
 
 import yaml
 
+from scripts.adapters.surfaces_lib import collect_changed_paths_for_ref
 from scripts.gates_support.prepare_packet_markdown_kind import prepare_packet_markdown_kind
 from scripts.review.critique_adapter_lib import (
     adapter_has_sections,
@@ -36,7 +37,6 @@ from scripts.review.validate_critique_artifacts import (
 from scripts.review.validate_critique_artifacts import (
     candidate_paths as critique_candidate_paths,
 )
-from scripts.surfaces_lib import collect_changed_paths_for_ref
 from tests.quality_gates.repo_shapes import install_two_commit_repo
 from tests.quality_gates.support import run_script
 from tests.reviewed_input_identity_fixtures import repo_seed as identity_repo_seed

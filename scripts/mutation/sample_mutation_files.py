@@ -28,10 +28,11 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
-REPO_ROOT = repo_root_from_script(__file__)
-
+from scripts.adapters.quality_universes_lib import DEFAULT_UNIVERSES  # noqa: E402
 from scripts.core.subprocess_guard import run_process  # noqa: E402
 from scripts.mutation.mutation_baseline_abort_lib import (  # noqa: E402
     DEFAULT_BASELINE_ABORT_MARKER,
@@ -67,7 +68,6 @@ from scripts.mutation.mutation_sampling_lib import (  # noqa: E402
     select_budgeted_sample,
     select_test_nodeids,
 )
-from scripts.quality_universes_lib import DEFAULT_UNIVERSES  # noqa: E402
 
 DEFAULT_MAX_FILES = 10
 DEFAULT_CHANGED_QUOTA = 5

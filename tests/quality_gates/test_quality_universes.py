@@ -7,8 +7,8 @@ from types import SimpleNamespace
 
 import yaml
 
-from scripts.quality_adapter_lib import load_quality_adapter
-from scripts.quality_universes_lib import (
+from scripts.adapters.quality_adapter_lib import load_quality_adapter
+from scripts.adapters.quality_universes_lib import (
     DEFAULT_UNIVERSES,
     Universe,
     matching_files,
@@ -114,13 +114,13 @@ def test_git_listing_and_raw_glob_fallback_have_the_same_matches(
             stderr="",
         )
 
-    monkeypatch.setattr("scripts.quality_universes_lib.run_process", listed_process)
+    monkeypatch.setattr("scripts.adapters.quality_universes_lib.run_process", listed_process)
     from_git = matching_files(repo, universe)
 
     def unavailable_process(*_args, **_kwargs):
         return SimpleNamespace(returncode=128, stdout="", stderr="not a git repo")
 
-    monkeypatch.setattr("scripts.quality_universes_lib.run_process", unavailable_process)
+    monkeypatch.setattr("scripts.adapters.quality_universes_lib.run_process", unavailable_process)
     from_fallback = matching_files(repo, universe)
 
     assert from_git == from_fallback
@@ -148,7 +148,7 @@ def test_files_cli_lists_nested_matches_for_a_family(tmp_path: Path) -> None:
     (repo / "scripts" / "nested" / "two.py").write_text("", encoding="utf-8")
 
     result = run_script(
-        "scripts/quality_universes_lib.py",
+        "scripts/adapters/quality_universes_lib.py",
         "--repo-root",
         str(repo),
         "--files",

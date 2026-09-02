@@ -42,7 +42,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import adapter_version_verdict
+from scripts.adapters import adapter_version_verdict
 from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]

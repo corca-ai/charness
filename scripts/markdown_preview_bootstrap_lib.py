@@ -10,7 +10,7 @@ from typing import Any
 import yaml
 
 from scripts.adapter_lib import plan_generated_write
-from scripts.adapter_yaml_render_lib import render_yaml_mapping
+from scripts.adapters.adapter_yaml_render_lib import render_yaml_mapping
 from scripts.runtime_bootstrap import load_path_module
 
 LIB_REPO_ROOT = Path(__file__).resolve().parents[1]

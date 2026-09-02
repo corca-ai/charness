@@ -18,7 +18,7 @@ import sys
 
 import pytest
 
-from scripts import adapter_yaml_parse as parse
+from scripts.adapters import adapter_yaml_parse as parse
 
 
 def test_an_empty_scalar_stays_an_empty_string_rather_than_becoming_none():
@@ -106,7 +106,7 @@ def test_the_parser_is_loaded_once_per_path_and_its_sink_is_internally_consisten
     """One instance PER PATH, and the sink consistent within it.
 
     Written first as "one instance per process", which is FALSE and the test found it:
-    `from scripts import adapter_yaml_parse` is a second module object beside `adapter_lib`'s
+    `from scripts.adapters import adapter_yaml_parse` is a second module object beside `adapter_lib`'s
     path-loaded one, so two `_UNINTERPRETED_SINK` ContextVars exist right now. Harmless,
     because `load_yaml_report` arms the sink and `_parse_block` records into it from the SAME
     instance -- no caller can cross them. An adoption scan that would have collapsed them was

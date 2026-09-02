@@ -20,9 +20,22 @@ from typing import Any
 # `ImportError: ... partially initialized module`. Measured, not theorised -- the first
 # cut had it, and it was invisible to the whole test suite because every existing
 # importer happens to reach `defaults` first. The first person to write
-# `from scripts.quality_policy_merge import ...` at the top of a new test file would
+# `from scripts.adapters.quality_policy_merge import ...` at the top of a new test file would
 # have found it, in a single-file pytest run that nobody else could reproduce.
 
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
 
 def refilled_policy_subkeys(raw_value: Any, defaults: dict[str, Any], merged: dict[str, Any]) -> list[str]:
     """Which sub-keys a policy merge filled from defaults rather than from the operator.
@@ -124,7 +137,7 @@ def refilled_policy_subkeys(raw_value: Any, defaults: dict[str, Any], merged: di
 
 
 def merge_coverage_floor_policy(value: Any) -> dict[str, Any]:
-    from scripts.quality_policy_defaults import DEFAULT_COVERAGE_FLOOR_POLICY
+    from scripts.adapters.quality_policy_defaults import DEFAULT_COVERAGE_FLOOR_POLICY
 
     merged_policy = dict(DEFAULT_COVERAGE_FLOOR_POLICY)
     if not isinstance(value, dict):
@@ -141,7 +154,7 @@ def merge_coverage_floor_policy(value: Any) -> dict[str, Any]:
 
 
 def merge_prompt_asset_policy(value: Any) -> dict[str, Any]:
-    from scripts.quality_policy_defaults import DEFAULT_PROMPT_ASSET_POLICY
+    from scripts.adapters.quality_policy_defaults import DEFAULT_PROMPT_ASSET_POLICY
 
     merged_policy = dict(DEFAULT_PROMPT_ASSET_POLICY)
     if not isinstance(value, dict):

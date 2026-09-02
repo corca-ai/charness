@@ -49,7 +49,7 @@ def test_quality_setup_snapshot_preserves_plan_when_bootstrap_read_fails(monkeyp
     def fail_bootstrap(_repo: Path) -> tuple[dict[str, object], dict[str, object], list[object]]:
         raise RuntimeError("fixture failure")
 
-    monkeypatch.setattr("scripts.quality_bootstrap_lib.build_bootstrap_state", fail_bootstrap)
+    monkeypatch.setattr("scripts.adapters.quality_bootstrap_lib.build_bootstrap_state", fail_bootstrap)
 
     snapshot = quality_setup_snapshot(tmp_path)
 

@@ -15,7 +15,21 @@ from __future__ import annotations
 
 from typing import Any, Sequence
 
-from scripts.adapter_lib import optional_int, optional_string, optional_string_list
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.adapter_lib import optional_int, optional_string, optional_string_list  # noqa: E402
 
 __all__ = ["apply_optional_fields"]
 

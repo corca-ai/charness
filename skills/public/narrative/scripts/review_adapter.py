@@ -23,7 +23,7 @@ def _repo_root() -> Path:
 
 def review_adapter(repo_root: Path) -> dict[str, object]:
     sys.path.insert(0, str(_repo_root()))
-    from scripts.narrative_adapter_lib import review_narrative_adapter
+    from scripts.adapters.narrative_adapter_lib import review_narrative_adapter
 
     return review_narrative_adapter(repo_root)
 

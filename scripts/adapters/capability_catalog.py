@@ -8,14 +8,42 @@ import os
 import sys
 from pathlib import Path
 
-if str(Path(__file__).resolve().parent.parent) not in sys.path:
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from scripts.capability_catalog_artifact import persist_catalog, read_only_result
-from scripts.capability_catalog_resolver import resolve_skill_path
-from scripts.capability_catalog_sources import build_inventory
-from scripts.gates import check_consumer_validator_catalog
-from scripts.yaml_output import emit_yaml
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+def _script_root_from_file() -> Path:
+    script_path = Path(__file__).resolve()
+    for parent in script_path.parents:
+        if (parent / "scripts" / "adapter_lib.py").is_file():
+            return parent
+        if (parent / ".codex-plugin" / "plugin.json").is_file():
+            return parent
+    return script_path.parent.parent
+
+
+_script_root = _script_root_from_file()
+if str(_script_root) not in sys.path:
+    sys.path.insert(0, str(_script_root))
+
+from scripts import check_consumer_validator_catalog  # noqa: E402
+from scripts.adapters.capability_catalog_artifact import (  # noqa: E402
+    persist_catalog,
+    read_only_result,
+)
+from scripts.adapters.capability_catalog_resolver import resolve_skill_path  # noqa: E402
+from scripts.adapters.capability_catalog_sources import build_inventory  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 
 class CatalogRepoRootError(ValueError):
@@ -59,7 +87,7 @@ def _consumer_validator_catalog(
 ) -> dict[str, object]:
     """Read the packaged validator contract owned by this Charness checkout."""
 
-    owner_root = Path(__file__).resolve().parent.parent
+    owner_root = _script_root_from_file()
     if (owner_root / "plugins" / "charness").is_dir():
         package_root = owner_root / "plugins" / "charness"
         catalog_path = owner_root / check_consumer_validator_catalog.DEFAULT_CATALOG_REL

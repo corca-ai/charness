@@ -21,12 +21,12 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 
 
-_scripts_adapter_init_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_init_lib")
+_scripts_adapter_init_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.adapter_init_lib")
 base_adapter_items = _scripts_adapter_init_lib_module.base_adapter_items
 run_init_adapter = _scripts_adapter_init_lib_module.run_init_adapter
 resolve_existing_adapter_state = _scripts_adapter_init_lib_module.resolve_existing_adapter_state
 load_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter").load_adapter
-_scripts_quality_policy_defaults_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_policy_defaults")
+_scripts_quality_policy_defaults_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.quality_policy_defaults")
 DEFAULT_COVERAGE_FLOOR_POLICY = _scripts_quality_policy_defaults_module.DEFAULT_COVERAGE_FLOOR_POLICY
 DEFAULT_MUTATION_TESTING = _scripts_quality_policy_defaults_module.DEFAULT_MUTATION_TESTING
 DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR = (

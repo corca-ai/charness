@@ -69,7 +69,7 @@ def preset_rows(
     repo_root: Path, raw: dict[str, Any], repo_module: Callable[[str], Any]
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Reconcile explicit prescriptions against exact declared commands."""
-    detected = set(repo_module("scripts.quality_bootstrap_detect").detect_preset_lineage(repo_root))
+    detected = set(repo_module("scripts.adapters.quality_bootstrap_detect").detect_preset_lineage(repo_root))
     declared_commands = {
         command
         for field in COMMAND_FIELDS

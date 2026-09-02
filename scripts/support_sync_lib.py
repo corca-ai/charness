@@ -14,7 +14,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from scripts.control_plane_render import render_generated_wrapper
+from scripts.adapters.control_plane_render import render_generated_wrapper
 from scripts.core.repo_layout import (
     discovery_stub_dir,
     generated_support_dir,

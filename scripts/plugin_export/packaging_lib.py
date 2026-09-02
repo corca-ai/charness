@@ -30,12 +30,12 @@ from scripts.runtime_bootstrap import (  # noqa: E402
 REPO_ROOT = repo_root_from_script(__file__)
 VALIDATE_PACKAGING_PATH = REPO_ROOT / "scripts" / "plugin_export" / "validate_packaging.py"
 VALIDATE_PACKAGING = load_path_module("validate_packaging", VALIDATE_PACKAGING_PATH)
-_scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_lib")
+_scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.adapters.surfaces_lib")
 SURFACES_PATH = _scripts_surfaces_lib_module.SURFACES_PATH
 apply_generated_markdown_header = _scripts_surfaces_lib_module.apply_generated_markdown_header
 load_surfaces = _scripts_surfaces_lib_module.load_surfaces
 lookup_generated_markdown = _scripts_surfaces_lib_module.lookup_generated_markdown
-_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
+_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.adapters.control_plane_lib")
 load_manifests_for_discovery = _scripts_control_plane_lib_module.load_manifests_for_discovery
 _scripts_support_sync_lib_module = import_repo_module(__file__, "scripts.support_sync_lib")
 support_link_name = _scripts_support_sync_lib_module.support_link_name

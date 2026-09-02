@@ -8,7 +8,7 @@ The portable Charness residual/disposition ledger
 ([`scripts/core/disposition_form.py`](../scripts/core/disposition_form.py)) stays
 presence/form-enum-only and learns **no** domain proof concept. The **domain
 proof semantics** live entirely in this optional adapter, resolved by
-[`scripts/proof_semantics_adapter_lib.py`](../scripts/proof_semantics_adapter_lib.py).
+[`scripts/adapters/proof_semantics_adapter_lib.py`](../scripts/adapters/proof_semantics_adapter_lib.py).
 Charness asks; the adapter answers.
 
 This keeps the gate-and-intelligence split (#253/#329/#337): Charness does only

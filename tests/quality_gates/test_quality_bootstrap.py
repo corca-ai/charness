@@ -5,9 +5,12 @@ from pathlib import Path
 
 import yaml
 
-from scripts.quality_adapter_lib import load_quality_adapter_permissive, load_quality_adapter_strict
-from scripts.quality_policy_defaults import DEFAULT_SKILL_ERGONOMICS_GATE_RULES
-from scripts.simple_skill_adapter_lib import validate_simple_adapter_data
+from scripts.adapters.quality_adapter_lib import (
+    load_quality_adapter_permissive,
+    load_quality_adapter_strict,
+)
+from scripts.adapters.quality_policy_defaults import DEFAULT_SKILL_ERGONOMICS_GATE_RULES
+from scripts.adapters.simple_skill_adapter_lib import validate_simple_adapter_data
 
 from .quality_bootstrap_support import (
     _run_quality_bootstrap_adapter,

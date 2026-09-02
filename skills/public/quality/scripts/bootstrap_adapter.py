@@ -20,8 +20,8 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 
 
-_scripts_quality_bootstrap_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_bootstrap_lib")
-_scripts_quality_bootstrap_lifecycle_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_bootstrap_lifecycle")
+_scripts_quality_bootstrap_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.quality_bootstrap_lib")
+_scripts_quality_bootstrap_lifecycle_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.quality_bootstrap_lifecycle")
 BootstrapValidationError = _scripts_quality_bootstrap_lib_module.BootstrapValidationError
 bootstrap_quality_adapter = _scripts_quality_bootstrap_lifecycle_module.bootstrap_quality_adapter
 _summary_output = SKILL_RUNTIME.load_local_skill_module(__file__, "summary_output_lib")

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import scripts.control_plane_lib as control
+import scripts.adapters.control_plane_lib as control
 
 
 def _write_manifest_schema(repo: Path) -> None:

@@ -34,7 +34,25 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import declared_fields_after_version_check, load_yaml_file, optional_string
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.adapter_lib import (  # noqa: E402
+    declared_fields_after_version_check,
+    load_yaml_file,
+    optional_string,
+)
 
 ADAPTER_CANDIDATES = (
     Path(".agents/proof-semantics-adapter.yaml"),

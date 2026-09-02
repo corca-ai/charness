@@ -48,7 +48,7 @@ output_dir: custom-artifacts/impl
 
 def _load_init_adapter_lib():
     module_name = "adapter_init_lib_for_impl_bootstrap"
-    spec = importlib.util.spec_from_file_location(module_name, REPO_ROOT / "scripts/adapter_init_lib.py")
+    spec = importlib.util.spec_from_file_location(module_name, REPO_ROOT / "scripts/adapters/adapter_init_lib.py")
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

@@ -23,7 +23,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 load_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter").load_adapter
 _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.adapter_version_verdict"
+    __file__, "scripts.adapters.adapter_version_verdict"
 )
 runtime_budget_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "runtime_budget_lib")
 runtime_budget_sizing_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "runtime_budget_sizing_lib")

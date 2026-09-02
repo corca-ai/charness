@@ -17,8 +17,8 @@ def _load_changed_path_owner():
     )
     if root is None:
         raise ImportError(f"Unable to resolve repository root from {script_path}")
-    sibling = root / "scripts" / "surfaces_lib.py"
-    canonical = "scripts.surfaces_lib"
+    sibling = root / "scripts" / "adapters" / "surfaces_lib.py"
+    canonical = "scripts.adapters.surfaces_lib"
     loaded = sys.modules.get(canonical)
     if loaded is not None and Path(getattr(loaded, "__file__", "")).resolve() == sibling:
         return loaded

@@ -6,9 +6,9 @@ from pathlib import Path
 
 import yaml
 
-import scripts.quality_bootstrap_lib as bootstrap_lib
-import scripts.quality_bootstrap_lifecycle as lifecycle
-from scripts.quality_adapter_lib import load_quality_adapter_permissive
+import scripts.adapters.quality_bootstrap_lib as bootstrap_lib
+import scripts.adapters.quality_bootstrap_lifecycle as lifecycle
+from scripts.adapters.quality_adapter_lib import load_quality_adapter_permissive
 
 from .quality_bootstrap_support import _run_quality_bootstrap_adapter, seed_quality_repo
 

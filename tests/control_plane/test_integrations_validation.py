@@ -12,7 +12,7 @@ import yaml
 import scripts.doctor as doctor_module
 import scripts.install_tools as install_tools_module
 import tools.validate_integrations as validate_integrations_module
-from scripts.control_plane_lib import load_capabilities
+from scripts.adapters.control_plane_lib import load_capabilities
 from scripts.doctor import inspect_manifest
 from scripts.sync_support import sync_one
 from tests.dsl import Repo

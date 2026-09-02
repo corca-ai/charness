@@ -19,7 +19,10 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-from scripts.control_plane_lib import load_manifests_for_discovery, staged_tool_ids  # noqa: E402
+from scripts.adapters.control_plane_lib import (  # noqa: E402
+    load_manifests_for_discovery,
+    staged_tool_ids,
+)
 from scripts.doctor_lib import inspect_capability_state  # noqa: E402
 
 

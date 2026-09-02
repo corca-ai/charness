@@ -17,7 +17,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 
 _scripts_simple_skill_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.simple_skill_adapter_lib"
+    __file__, "scripts.adapters.simple_skill_adapter_lib"
 )
 load_adapter_contract = _scripts_simple_skill_adapter_lib_module.load_adapter_contract
 _scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")

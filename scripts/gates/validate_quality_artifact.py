@@ -43,8 +43,8 @@ def _resolver_path(repo_root: Path) -> Path:
 _quality_resolve_adapter = load_path_module("quality_resolve_adapter", _resolver_path(REPO_ROOT))
 load_adapter = _quality_resolve_adapter.load_adapter
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
-_adapter_version_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
-_surface_contract = import_repo_module(__file__, "scripts.quality_surface_contract")
+_adapter_version_verdict = import_repo_module(__file__, "scripts.adapters.adapter_version_verdict")
+_surface_contract = import_repo_module(__file__, "scripts.adapters.quality_surface_contract")
 # Shared with debug through the module that owns the measurement; see its docstring
 # for why dated artifacts are grandfathered.
 ValidationError = _scripts_artifact_validator_module.ValidationError
@@ -60,7 +60,7 @@ validate_date_line = _scripts_artifact_validator_module.validate_date_line
 resolve_adapter_line_budget = _scripts_artifact_validator_module.resolve_adapter_line_budget
 validate_section_order = _scripts_artifact_validator_module.validate_section_order
 run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
-_skill_ergonomics = import_repo_module(__file__, "scripts.quality_artifact_skill_ergonomics")
+_skill_ergonomics = import_repo_module(__file__, "scripts.adapters.quality_artifact_skill_ergonomics")
 _skill_ergonomics_counts = _skill_ergonomics._skill_ergonomics_counts
 
 

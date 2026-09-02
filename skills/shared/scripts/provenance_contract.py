@@ -95,10 +95,10 @@ CONTRACTS: tuple[BoundaryContract, ...] = (
             "tests/test_capability_catalog.py::"
             "test_catalog_resolver_refuses_malformed_candidate_manifest"
         ),
-        consumer_path="scripts/capability_catalog_resolver.py",
+        consumer_path="scripts/adapters/capability_catalog_resolver.py",
         trigger_paths=(
-            "scripts/capability_catalog_resolver.py",
-            "plugins/charness/scripts/capability_catalog_resolver.py",
+            "scripts/adapters/capability_catalog_resolver.py",
+            "plugins/charness/scripts/adapters/capability_catalog_resolver.py",
             "tests/test_capability_catalog.py",
         ),
     ),
@@ -130,7 +130,7 @@ CONTRACTS: tuple[BoundaryContract, ...] = (
             "skills/public/quality/scripts/inventory_nose_clones.py",
             "skills/public/quality/scripts/inventory_doc_duplicates.py",
             "skills/public/quality/scripts/summary_output_lib.py",
-            "scripts/quality_adapter_lib.py",
+            "scripts/adapters/quality_adapter_lib.py",
             "plugins/charness/skills/quality/scripts/check_dup_ratchet.py",
             "plugins/charness/skills/quality/scripts/dup_review_lib.py",
             "plugins/charness/skills/quality/scripts/dup_family_lineage.py",
@@ -146,7 +146,7 @@ CONTRACTS: tuple[BoundaryContract, ...] = (
             "plugins/charness/skills/quality/scripts/inventory_nose_clones.py",
             "plugins/charness/skills/quality/scripts/inventory_doc_duplicates.py",
             "plugins/charness/skills/quality/scripts/summary_output_lib.py",
-            "plugins/charness/scripts/quality_adapter_lib.py",
+            "plugins/charness/scripts/adapters/quality_adapter_lib.py",
             "skills/public/quality/scripts/check_provenance_contract.py",
             "plugins/charness/skills/quality/scripts/check_provenance_contract.py",
             "tests/quality_gates/test_dup_ratchet.py",

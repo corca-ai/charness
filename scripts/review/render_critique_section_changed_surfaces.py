@@ -33,7 +33,7 @@ from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script 
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_lib")
+_scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.adapters.surfaces_lib")
 SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 collect_working_tree_snapshot = _scripts_surfaces_lib_module.collect_working_tree_snapshot
 collect_changed_and_deleted_paths_for_ref = (

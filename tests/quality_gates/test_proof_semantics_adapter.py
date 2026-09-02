@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts import proof_semantics_adapter_lib as psa
+from scripts.adapters import proof_semantics_adapter_lib as psa
 
 
 def _write_adapter(repo_root: Path, body: str) -> None:

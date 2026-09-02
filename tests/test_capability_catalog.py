@@ -10,18 +10,18 @@ import pytest
 import yaml
 
 # provenance-contract fixture: skill_manifest_selection
-import scripts.capability_catalog as catalog
-import scripts.capability_catalog_sources as sources
-from scripts.capability_catalog import (
+import scripts.adapters.capability_catalog as catalog
+import scripts.adapters.capability_catalog_sources as sources
+from scripts.adapters.capability_catalog import (
     CatalogRepoRootError,
     _repo_root,
     list_catalog,
     refresh_catalog,
     summarize_catalog,
 )
-from scripts.capability_catalog import main as catalog_main
-from scripts.capability_catalog_artifact import persist_catalog
-from scripts.capability_catalog_resolver import _cache_candidates, resolve_skill_path
+from scripts.adapters.capability_catalog import main as catalog_main
+from scripts.adapters.capability_catalog_artifact import persist_catalog
+from scripts.adapters.capability_catalog_resolver import _cache_candidates, resolve_skill_path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -200,7 +200,7 @@ def test_catalog_resolver_refuses_valid_plus_malformed_manifest(monkeypatch, tmp
     (plugin / ".codex-plugin/plugin.json").write_text('{"version":"1.0.0"}\n', encoding="utf-8")
     (owner / ".codex-plugin/plugin.json").write_text("{broken\n", encoding="utf-8")
     (owner / "skills/public/impl/SKILL.md").write_text("skill\n", encoding="utf-8")
-    monkeypatch.setattr("scripts.capability_catalog_resolver._owner_root", lambda: owner)
+    monkeypatch.setattr("scripts.adapters.capability_catalog_resolver._owner_root", lambda: owner)
     payload = resolve_skill_path(
         skill_id="impl",
         repo_root=owner,
@@ -230,7 +230,7 @@ def test_catalog_resolver_refuses_malformed_candidate_manifest(monkeypatch, tmp_
     (cache / "SKILL.md").write_text("skill\n", encoding="utf-8")
     (cache.parent.parent / ".codex-plugin").mkdir(parents=True)
     (cache.parent.parent / ".codex-plugin/plugin.json").write_bytes(b"\xff\xfe\x00")
-    monkeypatch.setattr("scripts.capability_catalog_resolver._owner_root", lambda: owner)
+    monkeypatch.setattr("scripts.adapters.capability_catalog_resolver._owner_root", lambda: owner)
     payload = resolve_skill_path(
         skill_id="impl",
         repo_root=owner,
@@ -399,7 +399,7 @@ def test_catalog_cli_dispatches_all_commands_and_direct_script_bootstraps_path(
         )
         with pytest.raises(SystemExit) as exc_info:
             runpy.run_path(
-                str(Path(repo_path) / "scripts/capability_catalog.py"), run_name="__main__"
+                str(Path(repo_path) / "scripts/adapters/capability_catalog.py"), run_name="__main__"
             )
         assert exc_info.value.code == 0
     finally:

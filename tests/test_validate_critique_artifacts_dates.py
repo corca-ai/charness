@@ -96,7 +96,7 @@ def test_c6_worktree_scope_arms_the_cross_surface_tooth(tmp_path: Path, monkeypa
     monkeypatch.setattr(probe, "_critique_adapter_lib", _Adapter)
     monkeypatch.setattr(probe._surfaces_lib, "collect_changed_paths_for_ref", lambda r, ref: [])
     monkeypatch.setattr(
-        probe._surfaces_lib, "collect_changed_paths", lambda r: ["scripts/surfaces_lib.py"]
+        probe._surfaces_lib, "collect_changed_paths", lambda r: ["scripts/adapters/surfaces_lib.py"]
     )
 
     committed_only = scope.resolve_cross_surface_scope(

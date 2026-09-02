@@ -1,4 +1,4 @@
-"""Direct unit tests for `scripts/quality_policy_merge.py`.
+"""Direct unit tests for `scripts/adapters/quality_policy_merge.py`.
 
 The module was extracted from `quality_policy_defaults` and its behaviour was
 reachable only end-to-end through the bootstrap. That left the merges' own accept/
@@ -19,7 +19,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 _spec = importlib.util.spec_from_file_location(
-    "scripts.quality_policy_defaults", ROOT / "scripts" / "quality_policy_defaults.py"
+    "scripts.adapters.quality_policy_defaults",
+    ROOT / "scripts" / "adapters" / "quality_policy_defaults.py",
 )
 defaults = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(defaults)

@@ -15,7 +15,7 @@ def _adapter_inventory_paths(
 ) -> tuple[list[str] | None, list[str], list[str]]:
     """Read optional consumer-owned scope without hard-coding it in the skill."""
     try:
-        adapter_module = load_repo_module(script_path, "scripts.quality_adapter_lib")
+        adapter_module = load_repo_module(script_path, "scripts.adapters.quality_adapter_lib")
         payload = adapter_module.load_quality_adapter_permissive(repo_root)
     except (ImportError, RuntimeError, OSError) as exc:
         return None, [], [f"quality adapter scope unavailable; using defaults: {exc}"]

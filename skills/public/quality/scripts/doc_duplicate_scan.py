@@ -24,11 +24,11 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _quality_adapter = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.quality_adapter_lib"
+    __file__, "scripts.adapters.quality_adapter_lib"
 )
 load_quality_adapter = _quality_adapter.load_quality_adapter
 _quality_universes = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.quality_universes_lib"
+    __file__, "scripts.adapters.quality_universes_lib"
 )
 DEFAULT_UNIVERSES = _quality_universes.DEFAULT_UNIVERSES
 matching_files = _quality_universes.matching_files

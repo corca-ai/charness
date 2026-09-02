@@ -12,7 +12,7 @@ not block).
 
 Boundary. This module owns the cases that go through the canonical
 `load_quality_adapter` entrypoint — so the wiring in `quality_adapter_lib` is
-part of what is proven — for these `scripts/quality_policy_defaults.py`
+part of what is proven — for these `scripts/adapters/quality_policy_defaults.py`
 surfaces: the `validate_mutation_testing` scalar-slot and sub-mapping helpers,
 `validate_standing_doc_provenance`, `validate_changed_line_mutation_gate`, and
 `validate_skill_ergonomics_gate_rules`.
@@ -36,9 +36,9 @@ from textwrap import dedent
 
 import pytest
 
-from scripts import quality_adapter_lib
-from scripts.quality_adapter_lib import load_quality_adapter
-from scripts.quality_policy_defaults import (
+from scripts.adapters import quality_adapter_lib
+from scripts.adapters.quality_adapter_lib import load_quality_adapter
+from scripts.adapters.quality_policy_defaults import (
     DEFAULT_CHANGED_LINE_MUTATION_GATE,
     DEFAULT_MUTATION_TESTING,
     DEFAULT_STANDING_DOC_PROVENANCE,

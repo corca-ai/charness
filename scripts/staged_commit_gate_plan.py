@@ -11,7 +11,7 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module
 from yaml_output import emit_yaml
 
-_surfaces_lib = import_repo_module(__file__, "scripts.surfaces_lib")
+_surfaces_lib = import_repo_module(__file__, "scripts.adapters.surfaces_lib")
 _plan_helpers = import_repo_module(__file__, "scripts.staged_commit_gate_plan_helpers")
 
 GateCommand = _plan_helpers.GateCommand
@@ -212,7 +212,7 @@ def _touches_current_pointer_freshness_surface(paths: list[str]) -> bool:
         "scripts/gates_support/record_quality_runtime.py",
         "skills/public/quality/scripts/check_runtime_budget.py",
         "skills/public/quality/scripts/runtime_budget_lib.py",
-        "scripts/capability_catalog_sources.py",
+        "scripts/adapters/capability_catalog_sources.py",
         "packaging/charness.json",
         "plugins/charness/.codex-plugin/plugin.json",
         "plugins/charness/.claude-plugin/plugin.json",

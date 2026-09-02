@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.quality_adapter_lib import (
+from scripts.adapters.quality_adapter_lib import (
     ABSENCE_STRUCTURAL_FIELDS,
     PATH_BEARING_ABSENCE_FIELDS,
     infer_quality_defaults,
@@ -24,7 +24,7 @@ from scripts.quality_adapter_lib import (
     names_a_filesystem_location,
     path_bearing_entries,
 )
-from scripts.quality_bootstrap_lib import build_bootstrap_state
+from scripts.adapters.quality_bootstrap_lib import build_bootstrap_state
 
 from .support import ROOT
 from .test_quality_bootstrap_absence import (

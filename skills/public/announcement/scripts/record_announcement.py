@@ -29,11 +29,11 @@ requires_delivery_verification = _verification_lib.requires_delivery_verificatio
 resolve_manual_disposition = _verification_lib.resolve_manual_disposition
 run_readback_probe = _verification_lib.run_readback_probe
 
-_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.announcement_adapter_lib")
+_adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.announcement_adapter_lib")
 DELIVERY_KINDS = _adapter_lib.DELIVERY_KINDS
 load_announcement_adapter = _adapter_lib.load_announcement_adapter
 _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.adapter_version_verdict"
+    __file__, "scripts.adapters.adapter_version_verdict"
 )
 normalize_delivery_kind = _adapter_lib.normalize_delivery_kind
 

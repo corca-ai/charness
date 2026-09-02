@@ -55,8 +55,8 @@ if _EARLY_BYTECODE_GUARD:
 heartbeat_interval_from_env = _subprocess_guard.heartbeat_interval_from_env
 run_monitored_phase = _subprocess_guard.run_monitored_phase
 
-_quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
-_quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+_quality_universes = import_repo_module(__file__, "scripts.adapters.quality_universes_lib")
+_quality_adapter = import_repo_module(__file__, "scripts.adapters.quality_adapter_lib")
 DEFAULT_UNIVERSES = _quality_universes.DEFAULT_UNIVERSES
 matching_files = _quality_universes.matching_files
 refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty

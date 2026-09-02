@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from scripts.control_plane_lib import (
+from scripts.adapters.control_plane_lib import (
     load_lock_schema,
     read_lock,
     validate_lock_data,

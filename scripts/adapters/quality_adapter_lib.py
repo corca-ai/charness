@@ -6,17 +6,33 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.adapter_lib import (  # noqa: E402
     optional_int,
     optional_string,
     optional_string_list,
     resolve_adapter_payload,
 )
-from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
-from scripts.quality_bootstrap_absence import remove_nested_absences
-from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
-from scripts.quality_dup_ratchet_policy import DEFAULT_DUP_RATCHET, validate_dup_ratchet
-from scripts.quality_policy_defaults import (
+from scripts.adapters.quality_bootstrap_absence import remove_nested_absences  # noqa: E402
+from scripts.adapters.quality_bootstrap_lib import ADAPTER_CANDIDATES  # noqa: E402
+from scripts.adapters.quality_dup_ratchet_policy import (  # noqa: E402
+    DEFAULT_DUP_RATCHET,
+    validate_dup_ratchet,
+)
+from scripts.adapters.quality_policy_defaults import (  # noqa: E402
     DEFAULT_CHANGED_LINE_MUTATION_GATE,
     DEFAULT_COVERAGE_FLOOR_POLICY,
     DEFAULT_MUTATION_TESTING,
@@ -35,14 +51,15 @@ from scripts.quality_policy_defaults import (
     validate_skill_ergonomics_gate_rules,
     validate_standing_doc_provenance,
 )
-from scripts.quality_universes_lib import DEFAULT_UNIVERSES
+from scripts.adapters.quality_universes_lib import DEFAULT_UNIVERSES  # noqa: E402
+from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN  # noqa: E402
 
 ARTIFACT_FILENAME = "latest.md"
 ARTIFACT_CLASS = "history"
 
 
 def _load_adapter_validators():
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     candidates = (
         repo_root / "skills" / "public" / "quality" / "scripts",
         repo_root / "skills" / "quality" / "scripts",

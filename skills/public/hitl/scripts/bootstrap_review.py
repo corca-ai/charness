@@ -17,13 +17,13 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 
-_scripts_render_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_yaml_render_lib")
+_scripts_render_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.adapter_yaml_render_lib")
 render_yaml_mapping = _scripts_render_lib_module.render_yaml_mapping
 emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output").emit_yaml
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
 _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.adapter_version_verdict"
+    __file__, "scripts.adapters.adapter_version_verdict"
 )
 _SCRATCHPAD_TEMPLATE = Template(
     (Path(__file__).resolve().parent / "templates" / "scratchpad.md.txt").read_text(encoding="utf-8")

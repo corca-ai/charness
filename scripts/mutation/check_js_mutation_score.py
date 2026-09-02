@@ -26,6 +26,7 @@ from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
+from scripts.adapters.quality_adapter_lib import load_quality_adapter  # noqa: E402
 from scripts.mutation.mutation_baseline_abort_lib import (  # noqa: E402
     DEFAULT_BASELINE_ABORT_MARKER,
     UNMEASURED_STATUS,
@@ -34,7 +35,6 @@ from scripts.mutation.mutation_baseline_abort_lib import (  # noqa: E402
     resolve_baseline_abort_marker,
     verdict_token,
 )
-from scripts.quality_adapter_lib import load_quality_adapter  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:

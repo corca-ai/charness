@@ -20,7 +20,7 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 
 
-_scripts_adapter_init_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_init_lib")
+_scripts_adapter_init_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.adapter_init_lib")
 base_adapter_items = _scripts_adapter_init_lib_module.base_adapter_items
 run_init_adapter = _scripts_adapter_init_lib_module.run_init_adapter
 resolve_existing_adapter_state = _scripts_adapter_init_lib_module.resolve_existing_adapter_state

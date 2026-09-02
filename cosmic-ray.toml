@@ -1,5 +1,5 @@
 [cosmic-ray]
-module-path = ["scripts/control_plane_lib.py"]
+module-path = ["scripts/adapters/control_plane_lib.py"]
 timeout = 300.0
 excluded-modules = []
 test-command = "env CHARNESS_ALLOW_BARE_PYTEST=1 python3 -m pytest -q -m 'not release_only' tests"

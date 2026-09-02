@@ -22,7 +22,7 @@ run_process = SKILL_RUNTIME.load_repo_module_from_skill_script(
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.adapter_version_verdict"
+    __file__, "scripts.adapters.adapter_version_verdict"
 )
 load_adapter = _resolve_adapter.load_adapter
 REQUESTED_REVIEW_TIMEOUT_SECONDS = 300

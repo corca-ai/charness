@@ -342,7 +342,7 @@ def test_sample_script_removes_stale_marker_on_successful_start(
         dedent(
             """\
             [cosmic-ray]
-            module-path = ["scripts/control_plane_lib.py"]
+            module-path = ["scripts/adapters/control_plane_lib.py"]
             timeout = 30.0
             test-command = "python3 -m pytest -q tests"
             """

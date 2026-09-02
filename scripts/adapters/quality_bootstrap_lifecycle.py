@@ -12,15 +12,29 @@ import json
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.adapter_lib import (  # noqa: E402
     _find_mapping_separator,
     inline_comment_start,
     load_yaml,
     plan_generated_write,
     strip_inline_comment,
 )
-from scripts.core.path_portability_lib import repo_relative
-from scripts.quality_bootstrap_render import render_bootstrap_adapter
+from scripts.adapters.quality_bootstrap_render import render_bootstrap_adapter  # noqa: E402
+from scripts.core.path_portability_lib import repo_relative  # noqa: E402
 
 
 def _value_text(value: Any) -> str:
@@ -178,7 +192,10 @@ def bootstrap_quality_adapter(
     """Run the quality adapter lifecycle with an explicit migration boundary."""
     # Keep the state builder dependency local: the builder owns detection and merge
     # policy, while this module owns write authorization and migration behavior.
-    from scripts.quality_bootstrap_lib import BootstrapValidationError, build_bootstrap_state
+    from scripts.adapters.quality_bootstrap_lib import (
+        BootstrapValidationError,
+        build_bootstrap_state,
+    )
 
     adapter_path = output_path if output_path.is_absolute() else repo_root / output_path
     resolved_report_path = report_path if report_path.is_absolute() else repo_root / report_path

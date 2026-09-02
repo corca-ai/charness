@@ -25,7 +25,7 @@ def _repo_root() -> Path:
 
 def load_adapter(repo_root: Path) -> dict[str, object]:
     sys.path.insert(0, str(_repo_root()))
-    from scripts.narrative_adapter_lib import load_narrative_adapter
+    from scripts.adapters.narrative_adapter_lib import load_narrative_adapter
 
     return normalize_adapter_result(load_narrative_adapter(repo_root), skill_id="narrative")
 

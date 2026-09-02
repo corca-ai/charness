@@ -214,10 +214,10 @@
       "description": "Deterministic capability inventory, stale-path resolver, and canonical current-pointer artifacts.",
       "source_paths": [
         "charness",
-        "scripts/capability_catalog.py",
-        "scripts/capability_catalog_artifact.py",
-        "scripts/capability_catalog_resolver.py",
-        "scripts/capability_catalog_sources.py"
+        "scripts/adapters/capability_catalog.py",
+        "scripts/adapters/capability_catalog_artifact.py",
+        "scripts/adapters/capability_catalog_resolver.py",
+        "scripts/adapters/capability_catalog_sources.py"
       ],
       "derived_paths": [
         "charness-artifacts/capability-catalog/latest.md",
@@ -239,7 +239,7 @@
       "source_paths": [
         ".agents/consumer-validator-adoption.yaml",
         "scripts/gates/check_consumer_validator_catalog.py",
-        "scripts/capability_catalog.py",
+        "scripts/adapters/capability_catalog.py",
         "scripts/plugin_export/packaging_lib.py",
         "scripts/run-quality.sh",
         "scripts/staged_commit_gate_plan.py",
@@ -247,8 +247,8 @@
       ],
       "derived_paths": [
         "plugins/charness/scripts/check_consumer_validator_catalog.py",
-        "plugins/charness/scripts/capability_catalog.py",
-        "plugins/charness/scripts/plugin_export/packaging_lib.py",
+        "plugins/charness/scripts/adapters/capability_catalog.py",
+        "plugins/charness/scripts/packaging_lib.py",
         "plugins/charness/scripts/run-quality.sh",
         "plugins/charness/scripts/staged_commit_gate_plan.py",
         "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml"
@@ -335,8 +335,8 @@
         ".agents/*-adapter.yaml",
         "scripts/adapter*_lib.py",
         "scripts/**/adapter*_lib.py",
-        "scripts/adapter_init_lib.py",
-        "scripts/simple_skill_adapter_lib.py"
+        "scripts/adapters/adapter_init_lib.py",
+        "scripts/adapters/simple_skill_adapter_lib.py"
       ],
       "derived_paths": [],
       "sync_commands": [],
@@ -479,7 +479,7 @@
         "skills/public/gather/scripts/gather_public_url.py"
       ],
       "derived_paths": [
-        "plugins/charness/scripts/plugin_export/packaging_lib.py",
+        "plugins/charness/scripts/packaging_lib.py",
         "plugins/charness/packaging/bootstrap-python.json",
         "plugins/charness/packaging/bootstrap-requirements.txt",
         "plugins/charness/skills/gather/scripts/gather_public_url.py"
@@ -518,17 +518,17 @@
         "skills/public/quality/scripts/templates/mutation-tests.yml"
       ],
       "derived_paths": [
-        "plugins/charness/scripts/mutation/check_changed_line_mutation_coverage.py",
-        "plugins/charness/scripts/mutation/check_js_mutation_score.py",
-        "plugins/charness/scripts/mutation/check_mutation_score.py",
-        "plugins/charness/scripts/mutation/check_mutation_suite_score.py",
-        "plugins/charness/scripts/mutation/filter_cosmic_ray_mutants.py",
-        "plugins/charness/scripts/mutation/mutation_coverage_producer.py",
-        "plugins/charness/scripts/mutation/mutation_manifest_lib.py",
-        "plugins/charness/scripts/mutation/mutation_sampling_lib.py",
-        "plugins/charness/scripts/mutation/run_cosmic_ray_mutation.py",
-        "plugins/charness/scripts/mutation/run_js_mutation.py",
-        "plugins/charness/scripts/mutation/sample_mutation_files.py",
+        "plugins/charness/scripts/check_changed_line_mutation_coverage.py",
+        "plugins/charness/scripts/check_js_mutation_score.py",
+        "plugins/charness/scripts/check_mutation_score.py",
+        "plugins/charness/scripts/check_mutation_suite_score.py",
+        "plugins/charness/scripts/filter_cosmic_ray_mutants.py",
+        "plugins/charness/scripts/mutation_coverage_producer.py",
+        "plugins/charness/scripts/mutation_manifest_lib.py",
+        "plugins/charness/scripts/mutation_sampling_lib.py",
+        "plugins/charness/scripts/run_cosmic_ray_mutation.py",
+        "plugins/charness/scripts/run_js_mutation.py",
+        "plugins/charness/scripts/sample_mutation_files.py",
         "plugins/charness/skills/quality/scripts/templates/mutation-tests.yml"
       ],
       "sync_commands": [
@@ -716,10 +716,10 @@
       "description": "Local cited lesson history and its pure selection projections.",
       "source_paths": [
         "charness-artifacts/retro/lesson-ledger.json",
-        "scripts/lesson_ledger_lib.py",
-        "scripts/lesson_selection_preview_lib.py",
+        "scripts/lessons/lesson_ledger_lib.py",
+        "scripts/lessons/lesson_selection_preview_lib.py",
         "scripts/lessons/check_lesson_ledger.py",
-        "scripts/record_lesson_score.py"
+        "scripts/lessons/record_lesson_score.py"
       ],
       "derived_paths": [
         "plugins/charness/scripts/lesson_ledger_lib.py",
@@ -763,9 +763,9 @@
       "description": "External tool manifests and install, update, doctor, support-sync, and upstream-release helpers whose behavior depends on host state.",
       "source_paths": [
         "integrations/tools/**",
-        "scripts/control_plane_lib.py",
-        "scripts/control_plane_lifecycle_lib.py",
-        "scripts/control_plane_render.py",
+        "scripts/adapters/control_plane_lib.py",
+        "scripts/adapters/control_plane_lifecycle_lib.py",
+        "scripts/adapters/control_plane_render.py",
         "scripts/doctor.py",
         "scripts/doctor_lib.py",
         "scripts/install_provenance_lib.py",
@@ -777,9 +777,9 @@
       ],
       "derived_paths": [
         "plugins/charness/integrations/tools/**",
-        "plugins/charness/scripts/control_plane_lib.py",
-        "plugins/charness/scripts/control_plane_lifecycle_lib.py",
-        "plugins/charness/scripts/control_plane_render.py",
+        "plugins/charness/scripts/adapters/control_plane_lib.py",
+        "plugins/charness/scripts/adapters/control_plane_lifecycle_lib.py",
+        "plugins/charness/scripts/adapters/control_plane_render.py",
         "plugins/charness/scripts/doctor.py",
         "plugins/charness/scripts/doctor_lib.py",
         "plugins/charness/scripts/install_provenance_lib.py",
@@ -802,8 +802,8 @@
       "description": "Integration manifests and control-plane helper scripts.",
       "source_paths": [
         "integrations/**",
-        "scripts/control_plane_lib.py",
-        "scripts/control_plane_render.py",
+        "scripts/adapters/control_plane_lib.py",
+        "scripts/adapters/control_plane_render.py",
         "scripts/install_provenance_lib.py",
         "scripts/install_tools.py",
         "scripts/support_sync_lib.py",
@@ -893,9 +893,9 @@
         "skills/public/quality/scripts/render_runtime_summary.py",
         "scripts/gates_support/lint_ignore_inventory_lib.py",
         "scripts/gates/check_code_lengths.py",
-        "scripts/capability_catalog_sources.py",
+        "scripts/adapters/capability_catalog_sources.py",
         "skills/public/quality/references/automation-promotion.md",
-        "scripts/capability_catalog_artifact.py",
+        "scripts/adapters/capability_catalog_artifact.py",
         "skills/public/quality/references/gate-classification.md"
       ],
       "derived_paths": [],

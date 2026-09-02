@@ -14,18 +14,19 @@ DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS = ["proof: pointer", "proof: pointer-s
 
 def load_repo_script_module(module_name: str) -> Any | None:
     for ancestor in Path(__file__).resolve().parents:
-        candidate = ancestor / "scripts" / f"{module_name}.py"
-        if not candidate.is_file():
-            continue
-        spec = importlib.util.spec_from_file_location(module_name, candidate)
-        if spec is None or spec.loader is None:
-            continue
-        if str(ancestor) not in sys.path:
-            sys.path.insert(0, str(ancestor))
-        module = importlib.util.module_from_spec(spec)
-        sys.modules.setdefault(module_name, module)
-        spec.loader.exec_module(module)
-        return module
+        for package in ("", "adapters"):
+            candidate = ancestor / "scripts" / package / f"{module_name}.py"
+            if not candidate.is_file():
+                continue
+            spec = importlib.util.spec_from_file_location(module_name, candidate)
+            if spec is None or spec.loader is None:
+                continue
+            if str(ancestor) not in sys.path:
+                sys.path.insert(0, str(ancestor))
+            module = importlib.util.module_from_spec(spec)
+            sys.modules.setdefault(module_name, module)
+            spec.loader.exec_module(module)
+            return module
     return None
 
 

@@ -155,8 +155,8 @@ def _tarball_with_single_root() -> bytes:
 def exercise_control_plane_scenarios() -> None:
     import jsonschema
 
-    import scripts.control_plane_lib as control
-    import scripts.control_plane_lifecycle_lib as lifecycle
+    import scripts.adapters.control_plane_lib as control
+    import scripts.adapters.control_plane_lifecycle_lib as lifecycle
 
     result = control.CommandResult("demo", 1, "out", "err")
     lifecycle.command_result_payload(result)
@@ -350,11 +350,11 @@ def exercise_support_sync_scenarios() -> None:
 
 
 def exercise_lifecycle_scenarios() -> None:
-    import scripts.control_plane_lifecycle_lib as lifecycle
+    import scripts.adapters.control_plane_lifecycle_lib as lifecycle
     import scripts.install_tools as install_tools
     import scripts.sync_support as sync_support
     import scripts.update_tools as update_tools
-    from scripts.control_plane_lib import CommandResult
+    from scripts.adapters.control_plane_lib import CommandResult
 
     manifest = _basic_manifest()
     manifest["lifecycle"] = {

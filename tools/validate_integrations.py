@@ -12,7 +12,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
+_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.adapters.control_plane_lib")
 load_lock_schema = _scripts_control_plane_lib_module.load_lock_schema
 load_manifests = _scripts_control_plane_lib_module.load_manifests
 load_manifests_for_discovery = _scripts_control_plane_lib_module.load_manifests_for_discovery

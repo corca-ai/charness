@@ -27,7 +27,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.quality_adapter_lib import load_quality_adapter_permissive
+from scripts.adapters.quality_adapter_lib import load_quality_adapter_permissive
 
 from .git_fixture_support import init_git_repo
 from .quality_bootstrap_support import seed_quality_repo

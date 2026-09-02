@@ -20,6 +20,12 @@ from textwrap import dedent
 import pytest
 import yaml
 
+from scripts.adapters.quality_adapter_lib import (
+    infer_quality_defaults,
+    load_quality_adapter,
+    validate_quality_adapter_data,
+)
+from scripts.adapters.quality_policy_defaults import DEFAULT_MUTATION_TESTING
 from scripts.mutation import check_mutation_score
 from scripts.mutation.check_mutation_score import (
     iter_dump_records,
@@ -30,12 +36,6 @@ from scripts.mutation.filter_cosmic_ray_mutants import (
     coverage_skip_reason,
     is_trivial_entry_guard_mutation,
 )
-from scripts.quality_adapter_lib import (
-    infer_quality_defaults,
-    load_quality_adapter,
-    validate_quality_adapter_data,
-)
-from scripts.quality_policy_defaults import DEFAULT_MUTATION_TESTING
 from tests.quality_gates.support import run_loaded_script_main, run_script
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -343,7 +343,7 @@ def test_auto_issue_label_with_comma_is_refused() -> None:
     literally but can never be listed back: the workflow would file a duplicate on
     every failing run and never annotate a recovery candidate, silently. Refuse the
     config rather than ship the silent failure."""
-    from scripts.quality_policy_defaults import _validate_mutation_auto_issue
+    from scripts.adapters.quality_policy_defaults import _validate_mutation_auto_issue
 
     validated: dict = {}
     errors: list[str] = []

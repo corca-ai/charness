@@ -6,8 +6,21 @@ import re
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_field_application import apply_optional_fields
-from scripts.adapter_lib import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.adapter_lib import (  # noqa: E402
     declared_fields_after_version_check,
     list_field_state,
     load_yaml_file_report,
@@ -15,8 +28,9 @@ from scripts.adapter_lib import (
     parse_failure_error,
     uninterpreted_warnings,
 )
-from scripts.adapter_version_verdict import declarations_unhonored
-from scripts.artifact_naming_lib import RECORD_PATTERN
+from scripts.adapters.adapter_field_application import apply_optional_fields  # noqa: E402
+from scripts.adapters.adapter_version_verdict import declarations_unhonored  # noqa: E402
+from scripts.artifact_naming_lib import RECORD_PATTERN  # noqa: E402
 
 KIND_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 BUILTIN_KINDS = frozenset({"issues", "path"})

@@ -25,9 +25,9 @@ from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 _repo_file_listing = import_repo_module(__file__, "scripts.core.repo_file_listing")
 RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
 iter_repo_files = _repo_file_listing.iter_repo_files
-_quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
+_quality_adapter = import_repo_module(__file__, "scripts.adapters.quality_adapter_lib")
 load_quality_adapter = _quality_adapter.load_quality_adapter
-_quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
+_quality_universes = import_repo_module(__file__, "scripts.adapters.quality_universes_lib")
 DEFAULT_UNIVERSES = _quality_universes.DEFAULT_UNIVERSES
 matching_files = _quality_universes.matching_files
 refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty
