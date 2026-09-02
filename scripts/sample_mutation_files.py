@@ -55,9 +55,16 @@ MUTATION_POOLS = {
         "runtime_bootstrap.py",
         "skill_runtime_bootstrap.py",
         "scripts/*.py",
+        "scripts/**/*.py",
     ),
-    "public-skill-python": ("skills/public/*/scripts/*.py",),
-    "support-skill-python": ("skills/support/*/scripts/*.py",),
+    "public-skill-python": (
+        "skills/public/*/scripts/*.py",
+        "skills/public/*/scripts/**/*.py",
+    ),
+    "support-skill-python": (
+        "skills/support/*/scripts/*.py",
+        "skills/support/*/scripts/**/*.py",
+    ),
 }
 EXCLUDED_NAMES = {"__init__.py"}
 DEFAULT_MAX_FILES = 10
@@ -305,12 +312,19 @@ def output_paths(args: argparse.Namespace, repo_root: Path) -> tuple[Path, Path]
 
 
 def report_no_eligible(coverage_enabled: bool, test_command: str) -> None:
+    pools = ", ".join(
+        pattern for patterns in MUTATION_POOLS.values() for pattern in patterns
+    )
     if coverage_enabled:
         sys.stderr.write(
-            f"no eligible mutation pool files had coverage from {test_command!r}\n"
+            f"refusing empty matched mutation universe; no eligible mutation pool files "
+            f"had coverage from {test_command!r} (globs: {pools})\n"
         )
     else:
-        sys.stderr.write("no eligible files matched the configured mutation pools\n")
+        sys.stderr.write(
+            f"refusing empty matched mutation universe; no eligible files matched the "
+            f"configured mutation pools (globs: {pools})\n"
+        )
 
 
 def select_sample_files(

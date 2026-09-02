@@ -177,7 +177,7 @@ def _tracked_files(own_root: Path, anchors: Iterable[Path], loaded_modules: Iter
         # packages `skills/` holds in the source layout; keying only on `skills` left
         # every exported support/shared entry point comparing one lone file.
         if anchor.relative_to(own_root).parts[0] in {"skills", "support", "shared"}:
-            files.extend(sorted(p for p in anchor.parent.glob("*.py") if p not in files))
+            files.extend(sorted(p for p in anchor.parent.rglob("*.py") if p not in files))
     for module in modules:
         module_file = getattr(module, "__file__", None)
         if not isinstance(module_file, str):

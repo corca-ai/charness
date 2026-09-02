@@ -348,6 +348,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-test-completeness", "check_test_completeness.py"),
     ("check-test-production-ratio", "check_test_production_ratio.py"),
     ("check-boundary-bypass-ratchet", "check_boundary_bypass_ratchet.py"),
+    ("check-unreferenced-scripts", "check_unreferenced_scripts.py"),
     ("check-consumer-validator-catalog", "check_consumer_validator_catalog.py"),
     ("release-changed-line-coverage", "release_changed_line_coverage.py"),
     ("run-evals", "run_evals.py"),

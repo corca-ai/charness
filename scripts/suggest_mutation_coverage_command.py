@@ -207,7 +207,7 @@ def _local_loader_ancestor_levels(repo_root: Path, path: str) -> list[list[str]]
             directory = repo_root / child.parent
             if not directory.is_dir():
                 continue
-            for candidate in directory.glob("*.py"):
+            for candidate in directory.rglob("*.py"):
                 relative = candidate.relative_to(repo_root).as_posix()
                 if relative in related:
                     continue

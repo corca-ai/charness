@@ -2,32 +2,20 @@
 
 from __future__ import annotations
 
-import importlib.util
 import runpy
 from pathlib import Path
 from typing import Any
 
+_LOCAL_IMPORT = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))
+_load_local = _LOCAL_IMPORT["sibling_loader"](__file__)
+
 
 def _load_achieve(name: str, alias: str) -> Any:
-    here = Path(__file__).resolve()
-    for ancestor in here.parents:
-        candidate = ancestor / "achieve" / "scripts" / f"{name}.py"
-        if not candidate.is_file():
-            continue
-        spec = importlib.util.spec_from_file_location(alias, candidate)
-        if spec is None or spec.loader is None:
-            raise ImportError(f"unable to load canonical Achieve module {candidate}")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return module
-    raise ImportError(f"canonical Achieve module {name!r} was not found")
+    return _LOCAL_IMPORT["load_achieve"](name, alias, caller_file=__file__)
 
 
 BINDING = _load_achieve("goal_binding", "issue_goal_run_binding_contract")
 PICKUP = _load_achieve("goal_run_pickup_contract", "issue_goal_run_pickup_contract")
-_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))[
-    "sibling_loader"
-](__file__)
 AMENDMENT = _load_local(
     "issue_goal_run_parent_amendment", "issue_goal_run_parent_amendment_contract"
 )
@@ -283,87 +271,10 @@ def require_created_children(
         unmatched.remove(matches[0])
 
 
-def validate_parent_metadata(
-    metadata: dict[str, Any],
-    binding: dict[str, Any],
-    *,
-    repo: str,
-    parent_number: int,
-    parent_url: str | None = None,
-) -> dict[str, Any]:
-    """Validate Goal Run metadata against one complete binding, not a Work Item."""
-    try:
-        PICKUP.validate_metadata(
-            metadata,
-            repo=repo,
-            parent_number=parent_number,
-            parent_url=parent_url or _parent_identity(repo, parent_number)["url"],
-        )
-    except PICKUP.PickupError as exc:
-        raise RuntimeError(str(exc)) from exc
-    if metadata["binding_schema"] != binding["kind"]:
-        raise RuntimeError(
-            "Goal Run metadata binding schema differs from the immutable Goal Binding"
-        )
-    if metadata["binding_sha256"] != binding["binding_sha256"]:
-        raise RuntimeError("Goal Run metadata binding hash differs from the immutable Goal Binding")
-    if metadata["draft_sha256"] != binding["draft_sha256"]:
-        raise RuntimeError("Goal Run metadata draft hash differs from the immutable Goal Binding")
-    if metadata["initial_graph_sha256"] != binding["approved_work_items_sha256"]:
-        raise RuntimeError(
-            "Goal Run metadata initial graph differs from the immutable Goal Binding"
-        )
-    if metadata["parent_identity"] != binding["parent"]:
-        raise RuntimeError("Goal Run metadata parent differs from the immutable Goal Binding")
-    return metadata
-
-
-def validate_parent_body_update(
-    current_body: str,
-    desired_body: str,
-    *,
-    binding: dict[str, Any],
-    repo: str,
-    parent_number: int,
-    parent_url: str | None,
-    guard: Any,
-    amendment_authorization_file: Path | None = None,
-) -> None:
-    AMENDMENT.validate_parent_body_update(
-        current_body,
-        desired_body,
-        binding=binding,
-        repo=repo,
-        parent_number=parent_number,
-        parent_url=parent_url,
-        guard=guard,
-        validate_parent_metadata=validate_parent_metadata,
-        canonical_json_bytes=BINDING.canonical_json_bytes,
-        amendment_authorization_file=amendment_authorization_file,
-    )
-
-
-def parent_body_validator(
-    binding: dict[str, Any],
-    *,
-    repo: str,
-    parent_number: int,
-    guard: Any,
-    amendment_authorization_file: Path | None = None,
-) -> Any:
-    def validate(current_body: str, desired_body: str) -> None:
-        validate_parent_body_update(
-            current_body,
-            desired_body,
-            binding=binding,
-            repo=repo,
-            parent_number=parent_number,
-            parent_url=f"https://github.com/{repo}/issues/{parent_number}",
-            guard=guard,
-            amendment_authorization_file=amendment_authorization_file,
-        )
-
-    return validate
+PARENT_BODY = _load_local("issue_goal_run_parent_body", "issue_goal_run_binding_parent_body")
+validate_parent_metadata = PARENT_BODY.validate_parent_metadata
+validate_parent_body_update = PARENT_BODY.validate_parent_body_update
+parent_body_validator = PARENT_BODY.parent_body_validator
 
 
 def validate_operation_binding(

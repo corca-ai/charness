@@ -64,6 +64,21 @@ def test_check_code_lengths_rejects_too_long_skill_helper_file(tmp_path: Path) -
     assert "tokei code lines 361 exceed limit 360" in result.stderr
 
 
+def test_check_code_lengths_rejects_an_oversize_shell_file(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True)
+    (scripts_dir / "too-long.sh").write_text(
+        "\n".join(["#!/usr/bin/env bash", *["true" for _ in range(205)]]) + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/check_code_lengths.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "scripts/too-long.sh: physical lines 206 exceed limit 205" in result.stderr
+
+
 def test_check_code_lengths_reports_all_over_limit_files_in_one_run(tmp_path: Path) -> None:
     """One bad file must not hide later hard failures in the same listing."""
     repo = tmp_path / "repo"

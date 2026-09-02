@@ -266,6 +266,33 @@ def test_sample_pool_includes_core_and_skill_helper_python(tmp_path: Path) -> No
     assert pool_for_path("skills/support/web-fetch/scripts/helper.py") == "support-skill-python"
 
 
+def test_sample_refuses_when_repo_contains_only_out_of_pool_files(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "other").mkdir(parents=True)
+    (repo / "other" / "not_a_mutation_target.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "cosmic-ray.toml").write_text(
+        "[cosmic-ray]\ntest-command = 'python3 -m pytest -q tests'\n", encoding="utf-8"
+    )
+
+    result = subprocess.run(
+        [
+            "python3",
+            "scripts/sample_mutation_files.py",
+            "--repo-root",
+            str(repo),
+            "--skip-coverage",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert "refusing empty matched mutation universe" in result.stderr
+    assert "scripts/*.py" in result.stderr
+
+
 def test_changed_sample_pathspecs_cover_all_mutation_pools() -> None:
     pathspecs = mutation_pathspecs()
 

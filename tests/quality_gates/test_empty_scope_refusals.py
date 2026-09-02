@@ -13,6 +13,7 @@ artifact of this family" is a real answer to a real question, and stays a cheap
 no-op; that asymmetry is pinned below too, because collapsing it would make
 every commit pay for every artifact family.
 """
+
 from __future__ import annotations
 
 import subprocess
@@ -38,6 +39,7 @@ _MODULES = {
         "scripts/validate_ideation_artifact.py",
         "scripts/check_mutation_run_proof.py",
         "scripts/check_code_lengths.py",
+        "scripts/check_python_runtime_inheritance.py",
         "scripts/check_skill_bootstrap_vars.py",
         "scripts/check_skill_cut_safety.py",
         "scripts/check_skill_surface_preflight.py",
@@ -58,7 +60,10 @@ def run_gate(script: str, *args: str):
 
 def _git(repo: Path, *args: str) -> None:
     subprocess.run(
-        ["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=repo, check=True, capture_output=True
+        ["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
+        cwd=repo,
+        check=True,
+        capture_output=True,
     )
 
 
@@ -142,8 +147,10 @@ def test_named_path_that_resolves_to_nothing_refuses(tmp_path: Path) -> None:
 def test_named_critique_path_traversal_refuses(tmp_path: Path) -> None:
     result = run_gate(
         "scripts/validate_critique_artifacts.py",
-        "--repo-root", str(tmp_path),
-        "--paths", "charness-artifacts/critique/../../outside.md",
+        "--repo-root",
+        str(tmp_path),
+        "--paths",
+        "charness-artifacts/critique/../../outside.md",
     )
     assert result.returncode != 0, result.stdout + result.stderr
     assert "resolve to nothing" in (result.stdout + result.stderr)
@@ -156,7 +163,10 @@ def test_named_path_from_another_family_is_not_this_validator_business(tmp_path:
     (tmp_path / "charness-artifacts/critique").mkdir(parents=True)
     result = run_gate(
         "scripts/validate_critique_artifacts.py",
-        "--repo-root", str(tmp_path), "--paths", "scripts/unrelated.py",
+        "--repo-root",
+        str(tmp_path),
+        "--paths",
+        "scripts/unrelated.py",
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
@@ -174,8 +184,10 @@ def test_named_path_the_validator_filters_out_still_passes(tmp_path: Path) -> No
     )
     result = run_gate(
         "scripts/validate_critique_artifacts.py",
-        "--repo-root", str(tmp_path),
-        "--paths", "charness-artifacts/critique/2026-07-27-demo-packet.md",
+        "--repo-root",
+        str(tmp_path),
+        "--paths",
+        "charness-artifacts/critique/2026-07-27-demo-packet.md",
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
@@ -193,8 +205,10 @@ def test_named_path_deleted_by_this_change_still_passes(tmp_path: Path) -> None:
 
     result = run_gate(
         "scripts/validate_critique_artifacts.py",
-        "--repo-root", str(repo),
-        "--paths", "charness-artifacts/critique/2026-07-27-old.md",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/critique/2026-07-27-old.md",
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
@@ -227,7 +241,12 @@ def test_mutation_run_proof_refuses_without_a_run() -> None:
 def test_mutation_run_proof_still_confirms_a_green_identified_run() -> None:
     result = run_gate(
         "scripts/check_mutation_run_proof.py",
-        "--claim", "score", "--event", "schedule", "--conclusion", "success",
+        "--claim",
+        "score",
+        "--event",
+        "schedule",
+        "--conclusion",
+        "success",
     )
     assert result.returncode == 0, result.stdout + result.stderr
     verdict = yaml.safe_load(result.stdout)
@@ -239,7 +258,9 @@ def test_provable_says_whether_the_run_was_known_green() -> None:
     """A manifest carries no conclusion, so `provable` there means "this trigger
     could evaluate the claim", not "and the run was green". The verdict must not
     let one word carry both."""
-    result = run_gate("scripts/check_mutation_run_proof.py", "--claim", "score", "--event", "schedule")
+    result = run_gate(
+        "scripts/check_mutation_run_proof.py", "--claim", "score", "--event", "schedule"
+    )
     verdict = yaml.safe_load(result.stdout)
     assert verdict["provable"] is True
     assert verdict["conclusion_established"] is False
@@ -250,7 +271,12 @@ def test_known_red_run_is_distinguishable_from_unknown_conclusion() -> None:
     False would collapse "known red" into "nobody checked"."""
     red = run_gate(
         "scripts/check_mutation_run_proof.py",
-        "--claim", "score", "--event", "schedule", "--conclusion", "failure",
+        "--claim",
+        "score",
+        "--event",
+        "schedule",
+        "--conclusion",
+        "failure",
     )
     verdict = yaml.safe_load(red.stdout)
     assert red.returncode != 0
@@ -272,8 +298,10 @@ def test_skill_cut_safety_named_non_skill_path_refuses() -> None:
     checks -- a green verdict for a question that was never evaluated."""
     result = run_gate(
         "scripts/check_skill_cut_safety.py",
-        "--repo-root", str(ROOT),
-        "--path", "skills/public/release/references/critique-boundary.md",
+        "--repo-root",
+        str(ROOT),
+        "--path",
+        "skills/public/release/references/critique-boundary.md",
     )
     assert result.returncode != 0, result.stdout + result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -285,7 +313,10 @@ def test_skill_cut_safety_named_skill_md_still_passes() -> None:
     """Control: a named SKILL.md with no broken pin is a real clean verdict."""
     result = run_gate(
         "scripts/check_skill_cut_safety.py",
-        "--repo-root", str(ROOT), "--path", "skills/public/achieve/SKILL.md",
+        "--repo-root",
+        str(ROOT),
+        "--path",
+        "skills/public/achieve/SKILL.md",
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert yaml.safe_load(result.stdout)["status"] == "clean"
@@ -296,8 +327,10 @@ def test_skill_core_headroom_absolute_path_refuses() -> None:
     ABSOLUTE path of a real SKILL.md was dropped and reported `status: ok`."""
     result = run_gate(
         "scripts/check_skill_surface_preflight.py",
-        "--repo-root", str(ROOT),
-        "--changed-skill-md", str(ROOT / "skills/public/impl/SKILL.md"),
+        "--repo-root",
+        str(ROOT),
+        "--changed-skill-md",
+        str(ROOT / "skills/public/impl/SKILL.md"),
     )
     assert result.returncode != 0, result.stdout + result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -320,7 +353,10 @@ def test_skill_core_headroom_relative_path_still_passes() -> None:
     caller names it, is really ratcheted."""
     result = run_gate(
         "scripts/check_skill_surface_preflight.py",
-        "--repo-root", str(ROOT), "--changed-skill-md", "skills/public/impl/SKILL.md",
+        "--repo-root",
+        str(ROOT),
+        "--changed-skill-md",
+        "skills/public/impl/SKILL.md",
     )
     assert result.returncode == 0, result.stdout + result.stderr
     payload = yaml.safe_load(result.stdout)
@@ -344,33 +380,50 @@ def test_code_lengths_unresolvable_named_path_refuses() -> None:
     relative to a subdirectory) measured zero files and printed `Validated ... 0
     file(s).` -- a hard length gate passing over nothing."""
     result = run_gate(
-        "scripts/check_code_lengths.py", "--repo-root", str(ROOT), "--paths", "scripts/no_such_file.py"
+        "scripts/check_code_lengths.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "scripts/no_such_file.py",
     )
     assert result.returncode != 0, result.stdout + result.stderr
     assert "resolve to nothing" in (result.stdout + result.stderr)
 
 
-def test_code_lengths_named_ungated_paths_pass_without_a_validated_verdict() -> None:
-    """The false-refusal boundary, and why this half is NOT a refusal: the staged
-    pre-commit caller hands over staged .py files, and real ones sit outside the
-    gated globs (`runtime_bootstrap.py`, the generated `plugins/` mirror). Failing
-    those would block a legitimate commit -- but the run may not claim it validated."""
+def test_code_lengths_named_ungated_paths_refuse_empty_universe() -> None:
+    """S40: a named path outside the gate's universe must not become a green zero."""
     result = run_gate(
         "scripts/check_code_lengths.py", "--repo-root", str(ROOT), "--paths", "runtime_bootstrap.py"
     )
-    assert result.returncode == 0, result.stdout + result.stderr
-    # Formatted from the gate's own template, not re-spelled: renaming this message
-    # used to mean chasing string literals across test files serially. The COUNT is
-    # still the assertion -- a run that validated nothing may not claim a verdict.
-    assert _CODE_LENGTHS.validated_verdict(0) not in result.stdout
-    assert "nothing was validated" in result.stdout
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "refusing empty matched universe" in (result.stdout + result.stderr)
+    assert "gated globs" in (result.stdout + result.stderr)
+
+
+def test_code_lengths_empty_out_of_glob_root_refuses(tmp_path: Path) -> None:
+    (tmp_path / "top_level.py").write_text("VALUE = 1\n", encoding="utf-8")
+    result = run_gate("scripts/check_code_lengths.py", "--repo-root", str(tmp_path))
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "refusing empty matched universe" in (result.stdout + result.stderr)
+    assert "scripts/*.py" in (result.stdout + result.stderr)
+
+
+def test_python_runtime_inheritance_empty_out_of_glob_root_refuses(tmp_path: Path) -> None:
+    (tmp_path / "top_level.py").write_text("VALUE = 1\n", encoding="utf-8")
+    result = run_gate("scripts/check_python_runtime_inheritance.py", "--repo-root", str(tmp_path))
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "refusing empty matched universe" in (result.stdout + result.stderr)
+    assert "scripts/*.py" in (result.stdout + result.stderr)
 
 
 def test_code_lengths_named_gated_path_still_validates() -> None:
     """Control: the ordinary staged-file invocation still measures and passes."""
     result = run_gate(
         "scripts/check_code_lengths.py",
-        "--repo-root", str(ROOT), "--paths", "scripts/check_code_lengths.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "scripts/check_code_lengths.py",
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert _CODE_LENGTHS.validated_verdict(1) in result.stdout
@@ -712,9 +765,12 @@ def test_per_file_floor_payload_names_the_unestablished_scope() -> None:
 
     # A payload MISSING the key must fail closed onto the caveat, not take the
     # green numeric arm — round 1, MINOR 2.
-    assert "UNESTABLISHED" in check_coverage.coverage_report(
-        {"per_file_floor": {"violations": [], "warn_band": []}}
-    )["per_file_floor_caveat"]
+    assert (
+        "UNESTABLISHED"
+        in check_coverage.coverage_report({"per_file_floor": {"violations": [], "warn_band": []}})[
+            "per_file_floor_caveat"
+        ]
+    )
 
 
 def test_parity_gate_names_a_job_whose_steps_it_could_not_parse(tmp_path: Path) -> None:

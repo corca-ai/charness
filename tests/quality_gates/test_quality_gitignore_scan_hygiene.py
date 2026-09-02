@@ -89,6 +89,23 @@ def test_gitignore_scan_hygiene_require_empty_fails_on_findings(tmp_path: Path) 
     assert "repo_root.rglob('*')" in result.stdout
 
 
+def test_gitignore_scan_hygiene_refuses_empty_configured_scope(tmp_path: Path) -> None:
+    (tmp_path / "scan.py").write_text("def scan(repo_root):\n    return []\n", encoding="utf-8")
+
+    result = run_script(
+        str(SCRIPT),
+        "--repo-root",
+        str(tmp_path),
+        "--path-glob",
+        "missing/*.py",
+        cwd=ROOT,
+    )
+
+    assert result.returncode == 1
+    assert "refusing empty matched universe" in result.stderr
+    assert "missing/*.py" in result.stderr
+
+
 def test_gitignore_scan_hygiene_strict_listing_fails_closed_outside_git(tmp_path: Path) -> None:
     (tmp_path / "scan.py").write_text("def scan(repo_root):\n    return []\n", encoding="utf-8")
 
@@ -109,6 +126,7 @@ def test_gitignore_scan_hygiene_strict_listing_fails_closed_outside_git(tmp_path
 
 def test_gitignore_scan_hygiene_respects_gitignore_for_inventory_inputs(tmp_path: Path) -> None:
     install_committed_repo(tmp_path, {".gitignore": "ignored/\n"})
+    (tmp_path / "scan.py").write_text("def scan(repo_root):\n    return []\n", encoding="utf-8")
     ignored_dir = tmp_path / "ignored"
     ignored_dir.mkdir()
     (ignored_dir / "bad_scan.py").write_text(

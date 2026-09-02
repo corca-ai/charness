@@ -11,12 +11,20 @@ from git_inventory_lib import visible_repo_files  # noqa: E402
 from summary_output_lib import add_output_args, emit_selected, emit_yaml  # noqa: E402
 
 FINDING_CLASSES = {
-    "structural_fact", "contextual_recommendation", "acknowledgement_gap",
-    "migration_gap", "brittle_hard_gate_smell",
+    "structural_fact",
+    "contextual_recommendation",
+    "acknowledgement_gap",
+    "migration_gap",
+    "brittle_hard_gate_smell",
 }
 ENFORCEMENT_TIERS = {"AUTO_EXISTING", "AUTO_CANDIDATE", "NON_AUTOMATABLE"}
 QUALITY_ADAPTER_CANDIDATES = (Path(".agents/quality-adapter.yaml"),)
-DEFAULT_REVIEW_GLOBS = (".agents/*-adapter.yaml", "skills/public/*/adapter.example.yaml", "scripts/*.py")
+DEFAULT_REVIEW_GLOBS = (
+    ".agents/*-adapter.yaml",
+    "skills/public/*/adapter.example.yaml",
+    "scripts/*.py",
+    "scripts/**/*.py",
+)
 
 
 def _relative(path: Path, repo_root: Path) -> str:
@@ -67,7 +75,14 @@ def _top_level_string_list(text: str, field: str) -> list[str]:
 
 
 def _review_globs(repo_root: Path) -> tuple[list[str], str]:
-    adapter_path = next((repo_root / candidate for candidate in QUALITY_ADAPTER_CANDIDATES if (repo_root / candidate).is_file()), None)
+    adapter_path = next(
+        (
+            repo_root / candidate
+            for candidate in QUALITY_ADAPTER_CANDIDATES
+            if (repo_root / candidate).is_file()
+        ),
+        None,
+    )
     if adapter_path is None:
         return list(DEFAULT_REVIEW_GLOBS), "default"
     text = adapter_path.read_text(encoding="utf-8", errors="replace")
@@ -75,7 +90,11 @@ def _review_globs(repo_root: Path) -> tuple[list[str], str]:
         *_top_level_string_list(text, "adapter_review_sources"),
         *_top_level_string_list(text, "gate_design_review_globs"),
     ]
-    return (configured, _relative(adapter_path, repo_root)) if configured else (list(DEFAULT_REVIEW_GLOBS), "default")
+    return (
+        (configured, _relative(adapter_path, repo_root))
+        if configured
+        else (list(DEFAULT_REVIEW_GLOBS), "default")
+    )
 
 
 def _review_paths(repo_root: Path) -> tuple[list[Path], str]:
@@ -89,6 +108,15 @@ def _review_paths(repo_root: Path) -> tuple[list[Path], str]:
             if path.is_file() and (visible_files is None or path in visible_files)
         )
     unique = sorted({path.resolve(): path for path in paths}.values())
+    # Two empties, two answers. Adapter-NAMED globs that match nothing are a
+    # configured scope resolving to nothing (the S40 shape) and refuse. The
+    # DEFAULT globs matching nothing is a consumer repo with no adapters and no
+    # scripts: a discovered empty set the inventory reports in its YAML payload.
+    if not unique and source != "default":
+        raise SystemExit(
+            "refusing empty matched universe for inventory_adapter_gate_design "
+            f"(review globs: {', '.join(globs)})."
+        )
     return unique, source
 
 
@@ -131,10 +159,13 @@ def _inventory_adapter(path: Path, repo_root: Path) -> list[dict[str, object]]:
                     suggested_action="Resolve quality adapters with safe empty review defaults, then backfill examples.",
                 )
             )
-    has_acknowledgement_items = re.search(
-        r"acknowledged(?:_recommendations)?[ \t]*:[ \t]*\n[ \t]*-[ \t]+",
-        text,
-    ) is not None
+    has_acknowledgement_items = (
+        re.search(
+            r"acknowledged(?:_recommendations)?[ \t]*:[ \t]*\n[ \t]*-[ \t]+",
+            text,
+        )
+        is not None
+    )
     if has_acknowledgement_items and "reason" not in text:
         findings.append(
             _finding(
@@ -213,7 +244,12 @@ def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the adapter-and-gate-design inventory scan")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repo root for the adapter-and-gate-design inventory scan",
+    )
     add_output_args(
         parser,
         summary_help="Emit compact YAML finding counts and samples for triage",

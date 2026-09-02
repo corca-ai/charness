@@ -13,9 +13,13 @@ iter_matching_repo_files = _repo_file_listing_module.iter_matching_repo_files
 
 DEFAULT_SCAN_GLOBS = (
     "scripts/*.py",
+    "scripts/**/*.py",
     "skills/public/*/scripts/*.py",
+    "skills/public/*/scripts/**/*.py",
     "skills/support/*/scripts/*.py",
+    "skills/support/*/scripts/**/*.py",
     "skills/shared/scripts/*.py",
+    "skills/shared/scripts/**/*.py",
 )
 SKIP_PATH_PARTS = {"__pycache__", "vendor", "generated"}
 
@@ -120,8 +124,14 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
+    scan_paths = _iter_scan_paths(repo_root, require_git=args.require_git_file_listing)
+    if not scan_paths:
+        raise SystemExit(
+            "refusing empty matched universe for check_python_runtime_inheritance "
+            f"(scan globs: {', '.join(DEFAULT_SCAN_GLOBS)})."
+        )
     failures: list[str] = []
-    for path in _iter_scan_paths(repo_root, require_git=args.require_git_file_listing):
+    for path in scan_paths:
         failures.extend(check_file(repo_root, path))
 
     if failures:

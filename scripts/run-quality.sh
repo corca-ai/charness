@@ -1035,6 +1035,7 @@ queue_selected "check-inventory-declaration-coverage" python3 scripts/check_inve
 # and pinned. `--strict` refuses on findings and on unreadable docs; without it
 # the same command stays a read-only inventory.
 queue_selected "inventory-skill-script-references" python3 scripts/inventory_skill_script_references.py --repo-root "$REPO_ROOT" --strict
+queue_selected "check-unreferenced-scripts" python3 scripts/check_unreferenced_scripts.py --repo-root "$REPO_ROOT" --strict
 queue_selected "validate-quality-closeout-contract" python3 scripts/validate_quality_closeout_contract.py --repo-root "$REPO_ROOT"
 # Resolve the release/change range once. The release-final changed-line producer
 # receives this explicit SHA, and the critique probe shares the same range. The
@@ -1151,14 +1152,22 @@ queue_selected "check-shell" ./scripts/check-shell.sh
 # against a 480-line Python cap. This closes the lint half. The length half is still open
 # and check-rust.sh names that blind class in its own header.
 queue_selected "check-rust" ./scripts/check-rust.sh
-shopt -s nullglob
+shopt -s nullglob globstar
 python_files=(
   scripts/*.py
+  scripts/**/*.py
   skills/public/*/scripts/*.py
+  skills/public/*/scripts/**/*.py
   skills/support/*/scripts/*.py
+  skills/support/*/scripts/**/*.py
   skills/shared/scripts/*.py
+  skills/shared/scripts/**/*.py
   skills/support/*/vendor/*.py
 )
+if [[ "${#python_files[@]}" -eq 0 ]]; then
+  echo "py-compile: refusing empty matched universe (globs: scripts/*.py, scripts/**/*.py, skills/public/*/scripts/*.py, skills/public/*/scripts/**/*.py, skills/support/*/scripts/*.py, skills/support/*/scripts/**/*.py, skills/shared/scripts/*.py, skills/shared/scripts/**/*.py, skills/support/*/vendor/*.py)." >&2
+  exit 1
+fi
 queue_selected "py-compile" python3 -m py_compile "${python_files[@]}"
 queue_selected "ruff" ./scripts/check-python-lint.sh
 

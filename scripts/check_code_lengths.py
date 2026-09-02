@@ -18,6 +18,7 @@ _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_f
 iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
 
 REPO_SCRIPT_FILE_MAX = 480
+SHELL_FILE_MAX = 205
 SKILL_HELPER_FILE_MAX = 360
 TEST_FILE_MAX = 800
 # Rust joined this gate on 2026-08-29. It had NO length gate at all while the ratio
@@ -45,6 +46,7 @@ NATIVE_TEST_FILE_MAX = 800
 # ``^(WARNING|WARN|WEAK|ADVISORY)(:|[[:space:]])`` — an unprefixed advisory is
 # captured to the log but never shown, silently defeating the tier.
 REPO_SCRIPT_FILE_WARN = 432
+SHELL_FILE_WARN = SHELL_FILE_MAX + 1
 SKILL_HELPER_FILE_WARN = 330
 TEST_FILE_WARN = 720
 NATIVE_SOURCE_FILE_WARN = REPO_SCRIPT_FILE_MAX
@@ -158,7 +160,9 @@ def tokei_code_counts(paths: list[Path]) -> dict[Path, int]:
             continue
         code = stats.get("code")
         if not isinstance(code, int):
-            raise TokeiError(f"tokei report for {requested[resolved]} is missing integer `stats.code`")
+            raise TokeiError(
+                f"tokei report for {requested[resolved]} is missing integer `stats.code`"
+            )
         counts[requested[resolved]] = code
     missing = [path for path in paths if path not in counts]
     if missing:
@@ -178,9 +182,21 @@ def tokei_code_counts(paths: list[Path]) -> dict[Path, int]:
 # discovery-boundary: one tokei code-line policy owns both Python and Rust here
 GATED_GLOBS = (
     "scripts/*.py",
+    "scripts/**/*.py",
+    "scripts/*.sh",
+    "scripts/**/*.sh",
     "skills/public/*/scripts/*.py",
+    "skills/public/*/scripts/**/*.py",
+    "skills/public/*/scripts/*.sh",
+    "skills/public/*/scripts/**/*.sh",
     "skills/support/*/scripts/*.py",
+    "skills/support/*/scripts/**/*.py",
+    "skills/support/*/scripts/*.sh",
+    "skills/support/*/scripts/**/*.sh",
     "skills/shared/scripts/*.py",
+    "skills/shared/scripts/**/*.py",
+    "skills/shared/scripts/*.sh",
+    "skills/shared/scripts/**/*.sh",
     "tests/*.py",
     "tests/**/*.py",
     "native/*/src/*.rs",
@@ -219,6 +235,8 @@ def _is_native_test(relative: Path) -> bool:
 
 def file_limit_for(path: Path, root: Path) -> int:
     relative = path.relative_to(root)
+    if relative.suffix == ".sh":
+        return SHELL_FILE_MAX
     if relative.parts[:1] == ("native",):
         return NATIVE_TEST_FILE_MAX if _is_native_test(relative) else NATIVE_SOURCE_FILE_MAX
     if relative.parts[:1] == ("scripts",):
@@ -230,6 +248,8 @@ def file_limit_for(path: Path, root: Path) -> int:
 
 def file_warn_for(path: Path, root: Path) -> int:
     relative = path.relative_to(root)
+    if relative.suffix == ".sh":
+        return SHELL_FILE_WARN
     if relative.parts[:1] == ("native",):
         return NATIVE_TEST_FILE_WARN if _is_native_test(relative) else NATIVE_SOURCE_FILE_WARN
     if relative.parts[:1] == ("scripts",):
@@ -239,11 +259,24 @@ def file_warn_for(path: Path, root: Path) -> int:
     return SKILL_HELPER_FILE_WARN
 
 
+SHELL_LENGTH_EXEMPTIONS = {
+    "scripts/run-quality.sh": "2026-09-02; retired by #769",
+}
+
+
 def validate_file_length(path: Path, root: Path, *, code_lines: int) -> str | None:
     """Hard-fail when a file exceeds its code-line limit; otherwise return an advisory
     ``WARN:`` line when the file sits in the ``[warn, limit]`` band, or ``None``.
     """
+    relative = path.relative_to(root)
+    exemption = SHELL_LENGTH_EXEMPTIONS.get(relative.as_posix())
     limit = file_limit_for(path, root)
+    if exemption is not None and code_lines > limit:
+        return (
+            f"WARN: {relative}: physical lines {code_lines} exceed shell cap {limit}; "
+            f"NAMED EXEMPTION ({exemption})."
+        )
+    measurement = "physical lines" if relative.suffix == ".sh" else "tokei code lines"
     if code_lines > limit:
         # Operator-endorsed teeth (charness-artifacts/gather/2026-07-04-enforcing-
         # quality-of-ai-generated-code.md): a max-file-length linter constraint stays
@@ -252,19 +285,39 @@ def validate_file_length(path: Path, root: Path, *, code_lines: int) -> str | No
         # a cohesion-scoped module or delete dead code -- do NOT mechanically spill
         # into an _extra_lib/_lib companion just to dodge the cap.
         raise ValidationError(
-            f"{path}: tokei code lines {code_lines} exceed limit {limit}. Split the file "
+            f"{relative}: {measurement} {code_lines} exceed limit {limit}. Split the file "
             "into a cohesive new module or delete code; do not mechanically spill into an "
             "_extra_lib/_lib companion to dodge the cap (docs/deferred-decisions.md D33)."
         )
     warn = file_warn_for(path, root)
     if code_lines >= warn:
-        relative = path.relative_to(root)
         return (
-            f"WARN: {relative}: tokei code lines {code_lines} are within the advisory warn "
+            f"WARN: {relative}: {measurement} {code_lines} are within the advisory warn "
             f"band [{warn}, {limit}]; separate a concept or delete before it reaches the hard "
             f"limit {limit} — do not shave lines to stay under the bar."
         )
     return None
+
+
+def shell_line_counts(paths: list[Path]) -> dict[Path, int]:
+    """Measure shell files by physical lines; tokei is not a shell counter here."""
+
+    counts: dict[Path, int] = {}
+    for path in paths:
+        try:
+            counts[path] = path.read_bytes().count(b"\n")
+        except OSError as exc:
+            raise ValidationError(f"cannot read {path}: {exc}") from exc
+    return counts
+
+
+def code_line_counts(paths: list[Path]) -> dict[Path, int]:
+    """Use the established tokei measurement for code and physical lines for shell."""
+
+    non_shell = [path for path in paths if path.suffix != ".sh"]
+    counts = tokei_code_counts(non_shell) if non_shell else {}
+    counts.update(shell_line_counts([path for path in paths if path.suffix == ".sh"]))
+    return counts
 
 
 def headroom_for(paths: list[Path] | None, root: Path) -> list[dict[str, object]]:
@@ -280,7 +333,13 @@ def headroom_for(paths: list[Path] | None, root: Path) -> list[dict[str, object]
     overages, but still fails when the tokei measurement itself is unavailable.
     """
     targets = select_targets(root, paths=paths, require_git=False)
-    counts = tokei_code_counts(targets)
+    if not targets:
+        scope = "named --paths (they resolve to nothing)" if paths is not None else "the repository"
+        raise ValidationError(
+            f"refusing empty matched universe for {scope}; nothing was measured "
+            f"(gated globs: {', '.join(GATED_GLOBS)})."
+        )
+    counts = code_line_counts(targets)
     rows: list[dict[str, object]] = []
     for path in targets:
         lines = counts[path]
@@ -290,7 +349,9 @@ def headroom_for(paths: list[Path] | None, root: Path) -> list[dict[str, object]
             {
                 "path": path.relative_to(root).as_posix(),
                 "lines": lines,
-                "measurement": "tokei-python-code-lines",
+                "measurement": "physical-lines"
+                if path.suffix == ".sh"
+                else "tokei-python-code-lines",
                 "limit": limit,
                 "warn": warn,
                 "headroom": limit - lines,
@@ -300,9 +361,7 @@ def headroom_for(paths: list[Path] | None, root: Path) -> list[dict[str, object]
     return rows
 
 
-def select_targets(
-    root: Path, *, paths: list[Path] | None, require_git: bool
-) -> list[Path]:
+def select_targets(root: Path, *, paths: list[Path] | None, require_git: bool) -> list[Path]:
     """Whole-repo glob by default. When ``paths`` is given (e.g. staged files in
     a pre-commit hook), restrict to the subset of those paths the whole-repo
     glob would also gate, so the same per-class limits/bands apply and a path
@@ -370,36 +429,18 @@ def main() -> int:
             )
         emit_yaml(payload)
         return 0
-    targets = select_targets(
-        root, paths=args.paths, require_git=args.require_git_file_listing
-    )
-    if args.paths is not None and not targets:
-        # A NAMED scope that measured nothing must not read as a pass. Two shapes,
-        # deliberately answered differently:
-        #  - a named path that does not exist at all (a typo, or paths expressed
-        #    relative to a subdirectory so they never resolve under --repo-root) is
-        #    a broken scope and refuses;
-        #  - named paths that exist but sit outside the gated glob universe (the
-        #    generated `plugins/` mirror, root-level `runtime_bootstrap.py`) are the
-        #    caller saying "none of this is yours" — a legitimate pass, as for the
-        #    artifact family, but it may not print `Validated ... 0 file(s)`.
-        unresolved = [
-            path for path in args.paths
-            if not (path if path.is_absolute() else root / path).exists()
-        ]
-        if unresolved:
-            raise ValidationError(
-                "named --paths resolve to nothing under "
-                f"{root}: {', '.join(str(path) for path in unresolved)}; nothing was "
-                "validated. Pass paths relative to --repo-root, or drop --paths to "
-                "gate the whole repo."
-            )
-        print(
-            f"No gated files among the {len(args.paths)} named path(s); "
-            f"nothing was validated (the gated globs are {gated_globs_summary()})."
+    targets = select_targets(root, paths=args.paths, require_git=args.require_git_file_listing)
+    if not targets:
+        scope = (
+            "named --paths (they resolve to nothing)"
+            if args.paths is not None
+            else "the repository"
         )
-        return 0
-    counts = tokei_code_counts(targets)
+        raise ValidationError(
+            f"refusing empty matched universe for {scope}; nothing was validated "
+            f"(gated globs: {', '.join(GATED_GLOBS)})."
+        )
+    counts = code_line_counts(targets)
     warnings: list[str] = []
     hard_failures: list[str] = []
     for path in targets:

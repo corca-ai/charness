@@ -46,6 +46,7 @@ gate_design_review_globs:
   - .agents/*-adapter.yaml
   - skills/public/*/adapter.example.yaml
   - scripts/*.py
+  - scripts/**/*.py
 product_surfaces:
   - installable_cli
   - bundled_skill

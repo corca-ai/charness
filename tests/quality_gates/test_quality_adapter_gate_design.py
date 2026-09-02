@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 import yaml
 
 from .quality_bootstrap_support import _run_adapter_gate_design, seed_quality_repo
@@ -62,6 +63,14 @@ def test_quality_inventory_adapter_gate_design_uses_configured_review_scope(tmp_
     assert payload["review_scope_source"].endswith(".agents/quality-adapter.yaml")
     assert "custom/review_policy.py" in payload["reviewed_paths"]
     assert "scripts/ignored_policy.py" not in payload["reviewed_paths"]
+
+
+def test_quality_inventory_adapter_gate_design_refuses_empty_review_scope(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    write_quality_adapter(repo, ["gate_design_review_globs:", "- missing/*.py"], language="en")
+
+    with pytest.raises(SystemExit, match="refusing empty matched universe.*missing/\\*\\.py"):
+        _run_adapter_gate_design("--repo-root", str(repo), "--detail")
 
 
 def test_quality_inventory_adapter_gate_design_defaults_to_yaml_with_json_compatibility(

@@ -78,8 +78,8 @@ def test_headroom_payload_shape(tmp_path: Path) -> None:
 
 
 def test_headroom_ignores_non_gated_paths(tmp_path: Path) -> None:
-    # A path outside the gated universe (e.g. a top-level file) is silently
-    # excluded — headroom only speaks for files the length gate would gate.
+    # A named path outside the gated universe must not turn an empty advisory
+    # scope into a green report.
     repo = tmp_path / "repo"
     (repo).mkdir(parents=True, exist_ok=True)
     top = repo / "top_level.py"
@@ -87,8 +87,9 @@ def test_headroom_ignores_non_gated_paths(tmp_path: Path) -> None:
     result = run_script(
         "scripts/check_code_lengths.py", "--repo-root", str(repo), "--headroom", "--paths", str(top)
     )
-    assert result.returncode == 0
-    assert "top_level.py" not in result.stdout
+    assert result.returncode == 1
+    assert "refusing empty matched universe" in result.stderr
+    assert "gated globs" in result.stderr
 
 
 # --- #257 staged plugin-mirror drift (hard gate) ---------------------------

@@ -33,10 +33,15 @@ GIT_AWARE_MARKERS = (
 )
 DEFAULT_PATH_GLOBS = (
     "skills/public/quality/scripts/*.py",
+    "skills/public/quality/scripts/**/*.py",
     "skills/public/quality/references/*.py",
+    "skills/public/quality/references/**/*.py",
     "scripts/*inventory*.py",
+    "scripts/**/*inventory*.py",
     "scripts/*quality*.py",
+    "scripts/**/*quality*.py",
     "scripts/*scan*.py",
+    "scripts/**/*scan*.py",
 )
 REPO_ROOT_NAMES = {"repo_root", "root", "REPO_ROOT"}
 
@@ -54,6 +59,7 @@ def candidate_files(
     path_globs: tuple[str, ...],
     *,
     require_git: bool = False,
+    named_scope: bool = True,
 ) -> list[Path]:
     try:
         visible_files = visible_repo_files(
@@ -73,6 +79,15 @@ def candidate_files(
             if visible_files is not None and path not in visible_files:
                 continue
             candidates.append(path)
+    # Two empties, two answers: a NAMED --path-glob that matches nothing is a
+    # configured scope resolving to nothing and refuses; the default globs
+    # matching nothing is a consumer repo with no scanners, a discovered empty
+    # set the inventory reports in its payload.
+    if not candidates and named_scope:
+        raise InventoryError(
+            "refusing empty matched universe for inventory_gitignore_scan_hygiene "
+            f"(path globs: {', '.join(path_globs)})."
+        )
     return sorted(candidates)
 
 
@@ -170,23 +185,51 @@ def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the gitignore scan-hygiene inventory")
-    parser.add_argument("--path-glob", action="append", default=[], help="Glob of Python scanners to inspect (repeatable; defaults applied if omitted)")
-    parser.add_argument("--exclude-glob", action="append", default=[], help="Glob of paths to exclude from the inventory (repeatable)")
-    parser.add_argument("--require-empty", action="store_true", help="Exit non-zero when any non-git-aware repo traversal is found")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        required=True,
+        help="Repo root for the gitignore scan-hygiene inventory",
+    )
+    parser.add_argument(
+        "--path-glob",
+        action="append",
+        default=[],
+        help="Glob of Python scanners to inspect (repeatable; defaults applied if omitted)",
+    )
+    parser.add_argument(
+        "--exclude-glob",
+        action="append",
+        default=[],
+        help="Glob of paths to exclude from the inventory (repeatable)",
+    )
+    parser.add_argument(
+        "--require-empty",
+        action="store_true",
+        help="Exit non-zero when any non-git-aware repo traversal is found",
+    )
     add_output_args(
         parser,
         summary_help="Emit compact YAML finding counts and samples for triage",
         detail_help="Emit the full gitignore scan-hygiene inventory as YAML",
     )
-    parser.add_argument("--require-git-file-listing", action="store_true", help="Fail when git ls-files is unavailable for scanner discovery")
+    parser.add_argument(
+        "--require-git-file-listing",
+        action="store_true",
+        help="Fail when git ls-files is unavailable for scanner discovery",
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     path_globs = tuple(args.path_glob or DEFAULT_PATH_GLOBS)
     exclude_globs = tuple(args.exclude_glob or ())
     findings: list[dict[str, object]] = []
-    for path in candidate_files(repo_root, path_globs, require_git=args.require_git_file_listing):
+    for path in candidate_files(
+        repo_root,
+        path_globs,
+        require_git=args.require_git_file_listing,
+        named_scope=bool(args.path_glob),
+    ):
         rendered = str(path.relative_to(repo_root))
         if matches_any(rendered, exclude_globs):
             continue
