@@ -25,7 +25,6 @@ def _resolver_path(repo_root: Path) -> Path:
 _quality_resolve_adapter = load_path_module("quality_resolve_adapter", _resolver_path(REPO_ROOT))
 load_adapter = _quality_resolve_adapter.load_adapter
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
-_skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
 _adapter_version_verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
 _surface_contract = import_repo_module(__file__, "scripts.quality_surface_contract")
 # Shared with debug through the module that owns the measurement; see its docstring
@@ -43,6 +42,15 @@ validate_date_line = _scripts_artifact_validator_module.validate_date_line
 resolve_adapter_line_budget = _scripts_artifact_validator_module.resolve_adapter_line_budget
 validate_section_order = _scripts_artifact_validator_module.validate_section_order
 run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
+_skill_ergonomics = import_repo_module(__file__, "scripts.quality_artifact_skill_ergonomics")
+_skill_ergonomics_counts = _skill_ergonomics._skill_ergonomics_counts
+
+
+def validate_skill_ergonomics_count_claims(lines: list[str], repo_root: Path) -> None:
+    _skill_ergonomics.validate_skill_ergonomics_count_claims(
+        lines, repo_root, collect_bullets=collect_bullets
+    )
+
 
 # The DEFAULT ceiling, in WORDS since 2026-08-19; a consuming repo raises or lowers it
 # with `max_artifact_words` in its quality adapter. Both this gate and the scaffold's
@@ -205,14 +213,6 @@ ADVISORY_EVIDENCE_MARKERS = (
     "from ",
     "found by ",
 )
-SKILL_ERGONOMICS_COUNT_RE = re.compile(
-    r"`?core_nonempty_lines=(?P<core>\d+)`?.{0,120}?"
-    r"`?reference_file_count=(?P<refs>\d+)`?.{0,120}?"
-    r"`?script_file_count=(?P<scripts>\d+)`?",
-    re.DOTALL,
-)
-BACKTICKED_TOKEN_RE = re.compile(r"`([a-z0-9-]+)`")
-PRESSURE_EXEMPT_H2_SECTIONS = {"Load-Bearing Anchors", "References"}
 QUALITY_RECORD_FILENAME_DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-")
 QUALITY_BODY_DATE_RE = re.compile(r"^Date:\s*(\d{4}-\d{2}-\d{2})\b")
 CURRENT_POINTER_FILENAME = "latest.md"
@@ -499,69 +499,6 @@ def validate_subagent_blocker_reasoning(lines: list[str]) -> None:
                     "quality artifact must not treat missing explicit subagent allowance as the canonical blocker; "
                     "cite a concrete host signal or describe the pass as degraded/unprobed"
                 )
-
-
-def _count_files(path: Path) -> int:
-    if not path.is_dir():
-        return 0
-    return sum(1 for candidate in path.rglob("*") if candidate.is_file())
-
-
-def _skill_ergonomics_counts(repo_root: Path, skill_id: str) -> dict[str, int]:
-    skill_path = repo_root / "skills" / "public" / skill_id / "SKILL.md"
-    if not skill_path.is_file():
-        raise ValidationError(
-            f"quality artifact cites skill ergonomics counts for missing skill `{skill_id}`"
-        )
-    skill_dir = skill_path.parent
-    body_lines: list[str] = []
-    active_section: str | None = None
-    for raw in _skill_markdown_lib.strip_frontmatter(
-        skill_path.read_text(encoding="utf-8")
-    ).splitlines():
-        stripped = raw.strip()
-        if stripped.startswith("## "):
-            active_section = stripped[3:].strip()
-        if active_section not in PRESSURE_EXEMPT_H2_SECTIONS:
-            body_lines.append(raw)
-    return {
-        "core_nonempty_lines": sum(1 for line in body_lines if line.strip()),
-        "reference_file_count": _count_files(skill_dir / "references"),
-        "script_file_count": _count_files(skill_dir / "scripts"),
-    }
-
-
-def _claim_skill_id(repo_root: Path, claim_text: str) -> str:
-    candidates = [
-        match.group(1)
-        for match in BACKTICKED_TOKEN_RE.finditer(claim_text)
-        if (repo_root / "skills" / "public" / match.group(1) / "SKILL.md").is_file()
-    ]
-    if not candidates:
-        raise ValidationError(
-            "quality artifact has explicit skill ergonomics counts but no backticked public skill id "
-            "in the same bullet"
-        )
-    return candidates[0]
-
-
-def validate_skill_ergonomics_count_claims(lines: list[str], repo_root: Path) -> None:
-    for claim_text in collect_bullets(lines):
-        match = SKILL_ERGONOMICS_COUNT_RE.search(claim_text)
-        if not match:
-            continue
-        skill_id = _claim_skill_id(repo_root, claim_text)
-        claimed = {
-            "core_nonempty_lines": int(match.group("core")),
-            "reference_file_count": int(match.group("refs")),
-            "script_file_count": int(match.group("scripts")),
-        }
-        actual = _skill_ergonomics_counts(repo_root, skill_id)
-        if claimed != actual:
-            raise ValidationError(
-                f"quality artifact has stale skill ergonomics counts for `{skill_id}`: "
-                f"claimed {claimed}, actual {actual}"
-            )
 
 
 # The `Date:` header value, read from the PREAMBLE only: the scan stops at the first
