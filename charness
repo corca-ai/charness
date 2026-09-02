@@ -2600,8 +2600,8 @@ def install_surface(
     cli_path: Path | None,
     update: bool,
 ) -> dict[str, object]:
-    invoke_repo_script(repo_root, "scripts/validate_packaging.py", "--repo-root", str(repo_root))
-    invoke_repo_script(repo_root, "scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo_root))
+    invoke_repo_script(repo_root, "scripts/plugin_export/validate_packaging.py", "--repo-root", str(repo_root))
+    invoke_repo_script(repo_root, "scripts/plugin_export/sync_root_plugin_manifests.py", "--repo-root", str(repo_root))
     install_output = invoke_repo_script(
         repo_root,
         "scripts/install_machine_local.py",
@@ -2813,13 +2813,13 @@ def build_doctor_payload(
     if source_manifest_present:
         preamble_output = invoke_repo_script(
             repo_root,
-            "scripts/plugin_preamble.py",
+            "scripts/plugin_export/plugin_preamble.py",
             "--repo-root",
             str(repo_root),
             "--consumer-root",
             str(home_root),
         )
-        payload["plugin_preamble"] = parse_repo_script_payload(preamble_output, "scripts/plugin_preamble.py")
+        payload["plugin_preamble"] = parse_repo_script_payload(preamble_output, "scripts/plugin_export/plugin_preamble.py")
     else:
         payload["plugin_preamble"] = None
     payload["codex_enabled_plugin_ids"] = codex_enabled_plugin_ids(payload["codex_config_entries"])

@@ -414,7 +414,7 @@ def test_an_out_of_tree_copy_of_the_script_is_advised_on_even_with_an_inherited_
     # inherited-env spawn of the blocked script. Round 2 caught the absence of this
     # control on a reader that matched the copy's PARENT DIRECTORY name, so any test
     # copying anything out of `scripts/` was reported as copying whichever script it
-    # mentioned — `scripts/check_supply_chain.py` really was named that way.
+    # mentioned — `scripts/plugin_export/check_supply_chain.py` really was named that way.
     other = source.replace('"scripts" / "foo.py", tmp_path', '"scripts" / "other.sh", tmp_path')
     assert (
         lib.unmeasured_spawn_mechanisms(_write_raw(other), "tests/test_foo.py", "scripts/foo.py")
@@ -539,7 +539,7 @@ def test_an_env_replacing_spawn_of_a_DIFFERENT_script_does_not_implicate_this_on
 
     The live instance was real: `tests/quality_gates/test_python_and_security_gates.py`
     scrubs the env for a shell-script test at one line and names
-    `scripts/check_supply_chain.py` at another — a script whose only exercise is an
+    `scripts/plugin_export/check_supply_chain.py` at another — a script whose only exercise is an
     inherited-env spawn at its real in-repo path, i.e. MEASURED. The advisory named
     it anyway. The mechanism is now bound to the spawn call whose command names this
     script.

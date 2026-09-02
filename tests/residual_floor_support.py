@@ -18,7 +18,7 @@ RESIDUAL_MEASURE_SCRIPT = "scripts/gates/measure_evidence_residual.py"
 RESIDUAL_FLOOR_HOME = "scripts/gates/check_prescribed_skill_executed_lib.py"
 RESIDUAL_FLOOR_SYMBOL = "MIN_BOUND_RESIDUAL_CHARS"
 RESIDUAL_FLOOR_MIRROR = "plugins/charness/scripts/check_prescribed_skill_executed_lib.py"
-MIRROR_SYNC_COMMAND = "python3 scripts/sync_root_plugin_manifests.py"
+MIRROR_SYNC_COMMAND = "python3 scripts/plugin_export/sync_root_plugin_manifests.py"
 
 RESIDUAL_UPDATE_SURFACES: tuple[tuple[str, str | None], ...] = (
     (

@@ -93,5 +93,5 @@ def detect_gate_commands(repo_root: Path) -> list[str]:
 def detect_security_commands(repo_root: Path) -> list[str]:
     return [cmd for exists, cmd in (
         ((repo_root / "scripts" / "check-secrets.sh").is_file(), "./scripts/check-secrets.sh"),
-        ((repo_root / "scripts" / "check_supply_chain.py").is_file(), "python3 scripts/check_supply_chain.py --repo-root ."),
+        ((repo_root / "scripts" / "plugin_export" / "check_supply_chain.py").is_file(), "python3 scripts/plugin_export/check_supply_chain.py --repo-root ."),
     ) if exists]

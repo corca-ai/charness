@@ -405,11 +405,11 @@ def test_export_gate_run_as_a_program_exits_with_the_code_main_returned(
 
 
 # ---------------------------------------------------------------------------
-# scripts/check_supply_chain_online.py
+# scripts/plugin_export/check_supply_chain_online.py
 # ---------------------------------------------------------------------------
 
 _supply_chain_online = load_script_module(
-    "coverage_debt_check_supply_chain_online", ROOT / "scripts" / "check_supply_chain_online.py"
+    "coverage_debt_check_supply_chain_online", ROOT / "scripts" / "plugin_export" / "check_supply_chain_online.py"
 )
 
 

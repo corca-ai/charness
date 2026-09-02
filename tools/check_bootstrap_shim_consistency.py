@@ -9,7 +9,7 @@ portability contract; this gate machine-owns what was previously maintained by
 hand: every copy must stay byte-identical to the canonical block below.
 
 `--fix` rewrites drifted module-level copies in place. After fixing exported
-skill scripts, re-run `python3 scripts/sync_root_plugin_manifests.py
+skill scripts, re-run `python3 scripts/plugin_export/sync_root_plugin_manifests.py
 --repo-root .` so the plugin mirror follows.
 """
 

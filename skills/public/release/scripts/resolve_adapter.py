@@ -181,7 +181,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "package_id": package_id,
         "packaging_manifest_path": f"packaging/{package_id}.json",
         "materialized_plugin_root": f"plugins/{package_id}",
-        "sync_command": "python3 scripts/sync_root_plugin_manifests.py --repo-root .",
+        "sync_command": "python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .",
         "quality_command": "./scripts/run-quality.sh",
         "post_publish_install_refresh": "",
         "post_publish_version_readback": "",

@@ -20,7 +20,7 @@ mutants/
 .charness/bootstrap-python/
 # The plugin export is GENERATED, not authored. `charness init`/`update`
 # (charness:2589) and the release version bump (`bump_version.py` runs the release
-# adapter's `sync_command`) run `scripts/sync_root_plugin_manifests.py`, and the
+# adapter's `sync_command`) run `scripts/plugin_export/sync_root_plugin_manifests.py`, and the
 # Claude marketplace reads `./plugins/charness` from the checkout ON DISK -- it
 # never needed to be in history. Tracking it cost 1,042 files, 11 MB, and 934 of
 # the last 2,498 commits (37%) as pure regenerated churn, and it put a byte-identical
@@ -72,6 +72,6 @@ charness-artifacts/efficiency/**/preserved/**/stream.jsonl
 # Scoped to `worktrees/` on purpose -- `.claude/agents/` is tracked.
 .claude/worktrees/
 
-# Ephemeral specdown config written by scripts/specdown_ephemeral_config.py so an
+# Ephemeral specdown config written by scripts/plugin_export/specdown_ephemeral_config.py so an
 # automated gate does not rewrite the tracked .charness/specdown/ report.
 .specdown.ephemeral.json

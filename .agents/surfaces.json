@@ -24,10 +24,10 @@
         ".agents/plugins/marketplace.json"
       ],
       "sync_commands": [
-        "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+        "python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root ."
       ],
       "verify_commands": [
-        "python3 scripts/validate_packaging.py --repo-root .",
+        "python3 scripts/plugin_export/validate_packaging.py --repo-root .",
         "python3 -m tools.validate_packaging_committed --repo-root ."
       ],
       "notes": [
@@ -38,8 +38,8 @@
         {
           "derived_path": "plugins/charness/README.md",
           "source_path": "README.md",
-          "generator": "python3 scripts/sync_root_plugin_manifests.py --repo-root .",
-          "sync_command": "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+          "generator": "python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .",
+          "sync_command": "python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root ."
         }
       ]
     },
@@ -112,7 +112,7 @@
         "plugins/charness/agents/**"
       ],
       "sync_commands": [
-        "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+        "python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root ."
       ],
       "verify_commands": [
         "./scripts/check-markdown.sh",
@@ -240,7 +240,7 @@
         ".agents/consumer-validator-adoption.yaml",
         "scripts/gates/check_consumer_validator_catalog.py",
         "scripts/capability_catalog.py",
-        "scripts/packaging_lib.py",
+        "scripts/plugin_export/packaging_lib.py",
         "scripts/run-quality.sh",
         "scripts/staged_commit_gate_plan.py",
         "skills/public/quality/references/consumer-validator-catalog.yaml"
@@ -248,13 +248,13 @@
       "derived_paths": [
         "plugins/charness/scripts/check_consumer_validator_catalog.py",
         "plugins/charness/scripts/capability_catalog.py",
-        "plugins/charness/scripts/packaging_lib.py",
+        "plugins/charness/scripts/plugin_export/packaging_lib.py",
         "plugins/charness/scripts/run-quality.sh",
         "plugins/charness/scripts/staged_commit_gate_plan.py",
         "plugins/charness/skills/quality/references/consumer-validator-catalog.yaml"
       ],
       "sync_commands": [
-        "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+        "python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root ."
       ],
       "verify_commands": [
         "python3 scripts/gates/check_consumer_validator_catalog.py --repo-root . --adoption-path .agents/consumer-validator-adoption.yaml --require-adoption",
@@ -439,7 +439,7 @@
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/check_supply_chain.py --repo-root .",
+        "python3 scripts/plugin_export/check_supply_chain.py --repo-root .",
         "npm ls --depth=0"
       ],
       "notes": [
@@ -473,19 +473,19 @@
       "source_paths": [
         "tools/check_export_self_sufficiency.py",
         "tools/export_self_sufficiency_lib.py",
-        "scripts/packaging_lib.py",
+        "scripts/plugin_export/packaging_lib.py",
         "packaging/bootstrap-python.json",
         "packaging/bootstrap-requirements.txt",
         "skills/public/gather/scripts/gather_public_url.py"
       ],
       "derived_paths": [
-        "plugins/charness/scripts/packaging_lib.py",
+        "plugins/charness/scripts/plugin_export/packaging_lib.py",
         "plugins/charness/packaging/bootstrap-python.json",
         "plugins/charness/packaging/bootstrap-requirements.txt",
         "plugins/charness/skills/gather/scripts/gather_public_url.py"
       ],
       "sync_commands": [
-        "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+        "python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root ."
       ],
       "verify_commands": [
         "python3 -m tools.check_export_self_sufficiency --repo-root .",
@@ -532,14 +532,14 @@
         "plugins/charness/skills/quality/scripts/templates/mutation-tests.yml"
       ],
       "sync_commands": [
-        "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+        "python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root ."
       ],
       "verify_commands": [
         "python3 -m pytest -q tests/quality_gates/test_quality_mutation_testing.py",
         "python3 -m pytest -q tests/quality_gates/test_coverage_builder_policy_parity.py",
         "python3 scripts/gates/check_github_actions.py --repo-root .",
         "python3 scripts/gates/validate_adapters.py --repo-root .",
-        "python3 scripts/validate_packaging.py --repo-root .",
+        "python3 scripts/plugin_export/validate_packaging.py --repo-root .",
         "python3 -m tools.validate_packaging_committed --repo-root ."
       ],
       "notes": [
@@ -728,7 +728,7 @@
         "plugins/charness/scripts/record_lesson_score.py"
       ],
       "sync_commands": [
-        "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+        "python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root ."
       ],
       "verify_commands": [
         "python3 scripts/check_lesson_ledger.py --repo-root .",
@@ -751,11 +751,11 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "specdown_report_dir=$(mktemp -d); specdown_config=$(python3 scripts/specdown_ephemeral_config.py --repo-root . --out-dir \"$specdown_report_dir\") || exit 1; trap 'rm -rf \"$specdown_report_dir\" \"$specdown_config\"' EXIT; specdown run -config \"$specdown_config\" -jobs 4 -out \"$specdown_report_dir\""
+        "specdown_report_dir=$(mktemp -d); specdown_config=$(python3 scripts/plugin_export/specdown_ephemeral_config.py --repo-root . --out-dir \"$specdown_report_dir\") || exit 1; trap 'rm -rf \"$specdown_report_dir\" \"$specdown_config\"' EXIT; specdown run -config \"$specdown_config\" -jobs 4 -out \"$specdown_report_dir\""
       ],
       "notes": [
         "Keep executable specs focused on stable operator-facing behavior; avoid adding adapters until setup or JSON extraction repeats.",
-        "The checked-in .charness/specdown/ report is derived state; refresh it manually with `specdown run` when specs change (not a sync command: a direct run rewrites the generatedAt timestamp, so it can never no-op). Automated gates run against an ephemeral config from scripts/specdown_ephemeral_config.py so they do not dirty it."
+        "The checked-in .charness/specdown/ report is derived state; refresh it manually with `specdown run` when specs change (not a sync command: a direct run rewrites the generatedAt timestamp, so it can never no-op). Automated gates run against an ephemeral config from scripts/plugin_export/specdown_ephemeral_config.py so they do not dirty it."
       ]
     },
     {
@@ -961,7 +961,7 @@
         "plugins/charness/skills/quality/scripts/inventory_command_dominance.py"
       ],
       "sync_commands": [
-        "python3 scripts/sync_root_plugin_manifests.py"
+        "python3 scripts/plugin_export/sync_root_plugin_manifests.py"
       ],
       "verify_commands": [
         "python3 scripts/gates/check_command_dominance.py --repo-root .",

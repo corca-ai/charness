@@ -34,7 +34,7 @@ def load_charness_module(module_name: str = "charness_managed_install_under_test
 
 def sync_root_plugin_manifests_inprocess(repo_root: Path) -> dict[str, object]:
     module_name = "sync_root_plugin_manifests_managed_install_under_test"
-    module = load_script_module(module_name, CLI.parent / "scripts" / "sync_root_plugin_manifests.py")
+    module = load_script_module(module_name, CLI.parent / "scripts" / "plugin_export" / "sync_root_plugin_manifests.py")
     saved_cwd = Path.cwd()
     try:
         os.chdir(repo_root)

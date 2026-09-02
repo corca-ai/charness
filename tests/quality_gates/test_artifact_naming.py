@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-import scripts.export_plugin as export_plugin_module
+import scripts.plugin_export.export_plugin as export_plugin_module
 import scripts.refresh_current_pointer as refresh_current_pointer_module
 from scripts.artifact_naming_lib import (
     current_artifact_filename,

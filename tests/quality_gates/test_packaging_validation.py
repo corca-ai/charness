@@ -11,12 +11,12 @@ from pathlib import Path
 import pytest
 import yaml
 
-import scripts.export_plugin as export_plugin_module
 import scripts.gates.check_consumer_validator_catalog as consumer_validator_catalog_module
-import scripts.packaging_lib as packaging_lib
-import scripts.sync_root_plugin_manifests as sync_root_plugin_manifests_module
-import scripts.validate_packaging as validate_packaging_module
-import scripts.validate_packaging_install_surface as validate_packaging_install_surface_module
+import scripts.plugin_export.export_plugin as export_plugin_module
+import scripts.plugin_export.packaging_lib as packaging_lib
+import scripts.plugin_export.sync_root_plugin_manifests as sync_root_plugin_manifests_module
+import scripts.plugin_export.validate_packaging as validate_packaging_module
+import scripts.plugin_export.validate_packaging_install_surface as validate_packaging_install_surface_module
 from tests.repo_copy import clone_seeded_charness_repo
 from tests.script_main import run_loaded_script_main
 
@@ -188,7 +188,7 @@ def test_validate_packaging_default_allows_materialized_plugin_export_drift(
         "materialized plugin export does not match the generated install surface"
         in export_result.stderr
     )
-    assert "scripts/sync_root_plugin_manifests.py" in export_result.stderr
+    assert "scripts/plugin_export/sync_root_plugin_manifests.py" in export_result.stderr
 
 
 def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> None:
@@ -440,7 +440,7 @@ def test_validate_packaging_install_surface_bootstraps_repo_imports(tmp_path: Pa
         [
             "python3",
             "-m",
-            "scripts.validate_packaging_install_surface",
+            "scripts.plugin_export.validate_packaging_install_surface",
             "--repo-root",
             str(ROOT),
         ],
@@ -557,7 +557,9 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert exported_helper_script.is_file()
     assert not exported_tools.exists()
     assert not (exported_scripts / "validate_skills.py").exists()
-    assert (exported_scripts / "validate_packaging.py").exists()  # export machinery ships
+    assert (
+        exported_scripts / "plugin_export" / "validate_packaging.py"
+    ).exists()  # export machinery ships
     assert (exported_scripts / "public_skill_dogfood_lib.py").is_file()
     assert (
         claude_root
@@ -578,7 +580,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert exported_readme_text.startswith("<!--\ngenerated_file: true\n")
     assert "source_path: README.md" in exported_readme_text
     assert (
-        "sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+        "sync_command: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root ."
         in exported_readme_text
     )
     assert "./skills/public/" not in exported_readme_text
@@ -684,7 +686,7 @@ def test_install_surface_names_the_parser_adapter_lib_loads_by_path(
     The export byte comparison is covered by the release-marked end-to-end tests below.
     Patch it here so this standing test remains narrowly about the required parser file.
     """
-    from scripts import validate_packaging_install_surface as surface
+    from scripts.plugin_export import validate_packaging_install_surface as surface
 
     required: list[str] = []
     root = Path(__file__).resolve().parents[2]

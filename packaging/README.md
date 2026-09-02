@@ -26,10 +26,10 @@ into host-specific plugin surfaces.
   - `.agents/plugins/marketplace.json`
 - those marketplace files are generated compatibility artifacts, not the
   primary operator-facing install contract
-- `scripts/validate_packaging.py` proves contract shape and repo-path integrity
-- `scripts/export_plugin.py` materializes temporary Claude/Codex plugin layouts
+- `scripts/plugin_export/validate_packaging.py` proves contract shape and repo-path integrity
+- `scripts/plugin_export/export_plugin.py` materializes temporary Claude/Codex plugin layouts
   from the shared manifest
-- `scripts/sync_root_plugin_manifests.py` refreshes the materialized plugin
+- `scripts/plugin_export/sync_root_plugin_manifests.py` refreshes the materialized plugin
   export and root marketplace files
 - `scripts/core/bootstrap_runtime.py` creates or reuses the managed checkout's
   isolated Python runtime for install/update/bootstrap commands

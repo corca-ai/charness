@@ -43,7 +43,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _lib = import_repo_module(__file__, "tools.export_self_sufficiency_lib")
-_packaging = import_repo_module(__file__, "scripts.packaging_lib")
+_packaging = import_repo_module(__file__, "scripts.plugin_export.packaging_lib")
 _yaml_output = import_repo_module(__file__, "scripts.yaml_output")
 
 DEFAULT_PACKAGE_ID = "charness"

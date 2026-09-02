@@ -7,12 +7,26 @@ import shutil
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_packaging_lib_module = import_repo_module(__file__, "scripts.packaging_lib")
+_scripts_packaging_lib_module = import_repo_module(__file__, "scripts.plugin_export.packaging_lib")
 PackagingError = _scripts_packaging_lib_module.PackagingError
 build_codex_marketplace = _scripts_packaging_lib_module.build_codex_marketplace
 materialized_plugin_root = _scripts_packaging_lib_module.materialized_plugin_root
@@ -26,7 +40,9 @@ class ExportError(Exception):
     pass
 
 
-def export_plugin(repo_root: Path, output_root: Path, manifest: dict, host: str, with_marketplace: bool) -> Path:
+def export_plugin(
+    repo_root: Path, output_root: Path, manifest: dict, host: str, with_marketplace: bool
+) -> Path:
     plugin_root = output_root / materialized_plugin_root(manifest)
     if plugin_root.exists():
         shutil.rmtree(plugin_root)
@@ -46,7 +62,9 @@ def export_plugin(repo_root: Path, output_root: Path, manifest: dict, host: str,
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Export a host plugin layout from the shared packaging manifest.")
+    parser = argparse.ArgumentParser(
+        description="Export a host plugin layout from the shared packaging manifest."
+    )
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--package-id", default="charness")
     parser.add_argument("--host", choices=("claude", "codex"), required=True)

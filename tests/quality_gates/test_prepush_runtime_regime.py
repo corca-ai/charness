@@ -63,7 +63,7 @@ def _seed_prepush_repo(tmp_path: Path) -> Path:
         "docs/seed.md": "# seed\n",
         ".gitignore": "plugins/\n",
         "plugins/charness/plugin.txt": "seed\n",
-        "scripts/sync_root_plugin_manifests.py": "#!/usr/bin/env python3\n",
+        "scripts/plugin_export/sync_root_plugin_manifests.py": "#!/usr/bin/env python3\n",
         "tools/validate_current_pointer_freshness.py": "#!/usr/bin/env python3\n",
         "scripts/run_quality_engine.py": (
             "#!/usr/bin/env python3\n"

@@ -221,7 +221,7 @@ _REFUSAL_DRIFT_LIMIT = 8
 _OWN_ROOT_UNESTABLISHED = "own-root-unestablished"
 _REFUSED_STATUSES = ("drifted", "scope-unestablished", _OWN_ROOT_UNESTABLISHED)
 _EXPORT_PARENT = "plugins"
-_RESYNC_CURE = "  python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+_RESYNC_CURE = "  python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root ."
 
 
 def _is_materialized_export(verdict: dict) -> bool:

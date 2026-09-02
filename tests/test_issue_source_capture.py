@@ -19,7 +19,6 @@ import pytest
 import yaml
 
 import scripts.issue_source_capture_lib as capture_lib
-from scripts import packaging_lib
 from scripts.capture_issue_source import resolve_adapter_module, run_capture
 from scripts.issue_source_capture_lib import (
     CaptureRefusal,
@@ -34,6 +33,7 @@ from scripts.issue_source_normalize_lib import (
     clause_inventory_identity,
     split_clauses,
 )
+from scripts.plugin_export import packaging_lib
 from tests.script_main import load_script_module
 
 REPO_ROOT = Path(__file__).resolve().parent.parent

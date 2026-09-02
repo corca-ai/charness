@@ -89,7 +89,7 @@ session-start hook or standalone handoff artifact to keep synchronized.
 ./scripts/run-quality.sh --full --read-only
 
 # source export, only when the source surface changed
-python3 scripts/sync_root_plugin_manifests.py --repo-root .
+python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .
 
 # documentation receipt when docs changed
 ./scripts/check-docs.sh

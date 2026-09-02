@@ -199,7 +199,7 @@ def _spawn_of_this_script_replaces_env(tree: ast.AST, script_path: str) -> bool:
 
     Bound to the call, not to the file. An earlier cut asked only "does this file
     contain an env-replacing call anywhere", which named
-    `scripts/check_supply_chain.py` — exercised only by inherited-env spawns at its
+    `scripts/plugin_export/check_supply_chain.py` — exercised only by inherited-env spawns at its
     real in-repo path — because the same test file scrubs the env for an unrelated
     SHELL script. That is false reassurance printed onto a true block, so the
     command argument must name this script.

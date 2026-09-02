@@ -112,7 +112,7 @@ def seed_quality_repo(tmp_path: Path) -> Path:
     (repo / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
     (repo / "scripts" / "validate_maintainer_setup.py").write_text("print('ok')\n", encoding="utf-8")
     (repo / "scripts" / "check-secrets.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
-    (repo / "scripts" / "check_supply_chain.py").write_text("print('ok')\n", encoding="utf-8")
+    (repo / "scripts" / "plugin_export" / "check_supply_chain.py").write_text("print('ok')\n", encoding="utf-8")
     return repo
 
 

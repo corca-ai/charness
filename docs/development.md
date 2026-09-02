@@ -85,7 +85,7 @@ worker at collection time.
 When `skills/public/` changes, batch edits and run the canonical exporter once:
 
 ```bash
-python3 scripts/sync_root_plugin_manifests.py --repo-root .
+python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .
 ```
 
 The quality preamble follows the same boundary: in a writing run it regenerates

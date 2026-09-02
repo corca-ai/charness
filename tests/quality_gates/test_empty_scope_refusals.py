@@ -33,7 +33,7 @@ from .support import ROOT
 _MODULES = {
     name: load_script_module(name.removesuffix(".py").replace("/", "_"), ROOT / name)
     for name in (
-        "scripts/validate_packaging.py",
+        "scripts/plugin_export/validate_packaging.py",
         "tools/check_bootstrap_shim_consistency.py",
         "scripts/gates/check_doc_links.py",
         "scripts/gates/check_docs_graph.py",
@@ -54,7 +54,7 @@ _MODULES = {
         "scripts/gates/check_test_repo_copy_invariants.py",
         "tools/validate_integrations.py",
         "skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py",
-        "scripts/specdown_ephemeral_config.py",
+        "scripts/plugin_export/specdown_ephemeral_config.py",
         "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
         "tools/check_coverage.py",
     )
@@ -92,7 +92,7 @@ def _empty_root(tmp_path: Path) -> Path:
 def test_zero_scope_scan_refuses(tmp_path: Path) -> None:
     root = str(_empty_root(tmp_path))
     cases = (
-        ("scripts/validate_packaging.py", "no packaging manifests found"),
+        ("scripts/plugin_export/validate_packaging.py", "no packaging manifests found"),
         ("tools/check_bootstrap_shim_consistency.py", "nothing was compared"),
         ("tools/check_skill_bootstrap_vars.py", "no public/support SKILL.md files found"),
         ("scripts/gates/check_test_repo_copy_invariants.py", "no test Python files found"),
@@ -115,7 +115,7 @@ def test_zero_scope_scan_refuses(tmp_path: Path) -> None:
     assert "refusing empty declared universe" in (scanner.stdout + scanner.stderr).lower()
 
     specdown = run_gate(
-        "scripts/specdown_ephemeral_config.py",
+        "scripts/plugin_export/specdown_ephemeral_config.py",
         "--repo-root",
         root,
         "--out-dir",

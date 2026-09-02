@@ -13,7 +13,7 @@ from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_packaging_lib_module = import_repo_module(__file__, "scripts.packaging_lib")
+_scripts_packaging_lib_module = import_repo_module(__file__, "scripts.plugin_export.packaging_lib")
 PackagingError = _scripts_packaging_lib_module.PackagingError
 build_codex_marketplace = _scripts_packaging_lib_module.build_codex_marketplace
 export_plugin_tree = _scripts_packaging_lib_module.export_plugin_tree

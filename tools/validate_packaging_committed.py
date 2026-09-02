@@ -58,7 +58,7 @@ def extract_snapshot(repo_root: Path, ref: str, snapshot_root: Path) -> None:
 
 
 def validate_snapshot(snapshot_root: Path):  # noqa: ANN201
-    script_path = snapshot_root / "scripts" / "validate_packaging.py"
+    script_path = snapshot_root / "scripts" / "plugin_export" / "validate_packaging.py"
     if not script_path.is_file():
         raise ValidationError(f"snapshot is missing `{script_path.relative_to(snapshot_root)}`")
     # No `--validate-export`. That flag requires the materialized plugin export to exist in

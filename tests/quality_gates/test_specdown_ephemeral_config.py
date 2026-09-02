@@ -1,4 +1,4 @@
-"""Behavioural cover for `scripts/specdown_ephemeral_config.py`.
+"""Behavioural cover for `scripts/plugin_export/specdown_ephemeral_config.py`.
 
 The failure this helper exists to stop: the quality gate rewriting the tracked
 specdown report it only reads, dirtying the worktree on every run for a changed
@@ -25,7 +25,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.specdown_ephemeral_config import (
+from scripts.plugin_export.specdown_ephemeral_config import (
     EPHEMERAL_CONFIG_NAME,
     build_ephemeral_config,
     main,
@@ -295,7 +295,7 @@ def test_cli_entrypoint_dispatches_through_main_and_exits_zero(tmp_path: Path) -
     result = subprocess.run(
         [
             sys.executable,
-            str(ROOT / "scripts" / "specdown_ephemeral_config.py"),
+            str(ROOT / "scripts" / "plugin_export" / "specdown_ephemeral_config.py"),
             "--repo-root",
             str(repo),
             "--out-dir",

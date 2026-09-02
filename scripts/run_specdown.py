@@ -33,7 +33,7 @@ def main() -> int:
     config = run_process(
         [
             "python3",
-            "scripts/specdown_ephemeral_config.py",
+            "scripts/plugin_export/specdown_ephemeral_config.py",
             "--repo-root",
             str(root),
             "--out-dir",

@@ -46,8 +46,8 @@ def test_check_changed_surfaces_reports_expected_obligations_for_readme() -> Non
     surface_ids = {surface["surface_id"] for surface in payload["matched_surfaces"]}
     assert "materialized-plugin-export" in surface_ids
     assert "repo-markdown" in surface_ids
-    assert "python3 scripts/sync_root_plugin_manifests.py --repo-root ." in payload["sync_commands"]
-    assert "python3 scripts/validate_packaging.py --repo-root ." in payload["verify_commands"]
+    assert "python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root ." in payload["sync_commands"]
+    assert "python3 scripts/plugin_export/validate_packaging.py --repo-root ." in payload["verify_commands"]
     assert (
         "python3 -m tools.validate_packaging_committed --repo-root ." in payload["verify_commands"]
     )
@@ -268,11 +268,11 @@ def test_select_verifiers_returns_smallest_repo_owned_bundle_for_readme() -> Non
     recommendations = payload["recommended_commands"]
     assert recommendations[0] == {
         "phase": "sync",
-        "command": "python3 scripts/sync_root_plugin_manifests.py --repo-root .",
+        "command": "python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .",
         "reason_surface_ids": ["materialized-plugin-export"],
     }
     verify_commands = {item["command"] for item in recommendations if item["phase"] == "verify"}
-    assert "python3 scripts/validate_packaging.py --repo-root ." in verify_commands
+    assert "python3 scripts/plugin_export/validate_packaging.py --repo-root ." in verify_commands
     assert "python3 -m tools.validate_packaging_committed --repo-root ." in verify_commands
     assert "./scripts/check-docs.sh" in verify_commands
 

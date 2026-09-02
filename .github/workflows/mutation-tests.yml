@@ -76,7 +76,7 @@ jobs:
         # runs the standing suite, and 94 of its tests assert facts ABOUT the
         # exported mirror, so without this step the baseline fails and NO mutant
         # ever runs -- which is how #758 reported `Status: UNMEASURED`.
-        run: python3 scripts/sync_root_plugin_manifests.py --repo-root .
+        run: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .
 
       - name: Install JS mutation runner
         # `node_modules/.bin` on PATH, which `npm ci` alone does not do. This job runs

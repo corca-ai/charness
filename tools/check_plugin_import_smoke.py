@@ -22,7 +22,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_validate_packaging_install_surface_module = import_repo_module(__file__, "scripts.validate_packaging_install_surface")
+_scripts_validate_packaging_install_surface_module = import_repo_module(__file__, "scripts.plugin_export.validate_packaging_install_surface")
 smoke_exported_plugin_imports = _scripts_validate_packaging_install_surface_module.smoke_exported_plugin_imports
 
 PACKAGING_MANIFEST = REPO_ROOT / "packaging" / "charness.json"

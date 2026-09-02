@@ -44,7 +44,7 @@ def _write_release_repo(tmp_path: Path, *, with_sync: bool = True) -> tuple[Path
                 "package_id: demo",
                 "packaging_manifest_path: packaging/demo.json",
                 "materialized_plugin_root: plugins/demo",
-                "sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root .",
+                "sync_command: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .",
                 "quality_command: ./scripts/run-quality.sh",
                 "",
             ]
@@ -72,8 +72,8 @@ def _write_release_repo(tmp_path: Path, *, with_sync: bool = True) -> tuple[Path
     )
     (repo / "packaging" / "demo.json").write_text(manifest_text, encoding="utf-8")
     if with_sync:
-        (repo / "scripts").mkdir(parents=True)
-        (repo / "scripts" / "sync_root_plugin_manifests.py").write_text(
+        (repo / "scripts" / "plugin_export").mkdir(parents=True)
+        (repo / "scripts" / "plugin_export" / "sync_root_plugin_manifests.py").write_text(
             "\n".join(
                 [
                     "import argparse",
@@ -134,7 +134,7 @@ def test_release_bump_version_refuses_a_missing_sync_command_before_mutating(
 ) -> None:
     """`sync_command` is RUN, and it runs AFTER the version is written.
 
-    The inferred default names THIS authoring repo's `scripts/sync_root_plugin_manifests.py`,
+    The inferred default names THIS authoring repo's `scripts/plugin_export/sync_root_plugin_manifests.py`,
     so a consuming repo that never wrote a release adapter inherits a command that cannot
     exist in its tree. Checked after the write, the bump lands and the sync does not: a
     bumped `packaging/` manifest with an unsynced plugin mirror, repairable only by hand.
@@ -185,8 +185,8 @@ def test_release_adapter_does_not_judge_a_command_shape_it_cannot_read() -> None
     """`None` means NOT JUDGED. A recognizer that guessed here would refuse working commands."""
     target = load_release_script("resolve_adapter").command_script_target
 
-    assert target("python3 scripts/sync_root_plugin_manifests.py --repo-root .") == (
-        "scripts/sync_root_plugin_manifests.py"
+    assert target("python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .") == (
+        "scripts/plugin_export/sync_root_plugin_manifests.py"
     )
     assert target("./scripts/run-quality.sh") == "scripts/run-quality.sh"
     for unreadable in (

@@ -12,7 +12,7 @@ This reference covers the `uv` lockfile and audit moves that matter to
 - keep dependency declarations and the lockfile in the same repo root unless
   the packaging contract says otherwise
 
-`<plugin-dir>/scripts/check_supply_chain.py` currently owns this offline alignment check for
+`<plugin-dir>/scripts/plugin_export/check_supply_chain.py` currently owns this offline alignment check for
 `charness`.
 
 ## Manual Or Networked Follow-Up
@@ -23,4 +23,4 @@ This reference covers the `uv` lockfile and audit moves that matter to
 - if a downstream repo wants a standing online audit command, make it explicit
   which binary or service owns that check and where maintainers will read it;
   `charness` wraps that path explicitly in
-  `<plugin-dir>/scripts/check_supply_chain_online.py` with `uv audit --frozen`
+  `<plugin-dir>/scripts/plugin_export/check_supply_chain_online.py` with `uv audit --frozen`

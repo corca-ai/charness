@@ -249,7 +249,7 @@ Choosing between them, in one question: **who evaluates this path?**
   correctly evaluates false and the step is a documented no-op.
 - Nobody — the sentence is describing what charness ships → `<authoring-repo>/`.
   Example: "`charness` wraps that path explicitly in
-  `<authoring-repo>/scripts/check_supply_chain_online.py`".
+  `<authoring-repo>/scripts/plugin_export/check_supply_chain_online.py`".
 
 A path the reader is told to RUN, that only exists in the authoring repo, is
 neither: it is a bug, and belongs in the skill's own package or behind

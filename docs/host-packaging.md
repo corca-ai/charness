@@ -23,8 +23,8 @@ minimal Grok Build plugin layouts.
 - source schema: [packaging/plugin.schema.json](../packaging/plugin.schema.json)
 - bootstrap runtime contract: [packaging/bootstrap-python.json](../packaging/bootstrap-python.json)
 - bootstrap runtime requirements: [packaging/bootstrap-requirements.txt](../packaging/bootstrap-requirements.txt)
-- validation entrypoint: [scripts/validate_packaging.py](../scripts/validate_packaging.py)
-- export entrypoint: [scripts/export_plugin.py](../scripts/export_plugin.py)
+- validation entrypoint: [scripts/plugin_export/validate_packaging.py](../scripts/plugin_export/validate_packaging.py)
+- export entrypoint: [scripts/plugin_export/export_plugin.py](../scripts/plugin_export/export_plugin.py)
 
 The shared packaging manifest is authoritative for:
 
@@ -85,7 +85,7 @@ needing a second skill taxonomy or a second profile catalog.
 
 The repo also materializes a generated plugin tree on demand so hosts get one
 stable install path. That tree is NOT in git:
-[`scripts/sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py)
+[`scripts/plugin_export/sync_root_plugin_manifests.py`](../scripts/plugin_export/sync_root_plugin_manifests.py)
 writes it, `charness init` and `charness update` run that producer, and a bare
 clone has no `plugins/` at all until something does. Run the producer before the
 next two links resolve:
@@ -198,7 +198,7 @@ When a release workflow needs a stamped export without mutating
 version:
 
 ```bash
-python3 scripts/export_plugin.py \
+python3 scripts/plugin_export/export_plugin.py \
   --repo-root . \
   --host codex \
   --output-root /tmp/charness-export \
@@ -259,7 +259,7 @@ Operationally this means:
 
 Instead, hosts may render a thin startup advisory from:
 
-- [scripts/plugin_preamble.py](../scripts/plugin_preamble.py) — builds the advisory payload from the packaging manifest, capability locks, and copy checks
+- [scripts/plugin_export/plugin_preamble.py](../scripts/plugin_export/plugin_preamble.py) — builds the advisory payload from the packaging manifest, capability locks, and copy checks
 
 Current v1 output is intentionally read-only:
 

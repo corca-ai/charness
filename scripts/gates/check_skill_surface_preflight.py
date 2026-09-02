@@ -310,7 +310,7 @@ def _couplings(target_kind: str, skill_kind: str) -> list[dict[str, str]]:
             {
                 "id": "plugin_mirror_sync",
                 "message": "Public skill edits require plugin mirror sync before validators and staging.",
-                "command": "python3 scripts/sync_root_plugin_manifests.py --repo-root .",
+                "command": "python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .",
             }
         )
     if target_kind == "reference":

@@ -25,9 +25,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_skill_script_references",
         ROOT / "scripts" / "check_skill_script_references.py",
     ),
-    "scripts/check_supply_chain_online.py": (
+    "scripts/plugin_export/check_supply_chain_online.py": (
         "tests.quality_gates.support_check_supply_chain_online",
-        ROOT / "scripts" / "check_supply_chain_online.py",
+        ROOT / "scripts" / "plugin_export" / "check_supply_chain_online.py",
     ),
     "scripts/gates_support/list_external_links.py": (
         "tests.quality_gates.support_list_external_links",
@@ -409,9 +409,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_validate_profiles",
         ROOT / "tools" / "validate_profiles.py",
     ),
-    "scripts/check_supply_chain.py": (
+    "scripts/plugin_export/check_supply_chain.py": (
         "tests.quality_gates.support_check_supply_chain",
-        ROOT / "scripts" / "check_supply_chain.py",
+        ROOT / "scripts" / "plugin_export" / "check_supply_chain.py",
     ),
     "scripts/gates/check_command_docs.py": (
         "tests.quality_gates.support_check_command_docs",

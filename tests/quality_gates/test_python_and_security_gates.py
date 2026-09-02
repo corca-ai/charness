@@ -560,7 +560,7 @@ def test_check_supply_chain_requires_javascript_lockfile(tmp_path: Path) -> None
         + "\n",
         encoding="utf-8",
     )
-    result = run_script("scripts/check_supply_chain.py", "--repo-root", str(repo))
+    result = run_script("scripts/plugin_export/check_supply_chain.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "no lockfile is checked in" in result.stderr
 
@@ -581,7 +581,7 @@ def test_check_supply_chain_requires_declared_pnpm_lockfile(tmp_path: Path) -> N
         encoding="utf-8",
     )
     (repo / "package-lock.json").write_text("{}", encoding="utf-8")
-    result = run_script("scripts/check_supply_chain.py", "--repo-root", str(repo))
+    result = run_script("scripts/plugin_export/check_supply_chain.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "packageManager declares `pnpm`" in result.stderr
 
@@ -601,7 +601,7 @@ def test_check_supply_chain_requires_uv_lock_when_dependencies_exist(tmp_path: P
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/check_supply_chain.py", "--repo-root", str(repo))
+    result = run_script("scripts/plugin_export/check_supply_chain.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "uv.lock is missing" in result.stderr
 
@@ -622,7 +622,7 @@ def test_check_supply_chain_accepts_uv_lock_for_python_dependencies(tmp_path: Pa
         encoding="utf-8",
     )
     (repo / "uv.lock").write_text("version = 1\n", encoding="utf-8")
-    result = run_script("scripts/check_supply_chain.py", "--repo-root", str(repo))
+    result = run_script("scripts/plugin_export/check_supply_chain.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "uv:uv.lock" in result.stdout
 

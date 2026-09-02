@@ -64,8 +64,8 @@ Read first:
 Useful local commands:
 
 ```bash
-python3 scripts/validate_packaging.py --repo-root .
-python3 scripts/sync_root_plugin_manifests.py --repo-root .
+python3 scripts/plugin_export/validate_packaging.py --repo-root .
+python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .
 charness doctor
 charness update all
 charness tool update agent-browser

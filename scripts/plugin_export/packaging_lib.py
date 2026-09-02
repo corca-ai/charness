@@ -7,10 +7,28 @@ import re
 import shutil
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import (  # noqa: E402
+    import_repo_module,
+    load_path_module,
+    repo_root_from_script,
+)
 
 REPO_ROOT = repo_root_from_script(__file__)
-VALIDATE_PACKAGING_PATH = REPO_ROOT / "scripts" / "validate_packaging.py"
+VALIDATE_PACKAGING_PATH = REPO_ROOT / "scripts" / "plugin_export" / "validate_packaging.py"
 VALIDATE_PACKAGING = load_path_module("validate_packaging", VALIDATE_PACKAGING_PATH)
 _scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_lib")
 SURFACES_PATH = _scripts_surfaces_lib_module.SURFACES_PATH

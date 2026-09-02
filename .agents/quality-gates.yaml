@@ -213,7 +213,7 @@ phases:
   - label: validate-packaging
     command:
     - python3
-    - scripts/validate_packaging.py
+    - scripts/plugin_export/validate_packaging.py
     - --repo-root
     - $REPO_ROOT
     lane: core
@@ -707,7 +707,7 @@ phases:
   - label: check-supply-chain
     command:
     - python3
-    - scripts/check_supply_chain.py
+    - scripts/plugin_export/check_supply_chain.py
     - --repo-root
     - $REPO_ROOT
     lane: standard
@@ -725,7 +725,7 @@ phases:
   - label: check-supply-chain-online
     command:
     - python3
-    - scripts/check_supply_chain_online.py
+    - scripts/plugin_export/check_supply_chain_online.py
     - --repo-root
     - $REPO_ROOT
     - --triage-owner

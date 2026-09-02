@@ -11,14 +11,14 @@ This reference covers the npm lockfile and audit moves that matter to
 - keep `packageManager: "npm@..."` aligned with the checked-in lockfile when
   the field is present
 
-`<plugin-dir>/scripts/check_supply_chain.py` owns those checks for the current `charness`
+`<plugin-dir>/scripts/plugin_export/check_supply_chain.py` owns those checks for the current `charness`
 bar.
 
 ## Manual Or Networked Follow-Up
 
 - run npm's advisory flow when dependency changes matter enough to justify a
   live registry lookup; `charness` wraps that path explicitly in
-  `<plugin-dir>/scripts/check_supply_chain_online.py` with `npm audit --json`
+  `<plugin-dir>/scripts/plugin_export/check_supply_chain_online.py` with `npm audit --json`
 - review new scopes or publishers before promoting them into standing runtime
   dependencies
 - keep high-noise online audit commands out of the default local gate unless

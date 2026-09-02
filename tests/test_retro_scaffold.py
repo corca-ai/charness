@@ -7,7 +7,7 @@ from pathlib import Path
 
 import yaml
 
-import scripts.export_plugin as export_plugin_module
+import scripts.plugin_export.export_plugin as export_plugin_module
 from tests.quality_gates.support import run_script
 from tests.script_main import run_loaded_script_main
 

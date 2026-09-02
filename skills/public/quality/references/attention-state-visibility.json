@@ -384,7 +384,7 @@
       ],
       "rationale": "A path with no recoverable baseline cannot be compared, and that is NOT the same answer as \"this repair changed nothing\". Conflating them would report a reassuring zero for a slice the harness never examined -- the silent-zero shape this tool exists to prevent one level down. So uncomparable paths are counted by path with the reason (no baseline at that ref, or not captured by the reviewer snapshot, which stores Python sources only), printed in the success line, and carried per-path in the YAML payload under `uncomparable` so a consumer can tell an empty result from an unexamined one."
     },
-    "scripts/plugin_preamble.py": {
+    "scripts/plugin_export/plugin_preamble.py": {
       "states": [
         "disabled"
       ],

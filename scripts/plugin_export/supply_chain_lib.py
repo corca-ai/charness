@@ -77,7 +77,9 @@ def detect_declared_python_dependencies(pyproject_path: Path) -> bool:
             if isinstance(dependencies, list) and dependencies:
                 return True
             optional = project.get("optional-dependencies")
-            if isinstance(optional, dict) and any(isinstance(value, list) and value for value in optional.values()):
+            if isinstance(optional, dict) and any(
+                isinstance(value, list) and value for value in optional.values()
+            ):
                 return True
         dependency_groups = data.get("dependency-groups")
         if isinstance(dependency_groups, dict) and any(
@@ -125,7 +127,9 @@ def validate_javascript_surface(repo_root: Path) -> list[str]:
     declared_manager = parse_package_manager(data.get("packageManager"))
     if len(found_lockfiles) > 1:
         rendered = ", ".join(sorted(path.name for path in found_lockfiles.values()))
-        raise ValidationError(f"multiple JavaScript lockfiles present ({rendered}); keep one package manager surface")
+        raise ValidationError(
+            f"multiple JavaScript lockfiles present ({rendered}); keep one package manager surface"
+        )
 
     manager = declared_manager
     if manager is None and found_lockfiles:
@@ -133,7 +137,9 @@ def validate_javascript_surface(repo_root: Path) -> list[str]:
     if manager in JS_LOCKFILES:
         if not found_lockfiles.get(manager):
             expected = " or ".join(JS_LOCKFILES[manager])
-            raise ValidationError(f"packageManager declares `{manager}` but `{expected}` is missing")
+            raise ValidationError(
+                f"packageManager declares `{manager}` but `{expected}` is missing"
+            )
         findings.append(f"{manager}:{found_lockfiles[manager].name}")
         return findings
 

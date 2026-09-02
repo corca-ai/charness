@@ -9,7 +9,7 @@ import yaml
 from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[1]
-_plugin_preamble = import_repo_module(__file__, "scripts.plugin_preamble")
+_plugin_preamble = import_repo_module(__file__, "scripts.plugin_export.plugin_preamble")
 
 
 def test_plugin_preamble_payload_includes_hints_and_readiness() -> None:

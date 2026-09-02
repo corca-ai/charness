@@ -25,7 +25,8 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from scripts import native_gate_lib, packaging_lib
+from scripts import native_gate_lib
+from scripts.plugin_export import packaging_lib
 from tests.quality_gates.git_fixture_support import init_git_repo
 from tests.repo_copy import clone_seeded_charness_repo
 

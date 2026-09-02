@@ -10,7 +10,7 @@ from runtime_bootstrap import import_repo_module
 from tests.quality_gates.repo_shapes import install_committed_repo
 
 ROOT = Path(__file__).resolve().parents[2]
-_export = import_repo_module(__file__, "scripts.export_plugin")
+_export = import_repo_module(__file__, "scripts.plugin_export.export_plugin")
 
 
 def test_exported_plugin_carries_boundary_helper_and_claude_agent(tmp_path: Path) -> None:

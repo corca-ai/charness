@@ -47,7 +47,7 @@ def test_check_supply_chain_online_uses_npm_audit(tmp_path: Path) -> None:
 
     env = {"PATH": f"{bin_dir}:/usr/bin:/bin", "TEST_OUTPUT": str(output_path)}
     result = run_script(
-        "scripts/check_supply_chain_online.py",
+        "scripts/plugin_export/check_supply_chain_online.py",
         "--repo-root",
         str(repo),
         "--audit-level",
@@ -71,7 +71,7 @@ def test_check_supply_chain_online_uses_pnpm_audit(tmp_path: Path) -> None:
 
     env = {"PATH": f"{bin_dir}:/usr/bin:/bin", "TEST_OUTPUT": str(output_path)}
     result = run_script(
-        "scripts/check_supply_chain_online.py",
+        "scripts/plugin_export/check_supply_chain_online.py",
         "--repo-root",
         str(repo),
         "--audit-level",
@@ -101,7 +101,7 @@ def test_check_supply_chain_online_uses_uv_audit(tmp_path: Path) -> None:
 
     env = {"PATH": f"{bin_dir}:/usr/bin:/bin", "TEST_OUTPUT": str(output_path)}
     result = run_script(
-        "scripts/check_supply_chain_online.py",
+        "scripts/plugin_export/check_supply_chain_online.py",
         "--repo-root",
         str(repo),
         cwd=ROOT,
@@ -119,7 +119,7 @@ def test_check_supply_chain_online_missing_binary_names_owner(tmp_path: Path) ->
     (bin_dir / "python3").symlink_to(Path("/usr/bin/python3"))
     env = {"PATH": str(bin_dir)}
     result = run_script(
-        "scripts/check_supply_chain_online.py",
+        "scripts/plugin_export/check_supply_chain_online.py",
         "--repo-root",
         str(repo),
         "--triage-owner",

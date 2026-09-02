@@ -5,7 +5,7 @@ from pathlib import Path
 
 import yaml
 
-from scripts import packaging_lib
+from scripts.plugin_export import packaging_lib
 from tests.script_main import load_script_module, run_loaded_script_main
 
 PLAN = "skills/public/gather/scripts/gather_plan.py"

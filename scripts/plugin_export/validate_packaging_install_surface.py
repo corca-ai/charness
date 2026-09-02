@@ -8,10 +8,26 @@ import tempfile
 from pathlib import Path
 from typing import Callable
 
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 try:
-    from runtime_bootstrap import import_repo_module
-except ModuleNotFoundError:  # imported as scripts.validate_packaging_install_surface
-    from scripts.runtime_bootstrap import import_repo_module
+    from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script
+except ModuleNotFoundError:  # imported as scripts.plugin_export.validate_packaging_install_surface
+    from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script
+
+REPO_ROOT = repo_root_from_script(__file__)
 
 _skill_iter_module = import_repo_module(__file__, "scripts.core.skill_iter")
 _subprocess_guard_module = import_repo_module(__file__, "scripts.core.subprocess_guard")
@@ -180,7 +196,7 @@ def collect_files(root: Path) -> set[Path]:
 def validate_materialized_plugin_export_matches_generated(
     root: Path, plugin_root: Path, data: dict[str, object]
 ) -> None:
-    from scripts.packaging_lib import export_plugin_tree
+    from scripts.plugin_export.packaging_lib import export_plugin_tree
 
     with tempfile.TemporaryDirectory(prefix="charness-validate-plugin-tree-") as tmpdir:
         generated_plugin_root = Path(tmpdir) / "plugins" / data["package_id"]
@@ -199,7 +215,7 @@ def validate_materialized_plugin_export_matches_generated(
             raise RuntimeError(
                 "materialized plugin export does not match the generated install surface"
                 + (f" ({'; '.join(details)})" if details else "")
-                + "; re-run `python3 scripts/sync_root_plugin_manifests.py` to refresh the mirror"
+                + "; re-run `python3 scripts/plugin_export/sync_root_plugin_manifests.py` to refresh the mirror"
             )
 
         for rel_path in sorted(expected_files):
@@ -209,12 +225,12 @@ def validate_materialized_plugin_export_matches_generated(
                 raise RuntimeError(
                     "materialized plugin export does not match the generated install surface "
                     f"(drift at `{(plugin_root / rel_path).relative_to(root)}`); "
-                    "re-run `python3 scripts/sync_root_plugin_manifests.py` to refresh the mirror"
+                    "re-run `python3 scripts/plugin_export/sync_root_plugin_manifests.py` to refresh the mirror"
                 )
 
 
 _IMPORT_SMOKE_SCRIPT = (
-    Path(__file__).resolve().parent / "templates" / "plugin_import_smoke.py.txt"
+    REPO_ROOT / "scripts" / "templates" / "plugin_import_smoke.py.txt"
 ).read_text(encoding="utf-8")
 
 

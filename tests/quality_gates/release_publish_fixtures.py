@@ -57,7 +57,7 @@ def _write_release_adapter(repo: Path) -> None:
                 "package_id: demo",
                 "packaging_manifest_path: packaging/demo.json",
                 "materialized_plugin_root: plugins/demo",
-                "sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root .",
+                "sync_command: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .",
                 "quality_command: ./scripts/run-quality.sh",
                 "post_publish_distinct_channel_probe: distinct-channel-probe {tag}",
                 "update_instructions:",
@@ -116,7 +116,7 @@ def _write_fake_git(repo: Path, bin_dir: Path) -> None:
 
 
 def _write_sync_script(repo: Path) -> None:
-    script = repo / "scripts" / "sync_root_plugin_manifests.py"
+    script = repo / "scripts" / "plugin_export" / "sync_root_plugin_manifests.py"
     shutil.copy2(FIXTURES / "release_publish_sync_root_plugin_manifests.py", script)
     script.chmod(0o755)
 
@@ -248,7 +248,7 @@ def _simulate_partial_publish(
     (output_dir / "latest.md").write_text("# Release demo 0.0.0 (partial)\n", encoding="utf-8")
     # Resume revalidates generated surfaces after claims review. Keep this success
     # fixture synced; an absent tree belongs in a refusal fixture instead.
-    sync_script = repo / "scripts" / "sync_root_plugin_manifests.py"
+    sync_script = repo / "scripts" / "plugin_export" / "sync_root_plugin_manifests.py"
     previous_cwd = Path.cwd()
     try:
         os.chdir(repo)

@@ -11,7 +11,7 @@ from runtime_bootstrap import import_repo_module
 from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
-_export_plugin = import_repo_module(__file__, "scripts.export_plugin")
+_export_plugin = import_repo_module(__file__, "scripts.plugin_export.export_plugin")
 _validate_quality_artifact = import_repo_module(__file__, "scripts.gates.validate_quality_artifact")
 _scaffold_quality_artifact = import_repo_module(
     __file__,

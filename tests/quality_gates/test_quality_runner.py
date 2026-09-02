@@ -34,7 +34,7 @@ def test_quality_runner_seed_uses_the_cross_worker_cache(tmp_path: Path) -> None
 
     seed = quality_runner_seed(cache_get_or_build=fake_cache)
 
-    assert cache_calls == ["quality-runner-repo-seed-r2c"]
+    assert cache_calls == ["quality-runner-repo-seed-r2b"]
     assert (seed / "scripts" / "run-quality.sh").is_file()
 
 
@@ -304,7 +304,7 @@ def test_run_quality_seed_budget_uses_external_pytest_temp_root(
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     log_path = repo / "seed-budget-temproot.txt"
     write_executable(
-        repo / "scripts" / "gates" / "check_seed_fixture_budget.py",
+        repo / "scripts" / "check_seed_fixture_budget.py",
         "\n".join(
             [
                 "#!/usr/bin/env python3",
@@ -342,7 +342,7 @@ def test_run_quality_can_reach_the_seed_budget_escape_hatch(
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     log_path = repo / "seed-budget-argv.txt"
     write_executable(
-        repo / "scripts" / "gates" / "check_seed_fixture_budget.py",
+        repo / "scripts" / "check_seed_fixture_budget.py",
         "\n".join(
             [
                 "#!/usr/bin/env python3",
@@ -400,7 +400,7 @@ def test_run_quality_passes_expanded_targets_to_test_completeness(
     (repo / "tests" / "test_alpha.py").write_text("def test_alpha(): pass\n", encoding="utf-8")
     log_path = repo / "test-completeness-targets.json"
     write_executable(
-        repo / "scripts" / "gates" / "check_test_completeness.py",
+        repo / "scripts" / "check_test_completeness.py",
         "\n".join(
             [
                 "#!/usr/bin/env python3",
@@ -472,7 +472,7 @@ def test_run_quality_replays_passing_attention_logs(
         repo, env = clone_quality_runner_repo(
             tmp_path / attention_token.lower(), seeded_quality_runner_repo
         )
-        warning_script = repo / "scripts" / "gates" / "validate_skill_ergonomics.py"
+        warning_script = repo / "scripts" / "validate_skill_ergonomics.py"
         warning_script.write_text(
             "\n".join(
                 [
@@ -501,7 +501,7 @@ def test_run_quality_keeps_passing_non_attention_logs_quiet(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
-    warning_script = repo / "scripts" / "gates" / "validate_skill_ergonomics.py"
+    warning_script = repo / "scripts" / "validate_skill_ergonomics.py"
     warning_script.write_text(
         "\n".join(
             [
@@ -758,12 +758,10 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
     from .support import QUALITY_PYTHON_STUBS, QUALITY_SHELL_STUBS
 
     runner = RUN_QUALITY_SCRIPT_TEXT
-    queued = set(re.findall(r'queue_selected "[^"]+" python3 scripts/([a-z0-9_]+\.py)', runner))
+    queued = set(re.findall(r'queue_selected "[^"]+" python3 scripts/([a-z0-9_/-]+\.py)', runner))
     queued |= {
         f"{module}.py"
-        for module in re.findall(
-            r'queue_selected "[^"]+" python3 -m tools\.([a-z0-9_]+)', runner
-        )
+        for module in re.findall(r'queue_selected "[^"]+" python3 -m tools\.([a-z0-9_]+)', runner)
     }
     # A gate wrapped in `bash -c` can still call a repo script, and the pattern above
     # cannot see it -- the specdown step is exactly that shape, and its seeding had to
@@ -771,7 +769,7 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
     for line in runner.splitlines():
         if "queue_selected" not in line:
             continue
-        for path in re.findall(r"([\w$/{}.-]*scripts/[a-z0-9_]+\.py)", line):
+        for path in re.findall(r"([\w$/{}.-]*scripts/[a-z0-9_/-]+\.py)", line):
             prefix, _, name = path.rpartition("scripts/")
             # Repo-root scripts only. Skill-package gates (skills/public/quality/scripts)
             # come from QUALITY_RUNTIME_STUBS and are seeded elsewhere.
@@ -792,7 +790,7 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
 
     stubbed = {name for _, name in QUALITY_PYTHON_STUBS}
     stubbed |= {name for _, name in QUALITY_SHELL_STUBS}
-    copied_real_scripts = {"gates_support/run_standing_pytest.py", "specdown_ephemeral_config.py"}
+    copied_real_scripts = {"run_standing_pytest.py", "plugin_export/specdown_ephemeral_config.py"}
     missing = sorted(queued - stubbed - copied_real_scripts)
     assert missing == [], (
         "run-quality.sh queues repo-script gates with no seeded harness stub; "
@@ -802,9 +800,7 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
 
 def test_quality_runner_keeps_specdown_reports_out_of_the_worktree() -> None:
     """The declared specdown row carries a clean argv and an external output path."""
-    data = yaml.safe_load(
-        (ROOT / ".agents" / "quality-gates.yaml").read_text(encoding="utf-8")
-    )
+    data = yaml.safe_load((ROOT / ".agents" / "quality-gates.yaml").read_text(encoding="utf-8"))
     row = next(
         gate
         for phase in data["phases"]
@@ -829,7 +825,8 @@ def test_specdown_ephemeral_config_redirects_every_reporter_out_of_the_repo(tmp_
     the real checked-in config so a newly added reporter is covered without anyone
     remembering to update a fixture."""
     helper = import_repo_module(
-        ROOT / "scripts" / "specdown_ephemeral_config.py", "scripts.specdown_ephemeral_config"
+        ROOT / "scripts" / "plugin_export" / "specdown_ephemeral_config.py",
+        "scripts.plugin_export.specdown_ephemeral_config",
     )
     source = json.loads((ROOT / "specdown.json").read_text(encoding="utf-8"))
     assert source.get("reporters"), "fixture assumes the repo config declares reporters"
@@ -884,7 +881,8 @@ def test_quality_runner_leaves_no_specdown_state_in_the_worktree(
     if handed is None:
         # Cleaned up by the trap, which is the point; reconstruct what it contained.
         helper = import_repo_module(
-            ROOT / "scripts" / "specdown_ephemeral_config.py", "scripts.specdown_ephemeral_config"
+            ROOT / "scripts" / "plugin_export" / "specdown_ephemeral_config.py",
+            "scripts.plugin_export.specdown_ephemeral_config",
         )
         source = json.loads((repo / "specdown.json").read_text(encoding="utf-8"))
         handed = helper.build_ephemeral_config(source, tmp_path / "out")

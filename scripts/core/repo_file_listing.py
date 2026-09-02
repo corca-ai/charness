@@ -155,13 +155,13 @@ def iter_generated_mirror_files(repo_root: Path, patterns: tuple[str, ...]) -> l
     whole defect: a caller cannot tell "I examined the mirror and found nothing"
     from "there was no mirror to examine." The producer is unconditional, so
     absence is never a legitimate discovered-empty family -- it means nobody ran
-    `scripts/sync_root_plugin_manifests.py`.
+    `scripts/plugin_export/sync_root_plugin_manifests.py`.
     """
     mirror_root = repo_root / GENERATED_MIRROR_DIRNAME
     if not mirror_root.is_dir():
         raise GeneratedMirrorAbsentError(
             f"generated plugin mirror is absent at {mirror_root}; "
-            "run `python3 scripts/sync_root_plugin_manifests.py --repo-root .` first"
+            "run `python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .` first"
         )
     matches: list[Path] = []
     seen: set[Path] = set()

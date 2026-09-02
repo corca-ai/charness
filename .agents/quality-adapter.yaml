@@ -747,7 +747,7 @@ review_commands:
   - ./scripts/run-quality.sh --review
 security_commands:
   - ./scripts/check-secrets.sh
-  - python3 scripts/check_supply_chain.py --repo-root .
+  - python3 scripts/plugin_export/check_supply_chain.py --repo-root .
 
 # >>> mutation_testing (charness propose) >>>
 mutation_testing:

@@ -1,7 +1,7 @@
 # Export boundary
 
 > Status: current
-> Source of truth: this page and [packaging_lib.py](../scripts/packaging_lib.py)
+> Source of truth: this page and [packaging_lib.py](../scripts/plugin_export/packaging_lib.py)
 > Last verified: 2026-09-02
 
 The plugin export ships the documented bundle trees: [README.md](../README.md), public skills
@@ -25,7 +25,7 @@ must not mutate `sys.path` or add another shim pair under `tools/`.
 To inspect the clean export boundary:
 
 ```bash
-python3 scripts/export_plugin.py --repo-root . --host claude --output-root /tmp/export-probe
+python3 scripts/plugin_export/export_plugin.py --repo-root . --host claude --output-root /tmp/export-probe
 export_root=/tmp/export-probe/plugins/charness
 root_tools_count=$(find "$export_root" -maxdepth 1 -type d -name tools -print | wc -l)
 test "$root_tools_count" -eq 0

@@ -65,7 +65,7 @@ for that phase. A green local check is not authorization for any of them.
 Batch source edits, then run the canonical exporter once:
 
 ```bash
-python3 scripts/sync_root_plugin_manifests.py --repo-root .
+python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .
 ```
 
 Validate the source and generated host layout together when packaging changes.

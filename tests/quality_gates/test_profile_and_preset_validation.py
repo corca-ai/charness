@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
+from scripts import validate_adapters as VALIDATE_ADAPTERS
 from scripts import validate_presets as VALIDATE_PRESETS
-from scripts.gates import validate_adapters as VALIDATE_ADAPTERS
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tools import validate_profiles as VALIDATE_PROFILES
 
@@ -556,7 +556,12 @@ def test_exported_validate_adapters_runs_from_flattened_layout(tmp_path: Path) -
     exported = subprocess.run(
         [
             sys.executable,
-            str(Path(__file__).resolve().parents[2] / "scripts" / "export_plugin.py"),
+            str(
+                Path(__file__).resolve().parents[2]
+                / "scripts"
+                / "plugin_export"
+                / "export_plugin.py"
+            ),
             "--repo-root",
             str(Path(__file__).resolve().parents[2]),
             "--host",
@@ -577,7 +582,7 @@ def test_exported_validate_adapters_runs_from_flattened_layout(tmp_path: Path) -
     result = subprocess.run(
         [
             sys.executable,
-            str(plugin_root / "scripts" / "gates" / "validate_adapters.py"),
+            str(plugin_root / "scripts" / "validate_adapters.py"),
             "--repo-root",
             str(plugin_root),
         ],

@@ -61,7 +61,7 @@ the evidence is sufficient for the boundary at hand.
 - Question: Which shared packaging manifest is canonical for Claude/Codex dual support?
 - Current choice: [`packaging/charness.json`](../packaging/charness.json) stays the single source of truth.
 - Why now: This is already how the checked-in plugin install surface and root marketplace files are generated and validated.
-- Impact surfaces: [`docs/host-packaging.md`](./host-packaging.md), [`scripts/sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py), [`scripts/validate_packaging.py`](../scripts/validate_packaging.py)
+- Impact surfaces: [`docs/host-packaging.md`](./host-packaging.md), [`scripts/plugin_export/sync_root_plugin_manifests.py`](../scripts/plugin_export/sync_root_plugin_manifests.py), [`scripts/plugin_export/validate_packaging.py`](../scripts/plugin_export/validate_packaging.py)
 - Reopen trigger: If host-specific metadata can no longer be represented as generated output from one shared manifest.
 
 ### D3. Packaging Version Ownership
@@ -69,7 +69,7 @@ the evidence is sufficient for the boundary at hand.
 - Question: Should shared packaging manifest carry release version directly or rely on export-time override?
 - Current choice: Shared manifest remains canonical for default version; export-time override is allowed for host-specific release workflows.
 - Why now: Preserves reproducibility while keeping release operations flexible.
-- Impact surfaces: [`packaging/charness.json`](../packaging/charness.json), [`scripts/export_plugin.py`](../scripts/export_plugin.py), [`docs/host-packaging.md`](./host-packaging.md)
+- Impact surfaces: [`packaging/charness.json`](../packaging/charness.json), [`scripts/plugin_export/export_plugin.py`](../scripts/plugin_export/export_plugin.py), [`docs/host-packaging.md`](./host-packaging.md)
 - Reopen trigger: If release tooling requires immutable manifest-only versioning with no override path.
 
 ### D4. Generated Export Tree Storage
@@ -77,7 +77,7 @@ the evidence is sufficient for the boundary at hand.
 - Question: Store generated Claude/Codex export trees as fixtures or keep script+temp smoke canonical?
 - Current choice: Keep script-driven temporary materialization canonical; do not commit generated export trees.
 - Why now: Avoids drift and duplicate source-of-truth risk.
-- Impact surfaces: [`scripts/export_plugin.py`](../scripts/export_plugin.py), [`scripts/sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py), packaging docs
+- Impact surfaces: [`scripts/plugin_export/export_plugin.py`](../scripts/plugin_export/export_plugin.py), [`scripts/plugin_export/sync_root_plugin_manifests.py`](../scripts/plugin_export/sync_root_plugin_manifests.py), packaging docs
 - Reopen trigger: If a downstream installer requires committed generated trees as contract artifacts.
 
 ### D5. `profile.extends` Depth
@@ -608,7 +608,7 @@ check.
   line this slice was entitled to add.
 - **Withdrawn, do not retry:** the "derive the expected set from the repo's own sync
   command output" repair named below is NOT buildable as described.
-  [`sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py) reports `written_paths` carrying the plugin root as a
+  [`sync_root_plugin_manifests.py`](../scripts/plugin_export/sync_root_plugin_manifests.py) reports `written_paths` carrying the plugin root as a
   *directory* (`plugins/charness`), so two of the four surfaces — `claude_plugin` and
   `codex_plugin` — never appear in it; [`current_release.py`](../skills/public/release/scripts/current_release.py)'s vocabulary is symbolic keys
   rather than paths, so a derivation would additionally need a path→key map with nowhere
@@ -618,7 +618,7 @@ check.
 - Named remedy premise:
   - Remedy: derive the expected release-surface set from sync command output.
   - Premise: the sync output names every generated surface in the vocabulary consumed by [`current_release.py`](../skills/public/release/scripts/current_release.py).
-  - Evidence channel: read [`sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py) output fields and [`current_release.py`](../skills/public/release/scripts/current_release.py) surface vocabulary.
+  - Evidence channel: read [`sync_root_plugin_manifests.py`](../scripts/plugin_export/sync_root_plugin_manifests.py) output fields and [`current_release.py`](../skills/public/release/scripts/current_release.py) surface vocabulary.
   - Observation: sync reports the plugin root as a directory, omits two surfaces, and uses no path-to-key mapping for the release vocabulary.
   - Downstream decision delta: withdraw the derivation repair; retain declared-only status with explicit uncorroborated publish refusal.
   - Status: withdrawn

@@ -89,7 +89,7 @@ jobs:
         # anyone who clones: measured on a fresh clone of 030aa8262, the standing
         # suite is 94 failed / 16 errors without this step and clean with it, and
         # `check_doc_links.py` fails on `docs/host-packaging.md` before pytest runs.
-        run: python3 scripts/sync_root_plugin_manifests.py --repo-root .
+        run: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .
 
       - name: Lint (ruff)
         # Invokes the repo-owned entrypoint rather than retyping its path list, which is
@@ -99,7 +99,7 @@ jobs:
         run: ./scripts/check-python-lint.sh
 
       - name: Validate plugin packaging export
-        run: python3 scripts/validate_packaging.py --repo-root .
+        run: python3 scripts/plugin_export/validate_packaging.py --repo-root .
 
       - name: Validate doc links
         run: python3 scripts/gates/check_doc_links.py --repo-root .

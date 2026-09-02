@@ -344,7 +344,7 @@ def under_generated_export(root: Path, path: Path) -> bool:
 
     A path is UNDURABLE when nothing can bring it back. The plugin export is
     gitignored, but it is regenerated from tracked source by a repo-owned producer
-    (`scripts/sync_root_plugin_manifests.py`, run by `charness init`/`update` and by
+    (`scripts/plugin_export/sync_root_plugin_manifests.py`, run by `charness init`/`update` and by
     the release version bump), and that regeneration was proven byte-identical for
     all 1,042 files when the tree was untracked on 2026-08-29. A citation into it is
     therefore reproducible, which is exactly what this gate asks for -- the gitignore

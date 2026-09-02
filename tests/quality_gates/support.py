@@ -34,7 +34,8 @@ def exported_plugin_tree(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """
     output_root = tmp_path_factory.mktemp("quality-plugin-export")
     export_plugin = load_script_module(
-        "tests.quality_gates.support_export_plugin", ROOT / "scripts" / "export_plugin.py"
+        "tests.quality_gates.support_export_plugin",
+        ROOT / "scripts" / "plugin_export" / "export_plugin.py",
     )
     result = run_loaded_script_main(
         "export_plugin.py",
@@ -48,6 +49,8 @@ def exported_plugin_tree(tmp_path_factory: pytest.TempPathFactory) -> Path:
     )
     assert result.returncode == 0, result.stderr
     return output_root / "plugins" / "charness"
+
+
 EVAL_REGISTRY = load_script_module(
     "tests.quality_gates.support_eval_registry", ROOT / "tools" / "eval_registry.py"
 )
@@ -326,7 +329,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-presets", "validate_presets.py"),
     ("validate-adapters", "validate_adapters.py"),
     ("validate-integrations", "validate_integrations.py"),
-    ("validate-packaging", "validate_packaging.py"),
+    ("validate-packaging", "plugin_export/validate_packaging.py"),
     ("validate-packaging-committed", "validate_packaging_committed.py"),
     ("validate-debug-artifact", "validate_debug_artifact.py"),
     ("validate-debug-seam-index", "build_debug_seam_risk_index.py"),
@@ -370,9 +373,9 @@ QUALITY_PYTHON_STUBS = (
     ("check-artifact-referents", "check_artifact_referents.py"),
     ("check-references-link-inventory", "check_references_link_inventory.py"),
     ("check-seed-fixture-budget", "check_seed_fixture_budget.py"),
-    ("check-supply-chain", "check_supply_chain.py"),
+    ("check-supply-chain", "plugin_export/check_supply_chain.py"),
     ("check-github-actions", "check_github_actions.py"),
-    ("check-supply-chain-online", "check_supply_chain_online.py"),
+    ("check-supply-chain-online", "plugin_export/check_supply_chain_online.py"),
     ("check-coverage", "check_coverage.py"),
     ("check-test-completeness", "check_test_completeness.py"),
     ("check-test-production-ratio", "check_test_production_ratio.py"),
@@ -486,7 +489,9 @@ def quality_shell_stub(label: str) -> str:
 
 def seed_quality_python_stubs(target_dir: Path, stubs: tuple[tuple[str, str], ...]) -> None:
     for label, filename in stubs:
-        write_executable(target_dir / filename, quality_python_stub(label))
+        target_path = target_dir / filename
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        write_executable(target_path, quality_python_stub(label))
 
 
 def seed_quality_shell_stubs(target_dir: Path) -> None:
@@ -743,11 +748,12 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         )
     # Copied rather than stubbed: the runner's specdown step calls it for real, and a
     # stub would let the runner keep passing if the redirect it produces ever broke.
+    specdown_config = scripts_dir / "plugin_export" / "specdown_ephemeral_config.py"
+    specdown_config.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(
-        ROOT / "scripts" / "specdown_ephemeral_config.py",
-        scripts_dir / "specdown_ephemeral_config.py",
+        ROOT / "scripts" / "plugin_export" / "specdown_ephemeral_config.py", specdown_config
     )
-    (scripts_dir / "specdown_ephemeral_config.py").chmod(0o755)
+    specdown_config.chmod(0o755)
     (repo / "specdown.json").write_text(
         json.dumps(
             {

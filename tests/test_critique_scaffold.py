@@ -12,7 +12,7 @@ from skills.public.critique.scripts.verification_retry import build_retry_key
 from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
-_export_plugin = import_repo_module(__file__, "scripts.export_plugin")
+_export_plugin = import_repo_module(__file__, "scripts.plugin_export.export_plugin")
 
 SCAFFOLD = "skills/public/critique/scripts/scaffold_critique_artifact.py"
 

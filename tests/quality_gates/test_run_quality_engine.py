@@ -217,7 +217,7 @@ def test_plugin_preamble_runs_for_writable_full_mode_and_skips_read_only(
     )
     (repo / ".gitignore").write_text("/plugins/\n", encoding="utf-8")
     write_executable(
-        repo / "scripts" / "sync_root_plugin_manifests.py",
+        repo / "scripts" / "plugin_export" / "sync_root_plugin_manifests.py",
         "from pathlib import Path\nPath('preamble-ran').write_text('yes')\n",
     )
 

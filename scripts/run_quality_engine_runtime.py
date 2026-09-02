@@ -424,7 +424,7 @@ def run_preamble(context: RuntimeContext, *, read_only: bool) -> int:
         return 0
     command = [
         "python3",
-        "scripts/validate_packaging.py" if read_only else "scripts/sync_root_plugin_manifests.py",
+        "scripts/plugin_export/validate_packaging.py" if read_only else "scripts/plugin_export/sync_root_plugin_manifests.py",
         "--repo-root",
         str(context.repo_root),
     ]
@@ -439,7 +439,7 @@ def run_preamble(context: RuntimeContext, *, read_only: bool) -> int:
             print(result.stderr, end="", file=os.sys.stderr)
         if read_only:
             print(
-                "run-quality: regenerate with `python3 scripts/sync_root_plugin_manifests.py "
+                "run-quality: regenerate with `python3 scripts/plugin_export/sync_root_plugin_manifests.py "
                 f"--repo-root {context.repo_root}`",
                 file=os.sys.stderr,
             )

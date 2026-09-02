@@ -33,7 +33,7 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
         ("package_id", repo_name),
         ("packaging_manifest_path", f"packaging/{repo_name}.json"),
         ("materialized_plugin_root", f"plugins/{repo_name}"),
-        ("sync_command", "python3 scripts/sync_root_plugin_manifests.py --repo-root ."),
+        ("sync_command", "python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root ."),
         ("quality_command", "./scripts/run-quality.sh"),
         ("update_instructions", []),
         ("requested_review_commands", []),
