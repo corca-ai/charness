@@ -192,9 +192,10 @@ classes seeded, one RCA event). Lane worktrees are all removed.
   launch and do not write files while a launch is sleeping.
 - Bounded-reviewer reports are truncated by the host around 4k characters;
   ask for under 60 lines and run two passes with disjoint angles.
-- A Codex lane cannot write `.agents/`. Two lanes (ratchet, #774) ended
-  uncommitted for that reason alone; say in the brief that the parent applies
-  adapter and surfaces edits.
+- A Codex lane could not write `.agents/` (the workspace-write sandbox holds it
+  read-only). Two lanes (ratchet, #774) ended uncommitted for that reason alone.
+  FIXED at the tool after the retro: `charness task run` now grants the
+  worktree's `.agents/` with `--add-dir` (`17e6d66f8`), so briefs need no rule.
 - The generated `plugins/` mirror is not tracked but two standing tests
   compare it byte for byte; regenerate it before every full lane.
 - The pre-push hook runs the quality lane on the parent working tree, so a
@@ -203,6 +204,7 @@ classes seeded, one RCA event). Lane worktrees are all removed.
   cherry-picks ran inside the lane worktree instead of main. Use `git -C`.
 - Bisect the collection set (all test modules import in every xdist worker),
   not the runtime prefix, when a failure passes alone; it found the polluter
-  in nine runs of 20 seconds where the runtime bisect found nothing.
+  in nine runs of 20 seconds where the runtime bisect found nothing. Written
+  into `skills/public/debug/references/sibling-search.md` (`201719383`).
 - An in-process migration must emulate the child interpreter: empty module
   table, argv swapped before import, script directory first on `sys.path`.
