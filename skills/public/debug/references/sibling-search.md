@@ -110,3 +110,24 @@ a default escape.
 State the simplest evidence that the listed locations are actual instances of the
 same pattern, not surface-level keyword matches. A sibling list that cannot
 defend each entry against "this only shares a name" is over-reach.
+
+## Order-dependent failures: bisect the collection set first
+
+A test that fails in the full run and passes alone is polluted by another
+module, and under xdist the polluter is usually NOT a test that ran earlier on
+the same worker. Every worker imports every collected test module before it
+runs anything, so a module-level side effect (a `load_script_module(...)` under a
+bare name that rebinds `sys.modules`, a `sys.path` insert, a global registry
+mutation) lands in all workers regardless of runtime order. Two consequences:
+
+- Reproduce with the FULL collection and only the victim selected:
+  `pytest -n0 <every standing target> -k <victim>`. If that fails, the cause is
+  collection-time and a runtime-prefix bisect (re-running the tests that
+  preceded the victim on its worker) will never find it.
+- Bisect the collected FILE list by halves with the victim appended and `-k
+  <victim>`; each run costs one collection (about 20 seconds here). Nine runs
+  found `tests/coverage_debt/test_batch6.py` among 563 files on 2026-09-02
+  after three runtime-prefix rounds had found nothing.
+
+Fix at the polluter (import the shared module by name so there is one copy),
+not at the victim, and say so in the commit body.
