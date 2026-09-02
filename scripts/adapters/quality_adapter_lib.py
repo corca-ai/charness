@@ -52,7 +52,7 @@ from scripts.adapters.quality_policy_defaults import (  # noqa: E402
     validate_standing_doc_provenance,
 )
 from scripts.adapters.quality_universes_lib import DEFAULT_UNIVERSES  # noqa: E402
-from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN  # noqa: E402
+from scripts.artifacts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN  # noqa: E402
 
 ARTIFACT_FILENAME = "latest.md"
 ARTIFACT_CLASS = "history"

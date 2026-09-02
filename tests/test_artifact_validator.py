@@ -9,8 +9,8 @@ from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[1]
 _artifact_validator = import_repo_module(
-    ROOT / "scripts" / "artifact_validator.py",
-    "scripts.artifact_validator",
+    ROOT / "scripts" / "artifacts" / "artifact_validator.py",
+    "scripts.artifacts.artifact_validator",
 )
 
 

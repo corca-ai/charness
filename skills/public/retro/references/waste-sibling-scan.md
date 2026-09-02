@@ -79,5 +79,5 @@ with a single bullet rather than omitting the section reasoning:
 `## Sibling Search` section is present in a per-session retro artifact. The
 section is opt-in: artifacts without it pass unchanged, so historical retros and
 narrowly-local sessions are not retroactively gated. The validator shares
-`scripts/artifact_validator.py:validate_sibling_followups` with the `debug`
+`scripts/artifacts/artifact_validator.py:validate_sibling_followups` with the `debug`
 validator so the two skills enforce one grammar, not two.

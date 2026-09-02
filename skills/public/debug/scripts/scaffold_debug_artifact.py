@@ -21,7 +21,7 @@ _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.adapters.adapter_version_verdict"
 )
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.core.scaffold_artifact_lib")
-_resolve_artifact_path = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.resolve_artifact_path")
+_resolve_artifact_path = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.artifacts.resolve_artifact_path")
 _scaffold_artifact_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.core.scaffold_artifact_lib")
 _followup_routing = SKILL_RUNTIME.load_local_skill_module(__file__, "debug_followup_routing")
 

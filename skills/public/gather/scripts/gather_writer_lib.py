@@ -53,7 +53,7 @@ def refresh_current_pointer(
 ) -> dict[str, Any]:
     """Inline symlink-aware pointer refresh.
 
-    Mirrors the safety contract in `scripts/refresh_current_pointer.py`
+    Mirrors the safety contract in `scripts/artifacts/refresh_current_pointer.py`
     but stays in-process so the writer does not depend on a
     parent-harness shell-out that may not be available in every consumer
     layout. Refuses to operate on a symlink whose target escapes

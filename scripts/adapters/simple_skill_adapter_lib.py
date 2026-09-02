@@ -27,7 +27,7 @@ from scripts.adapter_lib import (  # noqa: E402
 )
 from scripts.adapters.adapter_field_application import apply_optional_fields  # noqa: E402
 from scripts.adapters.adapter_version_verdict import declarations_unhonored  # noqa: E402
-from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN  # noqa: E402
+from scripts.artifacts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN  # noqa: E402
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
 # `(field_name, minimum)` pairs a skill opts into; see `validate_simple_adapter_data`.

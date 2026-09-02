@@ -22,7 +22,7 @@ _load_repo_runtime_bootstrap()
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _identity = import_repo_module(__file__, "scripts.review.reviewed_input_verification")
-_artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+_artifact_validator = import_repo_module(__file__, "scripts.artifacts.artifact_validator")
 ValidationError = _artifact_validator.ValidationError
 # One definition, shared with the validator. Two copies of this regex existed and
 # both missed the bullet form the corpus writes, so "is this critique packet-bound"

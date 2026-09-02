@@ -129,7 +129,7 @@ SURFACES = (
     ),
     (
         "current_pointer_writer",
-        "scripts/refresh_current_pointer.py",
+        "scripts/artifacts/refresh_current_pointer.py",
         lambda repo: (
             "--repo-root", str(repo), "--skill-id", "retro",
             "--record-artifact-path", "docs/retros/2026-08-18-probe.md",

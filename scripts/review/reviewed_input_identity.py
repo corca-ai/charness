@@ -39,7 +39,7 @@ _LEGACY_SUBSTRATE_MODE_ALIASES = {
     "worktree": SUBSTRATE_WORKING_TREE,
 }
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-# Owned by `scripts/artifact_naming_lib.py`, restated rather than imported. The
+# Owned by `scripts/artifacts/artifact_naming_lib.py`, restated rather than imported. The
 # shipped reviewer runtime loads this file BY PATH (`spec_from_file_location`),
 # with no package context, so a sibling import would not resolve there.
 # `validate_quality_artifact.py` restates it the same way; a test asserts the two

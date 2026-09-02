@@ -688,16 +688,46 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         "quality_policy_defaults.py",
         "quality_policy_merge.py",
     }
+    artifact_names = {
+        "artifact_naming_lib.py",
+        "artifact_quantities.py",
+        "artifact_referents.py",
+        "artifact_run_scope.py",
+        "artifact_shape_source.py",
+        "artifact_size_budget.py",
+        "artifact_subject_identity.py",
+        "artifact_validator.py",
+        "artifact_violation_report.py",
+        "current_pointer_writer_lib.py",
+        "inventory_current_pointer_layouts.py",
+        "refresh_current_pointer.py",
+        "resolve_artifact_path.py",
+    }
     adapter_dir = scripts_dir / "adapters"
     adapter_dir.mkdir()
     shutil.copy2(ROOT / "scripts" / "adapters" / "__init__.py", adapter_dir / "__init__.py")
+    artifact_dir = scripts_dir / "artifacts"
+    artifact_dir.mkdir()
+    shutil.copy2(ROOT / "scripts" / "artifacts" / "__init__.py", artifact_dir / "__init__.py")
     for real_name in (
         "quality_label_universe.py",
         "runtime_bootstrap.py",
         "adapter_lib.py",
+        "artifact_naming_lib.py",
+        "artifact_quantities.py",
+        "artifact_referents.py",
+        "artifact_run_scope.py",
+        "artifact_shape_source.py",
+        "artifact_size_budget.py",
+        "artifact_subject_identity.py",
+        "artifact_validator.py",
+        "artifact_violation_report.py",
+        "current_pointer_writer_lib.py",
+        "inventory_current_pointer_layouts.py",
+        "refresh_current_pointer.py",
+        "resolve_artifact_path.py",
         "quality_adapter_lib.py",
         "quality_universes_lib.py",
-        "artifact_naming_lib.py",
         "quality_bootstrap_absence.py",
         "quality_bootstrap_lib.py",
         "quality_bootstrap_common.py",
@@ -733,8 +763,12 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         "inventory_nose_clones_unavailable.py",
         "release_changed_line_coverage_unavailable.py",
     ):
-        source = ROOT / "scripts" / ("adapters" if real_name in adapter_names else "") / real_name
-        destination = scripts_dir / ("adapters" if real_name in adapter_names else "") / real_name
+        source = ROOT / "scripts" / (
+            "adapters" if real_name in adapter_names else "artifacts" if real_name in artifact_names else ""
+        ) / real_name
+        destination = scripts_dir / (
+            "adapters" if real_name in adapter_names else "artifacts" if real_name in artifact_names else ""
+        ) / real_name
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
         destination.chmod(0o755)

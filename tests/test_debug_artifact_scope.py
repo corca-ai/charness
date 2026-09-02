@@ -456,9 +456,9 @@ def test_a_missing_git_binary_refuses_rather_than_crashing(tmp_path: Path) -> No
     # Imported through the repo's own module path, not by file location: this module
     # carries `from __future__ import annotations` dataclasses whose resolution needs
     # the real package context, and a file-location load fails on them.
-    sys.path.insert(0, str(ROOT / "scripts"))
+    sys.path.insert(0, str(ROOT))
     try:
-        import artifact_run_scope as module
+        from scripts.artifacts import artifact_run_scope as module
     finally:
         sys.path.pop(0)
 

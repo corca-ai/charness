@@ -98,7 +98,7 @@ def test_retargeting_the_current_pointer_stales_the_verdict(tmp_path: Path) -> N
 
 def test_the_current_pointer_filename_matches_its_owning_module(tmp_path: Path) -> None:
     """The restated constant must not drift from `artifact_naming_lib`."""
-    from scripts.artifact_naming_lib import CURRENT_POINTER_FILENAME as OWNED
+    from scripts.artifacts.artifact_naming_lib import CURRENT_POINTER_FILENAME as OWNED
     from scripts.review.reviewed_input_identity import CURRENT_POINTER_FILENAME as RESTATED
 
     assert RESTATED == OWNED

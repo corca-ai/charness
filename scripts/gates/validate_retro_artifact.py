@@ -25,7 +25,7 @@ from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script 
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
+_scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifacts.artifact_validator")
 _prepare_packet_markdown_kind = import_repo_module(__file__, "scripts.gates_support.prepare_packet_markdown_kind")
 # One home for "what date does this artifact grandfather on" across every dated
 # artifact family; see `_retro_observed_date`.

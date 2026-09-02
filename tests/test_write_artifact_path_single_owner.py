@@ -5,9 +5,9 @@
 
 - `scripts/core/scaffold_artifact_lib.py` (quality, handoff, ideation, retro scaffolds) — now the
   single owner
-- `scripts/resolve_artifact_path.py` (debug and the generic path)
+- `scripts/artifacts/resolve_artifact_path.py` (debug and the generic path)
 - `skills/public/quality/scripts/resolve_quality_artifact.py`
-- `scripts/inventory_current_pointer_layouts.py` — the fourth, which the duplicate-ratchet
+- `scripts/artifacts/inventory_current_pointer_layouts.py` — the fourth, which the duplicate-ratchet
   gate surfaced while the first three were being consolidated; it reports on pointer layouts,
   so a drift there would make the inventory disagree with the payloads it inventories
 

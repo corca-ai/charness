@@ -27,11 +27,11 @@ from tests.quality_gates.support import ROOT
 from tests.script_main import load_script_module, run_loaded_script_main
 
 # ---------------------------------------------------------------------------
-# scripts/refresh_current_pointer.py -- the two "already correct" verdicts
+# scripts/artifacts/refresh_current_pointer.py -- the two "already correct" verdicts
 # ---------------------------------------------------------------------------
 
 REFRESH_CURRENT_POINTER = load_script_module(
-    "refresh_current_pointer_batch5", ROOT / "scripts" / "refresh_current_pointer.py"
+    "refresh_current_pointer_batch5", ROOT / "scripts" / "artifacts" / "refresh_current_pointer.py"
 )
 
 

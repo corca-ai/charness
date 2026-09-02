@@ -63,8 +63,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.artifact_quantities import inconsistent_quantities  # noqa: E402
-from scripts.artifact_referents import (  # noqa: E402
+from scripts.artifacts.artifact_quantities import inconsistent_quantities  # noqa: E402
+from scripts.artifacts.artifact_referents import (  # noqa: E402
     DISPOSITION_LINE_RE,
     INLINE_DISPOSITION_RE,
     ResolverUnavailable,
@@ -247,6 +247,15 @@ def load_local_context_declarations(
 #: reported. This is the date the gate landed.
 ENFORCED_FROM = date(2026, 8, 22)
 
+# Package moves preserve the meaning of frozen records without rewriting their
+# history. A pre-move artifact may still name the flat path that was real when
+# it was written; the same spelling in a post-move artifact is a new, stale
+# referent and must block. This is deliberately derived from the destination
+# packages that landed in #770 rather than from a permanent alias that would
+# make old paths valid forever.
+PACKAGE_MOVE_ENFORCED_FROM = date(2026, 9, 3)
+MOVED_SCRIPT_PACKAGES = ("review", "lessons", "adapters", "artifacts")
+
 #: Families whose dispositions ship inside release bundles and are read as
 #: statements of fact by later sessions.
 SCANNED_FAMILIES = ("goals", "retro")
@@ -305,6 +314,22 @@ def is_enforced(path: Path) -> bool:
     return observed >= ENFORCED_FROM
 
 
+def _is_pre_move_path_referent(path: Path, repo_root: Path, finding: dict[str, str]) -> bool:
+    """Grandfather only dated history that names a script moved in #770."""
+    if finding.get("kind") != "missing-path-referent":
+        return False
+    observed = date_from_filename(path)
+    if observed is None or observed >= PACKAGE_MOVE_ENFORCED_FROM:
+        return False
+    candidate = Path(finding.get("token", ""))
+    if candidate.parts[:1] != ("scripts",) or len(candidate.parts) != 2:
+        return False
+    return any(
+        (repo_root / "scripts" / package / candidate.name).is_file()
+        for package in MOVED_SCRIPT_PACKAGES
+    )
+
+
 def disposition_lines(text: str) -> list[tuple[int, str]]:
     """Every disposition-bearing line, 1-indexed, fenced blocks excluded.
 
@@ -352,11 +377,14 @@ def audit_file(
     for number, line in disposition_lines(text):
         scope["dispositions"] += 1
         for finding in check_disposition_referents(line, repo_root):
+            finding_enforced = enforced and not _is_pre_move_path_referent(
+                path, repo_root, finding
+            )
             findings.append(
                 {
                     "file": _display_path(path, repo_root),
                     "line": number,
-                    "enforced": enforced,
+                    "enforced": finding_enforced,
                     **finding,
                 }
             )

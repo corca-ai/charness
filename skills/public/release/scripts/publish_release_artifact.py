@@ -6,7 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
-from scripts.current_pointer_writer_lib import write_current_pointer_text
+from scripts.artifacts.current_pointer_writer_lib import write_current_pointer_text
 
 _sections = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_artifact_sections.py")))

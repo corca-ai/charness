@@ -17,7 +17,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 
-_scripts_artifact_naming_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.artifact_naming_lib")
+_scripts_artifact_naming_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.artifacts.artifact_naming_lib")
 ARTIFACT_CLASSES = _scripts_artifact_naming_lib_module.ARTIFACT_CLASSES
 _scripts_simple_skill_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.adapters.simple_skill_adapter_lib"

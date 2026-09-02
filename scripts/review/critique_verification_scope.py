@@ -26,7 +26,7 @@ from scripts.runtime_bootstrap import (  # noqa: E402
 )
 
 REPO_ROOT = repo_root_from_script(__file__)
-_artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+_artifact_validator = import_repo_module(__file__, "scripts.artifacts.artifact_validator")
 _sections = import_repo_module(__file__, "scripts.core.markdown_sections")
 _verification_retry = load_path_module(
     "charness_critique_verification_retry",

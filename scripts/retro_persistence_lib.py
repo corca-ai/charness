@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scripts.artifact_naming_lib import dated_artifact_filename
+from scripts.artifacts.artifact_naming_lib import dated_artifact_filename
 from scripts.core.helper_provenance_lib import require_repo_local_helper
 from scripts.goal_lineage import (
     LineageError,

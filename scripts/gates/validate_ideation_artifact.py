@@ -22,7 +22,7 @@ from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script 
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+_artifact_validator = import_repo_module(__file__, "scripts.artifacts.artifact_validator")
 # The required-fields / unique-id / typed-enum loop over a structured-entry
 # section, shared with the critique `## Structured Findings` floor.
 _structured_entry_floor = import_repo_module(__file__, "scripts.gates_support.structured_entry_floor")

@@ -22,9 +22,13 @@ def _load_repo_helper(module_filename: str) -> dict[str, object]:
     """
     helper = next(
         (
-            ancestor / "scripts" / module_filename
+            candidate
             for ancestor in Path(__file__).resolve().parents
-            if (ancestor / "scripts" / module_filename).is_file()
+            for candidate in (
+                ancestor / "scripts" / module_filename,
+                ancestor / "scripts" / "artifacts" / module_filename,
+            )
+            if candidate.is_file()
         ),
         None,
     )

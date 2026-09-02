@@ -42,7 +42,7 @@ def _resolver_path(repo_root: Path) -> Path:
 
 _quality_resolve_adapter = load_path_module("quality_resolve_adapter", _resolver_path(REPO_ROOT))
 load_adapter = _quality_resolve_adapter.load_adapter
-_scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
+_scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifacts.artifact_validator")
 _adapter_version_verdict = import_repo_module(__file__, "scripts.adapters.adapter_version_verdict")
 _surface_contract = import_repo_module(__file__, "scripts.adapters.quality_surface_contract")
 # Shared with debug through the module that owns the measurement; see its docstring

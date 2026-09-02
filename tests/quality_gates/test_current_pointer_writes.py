@@ -17,7 +17,7 @@ from .seeding_support import load_module
 from .support import ROOT, run_script
 
 WRITER = load_module(
-    "current_pointer_writer_lib", ROOT / "scripts" / "current_pointer_writer_lib.py"
+    "current_pointer_writer_lib", ROOT / "scripts" / "artifacts" / "current_pointer_writer_lib.py"
 )
 RELEASE_ARTIFACT = load_module(
     "publish_release_artifact",
@@ -97,7 +97,7 @@ def test_current_pointer_write_shapes_are_caught_in_one_scan(tmp_path: Path) -> 
             ),
             "scripts/mixed_writer.py": (
                 "from pathlib import Path\n"
-                "from scripts.current_pointer_writer_lib import write_current_pointer_text\n"
+                "from scripts.artifacts.current_pointer_writer_lib import write_current_pointer_text\n"
                 "target = Path('charness-artifacts/demo') / 'latest.md'\n"
                 "write_current_pointer_text(target, 'ok')\n"
                 "target.write_text('bad', encoding='utf-8')\n"
@@ -481,7 +481,7 @@ def test_current_pointer_write_scanner_skips_generated_plugin_mirrors(
 
 def test_current_pointer_write_scanner_ignores_helper_and_syntax_error(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    script_dir = repo / "scripts"
+    script_dir = repo / "scripts" / "artifacts"
     script_dir.mkdir(parents=True)
     helper = script_dir / "current_pointer_writer_lib.py"
     helper.write_text(
@@ -543,7 +543,7 @@ def test_current_pointer_write_scanner_skips_helper_during_repo_scan(
     repo = _scanner_repo(
         tmp_path,
         {
-            "scripts/current_pointer_writer_lib.py": (
+            "scripts/artifacts/current_pointer_writer_lib.py": (
                 "from pathlib import Path\n"
                 "(Path('charness-artifacts/demo') / 'latest.md').write_text('helper')\n"
             ),

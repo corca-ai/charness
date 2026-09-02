@@ -26,7 +26,7 @@ from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script 
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+_artifact_validator = import_repo_module(__file__, "scripts.artifacts.artifact_validator")
 _adversarial_evidence = import_repo_module(__file__, "scripts.review.adversarial_evidence")
 ValidationError = _artifact_validator.ValidationError
 report_validation_failure = _artifact_validator.report_validation_failure

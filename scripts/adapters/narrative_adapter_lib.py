@@ -25,7 +25,7 @@ from scripts.adapter_lib import (  # noqa: E402
     optional_string_list,
     resolve_adapter_payload,
 )
-from scripts.artifact_naming_lib import RECORD_PATTERN  # noqa: E402
+from scripts.artifacts.artifact_naming_lib import RECORD_PATTERN  # noqa: E402
 
 ADAPTER_CANDIDATES = (
     Path(".agents/narrative-adapter.yaml"),

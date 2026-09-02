@@ -70,7 +70,7 @@ run the repo inventory and use its `write_artifact_path` and symlink metadata
 rather than inspecting only one file by hand:
 
 ```bash
-python3 <plugin-dir>/scripts/inventory_current_pointer_layouts.py --repo-root .
+python3 <plugin-dir>/scripts/artifacts/inventory_current_pointer_layouts.py --repo-root .
 ```
 
 ## Initial Signal Sweep

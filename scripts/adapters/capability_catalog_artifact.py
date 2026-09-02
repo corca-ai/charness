@@ -20,7 +20,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-from scripts.current_pointer_writer_lib import (  # noqa: E402
+from scripts.artifacts.current_pointer_writer_lib import (  # noqa: E402
     write_current_pointer_json,
     write_current_pointer_text,
 )

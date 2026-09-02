@@ -29,7 +29,7 @@ def _scaffold_rel(artifact_type: str) -> str | None:
     consumer repo may not ship the skill tree), otherwise the command would name
     a file the author cannot run.
     """
-    scripts_dir = Path(__file__).resolve().parent
+    scripts_dir = Path(__file__).resolve().parent.parent
     try:
         if str(scripts_dir) not in sys.path:
             sys.path.insert(0, str(scripts_dir))

@@ -166,8 +166,8 @@ Before editing an artifact, resolve the edit target instead of opening
 `latest.md` from memory:
 
 ```bash
-python3 scripts/resolve_artifact_path.py --repo-root . --skill-id <skill-id> --slug <slug> --intent record
-python3 scripts/resolve_artifact_path.py --repo-root . --skill-id <skill-id> --slug <slug> --intent current
+python3 scripts/artifacts/resolve_artifact_path.py --repo-root . --skill-id <skill-id> --slug <slug> --intent record
+python3 scripts/artifacts/resolve_artifact_path.py --repo-root . --skill-id <skill-id> --slug <slug> --intent current
 ```
 
 Use `--intent record` when preserving point-in-time evidence. It returns the
@@ -181,7 +181,7 @@ After writing a dated record, refresh the visible current pointer through the
 helper instead of editing `latest.md` directly:
 
 ```bash
-python3 scripts/refresh_current_pointer.py --repo-root . --skill-id <skill-id> --record-artifact-path <record-path> --execute
+python3 scripts/artifacts/refresh_current_pointer.py --repo-root . --skill-id <skill-id> --record-artifact-path <record-path> --execute
 ```
 
 The helper defaults to copying when the current pointer is a regular file and
@@ -199,7 +199,7 @@ the owning adapter resolver or policy document.
 To audit the current repo layout instead of relying on memory, run:
 
 ```bash
-python3 scripts/inventory_current_pointer_layouts.py --repo-root .
+python3 scripts/artifacts/inventory_current_pointer_layouts.py --repo-root .
 ```
 
 The inventory reports the adapter class, `artifact_path`, `write_artifact_path`,

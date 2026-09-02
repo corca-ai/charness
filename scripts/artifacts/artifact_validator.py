@@ -7,13 +7,27 @@ import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 # The sibling scope module is resolved the same way every other repo script
 # resolves a sibling: a bare `from artifact_run_scope import ...` binds only when
 # `scripts/` happens to be on sys.path, which is true in the repo and false in the
 # exported plugin layout — where it silently degrades a consumer's scaffold.
-_run_scope = import_repo_module(__file__, "scripts.artifact_run_scope")
+_run_scope = import_repo_module(__file__, "scripts.artifacts.artifact_run_scope")
 ChangedArtifactRun = _run_scope.ChangedArtifactRun
 ValidationError = _run_scope.ValidationError
 add_changed_artifact_args = _run_scope.add_changed_artifact_args
@@ -44,13 +58,13 @@ H2_RE = re.compile(r"^##\s+.+$")
 
 # The violation-reporting surface (the scaffold hint and the failure printer) lives in
 # its own module; re-exported here so every validator keeps its single import point.
-_violation_report = import_repo_module(__file__, "scripts.artifact_violation_report")
+_violation_report = import_repo_module(__file__, "scripts.artifacts.artifact_violation_report")
 _scaffold_rel = _violation_report._scaffold_rel
 # The size measurement and its refusal live in their own module: they are one
 # cohesive decision, and the reasoning that has to travel with the unit did not fit
 # under this file's code-length cap. Re-exported so every existing call site keeps
 # importing size enforcement from the validator it already loads.
-_size_budget = import_repo_module(__file__, "scripts.artifact_size_budget")
+_size_budget = import_repo_module(__file__, "scripts.artifacts.artifact_size_budget")
 artifact_words = _size_budget.artifact_words
 validate_max_words = _size_budget.validate_max_words
 word_ceiling_enforced = _size_budget.word_ceiling_enforced

@@ -25,7 +25,7 @@ from scripts.runtime_bootstrap import (  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
+_scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifacts.artifact_validator")
 ValidationError = _scripts_artifact_validator_module.ValidationError
 find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines

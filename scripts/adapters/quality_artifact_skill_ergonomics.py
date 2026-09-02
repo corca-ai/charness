@@ -28,7 +28,7 @@ _load_repo_runtime_bootstrap()
 
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
-_artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+_artifact_validator = import_repo_module(__file__, "scripts.artifacts.artifact_validator")
 _skill_markdown_lib = import_repo_module(__file__, "scripts.core.skill_markdown_lib")
 ValidationError = _artifact_validator.ValidationError
 

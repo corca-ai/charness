@@ -37,7 +37,7 @@ canonical record. The recipe is the same in all three cases:
    the scripted writer
    `../scripts/write_record.py` so the
    pointer-refresh path is symlink-aware. The refresh is unlink-then-write
-   (mirrors `<plugin-dir>/scripts/refresh_current_pointer.py` in shape, not
+   (mirrors `<plugin-dir>/scripts/artifacts/refresh_current_pointer.py` in shape, not
    strictly POSIX-atomic); the small window is acceptable for gather's
    read-mostly workload. The writer:
    - existing symlink pointer → unlink + symlink to the new record

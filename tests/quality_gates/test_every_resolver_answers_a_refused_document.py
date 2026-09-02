@@ -24,7 +24,7 @@ AND THIS CHANGE MOVED FOUR OF THEM, which a first draft of this docstring wrongl
 divergence that "predates this change". Before `#673`, `achieve`, `create-skill`,
 `narrative` and `quality` exited NON-ZERO on a refused parse -- by tracebacking. Making them
 render a verdict made them exit 0, and a bounded review found that a consumer keyed on
-exactly that: `scripts/resolve_artifact_path.py` treated the subprocess return code as its
+exactly that: `scripts/artifacts/resolve_artifact_path.py` treated the subprocess return code as its
 only protection and began resolving a charness default over a repo that declared otherwise.
 That consumer is guarded on the CONDITION now. The exit codes themselves are still not
 normalised -- that is a behavior change for every caller that branches on them -- so the

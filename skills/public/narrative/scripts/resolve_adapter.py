@@ -20,7 +20,11 @@ normalize_adapter_result = _adapter_lib.normalize_adapter_result
 
 
 def _repo_root() -> Path:
-    return next(parent for parent in Path(__file__).resolve().parents if (parent / "scripts" / "narrative_adapter_lib.py").is_file())
+    return next(
+        parent
+        for parent in Path(__file__).resolve().parents
+        if (parent / "scripts" / "adapters" / "narrative_adapter_lib.py").is_file()
+    )
 
 
 def load_adapter(repo_root: Path) -> dict[str, object]:

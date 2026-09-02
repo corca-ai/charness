@@ -11,14 +11,32 @@ from pathlib import Path
 
 import yaml
 
-from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
-from yaml_output import emit_yaml
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import (  # noqa: E402
+    import_repo_module,
+    load_path_module,
+    repo_root_from_script,
+)
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)
 
 _verdict = import_repo_module(__file__, "scripts.adapters.adapter_version_verdict")
 
-_scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.artifact_naming_lib")
+_scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.artifacts.artifact_naming_lib")
 _scaffold_artifact_lib = import_repo_module(__file__, "scripts.core.scaffold_artifact_lib")
 ArtifactClassError = _scripts_artifact_naming_lib_module.ArtifactClassError
 artifact_class_from_adapter = _scripts_artifact_naming_lib_module.artifact_class_from_adapter

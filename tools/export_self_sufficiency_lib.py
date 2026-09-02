@@ -81,7 +81,7 @@ from tools.export_tools_reference_lib import (  # noqa: E402
 __all__ = ["MOVED_TOOL_BASENAMES", "exported_tools_reference_findings"]
 
 
-_artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+_artifact_validator = import_repo_module(__file__, "scripts.artifacts.artifact_validator")
 
 #: Repo-root entries a CONSUMER owns, with the reason each is not a shipping gap.
 #: A filled copy of any of these would overwrite the consumer's own state, so

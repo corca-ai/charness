@@ -30,7 +30,7 @@ from .seeding_support import load_module
 from .support import ROOT, run_script
 
 WRITER = load_module(
-    "current_pointer_writer_lib", ROOT / "scripts" / "current_pointer_writer_lib.py"
+    "current_pointer_writer_lib", ROOT / "scripts" / "artifacts" / "current_pointer_writer_lib.py"
 )
 RELEASE_ARTIFACT = load_module(
     "publish_release_artifact",
@@ -43,7 +43,7 @@ HITL_SYNC_REVIEW_ARTIFACT = load_script_module(
 )
 
 REFRESH_CURRENT_POINTER = load_script_module(
-    "refresh_current_pointer_under_test", ROOT / "scripts" / "refresh_current_pointer.py"
+    "refresh_current_pointer_under_test", ROOT / "scripts" / "artifacts" / "refresh_current_pointer.py"
 )
 
 
@@ -462,7 +462,7 @@ def test_refresh_current_pointer_refuses_an_empty_record(tmp_path: Path) -> None
     """Sweep row S19's destructive half, at the surface that actually owns it.
 
     The gather writer was fixed to refuse empty content, but `is_file()` was the only
-    content check in `scripts/refresh_current_pointer.py` — the GENERIC pointer writer
+    content check in `scripts/artifacts/refresh_current_pointer.py` — the GENERIC pointer writer
     every skill routes through — and a 0-byte file passes it. Repointing `latest.md` at
     nothing destroys the asset other sessions read as current and reports
     `{"status": "updated"}`, which is the same wrong output one command over."""

@@ -26,10 +26,10 @@ from tests.script_main import load_script_module
 from .support import ROOT, run_script
 
 ARTIFACT_QUANTITIES = load_script_module(
-    "artifact_quantities_under_test", ROOT / "scripts" / "artifact_quantities.py"
+    "artifact_quantities_under_test", ROOT / "scripts" / "artifacts" / "artifact_quantities.py"
 )
 ARTIFACT_REFERENTS = load_script_module(
-    "artifact_referents_under_test", ROOT / "scripts" / "artifact_referents.py"
+    "artifact_referents_under_test", ROOT / "scripts" / "artifacts" / "artifact_referents.py"
 )
 ARTIFACT_GATE = load_script_module(
     "artifact_referents_gate_under_test", ROOT / "scripts" / "gates" / "check_artifact_referents.py"
@@ -113,7 +113,24 @@ def test_a_named_path_that_does_not_exist_is_reported() -> None:
 
 
 def test_a_named_path_that_exists_passes() -> None:
-    assert missing_paths("applied: `scripts/artifact_referents.py` owns it", ROOT) == []
+    assert missing_paths("applied: `scripts/artifacts/artifact_referents.py` owns it", ROOT) == []
+
+
+def test_a_pre_move_reference_is_grandfathered_but_a_new_one_blocks(tmp_path: Path) -> None:
+    """Frozen records keep their historical flat paths; new records do not."""
+    moved = tmp_path / "scripts" / "artifacts" / "artifact_referents.py"
+    moved.parent.mkdir(parents=True)
+    moved.write_text("# moved destination\n", encoding="utf-8")
+    for artifact_date, expected_code in (("2026-08-22", 0), ("2026-09-03", 1)):
+        artifact = tmp_path / "charness-artifacts" / "goals" / f"{artifact_date}-path.md"
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text(
+            "Disposition: applied: scripts/artifact_referents.py now owns it\n",
+            encoding="utf-8",
+        )
+        result = run_script(str(GATE), "--repo-root", str(tmp_path), "--path", str(artifact))
+        assert result.returncode == expected_code, result.stdout
+        assert "missing-path-referent" in result.stdout
 
 
 def test_an_unresolvable_sha_is_reported() -> None:

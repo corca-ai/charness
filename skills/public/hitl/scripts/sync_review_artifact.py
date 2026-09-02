@@ -18,7 +18,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _sync_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.review.hitl_review_artifact_lib")
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
-_current_pointer_writer = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.current_pointer_writer_lib")
+_current_pointer_writer = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.artifacts.current_pointer_writer_lib")
 # Command output is unconditionally YAML since the 2026-08-14 --json removal. SKILL.md
 # teaches both of this script's invocations, so its stdout is a command surface, not an
 # artifact -- the durable artifact it syncs is written by `_sync_lib`, not printed here.

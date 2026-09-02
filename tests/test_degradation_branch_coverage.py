@@ -31,7 +31,7 @@ from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
 artifact_validator = load_script_module(
-    "artifact_validator_degradation_test", ROOT / "scripts" / "artifact_validator.py"
+    "artifact_validator_degradation_test", ROOT / "scripts" / "artifacts" / "artifact_validator.py"
 )
 preflight = load_script_module(
     "check_doc_authoring_preflight_degradation_test",
@@ -46,7 +46,7 @@ check_doc_links = load_script_module(
 # module path, and a bare top-level import is invisible to it -- the gate reported
 # this file as mapping to no standing test at all while these tests drove it.
 artifact_violation_report = load_script_module(
-    "artifact_violation_report_degradation_test", ROOT / "scripts" / "artifact_violation_report.py"
+    "artifact_violation_report_degradation_test", ROOT / "scripts" / "artifacts" / "artifact_violation_report.py"
 )
 
 # --- artifact_violation_report: the scaffold hint must degrade, never raise ----

@@ -30,7 +30,7 @@ from scripts.adapter_lib import (  # noqa: E402
 )
 from scripts.adapters.adapter_field_application import apply_optional_fields  # noqa: E402
 from scripts.adapters.adapter_version_verdict import declarations_unhonored  # noqa: E402
-from scripts.artifact_naming_lib import RECORD_PATTERN  # noqa: E402
+from scripts.artifacts.artifact_naming_lib import RECORD_PATTERN  # noqa: E402
 
 KIND_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 BUILTIN_KINDS = frozenset({"issues", "path"})

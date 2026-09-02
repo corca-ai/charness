@@ -350,7 +350,7 @@ intervention — a `scripts/validate_*_artifact.py` + a section-gated rule.
 
 Keep the validator opt-in and section-gated (fail only when the structured
 section is present) so prose-only output and historical artifacts stay valid.
-Reuse the shared grammar in `<plugin-dir>/scripts/artifact_validator.py` (e.g.
+Reuse the shared grammar in `<plugin-dir>/scripts/artifacts/artifact_validator.py` (e.g.
 `validate_sibling_followups`) instead of re-implementing follow-up or enum
 parsing per skill.
 

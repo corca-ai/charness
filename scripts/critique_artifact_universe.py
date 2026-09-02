@@ -7,7 +7,7 @@ from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
 
-_artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
+_artifact_validator = import_repo_module(__file__, "scripts.artifacts.artifact_validator")
 ValidationError = _artifact_validator.ValidationError
 _critique_adapter = import_repo_module(__file__, "scripts.review.critique_adapter_lib")
 load_critique_adapter = _critique_adapter.load_adapter

@@ -353,9 +353,9 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_check_upstream_support_drift",
         ROOT / "scripts" / "gates" / "check_upstream_support_drift.py",
     ),
-    "scripts/resolve_artifact_path.py": (
+    "scripts/artifacts/resolve_artifact_path.py": (
         "tests.quality_gates.support_resolve_artifact_path",
-        ROOT / "scripts" / "resolve_artifact_path.py",
+        ROOT / "scripts" / "artifacts" / "resolve_artifact_path.py",
     ),
     "skills/support/web-fetch/scripts/route_public_fetch.py": (
         "tests.quality_gates.support_route_public_fetch",

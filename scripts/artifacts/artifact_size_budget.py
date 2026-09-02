@@ -47,14 +47,28 @@ import datetime as _dt
 from pathlib import Path
 from typing import Sequence
 
-from runtime_bootstrap import import_repo_module
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 # Sibling resolution, not a bare import: `from artifact_run_scope import ...` binds
 # only where `scripts/` happens to be on sys.path -- true in the repo, false in the
 # exported plugin layout, where it would silently degrade a consumer's gate.
-_run_scope = import_repo_module(__file__, "scripts.artifact_run_scope")
+_run_scope = import_repo_module(__file__, "scripts.artifacts.artifact_run_scope")
 ValidationError = _run_scope.ValidationError
-_violation_report = import_repo_module(__file__, "scripts.artifact_violation_report")
+_violation_report = import_repo_module(__file__, "scripts.artifacts.artifact_violation_report")
 _scaffold_rel = _violation_report._scaffold_rel
 _enforcement_scope = import_repo_module(__file__, "scripts.review.critique_enforcement_scope")
 

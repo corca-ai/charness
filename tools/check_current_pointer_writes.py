@@ -48,7 +48,7 @@ _EXTERNAL_SUPPORT_PREFIX = "<external-support>"
 CURRENT_POINTER_NAMES = {"latest.md", "latest.json"}
 WRITE_CALL_TOKENS = ("write_text", "write_bytes", "open")
 HELPER_FILES = {
-    Path("scripts/current_pointer_writer_lib.py"),
+    Path("scripts/artifacts/current_pointer_writer_lib.py"),
 }
 SCAN_ROOTS = (
     Path("scripts"),
@@ -388,14 +388,14 @@ def _scan_text(repo_root: Path, path: Path, text: str) -> list[Finding]:
         if not isinstance(node, ast.Call):
             continue
         target = _call_target_name(node, assigned, constants)
-        reason = "direct write to current-pointer filename; use scripts.current_pointer_writer_lib"
+        reason = "direct write to current-pointer filename; use scripts.artifacts.current_pointer_writer_lib"
         if target is None:
             target = _computed_write_target(node, computed_assigned)
             if target is None:
                 continue
             reason = (
                 "write to a current-pointer filename BUILT at runtime; this gate cannot prove "
-                "the target is not a current pointer -- use scripts.current_pointer_writer_lib, "
+                "the target is not a current pointer -- use scripts.artifacts.current_pointer_writer_lib, "
                 "or write the literal filename so the scope is establishable"
             )
         findings.append(

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.artifact_validator import ValidationError
+from scripts.artifacts.artifact_validator import ValidationError
 from scripts.gates.validate_ideation_artifact import validate_structured_questions
 from tests.quality_gates.support import run_script
 

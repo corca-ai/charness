@@ -26,7 +26,7 @@ import pytest
 from .support import run_script
 
 ROOT = Path(__file__).resolve().parents[2]
-CLI = ROOT / "scripts" / "resolve_artifact_path.py"
+CLI = ROOT / "scripts" / "artifacts" / "resolve_artifact_path.py"
 
 DECLARED = "docs/mine-q"
 # One document per door. `version: 9` is the version door, `!!int 9` the parse door, and the

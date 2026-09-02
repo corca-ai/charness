@@ -12,8 +12,8 @@ from runtime_bootstrap import import_repo_module
 from .support import ROOT
 
 _artifact_validator = import_repo_module(
-    ROOT / "scripts" / "artifact_validator.py",
-    "scripts.artifact_validator",
+    ROOT / "scripts" / "artifacts" / "artifact_validator.py",
+    "scripts.artifacts.artifact_validator",
 )
 # Bound by its own DOTTED path even though every call below goes through the
 # re-exports above: the changed-line coverage mapper resolves a changed file to its
@@ -22,8 +22,8 @@ _artifact_validator = import_repo_module(
 # `coverage report -m` over this file alone shows the arms hit either way; what changes
 # is whether the GATE can see it.
 _violation_report = import_repo_module(
-    ROOT / "scripts" / "artifact_violation_report.py",
-    "scripts.artifact_violation_report",
+    ROOT / "scripts" / "artifacts" / "artifact_violation_report.py",
+    "scripts.artifacts.artifact_violation_report",
 )
 # Same binding, same reason, for the 2026-08-19 split: `artifact_words` and
 # `validate_max_words` moved into their own module and are exercised here only
@@ -31,8 +31,8 @@ _violation_report = import_repo_module(
 # repo had already paid for the missing binding once on the line above, and that
 # the new split shipped without it.
 _size_budget = import_repo_module(
-    ROOT / "scripts" / "artifact_size_budget.py",
-    "scripts.artifact_size_budget",
+    ROOT / "scripts" / "artifacts" / "artifact_size_budget.py",
+    "scripts.artifacts.artifact_size_budget",
 )
 
 
@@ -85,17 +85,17 @@ def test_a_repo_root_scaffold_names_no_owning_skill(register_surface) -> None:
     crash the hint or invent an owner, and the hint runs on the failure path of every
     validator -- the worst place to raise.
     """
-    register_surface("probe-repo-root-owned", "scripts/artifact_validator.py")
+    register_surface("probe-repo-root-owned", "scripts/artifacts/artifact_validator.py")
 
     # Guard: the registration took, so the assertions below are about the shape rule
     # rather than about an artifact type the registry never resolved.
-    assert _artifact_validator._scaffold_rel("probe-repo-root-owned") == "scripts/artifact_validator.py"
+    assert _artifact_validator._scaffold_rel("probe-repo-root-owned") == "scripts/artifacts/artifact_validator.py"
     assert _artifact_validator._skill_id("probe-repo-root-owned") is None
 
     hint = _artifact_validator.scaffold_hint("probe-repo-root-owned")
     assert hint is not None
     # The scaffold half of the hint still lands; only the skill invitation is withheld.
-    assert "python3 scripts/artifact_validator.py --repo-root ." in hint
+    assert "python3 scripts/artifacts/artifact_validator.py --repo-root ." in hint
     assert "skill for the authoring discipline" not in hint
 
 

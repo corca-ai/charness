@@ -10,15 +10,15 @@ from pathlib import Path
 import pytest
 import yaml
 
+import scripts.artifacts.refresh_current_pointer as refresh_current_pointer_module
 import scripts.plugin_export.export_plugin as export_plugin_module
-import scripts.refresh_current_pointer as refresh_current_pointer_module
-from scripts.artifact_naming_lib import (
+from scripts.artifacts.artifact_naming_lib import (
     current_artifact_filename,
     dated_artifact_filename,
     record_artifact_supported,
     slugify,
 )
-from scripts.resolve_artifact_path import payload_for as resolve_artifact_payload_for
+from scripts.artifacts.resolve_artifact_path import payload_for as resolve_artifact_payload_for
 from tests.script_main import run_loaded_script_main
 
 from .seeding_support import load_module
@@ -26,7 +26,7 @@ from .support import ROOT, run_script
 
 INVENTORY = load_module(
     "inventory_current_pointer_layouts",
-    ROOT / "scripts" / "inventory_current_pointer_layouts.py",
+    ROOT / "scripts" / "artifacts" / "inventory_current_pointer_layouts.py",
     register=True,
 )
 
@@ -350,7 +350,7 @@ def test_inventory_current_pointer_layouts_dunder_main(
 
     try:
         runpy.run_path(
-            str(ROOT / "scripts" / "inventory_current_pointer_layouts.py"), run_name="__main__"
+            str(ROOT / "scripts" / "artifacts" / "inventory_current_pointer_layouts.py"), run_name="__main__"
         )
     except SystemExit as exc:
         assert exc.code == 0
@@ -503,7 +503,7 @@ def test_invalid_artifact_class_fails_instead_of_defaulting_to_history(tmp_path:
     write_minimal_resolver(repo, "quality", "charness-artifacts/quality", artifact_class="typo")
 
     result = run_script(
-        "scripts/resolve_artifact_path.py",
+        "scripts/artifacts/resolve_artifact_path.py",
         "--repo-root",
         str(repo),
         "--skill-id",
@@ -648,7 +648,7 @@ def test_exported_resolver_uses_plugin_skill_resolver_for_consumer_repo(tmp_path
     (artifact_dir / "latest.md").symlink_to(Path("history") / "current-quality.md")
 
     result = run_script(
-        str(plugin_root / "scripts" / "resolve_artifact_path.py"),
+        str(plugin_root / "scripts" / "artifacts" / "resolve_artifact_path.py"),
         "--repo-root",
         str(consumer),
         "--skill-id",
@@ -666,7 +666,7 @@ def test_exported_resolver_uses_plugin_skill_resolver_for_consumer_repo(tmp_path
     record = artifact_dir / "2026-04-15-quality-review.md"
     record.write_text("# Quality Review\n\nFresh.\n", encoding="utf-8")
     record_result = run_script(
-        str(plugin_root / "scripts" / "resolve_artifact_path.py"),
+        str(plugin_root / "scripts" / "artifacts" / "resolve_artifact_path.py"),
         "--repo-root",
         str(consumer),
         "--skill-id",
@@ -682,7 +682,7 @@ def test_exported_resolver_uses_plugin_skill_resolver_for_consumer_repo(tmp_path
     assert record_result.returncode == 0, record_result.stderr
     record_payload = yaml.safe_load(record_result.stdout)
     assert record_payload["refresh_current_pointer_argv"][1] == str(
-        plugin_root / "scripts" / "refresh_current_pointer.py"
+        plugin_root / "scripts" / "artifacts" / "refresh_current_pointer.py"
     )
     refresh_result = subprocess.run(
         record_payload["refresh_current_pointer_argv"],
