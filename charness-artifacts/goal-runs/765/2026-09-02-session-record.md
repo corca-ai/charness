@@ -7,6 +7,29 @@ child closes below are carried in UNPUSHED commits, so the cursor still names
 checkout's copy (`python3 skills/public/achieve/scripts/goal_run_pickup.py`),
 not the installed one under `~/.agents`, which predates #773.
 
+## Session start (next session runs this before anything else)
+
+Pickup (`/goal #765`) will still name #771 as the next child, because the
+four closes below are unpushed. Do NOT re-implement #771; follow this order.
+
+0. Authorization on record: the operator approved, in the 2026-09-02 session
+   after reading the green boundary, pushing exactly `9ae34cf2b` to
+   `origin/main` ("다음 세션에서 그 푸시부터 시작"). This approval covers that
+   one ref only; the #768 commits after it stay local until the tree is green.
+1. Prove the boundary is still green from a clean checkout of that ref:
+   `git worktree add /tmp/wt-9ae34cf2b 9ae34cf2b && (cd /tmp/wt-9ae34cf2b && python3 scripts/sync_root_plugin_manifests.py --repo-root . && ./scripts/run-quality.sh --full --read-only)`;
+   read the skip list, not only the summary; then remove the worktree.
+2. `git push origin 9ae34cf2b:main` (the pre-push hook runs; if it refuses,
+   fix the refusal in a new commit on top of `9ae34cf2b` rather than skipping).
+3. For each of #771, #773, #766, #767: `python3 skills/public/issue/scripts/issue_tool.py verify-closeout --repo corca-ai/charness --number <n> --classification feature --carrier direct-commit --commit-ref <commit> --expect-state CLOSED`
+   (commits: #771 6673ad6d9, #773 b8a6c7421, #766 d27274cf7, #767 7f4bcf835).
+4. Advance the parent cursor through the issue-owned goal-run operations
+   (`issue_tool.py goal-run-read`, then an `update-body` operation file under
+   `charness-artifacts/goal-runs/765/operations/` with the new `progress`;
+   `#773`'s amendment set the precedent at `update-parent-amended-773.json`),
+   and re-run pickup until it names #768 (`subprocess-retroactive-removal`).
+5. Continue with the #768 steps under "Next session, in order".
+
 ## Integrated locally (closeout carrier in the commit body, `verify-closeout` = carrier_verified)
 
 | Child | Commit subject | Proof that mattered |
