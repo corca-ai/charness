@@ -14,7 +14,7 @@ session, in order".
 ## Window
 
 2026-09-02, from `git push origin a5002ffc9:main` to local `main` at the L4
-integration (`800c6dbad`), 45 commits after the pushed boundary; nine Codex
+integration (`e804963a7`, the SHA after the WIP-subject reword rebase), 45 commits after the pushed boundary; nine Codex
 lanes at xhigh; four bounded reviewers; roughly seven hours of parent time.
 
 ## Evidence Summary
