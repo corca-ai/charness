@@ -54,6 +54,19 @@
       ],
       "rationale": "Skipped debug artifacts are listed in the index payload with reasons and are not treated as clean seam-risk proof."
     },
+    "scripts/build_retro_lesson_selection_index.py": {
+      "states": [
+        "not_configured"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "summary_projection",
+        "not_configured"
+      ],
+      "rationale": "`summary_path: null` is the retro adapter's declared opt-out of the Markdown digest (#750, applied to this repo by #774). The command still writes or validates the source-linked selection index and validates the ledger; its payload names the digest comparison as `summary_projection: not_configured` so a reader can tell a declared absence from a comparison that ran."
+    },
     "scripts/check_cli_skill_surface.py": {
       "states": [
         "skipped"
@@ -883,20 +896,6 @@
         "status=\"skipped\""
       ],
       "rationale": "Web-fetch skipped acquisition attempts are explicit trace entries."
-    },
-    "scripts/recent_lessons_lib.py": {
-      "states": [
-        "disabled"
-      ],
-      "visibility": [
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "disabled",
-        "projection",
-        "status"
-      ],
-      "rationale": "`summary_path: null` disables only the optional Markdown digest, not the source-linked selection index. recent_lessons_lib produces the `disabled` projection status that build_retro_lesson_selection_index.py emits; the command writes or validates that index and, on `--check`, validates the ledger before comparing index bytes; the ledger-only lesson surface therefore remains fully checked without creating a second projection."
     }
   }
 }

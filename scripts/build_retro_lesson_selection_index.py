@@ -96,6 +96,9 @@ def main() -> int:
             "index_path": _relative(repo_root, index_path),
             "source_artifact_count": payload["source_artifact_count"],
             "candidate_count": payload["candidate_count"],
+            # `summary_path: null` is a declared state, not a silent skip: the digest
+            # comparison did not run because the adapter names no digest.
+            "summary_projection": "not_configured" if summary_path is None else "compared",
         }
 
     if args.write:
