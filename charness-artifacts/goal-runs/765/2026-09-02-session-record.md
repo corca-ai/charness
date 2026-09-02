@@ -261,6 +261,12 @@ Steps 1 and 2 of "Next session, in order" are done.
   exemption, 101 declared rows over 95 labels and 8 phases, ten universe
   families, full pytest 8577 passed, full read-only lane 80 passed.
 
+- #769 pushed (`c6477cefb` to `origin/main` from a clean clone, hook lane
+  79 passed), CLOSED on GitHub, `verify-closeout` = `verified`; cursor advanced
+  by `operations/update-parent-progress-770.json` (progress 7/2/9 revision
+  6); pickup names #770 (`scripts-packaging`). The #770 P0 foundation lane
+  was launched from `briefs/brief-770-p0-foundation.md`; P1 to P4 follow it.
+
 ## Lessons this session paid for
 
 - The default `run-quality.sh` lane ran five gates and the full lane ran only
