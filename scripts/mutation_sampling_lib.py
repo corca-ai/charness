@@ -14,7 +14,18 @@ from scripts import coverage_instrumentation_policy as _policy
 from scripts.mutation_line_coverage_lib import covered_statement_spans as _covered_statement_spans
 from scripts.mutation_line_coverage_lib import mutation_line_is_covered as _mutation_line_is_covered
 from scripts.runtime_bootstrap import configure_runtime_environment
-from scripts.subprocess_guard import run_monitored_phase, run_process
+
+try:
+    from scripts.subprocess_guard import run_monitored_phase, run_process
+except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
+    _scripts_dir = next(
+        ancestor / "scripts"
+        for ancestor in Path(__file__).resolve().parents
+        if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+    )
+    if str(_scripts_dir) not in sys.path:
+        sys.path.insert(0, str(_scripts_dir))
+    from subprocess_guard import run_monitored_phase, run_process
 
 DEFAULT_SAMPLE_COVERAGE_JSON = Path("reports/mutation/sample-coverage.json")
 

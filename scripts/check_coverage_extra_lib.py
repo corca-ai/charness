@@ -347,7 +347,7 @@ def exercise_upstream_release_helper_scenarios() -> None:
     with mock.patch.dict(os.environ, {"CHARNESS_RELEASE_PROBE_NO_GH": ""}, clear=False):
         with mock.patch.object(upstream.shutil, "which", return_value="/usr/bin/gh"):
             completed = type("Completed", (), {"returncode": 0, "stdout": "{not-json", "stderr": ""})()
-            with mock.patch.object(upstream.subprocess, "run", return_value=completed):
+            with mock.patch.object(upstream, "run_process", return_value=completed):
                 upstream._probe_github_release_with_gh("example/tool")
 
 
@@ -355,10 +355,10 @@ def exercise_install_provenance_helper_scenarios() -> None:
     import scripts.install_provenance_lib as provenance
 
     importlib.reload(provenance)
-    with mock.patch.object(provenance.subprocess, "run", side_effect=OSError()):
+    with mock.patch.object(provenance, "run_process", side_effect=OSError()):
         provenance._run_command(["missing"])
-    failed = type("Completed", (), {"returncode": 1, "stdout": "nope\n"})()
-    with mock.patch.object(provenance.subprocess, "run", return_value=failed):
+    failed = type("Completed", (), {"returncode": 1, "stdout": "nope\n", "stderr": ""})()
+    with mock.patch.object(provenance, "run_process", return_value=failed):
         provenance._run_command(["demo"])
 
     with tempfile.TemporaryDirectory(prefix="charness-install-provenance-extra-") as temp_dir:

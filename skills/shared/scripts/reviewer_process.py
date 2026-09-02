@@ -6,9 +6,20 @@ from __future__ import annotations
 import shlex
 import shutil
 import signal
+import sys
 from pathlib import Path
 
-from scripts.subprocess_guard import run_monitored_phase
+try:
+    from scripts.subprocess_guard import run_monitored_phase
+except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
+    _scripts_dir = next(
+        ancestor / "scripts"
+        for ancestor in Path(__file__).resolve().parents
+        if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+    )
+    if str(_scripts_dir) not in sys.path:
+        sys.path.insert(0, str(_scripts_dir))
+    from subprocess_guard import run_monitored_phase
 
 
 class ReviewerProcessError(ValueError):

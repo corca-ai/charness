@@ -3,10 +3,25 @@ from __future__ import annotations
 import re
 import runpy
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
-from scripts.subprocess_guard import heartbeat_interval_from_env, run_monitored_phase, run_process
+try:
+    from scripts.subprocess_guard import (
+        heartbeat_interval_from_env,
+        run_monitored_phase,
+        run_process,
+    )
+except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
+    _scripts_dir = next(
+        ancestor / "scripts"
+        for ancestor in Path(__file__).resolve().parents
+        if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+    )
+    if str(_scripts_dir) not in sys.path:
+        sys.path.insert(0, str(_scripts_dir))
+    from subprocess_guard import heartbeat_interval_from_env, run_monitored_phase, run_process
 
 RELEASE_VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"tag"})
 RELEASE_CREATE_PLACEHOLDERS: frozenset[str] = frozenset({"tag", "title"})
@@ -28,7 +43,9 @@ PROGRESS_INTERVAL_ENV = "CHARNESS_RELEASE_PROGRESS_INTERVAL_SECONDS"
 _RELEASE_DELTA = runpy.run_path(str(Path(__file__).with_name("release_delta.py")))
 # Read from the module that WRITES the field, never re-spelled here: the two readers of
 # `release_observer.path` disagreed about `None` once already.
-observer_path = runpy.run_path(str(Path(__file__).with_name("release_observer.py")))["observer_path"]
+observer_path = runpy.run_path(str(Path(__file__).with_name("release_observer.py")))[
+    "observer_path"
+]
 collect_release_delta = _RELEASE_DELTA["collect_release_delta"]
 path_list_sha256 = _RELEASE_DELTA["path_list_sha256"]
 _TAG_IDENTITY = runpy.run_path(str(Path(__file__).with_name("release_tag_identity.py")))
@@ -71,7 +88,9 @@ def run_shell(command: str, *, cwd: Path, check: bool = True) -> subprocess.Comp
     return result
 
 
-def run_phase(command: str, *, cwd: Path, phase: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+def run_phase(
+    command: str, *, cwd: Path, phase: str, check: bool = True
+) -> subprocess.CompletedProcess[str]:
     """`run_shell` for a command an operator is WAITING on, not merely reading.
 
     Same refusal contract; the difference is that start, a bounded heartbeat, and
@@ -178,11 +197,15 @@ def backend_command(
 
 def release_exists(repo_root: Path, tag_name: str, backend: dict[str, Any] | None = None) -> bool:
     backend = backend or {"id": "gh", "binary": "gh", "commands": None}
-    command = backend_command(backend, "release_view", ["gh", "release", "view", "{tag}"], tag=tag_name)
+    command = backend_command(
+        backend, "release_view", ["gh", "release", "view", "{tag}"], tag=tag_name
+    )
     return run(command, cwd=repo_root, check=False).returncode == 0
 
 
-def create_release(repo_root: Path, backend: dict[str, Any], *, tag_name: str, title: str, notes_file: Path | None):
+def create_release(
+    repo_root: Path, backend: dict[str, Any], *, tag_name: str, title: str, notes_file: Path | None
+):
     release_command = backend_command(
         backend,
         "release_create",
@@ -190,14 +213,20 @@ def create_release(repo_root: Path, backend: dict[str, Any], *, tag_name: str, t
         tag=tag_name,
         title=title,
     )
-    release_command.extend(["--notes-file", str(notes_file.resolve())] if notes_file else ["--generate-notes"])
+    release_command.extend(
+        ["--notes-file", str(notes_file.resolve())] if notes_file else ["--generate-notes"]
+    )
     return run(release_command, cwd=repo_root)
 
 
-def expected_github_release_url(repo_root: Path, backend: dict[str, Any], tag_name: str) -> str | None:
+def expected_github_release_url(
+    repo_root: Path, backend: dict[str, Any], tag_name: str
+) -> str | None:
     if backend.get("id", "gh") != "gh":
         return None
-    result = run(["gh", "repo", "view", "--json", "url", "--jq", ".url"], cwd=repo_root, check=False)
+    result = run(
+        ["gh", "repo", "view", "--json", "url", "--jq", ".url"], cwd=repo_root, check=False
+    )
     if result.returncode != 0:
         return None
     repo_url = result.stdout.strip().rstrip("/")
@@ -227,8 +256,12 @@ def _release_tag_versions(repo_root: Path, *, remote: str) -> set[str]:
             f"command: git tag --list v[0-9]*.[0-9]*.[0-9]*\nexit_code: {local.returncode}\n"
             f"STDOUT:\n{local.stdout}\nSTDERR:\n{local.stderr}"
         )
-    versions.update(filter(None, (_tag_version(line.strip()) for line in local.stdout.splitlines())))
-    remote_result = run(["git", "ls-remote", "--tags", remote, "refs/tags/v[0-9]*"], cwd=repo_root, check=False)
+    versions.update(
+        filter(None, (_tag_version(line.strip()) for line in local.stdout.splitlines()))
+    )
+    remote_result = run(
+        ["git", "ls-remote", "--tags", remote, "refs/tags/v[0-9]*"], cwd=repo_root, check=False
+    )
     if remote_result.returncode != 0:
         raise SystemExit(
             "release tag discovery failed while resolving previous release version\n"
@@ -245,7 +278,9 @@ def _release_tag_versions(repo_root: Path, *, remote: str) -> set[str]:
     return versions
 
 
-def latest_previous_release_version(repo_root: Path, *, target_version: str, remote: str) -> str | None:
+def latest_previous_release_version(
+    repo_root: Path, *, target_version: str, remote: str
+) -> str | None:
     target = _semver_tuple(target_version)
     if target is None:
         return None
@@ -266,10 +301,15 @@ def release_previous_version(
 ) -> str:
     if not publish_current:
         return current_version
-    return latest_previous_release_version(repo_root, target_version=target_version, remote=remote) or current_version
+    return (
+        latest_previous_release_version(repo_root, target_version=target_version, remote=remote)
+        or current_version
+    )
 
 
-def ensure_release_target_available(repo_root: Path, *, tag_name: str, remote: str, backend: dict[str, Any]) -> None:
+def ensure_release_target_available(
+    repo_root: Path, *, tag_name: str, remote: str, backend: dict[str, Any]
+) -> None:
     tag_state = tag_exists(repo_root, tag_name, remote=remote)
     if tag_state["local"] or tag_state["remote"]:
         raise SystemExit(f"tag `{tag_name}` already exists locally or on `{remote}`")
@@ -409,7 +449,9 @@ def commit_post_publish_artifact(
     )
     observer = observer_path(payload)
     tracked_paths = [artifact_relpath, *([observer] if observer else [])]
-    diff_result = run_command(["git", "diff", "--quiet", "--", *tracked_paths], cwd=repo_root, check=False)
+    diff_result = run_command(
+        ["git", "diff", "--quiet", "--", *tracked_paths], cwd=repo_root, check=False
+    )
     if diff_result.returncode == 0 and observer:
         untracked = run_command(
             ["git", "ls-files", "--error-unmatch", observer], cwd=repo_root, check=False
@@ -419,6 +461,11 @@ def commit_post_publish_artifact(
     if diff_result.returncode == 0:
         return
     run_command(["git", "add", *tracked_paths], cwd=repo_root)
-    run_command(["git", "commit", "-m", f"Record release verification for {payload['tag_name']}"], cwd=repo_root)
+    run_command(
+        ["git", "commit", "-m", f"Record release verification for {payload['tag_name']}"],
+        cwd=repo_root,
+    )
     run_command(["git", "push", remote, branch], cwd=repo_root)
-    payload["post_publish_artifact_commit_sha"] = run_command(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()
+    payload["post_publish_artifact_commit_sha"] = run_command(
+        ["git", "rev-parse", "HEAD"], cwd=repo_root
+    ).stdout.strip()

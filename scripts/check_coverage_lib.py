@@ -468,7 +468,7 @@ def exercise_upstream_release_scenarios() -> None:
             with mock.patch.object(upstream.urllib.request, "urlopen", ok_urlopen):
                 upstream.probe_github_release("example/no-gh")
         with mock.patch.object(upstream.shutil, "which", return_value="/usr/bin/gh"):
-            with mock.patch.object(upstream.subprocess, "run", return_value=FailedGh()):
+            with mock.patch.object(upstream, "run_process", return_value=FailedGh()):
                 with mock.patch.object(upstream.urllib.request, "urlopen", ok_urlopen):
                     upstream.probe_github_release("example/failed-gh")
         with mock.patch.object(upstream.shutil, "which", return_value=None):

@@ -10,14 +10,7 @@ from types import SimpleNamespace
 
 
 def _load_skill_runtime_bootstrap():
-    bootstrap = next(
-        (
-            ancestor / "skill_runtime_bootstrap.py"
-            for ancestor in Path(__file__).resolve().parents
-            if (ancestor / "skill_runtime_bootstrap.py").is_file()
-        ),
-        None,
-    )
+    bootstrap = next((ancestor / "skill_runtime_bootstrap.py" for ancestor in Path(__file__).resolve().parents if (ancestor / "skill_runtime_bootstrap.py").is_file()), None)
     if bootstrap is None:
         raise ImportError("skill_runtime_bootstrap.py not found")
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))

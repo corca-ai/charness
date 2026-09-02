@@ -8,7 +8,17 @@ import time
 from pathlib import Path
 from typing import Any, Callable, TextIO, TypeVar
 
-from scripts.subprocess_guard import run_process
+try:
+    from scripts.subprocess_guard import run_process
+except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
+    _scripts_dir = next(
+        ancestor / "scripts"
+        for ancestor in Path(__file__).resolve().parents
+        if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+    )
+    if str(_scripts_dir) not in sys.path:
+        sys.path.insert(0, str(_scripts_dir))
+    from subprocess_guard import run_process
 from scripts.yaml_output import render_yaml as _render_yaml
 
 T = TypeVar("T")

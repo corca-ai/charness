@@ -23,11 +23,23 @@ from scripts.repo_layout import (
 )
 from scripts.repo_path_display import display_path
 from scripts.runtime_bootstrap import repo_root_from_script
-from scripts.subprocess_guard import run_process
+
+try:
+    from scripts.subprocess_guard import run_process
+except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
+    _scripts_dir = next(
+        ancestor / "scripts"
+        for ancestor in Path(__file__).resolve().parents
+        if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+    )
+    if str(_scripts_dir) not in sys.path:
+        sys.path.insert(0, str(_scripts_dir))
+    from subprocess_guard import run_process
 
 LOCKS_DIR = Path("integrations/locks")
 SEMVER_RE = re.compile(r"(?<!\d)\d+(?:\.\d+){1,}(?!\d)")
 _SCHEMA_VALIDATOR_CACHE: dict[str, Any] = {}
+
 
 @dataclass
 class CommandResult:
@@ -35,17 +47,30 @@ class CommandResult:
     exit_code: int
     stdout: str
     stderr: str
+
+
 def now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
 def load_manifest_schema(repo_root: Path | None = None) -> dict[str, Any]:
     root = repo_root if repo_root is not None else repo_root_from_script(__file__)
-    return json.loads((integrations_tools_dir(root) / "manifest.schema.json").read_text(encoding="utf-8"))
+    return json.loads(
+        (integrations_tools_dir(root) / "manifest.schema.json").read_text(encoding="utf-8")
+    )
+
+
 def load_lock_schema(repo_root: Path | None = None) -> dict[str, Any]:
     root = repo_root if repo_root is not None else repo_root_from_script(__file__)
-    return json.loads((integrations_locks_dir(root) / "lock.schema.json").read_text(encoding="utf-8"))
+    return json.loads(
+        (integrations_locks_dir(root) / "lock.schema.json").read_text(encoding="utf-8")
+    )
+
+
 def load_support_capability_schema(repo_root: Path | None = None) -> dict[str, Any]:
     root = repo_root if repo_root is not None else repo_root_from_script(__file__)
     return json.loads(support_capability_schema_path(root).read_text(encoding="utf-8"))
+
 
 def _schema_validator(schema: dict[str, Any]) -> Any:
     key = json.dumps(schema, sort_keys=True)
@@ -57,11 +82,20 @@ def _schema_validator(schema: dict[str, Any]) -> Any:
         _SCHEMA_VALIDATOR_CACHE[key] = validator
     return validator
 
-_NON_MANIFEST_TOOLS_FILES = {"manifest.schema.json", "dependencies.json", "dependencies.schema.json"}
+
+_NON_MANIFEST_TOOLS_FILES = {
+    "manifest.schema.json",
+    "dependencies.json",
+    "dependencies.schema.json",
+}
 
 
 def manifest_paths(repo_root: Path) -> list[Path]:
-    return [path for path in sorted(integrations_tools_dir(repo_root).glob("*.json")) if path.name not in _NON_MANIFEST_TOOLS_FILES]
+    return [
+        path
+        for path in sorted(integrations_tools_dir(repo_root).glob("*.json"))
+        if path.name not in _NON_MANIFEST_TOOLS_FILES
+    ]
 
 
 def _plugin_fallback_root() -> Path:
@@ -74,9 +108,16 @@ def plugin_fallback_manifest_paths() -> list[Path]:
     fallback_dir = integrations_tools_dir(_plugin_fallback_root())
     if not fallback_dir.is_dir():
         return []
-    return [path for path in sorted(fallback_dir.glob("*.json")) if path.name not in _NON_MANIFEST_TOOLS_FILES]
+    return [
+        path
+        for path in sorted(fallback_dir.glob("*.json"))
+        if path.name not in _NON_MANIFEST_TOOLS_FILES
+    ]
+
+
 def load_manifest(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
 
 def validate_manifest_data(data: dict[str, Any], schema: dict[str, Any], path: Path) -> None:
     _schema_validator(schema).validate(data)
@@ -86,9 +127,14 @@ def validate_manifest_data(data: dict[str, Any], schema: dict[str, Any], path: P
     if support["source_type"] == "local_wrapper" and not support.get("wrapper_skill_id"):
         raise ValueError(f"{path}: local_wrapper requires wrapper_skill_id")
     if support["source_type"] == "upstream_repo" and Path(support["path"]).name == "SKILL.md":
-        raise ValueError(f"{path}: upstream_repo support path must point at a skill root directory, not `SKILL.md`")
+        raise ValueError(
+            f"{path}: upstream_repo support path must point at a skill root directory, not `SKILL.md`"
+        )
 
-def validate_support_capability_data(data: dict[str, Any], schema: dict[str, Any], path: Path, repo_root: Path) -> None:
+
+def validate_support_capability_data(
+    data: dict[str, Any], schema: dict[str, Any], path: Path, repo_root: Path
+) -> None:
     _schema_validator(schema).validate(data)
     expected_skill_path = str((path.parent / "SKILL.md").relative_to(repo_root))
     if data["support_skill_path"] != expected_skill_path:
@@ -96,8 +142,10 @@ def validate_support_capability_data(data: dict[str, Any], schema: dict[str, Any
             f"{path}: support_skill_path must match colocated support skill `{expected_skill_path}`"
         )
 
+
 def _manifest_path_for_payload(path: Path, repo_root: Path) -> str:
     return display_path(path, repo_root)
+
 
 def _append_manifest_payload(
     manifests: list[dict[str, Any]],
@@ -118,6 +166,7 @@ def _append_manifest_payload(
     data["_manifest_path"] = _manifest_path_for_payload(path, repo_root)
     data["_manifest_origin"] = origin
     manifests.append(data)
+
 
 def _load_and_append_manifest_payload(
     manifests: list[dict[str, Any]],
@@ -144,7 +193,10 @@ def _load_and_append_manifest_payload(
         duplicate_policy=duplicate_policy,
     )
 
-def normalize_support_capability(data: dict[str, Any], path: Path, repo_root: Path) -> dict[str, Any]:
+
+def normalize_support_capability(
+    data: dict[str, Any], path: Path, repo_root: Path
+) -> dict[str, Any]:
     return {
         "tool_id": data["capability_id"],
         "kind": data["kind"],
@@ -298,6 +350,7 @@ def run_shell(command: str, cwd: Path) -> CommandResult:
         stderr=completed.stderr,
     )
 
+
 def command_result_payload(result: CommandResult) -> dict[str, Any]:
     return {
         "command": result.command,
@@ -405,7 +458,9 @@ def validate_lock_data(data: dict[str, Any], schema: dict[str, Any]) -> None:
 
 
 def lock_paths(repo_root: Path) -> list[Path]:
-    return sorted(path for path in (repo_root / LOCKS_DIR).glob("*.json") if path.name != "lock.schema.json")
+    return sorted(
+        path for path in (repo_root / LOCKS_DIR).glob("*.json") if path.name != "lock.schema.json"
+    )
 
 
 def lock_path(repo_root: Path, tool_id: str) -> Path:
@@ -428,7 +483,17 @@ def read_lock(repo_root: Path, tool_id: str) -> dict[str, Any] | None:
     return data
 
 
-def upsert_lock(repo_root: Path, manifest: dict[str, Any], *, support: dict[str, Any] | None = None, doctor: dict[str, Any] | None = None, release: dict[str, Any] | None = None, provenance: dict[str, Any] | None = None, install: dict[str, Any] | None = None, update: dict[str, Any] | None = None) -> Path:
+def upsert_lock(
+    repo_root: Path,
+    manifest: dict[str, Any],
+    *,
+    support: dict[str, Any] | None = None,
+    doctor: dict[str, Any] | None = None,
+    release: dict[str, Any] | None = None,
+    provenance: dict[str, Any] | None = None,
+    install: dict[str, Any] | None = None,
+    update: dict[str, Any] | None = None,
+) -> Path:
     payload = read_lock(repo_root, manifest["tool_id"]) or {}
     payload["schema_version"] = "1"
     payload["tool_id"] = manifest["tool_id"]

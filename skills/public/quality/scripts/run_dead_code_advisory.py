@@ -6,11 +6,22 @@ import argparse
 import re
 import runpy
 import shutil
+import sys
 from collections import Counter
 from pathlib import Path
 from types import SimpleNamespace
 
-from scripts.subprocess_guard import run_process
+try:
+    from scripts.subprocess_guard import run_process
+except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
+    _scripts_dir = next(
+        ancestor / "scripts"
+        for ancestor in Path(__file__).resolve().parents
+        if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+    )
+    if str(_scripts_dir) not in sys.path:
+        sys.path.insert(0, str(_scripts_dir))
+    from subprocess_guard import run_process
 
 _summary_output = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).with_name("summary_output_lib.py")))
