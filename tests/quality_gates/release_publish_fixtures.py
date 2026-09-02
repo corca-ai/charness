@@ -6,6 +6,7 @@ import os
 import shlex
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import yaml
@@ -264,13 +265,17 @@ def _simulate_partial_publish(
     sync_script = repo / "scripts" / "plugin_export" / "sync_root_plugin_manifests.py"
     sync_script.parent.mkdir(parents=True, exist_ok=True)
     previous_cwd = Path.cwd()
+    saved_argv = sys.argv
     try:
         os.chdir(repo)
+        # The fixture script parses argv at import; give it the repo it syncs.
+        sys.argv = [str(sync_script), "--repo-root", str(repo)]
         load_script_module(
             f"release_publish_sync_fixture_{abs(hash(repo))}",
             sync_script,
         )
     finally:
+        sys.argv = saved_argv
         os.chdir(previous_cwd)
     subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
     commit_args = ["git", "commit", "-m", "Release demo 0.0.0"]

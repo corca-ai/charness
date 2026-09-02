@@ -45,8 +45,12 @@ def print_failure_payload(
     *,
     repo_root: Path,
     render_yaml: Callable[[Any], str] | None = None,
-    stream: TextIO = sys.stderr,
+    stream: TextIO | None = None,
 ) -> None:
+    # Resolved at call time: a default bound at import keeps the interpreter's
+    # original stderr, so an in-process caller that swaps sys.stderr sees nothing.
+    if stream is None:
+        stream = sys.stderr
     visible_keys = (
         "package_id",
         "previous_version",

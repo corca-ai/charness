@@ -39,9 +39,9 @@ pytestmark = pytest.mark.boundary_contract(
 
 def _reconstruct_the_cycle(source: str) -> str:
     """Hoist the sibling imports out of the functions — the pre-fix shape, exactly."""
-    names = sorted(set(re.findall(r"from scripts\.quality_policy_defaults import (\w+)", source)))
+    names = sorted(set(re.findall(r"from scripts\.adapters\.quality_policy_defaults import (\w+)", source)))
     assert names, "the function-level sibling imports are what break the cycle; they are gone"
-    hoisted = re.sub(r"[ \t]+from scripts\.quality_policy_defaults import \w+\n", "", source)
+    hoisted = re.sub(r"[ \t]+from scripts\.adapters\.quality_policy_defaults import \w+\n", "", source)
     return hoisted.replace(
         "from __future__ import annotations",
         "from __future__ import annotations\n\nfrom scripts.adapters.quality_policy_defaults import "

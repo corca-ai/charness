@@ -3,7 +3,13 @@
 
 import argparse
 
-parser = argparse.ArgumentParser(description=__doc__)
-parser.parse_args()
-print("ADVISORY: inventory_nose_clones.py unavailable; clone-family inventory is unproven.")
-raise SystemExit(3)
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.parse_args()
+    print("ADVISORY: inventory_nose_clones.py unavailable; clone-family inventory is unproven.")
+    raise SystemExit(3)
+
+
+if __name__ == "__main__":
+    main()
