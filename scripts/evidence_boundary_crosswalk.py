@@ -37,29 +37,8 @@ import re
 from pathlib import Path
 from typing import Any, Iterable
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
-from scripts.yaml_output import emit_yaml  # noqa: E402
+from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 _freeze_lib = import_repo_module(__file__, "scripts.issue_source_freeze_lib")
@@ -108,11 +87,7 @@ def normalize_target(target: Any, current_repository: str) -> dict[str, Any]:
         if match:
             repository, number, source = match.group("repo"), int(match.group("number")), "unknown"
         elif target.strip().lstrip("#").isdigit():
-            repository, number, source = (
-                current_repository,
-                int(target.strip().lstrip("#")),
-                "unknown",
-            )
+            repository, number, source = current_repository, int(target.strip().lstrip("#")), "unknown"
         else:
             raise CrosswalkError("unparsable_target", f"cannot read a close target from {target!r}")
     else:
@@ -135,9 +110,7 @@ def load_crosswalk(repo_root: Path, rel: str = DEFAULT_CROSSWALK_PATH) -> dict[s
     except ValueError as exc:
         raise CrosswalkError("crosswalk_invalid", f"{rel}: {exc}") from exc
     if payload.get("schema") != CROSSWALK_SCHEMA:
-        raise CrosswalkError(
-            "crosswalk_invalid", f"{rel} declares schema {payload.get('schema')!r}"
-        )
+        raise CrosswalkError("crosswalk_invalid", f"{rel} declares schema {payload.get('schema')!r}")
     return payload
 
 
@@ -156,12 +129,7 @@ def verify_frozen_source(repo_root: Path, crosswalk: dict[str, Any]) -> None:
         freeze = _freeze_lib.load_json(repo_root, freeze_rel, _freeze_lib.FREEZE_RECEIPT_SCHEMA)
     except _freeze_lib.FreezeError as exc:
         raise CrosswalkError("stale_source", f"{freeze_rel}: {exc.detail}") from exc
-    for field in (
-        "source_snapshot_sha256",
-        "clause_inventory_identity",
-        "reviewed_input_identity",
-        "freeze_identity",
-    ):
+    for field in ("source_snapshot_sha256", "clause_inventory_identity", "reviewed_input_identity", "freeze_identity"):
         if identity.get(field) != freeze.get(field):
             raise CrosswalkError(
                 "stale_source",
@@ -178,9 +146,7 @@ def _issue_row(crosswalk: dict[str, Any], number: int) -> dict[str, Any]:
     for row in crosswalk.get("issues") or []:
         if row.get("number") == number:
             return row
-    raise CrosswalkError(
-        "unmapped_issue", f"the crosswalk protects #{number} but carries no row for it"
-    )
+    raise CrosswalkError("unmapped_issue", f"the crosswalk protects #{number} but carries no row for it")
 
 
 def _refusal(reason: str, detail: str, **extra: Any) -> dict[str, Any]:
@@ -217,16 +183,10 @@ def authorize_closeout(
             # the refusal below fires only once a protected target is in play, and a
             # missing crosswalk is reported so it cannot be mistaken for a pass.
             return {
-                "applies": False,
-                "authorized": True,
-                "refusal": None,
-                "crosswalk_status": exc.code,
-                "crosswalk_detail": exc.detail,
-                "invoked_targets": [],
-                "carrier_targets": [],
-                "aggregate_targets": [],
-                "carrier_source": carrier_source,
-                "target": None,
+                "applies": False, "authorized": True, "refusal": None,
+                "crosswalk_status": exc.code, "crosswalk_detail": exc.detail,
+                "invoked_targets": [], "carrier_targets": [], "aggregate_targets": [],
+                "carrier_source": carrier_source, "target": None,
             }
 
     current = crosswalk["current_repository"]
@@ -252,10 +212,8 @@ def authorize_closeout(
     # `fork/charness#514` becomes a close nobody reviewed. The near-miss is worth a
     # refusal precisely because it looks so much like the real thing.
     foreign = [
-        target
-        for target in aggregate
-        if target["repository"].lower() != current.lower()
-        and target["issue_number"] in crosswalk["protected_issues"]
+        target for target in aggregate
+        if target["repository"].lower() != current.lower() and target["issue_number"] in crosswalk["protected_issues"]
     ]
     if not hits and not foreign:
         # Generic pass-through. Unrelated issues keep their existing behavior
@@ -268,8 +226,7 @@ def authorize_closeout(
             "foreign_repository",
             f"{foreign[0]['repository']}#{foreign[0]['issue_number']} is a different repository than {current}; "
             "a qualified foreign ref is never resolved to the protected target it resembles",
-            target=None,
-            **base,
+            target=None, **base,
         )
     if carrier_source in OUT_OF_SCOPE_CARRIERS:
         return _refusal(
@@ -277,8 +234,7 @@ def authorize_closeout(
             f"carrier {carrier_source!r} may not close protected issues "
             f"{sorted(crosswalk['protected_issues'])}; release/PR closure is outside this goal's boundary "
             "and needs a separately scoped publish boundary",
-            target=None,
-            **base,
+            target=None, **base,
         )
 
     distinct = {_key(target) for target in aggregate}
@@ -287,8 +243,7 @@ def authorize_closeout(
             "missing_invoked_target",
             "no invoked/declared target was supplied; a protected close may not be authorized by carrier "
             "content alone (this is what makes close-with-comment declare its target explicitly)",
-            target=None,
-            **base,
+            target=None, **base,
         )
     invoked_distinct = {_key(target) for target in invoked}
     carrier_distinct = {_key(target) for target in carrier}
@@ -314,8 +269,7 @@ def authorize_closeout(
             "a protected target makes the WHOLE carrier subject to exact singleton equality; "
             f"this carrier closes {sorted(f'{repo}#{number}' for repo, number in distinct)}. "
             "Split protected references cannot be evidenced independently.",
-            target=None,
-            **base,
+            target=None, **base,
         )
 
     repository, number = next(iter(distinct))
@@ -325,8 +279,7 @@ def authorize_closeout(
             "matrix_incomplete",
             f"the crosswalk is in {crosswalk.get('matrix_state')!r} state; the acceptance matrix that would "
             f"evidence closing #{number} does not exist yet",
-            target=target,
-            **base,
+            target=target, **base,
         )
     try:
         verify_frozen_source(repo_root, crosswalk)
@@ -341,27 +294,21 @@ def authorize_closeout(
         return _refusal(
             "consumer_owned",
             f"#{number} is classified consumer-owned; Charness cannot close it from here",
-            target=target,
-            owner=row.get("owner"),
-            **base,
+            target=target, owner=row.get("owner"), **base,
         )
     if row.get("owner") == "re-scoped":
         return _refusal(
             "re_scoped",
             f"#{number} is re-scoped to {row.get('replacement') or 'an unnamed replacement'}; "
             "a re-scope is not completion",
-            target=target,
-            owner=row.get("owner"),
-            **base,
+            target=target, owner=row.get("owner"), **base,
         )
     dependency = row.get("projection_dependency")
     if dependency not in DEPENDENCY_VALUES or dependency == "undecided":
         return _refusal(
             "undecided_projection_dependency",
             f"#{number} has projection_dependency={dependency!r}; the seam decision must be made before close",
-            target=target,
-            owner=row.get("owner"),
-            **base,
+            target=target, owner=row.get("owner"), **base,
         )
     return {
         "applies": True,
@@ -376,24 +323,17 @@ def authorize_closeout(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Inspect the closeout authorization record for a target."
-    )
+    parser = argparse.ArgumentParser(description="Inspect the closeout authorization record for a target.")
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--crosswalk", default=DEFAULT_CROSSWALK_PATH)
     parser.add_argument("--carrier-source", required=True)
-    parser.add_argument(
-        "--invoked", nargs="*", default=[], help="e.g. corca-ai/charness#514 or 514"
-    )
+    parser.add_argument("--invoked", nargs="*", default=[], help="e.g. corca-ai/charness#514 or 514")
     parser.add_argument("--carrier", nargs="*", default=[])
     args = parser.parse_args()
 
     result = authorize_closeout(
-        args.invoked,
-        args.carrier,
-        args.carrier_source,
-        repo_root=args.repo_root.resolve(),
-        crosswalk_path=args.crosswalk,
+        args.invoked, args.carrier, args.carrier_source,
+        repo_root=args.repo_root.resolve(), crosswalk_path=args.crosswalk,
     )
     emit_yaml(result)
     return 0 if result["authorized"] else 1

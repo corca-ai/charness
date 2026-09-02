@@ -21,27 +21,6 @@ import sys
 from functools import lru_cache
 from pathlib import Path
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
 BITOR_OPERATOR_PREFIX = "core/ReplaceBinaryOperator_BitOr_"
 COMPARISON_EQ_OPERATOR_PREFIX = "core/ReplaceComparisonOperator_Eq_"
 NUMBER_REPLACER_OPERATOR = "core/NumberReplacer"
@@ -140,9 +119,7 @@ def _annotation_union_positions(path_str: str) -> frozenset[tuple[int, int]]:
     return frozenset(positions)
 
 
-def annotation_union_operator_positions(
-    repo_root: Path, module_path: Path
-) -> frozenset[tuple[int, int]]:
+def annotation_union_operator_positions(repo_root: Path, module_path: Path) -> frozenset[tuple[int, int]]:
     return _annotation_union_positions(str(resolve(repo_root, module_path)))
 
 
@@ -152,16 +129,12 @@ def should_skip_mutation(repo_root: Path, mutation: object) -> bool:
         return False
     line_number, start_col = getattr(mutation, "start_pos", (0, 0))
     module_path = getattr(mutation, "module_path", Path())
-    return (int(line_number), int(start_col)) in annotation_union_operator_positions(
-        repo_root, module_path
-    )
+    return (int(line_number), int(start_col)) in annotation_union_operator_positions(repo_root, module_path)
 
 
 def is_trivial_entry_guard_mutation(line: str, operator_name: str) -> bool:
     stripped = line.lstrip()
-    if stripped.startswith("if __name__ ==") and operator_name.startswith(
-        COMPARISON_EQ_OPERATOR_PREFIX
-    ):
+    if stripped.startswith("if __name__ ==") and operator_name.startswith(COMPARISON_EQ_OPERATOR_PREFIX):
         return True
     if stripped.startswith("sys.path.insert(") and operator_name == NUMBER_REPLACER_OPERATOR:
         return True
@@ -206,9 +179,7 @@ def coverage_skip_reason(
     return None
 
 
-def skip_reason(
-    repo_root: Path, mutation: object, covered_lines: dict[str, set[int]]
-) -> str | None:
+def skip_reason(repo_root: Path, mutation: object, covered_lines: dict[str, set[int]]) -> str | None:
     if should_skip_mutation(repo_root, mutation):
         return ANNOTATION_UNION_SKIP_OUTPUT
     line_number, _start_col = getattr(mutation, "start_pos", (0, 0))
@@ -218,9 +189,7 @@ def skip_reason(
     return coverage_skip_reason(mutation, covered_lines, repo_root=repo_root)
 
 
-def filter_session(
-    repo_root: Path, session: Path, coverage_json: Path | None = None
-) -> dict[str, int]:
+def filter_session(repo_root: Path, session: Path, coverage_json: Path | None = None) -> dict[str, int]:
     try:
         from cosmic_ray.work_db import use_db
         from cosmic_ray.work_item import TestOutcome, WorkerOutcome, WorkResult

@@ -28,28 +28,7 @@ import re
 from datetime import date
 from pathlib import Path
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from runtime_bootstrap import import_repo_module
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _artifact_validator.ValidationError
@@ -246,16 +225,10 @@ def validate_delegation_consistency(
         # mode and the enforce-from date); claiming it here would double-report.
         return
     contradictions = []
-    if _LEADING_MARKUP_RE.sub("", fields.get("host exposure state", "").strip().lower()).startswith(
-        _PENDING_SPAWN
-    ):
+    if _LEADING_MARKUP_RE.sub("", fields.get("host exposure state", "").strip().lower()).startswith(_PENDING_SPAWN):
         contradictions.append(f"`Host exposure state: {_PENDING_SPAWN}` (no reviewer was spawned)")
-    if _LEADING_MARKUP_RE.sub("", fields.get(DELIVERY_STATE_FIELD, "").strip().lower()).startswith(
-        _PENDING_SPAWN
-    ):
-        contradictions.append(
-            f"`Delivery state: {_PENDING_SPAWN}` (no findings reached the parent)"
-        )
+    if _LEADING_MARKUP_RE.sub("", fields.get(DELIVERY_STATE_FIELD, "").strip().lower()).startswith(_PENDING_SPAWN):
+        contradictions.append(f"`Delivery state: {_PENDING_SPAWN}` (no findings reached the parent)")
     if contradictions:
         raise ValidationError(
             f"{path}: this artifact's `Fresh-eye satisfaction` claims a completed delegation, but its own "

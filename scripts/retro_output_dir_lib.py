@@ -14,32 +14,7 @@ from __future__ import annotations
 
 from pathlib import Path, PurePosixPath
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import (  # noqa: E402
-    load_path_module,
-    repo_root_from_script,
-    skill_script,
-)
+from runtime_bootstrap import load_path_module, repo_root_from_script, skill_script
 
 #: The prefix used when this repo's retro adapter cannot be read at all. NOT the
 #: prefix a run uses -- `retro_artifact_prefix` is. It was a bare constant in the

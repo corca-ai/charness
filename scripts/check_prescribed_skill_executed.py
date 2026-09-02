@@ -4,38 +4,16 @@
 See ``docs/prescribed-skill-closeout-contract.md`` for the closeout
 contract this gate enforces across achieve/issue/release closeouts.
 """
-
 from __future__ import annotations
 
 import argparse
 import importlib.util
 from pathlib import Path
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
 try:
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:
-    from scripts.yaml_output import emit_yaml
+    from yaml_output import emit_yaml
 
 
 def _load_lib():
@@ -59,45 +37,12 @@ def parse_args() -> argparse.Namespace:
             "an enum-valid reason."
         ),
     )
-    parser.add_argument(
-        "--repo-root",
-        type=Path,
-        default=Path.cwd(),
-        help="Repo root for resolving relative evidence paths",
-    )
-    parser.add_argument(
-        "--kind",
-        default=None,
-        help="Optional closeout kind label for the report (e.g. achieve-after, issue-resolution, release)",
-    )
-    parser.add_argument(
-        "--require",
-        action="append",
-        default=[],
-        metavar="NAME",
-        help="Required evidence name (repeatable)",
-    )
-    parser.add_argument(
-        "--evidence",
-        action="append",
-        default=[],
-        metavar="NAME:PATH",
-        help="Evidence file path for a required name (repeatable)",
-    )
-    parser.add_argument(
-        "--skip",
-        action="append",
-        default=[],
-        metavar="NAME:REASON",
-        help="Skip reason for a required name (repeatable); REASON must start with one of host-blocked-subagent, host-log-not-exposed, evaluator-unavailable",
-    )
-    parser.add_argument(
-        "--context-token",
-        action="append",
-        default=[],
-        metavar="TOKEN",
-        help="Closeout context identity (issue number, goal slug, release version; repeatable). Every evidence file must bind to at least one, by basename or by cited content. Omitting these leaves the run presence-only, which the report records as binding_checked=false.",
-    )
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root for resolving relative evidence paths")
+    parser.add_argument("--kind", default=None, help="Optional closeout kind label for the report (e.g. achieve-after, issue-resolution, release)")
+    parser.add_argument("--require", action="append", default=[], metavar="NAME", help="Required evidence name (repeatable)")
+    parser.add_argument("--evidence", action="append", default=[], metavar="NAME:PATH", help="Evidence file path for a required name (repeatable)")
+    parser.add_argument("--skip", action="append", default=[], metavar="NAME:REASON", help="Skip reason for a required name (repeatable); REASON must start with one of host-blocked-subagent, host-log-not-exposed, evaluator-unavailable")
+    parser.add_argument("--context-token", action="append", default=[], metavar="TOKEN", help="Closeout context identity (issue number, goal slug, release version; repeatable). Every evidence file must bind to at least one, by basename or by cited content. Omitting these leaves the run presence-only, which the report records as binding_checked=false.")
     return parser.parse_args()
 
 

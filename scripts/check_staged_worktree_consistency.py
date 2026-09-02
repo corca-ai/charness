@@ -26,27 +26,6 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
 if __package__ in (None, ""):  # `python3 scripts/<name>.py`, not `-m scripts.<name>`
     # That argv puts `<repo>/scripts` on `sys.path` and NOT the repo root, so
     # `from scripts.… import …` raised `ModuleNotFoundError: No module named
@@ -63,14 +42,14 @@ if __package__ in (None, ""):  # `python3 scripts/<name>.py`, not `-m scripts.<n
     # spellings at once.
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.env_bypass import env_bypass_enabled  # noqa: E402
-from scripts.git_status_snapshot import (  # noqa: E402
+from runtime_bootstrap import import_repo_module
+from scripts.env_bypass import env_bypass_enabled
+from scripts.git_status_snapshot import (
     GitStatusError,
     GitStatusSnapshot,
 )
-from scripts.git_status_snapshot import parse as parse_git_status  # noqa: E402
-from scripts.git_status_snapshot import status_args as git_status_args  # noqa: E402
-from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from scripts.git_status_snapshot import parse as parse_git_status
+from scripts.git_status_snapshot import status_args as git_status_args
 
 _subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
 run_process = _subprocess_guard.run_process

@@ -38,28 +38,7 @@ import re
 import sys
 from pathlib import Path
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 try:
     from scripts.subprocess_guard import run_process
@@ -72,7 +51,7 @@ except ImportError:  # flat layout: the script dir is on sys.path, the repo root
     if str(_scripts_dir) not in sys.path:
         sys.path.insert(0, str(_scripts_dir))
     from subprocess_guard import run_process
-from scripts.yaml_output import emit_yaml  # noqa: E402
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 

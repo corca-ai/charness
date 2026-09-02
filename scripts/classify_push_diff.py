@@ -12,7 +12,6 @@ Exit code: 0 in both classifications. A 2 exit signals an error resolving
 the diff range (no upstream / git failure); the caller should fall back to
 forcing a full gate.
 """
-
 from __future__ import annotations
 
 import argparse
@@ -20,31 +19,10 @@ import importlib.util
 import subprocess
 from pathlib import Path
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
 try:
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:
-    from scripts.yaml_output import emit_yaml
+    from yaml_output import emit_yaml
 
 
 def _load_lib():
@@ -68,23 +46,10 @@ def parse_args() -> argparse.Namespace:
             "whether to skip the broad quality gate (closes #230 Waste 3)."
         ),
     )
-    parser.add_argument(
-        "--repo-root",
-        type=Path,
-        default=Path.cwd(),
-        help="Repo root used to resolve the diff range",
-    )
-    parser.add_argument(
-        "--remote", default="origin", help="Git remote whose tracking branch defines the diff range"
-    )
-    parser.add_argument(
-        "--diff-range", help="Explicit `<base>..<head>` diff range; overrides upstream resolution"
-    )
-    parser.add_argument(
-        "--paths-stdin",
-        action="store_true",
-        help="Read newline-separated paths from stdin instead of running git diff",
-    )
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root used to resolve the diff range")
+    parser.add_argument("--remote", default="origin", help="Git remote whose tracking branch defines the diff range")
+    parser.add_argument("--diff-range", help="Explicit `<base>..<head>` diff range; overrides upstream resolution")
+    parser.add_argument("--paths-stdin", action="store_true", help="Read newline-separated paths from stdin instead of running git diff")
     return parser.parse_args()
 
 
@@ -93,7 +58,6 @@ def main() -> int:
     repo_root = args.repo_root.expanduser().resolve()
     if args.paths_stdin:
         import sys
-
         paths = [line.strip() for line in sys.stdin.read().splitlines() if line.strip()]
         result = LIB.classify(paths)
         emit_yaml(result)

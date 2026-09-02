@@ -8,28 +8,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -86,12 +65,8 @@ def load_contract(path: Path) -> dict[str, dict[str, object]]:
             errors.append(f"{path}: commands.{command_id} must be a mapping")
             continue
         parsed[command_id] = {
-            "help_command": require_string(
-                raw_command.get("help_command"), f"commands.{command_id}.help_command", errors
-            ),
-            "doc_paths": optional_string_list(
-                raw_command.get("doc_paths"), f"commands.{command_id}.doc_paths", errors
-            ),
+            "help_command": require_string(raw_command.get("help_command"), f"commands.{command_id}.help_command", errors),
+            "doc_paths": optional_string_list(raw_command.get("doc_paths"), f"commands.{command_id}.doc_paths", errors),
             "required_help_contains": optional_string_list(
                 raw_command.get("required_help_contains"),
                 f"commands.{command_id}.required_help_contains",
@@ -114,9 +89,7 @@ def load_contract(path: Path) -> dict[str, dict[str, object]]:
 
 
 def run_help(repo_root: Path, command: str) -> str:
-    return help_output_from_result(
-        command, run_process(shlex.split(command), cwd=repo_root, timeout_seconds=None)
-    )
+    return help_output_from_result(command, run_process(shlex.split(command), cwd=repo_root, timeout_seconds=None))
 
 
 def help_output_from_result(command: str, result) -> str:
@@ -128,9 +101,7 @@ def help_output_from_result(command: str, result) -> str:
     return result.stdout + result.stderr
 
 
-def _parallel_help_outputs(
-    repo_root: Path, commands: dict[str, dict[str, object]]
-) -> dict[str, str]:
+def _parallel_help_outputs(repo_root: Path, commands: dict[str, dict[str, object]]) -> dict[str, str]:
     help_commands = [str(config["help_command"]) for config in commands.values()]
     results = run_processes_in_order(
         [shlex.split(command) for command in help_commands],
@@ -167,9 +138,7 @@ def assert_absent(haystack: str, needle: str, *, context: str) -> str | None:
     return None
 
 
-def check_command(
-    repo_root: Path, command_id: str, config: dict[str, object], *, help_output: str | None = None
-) -> list[str]:
+def check_command(repo_root: Path, command_id: str, config: dict[str, object], *, help_output: str | None = None) -> list[str]:
     help_command = str(config["help_command"])
     help_output = run_help(repo_root, help_command) if help_output is None else help_output
     doc_paths = list(config["doc_paths"])
@@ -177,9 +146,7 @@ def check_command(
     findings: list[str] = []
 
     for needle in config["required_help_contains"]:
-        finding = assert_contains(
-            help_output, needle, context=f"{command_id}: help `{help_command}`"
-        )
+        finding = assert_contains(help_output, needle, context=f"{command_id}: help `{help_command}`")
         if finding:
             findings.append(finding)
     doc_context = f"{command_id}: docs {', '.join(doc_paths)}"
@@ -205,9 +172,7 @@ def build_report(repo_root: Path, contract_path: Path) -> dict[str, object]:
     findings = [
         finding
         for command_id, config in commands.items()
-        for finding in check_command(
-            repo_root, command_id, config, help_output=help_outputs[command_id]
-        )
+        for finding in check_command(repo_root, command_id, config, help_output=help_outputs[command_id])
     ]
     return {
         "status": "fail" if findings else "pass",

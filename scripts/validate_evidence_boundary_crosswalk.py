@@ -25,28 +25,7 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 _crosswalk = import_repo_module(__file__, "scripts.evidence_boundary_crosswalk")
@@ -101,20 +80,14 @@ def _validate_shape(crosswalk: dict[str, Any]) -> None:
         _fail("unprotected_row", f"rows for issues that are not protected: {extra}")
     for row in crosswalk["issues"]:
         if row.get("owner") not in OWNER_VALUES:
-            _fail(
-                "invalid_owner",
-                f"#{row.get('number')} owner={row.get('owner')!r}, allowed {OWNER_VALUES}",
-            )
+            _fail("invalid_owner", f"#{row.get('number')} owner={row.get('owner')!r}, allowed {OWNER_VALUES}")
         if row.get("projection_dependency") not in DEPENDENCY_VALUES:
             _fail(
                 "invalid_projection_dependency",
                 f"#{row.get('number')} projection_dependency={row.get('projection_dependency')!r}",
             )
         if row.get("owner") == "re-scoped" and not row.get("replacement"):
-            _fail(
-                "unnamed_rescope",
-                f"#{row.get('number')} is re-scoped without naming a replacement owner",
-            )
+            _fail("unnamed_rescope", f"#{row.get('number')} is re-scoped without naming a replacement owner")
 
 
 def _clause_index(repo_root: Path, crosswalk: dict[str, Any]) -> dict[int, set[str]]:
@@ -123,11 +96,7 @@ def _clause_index(repo_root: Path, crosswalk: dict[str, Any]) -> dict[int, set[s
         _fail("missing_source_identity", "the crosswalk declares no snapshot path")
     snapshot = _freeze_lib.load_json(repo_root, snapshot_rel, _freeze_lib.SNAPSHOT_SCHEMA)
     return {
-        issue["number"]: {
-            clause["source_clause_id"]
-            for unit in issue["source_units"]
-            for clause in unit["clauses"]
-        }
+        issue["number"]: {clause["source_clause_id"] for unit in issue["source_units"] for clause in unit["clauses"]}
         for issue in snapshot["clause_inventory"]["issues"]
     }
 
@@ -148,10 +117,7 @@ def _validate_bootstrap(crosswalk: dict[str, Any]) -> None:
                 "before Slice 0 has decided the seam",
             )
     if (crosswalk.get("shared_projection") or {}).get("status") != "undecided":
-        _fail(
-            "bootstrap_decides_projection",
-            "shared_projection status is decided while matrix_state=bootstrap",
-        )
+        _fail("bootstrap_decides_projection", "shared_projection status is decided while matrix_state=bootstrap")
 
 
 def _validate_complete(repo_root: Path, crosswalk: dict[str, Any]) -> None:
@@ -162,10 +128,7 @@ def _validate_complete(repo_root: Path, crosswalk: dict[str, Any]) -> None:
         coverage = row.get("coverage") or []
         clauses = row.get("source_clauses") or []
         if not criteria:
-            _fail(
-                "empty_criteria",
-                f"#{number} has no criterion; an issue with no criteria can never fail one",
-            )
+            _fail("empty_criteria", f"#{number} has no criterion; an issue with no criteria can never fail one")
         if not coverage:
             _fail("empty_coverage", f"#{number} has no executable coverage row")
         criterion_ids = [item["criterion_id"] for item in criteria]
@@ -186,9 +149,7 @@ def _validate_complete(repo_root: Path, crosswalk: dict[str, Any]) -> None:
         _validate_coverage(number, coverage, set(criterion_ids))
         _validate_criterion_clause_closure(number, clauses, criteria)
         if row.get("projection_dependency") == "undecided":
-            _fail(
-                "undecided_dependency", f"#{number} is still undecided while matrix_state=complete"
-            )
+            _fail("undecided_dependency", f"#{number} is still undecided while matrix_state=complete")
 
 
 def _validate_clause_dispositions(number: int, clauses: list[dict], frozen_ids: set[str]) -> None:
@@ -202,19 +163,11 @@ def _validate_clause_dispositions(number: int, clauses: list[dict], frozen_ids: 
                 "built against source that was never captured, or against a superseded freeze",
             )
         if clause_id in seen:
-            _fail(
-                "duplicate_clause_disposition",
-                f"#{number} dispositions clause {clause_id!r} more than once",
-            )
+            _fail("duplicate_clause_disposition", f"#{number} dispositions clause {clause_id!r} more than once")
         seen.add(clause_id)
         if clause.get("disposition") not in DISPOSITIONS:
-            _fail(
-                "invalid_disposition",
-                f"#{number} clause {clause_id!r} disposition={clause.get('disposition')!r}",
-            )
-        if clause["disposition"] in {"non-goal", "evidence-only"} and not (
-            clause.get("reason") and clause.get("owner")
-        ):
+            _fail("invalid_disposition", f"#{number} clause {clause_id!r} disposition={clause.get('disposition')!r}")
+        if clause["disposition"] in {"non-goal", "evidence-only"} and not (clause.get("reason") and clause.get("owner")):
             _fail(
                 "unowned_exclusion",
                 f"#{number} clause {clause_id!r} is excluded as {clause['disposition']} without a bounded "
@@ -228,9 +181,7 @@ def _validate_clause_dispositions(number: int, clauses: list[dict], frozen_ids: 
         )
 
 
-def _validate_criteria(
-    number: int, criteria: list[dict], clause_ids: set[str], coverage_ids: set[str]
-) -> None:
+def _validate_criteria(number: int, criteria: list[dict], clause_ids: set[str], coverage_ids: set[str]) -> None:
     for criterion in criteria:
         cid = criterion["criterion_id"]
         sources = criterion.get("source_clause_ids") or []
@@ -238,10 +189,7 @@ def _validate_criteria(
         if not sources:
             _fail("unsourced_criterion", f"#{number} criterion {cid} maps to no source clause")
         if not covers:
-            _fail(
-                "uncovered_criterion",
-                f"#{number} criterion {cid} maps to no executable coverage row",
-            )
+            _fail("uncovered_criterion", f"#{number} criterion {cid} maps to no executable coverage row")
         for source in sources:
             if source not in clause_ids:
                 _fail(
@@ -251,18 +199,8 @@ def _validate_criteria(
                 )
         for cover in covers:
             if cover not in coverage_ids:
-                _fail(
-                    "dangling_criterion_coverage",
-                    f"#{number} criterion {cid} cites unknown coverage {cover!r}",
-                )
-        for field in (
-            "producer",
-            "invocation",
-            "expected",
-            "artifact_path",
-            "final_reader_route",
-            "non_claim",
-        ):
+                _fail("dangling_criterion_coverage", f"#{number} criterion {cid} cites unknown coverage {cover!r}")
+        for field in ("producer", "invocation", "expected", "artifact_path", "final_reader_route", "non_claim"):
             if not criterion.get(field):
                 _fail("incomplete_criterion", f"#{number} criterion {cid} is missing {field!r}")
 
@@ -275,10 +213,7 @@ def _validate_coverage(number: int, coverage: list[dict], criterion_ids: set[str
             _fail("orphan_coverage", f"#{number} coverage {cid} maps to no criterion")
         for criterion in criteria:
             if criterion not in criterion_ids:
-                _fail(
-                    "dangling_coverage_criterion",
-                    f"#{number} coverage {cid} cites unknown criterion {criterion!r}",
-                )
+                _fail("dangling_coverage_criterion", f"#{number} coverage {cid} cites unknown criterion {criterion!r}")
         shared = row.get("shared")
         # `isinstance(..., bool)`, not `in {True, False}`: `0 in {True, False}` is True
         # because `0 == False`, while `0 is False` is not — so `"shared": 0` passed the
@@ -298,12 +233,8 @@ def _validate_coverage(number: int, coverage: list[dict], criterion_ids: set[str
             )
 
 
-def _validate_criterion_clause_closure(
-    number: int, clauses: list[dict], criteria: list[dict]
-) -> None:
-    mapped = {
-        source for criterion in criteria for source in criterion.get("source_clause_ids") or []
-    }
+def _validate_criterion_clause_closure(number: int, clauses: list[dict], criteria: list[dict]) -> None:
+    mapped = {source for criterion in criteria for source in criterion.get("source_clause_ids") or []}
     for clause in clauses:
         if clause["disposition"] == "criterion" and clause["source_clause_id"] not in mapped:
             _fail(
@@ -335,13 +266,7 @@ def _authorization_status(repo_root: Path, rel: str, crosswalk: dict[str, Any]) 
         number = row["number"]
         by_carrier = {
             carrier: _crosswalk.authorize_closeout(
-                [
-                    {
-                        "repository": crosswalk["current_repository"],
-                        "issue_number": number,
-                        "source": "validator-probe",
-                    }
-                ],
+                [{"repository": crosswalk["current_repository"], "issue_number": number, "source": "validator-probe"}],
                 [],
                 carrier,
                 repo_root=repo_root,
@@ -362,17 +287,13 @@ def _authorization_status(repo_root: Path, rel: str, crosswalk: dict[str, Any]) 
         "single_issue_close_authorized_by_some_in_scope_carrier": {
             number: item["authorized_by_any_carrier"] for number, item in per_issue.items()
         },
-        "authorizes_protected_close": all(
-            item["authorized_by_any_carrier"] for item in per_issue.values()
-        ),
+        "authorizes_protected_close": all(item["authorized_by_any_carrier"] for item in per_issue.values()),
         "probed_carriers": list(carriers),
         "not_probed": "multi-issue carriers (always refused by the singleton rule) and the "
         "close-with-comment manual-target-declaration requirement",
         "per_issue": per_issue,
         "owners": {row["number"]: row["owner"] for row in crosswalk["issues"]},
-        "projection_dependency": {
-            row["number"]: row["projection_dependency"] for row in crosswalk["issues"]
-        },
+        "projection_dependency": {row["number"]: row["projection_dependency"] for row in crosswalk["issues"]},
     }
 
 

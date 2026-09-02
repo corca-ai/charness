@@ -28,28 +28,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from runtime_bootstrap import import_repo_module
 
 _surfaces_lib = import_repo_module(__file__, "scripts.surfaces_lib")
 _critique_adapter_lib = import_repo_module(__file__, "scripts.critique_adapter_lib")
@@ -150,9 +129,7 @@ def cross_surface_probe_state(
             declared = set(resolved["declared"])
             matched_ids = {
                 surface["surface_id"]
-                for surface in _surfaces_lib.match_surfaces(manifest, changed_paths)[
-                    "matched_surfaces"
-                ]
+                for surface in _surfaces_lib.match_surfaces(manifest, changed_paths)["matched_surfaces"]
             }
             if matched_ids & declared:
                 return _probe_state(PROBE_EVALUATED, True, scanned)

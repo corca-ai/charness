@@ -7,29 +7,8 @@ import json
 import sys
 from pathlib import Path
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
-from scripts.yaml_output import emit_yaml  # noqa: E402
+from runtime_bootstrap import import_repo_module, repo_root_from_script
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -39,9 +18,7 @@ now_iso = _scripts_control_plane_lib_module.now_iso
 read_lock = _scripts_control_plane_lib_module.read_lock
 run_shell = _scripts_control_plane_lib_module.run_shell
 upsert_lock = _scripts_control_plane_lib_module.upsert_lock
-_scripts_control_plane_lifecycle_lib_module = import_repo_module(
-    __file__, "scripts.control_plane_lifecycle_lib"
-)
+_scripts_control_plane_lifecycle_lib_module = import_repo_module(__file__, "scripts.control_plane_lifecycle_lib")
 attach_release_metadata = _scripts_control_plane_lifecycle_lib_module.attach_release_metadata
 command_result_payload = _scripts_control_plane_lifecycle_lib_module.command_result_payload
 detect_and_healthcheck = _scripts_control_plane_lifecycle_lib_module.detect_and_healthcheck
@@ -49,9 +26,7 @@ evaluate_readiness = _scripts_control_plane_lifecycle_lib_module.evaluate_readin
 has_any_status = _scripts_control_plane_lifecycle_lib_module.has_any_status
 print_update_advisories = _scripts_control_plane_lifecycle_lib_module.print_update_advisories
 select_by_tool_id = _scripts_control_plane_lifecycle_lib_module.select_by_tool_id
-_scripts_install_provenance_lib_module = import_repo_module(
-    __file__, "scripts.install_provenance_lib"
-)
+_scripts_install_provenance_lib_module = import_repo_module(__file__, "scripts.install_provenance_lib")
 detect_install_provenance = _scripts_install_provenance_lib_module.detect_install_provenance
 package_manager_update_action = _scripts_install_provenance_lib_module.package_manager_update_action
 _scripts_upstream_release_lib_module = import_repo_module(__file__, "scripts.upstream_release_lib")
@@ -161,17 +136,9 @@ def passive_update(
     detect_result, healthcheck_result = detect_and_healthcheck(
         repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
     )
-    readiness_result = readiness_after_successful_checks(
-        repo_root, manifest, detect_result, healthcheck_result
-    )
-    status = (
-        "manual"
-        if mode == "manual"
-        else (
-            "updated-not-ready"
-            if detect_result["ok"] and healthcheck_result["ok"] and not readiness_result["ok"]
-            else "noop"
-        )
+    readiness_result = readiness_after_successful_checks(repo_root, manifest, detect_result, healthcheck_result)
+    status = "manual" if mode == "manual" else (
+        "updated-not-ready" if detect_result["ok"] and healthcheck_result["ok"] and not readiness_result["ok"] else "noop"
     )
     if execute:
         persist_update_lock(
@@ -209,11 +176,7 @@ def passive_update(
 def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -> dict[str, object]:
     configured_action = manifest["lifecycle"]["update"]
     provenance = capture_provenance(manifest)
-    routed_action = (
-        package_manager_update_action(manifest, provenance)
-        if configured_action["mode"] == "manual"
-        else None
-    )
+    routed_action = package_manager_update_action(manifest, provenance) if configured_action["mode"] == "manual" else None
     update_action = routed_action or configured_action
     mode = update_action["mode"]
     release = probe_release(manifest)
@@ -241,15 +204,11 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
             release=release,
         )
 
-    command_results = [
-        run_shell(command, repo_root) for command in update_action.get("commands", [])
-    ]
+    command_results = [run_shell(command, repo_root) for command in update_action.get("commands", [])]
     detect_result, healthcheck_result = detect_and_healthcheck(
         repo_root, manifest, failure_reason="detect failed after update"
     )
-    readiness_result = readiness_after_successful_checks(
-        repo_root, manifest, detect_result, healthcheck_result
-    )
+    readiness_result = readiness_after_successful_checks(repo_root, manifest, detect_result, healthcheck_result)
     command_ok = all(result.exit_code == 0 for result in command_results)
     version_transition = {
         "from": previous_observed_version(repo_root, manifest["tool_id"]),
@@ -274,9 +233,7 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
         package_name=update_action.get("package_name"),
         version_transition=version_transition,
     )
-    persist_update_lock(
-        repo_root, manifest, release=release, provenance=provenance, payload=payload
-    )
+    persist_update_lock(repo_root, manifest, release=release, provenance=provenance, payload=payload)
     result = {
         "tool_id": manifest["tool_id"],
         "status": status,
@@ -308,11 +265,7 @@ def main() -> int:
     # [healthcheck=<status>]`, all projected from `status`, `version_transition`, and
     # `healthcheck`, which every result already carries.
     emit_yaml(results)
-    if has_any_status(
-        results,
-        status_key="status",
-        statuses={"failed", "updated-not-ready", "refreshed-not-ready"},
-    ):
+    if has_any_status(results, status_key="status", statuses={"failed", "updated-not-ready", "refreshed-not-ready"}):
         return 1
     return 0
 

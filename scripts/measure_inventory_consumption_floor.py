@@ -41,7 +41,6 @@ measurements can be compared on one denominator. What this script's loose-mentio
 contributed to D47 -- the 169 -- was always machine-produced; only the marker split and
 the refusal count were hand measurements, and both are now executed.
 """
-
 from __future__ import annotations
 
 import json
@@ -49,32 +48,11 @@ import re
 import sys
 from pathlib import Path
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import inventory_measurement_lib as corpus_lib  # noqa: E402
 import validate_inventory_consumption as gate  # noqa: E402
 
-from scripts.yaml_output import emit_yaml  # noqa: E402
+from yaml_output import emit_yaml  # noqa: E402
 
 DEFAULT_CORPUS = corpus_lib.DEFAULT_CORPUS
 
@@ -96,20 +74,12 @@ def _label_residuals(body: str) -> list[dict[str, object]]:
         pattern = getattr(gate, attr)
         for match in pattern.finditer(body):
             end = body.find("\n", match.end())
-            value = body[match.end() :] if end == -1 else body[match.end() : end]
-            rows.append(
-                {
-                    "label": label,
-                    "residual": gate.residual_chars(value, ""),
-                    "value": value.strip()[:60],
-                }
-            )
+            value = body[match.end():] if end == -1 else body[match.end():end]
+            rows.append({"label": label, "residual": gate.residual_chars(value, ""), "value": value.strip()[:60]})
     return rows
 
 
-def scan(
-    repo_root: Path, corpus: Path, fields_path: Path, floor: int | None = None
-) -> dict[str, object]:
+def scan(repo_root: Path, corpus: Path, fields_path: Path, floor: int | None = None) -> dict[str, object]:
     inventories = json.loads(fields_path.read_text(encoding="utf-8")).get("inventories", {})
     effective_floor = gate.MIN_ENGAGEMENT_RESIDUAL_CHARS if floor is None else floor
     rows: list[dict[str, object]] = []
@@ -121,9 +91,7 @@ def scan(
         declared = gate.ARTIFACT_DATE_RE.search(text)
         declared_date = declared.group(1) if declared else None
         state, committed = gate.commit_state(repo_root, path)
-        claims_exemption = (
-            bool(declared_date) and declared_date < gate.ENFORCED_FROM_DATE.isoformat()
-        )
+        claims_exemption = bool(declared_date) and declared_date < gate.ENFORCED_FROM_DATE.isoformat()
         # Shared with the marker measurement so a later correction to the ladder cannot
         # silently diverge the two scripts' exemption semantics.
         exemption = corpus_lib.exemption_state(repo_root, path, text)
@@ -141,12 +109,10 @@ def scan(
             others = tuple(fields)
             loose = [f for f in fields if re.search(rf"\b{re.escape(f)}\b", body)]
             strict = [
-                f
-                for f in fields
+                f for f in fields
                 if any(
                     re.search(rf"\b{re.escape(f)}\b", line)
-                    and gate.residual_chars(line, f, tuple(x for x in others if x != f))
-                    >= effective_floor
+                    and gate.residual_chars(line, f, tuple(x for x in others if x != f)) >= effective_floor
                     for line in body.splitlines()
                 )
             ]
@@ -178,17 +144,11 @@ def scan(
         },
         "exemption_counts": {
             state: sum(1 for r in rows if r["exemption"] == state)
-            for state in (
-                "not-claimed",
-                "corroborated",
-                "not-corroborated",
-                "REFUSED-uncorroborated",
-            )
+            for state in ("not-claimed", "corroborated", "not-corroborated", "REFUSED-uncorroborated")
         },
         "citations_lowered_below_requirement": [
             {"path": r["path"], "inventory": name, **stats}
-            for r in rows
-            for name, stats in r["citations"].items()
+            for r in rows for name, stats in r["citations"].items()
             if stats["engaged_presence_only"] >= stats["required"]
             and stats["engaged_with_a_value"] < stats["required"]
         ],
@@ -231,11 +191,9 @@ def safety_defects(report: dict[str, object], *, expected_floor: int) -> list[st
 def main() -> int:
     parser = corpus_lib.build_parser(__doc__)
     parser.add_argument(
-        "--floor",
-        type=int,
-        default=None,
+        "--floor", type=int, default=None,
         help="Override the gate's MIN_ENGAGEMENT_RESIDUAL_CHARS so a counterfactual floor "
-        "can be re-run without editing the gate constant.",
+             "can be re-run without editing the gate constant.",
     )
     args = parser.parse_args()
 
@@ -245,7 +203,9 @@ def main() -> int:
 
     report = scan(repo_root, corpus, fields_path, args.floor)
     emit_yaml(report)
-    return 1 if safety_defects(report, expected_floor=gate.MIN_ENGAGEMENT_RESIDUAL_CHARS) else 0
+    return 1 if safety_defects(
+        report, expected_floor=gate.MIN_ENGAGEMENT_RESIDUAL_CHARS
+    ) else 0
 
 
 if __name__ == "__main__":

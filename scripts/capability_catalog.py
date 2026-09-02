@@ -8,35 +8,14 @@ import os
 import sys
 from pathlib import Path
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
 if str(Path(__file__).resolve().parent.parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from scripts import check_consumer_validator_catalog  # noqa: E402
-from scripts.capability_catalog_artifact import persist_catalog, read_only_result  # noqa: E402
-from scripts.capability_catalog_resolver import resolve_skill_path  # noqa: E402
-from scripts.capability_catalog_sources import build_inventory  # noqa: E402
-from scripts.yaml_output import emit_yaml  # noqa: E402
+from scripts import check_consumer_validator_catalog
+from scripts.capability_catalog_artifact import persist_catalog, read_only_result
+from scripts.capability_catalog_resolver import resolve_skill_path
+from scripts.capability_catalog_sources import build_inventory
+from scripts.yaml_output import emit_yaml
 
 
 class CatalogRepoRootError(ValueError):
@@ -86,9 +65,7 @@ def _consumer_validator_catalog(
         catalog_path = owner_root / check_consumer_validator_catalog.DEFAULT_CATALOG_REL
     else:
         package_root = owner_root
-        catalog_path = (
-            owner_root / "skills" / "quality" / "references" / "consumer-validator-catalog.yaml"
-        )
+        catalog_path = owner_root / "skills" / "quality" / "references" / "consumer-validator-catalog.yaml"
     try:
         return check_consumer_validator_catalog.validate_catalog(
             owner_root,
@@ -223,11 +200,9 @@ def main(argv: list[str] | None = None) -> int:
         emit_yaml({"error": str(exc), "repo_root": str(exc.repo_root)})
         return 2
     emit_yaml(payload)
-    if (
-        args.command == "resolve-skill-path"
-        and payload.get("admission_status", "admitted" if payload.get("resolved_path") else None)
-        != "admitted"
-    ):
+    if args.command == "resolve-skill-path" and payload.get(
+        "admission_status", "admitted" if payload.get("resolved_path") else None
+    ) != "admitted":
         return 1
     if args.command == "list" and catalog_is_blocked(payload):
         return 1

@@ -8,34 +8,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import (  # noqa: E402
+from runtime_bootstrap import (
     import_repo_module,
     load_path_module,
     repo_root_from_script,
     require_repo_local_helper,
 )
-from scripts.yaml_output import emit_yaml  # noqa: E402
+from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 INDEX_FILENAME = "seam-risk-index.json"
@@ -141,9 +120,7 @@ def _discover_artifact_paths(
 def build_index(repo_root: Path) -> dict[str, Any]:
     output_dir = _load_debug_output_dir(repo_root)
     if not output_dir.is_dir():
-        raise ValidationError(
-            f"debug output directory does not exist: `{_relative(repo_root, output_dir)}`"
-        )
+        raise ValidationError(f"debug output directory does not exist: `{_relative(repo_root, output_dir)}`")
 
     entries: list[dict[str, Any]] = []
     skipped: list[dict[str, str]] = []
@@ -199,7 +176,9 @@ def build_index(repo_root: Path) -> dict[str, Any]:
 
     if invalid:
         details = "\n".join(f"- `{path}`: {reason}" for path, reason in invalid)
-        raise ValidationError(f"{len(invalid)} invalid debug seam-risk artifact(s):\n{details}")
+        raise ValidationError(
+            f"{len(invalid)} invalid debug seam-risk artifact(s):\n{details}"
+        )
 
     return {
         "schema_version": 1,
@@ -256,7 +235,6 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     payload = build_index(repo_root)
-
     def _index_result(status: str, index_path: Path) -> dict[str, Any]:
         """One shape for both verdicts of one command.
 
@@ -277,7 +255,9 @@ def main() -> int:
         return 0
     if args.check:
         check_index(repo_root, payload)
-        emit_yaml(_index_result("validated", _load_debug_output_dir(repo_root) / INDEX_FILENAME))
+        emit_yaml(
+            _index_result("validated", _load_debug_output_dir(repo_root) / INDEX_FILENAME)
+        )
         return 0
     emit_yaml(payload)
     return 0

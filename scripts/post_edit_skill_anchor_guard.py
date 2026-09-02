@@ -15,7 +15,6 @@ skill-package file but the scan cannot render a verdict over it (missing
 the reason on stderr — the host's non-blocking hook-error channel — rather than
 reporting a clean verdict it never established.
 """
-
 from __future__ import annotations
 
 import argparse
@@ -24,28 +23,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -129,9 +107,7 @@ def _emit_dup_ratchet_advisory(repo_root: Path, raw_path: str) -> None:
 
 def main(argv: list[str] | None = None, stdin: Any = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--host", default="claude", help="Installing host (parity with the hook command; unused)."
-    )
+    parser.add_argument("--host", default="claude", help="Installing host (parity with the hook command; unused).")
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     args = parser.parse_args(argv)
     repo_root = args.repo_root.resolve()

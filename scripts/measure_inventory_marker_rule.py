@@ -34,7 +34,6 @@ Exit codes: 0 measured, 2 the corpus resolved to no files (a clean result over a
 corpus is not a measurement -- the class rule this repo applies to every measurement
 script).
 """
-
 from __future__ import annotations
 
 import json
@@ -42,32 +41,11 @@ import re
 import sys
 from pathlib import Path
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import inventory_measurement_lib as corpus_lib  # noqa: E402
 import validate_inventory_consumption as gate  # noqa: E402
 
-from scripts.yaml_output import emit_yaml  # noqa: E402
+from yaml_output import emit_yaml  # noqa: E402
 
 DEFAULT_CORPUS = corpus_lib.DEFAULT_CORPUS
 # Every exemption state on which `validate_inventory_consumption` returns 0 without
@@ -149,8 +127,7 @@ def scan(repo_root: Path, corpus: Path, fields_path: Path, *, recursive: bool) -
             mentions = _mentions(body, field)
             mentions_presence_only += len(mentions)
             clears_floor = [
-                line
-                for line in mentions
+                line for line in mentions
                 if gate.residual_chars(line, field, rest) >= gate.MIN_ENGAGEMENT_RESIDUAL_CHARS
             ]
             if clears_floor:

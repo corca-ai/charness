@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Suggest a focused pytest command for changed-line coverage production."""
-
 from __future__ import annotations
 
 import argparse
@@ -9,27 +8,6 @@ import re
 import shlex
 import sys
 from pathlib import Path
-
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:  # pragma: no cover - import bootstrap
@@ -95,7 +73,9 @@ def _reference_patterns(path: str) -> list[re.Pattern[str]]:
     patterns = [
         re.compile(rf"['\"]{escaped_path}['\"]"),
         re.compile(
-            r"\s*/\s*".join(rf"['\"]{re.escape(segment)}['\"]" for segment in path.split("/"))
+            r"\s*/\s*".join(
+                rf"['\"]{re.escape(segment)}['\"]" for segment in path.split("/")
+            )
         ),
     ]
     if path.endswith(".py"):
@@ -251,7 +231,10 @@ def _candidate_test_sources(repo_root: Path) -> list[str]:
     for target in expand_targets(repo_root):
         absolute = repo_root / target
         if absolute.is_dir():
-            paths.extend(path.relative_to(repo_root).as_posix() for path in absolute.rglob("*.py"))
+            paths.extend(
+                path.relative_to(repo_root).as_posix()
+                for path in absolute.rglob("*.py")
+            )
         elif target.endswith(".py") and absolute.is_file():
             paths.append(target)
     return sorted(dict.fromkeys(paths))
@@ -273,7 +256,7 @@ def _local_import_paths(path: str, text: str, module_paths: dict[str, str]) -> s
         if isinstance(node, ast.Import):
             candidates.extend(alias.name for alias in node.names)
         elif isinstance(node, ast.ImportFrom):
-            prefix = current[: -node.level] if node.level else []
+            prefix = current[:-node.level] if node.level else []
             module = node.module.split(".") if node.module else []
             base = ".".join([*prefix, *module])
             if base:
@@ -290,7 +273,8 @@ def _local_import_paths(path: str, text: str, module_paths: dict[str, str]) -> s
 def _test_source_closures(source_text: dict[str, str]) -> dict[str, set[str]]:
     module_paths = _module_name_to_path(list(source_text))
     dependencies = {
-        path: _local_import_paths(path, text, module_paths) for path, text in source_text.items()
+        path: _local_import_paths(path, text, module_paths)
+        for path, text in source_text.items()
     }
     closures: dict[str, set[str]] = {}
     for test_path in source_text:

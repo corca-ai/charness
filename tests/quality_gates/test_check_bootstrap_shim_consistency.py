@@ -199,9 +199,9 @@ def test_shim_dependency_contracts_without_a_tree() -> None:
 
 def test_repo_script_shim_is_checked_separately(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    scripts_dir = repo / "scripts"
+    scripts_dir = repo / "scripts" / "pkg"
     scripts_dir.mkdir(parents=True)
-    target = scripts_dir / "nested.py"
+    target = scripts_dir / "nested.py"  # only a NESTED script carries the shim
     target.write_text(
         shim_gate.CANONICAL_REPO_SHIM
         + "\n\nfrom scripts.runtime_bootstrap import repo_root_from_script\n",
@@ -216,7 +216,7 @@ def test_repo_script_shim_is_checked_separately(tmp_path: Path) -> None:
 
     target.write_text(
         target.read_text(encoding="utf-8").replace(
-            'raise ImportError("scripts/adapter_lib.py not found")',
+            'raise ImportError("scripts/adapter_lib.py not found above " + __file__)',
             'raise ImportError("repo marker not found")',
         ),
         encoding="utf-8",
@@ -224,4 +224,4 @@ def test_repo_script_shim_is_checked_separately(tmp_path: Path) -> None:
     drifted = run_script(SCRIPT, "--repo-root", str(repo))
     assert drifted.returncode == 1
     drifted_payload = _payload(drifted)
-    assert drifted_payload["repo_drifted"] == ["scripts/nested.py"]
+    assert drifted_payload["repo_drifted"] == ["scripts/pkg/nested.py"]

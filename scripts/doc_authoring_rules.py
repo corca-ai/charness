@@ -13,34 +13,12 @@ own constant, or the verdict that validator returns when this module PROBES it
 with a sample. A rule that changes upstream changes here; a rule deleted
 upstream stops being printed. There is no second copy of any rule text.
 """
-
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from runtime_bootstrap import import_repo_module
 
 _preflight = import_repo_module(__file__, "scripts.check_doc_authoring_preflight")
 _doc_links = import_repo_module(__file__, "scripts.check_doc_links")
@@ -63,7 +41,7 @@ def _probe_doc(repo_root: Path) -> Path:
 
 def _strip_doc_prefix(message: str, doc: Path) -> str:
     prefix = f"{doc}: "
-    return message[len(prefix) :] if message.startswith(prefix) else message
+    return message[len(prefix):] if message.startswith(prefix) else message
 
 
 def collect_link_shape_rules(repo_root: Path, sample: str) -> list[dict[str, Any]]:
@@ -113,9 +91,7 @@ def collect_backtick_rules(repo_root: Path, sample: str) -> list[dict[str, Any]]
     The reason tags and the remedy sentence are the gate's own
     (`classify_backtick_token`, `TREE_MARKER_REMEDY` / `LINK_FORM_REMEDY`).
     """
-    _root, known_repo, unique_basename, known_dirs, canonical = _preflight._doc_link_indices(
-        repo_root
-    )
+    _root, known_repo, unique_basename, known_dirs, canonical = _preflight._doc_link_indices(repo_root)
     probes: list[tuple[str, tuple[Path, Path] | None]] = [
         (sample, None),
         (f"./{Path(sample).parent.as_posix()}", None),
@@ -129,13 +105,8 @@ def collect_backtick_rules(repo_root: Path, sample: str) -> list[dict[str, Any]]
     for token, package_probe in probes:
         package_root, package_root_relative = package_probe or (None, None)
         reason = _doc_links.classify_backtick_token(
-            token,
-            known_repo,
-            unique_basename,
-            known_dirs,
-            canonical,
-            package_root,
-            package_root_relative,
+            token, known_repo, unique_basename, known_dirs, canonical,
+            package_root, package_root_relative,
         )
         remedy = None
         if reason is not None:
@@ -144,16 +115,12 @@ def collect_backtick_rules(repo_root: Path, sample: str) -> list[dict[str, Any]]
                 if reason in _doc_links.TREE_MARKER_REASONS
                 else _doc_links.LINK_FORM_REMEDY
             )
-        rows.append(
-            {
-                "token": token,
-                "reason": reason,
-                "remedy": remedy,
-                "inside_package": None
-                if package_probe is None
-                else package_root_relative.as_posix(),
-            }
-        )
+        rows.append({
+            "token": token,
+            "reason": reason,
+            "remedy": remedy,
+            "inside_package": None if package_probe is None else package_root_relative.as_posix(),
+        })
     return rows
 
 

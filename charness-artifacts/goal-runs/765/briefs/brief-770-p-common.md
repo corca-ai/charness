@@ -2,9 +2,14 @@
 
 Read `gh issue view 770` and `charness-artifacts/goal-runs/765/briefs/map-770.md`
 sections 2.3, 2.4, 2.6, 3, 5. Lane P0 has landed: nested scripts resolve
-their repo root by marker walk, the canonical repo-script preamble is
-enforced under `scripts/**`, `python3 -m tools.snapshot_gate_universes`
-writes the gate-universe snapshot, and
+their repo root by marker walk; FLAT scripts keep their bare sibling imports
+(they run with `scripts/` first on `sys.path`), and only a NESTED script
+(`scripts/<pkg>/<name>.py`) carries the canonical root-walking shim, which
+`python3 -m tools.rewrite_script_preambles --repo-root .` inserts for every
+nested file it finds (run it after each `git mv`; the shim gate
+`python3 -m tools.check_bootstrap_shim_consistency` enforces it under
+`scripts/*/**`); `python3 -m tools.snapshot_gate_universes` writes the
+gate-universe snapshot, and
 `charness-artifacts/quality/2026-09-02-gate-universes-before-770.yaml` is the
 "before". Read those AS LANDED first.
 

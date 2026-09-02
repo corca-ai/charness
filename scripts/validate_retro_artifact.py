@@ -7,28 +7,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -59,8 +38,6 @@ def _unspeakable_adapter_version(repo_root: Path) -> str | None:
     return _adapter_version_verdict.unspeakable_version_message(
         _output_dir.load_retro_adapter, repo_root, adapter_name="retro-adapter.yaml"
     )
-
-
 # Which dated floors are switched on for this repo. Re-exported because
 # `plan_retro_run` loads this module.
 _floor_scope = import_repo_module(__file__, "scripts.retro_floor_scope_lib")
@@ -82,17 +59,13 @@ validate_sibling_followups = _scripts_artifact_validator_module.validate_sibling
 _RECURRENCE_CLASS_TAG = re.compile(r"(?i)\brecurrence-class[ \t]*:[ \t]*(?P<value>[^\s)\]]*)")
 # The shape the index's parser accepts, anchored as a FULL match by the caller.
 _STRICT_SLUG = re.compile(r"(?i)[a-z0-9][a-z0-9-]*")
-file_is_prepare_packet_markdown_kind = (
-    _prepare_packet_markdown_kind.file_is_prepare_packet_markdown_kind
-)
+file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_prepare_packet_markdown_kind
 
 # Shared single source of the disposition-form grammar (#329); imported same-root
 # so the retro `## Next Improvements` floor never forks achieve parsing.
 disposition_form = import_repo_module(__file__, "scripts.disposition_form")
 
-DISPOSITION_FORM_REFERENCE = (
-    "skills/public/achieve/references/goal-artifact.md (#329 disposition-form floor)"
-)
+DISPOSITION_FORM_REFERENCE = "skills/public/achieve/references/goal-artifact.md (#329 disposition-form floor)"
 #: The path `north_star_reference` names when the repo being validated has this file.
 #: Deliberately NOT charness's internal `<authoring-repo>/...` spelling: a consuming
 #: author reads that as a directory they do not have, and the refusal message is the
@@ -155,7 +128,9 @@ def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -
         return [
             path
             for path in sorted(
-                path for path in (repo_root / prefix).glob("*.md") if path.name != GENERATED_DIGEST
+                path
+                for path in (repo_root / prefix).glob("*.md")
+                if path.name != GENERATED_DIGEST
             )
             if not file_is_prepare_packet_markdown_kind(
                 path,
@@ -167,14 +142,11 @@ def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -
     for relpath in paths:
         if _is_session_artifact(relpath, prefix):
             path = repo_root / relpath
-            if (
-                not file_is_prepare_packet_markdown_kind(
-                    path,
-                    expected_kind=RETRO_PREPARE_PACKET_KIND,
-                    expected_title_re=RETRO_PREPARE_PACKET_TITLE_RE,
-                )
-                and path.is_file()
-            ):
+            if not file_is_prepare_packet_markdown_kind(
+                path,
+                expected_kind=RETRO_PREPARE_PACKET_KIND,
+                expected_title_re=RETRO_PREPARE_PACKET_TITLE_RE,
+            ) and path.is_file():
                 candidates.append(path)
     return sorted(candidates)
 
@@ -241,8 +213,7 @@ def validate_recurrence_lineage(lines: list[str], observed_date: date | None) ->
     missing = [
         entry
         for entry in disposition_form.scan_dispositions(_next_improvements_body(lines))
-        if entry["verdict"]["kind"] == "issue"
-        and not disposition_form.has_recurrence_lineage(entry["value"])
+        if entry["verdict"]["kind"] == "issue" and not disposition_form.has_recurrence_lineage(entry["value"])
     ]
     if not missing:
         return
@@ -381,7 +352,6 @@ def validate_north_star_alignment(
             "facets held, which were mis-applied, and any failure signature the run walked into. "
             "Prose in the skill was not enough: two consecutive retros shipped without it."
         )
-
 
 def validate_retro_artifact(
     path: Path,

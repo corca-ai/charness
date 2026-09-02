@@ -31,28 +31,7 @@ from run_quality_engine_selection import (
     selected_count,
 )
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from runtime_bootstrap import import_repo_module
 
 _guard = import_repo_module(__file__, "scripts.subprocess_guard")
 run_process = _guard.run_process
@@ -170,20 +149,18 @@ def _predicates(context):
         "provenance_contract_checker_available": lambda: provenance_contract_checker_available(
             context
         ),
-        "provenance_contract_checker_unavailable": lambda: (
-            not provenance_contract_checker_available(context)
+        "provenance_contract_checker_unavailable": lambda: not provenance_contract_checker_available(
+            context
         ),
-        "inventory_gitignore_scan_hygiene_unavailable": lambda: (
-            not (
-                repo_root / "skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py"
-            ).is_file()
-        ),
-        "inventory_cli_ergonomics_unavailable": lambda: (
-            not (repo_root / "skills/public/quality/scripts/inventory_cli_ergonomics.py").is_file()
-        ),
-        "inventory_nose_clones_unavailable": lambda: (
-            not (repo_root / "skills/public/quality/scripts/inventory_nose_clones.py").is_file()
-        ),
+        "inventory_gitignore_scan_hygiene_unavailable": lambda: not (
+            repo_root / "skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py"
+        ).is_file(),
+        "inventory_cli_ergonomics_unavailable": lambda: not (
+            repo_root / "skills/public/quality/scripts/inventory_cli_ergonomics.py"
+        ).is_file(),
+        "inventory_nose_clones_unavailable": lambda: not (
+            repo_root / "skills/public/quality/scripts/inventory_nose_clones.py"
+        ).is_file(),
         "runtime_profile_present": lambda: bool(environment.get("CHARNESS_RUNTIME_PROFILE", "")),
         "runtime_profile_absent": lambda: not environment.get("CHARNESS_RUNTIME_PROFILE", ""),
         "release_final_base_sha_present": lambda: changed_line_base_sha_available(context),
@@ -308,7 +285,9 @@ def run(args: argparse.Namespace) -> int:
         )
         named_labels = frozenset(explicit_labels(labels))
         explicit_match_count = sum(
-            gate.label in named_labels for gates in selected.values() for gate in gates
+            gate.label in named_labels
+            for gates in selected.values()
+            for gate in gates
         )
         if selected_count(selected) == 0:
             print(

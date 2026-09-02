@@ -9,33 +9,12 @@ import time
 from pathlib import Path
 from typing import Any, Sequence
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts import task_run_completion as _completion  # noqa: E402
-from scripts import task_run_support as _support  # noqa: E402
-from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
-from scripts.task_run_git import _repo_snapshot  # noqa: E402
-from scripts.task_run_plan import resolve_task_inputs as _resolve_task_inputs  # noqa: E402
-from scripts.task_run_state import (  # noqa: E402
+from runtime_bootstrap import import_repo_module
+from scripts import task_run_completion as _completion
+from scripts import task_run_support as _support
+from scripts.task_run_git import _repo_snapshot
+from scripts.task_run_plan import resolve_task_inputs as _resolve_task_inputs
+from scripts.task_run_state import (
     _abnormal_exit_state,
     _candidate_result_state,
     _execution_state,

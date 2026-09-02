@@ -15,38 +15,15 @@ import jsonschema
 from packaging.specifiers import InvalidSpecifier, SpecifierSet
 from packaging.version import InvalidVersion, Version
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.repo_layout import (  # noqa: E402
+from runtime_bootstrap import import_repo_module
+from scripts.repo_layout import (
     integrations_locks_dir,
     integrations_tools_dir,
     support_capability_paths,
     support_capability_schema_path,
 )
-from scripts.repo_path_display import display_path  # noqa: E402
-from scripts.runtime_bootstrap import (  # noqa: E402
-    import_repo_module,  # noqa: E402
-    repo_root_from_script,  # noqa: E402
-)
+from scripts.repo_path_display import display_path
+from scripts.runtime_bootstrap import repo_root_from_script
 
 run_process = import_repo_module(__file__, "scripts.subprocess_guard").run_process
 

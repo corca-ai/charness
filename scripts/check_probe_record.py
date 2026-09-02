@@ -35,28 +35,7 @@ import argparse
 import sys
 from pathlib import Path
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from runtime_bootstrap import import_repo_module
 
 _probe_record = import_repo_module(__file__, "scripts.probe_record_lib")
 _stimulus_replay = import_repo_module(__file__, "scripts.probe_stimulus_replay")
@@ -112,9 +91,7 @@ def _merge_stimulus_replay(result: dict, replay: dict) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument(
-        "--record", type=Path, required=True, help="Path to the probe record to read"
-    )
+    parser.add_argument("--record", type=Path, required=True, help="Path to the probe record to read")
     parser.add_argument(
         "--require-evaluated",
         action="store_true",

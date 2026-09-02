@@ -15,21 +15,14 @@ import re
 from pathlib import Path
 
 REPO_SCRIPT_SHIM = """def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
 
 
 _load_repo_runtime_bootstrap()"""
@@ -130,7 +123,8 @@ def rewrite_tree(repo_root: Path, *, check: bool = False) -> dict[str, object]:
     changed_paths: list[str] = []
     rewritten_imports = 0
     already_normalized = 0
-    for path in sorted(scripts_root.rglob("*.py")):
+    # Only nested scripts need the shim; flat scripts keep their bare imports.
+    for path in sorted(p for p in scripts_root.rglob("*.py") if p.parent != scripts_root):
         source = path.read_text(encoding="utf-8")
         rewritten, replacements = _rewrite_source(source)
         if replacements == 0 and rewritten == source:

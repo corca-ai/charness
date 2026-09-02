@@ -3,32 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-
-def _load_repo_runtime_bootstrap():
-    _repo_bootstrap_pathlib = __import__("pathlib")
-    _repo_bootstrap_sys = __import__("sys")
-    repo_root = next(
-        (
-            ancestor
-            for ancestor in _repo_bootstrap_pathlib.Path(__file__).resolve().parents
-            if (ancestor / "scripts" / "adapter_lib.py").is_file()
-        ),
-        None,
-    )
-    if repo_root is None:
-        raise ImportError("scripts/adapter_lib.py not found")
-    repo_root_text = str(repo_root)
-    if repo_root_text not in _repo_bootstrap_sys.path:
-        _repo_bootstrap_sys.path.insert(0, repo_root_text)
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.runtime_bootstrap import (  # noqa: E402
-    import_repo_module,
-    load_path_module,
-    repo_root_from_script,
-)
+from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -45,11 +20,7 @@ FORCED_RISK_CLASSES = frozenset(
         "repeated-symptom",
     }
 )
-ALLOWED_RISK_CLASSES = FORCED_RISK_CLASSES | {
-    "operator-visible-recovery",
-    "contract-freeze-risk",
-    "none",
-}
+ALLOWED_RISK_CLASSES = FORCED_RISK_CLASSES | {"operator-visible-recovery", "contract-freeze-risk", "none"}
 ALLOWED_GENERALIZATION_PRESSURE = frozenset({"none", "monitor", "factor-now"})
 ALLOWED_SPEC_NEXT_STEPS = frozenset({"impl", "critique", "factor-first", "hitl"})
 ALLOWED_IMPL_STATUS = frozenset({"allowed", "blocked"})
@@ -133,9 +104,7 @@ def _parse_risk_classes(raw_value: str) -> tuple[str, ...]:
 
 def parse_debug_interrupt(artifact_path: Path) -> dict[str, object]:
     lines = read_lines(artifact_path)
-    missing_sections = [
-        heading for heading in DEBUG_INTERRUPT_REQUIRED_SECTIONS if heading not in lines
-    ]
+    missing_sections = [heading for heading in DEBUG_INTERRUPT_REQUIRED_SECTIONS if heading not in lines]
     if missing_sections:
         return {
             "present": False,
@@ -143,9 +112,7 @@ def parse_debug_interrupt(artifact_path: Path) -> dict[str, object]:
             "reason": "debug artifact has no risk interrupt sections yet",
         }
 
-    seam_lines = _section_lines(
-        lines, "## Seam Risk", ("## Seam Risk", "## Interrupt Decision", "## Prevention")
-    )
+    seam_lines = _section_lines(lines, "## Seam Risk", ("## Seam Risk", "## Interrupt Decision", "## Prevention"))
     interrupt_lines = _section_lines(
         lines,
         "## Interrupt Decision",
@@ -185,9 +152,7 @@ def parse_debug_interrupt(artifact_path: Path) -> dict[str, object]:
     if next_step not in {"impl", "spec"}:
         raise ValidationError("`Next Step` must be `impl` or `spec`")
 
-    forced = bool(
-        set(risk_classes) & FORCED_RISK_CLASSES or generalization_pressure == "factor-now"
-    )
+    forced = bool(set(risk_classes) & FORCED_RISK_CLASSES or generalization_pressure == "factor-now")
     if forced and critique_required != "yes":
         raise ValidationError("forced risk interrupt must record `Critique Required: yes`")
     if forced and next_step != "spec":
@@ -197,12 +162,8 @@ def parse_debug_interrupt(artifact_path: Path) -> dict[str, object]:
     if forced:
         if handoff_artifact == "none":
             raise ValidationError("forced risk interrupt must name a spec handoff artifact")
-        if not handoff_artifact.startswith(
-            "charness-artifacts/spec/"
-        ) or not handoff_artifact.endswith(".md"):
-            raise ValidationError(
-                "forced risk interrupt handoff must point at `charness-artifacts/spec/*.md`"
-            )
+        if not handoff_artifact.startswith("charness-artifacts/spec/") or not handoff_artifact.endswith(".md"):
+            raise ValidationError("forced risk interrupt handoff must point at `charness-artifacts/spec/*.md`")
 
     return {
         "present": True,
@@ -273,9 +234,7 @@ def parse_spec_interrupt_resolution(spec_path: Path, *, interrupt_id: str) -> di
     }
 
 
-def plan_risk_interrupt(
-    repo_root: Path, changed_paths: list[str] | None = None
-) -> dict[str, object]:
+def plan_risk_interrupt(repo_root: Path, changed_paths: list[str] | None = None) -> dict[str, object]:
     artifact_path = current_debug_artifact_path(repo_root)
     if artifact_path is None or not artifact_path.is_file():
         return {
@@ -312,11 +271,7 @@ def plan_risk_interrupt(
         }
 
     rel_artifact_path = str(artifact_path.relative_to(repo_root))
-    slice_affine = (
-        changed_paths is None
-        or rel_artifact_path in changed
-        or str(interrupt["handoff_artifact"]) in changed
-    )
+    slice_affine = changed_paths is None or rel_artifact_path in changed or str(interrupt["handoff_artifact"]) in changed
     if changed and not slice_affine:
         return {
             "status": "not-applicable",
@@ -342,9 +297,7 @@ def plan_risk_interrupt(
     handoff_path = repo_root / handoff_artifact
     spec_changed = handoff_artifact in changed
     try:
-        resolution = parse_spec_interrupt_resolution(
-            handoff_path, interrupt_id=str(interrupt["interrupt_id"])
-        )
+        resolution = parse_spec_interrupt_resolution(handoff_path, interrupt_id=str(interrupt["interrupt_id"]))
     except ValidationError as exc:
         resolution = None
         resolution_error = str(exc)
@@ -357,9 +310,7 @@ def plan_risk_interrupt(
     if not spec_changed or resolution is None:
         reasons: list[str] = []
         if not spec_changed:
-            reasons.append(
-                "forced interrupt requires a refreshed spec handoff in the current slice"
-            )
+            reasons.append("forced interrupt requires a refreshed spec handoff in the current slice")
         if resolution_error is not None:
             reasons.append(resolution_error)
         return {
@@ -384,5 +335,7 @@ def plan_risk_interrupt(
         "impl_status": resolution["impl_status"],
         "impl_status_reason": resolution["impl_status_reason"],
         "resolved_observation": resolution["resolved_observation"],
-        "reasons": ["forced interrupt is preserved in the refreshed spec artifact"],
+        "reasons": [
+            "forced interrupt is preserved in the refreshed spec artifact"
+        ],
     }
