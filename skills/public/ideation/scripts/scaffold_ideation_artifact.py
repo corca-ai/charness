@@ -27,7 +27,7 @@ VALIDATOR_SCRIPT_NAMES = ("validate_ideation_artifact.py", "validate-ideation-ar
 
 def _load_scaffold_artifact_lib():
     for ancestor in Path(__file__).resolve().parents:
-        candidate = ancestor / "scripts" / "scaffold_artifact_lib.py"
+        candidate = ancestor / "scripts" / "core" / "scaffold_artifact_lib.py"
         if candidate.is_file():
             spec = importlib.util.spec_from_file_location("scaffold_artifact_lib", candidate)
             if spec is None or spec.loader is None:

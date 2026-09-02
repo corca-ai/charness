@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.git_status_snapshot import status_args as git_status_args
+from scripts.core.git_status_snapshot import status_args as git_status_args
 
 from .dup_ratchet_test_support import git as _git
 from .repo_shapes import replace_with_committed_repo

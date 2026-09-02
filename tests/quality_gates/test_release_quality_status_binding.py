@@ -207,8 +207,8 @@ def test_release_quality_seals_a_semantic_one_push_receipt(tmp_path: Path) -> No
         repo / "scripts" / "prepush_quality_receipt.py",
     )
     shutil.copy2(
-        ROOT / "scripts" / "subprocess_guard.py",
-        repo / "scripts" / "subprocess_guard.py",
+        ROOT / "scripts" / "core" / "subprocess_guard.py",
+        repo / "scripts" / "core" / "subprocess_guard.py",
     )
     (repo / "plugins" / "charness" / "plugin.txt").write_text("v1\n", encoding="utf-8")
     replace_with_committed_repo(repo, message="seed")

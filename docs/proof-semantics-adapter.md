@@ -5,7 +5,7 @@
 > Last verified: 2026-09-02
 
 The portable Charness residual/disposition ledger
-([`scripts/disposition_form.py`](../scripts/disposition_form.py)) stays
+([`scripts/core/disposition_form.py`](../scripts/core/disposition_form.py)) stays
 presence/form-enum-only and learns **no** domain proof concept. The **domain
 proof semantics** live entirely in this optional adapter, resolved by
 [`scripts/proof_semantics_adapter_lib.py`](../scripts/proof_semantics_adapter_lib.py).

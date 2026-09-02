@@ -7,10 +7,10 @@ import pytest
 
 from scripts import checkout_view
 from scripts.checkout_view import FactsCheckout, GitCheckout
-from scripts.git_status_snapshot import GitStatusError
-from scripts.git_status_snapshot import capture as capture_status
-from scripts.git_status_snapshot import parse as parse_status
-from scripts.repo_file_listing import git_list_repo_files
+from scripts.core.git_status_snapshot import GitStatusError
+from scripts.core.git_status_snapshot import capture as capture_status
+from scripts.core.git_status_snapshot import parse as parse_status
+from scripts.core.repo_file_listing import git_list_repo_files
 from tests.quality_gates.repo_shapes import install_committed_repo
 
 

@@ -9,9 +9,9 @@ import sys
 from pathlib import Path
 
 try:
-    from scripts.subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:  # executed directly from scripts/
-    from subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 
 CLOSE_KEYWORD_GUARD_BASENAME = "prepush_close_keyword_guard.py"
 # The interpreter is required: `scripts/prepush_close_keyword_guard.py` alone would

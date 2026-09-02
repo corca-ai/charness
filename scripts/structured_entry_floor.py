@@ -24,7 +24,7 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
-_sections = import_repo_module(__file__, "scripts.markdown_sections")
+_sections = import_repo_module(__file__, "scripts.core.markdown_sections")
 ValidationError = _artifact_validator.ValidationError
 
 

@@ -14,10 +14,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
-try:
-    from scripts.subprocess_guard import run_process
-except ModuleNotFoundError:  # loaded as a standalone sibling module
-    from subprocess_guard import run_process
+from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 try:
     from scripts.yaml_output import emit_yaml

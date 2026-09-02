@@ -221,7 +221,7 @@ def test_an_empty_quote_is_unresolvable_never_verified(tmp_path: Path) -> None:
 def _git_repo_with_source(tmp_path: Path) -> str:
     """A repo whose committed `adapter.py` carries `QUOTED` and whose WORKTREE no longer
     does -- the living-document rot the pin exists for."""
-    from scripts.git_checkout import head_oid_from_files
+    from scripts.core.git_checkout import head_oid_from_files
     from tests.quality_gates.repo_shapes import install_committed_repo
 
     install_committed_repo(tmp_path, {"adapter.py": SOURCE_BODY})

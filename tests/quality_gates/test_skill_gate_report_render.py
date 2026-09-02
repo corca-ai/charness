@@ -1,7 +1,7 @@
 """Direct cover for the shared skill-gate report renderer.
 
 This module is the one #467's blocking signal named
-(`scripts/skill_gate_report_render.py:31`, `blocked = status == "blocked"`), and
+(`scripts/core/skill_gate_report_render.py:31`, `blocked = status == "blocked"`), and
 it had no test of any kind. Both production callers
 (`check_skill_surface_preflight.py`, `skill_issue_anchor_scan.py`) pass `blocked`
 explicitly, so the default-derivation branch is unreachable through either of
@@ -14,7 +14,7 @@ import importlib.util
 
 from .support import ROOT
 
-MODULE_PATH = ROOT / "scripts" / "skill_gate_report_render.py"
+MODULE_PATH = ROOT / "scripts" / "core" / "skill_gate_report_render.py"
 
 
 def _render():

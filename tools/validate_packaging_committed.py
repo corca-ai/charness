@@ -10,9 +10,9 @@ from pathlib import Path
 from types import SimpleNamespace
 
 try:
-    from scripts.subprocess_guard import run_monitored_phase, run_process
+    from scripts.core.subprocess_guard import run_monitored_phase, run_process
 except ModuleNotFoundError:  # executed directly from scripts/
-    from subprocess_guard import run_monitored_phase, run_process
+    from scripts.core.subprocess_guard import run_monitored_phase, run_process
 
 
 class ValidationError(Exception):

@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-import scripts.script_timeout as script_timeout
-from scripts.script_timeout import resolve_timeout_seconds
+import scripts.core.script_timeout as script_timeout
+from scripts.core.script_timeout import resolve_timeout_seconds
 
 ROOT = Path(__file__).resolve().parents[1]
 

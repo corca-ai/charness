@@ -144,7 +144,7 @@ The "use the repo's own copy" rule above is now enforced, not just documented.
 Write helpers that persist repo state — `refresh_recent_lessons.py`,
 `persist_retro_artifact.py`, `build_debug_seam_risk_index.py` — call
 `require_repo_local_helper` from
-`<plugin-dir>/scripts/helper_provenance_lib.py`
+`<plugin-dir>/scripts/core/helper_provenance_lib.py`
 before doing any work. `build_retro_lesson_selection_index.py` is guarded
 indirectly and later, at the moment `recent_lessons_lib` writes;
 `publish_release.py` is guarded at the entrypoint instead (below).
@@ -232,7 +232,7 @@ export CHARNESS_SUPPORT_DIR=packages/charness-support
 ```
 
 The override is read by `support_dir()` in
-`<plugin-dir>/scripts/repo_layout.py` and flows through
+`<plugin-dir>/scripts/core/repo_layout.py` and flows through
 `load_support_capability_schema()` / `load_support_capabilities()`.
 Default layouts need no override.
 

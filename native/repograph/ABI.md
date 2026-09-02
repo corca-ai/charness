@@ -998,7 +998,7 @@ profiles/**/*.md
 skills/**/*.md
 ```
 
-The Markdown walk follows `scripts.markdown_doc_scan.iter_doc_lines`: leading
+The Markdown walk follows `scripts.core.markdown_doc_scan.iter_doc_lines`: leading
 whitespace does not matter for a fence; an opening run has at least three
 backticks or tildes, and only the same marker character with a run at least as
 long closes it. Fence delimiters are consumed, mismatched marker characters do

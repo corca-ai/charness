@@ -7,10 +7,10 @@ import re
 from pathlib import Path
 
 try:
-    from scripts.repo_file_listing import iter_matching_repo_files
+    from scripts.core.repo_file_listing import iter_matching_repo_files
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:
-    from repo_file_listing import iter_matching_repo_files
+    from scripts.core.repo_file_listing import iter_matching_repo_files
 
     from yaml_output import emit_yaml
 

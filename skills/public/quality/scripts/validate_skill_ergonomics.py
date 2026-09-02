@@ -50,7 +50,7 @@ iter_skill_paths = _inventory_skill_ergonomics_module.iter_skill_paths
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 _scripts_quality_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
 load_adapter = _scripts_quality_adapter_lib_module.load_quality_adapter_strict
-_vendored_path_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.vendored_path_lib")
+_vendored_path_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.core.vendored_path_lib")
 
 RULE_HEURISTICS = {
     "long_core": ("long_core",),

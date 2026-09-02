@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import scaffold_artifact_lib
+from scripts.core import scaffold_artifact_lib
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
 
@@ -27,7 +27,7 @@ COLLECT_COMMITS = load_script_module(
     "collect_commits_batch1", ROOT / "skills/public/announcement/scripts/collect_commits.py"
 )
 # --------------------------------------------------------------------------
-# scripts/scaffold_artifact_lib.py
+# scripts/core/scaffold_artifact_lib.py
 # --------------------------------------------------------------------------
 
 

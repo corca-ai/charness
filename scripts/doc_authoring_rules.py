@@ -23,7 +23,7 @@ from runtime_bootstrap import import_repo_module
 _preflight = import_repo_module(__file__, "scripts.check_doc_authoring_preflight")
 _doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 _inline_code = import_repo_module(__file__, "scripts.check_markdown_inline_code")
-_markdown_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
+_markdown_scan = import_repo_module(__file__, "scripts.core.markdown_doc_scan")
 
 # Re-exported so a caller catches the class THIS module actually raises. Run as
 # `__main__`, the preflight script defines its own copy of the exception, and a

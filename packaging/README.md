@@ -31,5 +31,5 @@ into host-specific plugin surfaces.
   from the shared manifest
 - `scripts/sync_root_plugin_manifests.py` refreshes the materialized plugin
   export and root marketplace files
-- `scripts/bootstrap_runtime.py` creates or reuses the managed checkout's
+- `scripts/core/bootstrap_runtime.py` creates or reuses the managed checkout's
   isolated Python runtime for install/update/bootstrap commands

@@ -15,7 +15,7 @@ try:
 except ImportError:  # yaml_output has the same JSON fallback on minimal hosts
     yaml = None
 
-from scripts.subprocess_guard import run_process
+from scripts.core.subprocess_guard import run_process
 from scripts.yaml_output import emit_yaml, render_yaml
 
 BASELINE_RELATIVE_PATH = "charness-artifacts/quality/2026-09-02-gate-universes-before-770.yaml"

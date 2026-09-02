@@ -2,7 +2,7 @@
 
 The library had no test file of its own: every behavior was proven only through
 `check_documented_command_flags`, which reaches it via
-`import_repo_module(__file__, "scripts.argparse_surface_lib")` -- a DOTTED module
+`import_repo_module(__file__, "scripts.core.argparse_surface_lib")` -- a DOTTED module
 name, not a path literal, so the changed-line selector could not map it and its
 changed lines went unanalyzed locally while the remote broad mirror judged them.
 That is the same false-absence the 2026-08-09 remote-CI reconciliation contract
@@ -23,11 +23,11 @@ from runtime_bootstrap import import_repo_module
 
 from .support import ROOT
 
-_lib = import_repo_module(ROOT / "scripts/argparse_surface_lib.py", "scripts.argparse_surface_lib")
+_lib = import_repo_module(ROOT / "scripts/core/argparse_surface_lib.py", "scripts.core.argparse_surface_lib")
 _probe_lib = import_repo_module(
-    ROOT / "scripts/argparse_help_probe.py", "scripts.argparse_help_probe"
+    ROOT / "scripts/core/argparse_help_probe.py", "scripts.core.argparse_help_probe"
 )
-_emit = import_repo_module(ROOT / "scripts/gate_report_emit.py", "scripts.gate_report_emit")
+_emit = import_repo_module(ROOT / "scripts/core/gate_report_emit.py", "scripts.core.gate_report_emit")
 
 # The two renderings of a choice set argparse produces. Only the second is a
 # claim about what the next positional slot accepts.

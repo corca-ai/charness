@@ -6,8 +6,8 @@ import tokenize
 from pathlib import Path
 from typing import Any
 
-from scripts.repo_file_listing import iter_repo_files
-from scripts.vendored_path_lib import is_vendored, vendored_prefixes
+from scripts.core.repo_file_listing import iter_repo_files
+from scripts.core.vendored_path_lib import is_vendored, vendored_prefixes
 
 IGNORED_PARTS = {
     ".git",

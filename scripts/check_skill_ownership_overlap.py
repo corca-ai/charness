@@ -33,10 +33,10 @@ try:
 except ModuleNotFoundError:
     from yaml_output import emit_yaml
 
-try:
-    from scripts.waiver_file_lines import iter_waiver_lines
-except ModuleNotFoundError:
-    from waiver_file_lines import iter_waiver_lines
+from runtime_bootstrap import import_repo_module
+
+_waiver_file_lines = import_repo_module(__file__, "scripts.core.waiver_file_lines")
+iter_waiver_lines = _waiver_file_lines.iter_waiver_lines
 
 ART_RE = re.compile(r"charness-artifacts/([a-z][a-z0-9-]*)/")
 ADP_RE = re.compile(r"\.agents/([a-z][a-z0-9-]*)-adapter\.yaml")

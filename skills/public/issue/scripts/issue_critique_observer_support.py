@@ -14,14 +14,14 @@ from datetime import date
 from pathlib import Path
 
 try:
-    from scripts import subprocess_guard as _subprocess_guard
-    from scripts.subprocess_guard import run_process
+    from scripts.core import subprocess_guard as _subprocess_guard
+    from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:
     _scripts_dir = next(
         (
             ancestor / "scripts"
             for ancestor in (Path(__file__).resolve(), *Path(__file__).resolve().parents)
-            if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+            if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
         ),
         None,
     )
@@ -29,8 +29,8 @@ except ModuleNotFoundError:
         raise
     if str(_scripts_dir) not in sys.path:
         sys.path.insert(0, str(_scripts_dir))
-    import subprocess_guard as _subprocess_guard
-    from subprocess_guard import run_process
+    import scripts.core.subprocess_guard as _subprocess_guard
+    from scripts.core.subprocess_guard import run_process
 
 subprocess = _subprocess_guard.subprocess
 
@@ -59,9 +59,9 @@ def artifact_observed_date(path: Path, text: str) -> date | None:
 
 def _path_is_tracked(root: Path, relative: str) -> bool:
     try:
-        from scripts.repo_file_listing import RepoFileSnapshot
+        from scripts.core.repo_file_listing import RepoFileSnapshot
     except ModuleNotFoundError:
-        from repo_file_listing import RepoFileSnapshot
+        from scripts.core.repo_file_listing import RepoFileSnapshot
     listed = RepoFileSnapshot(root).list_files(include_untracked=False)
     return listed is not None and (root / relative) in listed
 

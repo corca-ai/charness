@@ -55,7 +55,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 run_process = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.subprocess_guard"
+    __file__, "scripts.core.subprocess_guard"
 ).run_process
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")

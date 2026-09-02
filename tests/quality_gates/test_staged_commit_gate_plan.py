@@ -40,7 +40,7 @@ def _labels(paths: list[str]) -> list[str]:
 def test_staged_commit_plan_includes_commit_only_python_gates() -> None:
     # A path that EXISTS: since A3 the per-file gates take only staged paths still
     # on disk, so a synthetic name is filtered before it can be planned.
-    labels = _labels(["scripts/helper_provenance_lib.py"])
+    labels = _labels(["scripts/core/helper_provenance_lib.py"])
 
     assert "check-staged-reversion" in labels
     assert "check-git-identity" in labels
@@ -502,7 +502,7 @@ def test_staged_commit_gate_plan_cli_emits_the_planned_labels() -> None:
         "--repo-root",
         str(ROOT),
         "--paths",
-        "scripts/helper_provenance_lib.py",
+        "scripts/core/helper_provenance_lib.py",
         "--no-ruff",
     )
     assert no_ruff_result.returncode == 0, no_ruff_result.stderr
@@ -514,7 +514,7 @@ def test_staged_commit_gate_plan_cli_emits_the_planned_labels() -> None:
     assert no_ruff_labels == [
         command.label
         for command in staged_commit_gate_plan(
-            ROOT, ["scripts/helper_provenance_lib.py"], ruff_path=""
+            ROOT, ["scripts/core/helper_provenance_lib.py"], ruff_path=""
         )
     ]
     assert "check-python-lengths (staged)" in no_ruff_labels
@@ -584,7 +584,7 @@ def test_a_scope_path_never_reaches_a_per_file_validator() -> None:
     something to be false against."""
 
     present = [
-        "scripts/helper_provenance_lib.py",
+        "scripts/core/helper_provenance_lib.py",
         "skills/public/critique/SKILL.md",
         "charness-artifacts/critique/2026-07-27-provenance-containment.md",
     ]
@@ -711,10 +711,10 @@ def test_a_renamed_and_edited_file_still_gets_its_per_file_gates() -> None:
     file — new content, present on disk — got no py_compile, no ruff, no length check.
     The existing-file list is derived from scope now, not queried separately."""
 
-    scope = ["scripts/gone_source.py", "scripts/helper_provenance_lib.py"]
+    scope = ["scripts/gone_source.py", "scripts/core/helper_provenance_lib.py"]
     plan = staged_commit_gate_plan(ROOT, scope_paths=scope, ruff_path="/bin/true")
     compile_gate = next(c for c in plan if c.label == "py_compile (staged)")
-    assert compile_gate.argv == ("python3", "-m", "py_compile", "scripts/helper_provenance_lib.py")
+    assert compile_gate.argv == ("python3", "-m", "py_compile", "scripts/core/helper_provenance_lib.py")
 
 
 def test_surface_validators_are_presence_guarded_on_their_own_script(tmp_path: Path) -> None:

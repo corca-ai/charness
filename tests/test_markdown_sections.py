@@ -1,4 +1,4 @@
-"""The shared structured-entry grammar (`scripts/markdown_sections.py`).
+"""The shared structured-entry grammar (`scripts/core/markdown_sections.py`).
 
 `parse_pipe_entry` is the ONE reader behind both the critique `## Structured
 Findings` floor and the ideation `## Structured Questions` floor. Sharing it is
@@ -9,7 +9,7 @@ not to whichever one happened to exercise them.
 
 from __future__ import annotations
 
-from scripts import markdown_sections
+from scripts.core import markdown_sections
 
 
 def test_parse_pipe_entry_returns_no_fields_for_a_contentless_bullet() -> None:

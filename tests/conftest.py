@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.repo_file_listing import (
+from scripts.core.repo_file_listing import (
     RepoFileSnapshot,
     bind_subject_listing,
     unbind_subject_listing,

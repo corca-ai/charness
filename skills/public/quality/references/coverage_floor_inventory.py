@@ -22,9 +22,9 @@ import sys
 from pathlib import Path
 
 try:
-    from scripts.repo_file_listing import RepoFileListingError, RepoFileSnapshot
+    from scripts.core.repo_file_listing import RepoFileListingError, RepoFileSnapshot
 except ModuleNotFoundError:
-    from repo_file_listing import RepoFileListingError, RepoFileSnapshot
+    from scripts.core.repo_file_listing import RepoFileListingError, RepoFileSnapshot
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 POLICY = {

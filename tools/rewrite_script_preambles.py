@@ -33,7 +33,7 @@ _BARE_IMPORT = re.compile(
     r"^(?P<indent>\s*)from (?P<module>runtime_bootstrap|yaml_output) import\b"
 )
 _REPO_IMPORT = re.compile(
-    r"^\s*from (?:scripts\.)?(?:runtime_bootstrap|yaml_output) import\b",
+    r"^\s*(?:from scripts(?:\.|\s+import)|import scripts(?:\.|\s))",
     re.MULTILINE,
 )
 

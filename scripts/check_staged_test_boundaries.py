@@ -29,7 +29,7 @@ from typing import Iterable
 from runtime_bootstrap import import_repo_module
 from yaml_output import emit_yaml
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
 SCHEMA_VERSION = "charness.quality.staged_test_boundary_advisory.v1"

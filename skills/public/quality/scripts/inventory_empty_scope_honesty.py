@@ -80,7 +80,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 run_process = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.subprocess_guard"
+    __file__, "scripts.core.subprocess_guard"
 ).run_process
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 sys.path.insert(0, str(Path(__file__).resolve().parent))

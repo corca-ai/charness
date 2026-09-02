@@ -42,7 +42,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_monitored_phase = _subprocess_guard.run_monitored_phase
 _quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
 load_quality_adapter = _quality_adapter.load_quality_adapter

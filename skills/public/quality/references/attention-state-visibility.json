@@ -303,7 +303,7 @@
       ],
       "rationale": "Filtered mutation work is summarized by inspected and skipped counts."
     },
-    "scripts/gate_report_emit.py": {
+    "scripts/core/gate_report_emit.py": {
       "states": [
         "skipped"
       ],

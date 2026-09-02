@@ -11,7 +11,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
+_scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.core.repo_file_listing")
 iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
 
 PRESET_NAME_RE = r"^[a-z0-9]+(?:-[a-z0-9]+)*$"

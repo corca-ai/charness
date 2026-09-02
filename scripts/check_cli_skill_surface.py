@@ -13,7 +13,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_monitored_phase = _subprocess_guard.run_monitored_phase
 REQUIRED_PRODUCT_SURFACES = {"installable_cli", "bundled_skill"}
 DEFAULT_COMMAND_DOCS = (".agents/command-docs.yaml",)

@@ -50,7 +50,7 @@ from scripts.mutation_sampling_lib import (  # noqa: E402
     select_test_nodeids,
 )
 from scripts.quality_universes_lib import DEFAULT_UNIVERSES  # noqa: E402
-from scripts.subprocess_guard import run_process  # noqa: E402
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 
 DEFAULT_MAX_FILES = 10
 DEFAULT_CHANGED_QUOTA = 5

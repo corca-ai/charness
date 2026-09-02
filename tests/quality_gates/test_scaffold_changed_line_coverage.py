@@ -42,7 +42,7 @@ from mutation_sampling_lib import (  # noqa: E402
 # subprocess-only tests left uncovered and that the in-process test now drives.
 # Re-resolved structurally below so a line shift does not silently pass.
 SCAFFOLDS = ["critique", "debug", "ideation", "quality", "retro"]
-SCAFFOLD_HELPER_REL = "scripts/scaffold_artifact_lib.py"
+SCAFFOLD_HELPER_REL = "scripts/core/scaffold_artifact_lib.py"
 
 
 def _scaffold_rel(slug: str) -> str:

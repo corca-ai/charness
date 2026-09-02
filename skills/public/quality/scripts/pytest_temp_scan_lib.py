@@ -18,16 +18,16 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from scripts import subprocess_guard as _subprocess_guard
+    from scripts.core import subprocess_guard as _subprocess_guard
 except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
     _scripts_dir = next(
         ancestor / "scripts"
         for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
     )
     if str(_scripts_dir) not in sys.path:
         sys.path.insert(0, str(_scripts_dir))
-    import subprocess_guard as _subprocess_guard
+    import scripts.core.subprocess_guard as _subprocess_guard
 
 _guard_run_process = _subprocess_guard.run_process
 subprocess = _subprocess_guard.subprocess

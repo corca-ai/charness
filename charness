@@ -36,7 +36,7 @@ TOOL_SUPPORT_FAILURE_STATUSES = frozenset({"failed", "error", "runner_error", "i
 TOOL_DOCTOR_FAILURE_STATUSES = frozenset({"failed", "unhealthy", "not-ready"})
 SCRIPT_PATH = Path(__file__).resolve()
 EMBEDDED_REPO_ROOT = SCRIPT_PATH.parent if (SCRIPT_PATH.parent / "packaging" / f"{PACKAGE_ID}.json").is_file() else None
-BOOTSTRAP_RUNTIME_RELATIVE_PATH = "scripts/bootstrap_runtime.py"
+BOOTSTRAP_RUNTIME_RELATIVE_PATH = "scripts/core/bootstrap_runtime.py"
 _BOOTSTRAP_PYTHON_CACHE: dict[str, str] = {}
 
 
@@ -147,7 +147,7 @@ def parse_repo_script_payload(stdout: str, source: str) -> object:
         raise CharnessError(
             f"`{source}` returned a YAML payload and PyYAML is not importable by this interpreter "
             f"({sys.executable}).\nInstall PyYAML for it, or run the command through the managed "
-            "runtime (`python3 scripts/bootstrap_runtime.py --repo-root . --print-python`)."
+            "runtime (`python3 scripts/core/bootstrap_runtime.py --repo-root . --print-python`)."
         ) from exc
     try:
         return yaml.safe_load(stdout)
@@ -426,7 +426,7 @@ def compare_semver_like(left: object, right: object) -> int | None:
 
 
 def bool_env(name: str) -> bool:
-    # The FIFTH copy of the table owned by `scripts/env_bypass.py`, and the one
+    # The FIFTH copy of the table owned by `scripts/core/env_bypass.py`, and the one
     # copy that cannot import its owner. This file is the installed standalone
     # CLI: `source_root` above returns None when no charness source tree is
     # present, so `scripts` is not importable here in the case this entry point
@@ -435,7 +435,7 @@ def bool_env(name: str) -> bool:
     # It is still the same contract, so it keeps the same allowlist: bare
     # truthiness would make `CHARNESS_NO_UPDATE_CHECK=0` -- the spelling an
     # operator uses to keep the check ON -- switch it off. If the table in
-    # `scripts/env_bypass.py` ever changes, change it here too.
+    # `scripts/core/env_bypass.py` ever changes, change it here too.
     return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
 

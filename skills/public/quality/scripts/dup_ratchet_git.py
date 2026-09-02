@@ -20,22 +20,22 @@ import sys
 from pathlib import Path
 
 try:
-    from scripts.subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
     _scripts_dir = next(
         ancestor / "scripts"
         for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
     )
     if str(_scripts_dir) not in sys.path:
         sys.path.insert(0, str(_scripts_dir))
-    from subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 
 
 def _ensure_scripts_package() -> None:
     here = Path(__file__).resolve()
     for candidate in (here, *here.parents):
-        if (candidate / "scripts" / "git_checkout.py").is_file():
+        if (candidate / "scripts" / "core" / "git_checkout.py").is_file():
             root = str(candidate)
             if root not in sys.path:
                 sys.path.insert(0, root)
@@ -43,11 +43,11 @@ def _ensure_scripts_package() -> None:
 
 
 _ensure_scripts_package()
-from scripts.git_checkout import discoverable as _git_metadata_is_discoverable  # noqa: E402
-from scripts.git_status_snapshot import GitStatusError  # noqa: E402
-from scripts.git_status_snapshot import parse as parse_git_status  # noqa: E402
-from scripts.git_status_snapshot import status_args as git_status_args  # noqa: E402
-from scripts.repo_file_listing import RepoFileSnapshot  # noqa: E402
+from scripts.core.git_checkout import discoverable as _git_metadata_is_discoverable  # noqa: E402
+from scripts.core.git_status_snapshot import GitStatusError  # noqa: E402
+from scripts.core.git_status_snapshot import parse as parse_git_status  # noqa: E402
+from scripts.core.git_status_snapshot import status_args as git_status_args  # noqa: E402
+from scripts.core.repo_file_listing import RepoFileSnapshot  # noqa: E402
 
 
 def _git_output(repo_root: Path, args: list[str]) -> tuple[int, str]:

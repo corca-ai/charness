@@ -19,10 +19,24 @@ import os
 from collections.abc import Callable
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module
 
-_argparse_surface = import_repo_module(__file__, "scripts.argparse_surface_lib")
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+
+_argparse_surface = import_repo_module(__file__, "scripts.core.argparse_surface_lib")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_processes_in_order = _subprocess_guard.run_processes_in_order
 
 # argparse wraps to the terminal width, and a wrapped line can put an option name

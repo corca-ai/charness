@@ -79,7 +79,7 @@ from scripts import changed_line_verdict_codes as _verdict_codes  # noqa: E402
 from scripts import mutation_coverage_producer as _producer  # noqa: E402
 from scripts import suggest_mutation_coverage_command as _suggest  # noqa: E402
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
-from scripts.subprocess_guard import run_monitored_phase  # noqa: E402
+from scripts.core.subprocess_guard import run_monitored_phase  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 NO_VERDICT_EXIT = _verdict_codes.REFUSED_EXIT

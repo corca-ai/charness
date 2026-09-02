@@ -20,7 +20,7 @@ from typing import Iterable
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
 CONFIDENCE_RANK = {"low": 1, "medium": 2, "high": 3}

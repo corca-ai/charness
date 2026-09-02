@@ -81,8 +81,8 @@ def write_lesson_selection_index(
     # An installed-plugin copy of this module once emitted an older schema into a
     # source tree whose own gate then rejected it. Guarding the writer rather than
     # each CLI above it covers every caller.
-    # See scripts/helper_provenance_lib.py.
-    from scripts.helper_provenance_lib import require_repo_local_helper
+    # See scripts/core/helper_provenance_lib.py.
+    from scripts.core.helper_provenance_lib import require_repo_local_helper
 
     require_repo_local_helper(__file__, repo_root)
     payload = build_lesson_selection_index(

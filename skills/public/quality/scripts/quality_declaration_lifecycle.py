@@ -18,9 +18,10 @@ COMMAND_FIELDS = (
 
 
 def _repo_module(name: str):
+    parts = name.split(".")
+    module_path = Path(*parts[:-1]) / f"{parts[-1]}.py"
     for ancestor in Path(__file__).resolve().parents:
-        module_root = name.split(".", 1)[0] if "." in name else "scripts"
-        if (ancestor / module_root / f"{name.rsplit('.', 1)[-1]}.py").is_file():
+        if (ancestor / module_path).is_file():
             root = str(ancestor)
             if root not in sys.path:
                 sys.path.insert(0, root)
@@ -75,7 +76,7 @@ def _load_skill_scope():
     return module
 
 
-_REPO_FILE_LISTING = _repo_module("scripts.repo_file_listing")
+_REPO_FILE_LISTING = _repo_module("scripts.core.repo_file_listing")
 _CATALOG_APPLICABILITY = _load_catalog_applicability()
 _SKILL_SCOPE = _load_skill_scope()
 

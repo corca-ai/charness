@@ -21,22 +21,22 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from scripts import subprocess_guard as _subprocess_guard
-    from scripts.subprocess_guard import run_process
+    from scripts.core import subprocess_guard as _subprocess_guard
+    from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:
     _scripts_dir = next(
         (
             ancestor / "scripts"
             for ancestor in (Path(__file__).resolve(), *Path(__file__).resolve().parents)
-            if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+            if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
         ),
         None,
     )
     if _scripts_dir is None:
         raise
     sys.path.insert(0, str(_scripts_dir))
-    import subprocess_guard as _subprocess_guard
-    from subprocess_guard import run_process
+    import scripts.core.subprocess_guard as _subprocess_guard
+    from scripts.core.subprocess_guard import run_process
 
 subprocess = _subprocess_guard.subprocess
 

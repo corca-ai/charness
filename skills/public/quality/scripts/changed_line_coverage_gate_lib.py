@@ -25,11 +25,11 @@ from pathlib import Path
 from typing import Callable, NamedTuple
 
 try:
-    from scripts.subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
     _scripts = (p / "scripts" for p in Path(__file__).resolve().parents)
     sys.path.insert(0, str(next(d for d in _scripts if (d / "subprocess_guard.py").is_file())))
-    from subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 
 
 class GitUnavailable(RuntimeError):

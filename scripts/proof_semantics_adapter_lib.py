@@ -1,7 +1,7 @@
 """Proof-semantics adapter loader + validator (the #339 adapter boundary).
 
 Charness asks; the adapter answers. The portable residual/disposition ledger
-(``scripts/disposition_form.py``) stays presence/form-enum-only and learns NO
+(``scripts/core/disposition_form.py``) stays presence/form-enum-only and learns NO
 domain concept. The DOMAIN proof semantics live entirely in this OPTIONAL adapter,
 which declares:
 

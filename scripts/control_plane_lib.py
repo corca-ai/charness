@@ -16,16 +16,16 @@ from packaging.specifiers import InvalidSpecifier, SpecifierSet
 from packaging.version import InvalidVersion, Version
 
 from runtime_bootstrap import import_repo_module
-from scripts.repo_layout import (
+from scripts.core.repo_layout import (
     integrations_locks_dir,
     integrations_tools_dir,
     support_capability_paths,
     support_capability_schema_path,
 )
-from scripts.repo_path_display import display_path
+from scripts.core.repo_path_display import display_path
 from scripts.runtime_bootstrap import repo_root_from_script
 
-run_process = import_repo_module(__file__, "scripts.subprocess_guard").run_process
+run_process = import_repo_module(__file__, "scripts.core.subprocess_guard").run_process
 
 LOCKS_DIR = Path("integrations/locks")
 SEMVER_RE = re.compile(r"(?<!\d)\d+(?:\.\d+){1,}(?!\d)")

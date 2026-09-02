@@ -15,7 +15,7 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
-_skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
+_skill_markdown_lib = import_repo_module(__file__, "scripts.core.skill_markdown_lib")
 ValidationError = _artifact_validator.ValidationError
 
 SKILL_ERGONOMICS_COUNT_RE = re.compile(

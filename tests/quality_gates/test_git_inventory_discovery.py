@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.repo_file_listing import (
+from scripts.core.repo_file_listing import (
     RepoFileSnapshot,
     bind_subject_listing,
     unbind_subject_listing,
@@ -77,7 +77,7 @@ def test_visible_repo_files_reuses_a_bound_subject_listing(
     tracked.write_text("x\n", encoding="utf-8")
     calls = 0
 
-    from scripts import repo_file_listing as listing
+    from scripts.core import repo_file_listing as listing
 
     def counted(*_args, **_kwargs):
         nonlocal calls

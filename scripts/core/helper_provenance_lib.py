@@ -33,16 +33,31 @@ from types import ModuleType
 from typing import Iterable
 
 # Dual-path, like every other consumer of this helper. A bare
-# `from scripts.env_bypass import ...` turned a module whose imports were
+# `from scripts.core.env_bypass import ...` turned a module whose imports were
 # stdlib-only into one that requires `scripts` to be importable AS A PACKAGE.
 # This module is mirrored into the exported plugin tree and is also imported
 # FLAT by callers that put `scripts/` itself on `sys.path`
 # (`tests/test_degradation_branch_coverage.py` does exactly that, and survived
 # only because pytest independently puts the repo root on `sys.path` too).
+
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 try:
-    from scripts.env_bypass import env_bypass_enabled
+    from scripts.core.env_bypass import env_bypass_enabled
 except ModuleNotFoundError:
-    from env_bypass import env_bypass_enabled
+    from scripts.core.env_bypass import env_bypass_enabled
 
 OVERRIDE_ENV = "CHARNESS_ALLOW_FOREIGN_HELPER"
 SOURCE_TREE_MARKER = Path("packaging") / "charness.json"

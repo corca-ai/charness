@@ -16,7 +16,7 @@ from string import Template
 def _ensure_scripts_package() -> None:
     here = Path(__file__).resolve()
     for candidate in (here, *here.parents):
-        if (candidate / "scripts" / "git_checkout.py").is_file():
+        if (candidate / "scripts" / "core" / "git_checkout.py").is_file():
             root = str(candidate)
             if root not in sys.path:
                 sys.path.insert(0, root)
@@ -24,9 +24,9 @@ def _ensure_scripts_package() -> None:
 
 
 _ensure_scripts_package()
-from scripts import subprocess_guard as _subprocess_guard  # noqa: E402
-from scripts.git_checkout import discoverable as _git_metadata_is_discoverable  # noqa: E402
-from scripts.subprocess_guard import run_process  # noqa: E402
+from scripts.core import subprocess_guard as _subprocess_guard
+from scripts.core.git_checkout import discoverable as _git_metadata_is_discoverable  # noqa: E402
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 
 subprocess = _subprocess_guard.subprocess
 

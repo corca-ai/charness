@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts import git_checkout as checkout
-from scripts.git_status_snapshot import GitStatusError
-from scripts.git_status_snapshot import capture as capture_status
+from scripts.core import git_checkout as checkout
+from scripts.core.git_status_snapshot import GitStatusError
+from scripts.core.git_status_snapshot import capture as capture_status
 from tests.quality_gates.repo_shapes import install_committed_repo
 
 

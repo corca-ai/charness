@@ -19,7 +19,7 @@ from typing import Any
 from runtime_bootstrap import import_repo_module
 from scripts.critique_adapter_lib import adapter_has_sections
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_monitored_phase = _subprocess_guard.run_monitored_phase
 
 PACKET_KIND = "charness.critique_prepare_packet"

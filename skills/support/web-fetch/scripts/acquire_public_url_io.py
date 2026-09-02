@@ -6,13 +6,13 @@ from typing import Sequence
 from url_reader import read_url
 
 try:
-    from scripts import subprocess_guard as _subprocess_guard
+    from scripts.core import subprocess_guard as _subprocess_guard
 except ModuleNotFoundError:
     _scripts_dir = next(
         (
             ancestor / "scripts"
             for ancestor in (Path(__file__).resolve(), *Path(__file__).resolve().parents)
-            if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+            if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
         ),
         None,
     )
@@ -22,7 +22,7 @@ except ModuleNotFoundError:
         import sys
 
         sys.path.insert(0, str(_scripts_dir))
-        import subprocess_guard as _subprocess_guard
+        import scripts.core.subprocess_guard as _subprocess_guard
 
 run_process = _subprocess_guard.run_process if _subprocess_guard is not None else None
 

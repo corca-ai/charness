@@ -14,7 +14,7 @@ ValidationError = _artifact_validator.ValidationError
 # both missed the bullet form the corpus writes, so "is this critique packet-bound"
 # had two answers that could drift independently.
 _scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
-_sections = import_repo_module(__file__, "scripts.markdown_sections")
+_sections = import_repo_module(__file__, "scripts.core.markdown_sections")
 PACKET_CONSUMED_RE = _scope.PACKET_CONSUMED_RE
 packet_consumed = _scope.packet_consumed
 EXPECTED_KIND = "charness.critique_prepare_packet"

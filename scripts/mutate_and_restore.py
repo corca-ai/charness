@@ -77,10 +77,10 @@ from mutation_recovery import (
     termination_handlers,
 )
 
-try:
-    from scripts.subprocess_guard import run_monitored_phase
-except ModuleNotFoundError:
-    from subprocess_guard import run_monitored_phase
+from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
+run_monitored_phase = _subprocess_guard.run_monitored_phase
 
 from yaml_output import emit_yaml
 

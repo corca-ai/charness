@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from scripts.skill_iter import iter_skill_ids
+from scripts.core.skill_iter import iter_skill_ids
 
 VALID_TIERS = ("smoke-only", "hitl-recommended", "evaluator-required")
 VALID_ADAPTER_REQUIREMENTS = ("required", "adapter-free")

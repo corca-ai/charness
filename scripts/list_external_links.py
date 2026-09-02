@@ -7,10 +7,10 @@ import re
 from pathlib import Path
 from urllib.parse import urlsplit
 
-try:
-    from scripts.repo_file_listing import iter_repo_files
-except ModuleNotFoundError:
-    from repo_file_listing import iter_repo_files
+from runtime_bootstrap import import_repo_module
+
+_repo_file_listing = import_repo_module(__file__, "scripts.core.repo_file_listing")
+iter_repo_files = _repo_file_listing.iter_repo_files
 
 TEXT_SUFFIXES = {".md", ".json", ".yaml", ".yml", ".jsonc", ".toml"}
 SKIP_DIR_NAMES = {".git", ".charness", "node_modules", ".pytest_cache", "charness-artifacts", "__pycache__"}

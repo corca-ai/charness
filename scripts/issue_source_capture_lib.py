@@ -36,7 +36,7 @@ from scripts.issue_source_normalize_lib import (
     sha256_text,
 )
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
 CAPTURE_TOOL = "scripts/capture_issue_source.py"

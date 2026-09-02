@@ -173,8 +173,8 @@ def _expand_pattern(repo_root: Path, pattern: str) -> tuple[list[Path], list[str
 
 
 def _changed_markdown_paths(repo_root: Path) -> tuple[set[str], list[str]]:
-    from scripts.git_status_snapshot import GitStatusError
-    from scripts.git_status_snapshot import capture as capture_git_status
+    from scripts.core.git_status_snapshot import GitStatusError
+    from scripts.core.git_status_snapshot import capture as capture_git_status
 
     try:
         snapshot = capture_git_status(repo_root)

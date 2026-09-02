@@ -8,7 +8,7 @@ import pytest
 
 from scripts import reviewed_input_identity as identity_lib
 from scripts import reviewed_input_verification as verification_lib
-from scripts.git_status_snapshot import parse as parse_status
+from scripts.core.git_status_snapshot import parse as parse_status
 from scripts.reviewed_input_worktree import WorkingTreeSnapshot
 from tests.quality_gates.repo_shapes import install_two_commit_repo
 
@@ -59,7 +59,7 @@ def test_clean_worktree_identity_skips_empty_patch_processes(
         repo_root=tmp_path, reviewed_paths=["reviewed.txt"]
     )
 
-    from scripts.git_status_snapshot import status_args
+    from scripts.core.git_status_snapshot import status_args
 
     assert captured["status"] == "captured"
     assert calls == [status_args()]
@@ -139,7 +139,7 @@ def test_status_snapshot_derives_only_conservative_patch_dirty_bits() -> None:
 
 
 def test_unknown_status_record_fails_closed() -> None:
-    from scripts.git_status_snapshot import GitStatusError
+    from scripts.core.git_status_snapshot import GitStatusError
 
     with pytest.raises(GitStatusError, match="unexpected git status record"):
         parse_status(b"# branch.oid " + (b"a" * 40) + b"\0unknown\0")

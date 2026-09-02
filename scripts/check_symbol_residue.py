@@ -11,14 +11,14 @@ from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
 try:
-    from scripts.repo_file_listing import RepoFileSnapshot
+    from scripts.core.repo_file_listing import RepoFileSnapshot
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:
-    from repo_file_listing import RepoFileSnapshot
+    from scripts.core.repo_file_listing import RepoFileSnapshot
 
     from yaml_output import emit_yaml
 

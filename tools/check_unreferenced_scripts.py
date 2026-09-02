@@ -20,7 +20,7 @@ from runtime_bootstrap import import_repo_module
 from yaml_output import emit_yaml
 
 _ROOT = Path(__file__).resolve().parents[1]
-_LISTING = import_repo_module(__file__, "scripts.repo_file_listing")
+_LISTING = import_repo_module(__file__, "scripts.core.repo_file_listing")
 _SKILL_REFS = import_repo_module(__file__, "tools.inventory_skill_script_references")
 _EXPORT = import_repo_module(__file__, "tools.export_self_sufficiency_lib")
 
@@ -312,9 +312,12 @@ def _read_text(path: Path) -> str:
 def _seed_intrinsic_edges(nodes: dict[str, Path]) -> dict[str, set[str]]:
     edges: dict[str, set[str]] = defaultdict(set)
     for relative, path in nodes.items():
-        if relative == "tools/__init__.py":
+        if relative == "tools/__init__.py" or (
+            relative.startswith("scripts/") and Path(relative).name == "__init__.py"
+        ):
             # The empty package marker is required by the tools module carrier;
-            # it is not itself a runnable or referenceable gate.
+            # it is not itself a runnable or referenceable gate. The same holds
+            # for concept-package markers under scripts/.
             edges[relative].add("surface")
         elif relative.startswith("skills/"):
             edges[relative].add("skill")

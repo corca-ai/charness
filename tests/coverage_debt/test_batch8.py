@@ -24,16 +24,14 @@ from pathlib import Path
 
 import pytest
 
-from scripts import (
-    checkout_view,
-    lesson_ledger_lib,
-    setup_inspect_quality_lib,
-    sibling_module_loader,
-    task_run,
-    task_run_git,
-)
-from scripts import git_checkout as checkout
-from scripts import git_status_snapshot as status_snapshot
+from scripts import checkout_view
+from scripts import lesson_ledger_lib
+from scripts import setup_inspect_quality_lib
+from scripts.core import sibling_module_loader
+from scripts import task_run
+from scripts import task_run_git
+from scripts.core import git_checkout as checkout
+from scripts.core import git_status_snapshot as status_snapshot
 from scripts import prepush_quality_receipt as receipt
 from scripts import reviewed_input_identity as reviewed_identity
 from scripts import reviewed_input_nonblob as reviewed_nonblob
@@ -106,7 +104,7 @@ def test_a_skill_script_puts_the_owning_repo_root_on_sys_path(
 
     These modules run as `$SKILL_DIR/scripts/<name>.py` under a host that puts
     only the script's own directory on `sys.path`. Without this climb, the very
-    next line -- `from scripts.repo_file_listing import ...` -- raises
+    next line -- `from scripts.core.repo_file_listing import ...` -- raises
     `ModuleNotFoundError` and the gate cannot start. In-process tests never see
     it, because pytest has already put the repo root on `sys.path`, which is
     exactly why the bootstrap needs a test that removes it first.
@@ -734,7 +732,7 @@ def _without_the_scripts_package(
 @pytest.mark.parametrize(
     ("script", "bound", "flat_module"),
     [
-        ("scripts/helper_provenance_lib.py", "env_bypass_enabled", "env_bypass"),
+        ("scripts/core/helper_provenance_lib.py", "env_bypass_enabled", "env_bypass"),
         ("tools/check_current_pointer_writes.py", "RepoFileSnapshot", "repo_file_listing"),
         ("scripts/check_symbol_residue.py", "RepoFileSnapshot", "repo_file_listing"),
         ("scripts/dup_ratchet_edit_advisory.py", "head_oid_from_files", "git_checkout"),
@@ -754,9 +752,9 @@ def test_a_root_script_binds_its_owners_flat_when_the_package_is_unreachable(
     """
     blocked = None
     if script.endswith("check_symbol_residue.py"):
-        blocked = "scripts.repo_file_listing"
+        blocked = "scripts.core.repo_file_listing"
     elif script.endswith("dup_ratchet_edit_advisory.py"):
-        blocked = "scripts.git_checkout"
+        blocked = "scripts.core.git_checkout"
     _without_the_scripts_package(monkeypatch, only=blocked)
     before = set(sys.modules)
     try:
@@ -775,7 +773,7 @@ def test_the_identity_builder_binds_the_sibling_loader_flat(
     """The identity builder's own sibling-loader import has a flat fallback, and
     taking it still yields the real loader.
 
-    Scoped to `scripts.sibling_module_loader` alone, because that is the import
+    Scoped to `scripts.core.sibling_module_loader` alone, because that is the import
     the dual path guards. This module reaches other owners THROUGH the loader
     (which resolves them by path), so blocking the whole package would refuse a
     later unconditional package import in a transitive owner -- a different
@@ -786,7 +784,7 @@ def test_the_identity_builder_binds_the_sibling_loader_flat(
     lines down, so a broken fallback is an import-time crash of the whole
     reviewed-input identity surface.
     """
-    _without_the_scripts_package(monkeypatch, only="scripts.sibling_module_loader")
+    _without_the_scripts_package(monkeypatch, only="scripts.core.sibling_module_loader")
     before = set(sys.modules)
     try:
         module = load_script_module(
@@ -878,7 +876,7 @@ def test_the_structural_waste_scan_puts_the_repo_root_back_before_importing(
     owns this file, puts its root on `sys.path`, and retries the SAME import.
 
     Refused ONCE rather than by filtering `sys.path`: the arm's whole job is to
-    make `scripts.repo_file_listing` reachable, so a finder that refuses the name
+    make `scripts.core.repo_file_listing` reachable, so a finder that refuses the name
     outright would also refuse the retry, and a `sys.path` filter makes the arm's
     success depend on what other tests have already put on the path -- this test
     passed alone and failed in the full suite for exactly that reason. A one-shot
@@ -893,9 +891,9 @@ def test_the_structural_waste_scan_puts_the_repo_root_back_before_importing(
     )
     # A COPY, so the module's own `sys.path.insert` is undone at teardown.
     monkeypatch.setattr(sys, "path", list(sys.path))
-    monkeypatch.delitem(sys.modules, "scripts.repo_file_listing", raising=False)
+    monkeypatch.delitem(sys.modules, "scripts.core.repo_file_listing", raising=False)
     monkeypatch.setattr(
-        sys, "meta_path", [_RefuseOnce("scripts.repo_file_listing")] + sys.meta_path
+        sys, "meta_path", [_RefuseOnce("scripts.core.repo_file_listing")] + sys.meta_path
     )
 
     iter_repo_files = waste._iter_repo_files()

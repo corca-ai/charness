@@ -19,7 +19,7 @@ from scripts.adapter_lib import (
     plan_generated_write,
     strip_inline_comment,
 )
-from scripts.path_portability_lib import repo_relative
+from scripts.core.path_portability_lib import repo_relative
 from scripts.quality_bootstrap_render import render_bootstrap_adapter
 
 

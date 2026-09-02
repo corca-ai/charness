@@ -8,9 +8,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 try:
-    from scripts.subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:  # loaded as a standalone sibling module
-    from subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 
 
 @dataclass(frozen=True)

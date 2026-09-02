@@ -772,7 +772,7 @@ def test_kill_group_and_drain_never_signals_a_group_the_probe_does_not_own(tmp_p
         "import subprocess, sys, time\n"
         f"sys.path.insert(0, {str(ROOT / 'scripts')!r})\n"
         "from runtime_bootstrap import import_repo_module\n"
-        f"m = import_repo_module({str(ROOT / 'scripts/subprocess_guard.py')!r}, 'scripts.subprocess_guard')\n"
+        f"m = import_repo_module({str(ROOT / 'scripts/core/subprocess_guard.py')!r}, 'scripts.core.subprocess_guard')\n"
         # No start_new_session: the child SHARES this process's group, so an
         # unguarded killpg would take this process down with it.
         "child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(600)'],\n"

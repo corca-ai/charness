@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-guard = importlib.import_module("scripts.helper_provenance_lib")
+guard = importlib.import_module("scripts.core.helper_provenance_lib")
 
 
 def _write(path: Path, text: str) -> Path:

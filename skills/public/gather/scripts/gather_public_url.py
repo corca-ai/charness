@@ -45,7 +45,7 @@ except ModuleNotFoundError as exc:
         f"-r {_REQUIREMENTS}\n"
         f"  The pinned versions are declared in {_REQUIREMENTS}.\n"
         "  A repo-local runtime is also available via "
-        f"{_PLUGIN_ROOT / 'scripts' / 'bootstrap_runtime.py'} --repo-root {_PLUGIN_ROOT}, "
+        f"{_PLUGIN_ROOT / 'scripts' / 'core' / 'bootstrap_runtime.py'} --repo-root {_PLUGIN_ROOT}, "
         "but it installs into its own launcher rather than into this interpreter, so "
         "re-running the documented command afterwards needs that launcher."
     ) from exc
@@ -81,13 +81,13 @@ if str(SCRIPT_DIR) not in sys.path:
 import gather_record_rendering  # noqa: E402
 
 try:
-    from scripts import subprocess_guard as _subprocess_guard  # noqa: E402
+    from scripts.core import subprocess_guard as _subprocess_guard
 except ModuleNotFoundError:
     _scripts_dir = next(
         (
             ancestor / "scripts"
             for ancestor in (Path(__file__).resolve(), *Path(__file__).resolve().parents)
-            if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+            if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
         ),
         None,
     )
@@ -95,7 +95,7 @@ except ModuleNotFoundError:
         _subprocess_guard = None
     else:
         sys.path.insert(0, str(_scripts_dir))
-        import subprocess_guard as _subprocess_guard  # noqa: E402
+        import scripts.core.subprocess_guard as _subprocess_guard  # noqa: E402
 
 run_process = _subprocess_guard.run_process if _subprocess_guard is not None else None
 import gather_public_execution as _execution  # noqa: E402

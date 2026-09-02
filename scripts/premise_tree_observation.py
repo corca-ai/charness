@@ -7,10 +7,10 @@ import os
 from pathlib import Path
 from typing import Any
 
-try:
-    from scripts.subprocess_guard import run_process
-except ModuleNotFoundError:  # loaded as a standalone sibling module
-    from subprocess_guard import run_process
+from runtime_bootstrap import import_repo_module
+
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
+run_process = _subprocess_guard.run_process
 
 
 class ObservationPathEscape(ValueError):
@@ -39,10 +39,9 @@ def _git_bytes(repo_root: Path, *args: str):
 
 
 def _index_paths(repo_root: Path) -> set[bytes]:
-    try:
-        from scripts.repo_file_listing import RepoFileListingError, RepoFileSnapshot
-    except ModuleNotFoundError:
-        from repo_file_listing import RepoFileListingError, RepoFileSnapshot
+    _repo_file_listing = import_repo_module(__file__, "scripts.core.repo_file_listing")
+    RepoFileListingError = _repo_file_listing.RepoFileListingError
+    RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
     try:
         listed = RepoFileSnapshot(repo_root, require_git=True).list_files(include_untracked=False)
     except RepoFileListingError as exc:

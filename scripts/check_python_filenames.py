@@ -8,10 +8,10 @@ import re
 import sys
 from pathlib import Path
 
-try:
-    from scripts.repo_file_listing import iter_matching_repo_files
-except ModuleNotFoundError:
-    from repo_file_listing import iter_matching_repo_files
+from runtime_bootstrap import import_repo_module
+
+_repo_file_listing = import_repo_module(__file__, "scripts.core.repo_file_listing")
+iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
 
 VALID_NAME_RE = re.compile(r"^(?:__init__|[a-z][a-z0-9_]*)\.py$")
 IMPORT_NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")

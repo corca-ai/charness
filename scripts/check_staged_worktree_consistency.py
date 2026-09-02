@@ -34,7 +34,7 @@ if __package__ in (None, ""):  # `python3 scripts/<name>.py`, not `-m scripts.<n
     #
     # The repo root goes on the path rather than each import gaining a bare-name
     # fallback, because the failure is not local: `git_status_snapshot` imports
-    # `scripts.git_checkout` in turn, so a per-import dual-path here fixes only
+    # `scripts.core.git_checkout` in turn, so a per-import dual-path here fixes only
     # the first link and dies on the next one down.
     #
     # No test could observe this. Every test reaches these gates IN-PROCESS,
@@ -43,15 +43,15 @@ if __package__ in (None, ""):  # `python3 scripts/<name>.py`, not `-m scripts.<n
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from runtime_bootstrap import import_repo_module
-from scripts.env_bypass import env_bypass_enabled
-from scripts.git_status_snapshot import (
+from scripts.core.env_bypass import env_bypass_enabled
+from scripts.core.git_status_snapshot import (
     GitStatusError,
     GitStatusSnapshot,
 )
-from scripts.git_status_snapshot import parse as parse_git_status
-from scripts.git_status_snapshot import status_args as git_status_args
+from scripts.core.git_status_snapshot import parse as parse_git_status
+from scripts.core.git_status_snapshot import status_args as git_status_args
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
 ALLOW_ENV = "CHARNESS_ALLOW_PARTIAL_STAGE"

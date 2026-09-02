@@ -27,7 +27,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 
-env_bypass = importlib.import_module("scripts.env_bypass")
+env_bypass = importlib.import_module("scripts.core.env_bypass")
 csr = importlib.import_module("scripts.check_staged_reversion")
 csrc = importlib.import_module("scripts.check_staged_router_change")
 cswc = importlib.import_module("scripts.check_staged_worktree_consistency")
@@ -100,7 +100,7 @@ def test_the_standalone_cli_copy_agrees_with_the_owner_on_every_spelling(monkeyp
 
     The root `charness` CLI is the installed standalone entry point: its
     source-root probe returns None when no charness tree is present, so
-    `scripts.env_bypass` is not importable in the case that entry point exists to
+    `scripts.core.env_bypass` is not importable in the case that entry point exists to
     serve. Its `bool_env` is therefore a deliberate fifth copy of the table.
 
     A comment saying "keep these in sync" is the restatement pattern this whole

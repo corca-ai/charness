@@ -217,7 +217,7 @@ def test_only_a_confirmed_match_writes_in_place(tmp_path: Path) -> None:
     regular file, a legacy undated record name) and an undeclared invocation both continued
     silently. Each of those is a live layout, not a hypothetical.
     """
-    lib = import_repo_module(ROOT / "scripts/scaffold_artifact_lib.py", "scripts.scaffold_artifact_lib")
+    lib = import_repo_module(ROOT / "scripts/core/scaffold_artifact_lib.py", "scripts.core.scaffold_artifact_lib")
 
     unknown = lib.subject_identity_facts(invocation_subject_key="quality-review@2026-08-15", target_subject_key=None)
     undeclared = lib.subject_identity_facts(invocation_subject_key=None, target_subject_key="an-open-investigation")
@@ -240,7 +240,7 @@ def test_two_unreadable_channels_do_not_compose_into_a_match(tmp_path: Path) -> 
     A multi-channel key whose unavailable channels both compare equal must still
     refuse an in-place write, so two same-day records cannot silently collide.
     """
-    lib = import_repo_module(ROOT / "scripts/scaffold_artifact_lib.py", "scripts.scaffold_artifact_lib")
+    lib = import_repo_module(ROOT / "scripts/core/scaffold_artifact_lib.py", "scripts.core.scaffold_artifact_lib")
 
     assert lib.compose_subject_key("session-retro", None) is None
     assert lib.compose_subject_key(None, "2026-08-15") is None
@@ -279,7 +279,7 @@ def test_divert_is_decided_by_the_path_naming_a_subject_not_by_a_mismatch_compar
     pointer wrote in place under another investigation's name while the same payload stamped
     `undeclared`. At stake means: something is there, OR the path names a subject.
     """
-    lib = import_repo_module(ROOT / "scripts/scaffold_artifact_lib.py", "scripts.scaffold_artifact_lib")
+    lib = import_repo_module(ROOT / "scripts/core/scaffold_artifact_lib.py", "scripts.core.scaffold_artifact_lib")
     repo = tmp_path / "divert"
     (repo / "charness-artifacts/debug").mkdir(parents=True)
     (repo / "charness-artifacts/debug/2026-05-06-theirs.md").write_text("# Theirs\n", encoding="utf-8")

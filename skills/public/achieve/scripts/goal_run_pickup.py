@@ -22,7 +22,7 @@ def _load_skill_runtime_bootstrap():
 _SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 run_process = _SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.subprocess_guard"
+    __file__, "scripts.core.subprocess_guard"
 ).run_process
 
 _SCRIPT_DIR = Path(__file__).resolve().parent

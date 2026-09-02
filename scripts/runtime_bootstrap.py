@@ -270,7 +270,7 @@ def arm_cli_timeout(
     label: str,
     default_seconds: int = 10,
 ):
-    module = import_repo_module(__file__, "scripts.script_timeout")
+    module = import_repo_module(__file__, "scripts.core.script_timeout")
     return module.arm_cli_timeout(label=label, default_seconds=default_seconds)
 
 
@@ -281,5 +281,5 @@ def require_repo_local_helper(script_file: str | Path, repo_root: str | Path, **
     the guard is always the copy that shipped with the helper being guarded.
     """
 
-    module = import_repo_module(__file__, "scripts.helper_provenance_lib")
+    module = import_repo_module(__file__, "scripts.core.helper_provenance_lib")
     return module.require_repo_local_helper(script_file, repo_root, **kwargs)

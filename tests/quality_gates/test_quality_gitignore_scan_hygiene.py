@@ -37,7 +37,7 @@ def test_gitignore_scan_hygiene_warns_on_repo_wide_rglob(tmp_path: Path) -> None
             "reason": "repo-wide filesystem traversal without an obvious gitignore-aware file source",
             "recommendation": (
                 "Prefer `git ls-files --cached --others --exclude-standard` or "
-                "`scripts.repo_file_listing.iter_matching_repo_files` before scanning."
+                "`scripts.core.repo_file_listing.iter_matching_repo_files` before scanning."
             ),
         }
     ]
@@ -190,7 +190,7 @@ def test_a_snapshot_backed_fallback_is_not_flagged(tmp_path: Path) -> None:
     script = tmp_path / "scan.py"
     script.write_text(
         "from pathlib import Path\n"
-        "from scripts.repo_file_listing import RepoFileSnapshot\n"
+        "from scripts.core.repo_file_listing import RepoFileSnapshot\n"
         "def scan(repo_root: Path):\n"
         "    listed = RepoFileSnapshot(repo_root).list_files(include_untracked=True)\n"
         "    if listed is None:\n"

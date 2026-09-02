@@ -21,9 +21,9 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from scripts.subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:  # executed directly from scripts/
-    from subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 
 # markdownlint-cli2's first output line, on every run it makes: ``markdownlint-cli2 v0.21.0
 # (markdownlint v0.40.0)``. It is the only evidence available here that the ENGINE ran, as

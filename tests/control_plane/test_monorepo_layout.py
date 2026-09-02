@@ -4,8 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts import repo_file_listing, repo_layout
-from scripts.repo_file_listing import (
+from scripts.core import repo_file_listing
+from scripts.core import repo_layout
+from scripts.core.repo_file_listing import (
     RepoFileListingError,
     RepoFileSnapshot,
     bind_subject_listing,

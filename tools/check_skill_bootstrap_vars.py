@@ -23,7 +23,7 @@ from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
+_repo_file_listing_module = import_repo_module(__file__, "scripts.core.repo_file_listing")
 iter_matching_repo_files = _repo_file_listing_module.iter_matching_repo_files
 
 REPO_ROOT = repo_root_from_script(__file__)

@@ -49,8 +49,8 @@ from scripts import (
 )
 from scripts import check_staged_worktree_consistency as staged_consistency
 from scripts import classify_t_signal as t_signal
-from scripts import git_checkout as checkout
-from scripts import git_status_snapshot as status_snapshot
+from scripts.core import git_checkout as checkout
+from scripts.core import git_status_snapshot as status_snapshot
 from scripts import premise_git_snapshot as premise_snapshot
 from scripts import worktree_doctor_checks as worktree_checks
 from tests.quality_gates.repo_shapes import install_committed_repo

@@ -28,7 +28,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 TARGET_TOKEN_PREFIX = "{target:"
 TARGET_TOKEN_SUFFIX = "}"
@@ -248,7 +248,7 @@ def _probe_command(
                 stderr=result.stderr.strip()[-800:],
             )
         ]
-    from argparse_surface_lib import accepted_options, iter_option_declarations
+    from scripts.core.argparse_surface_lib import accepted_options, iter_option_declarations
 
     accepted = sorted(accepted_options(output))
     accepted.extend(

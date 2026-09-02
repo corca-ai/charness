@@ -9,9 +9,9 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from scripts.subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:  # loaded as a standalone sibling module
-    from subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 
 ALGORITHM = "sha256-v2"
 SUBSTRATE_WORKING_TREE = "working-tree"
@@ -100,9 +100,9 @@ def _sha256(payload: bytes) -> str:
 
 
 try:
-    from scripts.sibling_module_loader import load_sibling as _load_sibling
+    from scripts.core.sibling_module_loader import load_sibling as _load_sibling
 except ModuleNotFoundError:  # invoked as `python3 scripts/<name>.py`
-    from sibling_module_loader import load_sibling as _load_sibling
+    from scripts.core.sibling_module_loader import load_sibling as _load_sibling
 
 _checkout = _load_sibling("git_checkout")
 _path_selection = _load_sibling("reviewed_input_path_selection")

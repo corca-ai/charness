@@ -72,7 +72,7 @@ def _bundle_yaml_output(root: Path) -> None:
 def _bundle_subprocess_guard(root: Path) -> None:
     scripts_dir = root / "scripts"
     scripts_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ROOT / "scripts" / "subprocess_guard.py", scripts_dir / "subprocess_guard.py")
+    shutil.copy2(ROOT / "scripts" / "core" / "subprocess_guard.py", scripts_dir / "subprocess_guard.py")
 
 
 def _close_was_attempted(log_path: Path) -> bool:

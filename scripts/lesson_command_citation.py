@@ -33,7 +33,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.helper_provenance_lib import is_charness_source_tree
+from scripts.core.helper_provenance_lib import is_charness_source_tree
 
 INDEX_SCRIPT_NAME = "build_retro_lesson_selection_index.py"
 INDEX_SCRIPT_RELATIVE = Path("scripts") / INDEX_SCRIPT_NAME

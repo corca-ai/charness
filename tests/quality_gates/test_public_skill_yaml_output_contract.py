@@ -14,7 +14,8 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from scripts import gate_report_emit, yaml_output
+from scripts.core import gate_report_emit
+from scripts import yaml_output
 from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT

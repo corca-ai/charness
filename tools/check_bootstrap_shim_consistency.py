@@ -22,10 +22,10 @@ import re
 from pathlib import Path
 
 try:
-    from scripts.repo_file_listing import iter_matching_repo_files
+    from scripts.core.repo_file_listing import iter_matching_repo_files
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:
-    from repo_file_listing import iter_matching_repo_files
+    from scripts.core.repo_file_listing import iter_matching_repo_files
 
     from yaml_output import emit_yaml
 
@@ -50,7 +50,7 @@ SCAN_PATTERNS = ("skills/**/*.py", "scripts/**/*.py", "tools/**/*.py")
 # they run); only a NESTED script needs the root-walking shim.
 REPO_SHIM_SCAN_PATTERN = ("scripts/*/**/*.py",)
 REPO_SHIM_TRIGGER = re.compile(
-    r"^\s*from (?:scripts\.)?(?:runtime_bootstrap|yaml_output) import\b", re.MULTILINE
+    r"^\s*(?:from scripts(?:\.|\s+import)|import scripts(?:\.|\s))", re.MULTILINE
 )
 
 

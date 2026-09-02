@@ -28,9 +28,9 @@ from runtime_bootstrap import load_path_module, repo_root_from_script
 from yaml_output import emit_yaml
 
 try:
-    from scripts.repo_file_listing import iter_matching_repo_files
+    from scripts.core.repo_file_listing import iter_matching_repo_files
 except ModuleNotFoundError:
-    from repo_file_listing import iter_matching_repo_files
+    from scripts.core.repo_file_listing import iter_matching_repo_files
 
 LIB_ROOT = repo_root_from_script(__file__)
 ANCHOR_PATTERNS = ("skills/shared/references/**/*.md", "docs/cli-reference.md")

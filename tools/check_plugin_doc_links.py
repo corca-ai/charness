@@ -58,11 +58,11 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
+_scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.core.repo_file_listing")
 iter_generated_mirror_files = _scripts_repo_file_listing_module.iter_generated_mirror_files
 GeneratedMirrorAbsentError = _scripts_repo_file_listing_module.GeneratedMirrorAbsentError
 
-_markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
+_markdown_doc_scan = import_repo_module(__file__, "scripts.core.markdown_doc_scan")
 classify_link_shape = _markdown_doc_scan.classify_link_shape
 iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 iter_link_targets = _markdown_doc_scan.iter_link_targets

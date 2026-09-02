@@ -7,7 +7,7 @@ import pytest
 import yaml
 
 from scripts import suggest_mutation_coverage_command as sugg
-from scripts.git_checkout import head_oid_from_files
+from scripts.core.git_checkout import head_oid_from_files
 
 from .repo_shapes import install_committed_repo
 

@@ -19,7 +19,7 @@ from run_quality_engine_model import GateList, RunnerError
 
 from runtime_bootstrap import configure_runtime_environment, import_repo_module
 
-_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _guard.run_process
 
 _ARRAY_TOKEN = re.compile(r"^\$\{([A-Za-z_][A-Za-z0-9_]*)\[@\]\}$")

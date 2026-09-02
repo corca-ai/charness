@@ -5,7 +5,7 @@ from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
 _PLAN_HELPERS_ROOT = repo_root_from_script(__file__)

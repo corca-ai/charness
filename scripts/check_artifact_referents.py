@@ -61,9 +61,9 @@ from scripts.artifact_referents import (  # noqa: E402
     unresolvable_shas,
 )
 from scripts.critique_enforcement_scope import date_from_filename  # noqa: E402
-from scripts.repo_path_display import display_path as _display_path  # noqa: E402
+from scripts.core.repo_path_display import display_path as _display_path  # noqa: E402
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 _quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
 load_quality_adapter = _quality_adapter.load_quality_adapter

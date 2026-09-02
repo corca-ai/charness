@@ -33,7 +33,7 @@ from run_quality_engine_selection import (
 
 from runtime_bootstrap import import_repo_module
 
-_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _guard.run_process
 
 

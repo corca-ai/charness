@@ -12,7 +12,7 @@ from unittest import mock
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-_scripts_repo_layout_module = import_repo_module(__file__, "scripts.repo_layout")
+_scripts_repo_layout_module = import_repo_module(__file__, "scripts.core.repo_layout")
 integrations_tools_dir = _scripts_repo_layout_module.integrations_tools_dir
 support_capability_schema_path = _scripts_repo_layout_module.support_capability_schema_path
 

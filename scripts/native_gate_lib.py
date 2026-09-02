@@ -25,9 +25,9 @@ from pathlib import Path
 from typing import Literal
 
 try:
-    from scripts.subprocess_guard import run_monitored_phase
+    from scripts.core.subprocess_guard import run_monitored_phase
 except ModuleNotFoundError:  # executed directly from scripts/
-    from subprocess_guard import run_monitored_phase
+    from scripts.core.subprocess_guard import run_monitored_phase
 
 Provenance = Literal["override", "dev-tree", "installed"]
 

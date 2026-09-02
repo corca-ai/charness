@@ -3,7 +3,7 @@
 #548. FOUR modules implemented the same pointer-resolution rule, three of them emitting the
 `write_artifact_path` / `write_artifact_role` pair from separate code:
 
-- `scripts/scaffold_artifact_lib.py` (quality, handoff, ideation, retro scaffolds) — now the
+- `scripts/core/scaffold_artifact_lib.py` (quality, handoff, ideation, retro scaffolds) — now the
   single owner
 - `scripts/resolve_artifact_path.py` (debug and the generic path)
 - `skills/public/quality/scripts/resolve_quality_artifact.py`
@@ -33,7 +33,7 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module
 from tests.quality_gates.support import ROOT
 
-_scaffold_lib = import_repo_module(ROOT / "scripts/scaffold_artifact_lib.py", "scripts.scaffold_artifact_lib")
+_scaffold_lib = import_repo_module(ROOT / "scripts/core/scaffold_artifact_lib.py", "scripts.core.scaffold_artifact_lib")
 _resolve_quality_artifact = import_repo_module(
     ROOT / "skills/public/quality/scripts/resolve_quality_artifact.py",
     "skills.public.quality.scripts.resolve_quality_artifact",
@@ -142,7 +142,7 @@ _SYMLINK_RESOLUTION_SPELLINGS = (
     "os.path.realpath(",
     "from os import readlink",
 )
-_OWNER_REL = "scripts/scaffold_artifact_lib.py"
+_OWNER_REL = "scripts/core/scaffold_artifact_lib.py"
 # How a module may legitimately obtain the write-target facts: by stamping them, by using the
 # owner's shared record shape, or by being the owner.
 _FACT_ROUTES = (
@@ -274,7 +274,7 @@ def test_the_owner_stays_importable_with_no_package_context() -> None:
     So the owner must import only the standard library. This was stated in a docstring as
     load-bearing and guarded by nothing, which is the shape this goal is about.
     """
-    source = (ROOT / "scripts/scaffold_artifact_lib.py").read_text(encoding="utf-8")
+    source = (ROOT / "scripts/core/scaffold_artifact_lib.py").read_text(encoding="utf-8")
     # `import scripts.x` is the most natural second spelling of the exact failure mode this
     # guards, and the first version of the list missed it.
     forbidden = (

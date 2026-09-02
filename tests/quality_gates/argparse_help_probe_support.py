@@ -19,7 +19,7 @@ import traceback
 from collections.abc import Sequence
 from pathlib import Path
 
-from scripts.subprocess_guard import run_process
+from scripts.core.subprocess_guard import run_process
 
 
 def _python_script(command: Sequence[str], cwd: Path) -> Path | None:

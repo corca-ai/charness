@@ -15,8 +15,8 @@ from typing import Any
 
 from runtime_bootstrap import import_repo_module
 
-_path_portability = import_repo_module(__file__, "scripts.path_portability_lib")
-run_process = import_repo_module(__file__, "scripts.subprocess_guard").run_process
+_path_portability = import_repo_module(__file__, "scripts.core.path_portability_lib")
+run_process = import_repo_module(__file__, "scripts.core.subprocess_guard").run_process
 
 PLAN_VERSION = 1
 

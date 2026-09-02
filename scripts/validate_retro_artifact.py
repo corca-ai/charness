@@ -18,8 +18,8 @@ _prepare_packet_markdown_kind = import_repo_module(__file__, "scripts.prepare_pa
 _enforcement_scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
 # One home for "the lines of a markdown section", shared with the critique and
 # ideation validators.
-_sections = import_repo_module(__file__, "scripts.markdown_sections")
-_skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
+_sections = import_repo_module(__file__, "scripts.core.markdown_sections")
+_skill_markdown_lib = import_repo_module(__file__, "scripts.core.skill_markdown_lib")
 # Where this repo keeps its retros, resolved from its own adapter rather than from a
 # literal written here. `retro_artifact_prefix` is used below; `DEFAULT_RETRO_ARTIFACT_PREFIX`
 # is re-exported for tests that assert the fallback identity. An earlier comment claimed
@@ -63,7 +63,7 @@ file_is_prepare_packet_markdown_kind = _prepare_packet_markdown_kind.file_is_pre
 
 # Shared single source of the disposition-form grammar (#329); imported same-root
 # so the retro `## Next Improvements` floor never forks achieve parsing.
-disposition_form = import_repo_module(__file__, "scripts.disposition_form")
+disposition_form = import_repo_module(__file__, "scripts.core.disposition_form")
 
 DISPOSITION_FORM_REFERENCE = "skills/public/achieve/references/goal-artifact.md (#329 disposition-form floor)"
 #: The path `north_star_reference` names when the repo being validated has this file.

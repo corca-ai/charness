@@ -27,7 +27,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from scripts.disposition_form import evaluate_residual_disposition_form
+from scripts.core.disposition_form import evaluate_residual_disposition_form
 from scripts.proof_semantics_adapter_lib import (
     acceptance_map_available,
     level_satisfies,

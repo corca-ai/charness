@@ -172,7 +172,7 @@ def _release_scope(
 
 def _allowed_dirty_paths(repo_root: Path, allowed: set[str]) -> None:
     status_mod = SKILL_RUNTIME.load_repo_module_from_skill_script(
-        __file__, "scripts.git_status_snapshot"
+        __file__, "scripts.core.git_status_snapshot"
     )
     try:
         snapshot = status_mod.capture(repo_root)

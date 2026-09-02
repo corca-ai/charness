@@ -63,7 +63,7 @@ def repo_relpath(repo_root: Path, raw: str) -> str | None:
     each grown their own copy of this core.
     """
 
-    portability = import_repo_module(__file__, "scripts.path_portability_lib")
+    portability = import_repo_module(__file__, "scripts.core.path_portability_lib")
     return portability.resolve_within_repo(repo_root, raw)
 
 

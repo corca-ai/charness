@@ -15,7 +15,7 @@ from urllib.parse import unquote
 def _ensure_scripts_package() -> None:
     here = Path(__file__).resolve()
     for candidate in (here, *here.parents):
-        if (candidate / "scripts" / "repo_file_listing.py").is_file():
+        if (candidate / "scripts" / "core" / "repo_file_listing.py").is_file():
             root = str(candidate)
             if root not in sys.path:
                 sys.path.insert(0, root)
@@ -23,7 +23,7 @@ def _ensure_scripts_package() -> None:
 
 
 _ensure_scripts_package()
-from scripts.repo_file_listing import RepoFileSnapshot  # noqa: E402
+from scripts.core.repo_file_listing import RepoFileSnapshot  # noqa: E402
 
 DEFAULT_REVIEW_PROMPTS = [
     "Keep first-touch docs concise; let deeper docs own durable procedure and edge cases.",

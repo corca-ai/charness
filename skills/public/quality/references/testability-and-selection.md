@@ -190,7 +190,7 @@ reason with `pytest.mark.boundary_contract(reason="...")`. Ordinary behavior
 should use the repository's in-process loaders and test the smaller callable
 surface. The staged boundary advisory makes new direct crossings visible, while
 `check_subprocess_form.py` enforces the production rule that child processes go
-through `<plugin-dir>/scripts/subprocess_guard.py`.
+through `<plugin-dir>/scripts/core/subprocess_guard.py`.
 
 ## Language Notes
 

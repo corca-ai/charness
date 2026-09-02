@@ -13,7 +13,7 @@ from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 _quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
 _quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")

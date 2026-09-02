@@ -13,7 +13,7 @@ from tests.quality_gates.support import ROOT
 def _seed(tmp_path: Path, body: str) -> Path:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
-    (repo / "scripts" / "subprocess_guard.py").write_text(
+    (repo / "scripts" / "core" / "subprocess_guard.py").write_text(
         "import subprocess\n\ndef run_process(command, *, cwd):\n    return subprocess.run(command, cwd=cwd)\n",
         encoding="utf-8",
     )

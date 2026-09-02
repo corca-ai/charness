@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refuse a child-process call outside `scripts/subprocess_guard.py`.
+"""Refuse a child-process call outside `scripts/core/subprocess_guard.py`.
 
 This repo has exactly one spawn primitive (#768). A production module that
 calls `subprocess.run`, `Popen`, `check_output`, `check_call`, `call`,
@@ -22,7 +22,7 @@ from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
 
-_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
+_repo_file_listing_module = import_repo_module(__file__, "scripts.core.repo_file_listing")
 iter_matching_repo_files = _repo_file_listing_module.iter_matching_repo_files
 
 DEFAULT_SCAN_GLOBS = (
@@ -37,7 +37,7 @@ DEFAULT_SCAN_GLOBS = (
     "skills/shared/scripts/*.py",
     "skills/shared/scripts/**/*.py",
 )
-GUARD_RELATIVE = "scripts/subprocess_guard.py"
+GUARD_RELATIVE = "scripts/core/subprocess_guard.py"
 SKIP_PATH_PARTS = {"__pycache__", "vendor", "generated"}
 SUBPROCESS_SPAWNS = frozenset(
     {"run", "Popen", "check_output", "check_call", "call", "getoutput", "getstatusoutput"}
@@ -90,7 +90,7 @@ def check_file(repo_root: Path, path: Path) -> list[str]:
     except (SyntaxError, UnicodeDecodeError) as exc:
         return [f"{relative}: cannot parse: {exc}"]
     return [
-        f"{relative}:{line}: `{form}` spawns outside scripts/subprocess_guard.py; "
+        f"{relative}:{line}: `{form}` spawns outside scripts/core/subprocess_guard.py; "
         "use run_process (short probe) or run_monitored_phase (long phase)"
         for line, form in _direct_spawn_findings(tree)
     ]

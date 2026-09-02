@@ -19,7 +19,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 # xdist worker count from affinity. Consumed here rather than re-derived so a third
 # copy of the affinity question cannot drift from the other two.
 usable_cpu_count = import_repo_module(__file__, "scripts.run_standing_pytest").usable_cpu_count
-_scripts_subprocess_guard_module = import_repo_module(__file__, "scripts.subprocess_guard")
+_scripts_subprocess_guard_module = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _scripts_subprocess_guard_module.run_process
 _tools_eval_setup_module = import_repo_module(__file__, "tools.eval_setup")
 run_setup_inspect_states = _tools_eval_setup_module.run_setup_inspect_states

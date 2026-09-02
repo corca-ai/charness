@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-import scripts.subprocess_guard as subprocess_guard
-from scripts.subprocess_guard import (
+import scripts.core.subprocess_guard as subprocess_guard
+from scripts.core.subprocess_guard import (
     DEFAULT_HEARTBEAT_SECONDS,
     DRAIN_UNAVAILABLE,
     TIMEOUT_EXIT_CODE,
@@ -86,7 +86,7 @@ def test_monitored_phase_can_stream_the_body_instead_of_capturing_it(tmp_path: P
     script.write_text(
         "import sys\n"
         f"sys.path.insert(0, {str(ROOT)!r})\n"
-        "from scripts.subprocess_guard import run_monitored_phase\n"
+        "from scripts.core.subprocess_guard import run_monitored_phase\n"
         "outcome = run_monitored_phase(\n"
         "    [sys.executable, '-c', \"import sys; print('body' + '-out'); \"\n"
         "     \"print('body' + '-err', file=sys.stderr)\"],\n"
@@ -188,7 +188,7 @@ def test_monitored_phase_repeats_bounded_heartbeats_on_a_supplied_display(monkey
             return False
 
     monkeypatch.setattr(subprocess, "Popen", lambda *_args, **_kwargs: FakeProcess())
-    monkeypatch.setattr("scripts.subprocess_guard.time.monotonic", lambda: 0.0)
+    monkeypatch.setattr("scripts.core.subprocess_guard.time.monotonic", lambda: 0.0)
 
     outcome = run_monitored_phase(
         ["/bin/bash", "-lc", "export PATH=/wrapper; pytest -q"],
@@ -329,7 +329,7 @@ def test_monitored_phase_kills_the_child_when_the_wait_raises(monkeypatch, tmp_p
         seen["pid"] = process.pid
         raise KeyboardInterrupt
 
-    monkeypatch.setattr("scripts.subprocess_guard._await_child", exploding_await)
+    monkeypatch.setattr("scripts.core.subprocess_guard._await_child", exploding_await)
 
     with pytest.raises(KeyboardInterrupt):
         run_monitored_phase(

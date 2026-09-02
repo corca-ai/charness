@@ -4,17 +4,31 @@ from __future__ import annotations
 
 from pathlib import Path
 
-try:
-    from scripts.subprocess_guard import run_process
-except ModuleNotFoundError:  # loaded as a standalone sibling module
-    from subprocess_guard import run_process
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
 
 try:
-    from scripts.git_checkout import discoverable as _git_metadata_is_discoverable
-    from scripts.repo_layout import support_dir
+    from scripts.core.subprocess_guard import run_process
+except ModuleNotFoundError:  # loaded as a standalone sibling module
+    from scripts.core.subprocess_guard import run_process
+
+try:
+    from scripts.core.git_checkout import discoverable as _git_metadata_is_discoverable
+    from scripts.core.repo_layout import support_dir
 except ModuleNotFoundError:
-    from git_checkout import discoverable as _git_metadata_is_discoverable
-    from repo_layout import support_dir
+    from scripts.core.git_checkout import discoverable as _git_metadata_is_discoverable
+    from scripts.core.repo_layout import support_dir
 
 
 class RepoFileListingError(SystemExit):

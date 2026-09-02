@@ -19,7 +19,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 _verdict = import_repo_module(__file__, "scripts.adapter_version_verdict")
 
 _scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.artifact_naming_lib")
-_scaffold_artifact_lib = import_repo_module(__file__, "scripts.scaffold_artifact_lib")
+_scaffold_artifact_lib = import_repo_module(__file__, "scripts.core.scaffold_artifact_lib")
 ArtifactClassError = _scripts_artifact_naming_lib_module.ArtifactClassError
 artifact_class_from_adapter = _scripts_artifact_naming_lib_module.artifact_class_from_adapter
 current_artifact_filename = _scripts_artifact_naming_lib_module.current_artifact_filename

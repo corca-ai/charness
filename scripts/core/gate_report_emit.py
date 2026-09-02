@@ -21,10 +21,24 @@ import sys
 from pathlib import Path
 from typing import TextIO
 
-from runtime_bootstrap import load_path_module
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is None:
+        raise ImportError("scripts/adapter_lib.py not found above " + __file__)
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import load_path_module  # noqa: E402
 
 render_yaml = load_path_module(
-    "scripts.yaml_output", Path(__file__).resolve().parent / "yaml_output.py"
+    "scripts.yaml_output", Path(__file__).resolve().parent.parent / "yaml_output.py"
 ).render_yaml
 
 

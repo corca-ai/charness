@@ -22,7 +22,7 @@ def _load_skill_runtime_bootstrap():
 
 _SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _quality_adapter_lib = _SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
-_vendored_path_lib = _SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.vendored_path_lib")
+_vendored_path_lib = _SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.core.vendored_path_lib")
 
 
 def _adapter_vendored_prefixes(adapter: dict[str, object]) -> list[str]:

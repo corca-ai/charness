@@ -8,7 +8,7 @@ from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
 
-_repo_file_listing = import_repo_module(__file__, "scripts.repo_file_listing")
+_repo_file_listing = import_repo_module(__file__, "scripts.core.repo_file_listing")
 RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
 iter_repo_files = _repo_file_listing.iter_repo_files
 _quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")

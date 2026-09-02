@@ -7,7 +7,7 @@ from typing import Any
 from runtime_bootstrap import import_repo_module
 
 _adapter_lib_module = import_repo_module(__file__, "scripts.adapter_lib")
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 TIMEOUT_EXIT_CODE = _subprocess_guard.TIMEOUT_EXIT_CODE
 load_yaml_file = _adapter_lib_module.load_yaml_file

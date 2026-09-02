@@ -6,7 +6,7 @@ from typing import Any
 
 from runtime_bootstrap import import_repo_module
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
 _doctor_lib = import_repo_module(__file__, "scripts.worktree_doctor_lib")

@@ -44,10 +44,10 @@ GIT_TIMEOUT_SECONDS = 30
 NO_VERDICT_EXIT = 2
 
 try:
-    from scripts.subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:  # executed directly from scripts/
     try:
-        from subprocess_guard import run_process
+        from scripts.core.subprocess_guard import run_process
     except ModuleNotFoundError:
 
         def run_process(*_args: Any, **_kwargs: Any):

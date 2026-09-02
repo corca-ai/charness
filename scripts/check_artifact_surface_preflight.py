@@ -36,7 +36,7 @@ from skill_runtime_bootstrap import load_repo_module_from_skill_script
 from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
-_path_portability = import_repo_module(__file__, "scripts.path_portability_lib")
+_path_portability = import_repo_module(__file__, "scripts.core.path_portability_lib")
 _artifact_run_scope = import_repo_module(__file__, "scripts.artifact_run_scope")
 _critique_paths = import_repo_module(__file__, "scripts.critique_artifact_paths")
 _shape_source = import_repo_module(__file__, "scripts.artifact_shape_source")

@@ -99,22 +99,22 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_argparse_surface = import_repo_module(__file__, "scripts.argparse_surface_lib")
+_argparse_surface = import_repo_module(__file__, "scripts.core.argparse_surface_lib")
 iter_invocation_tails = _argparse_surface.iter_invocation_tails
 walk_subcommands = _argparse_surface.walk_subcommands
 MAX_SUBCOMMAND_DEPTH = _argparse_surface.MAX_SUBCOMMAND_DEPTH
-_argparse_help_probe = import_repo_module(__file__, "scripts.argparse_help_probe")
+_argparse_help_probe = import_repo_module(__file__, "scripts.core.argparse_help_probe")
 HelpProbe = _argparse_help_probe.HelpProbe
 HelpRunner = _argparse_help_probe.HelpRunner
 _check_doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 iter_docs = _check_doc_links.iter_docs
 BACKTICK_CONTENT_RE = _check_doc_links.BACKTICK_CONTENT_RE
-_repo_file_listing = import_repo_module(__file__, "scripts.repo_file_listing")
+_repo_file_listing = import_repo_module(__file__, "scripts.core.repo_file_listing")
 iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
 RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
-_markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
+_markdown_doc_scan = import_repo_module(__file__, "scripts.core.markdown_doc_scan")
 iter_doc_lines_with_language = _markdown_doc_scan.iter_doc_lines_with_language
-_gate_report_emit = import_repo_module(__file__, "scripts.gate_report_emit")
+_gate_report_emit = import_repo_module(__file__, "scripts.core.gate_report_emit")
 # Findings still go to stderr so a green run's stdout stays quotable; only the
 # FORMAT changed here, never the stream this gate writes a verdict on.
 emit_findings_report = _gate_report_emit.emit_findings_report

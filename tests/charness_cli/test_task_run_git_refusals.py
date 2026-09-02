@@ -125,8 +125,8 @@ def test_collect_populations_refuses_malformed_and_tracks_rename_destination(
     tmp_path: Path,
 ) -> None:
     from scripts.checkout_view import FactsCheckout
-    from scripts.git_status_snapshot import GitStatusError
-    from scripts.git_status_snapshot import parse as parse_status
+    from scripts.core.git_status_snapshot import GitStatusError
+    from scripts.core.git_status_snapshot import parse as parse_status
 
     class _Broken:
         repo_root = tmp_path
@@ -155,7 +155,7 @@ def test_terminal_population_snapshot_keeps_head_branch_and_rename_paths(
     tmp_path: Path,
 ) -> None:
     from scripts.checkout_view import FactsCheckout
-    from scripts.git_status_snapshot import parse as parse_status
+    from scripts.core.git_status_snapshot import parse as parse_status
 
     view = FactsCheckout(
         tmp_path,

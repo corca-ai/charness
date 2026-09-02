@@ -13,9 +13,9 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from scripts.subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:  # executed directly from scripts/
-    from subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 
 SCHEMA = "charness.prepush-quality-receipt.v1"
 SCOPE = "release-full-superset"

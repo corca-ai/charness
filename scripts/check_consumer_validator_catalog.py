@@ -66,7 +66,7 @@ _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _adapter_lib.load_yaml_file
 _yaml_output = import_repo_module(__file__, "scripts.yaml_output")
 emit_yaml = _yaml_output.emit_yaml
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
 

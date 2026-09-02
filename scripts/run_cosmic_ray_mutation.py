@@ -18,7 +18,7 @@ from runtime_bootstrap import import_repo_module
 
 _abort_lib = import_repo_module(__file__, "scripts.mutation_baseline_abort_lib")
 _sampling = import_repo_module(__file__, "scripts.mutation_sampling_lib")
-_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = Path("cosmic-ray.toml")

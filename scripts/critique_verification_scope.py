@@ -13,7 +13,7 @@ from runtime_bootstrap import (
 
 REPO_ROOT = repo_root_from_script(__file__)
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
-_sections = import_repo_module(__file__, "scripts.markdown_sections")
+_sections = import_repo_module(__file__, "scripts.core.markdown_sections")
 _verification_retry = load_path_module(
     "charness_critique_verification_retry",
     skill_script(REPO_ROOT, "critique", "verification_retry.py"),

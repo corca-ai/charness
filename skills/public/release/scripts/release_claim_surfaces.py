@@ -43,7 +43,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 
 _repo_file_listing = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.repo_file_listing"
+    __file__, "scripts.core.repo_file_listing"
 )
 git_list_repo_files = _repo_file_listing.git_list_repo_files
 RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot

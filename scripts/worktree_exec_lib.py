@@ -11,7 +11,7 @@ from runtime_bootstrap import (
 )
 
 _doctor_checks = import_repo_module(__file__, "scripts.worktree_doctor_checks")
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 git_checkout_facts = _doctor_checks.git_checkout_facts
 checkout_isolation = _doctor_checks.checkout_isolation

@@ -6,7 +6,7 @@ import pytest
 
 from scripts import reviewed_input_identity as identity_lib
 from scripts import reviewed_input_nonblob
-from scripts.git_status_snapshot import status_args
+from scripts.core.git_status_snapshot import status_args
 
 
 def test_initialized_gitlink_uses_one_checked_out_snapshot_query(

@@ -16,7 +16,7 @@ from scripts.goal_lineage import (
     not_goal_bound_lineage,
     planning_only_lineage,
 )
-from scripts.helper_provenance_lib import require_repo_local_helper
+from scripts.core.helper_provenance_lib import require_repo_local_helper
 from scripts.lesson_command_citation import (
     INDEX_SCRIPT_RELATIVE,
     index_build_command,
@@ -305,7 +305,7 @@ def persist_retro_artifact(
     # Guarded here, at the WRITE boundary, rather than only in the CLIs above it:
     # `publish_release` reaches this function directly, and the four failed publishes
     # this check exists for wrote an old-schema lesson index through exactly this
-    # path from an installed plugin copy. See scripts/helper_provenance_lib.py.
+    # path from an installed plugin copy. See scripts/core/helper_provenance_lib.py.
     require_repo_local_helper(__file__, repo_root)
     if goal_path is not None and goal_lineage_path is not None:
         raise ValueError("retro accepts either --goal-path or --goal-lineage-file, not both")

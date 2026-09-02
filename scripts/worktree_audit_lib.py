@@ -8,7 +8,7 @@ from typing import Any
 from runtime_bootstrap import import_repo_module
 
 _doctor_lib = import_repo_module(__file__, "scripts.worktree_doctor_lib")
-_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 
 PASS = "pass"
 WARN = "warn"
@@ -161,7 +161,7 @@ def _attach_doctor_summaries(entries: list[dict[str, Any]]) -> dict[str, int]:
 
 
 def _git_common_dir(repo_root: Path) -> Path | None:
-    from scripts.git_checkout import layout_from_files
+    from scripts.core.git_checkout import layout_from_files
 
     layout = layout_from_files(repo_root)
     if layout is not None:

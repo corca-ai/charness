@@ -7,7 +7,7 @@ from collections.abc import Sequence
 
 from runtime_bootstrap import import_repo_module
 
-_markdown_sections = import_repo_module(__file__, "scripts.markdown_sections")
+_markdown_sections = import_repo_module(__file__, "scripts.core.markdown_sections")
 
 
 SECTION = "## Surface Contract Review"

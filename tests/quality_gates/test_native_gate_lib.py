@@ -7,7 +7,7 @@ from typing import Callable
 import pytest
 
 from scripts import native_gate_lib
-from scripts.subprocess_guard import PhaseOutcome
+from scripts.core.subprocess_guard import PhaseOutcome
 
 from .support import write_executable
 

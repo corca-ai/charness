@@ -11,7 +11,7 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 from yaml_output import emit_yaml
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 _quality_universes = import_repo_module(__file__, "scripts.quality_universes_lib")
 _quality_adapter = import_repo_module(__file__, "scripts.quality_adapter_lib")
@@ -23,9 +23,9 @@ resolve_universe = _quality_universes.resolve_universe
 load_quality_adapter = _quality_adapter.load_quality_adapter
 
 try:
-    from scripts.repo_file_listing import iter_repo_files
+    from scripts.core.repo_file_listing import iter_repo_files
 except ModuleNotFoundError:
-    from repo_file_listing import iter_repo_files
+    from scripts.core.repo_file_listing import iter_repo_files
 
 IGNORED_DIRS = {
     ".artifacts",

@@ -36,7 +36,7 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _audit_narrative = SKILL_RUNTIME.load_local_skill_module(__file__, "audit_public_release_narrative")
 _notes_claims = SKILL_RUNTIME.load_local_skill_module(__file__, "release_notes_claims")
 _narrative_lint = SKILL_RUNTIME.load_local_skill_module(__file__, "lint_release_narrative")
-_repo_file_listing = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.repo_file_listing")
+_repo_file_listing = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.core.repo_file_listing")
 #: `RepoFileListingError` subclasses `SystemExit`, so it derives from
 #: `BaseException` and an `except Exception` handler NEVER catches it. The
 #: first version of the guard below was dead code for the one cause it named,

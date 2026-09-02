@@ -6,7 +6,7 @@ from runtime_bootstrap import import_repo_module
 
 from .support import ROOT
 
-_scan = import_repo_module(ROOT / "scripts/markdown_doc_scan.py", "scripts.markdown_doc_scan")
+_scan = import_repo_module(ROOT / "scripts/core/markdown_doc_scan.py", "scripts.core.markdown_doc_scan")
 
 
 def _write(tmp_path: Path, *lines: str) -> Path:

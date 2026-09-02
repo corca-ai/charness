@@ -393,7 +393,7 @@ def test_lesson_that_is_only_a_class_tag_is_skipped(tmp_path) -> None:
 def test_source_tree_marker_with_unreadable_manifest_is_not_a_source_tree(tmp_path) -> None:
     """A corrupt marker must read as 'not a source tree', never crash the guard."""
     lib = load_script_module(
-        "helper_provenance_lib_degradation_test", ROOT / "scripts" / "helper_provenance_lib.py"
+        "helper_provenance_lib_degradation_test", ROOT / "scripts" / "core" / "helper_provenance_lib.py"
     )
 
     root = tmp_path / "repo"
@@ -408,7 +408,7 @@ def test_charness_version_skips_unreadable_and_non_dict_manifests(tmp_path) -> N
     """Version lookup walks past a corrupt or wrong-shaped manifest to the next one."""
     lib = load_script_module(
         "helper_provenance_lib_version_degradation_test",
-        ROOT / "scripts" / "helper_provenance_lib.py",
+        ROOT / "scripts" / "core" / "helper_provenance_lib.py",
     )
 
     root = tmp_path / "repo"
@@ -438,7 +438,7 @@ def test_help_probe_readers_are_empty_when_the_probe_did_not_run_clean() -> None
     import subprocess as _sp
 
     probe_module = load_script_module(
-        "argparse_help_probe_degradation_test", ROOT / "scripts" / "argparse_help_probe.py"
+        "argparse_help_probe_degradation_test", ROOT / "scripts" / "core" / "argparse_help_probe.py"
     )
 
     probe = probe_module.HelpProbe(ROOT)
@@ -562,7 +562,7 @@ def test_a_scaffold_says_so_when_it_cannot_reach_the_gates_resolver(monkeypatch)
     declaring 300 would be handed a forecast of 180 with nothing red, and would write
     to fit a number its own gate does not enforce.
     """
-    from scripts import scaffold_artifact_lib
+    from scripts.core import scaffold_artifact_lib
 
     def boom(*_args, **_kwargs):
         raise AttributeError("resolver missing from a stale vendored validator")
@@ -586,7 +586,7 @@ def test_a_scaffold_publishes_no_budget_at_all_when_the_validator_never_loaded()
     a default exists to fall back to. Here nothing loaded, and publishing the shipped
     literal would assert a ceiling this install cannot enforce.
     """
-    from scripts import scaffold_artifact_lib
+    from scripts.core import scaffold_artifact_lib
 
     assert scaffold_artifact_lib.size_budget(None, 180, {}, guidance="g") is None
     assert scaffold_artifact_lib.size_budget(object(), None, {}, guidance="g") is None
@@ -658,7 +658,7 @@ def test_a_scaffold_still_imports_when_the_repo_root_validator_is_absent(
     assert module._MAX_ARTIFACT_WORDS is None
     # And the consequence the arm exists for: a payload with no ceiling claim at all,
     # rather than the shipped literal asserted against a gate this install cannot run.
-    from scripts import scaffold_artifact_lib
+    from scripts.core import scaffold_artifact_lib
 
     assert (
         scaffold_artifact_lib.size_budget(

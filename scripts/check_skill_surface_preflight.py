@@ -13,7 +13,7 @@ from yaml_output import emit_yaml
 
 REPO_ROOT = repo_root_from_script(__file__)
 _issue_anchor_scan = import_repo_module(__file__, "scripts.skill_issue_anchor_scan")
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 run_processes_in_order = _subprocess_guard.run_processes_in_order
 _density = import_repo_module(__file__, "scripts.skill_core_density")

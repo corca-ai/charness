@@ -9,7 +9,7 @@ from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
 
-_markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
+_markdown_doc_scan = import_repo_module(__file__, "scripts.core.markdown_doc_scan")
 iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 
 BACKTICK_CONTENT_RE = re.compile(r"`([^`\n]+)`")

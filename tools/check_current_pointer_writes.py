@@ -7,16 +7,16 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 try:
-    from scripts.repo_file_listing import (
+    from scripts.core.repo_file_listing import (
         RepoFileSnapshot,
         iter_matching_repo_files,
         iter_repo_files,
     )
-    from scripts.repo_layout import support_dir
+    from scripts.core.repo_layout import support_dir
     from scripts.yaml_output import emit_yaml
 except ModuleNotFoundError:  # invoked directly with only the scripts directory importable
-    from repo_file_listing import RepoFileSnapshot, iter_matching_repo_files, iter_repo_files
-    from repo_layout import support_dir
+    from scripts.core.repo_file_listing import RepoFileSnapshot, iter_matching_repo_files, iter_repo_files
+    from scripts.core.repo_layout import support_dir
 
     from yaml_output import emit_yaml
 

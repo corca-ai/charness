@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import git_status_snapshot as status
+from scripts.core import git_status_snapshot as status
 from tests.quality_gates.repo_shapes import install_committed_repo
 
 

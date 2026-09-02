@@ -9,10 +9,10 @@ from typing import Any
 
 from runtime_bootstrap import import_repo_module
 from scripts import lesson_score_outcome_lib as outcome_lib
-from scripts.git_checkout import head_oid_from_files
+from scripts.core.git_checkout import head_oid_from_files
 from scripts.recent_lessons_lib import build_lesson_selection_index
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
 LEDGER_FILENAME = "lesson-ledger.json"

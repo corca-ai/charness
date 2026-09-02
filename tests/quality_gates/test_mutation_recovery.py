@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 
 from runtime_bootstrap import import_repo_module
-from scripts.subprocess_guard import PhaseOutcome
+from scripts.core.subprocess_guard import PhaseOutcome
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "mutate_and_restore.py"

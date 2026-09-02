@@ -39,7 +39,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 _inline_code = import_repo_module(__file__, "scripts.check_markdown_inline_code")
-_path_portability = import_repo_module(__file__, "scripts.path_portability_lib")
+_path_portability = import_repo_module(__file__, "scripts.core.path_portability_lib")
 _markdownlint = import_repo_module(__file__, "scripts.markdownlint_probe")
 
 # Re-exported, not re-implemented. The markdownlint engine adapter moved to its own

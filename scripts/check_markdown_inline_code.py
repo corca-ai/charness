@@ -21,7 +21,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-_repo_file_listing = import_repo_module(__file__, "scripts.repo_file_listing")
+_repo_file_listing = import_repo_module(__file__, "scripts.core.repo_file_listing")
 iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
 
 FENCE_RE = re.compile(r"^\s*(```|~~~)")

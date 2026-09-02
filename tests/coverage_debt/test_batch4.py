@@ -32,7 +32,7 @@ CLASSIFY_PUSH_DIFF = load_script_module("batch4_classify_push_diff", ROOT / "scr
 GATHER = load_script_module("batch4_gather_public_url", ROOT / "skills/public/gather/scripts/gather_public_url.py")
 PRESCRIBED = load_script_module("batch4_check_prescribed_skill_executed", ROOT / "scripts/check_prescribed_skill_executed.py")
 WORKTREE_AUDIT = load_script_module("batch4_worktree_audit", ROOT / "scripts/worktree_audit.py")
-BOOTSTRAP_RUNTIME = load_script_module("batch4_bootstrap_runtime", ROOT / "scripts/bootstrap_runtime.py")
+BOOTSTRAP_RUNTIME = load_script_module("batch4_bootstrap_runtime", ROOT / "scripts/core/bootstrap_runtime.py")
 UPDATE_TOOLS = load_script_module("batch4_update_tools", ROOT / "scripts/update_tools.py")
 BOOTSTRAP_PREVIEW = load_script_module(
     "batch4_bootstrap_markdown_preview", ROOT / "skills/public/quality/scripts/bootstrap_markdown_preview.py"
@@ -442,7 +442,7 @@ def test_worktree_audit_prune_emits_a_second_yaml_document_behind_a_start_marker
 
 
 # --------------------------------------------------------------------------- #
-# scripts/bootstrap_runtime.py
+# scripts/core/bootstrap_runtime.py
 # --------------------------------------------------------------------------- #
 
 

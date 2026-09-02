@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts.adapter_lib import load_yaml_file
-from scripts.skill_markdown_lib import split_fenced_lines
+from scripts.core.skill_markdown_lib import split_fenced_lines
 
 
 def iso_from_ts(timestamp: float) -> str:

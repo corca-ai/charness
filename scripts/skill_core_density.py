@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import re
 
-from skill_markdown_lib import split_fenced_lines, strip_frontmatter
+from scripts.core.skill_markdown_lib import split_fenced_lines, strip_frontmatter
 
 # `Closeout Vocabulary` is headroom-exempt so a skill can keep the literal tokens
 # a representative run must reproduce VERBATIM for a well-formed / validator-

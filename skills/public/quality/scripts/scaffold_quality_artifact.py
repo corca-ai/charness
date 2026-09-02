@@ -20,7 +20,7 @@ load_adapter = _resolve_adapter.load_adapter
 _adapter_version_verdict = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.adapter_version_verdict"
 )
-_scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
+_scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.core.scaffold_artifact_lib")
 _resolve_quality_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_quality_artifact")
 
 #: What a subject-mismatch redirect replaces on the current-pointer payload. The record

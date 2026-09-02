@@ -10,7 +10,7 @@ from typing import Any
 from runtime_bootstrap import import_repo_module
 from yaml_output import emit_yaml
 
-_scaffold_artifact_lib = import_repo_module(__file__, "scripts.scaffold_artifact_lib")
+_scaffold_artifact_lib = import_repo_module(__file__, "scripts.core.scaffold_artifact_lib")
 _resolver = import_repo_module(__file__, "scripts.resolve_artifact_path")
 
 

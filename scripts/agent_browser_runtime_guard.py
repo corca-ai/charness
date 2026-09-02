@@ -21,7 +21,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
-_subprocess_guard = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.subprocess_guard")
+_subprocess_guard = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 _yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 emit_yaml = _yaml_output.emit_yaml

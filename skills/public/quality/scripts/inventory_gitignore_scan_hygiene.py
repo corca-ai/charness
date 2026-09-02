@@ -164,7 +164,7 @@ def analyze_file(path: Path, repo_root: Path) -> list[dict[str, object]]:
                 "reason": "repo-wide filesystem traversal without an obvious gitignore-aware file source",
                 "recommendation": (
                     "Prefer `git ls-files --cached --others --exclude-standard` or "
-                    "`scripts.repo_file_listing.iter_matching_repo_files` before scanning."
+                    "`scripts.core.repo_file_listing.iter_matching_repo_files` before scanning."
                 ),
             }
         )

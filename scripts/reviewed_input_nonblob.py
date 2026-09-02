@@ -23,9 +23,9 @@ import tempfile
 from pathlib import Path
 
 try:
-    from scripts.subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:  # loaded as a standalone sibling module
-    from subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 
 
 def _git_bytes_optional(repo_root: Path, *args: str) -> bytes | None:

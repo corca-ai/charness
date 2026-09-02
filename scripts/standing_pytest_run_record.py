@@ -28,7 +28,7 @@ from typing import Any
 
 from runtime_bootstrap import import_repo_module, runtime_root
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 heartbeat_interval_from_env = _subprocess_guard.heartbeat_interval_from_env
 
 

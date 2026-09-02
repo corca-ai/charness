@@ -15,7 +15,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_supply_chain_lib_module = import_repo_module(__file__, "scripts.supply_chain_lib")
 ValidationError = _scripts_supply_chain_lib_module.ValidationError
 detect_online_audit_surfaces = _scripts_supply_chain_lib_module.detect_online_audit_surfaces
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_monitored_phase = _subprocess_guard.run_monitored_phase
 
 DEFAULT_TRIAGE_OWNER = "repo-maintainers"

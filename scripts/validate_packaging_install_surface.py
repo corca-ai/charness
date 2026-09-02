@@ -13,8 +13,8 @@ try:
 except ModuleNotFoundError:  # imported as scripts.validate_packaging_install_surface
     from scripts.runtime_bootstrap import import_repo_module
 
-_skill_iter_module = import_repo_module(__file__, "scripts.skill_iter")
-_subprocess_guard_module = import_repo_module(__file__, "scripts.subprocess_guard")
+_skill_iter_module = import_repo_module(__file__, "scripts.core.skill_iter")
+_subprocess_guard_module = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard_module.run_process
 iter_skill_ids = _skill_iter_module.iter_skill_ids
 

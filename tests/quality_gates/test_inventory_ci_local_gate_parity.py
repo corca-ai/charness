@@ -18,7 +18,7 @@ from .support import run_script as subprocess_run_script
 SCRIPT = "skills/public/quality/scripts/inventory_ci_local_gate_parity.py"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _argparse_surface = import_repo_module(
-    REPO_ROOT / "scripts/argparse_surface_lib.py", "scripts.argparse_surface_lib"
+    REPO_ROOT / "scripts/core/argparse_surface_lib.py", "scripts.core.argparse_surface_lib"
 )
 _MODULE = load_module(
     "inventory_ci_local_gate_parity_under_test",

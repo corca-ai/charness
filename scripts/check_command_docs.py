@@ -14,10 +14,10 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_adapter_lib_module = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 run_processes_in_order = _subprocess_guard.run_processes_in_order
-_gate_report_emit = import_repo_module(__file__, "scripts.gate_report_emit")
+_gate_report_emit = import_repo_module(__file__, "scripts.core.gate_report_emit")
 # Findings still go to stderr so a green run's stdout stays quotable; only the
 # FORMAT changed here, never the stream this gate writes a verdict on.
 emit_findings_report = _gate_report_emit.emit_findings_report

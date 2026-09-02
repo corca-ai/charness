@@ -21,7 +21,7 @@ emit_yaml = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.yaml_output"
 ).emit_yaml
 run_process = SKILL_RUNTIME.load_repo_module_from_skill_script(
-    __file__, "scripts.subprocess_guard"
+    __file__, "scripts.core.subprocess_guard"
 ).run_process
 
 TRAILER_RE = re.compile(r"^(?P<key>[A-Za-z][A-Za-z0-9-]*):\s*(?P<value>.+)$")

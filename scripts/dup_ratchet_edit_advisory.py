@@ -36,13 +36,13 @@ import subprocess
 from pathlib import Path
 
 try:
-    from scripts.git_checkout import head_oid_from_files
+    from scripts.core.git_checkout import head_oid_from_files
 except ModuleNotFoundError:  # invoked as `python3 scripts/dup_ratchet_edit_advisory.py`
-    from git_checkout import head_oid_from_files
+    from scripts.core.git_checkout import head_oid_from_files
 
 from runtime_bootstrap import import_repo_module
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
 #: Fallback when the adapter cannot be read. Kept identical to the shipped
@@ -256,7 +256,7 @@ def advise_for_edited_file(
     if head_sha is None:
         # `.git/HEAD` already states this; a `rev-parse` subprocess purely to key
         # a dedupe cache asked Git a question the checkout files already answer
-        # (see `scripts.git_checkout.head_oid_from_files`).
+        # (see `scripts.core.git_checkout.head_oid_from_files`).
         head_sha = head_oid_from_files(repo_root)
     if _already_advised(repo_root, relpath, head_sha):
         return None

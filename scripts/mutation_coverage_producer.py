@@ -21,9 +21,9 @@ from typing import Callable
 from runtime_bootstrap import import_repo_module
 
 try:
-    from scripts.subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:  # executed directly from scripts/
-    from subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 
 _sampling = import_repo_module(__file__, "scripts.mutation_sampling_lib")
 _changed_files = import_repo_module(__file__, "scripts.mutation_changed_files_lib")

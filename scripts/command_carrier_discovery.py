@@ -69,12 +69,12 @@ from runtime_bootstrap import import_repo_module
 # import lines -- past the clone detector's floor, and a new fixable duplicate
 # family built from no logic at all. The gate this module was split out of
 # carries a comment recording the same trap from the other direction.
-_markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
+_markdown_doc_scan = import_repo_module(__file__, "scripts.core.markdown_doc_scan")
 iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 _check_doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 BACKTICK_CONTENT_RE = _check_doc_links.BACKTICK_CONTENT_RE
 iter_docs = _check_doc_links.iter_docs
-_repo_file_listing = import_repo_module(__file__, "scripts.repo_file_listing")
+_repo_file_listing = import_repo_module(__file__, "scripts.core.repo_file_listing")
 iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
 RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
 

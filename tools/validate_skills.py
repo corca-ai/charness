@@ -11,7 +11,7 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
-_scripts_skill_markdown_lib_module = import_repo_module(__file__, "scripts.skill_markdown_lib")
+_scripts_skill_markdown_lib_module = import_repo_module(__file__, "scripts.core.skill_markdown_lib")
 count_fence_blocks = _scripts_skill_markdown_lib_module.count_fence_blocks
 extract_h2_section_lines = _scripts_skill_markdown_lib_module.extract_h2_section_lines
 _scripts_skill_portability_lib_module = import_repo_module(__file__, "tools.skill_portability_lib")
@@ -396,7 +396,7 @@ SKILL_ROOTS = (
 
 def _resolved_skill_root(root: Path, kind: str, rel_root: Path) -> Path:
     if kind == "support":
-        from scripts.repo_layout import support_dir
+        from scripts.core.repo_layout import support_dir
 
         return support_dir(root)
     return root / rel_root

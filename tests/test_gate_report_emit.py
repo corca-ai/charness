@@ -1,4 +1,4 @@
-"""Pin the emit convention in scripts/gate_report_emit.py (#457 surviving mutants).
+"""Pin the emit convention in scripts/core/gate_report_emit.py (#457 surviving mutants).
 
 Five of the six mutants that survived the #457 mutation run were in
 `emit_findings_report`, because the module had no tests at all: mutants flipping
@@ -39,7 +39,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-import gate_report_emit  # noqa: E402
+import scripts.core.gate_report_emit  # noqa: E402
 
 # --- stream routing ---------------------------------------------------------
 

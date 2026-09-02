@@ -240,7 +240,7 @@ def test_reports_every_unfollowable_link_not_only_the_first(tmp_path: Path, monk
     write_doc(
         repo,
         "plugins/charness/shared/references/bootstrap-resolution.md",
-        "[a](../../../scripts/runtime_bootstrap.py)\n[b](../../../scripts/repo_layout.py)\n",
+        "[a](../../../scripts/runtime_bootstrap.py)\n[b](../../../scripts/core/repo_layout.py)\n",
     )
 
     result = run_check(monkeypatch, capsys, "--repo-root", str(repo))

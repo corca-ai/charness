@@ -36,7 +36,7 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module
 
 # One home for "the lines of a markdown section"; this module carried three copies.
-_sections = import_repo_module(__file__, "scripts.markdown_sections")
+_sections = import_repo_module(__file__, "scripts.core.markdown_sections")
 # The base loader library, NOT the injected `adapter_lib` parameter: callers inject the
 # CRITIQUE adapter (which owns `load_adapter`), while the rule for reading that loader's
 # refusals lives with the loader that produces them.

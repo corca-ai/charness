@@ -227,7 +227,7 @@ def evaluate_behavioral_verdict(text: str, classification: str, numbers: list[in
 # (``hotl/references/ledger-and-dispositions.md`` §Statuses) plus the
 # ``local-only-by-contract`` escape the behavioral-verdict floor already names.
 # ANCHORED to the value's leading token, mirroring the repo's existing disposition
-# grammar (``scripts/disposition_form.py`` ``_APPLIED`` / ``_ISSUE_LEAD``). An
+# grammar (``scripts/core/disposition_form.py`` ``_APPLIED`` / ``_ISSUE_LEAD``). An
 # unanchored search over the same vocabulary accepts a status's own NEGATION
 # ("not verified", "could not be verified; no readback available") and incidental
 # English prose ("a known issue with the provider") — so the floor rubber-stamped

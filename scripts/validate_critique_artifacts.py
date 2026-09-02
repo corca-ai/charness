@@ -36,7 +36,7 @@ _reviewer_evidence = import_repo_module(__file__, "scripts.critique_reviewer_evi
 _scope = import_repo_module(__file__, "scripts.critique_enforcement_scope")
 # One home for "the lines of a markdown section": this file carried three copies of
 # the same heading walk, each with a slightly different heading matcher.
-_sections = import_repo_module(__file__, "scripts.markdown_sections")
+_sections = import_repo_module(__file__, "scripts.core.markdown_sections")
 # The required-fields / unique-id / typed-enum loop over a structured-entry
 # section, shared with the ideation `## Structured Questions` floor.
 _structured_findings = import_repo_module(__file__, "scripts.critique_structured_findings")

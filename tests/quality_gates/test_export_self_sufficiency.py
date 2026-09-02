@@ -65,7 +65,7 @@ def test_the_export_ships_the_bootstrap_contract_beside_the_installer() -> None:
     dependency arm would also go green if the installer stopped being exported."""
     export_root = ROOT / "plugins" / "charness"
 
-    assert (export_root / "scripts" / "bootstrap_runtime.py").is_file()
+    assert (export_root / "scripts" / "core" / "bootstrap_runtime.py").is_file()
     assert (export_root / "packaging" / "bootstrap-python.json").is_file()
     assert (export_root / "packaging" / "bootstrap-requirements.txt").is_file()
 
@@ -558,7 +558,7 @@ def test_the_dominance_inventory_guard_invents_no_path_when_the_contract_is_miss
 def test_the_printed_bootstrap_command_only_uses_flags_that_exist() -> None:
     """Pins the pairing directly, so the two files cannot drift apart silently."""
     guard = (ROOT / "skills/public/gather/scripts/gather_public_url.py").read_text(encoding="utf-8")
-    bootstrap = (ROOT / "scripts/bootstrap_runtime.py").read_text(encoding="utf-8")
+    bootstrap = (ROOT / "scripts/core/bootstrap_runtime.py").read_text(encoding="utf-8")
 
     # The WHOLE guard block, not a character budget: an earlier version sliced 800
     # characters after the `except`, the only flag sat past the cut, and the loop

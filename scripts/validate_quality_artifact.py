@@ -35,7 +35,7 @@ add_artifact_path_arg = _scripts_artifact_validator_module.add_artifact_path_arg
 resolve_artifact_override = _scripts_artifact_validator_module.resolve_artifact_override
 # The canonical repo-relative renderer. A third local copy of the try/relative_to
 # dance is what a duplication gate caught twice in one session.
-repo_relative = import_repo_module(__file__, "scripts.path_portability_lib").repo_relative
+repo_relative = import_repo_module(__file__, "scripts.core.path_portability_lib").repo_relative
 find_index = _scripts_artifact_validator_module.find_index
 read_lines = _scripts_artifact_validator_module.read_lines
 validate_date_line = _scripts_artifact_validator_module.validate_date_line

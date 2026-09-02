@@ -17,7 +17,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _tools_eval_registry_module = import_repo_module(__file__, "tools.eval_registry")
 scenario_ids = _tools_eval_registry_module.scenario_ids
-_scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
+_scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.core.repo_file_listing")
 iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
 
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")

@@ -9,7 +9,7 @@ import pytest
 import yaml
 
 from runtime_bootstrap import import_repo_module
-from scripts.subprocess_guard import PhaseOutcome
+from scripts.core.subprocess_guard import PhaseOutcome
 
 ROOT = Path(__file__).resolve().parents[1]
 PERSIST = import_repo_module(

@@ -599,7 +599,7 @@ def test_index_hygiene_gates_import_through_their_scheduled_argv(script: str) ->
 
     That argv is what `staged_commit_gate_plan_helpers.index_hygiene_gates` builds,
     and it puts `<repo>/scripts` on `sys.path` WITHOUT the repo root. This gate
-    imported `scripts.git_status_snapshot`, which imports `scripts.git_checkout` in
+    imported `scripts.core.git_status_snapshot`, which imports `scripts.core.git_checkout` in
     turn, so it raised `ModuleNotFoundError: No module named 'scripts'` and could
     not run at all -- while every test passed, because tests import it in-process.
     """

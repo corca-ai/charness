@@ -19,7 +19,7 @@ from scripts.adapter_lib import (
     validate_adapter_version,
 )
 from scripts.control_plane_lib import load_manifests_for_discovery, load_support_capabilities
-from scripts.repo_layout import generated_support_dir, public_skills_dir, support_dir
+from scripts.core.repo_layout import generated_support_dir, public_skills_dir, support_dir
 from scripts.support_sync_lib import support_link_name, support_state_for_manifest
 
 PROVIDER_ID_ALIASES = {"github-gh": "github-worker"}

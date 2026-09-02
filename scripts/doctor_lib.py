@@ -11,7 +11,7 @@ from scripts.control_plane_lifecycle_lib import (
     render_repo_followup,
     skipped_healthcheck,
 )
-from scripts.repo_layout import discovery_stub_dir, generated_support_dir
+from scripts.core.repo_layout import discovery_stub_dir, generated_support_dir
 from scripts.support_sync_lib import (
     inspect_support_sync,
     support_link_name,

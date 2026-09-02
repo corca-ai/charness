@@ -79,7 +79,7 @@ def install_repo_root_script(repo: Path, script_name: str) -> tuple[Path, Path]:
     #
     # Repo-owned Python HELPERS a gate shells out to are deliberately NOT installed
     # here. Their dependency closure reaches back into `scripts/` as a package
-    # (`scripts.repo_file_listing` and onward), so installing them means reproducing the
+    # (`scripts.core.repo_file_listing` and onward), so installing them means reproducing the
     # repo, which is the thing this fixture exists to avoid. A test whose subject
     # is the gate's COMPOSITION stubs those helpers exactly as it stubs the external
     # tool; a test whose subject is a helper's own output belongs in that helper's

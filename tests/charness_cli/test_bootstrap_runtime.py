@@ -12,7 +12,7 @@ import pytest
 from .support import load_cli_module, pin_state_home
 
 ROOT = Path(__file__).resolve().parents[2]
-BOOTSTRAP_RUNTIME_PATH = ROOT / "scripts" / "bootstrap_runtime.py"
+BOOTSTRAP_RUNTIME_PATH = ROOT / "scripts" / "core" / "bootstrap_runtime.py"
 CHARNESS_PATH = ROOT / "charness"
 INIT_SH_PATH = ROOT / "init.sh"
 
@@ -174,7 +174,7 @@ def test_charness_invokes_repo_scripts_with_bootstrap_runtime(monkeypatch, tmp_p
     def fake_run(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
         del cwd
         commands.append(command)
-        if command[:2] == [sys.executable, "scripts/bootstrap_runtime.py"]:
+        if command[:2] == [sys.executable, "scripts/core/bootstrap_runtime.py"]:
             return completed(command, stdout="/tmp/charness-bootstrap/bin/python\n")
         if command == ["/tmp/charness-bootstrap/bin/python", "scripts/example.py", "--flag"]:
             return completed(command, stdout="ok\n")
@@ -186,7 +186,7 @@ def test_charness_invokes_repo_scripts_with_bootstrap_runtime(monkeypatch, tmp_p
     result = module.invoke_repo_script(repo_root, "scripts/example.py", "--flag")
 
     assert result == "ok"
-    assert commands[0][:2] == [sys.executable, "scripts/bootstrap_runtime.py"]
+    assert commands[0][:2] == [sys.executable, "scripts/core/bootstrap_runtime.py"]
     assert commands[1][0] == "/tmp/charness-bootstrap/bin/python"
 
 
@@ -233,7 +233,7 @@ def test_resolve_repo_python_bootstraps_when_launcher_is_absent(monkeypatch, tmp
     ) -> subprocess.CompletedProcess[str]:
         del cwd, env
         commands.append(command)
-        assert command[:2] == [sys.executable, "scripts/bootstrap_runtime.py"]
+        assert command[:2] == [sys.executable, "scripts/core/bootstrap_runtime.py"]
         return completed(command, stdout="/tmp/repaired/bin/python\n")
 
     monkeypatch.setattr(module, "run", fake_run)
@@ -285,7 +285,7 @@ def test_resolve_repo_python_leaves_malformed_contracts_to_bootstrap(
     ) -> subprocess.CompletedProcess[str]:
         del cwd, env
         commands.append(command)
-        assert command[:2] == [sys.executable, "scripts/bootstrap_runtime.py"]
+        assert command[:2] == [sys.executable, "scripts/core/bootstrap_runtime.py"]
         return completed(command, stdout="/tmp/repaired/bin/python\n")
 
     monkeypatch.setattr(module, "run", fake_run)
@@ -330,7 +330,7 @@ def test_resolve_repo_python_bootstraps_when_launcher_probe_fails(
             if requires_version_guard:
                 assert "sys.version_info[:2] < minimum" in command[2]
             return completed(command, returncode=1)
-        assert command[:2] == [sys.executable, "scripts/bootstrap_runtime.py"]
+        assert command[:2] == [sys.executable, "scripts/core/bootstrap_runtime.py"]
         return completed(command, stdout="/tmp/repaired/bin/python\n")
 
     monkeypatch.setattr(module, "run", fake_run)
@@ -351,7 +351,7 @@ def test_resolve_repo_python_bootstraps_when_launcher_is_not_executable(
     launcher.parent.mkdir(parents=True)
     launcher.write_text("not executable\n", encoding="utf-8")
     launcher.chmod(0o644)
-    bootstrap_script = repo_root / "scripts" / "bootstrap_runtime.py"
+    bootstrap_script = repo_root / "scripts" / "core" / "bootstrap_runtime.py"
     bootstrap_script.parent.mkdir(parents=True)
     bootstrap_script.write_text("print('/tmp/repaired/bin/python')\n", encoding="utf-8")
     module._BOOTSTRAP_PYTHON_CACHE.clear()
@@ -366,7 +366,7 @@ def test_init_sh_falls_back_to_python_when_python3_is_missing(tmp_path: Path) ->
     fixture_repo = tmp_path / "fixture-repo"
     (fixture_repo / "scripts").mkdir(parents=True)
     (fixture_repo / "packaging").mkdir(parents=True)
-    (fixture_repo / "scripts" / "bootstrap_runtime.py").write_text("# fixture\n", encoding="utf-8")
+    (fixture_repo / "scripts" / "core" / "bootstrap_runtime.py").write_text("# fixture\n", encoding="utf-8")
     (fixture_repo / "charness").write_text("# fixture\n", encoding="utf-8")
     init_copy = tmp_path / "init.sh"
     init_copy.write_text(INIT_SH_PATH.read_text(encoding="utf-8"), encoding="utf-8")
@@ -393,7 +393,7 @@ def test_init_sh_falls_back_to_python_when_python3_is_missing(tmp_path: Path) ->
     fake_python.write_text(
         "#!/bin/sh\n"
         f"printf '%s\\n' \"$@\" >> {python_log}\n"
-        "if [ \"$1\" = scripts/bootstrap_runtime.py ]; then\n"
+        "if [ \"$1\" = scripts/core/bootstrap_runtime.py ]; then\n"
         f"  printf '%s\\n' '{bootstrap_python}'\n"
         "  exit 0\n"
         "fi\n"
@@ -428,5 +428,5 @@ def test_init_sh_falls_back_to_python_when_python3_is_missing(tmp_path: Path) ->
     )
 
     assert result.returncode == 0, result.stderr
-    assert "scripts/bootstrap_runtime.py" in python_log.read_text(encoding="utf-8")
+    assert "scripts/core/bootstrap_runtime.py" in python_log.read_text(encoding="utf-8")
     assert bootstrap_log.read_text(encoding="utf-8").splitlines()[:2] == ["./charness", "init"]

@@ -32,7 +32,7 @@ resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapt
 scaffold_debug_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "scaffold_debug_artifact")
 risk_interrupt_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.risk_interrupt_lib")
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
-_scaffold_artifact_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
+_scaffold_artifact_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.core.scaffold_artifact_lib")
 declarations = SKILL_RUNTIME.load_local_skill_module(__file__, "debug_artifact_declarations")
 # The artifact-state questions the plan is assembled FROM, in one owner.
 _state = SKILL_RUNTIME.load_local_skill_module(__file__, "debug_artifact_state")

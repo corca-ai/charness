@@ -67,7 +67,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 native_gate_lib = import_repo_module(__file__, "scripts.native_gate_lib")
 NativeGateError = native_gate_lib.NativeGateError
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
 # floor-addition-restraint: BLOCKING, deliberately, against this repo's default of

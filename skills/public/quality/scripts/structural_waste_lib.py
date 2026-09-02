@@ -45,15 +45,15 @@ iter_snippets = _DISCOVERY.iter_snippets
 
 def _iter_repo_files():
     try:
-        from scripts.repo_file_listing import iter_repo_files
+        from scripts.core.repo_file_listing import iter_repo_files
     except ModuleNotFoundError:
         root = next(
             candidate
             for candidate in Path(__file__).resolve().parents
-            if (candidate / "scripts" / "repo_file_listing.py").is_file()
+            if (candidate / "scripts" / "core" / "repo_file_listing.py").is_file()
         )
         sys.path.insert(0, str(root))
-        from scripts.repo_file_listing import iter_repo_files
+        from scripts.core.repo_file_listing import iter_repo_files
     return iter_repo_files
 
 

@@ -62,12 +62,12 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 # The argparse side of this check -- what a parser declares, which options consume a
 # value, and which parser a flag written at a given position would reach.
-_argparse_surface = import_repo_module(__file__, "scripts.argparse_surface_lib")
+_argparse_surface = import_repo_module(__file__, "scripts.core.argparse_surface_lib")
 iter_invocation_tails = _argparse_surface.iter_invocation_tails
 resolve_subcommands = _argparse_surface.resolve_subcommands
 active_depth = _argparse_surface.active_depth
 MAX_SUBCOMMAND_DEPTH = _argparse_surface.MAX_SUBCOMMAND_DEPTH
-_argparse_help_probe = import_repo_module(__file__, "scripts.argparse_help_probe")
+_argparse_help_probe = import_repo_module(__file__, "scripts.core.argparse_help_probe")
 HelpProbe = _argparse_help_probe.HelpProbe
 HelpRunner = _argparse_help_probe.HelpRunner
 _check_doc_links = import_repo_module(__file__, "scripts.check_doc_links")
@@ -75,7 +75,7 @@ iter_known_repo_paths = _check_doc_links.iter_known_repo_paths
 looks_like_repo_reference = _check_doc_links.looks_like_repo_reference
 build_unique_basename_index = _check_doc_links.build_unique_basename_index
 portable_skill_package_root = _check_doc_links.portable_skill_package_root
-_gate_report_emit = import_repo_module(__file__, "scripts.gate_report_emit")
+_gate_report_emit = import_repo_module(__file__, "scripts.core.gate_report_emit")
 # Findings still go to stderr so a green run's stdout stays quotable; only the
 # FORMAT changed here, never the stream this gate writes a verdict on.
 emit_findings_report = _gate_report_emit.emit_findings_report

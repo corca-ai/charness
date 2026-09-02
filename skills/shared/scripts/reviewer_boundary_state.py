@@ -25,7 +25,7 @@ from pathlib import Path
 def _ensure_scripts_package() -> None:
     here = Path(__file__).resolve()
     for candidate in (here, *here.parents):
-        if (candidate / "scripts" / "git_status_snapshot.py").is_file():
+        if (candidate / "scripts" / "core" / "git_status_snapshot.py").is_file():
             root = str(candidate)
             if root not in sys.path:
                 sys.path.insert(0, root)
@@ -33,10 +33,10 @@ def _ensure_scripts_package() -> None:
 
 
 _ensure_scripts_package()
-from scripts.git_checkout import head_oid_from_files  # noqa: E402
-from scripts.git_status_snapshot import parse as parse_git_status  # noqa: E402
-from scripts.git_status_snapshot import status_args as git_status_args  # noqa: E402
-from scripts.subprocess_guard import run_process  # noqa: E402
+from scripts.core.git_checkout import head_oid_from_files  # noqa: E402
+from scripts.core.git_status_snapshot import parse as parse_git_status  # noqa: E402
+from scripts.core.git_status_snapshot import status_args as git_status_args  # noqa: E402
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 
 
 class FingerprintError(Exception):

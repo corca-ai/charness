@@ -118,16 +118,16 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module
 
 try:
-    from scripts.subprocess_guard import run_process
-except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
-    _scripts_dir = next(
-        ancestor / "scripts"
+    from scripts.core.subprocess_guard import run_process
+except ImportError:  # flat layout: the repo root is not on sys.path
+    _repo_root = next(
+        ancestor
         for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "subprocess_guard.py").is_file()
+        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
     )
-    if str(_scripts_dir) not in sys.path:
-        sys.path.insert(0, str(_scripts_dir))
-    from subprocess_guard import run_process
+    if str(_repo_root) not in sys.path:
+        sys.path.insert(0, str(_repo_root))
+    from scripts.core.subprocess_guard import run_process
 
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 _documents = import_repo_module(__file__, "scripts.probe_stimulus_documents")

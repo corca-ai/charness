@@ -27,9 +27,9 @@ import time
 from pathlib import Path
 
 try:
-    from scripts.subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 except ModuleNotFoundError:  # executed directly from scripts/
-    from subprocess_guard import run_process
+    from scripts.core.subprocess_guard import run_process
 
 FAILED_BASETEMP_KEEP = 3
 _RUN_BASETEMP_NAME = re.compile(r"^charness-run-[0-9]+$")

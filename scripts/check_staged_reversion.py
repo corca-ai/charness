@@ -67,14 +67,11 @@ try:
 except ModuleNotFoundError:
     from yaml_output import emit_yaml
 
-try:
-    from scripts.env_bypass import env_bypass_enabled
-except ModuleNotFoundError:
-    from env_bypass import env_bypass_enabled
-
 from runtime_bootstrap import import_repo_module
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_env_bypass = import_repo_module(__file__, "scripts.core.env_bypass")
+env_bypass_enabled = _env_bypass.env_bypass_enabled
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
 _ENV_BYPASS = "CHARNESS_ALLOW_STAGED_REVERSION"

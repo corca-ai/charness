@@ -40,11 +40,11 @@ if str(REPO_ROOT) not in sys.path:  # pragma: no cover - import bootstrap
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.checkout_view import CheckoutView, GitCheckout  # noqa: E402
-from scripts.git_status_snapshot import GitStatusError  # noqa: E402
-from scripts.git_status_snapshot import parse as parse_git_status  # noqa: E402
+from scripts.core.git_status_snapshot import GitStatusError  # noqa: E402
+from scripts.core.git_status_snapshot import parse as parse_git_status  # noqa: E402
 from scripts.mutation_changed_files_lib import changed_pool_fingerprint  # noqa: E402
 
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
 _GIT_OID_RE = re.compile(r"^(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})$")

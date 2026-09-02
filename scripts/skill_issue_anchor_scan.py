@@ -13,7 +13,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from skill_gate_report_render import render_gate_report
+from scripts.core.skill_gate_report_render import render_gate_report
 
 from runtime_bootstrap import load_path_module, repo_root_from_script
 

@@ -35,7 +35,7 @@ except ImportError:  # pragma: no cover - exercised by the coverage-producer tes
 # The repo's ONE child-process owner. Imported through the bootstrap rather than
 # `from scripts...` because this script is run directly as often as it is
 # imported, and a plain package import fails in the direct-invocation case.
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 if _EARLY_BYTECODE_GUARD:
     sys.dont_write_bytecode = False
 heartbeat_interval_from_env = _subprocess_guard.heartbeat_interval_from_env

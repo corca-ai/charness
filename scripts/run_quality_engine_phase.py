@@ -14,7 +14,7 @@ from run_quality_engine_runtime import RuntimeContext, substitute_command
 
 from runtime_bootstrap import import_repo_module
 
-_guard = import_repo_module(__file__, "scripts.subprocess_guard")
+_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_monitored_phase = _guard.run_monitored_phase
 
 
