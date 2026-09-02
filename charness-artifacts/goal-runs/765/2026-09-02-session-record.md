@@ -30,6 +30,35 @@ four closes below are unpushed. Do NOT re-implement #771; follow this order.
    and re-run pickup until it names #768 (`subprocess-retroactive-removal`).
 5. Continue with the #768 steps under "Next session, in order".
 
+## Session start executed (second session, 2026-09-02)
+
+Steps 0 to 4 above are done; the cursor names #768 (`cursor_revision: 4`).
+
+- Step 1 was NOT green at `9ae34cf2b`. A real clone (worktrees lie: a detached
+  HEAD trips `plan_release_run.py`, a linked worktree on a branch trips
+  `head_oid_from_files`) passed pytest 8554 but failed four later gates that no
+  earlier lane had read: bootstrap-shim drift in `goal_run_pickup.py`, "#773"
+  anchors in two portable-package docstrings, the repograph captured-reader
+  fixture missing `check-unreferenced-scripts`, and the boundary-bypass
+  ratchet (one convertible spawn in `test_unreferenced_scripts.py` plus three
+  rebound keys from #766/#767 edits). Fixed in `a5002ffc9` on top of
+  `9ae34cf2b`, following step 2's "fix in a new commit rather than skipping";
+  the fresh-clone lane then read `79 passed, 0 failed`, skip list empty.
+- Step 2: the pre-push hook runs the lane against the PARENT working tree, so
+  a push from this checkout (on the #768 commits, 131 red) refused. Pushed
+  `a5002ffc9` from the fresh clone with the GitHub remote added; the hook ran
+  there on the exact tree and passed. `origin/main` = `a5002ffc9`.
+- Step 3: `verify-closeout` = `verified` for #771, #773, #766, #767.
+- Step 4: `operations/update-parent-progress-768.json` (verified-write,
+  identity fields resolved from live metadata, no `binding_sha256` needed
+  after #773); body `bodies/parent-progress-768.md`; progress 4/5/9 rev 4.
+- Local `main` was rebased onto `a5002ffc9`: the twelve #768 commits have new
+  SHAs (tip `0485c7db9` before this record commit). The temporary worktree and
+  branch `tmp/wt-9ae34cf2b` were removed.
+
+Lesson: the push hook is a parent-tree gate, not a pushed-ref gate. Prove and
+push a boundary from a clone of the ref when the parent tree is mid-migration.
+
 ## Integrated locally (closeout carrier in the commit body, `verify-closeout` = carrier_verified)
 
 | Child | Commit subject | Proof that mattered |
