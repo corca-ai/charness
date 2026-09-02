@@ -63,7 +63,20 @@ Design:
    rows from the data file through the engine (`--print-docs-only-labels`)
    instead of its literal.
 
-Scope: `scripts/run-quality.sh`, `scripts/run_quality_engine*.py`,
+7. Live defect from the #772 map (`briefs/map-772.md` section 3.5): the
+   exported `run-quality.sh` in an installed tree dies with a bare bash
+   "No such file or directory" at `scripts/run-quality.sh:128` sourcing
+   `.githooks/runtime-env.sh`, which the export does not carry, because
+   `exported-copy-guard.sh:102-122` only refuses when git names a differing
+   toplevel and an installed plugin sits in no repo at all. The thin wrapper
+   must resolve the state root inside the engine with a documented fallback
+   when `.githooks/runtime-env.sh` is absent, so a consumer's quality run
+   works from the installed tree; and `exported-copy-guard.sh` must refuse
+   BY NAME when no git toplevel exists and the package root is not a source
+   checkout. Add a behavioural test that runs the exported wrapper from a
+   tempdir outside any repo (`boundary_contract`, the shell is the claim).
+
+Scope: `scripts/run-quality.sh`, `scripts/exported-copy-guard.sh`, `scripts/run_quality_engine*.py`,
 `scripts/quality_label_universe.py`, `scripts/check_code_lengths.py`,
 `scripts/check_timing_layer_completeness.py`, `.agents/quality-gates.yaml`,
 `.githooks/pre-push`, `docs/validator-timing-layers.md`,
