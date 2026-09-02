@@ -38,8 +38,7 @@ def test_no_documented_entrypoint_crashes_on_a_bare_import() -> None:
     payload = _gate.run_check(ROOT)
 
     assert payload["unguarded_entrypoint_imports"] == [], (
-        "a script the export tells a consumer to RUN imports a third-party "
-        "package unguarded"
+        "a script the export tells a consumer to RUN imports a third-party package unguarded"
     )
     assert payload["documented_entrypoint_count"] > 50, (
         "the entrypoint set is derived from exported docs; a near-empty set would "
@@ -92,10 +91,7 @@ def test_consumer_owned_roots_are_not_reported_against_the_real_export() -> None
     would overwrite consumer config, so "not shipped" is correct there and a
     check that reports them would be turned off within a day."""
     payload = _gate.run_check(ROOT)
-    reported = {
-        finding["segment"]
-        for finding in payload["advisory_unshipped_path_sites"]
-    }
+    reported = {finding["segment"] for finding in payload["advisory_unshipped_path_sites"]}
 
     assert reported.isdisjoint(_lib.CONSUMER_OWNED_ROOTS), reported
     for owned in (".agents", "charness-artifacts", "docs"):
@@ -221,9 +217,7 @@ def test_an_unshipped_first_segment_is_reported(tmp_path: Path) -> None:
         tmp_path, source='from pathlib import Path\np = Path(".") / "evals" / "fixtures"\n'
     )
 
-    findings = _lib.unshipped_path_findings(
-        export_root, repo_root_entries={"evals", "scripts"}
-    )
+    findings = _lib.unshipped_path_findings(export_root, repo_root_entries={"evals", "scripts"})
 
     assert [finding["segment"] for finding in findings] == ["evals"]
 
@@ -240,9 +234,7 @@ def test_a_shipped_directory_does_not_excuse_an_unshipped_path_inside_it(
         requirements="PyYAML>=6\n",
     )
 
-    findings = _lib.unshipped_path_findings(
-        export_root, repo_root_entries={"packaging", "scripts"}
-    )
+    findings = _lib.unshipped_path_findings(export_root, repo_root_entries={"packaging", "scripts"})
 
     assert [finding["literal"] for finding in findings] == ["packaging/charness.json"]
 
@@ -261,9 +253,7 @@ def test_a_subpath_written_as_one_literal_does_not_escape(tmp_path: Path) -> Non
         requirements="PyYAML>=6\n",
     )
 
-    findings = _lib.unshipped_path_findings(
-        export_root, repo_root_entries={"packaging", "scripts"}
-    )
+    findings = _lib.unshipped_path_findings(export_root, repo_root_entries={"packaging", "scripts"})
 
     assert [finding["literal"] for finding in findings] == ["packaging/charness.json"]
 
@@ -399,7 +389,9 @@ def test_unestablished_exits_3_and_the_runner_knows_that_label(monkeypatch) -> N
     assert "check-export-self-sufficiency" in labels
 
 
-def test_a_present_but_invalid_manifest_is_not_reported_as_absent(tmp_path: Path, monkeypatch) -> None:
+def test_a_present_but_invalid_manifest_is_not_reported_as_absent(
+    tmp_path: Path, monkeypatch
+) -> None:
     """The blanket `except Exception` this replaces reported a real, unrelated
     packaging defect as "no manifest here" -- a false cause, and a laundering
     path the moment unestablished stopped exiting 1."""
@@ -446,6 +438,9 @@ def test_the_documented_gather_entrypoint_names_what_to_install() -> None:
     assert "bootstrap_runtime.py" in source
 
 
+@pytest.mark.boundary_contract(
+    reason="env-scrubbed export self-sufficiency: the clean interpreter must execute the gather import guard"
+)
 def test_the_gather_guard_actually_runs_and_names_what_to_install(tmp_path: Path) -> None:
     """EXECUTED, not grepped.
 
@@ -488,10 +483,15 @@ def test_the_gather_guard_actually_runs_and_names_what_to_install(tmp_path: Path
     for token in message.split():
         candidate = token.strip("`,.")
         if candidate.startswith("/") and ("packaging/" in candidate or candidate.endswith(".py")):
-            assert Path(candidate).exists(), f"the guard printed a path that does not exist: {candidate}"
+            assert Path(candidate).exists(), (
+                f"the guard printed a path that does not exist: {candidate}"
+            )
     assert str(ROOT / "packaging" / "bootstrap-requirements.txt") in message
 
 
+@pytest.mark.boundary_contract(
+    reason="env-scrubbed export self-sufficiency: the clean interpreter must execute the inventory import guard"
+)
 def test_the_dominance_inventory_guard_actually_runs_and_names_what_to_install(
     tmp_path: Path,
 ) -> None:
@@ -533,7 +533,9 @@ def test_the_dominance_inventory_guard_actually_runs_and_names_what_to_install(
     for token in message.split():
         candidate = token.strip("`,.")
         if candidate.startswith("/") and ("packaging/" in candidate or candidate.endswith(".py")):
-            assert Path(candidate).exists(), f"the guard printed a path that does not exist: {candidate}"
+            assert Path(candidate).exists(), (
+                f"the guard printed a path that does not exist: {candidate}"
+            )
     assert str(ROOT / "packaging" / "bootstrap-requirements.txt") in message
 
 
@@ -554,9 +556,7 @@ def test_the_dominance_inventory_guard_invents_no_path_when_the_contract_is_miss
 
 def test_the_printed_bootstrap_command_only_uses_flags_that_exist() -> None:
     """Pins the pairing directly, so the two files cannot drift apart silently."""
-    guard = (ROOT / "skills/public/gather/scripts/gather_public_url.py").read_text(
-        encoding="utf-8"
-    )
+    guard = (ROOT / "skills/public/gather/scripts/gather_public_url.py").read_text(encoding="utf-8")
     bootstrap = (ROOT / "scripts/bootstrap_runtime.py").read_text(encoding="utf-8")
 
     # The WHOLE guard block, not a character budget: an earlier version sliced 800
@@ -609,7 +609,9 @@ def test_the_arm_measures_the_INSTRUCTION_and_not_merely_the_script_name(tmp_pat
     assert _lib.repo_root_instruction_findings(fixed) == []
 
 
-def test_an_instruction_naming_an_unshipped_script_is_not_this_arms_business(tmp_path: Path) -> None:
+def test_an_instruction_naming_an_unshipped_script_is_not_this_arms_business(
+    tmp_path: Path,
+) -> None:
     """A consumer-owned command that happens to live under `scripts/` is not a delivery
     bug: there is nothing in the export it should have pointed at instead."""
     export_root = _instruction_export(
@@ -638,10 +640,14 @@ def test_a_skill_doc_is_consumer_doc_and_a_module_docstring_is_module_prose(tmp_
     )
 
     assert [f["site_class"] for f in _lib.repo_root_instruction_findings(doc)] == ["consumer-doc"]
-    assert [f["site_class"] for f in _lib.repo_root_instruction_findings(module)] == ["module-prose"]
+    assert [f["site_class"] for f in _lib.repo_root_instruction_findings(module)] == [
+        "module-prose"
+    ]
 
 
-def test_a_script_under_a_skills_scripts_dir_is_module_prose_not_consumer_doc(tmp_path: Path) -> None:
+def test_a_script_under_a_skills_scripts_dir_is_module_prose_not_consumer_doc(
+    tmp_path: Path,
+) -> None:
     """A `.md` under a `scripts/` directory is module documentation, not consumer prose.
     This is the case the `/scripts/` clause exists for; a `.py` there is already caught
     by the suffix test, so without a non-.py fixture the clause would be uncovered."""
@@ -838,7 +844,9 @@ def test_an_undecodable_file_is_skipped_rather_than_crashing_the_arm(tmp_path: P
         doc_relative="skills/demo/references/how.md",
         body="Run `python3 scripts/render_thing.py`\n",
     )
-    (export_root / "skills" / "demo" / "references" / "blob.json").write_bytes(b"\xff\xfe\x00binary")
+    (export_root / "skills" / "demo" / "references" / "blob.json").write_bytes(
+        b"\xff\xfe\x00binary"
+    )
 
     findings = _lib.repo_root_instruction_findings(export_root)
 

@@ -13,6 +13,7 @@ Two fail-open defects this file pins:
 The gate must still pass a clean full stage, a fully staged deletion, and an
 unstaged-only deletion.
 """
+
 from __future__ import annotations
 
 import importlib
@@ -50,32 +51,22 @@ def test_classify_stale_projects_edited_and_orphaned_from_index_sides() -> None:
     assert edited == {"f.txt"}
     assert orphaned == set()
 
-    edited, orphaned = cswc.classify_stale(
-        {"f.txt"}, set(), set(), present=_present("f.txt")
-    )
+    edited, orphaned = cswc.classify_stale({"f.txt"}, set(), set(), present=_present("f.txt"))
     assert edited == set()
     assert orphaned == {"f.txt"}
 
-    edited, orphaned = cswc.classify_stale(
-        {"f.txt"}, set(), set(), present=_present()
-    )
+    edited, orphaned = cswc.classify_stale({"f.txt"}, set(), set(), present=_present())
     assert (edited, orphaned) == (set(), set())
 
 
 def test_classify_stale_passes_a_clean_full_stage_and_a_fully_applied_deletion() -> None:
-    edited, orphaned = cswc.classify_stale(
-        {"f.txt"}, set(), {"f.txt"}, present=_present("f.txt")
-    )
+    edited, orphaned = cswc.classify_stale({"f.txt"}, set(), {"f.txt"}, present=_present("f.txt"))
     assert (edited, orphaned) == (set(), set())
 
-    edited, orphaned = cswc.classify_stale(
-        {"f.txt"}, set(), set(), present=_present()
-    )
+    edited, orphaned = cswc.classify_stale({"f.txt"}, set(), set(), present=_present())
     assert (edited, orphaned) == (set(), set())
 
-    edited, orphaned = cswc.classify_stale(
-        set(), {"g.txt"}, {"g.txt"}, present=_present()
-    )
+    edited, orphaned = cswc.classify_stale(set(), {"g.txt"}, {"g.txt"}, present=_present())
     assert (edited, orphaned) == (set(), set())
 
 
@@ -227,7 +218,10 @@ def _case_rename_source_recreated_is_flagged(repo: Path, monkeypatch) -> None:
     # The letter-based query the first cut used sees nothing here.
     letters = subprocess.run(
         ["git", "diff", "--cached", "--name-only", "--diff-filter=D"],
-        cwd=repo, capture_output=True, text=True, check=True,
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout.split()
     assert letters == [], "rename detection collapsed the D; this is why the query changed"
 
@@ -251,8 +245,8 @@ def _case_dangling_symlink_at_orphaned_path(repo: Path, monkeypatch) -> None:
     git(repo, "rm", "-q", "--cached", "f.txt")
     (repo / "f.txt").unlink()
     (repo / "f.txt").symlink_to(repo / "nonexistent-target")
-    assert not (repo / "f.txt").exists()      # the old predicate said "gone"
-    assert (repo / "f.txt").is_symlink()      # a walker still sees it
+    assert not (repo / "f.txt").exists()  # the old predicate said "gone"
+    assert (repo / "f.txt").is_symlink()  # a walker still sees it
     assert cswc.find_stale_staged(repo) == ["f.txt"]
 
 
@@ -349,7 +343,9 @@ def _case_intent_to_add_rename_does_not_hide_deletion(repo: Path, monkeypatch) -
     collapsed = subprocess.run(
         ["git", "diff", "--name-only"], cwd=repo, capture_output=True, text=True, check=True
     ).stdout.split()
-    assert "f.txt" not in collapsed, "rename detection hid it; this is why --no-renames is on both reads"
+    assert "f.txt" not in collapsed, (
+        "rename detection hid it; this is why --no-renames is on both reads"
+    )
 
     assert "f.txt" in cswc.find_stale_staged(repo)
 
@@ -421,7 +417,9 @@ def test_env_values_that_enable_or_disable_the_bypass(monkeypatch) -> None:
     assert cswc.main(["--repo-root", "/nonexistent"]) == 0
 
 
-def test_untrack_remedy_is_not_git_add_and_actually_runs(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_untrack_remedy_is_not_git_add_and_actually_runs(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     """The offered remedies are EXECUTED here, not string-matched.
 
     The first cut of this repair offered `git rm <path>` for an orphaned path.
@@ -433,7 +431,7 @@ def test_untrack_remedy_is_not_git_add_and_actually_runs(tmp_path: Path, monkeyp
     """
     monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
     repo = _repo(tmp_path)
-    git(repo, "rm", "-q", "--cached", "f.txt")          # orphaned
+    git(repo, "rm", "-q", "--cached", "f.txt")  # orphaned
     (repo / "g.txt").write_text("g2\n", encoding="utf-8")
     git(repo, "add", "g.txt")
     (repo / "g.txt").write_text("g3\n", encoding="utf-8")  # staged then edited
@@ -500,9 +498,7 @@ def test_classification_uses_one_status_snapshot(tmp_path: Path, monkeypatch) ->
 
     def _status(command, **_kwargs):
         calls.append(command)
-        return subprocess.CompletedProcess(
-            command, 0, b"1 MM x x x x x x f.txt\0", b""
-        )
+        return subprocess.CompletedProcess(command, 0, b"1 MM x x x x x x f.txt\0", b"")
 
     monkeypatch.setattr(cswc.subprocess, "run", _status)
 
@@ -585,9 +581,8 @@ def test_an_unreadable_path_is_treated_as_present(tmp_path: Path, monkeypatch) -
 
 @pytest.mark.boundary_contract(
     reason=(
-        "the defect is the ARGV, so it is only observable as a real process: every "
-        "in-process import resolves `scripts.` via pyproject `pythonpath`, which is "
-        "exactly what hid a gate that could not run through its own invocation"
+        "__main__ dispatch smoke: the scheduled ARGV puts only scripts/ on sys.path, "
+        "so each gate must be runnable as a program without the test runner's package path"
     )
 )
 @pytest.mark.parametrize(

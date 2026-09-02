@@ -10,14 +10,31 @@ atomically refreshes the pointer.
 from __future__ import annotations
 
 import hashlib
+import io
 import os
-import subprocess
+import sys
 from pathlib import Path
+
+from tests.script_main import load_script_module, run_loaded_script_main
 
 from .repo_shapes import install_committed_repo
 from .support import run_script
 
 WRITE_RECORD = "skills/public/gather/scripts/write_record.py"
+WRITE_RECORD_MODULE = load_script_module(
+    "gather_write_record_symlink_safety",
+    Path(__file__).resolve().parents[2] / WRITE_RECORD,
+)
+
+
+def _run_write_record(monkeypatch, *args: str, input_text: str = "x\n"):
+    monkeypatch.setattr(sys, "stdin", io.StringIO(input_text))
+    return run_loaded_script_main(
+        WRITE_RECORD,
+        WRITE_RECORD_MODULE,
+        *args,
+        cli_error_names=("WriteError",),
+    )
 
 
 def _bootstrap_gather_repo(tmp_path: Path) -> Path:
@@ -74,35 +91,28 @@ def test_write_record_does_not_mutate_prior_canonical_when_pointer_is_symlink(
     assert target == new_canonical.name, target
 
 
-def test_write_record_blocks_when_dated_path_exists(tmp_path: Path) -> None:
+def test_write_record_blocks_when_dated_path_exists(tmp_path: Path, monkeypatch) -> None:
     repo = _bootstrap_gather_repo(tmp_path)
     gather_dir = repo / "charness-artifacts" / "gather"
     existing = gather_dir / "2026-05-09-already-here.md"
     existing.write_text("# already here\n", encoding="utf-8")
 
-    proc = subprocess.run(
-        [
-            "python3",
-            WRITE_RECORD,
-            "--repo-root",
-            str(repo),
-            "--slug",
-            "already-here",
-            "--date",
-            "2026-05-09",
-            "--execute",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        input="duplicate content\n",
-        capture_output=True,
-        text=True,
-        check=False,
+    proc = _run_write_record(
+        monkeypatch,
+        "--repo-root",
+        str(repo),
+        "--slug",
+        "already-here",
+        "--date",
+        "2026-05-09",
+        "--execute",
+        input_text="duplicate content\n",
     )
     assert proc.returncode == 1, proc.stdout
     assert "dated record already exists" in proc.stdout
 
 
-def test_write_record_dry_run_does_not_write(tmp_path: Path) -> None:
+def test_write_record_dry_run_does_not_write(tmp_path: Path, monkeypatch) -> None:
     repo = _bootstrap_gather_repo(tmp_path)
     gather_dir = repo / "charness-artifacts" / "gather"
     prior = gather_dir / "2026-05-09-prior.md"
@@ -110,22 +120,15 @@ def test_write_record_dry_run_does_not_write(tmp_path: Path) -> None:
     (gather_dir / "latest.md").symlink_to(prior.name)
     prior_sha = _sha256_bytes(prior)
 
-    proc = subprocess.run(
-        [
-            "python3",
-            WRITE_RECORD,
-            "--repo-root",
-            str(repo),
-            "--slug",
-            "dry-run",
-            "--date",
-            "2026-05-09",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        input="dry run\n",
-        capture_output=True,
-        text=True,
-        check=False,
+    proc = _run_write_record(
+        monkeypatch,
+        "--repo-root",
+        str(repo),
+        "--slug",
+        "dry-run",
+        "--date",
+        "2026-05-09",
+        input_text="dry run\n",
     )
     assert proc.returncode == 0, proc.stderr
     assert "planned" in proc.stdout
@@ -133,27 +136,20 @@ def test_write_record_dry_run_does_not_write(tmp_path: Path) -> None:
     assert _sha256_bytes(prior) == prior_sha
 
 
-def test_write_record_creates_fresh_pointer_when_absent(tmp_path: Path) -> None:
+def test_write_record_creates_fresh_pointer_when_absent(tmp_path: Path, monkeypatch) -> None:
     repo = _bootstrap_gather_repo(tmp_path)
     gather_dir = repo / "charness-artifacts" / "gather"
 
-    proc = subprocess.run(
-        [
-            "python3",
-            WRITE_RECORD,
-            "--repo-root",
-            str(repo),
-            "--slug",
-            "fresh",
-            "--date",
-            "2026-05-09",
-            "--execute",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        input="fresh content\n",
-        capture_output=True,
-        text=True,
-        check=False,
+    proc = _run_write_record(
+        monkeypatch,
+        "--repo-root",
+        str(repo),
+        "--slug",
+        "fresh",
+        "--date",
+        "2026-05-09",
+        "--execute",
+        input_text="fresh content\n",
     )
     assert proc.returncode == 0, proc.stdout
     record = gather_dir / "2026-05-09-fresh.md"
@@ -162,31 +158,23 @@ def test_write_record_creates_fresh_pointer_when_absent(tmp_path: Path) -> None:
     assert pointer.exists()
 
 
-def test_write_record_rejects_invalid_date(tmp_path: Path) -> None:
+def test_write_record_rejects_invalid_date(tmp_path: Path, monkeypatch) -> None:
     repo = _bootstrap_gather_repo(tmp_path)
-    proc = subprocess.run(
-        [
-            "python3",
-            WRITE_RECORD,
-            "--repo-root",
-            str(repo),
-            "--slug",
-            "ok",
-            "--date",
-            "../../etc",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        input="x\n",
-        capture_output=True,
-        text=True,
-        check=False,
+    proc = _run_write_record(
+        monkeypatch,
+        "--repo-root",
+        str(repo),
+        "--slug",
+        "ok",
+        "--date",
+        "../../etc",
     )
     assert proc.returncode == 1
     assert "ISO YYYY-MM-DD" in proc.stderr
 
 
 def test_write_record_blocks_when_pointer_symlink_targets_outside_output_dir(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch
 ) -> None:
     repo = _bootstrap_gather_repo(tmp_path)
     gather_dir = repo / "charness-artifacts" / "gather"
@@ -195,52 +183,37 @@ def test_write_record_blocks_when_pointer_symlink_targets_outside_output_dir(
     pointer = gather_dir / "latest.md"
     pointer.symlink_to("../../outside-target.md")
 
-    proc = subprocess.run(
-        [
-            "python3",
-            WRITE_RECORD,
-            "--repo-root",
-            str(repo),
-            "--slug",
-            "new",
-            "--date",
-            "2026-05-09",
-            "--execute",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        input="x\n",
-        capture_output=True,
-        text=True,
-        check=False,
+    proc = _run_write_record(
+        monkeypatch,
+        "--repo-root",
+        str(repo),
+        "--slug",
+        "new",
+        "--date",
+        "2026-05-09",
+        "--execute",
     )
     assert proc.returncode == 1, proc.stdout
     assert "outside output_dir" in proc.stdout
 
 
-def test_write_record_handles_dangling_symlink_pointer(tmp_path: Path) -> None:
+def test_write_record_handles_dangling_symlink_pointer(tmp_path: Path, monkeypatch) -> None:
     repo = _bootstrap_gather_repo(tmp_path)
     gather_dir = repo / "charness-artifacts" / "gather"
     pointer = gather_dir / "latest.md"
     # symlink to a record that doesn't exist (dangling)
     pointer.symlink_to("2026-01-01-missing.md")
 
-    proc = subprocess.run(
-        [
-            "python3",
-            WRITE_RECORD,
-            "--repo-root",
-            str(repo),
-            "--slug",
-            "fresh-after-dangling",
-            "--date",
-            "2026-05-09",
-            "--execute",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        input="content\n",
-        capture_output=True,
-        text=True,
-        check=False,
+    proc = _run_write_record(
+        monkeypatch,
+        "--repo-root",
+        str(repo),
+        "--slug",
+        "fresh-after-dangling",
+        "--date",
+        "2026-05-09",
+        "--execute",
+        input_text="content\n",
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
     assert pointer.is_symlink()
@@ -248,28 +221,22 @@ def test_write_record_handles_dangling_symlink_pointer(tmp_path: Path) -> None:
     assert target == "2026-05-09-fresh-after-dangling.md", target
 
 
-def test_write_record_rejects_invalid_slug(tmp_path: Path) -> None:
+def test_write_record_rejects_invalid_slug(tmp_path: Path, monkeypatch) -> None:
     repo = _bootstrap_gather_repo(tmp_path)
-    proc = subprocess.run(
-        [
-            "python3",
-            WRITE_RECORD,
-            "--repo-root",
-            str(repo),
-            "--slug",
-            "Has Spaces",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        input="x\n",
-        capture_output=True,
-        text=True,
-        check=False,
+    proc = _run_write_record(
+        monkeypatch,
+        "--repo-root",
+        str(repo),
+        "--slug",
+        "Has Spaces",
     )
     assert proc.returncode == 1
     assert "lowercase letters, digits, and hyphens" in proc.stderr
 
 
-def test_write_record_refuses_empty_content_instead_of_erasing_the_pointer(tmp_path: Path) -> None:
+def test_write_record_refuses_empty_content_instead_of_erasing_the_pointer(
+    tmp_path: Path, monkeypatch
+) -> None:
     """Sweep row S19, parent-reproduced. Empty content wrote a 0-byte dated record AND
     overwrote `latest.md` with 0 bytes, reporting `{"status": "updated",
     "wrote_record": true}` and exit 0.
@@ -290,10 +257,17 @@ def test_write_record_refuses_empty_content_instead_of_erasing_the_pointer(tmp_p
     whitespace.write_text("   \n\n\t\n", encoding="utf-8")
     for label, content_file in (("empty", tmp_path / "empty.md"), ("whitespace-only", whitespace)):
         content_file.touch(exist_ok=True)
-        result = run_script(
-            WRITE_RECORD, "--repo-root", str(repo), "--slug", f"{label}-record",
-            "--date", "2026-05-10", "--content-file", str(content_file), "--execute",
-            cwd=Path.cwd(), env={**os.environ}, real_process=True,
+        result = _run_write_record(
+            monkeypatch,
+            "--repo-root",
+            str(repo),
+            "--slug",
+            f"{label}-record",
+            "--date",
+            "2026-05-10",
+            "--content-file",
+            str(content_file),
+            "--execute",
         )
         assert result.returncode == 1, label
         assert "refusing to write an empty gather record" in result.stderr, label
@@ -303,16 +277,24 @@ def test_write_record_refuses_empty_content_instead_of_erasing_the_pointer(tmp_p
 
     # The dry-run path reads content too (it reports `content_bytes`), so it must
     # refuse the same input the executing run would rather than plan a write.
-    planned = run_script(
-        WRITE_RECORD, "--repo-root", str(repo), "--slug", "empty-plan",
-        "--date", "2026-05-11", "--content-file", str(tmp_path / "empty.md"),
-        cwd=Path.cwd(), env={**os.environ}, real_process=True,
+    planned = _run_write_record(
+        monkeypatch,
+        "--repo-root",
+        str(repo),
+        "--slug",
+        "empty-plan",
+        "--date",
+        "2026-05-11",
+        "--content-file",
+        str(tmp_path / "empty.md"),
     )
     assert planned.returncode == 1
     assert "refusing to write an empty gather record" in planned.stderr
 
 
-def test_write_record_refuses_a_content_file_that_is_not_a_file(tmp_path: Path) -> None:
+def test_write_record_refuses_a_content_file_that_is_not_a_file(
+    tmp_path: Path, monkeypatch
+) -> None:
     """An ABSENT `--content-file` is not empty content, and it is not a crash either.
 
     The emptiness refusal above reads the file to judge it. Reaching that read with a
@@ -335,10 +317,17 @@ def test_write_record_refuses_a_content_file_that_is_not_a_file(tmp_path: Path) 
     cases = (("absent", tmp_path / "never-written.md"), ("directory", a_directory))
     for label, content_file in cases:
         for arm, extra in (("execute", ["--execute"]), ("dry-run", [])):
-            result = run_script(
-                WRITE_RECORD, "--repo-root", str(repo), "--slug", f"{label}-{arm}",
-                "--date", "2026-05-13", "--content-file", str(content_file), *extra,
-                cwd=Path.cwd(), env={**os.environ}, real_process=True,
+            result = _run_write_record(
+                monkeypatch,
+                "--repo-root",
+                str(repo),
+                "--slug",
+                f"{label}-{arm}",
+                "--date",
+                "2026-05-13",
+                "--content-file",
+                str(content_file),
+                *extra,
             )
             assert result.returncode == 1, f"{label}/{arm}"
             assert "does not exist or is not a file" in result.stderr, f"{label}/{arm}"

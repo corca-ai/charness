@@ -10,6 +10,7 @@ rule rather than of an unrelated script.
 Each test names the pre-repair verdict it pins against, because that verdict is what the
 2026-08-01 reproduction controls actually observed in the parent.
 """
+
 from __future__ import annotations
 
 import json
@@ -219,7 +220,10 @@ def _stub_live_scan(monkeypatch, families: int = 50):
         REBASELINE._scan,
         "live_scan_for_rebaseline",
         lambda *args, **kwargs: (
-            "charness-artifacts/quality/dup-ratchet-baseline.json", members, "nose-1.2.3", None
+            "charness-artifacts/quality/dup-ratchet-baseline.json",
+            members,
+            "nose-1.2.3",
+            None,
         ),
     )
     return members
@@ -263,7 +267,9 @@ def test_s28_a_genuine_first_time_bootstrap_still_writes(tmp_path, monkeypatch):
     assert baseline.is_file()
 
 
-def test_s28_a_readable_baseline_with_a_small_delta_is_untouched_by_the_new_gate(tmp_path, monkeypatch):
+def test_s28_a_readable_baseline_with_a_small_delta_is_untouched_by_the_new_gate(
+    tmp_path, monkeypatch
+):
     members = _stub_live_scan(monkeypatch)
     repo, baseline = _rebaseline_repo(tmp_path, None)
     REBASELINE.write_gate_baseline(baseline, members, "nose-1.2.3")
@@ -353,7 +359,9 @@ def test_s35_this_repo_declares_its_surfaces_and_has_none_absent():
     payload = CURRENT_RELEASE.build_payload(ROOT)
 
     assert payload["required_release_surfaces"] == [
-        "claude_plugin", "codex_plugin", "claude_marketplace_version",
+        "claude_plugin",
+        "codex_plugin",
+        "claude_marketplace_version",
         "codex_marketplace_source_path",
     ]
     assert payload["absent_surfaces"] == []
@@ -480,9 +488,7 @@ def test_the_measurement_emits_a_structured_payload(tmp_path, monkeypatch, capsy
     (tmp_path / ".agents").mkdir(parents=True)
     (tmp_path / ".agents" / "issue-adapter.yaml").write_text("version: 1\n", encoding="utf-8")
     measure = _measure()
-    monkeypatch.setattr(
-        "sys.argv", ["measure", "--repo-root", str(tmp_path), "--roots", ".agents"]
-    )
+    monkeypatch.setattr("sys.argv", ["measure", "--repo-root", str(tmp_path), "--roots", ".agents"])
 
     assert measure.main() == 0
     assert yaml.safe_load(capsys.readouterr().out)["uninterpreted_line_count"] == 0
@@ -652,6 +658,9 @@ def test_the_measurement_raises_if_the_report_variant_ever_diverges(tmp_path, mo
         raise AssertionError("the divergence guard did not fire")
 
 
+@pytest.mark.boundary_contract(
+    reason="__main__ dispatch smoke: the measurement script must be runnable as a program"
+)
 def test_the_measurement_runs_as_a_script(tmp_path):
     # `measure_adapter_yaml_uninterpreted.py:138` — the `__main__` guard. Only a
     # subprocess invocation reaches it, and the mutation coverage producer captures
@@ -666,9 +675,16 @@ def test_the_measurement_runs_as_a_script(tmp_path):
     )
 
     result = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "measure_adapter_yaml_uninterpreted.py"),
-         "--repo-root", str(tmp_path), "--roots", ".agents"],
-        capture_output=True, text=True,
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "measure_adapter_yaml_uninterpreted.py"),
+            "--repo-root",
+            str(tmp_path),
+            "--roots",
+            ".agents",
+        ],
+        capture_output=True,
+        text=True,
     )
 
     assert result.returncode == 1
@@ -896,7 +912,9 @@ def test_d48_a_surface_named_in_both_declarations_warns_and_fails_closed(tmp_pat
 
     payload = CURRENT_RELEASE.build_payload(repo)
 
-    assert any("named as BOTH required and unpublished" in w for w in payload["adapter"]["warnings"])
+    assert any(
+        "named as BOTH required and unpublished" in w for w in payload["adapter"]["warnings"]
+    )
     # Fail-closed: `required` still wins.
     assert any("codex_plugin=<absent>" in entry for entry in payload["drift"])
 
@@ -949,7 +967,9 @@ def test_d48_ensure_release_surface_raises_the_blocker_it_is_given(tmp_path, mon
     assert "boom" in str(excinfo.value)
 
 
-def test_d48_ensure_release_surface_returns_the_disposition_when_there_is_no_blocker(tmp_path, monkeypatch):
+def test_d48_ensure_release_surface_returns_the_disposition_when_there_is_no_blocker(
+    tmp_path, monkeypatch
+):
     """No blocker is a PASS the record can cite, not silence.
 
     The release record's no-drift sentence used to be an unconditional literal, so

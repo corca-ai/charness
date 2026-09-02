@@ -17,6 +17,10 @@ from .support import run_script
 
 PYTHON_LENGTHS = importlib.import_module("scripts.check_code_lengths")
 
+
+@pytest.mark.boundary_contract(
+    reason="target spawns git and this test observes its exact unavailable-listing stderr contract"
+)
 def test_check_code_lengths_strict_listing_fails_closed_outside_git(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     scripts_dir = repo / "scripts"
@@ -36,7 +40,9 @@ def test_check_code_lengths_strict_listing_fails_closed_outside_git(tmp_path: Pa
     assert "command: git ls-files -z --cached --others --exclude-standard" in result.stderr
 
 
-def test_check_python_runtime_inheritance_strict_listing_fails_closed_outside_git(tmp_path: Path) -> None:
+def test_check_python_runtime_inheritance_strict_listing_fails_closed_outside_git(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     scripts_dir = repo / "scripts"
     scripts_dir.mkdir(parents=True)
@@ -58,7 +64,9 @@ def test_check_code_lengths_rejects_too_long_skill_helper_file(tmp_path: Path) -
     repo = tmp_path / "repo"
     helper_dir = repo / "skills" / "public" / "demo" / "scripts"
     helper_dir.mkdir(parents=True)
-    (helper_dir / "helper.py").write_text("\n".join(f"print({i})" for i in range(361)) + "\n", encoding="utf-8")
+    (helper_dir / "helper.py").write_text(
+        "\n".join(f"print({i})" for i in range(361)) + "\n", encoding="utf-8"
+    )
     result = run_script("scripts/check_code_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "tokei code lines 361 exceed limit 360" in result.stderr
@@ -98,7 +106,10 @@ def test_check_code_lengths_reports_all_over_limit_files_in_one_run(tmp_path: Pa
     )
 
     assert result.returncode == 1
-    assert "skills/public/demo/scripts/helper.py: tokei code lines 361 exceed limit 360" in result.stderr
+    assert (
+        "skills/public/demo/scripts/helper.py: tokei code lines 361 exceed limit 360"
+        in result.stderr
+    )
     assert "scripts/tool.py: tokei code lines 481 exceed limit 480" in result.stderr
     assert "Validation failed for 2 file(s)" in result.stderr
 
@@ -118,7 +129,12 @@ def test_check_code_lengths_uses_tokei_code_lines_not_comments_or_blanks(tmp_pat
     assert "comment_heavy.py" not in result.stdout
 
 
-def test_check_code_lengths_fails_when_tokei_missing_instead_of_falling_back(tmp_path: Path) -> None:
+@pytest.mark.boundary_contract(
+    reason="target spawns git and tokei and this test observes the PATH-dependent missing-binary contract"
+)
+def test_check_code_lengths_fails_when_tokei_missing_instead_of_falling_back(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     helper_dir = repo / "skills" / "public" / "demo" / "scripts"
     helper_dir.mkdir(parents=True)
@@ -192,7 +208,14 @@ def test_check_code_lengths_ignores_gitignored_python_files(tmp_path: Path) -> N
         "\n".join(f"print({i})" for i in range(381)) + "\n", encoding="utf-8"
     )
     (repo / "tests" / "generated_long.py").write_text(
-        "\n".join(["def test_generated():", *[f"    value_{i} = {i}" for i in range(151)], "    assert True", ""]),
+        "\n".join(
+            [
+                "def test_generated():",
+                *[f"    value_{i} = {i}" for i in range(151)],
+                "    assert True",
+                "",
+            ]
+        ),
         encoding="utf-8",
     )
 
@@ -204,7 +227,9 @@ def test_check_code_lengths_rejects_too_long_test_file(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     tests_dir = repo / "tests"
     tests_dir.mkdir(parents=True)
-    (tests_dir / "test_big.py").write_text("\n".join(f"VALUE_{i} = {i}" for i in range(801)) + "\n", encoding="utf-8")
+    (tests_dir / "test_big.py").write_text(
+        "\n".join(f"VALUE_{i} = {i}" for i in range(801)) + "\n", encoding="utf-8"
+    )
     result = run_script("scripts/check_code_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "tokei code lines 801 exceed limit 800" in result.stderr
@@ -220,17 +245,33 @@ def test_check_code_lengths_warns_for_in_band_files_across_classes(tmp_path: Pat
     for directory in (helper_dir, scripts_dir, tests_dir):
         directory.mkdir(parents=True)
     # skill helper band [330, 360]; repo script band [432, 480]; test band [720, 800].
-    (helper_dir / "helper.py").write_text("\n".join(f"print({i})" for i in range(340)) + "\n", encoding="utf-8")
-    (scripts_dir / "tool.py").write_text("\n".join(f"print({i})" for i in range(440)) + "\n", encoding="utf-8")
-    (tests_dir / "test_band.py").write_text("\n".join(f"VALUE_{i} = {i}" for i in range(730)) + "\n", encoding="utf-8")
+    (helper_dir / "helper.py").write_text(
+        "\n".join(f"print({i})" for i in range(340)) + "\n", encoding="utf-8"
+    )
+    (scripts_dir / "tool.py").write_text(
+        "\n".join(f"print({i})" for i in range(440)) + "\n", encoding="utf-8"
+    )
+    (tests_dir / "test_band.py").write_text(
+        "\n".join(f"VALUE_{i} = {i}" for i in range(730)) + "\n", encoding="utf-8"
+    )
 
     result = run_script("scripts/check_code_lengths.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
     warn_lines = [line for line in result.stdout.splitlines() if line.startswith("WARN: ")]
-    assert any("helper.py: tokei code lines 340 are within the advisory warn band [330, 360]" in line for line in warn_lines)
-    assert any("scripts/tool.py: tokei code lines 440 are within the advisory warn band [432, 480]" in line for line in warn_lines)
-    assert any("tests/test_band.py: tokei code lines 730 are within the advisory warn band [720, 800]" in line for line in warn_lines)
+    assert any(
+        "helper.py: tokei code lines 340 are within the advisory warn band [330, 360]" in line
+        for line in warn_lines
+    )
+    assert any(
+        "scripts/tool.py: tokei code lines 440 are within the advisory warn band [432, 480]" in line
+        for line in warn_lines
+    )
+    assert any(
+        "tests/test_band.py: tokei code lines 730 are within the advisory warn band [720, 800]"
+        in line
+        for line in warn_lines
+    )
 
 
 def test_check_code_lengths_does_not_warn_just_below_band(tmp_path: Path) -> None:
@@ -238,7 +279,9 @@ def test_check_code_lengths_does_not_warn_just_below_band(tmp_path: Path) -> Non
     helper_dir = repo / "skills" / "public" / "demo" / "scripts"
     helper_dir.mkdir(parents=True)
     # 329 lines: one below the skill-helper warn floor of 330.
-    (helper_dir / "helper.py").write_text("\n".join(f"print({i})" for i in range(329)) + "\n", encoding="utf-8")
+    (helper_dir / "helper.py").write_text(
+        "\n".join(f"print({i})" for i in range(329)) + "\n", encoding="utf-8"
+    )
     result = run_script("scripts/check_code_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "WARN:" not in result.stdout
@@ -248,7 +291,9 @@ def test_check_code_lengths_paths_mode_rejects_over_limit_staged_file(tmp_path: 
     repo = tmp_path / "repo"
     helper_dir = repo / "skills" / "public" / "demo" / "scripts"
     helper_dir.mkdir(parents=True)
-    (helper_dir / "over.py").write_text("\n".join(f"print({i})" for i in range(361)) + "\n", encoding="utf-8")
+    (helper_dir / "over.py").write_text(
+        "\n".join(f"print({i})" for i in range(361)) + "\n", encoding="utf-8"
+    )
     result = run_script(
         "scripts/check_code_lengths.py",
         "--repo-root",
@@ -265,7 +310,9 @@ def test_check_code_lengths_paths_mode_warns_for_in_band_staged_file(tmp_path: P
     helper_dir = repo / "skills" / "public" / "demo" / "scripts"
     helper_dir.mkdir(parents=True)
     # 340 lines: inside the skill-helper warn band [330, 360].
-    (helper_dir / "band.py").write_text("\n".join(f"print({i})" for i in range(340)) + "\n", encoding="utf-8")
+    (helper_dir / "band.py").write_text(
+        "\n".join(f"print({i})" for i in range(340)) + "\n", encoding="utf-8"
+    )
     result = run_script(
         "scripts/check_code_lengths.py",
         "--repo-root",
@@ -275,7 +322,10 @@ def test_check_code_lengths_paths_mode_warns_for_in_band_staged_file(tmp_path: P
     )
     assert result.returncode == 0, result.stderr
     warn_lines = [line for line in result.stdout.splitlines() if line.startswith("WARN: ")]
-    assert any("band.py: tokei code lines 340 are within the advisory warn band [330, 360]" in line for line in warn_lines)
+    assert any(
+        "band.py: tokei code lines 340 are within the advisory warn band [330, 360]" in line
+        for line in warn_lines
+    )
 
 
 def test_check_code_lengths_paths_mode_checks_only_listed_paths(tmp_path: Path) -> None:
@@ -285,7 +335,9 @@ def test_check_code_lengths_paths_mode_checks_only_listed_paths(tmp_path: Path) 
     repo = tmp_path / "repo"
     helper_dir = repo / "skills" / "public" / "demo" / "scripts"
     helper_dir.mkdir(parents=True)
-    (helper_dir / "trap.py").write_text("\n".join(f"print({i})" for i in range(400)) + "\n", encoding="utf-8")
+    (helper_dir / "trap.py").write_text(
+        "\n".join(f"print({i})" for i in range(400)) + "\n", encoding="utf-8"
+    )
     (helper_dir / "small.py").write_text("print(1)\n", encoding="utf-8")
     result = run_script(
         "scripts/check_code_lengths.py",
@@ -308,7 +360,9 @@ def test_check_code_lengths_over_limit_message_teaches_split_or_delete(tmp_path:
     repo = tmp_path / "repo"
     helper_dir = repo / "skills" / "public" / "demo" / "scripts"
     helper_dir.mkdir(parents=True)
-    (helper_dir / "over.py").write_text("\n".join(f"print({i})" for i in range(361)) + "\n", encoding="utf-8")
+    (helper_dir / "over.py").write_text(
+        "\n".join(f"print({i})" for i in range(361)) + "\n", encoding="utf-8"
+    )
     result = run_script(
         "scripts/check_code_lengths.py",
         "--repo-root",

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -10,12 +9,18 @@ import yaml
 
 from tests.quality_gates.seeding_support import environment_with_path, write_json_executable
 from tests.quality_gates.support import ROOT, run_script
+from tests.script_main import load_script_module
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
-sys.path.insert(0, str(ROOT / "skills" / "public" / "issue" / "scripts"))
-import issue_read  # noqa: E402
+issue_read = load_script_module(
+    "issue_read_under_test",
+    ROOT / "skills" / "public" / "issue" / "scripts" / "issue_read.py",
+)
 
 
+@pytest.mark.boundary_contract(
+    reason="exact process exit-code contract: run_script must select the current interpreter when PATH shadows python"
+)
 def test_run_script_uses_current_python_when_path_shadows_python(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
@@ -34,6 +39,9 @@ def test_run_script_uses_current_python_when_path_shadows_python(tmp_path: Path)
     assert result.stdout.strip() == "current-python"
 
 
+@pytest.mark.boundary_contract(
+    reason="target spawns gh and this test observes the backend response contract"
+)
 def test_issue_read_fails_when_backend_omits_comments(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
@@ -163,7 +171,9 @@ def test_issue_read_load_local_missing_spec(monkeypatch: pytest.MonkeyPatch) -> 
 def test_issue_read_command_stops_on_invalid_adapter(tmp_path: Path) -> None:
     adapter_dir = tmp_path / ".agents"
     adapter_dir.mkdir()
-    (adapter_dir / "issue-adapter.yaml").write_text("version: 1\nissue_backend: broken\n", encoding="utf-8")
+    (adapter_dir / "issue-adapter.yaml").write_text(
+        "version: 1\nissue_backend: broken\n", encoding="utf-8"
+    )
 
     result = run_script(
         SCRIPT,

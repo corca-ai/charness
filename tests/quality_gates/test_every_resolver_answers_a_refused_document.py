@@ -80,7 +80,10 @@ def _resolve_subprocess(
     repo = _write_adapter(resolver, tmp_path, document)
     done = subprocess.run(
         [sys.executable, str(resolver), "--repo-root", str(repo)],
-        capture_output=True, text=True, check=False, cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=ROOT,
     )
     payload = yaml.safe_load(done.stdout) if done.stdout.strip() else None
     return (payload if isinstance(payload, dict) else {}), done
@@ -113,10 +116,25 @@ def _resolve_without_adapter_in_process(resolver: Path, tmp_path: Path) -> tuple
 # `skills/public/*/scripts/resolve_adapter.py` at the same time any new skill gains one keeps
 # the count at fifteen and silently drops the regressed row from every sweep below. Naming
 # them turns that into a diff, which is the same argument `NON_ZERO_EXIT_SKILLS` makes.
-EXPECTED_RESOLVER_SKILLS = frozenset({
-    "achieve", "announcement", "create-skill", "critique", "debug", "gather",
-    "hitl", "hotl", "impl", "issue", "narrative", "quality", "release", "retro", "setup",
-})
+EXPECTED_RESOLVER_SKILLS = frozenset(
+    {
+        "achieve",
+        "announcement",
+        "create-skill",
+        "critique",
+        "debug",
+        "gather",
+        "hitl",
+        "hotl",
+        "impl",
+        "issue",
+        "narrative",
+        "quality",
+        "release",
+        "retro",
+        "setup",
+    }
+)
 
 
 def test_the_resolver_roster_is_complete():
@@ -126,6 +144,9 @@ def test_the_resolver_roster_is_complete():
 
 
 @pytest.mark.parametrize("resolver", RESOLVERS, ids=_skill)
+@pytest.mark.boundary_contract(
+    reason="exact per-resolver exit-code and stderr contract for a refused adapter document"
+)
 def test_a_refused_parse_renders_a_verdict_and_never_a_traceback(resolver: Path, tmp_path: Path):
     """One real process smoke; the remaining assertions use in-process calls."""
     payload, done = _resolve_subprocess(resolver, tmp_path, REFUSED_PARSE)

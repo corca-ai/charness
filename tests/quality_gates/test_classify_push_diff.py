@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import importlib.util
-import subprocess
+import io
 import sys
 from pathlib import Path
 
 import yaml
+
+from tests.script_main import load_script_module, run_loaded_script_main
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 LIB_PATH = REPO_ROOT / "scripts/classify_push_diff_lib.py"
@@ -14,6 +16,14 @@ CLI_PATH = REPO_ROOT / "scripts/classify_push_diff.py"
 _spec = importlib.util.spec_from_file_location("classify_push_diff_lib", LIB_PATH)
 lib = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(lib)
+CLI = load_script_module("classify_push_diff_cli", CLI_PATH)
+
+
+def _run_cli(monkeypatch, input_text: str):
+    monkeypatch.setattr(sys, "stdin", io.StringIO(input_text))
+    return run_loaded_script_main(
+        str(CLI_PATH), CLI, "--repo-root", str(REPO_ROOT), "--paths-stdin"
+    )
 
 
 def test_docs_artifact_only_classification() -> None:
@@ -56,7 +66,9 @@ def test_claude_plugin_path_unconditionally_forces_full_gate() -> None:
 
 
 def test_agents_plugin_path_unconditionally_forces_full_gate() -> None:
-    result = lib.classify(["charness-artifacts/release/latest.md", ".agents/plugins/marketplace.json"])
+    result = lib.classify(
+        ["charness-artifacts/release/latest.md", ".agents/plugins/marketplace.json"]
+    )
     assert result["classification"] == "full-gate-required"
     assert ".agents/plugins/marketplace.json" in result["unconditional_full_gate_hits"]
 
@@ -116,14 +128,9 @@ def test_charness_artifacts_subdirectory_is_allowlisted() -> None:
     assert result["classification"] == "docs-artifact-only"
 
 
-def test_cli_emits_classification_for_explicit_path_list() -> None:
-    process = subprocess.run(
-        [sys.executable, str(CLI_PATH), "--repo-root", str(REPO_ROOT), "--paths-stdin"],
-        input="docs/index.md\nREADME.md\n",
-        capture_output=True,
-        text=True,
-        check=True,
-    )
+def test_cli_emits_classification_for_explicit_path_list(monkeypatch) -> None:
+    process = _run_cli(monkeypatch, "docs/index.md\nREADME.md\n")
+    assert process.returncode == 0, process.stderr
     payload = yaml.safe_load(process.stdout)
     assert payload["classification"] == "docs-artifact-only"
 
@@ -146,14 +153,9 @@ def test_top_level_dotfile_forces_full_gate() -> None:
         assert path in result["full_gate_pattern_hits"], path
 
 
-def test_cli_emits_full_gate_for_unconditional_path_via_stdin() -> None:
-    process = subprocess.run(
-        [sys.executable, str(CLI_PATH), "--repo-root", str(REPO_ROOT), "--paths-stdin"],
-        input="docs/index.md\nplugins/charness/SKILL.md\n",
-        capture_output=True,
-        text=True,
-        check=True,
-    )
+def test_cli_emits_full_gate_for_unconditional_path_via_stdin(monkeypatch) -> None:
+    process = _run_cli(monkeypatch, "docs/index.md\nplugins/charness/SKILL.md\n")
+    assert process.returncode == 0, process.stderr
     payload = yaml.safe_load(process.stdout)
     assert payload["classification"] == "full-gate-required"
     assert "plugins/charness/SKILL.md" in payload["unconditional_full_gate_hits"]

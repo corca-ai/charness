@@ -17,12 +17,16 @@ import os
 import subprocess
 import sys
 
+import pytest
+
 from runtime_bootstrap import import_repo_module
 
 from .support import ROOT
 
 _lib = import_repo_module(ROOT / "scripts/argparse_surface_lib.py", "scripts.argparse_surface_lib")
-_probe_lib = import_repo_module(ROOT / "scripts/argparse_help_probe.py", "scripts.argparse_help_probe")
+_probe_lib = import_repo_module(
+    ROOT / "scripts/argparse_help_probe.py", "scripts.argparse_help_probe"
+)
 _emit = import_repo_module(ROOT / "scripts/gate_report_emit.py", "scripts.gate_report_emit")
 
 # The two renderings of a choice set argparse produces. Only the second is a
@@ -77,7 +81,10 @@ def test_walk_subcommands_reports_the_word_argparse_would_reject() -> None:
 
 def test_walk_subcommands_reports_at_the_depth_that_owns_the_slot() -> None:
     tree = {(): {"tool"}, ("tool",): {"install", "doctor"}}
-    assert _lib.walk_subcommands(_tokens("tool", "inspect"), _choices(tree)) == (("tool",), "inspect")
+    assert _lib.walk_subcommands(_tokens("tool", "inspect"), _choices(tree)) == (
+        ("tool",),
+        "inspect",
+    )
 
 
 def test_walk_subcommands_stops_at_a_parser_with_no_subcommands() -> None:
@@ -107,8 +114,13 @@ def test_resolve_subcommands_stays_tolerant_where_walk_is_strict() -> None:
     reject is the one it skips."""
     tree = {(): {"resolve"}}
     tokens = _tokens("--repo-root", ".", "resolve")
-    assert _lib.resolve_subcommands(tokens, _choices(tree), lambda _path: {"--repo-root"}) == ("resolve",)
-    assert _lib.walk_subcommands(tokens, _choices(tree), lambda _path: {"--repo-root"}) == (("resolve",), None)
+    assert _lib.resolve_subcommands(tokens, _choices(tree), lambda _path: {"--repo-root"}) == (
+        "resolve",
+    )
+    assert _lib.walk_subcommands(tokens, _choices(tree), lambda _path: {"--repo-root"}) == (
+        ("resolve",),
+        None,
+    )
 
 
 def test_resolve_subcommands_skips_a_leading_word_that_is_not_a_choice() -> None:
@@ -135,7 +147,9 @@ def test_help_probe_answers_nothing_for_a_target_that_did_not_probe_clean() -> N
     probe = _probe_lib.HelpProbe(ROOT)
     target = ("demo",)
     assert probe.subcommand_choices(target) == set()
-    probe._results[target] = subprocess.CompletedProcess(args=["x"], returncode=2, stdout="", stderr="")
+    probe._results[target] = subprocess.CompletedProcess(
+        args=["x"], returncode=2, stdout="", stderr=""
+    )
     assert probe.subcommand_choices(target) == set()
     assert probe.accepted_options(target) == set()
     assert probe.options_with_values(target) == set()
@@ -213,6 +227,9 @@ def test_subcommand_choices_survives_translated_section_headers() -> None:
     assert _lib.subcommand_choices(HELP_WITH_TRANSLATED_HEADERS) == {"init", "update", "tool"}
 
 
+@pytest.mark.boundary_contract(
+    reason="__main__ dispatch smoke: the root charness CLI must render its real help surface"
+)
 def test_subcommand_choices_matches_the_real_cli_argparse_surface() -> None:
     """End-to-end against output argparse actually produced, not a hand-written
     fixture: a fixture cannot detect a rendering change, which is the whole risk
@@ -279,12 +296,15 @@ def test_subcommand_choices_still_ignores_a_braced_group_with_spaces() -> None:
 # A command carrier's own invocation regex, so these cases exercise the real boundary
 # classes rather than a simplified stand-in. The trailing-quote consumption below is a
 # property OF this regex, and a hand-written pattern would not reproduce it.
-_INVOCATION_RE = __import__("runpy").run_path("scripts/check_documented_command_flags.py")["INVOCATION_RE"]
+_INVOCATION_RE = __import__("runpy").run_path("scripts/check_documented_command_flags.py")[
+    "INVOCATION_RE"
+]
 
 
 def _attribution(carrier: str) -> list[tuple[str, list[str]]]:
     return [
-        (match.group(0), flags) for match, _tokens, flags in _lib.iter_invocation_tails(carrier, _INVOCATION_RE)
+        (match.group(0), flags)
+        for match, _tokens, flags in _lib.iter_invocation_tails(carrier, _INVOCATION_RE)
     ]
 
 
@@ -298,7 +318,9 @@ def test_a_quoted_script_path_is_not_a_nested_command() -> None:
     loss in a blocking gate, which is strictly worse than the false red being fixed.
     """
     carrier = 'python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . --slug <slug>'
-    assert _attribution(carrier) == [('"$SKILL_DIR/scripts/upsert_goal.py"', ["--repo-root", "--slug"])]
+    assert _attribution(carrier) == [
+        ('"$SKILL_DIR/scripts/upsert_goal.py"', ["--repo-root", "--slug"])
+    ]
 
 
 def test_a_command_inside_another_commands_flag_value_keeps_its_own_flags() -> None:

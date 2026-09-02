@@ -10,32 +10,43 @@ identical authoring mistake was caught in ZERO seconds, three times, by the
 release-notes linter -- which re-derives its numbers -- and took four rounds in
 the goal/retro artifacts, which had no such machinery.
 """
+
 from __future__ import annotations
 
 import re
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
+from tests.script_main import load_script_module
+
 from .support import ROOT, run_script
 
-sys.path.insert(0, str(ROOT))
+ARTIFACT_QUANTITIES = load_script_module(
+    "artifact_quantities_under_test", ROOT / "scripts" / "artifact_quantities.py"
+)
+ARTIFACT_REFERENTS = load_script_module(
+    "artifact_referents_under_test", ROOT / "scripts" / "artifact_referents.py"
+)
+ARTIFACT_GATE = load_script_module(
+    "artifact_referents_gate_under_test", ROOT / "scripts" / "check_artifact_referents.py"
+)
 
-from scripts.artifact_quantities import (  # noqa: E402
-    inconsistent_quantities,
-    quantity_sites,
-    render,
-)
-from scripts.artifact_referents import (  # noqa: E402
-    bad_issue_refs,
-    check_disposition_referents,
-    is_placeholder_line,
-    missing_paths,
-    unresolvable_shas,
-)
+inconsistent_quantities = ARTIFACT_QUANTITIES.inconsistent_quantities
+quantity_sites = ARTIFACT_QUANTITIES.quantity_sites
+render = ARTIFACT_QUANTITIES.render
+bad_issue_refs = ARTIFACT_REFERENTS.bad_issue_refs
+check_disposition_referents = ARTIFACT_REFERENTS.check_disposition_referents
+is_placeholder_line = ARTIFACT_REFERENTS.is_placeholder_line
+missing_paths = ARTIFACT_REFERENTS.missing_paths
+unresolvable_shas = ARTIFACT_REFERENTS.unresolvable_shas
+ResolverUnavailable = ARTIFACT_REFERENTS.ResolverUnavailable
+git_commit_reachable_from_head = ARTIFACT_REFERENTS.git_commit_reachable_from_head
+reachable_head_commits = ARTIFACT_REFERENTS.reachable_head_commits
+sha_candidates = ARTIFACT_REFERENTS.sha_candidates
+load_local_context_declarations = ARTIFACT_GATE.load_local_context_declarations
 
 GATE = ROOT / "scripts" / "check_artifact_referents.py"
 
@@ -109,8 +120,6 @@ def test_an_unresolvable_sha_is_reported() -> None:
 
 
 def test_a_typed_content_identity_does_not_hide_a_commit_candidate() -> None:
-    from scripts.artifact_referents import sha_candidates
-
     for content_label in (
         "packet",
         "packet identity",
@@ -127,14 +136,10 @@ def test_a_typed_content_identity_does_not_hide_a_commit_candidate() -> None:
 
 
 def test_a_git_commit_identity_remains_a_commit_candidate() -> None:
-    from scripts.artifact_referents import sha_candidates
-
     assert sha_candidates("Git commit identity: `c2db5e7cd1e6`") == ["c2db5e7cd1e6"]
 
 
 def test_uuid_components_are_not_commit_candidates_but_a_sibling_sha_is() -> None:
-    from scripts.artifact_referents import sha_candidates
-
     line = (
         'Retired evaluation: {"run_id":"2026-08-24-'
         '01a032f5-c64c-7ad2-a838-8eb738d99824"} commit `4dc3fb851`'
@@ -144,8 +149,6 @@ def test_uuid_components_are_not_commit_candidates_but_a_sibling_sha_is() -> Non
 
 
 def test_malformed_uuid_components_remain_commit_candidates() -> None:
-    from scripts.artifact_referents import sha_candidates
-
     assert sha_candidates("2026-08-24-01a032f5-c64c-7ad2-a838-8eb738d9982") == [
         "01a032f5",
         "8eb738d9982",
@@ -153,8 +156,6 @@ def test_malformed_uuid_components_remain_commit_candidates() -> None:
 
 
 def test_a_uuid_component_repeated_outside_the_uuid_remains_a_candidate() -> None:
-    from scripts.artifact_referents import sha_candidates
-
     line = "session 01a032f5-c64c-7ad2-a838-8eb738d99824 commit `01a032f5`"
 
     assert sha_candidates(line) == ["01a032f5"]
@@ -375,7 +376,9 @@ def test_the_repo_corpus_is_clean_and_reports_its_grandfathered_set() -> None:
     # to refuse, inside the gate's own test.
     scanned = int(re.search(r"scanned: (\d+) artifact", result.stdout).group(1))
     dispositions = int(re.search(r"dispositions_examined: (\d+)", result.stdout).group(1))
-    grandfathered = int(re.search(r"grandfathered \(reported, not rewritten\): (\d+)", result.stdout).group(1))
+    grandfathered = int(
+        re.search(r"grandfathered \(reported, not rewritten\): (\d+)", result.stdout).group(1)
+    )
 
     assert scanned > 500, "the corpus collapsed; a clean verdict here proves nothing"
     assert dispositions > 100, "the disposition regex stopped matching corpus-wide"
@@ -400,8 +403,6 @@ def test_git_refusing_is_distinguished_from_a_missing_commit() -> None:
     """`exit 128` is what git returns for "not a work tree" and for "dubious
     ownership" -- routine in containers. Treating it as "this SHA is absent"
     would report every SHA in every dated artifact as unresolvable."""
-    from scripts.artifact_referents import ResolverUnavailable, git_commit_reachable_from_head
-
     assert git_commit_reachable_from_head("96ba78f7f", ROOT) is True
     with pytest.raises(ResolverUnavailable):
         git_commit_reachable_from_head("96ba78f7f", Path("/tmp"))
@@ -432,17 +433,13 @@ def _build_side_branch_repo_seed(seed: Path) -> None:
 def _repo_with_side_branch_commit(tmp_path: Path) -> tuple[Path, str]:
     from tests.seed_cache import get_or_build
 
-    seed = get_or_build(
-        "artifact-referents-side-branch-repo-seed", _build_side_branch_repo_seed
-    )
+    seed = get_or_build("artifact-referents-side-branch-repo-seed", _build_side_branch_repo_seed)
     repo = shutil.copytree(seed / "repo", tmp_path / "repo")
     local_sha = (seed / "side-branch-commit").read_text(encoding="utf-8").strip()
     return repo, local_sha
 
 
 def test_side_branch_seed_copies_are_private(tmp_path: Path) -> None:
-    from scripts.artifact_referents import git_commit_reachable_from_head
-
     first_root = tmp_path / "first"
     second_root = tmp_path / "second"
     first_root.mkdir()
@@ -458,6 +455,9 @@ def test_side_branch_seed_copies_are_private(tmp_path: Path) -> None:
     assert git_commit_reachable_from_head(second_sha, second_repo) is False
 
 
+@pytest.mark.boundary_contract(
+    reason="target spawns git and this test observes shallow-repository reachability refusal"
+)
 def test_reachability_and_history_queries_over_one_side_branch_checkout(tmp_path: Path) -> None:
     """Three read-only questions against one immutable side-branch checkout,
     merged because none of them mutates the repo they observe.
@@ -468,12 +468,6 @@ def test_reachability_and_history_queries_over_one_side_branch_checkout(tmp_path
     - A shallow clone cannot answer "reachable from HEAD" at all; it must
       refuse rather than report a missing commit.
     """
-    from scripts.artifact_referents import (
-        ResolverUnavailable,
-        git_commit_reachable_from_head,
-        reachable_head_commits,
-    )
-
     repo, local_sha = _repo_with_side_branch_commit(tmp_path)
 
     assert _git(repo, "cat-file", "-t", local_sha) == "commit"
@@ -486,15 +480,15 @@ def test_reachability_and_history_queries_over_one_side_branch_checkout(tmp_path
     shallow = tmp_path / "shallow"
     subprocess.run(
         ["git", "clone", "--depth=1", f"file://{repo}", str(shallow)],
-        capture_output=True, text=True, check=True,
+        capture_output=True,
+        text=True,
+        check=True,
     )
     with pytest.raises(ResolverUnavailable, match="shallow"):
         reachable_head_commits(shallow)
 
 
 def test_failed_head_ancestry_read_is_unestablished(monkeypatch: pytest.MonkeyPatch) -> None:
-    from scripts.artifact_referents import ResolverUnavailable, reachable_head_commits
-
     results = iter(
         [
             subprocess.CompletedProcess([], 0, "false\n", ""),
@@ -528,17 +522,15 @@ def test_exact_local_context_declaration_is_visible_and_stale_checked(tmp_path: 
     }
     declarations.write_text(json.dumps([entry]), encoding="utf-8")
     _git(repo, "add", str(declarations.relative_to(repo)))
-    command = [
-        sys.executable, str(GATE), "--repo-root", str(repo), "--path", artifact_rel,
-    ]
+    command = [str(GATE), "--repo-root", str(repo), "--path", artifact_rel]
 
-    accepted = run_script(*command[1:])
+    accepted = run_script(*command)
     assert accepted.returncode == 0, accepted.stdout
     assert "declared local context (reported, exact): 1" in accepted.stdout
     assert "declared-local-commit-ref" in accepted.stdout
 
     artifact.write_text(f"changed context, same token `{local_sha[:10]}`\n", encoding="utf-8")
-    changed_line = run_script(*command[1:])
+    changed_line = run_script(*command)
     assert changed_line.returncode == 1
     assert "stale-local-context-declaration" in changed_line.stdout
     artifact.write_text(f"{line}\n", encoding="utf-8")
@@ -546,7 +538,7 @@ def test_exact_local_context_declaration_is_visible_and_stale_checked(tmp_path: 
     entry["line"] = 2
     declarations.write_text(json.dumps([entry]), encoding="utf-8")
     _git(repo, "add", str(declarations.relative_to(repo)))
-    stale = run_script(*command[1:])
+    stale = run_script(*command)
     assert stale.returncode == 1
     assert "stale-local-context-declaration" in stale.stdout
     assert "non-durable-commit-ref" in stale.stdout
@@ -608,13 +600,20 @@ def test_untracked_local_context_declaration_cannot_change_the_verdict(tmp_path:
     artifact.write_text(f"{line}\n", encoding="utf-8")
     declarations = repo / "scripts" / "artifact-referent-local-context.json"
     declarations.parent.mkdir()
-    declarations.write_text(json.dumps([{
-        "artifact": artifact_rel,
-        "line": 1,
-        "token": local_sha[:10],
-        "line_sha256": hashlib.sha256(line.encode()).hexdigest(),
-        "reason": "unreviewed local bytes",
-    }]), encoding="utf-8")
+    declarations.write_text(
+        json.dumps(
+            [
+                {
+                    "artifact": artifact_rel,
+                    "line": 1,
+                    "token": local_sha[:10],
+                    "line_sha256": hashlib.sha256(line.encode()).hexdigest(),
+                    "reason": "unreviewed local bytes",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
 
     result = run_script(str(GATE), "--repo-root", str(repo), "--path", artifact_rel)
     assert result.returncode == 1
@@ -642,15 +641,15 @@ def _valid_declaration() -> dict[str, object]:
     }
 
 
-def test_declaration_index_read_error_blocks(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    from scripts.check_artifact_referents import load_local_context_declarations
-
+def test_declaration_index_read_error_blocks(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     repo, _data = _declaration_bytes(tmp_path, [_valid_declaration()])
 
     def fail_index_read(*args, **kwargs):
         raise OSError("index unavailable")
 
-    monkeypatch.setattr("scripts.check_artifact_referents.subprocess.run", fail_index_read)
+    monkeypatch.setattr(ARTIFACT_GATE.subprocess, "run", fail_index_read)
     declarations, defects = load_local_context_declarations(repo)
 
     assert declarations == []
@@ -674,8 +673,6 @@ def test_invalid_declaration_file_shapes_block(
     the malformed-declaration cases above, even though this cluster's git count
     was already zero -- the parametrize node-count cost was independent of it.
     """
-    from scripts.check_artifact_referents import load_local_context_declarations
-
     for raw, expected_kind in _INVALID_DECLARATION_FILE_SHAPES:
         if raw == "duplicate":
             payload: object = [_valid_declaration(), _valid_declaration()]
@@ -690,9 +687,7 @@ def test_invalid_declaration_file_shapes_block(
             data = raw
 
         indexed = subprocess.CompletedProcess([], 0, data, b"")
-        monkeypatch.setattr(
-            "scripts.check_artifact_referents.subprocess.run", lambda *args, **kwargs: indexed
-        )
+        monkeypatch.setattr(ARTIFACT_GATE.subprocess, "run", lambda *args, **kwargs: indexed)
         declarations, defects = load_local_context_declarations(repo)
 
         if raw == "duplicate":
@@ -804,8 +799,6 @@ def test_shas_resolved_counts_tokens_not_lines() -> None:
     """M1: the counter incremented once per LINE, so it stayed at the corpus
     line count even if SHA_RE stopped matching entirely -- structurally unable
     to show the collapse it was added to detect."""
-    from scripts.artifact_referents import sha_candidates
-
     assert sha_candidates("no shas here at all") == []
     assert sha_candidates("`96ba78f7f` and `deadbee1234`") == ["96ba78f7f", "deadbee1234"]
 
@@ -847,8 +840,6 @@ def test_git_failing_to_run_at_all_raises_rather_than_answering() -> None:
     """The OSError arm. A missing or unexecutable git is "cannot answer", not
     "this SHA is absent" -- answering would report every SHA in the corpus as
     unresolvable."""
-    from scripts.artifact_referents import ResolverUnavailable, git_commit_reachable_from_head
-
     with pytest.raises(ResolverUnavailable):
         git_commit_reachable_from_head("96ba78f7f", Path("/nonexistent-root-9f3a/deeper"))
 

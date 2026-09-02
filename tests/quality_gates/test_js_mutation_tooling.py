@@ -14,10 +14,21 @@ from scripts.run_js_mutation import (
     remove_stale_report,
     select_js_targets,
 )
+from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
 
+RUN_JS_MUTATION = load_script_module(
+    "run_js_mutation_cli_boundary", ROOT / "scripts" / "run_js_mutation.py"
+)
+CHECK_JS_MUTATION_SCORE = load_script_module(
+    "check_js_mutation_score_cli", ROOT / "scripts" / "check_js_mutation_score.py"
+)
 
+
+@pytest.mark.boundary_contract(
+    reason="exact process exit-code contract: Node must load the repository's ESM Stryker configuration"
+)
 def test_stryker_config_mutates_only_agent_runtime_sources() -> None:
     env = os.environ.copy()
     env.pop("MUTATION_JS_TARGETS", None)
@@ -78,7 +89,9 @@ def test_js_mutation_full_mode_rejects_unweighted_pool_target(tmp_path, monkeypa
 
 def test_js_mutation_full_mode_rejects_non_positive_weight(monkeypatch) -> None:
     monkeypatch.delenv("MUTATION_JS_TARGETS", raising=False)
-    monkeypatch.setitem(JS_MUTATION_MUTANT_WEIGHTS, "scripts/agent-runtime/contract-versions.mjs", 0)
+    monkeypatch.setitem(
+        JS_MUTATION_MUTANT_WEIGHTS, "scripts/agent-runtime/contract-versions.mjs", 0
+    )
 
     with pytest.raises(SystemExit, match="non-positive JS mutation mutant weights"):
         select_js_targets(ROOT, mode="full")
@@ -92,7 +105,9 @@ def test_js_native_tests_import_every_mutated_agent_runtime_module() -> None:
     imported_runtime_modules: set[str] = set()
     for test_file in test_dir.glob("*.test.mjs"):
         test_source = test_file.read_text(encoding="utf-8")
-        for match in re.findall(r'from "(\.\./\.\./scripts/agent-runtime/[^"]+\.mjs)"', test_source):
+        for match in re.findall(
+            r'from "(\.\./\.\./scripts/agent-runtime/[^"]+\.mjs)"', test_source
+        ):
             imported_runtime_modules.add(
                 str((test_dir / match).resolve().relative_to(ROOT).as_posix())
             )
@@ -118,9 +133,7 @@ def test_js_mutation_explicit_targets_override_budget(monkeypatch) -> None:
     monkeypatch.setenv("MUTATION_JS_TARGETS", "scripts/agent-runtime/run-local-eval-test.mjs")
     monkeypatch.setenv("MUTATION_JS_MAX_MUTANTS", "1")
 
-    assert select_js_targets(ROOT, mode="full") == [
-        "scripts/agent-runtime/run-local-eval-test.mjs"
-    ]
+    assert select_js_targets(ROOT, mode="full") == ["scripts/agent-runtime/run-local-eval-test.mjs"]
 
 
 def test_js_mutation_runner_requires_local_stryker_install(tmp_path) -> None:
@@ -129,12 +142,8 @@ def test_js_mutation_runner_requires_local_stryker_install(tmp_path) -> None:
     (repo / "stryker.config.mjs").write_text("export default {};\n", encoding="utf-8")
     runner = ROOT / "scripts" / "run_js_mutation.py"
 
-    result = subprocess.run(
-        ["python3", str(runner), "--repo-root", str(repo), "--mode", "dry-run"],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_loaded_script_main(
+        str(runner), RUN_JS_MUTATION, "--repo-root", str(repo), "--mode", "dry-run"
     )
 
     assert result.returncode != 0
@@ -172,12 +181,11 @@ def test_js_mutation_summary_fails_when_report_missing(tmp_path) -> None:
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        ["python3", str(ROOT / "scripts" / "check_js_mutation_score.py"), "--repo-root", str(repo)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_loaded_script_main(
+        "scripts/check_js_mutation_score.py",
+        CHECK_JS_MUTATION_SCORE,
+        "--repo-root",
+        str(repo),
     )
 
     assert result.returncode == 1
@@ -234,12 +242,11 @@ def test_js_all_ignored_report_is_unmeasured_through_the_cli(tmp_path) -> None:
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        ["python3", str(ROOT / "scripts" / "check_js_mutation_score.py"), "--repo-root", str(repo)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_loaded_script_main(
+        "scripts/check_js_mutation_score.py",
+        CHECK_JS_MUTATION_SCORE,
+        "--repo-root",
+        str(repo),
     )
 
     summary = (repo / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
@@ -270,7 +277,9 @@ def test_js_mutation_summary_appends_stryker_results(tmp_path) -> None:
         ),
         encoding="utf-8",
     )
-    (repo / "reports" / "mutation" / "summary.md").write_text("# Mutation Testing Summary\n", encoding="utf-8")
+    (repo / "reports" / "mutation" / "summary.md").write_text(
+        "# Mutation Testing Summary\n", encoding="utf-8"
+    )
     (repo / "reports" / "mutation" / "stryker-js.json").write_text(
         json.dumps(
             {
@@ -291,12 +300,11 @@ def test_js_mutation_summary_appends_stryker_results(tmp_path) -> None:
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        ["python3", str(ROOT / "scripts" / "check_js_mutation_score.py"), "--repo-root", str(repo)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_loaded_script_main(
+        "scripts/check_js_mutation_score.py",
+        CHECK_JS_MUTATION_SCORE,
+        "--repo-root",
+        str(repo),
     )
 
     assert result.returncode == 1
@@ -343,12 +351,11 @@ def test_js_mutation_summary_blocks_no_coverage_mutants(tmp_path) -> None:
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        ["python3", str(ROOT / "scripts" / "check_js_mutation_score.py"), "--repo-root", str(repo)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_loaded_script_main(
+        "scripts/check_js_mutation_score.py",
+        CHECK_JS_MUTATION_SCORE,
+        "--repo-root",
+        str(repo),
     )
 
     assert result.returncode == 1

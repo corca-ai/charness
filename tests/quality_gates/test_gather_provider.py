@@ -1,22 +1,17 @@
 from __future__ import annotations
 
-import importlib.util
-import subprocess
-import sys
 from pathlib import Path
 
 import yaml
+
+from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
 
 
 def _load_gather_module(name: str):
     module_path = ROOT / "skills" / "public" / "gather" / "scripts" / f"{name}.py"
-    spec = importlib.util.spec_from_file_location(f"gather_{name}", module_path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_script_module(f"gather_{name}", module_path)
 
 
 def test_gather_adapter_defaults_are_public_source_only(tmp_path: Path) -> None:
@@ -94,11 +89,11 @@ def test_gather_adapter_rejects_credentialed_org_sources(tmp_path: Path) -> None
 
 def _run_advise(tmp_path: Path) -> dict[str, object]:
     script = ROOT / "skills" / "public" / "gather" / "scripts" / "advise_google_workspace_path.py"
-    result = subprocess.run(
-        [sys.executable, str(script), "--repo-root", str(tmp_path)],
-        check=False,
-        capture_output=True,
-        text=True,
+    result = run_loaded_script_main(
+        str(script),
+        _load_gather_module("advise_google_workspace_path"),
+        "--repo-root",
+        str(tmp_path),
     )
     assert result.returncode == 0, result.stderr
     return yaml.safe_load(result.stdout)

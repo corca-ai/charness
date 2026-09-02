@@ -9,6 +9,7 @@ import time
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
 import yaml
 
 from runtime_bootstrap import import_repo_module
@@ -46,7 +47,9 @@ def seed_repo(tmp_path: Path, *, adapter_body: str) -> Path:
     return repo
 
 
-def test_cli_skill_surface_is_not_applicable_without_product_combo_or_inferred_skill(tmp_path: Path) -> None:
+def test_cli_skill_surface_is_not_applicable_without_product_combo_or_inferred_skill(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / ".agents" / "quality-adapter.yaml").write_text(
@@ -109,7 +112,9 @@ def test_cli_skill_surface_treats_a_non_mapping_adapter_as_no_adapter(
     assert payload["product_surface_source"] == "inferred"
 
 
-def test_cli_skill_surface_flags_inferred_combo_without_adapter_fields(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_cli_skill_surface_flags_inferred_combo_without_adapter_fields(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = seed_repo(tmp_path, adapter_body="version: 1\nproduct_surfaces: []\n")
 
     result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo))
@@ -154,8 +159,12 @@ def test_cli_skill_surface_accepts_declared_combo_with_probes_and_docs(tmp_path:
             ]
         ),
     )
-    (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes")
+    (repo / ".agents" / "command-docs.yaml").write_text(
+        "commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8"
+    )
+    result = run_script(
+        "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes"
+    )
     payload = yaml.safe_load(result.stdout)
     assert result.returncode == 0, result.stderr
     assert payload["status"] == "ok"
@@ -179,12 +188,18 @@ def test_cli_skill_surface_reports_probe_timeout(tmp_path: Path) -> None:
             ]
         ),
     )
-    (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
-    write_executable(repo / "scripts" / "hang.py", "#!/usr/bin/env python3\nimport time\ntime.sleep(2)\n")
+    (repo / ".agents" / "command-docs.yaml").write_text(
+        "commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8"
+    )
+    write_executable(
+        repo / "scripts" / "hang.py", "#!/usr/bin/env python3\nimport time\ntime.sleep(2)\n"
+    )
     env = os.environ.copy()
     env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.1"
 
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env)
+    result = run_script(
+        "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env
+    )
     payload = yaml.safe_load(result.stdout)
 
     # Still refuses -- the floor is unchanged -- but as an UNOBSERVED readiness
@@ -220,7 +235,9 @@ def test_cli_skill_surface_retries_a_starved_probe_before_concluding(
             ]
         ),
     )
-    (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
+    (repo / ".agents" / "command-docs.yaml").write_text(
+        "commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8"
+    )
     attempts: list[tuple[Path, str, float]] = []
 
     def fake_attempt(repo_root: Path, command: str, timeout_seconds: float):
@@ -242,9 +259,7 @@ def test_cli_skill_surface_retries_a_starved_probe_before_concluding(
         }
 
     monkeypatch.setattr(_check_cli_skill_surface, "_attempt_probe", fake_attempt)
-    result = run_cli_skill_surface(
-        monkeypatch, capsys, "--repo-root", str(repo), "--run-probes"
-    )
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--run-probes")
     payload = yaml.safe_load(result.stdout)
 
     assert result.returncode == 0, result.stderr
@@ -294,10 +309,16 @@ def test_cli_skill_surface_keeps_an_observed_failure_out_of_unobserved(tmp_path:
             ]
         ),
     )
-    (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
-    write_executable(repo / "scripts" / "broken.py", "#!/usr/bin/env python3\nraise SystemExit(2)\n")
+    (repo / ".agents" / "command-docs.yaml").write_text(
+        "commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8"
+    )
+    write_executable(
+        repo / "scripts" / "broken.py", "#!/usr/bin/env python3\nraise SystemExit(2)\n"
+    )
 
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes")
+    result = run_script(
+        "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes"
+    )
     payload = yaml.safe_load(result.stdout)
 
     assert result.returncode == 1
@@ -308,7 +329,9 @@ def test_cli_skill_surface_keeps_an_observed_failure_out_of_unobserved(tmp_path:
     assert any("exited 2" in blocker for blocker in payload["blockers"])
 
 
-def test_cli_skill_surface_blocks_direct_agent_browser_runtime_probes(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_cli_skill_surface_blocks_direct_agent_browser_runtime_probes(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = seed_repo(
         tmp_path,
         adapter_body="\n".join(
@@ -325,16 +348,22 @@ def test_cli_skill_surface_blocks_direct_agent_browser_runtime_probes(tmp_path: 
             ]
         ),
     )
-    (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
+    (repo / ".agents" / "command-docs.yaml").write_text(
+        "commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8"
+    )
 
     result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo))
     payload = yaml.safe_load(result.stdout)
     assert result.returncode == 1
     assert payload["status"] == "blocked"
-    assert "Unsafe CLI plus skill probe `agent-browser open https://example.com`" in "\n".join(payload["blockers"])
+    assert "Unsafe CLI plus skill probe `agent-browser open https://example.com`" in "\n".join(
+        payload["blockers"]
+    )
 
 
-def test_cli_skill_surface_blocks_wrapped_agent_browser_runtime_probes(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_cli_skill_surface_blocks_wrapped_agent_browser_runtime_probes(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = seed_repo(
         tmp_path,
         adapter_body="\n".join(
@@ -352,7 +381,9 @@ def test_cli_skill_surface_blocks_wrapped_agent_browser_runtime_probes(tmp_path:
             ]
         ),
     )
-    (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
+    (repo / ".agents" / "command-docs.yaml").write_text(
+        "commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8"
+    )
 
     result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo))
     payload = yaml.safe_load(result.stdout)
@@ -362,7 +393,9 @@ def test_cli_skill_surface_blocks_wrapped_agent_browser_runtime_probes(tmp_path:
     assert "bash -c 'agent-browser screenshot /tmp/page.png'" in blockers
 
 
-def test_cli_skill_surface_reports_missing_skill_path_adapter_weakness(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_cli_skill_surface_reports_missing_skill_path_adapter_weakness(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = seed_repo(
         tmp_path,
         adapter_body="\n".join(
@@ -380,7 +413,9 @@ def test_cli_skill_surface_reports_missing_skill_path_adapter_weakness(tmp_path:
             ]
         ),
     )
-    (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
+    (repo / ".agents" / "command-docs.yaml").write_text(
+        "commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8"
+    )
 
     result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo))
 
@@ -390,7 +425,9 @@ def test_cli_skill_surface_reports_missing_skill_path_adapter_weakness(tmp_path:
     assert "cli_skill_surface_skill_paths is empty" in "\n".join(payload["adapter_weaknesses"])
 
 
-def test_cli_skill_surface_skips_irrelevant_release_change(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_cli_skill_surface_skips_irrelevant_release_change(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     repo = seed_repo(
         tmp_path,
         adapter_body="\n".join(
@@ -436,7 +473,9 @@ def _run_bounded_in_own_session(*args: str, env: dict[str, str], limit: float = 
     )
     try:
         stdout, stderr = process.communicate(timeout=limit)
-        assert stdout, f"the check produced no stdout; rc={process.returncode} stderr={stderr[-400:]}"
+        assert stdout, (
+            f"the check produced no stdout; rc={process.returncode} stderr={stderr[-400:]}"
+        )
         return stdout
     except subprocess.TimeoutExpired:
         os.killpg(os.getpgid(process.pid), signal.SIGKILL)
@@ -464,7 +503,9 @@ def _probe_repo(tmp_path: Path, command: str) -> Path:
             ]
         ),
     )
-    (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
+    (repo / ".agents" / "command-docs.yaml").write_text(
+        "commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8"
+    )
     return repo
 
 
@@ -527,7 +568,9 @@ def _stop_recorded_children(
     return pids, exited, survivors
 
 
-def test_cli_skill_surface_separates_a_real_124_exit_from_an_unobserved_probe(tmp_path: Path) -> None:
+def test_cli_skill_surface_separates_a_real_124_exit_from_an_unobserved_probe(
+    tmp_path: Path,
+) -> None:
     """A command that ANSWERS 124 is a blocker; only an unread verdict is unobserved.
 
     124 is the code this check synthesizes for its own deadline, so a probe that
@@ -535,9 +578,13 @@ def test_cli_skill_surface_separates_a_real_124_exit_from_an_unobserved_probe(tm
     implementation apart from a `timed_out`-keyed one.
     """
     repo = _probe_repo(tmp_path, "python3 scripts/exits124.py doctor --json")
-    write_executable(repo / "scripts" / "exits124.py", "#!/usr/bin/env python3\nraise SystemExit(124)\n")
+    write_executable(
+        repo / "scripts" / "exits124.py", "#!/usr/bin/env python3\nraise SystemExit(124)\n"
+    )
 
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes")
+    result = run_script(
+        "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes"
+    )
     payload = yaml.safe_load(result.stdout)
 
     assert result.returncode == 1
@@ -549,6 +596,9 @@ def test_cli_skill_surface_separates_a_real_124_exit_from_an_unobserved_probe(tm
     assert any("exited 124" in blocker for blocker in payload["blockers"])
 
 
+@pytest.mark.boundary_contract(
+    reason="child-exit-on-parent-death: a real probe process and grandchild must be bounded and reaped"
+)
 def test_cli_skill_surface_survives_a_probe_whose_grandchild_holds_the_pipe(tmp_path: Path) -> None:
     """The deadline must bind even when a grandchild inherits the output pipe.
 
@@ -581,10 +631,14 @@ def test_cli_skill_surface_survives_a_probe_whose_grandchild_holds_the_pipe(tmp_
             "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env
         )
         recorded_pids = _recorded_pids(pid_log)
-        production_survivors = [pid for pid in recorded_pids if _owned_process_is_running(pid, str(stop_path))]
+        production_survivors = [
+            pid for pid in recorded_pids if _owned_process_is_running(pid, str(stop_path))
+        ]
     finally:
         cleanup_pids, _, cleanup_survivors = _stop_recorded_children(pid_log, stop_path, exit_dir)
-    assert result is not None, "the check did not bound its own probe deadline; it hung on the orphan-held pipe"
+    assert result is not None, (
+        "the check did not bound its own probe deadline; it hung on the orphan-held pipe"
+    )
     assert recorded_pids, "the fixture never established an inherited pipe holder"
     assert not production_survivors, "the production group kill left an ordinary descendant running"
     assert not cleanup_survivors, "the fixture failed to clean every recorded descendant"
@@ -598,7 +652,12 @@ def test_cli_skill_surface_survives_a_probe_whose_grandchild_holds_the_pipe(tmp_
     assert "partial verdict before the hang" in payload["probe_results"][0]["stdout_preview"]
 
 
-def test_cli_skill_surface_bounds_the_drain_when_the_grandchild_escapes_the_group(tmp_path: Path) -> None:
+@pytest.mark.boundary_contract(
+    reason="child-exit-on-parent-death: an escaped grandchild must not defeat the process-group drain deadline"
+)
+def test_cli_skill_surface_bounds_the_drain_when_the_grandchild_escapes_the_group(
+    tmp_path: Path,
+) -> None:
     """The drain deadline must bind when killing the group cannot reach the holder.
 
     Killing the probe's process group reaps the ordinary grandchild, which makes
@@ -639,7 +698,9 @@ def test_cli_skill_surface_bounds_the_drain_when_the_grandchild_escapes_the_grou
     finally:
         escaped_pids, exited_pids, survivors = _stop_recorded_children(pid_log, stop_path, exit_dir)
 
-    assert result is not None, "the drain was unbounded; the escaped grandchild held the pipe open forever"
+    assert result is not None, (
+        "the drain was unbounded; the escaped grandchild held the pipe open forever"
+    )
     assert escaped_pids, "the fixture never established an escaped pipe holder"
     assert exited_pids == escaped_pids, "the fixture failed to stop every escaped pipe holder"
     assert not survivors
@@ -653,6 +714,9 @@ def test_cli_skill_surface_bounds_the_drain_when_the_grandchild_escapes_the_grou
     assert elapsed < 5, f"test-owned drain deadline did not bind: {elapsed:.1f}s"
 
 
+@pytest.mark.boundary_contract(
+    reason="signal behavior: group cleanup must not signal a process group the probe does not own"
+)
 def test_kill_group_and_drain_never_signals_a_group_the_probe_does_not_own(tmp_path: Path) -> None:
     """Guard against the probe SIGKILLing the whole quality run.
 
@@ -684,7 +748,11 @@ def test_kill_group_and_drain_never_signals_a_group_the_probe_does_not_own(tmp_p
     )
 
     process = subprocess.Popen(
-        [sys.executable, str(probe)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True
+        [sys.executable, str(probe)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        start_new_session=True,
     )
     try:
         stdout, stderr = process.communicate(timeout=60)
@@ -699,7 +767,12 @@ def test_kill_group_and_drain_never_signals_a_group_the_probe_does_not_own(tmp_p
     )
 
 
-def test_cli_skill_surface_keeps_partial_output_when_even_the_drain_times_out(tmp_path: Path) -> None:
+@pytest.mark.boundary_contract(
+    reason="child-exit-on-parent-death: escaped descendants must be cleaned while preserving partial output"
+)
+def test_cli_skill_surface_keeps_partial_output_when_even_the_drain_times_out(
+    tmp_path: Path,
+) -> None:
     """Partial evidence must survive the DRAIN deadline, not just the probe deadline.
 
     Round 2 found the two existing fixtures each covered one half: the orphan
@@ -747,7 +820,10 @@ def test_cli_skill_surface_keeps_partial_output_when_even_the_drain_times_out(tm
     assert payload["status"] == "unobserved"
     assert payload["probe_results"][0]["timed_out"] is True
     assert len(escaped_pids) == payload["probe_results"][0]["attempts"]
-    assert "partial verdict that must survive the drain" in payload["probe_results"][0]["stdout_preview"]
+    assert (
+        "partial verdict that must survive the drain"
+        in payload["probe_results"][0]["stdout_preview"]
+    )
 
 
 def test_cli_skill_surface_names_the_unobserved_probe_in_its_only_output(tmp_path: Path) -> None:
@@ -760,11 +836,15 @@ def test_cli_skill_surface_names_the_unobserved_probe_in_its_only_output(tmp_pat
     second rendering left to carry it.
     """
     repo = _probe_repo(tmp_path, "python3 scripts/hang.py doctor --json")
-    write_executable(repo / "scripts" / "hang.py", "#!/usr/bin/env python3\nimport time\ntime.sleep(30)\n")
+    write_executable(
+        repo / "scripts" / "hang.py", "#!/usr/bin/env python3\nimport time\ntime.sleep(30)\n"
+    )
     env = os.environ.copy()
     env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.2"
 
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env)
+    result = run_script(
+        "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env
+    )
 
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)

@@ -6,6 +6,7 @@ A field name's presence stood in for engaging with the field.
 Each test names the pre-repair verdict it pins against, observed in the parent on
 2026-08-01 before any repair was written.
 """
+
 from __future__ import annotations
 
 import subprocess
@@ -28,10 +29,14 @@ def _artifact(body: str, date: str = "2026-08-01") -> str:
     return f"# Quality Review\n\nDate: {date}\n\n## Findings\n\n{body}\n\n## Commands Run\n\n- {_CITED}\n"
 
 
-def _write_repo(tmp_path: Path, text: str, *, git: bool, commit_date: str | None = None) -> tuple[Path, Path]:
+def _write_repo(
+    tmp_path: Path, text: str, *, git: bool, commit_date: str | None = None
+) -> tuple[Path, Path]:
     from .repo_shapes import install_committed_repo
 
-    fields = ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
+    fields = (
+        ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
+    )
     files = {
         "fields.json": fields.read_text(encoding="utf-8"),
         "artifact.md": text,
@@ -80,7 +85,9 @@ def test_s9_a_genuinely_old_artifact_stays_exempt(tmp_path):
     # The exemption exists for a real reason — rewriting frozen retros to satisfy a later
     # gate is Goodhart. Corroboration keeps it for artifacts git agrees are old.
     repo, artifact = _write_repo(
-        tmp_path, _artifact(_FAILING_BODY, date="2020-01-01"), git=True,
+        tmp_path,
+        _artifact(_FAILING_BODY, date="2020-01-01"),
+        git=True,
         commit_date="2020-01-02T12:00:00 +0000",
     )
 
@@ -146,7 +153,8 @@ def test_s10_an_explicit_negation_still_counts_as_engagement(tmp_path):
     repo, artifact = _write_repo(tmp_path, _artifact(body), git=True)
 
     engaged = [
-        field for field in ("scope_status", "finding_status")
+        field
+        for field in ("scope_status", "finding_status")
         if INVENTORY._engages(body, field, _ERGONOMICS_FIELDS)
     ]
 
@@ -193,7 +201,12 @@ def test_s10_a_real_observation_still_passes(tmp_path):
 
 def test_s10_residual_ignores_the_field_name_and_stub_tokens():
     assert INVENTORY.residual_chars("- prose_review_status: n/a", "prose_review_status") == 0
-    assert INVENTORY.residual_chars("`heuristic_finding_count=17`, all from", "heuristic_finding_count") == 9
+    assert (
+        INVENTORY.residual_chars(
+            "`heuristic_finding_count=17`, all from", "heuristic_finding_count"
+        )
+        == 9
+    )
 
 
 def test_s9_an_uncommitted_artifact_cannot_self_exempt(tmp_path):
@@ -217,13 +230,17 @@ def test_s9_a_dirty_artifact_cannot_self_exempt(tmp_path):
     # content git has never seen — the same rolling-pointer argument that rules out using
     # the first-commit date.
     repo, artifact = _write_repo(
-        tmp_path, _artifact(_FAILING_BODY, date="2020-01-01"), git=True,
+        tmp_path,
+        _artifact(_FAILING_BODY, date="2020-01-01"),
+        git=True,
         commit_date="2020-01-02T12:00:00 +0000",
     )
     (repo / "newer.txt").write_text("later work\n", encoding="utf-8")
     subprocess.run(["git", "add", "-A"], cwd=repo, check=True)
     subprocess.run(["git", "commit", "-q", "-m", "later"], cwd=repo, check=True)
-    artifact.write_text(artifact.read_text(encoding="utf-8") + "\n- edited now.\n", encoding="utf-8")
+    artifact.write_text(
+        artifact.read_text(encoding="utf-8") + "\n- edited now.\n", encoding="utf-8"
+    )
 
     result = _run(repo, artifact)
 
@@ -319,7 +336,9 @@ def test_the_measurement_floor_is_overridable_without_editing_the_gate():
     # The docstring's own rule is that a threshold is defended by a number that can be
     # re-run; the counterfactual floor was not re-runnable until `--floor` existed.
     corpus = ROOT / "charness-artifacts" / "quality"
-    fields = ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
+    fields = (
+        ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
+    )
 
     low = MEASURE.scan(ROOT, corpus, fields, 5)
     high = MEASURE.scan(ROOT, corpus, fields, 20)
@@ -335,10 +354,13 @@ def test_the_measurement_reports_a_corpus_outside_the_repo_without_crashing(tmp_
     # measurement shipped in the same slice reproduced it at two call sites.
     corpus = tmp_path / "elsewhere"
     corpus.mkdir()
-    (corpus / "a.md").write_text("# Q\n\nDate: 2026-08-01\n\n## Commands Run\n\n- none\n", encoding="utf-8")
+    (corpus / "a.md").write_text(
+        "# Q\n\nDate: 2026-08-01\n\n## Commands Run\n\n- none\n", encoding="utf-8"
+    )
 
     report = MEASURE.scan(
-        ROOT, corpus,
+        ROOT,
+        corpus,
         ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json",
     )
 
@@ -407,7 +429,10 @@ def test_commit_state_survives_an_unparsable_head_date(monkeypatch, tmp_path):
 
     monkeypatch.setattr(INVENTORY, "_git", _fake)
 
-    assert INVENTORY.commit_state(tmp_path, tmp_path / "a.md") == ("dated", INVENTORY.date(2020, 1, 2))
+    assert INVENTORY.commit_state(tmp_path, tmp_path / "a.md") == (
+        "dated",
+        INVENTORY.date(2020, 1, 2),
+    )
 
 
 def test_commit_state_reports_unavailable_when_the_path_log_fails(monkeypatch, tmp_path):
@@ -424,7 +449,9 @@ def test_commit_state_reports_unavailable_when_the_path_log_fails(monkeypatch, t
     assert INVENTORY.commit_state(tmp_path, tmp_path / "a.md") == ("unavailable", None)
 
 
-def test_commit_state_reports_uncommitted_for_a_clean_but_never_committed_path(monkeypatch, tmp_path):
+def test_commit_state_reports_uncommitted_for_a_clean_but_never_committed_path(
+    monkeypatch, tmp_path
+):
     # `:225` — the arm round 1 found: git exits 0 with EMPTY stdout for a file it has
     # never seen, which the first cut collapsed into "git cannot answer".
     def _fake(root, *args):
@@ -437,7 +464,8 @@ def test_commit_state_reports_uncommitted_for_a_clean_but_never_committed_path(m
     monkeypatch.setattr(INVENTORY, "_git", _fake)
 
     assert INVENTORY.commit_state(tmp_path, tmp_path / "a.md") == (
-        "uncommitted", INVENTORY.date(2026, 8, 1),
+        "uncommitted",
+        INVENTORY.date(2026, 8, 1),
     )
 
 
@@ -459,7 +487,9 @@ def test_a_whole_repository_predating_the_contract_is_not_called_corroborated(tm
     # `:324, :331` — the arm round 2 rewrote: HEAD's date says nothing about a file git
     # has not seen, so this may not print "Corroborated".
     repo, artifact = _write_repo(
-        tmp_path, _artifact(_FAILING_BODY, date="2020-01-01"), git=True,
+        tmp_path,
+        _artifact(_FAILING_BODY, date="2020-01-01"),
+        git=True,
         commit_date="2020-01-02T12:00:00 +0000",
     )
     fresh = repo / "fresh.md"
@@ -486,11 +516,21 @@ def test_the_floor_measurement_payload_and_exit_code(tmp_path, monkeypatch, caps
         "measure_inventory_consumption_floor_cli",
         ROOT / "scripts" / "measure_inventory_consumption_floor.py",
     )
-    fields = ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
-    monkeypatch.setattr("sys.argv", [
-        "measure", "--repo-root", str(tmp_path), "--corpus", str(corpus),
-        "--consumer-fields-path", str(fields),
-    ])
+    fields = (
+        ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "measure",
+            "--repo-root",
+            str(tmp_path),
+            "--corpus",
+            str(corpus),
+            "--consumer-fields-path",
+            str(fields),
+        ],
+    )
 
     code = measure.main()
     payload = yaml.safe_load(capsys.readouterr().out)
@@ -514,11 +554,21 @@ def test_the_floor_measurement_emits_a_structured_payload(tmp_path, monkeypatch,
         "measure_inventory_consumption_floor_json",
         ROOT / "scripts" / "measure_inventory_consumption_floor.py",
     )
-    fields = ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
-    monkeypatch.setattr("sys.argv", [
-        "measure", "--repo-root", str(tmp_path), "--corpus", str(corpus),
-        "--consumer-fields-path", str(fields),
-    ])
+    fields = (
+        ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "measure",
+            "--repo-root",
+            str(tmp_path),
+            "--corpus",
+            str(corpus),
+            "--consumer-fields-path",
+            str(fields),
+        ],
+    )
 
     assert measure.main() == 0
     assert yaml.safe_load(capsys.readouterr().out)["artifacts"] == 1
@@ -531,20 +581,30 @@ def test_the_floor_measurement_names_a_citation_it_lowers(tmp_path, monkeypatch,
     corpus = tmp_path / "quality"
     corpus.mkdir()
     (corpus / "a.md").write_text(
-        _artifact(
-            "- `scope_status=complete` and `finding_status=clean` across the run."
-        ),
+        _artifact("- `scope_status=complete` and `finding_status=clean` across the run."),
         encoding="utf-8",
     )
     measure = _load_script_module(
         "measure_inventory_consumption_floor_lowered",
         ROOT / "scripts" / "measure_inventory_consumption_floor.py",
     )
-    fields = ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
-    monkeypatch.setattr("sys.argv", [
-        "measure", "--repo-root", str(tmp_path), "--corpus", str(corpus),
-        "--consumer-fields-path", str(fields), "--floor", "400",
-    ])
+    fields = (
+        ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "measure",
+            "--repo-root",
+            str(tmp_path),
+            "--corpus",
+            str(corpus),
+            "--consumer-fields-path",
+            str(fields),
+            "--floor",
+            "400",
+        ],
+    )
 
     assert measure.main() == 1
     payload = yaml.safe_load(capsys.readouterr().out)
@@ -556,18 +616,31 @@ def test_the_floor_measurement_names_a_citation_it_lowers(tmp_path, monkeypatch,
     assert lowered[0]["lost_to_the_floor"]
 
 
+@pytest.mark.boundary_contract(
+    reason="__main__ dispatch smoke: the floor measurement script must be runnable as a program"
+)
 def test_the_floor_measurement_runs_as_a_script(tmp_path):
     # the `__main__` guard, reachable only through a subprocess invocation.
     corpus = tmp_path / "quality"
     corpus.mkdir()
     (corpus / "a.md").write_text(_artifact("- nothing cited."), encoding="utf-8")
-    fields = ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
+    fields = (
+        ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
+    )
 
     result = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "measure_inventory_consumption_floor.py"),
-         "--repo-root", str(tmp_path), "--corpus", str(corpus),
-         "--consumer-fields-path", str(fields)],
-        capture_output=True, text=True,
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "measure_inventory_consumption_floor.py"),
+            "--repo-root",
+            str(tmp_path),
+            "--corpus",
+            str(corpus),
+            "--consumer-fields-path",
+            str(fields),
+        ],
+        capture_output=True,
+        text=True,
     )
 
     assert result.returncode == 0

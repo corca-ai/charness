@@ -22,10 +22,15 @@ import yaml
 
 from tests.closeout_authorization_world import build_protected_world
 from tests.quality_gates.seeding_support import _install_empty_git_dir
+from tests.script_main import load_script_module, run_loaded_script_main
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ISSUE_SCRIPTS = REPO_ROOT / "skills" / "public" / "issue" / "scripts"
 RELEASE_SCRIPTS = REPO_ROOT / "skills" / "public" / "release" / "scripts"
+COMMIT_HOOK = load_script_module(
+    "closeout_authorization_commit_hook",
+    REPO_ROOT / "scripts" / "check_issue_closeout_commit_msg.py",
+)
 
 
 def _load(path: Path, name: str):
@@ -102,8 +107,11 @@ def test_direct_close_of_a_protected_issue_makes_zero_backend_calls(tmp_path: Pa
 
     with pytest.raises(RuntimeError) as excinfo:
         close.close_with_comment(
-            "corca-ai/charness", 514, _body(tmp_path, 514),
-            repo_root=tmp_path, classification="bug",
+            "corca-ai/charness",
+            514,
+            _body(tmp_path, 514),
+            repo_root=tmp_path,
+            classification="bug",
         )
 
     assert spy.calls == []
@@ -124,8 +132,12 @@ def test_direct_close_without_a_manual_declaration_is_refused(tmp_path: Path) ->
 
     with pytest.raises(RuntimeError) as excinfo:
         close.close_with_comment(
-            "corca-ai/charness", 515, _body(tmp_path, 515),
-            repo_root=tmp_path, classification="bug", manual_target_declaration=None,
+            "corca-ai/charness",
+            515,
+            _body(tmp_path, 515),
+            repo_root=tmp_path,
+            classification="bug",
+            manual_target_declaration=None,
         )
 
     assert spy.calls == []
@@ -140,8 +152,12 @@ def test_a_manual_declaration_naming_a_different_issue_is_refused(tmp_path: Path
 
     with pytest.raises(RuntimeError) as excinfo:
         close.close_with_comment(
-            "corca-ai/charness", 514, _body(tmp_path, 514), repo_root=tmp_path,
-            classification="bug", manual_target_declaration="corca-ai/charness#518",
+            "corca-ai/charness",
+            514,
+            _body(tmp_path, 514),
+            repo_root=tmp_path,
+            classification="bug",
+            manual_target_declaration="corca-ai/charness#518",
         )
 
     assert spy.calls == []
@@ -157,8 +173,12 @@ def test_a_manual_declaration_naming_a_foreign_repo_is_refused(tmp_path: Path) -
 
     with pytest.raises(RuntimeError):
         close.close_with_comment(
-            "corca-ai/charness", 514, _body(tmp_path, 514), repo_root=tmp_path,
-            classification="bug", manual_target_declaration="fork-org/charness#514",
+            "corca-ai/charness",
+            514,
+            _body(tmp_path, 514),
+            repo_root=tmp_path,
+            classification="bug",
+            manual_target_declaration="fork-org/charness#514",
         )
 
     assert spy.calls == []
@@ -211,15 +231,20 @@ def _run_commit_hook(repo: Path, message: str):
     """
     message_file = repo / "COMMIT_EDITMSG"
     message_file.write_text(message, encoding="utf-8")
-    result = subprocess.run(
-        ["python3", str(REPO_ROOT / "scripts" / "check_issue_closeout_commit_msg.py"),
-         "--repo-root", str(repo), "--commit-msg-file", str(message_file)],
-        cwd=REPO_ROOT, capture_output=True, text=True,
+    result = run_loaded_script_main(
+        "scripts/check_issue_closeout_commit_msg.py",
+        COMMIT_HOOK,
+        "--repo-root",
+        str(repo),
+        "--commit-msg-file",
+        str(message_file),
     )
     return result, message_file
 
 
-def test_the_commit_hook_refuses_a_protected_close_without_writing_its_temp_carrier(tmp_path: Path) -> None:
+def test_the_commit_hook_refuses_a_protected_close_without_writing_its_temp_carrier(
+    tmp_path: Path,
+) -> None:
     """The temp carrier is this hook's first side effect, so it must not exist.
 
     The sanitized `.charness-closeout-body` file is written before any per-issue
@@ -239,7 +264,9 @@ def test_the_commit_hook_refuses_a_protected_close_without_writing_its_temp_carr
     assert not sanitized.exists()
 
 
-def test_the_commit_hook_refuses_a_carrier_that_mixes_a_protected_and_another_issue(tmp_path: Path) -> None:
+def test_the_commit_hook_refuses_a_carrier_that_mixes_a_protected_and_another_issue(
+    tmp_path: Path,
+) -> None:
     """The aggregate rule, on the carrier where it matters most.
 
     GitHub auto-closes both numbers on push. There is no way to attach the protected
@@ -297,8 +324,14 @@ def test_draft_validation_of_a_protected_issue_cannot_report_draft_verified(tmp_
     body = _body(tmp_path, 514)
 
     result = draft.validate_closeout_draft(
-        verifier=verifier, repo_root=tmp_path, repo="corca-ai/charness", numbers=[514],
-        classification="bug", body_file=None, backend={"id": "gh"}, carrier="direct-commit",
+        verifier=verifier,
+        repo_root=tmp_path,
+        repo="corca-ai/charness",
+        numbers=[514],
+        classification="bug",
+        body_file=None,
+        backend={"id": "gh"},
+        carrier="direct-commit",
         commit_message_file=body,
     )
 
@@ -312,8 +345,14 @@ def test_draft_validation_of_an_unrelated_issue_is_unaffected(tmp_path: Path) ->
     verifier = _load(ISSUE_SCRIPTS / "issue_verify_closeout.py", "authz_draft_verifier_2")
 
     result = draft.validate_closeout_draft(
-        verifier=verifier, repo_root=tmp_path, repo="corca-ai/charness", numbers=[9001],
-        classification="bug", body_file=None, backend={"id": "gh"}, carrier="direct-commit",
+        verifier=verifier,
+        repo_root=tmp_path,
+        repo="corca-ai/charness",
+        numbers=[9001],
+        classification="bug",
+        body_file=None,
+        backend={"id": "gh"},
+        carrier="direct-commit",
         commit_message_file=_body(tmp_path, 9001),
     )
 
@@ -325,7 +364,9 @@ def test_draft_validation_of_an_unrelated_issue_is_unaffected(tmp_path: Path) ->
     assert not [item for item in result.get("refusals", []) if item.get("refusal")]
 
 
-def test_the_post_publication_readback_reports_authorization_but_does_not_gate_on_it(tmp_path: Path) -> None:
+def test_the_post_publication_readback_reports_authorization_but_does_not_gate_on_it(
+    tmp_path: Path,
+) -> None:
     """The one ingress that deliberately does NOT refuse.
 
     By readback time the close has already landed. Refusing here would suppress the
@@ -336,8 +377,13 @@ def test_the_post_publication_readback_reports_authorization_but_does_not_gate_o
     verifier = _load(ISSUE_SCRIPTS / "issue_verify_closeout.py", "authz_verify")
 
     result = verifier.verify_closeout(
-        repo_root=tmp_path, repo="corca-ai/charness", numbers=[514], classification="bug",
-        carrier="pr-body", backend={"id": "gh"}, body_file=_body(tmp_path, 514),
+        repo_root=tmp_path,
+        repo="corca-ai/charness",
+        numbers=[514],
+        classification="bug",
+        carrier="pr-body",
+        backend={"id": "gh"},
+        body_file=_body(tmp_path, 514),
     )
 
     assert "reported-only" in result["closeout_authorization"]["gating"]
@@ -351,7 +397,9 @@ def _release_module():
     return _load(RELEASE_SCRIPTS / "release_issue_closeout.py", "authz_release_closeout")
 
 
-def test_release_preflight_refuses_a_protected_issue_before_any_bump_or_publish(tmp_path: Path) -> None:
+def test_release_preflight_refuses_a_protected_issue_before_any_bump_or_publish(
+    tmp_path: Path,
+) -> None:
     """Release closure is outside this goal, so the release path must not be the
     unwatched route that ships one. The spy proves nothing ran."""
     build_protected_world(tmp_path)
@@ -360,15 +408,22 @@ def test_release_preflight_refuses_a_protected_issue_before_any_bump_or_publish(
 
     with pytest.raises(SystemExit) as excinfo:
         release.preflight_release_issues(
-            tmp_path, repo="corca-ai/charness", issue_numbers=[514], payload={}, run=spy,
-            classification="bug", carrier_file=None,
+            tmp_path,
+            repo="corca-ai/charness",
+            issue_numbers=[514],
+            payload={},
+            run=spy,
+            classification="bug",
+            carrier_file=None,
         )
 
     assert spy.calls == []
     assert "carrier_out_of_scope" in str(excinfo.value)
 
 
-def test_release_preflight_refuses_before_it_even_demands_its_own_required_flags(tmp_path: Path) -> None:
+def test_release_preflight_refuses_before_it_even_demands_its_own_required_flags(
+    tmp_path: Path,
+) -> None:
     """Ordering detail worth pinning: the refusal precedes the classification/carrier
     checks, so an operator cannot learn the protected target was acceptable-but-for-a-
     missing-flag and go supply the flag."""
@@ -377,8 +432,13 @@ def test_release_preflight_refuses_before_it_even_demands_its_own_required_flags
 
     with pytest.raises(SystemExit) as excinfo:
         release.preflight_release_issues(
-            tmp_path, repo="corca-ai/charness", issue_numbers=[515], payload={}, run=BackendSpy(),
-            classification=None, carrier_file=None,
+            tmp_path,
+            repo="corca-ai/charness",
+            issue_numbers=[515],
+            payload={},
+            run=BackendSpy(),
+            classification=None,
+            carrier_file=None,
         )
 
     assert "carrier_out_of_scope" in str(excinfo.value)
@@ -393,8 +453,11 @@ def test_ensure_release_issues_closed_refuses_before_calling_gh_issue_close(tmp_
 
     with pytest.raises(SystemExit):
         release.ensure_release_issues_closed(
-            tmp_path, repo="corca-ai/charness", issue_numbers=[518],
-            payload={"tag_name": "v1", "commit_sha": "abc"}, run=spy,
+            tmp_path,
+            repo="corca-ai/charness",
+            issue_numbers=[518],
+            payload={"tag_name": "v1", "commit_sha": "abc"},
+            run=spy,
         )
 
     assert spy.calls == []
@@ -408,8 +471,11 @@ def test_the_release_closeout_message_refuses_before_writing_its_temp_file(tmp_p
 
     with pytest.raises(SystemExit) as excinfo:
         message.validate_release_closeout_commit_message(
-            tmp_path, repo="corca-ai/charness", issue_numbers=[514],
-            classification="bug", commit_message="Closes #514\n",
+            tmp_path,
+            repo="corca-ai/charness",
+            issue_numbers=[514],
+            classification="bug",
+            commit_message="Closes #514\n",
         )
 
     assert "REFUSED" in str(excinfo.value)

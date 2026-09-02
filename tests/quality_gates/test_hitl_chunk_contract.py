@@ -1,20 +1,26 @@
 from __future__ import annotations
 
-import subprocess
+import io
 import sys
 from pathlib import Path
 
 import yaml
 
+from tests.script_main import load_script_module, run_loaded_script_main
+
 from .seeding_support import load_module
 from .support import ROOT, run_script
 
 HITL_SKILL = (ROOT / "skills" / "public" / "hitl" / "SKILL.md").read_text(encoding="utf-8")
-CHUNK_CONTRACT = (ROOT / "skills" / "public" / "hitl" / "references" / "chunk-contract.md").read_text(
-    encoding="utf-8"
-)
+CHUNK_CONTRACT = (
+    ROOT / "skills" / "public" / "hitl" / "references" / "chunk-contract.md"
+).read_text(encoding="utf-8")
 
 CHECK_SCRIPT = "skills/public/hitl/scripts/check_chunk_contract.py"
+CHECK_MODULE = load_script_module(
+    "hitl_check_chunk_contract",
+    ROOT / "skills" / "public" / "hitl" / "scripts" / "check_chunk_contract.py",
+)
 
 
 def _load_hitl_lib():
@@ -158,7 +164,9 @@ def test_check_chunk_contract_lib_still_skips_a_purely_informational_chunk() -> 
     # merely mentions a decision it is NOT asking for stays out of scope.
     lib = _load_hitl_lib()
 
-    assert lib.check_chunk_contract("Status update: still gathering evidence; no decision yet.") == []
+    assert (
+        lib.check_chunk_contract("Status update: still gathering evidence; no decision yet.") == []
+    )
     assert lib.check_chunk_contract("The prior decision stands; nothing needed from you.") == []
 
 
@@ -180,7 +188,9 @@ def test_check_chunk_contract_lib_ignores_decision_verbs_in_descriptive_prose() 
 
     assert lib.check_chunk_contract("The validator will reject a digest with no records.") == []
     assert lib.check_chunk_contract("I can confirm the rewrite preserves the contract.") == []
-    assert lib.check_chunk_contract("```yaml\napprove: true\n```\nThis block shows the schema.") == []
+    assert (
+        lib.check_chunk_contract("```yaml\napprove: true\n```\nThis block shows the schema.") == []
+    )
 
 
 def test_check_chunk_contract_lib_flags_a_line_initial_request() -> None:
@@ -190,18 +200,12 @@ def test_check_chunk_contract_lib_flags_a_line_initial_request() -> None:
     assert lib.check_chunk_contract("Approval needed on the rename.") != []
 
 
-def test_check_chunk_contract_script_blocks_empty_stdin() -> None:
+def test_check_chunk_contract_script_blocks_empty_stdin(monkeypatch) -> None:
     # The sweep's literal reproduction: `printf '' | check_chunk_contract.py`.
     # Driven through stdin on purpose — the `--chunk-file` test does not reach
     # `sys.stdin.read()`, which is the path the row actually exercised.
-    result = subprocess.run(
-        [sys.executable, CHECK_SCRIPT],
-        cwd=ROOT,
-        input="",
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    monkeypatch.setattr(sys, "stdin", io.StringIO(""))
+    result = run_loaded_script_main(CHECK_SCRIPT, CHECK_MODULE)
 
     assert result.returncode == 1
     assert yaml.safe_load(result.stdout)["status"] == "blocked"

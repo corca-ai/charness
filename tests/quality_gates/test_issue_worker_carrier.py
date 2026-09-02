@@ -2,13 +2,13 @@
 
 These cases verify that process/media success cannot be consumed as reviewer approval.
 """
+
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
-import os
 import shutil
-import subprocess
 import sys
 from functools import cache
 from pathlib import Path
@@ -28,6 +28,7 @@ from tests.quality_gates.seeding_support import load_module, verify_closeout_arg
 from tests.quality_gates.support import ROOT, run_script
 from tests.reviewed_input_identity_fixtures import repo_seed as identity_repo_seed
 from tests.reviewed_input_identity_fixtures import reviewed_identity_seed
+from tests.script_main import load_script_module, run_loaded_script_main
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 CRITIQUE_REL = "charness-artifacts/critique/res-42.md"
@@ -165,9 +166,9 @@ def _worker_delivered_artifact(
         backend="codex_exec",
         prompt_sha256=prompt_sha256,
         schema_sha256=schema_sha256,
-        capability_launch_envelope_sha256=receipt_capability_fields("issue-worker-1", payload=capability_payload)[
-            "capability_launch_envelope_sha256"
-        ],
+        capability_launch_envelope_sha256=receipt_capability_fields(
+            "issue-worker-1", payload=capability_payload
+        )["capability_launch_envelope_sha256"],
         output_file=str(result_path.resolve()),
         receipt_file=str(receipt_path.resolve()),
         producer_run_id="issue-worker-run-1",
@@ -243,7 +244,9 @@ worker-delivered
 def _case_worker_delivered_requires_the_shared_report_carrier(case_dir: Path) -> None:
     module = _load_resolution_critique()
     artifact = _worker_delivered_artifact(case_dir)
-    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+    check = {
+        "satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]
+    }
 
     observer = module._observer_disposition(
         case_dir,
@@ -260,7 +263,9 @@ def _case_worker_delivered_requires_the_shared_report_carrier(case_dir: Path) ->
 def _case_worker_delivered_foreign_packet_is_refused_by_the_issue_consumer(case_dir: Path) -> None:
     module = _load_resolution_critique()
     artifact = _worker_delivered_artifact(case_dir, report_changes={"packet_identity": "d" * 64})
-    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+    check = {
+        "satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]
+    }
 
     observer = module._observer_disposition(case_dir, check)
 
@@ -285,7 +290,9 @@ def _case_worker_carrier_rejects_capability_identity_foreign_to_the_attempt(case
         lines.append(line)
     artifact.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+    check = {
+        "satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]
+    }
     observer = module._observer_disposition(case_dir, check)
 
     assert observer["disposition"] == "carrier-unverified"
@@ -304,7 +311,9 @@ def _case_worker_carrier_rejects_optional_non_claim_result_mutation(
     else:
         result["capability_non_claims"] = [target_non_claim("github:issue:690", "unproved")]
     if mutation != "missing":
-        result["capability_non_claims_sha256"] = non_claims_sha256(result.get("capability_non_claims", []))
+        result["capability_non_claims_sha256"] = non_claims_sha256(
+            result.get("capability_non_claims", [])
+        )
     result_path.write_text(json.dumps(result, separators=(",", ":")), encoding="utf-8")
     result_identity = hashlib.sha256(result_path.read_bytes()).hexdigest()
 
@@ -335,7 +344,9 @@ def _case_worker_carrier_rejects_optional_non_claim_result_mutation(
     artifact.write_text("\n".join(artifact_lines) + "\n", encoding="utf-8")
 
     module = _load_resolution_critique()
-    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+    check = {
+        "satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]
+    }
     observer = module._observer_disposition(case_dir, check)
     assert observer["disposition"] == "carrier-unverified"
     expected_reason = "canonical schema" if mutation == "missing" else "non-claim"
@@ -353,14 +364,17 @@ def _case_worker_delivered_provenance_alias_mismatch_is_refused(case_dir: Path) 
     artifact.write_text(
         artifact.read_text(encoding="utf-8").replace(
             next(
-                line for line in artifact.read_text(encoding="utf-8").splitlines()
+                line
+                for line in artifact.read_text(encoding="utf-8").splitlines()
                 if line.startswith("- Worker report identity:")
             ),
             f"- Worker report identity: {report_identity}",
         ),
         encoding="utf-8",
     )
-    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+    check = {
+        "satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]
+    }
 
     observer = module._observer_disposition(case_dir, check)
 
@@ -413,7 +427,9 @@ def test_worker_delivered_prose_without_carrier_is_not_approval(tmp_path: Path) 
         "Critique of the #42 resolution.\n\nFresh-eye satisfaction: worker-delivered\n",
         encoding="utf-8",
     )
-    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+    check = {
+        "satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]
+    }
 
     observer = module._observer_disposition(tmp_path, check)
 
@@ -422,9 +438,7 @@ def test_worker_delivered_prose_without_carrier_is_not_approval(tmp_path: Path) 
     assert "carrier" in observer["carrier_reason"]
 
 
-def _rebind_worker_packet(
-    artifact: Path, prepared_for: str, *, repo: str | None = None
-) -> None:
+def _rebind_worker_packet(artifact: Path, prepared_for: str, *, repo: str | None = None) -> None:
     """Rebind every carrier layer after changing packet context."""
     root = artifact.parent
     packet = root / "packet.json"
@@ -523,7 +537,9 @@ def test_worker_delivered_packet_for_another_issue_is_refused_at_close(tmp_path:
     module = _load_resolution_critique()
     artifact = _worker_delivered_artifact(tmp_path)
     _rebind_worker_packet(artifact, "corca-ai/charness#99 resolution-critique")
-    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+    check = {
+        "satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]
+    }
 
     observer = module._observer_disposition(
         tmp_path,
@@ -540,7 +556,9 @@ def test_worker_delivered_same_number_from_foreign_repository_is_refused(tmp_pat
     module = _load_resolution_critique()
     artifact = _worker_delivered_artifact(tmp_path)
     _rebind_worker_packet(artifact, "other-org/other-repo#42 resolution-critique")
-    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+    check = {
+        "satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]
+    }
 
     observer = module._observer_disposition(
         tmp_path,
@@ -561,7 +579,9 @@ def test_worker_delivered_packet_repository_must_rejoin_the_target(tmp_path: Pat
         "corca-ai/charness#42 resolution-critique",
         repo="other-org/other-repo",
     )
-    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+    check = {
+        "satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]
+    }
     observer = module._observer_disposition(
         tmp_path,
         check,
@@ -576,7 +596,9 @@ def test_worker_delivered_canonical_result_verdict_is_consumed(tmp_path: Path) -
     module = _load_resolution_critique()
     artifact = _worker_delivered_artifact(tmp_path)
     _rebind_worker_result(artifact, verdict="block")
-    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+    check = {
+        "satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]
+    }
     observer = module._observer_disposition(
         tmp_path,
         check,
@@ -596,7 +618,9 @@ def test_worker_delivered_canonical_history_is_consumed(tmp_path: Path) -> None:
         {"state": "findings-received", "terminal": True, "attempt_id": "issue-worker-1"}
     ]
     ledger_path.write_text(json.dumps(ledger, separators=(",", ":")), encoding="utf-8")
-    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+    check = {
+        "satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]
+    }
     observer = module._observer_disposition(
         tmp_path,
         check,
@@ -621,7 +645,9 @@ def test_worker_delivered_report_attempt_id_must_rejoin_provenance(tmp_path: Pat
             line = f"- Worker report identity: {report_identity}"
         lines.append(line)
     artifact.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]}
+    check = {
+        "satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(artifact)}]
+    }
     observer = module._observer_disposition(
         tmp_path,
         check,
@@ -632,33 +658,31 @@ def test_worker_delivered_report_attempt_id_must_rejoin_provenance(tmp_path: Pat
     assert "attempt_id" in observer["carrier_reason"]
 
 
-def test_worker_carrier_does_not_import_a_consumer_shadow_helper(tmp_path: Path) -> None:
+def test_worker_carrier_does_not_import_a_consumer_shadow_helper(
+    tmp_path: Path, monkeypatch
+) -> None:
     shadow = tmp_path / "shadow"
     shadow.mkdir()
     (shadow / "reviewer_delivery_fields.py").write_text(
         "import re\nPARENT_RECEIPT_ID_RE = re.compile(r'.*')\n", encoding="utf-8"
     )
     carrier = ROOT / "skills/shared/scripts/reviewer_worker_carrier.py"
-    code = (
-        "import importlib.util; "
-        f"s=importlib.util.spec_from_file_location('carrier', {str(carrier)!r}); "
-        "m=importlib.util.module_from_spec(s); s.loader.exec_module(m); "
-        "print(m.PARENT_RECEIPT_ID_RE.fullmatch('not a valid receipt') is not None)"
-    )
-    result = subprocess.run(
-        [sys.executable, "-c", code],
-        cwd=tmp_path,
-        env={**os.environ, "PYTHONPATH": f"{shadow}:{ROOT}"},
-        capture_output=True,
-        text=True,
-        check=False,
-    )
 
-    assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "False"
+    class ShadowFinder:
+        def find_spec(self, fullname, path=None, target=None):
+            if fullname == "reviewer_delivery_fields":
+                return importlib.util.spec_from_file_location(fullname, shadow / f"{fullname}.py")
+            return None
+
+    monkeypatch.delitem(sys.modules, "reviewer_delivery_fields", raising=False)
+    monkeypatch.setattr(sys, "meta_path", [ShadowFinder(), *sys.meta_path])
+    module = load_script_module("reviewer_worker_carrier_shadow_test", carrier)
+    assert module.PARENT_RECEIPT_ID_RE.fullmatch("not a valid receipt") is None
 
 
-def test_worker_delivered_carrier_refusal_is_unconditional_without_repo_contract(tmp_path: Path) -> None:
+def test_worker_delivered_carrier_refusal_is_unconditional_without_repo_contract(
+    tmp_path: Path,
+) -> None:
     _seed(tmp_path, satisfaction="worker-delivered", contract=False)
 
     result = _verify(tmp_path)
@@ -667,10 +691,15 @@ def test_worker_delivered_carrier_refusal_is_unconditional_without_repo_contract
     assert payload["ok"] is False
     observer = payload["resolution_critique_check"]["fresh_eye_observer"]
     assert observer["disposition"] == "carrier-unverified"
-    assert payload["resolution_critique_check"]["observer_refusals"][0]["disposition"] == "carrier-unverified"
+    assert (
+        payload["resolution_critique_check"]["observer_refusals"][0]["disposition"]
+        == "carrier-unverified"
+    )
 
 
-def test_typed_subagent_claim_over_non_delivery_state_is_refused_at_issue_close(tmp_path: Path) -> None:
+def test_typed_subagent_claim_over_non_delivery_state_is_refused_at_issue_close(
+    tmp_path: Path,
+) -> None:
     critique = tmp_path / CRITIQUE_REL
     critique.parent.mkdir(parents=True, exist_ok=True)
     critique.write_text(
@@ -703,23 +732,25 @@ Fresh-eye satisfaction: parent-delegated
 def test_cited_critique_outside_repo_is_refused(tmp_path: Path) -> None:
     module = _load_resolution_critique()
     foreign = tmp_path.parent / "foreign-critique.md"
-    foreign.write_text("Critique of #42.\nFresh-eye satisfaction: parent-delegated\n", encoding="utf-8")
-    check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(foreign)}]}
+    foreign.write_text(
+        "Critique of #42.\nFresh-eye satisfaction: parent-delegated\n", encoding="utf-8"
+    )
+    check = {
+        "satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(foreign)}]
+    }
 
     observer = module._observer_disposition(tmp_path, check, expected_issue_numbers=[42])
 
     assert observer["disposition"] == "outside-repo"
 
 
-def test_collapsed_plugin_issue_loader_works_from_an_unrelated_cwd(tmp_path: Path) -> None:
+def test_collapsed_plugin_issue_loader_works_from_an_unrelated_cwd(
+    tmp_path: Path, monkeypatch
+) -> None:
     script = ROOT / "plugins" / "charness" / "skills" / "issue" / "scripts" / "issue_tool.py"
-    result = subprocess.run(
-        [sys.executable, str(script), "--help"],
-        cwd=tmp_path,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    module = load_script_module("collapsed_plugin_issue_tool", script)
+    monkeypatch.chdir(tmp_path)
+    result = run_loaded_script_main(str(script), module, "--help")
 
     assert result.returncode == 0, result.stderr
     assert "ModuleNotFoundError" not in result.stderr

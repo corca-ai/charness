@@ -157,9 +157,9 @@ def test_render_cli_reference_matches_checked_in_doc(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    assert output.read_text(encoding="utf-8") == (
-        ROOT / "docs" / "cli-reference.md"
-    ).read_text(encoding="utf-8")
+    assert output.read_text(encoding="utf-8") == (ROOT / "docs" / "cli-reference.md").read_text(
+        encoding="utf-8"
+    )
 
 
 def test_root_cli_command_contracts_cover_every_parser_path() -> None:
@@ -247,9 +247,14 @@ def test_render_cli_reference_renders_contract_order_and_examples(monkeypatch) -
     assert rendered.index("## `charness tool install`") < rendered.index("## `charness alpha`")
     assert "help for tool install" in rendered
     assert "help for alpha" in rendered
-    assert "charness tool install --recommendation-role validation --next-skill-id quality" in rendered
+    assert (
+        "charness tool install --recommendation-role validation --next-skill-id quality" in rendered
+    )
 
 
+@pytest.mark.boundary_contract(
+    reason="exact exit-code and stderr contract of the root charness CLI for a removed flag"
+)
 def test_root_cli_has_no_json_compatibility_flag() -> None:
     """The root CLI carries no `--json`, read off the CLI itself.
 
@@ -344,6 +349,9 @@ def test_render_cli_reference_resolves_relative_output_under_repo_root(
     assert (tmp_path / "sub" / "dir" / "out.md").read_text(encoding="utf-8") == "STUB\n"
 
 
+@pytest.mark.boundary_contract(
+    reason="exact exit-code contract of the target's help-command runner"
+)
 def test_run_help_raises_systemexit_on_nonzero_exit(tmp_path: Path) -> None:
     # A failing help command (positive non-zero exit) must surface as SystemExit:
     # pins `check=False` (check=True would raise CalledProcessError instead) and
@@ -353,6 +361,7 @@ def test_run_help_raises_systemexit_on_nonzero_exit(tmp_path: Path) -> None:
         mod.run_help(tmp_path, ("bash", "-c", "echo out; echo err >&2; exit 2"))
 
 
+@pytest.mark.boundary_contract(reason="exact signal behavior of the target's help-command runner")
 def test_run_help_raises_systemexit_on_signal_death(tmp_path: Path) -> None:
     # A signal-killed help command yields a NEGATIVE returncode: `!= 0` is True
     # (raise) while the `> 0` mutant would be False (no raise). This is the case a

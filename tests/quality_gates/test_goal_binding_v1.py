@@ -85,9 +85,7 @@ def _created(
     }
 
 
-def _fixture(
-    tmp_path: Path, *, write: bool = True
-) -> tuple[Path, Path, dict[str, object]]:
+def _fixture(tmp_path: Path, *, write: bool = True) -> tuple[Path, Path, dict[str, object]]:
     draft = tmp_path / "charness-artifacts/goals/demo.md"
     draft.parent.mkdir(parents=True)
     draft.write_text("# approved draft\n", encoding="utf-8")
@@ -379,7 +377,9 @@ def test_path_escape_missing_wrong_pairing_and_symlink_paths_refuse(tmp_path: Pa
         binding.validate_structural_binding(tmp_path / "absolute", path)
 
     _, path, payload = _fixture(tmp_path / "in-repo-absolute")
-    payload["draft"]["path"] = str((tmp_path / "in-repo-absolute" / "charness-artifacts/goals/demo.md").resolve())
+    payload["draft"]["path"] = str(
+        (tmp_path / "in-repo-absolute" / "charness-artifacts/goals/demo.md").resolve()
+    )
     path.write_bytes(binding.canonical_json_bytes(payload))
     with pytest.raises(binding.BindingError) as exc_info:
         binding.validate_structural_binding(tmp_path / "in-repo-absolute", path)
@@ -517,7 +517,10 @@ def test_competing_writers_have_one_winner_and_no_partial_target(tmp_path: Path)
     with ThreadPoolExecutor(max_workers=2) as pool:
         outcomes = list(pool.map(lambda _: attempt(), range(2)))
     assert sorted(outcomes) == ["binding-frozen", "ok"]
-    assert binding.canonical_json_bytes(json.loads(path.read_text(encoding="utf-8"))) == path.read_bytes()
+    assert (
+        binding.canonical_json_bytes(json.loads(path.read_text(encoding="utf-8")))
+        == path.read_bytes()
+    )
 
 
 def test_provider_observation_consumes_validator_returned_hash(tmp_path: Path) -> None:
@@ -540,6 +543,9 @@ def test_provider_observation_consumes_validator_returned_hash(tmp_path: Path) -
     assert started["payload"]["binding_sha256"] == result["binding_sha256"]
 
 
+@pytest.mark.boundary_contract(
+    reason="env-scrubbed export self-sufficiency: a clean interpreter validates source and exported bindings"
+)
 def test_clean_process_validates_frozen_pair_and_export_matches_source(tmp_path: Path) -> None:
     draft, path, payload = _fixture(tmp_path)
     assert SCRIPT.read_bytes() == PLUGIN_SCRIPT.read_bytes()

@@ -16,29 +16,34 @@ Driven in-process rather than by subprocess, following the #322 convention.
 
 from __future__ import annotations
 
-import importlib
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 
+from tests.script_main import load_script_module
+
 from .support import ROOT
 
-sys.path.insert(0, str(ROOT / "scripts"))
-from runtime_bootstrap import load_path_module  # noqa: E402
-
-DOMINANCE = load_path_module(
+DOMINANCE = load_script_module(
     "command_dominance_lib_under_test",
     ROOT / "skills" / "public" / "quality" / "scripts" / "command_dominance_lib.py",
 )
-GATE = importlib.import_module("scripts.check_command_dominance")
-UNIVERSE = importlib.import_module("scripts.check_runtime_budget_universe")
+GATE = load_script_module(
+    "check_command_dominance_under_test", ROOT / "scripts" / "check_command_dominance.py"
+)
+UNIVERSE = load_script_module(
+    "check_runtime_budget_universe_under_test",
+    ROOT / "scripts" / "check_runtime_budget_universe.py",
+)
 
 REPLACEMENT = "python3 scripts/run_standing_pytest.py"
 
 
-def _registry_data(*, exemptions: list[dict] | None = None, wrappers: list[dict] | None = None) -> dict:
+def _registry_data(
+    *, exemptions: list[dict] | None = None, wrappers: list[dict] | None = None
+) -> dict:
     return {
         "version": 1,
         "dominated_commands": [
@@ -91,7 +96,10 @@ def test_a_focused_bare_pytest_run_is_not_dominated() -> None:
     which is how a gate gets disabled rather than obeyed.
     """
     registry = _registry()
-    assert DOMINANCE.match_command("python3 -m pytest -q tests/quality_gates/test_x.py", registry) is None
+    assert (
+        DOMINANCE.match_command("python3 -m pytest -q tests/quality_gates/test_x.py", registry)
+        is None
+    )
     assert DOMINANCE.match_command("python3 -m pytest -q tests/a.py tests/b.py", registry) is None
 
 
@@ -119,8 +127,10 @@ def test_a_wrapper_does_not_hide_the_command_it_runs() -> None:
     ratio is not restated here at all now — it lives in exactly one place, the
     test that asserts it.
     """
-    wrapped = "queue_selected \"suite\" python3 -m pytest -q tests"
-    assert DOMINANCE.match_command(wrapped, _registry()) is None, "unwrapped registry should not see it"
+    wrapped = 'queue_selected "suite" python3 -m pytest -q tests'
+    assert DOMINANCE.match_command(wrapped, _registry()) is None, (
+        "unwrapped registry should not see it"
+    )
     registry = _registry(wrappers=[{"program": "queue_selected", "skip_args": 1}])
     assert DOMINANCE.match_command(wrapped, registry) is not None
 
@@ -131,7 +141,9 @@ def test_env_and_bash_c_do_not_hide_the_command_they_run() -> None:
     assert DOMINANCE.match_command('bash -c "python3 -m pytest tests"', registry) is not None
     # The repo's own runner is spelled with a leading `env`; it must stay clean.
     assert (
-        DOMINANCE.match_command(f"env CHARNESS_STANDING_PYTEST_PYTHON=python3 {REPLACEMENT}", registry)
+        DOMINANCE.match_command(
+            f"env CHARNESS_STANDING_PYTEST_PYTHON=python3 {REPLACEMENT}", registry
+        )
         is None
     )
 
@@ -154,7 +166,7 @@ def test_a_config_literal_line_is_read_as_its_value_not_as_the_whole_line() -> N
     LINE and handed it to the classifier, which resolved the program to
     `test-command` and reported a clean tree over a dominated literal.
     """
-    body = 'timeout = 300.0\ntest-command = "python3 -m pytest -q -m \'not release_only\' tests"\n'
+    body = "timeout = 300.0\ntest-command = \"python3 -m pytest -q -m 'not release_only' tests\"\n"
     literals = DOMINANCE.read_config_literal(body, "test-command")
     assert literals == [(2, "python3 -m pytest -q -m 'not release_only' tests")]
     assert DOMINANCE.match_command(literals[0][1], _registry()) is not None
@@ -404,9 +416,9 @@ def test_sc15_the_existing_budgeted_label_direction_still_reports(tmp_path, monk
     )
     report = UNIVERSE.evaluate(ROOT)
     assert report["armed"]
-    assert "a-label-no-runner-queues" in {
-        entry["label"] for entry in report["unknown_labels"]
-    }, "a budget naming a label the runner cannot queue must still be reported"
+    assert "a-label-no-runner-queues" in {entry["label"] for entry in report["unknown_labels"]}, (
+        "a budget naming a label the runner cannot queue must still be reported"
+    )
 
 
 def test_sc15_a_real_budgeted_label_suppresses_its_own_command(tmp_path) -> None:
@@ -461,13 +473,15 @@ def test_sc15_says_what_it_did_not_judge_about_the_new_direction() -> None:
 # 6. SC19 -- the exported consumer half.
 # --------------------------------------------------------------------------
 
-INVENTORY = load_path_module(
+INVENTORY = load_script_module(
     "inventory_command_dominance_under_test",
     ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_command_dominance.py",
 )
 
 
-def test_sc19_a_consumer_without_a_registry_gets_a_named_state_not_a_silent_zero(tmp_path: Path) -> None:
+def test_sc19_a_consumer_without_a_registry_gets_a_named_state_not_a_silent_zero(
+    tmp_path: Path,
+) -> None:
     """An empty finding list beside a green summary reads as 'nothing is
     dominated here', which is a claim a registry-less run has no basis for."""
     payload = INVENTORY.inventory(tmp_path, tmp_path / ".agents" / "command-dominance.yaml")
@@ -547,6 +561,9 @@ def test_sc19_answers_the_budget_question_the_exported_angle_promises(tmp_path: 
     assert payload["unbudgeted_commands"] == []
 
 
+@pytest.mark.boundary_contract(
+    reason="__main__ dispatch smoke: the exported inventory must run its full finding loop"
+)
 def test_sc19_never_fails_a_consumers_lane_even_when_it_has_findings(tmp_path: Path) -> None:
     """`main()` was only ever run over trees with nothing to report.
 

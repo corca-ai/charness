@@ -7,10 +7,12 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+import pytest
 import yaml
 
 from tests.quality_gates.seeding_support import _install_empty_git_dir
 from tests.quality_gates.support import run_script
+from tests.script_main import load_script_module, run_loaded_script_main
 
 SCRIPT = "scripts/check_issue_closeout_commit_msg.py"
 hook = importlib.import_module("scripts.check_issue_closeout_commit_msg")
@@ -85,7 +87,12 @@ def test_commit_msg_gate_skips_when_no_issue_closeout_artifact_is_staged(tmp_pat
     assert payload["status"] == "not_applicable"
 
 
-def test_commit_msg_gate_rejects_staged_closeout_artifact_without_commit_carrier(tmp_path: Path) -> None:
+@pytest.mark.boundary_contract(
+    reason="target spawns git and this test observes the commit-msg gate's staged-index contract"
+)
+def test_commit_msg_gate_rejects_staged_closeout_artifact_without_commit_carrier(
+    tmp_path: Path,
+) -> None:
     _init_git_repo(tmp_path)
     _stage_issue_closeout(tmp_path, _bug_closeout_body())
     subprocess.run(
@@ -111,7 +118,12 @@ def test_commit_msg_gate_rejects_staged_closeout_artifact_without_commit_carrier
     payload = yaml.safe_load(result.stdout)
     assert payload["status"] == "failed"
     assert payload["reports"][0]["missing_close_keywords"] == [42]
-    assert set(payload["reports"][0]["missing_fields"]) >= {"root_cause", "debug_artifact", "siblings", "prevention"}
+    assert set(payload["reports"][0]["missing_fields"]) >= {
+        "root_cause",
+        "debug_artifact",
+        "siblings",
+        "prevention",
+    }
 
 
 def test_commit_msg_gate_accepts_commit_message_closeout_carrier(tmp_path: Path) -> None:
@@ -285,7 +297,9 @@ def test_commit_msg_gate_bare_close_with_answer_substring_defaults_to_bug_not_qu
     assert "debug_artifact" in report["missing_fields"]
 
 
-def test_commit_msg_gate_staged_artifact_never_infers_the_exempt_classification(tmp_path: Path) -> None:
+def test_commit_msg_gate_staged_artifact_never_infers_the_exempt_classification(
+    tmp_path: Path,
+) -> None:
     """B3 regression: the fully-exempt `question`/`decision-needed`
     classification must never be *inferred*.
 
@@ -424,7 +438,9 @@ def test_commit_msg_gate_surfaces_skipped_resolution_critique(tmp_path: Path) ->
     # reads, so the loudness this test exists to pin is proven by the payload.
 
 
-def test_commit_msg_gate_executed_resolution_critique_surfaces_no_skip_advisory(tmp_path: Path) -> None:
+def test_commit_msg_gate_executed_resolution_critique_surfaces_no_skip_advisory(
+    tmp_path: Path,
+) -> None:
     """Falsifiable counterpart to the skip advisory: the same close carrying a
     real bound critique artifact surfaces no skip advisory."""
     _init_repo(tmp_path)
@@ -446,7 +462,9 @@ def test_commit_msg_gate_executed_resolution_critique_surfaces_no_skip_advisory(
     assert payload["review_advisory"] == []
 
 
-def test_commit_msg_gate_fenced_close_keyword_in_message_still_triggers_floor(tmp_path: Path) -> None:
+def test_commit_msg_gate_fenced_close_keyword_in_message_still_triggers_floor(
+    tmp_path: Path,
+) -> None:
     """Regression: GitHub parses the raw commit message for close keywords and
     treats backticks as literal, so a close keyword inside a ``` code fence in
     the COMMIT MESSAGE still auto-closes the issue. The bare-close floor must not
@@ -482,18 +500,15 @@ def test_commit_msg_checker_resolves_exported_plugin_skill_layout(tmp_path: Path
     message = repo / "message.txt"
     message.write_text(_bug_closeout_body(), encoding="utf-8")
 
-    result = subprocess.run(
-        [
-            "python3",
-            str(plugin / "scripts" / "check_issue_closeout_commit_msg.py"),
-            "--repo-root",
-            str(repo),
-            "--commit-msg-file",
-            str(message),
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
+    script = plugin / "scripts" / "check_issue_closeout_commit_msg.py"
+    module = load_script_module("exported_issue_closeout_commit_msg", script)
+    result = run_loaded_script_main(
+        str(script),
+        module,
+        "--repo-root",
+        str(repo),
+        "--commit-msg-file",
+        str(message),
     )
 
     assert result.returncode == 0, result.stderr
@@ -617,13 +632,16 @@ def test_commit_msg_gate_stays_out_of_scope_for_template_faithful_brief(tmp_path
     floor applies only to briefs the gate can see (close-keyword text in the
     body), exactly as the resolution-brief Persistence prose states."""
     _init_repo(tmp_path)
-    body = "\n\n".join(
-        [
-            "# Resolution Brief — corca-ai/charness#77",
-            "**Classification**: deferred-work",
-            "**Autonomous vs pause**: pausing for user discussion",
-        ]
-    ) + "\n"
+    body = (
+        "\n\n".join(
+            [
+                "# Resolution Brief — corca-ai/charness#77",
+                "**Classification**: deferred-work",
+                "**Autonomous vs pause**: pausing for user discussion",
+            ]
+        )
+        + "\n"
+    )
     _stage_issue_closeout(tmp_path, body)
     message = tmp_path / "message.txt"
     message.write_text("Persist paused resolution brief for #77\n", encoding="utf-8")
@@ -742,10 +760,14 @@ def test_commit_msg_gate_renders_the_specific_critique_failure(tmp_path: Path) -
     nine words with no diagnosis. The emitted payload must carry the specific
     reason, not just the failing check's name."""
     _init_repo(tmp_path)
-    body = _bug_closeout_body().replace(
-        "Critique: blocked synthetic-test-harness: this test does not spawn a real reviewer",
-        "Critique: blocked host-down badly",
-    ).replace("Prevention: commit-msg blocks missing closeout carriers.", "Prevention: N/A")
+    body = (
+        _bug_closeout_body()
+        .replace(
+            "Critique: blocked synthetic-test-harness: this test does not spawn a real reviewer",
+            "Critique: blocked host-down badly",
+        )
+        .replace("Prevention: commit-msg blocks missing closeout carriers.", "Prevention: N/A")
+    )
     _stage_issue_closeout(tmp_path, body)
     message = tmp_path / "message.txt"
     message.write_text(body, encoding="utf-8")

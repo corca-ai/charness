@@ -6,6 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 from runtime_bootstrap import import_repo_module
@@ -100,6 +101,9 @@ jobs:
     assert yaml.safe_load(summary_json.stdout)["parity_issue_count"] == 1
 
 
+@pytest.mark.boundary_contract(
+    reason="target spawns git and this test observes the exact unavailable-listing stderr contract"
+)
 def test_strict_workflow_listing_fails_closed_outside_git(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     workflows = repo / ".github" / "workflows"
@@ -423,9 +427,7 @@ jobs:
     )
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
-    assert [issue["run"] for issue in payload["parity_issues"]] == [
-        "extra-required-check"
-    ]
+    assert [issue["run"] for issue in payload["parity_issues"]] == ["extra-required-check"]
 
 
 def test_default_patterns_anchor_each_shipped_run_quality_invocation(tmp_path: Path) -> None:
@@ -452,9 +454,7 @@ jobs:
 
         assert result.returncode == 0, result.stderr
         payload = yaml.safe_load(result.stdout)
-        assert [issue["run"] for issue in payload["parity_issues"]] == [
-            "required-after-runner"
-        ]
+        assert [issue["run"] for issue in payload["parity_issues"]] == ["required-after-runner"]
         assert payload["jobs_without_canonical_gate"] == []
 
 
@@ -619,6 +619,9 @@ jobs:
     assert "maintainer-local-enforcement.md" in result.stdout
 
 
+@pytest.mark.boundary_contract(
+    reason="target spawns git and this test observes the real repository listing contract"
+)
 def test_real_repo_workflows_or_zero_parity_issues(tmp_path: Path) -> None:
     """Real-repo watchdog, with charness's ACTUAL posture pinned.
 
@@ -630,9 +633,7 @@ def test_real_repo_workflows_or_zero_parity_issues(tmp_path: Path) -> None:
     asserted directly, so a third workflow (exempt or not) fires this test, which
     is the signal #137 actually asked for.
     """
-    result = run_script(
-        SCRIPT, "--repo-root", str(REPO_ROOT), "--detail", real_inventory=True
-    )
+    result = run_script(SCRIPT, "--repo-root", str(REPO_ROOT), "--detail", real_inventory=True)
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["parity_issues"] == []
@@ -773,7 +774,7 @@ jobs:
 
 def test_repo_does_not_reintroduce_pytest_ci_only_marker() -> None:
     mark_literal = "pytest.mark." + "ci_only"
-    pyproject_literal = '"ci' + '_only:'
+    pyproject_literal = '"ci' + "_only:"
     offenders: list[str] = []
     for path in [REPO_ROOT / "pyproject.toml", *sorted((REPO_ROOT / "tests").rglob("*.py"))]:
         text = path.read_text(encoding="utf-8")
@@ -814,6 +815,9 @@ def _declared_subcommands() -> set[str]:
     return _argparse_surface.subcommand_choices(help_text)
 
 
+@pytest.mark.boundary_contract(
+    reason="__main__ dispatch smoke: the root charness CLI must provide its real subcommand help"
+)
 def test_the_dead_charness_pattern_that_shipped_would_now_be_refused() -> None:
     """The tripwire, run against the list as it SHIPPED.
 
@@ -829,12 +833,19 @@ def test_the_dead_charness_pattern_that_shipped_would_now_be_refused() -> None:
     assert named - _declared_subcommands() == {"verify"}
 
 
-def test_no_default_canonical_gate_pattern_names_a_charness_subcommand_that_does_not_exist() -> None:
+@pytest.mark.boundary_contract(
+    reason="__main__ dispatch smoke: the root charness CLI must provide its real subcommand help"
+)
+def test_no_default_canonical_gate_pattern_names_a_charness_subcommand_that_does_not_exist() -> (
+    None
+):
     """Derived from `charness --help` rather than pinned to a list, so it stays
     true through a rename instead of needing a hand edit."""
     named = _charness_subcommands_named_by(_parity_lib.DEFAULT_CANONICAL_GATE_PATTERNS)
     undeclared = named - _declared_subcommands() if named else set()
-    assert not undeclared, f"default canonical-gate pattern(s) name non-subcommand(s): {sorted(undeclared)}"
+    assert not undeclared, (
+        f"default canonical-gate pattern(s) name non-subcommand(s): {sorted(undeclared)}"
+    )
 
 
 def test_default_canonical_gate_patterns_match_this_repo_s_own_local_gate() -> None:

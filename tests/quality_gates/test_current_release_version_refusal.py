@@ -10,17 +10,19 @@ exit 0, with `valid: false` printed in the same payload and acted on by nothing.
 Echoing the flag and using the defaults anyway is the shape the census's
 `safe-checks-errors` boundary turns on: a read is not a check.
 """
+
 from __future__ import annotations
 
-import subprocess
-import sys
 from pathlib import Path
 
 import yaml
 
+from tests.script_main import load_script_module, run_loaded_script_main
+
 from .support import ROOT
 
 SCRIPT = ROOT / "skills" / "public" / "release" / "scripts" / "current_release.py"
+CURRENT_RELEASE = load_script_module("current_release_version_refusal", SCRIPT)
 DECLARED = (
     "package_id: acme-harness\n"
     "packaging_manifest_path: vendor/mypkg/manifest.json\n"
@@ -31,7 +33,9 @@ DECLARED = (
 def _repo(tmp_path: Path, adapter: str | None) -> Path:
     repo = tmp_path / "repo"
     (repo / "vendor" / "mypkg" / ".claude-plugin").mkdir(parents=True)
-    (repo / "vendor" / "mypkg" / "manifest.json").write_text('{"version": "7.7.7"}\n', encoding="utf-8")
+    (repo / "vendor" / "mypkg" / "manifest.json").write_text(
+        '{"version": "7.7.7"}\n', encoding="utf-8"
+    )
     (repo / "vendor" / "mypkg" / ".claude-plugin" / "plugin.json").write_text(
         '{"version": "7.7.7"}\n', encoding="utf-8"
     )
@@ -41,10 +45,8 @@ def _repo(tmp_path: Path, adapter: str | None) -> Path:
     return repo
 
 
-def _run(repo: Path) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo)], capture_output=True, text=True
-    )
+def _run(repo: Path):
+    return run_loaded_script_main(str(SCRIPT), CURRENT_RELEASE, "--repo-root", str(repo))
 
 
 def test_an_unspeakable_version_refuses_rather_than_guessing_the_package(tmp_path: Path) -> None:
@@ -62,7 +64,10 @@ def test_a_speakable_version_reports_what_the_repo_declared(tmp_path: Path) -> N
     assert "vendor/mypkg" in result.stdout
     payload = yaml.safe_load(result.stdout)
     assert payload["versioned_surfaces"] == [
-        "packaging_manifest", "claude_plugin", "codex_plugin", "claude_marketplace_version"
+        "packaging_manifest",
+        "claude_plugin",
+        "codex_plugin",
+        "claude_marketplace_version",
     ]
     assert payload["presence_surfaces"] == ["codex_marketplace_source_path"]
 

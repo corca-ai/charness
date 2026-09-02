@@ -4,7 +4,6 @@ import importlib.util
 import re
 import runpy
 import shutil
-import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -15,6 +14,7 @@ import yaml
 from scripts import check_artifact_surface_preflight as preflight
 from scripts import export_plugin as export_plugin_module
 from skills.public.critique.scripts.verification_retry import build_retry_key
+from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
 
@@ -39,12 +39,17 @@ def _redirect_repo_scripts_to_root(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(preflight, "_run", run_repo_script)
 
+
 # --- registry / surface resolution (pure) -------------------------------------
 
 
 def test_surface_for_path_maps_prefix_families() -> None:
-    assert preflight.surface_for_path("charness-artifacts/critique/x.md").artifact_type == "critique"
-    assert preflight.surface_for_path("charness-artifacts/ideation/x.md").artifact_type == "ideation"
+    assert (
+        preflight.surface_for_path("charness-artifacts/critique/x.md").artifact_type == "critique"
+    )
+    assert (
+        preflight.surface_for_path("charness-artifacts/ideation/x.md").artifact_type == "ideation"
+    )
     assert preflight.surface_for_path("charness-artifacts/retro/x.md").artifact_type == "retro"
     # unknown / non-md / out-of-family -> None
     assert preflight.surface_for_path("charness-artifacts/spec/x.md") is None
@@ -57,7 +62,10 @@ def test_retro_surface_excludes_rolled_up_and_history() -> None:
     # boundary arm must not block on them either.
     assert preflight.surface_for_path("charness-artifacts/retro/recent-lessons.md") is None
     assert preflight.surface_for_path("charness-artifacts/retro/history/2026-01-01-x.md") is None
-    assert preflight.surface_for_path("charness-artifacts/retro/2026-06-08-x.md").artifact_type == "retro"
+    assert (
+        preflight.surface_for_path("charness-artifacts/retro/2026-06-08-x.md").artifact_type
+        == "retro"
+    )
 
 
 def test_critique_surface_excludes_append_only_round_records() -> None:
@@ -65,7 +73,10 @@ def test_critique_surface_excludes_append_only_round_records() -> None:
     # a receipt/findings shape, not the final critique shape; routing them to the
     # critique validator made a valid reviewer round fail only at commit time.
     assert preflight.surface_for_path("charness-artifacts/critique/rounds/2026-08-21-w.md") is None
-    assert preflight.surface_for_path("charness-artifacts/critique/2026-08-21-w.md").artifact_type == "critique"
+    assert (
+        preflight.surface_for_path("charness-artifacts/critique/2026-08-21-w.md").artifact_type
+        == "critique"
+    )
     assert preflight.surface_for_path("charness-artifacts/critique/../outside.md") is None
 
 
@@ -202,7 +213,9 @@ def test_emit_stub_critique_carries_required_sections() -> None:
     assert "## Structured Findings" in text
 
 
-def test_exported_preflight_resolves_flattened_scaffold_and_refuses_invalid_layout(tmp_path: Path) -> None:
+def test_exported_preflight_resolves_flattened_scaffold_and_refuses_invalid_layout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """The installed dispatcher must use its package, not the consumer cwd.
 
     The source registry intentionally keeps ``skills/public/...`` paths, while
@@ -222,37 +235,45 @@ def test_exported_preflight_resolves_flattened_scaffold_and_refuses_invalid_layo
     consumer = tmp_path / "consumer"
     consumer.mkdir()
     dispatcher = plugin_root / "scripts" / "check_artifact_surface_preflight.py"
-    command = [
-        sys.executable,
-        str(dispatcher),
-        "--repo-root",
-        str(consumer),
-        "--type",
-        "critique",
-        "--emit-stub",
-    ]
+    dispatcher_module = load_script_module("exported_check_artifact_surface_preflight", dispatcher)
 
-    positive = subprocess.run(command, cwd=consumer, check=False, capture_output=True, text=True)
+    def run_dispatcher():
+        return run_loaded_script_main(
+            str(dispatcher),
+            dispatcher_module,
+            "--repo-root",
+            str(consumer),
+            "--type",
+            "critique",
+            "--emit-stub",
+        )
+
+    monkeypatch.chdir(consumer)
+    positive = run_dispatcher()
     assert positive.returncode == 0, positive.stderr
     assert "## Reviewer Tier Evidence" in positive.stdout
     assert "## Structured Findings" in positive.stdout
 
-    flattened_scaffold = plugin_root / "skills" / "critique" / "scripts" / "scaffold_critique_artifact.py"
+    flattened_scaffold = (
+        plugin_root / "skills" / "critique" / "scripts" / "scaffold_critique_artifact.py"
+    )
     scaffold_backup = tmp_path / "scaffold_critique_artifact.py"
     shutil.copy2(flattened_scaffold, scaffold_backup)
     flattened_scaffold.unlink()
-    missing = subprocess.run(command, cwd=consumer, check=False, capture_output=True, text=True)
+    missing = run_dispatcher()
     assert missing.returncode == 1
     missing_output = missing.stdout + missing.stderr
     assert "missing shape source" in missing_output
     assert "flattened-installed=" in missing_output
 
     flattened_scaffold.parent.mkdir(parents=True, exist_ok=True)
-    canonical_scaffold = plugin_root / "skills" / "public" / "critique" / "scripts" / "scaffold_critique_artifact.py"
+    canonical_scaffold = (
+        plugin_root / "skills" / "public" / "critique" / "scripts" / "scaffold_critique_artifact.py"
+    )
     canonical_scaffold.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(scaffold_backup, canonical_scaffold)
     shutil.copy2(scaffold_backup, flattened_scaffold)
-    ambiguous = subprocess.run(command, cwd=consumer, check=False, capture_output=True, text=True)
+    ambiguous = run_dispatcher()
     assert ambiguous.returncode == 1
     ambiguous_output = ambiguous.stdout + ambiguous.stderr
     assert "ambiguous shape source" in ambiguous_output
@@ -274,7 +295,9 @@ def test_describe_quality_binds_artifact_path_never_paths() -> None:
 def test_describe_debug_is_changed_scoped_after_gaining_paths() -> None:
     # debug moved to the changed-scoped tier, so describe must now bind --paths to
     # the target rather than reporting a whole-corpus verdict.
-    out = preflight.describe(ROOT, preflight.surface_for_type("debug"), target_rel="charness-artifacts/debug/latest.md")
+    out = preflight.describe(
+        ROOT, preflight.surface_for_type("debug"), target_rel="charness-artifacts/debug/latest.md"
+    )
     assert "--paths charness-artifacts/debug/latest.md" in out
 
 
@@ -311,7 +334,10 @@ def test_changed_artifacts_passes_scaffold_roundtrip(
         ("- Requested tier: TODO", "- Requested tier: bounded-reviewer"),
         ("- Requested spawn fields: TODO", "- Requested spawn fields: model, reasoning effort"),
         ("- Application state: TODO", "- Application state: n/a"),
-        ("- Host exposure state: pending-parent-spawn", "- Host exposure state: requested_fields_sent"),
+        (
+            "- Host exposure state: pending-parent-spawn",
+            "- Host exposure state: requested_fields_sent",
+        ),
         ("- Delivery state: pending-parent-spawn", "- Delivery state: findings-received"),
     ):
         matches = [line for line in filled_in_stub.splitlines() if line.startswith(stub_line)]
@@ -394,7 +420,9 @@ def test_shape_text_handles_each_missing_shape_source() -> None:
 
 
 def test_emit_stub_scaffold_failure_returns_code_one() -> None:
-    bad = replace(preflight.surface_for_type("critique"), scaffold="scripts/does_not_exist_scaffold.py")
+    bad = replace(
+        preflight.surface_for_type("critique"), scaffold="scripts/does_not_exist_scaffold.py"
+    )
     text, code = preflight.emit_stub(ROOT, bad)
     assert code == 1
     assert text  # surfaces the scaffold's stderr/stdout, not silence
@@ -411,7 +439,9 @@ def test_describe_prefix_surface_includes_paths_and_failure_detail(
     import subprocess
 
     def failing_run(repo_root, argv):
-        return subprocess.CompletedProcess(argv, 1, stdout="", stderr="missing reviewer-tier section")
+        return subprocess.CompletedProcess(
+            argv, 1, stdout="", stderr="missing reviewer-tier section"
+        )
 
     monkeypatch.setattr(preflight, "_run", failing_run)
     repo = _minimal_repo(tmp_path)
@@ -436,9 +466,18 @@ def test_changed_artifacts_report_carries_the_verdict_and_the_blocked_remedy() -
     unaltered, and that the remedy — the only added information — is on the payload,
     on the blocked report and only there.
     """
-    ok_report = {"status": "ok", "checked": [
-        {"validator": "scripts/validate_critique_artifacts.py", "paths": ["a.md"], "returncode": 0, "stdout": "", "stderr": ""},
-    ]}
+    ok_report = {
+        "status": "ok",
+        "checked": [
+            {
+                "validator": "scripts/validate_critique_artifacts.py",
+                "paths": ["a.md"],
+                "returncode": 0,
+                "stdout": "",
+                "stderr": "",
+            },
+        ],
+    }
     ok_payload = preflight.changed_artifacts_report(ok_report)
     assert ok_payload["status"] == "ok"
     assert ok_payload["checked"][0]["returncode"] == 0
@@ -446,9 +485,18 @@ def test_changed_artifacts_report_carries_the_verdict_and_the_blocked_remedy() -
     # printed beside a passing verdict is the misleading-verdict class this arm avoids.
     assert "remedy" not in ok_payload
 
-    blocked_report = {"status": "blocked", "checked": [
-        {"validator": "scripts/validate_critique_artifacts.py", "paths": ["bad.md"], "returncode": 1, "stdout": "", "stderr": "missing section X"},
-    ]}
+    blocked_report = {
+        "status": "blocked",
+        "checked": [
+            {
+                "validator": "scripts/validate_critique_artifacts.py",
+                "paths": ["bad.md"],
+                "returncode": 1,
+                "stdout": "",
+                "stderr": "missing section X",
+            },
+        ],
+    }
     blocked_payload = preflight.changed_artifacts_report(blocked_report)
     assert blocked_payload["status"] == "blocked"
     assert blocked_payload["checked"][0]["returncode"] == 1
@@ -468,11 +516,23 @@ def test_main_changed_artifacts_emits_the_blocked_report(monkeypatch, capsys) ->
     the two runs jointly proved: the blocked exit code, and a machine-readable
     document that names the failing validator and its detail.
     """
-    blocked = {"status": "blocked", "blocked": ["scripts/validate_critique_artifacts.py"], "checked": [
-        {"validator": "scripts/validate_critique_artifacts.py", "paths": ["bad.md"], "returncode": 1, "stdout": "", "stderr": "boom"},
-    ]}
+    blocked = {
+        "status": "blocked",
+        "blocked": ["scripts/validate_critique_artifacts.py"],
+        "checked": [
+            {
+                "validator": "scripts/validate_critique_artifacts.py",
+                "paths": ["bad.md"],
+                "returncode": 1,
+                "stdout": "",
+                "stderr": "boom",
+            },
+        ],
+    }
     monkeypatch.setattr(preflight, "changed_artifacts", lambda repo_root, paths: blocked)
-    monkeypatch.setattr(sys, "argv", ["x", "--changed-artifacts", "charness-artifacts/critique/bad.md"])
+    monkeypatch.setattr(
+        sys, "argv", ["x", "--changed-artifacts", "charness-artifacts/critique/bad.md"]
+    )
     assert preflight.main() == 1
     payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["status"] == "blocked"
@@ -509,7 +569,9 @@ def test_module_main_guard_executes(monkeypatch) -> None:
     # subprocess, so the dispatcher stays off the boundary-bypass ratchet.
     monkeypatch.setattr(sys, "argv", ["x", "--type", "critique"])
     with pytest.raises(SystemExit) as exc:
-        runpy.run_path(str(ROOT / "scripts" / "check_artifact_surface_preflight.py"), run_name="__main__")
+        runpy.run_path(
+            str(ROOT / "scripts" / "check_artifact_surface_preflight.py"), run_name="__main__"
+        )
     assert exc.value.code == 0
 
 
@@ -573,8 +635,12 @@ def test_closeout_draft_shape_pins_live_verifier_constants() -> None:
     # surfaced shape, rendered from the live constants (never a stale hand copy).
     desc = _load_describe("skills/public/issue/scripts/describe_closeout_draft_shape.py", "dccs")
     shape = desc.required_shape()
-    for value in (*desc._VERIFY.CLASSIFICATIONS, *desc._VERIFY.CARRIERS,
-                  *desc._VERIFY.MANUAL_FALLBACK_REASONS, *desc._CRITIQUE.CRITIQUE_REQUIRED_CLASSIFICATIONS):
+    for value in (
+        *desc._VERIFY.CLASSIFICATIONS,
+        *desc._VERIFY.CARRIERS,
+        *desc._VERIFY.MANUAL_FALLBACK_REASONS,
+        *desc._CRITIQUE.CRITIQUE_REQUIRED_CLASSIFICATIONS,
+    ):
         assert value in shape, value
     for classification in desc._VERIFY.CLASSIFICATIONS:
         for field_id, _aliases in desc._BODY._classification_requirements(classification):
@@ -583,7 +649,9 @@ def test_closeout_draft_shape_pins_live_verifier_constants() -> None:
 
 def test_closeout_draft_shape_observes_consolidated_carrier_and_readback_boundaries() -> None:
     """A describe-first surface must not prescribe a body its own gate refuses."""
-    desc = _load_describe("skills/public/issue/scripts/describe_closeout_draft_shape.py", "dccs_consolidated")
+    desc = _load_describe(
+        "skills/public/issue/scripts/describe_closeout_draft_shape.py", "dccs_consolidated"
+    )
     shape = desc.required_shape("consolidated")
     classification = desc._CONSOLIDATED.CLASSIFICATION
     probe = "Closes #5\nJtbd: move the work\nConsolidated into: #6\n"
@@ -596,18 +664,27 @@ def test_closeout_draft_shape_observes_consolidated_carrier_and_readback_boundar
     assert "Consolidated disposition (consolidated)" in shape
     assert f"Do not use draft carriers {', '.join(refused)}" in shape
     assert f"--reason {desc._CONSOLIDATED.REQUIRED_CLOSE_REASON!r}" in shape
-    for fact in desc._CONSOLIDATED.evaluate("Jtbd: move the work\nConsolidated into: #6\n")["not_checked_here"]:
+    for fact in desc._CONSOLIDATED.evaluate("Jtbd: move the work\nConsolidated into: #6\n")[
+        "not_checked_here"
+    ]:
         assert fact in shape
     assert "claim Implementation, Prevention, Resolution brief" in shape
     assert "before comment/close mutation" in shape
     assert "neutral `Closes #N` is non-operative" in shape
-    assert any("auto-closes" in problem for problem in desc._BODY._missing_ledger_fields(probe, classification, carrier="direct-commit"))
+    assert any(
+        "auto-closes" in problem
+        for problem in desc._BODY._missing_ledger_fields(
+            probe, classification, carrier="direct-commit"
+        )
+    )
     assert "Carrier (--carrier" not in shape
     assert "Close keyword (not required" not in shape
 
 
 def test_closeout_draft_shape_can_render_the_selected_consolidated_guide(capsys) -> None:
-    desc = _load_describe("skills/public/issue/scripts/describe_closeout_draft_shape.py", "dccs_consolidated_cli")
+    desc = _load_describe(
+        "skills/public/issue/scripts/describe_closeout_draft_shape.py", "dccs_consolidated_cli"
+    )
     assert desc.main(["--classification", "consolidated"]) == 0
     shape = capsys.readouterr().out
     assert "required shape for classification `consolidated`" in shape
@@ -642,13 +719,7 @@ def test_closeout_draft_emit_stub_renders_a_starter_body() -> None:
     assert "Behavior #N:" in text
     assert "Critique #N:" not in text
     template = (
-        ROOT
-        / "skills"
-        / "public"
-        / "issue"
-        / "scripts"
-        / "templates"
-        / "closeout_draft_stub.txt"
+        ROOT / "skills" / "public" / "issue" / "scripts" / "templates" / "closeout_draft_stub.txt"
     )
     assert template.read_text(encoding="utf-8") == text
 
@@ -668,7 +739,9 @@ def test_emit_stub_no_source_arm() -> None:
     # no-stub-source arm rather than crashing — cover the defensive branch.
     bare = replace(
         preflight.surface_for_type("closeout-draft"),
-        scaffold=None, template_section=None, shape_command=None,
+        scaffold=None,
+        template_section=None,
+        shape_command=None,
     )
     text, code = preflight.emit_stub(ROOT, bare)
     assert code == 0
@@ -708,10 +781,16 @@ def test_describe_script_main_guard_executes(rel: str, monkeypatch) -> None:
 @pytest.mark.parametrize(
     "rel,loader,sibling",
     [
-        ("skills/public/issue/scripts/describe_closeout_draft_shape.py", "_load_local", "issue_verify_closeout_body"),
+        (
+            "skills/public/issue/scripts/describe_closeout_draft_shape.py",
+            "_load_local",
+            "issue_verify_closeout_body",
+        ),
     ],
 )
-def test_describe_sibling_loader_fails_closed_when_spec_missing(rel, loader, sibling, monkeypatch) -> None:
+def test_describe_sibling_loader_fails_closed_when_spec_missing(
+    rel, loader, sibling, monkeypatch
+) -> None:
     # fail-closed: the sibling loader raises ImportError when the spec cannot be
     # built (mirrors the repo's established loader-coverage pattern).
     desc = _load_describe(rel, f"loaderfail_{Path(rel).stem}")
@@ -739,7 +818,9 @@ def test_every_shape_producer_is_reachable_from_its_owning_skill() -> None:
             continue
         producer = Path(surface.shape_command[0])
         skill_dir = ROOT / producer.parent.parent  # skills/public/<skill>/
-        assert skill_dir.is_dir(), f"{surface.artifact_type}: cannot locate owning skill for {producer}"
+        assert skill_dir.is_dir(), (
+            f"{surface.artifact_type}: cannot locate owning skill for {producer}"
+        )
         reachable = [
             path
             for path in skill_dir.rglob("*")
@@ -781,7 +862,9 @@ def test_a_prefix_surface_without_the_arg_still_reports_validate_all_scope() -> 
     surface whose validator cannot be pointed at one file, or the fix would trade a
     misleading PASS for a misleading scope claim."""
     surface = replace(preflight.surface_for_type("quality"), artifact_path_arg=False)
-    out = preflight.describe(ROOT, surface, target_rel="charness-artifacts/quality/2026-07-25-quality-review.md")
+    out = preflight.describe(
+        ROOT, surface, target_rel="charness-artifacts/quality/2026-07-25-quality-review.md"
+    )
     assert "(validate-all)" in out
     assert "--artifact-path" not in out
 
