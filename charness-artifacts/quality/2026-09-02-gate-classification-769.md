@@ -33,7 +33,8 @@ this table.
 | validate-packaging, validate-packaging-committed | tools | the exported plugin or install manifests drifting from source |
 | validate-debug-artifact | ship (catalog: consumer) | a consumer's debug artifact lacking the root-cause floor |
 | validate-debug-seam-index | ship | a consumer's debug seam index disagreeing with its artifacts |
-| validate-retro-lesson-index, validate-lesson-ledger | ship, with a missing ledger as a discovered empty | a consumer's retro lesson index or ledger disagreeing with its retro artifacts; `check_lesson_ledger.py` raises when the ledger file is absent although the ledger is optional consumer memory (reviewer finding), so the shipped form must report absence, not crash |
+| validate-retro-lesson-index | ship | a consumer's retro lesson index disagreeing with its retro artifacts; paths come from `.agents/retro-adapter.yaml` (`build_retro_lesson_selection_index.py:32-48`, second reviewer) |
+| validate-lesson-ledger | ship, after it reads the retro adapter paths and treats an absent ledger as a discovered empty | a consumer's lesson ledger disagreeing with its retro artifacts; today `check_lesson_ledger.py:22-23` hardcodes `charness-artifacts/retro` and raises when the ledger is absent although the ledger is optional consumer memory (both reviewers) |
 | validate-quality-artifact | ship (catalog: consumer) | a consumer's quality artifact missing its receipt shape |
 | validate-attention-state-visibility | tools | charness scripts and skills hiding attention state from operators |
 | validate-inventory-consumption, validate-inventory-consumption-declaration, check-inventory-declaration-coverage | tools | a charness quality inventory shipping without a declared consumer field or consumer |
@@ -42,10 +43,10 @@ this table.
 | validate-quality-closeout-contract | ship (catalog: consumer) | a consumer's quality closeout claiming what its receipt does not hold |
 | validate-critique-artifacts, validate-ideation-artifact, validate-retro-artifact | ship (catalog: consumer) | a consumer's skill artifact missing its floor sections |
 | validate-current-pointer-freshness, check-current-pointer-writes | tools | this repo's current pointers rotting or written by the wrong hand; both scripts read `run-quality.sh`, `packaging/charness.json`, the plugin manifests, and fixed charness scan roots (reviewer finding: `validate_current_pointer_freshness.py:24-26,88-101,213-222`; `check_current_pointer_writes.py:32-44`) |
-| validate-maintainer-setup | tools | this repo's maintainer hooks and settings missing |
+| validate-maintainer-setup | ship | a consumer clone's `.githooks/commit-msg` wrapper and `core.hooksPath` missing; the script branches on `is_charness_source_repo` and still validates the consumer's own hooks when false (`validate_maintainer_setup.py:306-348`, second reviewer refuted the `tools` draft) |
 | check-python-lengths | ship | consumer files accreting past a length cap |
 | check-python-filenames | ship | consumer Python filenames that break import or convention |
-| check-python-runtime-inheritance | ship | consumer scripts re-spawning an interpreter that loses the runtime |
+| check-python-runtime-inheritance | ship, once its scan globs are adapter-declared | consumer scripts re-spawning an interpreter that loses the runtime; `DEFAULT_SCAN_GLOBS` is hardcoded to this repo's layout with no override flag (`check_python_runtime_inheritance.py:14-23,122-123`), so today it checks nothing in a `src/` layout (second reviewer) |
 | check-skill-contracts, check-skill-bootstrap-vars, check-bootstrap-shim-consistency | tools | charness skill scripts and bootstrap shims drifting |
 | check-public-doc-coupling | tools | charness public skill docs coupling to authoring-repo paths |
 | check-regenerable-facts | ship | consumer prose stating a transcribed number that a command regenerates (adapter-driven) |
@@ -57,7 +58,7 @@ this table.
 | check-docs | ship as a composite, minus its plugin and last-verified components | consumer docs failing syntax, graph, reference, or link checks; `check-plugin-doc-links` and `check-last-verified` (a charness authoring convention, #766) are `tools` (reviewer finding) |
 | check-doc-links, docs-graph, check-markdown, check-links-internal, check-links-external | ship | consumer doc links and pages rotting |
 | check-plugin-doc-links, check-plugin-dir-references, check-plugin-asset-command-carriers | tools | links and carriers that break only after export flattening |
-| check-spec-evidence-durability | ship | a consumer spec citing evidence that will not survive |
+| check-spec-evidence-durability | ship, with fixed `charness-artifacts/*` globs noted | a consumer spec citing evidence that will not survive; the doc globs are literal `charness-artifacts/{spec,...}/**/*.md` (`check_spec_evidence_durability.py:27-58`), so a relocated output directory gets an unannounced empty scan (second reviewer) |
 | check-artifact-referents | tools | this repo's goal and retro artifacts citing a referent that no longer exists; the script declares itself repo-internal, globs only `charness-artifacts/goals` and `retro`, and blocks on an empty corpus (reviewer finding: `check_artifact_referents.py:30-34,200-203,418-419`) |
 | check-references-link-inventory | tools | charness skill reference pages linking to missing files |
 | check-secrets, check-supply-chain, check-github-actions, check-supply-chain-online | ship | consumer secrets in tree, unpinned supply chain, unsafe workflows |
@@ -65,7 +66,7 @@ this table.
 | check-coverage, check-test-completeness, check-test-production-ratio, check-seed-fixture-budget | ship, test-completeness with the same consumer-resolved targets as pytest | consumer coverage floor, test completeness, ratio, and fixture cost regressing; `check-test-completeness` receives the hardcoded `STANDING_PYTEST_TARGETS` (`run-quality.sh:153-154,1184`) (reviewer finding) |
 | check-boundary-bypass-ratchet | retired by #768 | (tests spawning repo Python; the marker now carries the adjudication) |
 | check-consumer-validator-catalog | tools | a packaged charness validator lacking an explicit consumer decision |
-| check-provenance-contract | ship | consumer standing docs carrying dated dispositions (adapter-driven) |
+| check-provenance-contract | tools | a charness reviewer-delivery invariant drifting; the script validates a hardcoded registry of this repo's producer-to-consumer boundary invariants and runs its own pytest fixtures (`check_provenance_contract.py:102-134`, `provenance_contract.py:37-80`); the standing-doc disposition check the draft described is `check-regenerable-facts` (second reviewer) |
 | check-closeout-classification-parity | ship (catalog: consumer) | a consumer issue closeout classified differently by two readers |
 | specdown | ship | consumer executable specs failing |
 | run-evals | tools | charness skill evals regressing |
@@ -74,13 +75,15 @@ this table.
 | inventory-gitignore-scan-hygiene | ship | consumer scanners reading ignored files; with no adapter-named `--path-glob` the default scope is a discovered empty set and passes, so the shipped adapter must name the consumer's scanner globs (reviewer finding) |
 | measure-startup-probes, check-runtime-budget | ship | consumer gate runtime growing past its budget |
 | inventory-sloc, inventory-cli-ergonomics, inventory-nose-clones | ship | consumer size, CLI ergonomics, and clone families growing unseen |
-| release-changed-line-coverage | ship | a consumer release shipping changed lines with no covering test |
+| release-changed-line-coverage | ship, once the mutation pool pathspecs are adapter-declared | a consumer release shipping changed lines with no covering test; the changed set is the mutation pool hardcoded to this repo's layout (`sample_mutation_files.py:57-66` via `mutation_changed_files_lib.py:315-318`), so a `src/` consumer gets a vacuous green today (second reviewer) |
 
 Counts after the first fresh-eye pass (2026-09-02): ship 56 labels (five of them conditional on adapter-resolved inputs), tools 39 labels, retired 1. The composite `check-docs` splits: `check-plugin-doc-links` and `check-last-verified` are `tools`; the rest ships.
 
 ## Fresh-eye review record
 
-First pass (bounded reviewer, angle 1: `ship` rows reading authoring-repo surfaces) refuted eight rows; every refutation cited the script line it read and is applied above. Its report was truncated by the host after the eighth finding, so a second pass covers angles 2 to 4 and re-checks ten `ship` rows for adapter-resolved inputs; its findings are appended below when received.
+First pass (bounded reviewer, angle 1: `ship` rows reading authoring-repo surfaces) refuted eight rows; every refutation cited the script line it read and is applied above. Its report was truncated by the host after the eighth finding, so a second pass covers angles 2 to 4 and re-checks ten `ship` rows for adapter-resolved inputs; its report refuted five rows and rescued one (`validate-maintainer-setup` validates the consumer's own hooks); all are applied above. Both reports were truncated by the host after their last listed finding, so angles 2 to 4 beyond what is recorded here are UNREVIEWED and the #769 lane must treat any `tools` row it moves as unconfirmed until it reads the script itself.
+
+Running count of conditional `ship` rows (adapter-declared inputs required before export): pytest, check-test-completeness, check-shell, validate-lesson-ledger, check-python-runtime-inheritance, release-changed-line-coverage, check-spec-evidence-durability, inventory-gitignore-scan-hygiene. This is the real finding of the review: the boundary is not only which gates ship but that a shipped gate's universe must come from the consumer's adapter, or it is a vacuous green.
 
 ## What the classification does not decide
 
