@@ -182,8 +182,7 @@ phases:
   - label: validate-presets
     command:
     - python3
-    - -m
-    - tools.validate_presets
+    - scripts/validate_presets.py
     - --repo-root
     - $REPO_ROOT
     - --require-git-file-listing

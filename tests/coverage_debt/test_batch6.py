@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts import check_skill_cut_safety as csafety
+from tools import check_skill_cut_safety as csafety
 from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]

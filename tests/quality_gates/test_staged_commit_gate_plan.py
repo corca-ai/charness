@@ -261,7 +261,6 @@ def test_every_pulled_moved_gate_is_still_scheduled_through_tools() -> None:
         "validate-skills",
         "run-evals",
         "validate-profiles",
-        "validate-presets",
         "validate-integrations",
         "check-plugin-doc-links",
         "validate-inference-interpretation",

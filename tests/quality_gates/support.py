@@ -392,7 +392,6 @@ QUALITY_TOOL_PYTHON_FILENAMES = frozenset(
         "validate_public_skill_validation.py",
         "validate_public_skill_dogfood.py",
         "validate_profiles.py",
-        "validate_presets.py",
         "validate_integrations.py",
         "validate_packaging_committed.py",
         "validate_attention_state_visibility.py",

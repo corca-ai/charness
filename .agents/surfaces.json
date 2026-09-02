@@ -322,7 +322,7 @@
       "sync_commands": [],
       "verify_commands": [
         "python3 -m tools.validate_profiles --repo-root .",
-        "python3 -m tools.validate_presets --repo-root ."
+        "python3 scripts/validate_presets.py --repo-root ."
       ],
       "notes": [
         "Do not leave packaged defaults pointing at missing artifacts."

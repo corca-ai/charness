@@ -117,7 +117,7 @@ the evidence is sufficient for the boundary at hand.
 - Question: Move presets to JSON schema now or keep markdown-first catalog?
 - Current choice: Keep markdown-first preset contract with required frontmatter until first downstream organization preset matures.
 - Why now: Current preset surface is maintainer-oriented and stable with markdown validation.
-- Impact surfaces: `presets/*.md`, [`tools/validate_presets.py`](../tools/validate_presets.py)
+- Impact surfaces: `presets/*.md`, [`scripts/validate_presets.py`](../scripts/validate_presets.py)
 - Reopen trigger: If org-install preset scale needs stronger machine-only schema guarantees.
 
 ### D10. `ideation` Core Boundary

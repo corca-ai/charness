@@ -49,7 +49,7 @@ _MODULES = {
         "scripts/check_python_runtime_inheritance.py",
         "tools/check_skill_bootstrap_vars.py",
         "scripts/check_test_production_ratio.py",
-        "scripts/check_skill_cut_safety.py",
+        "tools/check_skill_cut_safety.py",
         "scripts/check_skill_surface_preflight.py",
         "scripts/check_test_repo_copy_invariants.py",
         "tools/validate_integrations.py",
@@ -370,7 +370,7 @@ def test_skill_cut_safety_named_non_skill_path_refuses() -> None:
     gate cannot judge (a references/*.md contract home) answered `clean` over zero
     checks -- a green verdict for a question that was never evaluated."""
     result = run_gate(
-        "scripts/check_skill_cut_safety.py",
+        "tools/check_skill_cut_safety.py",
         "--repo-root",
         str(ROOT),
         "--path",
@@ -385,7 +385,7 @@ def test_skill_cut_safety_named_non_skill_path_refuses() -> None:
 def test_skill_cut_safety_named_skill_md_still_passes() -> None:
     """Control: a named SKILL.md with no broken pin is a real clean verdict."""
     result = run_gate(
-        "scripts/check_skill_cut_safety.py",
+        "tools/check_skill_cut_safety.py",
         "--repo-root",
         str(ROOT),
         "--path",
@@ -527,7 +527,7 @@ def test_skill_cut_safety_unscoped_payload_names_the_paths_and_the_remedy() -> N
     into `report_payload`. A refusal whose payload does not name what it refused,
     or what to do instead, is still a refusal the operator can only work around.
     """
-    cut_safety = _MODULES["scripts/check_skill_cut_safety.py"]
+    cut_safety = _MODULES["tools/check_skill_cut_safety.py"]
     report = {
         "status": "unscoped",
         "skills": [],

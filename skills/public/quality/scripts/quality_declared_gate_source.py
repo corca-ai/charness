@@ -7,7 +7,12 @@ from pathlib import Path
 from typing import Any, Callable
 
 QUALITY_GATES_PATH = Path(".agents") / "quality-gates.yaml"
-TOOLS_OWNERSHIP = {"tools", "repo-only", "authoring", "authoring-repo"}
+TOOLS_OWNERSHIP = {
+    "tools",
+    "repo-only",
+    "authoring",
+    "authoring-repo",
+}  # export-guard: classifies declared rows as repo-only; never executes them
 SHIP_OWNERSHIP = {"ship", "consumer", "consumer-facing"}
 PACKET_METADATA = ("lane", "condition", "variant_of", "timing_layer", "note")
 
@@ -30,9 +35,13 @@ def _is_tools_command(command: object) -> bool:
         normalized = token.replace("\\", "/")
         if token.startswith("tools.") or normalized.startswith("tools/"):
             return True
-        if "/tools/" in normalized or normalized.endswith("/tools.py"):
+        if "/tools/" in normalized or normalized.endswith(
+            "/tools.py"
+        ):  # export-guard: classifies declared rows as repo-only; never executes them
             return True
-        if index and tokens[index - 1] == "-m" and token.startswith("tools"):
+        if (
+            index and tokens[index - 1] == "-m" and token.startswith("tools")
+        ):  # export-guard: classifies declared rows as repo-only; never executes them
             return True
     return False
 

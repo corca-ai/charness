@@ -11,7 +11,7 @@ import pytest
 
 from scripts import validate_adapters as VALIDATE_ADAPTERS
 from tests.quality_gates.repo_shapes import install_committed_repo
-from tools import validate_presets as VALIDATE_PRESETS
+from scripts import validate_presets as VALIDATE_PRESETS
 from tools import validate_profiles as VALIDATE_PROFILES
 
 from .support import run_script
@@ -172,7 +172,7 @@ def test_validate_presets_ignores_gitignored_files(tmp_path: Path) -> None:
         "# Missing frontmatter on ignored file.\n", encoding="utf-8"
     )
 
-    result = run_script("tools/validate_presets.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_presets.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 

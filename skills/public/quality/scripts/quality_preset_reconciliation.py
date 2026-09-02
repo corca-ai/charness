@@ -18,7 +18,7 @@ def preset_contract(
     repo_root: Path, preset: object, repo_module: Callable[[str], Any]
 ) -> dict[str, Any]:
     """Load one repo-owned, machine-readable preset adoption contract."""
-    validator = repo_module("tools.validate_presets")
+    validator = repo_module("scripts.validate_presets")
     if not isinstance(preset, str) or not validator.re.fullmatch(validator.PRESET_NAME_RE, preset):
         return {"state": "unavailable", "reason": "preset id must be a simple filename"}
     canonical_repo_root = repo_root.resolve()

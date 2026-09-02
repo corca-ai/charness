@@ -263,7 +263,7 @@ def _couplings(target_kind: str, skill_kind: str) -> list[dict[str, str]]:
         {
             "id": "validate_skills",
             "message": "Skill package shape, SKILL.md total line ceiling, references listings, and portability checks.",
-            "command": "python3 -m tools.validate_skills --repo-root .",
+            "command": "python3 -m tools.validate_skills --repo-root .",  # export-guard: filtered by _authoring_checkout before use
         },
         {
             "id": "markdown_inline_code",
@@ -288,7 +288,7 @@ def _couplings(target_kind: str, skill_kind: str) -> list[dict[str, str]]:
         {
             "id": "attention_state",
             "message": "A new exit-zero attention term in a package script must be declared in attention-state-visibility.json.",
-            "command": "python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root tools --scan-root skills --scan-root-map ../charness-support=skills/support",
+            "command": "python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root tools --scan-root skills --scan-root-map ../charness-support=skills/support",  # export-guard: filtered by _authoring_checkout before use
         },
     ]
     if skill_kind == "public":
@@ -328,7 +328,10 @@ def _check_commands(repo_root: Path) -> list[tuple[str, list[str]]]:
     """
     root = str(repo_root)
     return [
-        ("validate_skills", ["python3", "-m", "tools.validate_skills", "--repo-root", root]),
+        (
+            "validate_skills",
+            ["python3", "-m", "tools.validate_skills", "--repo-root", root],
+        ),  # export-guard: filtered by _authoring_checkout before use
         (
             "validate_skill_ergonomics",
             ["python3", "scripts/validate_skill_ergonomics.py", "--repo-root", root],
@@ -342,13 +345,13 @@ def _check_commands(repo_root: Path) -> list[tuple[str, list[str]]]:
             [
                 "python3",
                 "-m",
-                "tools.validate_attention_state_visibility",
+                "tools.validate_attention_state_visibility",  # export-guard: filtered by _authoring_checkout before use
                 "--repo-root",
                 root,
                 "--scan-root",
                 "scripts",
                 "--scan-root",
-                "tools",
+                "tools",  # export-guard: filtered by _authoring_checkout before use
                 "--scan-root",
                 "skills",
                 "--scan-root-map",
@@ -370,6 +373,13 @@ def _check_result(check_id: str, command: list[str], completed) -> dict[str, Any
     }
 
 
+def _authoring_checkout(repo_root: Path) -> bool:
+    """The charness source checkout: a consumer's own `tools/` directory is not it."""
+    return (repo_root / "tools" / "__init__.py").is_file() and (
+        repo_root / "packaging" / "charness.json"
+    ).is_file()
+
+
 def _authoring_only(command: list[str] | str) -> bool:
     """`python3 -m tools.<name>` gates live only in the charness authoring repo.
 
@@ -377,12 +387,12 @@ def _authoring_only(command: list[str] | str) -> bool:
     must not be told to run, or fail on, a command it cannot have.
     """
     text = command if isinstance(command, str) else " ".join(command)
-    return "-m tools." in text
+    return "-m tools." in text  # export-guard: the discriminator string itself
 
 
 def _run_checks(repo_root: Path) -> list[dict[str, Any]]:
     commands = _check_commands(repo_root)
-    if not (repo_root / "tools").is_dir():
+    if not _authoring_checkout(repo_root):
         commands = [item for item in commands if not _authoring_only(item[1])]
     completed = run_processes_in_order(
         [command for _check_id, command in commands], cwd=repo_root, timeout_seconds=None
@@ -451,7 +461,7 @@ def build_report(
         "couplings": [
             coupling
             for coupling in _couplings(context["target_kind"], context["skill_kind"])
-            if (repo_root / "tools").is_dir() or not _authoring_only(coupling["command"])
+            if _authoring_checkout(repo_root) or not _authoring_only(coupling["command"])
         ],
         "checks": checks,
     }

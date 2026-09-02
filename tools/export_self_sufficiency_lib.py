@@ -73,6 +73,13 @@ import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module
+from tools.export_tools_reference_lib import (  # noqa: E402
+    MOVED_TOOL_BASENAMES,
+    exported_tools_reference_findings,
+)
+
+__all__ = ["MOVED_TOOL_BASENAMES", "exported_tools_reference_findings"]
+
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifact_validator")
 
@@ -99,68 +106,13 @@ CONSUMER_OWNED_ROOTS = {
     "tools": "repository-only quality gates; never exported to consumers",
 }
 
+
 #: Filenames for the repository-only tool surface. An exported document or
 #: executable carrier naming one of these files has leaked a command whose
 #: implementation the export deliberately omits. Keep this explicit instead
 #: of deriving it from the export: the empty export is the case this arm must
 #: detect. The two small adapters below are new tools-only carriers, so they
 #: are included even though no former ``scripts/`` path exists for them.
-MOVED_TOOL_BASENAMES = tuple(
-    """
-    check_bootstrap_shim_consistency.py check_closeout_classification_parity.py
-    check_consumer_validator_catalog_decisions.py check_coverage.py check_coverage_extra_lib.py
-    check_current_pointer_writes.py check_export_self_sufficiency.py check_inventory_declaration_coverage.py
-    check_last_verified.py check_plugin_asset_command_carriers.py check_plugin_doc_links.py
-    check_plugin_import_smoke.py check_public_doc_coupling.py check_quality_tool_fixtures.py
-    check_references_link_inventory.py check_runtime_budget_universe.py check_skill_bootstrap_vars.py
-    check_skill_contracts.py check_timing_layer_completeness.py check_unreferenced_scripts.py
-    eval_issue_scenarios.py eval_registry.py eval_setup.py export_self_sufficiency_lib.py
-    inventory_skill_script_references.py public_skill_dogfood_validation_lib.py quality_gates_extract.py
-    run_evals.py skill_portability_lib.py suggest_public_skill_validation.py
-    validate_attention_state_visibility.py validate_current_pointer_freshness.py
-    validate_inference_interpretation.py validate_integrations.py
-    validate_inventory_consumption_declaration.py validate_packaging_committed.py validate_presets.py
-    validate_profiles.py validate_public_skill_dogfood.py validate_public_skill_validation.py
-    validate_quality_closeout_contract.py validate_quality_reference_catalog.py validate_skills.py
-    validate_surfaces.py
-    """.split()
-)
-_MOVED_TOOL_BASENAME_RE = re.compile(
-    "|".join(re.escape(name) for name in sorted(MOVED_TOOL_BASENAMES, key=len, reverse=True))
-)
-_EXPORTED_TOOL_REFERENCE_SUFFIXES = {".md", ".json", ".yaml", ".yml", ".py", ".sh"}
-
-
-def exported_tools_reference_findings(export_root: Path) -> list[dict[str, object]]:
-    """Find exported text that names a command from the non-exported ``tools/`` tree.
-
-    This is a shipping-boundary check, not a filename inventory: it reads file
-    contents only. A stale path or ``python3 -m tools.<name>`` carrier leaves an
-    installed consumer with instructions for a file that is intentionally absent.
-    """
-    findings: list[dict[str, object]] = []
-    for path in sorted(export_root.rglob("*")):
-        if not path.is_file() or path.suffix not in _EXPORTED_TOOL_REFERENCE_SUFFIXES:
-            continue
-        try:
-            lines = path.read_text(encoding="utf-8").splitlines()
-        except (UnicodeDecodeError, OSError):
-            continue
-        for lineno, line in enumerate(lines, start=1):
-            names = set(_MOVED_TOOL_BASENAME_RE.findall(line))
-            if "-m tools." in line:
-                names.add("-m tools.")
-            if not names:
-                continue
-            findings.append(
-                {
-                    "path": path.relative_to(export_root).as_posix(),
-                    "line": lineno,
-                    "references": sorted(names),
-                }
-            )
-    return findings
-
 #: Literal prefixes this check does NOT own, with the owner named. The plugin
 #: export collapses `skills/public/<skill>/` to `skills/<skill>/`, and
 #: The native-backed `check-export-safe-imports` gate already renders a verdict on exactly that --
@@ -170,6 +122,7 @@ def exported_tools_reference_findings(export_root: Path) -> list[dict[str, objec
 #: finding under a second name, and 60 of them would bury the findings this check
 #: is the only one that can see.
 COLLAPSE_PREFIXES_OWNED_BY_EXPORT_SAFE_IMPORTS = ("skills/public", "skills/support")
+
 
 #: Distributions whose import name differs from the name a requirements file
 #: spells. Kept explicit: guessing this mapping is how a declared dependency

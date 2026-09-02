@@ -22,11 +22,11 @@ THREE SEVERITIES, and the split is measured rather than staged:
   reasoning is in `export_self_sufficiency_lib`'s module docstring, along with
   what the arm still owes before it can refuse.
 
-- **References to repository-only ``tools/`` modules are ADVISORY.** The arm
-  scans the complete exported text surface for moved basenames and ``-m tools.``
-  carriers. That inventory includes maintainer-only scripts such as the
-  pre-R2b runner, so it must remain visible without turning this lane's
-  transitional export into a false blocking failure.
+- **An exported ``.py`` or ``.sh`` that names a repository-only ``tools/``
+  module BLOCKS unless the line carries an ``export-guard:`` comment saying why
+  it cannot run in a consumer (an authoring-checkout test, a ``repo: charness``
+  guard). Prose and data references stay advisory: the ``<authoring-repo>/tools/``
+  spelling is how shipped docs point at the authoring tree.
 
 An advisory list is still a carrier: it is regenerable, it appears in the runner's
 payload, and it is what a later slice works from. What it is NOT is proof that
@@ -139,10 +139,13 @@ def run_check(repo_root: Path, *, package_id: str = DEFAULT_PACKAGE_ID) -> dict:
     entrypoint_findings = _lib.unguarded_entrypoint_import_findings(
         export_root, relative_to=repo_root
     )
-    dependency_findings = _lib.undeclared_dependency_findings(
-        export_root, relative_to=repo_root
-    )
+    dependency_findings = _lib.undeclared_dependency_findings(export_root, relative_to=repo_root)
     exported_tools_references = _lib.exported_tools_reference_findings(export_root)
+    exported_tools_code_references = [
+        finding
+        for finding in exported_tools_references
+        if finding.get("code") and finding.get("executable") and not finding.get("guarded")
+    ]
 
     instruction_findings = _lib.repo_root_instruction_findings(export_root)
     consumer_doc_instructions = [
@@ -155,7 +158,7 @@ def run_check(repo_root: Path, *, package_id: str = DEFAULT_PACKAGE_ID) -> dict:
     payload: dict[str, object] = {
         "status": (
             "fail"
-            if entrypoint_findings or consumer_doc_instructions
+            if entrypoint_findings or consumer_doc_instructions or exported_tools_code_references
             else "pass"
         ),
         "export_root": _packaging.materialized_plugin_root(manifest).as_posix(),
@@ -167,6 +170,7 @@ def run_check(repo_root: Path, *, package_id: str = DEFAULT_PACKAGE_ID) -> dict:
         "advisory_path_note": PATH_ADVISORY_NOTE,
         "advisory_undeclared_dependencies": dependency_findings,
         "advisory_dependency_note": DEPENDENCY_INVENTORY_NOTE,
+        "exported_tools_code_references": exported_tools_code_references,
         "advisory_exported_tools_references": exported_tools_references,
         "advisory_exported_tools_note": EXPORTED_TOOLS_REFERENCE_NOTE,
         "consumer_doc_repo_root_instructions": consumer_doc_instructions,

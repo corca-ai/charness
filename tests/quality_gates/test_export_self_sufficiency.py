@@ -870,17 +870,31 @@ def test_an_exported_tools_reference_is_a_shipping_gap(tmp_path: Path) -> None:
         {
             "path": "skills/demo/references/how.md",
             "line": 1,
-            "references": ["-m tools.", "check_coverage.py"],
+            "references": [
+                "-m tools.",
+                "check_coverage.py",
+                "tools.check_coverage",
+                "tools/check_coverage.py",
+            ],
+            "code": False,
+            "executable": True,
+            "guarded": False,
         }
     ]
 
 
-def test_exported_tools_references_are_reported_without_blocking_the_composed_gate(monkeypatch) -> None:
+def test_exported_tools_references_are_reported_without_blocking_the_composed_gate(
+    monkeypatch,
+) -> None:
     monkeypatch.setattr(_gate._lib, "unguarded_entrypoint_import_findings", lambda *_a, **_k: [])
     monkeypatch.setattr(_gate._lib, "repo_root_instruction_findings", lambda *_a, **_k: [])
-    monkeypatch.setattr(_gate._lib, "exported_tools_reference_findings", lambda *_a, **_k: [
-        {"path": "scripts/run-quality.sh", "line": 1, "references": ["-m tools."]}
-    ])
+    monkeypatch.setattr(
+        _gate._lib,
+        "exported_tools_reference_findings",
+        lambda *_a, **_k: [
+            {"path": "scripts/run-quality.sh", "line": 1, "references": ["-m tools."]}
+        ],
+    )
 
     payload = _gate.run_check(ROOT)
 

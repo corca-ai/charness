@@ -78,7 +78,7 @@ def _timing_layer_gates(
             _timing_pull_gate(
                 repo_root,
                 "check-skill-contracts",
-                "tools/check_skill_contracts.py",
+                "tools/check_skill_contracts.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
                 "--repo-root",
                 str(repo_root),
             )
@@ -87,7 +87,7 @@ def _timing_layer_gates(
             _timing_pull_gate(
                 repo_root,
                 "check-skill-bootstrap-vars",
-                "tools/check_skill_bootstrap_vars.py",
+                "tools/check_skill_bootstrap_vars.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
                 "--repo-root",
                 str(repo_root),
                 "--require-git-file-listing",
@@ -100,7 +100,7 @@ def _timing_layer_gates(
             _timing_pull_gate(
                 repo_root,
                 "validate-surfaces",
-                "tools/validate_surfaces.py",
+                "tools/validate_surfaces.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
                 "--repo-root",
                 str(repo_root),
             )
@@ -118,7 +118,7 @@ def _timing_layer_gates(
             _timing_pull_gate(
                 repo_root,
                 "check-timing-layer-completeness",
-                "tools/check_timing_layer_completeness.py",
+                "tools/check_timing_layer_completeness.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
                 "--repo-root",
                 str(repo_root),
             )
@@ -147,7 +147,8 @@ def _timing_layer_gates(
         gates.extend(_provenance_self_test_gate(repo_root))
     gates.extend(_catalog_timing_layer_gates(repo_root, paths, present))
     if any(
-        path == "tools/validate_quality_reference_catalog.py"
+        path
+        == "tools/validate_quality_reference_catalog.py"  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
         or path.startswith("skills/public/quality/references/")
         for path in present
     ):
@@ -157,7 +158,7 @@ def _timing_layer_gates(
             _timing_pull_gate(
                 repo_root,
                 "validate-quality-reference-catalog",
-                "tools/validate_quality_reference_catalog.py",
+                "tools/validate_quality_reference_catalog.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
                 "--repo-root",
                 str(repo_root),
             )
@@ -169,7 +170,7 @@ def _timing_layer_gates(
             _timing_pull_gate(
                 repo_root,
                 "validate-current-pointer-freshness",
-                "tools/validate_current_pointer_freshness.py",
+                "tools/validate_current_pointer_freshness.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
                 "--repo-root",
                 str(repo_root),
             )
@@ -207,7 +208,7 @@ def _touches_current_pointer_freshness_surface(paths: list[str]) -> bool:
         "charness-artifacts/capability-catalog/latest.json",
         "scripts/run-quality.sh",
         ".agents/quality-gates.yaml",
-        "tools/validate_current_pointer_freshness.py",
+        "tools/validate_current_pointer_freshness.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
         "scripts/record_quality_runtime.py",
         "skills/public/quality/scripts/check_runtime_budget.py",
         "skills/public/quality/scripts/runtime_budget_lib.py",
@@ -284,7 +285,7 @@ def _leak_scan_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
             _timing_pull_gate(
                 repo_root,
                 "validate-inference-interpretation",
-                "tools/validate_inference_interpretation.py",
+                "tools/validate_inference_interpretation.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
                 "--repo-root",
                 str(repo_root),
                 "--require-git-file-listing",
@@ -299,7 +300,7 @@ def _leak_scan_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
             _timing_pull_gate(
                 repo_root,
                 "check-bootstrap-shim-consistency",
-                "tools/check_bootstrap_shim_consistency.py",
+                "tools/check_bootstrap_shim_consistency.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
                 "--repo-root",
                 str(repo_root),
                 "--require-git-file-listing",
@@ -313,7 +314,7 @@ def _leak_scan_gates(repo_root: Path, paths: list[str]) -> list[GateCommand]:
             _timing_pull_gate(
                 repo_root,
                 "check-inventory-declaration-coverage",
-                "tools/check_inventory_declaration_coverage.py",
+                "tools/check_inventory_declaration_coverage.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
                 "--repo-root",
                 str(repo_root),
             )
@@ -379,7 +380,7 @@ def staged_commit_gate_plan(
             _plan_helpers.present_tools_gate(
                 repo_root,
                 "validate-attention-state-visibility",
-                "tools/validate_attention_state_visibility.py",
+                "tools/validate_attention_state_visibility.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
                 "--repo-root",
                 str(repo_root),
                 "--scan-root",
@@ -401,7 +402,7 @@ def staged_commit_gate_plan(
             _plan_helpers.present_tools_gate(
                 repo_root,
                 "validate-skills",
-                "tools/validate_skills.py",
+                "tools/validate_skills.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
                 "--repo-root",
                 str(repo_root),
             )
@@ -416,7 +417,7 @@ def staged_commit_gate_plan(
             _plan_helpers.present_tools_gate(
                 repo_root,
                 "validate-profiles",
-                "tools/validate_profiles.py",
+                "tools/validate_profiles.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
                 "--repo-root",
                 str(repo_root),
             )
@@ -433,10 +434,10 @@ def staged_commit_gate_plan(
         )
     if _any_starts(paths, "presets/"):
         plan.extend(
-            _plan_helpers.present_tools_gate(
+            _plan_helpers.present_gate(
                 repo_root,
                 "validate-presets",
-                "tools/validate_presets.py",
+                "validate_presets.py",
                 "--repo-root",
                 str(repo_root),
             )
@@ -446,7 +447,7 @@ def staged_commit_gate_plan(
             _plan_helpers.present_tools_gate(
                 repo_root,
                 "validate-integrations",
-                "tools/validate_integrations.py",
+                "tools/validate_integrations.py",  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
                 "--repo-root",
                 str(repo_root),
             )
@@ -468,7 +469,10 @@ def staged_commit_gate_plan(
         # is not done here unilaterally.
         for label, script in (
             ("check-doc-links", "check_doc_links.py"),
-            ("check-plugin-doc-links", "tools/check_plugin_doc_links.py"),
+            (
+                "check-plugin-doc-links",
+                "tools/check_plugin_doc_links.py",
+            ),  # export-guard: commit-time plan; present_tools_gate schedules only an existing file
         ):
             if label == "check-plugin-doc-links":
                 plan.extend(

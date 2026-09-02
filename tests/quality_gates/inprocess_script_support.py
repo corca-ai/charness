@@ -501,7 +501,7 @@ _IN_PROCESS_SCRIPT_MODULES = {
         "tests.quality_gates.support_narrative_review_adapter",
         ROOT / "skills" / "public" / "narrative" / "scripts" / "review_adapter.py",
     ),
-    "tools/validate_presets.py": (
+    "scripts/validate_presets.py": (
         "tests.quality_gates.support_validate_presets",
         ROOT / "tools" / "validate_presets.py",
     ),

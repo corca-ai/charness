@@ -177,9 +177,9 @@ def coverage_relevant_changes_present(context: RuntimeContext, labels: str) -> b
         "scripts/sync_support.py",
         "scripts/update_tools.py",
         "scripts/upstream_release_lib.py",
-        "tools/check_coverage.py",
+        "tools/check_coverage.py",  # export-guard: changed-path prefix list; a path pattern, never executed
         "scripts/check_coverage_lib.py",
-        "tools/check_coverage_extra_lib.py",
+        "tools/check_coverage_extra_lib.py",  # export-guard: changed-path prefix list; a path pattern, never executed
         "tests/control_plane/",
         "tests/quality_gates/test_check_coverage_inventory.py",
     }

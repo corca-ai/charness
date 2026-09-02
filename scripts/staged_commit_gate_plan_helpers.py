@@ -88,19 +88,31 @@ def catalog_timing_layer_gates(
     }
     candidate_touched = any(
         path in catalog_paths
-        or (path.startswith(("scripts/", "tools/", "skills/public/", "plugins/charness/"))
-            and _is_catalog_candidate_name(Path(path).name))
+        or (
+            path.startswith(("scripts/", "tools/", "skills/public/", "plugins/charness/"))
+            and _is_catalog_candidate_name(Path(path).name)
+        )
         for path in paths
     )
     if not candidate_touched:
         return []
-    args = ("--repo-root", str(repo_root), "--adoption-path", ".agents/consumer-validator-adoption.yaml")
+    args = (
+        "--repo-root",
+        str(repo_root),
+        "--adoption-path",
+        ".agents/consumer-validator-adoption.yaml",
+    )
     return [
-        *timing_pull_gate(repo_root, "check-consumer-validator-catalog", "scripts/check_consumer_validator_catalog.py", *args),
+        *timing_pull_gate(
+            repo_root,
+            "check-consumer-validator-catalog",
+            "scripts/check_consumer_validator_catalog.py",
+            *args,
+        ),
         *timing_pull_gate(
             repo_root,
             "check-consumer-validator-catalog-decisions",
-            "tools/check_consumer_validator_catalog_decisions.py",
+            "tools/check_consumer_validator_catalog_decisions.py",  # export-guard: present_tools_gate schedules only an existing file
             *args,
             "--require-adoption",
             "--require-staged-adoption",

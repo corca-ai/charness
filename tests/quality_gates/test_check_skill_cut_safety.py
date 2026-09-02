@@ -3,7 +3,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-from scripts import check_skill_cut_safety as csafety
+from tools import check_skill_cut_safety as csafety
 
 SKILL_REL = "skills/public/demo/SKILL.md"
 CORE_PIN = "Always prefer the primary source over a cached summary."

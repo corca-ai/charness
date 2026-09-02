@@ -24,7 +24,9 @@ def _assert_points_at_runnable_script(text: str, script_name: str) -> None:
     # substring is a proxy: the reference keeps naming a script the repo deleted
     # and the guard stays green while the documented command is unrunnable.
     assert script_name in text, f"authoring-preflight.md no longer names {script_name}"
-    assert (ROOT / "scripts" / script_name).is_file(), f"scripts/{script_name} does not exist"
+    assert (ROOT / "scripts" / script_name).is_file() or (ROOT / "tools" / script_name).is_file(), (
+        f"neither scripts/{script_name} nor tools/{script_name} exists"
+    )
 
 
 def test_authoring_preflight_reference_exists_and_is_discoverable() -> None:

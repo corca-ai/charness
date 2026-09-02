@@ -22,10 +22,10 @@ source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
 run_component() {
   case "$1" in
     check-last-verified)
-      python3 -m tools.check_last_verified --repo-root "$REPO_ROOT" ;;
+      python3 -m tools.check_last_verified --repo-root "$REPO_ROOT" ;;  # export-guard: runs only when tools/__init__.py and packaging/charness.json exist
     check-markdown) "$CHARNESS_GATE_DIR/check-markdown.sh" ;;
     check-doc-links) python3 "$REPO_ROOT/scripts/check_doc_links.py" --repo-root "$REPO_ROOT" --require-git-file-listing ;;
-    check-plugin-doc-links) python3 -m tools.check_plugin_doc_links --repo-root "$REPO_ROOT" ;;
+    check-plugin-doc-links) python3 -m tools.check_plugin_doc_links --repo-root "$REPO_ROOT" ;;  # export-guard: runs only when tools/__init__.py and packaging/charness.json exist
     check-command-docs) python3 "$REPO_ROOT/scripts/check_command_docs.py" --repo-root "$REPO_ROOT" ;;
     docs-graph)
       # Exit 3 is soft only when awiki is genuinely unavailable. Once awiki is
@@ -49,7 +49,9 @@ declare -a checks=(
   check-links-internal
   check-links-external
 )
-if [[ -d "$REPO_ROOT/tools" ]]; then
+# The authoring checkout, not any repo with a tools/ directory: the two
+# tools/ components exist only where the packaging manifest and the package do.
+if [[ -f "$REPO_ROOT/tools/__init__.py" && -f "$REPO_ROOT/packaging/charness.json" ]]; then
   checks=(check-last-verified check-plugin-doc-links "${checks[@]}")
 fi
 

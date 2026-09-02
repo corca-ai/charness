@@ -165,7 +165,12 @@ def test_run_checks_reports_all_portable_package_gates_in_declared_order(
     repo = tmp_path / "repo"
     skill_path = _write_skill(repo, skill_lines=_skill_near_cap(12))
     repo_root = repo.resolve()
-    (repo_root / "tools").mkdir()  # the authoring shape: tools/ gates are declared and run
+    # The authoring shape: tools/ gates are declared and run only where the
+    # package and its manifest both exist.
+    (repo_root / "tools").mkdir()
+    (repo_root / "tools" / "__init__.py").write_text("", encoding="utf-8")
+    (repo_root / "packaging").mkdir()
+    (repo_root / "packaging" / "charness.json").write_text("{}\n", encoding="utf-8")
     declared = preflight._check_commands(repo_root)
     expected_ids = [check_id for check_id, _command in declared]
     expected_commands = [command for _check_id, command in declared]
@@ -187,7 +192,9 @@ def test_run_checks_reports_all_portable_package_gates_in_declared_order(
     checks = preflight._run_checks(repo_root)
     assert calls == [(expected_commands, repo_root, None)]
     assert [row["id"] for row in checks] == expected_ids
-    assert [row["command"] for row in checks] == [" ".join(command) for command in expected_commands]
+    assert [row["command"] for row in checks] == [
+        " ".join(command) for command in expected_commands
+    ]
     assert checks[2]["returncode"] == 7
     assert checks[2]["stdout_tail"] == long_stdout[-1000:]
     assert checks[2]["stderr_tail"] == long_stderr[-1000:]
@@ -408,7 +415,9 @@ def test_pressure_exempt_findings_flags_overlong_and_prose() -> None:
     # 13 non-empty exempt lines against a 12-line budget: one line of overflow,
     # charged to core density.
     without_overflow = text.replace("- token-11 <command>\n", "")
-    assert preflight._core_nonempty_lines(text) == preflight._core_nonempty_lines(without_overflow) + 1
+    assert (
+        preflight._core_nonempty_lines(text) == preflight._core_nonempty_lines(without_overflow) + 1
+    )
 
 
 def test_pressure_exempt_findings_empty_when_token_shaped() -> None:
@@ -507,7 +516,9 @@ def _skill_with_exempt_prose(section: str, *, repeat_heading: bool) -> str:
         ("References", False),
     ],
 )
-def test_exempt_section_prose_pays_density_and_is_reported(section: str, repeat_heading: bool) -> None:
+def test_exempt_section_prose_pays_density_and_is_reported(
+    section: str, repeat_heading: bool
+) -> None:
     text = _skill_with_exempt_prose(section, repeat_heading=repeat_heading)
     core = preflight._core_nonempty_lines(text)
 
@@ -604,9 +615,10 @@ def test_fenced_lines_still_pay_core_density() -> None:
     # from the count: that would re-open the free-prose hatch one layer down.
     base = ["# Demo", "", "## Workflow", "", "Step one.", ""]
     fenced = base + ["```bash", *[f"command_{index} --flag" for index in range(10)], "```", ""]
-    assert preflight._core_nonempty_lines("\n".join(fenced)) == preflight._core_nonempty_lines(
-        "\n".join(base)
-    ) + 12  # 10 commands + the two fence markers
+    assert (
+        preflight._core_nonempty_lines("\n".join(fenced))
+        == preflight._core_nonempty_lines("\n".join(base)) + 12
+    )  # 10 commands + the two fence markers
 
 
 def test_exempt_budget_keys_match_the_exempt_sections() -> None:
@@ -678,12 +690,18 @@ def test_fenced_lines_in_an_exempt_block_pay_density_even_within_budget() -> Non
     # would be a window that is both uncharged and unread. 10 fenced lines sit
     # under every budget and must still cost 12 (10 + the two fence markers).
     base = ["# Demo", "", f"## {preflight.CLOSEOUT_VOCAB_SECTION}", "", "- token <command>", ""]
-    fenced = base + ["```", *[f"Example line {index}. Second sentence." for index in range(10)], "```", ""]
+    fenced = base + [
+        "```",
+        *[f"Example line {index}. Second sentence." for index in range(10)],
+        "```",
+        "",
+    ]
 
     assert preflight.pressure_exempt_findings("\n".join(fenced)) == []
-    assert preflight._core_nonempty_lines("\n".join(fenced)) == preflight._core_nonempty_lines(
-        "\n".join(base)
-    ) + 12
+    assert (
+        preflight._core_nonempty_lines("\n".join(fenced))
+        == preflight._core_nonempty_lines("\n".join(base)) + 12
+    )
 
 
 def test_tilde_fenced_example_inside_an_exempt_block_is_not_audited_as_prose() -> None:
@@ -716,7 +734,9 @@ def test_exempt_section_block_carries_its_own_remediation_not_the_headroom_one()
                 "base_remaining": None,
                 "new_remaining": 158,
                 "buffer": 4,
-                "exempt_findings": ["`## References` line is multi-sentence prose, not a token: '...'"],
+                "exempt_findings": [
+                    "`## References` line is multi-sentence prose, not a token: '...'"
+                ],
             }
         ],
     }

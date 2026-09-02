@@ -47,10 +47,19 @@ def locate(name: str, caller: Path) -> Path:
     for ancestor in list(origin.parents)[:_MAX_ANCESTORS]:
         candidate = ancestor / target_root / name
         if candidate.is_file() and candidate.resolve() != origin:
+            if target_root == "tools" and not (ancestor / "packaging" / "charness.json").is_file():
+                # A consumer's own tools/<name> is not the authoring-repo script;
+                # the walk must never execute a file the plugin does not own.
+                continue
             return candidate
     raise FileNotFoundError(
         f"no ancestor of {origin} within {_MAX_ANCESTORS} levels contains {target_root}/{name}; "
-        "this shim must ship alongside the authoring-repo script it fronts"
+        + (
+            "the exported plugin does not carry the authoring repository's tools/ tree, "
+            "so this entrypoint runs only from a charness source checkout"
+            if target_root == "tools"
+            else "this shim must ship alongside the authoring-repo script it fronts"
+        )
     )
 
 

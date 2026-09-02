@@ -104,7 +104,7 @@ def test_preset_reconciliation_distinguishes_applied_missing_and_metadata_only(
         encoding="utf-8",
     )
     modules = {
-        "tools.validate_presets": LIFECYCLE._repo_module("tools.validate_presets"),
+        "scripts.validate_presets": LIFECYCLE._repo_module("scripts.validate_presets"),
         "scripts.quality_bootstrap_detect": SimpleNamespace(
             detect_preset_lineage=lambda _repo: ["strict"]
         ),
@@ -167,13 +167,13 @@ def test_preset_contract_refuses_malformed_frontmatter(
     repo = tmp_path / "app"
     presets = repo / "presets"
     presets.mkdir(parents=True)
-    validator = LIFECYCLE._repo_module("tools.validate_presets")
+    validator = LIFECYCLE._repo_module("scripts.validate_presets")
     monkeypatch.setattr(
         LIFECYCLE,
         "_repo_module",
         lambda name: (
             validator
-            if name == "tools.validate_presets"
+            if name == "scripts.validate_presets"
             else SimpleNamespace(detect_preset_lineage=lambda _repo: [])
         ),
     )
@@ -201,13 +201,13 @@ def test_preset_contract_accepts_crlf_and_refuses_external_symlink(
         encoding="utf-8",
     )
     (presets / "external.md").symlink_to(outside)
-    validator = LIFECYCLE._repo_module("tools.validate_presets")
+    validator = LIFECYCLE._repo_module("scripts.validate_presets")
     monkeypatch.setattr(
         LIFECYCLE,
         "_repo_module",
         lambda name: (
             validator
-            if name == "tools.validate_presets"
+            if name == "scripts.validate_presets"
             else SimpleNamespace(detect_preset_lineage=lambda _repo: [])
         ),
     )
@@ -229,13 +229,13 @@ def test_preset_contract_refuses_a_presets_directory_symlink(
     )
     repo.mkdir()
     (repo / "presets").symlink_to(outside_presets, target_is_directory=True)
-    validator = LIFECYCLE._repo_module("tools.validate_presets")
+    validator = LIFECYCLE._repo_module("scripts.validate_presets")
     monkeypatch.setattr(
         LIFECYCLE,
         "_repo_module",
         lambda name: (
             validator
-            if name == "tools.validate_presets"
+            if name == "scripts.validate_presets"
             else SimpleNamespace(detect_preset_lineage=lambda _repo: [])
         ),
     )
@@ -287,7 +287,7 @@ def test_preset_reconciliation_reports_unavailable_contract_shapes(
         validate_preset=lambda _path: {"reconciliation": "wrong-shape"},
     )
     modules = {
-        "tools.validate_presets": validator,
+        "scripts.validate_presets": validator,
         "scripts.quality_bootstrap_detect": SimpleNamespace(
             detect_preset_lineage=lambda _repo: ["strict"]
         ),

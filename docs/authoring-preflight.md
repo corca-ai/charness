@@ -367,11 +367,11 @@ with no reference home). Verify both **before** the cut, not after a late gate
 rejects it:
 
 ```bash
-python3 scripts/check_skill_cut_safety.py --repo-root .            # changed SKILL.md vs HEAD
-python3 scripts/check_skill_cut_safety.py --path skills/public/<skill>/SKILL.md
+python3 -m tools.check_skill_cut_safety --repo-root .            # changed SKILL.md vs HEAD
+python3 -m tools.check_skill_cut_safety --path skills/public/<skill>/SKILL.md
 ```
 
-[check_skill_cut_safety.py](../scripts/check_skill_cut_safety.py) composes the
+[check_skill_cut_safety.py](../tools/check_skill_cut_safety.py) composes the
 two pin surfaces (`check_skill_contracts` CORE/PACKAGE phrases +
 `check_prose_pin` test literals) and adds the lossless half, with two severities:
 
