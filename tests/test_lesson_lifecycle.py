@@ -80,6 +80,85 @@ def test_archive_and_resurrection_preserve_scores_and_refuse_invalid_transition(
     assert resurrected["state"] == "active"
 
 
+def test_graduate_and_resurrect_preserve_scores_and_active_count(tmp_path: Path) -> None:
+    _retro(tmp_path, "source.md", "a")
+    decision = tmp_path / "docs/development.md"
+    decision.parent.mkdir()
+    decision.write_text("# Development\n", encoding="utf-8")
+    path = _ledger(
+        tmp_path,
+        score_events=[_score_event(score=2, anchor="evidence")],
+    )
+
+    lifecycle_recorder.append_lifecycle_event(
+        repo_root=tmp_path,
+        event_id="graduate-a",
+        lesson_id="a",
+        action="graduate",
+        decision_ref="docs/development.md",
+        rationale="Promoted into the development guidance.",
+    )
+    graduated_payload = json.loads(path.read_text(encoding="utf-8"))
+    graduated = graduated_payload["lessons"]["a"]
+    assert graduated["state"] == "graduated"
+    assert (graduated["score_total"], graduated["score_count"]) == (1, 1)
+    assert "a" in graduated_payload["lessons"]
+    assert _validate(tmp_path)["active_lesson_count"] == 0
+
+    lifecycle_recorder.append_lifecycle_event(
+        repo_root=tmp_path,
+        event_id="resurrect-a",
+        lesson_id="a",
+        action="resurrect",
+        decision_ref="docs/development.md",
+        rationale="The lesson is needed in the working set again.",
+    )
+    resurrected = json.loads(path.read_text(encoding="utf-8"))["lessons"]["a"]
+    assert resurrected["state"] == "active"
+    assert (resurrected["score_total"], resurrected["score_count"]) == (1, 1)
+    assert _validate(tmp_path)["active_lesson_count"] == 1
+
+
+def test_graduate_requires_a_docs_decision_and_an_active_lesson(tmp_path: Path) -> None:
+    _retro(tmp_path, "source.md", "a")
+    decision = tmp_path / "docs/development.md"
+    decision.parent.mkdir()
+    decision.write_text("# Development\n", encoding="utf-8")
+    path = _ledger(tmp_path)
+
+    before = path.read_bytes()
+    with pytest.raises(ValueError, match="a graduated lesson lives in a `docs/` page"):
+        lifecycle_recorder.append_lifecycle_event(
+            repo_root=tmp_path,
+            event_id="graduate-a",
+            lesson_id="a",
+            action="graduate",
+            decision_ref="charness-artifacts/retro/source.md",
+            rationale="Invalid owning page.",
+        )
+    assert path.read_bytes() == before
+
+    lifecycle_recorder.append_lifecycle_event(
+        repo_root=tmp_path,
+        event_id="archive-a",
+        lesson_id="a",
+        action="archive",
+        decision_ref="charness-artifacts/retro/source.md",
+        rationale="Move out of the active working set.",
+    )
+    with pytest.raises(ValueError, match="only legal moves are") as refusal:
+        lifecycle_recorder.append_lifecycle_event(
+            repo_root=tmp_path,
+            event_id="graduate-archived-a",
+            lesson_id="a",
+            action="graduate",
+            decision_ref="docs/development.md",
+            rationale="Invalid archived graduation.",
+        )
+    assert "graduate a lesson in state `active`" in str(refusal.value)
+    assert "resurrect a lesson in state `graduated`" in str(refusal.value)
+
+
 def test_lifecycle_cli_refuses_unknown_lesson_without_rewriting(tmp_path: Path) -> None:
     _retro(tmp_path, "source.md", "a")
     (tmp_path / "decision.md").write_text("# Reviewed Decision\n", encoding="utf-8")

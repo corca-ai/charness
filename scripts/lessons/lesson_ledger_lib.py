@@ -29,7 +29,7 @@ run_process = _subprocess_guard.run_process
 
 LEDGER_FILENAME = "lesson-ledger.json"
 KIND = "charness.lesson-ledger"
-# 9 restores explicit archive/resurrection lifecycle decisions. The v8 ledger
+# 9 restores explicit archive/graduation/resurrection lifecycle decisions. The v8 ledger
 # remains readable and is upgraded by adding the lifecycle fields with every
 # existing lesson active and no prior lifecycle event.
 # 8 removed lesson archive/resurrection lifecycle state alongside the retired
@@ -84,7 +84,15 @@ LESSON_KEYS = {
 # rejection. Kept as the branch table itself rather than a parallel constant:
 # a message listing actions that the code no longer accepts is worse than no
 # message, and this shape makes that drift impossible.
-LIFECYCLE_TRANSITIONS = {("archive", "active"): "archived", ("resurrect", "archived"): "active"}
+LIFECYCLE_TRANSITIONS = {
+    ("archive", "active"): "archived",
+    ("graduate", "active"): "graduated",
+    ("resurrect", "archived"): "active",
+    ("resurrect", "graduated"): "active",
+}
+LIFECYCLE_STATES = frozenset(
+    {state for _, state in LIFECYCLE_TRANSITIONS} | set(LIFECYCLE_TRANSITIONS.values())
+)
 # The exact v8 shape accepted for migration. Keeping this separate from the v9
 # shape makes the one-way compatibility boundary explicit.
 V8_TOP_LEVEL_KEYS = {
@@ -325,6 +333,11 @@ def _replay_lifecycle(
             _fail(f"lifecycle event `{event_id}` names unseeded lesson")
         if not canonical_markdown_ref(repo_root, event.get("decision_ref")):
             _fail(f"lifecycle event `{event_id}` decision_ref is not existing canonical Markdown")
+        if action == "graduate" and not event["decision_ref"].startswith("docs/"):
+            _fail(
+                f"lifecycle event `{event_id}` decision_ref must be under `docs/`; "
+                "a graduated lesson lives in a `docs/` page, so the event must point at it"
+            )
         current = replayed[lesson_id]["state"]
         next_state = LIFECYCLE_TRANSITIONS.get((action, current))
         if next_state is None:

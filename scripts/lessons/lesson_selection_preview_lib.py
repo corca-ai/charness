@@ -22,6 +22,7 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.lessons.lesson_ledger_lib import (  # noqa: E402
+    LIFECYCLE_STATES,
     lesson_ledger_path,
     migrate_ledger_payload,
     validate_lesson_ledger,
@@ -162,11 +163,12 @@ def build_lesson_selection_preview(
         ledger["lessons"],
     )
     selected_ids: set[str] = set()
-    if any(row["state"] not in {"active", "archived"} for row in rows):
+    if any(row["state"] not in LIFECYCLE_STATES for row in rows):
         _fail("validated ledger lesson has invalid lifecycle state")
     active_rows = [row for row in rows if row["state"] == "active"]
     archived_rows = [row for row in rows if row["state"] == "archived"]
-    total_score_count = sum(row["score_count"] for row in rows)
+    eligible_rows = active_rows + archived_rows
+    total_score_count = sum(row["score_count"] for row in eligible_rows)
     recent = _take(sorted(active_rows, key=_recent_key), selected_ids, 3)
     value = _take(
         sorted(active_rows, key=lambda row: (-_value(row), row["lesson_id"])),
@@ -193,7 +195,7 @@ def build_lesson_selection_preview(
         "schema_version": SCHEMA_VERSION,
         "mode": "preview",
         "seed": seed,
-        "eligible_count": len(rows),
+        "eligible_count": len(eligible_rows),
         "bucket_counts": {
             "recent": len(recent),
             "value": len(value),

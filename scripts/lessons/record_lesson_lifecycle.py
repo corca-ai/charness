@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Append one explicit archive or resurrection event to the lesson ledger."""
+"""Append one explicit archive, graduation, or resurrection event to the lesson ledger."""
 
 from __future__ import annotations
 
@@ -32,6 +32,7 @@ from scripts.yaml_output import emit_yaml  # noqa: E402
 ROOT = repo_root_from_script(__file__)
 _ledger = import_repo_module(__file__, "scripts.lessons.lesson_ledger_lib")
 _writer = import_repo_module(__file__, "scripts.lessons.lesson_ledger_writer_lib")
+LIFECYCLE_ACTIONS = tuple(sorted({action for action, _state in _ledger.LIFECYCLE_TRANSITIONS}))
 
 
 def _nonblank(value: str, name: str) -> str:
@@ -59,8 +60,10 @@ def append_lifecycle_event(
     lesson_id = _nonblank(lesson_id, "lesson_id")
     decision_ref = _nonblank(decision_ref, "decision_ref")
     rationale = _nonblank(rationale, "rationale")
-    if action not in {"archive", "resurrect"}:
-        raise ValueError("record lesson lifecycle: action must be archive or resurrect")
+    if action not in LIFECYCLE_ACTIONS:
+        raise ValueError(
+            f"record lesson lifecycle: action must be one of {', '.join(LIFECYCLE_ACTIONS)}"
+        )
     with _writer.ledger_lock(path):
         payload = json.loads(path.read_text(encoding="utf-8"))
         payload, _migrated = _ledger.migrate_ledger_payload(payload)
@@ -105,7 +108,9 @@ def _materialize(candidate: dict[str, Any]) -> dict[str, Any]:
     lessons = copy.deepcopy(candidate["lessons"])
     event = candidate["lifecycle_events"][-1]
     lesson = lessons[event["lesson_id"]]
-    lesson["state"] = "archived" if event["action"] == "archive" else "active"
+    next_state = _ledger.LIFECYCLE_TRANSITIONS.get((event["action"], lesson["state"]))
+    if next_state is not None:
+        lesson["state"] = next_state
     lesson["last_lifecycle_event_id"] = event["event_id"]
     return lessons
 
@@ -115,7 +120,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repo-root", type=Path, default=ROOT)
     parser.add_argument("--event-id", required=True)
     parser.add_argument("--lesson-id", required=True)
-    parser.add_argument("--action", choices=("archive", "resurrect"), required=True)
+    parser.add_argument("--action", choices=LIFECYCLE_ACTIONS, required=True)
     parser.add_argument("--decision-ref", required=True)
     parser.add_argument("--rationale", required=True)
     args = parser.parse_args(argv)

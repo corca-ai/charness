@@ -21,6 +21,7 @@ from __future__ import annotations
 import copy
 from typing import Any
 
+from scripts.lessons import lesson_ledger_lib as ledger
 from scripts.lessons import lesson_score_outcome_lib as outcome_lib
 
 
@@ -80,7 +81,9 @@ def materialize(payload: dict[str, Any]) -> dict[str, Any]:
     for event in payload["lifecycle_events"]:
         lesson = payload["lessons"].get(event["lesson_id"])
         if lesson is not None:
-            lesson["state"] = "archived" if event["action"] == "archive" else "active"
+            next_state = ledger.LIFECYCLE_TRANSITIONS.get((event["action"], lesson["state"]))
+            if next_state is not None:
+                lesson["state"] = next_state
             lesson["last_lifecycle_event_id"] = event["event_id"]
     scored: dict[str, list[dict[str, Any]]] = {}
     for event in payload["score_events"]:

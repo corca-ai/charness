@@ -67,12 +67,18 @@ def test_preview_uses_the_pinned_shrunk_mean_and_ucb_formula() -> None:
     assert preview._uncertainty(row, 2) == pytest.approx(1 + math.sqrt(math.log(2) / 2))
 
 
-def test_preview_uses_only_active_first_nine_and_real_archive_slot(monkeypatch) -> None:
+def test_preview_excludes_graduated_and_uses_active_rows_and_archive_slot(monkeypatch) -> None:
     lessons = {
         f"lesson-{index}": {
             "score_total": index,
             "score_count": 1,
-            "state": "archived" if index == 9 else "active",
+            "state": (
+                "graduated"
+                if index == 8
+                else "archived"
+                if index == 9
+                else "active"
+            ),
         }
         for index in range(10)
     }
@@ -104,12 +110,13 @@ def test_preview_uses_only_active_first_nine_and_real_archive_slot(monkeypatch) 
     assert result["bucket_counts"] == {
         "recent": 3,
         "value": 3,
-        "uncertainty": 3,
+        "uncertainty": 2,
         "archive": 1,
         "archive_fallback_uncertainty": 0,
     }
+    assert result["eligible_count"] == 9
     ids = {item["lesson_id"] for item in result["items"]}
-    assert ids == set(lessons)
+    assert ids == set(lessons) - {"lesson-8"}
 
 
 def test_preview_requires_a_nonempty_seed() -> None:

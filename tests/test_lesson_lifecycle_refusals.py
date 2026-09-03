@@ -91,7 +91,9 @@ def test_lifecycle_operator_rejects_missing_blank_and_unknown_action(tmp_path: P
             repo_root=tmp_path, event_id=" ", lesson_id="a", action="archive",
             decision_ref="d.md", rationale="r",
         )
-    with pytest.raises(ValueError, match="action must be archive or resurrect"):
+    with pytest.raises(
+        ValueError, match="action must be one of archive, graduate, resurrect"
+    ):
         lifecycle_recorder.append_lifecycle_event(
             repo_root=tmp_path, event_id="e", lesson_id="a", action="other",
             decision_ref="d.md", rationale="r",
