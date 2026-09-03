@@ -1,0 +1,13 @@
+{
+ "kind": "charness.goal-run-operation/v1",
+ "repo": "corca-ai/charness",
+ "parent_number": 784,
+ "operation": "update-body",
+ "attempt_id": "advance-cursor-783-1",
+ "observation_dir": "charness-artifacts/goal-runs/784/observations",
+ "target": {
+  "repo": "corca-ai/charness",
+  "number": 784
+ },
+ "body_file": "charness-artifacts/goal-runs/784/bodies/parent-progress-783.md"
+}

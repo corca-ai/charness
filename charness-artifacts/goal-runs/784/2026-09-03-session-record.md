@@ -173,3 +173,40 @@ lint clean. Final tree: standing 8842 passed; full read-only quality 83
 passed, 0 failed. Publish dry run: `bump-and-publish` 8.0.2 -> 8.0.3, no
 blockers. The cut runs next through `publish_release.py --execute` with the
 #788 carrier; the operator pre-approved the decision on 2026-09-03.
+
+## Second session, closing (#788 closed; 8.0.3 shipped)
+
+The cut ran through the release skill with every step: planner, two fresh-eye
+critique reviewers plus a repair-verification pass, `publish_release.py
+--execute` to the prepared stop (release lane exit 0 in 164.7 s on the
+candidate), four claims-review rounds by a file-backed Codex reviewer, the
+claims record committed as the prepared commit's child, and `--resume
+--publish-current --execute`. Read back: GitHub release
+`https://github.com/corca-ai/charness/releases/tag/v8.0.3` (published
+2026-09-03T10:33:33Z), rung-2 https channel `confirmed`, post-publish install
+refresh `refreshed` (9.1 s), `charness version` from the managed checkout
+`~/.agents/src/charness` reports `8.0.3`, and #788 `verify-closeout` =
+`verified` (CLOSED) through the helper's carrier commit `ebfd777ed`.
+
+What the claims rounds taught, recorded for the next release: round 1 and
+round 2 each found a real record sentence (the planner does not refuse; a
+file add/delete count is not a set comparison; "nothing needs migration" was
+unqualified), each repair meant a reset before the prepared record and a new
+prepare; round 3 reviewed a stale tree because a chained command had changed
+directory into the push clone before running the prepare, so the prepared
+commit lived there and not in the checkout; round 4 found no false sentence
+and three evidence-boundary gaps, recorded as advisory findings. A prepare
+must run in the checkout the reviewer reads.
+
+Cursor advanced by `operations/update-parent-progress-783.json` (progress
+4/2/6, revision 5); `/goal #784` pickup names #783.
+
+## Remaining for a session with the operator
+
+- #783 lesson-review-783: the 34 scored active lessons, one at a time in
+  Korean, with the operator settling each; the four top candidates now have
+  their mechanisms (changed-line done-gate in the lane receipt, timeout-bound
+  form check, retention sweep, checkout-first routing) to graduate onto.
+- #789 integrated-closeout: standing, full read-only, and release lanes in a
+  clean clone; the scheduled mutation run read from GitHub with #764; every
+  child `verify-closeout`; the guarded parent close after exact readback.
