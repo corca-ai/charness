@@ -1594,8 +1594,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-green-test-is-not-covered-line"
     },
     "harness-differential-not-test": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
@@ -2356,6 +2356,19 @@
         "charness-artifacts/retro/2026-08-16-session-retro.md",
         "charness-artifacts/retro/2026-08-18-session-retro.md",
         "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md"
+      ]
+    },
+    {
+      "sequence": 16,
+      "event_id": "783-graduate-green-test-is-not-covered-line",
+      "lesson_id": "green-test-is-not-covered-line",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#783 joint review 2026-09-03: helped; all 11 encounters changed an action (2026-08-17 to 08-22), each a green batch whose named lines were unreached until measured. docs/development.md 'Verify in the shape production uses' owns the sentence beside the proxy-green rule; the lane half stays with parallel-execution.md and the claude-host bullet is one line plus a link. Mechanism: release_changed_line_coverage.py measures line reach and runs in the lane receipt's changed_line_gate and the pre-push hook, so no gap remains.",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+        "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+        "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md"
       ]
     }
   ]

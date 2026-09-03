@@ -81,7 +81,15 @@ run from the checkout by the rule in
 the Goal Run pickup and the release planner print `script_origin`; the pickup
 refuses a drifted installed copy instead of reading an older contract, the
 read-only planner only reports, and the publish helper's entrypoint guard
-refuses before a release mutation.
+refuses before a release mutation. A passing test is not a covered line:
+whether a test reached the line it was written for is measured, never inferred
+from green, and the measurer is
+[`release_changed_line_coverage.py`](../scripts/mutation/release_changed_line_coverage.py),
+which the lane receipt's `changed_line_gate` and the pre-push hook both run
+([parallel execution](./parallel-execution.md#disjoint-writers)). Graduated
+from the lesson ledger on 2026-09-03 after eleven encounters that each changed
+an action, the same shape every time: a green batch that left named lines
+unreached until the coverage read said so.
 
 Production code spawns only through
 [`subprocess_guard.py`](../scripts/core/subprocess_guard.py); the standing
