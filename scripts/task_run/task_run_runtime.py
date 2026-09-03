@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
 import os
 import re
 import shutil
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -149,18 +149,19 @@ def utc_now_iso() -> str:
 
 
 def runner_liveness(record: Mapping[str, Any]) -> dict[str, Any]:
-    """Say whether the runner that wrote this record is still a live process.
+    """Advisory pid check on the runner that wrote this record.
 
-    The list and the single read parse the same bytes, so when a lane's record
-    reads `timed-out` while its runner is visibly alive (#791) the reader is
-    looking at a different result store or a stale one. This projection lets
-    `task status` say so from the record itself: `alive` is the pid check,
-    `consistent` is whether that agrees with the record's phase. It is computed
-    at read time and never persisted.
+    A lane's record read `timed-out` while its runner was visibly alive (#791),
+    and the record could not say which reading was stale because it carried no
+    process identity. `alive` is `os.kill(pid, 0)` at read time, never
+    persisted, and only advisory: a pid can be reused, and a live runner on a
+    terminal record is normal while the runner finishes retention after its
+    final write. A `running` record whose pid is dead is the one firm reading:
+    that record is stale.
     """
     pid = record.get("runner_pid")
     if not isinstance(pid, int) or pid <= 0:
-        return {"runner_pid": None, "alive": None, "consistent": None}
+        return {"runner_pid": None, "alive": None}
     try:
         os.kill(pid, 0)
         alive = True
@@ -168,8 +169,7 @@ def runner_liveness(record: Mapping[str, Any]) -> dict[str, Any]:
         alive = False
     except PermissionError:
         alive = True
-    terminal = record.get("phase") == "terminal"
-    return {"runner_pid": pid, "alive": alive, "consistent": alive != terminal}
+    return {"runner_pid": pid, "alive": alive}
 
 
 def read_task_result(runtime_path: Path, task_id: str) -> dict[str, Any] | None:

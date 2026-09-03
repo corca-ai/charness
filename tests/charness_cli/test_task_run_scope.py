@@ -613,13 +613,31 @@ def test_a_descendant_head_with_a_clean_tree_is_still_the_whole_candidate(tmp_pa
     assert carrier["head_sha"] == carrier["observed_head_sha"]
 
 
-def test_scope_brace_groups_expand_to_one_scope_per_alternative() -> None:
-    """#790: one --scope can name a seam that spans two roots."""
-    assert task_run_scope.normalize_scopes(["{packages,gateway}/**"]) == [
-        "gateway/**",
-        "packages/**",
+def test_scope_brace_groups_expand_after_literal_precedence(tmp_path: Path) -> None:
+    """#790: one --scope can name a seam that spans two roots, and an existing
+    literal path whose name carries braces keeps the precedence a literal
+    with glob metacharacters already has."""
+    repo = _repo(tmp_path)
+    (repo / "packages").mkdir()
+    (repo / "packages" / "one.py").write_text("ONE = 1\n", encoding="utf-8")
+    (repo / "gateway").mkdir()
+    (repo / "gateway" / "two.py").write_text("TWO = 2\n", encoding="utf-8")
+    (repo / "lit{a,b}.py").write_text("LIT = 1\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _commit(repo, "seed roots")
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+
+    declared = task_run_scope.normalize_scopes(["{packages,gateway}/**", "lit{a,b}.py"])
+    assert declared == ["lit{a,b}.py", "{packages,gateway}/**"]
+
+    specs = task_run_scope.resolve_scope_specs(repo, declared, base)
+    assert [(spec["path"], spec["kind"], spec.get("expanded_from")) for spec in specs] == [
+        ("lit{a,b}.py", "exact", None),
+        ("packages/**", "glob", "{packages,gateway}/**"),
+        ("gateway/**", "glob", "{packages,gateway}/**"),
     ]
-    assert task_run_scope.normalize_scopes(["a/{b,c}/{d,e}.py", "a/b/d.py"]) == [
+
+    assert task_run_scope._expand_braces("a/{b,c}/{d,e}.py") == [
         "a/b/d.py",
         "a/b/e.py",
         "a/c/d.py",
@@ -632,7 +650,7 @@ def test_scope_brace_groups_expand_to_one_scope_per_alternative() -> None:
         ("a/{b,}", "two or more non-empty alternatives"),
     ):
         with pytest.raises(task_run.TaskRunError, match=message):
-            task_run_scope.normalize_scopes([broken])
+            task_run_scope.resolve_scope_specs(repo, [broken], base)
 
 
 def test_out_of_scope_change_names_the_offending_paths(tmp_path: Path) -> None:

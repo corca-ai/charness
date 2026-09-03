@@ -62,6 +62,17 @@ build_codex_command = _support.build_codex_command
 normalize_scopes = _support.normalize_scopes
 
 
+def _mark_phase(payload: dict[str, Any], phase: str, stamp: str) -> float:
+    """Enter a phase: record its UTC start and return the monotonic origin."""
+    payload["phase"] = phase
+    payload["timestamps"][stamp] = _support.utc_now_iso()
+    return time.monotonic()
+
+
+def _record_timing(payload: dict[str, Any], key: str, origin: float) -> None:
+    payload["timings_ms"][key] = int((time.monotonic() - origin) * 1000)
+
+
 def _persist(payload: dict[str, Any], runtime_path: Path) -> None:
     stamps = payload.setdefault("timestamps", {})
     stamps["updated_at"] = _support.utc_now_iso()
@@ -304,8 +315,7 @@ def run_task(
         "timestamps": {"launched_at": _support.utc_now_iso()},
         "timings_ms": {},
     }
-    payload["codex"]["timeout_seconds"] = timeout_seconds
-    payload["codex"]["timeout_scope"] = "codex-exec"
+    payload["codex"].update(timeout_seconds=timeout_seconds, timeout_scope="codex-exec")
     if resolved_lane is not None:
         payload["lane"] = resolved_lane
     if dry_run:
@@ -321,9 +331,7 @@ def run_task(
         return payload
 
     payload["status"] = "running"
-    payload["phase"] = "create"
-    payload["timestamps"]["create_started_at"] = _support.utc_now_iso()
-    started_at = time.monotonic()
+    started_at = _mark_phase(payload, "create", "create_started_at")
     _persist(payload, runtime_path)
     try:
         resolved_target.parent.mkdir(parents=True, exist_ok=True)
@@ -352,7 +360,7 @@ def run_task(
 
     payload["create"] = create_payload
     payload["created"] = bool(create_payload.get("created"))
-    payload["timings_ms"]["prepare"] = int((time.monotonic() - started_at) * 1000)
+    _record_timing(payload, "create", started_at)
     if not create_payload.get("created") or (
         resolved_prepare and create_payload.get("status") != PASS
     ):
@@ -400,9 +408,7 @@ def run_task(
         stdout_log = log_dir / "codex.stdout.log"
         stderr_log = log_dir / "codex.stderr.log"
         payload["logs"] = {"stdout": str(stdout_log), "stderr": str(stderr_log)}
-        payload["phase"] = "exec"
-        payload["timestamps"]["exec_started_at"] = _support.utc_now_iso()
-        exec_started_at = time.monotonic()
+        exec_started_at = _mark_phase(payload, "exec", "exec_started_at")
         _persist(payload, runtime_path)
 
         print(f"task run: executing Codex in {resolved_target}", file=sys.stderr)
@@ -415,7 +421,7 @@ def run_task(
             stderr_log=stderr_log,
             timeout_seconds=timeout_seconds,
         )
-        payload["timings_ms"]["exec"] = int((time.monotonic() - exec_started_at) * 1000)
+        _record_timing(payload, "exec", exec_started_at)
         candidate_commit = None
         abnormal = _abnormal_exit_state(execution)
         if abnormal is not None:

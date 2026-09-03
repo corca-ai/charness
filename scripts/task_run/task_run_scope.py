@@ -92,16 +92,15 @@ def _expand_braces(value: str) -> list[str]:
 
 
 def normalize_scopes(scopes: Sequence[str]) -> list[str]:
-    """Return one deterministic repository-relative scope list.
+    """Return one deterministic repository-relative scope list, as declared.
 
-    `--scope` is repeatable and each value may carry `{a,b}` groups; the
-    result is the sorted union of every expanded alternative.
+    Brace groups are expanded later, in `resolve_scope_specs`, so an existing
+    literal path whose name carries braces keeps the same precedence a literal
+    with glob metacharacters already has.
     """
     if not scopes:
         raise TaskRunError("at least one --scope is required")
-    return sorted(
-        {_normalize_scope(expanded) for value in scopes for expanded in _expand_braces(value)}
-    )
+    return sorted({_normalize_scope(value) for value in scopes})
 
 
 def _is_glob_scope(scope: str) -> bool:
@@ -189,30 +188,42 @@ def resolve_scope_specs(
     """Freeze scope semantics and expand globs from the selected Git tree."""
     tree_paths, tree_directories = _git_tree_paths(root, base_sha)
     specs: list[dict[str, Any]] = []
-    for scope in scopes:
-        if scope in tree_paths:
+    for declared in scopes:
+        if declared in tree_paths:
             specs.append(
-                {"path": scope, "kind": "directory" if scope in tree_directories else "exact"}
+                {
+                    "path": declared,
+                    "kind": "directory" if declared in tree_directories else "exact",
+                }
             )
             continue
-        if not _is_glob_scope(scope):
-            specs.append({"path": scope, "kind": "exact"})
-            continue
-        _validate_glob_scope(scope)
-        matches = sorted(path for path in tree_paths if _glob_path_matches(path, scope))
-        directories = sorted(path for path in matches if path in tree_directories)
-        if not matches:
-            raise TaskRunError(f"scope glob matched no paths: {scope!r}")
-        specs.append(
-            {
-                "path": scope,
-                "kind": "glob",
-                "matches": matches,
-                "match_count": len(matches),
-                "directory_matches": directories,
-            }
-        )
+        for scope in _expand_braces(declared):
+            spec = _resolve_one_scope(scope, tree_paths, tree_directories)
+            if scope != declared:
+                spec["expanded_from"] = declared
+            specs.append(spec)
     return specs
+
+
+def _resolve_one_scope(
+    scope: str, tree_paths: set[str], tree_directories: set[str]
+) -> dict[str, Any]:
+    if scope in tree_paths:
+        return {"path": scope, "kind": "directory" if scope in tree_directories else "exact"}
+    if not _is_glob_scope(scope):
+        return {"path": scope, "kind": "exact"}
+    _validate_glob_scope(scope)
+    matches = sorted(path for path in tree_paths if _glob_path_matches(path, scope))
+    directories = sorted(path for path in matches if path in tree_directories)
+    if not matches:
+        raise TaskRunError(f"scope glob matched no paths: {scope!r}")
+    return {
+        "path": scope,
+        "kind": "glob",
+        "matches": matches,
+        "match_count": len(matches),
+        "directory_matches": directories,
+    }
 
 
 def _refresh_scope_specs(

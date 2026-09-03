@@ -34,10 +34,12 @@ diagnostics and exceptional host setup. In shorthand, preparation and requiring
 a changed candidate are on by default; `--skip-prepare` and `--allow-no-change`
 are diagnostic opt-outs.
 
-`--scope` repeats, and a `{a,b}` group expands to one scope per alternative
-(`'{packages,gateway}/**'` is two), so a seam spanning several roots declares
-those roots instead of `**`. `scopes` is the expanded union, persisted with
-the `running` record, so `task status` shows every live lane's scopes.
+`--scope` repeats, and a `{a,b}` group expands to one spec per alternative
+(`'{packages,gateway}/**'` is two, each with `expanded_from`), so a seam
+spanning several roots declares them instead of `**`; an existing literal
+path with braces in its name stays literal. `scopes` and
+`scope_specs` are persisted with the `running` record, so `task status` shows
+every live lane's scopes.
 
 Scopes are classified against the selected base commit's Git tree (or `HEAD` in
 shorthand), including during dry-run. Existing literal files and directories
@@ -53,9 +55,10 @@ is a warning and does not become a candidate. A change outside every scope makes
 and `next_step` name the paths.
 
 `--timeout-seconds` bounds `codex exec` only (`codex.timeout_scope`); creation
-and prepare are untimed and reported apart: `timestamps` (UTC `launched_at`,
+and prepare are untimed, reported apart: `timestamps` (UTC `launched_at`,
 `create_started_at`, `exec_started_at`, `updated_at`, `finished_at`),
-`timings_ms` (`prepare`, `exec`), and `runner_pid`.
+`timings_ms` (`create`: worktree creation, readiness doctor, and the prepare
+step when enabled; `exec`), and `runner_pid`.
 
 The sole persisted result is atomically published at the external runtime
 directory `task-run/<task-id>/result.json`. It is written as `running` before
@@ -125,10 +128,10 @@ charness task status --repo-root . <task-id>
 ```
 
 Status reads exactly the external task-run result store and lists all records
-when no id is supplied. Each record carries one read-time `liveness`
-projection: `runner_pid`, `alive` (pid check), `consistent` (live runner on a
-non-terminal record, dead on a terminal one). `consistent: false` is a stale
-or second store, never a lane state; `--repo-root` must be the clean parent.
+when no id is supplied. Each returned record adds one read-time
+`liveness` key beside the persisted fields: `runner_pid` and `alive`, an
+advisory pid check. A `running` record whose pid is dead is
+stale; a live pid on a terminal record is normal while the runner finishes.
 
 When delivered text is one complete schema-bearing JSON/YAML mapping,
 `result_delivery.structured` exposes it unchanged; a
