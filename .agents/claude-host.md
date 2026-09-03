@@ -40,6 +40,13 @@ orchestrating session. The common operating contract stays in
 - A brief names every surface the change touches as the lane's deliverable,
   and `--scope` carries every one of them; the rule and its two paid instances
   live in [docs/parallel-execution.md](../docs/parallel-execution.md#disjoint-writers).
+- An in-process subagent brief that touches `scripts/` or `skills/` has no
+  lane receipt, so its definition of done names the gate by hand: the
+  subagent runs `python3 scripts/mutation/release_changed_line_coverage.py
+  --repo-root . --base-sha <base> --refuse-unestablished` on its own diff and
+  reports done only with `status: clean` (or `noop`), quoting the payload.
+  A `task run` lane gets the same verdict in its receipt's
+  `changed_line_gate` ([docs/parallel-execution.md](../docs/parallel-execution.md#disjoint-writers)).
 - Lane self-reports are not proof: re-run the battery in the integrated
   tree, and run the FULL standing gates before treating a
   production-surface change as done — focused per-lane checks miss

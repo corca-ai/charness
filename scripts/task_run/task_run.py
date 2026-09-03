@@ -22,6 +22,7 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from scripts.task_run import task_run_changed_line as _changed_line  # noqa: E402
 from scripts.task_run import task_run_completion as _completion  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402
 from scripts.task_run.task_run_git import _repo_snapshot  # noqa: E402
@@ -165,6 +166,7 @@ def _complete_task(
         started_at=started_at,
         candidate_commit=candidate_commit,
         target_head=target_head,
+        changed_line_gate=_changed_line.run_changed_line_gate,
         persist=_persist_completion,
         result_delivery=_support._result_delivery,
         completion_evidence=_completion_evidence,

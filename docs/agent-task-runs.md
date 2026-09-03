@@ -70,6 +70,19 @@ For a validated candidate, `candidate` binds the receipt to its carrier:
   bytes (or its deletion marker). Recompute it from the retained worktree and
   the receipt's `base_sha` to detect movement after validation.
 
+`changed_line_gate` is the lane's own run of
+[release_changed_line_coverage.py](../scripts/mutation/release_changed_line_coverage.py),
+executed once at completion in the lane worktree over `base_sha..HEAD` with
+`--refuse-unestablished`, for a validated candidate whose tree carries that
+script. It records the gate's `status`, `exit_code`, the consumer's
+`blocking_detail` and `blocking_targets` verbatim, a one-line `summary`, the
+runtime, and the log paths. Any exit the pre-push hook would refuse on
+(every non-zero exit, and a payload with no verdict) is `blocking: true`: the
+result becomes `validated-partial-result`, `approval_eligibility` is
+`ineligible`, and `next_step` names the unproven line. A tree without the
+script records `not-applicable`; a lane with no validated candidate records
+`skipped`. Neither is `clean`.
+
 When `head_is_complete` is false, `next_step` says that lane `HEAD` is not the
 complete candidate (and, for a committed lane, that the commit is a proper
 subset). The parent must carry the committed and dirty populations together;

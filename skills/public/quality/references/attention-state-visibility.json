@@ -894,6 +894,20 @@
         "status=\"skipped\""
       ],
       "rationale": "Web-fetch skipped acquisition attempts are explicit trace entries."
+    },
+    "scripts/task_run/task_run_completion.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "reason",
+        "changed_line_gate"
+      ],
+      "rationale": "_changed_line_verdict records `changed_line_gate.status: skipped` with a `reason` when a lane ended without a validated candidate, so there is nothing for the changed-line gate to judge. It is a typed, persisted field in the lane's terminal `result.json` beside `not-run` (no gate supplied) and `not-applicable` (a tree without the gate script); none of the three is `clean`, `blocking` is false only because no candidate exists, and the parent reads the status at the receipt (docs/agent-task-runs.md)."
     }
   }
 }

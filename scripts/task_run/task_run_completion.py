@@ -33,6 +33,7 @@ def complete_task(
     git_output: Callable[..., str],
     pass_value: str,
     target_head: str | None = None,
+    changed_line_gate: Callable[..., dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     delivery = result_delivery(stdout_log)
     evidence, scope, parent_progress = completion_evidence(
@@ -80,8 +81,6 @@ def complete_task(
         candidate_commit=candidate_commit,
     )
     payload["candidate"] = candidate
-    payload["status"] = result_state
-    payload["approval_eligibility"] = "eligible" if result_state == "completed" else "ineligible"
 
     blockers: list[str] = []
     if execution_status != "completed":
@@ -90,6 +89,27 @@ def complete_task(
         blockers.append(scope["reason"])
     if parent_progress["blocking"]:
         blockers.append("parent changed within the resolved candidate scope")
+
+    # The changed-line gate runs where the claim is made. A lane whose candidate
+    # the pre-push hook would refuse is useful but not done: the receipt says
+    # `validated-partial-result`, names the unproven line, and the parent reads
+    # at the receipt what it used to learn at the fourth refused push.
+    gate = _changed_line_verdict(
+        changed_line_gate,
+        execution_status=execution_status,
+        candidate=candidate,
+        worktree=resolved_target,
+        base_sha=base_sha,
+        log_dir=stdout_log.parent,
+    )
+    payload["changed_line_gate"] = gate
+    if gate.get("blocking"):
+        blockers.append(str(gate.get("summary") or "changed-line gate refused the candidate"))
+        if result_state == "completed":
+            result_state = "validated-partial-result"
+
+    payload["status"] = result_state
+    payload["approval_eligibility"] = "eligible" if result_state == "completed" else "ineligible"
 
     warnings = [
         f"{population}: {data['reason']}"
@@ -126,3 +146,33 @@ def complete_task(
     persist(payload, runtime_path)
     print(f"task run: {payload['status']} ({payload['task_id']})", file=sys.stderr)
     return payload
+
+
+def _changed_line_verdict(
+    changed_line_gate: Callable[..., dict[str, Any]] | None,
+    *,
+    execution_status: str,
+    candidate: Mapping[str, Any],
+    worktree: Path,
+    base_sha: str,
+    log_dir: Path,
+) -> dict[str, Any]:
+    """Run the gate for a validated candidate; otherwise say why it did not run."""
+    if changed_line_gate is None:
+        return {
+            "status": "not-run",
+            "blocking": False,
+            "reason": "no changed-line gate was supplied to completion",
+            "summary": "changed-line gate not run: none supplied",
+        }
+    if execution_status != "completed" or not candidate.get("useful"):
+        return {
+            "status": "skipped",
+            "blocking": False,
+            "reason": (
+                f"execution ended {execution_status} with candidate status "
+                f"{candidate.get('status')!r}; there is no validated candidate to judge"
+            ),
+            "summary": "changed-line gate skipped: no validated candidate",
+        }
+    return changed_line_gate(worktree, base_sha=base_sha, log_dir=log_dir)

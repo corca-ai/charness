@@ -112,6 +112,19 @@ lane. The authoring half has no gate, because which surfaces a change touches
 is a judgment made while writing the brief; this paragraph is where that
 judgment is owed.
 
+A lane is done only when its receipt's `changed_line_gate` is not blocking:
+`charness task run` runs
+[release_changed_line_coverage.py](../scripts/mutation/release_changed_line_coverage.py)
+from the lane tree at completion, over the lane's own base, and a refusal
+demotes the result to `validated-partial-result` with the unproven line named
+in `next_step` ([agent task runs](./agent-task-runs.md)). The definition of
+done for a brief that touches `scripts/` or `skills/` names that field: the
+lane reports done only with `changed_line_gate.status: clean` (or `noop`), and
+the parent reads the receipt before integrating. Measured on the #785 probe
+lane, a one-file candidate against this repo: 23.6 s for the gate plus 0.4 s to
+regenerate the lane's mirror first, against a lane wall time of 12 s without
+it. Four push refusals on 2026-09-03 for one commit were this class.
+
 So `mutate -> sync -> verify -> publish`
 ([implementation discipline](./implementation-discipline.md)) stays serial in the
 parent: writers author, and the parent alone syncs generated surfaces, runs

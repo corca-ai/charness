@@ -54,3 +54,36 @@ those numbers as its "before".
    operation under `operations/`.
 4. Slice 3 (#783) is one lesson at a time in Korean; the four top candidates
    wait for their mechanism (slices 1 and 2); the other thirty do not.
+
+## Second session, 2026-09-03 (#785 lane-changed-line-done)
+
+Tree confirmed first: standing runner 8756 passed in 70 s on `8c3bf3769`;
+`/goal #784` pickup from the checkout's own `goal_run_pickup.py` returned
+`verified-read` naming #785 (the installed 8.0.2 plugin was not used).
+
+Mechanism: `scripts/task_run/task_run_changed_line.py` runs the lane tree's
+`release_changed_line_coverage.py --base-sha <lane base> --refuse-unestablished`
+once at completion for a validated candidate; `complete_task` writes the verdict
+as `changed_line_gate` (status, exit code, consumer `blocking_detail` and
+`blocking_targets` verbatim, summary, runtime, logs) and demotes a blocking
+verdict to `validated-partial-result` with the line named in `next_step`.
+
+Disconfirming probe, a real lane against this repo with a fake Codex that
+commits an uncovered two-branch function into a pool file:
+
+| Probe | Result |
+| --- | --- |
+| first run | refused, but on the wrong ground: `no-verdict (exit 2): focused producer failed`. The lane worktree is a fresh checkout with no generated `plugins/` mirror, and the standing runner the gate instruments refuses a missing mirror. |
+| fix | the gate runner regenerates the mirror in the lane tree first (`sync_root_plugin_manifests.py`, 0.4 s), the same step the push recipe does by hand; a failed regeneration is `no-verdict`, blocking. |
+| second run | `validated-partial-result`, `changed_line_gate.status: blocked`, `blocking_detail: {scripts/task_run/task_run_changed_line.py: {changed_and_missing: [239, 240, 241]}}`, gate 23.6 s, lane wall 12 s before the gate. The hand-run gate on the same worktree returned the same detail for the same base. |
+| hand run against the pre-amend base | also named lines 89–98 and 137 of the new module: the mirror-sync path had no test. Covered before the slice's own diff passed the gate (`status: clean` against `553f79c7`). |
+
+The consumer's `blocking_targets` is a mapping of path to `[{line, source}]`;
+the first cut flattened it to keys. It is carried verbatim now.
+
+Standing runner on the finished slice: 8773 passed in 69 s.
+
+Docs: `docs/agent-task-runs.md` owns the receipt field;
+`docs/parallel-execution.md` "Disjoint Writers" carries the definition-of-done
+sentence with the measured runtime; `.agents/claude-host.md` carries the same
+for in-process subagent briefs, which have no receipt.
