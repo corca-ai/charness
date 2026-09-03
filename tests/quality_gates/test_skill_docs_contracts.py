@@ -273,15 +273,21 @@ def test_critique_and_debug_share_the_evidence_led_adversarial_route(exported_pl
     assert "Use `critique` first" in critique_reference.read_text(encoding="utf-8")
 
 
-def test_development_doc_carries_mutation_phase_barrier_rule() -> None:
-    development = (ROOT / "docs" / "development.md").read_text(encoding="utf-8")
+def test_parallel_execution_doc_owns_the_mutation_phase_barrier_rule() -> None:
+    """The serial mutate/sync/verify/publish rule has one owner, Disjoint Writers.
 
-    assert "## Mutation phase barriers" in development
-    assert "mutate" in development
-    assert "sync generated surfaces" in development
-    assert "verify" in development
-    assert "publish" in development
-    assert "Read-only inventory may run in parallel" in development
+    development.md used to carry a second copy under its own heading; the
+    2026-09-03 principle-fold pass removed it, so this pins the owner and the
+    pointer rather than the duplicate.
+    """
+    development = (ROOT / "docs" / "development.md").read_text(encoding="utf-8")
+    parallel = (ROOT / "docs" / "parallel-execution.md").read_text(encoding="utf-8")
+
+    assert "`mutate -> sync -> verify -> publish`" in parallel
+    assert "the parent alone syncs generated surfaces" in parallel
+    assert "Read-only inventory may run in parallel" in parallel
+    assert "parallel-execution.md#disjoint-writers" in development
+    assert "## Mutation phase barriers" not in development
 
 
 def test_public_skill_validation_doc_keeps_critique_and_on_demand_boundary_visible() -> None:

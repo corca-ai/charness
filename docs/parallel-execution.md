@@ -74,18 +74,13 @@ that fix waits — while every part the review does not gate proceeds.
 worktree preflight. Do not create a second plan for that path. Use
 [`command_plan_preflight.py`](../scripts/gates_support/command_plan_preflight.py) only for a manually assembled fan-out whose target,
 ref, or flag resolution is otherwise ambiguous, or when an irreversible/review
-boundary explicitly needs that receipt. It proves resolution and parser
-ownership only, not runtime, installed state, hosted state, or external truth.
+boundary explicitly needs that receipt. It is a plan checker, not a runner.
 
-Each command must declare `owner_target` and use exactly
-`{target:<owner_target>}` in `argv`; an explicit `help_argv` must use the same
-standalone token, or the checker refuses the command. Embedded forms such as
-`--input={target:<id>}` are target-token refusals rather than path substitutions.
-This binds the planned invocation and
-its help owner to one resolved path instead of allowing a copied literal or
-wrong-owner probe to produce a false green. Keep the plan under the repo root;
-relative plan paths are resolved from `--repo-root`, and preserve the report with
-the slice evidence when the fan-out crosses a release or review boundary.
+Each command declares `owner_target` and the standalone
+`{target:<owner_target>}` token in `argv` and `help_argv`; the checker refuses a
+mismatch or an embedded form such as `--input={target:<id>}`, and a plan outside
+the repo root. Preserve the report with the slice evidence when the fan-out
+crosses a release or review boundary.
 
 ## Disjoint Writers
 
@@ -93,8 +88,7 @@ Concurrent writers must not share a file or a single-writer surface. Partition
 the fan-out into disjoint path sets when the work allows it, and take isolated
 checkouts when it does not.
 
-These are single-writer surfaces regardless of how wide the authoring fan-out
-was, because they are last-writer-wins:
+These are single-writer surfaces, last-writer-wins, however wide the fan-out:
 
 - the generated plugin export under `plugins/` and the root marketplace manifests
 - `.charness/` run state, including closeout proof caches and quality failure logs
@@ -108,18 +102,14 @@ leaves unnamed lands on the parent. `charness task run` grants the worktree's
 `.agents/` to the lane. No gate holds the authoring half: which surfaces a
 change touches is judged while writing the brief.
 
-A lane is done only when its receipt's `changed_line_gate` is `clean` or
-`noop`: `charness task run` runs
-[release_changed_line_coverage.py](../scripts/mutation/release_changed_line_coverage.py)
-over the lane's own base at completion, and a refusal demotes the result to
-`validated-partial-result` with the unproven line in `next_step`
-([agent task runs](./agent-task-runs.md)). The parent reads the receipt before
+A lane is done only when its receipt's `changed_line_gate` is `clean` or `noop`
+([agent task runs](./agent-task-runs.md)); the parent reads the receipt before
 integrating.
 
-The parent's own slices run the same proof by hand, after the slice commit and
+The parent's slices run the same proof by hand, after the slice commit and
 before any broad lane: the gate reads committed lines (a dirty tree returns
-`unestablished`), and a broad lane run first cannot prove coverage and pays a
-full rerun per line the proof finds afterwards. Correctness is held by the
+`unestablished`), and a broad lane run first pays a full rerun per line the
+proof finds afterwards. Correctness is held by the
 receipt and the pre-push hook ([development](./development.md#pushing)); the
 order has no gate, because `run-quality.sh --full` also runs in consumer repos
 without a mutation pool.
@@ -127,7 +117,7 @@ without a mutation pool.
 So `mutate -> sync -> verify -> publish`
 ([implementation discipline](./implementation-discipline.md)) stays serial in the
 parent: writers author, and the parent alone syncs generated surfaces, runs
-gates, and commits.
+gates, and commits. Read-only inventory may run in parallel.
 
 ## Reviewers Stay Read-Only
 
