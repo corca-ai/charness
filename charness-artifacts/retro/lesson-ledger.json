@@ -1384,8 +1384,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 1
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-goal-closeout-evidence-binding"
     },
     "closeout-diagnostic-visibility": {
       "source_retro": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
@@ -2369,6 +2369,18 @@
         "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
         "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
         "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md"
+      ]
+    },
+    {
+      "sequence": 17,
+      "event_id": "783-graduate-goal-closeout-evidence-binding",
+      "lesson_id": "goal-closeout-evidence-binding",
+      "action": "graduate",
+      "decision_ref": "docs/goal-lifecycle.md",
+      "rationale": "#783 joint review 2026-09-03: helped; 6 of 7 encounters changed an action (2026-08-19 to 08-21: refused a retro bound to another objective, bound candidates separately, reconciled to read-back identities before terminal status) and none failed. docs/goal-lifecycle.md Execution And Closeout already states the mechanism as current fact: the dedicated close operation validates the hash-bound final-proof index before provider selection, reads back after close, and treats a failed readback as unverified, never completion. No docs edit under the third rule.",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
+        "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md"
       ]
     }
   ]
