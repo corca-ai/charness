@@ -108,7 +108,9 @@ Adapter policy:
      generalized `Structural pattern:`+`Triggering instance(s):` and a
      `Destination:`, owned by `../../shared/references/retro-issue-destination-split.md`
    - the lesson ledger is optional memory and selection state; do not create a
-     second lesson-specific artifact beside it
+     second lesson-specific artifact beside it. Where one exists, the agent
+     authors each score event from a cited action observed in the session; it
+     does not ask the person whether to record one
    - when a lesson keeps changing actions across sessions, or a person asks to
      promote one, route it through
      `../../shared/references/lesson-graduation.md`: a standing `docs/` page

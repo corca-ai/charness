@@ -1504,8 +1504,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-agent-authored-score-role"
     },
     "artifact-contract-late-feedback": {
       "source_retro": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
@@ -2394,6 +2394,18 @@
         "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
         "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
         "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md"
+      ]
+    },
+    {
+      "sequence": 19,
+      "event_id": "783-graduate-agent-authored-score-role",
+      "lesson_id": "agent-authored-score-role",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#783 joint review 2026-09-03: helped; all 4 encounters changed an action (2026-08-16 to 08-22), each authoring score events from cited actions instead of asking the operator. The rule was written nowhere; it now lives in skills/public/retro/SKILL.md's ledger bullet, the surface read at the scoring moment. docs/development.md Optional records links that skill for the ledger; no docs sentence. No mechanism: whether to ask is behavior, and the continuity gate the class once tripped no longer exists.",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+        "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md"
       ]
     }
   ]
