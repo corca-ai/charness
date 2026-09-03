@@ -1,0 +1,28 @@
+ok: false
+kind: charness.goal-run-pickup/v1
+status: cursor-child-closed
+outcome: refused
+mutation_invoked: false
+error_code: cursor-child-closed
+error: 'parent cursor points to child #789 in state ''CLOSED''; run explicit Goal
+  Run sync'
+details:
+  cursor:
+    key: integrated-closeout
+    number: 789
+    repo: corca-ai/charness
+    rank: 6
+    dependencies:
+    - checkout-first-routing-and-8-0-3
+    - lane-changed-line-done
+    - lesson-review-783
+    - runtime-root-retention
+    - timeout-bound-census
+    title: null
+    selection_source: parent-progress
+    cursor_revision: 6
+  child:
+    repo: corca-ai/charness
+    number: 789
+    state: CLOSED
+    url: https://github.com/corca-ai/charness/issues/789

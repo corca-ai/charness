@@ -1,0 +1,57 @@
+{
+  "kind": "charness.goal-run-final-proof-index/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 784,
+  "draft_sha256": "878f74409e4c271d07a87c4bb34108376d10878cfdc476249311ec3671a8a151",
+  "binding_sha256": "9e4650f0f731add79de7a0b68cc3b918ed087e71d7e28f43cb74c0973ddafd82",
+  "expected_children": {
+    "path": "charness-artifacts/goal-runs/784/expected-final-graph.json",
+    "sha256": "fbfdf8ef934a7f3310dedf1c1529220090528ce4d89ef19ec15a53b3479429b5"
+  },
+  "parent_obligation": {
+    "path": "charness-artifacts/goal-runs/784/parent-terminal-obligation.md",
+    "sha256": "e8de7f79cf09c1677e9483b8fafe75ce7f4de011e450c5aa453df51c14117e36"
+  },
+  "evidence": [
+    {
+      "role": "whole-system-reconciliation",
+      "path": "charness-artifacts/goal-runs/784/final-proof.md",
+      "sha256": "0771fbe6ac021f98c2151298f0effb912b16243154ced8f180f2953168ced9d5"
+    },
+    {
+      "role": "clean-clone-lanes",
+      "path": "charness-artifacts/goal-runs/784/789-clean-clone-lanes.md",
+      "sha256": "a4caef366ba53419b834a51968e9709aaf5df8f2bf03db014b561c877b55e21a"
+    },
+    {
+      "role": "hosted-observer-reading",
+      "path": "charness-artifacts/goal-runs/784/764-recovery-observer-reading.md",
+      "sha256": "863ec37b0170033e8a947ff2e4f7ab7756a45d818f0121eff179c8509a6edba3"
+    },
+    {
+      "role": "joint-lesson-review",
+      "path": "charness-artifacts/goal-runs/784/783-lesson-dispositions.md",
+      "sha256": "72dfcb9ce546275760b16dd535fe8862a27d715383fb99afc71a18bed07c5cbf"
+    },
+    {
+      "role": "session-record",
+      "path": "charness-artifacts/goal-runs/784/2026-09-03-session-record.md",
+      "sha256": "6e853ef186a9841645f9c7770e2921c99cbc44069b23035d84f08513e068f926"
+    },
+    {
+      "role": "exact-graph-readback",
+      "path": "charness-artifacts/goal-runs/784/observations/goal-784-final-read.yaml",
+      "sha256": "a6f47d110e706732d5c96aa9ecffb8461d304a5edea5afbcd48c19e06327ea69"
+    },
+    {
+      "role": "terminal-pickup-refusal",
+      "path": "charness-artifacts/goal-runs/784/observations/goal-784-final-pickup.yaml",
+      "sha256": "3c15317bb16fd79afdc1ecc7526f8192fbc507b88fffee13334a047309d4e33c"
+    },
+    {
+      "role": "session-retro",
+      "path": "charness-artifacts/retro/2026-09-04-goal-784-closeout-retro.md",
+      "sha256": "11f5cf04cdb7683e021ded694af3dfe521f97c142d1bad12b803847a5dcb51e2"
+    }
+  ]
+}

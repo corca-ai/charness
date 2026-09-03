@@ -24,7 +24,9 @@ final proof:
    recovery-observer path only if the sampler's coverage baseline ran and the
    run was green; otherwise the failing set is recorded on #764 as the next
    work and #764 stays open.
-5. `/goal #784` pickup returns `ok: true` with the bounded ledger preview.
+5. `/goal #784` pickup returned `ok: true`, `selected`, naming #789 at the
+   start of the closing session, and after #789 closed returns the typed
+   refusal `cursor-child-closed`: nothing is left to select.
 
 Push, tag, and installed-host mutation on operator machines stay separately
 authorised. Release 8.0.3 was published inside #788 under the operator's

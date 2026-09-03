@@ -265,3 +265,12 @@ Session retro persisted: `charness-artifacts/retro/2026-09-04-goal-784-closeout-
 (one class seeded: `inner-timeout-outlives-outer-budget`; ledger 63 lessons,
 26 active). `expected-final-graph.json` (six children, no amendments) and
 `parent-terminal-obligation.md` written for the close.
+
+#789 pushed from a clean clone as `399276f7d` (docs-subset hook lane, 9
+passed; the first commit attempt was refused by the pre-commit whitespace
+check on the four copied carrier bodies' trailing blank line), `verify-closeout`
+= `verified` (CLOSED), issue-owned comment posted. `goal-run-read` after that:
+six children CLOSED (`observations/goal-784-final-read.yaml`). `/goal #784`
+pickup then refuses `cursor-child-closed` (`goal-784-final-pickup.yaml`): the
+cursor's child is closed and the parent has nothing left to select, which is
+the terminal state the guarded close reads. The parent close follows.
