@@ -19,8 +19,16 @@
         "option": "reuse-783-as-child",
         "reason": "The ordering 'mechanism before the lesson it graduates' only exists inside one run"
       },
-      "answer": null,
-      "rejected_alternatives": []
+      "answer": {
+        "option": "reuse-783-as-child",
+        "reason": "Operator chose the recommendation (2026-09-03)"
+      },
+      "rejected_alternatives": [
+        {
+          "option": "standalone-783",
+          "reason": "The mechanism-before-lesson order would have to be tracked by hand across two trackers"
+        }
+      ]
     },
     {
       "decision": "Whether release 8.0.3 ships inside this goal (slice 5), or only the checkout-first routing lands and the release decision is recorded",
@@ -45,29 +53,58 @@
         "option": "routing-then-release-if-authorized",
         "reason": "Routing is the mechanism inside this repo; publishing is a separately authorized outward action"
       },
-      "answer": null,
-      "rejected_alternatives": []
+      "answer": {
+        "option": "release-required",
+        "reason": "Operator pre-approved the 8.0.3 release on 2026-09-03 ('릴리즈 미리 승인'): slice 5 closes only with 8.0.3 published and read back; the release skill's planner, critique, and readback still run at the cut"
+      },
+      "rejected_alternatives": [
+        {
+          "option": "routing-then-release-if-authorized",
+          "reason": "Operator gave the authorization now rather than at the moment"
+        },
+        {
+          "option": "routing-only",
+          "reason": "173 commits unshipped and the installed-plugin gap open on every host"
+        }
+      ]
     },
     {
-      "decision": "Mode of the first cross-key sweep of charness/runtime/ (1,871 keys, 340 GB)",
+      "decision": "How the runtime tree (340 GB: 250 GB ceal task-run records, 16 GB charness task-run records, 41 GB nested fixture roots, 9 GB charness caches, 1,871 keys) is cleaned",
       "options": [
         {
-          "id": "report-then-delete",
-          "summary": "Report mode first; the operator reads the report; the deleting sweep applies only the existing dead-key rule",
+          "id": "extend-rule-report-then-delete",
+          "summary": "Extend retention to task-run records, nested roots, pycache, coverage; first run in report mode, operator reads, then delete",
           "tradeoff": "One extra step before space is reclaimed"
         },
         {
-          "id": "delete-under-existing-rule",
-          "summary": "Run the deleting sweep directly under the dead-key rule already documented for pytest-tmp",
-          "tradeoff": "Faster; the first run deletes hundreds of GB nobody has looked at"
+          "id": "extend-rule-delete-directly",
+          "summary": "Same rule extension; the deleting sweep runs directly, logging what it removed",
+          "tradeoff": "Faster; the first run deletes about 300 GB without a prior list"
+        },
+        {
+          "id": "manual-cleanup-now",
+          "summary": "Hand-delete dead task-run worktrees and nested roots this session; policy slice unchanged",
+          "tradeoff": "Space now; no mechanism"
         }
       ],
       "recommendation": {
-        "option": "report-then-delete",
+        "option": "extend-rule-report-then-delete",
         "reason": "Deletion at this scale is irreversible and the rule was written for a much smaller tree"
       },
-      "answer": null,
-      "rejected_alternatives": []
+      "answer": {
+        "option": "extend-rule-delete-directly",
+        "reason": "Operator (2026-09-03): the tree is far too large; extend the rule and delete properly, no report step first"
+      },
+      "rejected_alternatives": [
+        {
+          "option": "extend-rule-report-then-delete",
+          "reason": "Operator declined the extra step"
+        },
+        {
+          "option": "manual-cleanup-now",
+          "reason": "Not chosen; the mechanism does the deletion"
+        }
+      ]
     },
     {
       "decision": "Where the changed-line definition of done binds for lanes and subagents",
@@ -87,14 +124,17 @@
         "option": "task-run-mechanism-plus-docs",
         "reason": "A brief rule without a gate is the shape rule-exists-but-does-not-bind names"
       },
-      "answer": null,
-      "rejected_alternatives": []
+      "answer": {
+        "option": "task-run-mechanism-plus-docs",
+        "reason": "Operator chose the recommendation after the explanation (2026-09-03)"
+      },
+      "rejected_alternatives": [
+        {
+          "option": "docs-sentence-only",
+          "reason": "Binds only if the brief author remembers; the two lessons it would graduate need a mechanism"
+        }
+      ]
     }
   ],
-  "remaining_consequential_decisions": [
-    "#783 reused as child or standalone",
-    "8.0.3 inside the goal",
-    "first cross-key sweep mode",
-    "changed-line done-gate as mechanism or docs sentence"
-  ]
+  "remaining_consequential_decisions": []
 }
