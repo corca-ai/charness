@@ -107,14 +107,12 @@ Adapter policy:
    - when an improvement is headed for an issue, classify it on two axes — a
      generalized `Structural pattern:`+`Triggering instance(s):` and a
      `Destination:`, owned by `../../shared/references/retro-issue-destination-split.md`
-   - the lesson ledger is optional memory and selection state; do not create a
-     second lesson-specific artifact beside it. Where one exists, the agent
-     authors each score event from a cited action observed in the session; it
-     does not ask the person whether to record one
+   - the lesson ledger is optional memory and selection state with no second
+     lesson artifact beside it; where one exists, the agent authors each score
+     event from a cited session action and does not ask whether to record one
    - when a lesson keeps changing actions across sessions, or a person asks to
-     promote one, route it through
-     `../../shared/references/lesson-graduation.md`: a standing `docs/` page
-     takes ownership of the rule and the lesson leaves the working set.
+     promote one, route it through `../../shared/references/lesson-graduation.md`:
+     a standing `docs/` page takes ownership and the lesson leaves the working set.
      Graduation is settled with the person and is not performed inside the retro
 5. Persist when there is a durable home.
    - if `output_dir` exists or the adapter defines one, persist the retro artifact with `$SKILL_DIR/scripts/persist_retro_artifact.py` instead of ad hoc file writes; for Goal Run evidence use the owning Goal Run identity contract; the helper stamps the `## Persisted` line with the real durable path it writes, so do not hand-edit that line afterward

@@ -267,12 +267,37 @@ DOCUMENTED_ENTRYPOINT_RE = re.compile(
 )
 _ENTRYPOINT_DOC_SUFFIXES = (".md", ".yaml", ".yml", ".json")
 
+# Directories no export scan reads: build output and vendored trees. `target/`
+# is the one that bit: the pre-push lane runs check-rust beside this scan, and
+# a bare `rglob("*")` over the source tree raised FileNotFoundError on a
+# compiler temp file that vanished between listing and stat (2026-09-04).
+_SCAN_PRUNED_DIRS = frozenset({".git", "target", "node_modules", "__pycache__"})
+
+
+def _scan_files(root: Path) -> list[Path]:
+    """Every file under `root` outside the pruned directories, sorted; a path
+    that disappears mid-walk is skipped rather than raised."""
+    import os
+
+    found: list[Path] = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = sorted(name for name in dirnames if name not in _SCAN_PRUNED_DIRS)
+        for name in filenames:
+            candidate = Path(dirpath) / name
+            try:
+                if candidate.is_file():
+                    found.append(candidate)
+            except OSError:
+                continue
+    return sorted(found)
+
+
 
 def documented_entrypoint_names(export_root: Path) -> set[str]:
     """Script filenames an exported doc, reference, or adapter tells a consumer to run."""
     names: set[str] = set()
-    for path in export_root.rglob("*"):
-        if path.suffix not in _ENTRYPOINT_DOC_SUFFIXES or not path.is_file():
+    for path in _scan_files(export_root):
+        if path.suffix not in _ENTRYPOINT_DOC_SUFFIXES:
             continue
         try:
             text = path.read_text(encoding="utf-8")
@@ -370,8 +395,8 @@ def repo_root_instruction_findings(
         for path in scripts_root.rglob("*")
         if path.is_file()
     }
-    for path in sorted(export_root.rglob("*")):
-        if path.suffix not in (*_ENTRYPOINT_DOC_SUFFIXES, ".py") or not path.is_file():
+    for path in _scan_files(export_root):
+        if path.suffix not in (*_ENTRYPOINT_DOC_SUFFIXES, ".py"):
             continue
         relative = path.relative_to(export_root).as_posix()
         if apply_exemptions and relative in INSTRUCTION_EXEMPT_PATHS:
@@ -452,7 +477,9 @@ def _iter_exported_modules(export_root: Path):
     but "which files are the export's Python, and what do we do with one that
     will not parse" is the same answer three times, and three copies is how they
     drift apart on the day someone adds an exclusion to one."""
-    for path in sorted(export_root.rglob("*.py")):
+    for path in _scan_files(export_root):
+        if path.suffix != ".py":
+            continue
         try:
             yield path, ast.parse(path.read_text(encoding="utf-8"))
         except (SyntaxError, UnicodeDecodeError):

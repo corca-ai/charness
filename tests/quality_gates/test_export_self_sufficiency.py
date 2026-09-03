@@ -921,3 +921,39 @@ def test_exported_tools_references_are_reported_without_blocking_the_composed_ga
     assert payload["advisory_exported_tools_references"] == [
         {"path": "scripts/run-quality.sh", "line": 1, "references": ["-m tools."]}
     ]
+
+
+def test_export_scans_prune_build_output_and_survive_a_vanishing_path(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """The pre-push lane runs check-rust beside these scans.
+
+    A bare ``rglob("*")`` over the source tree raised FileNotFoundError on a
+    compiler temp file under ``native/repograph/target`` that vanished between
+    listing and stat (2026-09-04), refusing a push on a defect the push did not
+    carry. Build output is not an export surface, so the walker prunes it; a
+    path that disappears mid-walk is skipped, not raised.
+    """
+    export_root = tmp_path / "plugins" / "charness"
+    (export_root / "scripts").mkdir(parents=True)
+    (export_root / "scripts" / "render_thing.py").write_text("x = 1\n", encoding="utf-8")
+    build = export_root / "native" / "repograph" / "target" / "debug"
+    build.mkdir(parents=True)
+    (build / "notes.md").write_text("Run `python3 scripts/render_thing.py`.\n", encoding="utf-8")
+    (export_root / "skills").mkdir()
+    (export_root / "skills" / "how.md").write_text(
+        "Run `python3 scripts/render_thing.py`.\n", encoding="utf-8"
+    )
+
+    assert [f["doc"] for f in _lib.repo_root_instruction_findings(export_root)] == ["skills/how.md"]
+    assert all("target" not in path.parts for path in _lib._scan_files(export_root))
+
+    real_is_file = Path.is_file
+
+    def vanishing_is_file(self: Path) -> bool:
+        if self.name == "how.md":
+            raise FileNotFoundError(self)
+        return real_is_file(self)
+
+    monkeypatch.setattr(Path, "is_file", vanishing_is_file)
+    assert [path.name for path in _lib._scan_files(export_root)] == ["render_thing.py"]
