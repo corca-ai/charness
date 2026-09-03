@@ -341,6 +341,21 @@ the evidence is sufficient for the boundary at hand.
 - Reopen trigger: a third recurrence of any lesson previously recorded in a retro
   and since decayed, or a session that re-derives a wrong attribution the repo
   already refuted.
+- **Reopened by its own trigger and resolved, 2026-09-03 (#781).** Three classes
+  recurred a third time in the #770 session while the ledger sat at 49 of 50 with
+  nothing promoting a proven lesson out. The contract for "promoted" is now
+  [lesson-graduation.md](../skills/shared/references/lesson-graduation.md): one
+  owning `docs/` page with duplicates removed, a code mechanism where one is
+  possible (or a stated reason there is none), then a `graduate` lifecycle event
+  whose `decision_ref` must be that `docs/` page. A lesson that *should* decay is
+  told apart from one that should not by a person, lesson by lesson, never by a
+  classifier; the first joint review settled fifteen (nine graduated, four
+  archived, two kept) and is recorded in
+  [781-lesson-dispositions.md](../charness-artifacts/goal-runs/775/781-lesson-dispositions.md).
+  The accepted
+  residual is unchanged: a Next Improvement nobody tags is still invisible to
+  the ledger, and the retro persistence step now seeds every tagged class and
+  the ledger check names the unseeded ones, so the strand is at least counted.
 
 ### D39. Changed-line proof freshness fingerprint is blind to `tests/`
 

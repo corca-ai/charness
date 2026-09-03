@@ -103,12 +103,33 @@ def materialize(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def legacy_v8_payload(payload: dict[str, Any]) -> dict[str, Any]:
-    """Return the pre-lifecycle v8 shape without changing append-only history."""
+    """Return the pre-lifecycle v8 shape without changing append-only history.
+
+    v8 had no lifecycle, so every lesson it held was active; a v8 corpus derived
+    from a v9 ledger therefore keeps only the lessons that are active in v9. The
+    archived and graduated ones left the working set through events v8 cannot
+    express, and carrying them across would put the derived corpus over the fixed
+    budget on migration -- a refusal about the fixture, not about the reader.
+    Their transitions and score events are dropped with them so the append-only
+    lists stay internally consistent.
+    """
     legacy = copy.deepcopy(payload)
     legacy["schema_version"] = 8
     legacy.pop("active_lesson_budget", None)
     legacy.pop("lifecycle_events", None)
-    for lesson in legacy.get("lessons", {}).values():
+    lessons = legacy.get("lessons", {})
+    retired = {name for name, lesson in lessons.items() if lesson.get("state", "active") != "active"}
+    for name in retired:
+        lessons.pop(name)
+    if retired:
+        legacy["transitions"] = [
+            {**t, "sequence": index}
+            for index, t in enumerate(
+                (t for t in legacy.get("transitions", []) if t.get("lesson_id") not in retired), start=1
+            )
+        ]
+        legacy["score_events"] = [e for e in legacy.get("score_events", []) if e.get("lesson_id") not in retired]
+    for lesson in lessons.values():
         lesson.pop("state", None)
         lesson.pop("last_lifecycle_event_id", None)
     return legacy

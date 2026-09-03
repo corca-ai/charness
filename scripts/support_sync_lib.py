@@ -9,6 +9,7 @@ import os
 import shutil
 import tarfile
 import tempfile
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -33,6 +34,15 @@ from scripts.core.repo_layout import (  # noqa: E402
     support_skill_cache_dir,
 )
 
+#: One tree per CONTENT DIGEST means every upstream bump and every wrapper edit adds a
+#: permanent entry, and nothing before this removed one. `current` is always kept; three
+#: recent neighbours cover a bisect across the last few syncs without unbounded growth.
+SUPPORT_SKILL_CACHE_KEEP = 3
+#: A SIBLING of the tree, never inside it: `charness update` proves "already current"
+#: by hashing the whole tree against the host's copy, so a use-stamp written inside
+#: the tree would make every readback differ and every update refresh (found by the
+#: release lane on 2026-09-03).
+_LAST_USED_SUFFIX = ".charness-last-used"
 SUPPORT_FIXTURES_ENV = "CHARNESS_SUPPORT_SYNC_FIXTURES"
 GITHUB_ARCHIVE_URL = "https://codeload.github.com/{repo}/tar.gz/{ref}"
 
@@ -195,21 +205,106 @@ def _compute_tree_digest(root: Path) -> str:
     return digest.hexdigest()
 
 
-def _promote_tree_to_cache(source_root: Path, *, manifest: dict[str, Any], digest: str) -> Path:
+def _last_used_marker(cache_path: Path) -> Path:
+    return cache_path.with_name(f".{cache_path.name}{_LAST_USED_SUFFIX}")
+
+
+def _touch_support_tree(cache_path: Path) -> None:
+    """Record USE, not creation: `copytree` carries the source's mtimes, so the tree's own
+    timestamps say when upstream wrote it, never when this repo last asked for it."""
+    try:
+        _last_used_marker(cache_path).write_text(str(time.time_ns()), encoding="utf-8")
+    except OSError:
+        pass
+
+
+def _support_tree_last_used(entry: Path) -> float:
+    for candidate in (_last_used_marker(entry), entry):
+        try:
+            return candidate.stat().st_mtime
+        except OSError:
+            continue
+    return 0.0
+
+
+def live_support_tree_targets(repo_root: Path | None) -> set[Path]:
+    """What `materialize_repo_symlink` currently points at, which must outlive any bound."""
+    if repo_root is None:
+        return set()
+    try:
+        links = list(generated_support_dir(repo_root).iterdir())
+    except OSError:
+        return set()
+    targets: set[Path] = set()
+    for link in links:
+        try:
+            targets.add(link.resolve())
+        except OSError:
+            continue
+    return targets
+
+
+def prune_support_skill_trees(
+    tool_root: Path,
+    *,
+    current: Path,
+    keep: int = SUPPORT_SKILL_CACHE_KEEP,
+    protected: set[Path] | None = None,
+) -> list[Path]:
+    """Keep `current` plus the `keep` least-recently-unused digest trees for one tool."""
+    protected_targets = protected or set()
+    try:
+        entries = [
+            entry
+            for entry in tool_root.iterdir()
+            if entry.is_dir() and not entry.name.startswith(".") and entry.name != current.name
+        ]
+    except OSError:
+        return []
+    entries = [entry for entry in entries if entry.resolve() not in protected_targets]
+    entries.sort(key=_support_tree_last_used, reverse=True)
+    removed: list[Path] = []
+    for stale in entries[max(0, keep) :]:
+        try:
+            shutil.rmtree(stale)
+        except OSError:
+            continue
+        _last_used_marker(stale).unlink(missing_ok=True)
+        removed.append(stale)
+    return removed
+
+
+def _promote_tree_to_cache(
+    source_root: Path,
+    *,
+    manifest: dict[str, Any],
+    digest: str,
+    repo_root: Path | None = None,
+) -> Path:
     cache_root = support_skill_cache_dir()
     cache_root.mkdir(parents=True, exist_ok=True)
     cache_path = cache_root / manifest["tool_id"] / digest
-    if cache_path.exists():
-        return cache_path
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
-    temp_target = cache_path.parent / f".tmp-{digest}"
-    clear_materialized_target(temp_target)
-    shutil.copytree(source_root, temp_target, symlinks=True)
-    temp_target.replace(cache_path)
+    if not cache_path.exists():
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        temp_target = cache_path.parent / f".tmp-{digest}"
+        clear_materialized_target(temp_target)
+        shutil.copytree(source_root, temp_target, symlinks=True)
+        temp_target.replace(cache_path)
+    _touch_support_tree(cache_path)
+    prune_support_skill_trees(
+        cache_path.parent,
+        current=cache_path,
+        protected=live_support_tree_targets(repo_root),
+    )
     return cache_path
 
 
-def _resolve_upstream_source_path(manifest: dict[str, Any], *, upstream_checkouts: dict[str, Path]) -> Path:
+def _resolve_upstream_source_path(
+    manifest: dict[str, Any],
+    *,
+    upstream_checkouts: dict[str, Path],
+    repo_root: Path | None = None,
+) -> Path:
     support = manifest["support_skill_source"]
     relative_source_path = Path(support["path"])
     fixture_root = _fixture_checkout_root(manifest["upstream_repo"], support.get("ref"))
@@ -242,6 +337,7 @@ def _resolve_upstream_source_path(manifest: dict[str, Any], *, upstream_checkout
             source_path,
             manifest=manifest,
             digest=_compute_tree_digest(source_path),
+            repo_root=repo_root,
         )
     return promoted_root
 
@@ -258,6 +354,12 @@ def _write_local_wrapper_to_cache(repo_root: Path, manifest: dict[str, Any], wra
             str(source_path.relative_to(repo_root)) + "\n",
             encoding="utf-8",
         )
+    _touch_support_tree(cache_root)
+    prune_support_skill_trees(
+        cache_root.parent,
+        current=cache_root,
+        protected=live_support_tree_targets(repo_root),
+    )
     return cache_root, digest
 
 
@@ -275,10 +377,19 @@ def materialize_plugin_copy(target_root: Path, dest_root: Path, plugin_root: Pat
     return [str(dest_root.relative_to(plugin_root))]
 
 
-def materialize_upstream_support(manifest: dict[str, Any], *, upstream_checkouts: dict[str, Path]) -> tuple[Path, str]:
-    source_path = _resolve_upstream_source_path(manifest, upstream_checkouts=upstream_checkouts)
+def materialize_upstream_support(
+    manifest: dict[str, Any],
+    *,
+    upstream_checkouts: dict[str, Path],
+    repo_root: Path | None = None,
+) -> tuple[Path, str]:
+    source_path = _resolve_upstream_source_path(
+        manifest, upstream_checkouts=upstream_checkouts, repo_root=repo_root
+    )
     digest = _compute_tree_digest(source_path)
-    cache_path = _promote_tree_to_cache(source_path, manifest=manifest, digest=digest)
+    cache_path = _promote_tree_to_cache(
+        source_path, manifest=manifest, digest=digest, repo_root=repo_root
+    )
     return cache_path, digest
 
 
@@ -301,6 +412,7 @@ def materialize_support(
         cache_path, content_digest = materialize_upstream_support(
             manifest,
             upstream_checkouts=upstream_checkouts,
+            repo_root=repo_root,
         )
 
     materialized_base = repo_root

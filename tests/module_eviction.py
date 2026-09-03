@@ -18,6 +18,7 @@ the identity split cannot outlive the test that needed the eviction.
 from __future__ import annotations
 
 import sys
+from collections.abc import Set as AbstractSet
 
 import pytest
 
@@ -30,3 +31,22 @@ def evict_module(monkeypatch: pytest.MonkeyPatch, name: str) -> None:
         # object at teardown, whatever the evicted import rebinds it to.
         monkeypatch.setattr(parent, attribute, getattr(parent, attribute), raising=False)
     monkeypatch.delitem(sys.modules, name, raising=False)
+
+
+def evict_new_modules(before: AbstractSet[str]) -> None:
+    """Drop every module imported since `before` WITHOUT stranding a parent attribute.
+
+    A test that loads a script by path, or re-imports one under a blocked
+    `scripts` package, leaves whatever that import pulled in behind. Dropping
+    only the `sys.modules` entries repeats the split `evict_module` exists to
+    prevent, one level down: the import bound the new object on its parent
+    package too, so `from scripts.core import x` would keep answering with a
+    module that `import scripts.core.x` no longer has. Deepest name first, so a
+    parent is still resolvable while its children are being unbound.
+    """
+    for name in sorted(set(sys.modules) - set(before), reverse=True):
+        module = sys.modules.pop(name, None)
+        parent_name, _, attribute = name.rpartition(".")
+        parent = sys.modules.get(parent_name) if parent_name else None
+        if parent is not None and getattr(parent, attribute, None) is module:
+            delattr(parent, attribute)

@@ -23,6 +23,8 @@ ROOT = repo_root_from_script(__file__)
 _ledger = import_repo_module(__file__, "scripts.lessons.lesson_ledger_lib")
 validate_lesson_ledger = _ledger.validate_lesson_ledger
 lesson_ledger_path = _ledger.lesson_ledger_path
+_seeder = import_repo_module(__file__, "scripts.lessons.seed_lesson_transitions")
+pending_seed_classes = _seeder.pending_seed_classes
 _retro_index = import_repo_module(__file__, "scripts.lessons.build_retro_lesson_selection_index")
 load_retro_paths = _retro_index._load_retro_paths
 _quality_adapter = import_repo_module(__file__, "scripts.adapters.quality_adapter_lib")
@@ -57,6 +59,28 @@ def _retro_paths(root: Path) -> tuple[Path, Path | None]:
         return _fallback_retro_paths(root)
 
 
+def print_unseeded_advisory(root: Path, output_dir: Path, summary_path: Path | None) -> None:
+    """Name every tagged class that is still not in the ledger, without failing.
+
+    ADVISORY, not a gate failure, and the distinction is the point. A tagged class
+    goes unseeded for two different reasons: nobody ran the seeder (a defect this
+    line fixes by being visible), or seeding it would pass the fixed active-lesson
+    budget and the ledger is waiting on a human archive decision (a legitimate
+    state that a hard failure would turn into a red lane nobody can clear without
+    making that decision under time pressure).
+
+    Silence when the set is empty. A gate line that prints on every clean run is a
+    line readers stop reading, and this one has to be noticed on the day it
+    appears.
+    """
+    pending = pending_seed_classes(repo_root=root, output_dir=output_dir, summary_path=summary_path)
+    if not pending:
+        return
+    print(
+        f"ADVISORY: {len(pending)} tagged recurrence class(es) not seeded: " + ", ".join(pending)
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=ROOT)
@@ -86,6 +110,7 @@ def main() -> int:
         f"{result['transition_count']} seed transitions, "
         f"{result['lifecycle_event_count']} lifecycle events."
     )
+    print_unseeded_advisory(root, output_dir, summary_path)
     return 0
 
 

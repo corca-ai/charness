@@ -12,7 +12,7 @@ import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Mapping
 
 QUALITY_STATUSES = {"pass", "fail", "unestablished"}
 RECOVERY_STATUSES = {"available", "unavailable", "not-applicable"}
@@ -133,10 +133,24 @@ def _quality_adverse_text(subject: AdverseSubject) -> str:
     return subject.subject
 
 
+def render_not_run_note(rows: Iterable[Mapping[str, str]]) -> str:
+    """The summary clause naming gates the requested scope did not execute.
+
+    A skipped gate is not a passed gate, so a green that omitted a check has to
+    say so in the same line that carries the pass count.
+    """
+    named = [(str(row["label"]), str(row["reason"])) for row in rows]
+    if not named:
+        return ""
+    listed = "; ".join(f"{label}: {reason}" for label, reason in named)
+    return f", {len(named)} not run ({listed})"
+
+
 def render_quality_summary(receipt: ProofReceipt) -> str:
     passed = receipt.details.get("passed", 0)
     failed = receipt.details.get("failed", 0)
     elapsed = receipt.details.get("elapsed", "0ms")
+    not_run_note = render_not_run_note(receipt.details.get("not_run") or ())
     failed_note = ""
     if receipt.adverse_subjects:
         failed_note = " (FAILED: " + "; ".join(_quality_adverse_text(subject) for subject in receipt.adverse_subjects) + ")"
@@ -144,17 +158,27 @@ def render_quality_summary(receipt: ProofReceipt) -> str:
         unproven = " ".join(receipt.unproven_subjects)
         unproven_note = f" (UNPROVEN: {unproven})" if unproven else " (UNPROVEN)"
         return (
-            f"Quality summary: {passed} passed, {failed} failed{failed_note}, "
+            f"Quality summary: {passed} passed, {failed} failed{failed_note}{not_run_note}, "
             f"{len(receipt.unproven_subjects)} UNPROVEN{unproven_note} "
             f"(ran; established nothing, or only part of its scope), total {elapsed}"
         )
-    return f"Quality summary: {passed} passed, {failed} failed{failed_note}, total {elapsed}"
+    return (
+        f"Quality summary: {passed} passed, {failed} failed{failed_note}{not_run_note}, "
+        f"total {elapsed}"
+    )
 
 
 def write_receipt_json(receipt: ProofReceipt, path: str | Path) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(receipt.as_dict(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def _parse_not_run_spec(spec: str) -> dict[str, str]:
+    label, separator, reason = spec.partition(":")
+    if not separator or not label.strip() or not reason.strip():
+        raise ReceiptContractError(f"--not-run must be label:reason, got {spec!r}")
+    return {"label": label.strip(), "reason": reason.strip()}
 
 
 def _parse_recovery_spec(spec: str) -> RecoveryEvidence:
@@ -183,6 +207,7 @@ def _quality_cli(args: argparse.Namespace) -> int:
             "release": args.release,
             "full_queue": args.full_queue,
             "non_claim": args.non_claim,
+            "not_run": [_parse_not_run_spec(spec) for spec in args.not_run],
         },
     )
     write_failed = False
@@ -213,6 +238,7 @@ def _parser() -> argparse.ArgumentParser:
     quality.add_argument("--adverse-subject", action="append", default=[])
     quality.add_argument("--recovery", action="append", default=[])
     quality.add_argument("--unproven-subject", action="append", default=[])
+    quality.add_argument("--not-run", action="append", default=[], metavar="LABEL:REASON")
     quality.add_argument("--json-path")
     quality.set_defaults(handler=_quality_cli)
     return parser

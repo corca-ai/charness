@@ -695,6 +695,10 @@ def test_commit_and_quality_consumers_refuse_pending_recovery_then_unblock(tmp_p
         "adapters/adapter_yaml_parse.py",
         "core/helper_provenance_lib.py",
         "core/script_timeout.py",
+        # The engine's mirror preamble imports this at module scope, so a repo
+        # seeded without it fails at import and this test would prove nothing
+        # about the recovery refusal it actually asks about.
+        "gates_support/plugin_mirror_preamble.py",
     ):
         source = ROOT / "scripts" / name
         destination = quality_repo / "scripts" / name

@@ -59,10 +59,28 @@ release, or uncertain deletion boundary.
 Push, pull request creation, reopening, tagging, version changes, release
 publication, installation, and evaluator execution require an explicit request
 for that phase. A green local check is not authorization for any of them.
+A skipped gate is not a passed gate: the quality summary line names every gate
+the run did not execute and why (`not run (label: reason)`), so a green that
+omitted a check says so in its last line.
 
 ## Generated surfaces
 
-Batch source edits, then run the canonical exporter once:
+The materialized `plugins/` mirror is derived from `skills/` and `scripts/`, so
+every source edit leaves it stale until the exporter runs again, and around
+thirty standing tests read that on-disk tree. Both entry points into the suite
+now settle this themselves through
+[`plugin_mirror_preamble.py`](../scripts/gates_support/plugin_mirror_preamble.py):
+the standing pytest runner and the quality engine regenerate the mirror in a
+writing run, and in read-only they validate it against a fresh export and refuse
+with the exact regenerate command rather than letting an unrun exporter surface
+as unrelated red tests. Both stay inert unless
+[`packaging/charness.json`](../packaging/charness.json) resolves a materialized
+plugin root that git ignores; a bare `plugins/` directory in a consuming repo is
+never sufficient.
+
+So batch source edits instead of exporting after each one, and run the exporter
+yourself only when you invoke `pytest` directly, which is the one path with no
+runner in front of it:
 
 ```bash
 python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .

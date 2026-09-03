@@ -25,6 +25,9 @@ from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 _guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _guard.run_process
 
+_receipt = import_repo_module(__file__, "scripts.evidence.proof_receipt")
+render_not_run_note = _receipt.render_not_run_note
+
 
 def finish(
     context: RuntimeContext,
@@ -38,6 +41,7 @@ def finish(
     receipt_json: str,
     labels: str,
     overall_rc: int,
+    not_run: tuple[tuple[str, str], ...] = (),
 ) -> None:
     import time
 
@@ -75,6 +79,8 @@ def finish(
         args.extend(("--adverse-subject", subject, "--recovery", recovery))
     for subject in ledger.unestablished:
         args.extend(("--unproven-subject", subject))
+    for label, reason in not_run:
+        args.extend(("--not-run", f"{label}:{reason}"))
     if receipt_json:
         args.extend(("--json-path", receipt_json))
     result = run_process(args, cwd=context.repo_root, env=context.environment, timeout_seconds=None)
@@ -83,6 +89,8 @@ def finish(
     if result.stderr:
         print(result.stderr, end="", file=sys.stderr)
     if result.returncode != 0 and not result.stdout:
+        note = render_not_run_note({"label": label, "reason": reason} for label, reason in not_run)
         print(
-            f"Quality summary: {ledger.passed} passed, {ledger.failed} failed, total {format_elapsed(elapsed_ms)}"
+            f"Quality summary: {ledger.passed} passed, {ledger.failed} failed{note}, "
+            f"total {format_elapsed(elapsed_ms)}"
         )

@@ -158,3 +158,93 @@ def requires_prior_phases_green(gate: Gate) -> bool:
         return False
 
     return find(gate.condition)
+
+
+NOT_RUN_NON_CLAIM = "non-claim"
+NOT_RUN_READ_ONLY = "read-only"
+NOT_RUN_OPT_IN = "opt-in unmet"
+NOT_RUN_CONDITION = "condition unmet"
+
+
+def _not_run_reason(
+    gate: Gate,
+    *,
+    excluded_labels: frozenset[str],
+    mode: str,
+    matches: Callable[[Gate, str], bool],
+) -> str | None:
+    if gate.label in excluded_labels:
+        return NOT_RUN_NON_CLAIM
+    if matches(gate, mode):
+        return None
+    if mode == "read-only" and matches(gate, "full"):
+        return NOT_RUN_READ_ONLY
+    return NOT_RUN_OPT_IN if gate.lane == "opt-in" else NOT_RUN_CONDITION
+
+
+def not_run_gates(
+    gate_list: GateList,
+    selected: Mapping[str, tuple[Gate, ...]],
+    *,
+    repo_root: Path,
+    mode: str,
+    full_queue: bool,
+    release: bool,
+    include_release_only: bool,
+    labels: str,
+    non_claim: str = "",
+    environment: Mapping[str, str] | None = None,
+    predicates: Mapping[str, Callable[[], bool]] | None = None,
+    excluded_labels: frozenset[str] = frozenset(),
+) -> tuple[tuple[str, str], ...]:
+    """Rows the requested scope asked for that this run did not execute.
+
+    Scope is what was asked for, not the whole gate list: an explicit ``--labels``
+    run requests exactly those labels, and an unfiltered run requests the rows its
+    lane matches.  A row whose variant sibling ran is not unrun, because the
+    variant family's claim was established by that sibling.
+    """
+    environment = os.environ if environment is None else environment
+    predicates = {} if predicates is None else predicates
+    explicit = frozenset(explicit_labels(labels))
+    ran = {gate.label for gates in selected.values() for gate in gates}
+    claimed = {gate.variant_of or gate.label for gates in selected.values() for gate in gates}
+
+    def matches(gate: Gate, candidate_mode: str) -> bool:
+        return _condition_matches(
+            gate,
+            repo_root=repo_root,
+            mode=candidate_mode,
+            environment=environment,
+            predicates=predicates,
+            release=release,
+            non_claim=non_claim,
+        )
+
+    rows: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for phase in gate_list.phases:
+        for gate in phase.gates:
+            if gate.label in ran or gate.label in seen:
+                continue
+            in_scope = (
+                gate.label in explicit
+                if explicit
+                else _lane_matches(
+                    gate,
+                    full_queue=full_queue,
+                    release=release,
+                    include_release_only=include_release_only,
+                    explicit=explicit,
+                )
+            )
+            if not in_scope or (gate.variant_of or gate.label) in claimed:
+                continue
+            reason = _not_run_reason(
+                gate, excluded_labels=excluded_labels, mode=mode, matches=matches
+            )
+            if reason is None:
+                continue
+            seen.add(gate.label)
+            rows.append((gate.label, reason))
+    return tuple(rows)

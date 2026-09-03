@@ -128,7 +128,9 @@ def test_v8_ledger_migration_preserves_the_live_lesson_corpus(tmp_path: Path) ->
 
     # The live corpus grows by one seed transition per retro class; pin the
     # migration to the corpus it read, not to the count on the day this was written.
-    live_count = len(current["lessons"])
+    # The v8 corpus is the live working set (archived and graduated lessons left it
+    # through events v8 cannot express; see `legacy_v8_payload`).
+    live_count = len(legacy["lessons"])
     assert result["lesson_count"] == live_count
     assert len(migrated["lessons"]) == live_count
     assert migrated["schema_version"] == 9
@@ -460,12 +462,9 @@ def test_validation_migrates_in_memory_and_never_writes_the_ledger(tmp_path: Pat
         summary_path=output_dir / "recent-lessons.md",
     )
 
-    # The verdict is complete...
-    assert result["lesson_count"] == len(
-        json.loads(
-            (ROOT / "charness-artifacts/retro/lesson-ledger.json").read_text(encoding="utf-8")
-        )["lessons"]
-    )
+    # The verdict is complete (over the v8 corpus, which is the live working set;
+    # see `legacy_v8_payload`)...
+    assert result["lesson_count"] == len(legacy["lessons"])
     # ...and the consumer's file is byte-for-byte what it was.
     assert path.read_bytes() == before
     assert json.loads(path.read_text(encoding="utf-8"))["schema_version"] == 8

@@ -35,7 +35,7 @@ from scripts.review import reviewed_input_worktree as reviewed_worktree
 from scripts.setup import setup_inspect_quality_lib
 from scripts.task_run import task_run, task_run_git
 from scripts.worktree import checkout_view
-from tests.module_eviction import evict_module
+from tests.module_eviction import evict_module, evict_new_modules
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.script_loader import load_script_module
 
@@ -766,8 +766,7 @@ def test_a_root_script_binds_its_owners_flat_when_the_package_is_unreachable(
 
         assert getattr(module, bound).__module__ == flat_module
     finally:
-        for name in set(sys.modules) - before:
-            del sys.modules[name]
+        evict_new_modules(before)
 
 
 def test_the_identity_builder_binds_the_sibling_loader_flat(
@@ -804,8 +803,7 @@ def test_the_identity_builder_binds_the_sibling_loader_flat(
         (git_dir / "HEAD").write_text("a" * 40, encoding="ascii")
         assert module._checkout.head_oid_from_files(repo) == "a" * 40
     finally:
-        for name in set(sys.modules) - before:
-            del sys.modules[name]
+        evict_new_modules(before)
 
 
 def test_the_premise_tree_observation_lists_the_index_through_the_package(
@@ -829,8 +827,7 @@ def test_the_premise_tree_observation_lists_the_index_through_the_package(
 
         assert observation._index_paths(repo) == {b"tracked.py"}
     finally:
-        for name in set(sys.modules) - before:
-            del sys.modules[name]
+        evict_new_modules(before)
 
 
 def test_the_issue_critique_observer_reads_tracked_state_without_the_package(
@@ -856,8 +853,7 @@ def test_the_issue_critique_observer_reads_tracked_state_without_the_package(
         assert support._path_is_tracked(repo, "tracked.py") is True
         assert support._path_is_tracked(repo, "loose.py") is False
     finally:
-        for name in set(sys.modules) - before:
-            del sys.modules[name]
+        evict_new_modules(before)
 
 
 class _RefuseOnce:

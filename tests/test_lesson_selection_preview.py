@@ -43,16 +43,23 @@ def test_preview_is_flat_seeded_and_fills_the_empty_archive_slot_from_uncertaint
     # Derived from the live ledger, not transcribed. This asserted `== 16` until
     # `seed_lesson_transitions.py` (#625) made adding a lesson a routine command,
     # at which point a hardcoded count fails on every seed and says nothing about
-    # the preview. The invariant is that every seeded lesson is eligible.
-    assert first["eligible_count"] == len(
-        json.loads((RETRO_DIR / "lesson-ledger.json").read_text(encoding="utf-8"))["lessons"]
+    # the preview. The invariant is that every seeded lesson still in the working
+    # set -- active, or archived and therefore a resurrection candidate -- is
+    # eligible; a graduated lesson left the working set for its docs page (#781).
+    live_lessons = json.loads((RETRO_DIR / "lesson-ledger.json").read_text(encoding="utf-8"))["lessons"]
+    assert first["eligible_count"] == sum(
+        lesson["state"] in {"active", "archived"} for lesson in live_lessons.values()
     )
+    # The archive slot is filled by an archived lesson when one exists and from
+    # the uncertainty ordering otherwise; the live ledger decides which (#781
+    # archived the first four).
+    archived = any(lesson["state"] == "archived" for lesson in live_lessons.values())
     assert first["bucket_counts"] == {
         "recent": 3,
         "value": 3,
         "uncertainty": 3,
-        "archive": 0,
-        "archive_fallback_uncertainty": 1,
+        "archive": 1 if archived else 0,
+        "archive_fallback_uncertainty": 0 if archived else 1,
     }
     assert len(first["items"]) == 10
     assert len({item["lesson_id"] for item in first["items"]}) == 10

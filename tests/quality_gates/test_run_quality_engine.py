@@ -276,3 +276,87 @@ def test_cli_unknown_argument_returns_exit_two(tmp_path: Path) -> None:
         check=False,
     )
     assert result.returncode == 2
+
+
+def _summary(stdout: str) -> str:
+    return [line for line in stdout.splitlines() if line.startswith("Quality summary:")][-1]
+
+
+_READ_ONLY_GATES = """schema: charness/quality-gates/v1
+runner_variables: {}
+phases:
+  - id: only
+    isolation: alone
+    fail_fast: false
+    gates:
+      - label: writes
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - writes
+        lane: core
+        condition:
+          mode_in:
+            - full
+      - label: reads
+        command:
+          - python3
+          - tests/quality_gates/fixtures/engine_gate.py
+          - reads
+        lane: core
+"""
+
+
+def test_summary_names_an_unmet_opt_in_gate_as_not_run(tmp_path: Path) -> None:
+    repo, env = _seed(tmp_path)
+    result = _run(repo, env, "--full")
+
+    assert result.returncode == 0, result.stderr
+    assert "PASS opt-in" not in result.stdout
+    assert "1 not run (opt-in: opt-in unmet)" in _summary(result.stdout)
+    receipt = json.loads((repo / "receipt.json").read_text(encoding="utf-8"))
+    assert receipt["details"]["not_run"] == [{"label": "opt-in", "reason": "opt-in unmet"}]
+
+
+def test_summary_names_the_non_claim_gate_as_not_run(tmp_path: Path) -> None:
+    repo, env = _seed(tmp_path)
+    result = _run(repo, env, "--release", "--non-claim=release-changed-line-coverage")
+
+    assert result.returncode == 0, result.stderr
+    assert "release-changed-line-coverage" not in _labels(result.stdout)
+    assert "release-changed-line-coverage: non-claim" in _summary(result.stdout)
+    assert "NON-CLAIM: release-changed-line-coverage was not run" in result.stderr
+    receipt = json.loads((repo / "receipt.json").read_text(encoding="utf-8"))
+    assert {"label": "release-changed-line-coverage", "reason": "non-claim"} in receipt["details"][
+        "not_run"
+    ]
+
+
+def test_summary_names_a_gate_dropped_by_read_only(tmp_path: Path) -> None:
+    repo, env = _seed(tmp_path)
+    (repo / "quality-gates.yaml").write_text(_READ_ONLY_GATES, encoding="utf-8")
+
+    read_only = _run(repo, env, "--read-only")
+    assert read_only.returncode == 0, read_only.stderr
+    assert _labels(read_only.stdout) == ["reads"]
+    assert "1 not run (writes: read-only)" in _summary(read_only.stdout)
+
+    writable = _run(repo, env)
+    assert writable.returncode == 0, writable.stderr
+    assert _labels(writable.stdout) == ["writes", "reads"]
+    assert "not run" not in _summary(writable.stdout)
+
+
+def test_summary_omits_the_not_run_clause_when_the_requested_scope_all_ran(
+    tmp_path: Path,
+) -> None:
+    repo, env = _seed(tmp_path)
+    result = _run(repo, env, "--labels", "core,standard,fast")
+
+    assert result.returncode == 0, result.stderr
+    assert sorted(_labels(result.stdout)) == ["core", "fast", "standard"]
+    summary = _summary(result.stdout)
+    elapsed = summary.rsplit("total ", 1)[1]
+    assert summary == f"Quality summary: 3 passed, 0 failed, total {elapsed}"
+    receipt = json.loads((repo / "receipt.json").read_text(encoding="utf-8"))
+    assert receipt["details"]["not_run"] == []

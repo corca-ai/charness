@@ -101,6 +101,17 @@ was, because they are last-writer-wins:
 - checked-in baselines and ratchet files
 - the git index
 
+A brief names every surface the change touches as the lane's deliverable, not
+only the files it edits: the tests that copy those files by path
+(`grep -rn 'ROOT / "scripts"' tests`), the adapters, and the generated
+surfaces the lane cannot write. Whatever the brief leaves unnamed lands on the parent after the
+lane ends, which is how two lanes finished uncommitted on 2026-09-02 and a file
+move left its fixture copies to the parent on 2026-09-03. The sandbox half is
+mechanism now: `charness task run` grants the worktree's `.agents/` to the
+lane. The authoring half has no gate, because which surfaces a change touches
+is a judgment made while writing the brief; this paragraph is where that
+judgment is owed.
+
 So `mutate -> sync -> verify -> publish`
 ([implementation discipline](./implementation-discipline.md)) stays serial in the
 parent: writers author, and the parent alone syncs generated surfaces, runs

@@ -109,9 +109,14 @@ Adapter policy:
      `Destination:`, owned by `../../shared/references/retro-issue-destination-split.md`
    - the lesson ledger is optional memory and selection state; do not create a
      second lesson-specific artifact beside it
+   - when a lesson keeps changing actions across sessions, or a person asks to
+     promote one, route it through
+     `../../shared/references/lesson-graduation.md`: a standing `docs/` page
+     takes ownership of the rule and the lesson leaves the working set.
+     Graduation is settled with the person and is not performed inside the retro
 5. Persist when there is a durable home.
    - if `output_dir` exists or the adapter defines one, persist the retro artifact with `$SKILL_DIR/scripts/persist_retro_artifact.py` instead of ad hoc file writes; for Goal Run evidence use the owning Goal Run identity contract; the helper stamps the `## Persisted` line with the real durable path it writes, so do not hand-edit that line afterward
-   - if the adapter defines `summary_path`, `$SKILL_DIR/scripts/persist_retro_artifact.py` should refresh the compact lesson digest automatically from the written durable artifact
+   - if the adapter defines `summary_path`, `$SKILL_DIR/scripts/persist_retro_artifact.py` should refresh the compact lesson digest automatically from the written durable artifact; where the repo keeps a lesson ledger it also seeds a transition for every newly tagged `(recurrence-class: <id>)` and records the outcome as a `Seeding:` line under `Persisted:` — those transitions land uncommitted for review, and a budget refusal is reported there rather than failing the persist
    - on the first retro after a legacy hand-curated `recent-lessons.md` (file exists, `output_dir` has no prior `*.md` artifacts), the persistence helper preserves the existing summary instead of replacing it with an empty-stub digest. Pass `--force-empty-summary` only after confirming the legacy content is safe to drop.
    - otherwise still give the user a concise retro in chat
    - when the retro names an RCA-class event (a bug, repeated correction, or
@@ -190,3 +195,4 @@ sub-agents, otherwise write the counterfactuals inline.
 - `../../shared/references/retro-issue-destination-split.md`
 - `../debug/references/sibling-search.md`
 - `../../shared/references/rca-ledger-append.md`
+- `../../shared/references/lesson-graduation.md`

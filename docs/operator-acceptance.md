@@ -61,7 +61,9 @@ Read first:
 - [docs/host-packaging.md](./host-packaging.md) — export contract for host plugin layouts and its source-of-truth surfaces.
 - [packaging/charness.json](../packaging/charness.json) — shared packaging manifest: identity, version, bundle inputs, host export paths.
 
-Useful local commands:
+Useful local commands. The export line is for a hand run of this experiment; the
+quality and standing runners refresh the generated mirror themselves, as
+[operating-contract.md](./operating-contract.md#generated-surfaces) sets out.
 
 ```bash
 python3 scripts/plugin_export/validate_packaging.py --repo-root .

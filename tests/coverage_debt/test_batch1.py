@@ -18,7 +18,7 @@ import pytest
 import yaml
 
 from scripts.core import scaffold_artifact_lib
-from tests.module_eviction import evict_module
+from tests.module_eviction import evict_module, evict_new_modules
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
 
@@ -211,5 +211,4 @@ def test_the_rca_recorder_loads_when_run_as_a_plain_script(monkeypatch: pytest.M
         assert callable(module.emit_yaml)
         assert module.lib.resolve_ledger_path(ROOT, None) == ROOT / module.lib.LEDGER_PATH
     finally:
-        for name in set(sys.modules) - before:
-            del sys.modules[name]
+        evict_new_modules(before)

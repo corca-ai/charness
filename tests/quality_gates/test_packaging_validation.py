@@ -380,7 +380,9 @@ def test_eval_registry_omits_redundant_current_repo_smokes() -> None:
     assert {"managed-cli-install", "packaging-valid", "packaging-export"}.isdisjoint(scenario_ids)
 
 
-def test_eval_registry_scenarios_are_immutable_contract_records() -> None:
+def test_eval_registry_scenarios_are_immutable_contract_records(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # Load a fresh copy from source so the `@dataclass(frozen=True)` decorator
     # line re-executes under THIS test's coverage context. The decorator runs
     # once at import (before any test context is active), so mutation sampling
@@ -397,16 +399,14 @@ def test_eval_registry_scenarios_are_immutable_contract_records() -> None:
     module = importlib.util.module_from_spec(spec)
     # `from __future__ import annotations` makes the field annotation a string;
     # dataclasses resolves it via `sys.modules[cls.__module__]`, so the probe
-    # module must be registered before exec. Pop it in `finally` so the unique
-    # throwaway name never leaks into other tests.
-    sys.modules[spec.name] = module
-    try:
-        spec.loader.exec_module(module)
-        scenario = module.SCENARIOS[0]
-        with pytest.raises(FrozenInstanceError):
-            scenario.description = "mutated"
-    finally:
-        sys.modules.pop(spec.name, None)
+    # module must be registered before exec. `setitem` deletes the unique
+    # throwaway name again at teardown, so it never leaks into other tests.
+    monkeypatch.setitem(sys.modules, spec.name, module)
+    spec.loader.exec_module(module)
+    scenario = module.SCENARIOS[0]
+
+    with pytest.raises(FrozenInstanceError):
+        scenario.description = "mutated"
 
 
 def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) -> None:

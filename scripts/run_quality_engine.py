@@ -26,6 +26,7 @@ from run_quality_engine_runtime import (
 )
 from run_quality_engine_selection import (
     explicit_labels,
+    not_run_gates,
     requires_prior_phases_green,
     select_gates,
     selected_count,
@@ -148,6 +149,18 @@ def _mutation_recovery_pending(context) -> bool:
         (git_path is not None and (git_path / "charness-mutation-recovery").exists())
         or (context.repo_root / ".charness" / "mutation-recovery").exists()
     )
+
+
+def _cached(probe):
+    """Answer a predicate once; selection and the not-run pass both ask."""
+    answer: list[bool] = []
+
+    def call() -> bool:
+        if not answer:
+            answer.append(bool(probe()))
+        return answer[0]
+
+    return call
 
 
 def _predicates(context):
@@ -282,8 +295,7 @@ def run(args: argparse.Namespace) -> int:
             f"requested_scope={requested_scope} outputs=isolated status=streamed",
             file=sys.stderr,
         )
-        selected = select_gates(
-            gate_list,
+        scope = dict(
             repo_root=repo_root,
             mode=mode,
             full_queue=full_queue,
@@ -292,9 +304,13 @@ def run(args: argparse.Namespace) -> int:
             labels=labels,
             non_claim=args.non_claim,
             environment=environment,
-            predicates=_predicates(context),
+            predicates={
+                name: _cached(probe) for name, probe in _predicates(context).items()
+            },
             excluded_labels=frozenset({args.non_claim}) if args.non_claim else frozenset(),
         )
+        selected = select_gates(gate_list, **scope)
+        not_run = not_run_gates(gate_list, selected, **scope)
         named_labels = frozenset(explicit_labels(labels))
         explicit_match_count = sum(
             gate.label in named_labels
@@ -320,6 +336,7 @@ def run(args: argparse.Namespace) -> int:
                 receipt_json=receipt_json,
                 labels=labels,
                 overall_rc=2,
+                not_run=not_run,
             )
             if selected_count(selected) == 0:
                 return 2
@@ -372,6 +389,7 @@ def run(args: argparse.Namespace) -> int:
             receipt_json=receipt_json,
             labels=labels,
             overall_rc=overall_rc,
+            not_run=not_run,
         )
         return overall_rc
     finally:

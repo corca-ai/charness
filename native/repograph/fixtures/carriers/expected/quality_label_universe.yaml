@@ -42,6 +42,7 @@ labels:
 - check-subprocess-form
 - check-script-lookup-form
 - check-wall-clock-form
+- check-module-eviction-form
 - check-skill-contracts
 - check-skill-bootstrap-vars
 - check-bootstrap-shim-consistency
@@ -147,6 +148,7 @@ sources:
   - check-subprocess-form
   - check-script-lookup-form
   - check-wall-clock-form
+  - check-module-eviction-form
   - check-skill-contracts
   - check-skill-bootstrap-vars
   - check-bootstrap-shim-consistency

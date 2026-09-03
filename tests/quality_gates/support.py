@@ -358,6 +358,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-subprocess-form", "check_subprocess_form.py"),
     ("check-script-lookup-form", "check_script_lookup_form.py"),
     ("check-wall-clock-form", "check_wall_clock_form.py"),
+    ("check-module-eviction-form", "check_module_eviction_form.py"),
     ("check-skill-contracts", "check_skill_contracts.py"),
     ("check-skill-bootstrap-vars", "check_skill_bootstrap_vars.py"),
     ("check-bootstrap-shim-consistency", "check_bootstrap_shim_consistency.py"),
@@ -715,6 +716,10 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         "standing_pytest_basetemp.py",
         "standing_pytest_run_record.py",
         "standing_pytest_environment.py",
+        # The mirror-freshness decision the engine's preamble and the standing
+        # runner now share. Both import it at module scope, so a seeded repo
+        # without it fails at import rather than on behavior.
+        "plugin_mirror_preamble.py",
         "run_quality_engine.py",
         "run_quality_engine_model.py",
         "run_quality_engine_output.py",

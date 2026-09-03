@@ -37,9 +37,9 @@ orchestrating session. The common operating contract stays in
 
 ## Lane-orchestration lessons this repo has already paid for
 
-- A lane's `--scope` list must contain every path its brief instructs it
-  to touch, including repo-root shims; a missed path invalidates an
-  otherwise correct candidate.
+- A brief names every surface the change touches as the lane's deliverable,
+  and `--scope` carries every one of them; the rule and its two paid instances
+  live in [docs/parallel-execution.md](../docs/parallel-execution.md#disjoint-writers).
 - Lane self-reports are not proof: re-run the battery in the integrated
   tree, and run the FULL standing gates before treating a
   production-surface change as done — focused per-lane checks miss

@@ -37,6 +37,11 @@ from scripts.runtime_bootstrap import (  # noqa: E402
 _guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _guard.run_process
 
+# The mirror-freshness decision this preamble shares with the standing pytest
+# runner. Imported through the bootstrap for the same reason as the guard above.
+_mirror = import_repo_module(__file__, "scripts.gates_support.plugin_mirror_preamble")
+ensure_plugin_mirror = _mirror.ensure_plugin_mirror
+
 _ARRAY_TOKEN = re.compile(r"^\$\{([A-Za-z_][A-Za-z0-9_]*)\[@\]\}$")
 _VALUE_TOKEN = re.compile(r"^\$([A-Za-z_][A-Za-z0-9_]*)$")
 
@@ -406,66 +411,25 @@ def run_preamble(context: RuntimeContext, *, read_only: bool) -> int:
     The shell wrapper deliberately does not source ``.githooks/runtime-env.sh``.
     ``prepare_runtime`` therefore supplies ``CHARNESS_RUNTIME_ROOT`` from the
     external cache when that source-only file is absent, which is the installed
-    tree fallback.  The mirror preamble is enabled only for a declared packaging
-    manifest whose resolved plugin root is gitignored; a consumer's unrelated
-    ``plugins/`` directory is never a reason to delete or regenerate anything.
-    In read-only mode validation generates into a temporary directory internally
-    and compares bytes without mutating the checkout.
+    tree fallback.
+
+    The decision itself lives in ``plugin_mirror_preamble`` rather than here,
+    because the standing pytest runner needs the SAME decision: it is the other
+    entry point into the suite whose byte-comparison tests read the mirror, and
+    when only this preamble knew the rule, invoking that runner directly turned a
+    stale mirror into two mystifying test failures.
     """
-    manifest_path = context.repo_root / "packaging" / "charness.json"
-    if not manifest_path.is_file():
-        return 0
-    try:
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        relative_root = manifest["codex"]["repo_marketplace"]["materialized_source_path"]
-        plugin_root = (context.repo_root / str(relative_root).removeprefix("./")).resolve()
-        plugin_root.relative_to(context.repo_root.resolve())
-    except (OSError, KeyError, TypeError, ValueError) as exc:
-        print(f"run-quality: could not resolve packaged plugin root: {exc}", file=os.sys.stderr)
-        return 1
-    relative_plugin_root = plugin_root.relative_to(context.repo_root.resolve()).as_posix()
-    ignored = _probe(
-        context,
-        [
-            "git",
-            "check-ignore",
-            "--no-index",
-            "-q",
-            "--",
-            relative_plugin_root,
-        ],
+    return ensure_plugin_mirror(
+        context.repo_root,
+        read_only=read_only,
+        probe=lambda command: _probe(context, command),
+        log=lambda message: print(f"run-quality: {message}", file=sys.stderr),
     )
-    if ignored.returncode != 0:
-        return 0
-    command = [
-        "python3",
-        "scripts/plugin_export/validate_packaging.py" if read_only else "scripts/plugin_export/sync_root_plugin_manifests.py",
-        "--repo-root",
-        str(context.repo_root),
-    ]
-    if read_only:
-        command.append("--validate-export")
-    result = _probe(context, command)
-    if result.returncode != 0:
-        print("run-quality: plugin manifest preamble failed", file=os.sys.stderr)
-        if result.stdout:
-            print(result.stdout, end="", file=os.sys.stderr)
-        if result.stderr:
-            print(result.stderr, end="", file=os.sys.stderr)
-        if read_only:
-            print(
-                "run-quality: regenerate with `python3 scripts/plugin_export/sync_root_plugin_manifests.py "
-                f"--repo-root {context.repo_root}`",
-                file=os.sys.stderr,
-            )
-    return result.returncode
 
 
 def record_runtime_batch(context: RuntimeContext, records: list[dict[str, Any]]) -> None:
     if not records:
         return
-    import json
-
     batch = context.temp_dir / "runtime-batch.jsonl"
     batch.write_text("\n".join(json.dumps(record) for record in records) + "\n", encoding="utf-8")
     result = _probe(

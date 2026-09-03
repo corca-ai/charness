@@ -295,6 +295,24 @@
       "transition_id": "seed-sweep-overreach",
       "lesson_id": "sweep-overreach",
       "source_retro": "charness-artifacts/retro/2026-09-03-session-retro.md"
+    },
+    {
+      "sequence": 50,
+      "transition_id": "seed-parallel-coverage-runtime-collision",
+      "lesson_id": "parallel-coverage-runtime-collision",
+      "source_retro": "charness-artifacts/retro/2026-08-21-session-retro.md"
+    },
+    {
+      "sequence": 51,
+      "transition_id": "seed-probe-stimulus-from-model-not-source",
+      "lesson_id": "probe-stimulus-from-model-not-source",
+      "source_retro": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md"
+    },
+    {
+      "sequence": 52,
+      "transition_id": "seed-wrong-path-is-premise-failure",
+      "lesson_id": "wrong-path-is-premise-failure",
+      "source_retro": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md"
     }
   ],
   "score_events": [
@@ -1239,8 +1257,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "archived",
+      "last_lifecycle_event_id": "781-archive-stale-current-pointer-at-closeout"
     },
     "removal-consumer-grep-incomplete": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
@@ -1404,8 +1422,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "archived",
+      "last_lifecycle_event_id": "781-archive-structured-edit-by-line-pattern"
     },
     "agent-authored-score-role": {
       "source_retro": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
@@ -1599,8 +1617,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "781-graduate-skipped-is-not-passed"
     },
     "unbounded-cache": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
@@ -1614,8 +1632,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "781-graduate-unbounded-cache"
     },
     "unchecked-redundant-flag": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
@@ -1629,8 +1647,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "archived",
+      "last_lifecycle_event_id": "781-archive-unchecked-redundant-flag"
     },
     "bar-recorded-as-prose": {
       "source_retro": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
@@ -1704,8 +1722,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "archived",
+      "last_lifecycle_event_id": "781-archive-positive-effect-cannot-be-cited"
     },
     "superseded-line-stays-quotable": {
       "source_retro": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
@@ -1719,8 +1737,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "781-graduate-superseded-line-stays-quotable"
     },
     "tagged-lesson-never-seeded": {
       "source_retro": "charness-artifacts/retro/2026-08-16-session-retro.md",
@@ -1734,8 +1752,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "781-graduate-tagged-lesson-never-seeded"
     },
     "executed-vs-read-field": {
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
@@ -1764,8 +1782,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "781-graduate-global-probe-for-local-fact"
     },
     "one-engine-per-pattern": {
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
@@ -1824,8 +1842,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "781-graduate-collection-time-pollution"
     },
     "derived-surface-batching": {
       "source_retro": "charness-artifacts/retro/2026-09-02-session-retro.md",
@@ -1839,8 +1857,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "781-graduate-derived-surface-batching"
     },
     "lane-brief-omits-parent-owned-surfaces": {
       "source_retro": "charness-artifacts/retro/2026-09-02-session-retro.md",
@@ -1854,8 +1872,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "781-graduate-lane-brief-omits-parent-owned-surfaces"
     },
     "verification-shape-mismatch": {
       "source_retro": "charness-artifacts/retro/2026-09-02-session-retro.md",
@@ -1884,8 +1902,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "781-graduate-layout-oracle-duplication"
     },
     "sweep-overreach": {
       "source_retro": "charness-artifacts/retro/2026-09-03-session-retro.md",
@@ -1901,8 +1919,158 @@
       },
       "state": "active",
       "last_lifecycle_event_id": null
+    },
+    "parallel-coverage-runtime-collision": {
+      "source_retro": "charness-artifacts/retro/2026-08-21-session-retro.md",
+      "transition_id": "seed-parallel-coverage-runtime-collision",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "probe-stimulus-from-model-not-source": {
+      "source_retro": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
+      "transition_id": "seed-probe-stimulus-from-model-not-source",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "wrong-path-is-premise-failure": {
+      "source_retro": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+      "transition_id": "seed-wrong-path-is-premise-failure",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
     }
   },
   "active_lesson_budget": 50,
-  "lifecycle_events": []
+  "lifecycle_events": [
+    {
+      "sequence": 1,
+      "event_id": "781-graduate-collection-time-pollution",
+      "lesson_id": "collection-time-pollution",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#781 joint review 2026-09-03: never consulted, yet the class recurred within a day (#780 push) and the structural fix exists; graduated with a mechanism: check_module_eviction_form.py refuses raw sys.modules eviction and tests/module_eviction.py is the one door; development.md owns the rule"
+    },
+    {
+      "sequence": 2,
+      "event_id": "781-graduate-derived-surface-batching",
+      "lesson_id": "derived-surface-batching",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#781 joint review 2026-09-03: never consulted across four recurrences; the standing runner lacked the mirror preamble the quality engine had; graduated with a mechanism: plugin_mirror_preamble.py shared by both runners (regenerate in a writing run, refuse with the command in read-only); operating-contract.md Generated surfaces owns the rule, development.md links"
+    },
+    {
+      "sequence": 3,
+      "event_id": "781-graduate-global-probe-for-local-fact",
+      "lesson_id": "global-probe-for-local-fact",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#781 joint review 2026-09-03: never encountered in three later retros; the rule stands beside the in-process import rules in development.md; no mechanism because the property is semantic and the docs page is read at the test-writing moment"
+    },
+    {
+      "sequence": 4,
+      "event_id": "781-graduate-lane-brief-omits-parent-owned-surfaces",
+      "lesson_id": "lane-brief-omits-parent-owned-surfaces",
+      "action": "graduate",
+      "decision_ref": "docs/parallel-execution.md",
+      "rationale": "#781 joint review 2026-09-03: two instances; the sandbox half already shipped as code (task run grants the worktree .agents/); the brief-authoring half has no gate and parallel-execution.md owns it, read at the brief-writing moment"
+    },
+    {
+      "sequence": 5,
+      "event_id": "781-graduate-skipped-is-not-passed",
+      "lesson_id": "skipped-is-not-passed",
+      "action": "graduate",
+      "decision_ref": "docs/operating-contract.md",
+      "rationale": "#781 joint review 2026-09-03: paid for itself twice on 2026-08-13 and never recurred, but the rule lived only in retros; graduated with a mechanism: the quality summary names every gate not run with its reason; operating-contract.md owns the sentence"
+    },
+    {
+      "sequence": 6,
+      "event_id": "781-graduate-superseded-line-stays-quotable",
+      "lesson_id": "superseded-line-stays-quotable",
+      "action": "graduate",
+      "decision_ref": "docs/documentation-principles.md",
+      "rationale": "#781 joint review 2026-09-03: never consulted; the class recurred today (a false development.md sentence about the mirror outlived its decision); flags and subcommands are gate-checked, the general rule now lives in documentation-principles.md Current state only, read at the docs-editing moment"
+    },
+    {
+      "sequence": 7,
+      "event_id": "781-graduate-tagged-lesson-never-seeded",
+      "lesson_id": "tagged-lesson-never-seeded",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#781 joint review 2026-09-03: never consulted while twelve tagged classes sat unseeded; graduated with two mechanisms: retro persistence runs the seeder and records the result beside Persisted, check_lesson_ledger.py names unseeded classes on every lane; development.md owns the sentence"
+    },
+    {
+      "sequence": 8,
+      "event_id": "781-graduate-unbounded-cache",
+      "lesson_id": "unbounded-cache",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#781 joint review 2026-09-03: never consulted while pytest-tmp reached 16 GB across 300 dead repo keys; graduated with mechanisms: repo-key markers and dead-key pruning in standing_pytest_basetemp.py, support-skills digest retention; development.md owns the cache-root retention table"
+    },
+    {
+      "sequence": 9,
+      "event_id": "781-graduate-layout-oracle-duplication",
+      "lesson_id": "layout-oracle-duplication",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#781 joint review 2026-09-03: changed an action: #777 folded eight lookups onto repo_layout.py the day after seeding; development.md owns the sentence and check_script_lookup_form.py enforces it"
+    },
+    {
+      "sequence": 10,
+      "event_id": "781-archive-positive-effect-cannot-be-cited",
+      "lesson_id": "positive-effect-cannot-be-cited",
+      "action": "archive",
+      "decision_ref": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
+      "rationale": "#781 joint review 2026-09-03: premise no longer holds: changed-an-action is the positive-effect outcome and most scored lessons carry it; the 2026-08-22 retro refuted the lesson against its own ledger"
+    },
+    {
+      "sequence": 11,
+      "event_id": "781-archive-stale-current-pointer-at-closeout",
+      "lesson_id": "stale-current-pointer-at-closeout",
+      "action": "archive",
+      "decision_ref": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "rationale": "#781 joint review 2026-09-03: both instances were docs/handoff.md rotting and that surface is retired; the Goal Run cursor is provider-owned and pickup refuses local fallback"
+    },
+    {
+      "sequence": 12,
+      "event_id": "781-archive-structured-edit-by-line-pattern",
+      "lesson_id": "structured-edit-by-line-pattern",
+      "action": "archive",
+      "decision_ref": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+      "rationale": "#781 joint review 2026-09-03: one instance, five weeks without recurrence, no gate can see the edit tool and the result is already caught by compile and tests; the class continues under the active sweep-overreach"
+    },
+    {
+      "sequence": 13,
+      "event_id": "781-archive-unchecked-redundant-flag",
+      "lesson_id": "unchecked-redundant-flag",
+      "action": "archive",
+      "decision_ref": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "rationale": "#781 joint review 2026-09-03: one instance, no recurrence, no mechanism or owner page; the general form is the scored active lesson harness-differential-not-test"
+    }
+  ]
 }

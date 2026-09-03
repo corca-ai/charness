@@ -95,6 +95,10 @@ python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .
 ./scripts/check-docs.sh
 ```
 
+The export line is here for a direct `pytest` run; the quality and standing
+runners refresh the generated mirror themselves, as
+[operating-contract.md](./operating-contract.md#generated-surfaces) sets out.
+
 If a command fails because a capability is unavailable, report that concrete
 failure. Do not replace an unavailable proof with a prose assertion that it
 ran.

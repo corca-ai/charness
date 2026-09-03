@@ -52,6 +52,15 @@ if _EARLY_BYTECODE_GUARD:
     sys.dont_write_bytecode = False
 heartbeat_interval_from_env = _subprocess_guard.heartbeat_interval_from_env
 run_monitored_phase = _subprocess_guard.run_monitored_phase
+run_process = _subprocess_guard.run_process
+
+# The generated plugin mirror goes stale on any `skills/` or `scripts/` edit, and
+# ~30 standing tests read that on-disk tree -- so this runner, invoked directly,
+# used to report an unrun exporter as a scattering of unrelated red tests. The
+# quality engine already knew the rule; `plugin_mirror_preamble` is now the ONE
+# owner both call.
+_mirror = import_repo_module(__file__, "scripts.gates_support.plugin_mirror_preamble")
+ensure_plugin_mirror = _mirror.ensure_plugin_mirror
 
 _quality_universes = import_repo_module(__file__, "scripts.adapters.quality_universes_lib")
 _quality_adapter = import_repo_module(__file__, "scripts.adapters.quality_adapter_lib")
@@ -91,6 +100,9 @@ default_pytest_cache_dir = _basetemp.default_pytest_cache_dir
 ensure_external_temp_root = _basetemp.ensure_external_temp_root
 default_basetemp = _basetemp.default_basetemp
 prune_failed_basetemps = _basetemp.prune_failed_basetemps
+prune_orphan_basetemps = _basetemp.prune_orphan_basetemps
+prepare_repo_key = _basetemp.prepare_repo_key
+ORPHAN_BASETEMP_KEEP = _basetemp.ORPHAN_BASETEMP_KEEP
 _failed_basetemp_keep = _basetemp._failed_basetemp_keep
 _hold_basetemp_lock = _basetemp._hold_basetemp_lock
 _mark_basetemp = _basetemp._mark_basetemp
@@ -389,6 +401,23 @@ def run_standing_pytest(args: argparse.Namespace) -> int:
     # it, which is the ambient-runner-state class `_scrub_ambient_runner_state`
     # already exists for.
     env["CHARNESS_STANDING_PYTEST"] = "1"
+    # Before the suite, not after it fails. `--print-command` is exempt: it
+    # prints a plan and spawns nothing, so it has no mirror to be stale for, and
+    # callers that build a command for later use must not be made to regenerate.
+    # A read-only run REFUSES here rather than running: staleness is a source
+    # edit awaiting the exporter, and a refusal naming the remedy is worth more
+    # than a red byte-comparison the reader has to trace back to the exporter.
+    if not args.print_command:
+        stale = ensure_plugin_mirror(
+            repo_root,
+            read_only=args.mode == "read-only",
+            probe=lambda command: run_process(
+                command, cwd=repo_root, env=env, timeout_seconds=None
+            ),
+            log=lambda message: print(f"standing-pytest: {message}", file=sys.stderr),
+        )
+        if stale:
+            return stale
     command = build_pytest_command(
         repo_root,
         basetemp=basetemp,
@@ -404,6 +433,16 @@ def run_standing_pytest(args: argparse.Namespace) -> int:
         _hold_basetemp_lock(basetemp) if runner_owned_basetemp else contextlib.nullcontext()
     )
     with lock_context:
+        if runner_owned_basetemp:
+            # Under this run's OWN key lock, before the suite: the key directory now
+            # names the repo it hashes, and the sibling keys whose repos are gone go
+            # with it. One key per hashed repo root and no cross-key retention is what
+            # let this cache reach 16 GB across 300 keys by 2026-09-03.
+            prepare_repo_key(
+                repo_root,
+                default_temp_root(repo_root, env),
+                log=lambda message: print(f"standing-pytest: {message}", file=sys.stderr),
+            )
         write_run_record(repo_root, {"state": "running", "command": shlex.join(command)})
         # SC11. This was a bare `subprocess.run` -- the repo's LONGEST child on a
         # plain call with no session, no heartbeat, and no group kill, while the
@@ -500,6 +539,14 @@ def run_standing_pytest(args: argparse.Namespace) -> int:
                 basetemp.parent,
                 current_failed=basetemp if returncode != 0 else None,
                 keep=_failed_basetemp_keep(env),
+            )
+            # A run that never reaches the lines above -- killed, OOM, host reboot --
+            # leaves a root with no marker at all, which the failed prune preserves by
+            # design. This is the only thing that bounds those.
+            prune_orphan_basetemps(
+                basetemp.parent,
+                current=basetemp,
+                keep=ORPHAN_BASETEMP_KEEP,
             )
     return returncode
 

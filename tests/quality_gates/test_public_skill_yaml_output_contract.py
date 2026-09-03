@@ -16,6 +16,7 @@ import yaml
 
 from scripts import yaml_output
 from scripts.core import gate_report_emit
+from tests.module_eviction import evict_new_modules
 from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
@@ -282,8 +283,7 @@ def test_every_quality_inventory_exposes_yaml_output_contract(
             assert "--detail" in help_result.stdout, script_name
             assert "--json" not in help_result.stdout, script_name
     finally:
-        for module_name in set(sys.modules) - modules_before:
-            sys.modules.pop(module_name, None)
+        evict_new_modules(modules_before)
     assert set(sys.modules) == modules_before
 
 

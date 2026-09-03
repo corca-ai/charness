@@ -9,9 +9,11 @@ import pytest
 
 from scripts.evidence.proof_receipt import (
     ReceiptContractError,
+    _parse_not_run_spec,
     _parse_recovery_spec,
     _recovery,
     quality_receipt,
+    render_not_run_note,
     render_quality_summary,
 )
 
@@ -106,6 +108,68 @@ def test_quality_receipt_keeps_mixed_recovery_and_actual_exit() -> None:
         "Quality summary: 0 passed, 2 failed (FAILED: lint "
         "[log: .charness/quality-failure-logs/lint.log]; tests [log unavailable]), total 12ms"
     )
+
+
+def test_not_run_note_names_every_unrun_gate_with_its_reason() -> None:
+    """A skipped gate is not a passed gate, so the note has to name each one.
+
+    The count and the names travel together: a reader who sees only the count
+    cannot tell whether the omitted check was the one that mattered.
+    """
+    assert render_not_run_note(()) == ""
+    assert render_not_run_note(
+        [
+            {"label": "release-changed-line-coverage", "reason": "condition unmet"},
+            {"label": "dead-code", "reason": "opt-in unmet"},
+        ]
+    ) == (", 2 not run (release-changed-line-coverage: condition unmet; dead-code: opt-in unmet)")
+
+
+def test_quality_summary_carries_the_not_run_clause_beside_the_pass_count() -> None:
+    receipt = quality_receipt(
+        status="pass",
+        measured_scope=["core"],
+        effective_exit_code=0,
+        details={
+            "passed": 1,
+            "failed": 0,
+            "elapsed": "5ms",
+            "not_run": [
+                {"label": "dead-code", "reason": "opt-in unmet"},
+                {"label": "pytest", "reason": "read-only"},
+            ],
+        },
+    )
+
+    assert render_quality_summary(receipt) == (
+        "Quality summary: 1 passed, 0 failed, 2 not run "
+        "(dead-code: opt-in unmet; pytest: read-only), total 5ms"
+    )
+
+
+@pytest.mark.parametrize(
+    "spec",
+    [
+        "no-separator",
+        ":condition unmet",
+        "dead-code:",
+        "   :   ",
+    ],
+)
+def test_not_run_spec_refuses_anything_that_is_not_label_and_reason(spec: str) -> None:
+    with pytest.raises(ReceiptContractError, match="--not-run must be label:reason"):
+        _parse_not_run_spec(spec)
+
+
+def test_not_run_spec_trims_the_pair_and_keeps_colons_inside_the_reason() -> None:
+    assert _parse_not_run_spec("  dead-code :  opt-in unmet  ") == {
+        "label": "dead-code",
+        "reason": "opt-in unmet",
+    }
+    assert _parse_not_run_spec("pytest:skipped: the lane is read-only") == {
+        "label": "pytest",
+        "reason": "skipped: the lane is read-only",
+    }
 
 
 @pytest.mark.boundary_contract(

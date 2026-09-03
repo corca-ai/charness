@@ -182,3 +182,98 @@ files (12) by a sonnet dynamic workflow. The parent reviewed every diff.
 | fake clock leaking into a real timeout | the stepped `monotonic` also sized the real `select` timeout | when the module under test derives a real wait from the clock, the fake's step must dwarf the wait |
 | length cap crossed by a test helper | the pidfd wait pushed `test_cli_skill_surface.py` to 824 code lines; the full read-only lane refused | the probe-boundary tests (own-session spawn, group kill, drain, survivors) moved to `test_cli_skill_surface_probe_boundary.py`, a cohesive split rather than a `_lib` spill (D33) |
 | installed plugin behind the repo (fourth time) | pickup refused from `~/.agents/src/charness` again | unchanged: route skill scripts to the working tree inside the charness repo; release 8.0.3 |
+
+## Fourth session, 2026-09-03 (#781 lesson-promotion-and-budget)
+
+#780 pushed after operator approval (hook release lane 86 passed); cursor to
+be advanced after #781's readback. #781 ran in two halves in parallel.
+
+Code half (Codex lane `task/lesson-graduate-lifecycle`, cherry-picked):
+`graduate` move and `graduated` state in `lesson_ledger_lib.LIFECYCLE_TRANSITIONS`,
+a graduate event's `decision_ref` must be under `docs/`, `_materialize` and the
+argparse choices derive from the table, graduated rows are neither eligible nor
+archive-slot candidates.
+
+Joint half, in conversation, one lesson at a time in Korean, recorded in
+`781-lesson-dispositions.md`. Two operator rules emerged and were written into
+the new `skills/shared/references/lesson-graduation.md` (linked from the retro
+skill): graduation is three questions (one owning `docs/` page with duplicates
+removed; a code mechanism where possible, shipped in the same commit; only then
+the event), and a docs-only graduation is allowed only into a page read at the
+decision moment, because the preview is read every session and a docs page on
+demand. Tally: nine graduated, four archived, two kept; the three recurred
+classes seeded; 39 of 50 active.
+
+Mechanisms shipped by the graduations (each by an opus subagent, reviewed here):
+`check_module_eviction_form.py` with `tests/module_eviction.py::evict_new_modules`
+(nine raw evictions folded); `plugin_mirror_preamble.py` shared by the standing
+runner and the quality engine (the runner now refuses a stale mirror in
+read-only and regenerates in full; a false `development.md` sentence claiming
+the byte-comparison tests use a temporary export was deleted, about thirty
+tests read the on-disk mirror); the quality summary line names every gate not
+run with its reason (`proof_receipt.py`, receipt `details.not_run`); retro
+persistence runs the seeder and stamps `Seeding:` beside `Persisted:`, and
+`check_lesson_ledger.py` names unseeded tagged classes (twelve today, nine of
+them stranded since mid-August); cache retention for `pytest-tmp` (16 GB, 300
+dead repo keys measured) and `support-skills`. D38 recorded as reopened by its
+trigger and resolved.
+
+## Next session, in order (operator-confirmed 2026-09-03)
+
+Resume with `/goal #775`; the cursor names #782 integrated-closeout once
+#781's push and readback land (this session advances it).
+
+1. #782: standing, full read-only, and release lanes green in a clean clone
+   with the skip list read; the quality summary's `not run` clause is now
+   that list.
+2. #782: read the most recent scheduled `mutation-tests.yml` run from GitHub
+   and make #764's state consistent with it; #764 closes only through its
+   recovery-observer path. The #779 sampler baseline is the thing to confirm
+   hosted.
+3. #782: graduate `verification-shape-mismatch` into `docs/development.md`
+   with a `changed-an-action` score citing this goal's retro; settle the two
+   open paths first (the installed plugin read ahead of the repo tree inside
+   the charness repo; whether 8.0.3 ships) or record them as the stated gap.
+4. Close #775 through the guarded Goal Run close after exact readback.
+
+Outside #775, carried by a follow-up issue filed this session: second joint
+lesson review (the 34 scored active lessons under the three-question rule,
+graduation candidates first: `changed-line-proof-before-broad-quality`,
+`green-test-is-not-covered-line`, `detector-blind-class-unstated`,
+`bar-recorded-as-prose`) and the nine tagged classes still unseeded, one by one.
+
+Cache retention outcome, measured: `pytest-tmp` 16 GB → 3.2 GB, 300 repo keys
+→ 59, in one 32 s sweep; the residue was 27 marked-failed roots bounded per key
+but never across keys, and 11 unmarked orphans from runners killed before their
+`finally`. Follow-up outside #781: the per-repo runtime root
+`$TMPDIR/charness/runtime/<key>` owned by `scripts/runtime_bootstrap.py` has no
+retention of its own; the sweep reaches only the keyed `pytest-tmp` namespace.
+
+First #781 standing run: 5 failed. Four tests read the LIVE ledger and assumed
+every lesson eligible or every lesson representable in v8 (the v8 fixture
+stripped lifecycle from a 52-lesson corpus and migrated it over the 50 budget);
+one docs gate flagged a literal count in the new cache table. Repairs: the v8
+fixture derives the working set (active lessons, transitions renumbered), the
+preview invariant counts active plus archived, the archive-slot expectation is
+derived from the live ledger, and the table names the retention constants
+instead of numbers. Smell: a live-corpus invariant ("all lessons active") was
+pinned in four places without a name; the first lifecycle event broke all four.
+
+Push refusals for #781, in order: (1) release lane, one `release_only` test:
+the support-skill use-stamp was written INSIDE the digest tree and
+`charness update`'s same-version content readback hashed it (moved to a
+sibling file; regression test pins the tree's bytes stable). (2) release
+changed-line coverage: about forty changed lines unproven across seven files
+(mostly `except OSError` branches in the new cache retention, the not-run
+clause rendering and parsing, manifest-resolution failure in the mirror
+preamble) plus two unmapped files (`run_quality_engine_receipt.py`,
+`run_quality_engine_selection.py`). Same class as the #780 session's first
+refusal: `green-test-is-not-covered-line`, a focused green is not a covered
+line. Covered by three parallel subagents before the retry.
+
+Observed under three concurrent agents: `test_cli_skill_surface_keeps_partial_output_when_even_the_drain_times_out`
+failed once under load and passes alone. It carries no `time.*` call, so the
+wall-clock form gate does not see it; its claim rides on subprocess drain
+timeouts. Same class as #779/#780, a shape the gate does not cover. For #782
+or a follow-up: extend the census to timeout-bound claims (`communicate(timeout=)`,
+probe deadlines) that decide a verdict rather than bound a hang.

@@ -12,6 +12,7 @@ import pytest
 import yaml
 
 from scripts.yaml_output import render_yaml as _render_yaml
+from tests.module_eviction import evict_module
 from tests.quality_gates.git_fixture_support import init_git_repo
 
 from .release_publish_fixtures import (
@@ -113,9 +114,13 @@ def test_failure_payload_preserves_bounded_terminal_detail_when_record_write_fai
     assert "actionable stderr detail" in payload["release_failure"]["error_detail"]
 
 
-def test_publish_release_cli_direct_loader_context_without_sys_modules() -> None:
+def test_publish_release_cli_direct_loader_context_without_sys_modules(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     module_name = "publish_release_cli_direct_loader_probe"
-    sys.modules.pop(module_name, None)
+    # The claim is about a module the loader never registered, so the name is
+    # held absent for the whole test rather than popped once at the top.
+    evict_module(monkeypatch, module_name)
     spec = importlib.util.spec_from_file_location(module_name, PUBLISH_CLI_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -129,9 +134,11 @@ def test_publish_release_cli_direct_loader_context_without_sys_modules() -> None
     assert context.reconcile_public_release_verification is module.reconcile_public_release_verification
 
 
-def test_release_closeout_message_direct_loader_context_without_sys_modules() -> None:
+def test_release_closeout_message_direct_loader_context_without_sys_modules(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     module_name = "release_issue_closeout_message_direct_loader_probe"
-    sys.modules.pop(module_name, None)
+    evict_module(monkeypatch, module_name)
     spec = importlib.util.spec_from_file_location(module_name, MESSAGE_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)

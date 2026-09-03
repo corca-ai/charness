@@ -115,6 +115,38 @@ def _candidate_seeds(repo_root: Path, output_dir: Path, summary_path: Path) -> d
     }
 
 
+def unseeded_classes(available: dict[str, str], payload: dict[str, Any]) -> list[str]:
+    """Tagged classes the ledger has no entry for, in deterministic slug order.
+
+    One line, extracted because two surfaces now ask it and they must never
+    disagree: this command's default target set, and the standing lane's advisory
+    (`check_lesson_ledger.py`) naming what is still stranded. A second derivation
+    there would let the gate report a class this command does not plan, or stay
+    quiet about one it does -- the exact shape that let twelve tagged classes sit
+    unseeded with nothing saying so.
+    """
+    return sorted(set(available) - set(payload.get("lessons") or {}))
+
+
+def pending_seed_classes(
+    *, repo_root: Path, output_dir: Path, summary_path: Path | None
+) -> list[str]:
+    """The unseeded tagged classes for a ledger on disk, read-only.
+
+    For callers that only want to REPORT the pending set and must not touch the
+    ledger: no lock, no migration write, no plan. A missing ledger is not an error
+    here -- an absent optional ledger has nothing pending, and the caller that
+    cares about its absence already says so in its own words.
+    """
+    path = _ledger.lesson_ledger_path(output_dir)
+    if not path.is_file():
+        return []
+    payload, _migrated = _ledger.migrate_ledger_payload(
+        json.loads(path.read_text(encoding="utf-8"))
+    )
+    return unseeded_classes(_candidate_seeds(repo_root, output_dir, summary_path), payload)
+
+
 def plan_seeds(
     *,
     repo_root: Path,
@@ -137,7 +169,7 @@ def plan_seeds(
         if isinstance(transition, dict)
     }
     if lesson_ids is None:
-        targets = sorted(set(available) - seeded)
+        targets = unseeded_classes(available, payload)
     else:
         targets = []
         for lesson_id in lesson_ids:

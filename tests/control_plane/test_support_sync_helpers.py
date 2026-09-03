@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import time
 from pathlib import Path
 
 import pytest
@@ -171,3 +173,162 @@ def test_write_discovery_stub_and_resolve_upstream_source_path(tmp_path: Path, m
             manifest,
             upstream_checkouts={"example/demo": bad_checkout},
         )
+
+
+def _digest_tree(tool_root: Path, name: str, *, age_days: float) -> Path:
+    tree = tool_root / name
+    tree.mkdir(parents=True)
+    (tree / "SKILL.md").write_text(f"# {name}\n", encoding="utf-8")
+    marker = support._last_used_marker(tree)
+    marker.write_text("0", encoding="utf-8")
+    stamp = time.time() - age_days * 86400
+    os.utime(marker, (stamp, stamp))
+    return tree
+
+
+def test_promoting_a_support_tree_keeps_the_current_plus_three_recent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("CHARNESS_CACHE_HOME", str(tmp_path / "cache"))
+    tool_root = support.support_skill_cache_dir() / "demo"
+    aged = {days: _digest_tree(tool_root, f"digest-{days}", age_days=days) for days in range(1, 6)}
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "SKILL.md").write_text("# fresh\n", encoding="utf-8")
+
+    promoted = support._promote_tree_to_cache(
+        source, manifest={"tool_id": "demo"}, digest="fresh", repo_root=None
+    )
+
+    assert promoted == tool_root / "fresh"
+    assert support._last_used_marker(promoted).is_file()
+    survivors = {path.name for path in tool_root.iterdir() if path.is_dir()}
+    assert survivors == {"fresh", "digest-1", "digest-2", "digest-3"}
+    assert not aged[4].exists() and not aged[5].exists()
+
+
+def test_a_support_tree_a_live_symlink_points_at_outlives_the_bound(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("CHARNESS_CACHE_HOME", str(tmp_path / "cache"))
+    repo = tmp_path / "repo"
+    tool_root = support.support_skill_cache_dir() / "demo"
+    aged = {days: _digest_tree(tool_root, f"digest-{days}", age_days=days) for days in range(1, 6)}
+    support.materialize_repo_symlink(aged[5], support.generated_support_dir(repo) / "demo", repo)
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "SKILL.md").write_text("# fresh\n", encoding="utf-8")
+
+    support._promote_tree_to_cache(
+        source, manifest={"tool_id": "demo"}, digest="fresh", repo_root=repo
+    )
+
+    # `digest-5` is the LEAST recently used and would fall outside `keep`, but the
+    # repo's generated support skill resolves through it, so the bound may not take it.
+    assert aged[5].is_dir()
+    assert (support.generated_support_dir(repo) / "demo" / "SKILL.md").is_file()
+    assert {path.name for path in tool_root.iterdir() if path.is_dir()} == {
+        "fresh",
+        "digest-1",
+        "digest-2",
+        "digest-3",
+        "digest-5",
+    }
+    assert not aged[4].exists()
+
+
+def test_support_tree_bound_tolerates_a_missing_root_and_an_unremovable_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    missing = tmp_path / "cache" / "support-skills" / "demo"
+    assert support.prune_support_skill_trees(missing, current=missing / "fresh") == []
+    assert support.live_support_tree_targets(None) == set()
+    assert support.live_support_tree_targets(tmp_path / "no-such-repo") == set()
+
+    tool_root = tmp_path / "tool"
+    stale = _digest_tree(tool_root, "old", age_days=9)
+    current = _digest_tree(tool_root, "new", age_days=0)
+    monkeypatch.setattr(
+        support.shutil, "rmtree", lambda _path: (_ for _ in ()).throw(OSError("busy"))
+    )
+    assert support.prune_support_skill_trees(tool_root, current=current, keep=0) == []
+    assert stale.is_dir()
+
+
+def test_a_support_tree_with_no_marker_is_still_ordered_and_touched(tmp_path: Path) -> None:
+    tool_root = tmp_path / "tool"
+    bare = tool_root / "bare"
+    bare.mkdir(parents=True)
+    assert support._support_tree_last_used(bare) == bare.stat().st_mtime
+    assert support._support_tree_last_used(tool_root / "gone") == 0.0
+    support._touch_support_tree(bare)
+    assert support._last_used_marker(bare).is_file()
+    support._touch_support_tree(tool_root / "gone")
+
+
+def test_an_unwritable_use_stamp_does_not_fail_the_sync_that_asked_for_the_tree(
+    tmp_path: Path,
+) -> None:
+    """The stamp is bookkeeping for the BOUND, never a precondition of the sync.
+
+    A cache root that does not exist -- a cleared cache home, a read-only tool
+    root -- must not turn "this repo used this support tree" into a failed
+    materialization. The tree the caller asked for is still the answer; only the
+    recency ordering degrades, and `_support_tree_last_used` already treats a
+    missing stamp as oldest.
+    """
+    missing_root = tmp_path / "no-such-cache" / "demo"
+    tree = missing_root / "digest"
+
+    support._touch_support_tree(tree)
+
+    assert not support._last_used_marker(tree).exists()
+    assert not missing_root.exists()
+    assert support._support_tree_last_used(tree) == 0.0
+
+
+def test_one_unresolvable_link_does_not_blind_the_bound_to_the_live_trees(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A link this process cannot resolve is skipped, not treated as the whole set.
+
+    Losing the loop here would drop every live target found after the bad link,
+    and the bound would then delete a tree the repo's generated support skill
+    still resolves through. Skipping one entry costs at most a stale tree.
+    """
+    monkeypatch.setenv("CHARNESS_CACHE_HOME", str(tmp_path / "cache"))
+    repo = tmp_path / "repo"
+    tool_root = support.support_skill_cache_dir() / "demo"
+    live = _digest_tree(tool_root, "live", age_days=1)
+    support.materialize_repo_symlink(live, support.generated_support_dir(repo) / "demo", repo)
+    unreadable = support.generated_support_dir(repo) / "unreadable"
+    unreadable.symlink_to(tool_root / "gone")
+    # Resolved BEFORE the patch, so the expectation is the real target rather than
+    # a second call through the failure shim.
+    expected = live.resolve()
+    original = Path.resolve
+
+    def fail_one(path: Path, *args, **kwargs):
+        if path == unreadable:
+            raise OSError("forced resolve failure")
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "resolve", fail_one)
+
+    assert support.live_support_tree_targets(repo) == {expected}
+
+
+def test_the_use_stamp_lives_beside_the_tree_so_its_content_digest_is_stable(tmp_path: Path) -> None:
+    """`charness update` proves "already current" by hashing the tree against the host's
+    copy; a stamp INSIDE the tree made every readback differ and every update refresh
+    (release lane, 2026-09-03). Touching must leave the tree's bytes alone."""
+    tool_root = tmp_path / "tool"
+    tree = tool_root / "digest"
+    tree.mkdir(parents=True)
+    (tree / "SKILL.md").write_text("# digest\n", encoding="utf-8")
+    before = sorted(path.relative_to(tree) for path in tree.rglob("*"))
+    support._touch_support_tree(tree)
+    support._touch_support_tree(tree)
+    assert sorted(path.relative_to(tree) for path in tree.rglob("*")) == before
+    assert support._last_used_marker(tree).parent == tool_root
+    assert support._support_tree_last_used(tree) > 0.0

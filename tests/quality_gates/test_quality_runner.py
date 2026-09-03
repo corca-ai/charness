@@ -556,8 +556,13 @@ def test_run_quality_default_full_skips_agent_browser_runtime_hygiene(
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
     assert result.returncode == 0, result.stderr
-    assert "agent-browser-runtime-baseline" not in result.stdout
-    assert "agent-browser-runtime-hygiene" not in result.stdout
+    for status in ("PASS", "FAIL", "UNPROVEN"):
+        assert f"{status} agent-browser-runtime-baseline" not in result.stdout
+        assert f"{status} agent-browser-runtime-hygiene" not in result.stdout
+    # A skipped gate is not a passed gate: the green says which opt-ins it omitted.
+    summary = [line for line in result.stdout.splitlines() if line.startswith("Quality summary:")][-1]
+    assert "agent-browser-runtime-baseline: opt-in unmet" in summary
+    assert "agent-browser-runtime-hygiene: opt-in unmet" in summary
 
 
 def test_run_quality_runtime_hygiene_env_forces_agent_browser_gate(
