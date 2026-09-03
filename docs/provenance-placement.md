@@ -24,10 +24,6 @@ In a standing/contract doc, a rule line:
 - **never** stacks dates or incident-names in the rule body. That diary noise
   moves to the record layer plus the one link above.
 
-Dates age and issue numbers couple a standing rule to mutable tracker state
-(issues close, renumber). A reader opening a contract should learn the current
-rule, not wade through incident history.
-
 ```text
 # smell (stacked diary noise in a rule body):
 Always sync the mirror before validators (added 2026-05-01 after #257, see also
@@ -45,19 +41,15 @@ Always sync the mirror before validators. Background: retro/2026-05-01-mirror-dr
 
 The policy does **not** blanket-strip refs. The doc classes, strictest first:
 
-- **Exported reusable guidance** — surfaces that ship to consumers as current
-  guidance: `skills/public/**` and `skills/support/**` package text,
-  `skills/shared/references/**`, and the generated [`docs/cli-reference.md`](./cli-reference.md). Here the bar is
-  stricter than for standing-rule docs: **no issue anchors and no charness
-  self-version pins in prose at all** — not even a single load-bearing
-  trailing ref (the gates' structured-field and placeholder-URL carve-outs
-  stand).
-  Provenance for exported guidance lives in the commit message and the
-  goal/critique/retro record, never in the package. Skill packages are
-  enforced blocking by `validate_skill_ergonomics`; the remaining exported
-  surfaces are scanned by the advisory [`check_public_doc_coupling.py`](../tools/check_public_doc_coupling.py)
-  (`check-public-doc-coupling` in the quality gate). External tool versions
-  are not self-version pins and stay legitimate.
+- **Exported reusable guidance** (`skills/public/**`, `skills/support/**`,
+  `skills/shared/references/**`, generated
+  [cli-reference](./cli-reference.md)) — no issue anchors and no charness
+  self-version pins in prose at all; skill packages are held by
+  `validate_skill_ergonomics`
+  ([portable skill packages](./authoring-preflight.md#portable-skill-packages)),
+  the rest by the advisory
+  [`check_public_doc_coupling.py`](../tools/check_public_doc_coupling.py).
+  External tool versions are not self-version pins.
 - **Standing-rule docs** — their job is to state timeless rules/contracts (the
   docs linked from `AGENTS.md`/[`CLAUDE.md`](../CLAUDE.md) as the rule layer, e.g.
   [operating-contract.md](./operating-contract.md),
@@ -73,23 +65,15 @@ The policy does **not** blanket-strip refs. The doc classes, strictest first:
 
 ## Enforcement
 
-The portable check is config-driven through the **quality adapter**
-(`<repo-root>/.agents/quality-adapter.yaml`), block `standing_doc_provenance`:
-
-- `standing_docs`: explicit globs of the rule docs to scan;
-- `tracking_allowlist`: globs excluded even when a `standing_docs` glob matches
-  them;
-- `inline_allow_marker`: a per-line escape hatch (default
-  `provenance-allow`) for a genuinely load-bearing line that must keep a date or
-  second ref — visible, not silent.
-
-Empty `standing_docs` makes the check inert (stack-neutral default), so a
-consuming repo opts in by listing its own rule docs. Run it with:
+Config-driven through the quality adapter's `standing_doc_provenance` block
+(`standing_docs`, `tracking_allowlist`, `inline_allow_marker`);
+[adapter-contract.md](../skills/public/quality/references/adapter-contract.md)
+holds the field list. Empty `standing_docs` is inert, so a consuming repo opts
+in. Run it with:
 
 ```bash
 python3 skills/public/quality/scripts/check_standing_doc_provenance.py --repo-root .
 ```
 
-It generalizes the skill-package anchor gate
-([`skill_text_quality_lib.py`](../skills/public/quality/scripts/skill_text_quality_lib.py): `ISSUE_ANCHOR_RE`, `DATED_INCIDENT_RE`) to standing
-docs; see [the quality reference](../skills/public/quality/references/standing-doc-provenance.md).
+Portable description:
+[standing-doc-provenance.md](../skills/public/quality/references/standing-doc-provenance.md).
