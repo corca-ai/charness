@@ -313,6 +313,60 @@
       "transition_id": "seed-wrong-path-is-premise-failure",
       "lesson_id": "wrong-path-is-premise-failure",
       "source_retro": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md"
+    },
+    {
+      "sequence": 53,
+      "transition_id": "seed-boundary-identity-unbound",
+      "lesson_id": "boundary-identity-unbound",
+      "source_retro": "charness-artifacts/retro/2026-08-25-consumer-friction-session-retro.md"
+    },
+    {
+      "sequence": 54,
+      "transition_id": "seed-branch-hidden-by-earlier-guard",
+      "lesson_id": "branch-hidden-by-earlier-guard",
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md"
+    },
+    {
+      "sequence": 55,
+      "transition_id": "seed-command-plan-premise-before-fanout",
+      "lesson_id": "command-plan-premise-before-fanout",
+      "source_retro": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md"
+    },
+    {
+      "sequence": 56,
+      "transition_id": "seed-fallback-aimed-at-production",
+      "lesson_id": "fallback-aimed-at-production",
+      "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md"
+    },
+    {
+      "sequence": 57,
+      "transition_id": "seed-foreign-helper-command-in-hook",
+      "lesson_id": "foreign-helper-command-in-hook",
+      "source_retro": "charness-artifacts/retro/2026-08-18-session-retro-second.md"
+    },
+    {
+      "sequence": 58,
+      "transition_id": "seed-lane-scoped-proof",
+      "lesson_id": "lane-scoped-proof",
+      "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md"
+    },
+    {
+      "sequence": 59,
+      "transition_id": "seed-unclaimed-session-disposition",
+      "lesson_id": "unclaimed-session-disposition",
+      "source_retro": "charness-artifacts/retro/2026-08-21-session-retro.md"
+    },
+    {
+      "sequence": 60,
+      "transition_id": "seed-uncounted-count",
+      "lesson_id": "uncounted-count",
+      "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md"
+    },
+    {
+      "sequence": 61,
+      "transition_id": "seed-wrong-path-and-target-binding",
+      "lesson_id": "wrong-path-and-target-binding",
+      "source_retro": "charness-artifacts/retro/2026-08-21-release-candidate.md"
     }
   ],
   "score_events": [
@@ -1182,6 +1236,13 @@
       "lesson_id": "removal-consumer-grep-incomplete",
       "outcome": "changed-an-action",
       "anchor": "Swept the ENGLISH as well as the identifier when the catalog predicate stopped being positional, which found docs/conventions/validator-timing-layers.md still teaching the prefix rule; without it I would have grepped only for check_ and validate_ and left that doc asserting a boundary the code no longer had."
+    },
+    {
+      "event_id": "782-score-verification-shape-mismatch",
+      "source_retro": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+      "lesson_id": "verification-shape-mismatch",
+      "outcome": "changed-an-action",
+      "anchor": "Goal Run #775 closed the class's escape paths one by one (release lane on every push, one layout resolver, empty wall-clock and module-eviction records, the mirror preamble in the standing runner, a summary that names unrun gates) rather than trusting a focused green; without it the #768 release-only regressions and the stale-mirror reds would have kept reaching decisions"
     }
   ],
   "lessons": {
@@ -1878,17 +1939,17 @@
     "verification-shape-mismatch": {
       "source_retro": "charness-artifacts/retro/2026-09-02-session-retro.md",
       "transition_id": "seed-verification-shape-mismatch",
-      "score_total": 0,
-      "score_count": 0,
+      "score_total": 1,
+      "score_count": 1,
       "outcome_counts": {
-        "changed-an-action": 0,
+        "changed-an-action": 1,
         "not-consulted": 0,
         "pushed-a-wrong-action": 0,
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "782-graduate-verification-shape-mismatch"
     },
     "layout-oracle-duplication": {
       "source_retro": "charness-artifacts/retro/2026-09-03-session-retro.md",
@@ -1953,6 +2014,141 @@
     "wrong-path-is-premise-failure": {
       "source_retro": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
       "transition_id": "seed-wrong-path-is-premise-failure",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "boundary-identity-unbound": {
+      "source_retro": "charness-artifacts/retro/2026-08-25-consumer-friction-session-retro.md",
+      "transition_id": "seed-boundary-identity-unbound",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "branch-hidden-by-earlier-guard": {
+      "source_retro": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+      "transition_id": "seed-branch-hidden-by-earlier-guard",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "command-plan-premise-before-fanout": {
+      "source_retro": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
+      "transition_id": "seed-command-plan-premise-before-fanout",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "fallback-aimed-at-production": {
+      "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+      "transition_id": "seed-fallback-aimed-at-production",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "foreign-helper-command-in-hook": {
+      "source_retro": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
+      "transition_id": "seed-foreign-helper-command-in-hook",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "lane-scoped-proof": {
+      "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+      "transition_id": "seed-lane-scoped-proof",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "unclaimed-session-disposition": {
+      "source_retro": "charness-artifacts/retro/2026-08-21-session-retro.md",
+      "transition_id": "seed-unclaimed-session-disposition",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "uncounted-count": {
+      "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
+      "transition_id": "seed-uncounted-count",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "wrong-path-and-target-binding": {
+      "source_retro": "charness-artifacts/retro/2026-08-21-release-candidate.md",
+      "transition_id": "seed-wrong-path-and-target-binding",
       "score_total": 0,
       "score_count": 0,
       "outcome_counts": {
@@ -2071,6 +2267,14 @@
       "action": "archive",
       "decision_ref": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
       "rationale": "#781 joint review 2026-09-03: one instance, no recurrence, no mechanism or owner page; the general form is the scored active lesson harness-differential-not-test"
+    },
+    {
+      "sequence": 14,
+      "event_id": "782-graduate-verification-shape-mismatch",
+      "lesson_id": "verification-shape-mismatch",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#782 closeout 2026-09-03: changed an action across the whole Goal Run (#776-#781 each closed one escape path of this class); docs/development.md now owns the rule beside the standing-runner paragraph and names the mechanisms; the one open path (installed plugin read ahead of the working tree) is stated there"
     }
   ]
 }

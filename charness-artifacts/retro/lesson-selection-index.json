@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-09-03",
-  "source_artifact_count": 424,
-  "candidate_count": 2204,
+  "source_artifact_count": 425,
+  "candidate_count": 2206,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -347,6 +347,94 @@
       ]
     },
     {
+      "candidate_id": "class:6624f88d18e2",
+      "kind": "next_improvement",
+      "lesson": "**workflow — `recurs:` one runner, one truth.** After any integration step, the only green that counts is `run_standing_pytest.py` followed by the full read-only lane; family reruns are for locating, not for claiming. Structural pattern: a proxy from an older tree read as the current state. Triggering instance(s): the 8568-pass bare run trusted over the runner's 31 failures.",
+      "normalized_key": "workflow recurs verify a migration in the shape production uses before the next launch",
+      "recurrence_class": "verification-shape-mismatch",
+      "source_count": 4,
+      "latest_source_path": "charness-artifacts/retro/2026-09-03-session-retro.md",
+      "latest_source_date": "2026-09-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.48,
+      "selection_weight": 2.44,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-02-session-retro.md",
+          "date": "2026-09-02",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**workflow — `recurs:` verify a migration in the shape production uses before the next launch.** Add to every lane brief that touches imports: \"run `python3 <file> --help` for each touched CLI from the repo root; paste the failures\". Parent side: run the full read-only lane before launching a dependent lane, not after. Structural pattern: verification bound to one loader shape misses the other. Triggering instance(s): 39 `scripts.subprocess_guard` package imports; `load_script_module` under bare names in `test_batch6.py`."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+          "date": "2026-09-03",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**The wall-clock census had a blind shape.** A test whose deadline arrives through an environment knob into a subprocess carries no `time.*` call; the gate that closed 47 sites could not see the 48th, and it was the one the hosted baseline tripped on."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+          "date": "2026-09-03",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**capability — `recurs:` extend the wall-clock census to timeout-bound claims.** `check_wall_clock_form.py` or a sibling refuses a test whose verdict depends on a subprocess deadline knob (`*_TIMEOUT_SECONDS` set below a few seconds beside an assertion on captured output) rather than on a forced observation. Structural pattern: a proxy shape the gate does not model. Triggering instance(s): the drain test on hosted run 33701977188, rewritten in #782."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-03-session-retro.md",
+          "date": "2026-09-03",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**workflow — `recurs:` one runner, one truth.** After any integration step, the only green that counts is `run_standing_pytest.py` followed by the full read-only lane; family reruns are for locating, not for claiming. Structural pattern: a proxy from an older tree read as the current state. Triggering instance(s): the 8568-pass bare run trusted over the runner's 31 failures."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:f018693d78d2",
+      "kind": "repeat_trap",
+      "lesson": "**Three push refusals for one commit, all the same class.** The release lane found a use-stamp written inside a hashed tree; the changed-line gate found about forty unproven lines and two unmapped modules. Each was fixable in minutes once named, and each was invisible to the focused runs the subagents had done. The previous session paid the same toll.",
+      "normalized_key": "workflow when adding tests to satisfy a coverage gate verify by measuring the named",
+      "recurrence_class": "green-test-is-not-covered-line",
+      "source_count": 4,
+      "latest_source_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+      "latest_source_date": "2026-09-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.48,
+      "selection_weight": 2.44,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**workflow**: when adding tests to satisfy a coverage gate, verify by MEASURING the named lines, not by the test passing. Both attempts here passed; only the coverage read distinguished the one that exercised the intended branch from the one that silently matched a different arm with an identical result."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "passing focused tests were not treated as changed-line proof; the changed-line producer's blocking target output remained the authoritative coverage verdict."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+          "date": "2026-09-03",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Three push refusals for one commit, all the same class.** The release lane found a use-stamp written inside a hashed tree; the changed-line gate found about forty unproven lines and two unmapped modules. Each was fixable in minutes once named, and each was invisible to the focused runs the subagents had done. The previous session paid the same toll."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+          "date": "2026-09-03",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**workflow — `recurs:` the changed-line gate is part of a subagent's definition of done.** Every brief that touches `scripts/` or `skills/` names `release_changed_line_coverage.py --base-sha <base>` as a verification step and pastes its `blocking_detail`; a focused green is not a covered line. Structural pattern: verification bound to the writer's shape misses the reviewer's. Triggering instance(s): the second #781 push refusal, forty lines across seven files."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:706976e11174",
       "kind": "repeat_trap",
       "lesson": "the session declaration was emitted and receipted, but no same-session retro disposition was written before the next-day broad gate. The gate caught the state, but only after the originating session had ended; this recurs against the open #639 boundary.",
@@ -542,80 +630,6 @@
           "section": "Waste",
           "kind": "repeat_trap",
           "lesson": "unsupported command forms were encountered during release preparation. They were kept as rejected evidence, while only owned help/inventory-derived commands were counted as checks."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:03d57427e02c",
-      "kind": "next_improvement",
-      "lesson": "state a detector's blind class — \"what can this mechanism NOT see?\" — in its module docstring before writing its first acceptance test. The HTML guard's blind class was \"it cannot see any renderer\", which was the whole finding, and it took three review rounds to surface.",
-      "normalized_key": "workflow when a slice adds or changes a detector write one adversarial input that",
-      "recurrence_class": "detector-blind-class-unstated",
-      "source_count": 3,
-      "latest_source_path": "charness-artifacts/retro/2026-08-18-session-retro.md",
-      "latest_source_date": "2026-08-18",
-      "age_days": 16,
-      "recency_weight": 0.7816,
-      "alpha": 0.36,
-      "selection_weight": 1.3443,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "kind": "next_improvement",
-          "lesson": "**workflow**: — when a slice adds or changes a detector, write ONE adversarial input that the blind class says must not be judged and that the current acceptance would pass, before the acceptance is finished. The docstring half landed twice this session and caught nothing; the acceptance half is the whole lesson. This is the same class the prior retro seeded, re-observed rather than re-worded."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "kind": "next_improvement",
-          "lesson": "**workflow**: — state a detector's blind class (\"what can this mechanism NOT see?\") in its module docstring BEFORE writing its acceptance, and make the first acceptance test the one that fails when it measures the wrong noun. Both false central claims this session were reachable from that one question, and both were found by a reviewer instead. Tagged so the lesson is SEEDABLE: a bullet without the tag produces a candidate whose class is `None`, which the selection index drops — so an untagged improvement is a lesson the next session can never be shown, which is the carrier gap this very retro names one section above."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro.md",
-          "date": "2026-08-18",
-          "section": "Next Improvements",
-          "kind": "next_improvement",
-          "lesson": "state a detector's blind class — \"what can this mechanism NOT see?\" — in its module docstring before writing its first acceptance test. The HTML guard's blind class was \"it cannot see any renderer\", which was the whole finding, and it took three review rounds to surface."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:7f8e23a21261",
-      "kind": "repeat_trap",
-      "lesson": "**The handoff was drafted, then validated**. `validate_handoff_artifact.py` refused it for a transcribed as-of count (`300 commits`), costing a read-edit-revalidate cycle. The lesson in view at session open says to run the authoring preflight BEFORE drafting the final packet. `strong`.",
-      "normalized_key": "closeout authoring rework the initial goal and packet used bare internal references and wrapped",
-      "recurrence_class": "closeout-authoring-rework",
-      "source_count": 3,
-      "latest_source_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-      "latest_source_date": "2026-08-16",
-      "age_days": 18,
-      "recency_weight": 0.7579,
-      "alpha": 0.36,
-      "selection_weight": 1.3035,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
-          "date": "2026-08-06",
-          "section": "Waste",
-          "kind": "repeat_trap",
-          "lesson": "closeout-authoring-rework: the initial goal and packet used bare internal references and wrapped inline code. The authoring preflight caught these before the slice closeout, so the cost was small but the same gate should be run before drafting the final packet."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-          "date": "2026-08-16",
-          "section": "Waste",
-          "kind": "repeat_trap",
-          "lesson": "**The handoff was drafted, then validated**. `validate_handoff_artifact.py` refused it for a transcribed as-of count (`300 commits`), costing a read-edit-revalidate cycle. The lesson in view at session open says to run the authoring preflight BEFORE drafting the final packet. `strong`."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
-          "date": "2026-08-16",
-          "section": "Next Improvements",
-          "kind": "next_improvement",
-          "lesson": "**memory**: — run the owning validator on a truth surface BEFORE drafting its final text, not after. Three separate sessions have now paid a read-edit-revalidate cycle on `docs/handoff.md` alone."
         }
       ]
     }
@@ -954,6 +968,94 @@
       ]
     },
     {
+      "candidate_id": "class:6624f88d18e2",
+      "kind": "next_improvement",
+      "lesson": "**workflow — `recurs:` one runner, one truth.** After any integration step, the only green that counts is `run_standing_pytest.py` followed by the full read-only lane; family reruns are for locating, not for claiming. Structural pattern: a proxy from an older tree read as the current state. Triggering instance(s): the 8568-pass bare run trusted over the runner's 31 failures.",
+      "normalized_key": "workflow recurs verify a migration in the shape production uses before the next launch",
+      "recurrence_class": "verification-shape-mismatch",
+      "source_count": 4,
+      "latest_source_path": "charness-artifacts/retro/2026-09-03-session-retro.md",
+      "latest_source_date": "2026-09-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.48,
+      "selection_weight": 2.44,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-02-session-retro.md",
+          "date": "2026-09-02",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**workflow — `recurs:` verify a migration in the shape production uses before the next launch.** Add to every lane brief that touches imports: \"run `python3 <file> --help` for each touched CLI from the repo root; paste the failures\". Parent side: run the full read-only lane before launching a dependent lane, not after. Structural pattern: verification bound to one loader shape misses the other. Triggering instance(s): 39 `scripts.subprocess_guard` package imports; `load_script_module` under bare names in `test_batch6.py`."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+          "date": "2026-09-03",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**The wall-clock census had a blind shape.** A test whose deadline arrives through an environment knob into a subprocess carries no `time.*` call; the gate that closed 47 sites could not see the 48th, and it was the one the hosted baseline tripped on."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+          "date": "2026-09-03",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**capability — `recurs:` extend the wall-clock census to timeout-bound claims.** `check_wall_clock_form.py` or a sibling refuses a test whose verdict depends on a subprocess deadline knob (`*_TIMEOUT_SECONDS` set below a few seconds beside an assertion on captured output) rather than on a forced observation. Structural pattern: a proxy shape the gate does not model. Triggering instance(s): the drain test on hosted run 33701977188, rewritten in #782."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-03-session-retro.md",
+          "date": "2026-09-03",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**workflow — `recurs:` one runner, one truth.** After any integration step, the only green that counts is `run_standing_pytest.py` followed by the full read-only lane; family reruns are for locating, not for claiming. Structural pattern: a proxy from an older tree read as the current state. Triggering instance(s): the 8568-pass bare run trusted over the runner's 31 failures."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:f018693d78d2",
+      "kind": "repeat_trap",
+      "lesson": "**Three push refusals for one commit, all the same class.** The release lane found a use-stamp written inside a hashed tree; the changed-line gate found about forty unproven lines and two unmapped modules. Each was fixable in minutes once named, and each was invisible to the focused runs the subagents had done. The previous session paid the same toll.",
+      "normalized_key": "workflow when adding tests to satisfy a coverage gate verify by measuring the named",
+      "recurrence_class": "green-test-is-not-covered-line",
+      "source_count": 4,
+      "latest_source_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+      "latest_source_date": "2026-09-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.48,
+      "selection_weight": 2.44,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**workflow**: when adding tests to satisfy a coverage gate, verify by MEASURING the named lines, not by the test passing. Both attempts here passed; only the coverage read distinguished the one that exercised the intended branch from the one that silently matched a different arm with an identical result."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
+          "date": "2026-08-21",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "passing focused tests were not treated as changed-line proof; the changed-line producer's blocking target output remained the authoritative coverage verdict."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+          "date": "2026-09-03",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Three push refusals for one commit, all the same class.** The release lane found a use-stamp written inside a hashed tree; the changed-line gate found about forty unproven lines and two unmapped modules. Each was fixable in minutes once named, and each was invisible to the focused runs the subagents had done. The previous session paid the same toll."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+          "date": "2026-09-03",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**workflow — `recurs:` the changed-line gate is part of a subagent's definition of done.** Every brief that touches `scripts/` or `skills/` names `release_changed_line_coverage.py --base-sha <base>` as a verification step and pastes its `blocking_detail`; a focused green is not a covered line. Structural pattern: verification bound to the writer's shape misses the reviewer's. Triggering instance(s): the second #781 push refusal, forty lines across seven files."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:706976e11174",
       "kind": "repeat_trap",
       "lesson": "the session declaration was emitted and receipted, but no same-session retro disposition was written before the next-day broad gate. The gate caught the state, but only after the originating session had ended; this recurs against the open #639 boundary.",
@@ -1264,13 +1366,13 @@
       ]
     },
     {
-      "candidate_id": "class:6624f88d18e2",
+      "candidate_id": "class:2166854d89a5",
       "kind": "next_improvement",
-      "lesson": "**workflow — `recurs:` one runner, one truth.** After any integration step, the only green that counts is `run_standing_pytest.py` followed by the full read-only lane; family reruns are for locating, not for claiming. Structural pattern: a proxy from an older tree read as the current state. Triggering instance(s): the 8568-pass bare run trusted over the runner's 31 failures.",
-      "normalized_key": "workflow recurs verify a migration in the shape production uses before the next launch",
-      "recurrence_class": "verification-shape-mismatch",
+      "lesson": "**memory — `recurs:` name a live-corpus invariant before the first event that can break it.** When a ledger, baseline, or record gains its first state transition, grep the tests that read the live artifact for the implicit \"all rows are X\" and give them a derived expectation.",
+      "normalized_key": "workflow when a failure passes alone bisect the collection set first under xdist every",
+      "recurrence_class": "collection-time-pollution",
       "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-09-03-session-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
       "latest_source_date": "2026-09-03",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -1282,14 +1384,14 @@
           "date": "2026-09-02",
           "section": "Next Improvements",
           "kind": "next_improvement",
-          "lesson": "**workflow — `recurs:` verify a migration in the shape production uses before the next launch.** Add to every lane brief that touches imports: \"run `python3 <file> --help` for each touched CLI from the repo root; paste the failures\". Parent side: run the full read-only lane before launching a dependent lane, not after. Structural pattern: verification bound to one loader shape misses the other. Triggering instance(s): 39 `scripts.subprocess_guard` package imports; `load_script_module` under bare names in `test_batch6.py`."
+          "lesson": "**workflow — when a failure passes alone, bisect the collection set first.** Under xdist every test module imports in every worker, so a module-level rebind pollutes regardless of runtime order. The nine-run bisect script is in the session record's lesson list; it belongs in `skills/public/debug/references/sibling-search.md` beside the runtime prefix method."
         },
         {
-          "artifact_path": "charness-artifacts/retro/2026-09-03-session-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
           "date": "2026-09-03",
           "section": "Next Improvements",
           "kind": "next_improvement",
-          "lesson": "**workflow — `recurs:` one runner, one truth.** After any integration step, the only green that counts is `run_standing_pytest.py` followed by the full read-only lane; family reruns are for locating, not for claiming. Structural pattern: a proxy from an older tree read as the current state. Triggering instance(s): the 8568-pass bare run trusted over the runner's 31 failures."
+          "lesson": "**memory — `recurs:` name a live-corpus invariant before the first event that can break it.** When a ledger, baseline, or record gains its first state transition, grep the tests that read the live artifact for the implicit \"all rows are X\" and give them a derived expectation."
         }
       ]
     },
@@ -1391,36 +1493,6 @@
       ]
     },
     {
-      "candidate_id": "class:f018693d78d2",
-      "kind": "repeat_trap",
-      "lesson": "passing focused tests were not treated as changed-line proof; the changed-line producer's blocking target output remained the authoritative coverage verdict.",
-      "normalized_key": "workflow when adding tests to satisfy a coverage gate verify by measuring the named",
-      "recurrence_class": "green-test-is-not-covered-line",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 13,
-      "recency_weight": 0.8185,
-      "alpha": 0.24,
-      "selection_weight": 1.015,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
-          "date": "2026-08-13",
-          "section": "Next Improvements",
-          "kind": "next_improvement",
-          "lesson": "**workflow**: when adding tests to satisfy a coverage gate, verify by MEASURING the named lines, not by the test passing. Both attempts here passed; only the coverage read distinguished the one that exercised the intended branch from the one that silently matched a different arm with an identical result."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-r2-semantic-packet-final.md",
-          "date": "2026-08-21",
-          "section": "Waste",
-          "kind": "repeat_trap",
-          "lesson": "passing focused tests were not treated as changed-line proof; the changed-line producer's blocking target output remained the authoritative coverage verdict."
-        }
-      ]
-    },
-    {
       "candidate_id": "class:db57823c8786",
       "kind": "repeat_trap",
       "lesson": "release publication and post-publish readback completed before the goal/handoff documents were reconciled to the new truth. The structural repair is to bind closeout artifacts after external readback and before changing terminal status.",
@@ -1474,6 +1546,29 @@
       ]
     },
     {
+      "candidate_id": "current_focus:bbcb17ccf12d",
+      "kind": "current_focus",
+      "lesson": "Goal Run #775, sessions three and four in one operator day: #780 wall-clock-rewrite-remainder, #781 lesson-promotion-and-budget with its joint lesson review, and #782 integrated-closeout up to the parent close.",
+      "normalized_key": "goal run 775 sessions three and four in one operator day 780 wall clock",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+      "latest_source_date": "2026-09-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+          "date": "2026-09-03",
+          "section": "Context",
+          "kind": "current_focus",
+          "lesson": "Goal Run #775, sessions three and four in one operator day: #780 wall-clock-rewrite-remainder, #781 lesson-promotion-and-budget with its joint lesson review, and #782 integrated-closeout up to the parent close."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:cac3f753b7b9",
       "kind": "next_improvement",
       "lesson": "**capability — `novel:` one layout resolver.** Fold `_repo_script` (scaffold_artifact_lib), `_packaged_script`/`_seed_path` (seeding_support), `load_repo_script_module` (public_spec_adapter_policy), and `present_gate` (staged plan helpers) onto one resolver beside `scripts/core/repo_layout.py` that answers \"where does repo script X live\" for flat and packaged layouts. Destination: #772 integrated-closeout, as a follow-up item in its brief. Structural pattern: the same layout question answered independently in four places. Triggering instance(s): the four lookups above, all written this session.",
@@ -1516,6 +1611,29 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "**workflow — `novel:` a sweep owns only repo paths.** A rename sweep must skip `$SKILL_DIR`-relative strings, `skills/**` trees, contract-checker snippets, and any test expectation for a hash-bound artifact; add those to the sweep's exclusion set before the next path migration. Structural pattern: a text rewrite applied past the layout it models. Triggering instance(s): the two contract snippets, the critique validator names, the 2026-08-12 snapshot expectation."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:efb98ab99e37",
+      "kind": "repeat_trap",
+      "lesson": "**A live-corpus invariant pinned in four tests without a name.** \"Every lesson is active\" held from the ledger's birth until the first lifecycle event, and four tests broke at once.",
+      "normalized_key": "a live corpus invariant pinned in four tests without a name every lesson is",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+      "latest_source_date": "2026-09-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+          "date": "2026-09-03",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**A live-corpus invariant pinned in four tests without a name.** \"Every lesson is active\" held from the ledger's birth until the first lifecycle event, and four tests broke at once."
         }
       ]
     },
@@ -1677,29 +1795,6 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "**workflow — use `git -C <worktree>` for every lane-worktree command.** The shell cwd persists across tool calls; two cherry-picks landed in the wrong repository. Trivial, but it recurred within one session."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:2166854d89a5",
-      "kind": "next_improvement",
-      "lesson": "**workflow — when a failure passes alone, bisect the collection set first.** Under xdist every test module imports in every worker, so a module-level rebind pollutes regardless of runtime order. The nine-run bisect script is in the session record's lesson list; it belongs in `skills/public/debug/references/sibling-search.md` beside the runtime prefix method.",
-      "normalized_key": "workflow when a failure passes alone bisect the collection set first under xdist every",
-      "recurrence_class": "collection-time-pollution",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-09-02-session-retro.md",
-      "latest_source_date": "2026-09-02",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-09-02-session-retro.md",
-          "date": "2026-09-02",
-          "section": "Next Improvements",
-          "kind": "next_improvement",
-          "lesson": "**workflow — when a failure passes alone, bisect the collection set first.** Under xdist every test module imports in every worker, so a module-level rebind pollutes regardless of runtime order. The nine-run bisect script is in the session record's lesson list; it belongs in `skills/public/debug/references/sibling-search.md` beside the runtime prefix method."
         }
       ]
     },

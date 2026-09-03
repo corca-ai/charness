@@ -67,6 +67,19 @@ python3 scripts/gates_support/run_standing_pytest.py --repo-root .
 ./scripts/run-quality.sh --full --read-only
 ```
 
+Verify in the shape production uses. After any integration step the only green
+that counts is the standing runner followed by the full read-only lane; a
+family rerun locates, it does not claim. A green from an older tree, a bare
+pytest, a focused run, or a lane that skipped the check in question is a proxy
+read as the current state, and every path of that class this repo has paid for
+now has a mechanism: the pre-push hook runs the release lane on every code
+push, the runners refresh or refuse a stale mirror themselves, the quality
+summary names every gate it did not run, and the wall-clock and module-eviction
+form checks keep their records empty. The open path is the installed plugin
+being read ahead of the working tree inside this repo; until the host adapter
+routes skill scripts to the checkout, run repo scripts from `skills/` and
+`scripts/` here.
+
 Production code spawns only through
 [`subprocess_guard.py`](../scripts/core/subprocess_guard.py); the standing
 [form check](../scripts/gates/check_subprocess_form.py) refuses a direct call.

@@ -1,8 +1,15 @@
 """The probe's process boundary: deadline, group kill, drain, and what survives them.
 
 Split from `test_cli_skill_surface.py` (#780): the adapter and classification
-tests stay there; every test here spawns the check in its own session and
-proves how it treats a probe's descendants.
+tests stay there; every test here proves how the check treats a probe's
+descendants.
+
+Two shapes live here, and the difference is deliberate. A test whose claim is
+only "the check refused to hang" runs the check in ITS OWN SESSION, so a
+regression cannot take the suite with it. A test whose claim needs the guard's
+budget to be spent by an OBSERVATION rather than by the wall runs the check
+IN-PROCESS through `run_cli_skill_surface`, because a controlled
+`time.monotonic` can only reach a probe that runs in this interpreter.
 """
 
 from __future__ import annotations
@@ -12,13 +19,17 @@ import select
 import signal
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
 import yaml
 
+from scripts.core.subprocess_guard import DRAIN_UNAVAILABLE
+from tests.fifo_witness import FifoWitness
+
 from .support import ROOT, run_script, write_executable
-from .test_cli_skill_surface import seed_repo
+from .test_cli_skill_surface import run_cli_skill_surface, seed_repo
 
 
 def _run_bounded_in_own_session(*args: str, env: dict[str, str], limit: float = 30.0) -> str | None:
@@ -82,26 +93,109 @@ def _recorded_pids(path: Path) -> list[int]:
     return [int(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
 
 
-def _write_controlled_pipe_holder(repo: Path) -> Path:
+def _write_controlled_pipe_holder(
+    repo: Path,
+    *,
+    witness_path: Path | None = None,
+    pid_log: Path | None = None,
+    release: str = "deadline",
+) -> Path:
+    """Seed the grandchild that holds a probe's inherited output pipe.
+
+    `pid_log` and `witness_path` are what make this holder a CONTROLLED child.
+    It records its own pid and THEN writes one FIFO line, before it does
+    anything else, so a single line proves three things at once: the holder
+    exists, it already holds the pipe it inherited at fork, and the test can name
+    its pid for cleanup. A probe that recorded that pid itself could be killed in
+    the gap between the spawn and the write, which a test reads as "the fixture
+    never established a holder" -- a red with nothing to say about the check.
+
+    `release` names what ends the hold:
+
+    - `deadline` (unchanged, and what the in-group orphan fixture still uses):
+      the stop file, or a five-second self-deadline.
+    - `parent-death`: block on a pidfd for the spawning probe with no timeout and
+      release the pipe the moment that probe dies. The group kill landing on the
+      probe but NOT on this holder is then what closes the pipe, so the post-kill
+      drain gets its EOF from a holder that provably outlived the kill.
+    - `stop-file`: hold until the test says stop. The drain cannot finish on its
+      own, so it must hit its own bound or never return at all.
+
+    The polling below is the child's behaviour, not a test's claim, and the long
+    deadline on `stop-file` is only a leak guard for a session that dies before
+    its cleanup runs; no assertion depends on either.
+    """
     holder = repo / "scripts" / "pipe_holder.py"
-    write_executable(
-        holder,
-        "#!/usr/bin/env python3\n"
-        "import os, signal, sys, time\n"
-        "from pathlib import Path\n"
-        "stop_path, exit_dir = map(Path, sys.argv[1:])\n"
-        "pid = os.getpid()\n"
-        "def finish(*_args):\n"
-        "    exit_dir.mkdir(parents=True, exist_ok=True)\n"
-        "    (exit_dir / str(pid)).write_text('exited\\n', encoding='utf-8')\n"
-        "    raise SystemExit(0)\n"
-        "signal.signal(signal.SIGTERM, finish)\n"
-        "deadline = time.monotonic() + 5.0\n"
-        "while not stop_path.exists() and time.monotonic() < deadline:\n"
-        "    time.sleep(0.01)\n"
-        "finish()\n",
-    )
+    lines = [
+        "#!/usr/bin/env python3",
+        "import os, select, signal, sys, time",
+        "from pathlib import Path",
+        "stop_path, exit_dir = map(Path, sys.argv[1:])",
+        "pid = os.getpid()",
+        "def finish(*_args):",
+        "    exit_dir.mkdir(parents=True, exist_ok=True)",
+        "    (exit_dir / str(pid)).write_text('exited\\n', encoding='utf-8')",
+        "    raise SystemExit(0)",
+        "signal.signal(signal.SIGTERM, finish)",
+    ]
+    if release == "parent-death":
+        # Armed BEFORE the witness line, and the witness line is what lets the
+        # kill fire: the probe cannot die in the window between this holder
+        # reading its pid and this holder watching it.
+        lines.append("_parent = os.pidfd_open(os.getppid())")
+    if pid_log is not None:
+        lines.append(
+            f"with open({str(pid_log)!r}, 'a', encoding='utf-8') as _log:"
+            " _log.write(str(pid) + '\\n')"
+        )
+    if witness_path is not None:
+        # Held open for this process's whole life, so the FIFO tracks the holder.
+        lines += [
+            f"_witness = open({str(witness_path)!r}, 'w')",
+            "_witness.write('holding\\n')",
+            "_witness.flush()",
+        ]
+    if release == "parent-death":
+        # A blocking select with no timeout, and the end of this script: the stop
+        # file below would be unreachable code, not a second chance.
+        lines += ["select.select([_parent], [], [])", "finish()", ""]
+    else:
+        lines += [
+            f"deadline = time.monotonic() + {600.0 if release == 'stop-file' else 5.0}",
+            "while not stop_path.exists() and time.monotonic() < deadline:",
+            "    time.sleep(0.01)",
+            "finish()",
+            "",
+        ]
+    write_executable(holder, "\n".join(lines))
     return holder
+
+
+def _clock_spent_by_witness(witness: FifoWitness) -> Callable[[], float]:
+    """A `time.monotonic` whose budget is spent by an OBSERVATION, not by the wall.
+
+    Reads 0 until the attempt's controlled holder has written its line, and 100
+    more for every line after that. The guard reads `started_at` once per attempt
+    and compares it against this on every heartbeat, so each of the check's two
+    probe attempts gets its own budget: attempt N starts at 100*(N-1) and crosses
+    its bound only once THAT attempt's holder has signalled.
+
+    Counting rather than latching one flag is what makes the second attempt
+    honest. A sticky flag reads as already-spent the moment attempt 2 starts, so
+    attempt 2 is killed before its child exists -- the vacuous pass this rewrite
+    removes, in a new place.
+    """
+    lines = 0
+
+    def monotonic() -> float:
+        nonlocal lines
+        if witness.has_line():
+            # Consumed, not peeked: the next attempt must produce its own line.
+            witness.wait_line()
+            lines += 1
+        return 100.0 * lines
+
+    return monotonic
 
 
 def _owned_process_is_running(pid: int, identity: str) -> bool:
@@ -268,62 +362,85 @@ def test_cli_skill_surface_survives_a_probe_whose_grandchild_holds_the_pipe(tmp_
     reason="child-exit-on-parent-death: an escaped grandchild must not defeat the process-group drain deadline"
 )
 def test_cli_skill_surface_bounds_the_drain_when_the_grandchild_escapes_the_group(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch, capsys
 ) -> None:
     """The drain deadline must bind when killing the group cannot reach the holder.
 
-    Killing the probe's process group reaps the ordinary grandchild, which makes
+    Killing the probe's process group reaps an ordinary grandchild, which makes
     the drain return instantly and leaves the guard's post-kill drain unexercised --
     a mutation sweep confirmed the deadline could be deleted with the suite
-    green. A grandchild that calls `setsid()` escapes the group, still holds the
-    inherited pipe, and is the input that makes the deadline load-bearing.
+    green. A grandchild that calls `setsid()` escapes the group and still holds
+    the inherited pipe, and it is now the input that makes the deadline
+    load-bearing rather than merely present:
+
+    - the escaped holder releases the pipe for nothing the check can do, only for
+      the stop file this test writes in its cleanup, so `communicate()` cannot
+      reach EOF while the check runs. The bound is then the only thing that can
+      end the drain: delete it and this test hangs, which is the whole claim;
+    - the outcome that proves the bound fired is in the payload, not in a stopwatch.
+      `DRAIN_UNAVAILABLE` with an EMPTY stdout preview is what the guard reports
+      exactly when it killed the group, waited its full drain, and found the body
+      still unreachable.
+
+    The clock is controlled and the check runs in-process, so the budget is spent
+    by the holder's FIFO line rather than by a 0.5 s wall deadline racing the
+    child's start. The old shape asserted one escapee per attempt and an elapsed
+    time under fifteen seconds, failed six scheduled runs in a row, and could
+    still pass vacuously with the kill landing before the grandchild existed
+    (#764, #779). The holder's earlier five-second self-deadline made this worse
+    than vacuous once the kill became prompt: it raced POST_KILL_DRAIN_SECONDS
+    from the other side, so the same test could bind or not bind by a margin the
+    scheduler picked.
     """
     pid_log = tmp_path / "escapee-pids.txt"
     stop_path = tmp_path / "stop-escapees"
     exit_dir = tmp_path / "escapee-exits"
     repo = _probe_repo(tmp_path, "python3 scripts/escapee.py doctor --json")
-    holder = _write_controlled_pipe_holder(repo)
-    write_executable(
-        repo / "scripts" / "escapee.py",
-        "#!/usr/bin/env python3\n"
-        "import subprocess, sys, time\n"
-        # start_new_session puts the grandchild in its OWN session, so killpg on
-        # the probe's group never reaches it; it keeps the pipe open regardless.
-        f"child = subprocess.Popen([sys.executable, {str(holder)!r}, {str(stop_path)!r}, {str(exit_dir)!r}], start_new_session=True)\n"
-        f"with open({str(pid_log)!r}, 'a', encoding='utf-8') as stream: stream.write(str(child.pid) + '\\n')\n"
-        "time.sleep(600)\n",
-    )
-    env = os.environ.copy()
-    env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.5"
-
-    try:
-        result = _run_bounded_in_own_session(
-            "scripts/gates/check_cli_skill_surface.py",
-            "--repo-root",
-            str(repo),
-            "--run-probes",
-            env=env,
+    with FifoWitness(tmp_path / "escapee-witness") as witness:
+        holder = _write_controlled_pipe_holder(
+            repo, witness_path=witness.path, pid_log=pid_log, release="stop-file"
         )
-    finally:
-        escaped_pids, exited_pids, survivors = _stop_recorded_children(pid_log, stop_path, exit_dir)
+        write_executable(
+            repo / "scripts" / "escapee.py",
+            "#!/usr/bin/env python3\n"
+            "import subprocess, sys, time\n"
+            # start_new_session puts the grandchild in its OWN session, so killpg on
+            # the probe's group never reaches it; it keeps the pipe open regardless.
+            # `Popen` returns only once that grandchild has exec'd, and the pipe was
+            # inherited at fork, so the witness line it writes covers both.
+            f"subprocess.Popen([sys.executable, {str(holder)!r}, {str(stop_path)!r}, {str(exit_dir)!r}], start_new_session=True)\n"
+            # Outlasts any plausible run ON PURPOSE: a probe that could reach its
+            # own end would let the drain finish for the wrong reason.
+            "time.sleep(600)\n",
+        )
+        # Not a deadline any more. The budget is judged on the fake clock below;
+        # this knob only sets the beat at which the guard re-reads it, because
+        # `_resolve_interval` clamps the heartbeat to the budget and
+        # MINIMUM_HEARTBEAT_SECONDS is 0.1.
+        monkeypatch.setenv("CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS", "0.1")
+        monkeypatch.setattr(
+            "scripts.core.subprocess_guard.time.monotonic", _clock_spent_by_witness(witness)
+        )
+        try:
+            result = run_cli_skill_surface(
+                monkeypatch, capsys, "--repo-root", str(repo), "--run-probes"
+            )
+        finally:
+            escaped_pids, exited_pids, survivors = _stop_recorded_children(
+                pid_log, stop_path, exit_dir
+            )
 
-    assert result is not None, (
-        "the drain was unbounded; the escaped grandchild held the pipe open forever"
-    )
     assert escaped_pids, "the fixture never established an escaped pipe holder"
     assert exited_pids == escaped_pids, "the fixture failed to stop every escaped pipe holder"
     assert not survivors
-    payload = yaml.safe_load(result)
+    payload = yaml.safe_load(result.stdout)
+    probe = payload["probe_results"][0]
     assert payload["status"] == "unobserved"
-    assert payload["probe_results"][0]["timed_out"] is True
-    # The claim is that the drain BINDS with an escaped holder on the pipe, and
-    # `_run_bounded_in_own_session` is that bound: `result is not None` above is the
-    # whole of it. It used to also require one escapee per attempt and an elapsed
-    # time under fifteen seconds; both are wall-clock claims (the second attempt is
-    # killed 0.5 s after it starts, before a loaded runner has spawned its escapee),
-    # and they failed six scheduled runs in a row without saying anything about the
-    # drain (#764, #779). One established escapee is the input that makes the
-    # deadline load-bearing; `assert escaped_pids` keeps that precondition.
+    assert probe["timed_out"] is True
+    assert DRAIN_UNAVAILABLE in probe["stderr_preview"], (
+        "the drain did not bind against a holder that never releases the pipe"
+    )
+    assert probe["stdout_preview"] == ""
 
 
 @pytest.mark.boundary_contract(
@@ -384,57 +501,94 @@ def test_kill_group_and_drain_never_signals_a_group_the_probe_does_not_own(tmp_p
     reason="child-exit-on-parent-death: escaped descendants must be cleaned while preserving partial output"
 )
 def test_cli_skill_surface_keeps_partial_output_when_even_the_drain_times_out(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch, capsys
 ) -> None:
-    """Partial evidence must survive the DRAIN deadline, not just the probe deadline.
+    """Partial evidence must survive a group kill the pipe holder ESCAPED.
 
     Round 2 found the two existing fixtures each covered one half: the orphan
-    probe prints but its grandchild is reaped, so the drain succeeds and never
-    exercises the discard; the escapee probe defeats the drain but prints
+    probe prints but its grandchild is reaped, so the drain returns instantly and
+    the body was never at risk; the escapee probe defeats the drain but prints
     nothing. Crossing them -- a probe that prints AND leaves an escaped
-    grandchild holding the pipe -- is the input that reaches the discard, which
-    is where the original defect had been reintroduced one call deeper.
+    grandchild holding the pipe -- is the input where the post-kill drain has to
+    WAIT for a descendant it could not signal, and still hand back what the probe
+    managed to say before it died. That is where the original defect had been
+    reintroduced one call deeper.
+
+    Every precondition is an observation this test forces, on a controlled clock:
+
+    - the probe prints its verdict and flushes BEFORE it spawns the holder, and
+      `Popen` returns only once that holder has exec'd, so the holder's existence
+      proves the verdict is already in the pipe;
+    - the holder records its pid and writes one FIFO line as its first actions,
+      so one line proves an escaped holder is alive on the inherited pipe and
+      nameable for cleanup;
+    - `time.monotonic` in the guard reads 0 until that line arrives, so the budget
+      is judged spent only once all of it is true. The knob below is a heartbeat
+      cadence, not a deadline (see the sibling above);
+    - the holder then blocks on a pidfd for the probe and releases the pipe when
+      the probe dies. EOF therefore arrives from a holder that OUTLIVED the group
+      kill, at the moment the kill landed, rather than whenever a self-deadline
+      happened to expire.
+
+    What it replaces: a real 0.5 s probe deadline racing the child's start. The
+    probe spawned the holder -- a whole interpreter -- BEFORE printing, so on a
+    loaded runner the deadline fired first, nothing was ever printed, and this
+    test's own assertion read `'partial verdict...' in ''`. It failed the hosted
+    mutation baseline on 2026-09-03 and once locally under three concurrent
+    agents.
+
+    On the name: when the drain TRULY times out, `_await_child` discards the body
+    and reports `DRAIN_UNAVAILABLE`, so partial output surviving a FAILED drain is
+    not behaviour this repo has. The sibling above owns the failed drain and
+    asserts exactly that discard; this test owns the other half -- a drain that
+    completes only because its holder escaped the kill -- and the payload check
+    below pins which of the two it is.
     """
     pid_log = tmp_path / "loud-escapee-pids.txt"
     stop_path = tmp_path / "stop-loud-escapees"
     exit_dir = tmp_path / "loud-escapee-exits"
     repo = _probe_repo(tmp_path, "python3 scripts/loud_escapee.py doctor --json")
-    holder = _write_controlled_pipe_holder(repo)
-    write_executable(
-        repo / "scripts" / "loud_escapee.py",
-        "#!/usr/bin/env python3\n"
-        "import subprocess, sys, time\n"
-        f"child = subprocess.Popen([sys.executable, {str(holder)!r}, {str(stop_path)!r}, {str(exit_dir)!r}], start_new_session=True)\n"
-        f"with open({str(pid_log)!r}, 'a', encoding='utf-8') as stream: stream.write(str(child.pid) + '\\n')\n"
-        "print('partial verdict that must survive the drain')\n"
-        "sys.stdout.flush()\n"
-        "time.sleep(600)\n",
-    )
-    env = os.environ.copy()
-    env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.5"
-    try:
-        result = _run_bounded_in_own_session(
-            "scripts/gates/check_cli_skill_surface.py",
-            "--repo-root",
-            str(repo),
-            "--run-probes",
-            env=env,
+    with FifoWitness(tmp_path / "loud-escapee-witness") as witness:
+        holder = _write_controlled_pipe_holder(
+            repo, witness_path=witness.path, pid_log=pid_log, release="parent-death"
         )
-    finally:
-        escaped_pids, exited_pids, survivors = _stop_recorded_children(pid_log, stop_path, exit_dir)
-    assert result is not None, "the check hung instead of bounding its drain"
+        write_executable(
+            repo / "scripts" / "loud_escapee.py",
+            "#!/usr/bin/env python3\n"
+            "import subprocess, sys, time\n"
+            # The verdict enters the pipe FIRST. Everything the test waits for
+            # happens after it, so no observation can precede it.
+            "print('partial verdict that must survive the drain')\n"
+            "sys.stdout.flush()\n"
+            f"subprocess.Popen([sys.executable, {str(holder)!r}, {str(stop_path)!r}, {str(exit_dir)!r}], start_new_session=True)\n"
+            "time.sleep(600)\n",
+        )
+        monkeypatch.setenv("CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS", "0.1")
+        monkeypatch.setattr(
+            "scripts.core.subprocess_guard.time.monotonic", _clock_spent_by_witness(witness)
+        )
+        try:
+            result = run_cli_skill_surface(
+                monkeypatch, capsys, "--repo-root", str(repo), "--run-probes"
+            )
+        finally:
+            escaped_pids, exited_pids, survivors = _stop_recorded_children(
+                pid_log, stop_path, exit_dir
+            )
+
     assert escaped_pids, "the fixture never established an escaped pipe holder"
     assert exited_pids == escaped_pids, "the fixture failed to stop every escaped pipe holder"
     assert not survivors
-    payload = yaml.safe_load(result)
+    payload = yaml.safe_load(result.stdout)
+    probe = payload["probe_results"][0]
 
     assert payload["status"] == "unobserved"
-    assert payload["probe_results"][0]["timed_out"] is True
+    assert probe["timed_out"] is True
     # Not `len(escaped_pids) == attempts`: see the sibling test above (#779).
-    assert (
-        "partial verdict that must survive the drain"
-        in payload["probe_results"][0]["stdout_preview"]
-    )
+    assert "partial verdict that must survive the drain" in probe["stdout_preview"]
+    # The half this test owns: the drain COMPLETED, so the body is real evidence
+    # rather than the marker the sibling asserts.
+    assert DRAIN_UNAVAILABLE not in probe["stderr_preview"]
 
 
 def test_cli_skill_surface_names_the_unobserved_probe_in_its_only_output(tmp_path: Path) -> None:

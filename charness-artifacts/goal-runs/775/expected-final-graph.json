@@ -1,0 +1,21 @@
+{
+  "kind": "charness.expected-sub-issue-set/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 775,
+  "children": [
+    776,
+    777,
+    778,
+    779,
+    780,
+    781,
+    782
+  ],
+  "source": {
+    "status": "operator-approved-initial-graph-no-amendments",
+    "initial_graph_path": "charness-artifacts/goal-runs/775/expected-initial-graph.json",
+    "amendments": [],
+    "frozen_draft_sha256": "6f2f63ecd8264a4502f7feeb9884a2e2cbb5e3f288be22536fd93a2eed010898",
+    "binding_sha256": "ea389dd26293eb3deff01bf502073c6d242dd84bb3a1df42b245fcac729d46b0"
+  }
+}

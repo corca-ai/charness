@@ -282,3 +282,19 @@ Pushed 2026-09-03 on the third attempt as `a6b48cb6a` (hook release lane 87
 passed, 4 not run named). `verify-closeout` = `verified` for #780 and #781.
 Cursor advanced by `operations/update-parent-progress-782.json` (progress
 6/1/7, revision 3); `/goal #775` pickup names #782 integrated-closeout.
+
+## Fifth session, 2026-09-03 (#782 integrated-closeout)
+
+Clean-clone lanes recorded in `782-clean-clone-lanes.md` (all green). Six
+children `verify-closeout` = verified with issue-owned closeout comments. The
+most recent scheduled mutation run (33701977188, tree `1e9cb9991`, after
+#779) failed its coverage baseline on one test whose deadline arrived through
+an env knob rather than a `time.*` call; rewritten in-process on a controlled
+clock plus FIFO (both probe-boundary escapee tests). #764 stays open: the fix
+is in the tree and only a scheduled run may report recovery (#358); the
+operator chose to close #782 and #775 today and reopen or refile if the next
+scheduled run disagrees. Session retro persisted
+(`2026-09-03-goal-775-closeout-retro.md`); its persistence seeded the nine
+tagged classes (operator: accept, #783 narrowed to the 34 scored lessons).
+`verification-shape-mismatch` scored `changed-an-action` and graduated into
+`docs/development.md`.
