@@ -153,3 +153,23 @@ refusal). Read back from the checkout: `same-tree`; from this repo's generated
 mirror under `plugins/charness`: `in-sync`. The rule and its reason are in
 `bootstrap-resolution.md`, the Claude host adapter, and `docs/development.md`,
 which no longer names the installed plugin as an open path.
+
+## Second session, continued (#788 release half, before the cut)
+
+Routing commit `d820d7e21` (standing 8838 passed; full read-only quality green
+after the exported reference dropped its issue anchors for the public-doc
+coupling gate). Release critique through the `critique` skill's file-backed
+Codex workers: two lenses before the repairs (block, five findings; defer,
+two), one repair-verification pass after (five confirmed, one minor, two
+evidence-binding majors, one wording contradiction), all dispositioned in
+`charness-artifacts/critique/release-8-0-3-critique.md`. Acted on before the
+bump (`e487d14b1`, `90ba234c7`): the runtime sweep's salvage reads NUL paths
+and reads its archive back; the update instruction says what `charness update`
+does; the Goal lifecycle page is current; the host adapter and
+`docs/development.md` say who refuses and who reports; README names the host
+restart; the install/update rehearsal (37 passed) is a tracked receipt. Notes
+`charness-artifacts/release/v8.0.3-notes.md`: derived block clean, narrative
+lint clean. Final tree: standing 8842 passed; full read-only quality 83
+passed, 0 failed. Publish dry run: `bump-and-publish` 8.0.2 -> 8.0.3, no
+blockers. The cut runs next through `publish_release.py --execute` with the
+#788 carrier; the operator pre-approved the decision on 2026-09-03.
