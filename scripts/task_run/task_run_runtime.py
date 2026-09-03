@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from datetime import datetime, timezone
 import os
 import re
 import shutil
@@ -140,6 +141,35 @@ def write_task_result(runtime_path: Path, result: Mapping[str, Any]) -> Path:
     finally:
         temp_path.unlink(missing_ok=True)
     return path
+
+
+def utc_now_iso() -> str:
+    """Wall-clock stamp for the receipt; the runtime's own clock, never a test's."""
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def runner_liveness(record: Mapping[str, Any]) -> dict[str, Any]:
+    """Say whether the runner that wrote this record is still a live process.
+
+    The list and the single read parse the same bytes, so when a lane's record
+    reads `timed-out` while its runner is visibly alive (#791) the reader is
+    looking at a different result store or a stale one. This projection lets
+    `task status` say so from the record itself: `alive` is the pid check,
+    `consistent` is whether that agrees with the record's phase. It is computed
+    at read time and never persisted.
+    """
+    pid = record.get("runner_pid")
+    if not isinstance(pid, int) or pid <= 0:
+        return {"runner_pid": None, "alive": None, "consistent": None}
+    try:
+        os.kill(pid, 0)
+        alive = True
+    except ProcessLookupError:
+        alive = False
+    except PermissionError:
+        alive = True
+    terminal = record.get("phase") == "terminal"
+    return {"runner_pid": pid, "alive": alive, "consistent": alive != terminal}
 
 
 def read_task_result(runtime_path: Path, task_id: str) -> dict[str, Any] | None:

@@ -63,6 +63,10 @@ normalize_scopes = _support.normalize_scopes
 
 
 def _persist(payload: dict[str, Any], runtime_path: Path) -> None:
+    stamps = payload.setdefault("timestamps", {})
+    stamps["updated_at"] = _support.utc_now_iso()
+    if payload.get("phase") == "terminal":
+        stamps["finished_at"] = stamps["updated_at"]
     _support.write_task_result(runtime_path, payload)
 
 
@@ -296,7 +300,12 @@ def run_task(
         "prepare": resolved_prepare,
         "require_change": resolved_require_change,
         "keep_worktree": True,
+        "runner_pid": os.getpid(),
+        "timestamps": {"launched_at": _support.utc_now_iso()},
+        "timings_ms": {},
     }
+    payload["codex"]["timeout_seconds"] = timeout_seconds
+    payload["codex"]["timeout_scope"] = "codex-exec"
     if resolved_lane is not None:
         payload["lane"] = resolved_lane
     if dry_run:
@@ -313,8 +322,9 @@ def run_task(
 
     payload["status"] = "running"
     payload["phase"] = "create"
-    _persist(payload, runtime_path)
+    payload["timestamps"]["create_started_at"] = _support.utc_now_iso()
     started_at = time.monotonic()
+    _persist(payload, runtime_path)
     try:
         resolved_target.parent.mkdir(parents=True, exist_ok=True)
         create_payload = _worktree.run_create(
@@ -342,6 +352,7 @@ def run_task(
 
     payload["create"] = create_payload
     payload["created"] = bool(create_payload.get("created"))
+    payload["timings_ms"]["prepare"] = int((time.monotonic() - started_at) * 1000)
     if not create_payload.get("created") or (
         resolved_prepare and create_payload.get("status") != PASS
     ):
@@ -390,6 +401,8 @@ def run_task(
         stderr_log = log_dir / "codex.stderr.log"
         payload["logs"] = {"stdout": str(stdout_log), "stderr": str(stderr_log)}
         payload["phase"] = "exec"
+        payload["timestamps"]["exec_started_at"] = _support.utc_now_iso()
+        exec_started_at = time.monotonic()
         _persist(payload, runtime_path)
 
         print(f"task run: executing Codex in {resolved_target}", file=sys.stderr)
@@ -402,6 +415,7 @@ def run_task(
             stderr_log=stderr_log,
             timeout_seconds=timeout_seconds,
         )
+        payload["timings_ms"]["exec"] = int((time.monotonic() - exec_started_at) * 1000)
         candidate_commit = None
         abnormal = _abnormal_exit_state(execution)
         if abnormal is not None:
@@ -482,7 +496,7 @@ def task_status(repo_root: Path, task_id: str | None = None) -> dict[str, Any]:
     if task_id is not None:
         record = _support.read_task_result(runtime_path, task_id)
         if record is not None:
-            return record
+            return {**record, "liveness": _support.runner_liveness(record)}
         return {
             "schema_version": _support.SCHEMA_VERSION,
             "event": "task-status",
@@ -496,5 +510,8 @@ def task_status(repo_root: Path, task_id: str | None = None) -> dict[str, Any]:
         "event": "task-status-list",
         "repo_root": str(resolved_repo),
         "runtime_root": str(runtime_path),
-        "tasks": _support.read_task_results(runtime_path),
+        "tasks": [
+            {**record, "liveness": _support.runner_liveness(record)}
+            for record in _support.read_task_results(runtime_path)
+        ],
     }

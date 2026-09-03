@@ -10,15 +10,21 @@ exit) are each pinned with the WIP candidate they must or must not commit.
 from __future__ import annotations
 
 import json
+import os
 import shlex
 from pathlib import Path
 
 import pytest
 
-from scripts.task_run import task_run, task_run_support
+from scripts.task_run import task_run, task_run_runtime, task_run_support
 from skills.shared.scripts import reviewer_lifecycle
 
 from .test_task_run_fixtures import _codex, _repo, _run
+
+
+def _with_liveness(payload: dict[str, object]) -> dict[str, object]:
+    """`task status` returns the record plus its read-time liveness projection."""
+    return {**payload, "liveness": task_run_runtime.runner_liveness(payload)}
 
 
 def test_task_result_exposes_schema_bearing_delivery_without_interpreting_it(tmp_path: Path) -> None:
@@ -70,7 +76,7 @@ def test_task_result_rejects_non_json_yaml_without_breaking_terminal_receipt(
 
     assert payload["status"] == "completed", payload
     assert payload["result_delivery"]["structured_status"] == "invalid"
-    assert task_run.task_status(repo, "non-json-yaml") == payload
+    assert task_run.task_status(repo, "non-json-yaml") == _with_liveness(payload)
 
 
 def _reviewer_lifecycle_codex(tmp_path: Path, carrier: dict[str, object]) -> Path:
@@ -131,7 +137,7 @@ def test_task_result_projects_canonical_reviewer_lifecycle_exactly(
     assert payload["result_delivery"]["structured"] == carrier
     assert payload["reviewer_lifecycle"] is payload["result_delivery"]["structured"]
     assert payload["reviewer_lifecycle"] == carrier
-    assert status == payload
+    assert status == _with_liveness(payload)
 
 
 def test_task_result_does_not_project_non_review_schema(tmp_path: Path) -> None:
@@ -240,3 +246,71 @@ def test_a_clean_normal_exit_still_produces_no_wip_commit(tmp_path: Path) -> Non
     assert payload["status"] == "completed"
     assert payload["candidate"]["status"] == "validated"
     assert "commit" not in payload["candidate"] or payload["candidate"].get("commit") is None
+
+
+def test_receipt_records_runner_pid_phase_timestamps_and_timings(tmp_path: Path) -> None:
+    """#791: prepare and exec are reported separately, and the record says
+    which process wrote it, so a reader can tell a live lane from a stale
+    record without trusting a status word."""
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "printf 'VALUE = 2\\n' > module.py")
+
+    payload = _run(repo, tmp_path, executable, scopes=["module.py"])
+
+    assert payload["runner_pid"] == os.getpid()
+    stamps = payload["timestamps"]
+    for key in ("launched_at", "create_started_at", "exec_started_at", "updated_at", "finished_at"):
+        assert stamps[key].endswith("Z"), (key, stamps)
+    assert set(payload["timings_ms"]) == {"prepare", "exec"}
+    assert all(isinstance(value, int) and value >= 0 for value in payload["timings_ms"].values())
+    assert payload["codex"]["timeout_scope"] == "codex-exec"
+
+
+def test_task_status_projects_runner_liveness_against_the_record_phase(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """#791: `task status` says whether the writer is alive and whether that
+    agrees with the record; a terminal record with a live writer, or a running
+    record with a dead one, is the two-store symptom made visible."""
+    dead_pid = 4_000_001
+
+    def kill(pid: int, sig: int) -> None:
+        if pid == dead_pid:
+            raise ProcessLookupError(pid)
+
+    monkeypatch.setattr(task_run_runtime.os, "kill", kill)
+
+    alive_running = task_run_runtime.runner_liveness({"runner_pid": os.getpid(), "phase": "exec"})
+    assert alive_running == {"runner_pid": os.getpid(), "alive": True, "consistent": True}
+
+    alive_terminal = task_run_runtime.runner_liveness(
+        {"runner_pid": os.getpid(), "phase": "terminal"}
+    )
+    assert alive_terminal["alive"] is True and alive_terminal["consistent"] is False
+
+    dead_running = task_run_runtime.runner_liveness({"runner_pid": dead_pid, "phase": "exec"})
+    assert dead_running == {"runner_pid": dead_pid, "alive": False, "consistent": False}
+
+    assert task_run_runtime.runner_liveness({"phase": "exec"}) == {
+        "runner_pid": None,
+        "alive": None,
+        "consistent": None,
+    }
+
+    repo = _repo(tmp_path)
+    runtime_path = task_run_runtime.task_runtime_root(repo)
+    record_path = runtime_path / "task-run" / "stale" / "result.json"
+    record_path.parent.mkdir(parents=True)
+    record_path.write_text(
+        json.dumps(
+            {"task_id": "stale", "status": "timed-out", "phase": "terminal", "runner_pid": dead_pid}
+        ),
+        encoding="utf-8",
+    )
+    listing = task_run.task_status(repo)
+    assert [task["liveness"] for task in listing["tasks"] if task["task_id"] == "stale"] == [
+        {"runner_pid": dead_pid, "alive": False, "consistent": True}
+    ]
+    single = task_run.task_status(repo, "stale")
+    assert single["liveness"]["alive"] is False
+    assert "liveness" not in json.loads(record_path.read_text(encoding="utf-8"))

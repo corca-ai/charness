@@ -93,6 +93,7 @@ def _candidate_result_state(
         "status": "validated" if candidate_useful else "absent" if candidate_valid else "invalid",
         "useful": candidate_useful,
         "changed_paths": changed_paths,
+        "disallowed_paths": list(scope.get("disallowed_paths", ())),
         **scope["candidate_carrier"],
     }
     if execution_state in _ABNORMAL_EXIT_STATES:

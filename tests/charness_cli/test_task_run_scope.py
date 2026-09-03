@@ -611,3 +611,42 @@ def test_a_descendant_head_with_a_clean_tree_is_still_the_whole_candidate(tmp_pa
     assert carrier["carrier_kind"] == "commit-only"
     assert carrier["head_is_complete"] is True
     assert carrier["head_sha"] == carrier["observed_head_sha"]
+
+
+def test_scope_brace_groups_expand_to_one_scope_per_alternative() -> None:
+    """#790: one --scope can name a seam that spans two roots."""
+    assert task_run_scope.normalize_scopes(["{packages,gateway}/**"]) == [
+        "gateway/**",
+        "packages/**",
+    ]
+    assert task_run_scope.normalize_scopes(["a/{b,c}/{d,e}.py", "a/b/d.py"]) == [
+        "a/b/d.py",
+        "a/b/e.py",
+        "a/c/d.py",
+        "a/c/e.py",
+    ]
+    for broken, message in (
+        ("a/{b", "unmatched '{'"),
+        ("a/b}", "unmatched '}'"),
+        ("a/{b}", "two or more non-empty alternatives"),
+        ("a/{b,}", "two or more non-empty alternatives"),
+    ):
+        with pytest.raises(task_run.TaskRunError, match=message):
+            task_run_scope.normalize_scopes([broken])
+
+
+def test_out_of_scope_change_names_the_offending_paths(tmp_path: Path) -> None:
+    """#790: a lane that writes outside its declared scopes is a typed failure
+    whose receipt names the paths, at the candidate and in the next step."""
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "printf 'VALUE = 2\\n' > module.py\nprintf 'STRAY = 1\\n' > stray.py",
+    )
+
+    payload = _run(repo, tmp_path, executable, scopes=["module.py"])
+
+    assert payload["status"] == "failed", payload
+    assert payload["candidate"]["status"] == "invalid"
+    assert payload["candidate"]["disallowed_paths"] == ["stray.py"]
+    assert "outside the declared scope: stray.py" in payload["next_step"]

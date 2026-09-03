@@ -41,11 +41,67 @@ def _normalize_scope(value: str) -> str:
     return scope
 
 
+def _expand_braces(value: str) -> list[str]:
+    """Expand shell-style `{a,b}` groups into one scope per alternative.
+
+    One `--scope` names one owner seam; a seam that spans two roots
+    (`{packages,gateway}/**`) used to degrade to `**` because a brace group
+    matched nothing literally (#790). Groups nest and repeat; an unbalanced
+    brace or an empty group is refused rather than passed to the matcher as a
+    literal that can never match.
+    """
+    start = value.find("{")
+    if start == -1:
+        if "}" in value:
+            raise TaskRunError(f"scope has an unmatched '}}': {value!r}")
+        return [value]
+    depth = 0
+    for index in range(start, len(value)):
+        if value[index] == "{":
+            depth += 1
+        elif value[index] == "}":
+            depth -= 1
+            if depth == 0:
+                end = index
+                break
+    else:
+        raise TaskRunError(f"scope has an unmatched '{{': {value!r}")
+    body = value[start + 1 : end]
+    alternatives: list[str] = []
+    depth = 0
+    current = ""
+    for char in body:
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+        if char == "," and depth == 0:
+            alternatives.append(current)
+            current = ""
+        else:
+            current += char
+    alternatives.append(current)
+    if len(alternatives) < 2 or any(not alternative for alternative in alternatives):
+        raise TaskRunError(
+            f"scope brace group needs two or more non-empty alternatives: {value!r}"
+        )
+    expanded: list[str] = []
+    for alternative in alternatives:
+        expanded.extend(_expand_braces(value[:start] + alternative + value[end + 1 :]))
+    return expanded
+
+
 def normalize_scopes(scopes: Sequence[str]) -> list[str]:
-    """Return one deterministic repository-relative scope list."""
+    """Return one deterministic repository-relative scope list.
+
+    `--scope` is repeatable and each value may carry `{a,b}` groups; the
+    result is the sorted union of every expanded alternative.
+    """
     if not scopes:
         raise TaskRunError("at least one --scope is required")
-    return sorted({_normalize_scope(value) for value in scopes})
+    return sorted(
+        {_normalize_scope(expanded) for value in scopes for expanded in _expand_braces(value)}
+    )
 
 
 def _is_glob_scope(scope: str) -> bool:
@@ -207,7 +263,9 @@ def _scope_result(
     allowed = _paths_in_scopes(changed, specs)
     disallowed = sorted(set(changed) - set(allowed))
     if disallowed:
-        verdict, reason = FAIL, "candidate changes paths outside the declared scope"
+        verdict, reason = FAIL, (
+            "candidate changes paths outside the declared scope: " + ", ".join(disallowed)
+        )
     elif require_change and not changed:
         verdict, reason = FAIL, "the task required a change but the worktree is unchanged"
     else:

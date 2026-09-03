@@ -34,6 +34,11 @@ diagnostics and exceptional host setup. In shorthand, preparation and requiring
 a changed candidate are on by default; `--skip-prepare` and `--allow-no-change`
 are diagnostic opt-outs.
 
+`--scope` repeats, and a `{a,b}` group expands to one scope per alternative
+(`'{packages,gateway}/**'` is two), so a seam spanning several roots declares
+those roots instead of `**`. `scopes` is the expanded union, persisted with
+the `running` record, so `task status` shows every live lane's scopes.
+
 Scopes are classified against the selected base commit's Git tree (or `HEAD` in
 shorthand), including during dry-run. Existing literal files and directories
 take precedence even when their names contain glob metacharacters; otherwise a
@@ -43,7 +48,14 @@ newly-created matching paths remain in scope. `**` includes files at every
 depth, including top-level files. Candidate and parent overlap use the same
 resolved rule.
 Tracked, untracked, and ignored paths are reported separately; ignored output
-is a warning and does not become a candidate.
+is a warning and does not become a candidate. A change outside every scope makes
+`candidate.status: invalid` and the lane `failed`; `candidate.disallowed_paths`
+and `next_step` name the paths.
+
+`--timeout-seconds` bounds `codex exec` only (`codex.timeout_scope`); creation
+and prepare are untimed and reported apart: `timestamps` (UTC `launched_at`,
+`create_started_at`, `exec_started_at`, `updated_at`, `finished_at`),
+`timings_ms` (`prepare`, `exec`), and `runner_pid`.
 
 The sole persisted result is atomically published at the external runtime
 directory `task-run/<task-id>/result.json`. It is written as `running` before
@@ -113,18 +125,16 @@ charness task status --repo-root . <task-id>
 ```
 
 Status reads exactly the external task-run result store and lists all records
-when no id is supplied.
+when no id is supplied. Each record carries one read-time `liveness`
+projection: `runner_pid`, `alive` (pid check), `consistent` (live runner on a
+non-terminal record, dead on a terminal one). `consistent: false` is a stale
+or second store, never a lane state; `--repo-root` must be the clean parent.
 
 When delivered text is one complete schema-bearing JSON/YAML mapping,
-`result_delivery.structured` exposes it unchanged. If that mapping's
-`schema_version` is `charness.reviewer_lifecycle.v1`, the sole persisted task
-result also exposes that exact mapping at top-level `reviewer_lifecycle`.
-`task status` returns the persisted record directly; it does not reconstruct
-that projection.
-
-This is only a projection of the canonical reviewer lifecycle carrier owned by
-[reviewer_lifecycle.py](../skills/shared/scripts/reviewer_lifecycle.py). Task runs do not interpret or
-synthesize reviewer fields, validate the lifecycle, infer approval, or claim
-reviewer ownership. Other schemas are not projected to `reviewer_lifecycle`.
-Malformed schema-bearing text is reported as `structured_status: invalid`,
-while ordinary prose is `not-applicable`.
+`result_delivery.structured` exposes it unchanged; a
+`charness.reviewer_lifecycle.v1` mapping is also exposed as top-level
+`reviewer_lifecycle`, a projection of the carrier owned by
+[reviewer_lifecycle.py](../skills/shared/scripts/reviewer_lifecycle.py). Task
+runs never interpret, validate, or synthesize reviewer fields, and project no
+other schema. Malformed schema-bearing text is `structured_status: invalid`;
+prose is `not-applicable`.

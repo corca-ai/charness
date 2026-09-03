@@ -286,8 +286,9 @@ options:
   --base BASE           Commit/ref from which the named worktree is created
                         (explicit form).
   --scope SCOPE         Repository-relative candidate path or quoted glob;
-                        globs must match before launch and retain the pattern
-                        for new matching paths.
+                        repeatable, and a `{a,b}` group expands to one scope
+                        per alternative. Globs must match before launch and
+                        retain the pattern for new matching paths.
   --prompt PROMPT       Implementation instructions passed to `codex exec`.
   --prompt-file PROMPT_FILE
                         Read implementation instructions from this file.

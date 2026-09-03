@@ -5592,7 +5592,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--scope",
         action="append",
         required=True,
-        help="Repository-relative candidate path or quoted glob; globs must match before launch and retain the pattern for new matching paths.",
+        help="Repository-relative candidate path or quoted glob; repeatable, and a `{a,b}` group expands to one scope per alternative. Globs must match before launch and retain the pattern for new matching paths.",
     )
     task_run_prompt = task_run_parser.add_mutually_exclusive_group(required=True)
     task_run_prompt.add_argument("--prompt", help="Implementation instructions passed to `codex exec`.")

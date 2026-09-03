@@ -14,6 +14,10 @@ from .support import run_cli_path
 from .test_task_run_fixtures import _codex, _git, _repo, _run
 
 
+def _with_liveness(payload: dict[str, object]) -> dict[str, object]:
+    return {**payload, "liveness": task_run_runtime.runner_liveness(payload)}
+
+
 def test_invalid_task_run_inputs_are_typed_and_actionable(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
 
@@ -209,6 +213,8 @@ def test_task_run_lane_shorthand_owns_safe_defaults_and_external_target(
         "executable": str(executable),
         "model": "gpt-5.6-luna",
         "effort": "xhigh",
+        "timeout_seconds": 3600,
+        "timeout_scope": "codex-exec",
     }
 
 
@@ -394,7 +400,7 @@ def test_task_run_assigns_distinct_lane_runtime_roots_and_releases_finished_lane
         )
         observed_paths = (result_dir / "observed-paths").read_text(encoding="utf-8").splitlines()
         assert all(Path(path).is_relative_to(execution_root) for path in observed_paths)
-        assert task_run.task_status(repo, payload["task_id"]) == payload
+        assert task_run.task_status(repo, payload["task_id"]) == _with_liveness(payload)
 
         retention = payload["retention"]
         assert retention["worktree"] == "removed"
@@ -630,7 +636,7 @@ def test_completion_scope_refresh_failure_persists_terminal_failed_result(
     assert payload["phase"] == "terminal"
     assert payload["approval_eligibility"] == "ineligible"
     assert payload["error"] == "task lifecycle failed: scope refresh failed"
-    assert task_run.task_status(repo, "completion-failure") == payload
+    assert task_run.task_status(repo, "completion-failure") == _with_liveness(payload)
 
 
 def test_post_create_setup_failure_persists_terminal_result(tmp_path: Path, monkeypatch) -> None:
@@ -659,7 +665,7 @@ def test_post_create_setup_failure_persists_terminal_result(tmp_path: Path, monk
         "task lifecycle failed: worktree create payload checkout own_dir is not an existing "
         f"directory: {tmp_path / 'missing-git-dir'}"
     )
-    assert task_run.task_status(repo, "setup-failure") == payload
+    assert task_run.task_status(repo, "setup-failure") == _with_liveness(payload)
 
 
 def test_completion_interrupt_persists_terminal_result(tmp_path: Path, monkeypatch) -> None:
@@ -674,7 +680,7 @@ def test_completion_interrupt_persists_terminal_result(tmp_path: Path, monkeypat
 
     assert payload["status"] == "interrupted"
     assert payload["phase"] == "terminal"
-    assert task_run.task_status(repo, "completion-interrupt") == payload
+    assert task_run.task_status(repo, "completion-interrupt") == _with_liveness(payload)
 
 
 def test_disjoint_parent_progress_is_reported_without_failing_lane(tmp_path: Path) -> None:
