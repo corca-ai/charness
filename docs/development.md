@@ -72,52 +72,45 @@ check is a proxy; a family rerun locates, it does not claim. The slice order
 (commit, changed-line proof, then the broad lane) is owned by
 [parallel execution](./parallel-execution.md#disjoint-writers).
 
-Each rule below is held by a mechanism, and the last column names what it
-cannot see. A new gate adds a row with that column filled; an empty cell is a
-gap to state. Dated evidence lives in `charness-artifacts/`, not here.
+Each rule below names the mechanism that holds it. The mechanism's docstring
+owns the exact form and what it cannot see; this table does not repeat it.
 
-| Rule | Mechanism | Record | Cannot see |
-| --- | --- | --- | --- |
-| A code push runs the full read-only and release lanes | the pre-push hook ([pushing](#pushing)) | none | the tree it does not run in; push from a clean clone |
-| A stale `plugins/` mirror is never read as a test failure | the standing runner and the quality engine regenerate it in a writing run and refuse in read-only, naming the command ([generated surfaces](./operating-contract.md#generated-surfaces)) | none | a bare `pytest` invocation; export by hand there |
-| A skipped gate is not a passed gate | the quality summary names every gate it did not run and why ([operating contract](./operating-contract.md#verification)) | the lane receipt | not stated |
-| A passing test is not a covered line | [`release_changed_line_coverage.py`](../scripts/mutation/release_changed_line_coverage.py) measures line reach, in the lane receipt's `changed_line_gate` and in the pre-push hook | `reports/mutation/` | a test importing a `scripts/` module by bare name is unmapped; a tests-only slice leaves the freshness marker unchanged ([deferred decisions](./deferred-decisions.md)) |
-| Production code spawns only through [`subprocess_guard.py`](../scripts/core/subprocess_guard.py) | [`check_subprocess_form.py`](../scripts/gates/check_subprocess_form.py) | none | `tests/` (the row below owns them) |
-| Where a repo script lives is answered only by [`repo_layout.py`](../scripts/core/repo_layout.py) | [`check_script_lookup_form.py`](../scripts/gates/check_script_lookup_form.py) refuses a by-name `glob`/`rglob` under `scripts/`, tests included | none | an enumeration (`rglob("*.py")`) is allowed by design |
-| A test's claim never depends on wall-clock time | [`check_wall_clock_form.py`](../scripts/gates/check_wall_clock_form.py) refuses `time.sleep`, `time.monotonic`, `time.perf_counter` in `tests/` | [`wall-clock-baseline.json`](../charness-artifacts/quality/wall-clock-baseline.json), empty, shrinks only | a sleep inside a seeded child script; `time.time()` used as data; `fixtures/` directories |
-| A test's verdict never rides on a short deadline | [`check_timeout_bound_form.py`](../scripts/gates/check_timeout_bound_form.py) refuses a sub-5 s `*_TIMEOUT_SECONDS` knob or a sub-second `communicate`/`run`/`wait` deadline whose handler asserts | [`timeout-bound-baseline.json`](../charness-artifacts/quality/timeout-bound-baseline.json), kept sites with reasons, shrinks only | a knob set in a fixture, helper, or module constant; a deadline through a variable; a value reached by call or tuple unpack; a fake raising `TimeoutExpired` |
-| A test module is evicted only through [`tests/module_eviction.py`](../tests/module_eviction.py) | [`check_module_eviction_form.py`](../scripts/gates/check_module_eviction_form.py) refuses a raw `sys.modules` eviction | empty, shrinks only | `monkeypatch.setitem` (adds, does not evict); reads of `sys.modules`; `fixtures/` directories |
-| A real spawn in a test is the claim, declared with `boundary_contract(reason=...)` | the staged test-boundary advisory in the commit hook ([`check_staged_test_boundaries.py`](../scripts/hooks/check_staged_test_boundaries.py)); the loaders below are the rule | none | dynamic commands, aliases, helper indirection, fixture builders, unparseable files |
-| Inside this repo a skill script runs from the checkout | `script_origin` from the pickup, the release planner, and the publish guard ([bootstrap resolution](../skills/shared/references/bootstrap-resolution.md)) | none | a copy old enough to predate the check does not carry it |
-| A local layout fact is asserted on what the module bound, never on a global interpreter property; force an arm with a `meta_path` finder, not by filtering `sys.path` | none: the distinction is semantic, and most `sys.path` edits in tests are legitimate shim proofs | none | everything; held by review |
+| Rule | Held by |
+| --- | --- |
+| A code push runs the full read-only and release lanes | the pre-push hook ([pushing](#pushing)) |
+| A stale `plugins/` mirror is regenerated or refused, never read as a failure | the standing runner and the quality engine ([generated surfaces](./operating-contract.md#generated-surfaces)) |
+| A skipped gate is not a passed gate | the quality summary ([operating contract](./operating-contract.md#verification)) |
+| A passing test is not a covered line | [`release_changed_line_coverage.py`](../scripts/mutation/release_changed_line_coverage.py), in the lane receipt and the pre-push hook |
+| Production code spawns only through [`subprocess_guard.py`](../scripts/core/subprocess_guard.py) | [`check_subprocess_form.py`](../scripts/gates/check_subprocess_form.py) |
+| A repo script's location is answered only by [`repo_layout.py`](../scripts/core/repo_layout.py) | [`check_script_lookup_form.py`](../scripts/gates/check_script_lookup_form.py) |
+| A test never depends on wall-clock time | [`check_wall_clock_form.py`](../scripts/gates/check_wall_clock_form.py), record empty and shrinking only |
+| A test's verdict never rides on a short deadline | [`check_timeout_bound_form.py`](../scripts/gates/check_timeout_bound_form.py), record shrinking only |
+| A test module is evicted only through [`tests/module_eviction.py`](../tests/module_eviction.py) | [`check_module_eviction_form.py`](../scripts/gates/check_module_eviction_form.py) |
+| A real spawn in a test is the claim, marked `boundary_contract(reason=...)` | [`check_staged_test_boundaries.py`](../scripts/hooks/check_staged_test_boundaries.py) in the commit hook |
+| Inside this repo a skill script runs from the checkout | `script_origin` ([bootstrap resolution](../skills/shared/references/bootstrap-resolution.md)) |
+| A layout fact is asserted on what the module bound, never on a global interpreter property; force an arm with a `meta_path` finder | nothing; the distinction is semantic, so review holds it |
 
 Tests import the script under test in-process through
 [`tests/script_loader.py`](../tests/script_loader.py),
 [`script_main.py`](../tests/script_main.py), and
 [`script_closure.py`](../tests/script_closure.py), which emulate the child
-interpreter: `argv` swapped before the import, the script's directory first on
-`sys.path`, a shadowing bare name evicted and restored, import-time exits
-captured. Never load a module under a bare name the code under test imports
-lazily; under xdist that rebinds `sys.modules` in every worker. A test that
-waits for a child blocks on a FIFO through
-[`tests/fifo_witness.py`](../tests/fifo_witness.py) or drives a controlled
+interpreter; never load a module under a bare name the code under test imports
+lazily. A test that waits for a child blocks on a FIFO
+([`tests/fifo_witness.py`](../tests/fifo_witness.py)) or drives a controlled
 clock. A failure that passes alone is bisected over the collection set first
 ([sibling search](../skills/public/debug/references/sibling-search.md)).
 
 Everything that writes under the cache root (`resolve_cache_home` in
-[`repo_layout.py`](../scripts/core/repo_layout.py), normally `~/.cache/charness`)
-has a row here; the writer enforces its retention on the next run that touches
-the root, and its docstring owns the exact rule. A new cache writer adds a row
-and the code.
+[`repo_layout.py`](../scripts/core/repo_layout.py)) has a row here, and the
+writer's docstring owns its retention rule.
 
-| Cache subtree | Writer | Retention |
-| --- | --- | --- |
-| `pytest-tmp` | [`standing_pytest_basetemp.py`](../scripts/gates_support/standing_pytest_basetemp.py) | Per key, a bounded number of failed and orphan run roots; passing roots deleted at once. A key whose recorded repo root is gone is removed whole. |
-| `test-seeds` | [`tests/seed_cache.py`](../tests/seed_cache.py) | `SEED_CACHE_KEEP` entries per seed hash; `SHAPE_CACHE_KEEP` on `shapes`. |
-| `support-skills` | [`support_sync_lib.py`](../scripts/support_sync_lib.py) | The current digest tree, the `SUPPORT_SKILL_CACHE_KEEP` most recent, and any live `skills/support/generated/` symlink target. |
-| `charness/runtime/<key>` (normally under `~/.cache/tmp`) | [`runtime_bootstrap.py`](../scripts/runtime_bootstrap.py) writes the key and its `.charness-repo-root` marker; [`runtime_root_retention.py`](../scripts/gates_support/runtime_root_retention.py) sweeps on every standing pytest run and by hand with `--repo-root . [--dry-run]` | A key is removed whole when its recorded repo root is gone, or when unmarked and idle past `LEGACY_KEY_MAX_AGE_DAYS`; skipped while a `pytest-tmp` run lock is live or any entry is inside `ACTIVE_WINDOW_DAYS`. Keys are siblings, never nested. Every removal and skip is logged under `<key>/retention/`. |
-| `<key>/task-run/<id>` | [`task_run_completion.py`](../scripts/task_run/task_run_completion.py), then the sweep | A `completed` commit-only lane releases its worktree and runtime at once. Any other finished lane is salvaged first (`uncommitted.patch`, `uncommitted-untracked.tar` beside `result.json`), then removed. `result.json` and the logs stay. |
-| Nested `<key>/xdg-cache/.../runtime/*` keys; `<key>/pycache`, `coverage`, `tmp`, `ruff`, `npm`, `pip`, `pytest-cache` | the sweep | Removed whole once idle past the window; rebuilt on demand. |
+| Cache subtree | Writer |
+| --- | --- |
+| `pytest-tmp` | [`standing_pytest_basetemp.py`](../scripts/gates_support/standing_pytest_basetemp.py) |
+| `test-seeds` | [`tests/seed_cache.py`](../tests/seed_cache.py) |
+| `support-skills` | [`support_sync_lib.py`](../scripts/support_sync_lib.py) |
+| `charness/runtime/<key>` and everything under it | [`runtime_bootstrap.py`](../scripts/runtime_bootstrap.py) writes the key; [`runtime_root_retention.py`](../scripts/gates_support/runtime_root_retention.py) sweeps on every standing run and by hand |
+| `<key>/task-run/<id>` | [`task_run_completion.py`](../scripts/task_run/task_run_completion.py), then the sweep |
 
 When docs change, run [`check-docs.sh`](../scripts/check-docs.sh). The source
 tree is authoritative; the plugin tree is a generated install surface.
