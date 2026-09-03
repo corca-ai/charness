@@ -1,0 +1,52 @@
+{
+  "distinct_channel_verification": {
+    "channel": "https-fetch",
+    "does_not_establish": "that a GitHub RELEASE exists for this tag \u2014 the same page returns 200 for a pushed tag with no release, and the tag is pushed before the release is created",
+    "establishes": "public-page-reachable-and-names-the-tag",
+    "evidence_len": 210900,
+    "expected_content": "v8.0.3",
+    "fetched_url": "https://github.com/corca-ai/charness/releases/tag/v8.0.3",
+    "http_status": 200,
+    "observer": "unauthenticated-http (credential-free; same host/process as publisher)",
+    "status": "confirmed",
+    "url": "https://github.com/corca-ai/charness/releases/tag/v8.0.3"
+  },
+  "installed_readback": {
+    "doctor": {
+      "command": "charness doctor",
+      "returncode": 0,
+      "status": "confirmed",
+      "value": "source: codex_host_guidance"
+    },
+    "install_refresh": {
+      "command": "charness update",
+      "elapsed_seconds": 9.13,
+      "returncode": 0,
+      "status": "refreshed",
+      "stderr_tail": "STEP: refreshing source checkout\nSTEP: source checkout code differs from the running CLI; re-executing the checkout's CLI so the run matches its scripts\nSTEP: refreshing source checkout\nSTEP: refreshing install surface\nSTEP: refreshing Codex host cache\nDONE: update complete",
+      "stdout_tail": "de to load or\n    refresh charness.\ngrok_host_guidance:\n  status: installed\n  manual_action_required: false\n  message: Grok plugin tree is present at `~/.grok/plugins/charness`. List `charness`\n    in `[plugins].enabled` (do not add a marketplace), then restart Grok Build.\nhost_next_steps:\n  codex: Codex host install markers are present. Start a new Codex session to load\n    charness.\n  claude: Claude host install markers are present. Restart Claude Code to load or\n    refresh charness.\n  grok: Grok plugin tree is present at `~/.grok/plugins/charness`. List `charness`\n    in `[plugins].enabled` (do not add a marketplace), then restart Grok Build.\nrepo_onboarding:\n  status: skipped\n  manual_action_required: false\n  message: null\n  reason: skipped during update unless --target-repo-root is provided\nnext_action:\n  kind: restart\n  host: codex\n  status: installed\n  manual_action_required: false\n  message: Codex host install markers are present. Start a new Codex session to load\n    charness.\n  source: codex_host_guidance\nsession_staleness:\n  message: Updated plugin caches were rotated. Active Codex/Claude sessions may have\n    stale absolute skill paths injected into their system prompt. Restart those sessions,\n    or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/scripts/adapters/capability_catalog.py\n    resolve-skill-path --repo-root <repo> --skill-id <id> --reported-path <stale>\n    [--marketplace <m> --plugin <p>]`.\n  affected_count: 1"
+    },
+    "status": "observed",
+    "version": {
+      "command": "charness version",
+      "expected_version": "8.0.3",
+      "reported_version": "8.0.3",
+      "returncode": 0,
+      "status": "confirmed",
+      "value": "version: 8.0.3",
+      "version_match": "matched"
+    }
+  },
+  "non_claims": [
+    "This record preserves observations; it is not a second release-success verdict.",
+    "A digest, command exit code, or recorded status is not terminal proof of operator-facing behavior."
+  ],
+  "observed_at": "2026-09-03T10:33:45.816168+00:00",
+  "schema_version": "charness.release_observer.v1",
+  "target": {
+    "commit": "516da0a55c4de3713406f0bf246a866a422957c2",
+    "release_url": "https://github.com/corca-ai/charness/releases/tag/v8.0.3",
+    "tag": "v8.0.3",
+    "version": "8.0.3"
+  }
+}
