@@ -2170,7 +2170,10 @@
       "lesson_id": "collection-time-pollution",
       "action": "graduate",
       "decision_ref": "docs/development.md",
-      "rationale": "#781 joint review 2026-09-03: never consulted, yet the class recurred within a day (#780 push) and the structural fix exists; graduated with a mechanism: check_module_eviction_form.py refuses raw sys.modules eviction and tests/module_eviction.py is the one door; development.md owns the rule"
+      "rationale": "#781 joint review 2026-09-03: never consulted, yet the class recurred within a day (#780 push) and the structural fix exists; graduated with a mechanism: check_module_eviction_form.py refuses raw sys.modules eviction and tests/module_eviction.py is the one door; development.md owns the rule",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-09-02-session-retro.md"
+      ]
     },
     {
       "sequence": 2,
@@ -2178,7 +2181,10 @@
       "lesson_id": "derived-surface-batching",
       "action": "graduate",
       "decision_ref": "docs/development.md",
-      "rationale": "#781 joint review 2026-09-03: never consulted across four recurrences; the standing runner lacked the mirror preamble the quality engine had; graduated with a mechanism: plugin_mirror_preamble.py shared by both runners (regenerate in a writing run, refuse with the command in read-only); operating-contract.md Generated surfaces owns the rule, development.md links"
+      "rationale": "#781 joint review 2026-09-03: never consulted across four recurrences; the standing runner lacked the mirror preamble the quality engine had; graduated with a mechanism: plugin_mirror_preamble.py shared by both runners (regenerate in a writing run, refuse with the command in read-only); operating-contract.md Generated surfaces owns the rule, development.md links",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-09-02-session-retro.md"
+      ]
     },
     {
       "sequence": 3,
@@ -2186,7 +2192,10 @@
       "lesson_id": "global-probe-for-local-fact",
       "action": "graduate",
       "decision_ref": "docs/development.md",
-      "rationale": "#781 joint review 2026-09-03: never encountered in three later retros; the rule stands beside the in-process import rules in development.md; no mechanism because the property is semantic and the docs page is read at the test-writing moment"
+      "rationale": "#781 joint review 2026-09-03: never encountered in three later retros; the rule stands beside the in-process import rules in development.md; no mechanism because the property is semantic and the docs page is read at the test-writing moment",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md"
+      ]
     },
     {
       "sequence": 4,
@@ -2194,7 +2203,11 @@
       "lesson_id": "lane-brief-omits-parent-owned-surfaces",
       "action": "graduate",
       "decision_ref": "docs/parallel-execution.md",
-      "rationale": "#781 joint review 2026-09-03: two instances; the sandbox half already shipped as code (task run grants the worktree .agents/); the brief-authoring half has no gate and parallel-execution.md owns it, read at the brief-writing moment"
+      "rationale": "#781 joint review 2026-09-03: two instances; the sandbox half already shipped as code (task run grants the worktree .agents/); the brief-authoring half has no gate and parallel-execution.md owns it, read at the brief-writing moment",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-09-02-session-retro.md",
+        "charness-artifacts/retro/2026-09-03-session-retro.md"
+      ]
     },
     {
       "sequence": 5,
@@ -2202,7 +2215,10 @@
       "lesson_id": "skipped-is-not-passed",
       "action": "graduate",
       "decision_ref": "docs/operating-contract.md",
-      "rationale": "#781 joint review 2026-09-03: paid for itself twice on 2026-08-13 and never recurred, but the rule lived only in retros; graduated with a mechanism: the quality summary names every gate not run with its reason; operating-contract.md owns the sentence"
+      "rationale": "#781 joint review 2026-09-03: paid for itself twice on 2026-08-13 and never recurred, but the rule lived only in retros; graduated with a mechanism: the quality summary names every gate not run with its reason; operating-contract.md owns the sentence",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md"
+      ]
     },
     {
       "sequence": 6,
@@ -2210,7 +2226,10 @@
       "lesson_id": "superseded-line-stays-quotable",
       "action": "graduate",
       "decision_ref": "docs/documentation-principles.md",
-      "rationale": "#781 joint review 2026-09-03: never consulted; the class recurred today (a false development.md sentence about the mirror outlived its decision); flags and subcommands are gate-checked, the general rule now lives in documentation-principles.md Current state only, read at the docs-editing moment"
+      "rationale": "#781 joint review 2026-09-03: never consulted; the class recurred today (a false development.md sentence about the mirror outlived its decision); flags and subcommands are gate-checked, the general rule now lives in documentation-principles.md Current state only, read at the docs-editing moment",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md"
+      ]
     },
     {
       "sequence": 7,
@@ -2218,7 +2237,10 @@
       "lesson_id": "tagged-lesson-never-seeded",
       "action": "graduate",
       "decision_ref": "docs/development.md",
-      "rationale": "#781 joint review 2026-09-03: never consulted while twelve tagged classes sat unseeded; graduated with two mechanisms: retro persistence runs the seeder and records the result beside Persisted, check_lesson_ledger.py names unseeded classes on every lane; development.md owns the sentence"
+      "rationale": "#781 joint review 2026-09-03: never consulted while twelve tagged classes sat unseeded; graduated with two mechanisms: retro persistence runs the seeder and records the result beside Persisted, check_lesson_ledger.py names unseeded classes on every lane; development.md owns the sentence",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-16-session-retro.md"
+      ]
     },
     {
       "sequence": 8,
@@ -2226,7 +2248,10 @@
       "lesson_id": "unbounded-cache",
       "action": "graduate",
       "decision_ref": "docs/development.md",
-      "rationale": "#781 joint review 2026-09-03: never consulted while pytest-tmp reached 16 GB across 300 dead repo keys; graduated with mechanisms: repo-key markers and dead-key pruning in standing_pytest_basetemp.py, support-skills digest retention; development.md owns the cache-root retention table"
+      "rationale": "#781 joint review 2026-09-03: never consulted while pytest-tmp reached 16 GB across 300 dead repo keys; graduated with mechanisms: repo-key markers and dead-key pruning in standing_pytest_basetemp.py, support-skills digest retention; development.md owns the cache-root retention table",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md"
+      ]
     },
     {
       "sequence": 9,
@@ -2234,7 +2259,10 @@
       "lesson_id": "layout-oracle-duplication",
       "action": "graduate",
       "decision_ref": "docs/development.md",
-      "rationale": "#781 joint review 2026-09-03: changed an action: #777 folded eight lookups onto repo_layout.py the day after seeding; development.md owns the sentence and check_script_lookup_form.py enforces it"
+      "rationale": "#781 joint review 2026-09-03: changed an action: #777 folded eight lookups onto repo_layout.py the day after seeding; development.md owns the sentence and check_script_lookup_form.py enforces it",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-09-03-session-retro.md"
+      ]
     },
     {
       "sequence": 10,
@@ -2242,7 +2270,10 @@
       "lesson_id": "positive-effect-cannot-be-cited",
       "action": "archive",
       "decision_ref": "charness-artifacts/retro/2026-08-22-tracker-closeout-retro.md",
-      "rationale": "#781 joint review 2026-09-03: premise no longer holds: changed-an-action is the positive-effect outcome and most scored lessons carry it; the 2026-08-22 retro refuted the lesson against its own ledger"
+      "rationale": "#781 joint review 2026-09-03: premise no longer holds: changed-an-action is the positive-effect outcome and most scored lessons carry it; the 2026-08-22 retro refuted the lesson against its own ledger",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md"
+      ]
     },
     {
       "sequence": 11,
@@ -2250,7 +2281,11 @@
       "lesson_id": "stale-current-pointer-at-closeout",
       "action": "archive",
       "decision_ref": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
-      "rationale": "#781 joint review 2026-09-03: both instances were docs/handoff.md rotting and that surface is retired; the Goal Run cursor is provider-owned and pickup refuses local fallback"
+      "rationale": "#781 joint review 2026-09-03: both instances were docs/handoff.md rotting and that surface is retired; the Goal Run cursor is provider-owned and pickup refuses local fallback",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+        "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md"
+      ]
     },
     {
       "sequence": 12,
@@ -2258,7 +2293,10 @@
       "lesson_id": "structured-edit-by-line-pattern",
       "action": "archive",
       "decision_ref": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-      "rationale": "#781 joint review 2026-09-03: one instance, five weeks without recurrence, no gate can see the edit tool and the result is already caught by compile and tests; the class continues under the active sweep-overreach"
+      "rationale": "#781 joint review 2026-09-03: one instance, five weeks without recurrence, no gate can see the edit tool and the result is already caught by compile and tests; the class continues under the active sweep-overreach",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md"
+      ]
     },
     {
       "sequence": 13,
@@ -2266,7 +2304,10 @@
       "lesson_id": "unchecked-redundant-flag",
       "action": "archive",
       "decision_ref": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
-      "rationale": "#781 joint review 2026-09-03: one instance, no recurrence, no mechanism or owner page; the general form is the scored active lesson harness-differential-not-test"
+      "rationale": "#781 joint review 2026-09-03: one instance, no recurrence, no mechanism or owner page; the general form is the scored active lesson harness-differential-not-test",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md"
+      ]
     },
     {
       "sequence": 14,
@@ -2274,7 +2315,12 @@
       "lesson_id": "verification-shape-mismatch",
       "action": "graduate",
       "decision_ref": "docs/development.md",
-      "rationale": "#782 closeout 2026-09-03: changed an action across the whole Goal Run (#776-#781 each closed one escape path of this class); docs/development.md now owns the rule beside the standing-runner paragraph and names the mechanisms; the one open path (installed plugin read ahead of the working tree) is stated there"
+      "rationale": "#782 closeout 2026-09-03: changed an action across the whole Goal Run (#776-#781 each closed one escape path of this class); docs/development.md now owns the rule beside the standing-runner paragraph and names the mechanisms; the one open path (installed plugin read ahead of the working tree) is stated there",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-09-02-session-retro.md",
+        "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+        "charness-artifacts/retro/2026-09-03-session-retro.md"
+      ]
     }
   ]
 }

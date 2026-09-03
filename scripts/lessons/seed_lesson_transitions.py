@@ -128,6 +128,67 @@ def unseeded_classes(available: dict[str, str], payload: dict[str, Any]) -> list
     return sorted(set(available) - set(payload.get("lessons") or {}))
 
 
+def uncited_graduated_tags(
+    class_sources: dict[str, set[str]], payload: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Graduated lessons tagged by a retro the ledger never consumed, in slug order.
+
+    A graduated lesson is out of the working set on the promise that a `docs/` page
+    now holds its rule. The one sensor for that promise failing is a retro tagging
+    the class again, and until this function existed that tag was silent: the
+    seeder skipped it (the ledger has an entry), no score event could name it (the
+    lesson is not active), and the unseeded advisory did not count it. Found on
+    2026-09-03 when the #775 closeout retro re-tagged `collection-time-pollution`
+    fifty minutes after its graduation and nothing said so.
+
+    "Consumed" is state-independent and needs no dates: a retro named by a seed
+    transition, a score event, or a lifecycle event's `reviewed_retros` for that
+    lesson was in front of the ledger when it decided. Any other tagging retro is
+    news. Whether it is a real recurrence, a mis-tag, or a reason to `resurrect`
+    is a person's call; this only names it.
+    """
+    lessons = payload.get("lessons") or {}
+    consumed: dict[str, set[str]] = {}
+    for record in list(payload.get("transitions") or []) + list(payload.get("score_events") or []):
+        if isinstance(record, dict) and isinstance(record.get("source_retro"), str):
+            consumed.setdefault(str(record.get("lesson_id")), set()).add(record["source_retro"])
+    owners: dict[str, str] = {}
+    for event in payload.get("lifecycle_events") or []:
+        if not isinstance(event, dict):
+            continue
+        lesson_id = str(event.get("lesson_id"))
+        consumed.setdefault(lesson_id, set()).update(
+            str(item) for item in event.get("reviewed_retros") or []
+        )
+        if event.get("action") == "graduate":
+            owners[lesson_id] = str(event.get("decision_ref"))
+    found: list[dict[str, Any]] = []
+    for lesson_id in sorted(lessons):
+        if lessons[lesson_id].get("state") != "graduated":
+            continue
+        uncited = sorted(class_sources.get(lesson_id, set()) - consumed.get(lesson_id, set()))
+        if uncited:
+            found.append(
+                {"lesson_id": lesson_id, "owner": owners.get(lesson_id), "retros": uncited}
+            )
+    return found
+
+
+def graduated_recurrences(
+    *, repo_root: Path, output_dir: Path, summary_path: Path | None
+) -> list[dict[str, Any]]:
+    """`uncited_graduated_tags` for the ledger on disk, read-only; absent ledger -> []."""
+    path = _ledger.lesson_ledger_path(output_dir)
+    if not path.is_file():
+        return []
+    payload, _migrated = _ledger.migrate_ledger_payload(
+        json.loads(path.read_text(encoding="utf-8"))
+    )
+    return uncited_graduated_tags(
+        _ledger.candidate_sources(repo_root, output_dir, summary_path), payload
+    )
+
+
 def pending_seed_classes(
     *, repo_root: Path, output_dir: Path, summary_path: Path | None
 ) -> list[str]:

@@ -25,6 +25,7 @@ validate_lesson_ledger = _ledger.validate_lesson_ledger
 lesson_ledger_path = _ledger.lesson_ledger_path
 _seeder = import_repo_module(__file__, "scripts.lessons.seed_lesson_transitions")
 pending_seed_classes = _seeder.pending_seed_classes
+graduated_recurrences = _seeder.graduated_recurrences
 _retro_index = import_repo_module(__file__, "scripts.lessons.build_retro_lesson_selection_index")
 load_retro_paths = _retro_index._load_retro_paths
 _quality_adapter = import_repo_module(__file__, "scripts.adapters.quality_adapter_lib")
@@ -81,6 +82,31 @@ def print_unseeded_advisory(root: Path, output_dir: Path, summary_path: Path | N
     )
 
 
+def print_graduated_recurrence_advisory(
+    root: Path, output_dir: Path, summary_path: Path | None
+) -> None:
+    """Name every graduated lesson a retro tagged again, without failing.
+
+    The sibling of the unseeded advisory and for the same reason: a graduated
+    lesson left the selection preview on the promise that its `docs/` page holds
+    the rule, and a retro tagging the class again is the only sensor that the
+    promise broke. Advisory because the next move (resurrect, strengthen the
+    mechanism, or call it a mis-tag) is settled by a person, not a red lane.
+    Silent when empty.
+    """
+    found = graduated_recurrences(repo_root=root, output_dir=output_dir, summary_path=summary_path)
+    if not found:
+        return
+    parts = [
+        f"{item['lesson_id']} (owner {item['owner']}; {', '.join(item['retros'])})"
+        for item in found
+    ]
+    print(
+        f"ADVISORY: {len(found)} graduated lesson(s) tagged again by a retro the ledger "
+        "does not cite: " + "; ".join(parts)
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=ROOT)
@@ -111,6 +137,7 @@ def main() -> int:
         f"{result['lifecycle_event_count']} lifecycle events."
     )
     print_unseeded_advisory(root, output_dir, summary_path)
+    print_graduated_recurrence_advisory(root, output_dir, summary_path)
     return 0
 
 

@@ -186,7 +186,7 @@ and the same push passes. The #778 closeout records both runs.
 Use [artifact policy](./artifact-policy.md) for durable evidence and
 [retro](../skills/public/retro/SKILL.md) for the optional lesson ledger. These
 records are useful state, but neither one is a session-start requirement.
-A tagged recurrence class becomes selectable only when its seed transition is appended; the retro persistence step runs the seeder and records the result beside `## Persisted`, and [`check_lesson_ledger.py`](../scripts/lessons/check_lesson_ledger.py) names every tagged class still unseeded on each standing lane, so a stranded lesson is visible rather than silent.
+A tagged recurrence class becomes selectable only when its seed transition is appended; the retro persistence step runs the seeder and records the result beside `## Persisted`, and [`check_lesson_ledger.py`](../scripts/lessons/check_lesson_ledger.py) names every tagged class still unseeded on each standing lane, so a stranded lesson is visible rather than silent. The same checker names every graduated lesson that a retro tags again outside the retros its lifecycle event reviewed, so a graduation that did not hold is visible on the next lane instead of never; the move (resurrect, a stronger mechanism, or a mis-tag) is a person's.
 A lesson graduates out of the ledger only through the three questions in [lesson-graduation.md](../skills/shared/references/lesson-graduation.md): one owning `docs/` page with duplicates removed, a code mechanism where one is possible, then the lifecycle event.
 
 ## Mutation phase barriers

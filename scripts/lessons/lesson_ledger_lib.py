@@ -61,6 +61,14 @@ LIFECYCLE_EVENT_KEYS = {
     "decision_ref",
     "rationale",
 }
+# `reviewed_retros` is the sorted list of retro paths that tagged the lesson's
+# class when the event was recorded, written by the recorder rather than typed
+# by a person. It exists so a graduated lesson's later re-tag can be told apart
+# from the instances the graduation already reviewed: dates cannot do that (the
+# 2026-09-03 review and its first recurrence share one day, and retros carry a
+# day, not a time). Optional in the shape because events recorded before it
+# existed were backfilled once and fixture ledgers may omit it.
+LIFECYCLE_EVENT_OPTIONAL_KEYS = {"reviewed_retros"}
 # Score-event shape, vocabulary, and citation now live in
 # `lesson_score_outcome_lib`: they are ONE concept (what an encounter record
 # means) that this module only replays, and keeping them here is what let the
@@ -313,10 +321,24 @@ def _replay_lifecycle(
         _fail(f"active_lesson_budget must remain fixed at {ACTIVE_LESSON_BUDGET}")
     event_ids: set[str] = set()
     for sequence, event in enumerate(events, start=1):
-        if not isinstance(event, dict) or set(event) != LIFECYCLE_EVENT_KEYS:
+        if (
+            not isinstance(event, dict)
+            or set(event) - LIFECYCLE_EVENT_OPTIONAL_KEYS != LIFECYCLE_EVENT_KEYS
+        ):
             _fail(
                 f"lifecycle event {sequence} has unexpected or missing fields; a lifecycle event "
-                f"takes exactly keys {sorted(LIFECYCLE_EVENT_KEYS)}"
+                f"takes exactly keys {sorted(LIFECYCLE_EVENT_KEYS)} plus optional "
+                f"{sorted(LIFECYCLE_EVENT_OPTIONAL_KEYS)}"
+            )
+        reviewed = event.get("reviewed_retros")
+        if "reviewed_retros" in event and (
+            not isinstance(reviewed, list)
+            or any(not _nonblank(item) for item in reviewed)
+            or reviewed != sorted(set(reviewed))
+        ):
+            _fail(
+                f"lifecycle event {sequence} reviewed_retros must be a sorted list of unique "
+                "retro paths"
             )
         if type(event.get("sequence")) is not int or event["sequence"] != sequence:
             _fail("lifecycle event sequences must start at 1 and be contiguous")
@@ -354,6 +376,29 @@ def _replay_lifecycle(
     active_count = sum(lesson["state"] == "active" for lesson in replayed.values())
     if active_count > budget:
         _fail(f"active lesson count {active_count} exceeds fixed budget {budget}")
+
+
+def _lifecycle_prefix_rewritten(current: list[Any], committed: list[Any]) -> bool:
+    """True when a committed lifecycle event changed in any way except gaining `reviewed_retros`.
+
+    The one tolerated difference is the one-time backfill of events recorded before
+    the field existed: a committed event without `reviewed_retros` may be matched by
+    the same event with it. An event that already carries the field is immutable.
+    """
+    if len(current) < len(committed):
+        return True
+    for new, old in zip(current, committed):
+        if new == old:
+            continue
+        if (
+            isinstance(new, dict)
+            and isinstance(old, dict)
+            and "reviewed_retros" not in old
+            and {key: value for key, value in new.items() if key != "reviewed_retros"} == old
+        ):
+            continue
+        return True
+    return False
 
 
 def _replay_scores(
@@ -450,7 +495,7 @@ def replay_validated_ledger_payload(
             _fail("committed score events were rewritten or removed; append new events instead")
         if budget != old_budget:
             _fail("committed active_lesson_budget was rewritten")
-        if lifecycle_events[: len(old_lifecycle)] != old_lifecycle:
+        if _lifecycle_prefix_rewritten(lifecycle_events, old_lifecycle):
             _fail("committed lifecycle events were rewritten or removed; append new events instead")
     _replay_scores(events, replayed, available)
     if any(

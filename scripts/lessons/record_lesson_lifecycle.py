@@ -83,6 +83,12 @@ def append_lifecycle_event(
                 f"record lesson lifecycle: lesson_id `{lesson_id}` is not seeded"
             )
         candidate = copy.deepcopy(payload)
+        # The retros tagging this class right now, so a later tag is provably
+        # later: `check_lesson_ledger.py` names a graduated lesson whose class a
+        # retro outside this list (and outside the ledger's citations) tags again.
+        reviewed = _ledger.candidate_sources(
+            repo_root, output_dir, output_dir / "recent-lessons.md"
+        ).get(lesson_id, set())
         event = {
             "sequence": len(candidate["lifecycle_events"]) + 1,
             "event_id": event_id,
@@ -90,6 +96,7 @@ def append_lifecycle_event(
             "action": action,
             "decision_ref": decision_ref,
             "rationale": rationale,
+            "reviewed_retros": sorted(reviewed),
         }
         candidate["lifecycle_events"].append(event)
         replayed = _ledger.replay_validated_ledger_payload(

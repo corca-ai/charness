@@ -267,3 +267,99 @@ def test_the_first_authorized_write_preserves_a_rollback_copy(tmp_path: Path) ->
         rationale="Reviewed resurrection decision.",
     )
     assert backup.read_bytes() == pre_upgrade
+
+
+def test_a_retro_that_retags_a_graduated_lesson_is_named_and_reviewed_tags_are_not(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """The sensor for a graduation that did not hold.
+
+    A graduated lesson leaves the selection preview on the promise that its
+    `docs/` page carries the rule. The only signal that the promise broke is a
+    retro tagging the class again, and the seeder, the score path, and the
+    unseeded advisory are all silent about it. The event records the retros it
+    reviewed so only a LATER tag counts; on 2026-09-03 the review and its first
+    recurrence shared one day, so a date could not have told them apart.
+    """
+    import sys
+
+    from scripts.lessons import seed_lesson_transitions as seeder
+    from tests.script_loader import load_script_module
+
+    _retro(tmp_path, "source.md", "a")
+    _retro(tmp_path, "reviewed.md", "a")
+    decision = tmp_path / "docs/development.md"
+    decision.parent.mkdir()
+    decision.write_text("# Development\n", encoding="utf-8")
+    path = _ledger(tmp_path)
+    output_dir = tmp_path / "charness-artifacts/retro"
+    summary = output_dir / "recent-lessons.md"
+
+    event = lifecycle_recorder.append_lifecycle_event(
+        repo_root=tmp_path,
+        event_id="graduate-a",
+        lesson_id="a",
+        action="graduate",
+        decision_ref="docs/development.md",
+        rationale="Owned by the development page.",
+    )
+    # The recorder wrote the tagging retros of the moment, uncited ones included.
+    assert event["reviewed_retros"] == [
+        "charness-artifacts/retro/reviewed.md",
+        "charness-artifacts/retro/source.md",
+    ]
+    assert (
+        seeder.graduated_recurrences(repo_root=tmp_path, output_dir=output_dir, summary_path=summary)
+        == []
+    )
+
+    _retro(tmp_path, "later.md", "a")
+    assert seeder.graduated_recurrences(
+        repo_root=tmp_path, output_dir=output_dir, summary_path=summary
+    ) == [
+        {
+            "lesson_id": "a",
+            "owner": "docs/development.md",
+            "retros": ["charness-artifacts/retro/later.md"],
+        }
+    ]
+    checker = load_script_module(
+        "check_lesson_ledger_for_recurrence_test",
+        Path(__file__).resolve().parents[1] / "scripts/lessons/check_lesson_ledger.py",
+    )
+    monkeypatch.setattr(sys, "argv", ["check_lesson_ledger.py", "--repo-root", str(tmp_path)])
+    assert checker.main() == 0
+    assert capsys.readouterr().out.splitlines()[-1] == (
+        "ADVISORY: 1 graduated lesson(s) tagged again by a retro the ledger does not cite: "
+        "a (owner docs/development.md; charness-artifacts/retro/later.md)"
+    )
+
+    # An event recorded before the field existed may gain it once, and only it.
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    del payload["lifecycle_events"][0]["reviewed_retros"]
+    committed = [dict(payload["lifecycle_events"][0])]
+    assert not ledger._lifecycle_prefix_rewritten(
+        [{**committed[0], "reviewed_retros": ["x"]}], committed
+    )
+    assert ledger._lifecycle_prefix_rewritten([{**committed[0], "rationale": "other"}], committed)
+    assert ledger._lifecycle_prefix_rewritten(
+        [{**committed[0], "reviewed_retros": ["y"]}],
+        [{**committed[0], "reviewed_retros": ["x"]}],
+    )
+    assert ledger._lifecycle_prefix_rewritten([], committed)  # removed, not appended
+    payload["lifecycle_events"][0]["reviewed_retros"] = ["b", "a"]
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="reviewed_retros must be a sorted list"):
+        _validate(tmp_path)
+
+    # A malformed event is skipped rather than crashing the advisory, and a
+    # repo with no ledger has nothing graduated to report.
+    assert seeder.uncited_graduated_tags(
+        {"a": {"charness-artifacts/retro/later.md"}},
+        {"lessons": {"a": {"state": "graduated"}}, "lifecycle_events": ["not-a-dict"]},
+    ) == [{"lesson_id": "a", "owner": None, "retros": ["charness-artifacts/retro/later.md"]}]
+    path.unlink()
+    assert (
+        seeder.graduated_recurrences(repo_root=tmp_path, output_dir=output_dir, summary_path=summary)
+        == []
+    )

@@ -94,3 +94,9 @@ event's reference is true at the commit it lands in.
 - `check_lesson_ledger.py` passes.
 - The lesson selection preview no longer shows the lesson in the working set.
 - The repo's docs gate (`check-docs.sh`) is green at the commit.
+
+After graduation the sensor is the retro tag: the lifecycle event records the
+retros that tagged the class when it was settled, and `check_lesson_ledger.py`
+prints an advisory naming any graduated lesson a later retro tags again. That
+line is the readback that the owning page held; what to do about it is settled
+the same way the graduation was.
