@@ -462,6 +462,16 @@ phases:
     lane: standard
     timing_layer: stays
     note: no wall-clock claim in tests/ (#779); the record has been empty since #780 and only shrinks.
+  - label: check-timeout-bound-form
+    command:
+    - python3
+    - scripts/gates/check_timeout_bound_form.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: standard
+    timing_layer: stays
+    note: no timeout-bound verdict in tests/ (#786); a kept site carries its reason in the record, which only shrinks.
   - label: check-module-eviction-form
     command:
     - python3

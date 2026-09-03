@@ -1,0 +1,16 @@
+{
+  "files": {
+    "tests/quality_gates/test_cli_skill_surface.py": 1,
+    "tests/quality_gates/test_cli_skill_surface_probe_boundary.py": 1,
+    "tests/test_markdown_preview_support.py": 1,
+    "tests/test_script_timeout.py": 1
+  },
+  "reasons": {
+    "tests/quality_gates/test_cli_skill_surface.py": "test_cli_skill_surface_reports_probe_timeout: the probe sleeps 2 s against a 0.1 s knob, so the deadline is certain to fire and load only widens the margin; the assertion is on the `unobserved` reporting shape, not on timing (census 2026-09-03, #786).",
+    "tests/quality_gates/test_cli_skill_surface_probe_boundary.py": "test_cli_skill_surface_names_the_unobserved_probe_in_its_only_output: the probe sleeps 30 s against a 0.2 s knob; certain to fire; the claim is the payload's `unobserved` word (census 2026-09-03, #786).",
+    "tests/test_markdown_preview_support.py": "test_markdown_preview_marks_slow_glow_as_backend_error: the fake glow sleeps 2 s against a 0.1 s knob; certain to fire; the claim is the `backend-error` rendering (census 2026-09-03, #786).",
+    "tests/test_script_timeout.py": "test_arm_cli_timeout_exits_in_subprocess: the alarm is armed at 0.05 s before a 0.2 s sleep starts; certain to fire; the claim is the handler's exit-code and stderr contract (census 2026-09-03, #786)."
+  },
+  "schema": "charness.timeout-bound-baseline/v1",
+  "total": 4
+}

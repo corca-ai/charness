@@ -358,6 +358,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-subprocess-form", "check_subprocess_form.py"),
     ("check-script-lookup-form", "check_script_lookup_form.py"),
     ("check-wall-clock-form", "check_wall_clock_form.py"),
+    ("check-timeout-bound-form", "check_timeout_bound_form.py"),
     ("check-module-eviction-form", "check_module_eviction_form.py"),
     ("check-skill-contracts", "check_skill_contracts.py"),
     ("check-skill-bootstrap-vars", "check_skill_bootstrap_vars.py"),

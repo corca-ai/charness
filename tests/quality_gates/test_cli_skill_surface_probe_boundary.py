@@ -32,38 +32,6 @@ from .support import ROOT, run_script, write_executable
 from .test_cli_skill_surface import run_cli_skill_surface, seed_repo
 
 
-def _run_bounded_in_own_session(*args: str, env: dict[str, str], limit: float = 30.0) -> str | None:
-    """Run the check under a bound that does NOT depend on the code under test.
-
-    `subprocess.run(timeout=)` is not usable here: it kills only the direct child
-    and then drains with no deadline, which is the exact defect this test exists
-    to catch, so a regressed check would hang the SUITE instead of failing it.
-    Returns stdout, or None when the check blew the bound.
-    """
-    process = subprocess.Popen(
-        [sys.executable, *args],
-        cwd=ROOT,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        env=env,
-        start_new_session=True,
-    )
-    try:
-        stdout, stderr = process.communicate(timeout=limit)
-        assert stdout, (
-            f"the check produced no stdout; rc={process.returncode} stderr={stderr[-400:]}"
-        )
-        return stdout
-    except subprocess.TimeoutExpired:
-        os.killpg(os.getpgid(process.pid), signal.SIGKILL)
-        try:
-            process.communicate(timeout=10)
-        except subprocess.TimeoutExpired:
-            pass
-        return None
-
-
 def _probe_repo(tmp_path: Path, command: str) -> Path:
     repo = seed_repo(
         tmp_path,
@@ -296,66 +264,6 @@ def test_cli_skill_surface_separates_a_real_124_exit_from_an_unobserved_probe(
     assert payload["probe_results"][0]["timed_out"] is False
     assert payload["probe_results"][0]["attempts"] == 1
     assert any("exited 124" in blocker for blocker in payload["blockers"])
-
-
-@pytest.mark.boundary_contract(
-    reason="child-exit-on-parent-death: a real probe process and grandchild must be bounded and reaped"
-)
-def test_cli_skill_surface_survives_a_probe_whose_grandchild_holds_the_pipe(tmp_path: Path) -> None:
-    """The deadline must bind even when a grandchild inherits the output pipe.
-
-    `subprocess.run(timeout=)` kills only the direct child and then drains with
-    NO deadline, so this shape hangs the check forever. Nothing above it -- not
-    `run-quality.sh`, not the pre-push hook -- puts a wall clock around a label,
-    so the gate would hang rather than refuse.
-    """
-    pid_log = tmp_path / "orphan-pids.txt"
-    stop_path = tmp_path / "stop-orphans"
-    exit_dir = tmp_path / "orphan-exits"
-    repo = _probe_repo(tmp_path, "python3 scripts/orphan.py doctor --json")
-    holder = _write_controlled_pipe_holder(repo)
-    write_executable(
-        repo / "scripts" / "orphan.py",
-        "#!/usr/bin/env python3\n"
-        "import subprocess, sys, time\n"
-        # The grandchild inherits stdout/stderr and outlives the parent.
-        f"child = subprocess.Popen([sys.executable, {str(holder)!r}, {str(stop_path)!r}, {str(exit_dir)!r}])\n"
-        f"with open({str(pid_log)!r}, 'a', encoding='utf-8') as stream: stream.write(str(child.pid) + '\\n')\n"
-        "print('partial verdict before the hang')\n"
-        "sys.stdout.flush()\n"
-        "time.sleep(600)\n",
-    )
-    env = os.environ.copy()
-    env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.5"
-
-    try:
-        result = _run_bounded_in_own_session(
-            "scripts/gates/check_cli_skill_surface.py",
-            "--repo-root",
-            str(repo),
-            "--run-probes",
-            env=env,
-        )
-        recorded_pids = _recorded_pids(pid_log)
-        production_survivors = [
-            pid for pid in recorded_pids if _owned_process_is_running(pid, str(stop_path))
-        ]
-    finally:
-        cleanup_pids, _, cleanup_survivors = _stop_recorded_children(pid_log, stop_path, exit_dir)
-    assert result is not None, (
-        "the check did not bound its own probe deadline; it hung on the orphan-held pipe"
-    )
-    assert recorded_pids, "the fixture never established an inherited pipe holder"
-    assert not production_survivors, "the production group kill left an ordinary descendant running"
-    assert not cleanup_survivors, "the fixture failed to clean every recorded descendant"
-    payload = yaml.safe_load(result)
-
-    assert payload["status"] == "unobserved"
-    assert payload["probe_results"][0]["timed_out"] is True
-    assert len(recorded_pids) == payload["probe_results"][0]["attempts"]
-    # Partial output captured before the deadline is EVIDENCE, not noise: it is
-    # what tells a reader the command was mid-verdict rather than never started.
-    assert "partial verdict before the hang" in payload["probe_results"][0]["stdout_preview"]
 
 
 @pytest.mark.boundary_contract(

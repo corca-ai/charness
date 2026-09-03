@@ -97,7 +97,16 @@ any `time.sleep`, `time.monotonic`, or `time.perf_counter` call in `tests/`;
 its record,
 [`wall-clock-baseline.json`](../charness-artifacts/quality/wall-clock-baseline.json),
 reached zero entries in #780 and can only shrink, so the first new call
-anywhere is red. A test that must wait for a child blocks on a FIFO the child
+anywhere is red. The sibling
+[timeout-bound form check](../scripts/gates/check_timeout_bound_form.py)
+refuses a test whose verdict rides on a deadline with no `time.*` call in
+it: a `*_TIMEOUT_SECONDS` knob set under 5 s in the same test function as an
+assertion on the child's `stdout`, `stderr`, or `returncode` (or a name
+derived from one), or a sub-second `communicate`/`run`/`wait` deadline whose
+`TimeoutExpired` handler asserts; its record,
+[`timeout-bound-baseline.json`](../charness-artifacts/quality/timeout-bound-baseline.json),
+names each kept site with a written reason and only shrinks, and its
+docstring names the shapes it cannot see. A test that must wait for a child blocks on a FIFO the child
 holds through [`tests/fifo_witness.py`](../tests/fifo_witness.py), or drives
 the module under test with a controlled clock. Tests
 import the script under test in-process through the loaders in

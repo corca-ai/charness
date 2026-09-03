@@ -87,3 +87,29 @@ Docs: `docs/agent-task-runs.md` owns the receipt field;
 `docs/parallel-execution.md` "Disjoint Writers" carries the definition-of-done
 sentence with the measured runtime; `.agents/claude-host.md` carries the same
 for in-process subagent briefs, which have no receipt.
+
+## Second session, continued (#786 timeout-bound-census)
+
+#785 pushed from a clean clone as `4057fcb09` (hook lane 87 passed in 162 s),
+`verify-closeout` = `verified` (CLOSED), cursor advanced by
+`operations/update-parent-progress-786.json` (progress 1/5/6, revision 2);
+`/goal #784` pickup names #786.
+
+Two full-lane refusals on the way to that push, both on the new module and
+both fixed structurally: the bootstrap-shim consistency gate wanted the
+canonical preamble in `task_run_changed_line.py` (the rewriter added it), and
+the attention-state visibility gate wanted the receipt's `skipped` state
+declared (`attention-state-visibility.json` now carries it with its rationale).
+
+Slice 2: the predicate was written into `timeout-census.md` before the gate,
+then extended by one closed rule because the pinned form was blind to the
+hosted shape itself (an assert on a name two assignments away from
+`result.stdout`). `scripts/gates/check_timeout_bound_form.py` is the sibling
+of the wall-clock check, wired as `check-timeout-bound-form` in the standing
+lane; its record `timeout-bound-baseline.json` carries four kept sites, each
+with its reason. The census read: 4 knob-bound sites the gate sees (all
+certain-to-fire, kept), 2 controlled-clock tests exempt, 3 blind sites named,
+and one real-process boundary test deleted because its two claims (holder
+spawned and line printed before a 0.5 s kill) race the wall clock in the
+unsafe direction, cannot be forced on a real check process, and are owned by
+the controlled-clock siblings.
