@@ -8,13 +8,13 @@ import shutil
 import signal
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 import pytest
 
 from runtime_bootstrap import import_repo_module
 from scripts.core.subprocess_guard import PhaseOutcome
+from tests.fifo_witness import FifoWitness, holder_snippet
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "mutation" / "mutate_and_restore.py"
@@ -55,11 +55,15 @@ def _rewrite_journal(recovery, update) -> None:
     recovery.journal_path.write_text(json.dumps(payload), encoding="utf-8")
 
 
-def _interruptible_plan(tmp_path: Path) -> tuple[Path, Path]:
+def _interruptible_plan(tmp_path: Path) -> tuple[Path, Path, FifoWitness]:
     repo = tmp_path / "interrupted-repo"
     repo.mkdir()
+    witness = FifoWitness(repo / "runner.witness")
     target = repo / "subject.py"
     target.write_text("STATE = 'ORIGINAL'\n", encoding="utf-8")
+    witness_source = holder_snippet(witness.path, "mutated").rstrip("\n").replace(
+        "\n", "\n    "
+    )
     (repo / "runner.py").write_text(
         "import os\n"
         "import time\n"
@@ -67,6 +71,7 @@ def _interruptible_plan(tmp_path: Path) -> tuple[Path, Path]:
         "text = Path('subject.py').read_text(encoding='utf-8')\n"
         "if 'MUTATED' in text:\n"
         "    Path('runner.pid').write_text(str(os.getpid()), encoding='utf-8')\n"
+        f"    {witness_source}\n"
         "    time.sleep(30)\n"
         "print('1 passed in 0.01s')\n",
         encoding="utf-8",
@@ -88,92 +93,91 @@ def _interruptible_plan(tmp_path: Path) -> tuple[Path, Path]:
         ),
         encoding="utf-8",
     )
-    return repo, plan_path
+    return repo, plan_path, witness
 
 
-def _wait_for_mutation(repo: Path) -> None:
-    deadline = time.monotonic() + 8
-    while time.monotonic() < deadline:
-        if (
-            "MUTATED" in (repo / "subject.py").read_text(encoding="utf-8")
-            and (repo / "runner.pid").exists()
-        ):
-            return
-        time.sleep(0.02)
-    raise AssertionError("the subprocess never reached the active mutation")
+def _wait_for_mutation(repo: Path, witness: FifoWitness) -> None:
+    assert witness.wait_line() == "mutated"
+    assert "MUTATED" in (repo / "subject.py").read_text(encoding="utf-8")
 
 
 @pytest.mark.boundary_contract(
     reason="prove SIGTERM sent to the real mutation runner restores the file and clears its recovery journal"
 )
 def test_sigterm_routes_through_restore_and_clears_the_journal(tmp_path: Path) -> None:
-    repo, plan_path = _interruptible_plan(tmp_path)
-    process = subprocess.Popen(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--plan", str(plan_path)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    _wait_for_mutation(repo)
+    repo, plan_path, witness = _interruptible_plan(tmp_path)
+    try:
+        process = subprocess.Popen(
+            [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--plan", str(plan_path)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        _wait_for_mutation(repo, witness)
 
-    process.send_signal(signal.SIGTERM)
-    _stdout, stderr = process.communicate(timeout=8)
+        process.send_signal(signal.SIGTERM)
+        _stdout, stderr = process.communicate(timeout=8)
 
-    assert process.returncode == 128 + signal.SIGTERM, stderr
-    assert "any active mutation was restored" in stderr
-    assert (repo / "subject.py").read_text(encoding="utf-8") == "STATE = 'ORIGINAL'\n"
-    assert not mar.MutationRecovery(repo).pending
+        assert process.returncode == 128 + signal.SIGTERM, stderr
+        assert "any active mutation was restored" in stderr
+        assert (repo / "subject.py").read_text(encoding="utf-8") == "STATE = 'ORIGINAL'\n"
+        assert not mar.MutationRecovery(repo).pending
+    finally:
+        witness.close()
 
 
 @pytest.mark.boundary_contract(
     reason="prove SIGKILL can leave a pending mutation child and the later recovery CLI restores exact bytes"
 )
 def test_sigkill_leaves_a_detectable_journal_that_recovers_exact_bytes(tmp_path: Path) -> None:
-    repo, plan_path = _interruptible_plan(tmp_path)
-    process = subprocess.Popen(
-        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--plan", str(plan_path)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    _wait_for_mutation(repo)
-    child_pid = int((repo / "runner.pid").read_text(encoding="utf-8"))
+    repo, plan_path, witness = _interruptible_plan(tmp_path)
     try:
-        process.kill()
-        process.communicate(timeout=8)
-
-        assert process.returncode == -signal.SIGKILL
-        assert "MUTATED" in (repo / "subject.py").read_text(encoding="utf-8")
-        assert mar.MutationRecovery(repo).pending
-
-        check = subprocess.run(
-            [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--check-recovery"],
-            capture_output=True,
+        process = subprocess.Popen(
+            [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--plan", str(plan_path)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
         )
-        assert check.returncode == 2
-        assert "recovery is REQUIRED" in check.stderr
-
-        recovered = subprocess.run(
-            [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--recover"],
-            capture_output=True,
-            text=True,
-        )
-        assert recovered.returncode == 0, recovered.stderr
-        assert "restored subject.py" in recovered.stdout
-        assert (repo / "subject.py").read_text(encoding="utf-8") == "STATE = 'ORIGINAL'\n"
-        assert list(repo.glob(".subject.py.charness-write-*")) == []
-        assert not mar.MutationRecovery(repo).pending
-        child_stat = Path(f"/proc/{child_pid}/stat")
-        assert (
-            not child_stat.exists()
-            or child_stat.read_text(encoding="utf-8").rsplit(")", 1)[1].split()[0] == "Z"
-        ), "recovery returned while the mutated test child was still active"
-    finally:
+        _wait_for_mutation(repo, witness)
+        child_pid = int((repo / "runner.pid").read_text(encoding="utf-8"))
         try:
-            os.kill(child_pid, signal.SIGTERM)
-        except ProcessLookupError:
-            pass
+            process.kill()
+            process.communicate(timeout=8)
+
+            assert process.returncode == -signal.SIGKILL
+            assert "MUTATED" in (repo / "subject.py").read_text(encoding="utf-8")
+            assert mar.MutationRecovery(repo).pending
+
+            check = subprocess.run(
+                [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--check-recovery"],
+                capture_output=True,
+                text=True,
+            )
+            assert check.returncode == 2
+            assert "recovery is REQUIRED" in check.stderr
+
+            recovered = subprocess.run(
+                [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--recover"],
+                capture_output=True,
+                text=True,
+            )
+            assert recovered.returncode == 0, recovered.stderr
+            assert "restored subject.py" in recovered.stdout
+            assert (repo / "subject.py").read_text(encoding="utf-8") == "STATE = 'ORIGINAL'\n"
+            assert list(repo.glob(".subject.py.charness-write-*")) == []
+            assert not mar.MutationRecovery(repo).pending
+            child_stat = Path(f"/proc/{child_pid}/stat")
+            assert (
+                not child_stat.exists()
+                or child_stat.read_text(encoding="utf-8").rsplit(")", 1)[1].split()[0] == "Z"
+            ), "recovery returned while the mutated test child was still active"
+        finally:
+            try:
+                os.kill(child_pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+    finally:
+        witness.close()
 
 
 def test_recovery_refuses_to_overwrite_bytes_changed_after_the_mutation(tmp_path: Path) -> None:

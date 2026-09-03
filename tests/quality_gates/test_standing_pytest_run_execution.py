@@ -20,11 +20,12 @@ import json
 import signal
 import subprocess
 import sys
-import time
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
+from tests.fifo_witness import FifoWitness, shell_holder_snippet
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -333,63 +334,54 @@ def test_a_wrapper_sigterm_reaps_the_real_child_tree(tmp_path: Path) -> None:
 
     A fake `pytest` that backgrounds a grandchild stands in for xdist workers,
     because the property under test is that the whole SESSION dies, not that one
-    process does. The marker file is the discriminator: it appears only if the
-    grandchild outlived the reap.
+    process does. The FIFO line forces the fake pytest to have started, and EOF
+    proves that the shell, its background child, and both sleeping processes all
+    died with it.
+
+    The FIFO is also the ordering boundary: no assertion runs until the fake
+    pytest has opened fd 3 and published its start line.
     """
     repo = tmp_path / "repo"
     (repo / "tests").mkdir(parents=True)
-    marker = tmp_path / "grandchild-survived"
-    started = tmp_path / "child-started"
-    fake_pytest = tmp_path / "fake_pytest.sh"
-    # The grandchild writes its marker QUICKLY and then lingers. A marker written
-    # only after a long sleep would land after the assertion window, so the test
-    # would pass whether or not the tree died -- MEASURED on 2026-08-15: with a
-    # 20s marker this assertion passed even with the handler disabled. Timing is
-    # the discriminator here, not the assertion.
-    fake_pytest.write_text(
-        f"#!/bin/bash\n(sleep 1; touch {marker}; sleep 30) &\ntouch {started}\nsleep 30\n",
-        encoding="utf-8",
-    )
-    fake_pytest.chmod(0o755)
+    with FifoWitness(tmp_path / "witness") as witness:
+        fake_pytest = tmp_path / "fake_pytest.sh"
+        fake_pytest.write_text(
+            f"#!/bin/bash\n{shell_holder_snippet(witness.path, 'started')}\n(sleep 30) &\nsleep 30\n",
+            encoding="utf-8",
+        )
+        fake_pytest.chmod(0o755)
 
-    driver = tmp_path / "driver.py"
-    driver.write_text(
-        "import sys\n"
-        f"sys.path.insert(0, {str(ROOT)!r})\n"
-        f"sys.path.insert(0, {str(ROOT / 'scripts')!r})\n"
-        "from scripts.gates_support import run_standing_pytest as runner\n"
-        "from types import SimpleNamespace\n"
-        f"runner.build_pytest_command = lambda *a, **k: [{str(fake_pytest)!r}]\n"
-        "runner.ensure_external_temp_root = lambda *a, **k: None\n"
-        "runner.run_standing_pytest(SimpleNamespace(\n"
-        f"    repo_root=__import__('pathlib').Path({str(repo)!r}),\n"
-        f"    mode='read-only', basetemp=__import__('pathlib').Path({str(tmp_path / 'bt')!r}),\n"
-        "    include_release_only=False, keep_basetemp=True, pytest_target=[],\n"
-        "    extra_pytest_target=[], print_command=False, timeout_seconds=None,\n"
-        "))\n",
-        encoding="utf-8",
-    )
+        driver = tmp_path / "driver.py"
+        driver.write_text(
+            "import sys\n"
+            f"sys.path.insert(0, {str(ROOT)!r})\n"
+            f"sys.path.insert(0, {str(ROOT / 'scripts')!r})\n"
+            "from scripts.gates_support import run_standing_pytest as runner\n"
+            "from types import SimpleNamespace\n"
+            f"runner.build_pytest_command = lambda *a, **k: [{str(fake_pytest)!r}]\n"
+            "runner.ensure_external_temp_root = lambda *a, **k: None\n"
+            "runner.run_standing_pytest(SimpleNamespace(\n"
+            f"    repo_root=__import__('pathlib').Path({str(repo)!r}),\n"
+            f"    mode='read-only', basetemp=__import__('pathlib').Path({str(tmp_path / 'bt')!r}),\n"
+            "    include_release_only=False, keep_basetemp=True, pytest_target=[],\n"
+            "    extra_pytest_target=[], print_command=False, timeout_seconds=None,\n"
+            "))\n",
+            encoding="utf-8",
+        )
 
-    proc = subprocess.Popen([sys.executable, str(driver)], cwd=tmp_path)
-    try:
-        deadline = time.monotonic() + 15
-        while not started.exists() and time.monotonic() < deadline:
-            time.sleep(0.05)
-        assert started.exists(), "the fake pytest child never started"
+        proc = subprocess.Popen([sys.executable, str(driver)], cwd=tmp_path)
+        try:
+            assert witness.wait_line() == "started"
 
-        # Exactly what an enclosing `run_monitored_phase` does at its budget.
-        proc.send_signal(signal.SIGTERM)
-        proc.wait(timeout=15)
-    finally:
-        if proc.poll() is None:  # pragma: no cover - only on a failed reap
-            proc.kill()
-            proc.wait(timeout=10)
+            # Exactly what an enclosing `run_monitored_phase` does at its budget.
+            proc.send_signal(signal.SIGTERM)
+            proc.wait(timeout=15)
+        finally:
+            if proc.poll() is None:  # pragma: no cover - only on a failed reap
+                proc.kill()
+                proc.wait(timeout=10)
 
-    # Past the grandchild's 1s marker, so a survivor has certainly written it.
-    # Verified by probe on 2026-08-15: with `_terminate_reaps_the_child` disabled
-    # this assertion FAILS (marker present), and with it in place it passes.
-    time.sleep(4)
-    assert not marker.exists(), (
-        "a SIGTERM to the runner left the child's process tree alive; an enclosing "
-        "guard's timeout would orphan the whole pytest run"
-    )
+        # EOF is the proof that the whole tree released fd 3. With
+        # `_terminate_reaps_the_child` disabled, this read blocks until the
+        # runner's budget ends it; with the handler in place, it completes here.
+        witness.wait_eof()

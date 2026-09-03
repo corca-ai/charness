@@ -11,13 +11,13 @@ import signal
 import stat
 import subprocess
 import sys
-import time
 from functools import cache
 from pathlib import Path
 
 import pytest
 import yaml
 
+from tests.fifo_witness import FifoWitness
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.seed_cache import get_or_build
 
@@ -151,10 +151,19 @@ from pathlib import Path
 
 sleep_for = float(os.environ.get("FAKE_REVIEW_SLEEP", "0"))
 if sleep_for:
-    child_pid_file = os.environ.get("FAKE_REVIEW_CHILD_PID_FILE")
-    if child_pid_file:
-        child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
-        Path(child_pid_file).write_text(str(child.pid), encoding="utf-8")
+    witness_path = os.environ.get("FAKE_REVIEW_WITNESS")
+    if witness_path:
+        child_source = (
+            "import os\\n"
+            f"_witness = open({witness_path!r}, 'w')\\n"
+            "_witness.write(str(os.getpid()) + chr(10))\\n"
+            "_witness.flush()\\n"
+            "import time\\n"
+            "time.sleep(30)\\n"
+        )
+    else:
+        child_source = "import time; time.sleep(30)"
+    child = subprocess.Popen([sys.executable, "-c", child_source])
     time.sleep(sleep_for)
 prompt = sys.stdin.read()
 packet = re.search(r"^Packet identity \\(copy exactly\\): ([0-9a-f]{64})$", prompt, re.MULTILINE).group(1)
@@ -662,58 +671,46 @@ def test_parent_interrupt_returns_typed_state_and_kills_backend_descendant(tmp_p
     bin_dir.mkdir()
     _fake_codex(bin_dir / "codex")
     packet_file = _install_cached_working_tree_packet(tmp_path)
-    child_pid_file = tmp_path / "child.pid"
-    env = {
-        **os.environ,
-        "PATH": f"{bin_dir}:{os.environ['PATH']}",
-        "FAKE_REVIEW_SLEEP": "30",
-        "FAKE_REVIEW_CHILD_PID_FILE": str(child_pid_file),
-    }
-    command = [
-        sys.executable,
-        str(WRAPPER),
-        "--repo-root",
-        str(tmp_path),
-        "--scope",
-        "semantic command",
-        "--lens",
-        "operability",
-        "--attempt-id",
-        "parent-interrupt",
-        "--backend",
-        "codex_exec",
-        "--packet-file",
-        packet_file,
-    ]
-    process = subprocess.Popen(command, cwd=ROOT, env=env, stdout=subprocess.PIPE, text=True)
-    child_pid = None
-    try:
-        deadline = time.monotonic() + 5
-        while not child_pid_file.exists() and time.monotonic() < deadline:
-            time.sleep(0.05)
-        assert child_pid_file.exists()
-        child_pid = int(child_pid_file.read_text(encoding="utf-8"))
-        process.send_signal(signal.SIGTERM)
-        stdout, _ = process.communicate(timeout=10)
-    finally:
-        if process.poll() is None:
-            process.kill()
-            process.wait(timeout=5)
-
-    assert child_pid is not None
-    payload = yaml.safe_load(stdout)
-    assert payload["status"] == "runner-interrupted"
-    assert payload["reviewer_started"] is True
-    assert payload["delivery_state"] == "interrupted"
-    assert payload["approval_eligible"] is False
-    for _ in range(40):
+    with FifoWitness(tmp_path / "witness") as witness:
+        env = {
+            **os.environ,
+            "PATH": f"{bin_dir}:{os.environ['PATH']}",
+            "FAKE_REVIEW_SLEEP": "30",
+            "FAKE_REVIEW_WITNESS": str(witness.path),
+        }
+        command = [
+            sys.executable,
+            str(WRAPPER),
+            "--repo-root",
+            str(tmp_path),
+            "--scope",
+            "semantic command",
+            "--lens",
+            "operability",
+            "--attempt-id",
+            "parent-interrupt",
+            "--backend",
+            "codex_exec",
+            "--packet-file",
+            packet_file,
+        ]
+        process = subprocess.Popen(command, cwd=ROOT, env=env, stdout=subprocess.PIPE, text=True)
         try:
-            os.kill(child_pid, 0)
-        except ProcessLookupError:
-            break
-        time.sleep(0.05)
-    else:
-        raise AssertionError("backend descendant survived parent interruption")
+            child_pid = int(witness.wait_line())
+            process.send_signal(signal.SIGTERM)
+            stdout, _ = process.communicate(timeout=10)
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.wait(timeout=5)
+
+        assert child_pid > 0
+        payload = yaml.safe_load(stdout)
+        assert payload["status"] == "runner-interrupted"
+        assert payload["reviewer_started"] is True
+        assert payload["delivery_state"] == "interrupted"
+        assert payload["approval_eligible"] is False
+        witness.wait_eof()
 
 
 def test_the_deleted_preimage_digest_matches_the_binder_across_the_skill_boundary(
