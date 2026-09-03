@@ -1,0 +1,86 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: created
+repo: corca-ai/charness
+parent_number: 784
+work_item_key: lane-changed-line-done
+number: 785
+url: https://github.com/corca-ai/charness/issues/785
+body_verified: true
+before:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  work_item_key: lane-changed-line-done
+  marker: '<!-- charness-work-item-key: lane-changed-line-done -->'
+  parent_number: 784
+  count: 0
+  matches: []
+  foreign_parent: []
+readback:
+  ok: true
+  repo: corca-ai/charness
+  title: 'lane changed-line done-gate: task run completion runs the changed-line gate
+    and the brief names it'
+  labels: []
+  milestone: null
+  body_bytes: 1859
+  body_preview: '<!-- charness-work-item-key: lane-changed-line-done -->
+
+
+    ## Objective
+
+
+    A `charness task run` lane, and any subagent brief that touches `scripts/` or
+    `skills/`, cannot report done while `release_changed_line_coverage.py` would refuse
+    the push. Four refusals for one commit on 2026-09-03 were this class (`green-test-is-not-covered-line`).
+
+
+    ## Owned scope
+
+
+    - `scripts/task_run/task_run_completion.py::complete_task` (and the runner that
+    feeds it `base_sha`) runs `scripts/mutation/release_changed_line_coverage.py --base-sha
+    <lane base>` on the candidate diff at completion and writes the verdict and `blocking_detail`
+    into the receipt; the receipt''s result state carries the refusal so the parent''s
+    read shows it.
+
+    - `docs/parallel-execution.md` "Disjoint writers": the definition-of-done sentence
+    for briefs, naming the mechanism and the gate''s runtime as measured.
+
+    - `.agents/claude-host.md`: the same sentence for in-process subagent briefs,
+    which have no lane receipt.
+
+    - Tests: a lane seeded with an uncovered branch ends with the refusal in its receipt;
+    a lane with every changed line proven completes as before.
+
+
+    ## Acceptance
+
+
+    - The seeded lane''s receipt names the unproven line; the parent''s re'
+  number: 785
+  url: https://github.com/corca-ai/charness/issues/785
+  body_verified: true
+  verification:
+    command: verify-create
+    repo: corca-ai/charness
+    number: 785
+    body_file: /home/hwidong/codes/charness/charness-artifacts/goal-runs/784/bodies/lane-changed-line-done.md
+operation: create-or-reuse-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/784/observations/bootstrap-create-lane-changed-line-done-1.started.json
+  started_sha256: a0e2082c000741cc0fa24ec7e422c22053a97cd3d2e48763f4d4ba3ef7cf5bcf
+  terminal_path: charness-artifacts/goal-runs/784/observations/bootstrap-create-lane-changed-line-done-1.terminal.json
+  terminal_sha256: 560cb56b66e106a9bc6448ad6cdd84dcce19e233e4116f8754b3b6664cb10507
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-create-lane-changed-line-done-1

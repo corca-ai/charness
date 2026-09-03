@@ -1,0 +1,86 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: created
+repo: corca-ai/charness
+parent_number: 784
+work_item_key: checkout-first-routing-and-8-0-3
+number: 788
+url: https://github.com/corca-ai/charness/issues/788
+body_verified: true
+before:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  work_item_key: checkout-first-routing-and-8-0-3
+  marker: '<!-- charness-work-item-key: checkout-first-routing-and-8-0-3 -->'
+  parent_number: 784
+  count: 0
+  matches: []
+  foreign_parent: []
+readback:
+  ok: true
+  repo: corca-ai/charness
+  title: checkout-first routing inside the charness repo, and release 8.0.3
+  labels: []
+  milestone: null
+  body_bytes: 1919
+  body_preview: '<!-- charness-work-item-key: checkout-first-routing-and-8-0-3 -->
+
+
+    ## Objective
+
+
+    Inside the charness repo, skill scripts resolve to the working tree instead of
+    the installed 8.0.2 plugin (four hand fallbacks in Goal Run #775), and release
+    8.0.3 (173 commits since v8.0.2) is cut through the `release` skill; the operator
+    pre-approved the release on 2026-09-03.
+
+
+    ## Owned scope
+
+
+    - `skills/shared/references/bootstrap-resolution.md` and `.agents/claude-host.md`:
+    when the working tree is the authoring repo (identified by its remote or adapter
+    identity, not by directory name), `$SKILL_DIR` resolution prefers `skills/public/<skill>/scripts`
+    in the checkout; the rule says why the installed copy is still what a consumer
+    runs.
+
+    - Proof: `/goal #<parent>` pickup from a session in this repo reads the checkout
+    with no hand fallback; `docs/development.md` drops the open-path sentence and
+    points at the rule.
+
+    - 8.0.3: `plan_release_run.py`, bump, critique, clean-clone release lane, publish,
+    readback from a consumer checkout (`charness update`), recorded under the item.
+    The pre-approval covers the decision to ship; no step of the release skill is
+    skipped.
+
+
+    ## Acceptance
+
+
+    - Pickup and one other skill s'
+  number: 788
+  url: https://github.com/corca-ai/charness/issues/788
+  body_verified: true
+  verification:
+    command: verify-create
+    repo: corca-ai/charness
+    number: 788
+    body_file: /home/hwidong/codes/charness/charness-artifacts/goal-runs/784/bodies/checkout-first-routing-and-8-0-3.md
+operation: create-or-reuse-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/784/observations/bootstrap-create-checkout-first-routing-and-8-0-3-1.started.json
+  started_sha256: 7d8aea8c01b009dda74ca1d5ca126d6c6a43c74384787dac85564f7cdb993fee
+  terminal_path: charness-artifacts/goal-runs/784/observations/bootstrap-create-checkout-first-routing-and-8-0-3-1.terminal.json
+  terminal_sha256: 62bfeb6cf2fdd5c7fc1c8a0e4bc7bbf34800afc0cff06b3cc944934715479c1b
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-create-checkout-first-routing-and-8-0-3-1

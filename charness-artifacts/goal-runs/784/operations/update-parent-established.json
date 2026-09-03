@@ -1,0 +1,16 @@
+{
+ "kind": "charness.goal-run-operation/v1",
+ "repo": "corca-ai/charness",
+ "parent_number": 784,
+ "draft_sha256": "878f74409e4c271d07a87c4bb34108376d10878cfdc476249311ec3671a8a151",
+ "binding_sha256": "9e4650f0f731add79de7a0b68cc3b918ed087e71d7e28f43cb74c0973ddafd82",
+ "binding_path": "charness-artifacts/goals/2026-09-03-lesson-review-and-775-followups.binding.json",
+ "observation_dir": "charness-artifacts/goal-runs/784/observations",
+ "operation": "update-body",
+ "attempt_id": "bootstrap-parent-established-1",
+ "target": {
+  "repo": "corca-ai/charness",
+  "number": 784
+ },
+ "body_file": "charness-artifacts/goal-runs/784/bodies/parent-established.md"
+}

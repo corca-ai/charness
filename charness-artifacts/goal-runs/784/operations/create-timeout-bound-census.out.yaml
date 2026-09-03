@@ -1,0 +1,78 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+action: created
+repo: corca-ai/charness
+parent_number: 784
+work_item_key: timeout-bound-census
+number: 786
+url: https://github.com/corca-ai/charness/issues/786
+body_verified: true
+before:
+  ok: true
+  status: verified-read
+  outcome: verified-read
+  mutation_invoked: false
+  repo: corca-ai/charness
+  work_item_key: timeout-bound-census
+  marker: '<!-- charness-work-item-key: timeout-bound-census -->'
+  parent_number: 784
+  count: 0
+  matches: []
+  foreign_parent: []
+readback:
+  ok: true
+  repo: corca-ai/charness
+  title: 'timeout-bound census: the wall-clock form check sees a verdict that rides
+    on a timeout knob'
+  labels: []
+  milestone: null
+  body_bytes: 2040
+  body_preview: '<!-- charness-work-item-key: timeout-bound-census -->
+
+
+    ## Objective
+
+
+    The wall-clock census sees a claim whose verdict rides on a `*_TIMEOUT_SECONDS`
+    knob or a subprocess deadline, not only a `time.*` call. Hosted run 33701977188
+    tripped on that shape (`test_cli_skill_surface_keeps_partial_output_when_even_the_drain_times_out`,
+    no `time.*` call).
+
+
+    ## Owned scope
+
+
+    - `scripts/gates/check_wall_clock_form.py` or a sibling form check: a closed AST
+    predicate pinned before the slice starts: within one test `FunctionDef`, a `*_TIMEOUT_SECONDS`
+    name assigned or `setenv`''d to a value under 5 s together with an `assert` that
+    reads `.stdout`, `.stderr`, `.returncode`, or a `communicate()` result; or a `communicate(timeout=)`
+    or `run(timeout=)` under 1 s whose `except TimeoutExpired` branch holds the assertion;
+    the docstring names the shapes still outside the rule (`detector-blind-class-unstated`).
+
+    - Census recorded under `charness-artifacts/goal-runs/<parent>/timeout-census.md`:
+    today''s 12 files reading a knob, 9 setting one, 8 passing a sub-second or `communicate`
+    timeout; each entry rewritten (controlled clock plus `tests/fifo_witness.py`),
+    deleted, or kept with the written reason that its cl'
+  number: 786
+  url: https://github.com/corca-ai/charness/issues/786
+  body_verified: true
+  verification:
+    command: verify-create
+    repo: corca-ai/charness
+    number: 786
+    body_file: /home/hwidong/codes/charness/charness-artifacts/goal-runs/784/bodies/timeout-bound-census.md
+operation: create-or-reuse-child
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/784/observations/bootstrap-create-timeout-bound-census-1.started.json
+  started_sha256: bbf2ea0b74e31d30d8a7df9349b3701098a7dc67bd82329ab23d1d86f6f9d4d8
+  terminal_path: charness-artifacts/goal-runs/784/observations/bootstrap-create-timeout-bound-census-1.terminal.json
+  terminal_sha256: 1f93862661958eebd3e99b06510a3278ea677b24abafbd67aa98c9360ccdcc84
+kind: charness.goal-run-apply/v1
+attempt_id: bootstrap-create-timeout-bound-census-1

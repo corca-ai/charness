@@ -1,0 +1,31 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+operation: update-body
+action: updated
+repo: corca-ai/charness
+number: 784
+url: https://github.com/corca-ai/charness/issues/784
+body_verified: true
+before:
+  ok: true
+  repo: corca-ai/charness
+  number: 784
+  url: https://github.com/corca-ai/charness/issues/784
+  readback_verified: true
+  body_verified: false
+  body_verification: byte-identical
+  stored_body_bytes: 4790
+  body_sha256: d78edfef6326f6475e9d3c66b0d0f327752b9160ad0e0dece40af3b497b60655
+single_updater_assumption: true
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/784/observations/bootstrap-parent-metadata-1.started.json
+  started_sha256: 72333e0162c02ec2a17ce508288cb9d13c6b7f5775c9362b64674407a3f33e8d
+  terminal_path: charness-artifacts/goal-runs/784/observations/bootstrap-parent-metadata-1.terminal.json
+  terminal_sha256: 7bb6ad366b6f1717207e02d178737eb140ebea34f74fa34f333d8329c2a78760
