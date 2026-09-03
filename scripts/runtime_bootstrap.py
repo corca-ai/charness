@@ -102,12 +102,60 @@ def _runtime_root(repo_root: Path, env: MutableMapping[str, str]) -> tuple[Path,
         or env.get("TMPDIR", "").strip()
         or tempfile.gettempdir()
     )
-    base = Path(base_text).expanduser().resolve()
+    base = _hoist_out_of_runtime_tree(Path(base_text).expanduser().resolve())
     if _is_inside(base, repo_root.resolve()):
         base = Path(tempfile.gettempdir()).resolve()
     if _is_inside(base, repo_root.resolve()):
         base = Path("/tmp").resolve()
-    return base / "charness" / "runtime" / runtime_key, True
+    return base / RUNTIME_TREE_NAME / RUNTIME_KEYS_NAME / runtime_key, True
+
+
+RUNTIME_TREE_NAME = "charness"
+RUNTIME_KEYS_NAME = "runtime"
+XDG_CACHE_EXPORT_NAME = "xdg-cache"
+
+
+REPO_ROOT_MARKER = ".charness-repo-root"
+
+
+def _record_repo_root_marker(key_root: Path, repo_root: Path) -> None:
+    """Name the repo an auto key hashes, once, so retention can tell dead from quiet.
+
+    The sweep in `scripts/gates_support/runtime_root_retention.py` removes a key
+    whose recorded repo root no longer exists; a key with no marker is judged by
+    age alone. Written only when absent, so the hot bootstrap path costs one stat.
+    """
+    marker = key_root / REPO_ROOT_MARKER
+    try:
+        if not marker.is_file():
+            key_root.mkdir(parents=True, exist_ok=True)
+            marker.write_text(f"{repo_root}\n", encoding="utf-8")
+    except OSError:
+        pass
+
+
+def _hoist_out_of_runtime_tree(base: Path) -> Path:
+    """The base a runtime key is created under, never another key's own subtree.
+
+    A bootstrapped process exports `XDG_CACHE_HOME=<its key>/xdg-cache`, so a child
+    bootstrapped for a DIFFERENT repo (a fixture repo in a test, a lane in another
+    checkout) derived its base from that and landed at
+    `<parent key>/xdg-cache/charness/runtime/<child key>`: a key inside a key, which
+    no retention rule reached. Measured 2026-09-03: 41 GB of 23,401 nested fixture
+    keys under this repo's key alone, and the installed plugin's key holding 250 GB
+    of another repo's lanes. When the inherited base IS such an export -- an
+    `xdg-cache` directory somewhere inside a `charness/runtime` tree, including a
+    lane's private `runtime/xdg-cache` -- the child's base is the directory above
+    that tree, so every key is a sibling of every other. Any other cache home,
+    including one a test points under its own temporary directory, is used as
+    given: only the bootstrap's own export is rewritten.
+    """
+    if base.name != XDG_CACHE_EXPORT_NAME:
+        return base
+    for candidate in base.parents:
+        if candidate.name == RUNTIME_KEYS_NAME and candidate.parent.name == RUNTIME_TREE_NAME:
+            return candidate.parent.parent
+    return base
 
 
 def runtime_root(repo_root: str | Path, env: MutableMapping[str, str] | None = None) -> Path:
@@ -155,7 +203,7 @@ def configure_runtime_environment(
         "CHARNESS_PYTEST_CACHE_DIR": runtime_root / "pytest-cache",
         "RUFF_CACHE_DIR": runtime_root / "ruff",
         "COVERAGE_FILE": runtime_root / "coverage" / ".coverage",
-        "XDG_CACHE_HOME": runtime_root / "xdg-cache",
+        "XDG_CACHE_HOME": runtime_root / XDG_CACHE_EXPORT_NAME,
         "PIP_CACHE_DIR": runtime_root / "pip",
         "NPM_CONFIG_CACHE": runtime_root / "npm",
     }
@@ -198,6 +246,8 @@ def configure_runtime_environment(
     coverage_file = target["COVERAGE_FILE"]
     if coverage_file != ":memory:":
         Path(coverage_file).parent.mkdir(parents=True, exist_ok=True)
+    if auto_root:
+        _record_repo_root_marker(Path(target["CHARNESS_RUNTIME_ROOT"]), root)
 
     if env is None:
         if hasattr(sys, "pycache_prefix"):

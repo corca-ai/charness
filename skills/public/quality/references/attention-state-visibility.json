@@ -908,6 +908,21 @@
         "changed_line_gate"
       ],
       "rationale": "_changed_line_verdict records `changed_line_gate.status: skipped` with a `reason` when a lane ended without a validated candidate, so there is nothing for the changed-line gate to judge. It is a typed, persisted field in the lane's terminal `result.json` beside `not-run` (no gate supplied) and `not-applicable` (a tree without the gate script); none of the three is `clean`, `blocking` is false only because no candidate exists, and the parent reads the status at the receipt (docs/agent-task-runs.md)."
+    },
+    "scripts/gates_support/runtime_root_retention.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "artifact_visible",
+        "stdout_attention"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "reason",
+        "retention"
+      ],
+      "rationale": "The runtime-root sweep records `skipped` for every entry it deliberately left alone (a running lane, a key or subtree touched within the active window, a live pytest run lock, an unverifiable salvage), each with its reason, in the JSON log under `<key>/retention/` and, for the by-hand CLI, on stderr; the standing-runner hook prints the counts on one summary line. A skip is a retention decision the operator can read, never a claim that anything was cleaned."
     }
   }
 }

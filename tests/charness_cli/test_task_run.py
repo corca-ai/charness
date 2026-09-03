@@ -346,15 +346,23 @@ def test_task_run_rejects_missing_or_malformed_checkout_carrier(carrier) -> None
         task_run._checkout_own_dir({"_checkout": carrier})
 
 
-def test_task_run_assigns_distinct_lane_runtime_roots_and_leaves_worktrees_clean(
+def test_task_run_assigns_distinct_lane_runtime_roots_and_releases_finished_lanes(
     tmp_path: Path,
 ) -> None:
+    """Each lane gets its own runtime root, and a commit-complete lane keeps only its record.
+
+    The evidence the fake Codex leaves is written one level UP from the lane
+    runtime, into the record directory beside `result.json`, because a finished
+    commit-only lane's `runtime/` and worktree are released at completion (#787):
+    the lane branch carries the whole candidate, so the worktree adds nothing.
+    """
     repo = _repo(tmp_path)
     executable = _codex(
         tmp_path,
         'mkdir -p "$CHARNESS_RUNTIME_ROOT"\n'
-        'printf \'%s\\n\' "$CHARNESS_RUNTIME_ROOT" > "$CHARNESS_RUNTIME_ROOT/observed-root"\n'
-        'printf \'%s\\n\' "$PYTHONPYCACHEPREFIX" "$TMPDIR" "$RUFF_CACHE_DIR" "$COVERAGE_FILE" "$XDG_CACHE_HOME" > "$CHARNESS_RUNTIME_ROOT/observed-paths"\n'
+        'record="$(dirname "$CHARNESS_RUNTIME_ROOT")"\n'
+        'printf \'%s\\n\' "$CHARNESS_RUNTIME_ROOT" > "$record/observed-root"\n'
+        'printf \'%s\\n\' "$PYTHONPYCACHEPREFIX" "$TMPDIR" "$RUFF_CACHE_DIR" "$COVERAGE_FILE" "$XDG_CACHE_HOME" > "$record/observed-paths"\n'
         "printf 'VALUE = 2\\n' > module.py\n"
         "git add -- module.py\n"
         "git -c user.email=test@example.com -c user.name=test commit -m 'update module'",
@@ -378,24 +386,48 @@ def test_task_run_assigns_distinct_lane_runtime_roots_and_leaves_worktrees_clean
     execution_roots = [Path(payload["execution_runtime_root"]) for payload in payloads]
     assert len({root.resolve() for root in execution_roots}) == 2
     for payload, execution_root in zip(payloads, execution_roots):
+        assert payload["status"] == "completed", payload
         result_dir = Path(payload["result_path"]).parent
         assert execution_root == result_dir / "runtime"
-        assert execution_root.is_dir()
-        assert (execution_root / "observed-root").read_text(encoding="utf-8").strip() == str(
+        assert (result_dir / "observed-root").read_text(encoding="utf-8").strip() == str(
             execution_root
         )
-        observed_paths = (
-            (execution_root / "observed-paths").read_text(encoding="utf-8").splitlines()
-        )
+        observed_paths = (result_dir / "observed-paths").read_text(encoding="utf-8").splitlines()
         assert all(Path(path).is_relative_to(execution_root) for path in observed_paths)
         assert task_run.task_status(repo, payload["task_id"]) == payload
-        worktree = Path(payload["worktree_path"])
-        assert (
-            _git(worktree, "status", "--porcelain=v1", "--ignored", "--untracked-files=all").stdout
-            == ""
-        )
+
+        retention = payload["retention"]
+        assert retention["worktree"] == "removed"
+        assert retention["runtime"] == "removed"
+        assert retention["carrier"] == f"{payload['target_branch']}@{payload['target_sha']}"
+        assert payload["keep_worktree"] is False
+        assert f"branch {payload['target_branch']} at {payload['target_sha']}" in payload["next_step"]
+        assert not execution_root.exists()
+        assert not Path(payload["worktree_path"]).exists()
+        assert Path(payload["result_path"]).is_file()
+        assert Path(payload["logs"]["stdout"]).is_file()
+        assert Path(payload["logs"]["stderr"]).is_file()
+        # The candidate survives on the lane branch in the parent's object store.
+        assert _git(repo, "rev-parse", payload["target_branch"]).stdout.strip() == payload["target_sha"]
+        assert "VALUE = 2" in _git(repo, "show", f"{payload['target_sha']}:module.py").stdout
 
     assert _git(repo, "status", "--porcelain=v1", "--ignored", "--untracked-files=all").stdout == ""
+    assert "lane-runtime-one" not in _git(repo, "worktree", "list").stdout
+
+
+def test_a_worktree_only_candidate_keeps_its_lane_worktree(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "printf 'VALUE = 2\\n' > module.py")
+
+    payload = _run(repo, tmp_path, executable)
+
+    assert payload["status"] == "completed", payload
+    assert payload["candidate"]["carrier_kind"] == "worktree-only"
+    assert payload["retention"]["worktree"] == "retained"
+    assert "not carried whole by lane HEAD" in payload["retention"]["reason"]
+    assert payload["keep_worktree"] is True
+    assert Path(payload["worktree_path"]).is_dir()
+    assert Path(payload["execution_runtime_root"]).is_dir()
 
 
 def test_task_run_grants_codex_git_and_lane_runtime_dirs(

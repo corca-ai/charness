@@ -155,3 +155,61 @@ def test_the_gate_is_skipped_when_there_is_no_validated_candidate(
     assert "no validated candidate" in payload["changed_line_gate"]["reason"]
     assert payload["status"] == "completed"
     capsys.readouterr()
+
+
+# --- release_finished_lane (#787) ------------------------------------------------
+
+
+def _released(tmp_path: Path, *, candidate: dict[str, Any], status: str = "completed", git=None, runtime: bool = True):
+    record = tmp_path / "record"
+    record.mkdir(parents=True, exist_ok=True)
+    if runtime:
+        (record / "runtime").mkdir(exist_ok=True)
+        (record / "runtime" / "x").write_text("x", encoding="utf-8")
+    (record / "codex.stdout.log").write_text("", encoding="utf-8")
+    payload = {"status": status, "candidate": candidate, "target_branch": "task/lane", "target_sha": "abc"}
+    return task_run_completion.release_finished_lane(
+        payload,
+        resolved_repo=tmp_path / "repo",
+        resolved_target=tmp_path / "worktree",
+        record_dir=record,
+        git=git or (lambda *_a, **_k: SimpleNamespace(returncode=0, stderr="")),
+    ), record
+
+
+def test_only_a_completed_commit_only_lane_is_released(tmp_path: Path) -> None:
+    complete = {"carrier_kind": "commit-only", "head_is_complete": True}
+    assert _released(tmp_path, candidate=complete, status="validated-partial-result")[0] is None
+    retained, _ = _released(tmp_path, candidate={"carrier_kind": "worktree-only", "head_is_complete": False})
+    assert retained["worktree"] == "retained" and "not carried whole" in retained["reason"]
+    released, record = _released(tmp_path, candidate=complete)
+    assert released == {
+        "worktree": "removed",
+        "runtime": "removed",
+        "carrier": "task/lane@abc",
+        "kept": ["result.json", "codex.stdout.log"],
+    }
+    assert not (record / "runtime").exists()
+
+
+def test_a_failed_worktree_removal_retains_with_the_git_error(tmp_path: Path) -> None:
+    complete = {"carrier_kind": "commit-only", "head_is_complete": True}
+    failing = lambda *_a, **_k: SimpleNamespace(returncode=128, stderr="fatal: locked")  # noqa: E731
+    retained, record = _released(tmp_path, candidate=complete, git=failing)
+    assert retained["worktree"] == "retained"
+    assert "fatal: locked" in retained["reason"]
+    assert (record / "runtime").is_dir()
+
+
+def test_a_failed_runtime_removal_and_an_absent_runtime_are_both_named(tmp_path: Path, monkeypatch) -> None:
+    complete = {"carrier_kind": "commit-only", "head_is_complete": True}
+
+    def refuse(_path: Path) -> None:
+        raise OSError("busy")
+
+    monkeypatch.setattr(task_run_completion, "_rmtree_writable", refuse)
+    failed, _ = _released(tmp_path, candidate=complete)
+    assert failed["worktree"] == "removed" and failed["runtime"] == "retained"
+    assert "busy" in failed["reason"]
+    absent, _ = _released(tmp_path / "absent", candidate=complete, runtime=False)
+    assert absent["runtime"] == "absent"

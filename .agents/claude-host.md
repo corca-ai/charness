@@ -54,9 +54,11 @@ orchestrating session. The common operating contract stays in
 - `.agents/*-adapter.yaml` checklist entries must be single-line quoted
   strings; the adapter readers are line-based and refuse multi-line
   continuations.
-- Integrate candidate-first: a lane's commit is inspectable in its
-  worktree as soon as the lane commits, so review and integrate from
-  there instead of idling on the wrapper process. When a lane times out,
+- Integrate candidate-first: a lane's commit is inspectable on its
+  `task/<lane>` branch as soon as the lane commits, so review and integrate
+  from there instead of idling on the wrapper process; a `completed`
+  commit-only lane releases its worktree at completion (#787), and the
+  receipt's `retention.carrier` names the branch and sha. When a lane times out,
   salvage its worktree commit (and any uncommitted work in it) rather
   than re-running the lane; a timeout destroys the wrapper, not the
   work. Background-waiting on a finished candidate is the antipattern

@@ -1,0 +1,33 @@
+ok: true
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+operation: update-body
+action: updated
+repo: corca-ai/charness
+number: 784
+url: https://github.com/corca-ai/charness/issues/784
+body_verified: true
+before:
+  ok: true
+  repo: corca-ai/charness
+  number: 784
+  url: https://github.com/corca-ai/charness/issues/784
+  readback_verified: true
+  body_verified: false
+  body_verification: byte-identical
+  stored_body_bytes: 5883
+  body_sha256: 1f95ca05fabef7613e1c6b9c6295f387142fae1e813b3f49854b389ebfe945de
+single_updater_assumption: true
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/784/observations/advance-cursor-787-1.started.json
+  started_sha256: 84097f81c85394524f9b202b6f161949da68b37b5ca90a1c78b2faebd4ae2ade
+  terminal_path: charness-artifacts/goal-runs/784/observations/advance-cursor-787-1.terminal.json
+  terminal_sha256: 0dbd5633400d0b74b86e595d4135daa213f0d052319694751a03c4b5ff02e705
+kind: charness.goal-run-apply/v1
+attempt_id: advance-cursor-787-1

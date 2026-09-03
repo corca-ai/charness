@@ -715,6 +715,9 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         # runner imports it at module scope, so a seeded repo without it fails at
         # import rather than on behavior.
         "standing_pytest_basetemp.py",
+        # The runtime-root sweep the runner calls beside `prepare_repo_key` (#787);
+        # imported at module scope for the same reason as the basetemp lifecycle.
+        "runtime_root_retention.py",
         "standing_pytest_run_record.py",
         "standing_pytest_environment.py",
         # The mirror-freshness decision the engine's preamble and the standing

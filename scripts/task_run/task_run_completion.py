@@ -8,6 +8,20 @@ from pathlib import Path
 from typing import Any, Callable, Mapping
 
 
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.gates_support.runtime_root_retention import _rmtree_writable  # noqa: E402
+
+
 def complete_task(
     payload: dict[str, Any],
     *,
@@ -144,8 +158,75 @@ def complete_task(
             "the typed result is approval-eligible."
         )
     persist(payload, runtime_path)
+    retention = release_finished_lane(
+        payload,
+        resolved_repo=resolved_repo,
+        resolved_target=resolved_target,
+        record_dir=stdout_log.parent,
+        git=git,
+    )
+    if retention is not None:
+        payload["retention"] = retention
+        payload["keep_worktree"] = retention.get("worktree") != "removed"
+        if retention.get("worktree") == "removed":
+            payload["next_step"] = (
+                f"Review the candidate on branch {payload.get('target_branch')} at "
+                f"{payload.get('target_sha')}; the typed result is approval-eligible and the "
+                "lane worktree was released because that commit carries the whole candidate."
+            )
+        persist(payload, runtime_path)
     print(f"task run: {payload['status']} ({payload['task_id']})", file=sys.stderr)
     return payload
+
+
+def release_finished_lane(
+    payload: Mapping[str, Any],
+    *,
+    resolved_repo: Path,
+    resolved_target: Path,
+    record_dir: Path,
+    git: Callable[..., Any],
+) -> dict[str, Any] | None:
+    """Drop a finished lane to `result.json` plus logs when its commit carries everything.
+
+    A finished lane kept a 1.4 GB worktree and a 1.1 GB runtime beside a 60 KB
+    receipt, 254 times over, and no rule reached them (#787). The candidate a
+    parent integrates is the lane branch's commit; once `head_is_complete` says
+    that commit IS the candidate, the worktree adds nothing the branch does not
+    hold. A worktree-only or commit-plus-dirty candidate is retained: its dirty
+    half exists nowhere else, and the retention sweep salvages it as a patch
+    before it goes.
+    """
+    candidate = payload.get("candidate")
+    if not isinstance(candidate, Mapping) or payload.get("status") != "completed":
+        return None
+    if not candidate.get("head_is_complete") or candidate.get("carrier_kind") != "commit-only":
+        return {
+            "worktree": "retained",
+            "runtime": "retained",
+            "reason": (
+                f"carrier {candidate.get('carrier_kind')!r} is not carried whole by lane HEAD; "
+                "the sweep salvages uncommitted edits before removing it"
+            ),
+        }
+    retention: dict[str, Any] = {"worktree": "retained", "runtime": "retained"}
+    removal = git(resolved_repo, "worktree", "remove", "--force", str(resolved_target))
+    if removal.returncode != 0:
+        retention["reason"] = f"git worktree remove failed: {removal.stderr.strip()[-300:]}"
+        return retention
+    retention["worktree"] = "removed"
+    runtime_dir = record_dir / "runtime"
+    if runtime_dir.is_dir():
+        try:
+            _rmtree_writable(runtime_dir)
+            retention["runtime"] = "removed"
+        except OSError as exc:
+            retention["reason"] = f"runtime removal failed: {exc}"
+    else:
+        retention["runtime"] = "absent"
+    retention["carrier"] = f"{payload.get('target_branch')}@{payload.get('target_sha')}"
+    retention["kept"] = ["result.json", *sorted(p.name for p in record_dir.glob("*.log"))]
+    return retention
 
 
 def _changed_line_verdict(

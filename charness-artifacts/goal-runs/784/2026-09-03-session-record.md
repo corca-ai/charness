@@ -113,3 +113,23 @@ and one real-process boundary test deleted because its two claims (holder
 spawned and line printed before a 0.5 s kill) race the wall clock in the
 unsafe direction, cannot be forced on a real check process, and are owned by
 the controlled-clock siblings.
+
+## Second session, continued (#786 closed; #787 runtime-root-retention)
+
+#786 pushed as `ede3ac7a9` (hook lane 88 passed; standing runner 8804 passed,
+full read-only quality 83 passed on the slice tree), `verify-closeout` =
+`verified` (CLOSED), cursor advanced by `operations/update-parent-progress-787.json`
+(progress 2/4/6, revision 3). The cursor was moved past #783 deliberately: the
+lesson review is a joint per-lesson conversation with the operator, slices 4
+and 5 declare no dependency on it, and the planning record says a session may
+take them first. #783 and #789 remain for a session with the operator.
+
+Slice 4 landed in three parts: the bootstrap hoists a base that is a
+bootstrap's own `xdg-cache` export out of the `charness/runtime` tree so keys
+are siblings; `task run` releases a `completed` commit-only lane's worktree and
+runtime at completion; `runtime_root_retention.py` sweeps finished lanes (with
+verified salvage of uncommitted edits), nested keys, idle rebuilt-on-demand
+subtrees, and dead or legacy-idle sibling keys, logs every removal and skip
+with bytes and reason under `<key>/retention/` (bounded to the newest 20), and
+runs from the standing runner hook and by hand. Details and the first run's
+numbers: `runtime-root-sweep.md`.

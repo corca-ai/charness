@@ -100,7 +100,11 @@ def test_task_run_accepts_a_clean_committed_candidate(tmp_path: Path) -> None:
     assert payload["candidate"]["content_digest"]
     assert payload["approval_eligibility"] == "eligible"
     assert "the typed result is approval-eligible" in payload["next_step"]
-    assert _git(worktree, "status", "--short").stdout == ""
+    # A commit-only candidate is carried by its branch, so the lane worktree is
+    # released at completion (#787) and the parent reads the commit from the branch.
+    assert payload["retention"]["worktree"] == "removed"
+    assert not worktree.exists()
+    assert _git(repo, "rev-parse", payload["target_branch"]).stdout.strip() == payload["target_sha"]
 
 
 def test_worktree_only_receipt_names_untracked_bytes_as_the_complete_candidate(

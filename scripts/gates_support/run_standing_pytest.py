@@ -102,6 +102,8 @@ default_basetemp = _basetemp.default_basetemp
 prune_failed_basetemps = _basetemp.prune_failed_basetemps
 prune_orphan_basetemps = _basetemp.prune_orphan_basetemps
 prepare_repo_key = _basetemp.prepare_repo_key
+_retention = import_repo_module(__file__, "scripts.gates_support.runtime_root_retention")
+sweep_runtime_root = _retention.sweep_runtime_root
 ORPHAN_BASETEMP_KEEP = _basetemp.ORPHAN_BASETEMP_KEEP
 _failed_basetemp_keep = _basetemp._failed_basetemp_keep
 _hold_basetemp_lock = _basetemp._hold_basetemp_lock
@@ -442,6 +444,14 @@ def run_standing_pytest(args: argparse.Namespace) -> int:
                 repo_root,
                 default_temp_root(repo_root, env),
                 log=lambda message: print(f"standing-pytest: {message}", file=sys.stderr),
+            )
+            # The same moment, one level up: the runtime key this run bootstrapped
+            # under, its finished lanes, its nested keys, its idle caches, and the
+            # sibling keys whose repos are gone (#787; 340 GB on 2026-09-03).
+            sweep_runtime_root(
+                repo_root,
+                log=lambda message: print(f"standing-pytest: retention {message}", file=sys.stderr),
+                log_skips=False,
             )
         write_run_record(repo_root, {"state": "running", "command": shlex.join(command)})
         # SC11. This was a bare `subprocess.run` -- the repo's LONGEST child on a
