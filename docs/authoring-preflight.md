@@ -8,7 +8,7 @@ Know the deterministic constraint *before* you author into a gated surface, so a
 existing gate (or a fresh-eye reviewer) does not catch an avoidable rework cycle
 after the fact. This reference gathers the three robustness traps: banned
 attention-state vocabulary, single-file length headroom, and string-matching
-edge cases (#308). It adds no new gate and no edit-time
+edge cases. It adds no new gate and no edit-time
 hook — the gates already exist; this is the discoverable list of what they check.
 
 Read this alongside the headroom and skill-surface preflight bullets in
@@ -22,10 +22,9 @@ attention-state terms, and reads them as STATUS VALUES rather than as words. A
 term counts when it is token-shaped — the whole value (`"skipped"`), one part of
 a state-shaped token (`"silently-skipped"`), or one side of a labelled field
 (`"WARNING: skipped"`, `"status=not_configured"`) — never when it is a word
-inside an English sentence, and never inside a docstring. That split is what
-ended the #302 `"silently-skipped"` docstring detour and its repeat; it also
-CAUGHT two real states a substring scan could not see, because they were spelled
-with a different separator (`advisory_only_no_cli_surface`, `not-configured`).
+inside an English sentence, and never inside a docstring. The token-shaped
+reading also catches two real states a substring scan cannot see, spelled with a
+different separator (`advisory_only_no_cli_surface`, `not-configured`).
 A module that uses one of these as a status fails the gate unless it is declared in
 [skills/public/quality/references/attention-state-visibility.json](../skills/public/quality/references/attention-state-visibility.json)
 with a visibility and rationale.
@@ -48,8 +47,7 @@ Before authoring: if the module genuinely reports one of these states, make it
 visible (a `WARN:`/`ADVISORY:`-prefixed line, an artifact-visible status, or a
 terminal-payload status field) and declare it. Do not reach for the heavyweight
 public-skill-validation declaration when a reworded docstring avoids the term
-entirely (the #302 over-correction). Prefer the wording that does not read as a
-silent skip.
+entirely. Prefer the wording that does not read as a silent skip.
 
 ## Length headroom
 
@@ -62,10 +60,7 @@ python3 scripts/gates/check_code_lengths.py --repo-root . --headroom --paths <fi
 
 It prints `limit − current` (tokei Python code lines) per gated file and flags
 near-limit files. If a file is near its limit, start a new module instead of
-appending — that avoids the unplanned mid-slice extraction
-[`acquire_public_url.py`](../skills/support/web-fetch/scripts/acquire_public_url.py)
-forced during #302.
-The advisory never blocks; the length gate is the hard floor.
+appending. The advisory never blocks; the length gate is the hard floor.
 
 ## SKILL.md core headroom
 
@@ -77,8 +72,7 @@ overflow charged back to the count) is governed
 by *two* separate limits: a hard `core_nonempty` ceiling of **160** lines, and a
 broad-gate test that additionally requires at least **4** lines of headroom below
 that ceiling. Authoring a core to exactly 160 (0 headroom) passes the hard limit
-but fails the headroom buffer — the trap that bit `achieve/SKILL.md` during the
-306-317 goal.
+but fails the headroom buffer.
 
 **The preflight's `core nonempty` is not the quality inventory's
 `core_nonempty_lines`.** [skill_ergonomics_lib.py](../skills/public/quality/scripts/skill_ergonomics_lib.py)
@@ -114,11 +108,8 @@ The skill-surface preflight above covers `skills/**` edits. The hand-authored
 **artifact** family (`charness-artifacts/critique/*.md`, retro, ideation, plus
 the adapter-scoped debug/quality) is covered by
 [check_artifact_surface_preflight.py](../scripts/gates/check_artifact_surface_preflight.py).
-It generalizes the same author-time idea to the recurring "authoring-preflight
-skip" class (issues 284 → 308 → 325 → 329 → 332 → 334): an author should learn an
-artifact's required shape at author time, not by failing the broad gate (the 334
-instance: a hand-authored critique missing `## Reviewer Tier Evidence` cost a
-second full gate run).
+It generalizes the same author-time idea: an author should learn an artifact's
+required shape at author time, not by failing the broad gate.
 
 Before authoring an artifact, surface its required shape (the dispatcher reads it
 from the owning scaffold/template/validator — it never re-declares it):
@@ -129,16 +120,10 @@ python3 scripts/gates/check_artifact_surface_preflight.py --type critique --emit
 python3 scripts/gates/check_artifact_surface_preflight.py --path <artifact>         # shape + current verdict
 ```
 
-This is not merely a doc: the dispatcher's `--changed-artifacts` mode is wired
-into [staged_commit_gate_plan.py](../scripts/staged_commit_gate_plan.py) as a
-**blocking** `STRUCTURAL_SWEEP_LABELS` member (`check-artifact-shape (staged)`),
-exactly like the SKILL.md core-headroom gate. When a commit touches a
-changed-scoped prefix family (critique/ideation/retro), its owning validator runs
-at the commit boundary — the *same* validator with the *same* verdict, only
-relocated earlier. It adds no new shape requirement and changes no validator's
-judgment. The adapter-scoped quality surface validates all by default and is
-author-time-only (`--type`/`--emit-stub`/`--path`); the broad gate remains their
-enforcement (see the coverage report for the tier rationale).
+`--changed-artifacts` runs as the blocking `check-artifact-shape (staged)`
+member of [staged_commit_gate_plan.py](../scripts/staged_commit_gate_plan.py) for
+critique/ideation/retro; the adapter-scoped quality surface is author-time-only
+and the broad gate enforces it.
 
 ### Closeout surface (closeout-draft)
 
@@ -177,14 +162,9 @@ one pass — and, before a single line exists, ask it for the rules instead:
 python3 scripts/gates/check_doc_authoring_preflight.py --path docs/index.md # a real target against them
 ```
 
-The rules mode is what makes this surface match its sibling
-([`check_skill_surface_preflight.py`](../scripts/gates/check_skill_surface_preflight.py),
-which describes by default). Every other
-check here is content-driven, so without it an author got the rules only *after*
-writing the thing that breaks them and one rework cycle was structurally
-guaranteed. The rules are rendered, never restated: each line is
-the owning validator's own constant, or the verdict that validator returns when
-the preflight probes it with a sample.
+The rules are rendered, never restated: each line is the owning validator's own
+constant, or the verdict that validator returns when the preflight probes it with
+a sample.
 
 [check_doc_authoring_preflight.py](../scripts/gates/check_doc_authoring_preflight.py)
 reuses the real validators — `check_markdown_inline_code`, `check_doc_links`,
@@ -233,13 +213,6 @@ These are **not** synonyms, and the distinction is load-bearing.
   yours". It IS verifiable here, and
   [inventory_skill_script_references.py](../tools/inventory_skill_script_references.py)
   resolves it rather than waving it through.
-
-Why the split exists: 13 shipped commands accumulated undetected because a
-reference to charness's own script wearing the consumer's placeholder is
-indistinguishable from a typo — to this gate, and to a human reading the line.
-The escape hatch and the defect were the same token. Giving the authoring-repo
-case its own spelling makes the class diagnosable by eye instead of only by a
-bespoke scanner.
 
 Choosing between them, in one question: **who evaluates this path?**
 
@@ -308,24 +281,13 @@ adapter-owned `skill_anchor_edit_guard` intent. The guard is fail-open and
 scoped to `skills/public|support` files; the commit sweep remains the universal
 backstop. A machine without that explicit host intent inherits no hook.
 
-Multi-checkout posture (#343, decided 2026-06-10): charness installs **one
-logical hook per machine**, deduped by script basename across checkouts —
-NOT one hook per checkout, which would make every shared host event fire each
-checkout's copy of the same guard. The commit-time sweep is the backstop for
-edits made in a checkout the surviving hook does not cover. The trade is that
-the installed hook binds one checkout's absolute script path; when that
-checkout is moved (or the hook script disappears),
-            the host-hook status surface flags the dangling state-tracked hook
-via its `hook_liveness` section — reinstall from a live checkout or
-uninstall. A *deleted* checkout's leftover settings entries are invisible to
-state (the state file dies with the deleted checkout); the same status
-surface's `settings_scan` section catches them by reading the host settings
-files directly (claude `settings.json`, codex `hooks.json`, codex
-`config.toml`) and flagging entries whose command carries a known charness
-hook-script basename — derived from the owning modules' script constants,
-never a forked list — but whose embedded path no longer exists. Both
-sections join the exit-1 drift list; missing or unreadable settings files
-degrade to silence, and foreign hooks are never flagged.
+One logical hook per machine, deduped by script basename across checkouts; the
+commit-time sweep covers edits in a checkout the surviving hook does not. A moved
+or deleted checkout's leftover is flagged by `hook_state_liveness` and the
+settings scan in
+[host_hook_registry.py](../scripts/hooks/host_hook_registry.py), whose docstrings
+own what each cannot see (foreign hooks are never flagged; unreadable settings
+degrade to silence).
 
 ### One-shot portable-package preflight
 
@@ -380,9 +342,7 @@ two pin surfaces (`check_skill_contracts` CORE/PACKAGE phrases +
   `tests/` literal. Restore or re-home the pinned phrase before cutting.
 - **REVIEW** (exit 0): a removed prose line vanished with no reference home.
   Confirm it is a justified no-op deletion (the §5 no-op test — legitimate, needs
-  no reference home) or re-home its content. This stays REVIEW, not BLOCK, on
-  purpose: a hard "every removed line must reappear" rule would forbid the prune
-  cure that diagnosis-first body redesign depends on. Use `--strict` to fail on
+  no reference home) or re-home its content. Use `--strict` to fail on
   REVIEW too when a caller wants the stricter gate.
 
 It is a helper, not a new commit gate: the contract gate, prose-pin, and
@@ -393,11 +353,8 @@ construction.
 ## Regex / string-matching edges
 
 When a check matches a version, identifier, or other token by string content,
-broad scanning regexes accept inputs you did not intend (the #305
-`update_instructions` staleness check was first a general semver-scan regex, then
-rewritten to concrete previous/target containment after a fresh-eye reviewer
-flagged date and `v`-prefix edges). Before shipping a string/regex check, walk
-this list:
+broad scanning regexes accept inputs you did not intend. Before shipping a
+string/regex check, walk this list:
 
 - Prefer explicit containment or equality over an unbounded scan when you only
   need "does X mention version V"; for evergreen adapter text, a concrete version
