@@ -224,7 +224,10 @@ def _local_loader_ancestor_levels(repo_root: Path, path: str) -> list[list[str]]
                     continue
                 try:
                     text = candidate.read_text(encoding="utf-8")
-                except OSError:
+                except (OSError, UnicodeDecodeError):
+                    # A non-UTF-8 fixture (native/repograph/fixtures/non_utf8.py)
+                    # is not a loader; a root-level changed path scans the whole
+                    # tree and used to die on it before any verdict.
                     continue
                 if _loads_local_sibling(text, child.stem):
                     parents.add(relative)

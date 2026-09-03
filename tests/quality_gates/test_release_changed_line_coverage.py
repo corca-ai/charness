@@ -741,3 +741,20 @@ def test_an_empty_changed_set_is_clean_not_refusable(gate, monkeypatch, capsys) 
 
     assert code == 0
     assert yaml.safe_load(capsys.readouterr().out)["status"] == "clean"
+
+
+def test_loader_scan_skips_a_non_utf8_sibling_instead_of_dying(tmp_path: Path) -> None:
+    """A root-level changed path scans the whole tree, which holds the deliberate
+    non-UTF-8 fixture; the 8.2.0 release lane died there before any verdict."""
+    from scripts.mutation import suggest_mutation_coverage_command as suggest
+
+    (tmp_path / "pkg").mkdir()
+    (tmp_path / "pkg" / "mod.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (tmp_path / "pkg" / "loader.py").write_text(
+        "from . import mod\n", encoding="utf-8"
+    )
+    (tmp_path / "pkg" / "non_utf8.py").write_bytes(b"\xff\xfe# not utf-8\n")
+
+    levels = suggest._local_loader_ancestor_levels(tmp_path, "pkg/mod.py")
+
+    assert levels == [["pkg/loader.py"]]
