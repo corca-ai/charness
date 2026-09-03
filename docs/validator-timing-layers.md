@@ -44,20 +44,14 @@ the enforcement floor, and pre-commit stays bypassable (`--no-verify`) with the
 production spawn-form check and staged test-boundary advisory providing early
 feedback.
 
-Budget rule: the pulled commit-time subset must stay small enough that the
-hook never tempts `--no-verify`. The 2026-06-10 audit's five pulled guards add
-about 0.5s combined; treat ~1s of additional typical-path latency as
-the line that requires removing something before adding more. The 2026-06-14
-leak-scan pulls (#368) are the costliest additions: `validate-inference-interpretation`
-(~0.9s full-tree AST leak scan — no cheaper changed-scoped subset, since the
-whole-tree scan IS the leak check) and `check-bootstrap-shim-consistency`
-(~0.28s). Honest combined-path cost: a `scripts/`|`skills/` `*.py` commit now
-runs `validate-attention-state-visibility` (~0.8s) + `validate-inference-interpretation`
-(~0.9s) + `check-bootstrap-shim-consistency` (~0.28s) ≈ **~2.0s of full-tree AST
-scans**, above the ~1s "add nothing more without removing" line. These three are
-explicitly the revisit-first items if the commit path starts tempting
-`--no-verify`. They earn the budget anyway because the alternative timing was the
-~4-min broad gate (a ~100× feedback win) and pre-commit stays bypassable.
+Budget rule: the pulled commit-time subset stays small enough that the hook
+never tempts `--no-verify`; roughly one second of added typical-path latency is
+the line for removing something before adding more, and the three full-tree AST
+scans on a `scripts/`|`skills/` `*.py` commit
+(`validate-attention-state-visibility`, `validate-inference-interpretation`,
+`check-bootstrap-shim-consistency`) are the revisit-first items. Measured
+history:
+[leak-scan shift-left critique](../charness-artifacts/critique/2026-06-15-issue-368-leak-scan-shift-left.md).
 
 ## Classification table
 <!-- BEGIN GENERATED: validator timing layers -->
@@ -65,14 +59,12 @@ explicitly the revisit-first items if the commit path starts tempting
 | --- | --- |
 | pytest-release, pytest, agent-browser-runtime-baseline, quality-tool-fixtures, dead-code-advisory, check-cli-skill-surface, validate-public-skill-validation, validate-public-skill-dogfood, validate-debug-artifact, validate-debug-seam-index, validate-retro-lesson-index, validate-lesson-ledger, validate-quality-artifact, validate-inventory-consumption, inventory-skill-script-references, check-unreferenced-scripts, validate-quality-closeout-contract, validate-critique-artifacts, validate-ideation-artifact, validate-retro-artifact, validate-maintainer-setup, check-python-runtime-inheritance, check-script-lookup-form, check-wall-clock-form, check-timeout-bound-form, check-module-eviction-form, check-runtime-budget-universe, check-command-dominance, check-export-safe-imports, check-export-self-sufficiency, check-plugin-import-smoke, check-command-docs, check-doc-links, check-docs-length, docs-graph, check-links-internal, check-links-external, check-plugin-asset-command-carriers, check-documented-command-flags, check-documented-subcommands, check-spec-evidence-durability, check-artifact-referents, check-references-link-inventory, check-secrets, check-supply-chain, check-github-actions, check-supply-chain-online, check-shell, check-rust, check-coverage, check-test-completeness, check-test-production-ratio, check-closeout-classification-parity, specdown, doc-duplicates, validate-inventory-consumption-declaration, dup-ratchet, check-seed-fixture-budget, inventory-gitignore-scan-hygiene, check-current-pointer-writes, measure-startup-probes, inventory-sloc, inventory-cli-ergonomics, inventory-nose-clones, check-runtime-budget, agent-browser-runtime-hygiene | stays |
 | validate-skills, validate-skill-ergonomics, validate-profiles, validate-presets, validate-adapters, validate-integrations, validate-packaging, validate-attention-state-visibility, validate-current-pointer-freshness, check-python-lengths, py-compile, ruff, run-evals | already earlier |
-| validate-quality-reference-catalog | **pulled → commit-time** (2026-06-23) |
-| validate-surfaces, check-python-filenames, check-subprocess-form, check-skill-contracts, check-skill-bootstrap-vars, check-plugin-doc-links, check-plugin-dir-references, inventory-ci-local-gate-parity | **pulled → commit-time** |
-| validate-inference-interpretation, check-inventory-declaration-coverage, check-bootstrap-shim-consistency, check-timing-layer-completeness | **pulled → commit-time** (#368, 2026-06-14) |
+| validate-quality-reference-catalog, validate-surfaces, validate-inference-interpretation, check-inventory-declaration-coverage, check-python-filenames, check-subprocess-form, check-skill-contracts, check-skill-bootstrap-vars, check-bootstrap-shim-consistency, check-timing-layer-completeness, check-plugin-doc-links, check-plugin-dir-references, inventory-ci-local-gate-parity | **pulled → commit-time** |
 | validate-packaging-committed | moved to release boundary |
 | check-public-doc-coupling | stays (advisory) |
 | check-regenerable-facts | **stays (broad)** |
 | check-docs | **pulled → commit-time + broad** |
-| check-markdown | **narrowed 2026-08-11 -> scoped commit-time + broad** |
+| check-markdown | **narrowed -> scoped commit-time + broad** |
 | check-consumer-validator-catalog, check-provenance-contract | pulled to commit-time |
 | release-changed-line-coverage | release-final owner |
 <!-- END GENERATED: validator timing layers -->
@@ -82,9 +74,8 @@ explicitly the revisit-first items if the commit path starts tempting
    not re-pull what is already pulled.
 2. Classify against the four criteria above; record a "stays" verdict with its
    reason when it fails one. This step is now CI-enforced: `check-timing-layer-completeness`
-   fails if a declared `run-quality.sh` gate label has no verdict row here, so
-   the table cannot silently fall behind a newly added validator (the #368
-   recurrence-mechanism fix — list the exact label, not a `(-suffix)` / glob shorthand).
+   fails if a declared `run-quality.sh` gate label has no verdict row here; list
+   the exact label, not a glob shorthand.
 3. Wire the earlier invocation through the existing dispatcher
    ([`staged_commit_gate_plan.py`](../scripts/staged_commit_gate_plan.py) path conditions or
    `FAST_SURFACE_VERIFY_COMMANDS`), with the exact broad-gate command so the

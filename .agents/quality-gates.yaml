@@ -84,7 +84,7 @@ phases:
     - --repo-root
     - $REPO_ROOT
     lane: standard
-    timing_layer: '**pulled → commit-time** (2026-06-23)'
+    timing_layer: '**pulled → commit-time**'
     note: src scripts/run-quality.sh:992; labels literal (475-479).
   - label: validate-skill-ergonomics
     command:
@@ -146,7 +146,7 @@ phases:
     - $REPO_ROOT
     - --require-git-file-listing
     lane: standard
-    timing_layer: '**pulled → commit-time** (#368, 2026-06-14)'
+    timing_layer: '**pulled → commit-time**'
     note: src scripts/run-quality.sh:1009; labels literal (475-479).
   - label: validate-public-skill-validation
     command:
@@ -315,7 +315,7 @@ phases:
     - --repo-root
     - $REPO_ROOT
     lane: standard
-    timing_layer: '**pulled → commit-time** (#368, 2026-06-14)'
+    timing_layer: '**pulled → commit-time**'
     note: src scripts/run-quality.sh:1029; labels literal (475-479).
   - label: inventory-skill-script-references
     command:
@@ -512,7 +512,7 @@ phases:
     - $REPO_ROOT
     - --require-git-file-listing
     lane: standard
-    timing_layer: '**pulled → commit-time** (#368, 2026-06-14)'
+    timing_layer: '**pulled → commit-time**'
     note: src scripts/run-quality.sh:1073; labels literal (475-479).
   - label: check-public-doc-coupling
     command:
@@ -542,7 +542,7 @@ phases:
     - --repo-root
     - $REPO_ROOT
     lane: standard
-    timing_layer: '**pulled → commit-time** (#368, 2026-06-14)'
+    timing_layer: '**pulled → commit-time**'
     note: src scripts/run-quality.sh:1076; labels literal (475-479).
   - label: check-runtime-budget-universe
     command:
@@ -658,7 +658,7 @@ phases:
     command:
     - ./scripts/check-markdown.sh
     lane: label-only
-    timing_layer: '**narrowed 2026-08-11 -> scoped commit-time + broad**'
+    timing_layer: '**narrowed -> scoped commit-time + broad**'
     note: src scripts/run-quality.sh:1114; labels literal (475-479).
   - label: check-links-internal
     command:
