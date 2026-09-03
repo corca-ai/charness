@@ -47,6 +47,19 @@ stronger proof, or conflicting evidence.
 - Do not create a local progress, session, or closeout artifact merely because
   a goal is active. Update the goal parent only when a child transition or
   externally visible decision actually changes.
+- Fix the class, not the instance. Before the change closes, read the diff once
+  against these six signals; they overlap, and every one that matches is repaired:
+  - a value hardcoded with no stated basis
+  - a second copy of a source of truth
+  - coupling tighter than the seam needs, or a domain boundary the change blurs
+  - verification or a gate that costs more than it catches
+  - code or a test that exists only for one past moment or incident
+  - token, disk, memory, or CPU cost, here and for the consumer who installs it
+
+  The slice's seam is every surface it edits — code, config, test, or
+  artifact — with that surface's direct consumers, readers, and generated
+  derivatives. Repair inside the seam; name a match outside it as a follow-up,
+  not a wider slice.
 
 ## Verify
 
@@ -56,6 +69,15 @@ Run the narrowest evidence that answers the changed behavior:
 - the default `<repo-root>/scripts/run-quality.sh` core lane when the change is broad;
 - `<repo-root>/scripts/run-quality.sh --full --read-only` only for an explicit broad,
   pre-push, or review check; use `--release` for release-only checks.
+
+When the same failure returns after a fix aimed at it, or a result contradicts
+what the contract claims, the test for the next move is whether a falsifiable
+cause can be stated — one that predicts an observation able to disprove it. If
+it can, make that one correction. If it cannot, another
+patch is a guess: stop and enter `../debug/SKILL.md`, whose hypothesis
+guardrail, pattern ladder, and detection-gap walk own the repair, and return to
+`impl` with its artifact intact. A new, narrower failure after a partial fix is
+progress, not this case.
 
 Use external cache and temporary roots supplied by the repo runtime wrapper.
 Never treat an ignored cache as proof that the worktree stayed clean; inspect
