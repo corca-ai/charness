@@ -82,6 +82,28 @@ reviewed separately by a bounded read-only reviewer.
 - F6 | bin: over-worry | evidence: contested | ref: skills/public/quality/SKILL.md | action: document | note: the waste scan duplicates quality and reverses P3; quality inspects on demand while impl is the moment of change, and the operator's observed non-recall is the P3 exception. Recorded here, not folded (reviewer 1).
 - F7 | bin: valid-but-defer | evidence: moderate | ref: skills/public/debug/SKILL.md#Bootstrap | action: defer | note: debug offers no narrow fast path around its bootstrap for a small reversible incident; a debug-skill slice, outside this change (reviewer 1).
 
+## Task-Run Code Critique (#790, #791)
+
+One file-backed reviewer (attempt `task-run-790-791-code-1`, packet
+`charness-artifacts/critique/task-run-790-791-code-1-packet.json`, SHA256
+`75c24e38251fdaeb43001dba91ddf435955169b6db1cbbe0f9bc4736d7a24f51`, identity
+`d5d33a1987362b178a096e70e4e2eab270926912603c3cb7a41b3c9dbb131cd1`) read
+commit `793758b6a` under a correctness and seam-ownership lens and delivered
+`block` with four findings, all acted on in the following commit:
+
+- T1 | bin: act-before-ship | evidence: strong | ref: scripts/task_run/task_run_runtime.py | action: fix | note: pid-only liveness cannot support the `consistent` store diagnosis (pid reuse; a live runner on a terminal record during retention); the projection is now `runner_pid` and `alive`, documented as advisory.
+- T2 | bin: act-before-ship | evidence: strong | ref: scripts/task_run/task_run_scope.py | action: fix | note: brace expansion in `normalize_scopes` stole a literal path with braces in its name; expansion now follows the existing literal-precedence check in `resolve_scope_specs`, and each alternative records `expanded_from`.
+- T3 | bin: bundle-anyway | evidence: strong | ref: scripts/task_run/task_run.py | action: fix | note: `timings_ms.prepare` measured creation, readiness, and prepare together; renamed `create` and documented as such.
+- T4 | bin: bundle-anyway | evidence: moderate | ref: docs/agent-task-runs.md | action: document | note: the additive `liveness` key changes the `task status` response shape; kept additive and documented as a read-time projection beside the persisted fields rather than restructuring the response.
+
+A repair-verification reviewer (attempt `task-run-790-791-repair-verify-1`)
+read the repaired commit `286a2a745` and delivered `pass`,
+`approval_eligible: true`: T1–T4 resolved, and four introduced-risk probes
+verified (expanded glob specs refresh independently at completion; a
+brace-bearing declaration that is itself a literal is emitted once; the
+extracted helpers move no timestamp across a lifecycle boundary; the tests
+make no wall-clock call). Its packet is named under Reviewed Input Identity.
+
 ## Reviewer Tier Evidence
 
 - Requested tier: n/a (run_review.py default; adapter `reviewer_runner` is `file-backed-worker`, backend `codex_exec`, boundary `read-only-worker`).
@@ -114,20 +136,27 @@ worker-delivered; four file-backed Codex workers ran through `run_review.py`. Re
 - Reviewer 1 packet: charness-artifacts/critique/impl-debug-route-weinberg-1-packet.json, SHA256 4bca88c074ec041de97af5b0acf73faaae98066757e87181720f1935996b45a7, identity 028c40b32436808e24e97b113cd46c73fa5d36b08fdc07b26b2bded0c5844b72, verdict block, three findings.
 - Reviewer 2 packet: charness-artifacts/critique/impl-debug-route-raskin-2-packet.json, SHA256 04d6fc96016090314c1886068333c396b06043554d7dc14525c9d494448d7eee, identity 15b1eb5dd241267cb72388feee43ab09a3ce06dcb722157409d8420a70114759, verdict block, three findings.
 - Reviewer 4 read the final tree; the subject identity above is that tree.
+- Task-run code critique packet: charness-artifacts/critique/task-run-790-791-code-1-packet.json, SHA256 75c24e38251fdaeb43001dba91ddf435955169b6db1cbbe0f9bc4736d7a24f51, identity d5d33a1987362b178a096e70e4e2eab270926912603c3cb7a41b3c9dbb131cd1, verdict block, four findings (commit 793758b6a).
+- Task-run repair-verification packet: charness-artifacts/critique/task-run-790-791-repair-verify-1-packet.json, SHA256 23b8998eef52f1222274c26cc809ec7768fca07a55b4bc52d4e9ccda0949ee7b, identity 5ade27d84510d40a597d39626f7ad289dd21e1c35b19626da51e04db56599beb, verdict pass, approval-eligible (commit 286a2a745).
 
 ## Release Scope
 
-Version: `8.1.1`. Tag: `v8.1.1`. Previous: `8.1.0`.
+Version: `8.2.0`. Tag: `v8.2.0`. Previous: `8.1.0`.
 
-Change: patch. What changes for a consumer: the installed `impl` skill routes a
+Change: minor. What changes for a consumer: the installed `impl` skill routes a
 repeated unexplained failure into `debug` instead of a second guess, and reads
 its diff against six waste signals before closing; the README is rewritten as
 the user guide with the install-effects list corrected against `init.sh` and
-the CLI. No public skill, CLI subcommand, adapter key, or install surface
-gained or lost a member; wording that should propagate to installed users is
-the patch shape in `version-policy.md`. The README review was two bounded
-read-only reviewers, separate from the four workers above; their install-list
-findings are the corrections in commit `b528a0add`.
+the CLI; and `charness task run` accepts `{a,b}` groups in `--scope`, names
+out-of-scope paths at `candidate.disallowed_paths`, and writes `runner_pid`,
+UTC `timestamps`, `timings_ms`, and `codex.timeout_scope` into every record,
+while `task status` adds a read-time `liveness` projection (#790, #791). The
+receipt fields and scope syntax are additive maintained behaviour adopted
+without migration, which is the minor shape in `version-policy.md`; no public
+skill, CLI subcommand, adapter key, or install surface gained or lost a
+member. The README review was two bounded read-only reviewers, separate from
+the four workers above; their install-list findings are the corrections in
+commit `b528a0add`. The task-run change has its own code critique below.
 
 ## Boundary Ownership
 
