@@ -7,9 +7,9 @@
 When a Charness skill gates work on "did the current change touch a repo
 seam that matters here", express that gate as **subscription to declared
 surface ids** (from [.agents/surfaces.json](../.agents/surfaces.json)),
-not as a per-skill copy of raw path globs. Raw globs remain available for
-narrow repo-specific exceptions that do not correspond to any declared
-surface.
+not as a per-skill copy of raw path globs. Raw globs
+(`auto_session_trigger_path_globs`) remain for a narrow repo-local exception
+or a genuinely cross-cutting path that no declared surface should claim.
 
 Today this convention applies to:
 
@@ -19,22 +19,6 @@ Today this convention applies to:
 
 New trigger consumers (`setup`, future skills) should adopt the same shape
 when they need to gate on changed seams.
-
-## Why surface ids, not raw globs
-
-A surface id is a named claim about what the seam is (`release-packaging`,
-`integrations-and-control-plane`, `materialized-plugin-export`, ...) and is
-owned by [.agents/surfaces.json](../.agents/surfaces.json). Multiple
-skills can subscribe to the same surface and stay in sync as the path
-shape underneath the surface evolves. Raw globs duplicated across adapters
-drift independently.
-
-Use raw globs (`auto_session_trigger_path_globs`) only when:
-
-- the path is a narrow repo-local exception that does not warrant a
-  full-surface declaration; or
-- the path is genuinely cross-cutting and naming it as a surface would
-  over-claim ownership.
 
 ## Fail-loud on unresolved configured ids
 
@@ -54,14 +38,13 @@ This is enforced by `resolve_trigger_surfaces` in
 `{"declared": [...], "unresolved": [...]}`. Call sites must bail with the
 broken-config payload before doing any change-path matching.
 
-Without this fail-loud step, a typo in `auto_session_trigger_surfaces` is
-indistinguishable from "the slice didn't touch the surface" — the most
-costly silent miss for a gate that exists exactly to flag risk slices.
-
 ## Required fixture shape
 
 Every trigger consumer ships at least the following four fixtures, in its
-own test file under [tests/quality_gates/](../tests/quality_gates):
+own test file under [tests/quality_gates/](../tests/quality_gates). No gate
+checks that a new consumer ships these; the retro fixtures in
+[tests/quality_gates/test_retro_auto_trigger.py](../tests/quality_gates/test_retro_auto_trigger.py)
+are the worked example.
 
 1. **True positive path** — a real path that maps to a configured surface
    id; the consumer triggers with `surface_hits` naming the id.
@@ -83,19 +66,6 @@ canonical implementation pattern is:
 ```python
 changed_paths = args.paths if args.paths is not None else collect_changed_paths(repo_root)
 ```
-
-## Call-site checklist
-
-When you add or change a trigger consumer:
-
-- subscribe to surface ids via the consumer's adapter field; reserve
-  raw-glob fields for narrow exceptions
-- resolve configured ids via `resolve_trigger_surfaces` in
-  [scripts/adapters/surfaces_lib.py](../scripts/adapters/surfaces_lib.py) and emit the
-  broken-config payload before path matching when `unresolved` is non-empty
-- treat `--paths` with zero values as explicit empty changeset
-- land all four fixtures from the shape above; do not skip the
-  unresolved-id case
 
 ## References
 
