@@ -1264,8 +1264,8 @@
         "read-but-not-applied": 4,
         "legacy-scalar": 1
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "archived",
+      "last_lifecycle_event_id": "783-archive-guard-adjacent-to-action"
     },
     "premise-not-checked-against-source": {
       "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
@@ -1354,8 +1354,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-graduation-is-proposal"
     },
     "durable-lesson-ledger-first": {
       "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md",
@@ -1369,8 +1369,8 @@
         "read-but-not-applied": 1,
         "legacy-scalar": 2
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "archived",
+      "last_lifecycle_event_id": "783-archive-durable-lesson-ledger-first"
     },
     "goal-closeout-evidence-binding": {
       "source_retro": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
@@ -1399,8 +1399,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 1
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-closeout-diagnostic-visibility"
     },
     "closeout-authoring-rework": {
       "source_retro": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
@@ -1414,8 +1414,8 @@
         "read-but-not-applied": 2,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "archived",
+      "last_lifecycle_event_id": "783-archive-closeout-authoring-rework"
     },
     "mutation-producer-selection": {
       "source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md",
@@ -1444,8 +1444,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 3
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-proof-surface-review-binding"
     },
     "rule-exists-but-does-not-bind": {
       "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
@@ -1519,8 +1519,8 @@
         "read-but-not-applied": 1,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "archived",
+      "last_lifecycle_event_id": "783-archive-artifact-contract-late-feedback"
     },
     "cause-named-from-one-observation": {
       "source_retro": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
@@ -1624,8 +1624,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-line-anchored-ledger-fields"
     },
     "premises-not-debt": {
       "source_retro": "charness-artifacts/retro/2026-08-13-session-retro.md",
@@ -1774,8 +1774,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-isolated-agent-base-mismatch"
     },
     "positive-effect-cannot-be-cited": {
       "source_retro": "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md",
@@ -1879,8 +1879,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-keyword-in-prose-is-a-directive"
     },
     "prose-claim-without-a-reader": {
       "source_retro": "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md",
@@ -1999,8 +1999,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-parallel-coverage-runtime-collision"
     },
     "probe-stimulus-from-model-not-source": {
       "source_retro": "charness-artifacts/retro/2026-08-18-adapter-version-containment-and-the-consumer-census.md",
@@ -2059,8 +2059,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-branch-hidden-by-earlier-guard"
     },
     "command-plan-premise-before-fanout": {
       "source_retro": "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md",
@@ -2074,8 +2074,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "archived",
+      "last_lifecycle_event_id": "783-archive-command-plan-premise-before-fanout"
     },
     "fallback-aimed-at-production": {
       "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
@@ -2089,8 +2089,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "archived",
+      "last_lifecycle_event_id": "783-archive-fallback-aimed-at-production"
     },
     "foreign-helper-command-in-hook": {
       "source_retro": "charness-artifacts/retro/2026-08-18-session-retro-second.md",
@@ -2104,8 +2104,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-foreign-helper-command-in-hook"
     },
     "lane-scoped-proof": {
       "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
@@ -2119,8 +2119,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-lane-scoped-proof"
     },
     "unclaimed-session-disposition": {
       "source_retro": "charness-artifacts/retro/2026-08-21-session-retro.md",
@@ -2134,8 +2134,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "archived",
+      "last_lifecycle_event_id": "783-archive-unclaimed-session-disposition"
     },
     "uncounted-count": {
       "source_retro": "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md",
@@ -2164,8 +2164,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "archived",
+      "last_lifecycle_event_id": "783-archive-wrong-path-and-target-binding"
     },
     "live-corpus-invariant-unnamed": {
       "source_retro": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
@@ -2406,6 +2406,218 @@
       "reviewed_retros": [
         "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
         "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md"
+      ]
+    },
+    {
+      "sequence": 20,
+      "event_id": "783-graduate-graduation-is-proposal",
+      "lesson_id": "graduation-is-proposal",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): helped. The rule is stated as current fact on the page read at exactly the moment it applies (lesson-graduation.md names this lesson by id, and the retro skill routes there), so preview-exposure loss is nil; keeping it active only re-selects a rule the process page already carries. The mapper's owner page is not a legal decision_ref (must be docs/), and the refuter is right that docs/development.md's paragraph names no mechanism, and right that the CLI cannot see a person; under the operator's third rule that is a stated gap, which earns one mechanisms-table row, not \"no sentence\". Evidence is thin (one event) but positive, and the process it describes is now the settled, written procedure. Principle: skills/shared/references/lesson-graduation.md (read at the decision moment): \"Graduation is a **proposal settled by a person and the agent together, lesson by lesson**. No rule, score threshold, class Mechanism: scripts/lessons/lesson_ledger_lib.py:358-361 refuses a `graduate` event whose decision_ref is not under `docs/`; scripts/lessons/record_lesson_lifecycle.py:131-132 requires --decision-ref and --ration",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-12-session-retro.md"
+      ]
+    },
+    {
+      "sequence": 21,
+      "event_id": "783-graduate-closeout-diagnostic-visibility",
+      "lesson_id": "closeout-diagnostic-visibility",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): helped. A repo-owned mechanism exists for precisely this class and shipped the day the lesson last scored; the loss it records (a suite's result dying with the foreground wrapper) cannot silently recur because the record is written to disk on every standing run regardless of how it was invoked. What is missing is that no docs/ sentence names it, so a fresh session would not know to read it back; one row in the mechanisms table fixes that on the page read when choosing how to verify. The mapper missed the mechanism and so kept a lesson that a gate already holds. Principle: docs/development.md \"Verification and export\": \"[The standing pytest runner](../scripts/gates_support/run_standing_pytest.py) is the pytest owner (xdist workers, chunk sizing, an external basetemp); a Mechanism: scripts/gates_support/standing_pytest_run_record.py (split from the runner in S6, 2026-08-15, commit 54654b032): \"How a standing pytest run OUTLIVES the caller that started it ... an agent's wrapper d",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+        "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+        "charness-artifacts/retro/2026-08-14-session-retro.md",
+        "charness-artifacts/retro/2026-08-15-json-to-yaml-migration-closeout.md"
+      ]
+    },
+    {
+      "sequence": 22,
+      "event_id": "783-graduate-proof-surface-review-binding",
+      "lesson_id": "proof-surface-review-binding",
+      "action": "graduate",
+      "decision_ref": "docs/parallel-execution.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): helped. Score +2 over four events, the mechanism caught the one miss and held on the next encounter, and the page CLAUDE.md routes to before spawning any reviewer already states the rule and the mechanism as current fact, so the exposure loss is acceptable for the review-window half. The refuter is right that the two positive packet-identity anchors (08-06, 08-13) name a shape the fingerprint cannot see, but that half has not recurred since 08-13 and the operator's rule handles an ungated half with a stated-gap row (precedent: #783 lesson 6), not a keep. The mapper's 'no sentence anywhere' is wrong on format: under the third operator rule a graduation adds a row or a stated gap. Principle: docs/design-north-star.md P4, verified verbatim at lines 65-67: \"Confirm it by re-examination that uses a **different evidence channel and a different observer** than the claim under review; never by  Mechanism: skills/shared/scripts/reviewer_boundary_fingerprint.py: snapshot/verify bound by --window-id, exit 1 on undeclared drift; opened, and it refuses exactly the -2 anchor (repairing inside an open review",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-06-session-retro.md",
+        "charness-artifacts/retro/2026-08-13-session-retro.md",
+        "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+        "charness-artifacts/retro/2026-08-14-session-retro.md",
+        "charness-artifacts/retro/2026-08-15-json-to-yaml-migration-closeout.md"
+      ]
+    },
+    {
+      "sequence": 23,
+      "event_id": "783-graduate-line-anchored-ledger-fields",
+      "lesson_id": "line-anchored-ledger-fields",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): helped. Both halves exist: the grammar makes a wrapped value a continuation by construction, so the author no longer has to remember anything and the preview-exposure loss is acceptable (mechanism makes reading unnecessary). The refuter is wrong on call sites: check_probe_record.py is unwired, but the grammar in probe_record_lib is what the issue close floor and release closeout floors read, so it is live at the irreversible boundary where the class fired. The refuter is right that the mapper misread consumer-validator-catalog.yaml (the entry says consumer_facing false, decision exclude) and that validate_retro_artifact.py's _PERSISTED_LINE is a different single-line shape; but both seeding and score instances were probe/closeout records, so the row should be scoped to that record family rather than the lesson's broader wording, and the residual is stated in the ledger rationale, not in docs. Principle: none stated in docs/; the owning surface under the operator's third rule is the mechanisms table in docs/development.md (\"a rule is held by a mechanism or it is prose\", design-north-star P3), which to Mechanism: scripts/evidence/probe_record_parse.py _FIELD_RE (comment verbatim: \"at column 0 it is a field, indented it is a continuation, and nothing has to arbitrate\"), consumed in production by skills/public/i",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md"
+      ]
+    },
+    {
+      "sequence": 24,
+      "event_id": "783-graduate-isolated-agent-base-mismatch",
+      "lesson_id": "isolated-agent-base-mismatch",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): helped. The seed premise is gone for the lane channel (task run branches from HEAD and records base_sha) and the packet channel binds base_head with a real refusal, so the mapper's instinct to graduate is right, but its owner page is not a docs/ page and P4 is not the owning principle; the refuter left no argument to weigh, and the strongest one — the only encounter was on the unheld ad hoc channel — is met by stating that channel as the gap rather than spending a preview slot on a lesson that has not fired in 15 days. Under the third operator rule this is one row in development.md's mechanisms table naming both mechanisms and the gap; archive is the runner-up, keep is not supported. Principle: docs/agent-task-runs.md \"Run\": \"The command creates the `task/feature-lane` branch from `HEAD`, derives the task id and linked worktree under the external task runtime, routes cache and logs outside t Mechanism: two, each holding one channel: `charness task run` branches the lane from HEAD and binds `base_sha` into the receipt's `content_digest` (docs/agent-task-runs.md, #785/#787); the critique packet's `rev",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-14-closeout-618-628-release-prep.md"
+      ]
+    },
+    {
+      "sequence": 25,
+      "event_id": "783-graduate-keyword-in-prose-is-a-directive",
+      "lesson_id": "keyword-in-prose-is-a-directive",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): helped. Both the refuter and mapper hold up under source: the owning page states the mechanism as current fact and the hook makes reading unnecessary, so preview-exposure loss is nil. The one gap in the docs sentence under the operator's rule (a sentence carries the mechanism's name) is that \"the irreversible close-keyword scan\" is unlinked prose; linking the phrase to the guard script adds no sentence and completes the name. Residual outside the mechanism: a push from a clone without hooks installed, which the same paragraph already addresses. Principle: docs/development.md \"Pushing\": \"After the irreversible close-keyword scan, a push touching anything beyond docs and artifacts runs `./scripts/run-quality.sh --full --read-only --release`\" — verified v Mechanism: .githooks/pre-push runs `python3 scripts/prepush_close_keyword_guard.py --repo-root ... --remote ...` first, unconditionally, before the receipt shortcut and the quality lane (\"The IRREVERSIBLE check",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-16-s8-the-handoff-five-and-the-aggregate-coverage-debt.md"
+      ]
+    },
+    {
+      "sequence": 26,
+      "event_id": "783-graduate-parallel-coverage-runtime-collision",
+      "lesson_id": "parallel-coverage-runtime-collision",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): never consulted. The general rule already lives verbatim at the page CLAUDE.md routes to for fan-out choice, and the specific collision is held structurally by code that every coverage producer must pass through, so dropping the preview line loses nothing at the batch-forming moment. Both mapper and refuter checked out; the mapper's only gap is that the mechanism is unnamed in development.md's cache table, which is what a row fixes. The row must be a bare rule-plus-mechanism under the operator's docs rule, and development.md is at the word budget so the commit trims elsewhere. Principle: docs/parallel-execution.md \"Disjoint Writers\": \"Concurrent writers must not share a file or a single-writer surface. Partition the fan-out into disjoint path sets when the work allows it, and take iso Mechanism: scripts/mutation/mutation_sampling_lib.py `coverage_runtime_paths()` — namespaces the coverage db, rcfile, and sitecustomize dir under `<runtime-root>/coverage/<repo-key>-<report-stem>`; its only prod",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
+        "charness-artifacts/retro/2026-08-21-session-retro.md"
+      ]
+    },
+    {
+      "sequence": 27,
+      "event_id": "783-graduate-branch-hidden-by-earlier-guard",
+      "lesson_id": "branch-hidden-by-earlier-guard",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): never consulted. The lesson's stated cost premise (\"the changed-line gate names only one uncovered line per pass and N hidden branches cost N round-trips\") no longer holds: the gate lists every uncovered changed line at once, so a hidden arm costs the same single round-trip as any other uncovered line, which is exactly the class already graduated as #2 and owned by the existing row. The mapper's keep leaves a never-consulted lesson in the preview whose rule is already held by a mechanism that makes reading unnecessary; the operator may prefer archive on the premise change, but the rule it carries (every refusal arm reached by a test) is owned by the row, so graduate-no-sentence records that honestly. Principle: docs/design-north-star.md P1, verbatim as the mapper quoted: \"Where a mistake stays inside this session's editable state, the default is a short principle plus the agent's judgment; a gate/validator/r Mechanism: scripts/mutation/release_changed_line_coverage.py — \"a mapped changed pool file has uncovered changed lines (the blocker)\"; it refuses every uncovered changed line, including a guard arm hidden behind",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md"
+      ]
+    },
+    {
+      "sequence": 28,
+      "event_id": "783-graduate-foreign-helper-command-in-hook",
+      "lesson_id": "foreign-helper-command-in-hook",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): did not help. Both Sonnets overstate: the mapper claims the mechanism already holds the whole class and no edit is needed, but bootstrap-resolution.md scopes enforcement to an enumerated write/irreversible set and the seeding retro says the guard did not stop the trigger; the refuter concludes keep, but the operator's rules allow graduation with a stated gap, and the unguarded remainder (a read-only helper from a stale copy) is reversible work where north-star P1 says judgment suffices, while every irreversible copy-drift boundary already refuses. The owning page exists and is the one read at skill bootstrap, the triggering hook surface was deleted, and the 08-18 retro records that the executable seam held where the prose lesson did not — so the ledger slot buys no exposure the row plus mechanism do not. Graduate with the gap written into the existing row, not a new sentence. Principle: skills/shared/references/bootstrap-resolution.md (owner, linked from the docs/development.md mechanisms-table row \"Inside this repo a skill script runs from the checkout | `script_origin`\"): \"The inst Mechanism: scripts/core/helper_provenance_lib.py `require_repo_local_helper` (callers: record_lesson_score.py, record_lesson_lifecycle.py, seed_lesson_transitions.py, recent_lessons_lib.py, persist_retro_artifac",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-18-session-retro-second.md"
+      ]
+    },
+    {
+      "sequence": 29,
+      "event_id": "783-graduate-lane-scoped-proof",
+      "lesson_id": "lane-scoped-proof",
+      "action": "graduate",
+      "decision_ref": "docs/development.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): never consulted. The refuter examined this one and did not refute; my verification agrees. The false-stop direction is the same stated gap as the already-graduated green-test-is-not-covered-line (#783 row 2), written in the same mechanism's docstring, and the decision moment is the BLOCK verdict where the subprocess advisory already prints, so the mechanism makes a page read unnecessary and the preview-exposure loss is nil. Zero encounters means \"helped\" cannot be claimed, but lesson-graduation.md gates on owner plus mechanism, not on a score threshold, and #783 row 5 set the precedent for a mechanism-sufficiency graduate. No new sentence: the row and docstring already carry it. Principle: docs/development.md lines 75-76, verbatim: \"Each rule below names the mechanism that holds it. The mechanism's docstring owns the exact form and what it cannot see; this table does not repeat it.\" gov Mechanism: scripts/mutation/release_changed_line_coverage.py — module docstring states this exact blind class: \"Coverage collected from a SUBSET of the suite is a subset of full coverage, so this can report a co",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md"
+      ]
+    },
+    {
+      "sequence": 30,
+      "event_id": "783-archive-guard-adjacent-to-action",
+      "lesson_id": "guard-adjacent-to-action",
+      "action": "archive",
+      "decision_ref": "charness-artifacts/goal-runs/784/783-principle-fold-map.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): did not help. The vehicle every scored encounter rode on (a free-form handoff document plus its validator) is gone from the tree and operating-contract.md states there is no handoff document at all, so the recorded premise cannot recur. The lesson never changed an action even while presented at session open five times in a row, so keeping it buys no exposure; the general half ('a gate's green is a claim') is already the north star's P4, which every session is briefed on. The mapper's move and quote check out; nothing to correct. Principle: docs/design-north-star.md P4: \"A passing gate, a `CLOSED` state, a readback, an advisor verdict — each is a *claim*, not a conclusion.\" The mapper's quote also exists verbatim at docs/operating-contra Mechanism: none for the recorded shape: scripts/validate_handoff_artifact.py and skills/public/handoff/SKILL.md were deleted in commit 6bce02c58 (\"Simplify goal execution and remove workflow friction\"); `git ls-",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-07-27-session-retro.md",
+        "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+        "charness-artifacts/retro/2026-08-13-session-retro.md",
+        "charness-artifacts/retro/2026-08-15-s3-lesson-loop.md"
+      ]
+    },
+    {
+      "sequence": 31,
+      "event_id": "783-archive-durable-lesson-ledger-first",
+      "lesson_id": "durable-lesson-ledger-first",
+      "action": "archive",
+      "decision_ref": "charness-artifacts/goal-runs/784/783-principle-fold-map.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): helped. The premise is gone by construction: the durable ledger was built, it is the sole lifecycle state, the entry point mandates reading it, and the session-snapshot/handoff path that could have authorized a lifecycle step without it was deleted. The lesson's one positive score (legacy +2, \"used the ledger-first sequence\") records the transition being made, not a rule that still needs remembering. The mapper is right; nothing to graduate because no docs sentence is needed to hold a fact that has no competing path. Principle: AGENTS.md:9 (CLAUDE.md is its symlink), verified verbatim: \"Read the lesson ledger before planning, not after failing:\" followed by the render_lesson_selection_preview.py command. docs/development.md  Mechanism: charness-artifacts/retro/lesson-ledger.json is the only state scripts/render_lesson_selection_preview.py and scripts/lessons/check_lesson_ledger.py read or write (lesson_ledger_lib.py replays transiti",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-12-session-retro.md",
+        "charness-artifacts/retro/2026-08-13-session-retro.md"
+      ]
+    },
+    {
+      "sequence": 32,
+      "event_id": "783-archive-closeout-authoring-rework",
+      "lesson_id": "closeout-authoring-rework",
+      "action": "archive",
+      "decision_ref": "charness-artifacts/goal-runs/784/783-principle-fold-map.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): never consulted. Every concrete instance was a rework cycle on a surface that no longer exists (handoff packet, handoff validator, unclaimed-emission gate), and the lesson never once changed an action, so there is nothing proven to promote. The general author-time idea it gestures at is already owned and mechanism-held in docs/authoring-preflight.md independent of this lesson, so archiving loses no coverage; graduating a lesson that never helped into a page that already holds the class would be a bookkeeping move, not a promotion. Principle: docs/authoring-preflight.md \"Artifact-shape preflight\", verified verbatim: \"It generalizes the same author-time idea to the recurring \"authoring-preflight skip\" class (issues 284 → 308 → 325 → 329 → 3 Mechanism: scripts/gates/check_artifact_surface_preflight.py (--type/--emit-stub/--path gives the shape before drafting; blocking `check-artifact-shape (staged)` in the commit sweep, authoring-preflight.md:134)",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+        "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md"
+      ]
+    },
+    {
+      "sequence": 33,
+      "event_id": "783-archive-artifact-contract-late-feedback",
+      "lesson_id": "artifact-contract-late-feedback",
+      "action": "archive",
+      "decision_ref": "charness-artifacts/goal-runs/784/783-principle-fold-map.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): did not help. The lesson's rule is a capability ask (\"have the scaffold report its budget against a draft rather than only after a complete artifact\"), and that has shipped: the scaffold states the size budget before any draft exists and the validator states the exact overage in one number, so the late-feedback premise no longer holds; neither the mapper nor the refuter opened scaffold_artifact_lib.py. The only recorded miss was hand-authoring a handoff, which is the scaffold-first residual D28 already tracks with its own trigger and whose vehicle no longer exists. That is the archive row in the graduation table (premise gone), not a docs-only graduation into a decision log and not a keep for a class that has not recurred. Principle: docs/deferred-decisions.md D28, verified verbatim: \"should `emit_payload_main` in [scaffold_artifact_lib.py] grow a `--write` mode so scaffold-first becomes the path of least resistance?\" and \"Trigger Mechanism: scripts/core/scaffold_artifact_lib.py:122-128, opened: the scaffold payload now carries `size_budget` \"so a run writes-to-fit up front instead of writing long and then burning a trim-to-fit edit/re-me",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md"
+      ]
+    },
+    {
+      "sequence": 34,
+      "event_id": "783-archive-command-plan-premise-before-fanout",
+      "lesson_id": "command-plan-premise-before-fanout",
+      "action": "archive",
+      "decision_ref": "charness-artifacts/goal-runs/784/783-principle-fold-map.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): never consulted. The refuter is right and the mapper misread the page: commit 489df2c37 (2026-08-27, \"Simplify execution ownership and delegation\") deliberately replaced the universal \"before starting a manual or parallel command fan-out, write a plan and run preflight\" sentence with the narrower rule quoted above, which says the opposite of the lesson (\"only for a manually assembled fan-out whose ... resolution is otherwise ambiguous\"). A page cannot take ownership of a rule it was edited to contradict, so graduate-no-sentence would record a false owner; and under documentation-principles (\"when a decision supersedes a sentence, delete that sentence\") the lesson is the superseded sentence. With zero encounters and the lane runner owning the path September fan-outs actually used, the premise is gone rather than unheld: archive. The still-live resolution half belongs to the sibling wrong-path-is-premise-failure, judged separately. Principle: docs/parallel-execution.md \"Command Fan-Out Preflight\": \"`charness task run` already owns its lane's base, branch, path, scope, and worktree preflight. Do not create a second plan for that path. Use ` Mechanism: scripts/gates_support/command_plan_preflight.py refuses a missing or ambiguous target when it is run; nothing forces it before a manual fan-out, and the lane path is owned by `charness task run` (para",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-21-command-plan-preflight-retro.md"
+      ]
+    },
+    {
+      "sequence": 35,
+      "event_id": "783-archive-fallback-aimed-at-production",
+      "lesson_id": "fallback-aimed-at-production",
+      "action": "archive",
+      "decision_ref": "charness-artifacts/goal-runs/784/783-principle-fold-map.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): never consulted. The mapper's archive case verifies from source: the concrete premise (a leak guard exempting one live-repo subtree) was removed with the usage-episodes surface four days after seeding, the lesson has zero encounters in 17 days, and its origin was a counterfactual rather than a scored failure. The residual general habit is ordinary test-authoring judgment on reversible work (north-star P1), which needs no ledger slot. No refutation was offered and I found nothing to add one on. Principle: none — no docs/ page or north-star facet owns \"trace where the remaining fallback lands when a test removes an input\"; I searched docs/, tests/conftest.py, scripts/mutation and scripts/core for a leak Mechanism: none. The subtree the seeding retro names (`.charness/usage-episodes/sessions/`) belonged to the usage-episodes feature deleted whole in 7f482ded7 (2026-08-25: `.agents/usage-episodes-adapter.yaml`, `",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-17-612-and-the-uncounted-count.md"
+      ]
+    },
+    {
+      "sequence": 36,
+      "event_id": "783-archive-unclaimed-session-disposition",
+      "lesson_id": "unclaimed-session-disposition",
+      "action": "archive",
+      "decision_ref": "charness-artifacts/goal-runs/784/783-principle-fold-map.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): never consulted. The mapper's archive case verifies: the failure this lesson names requires a receipted session and a pre-push continuity gate, and both were removed with the score-event model (the ledger is now optional and selection needs no receipt). Its tracking issue was closed as requalified the day the lesson was seeded. A class whose triggering architecture is gone cannot recur, so this is \"premise no longer holds\", not keep; no refutation was offered and I found nothing to refute on. Principle: docs/development.md \"Optional records\", verbatim: \"Use [artifact policy](./artifact-policy.md) for durable evidence and [retro](../skills/public/retro/SKILL.md) for the optional lesson ledger; neither Mechanism: none, by design: scripts/lessons/ (16 files listed) has no session-declare, receipt, or continuity-gate code; check_lesson_ledger.py prints only the unseeded-class and graduated-recurrence advisories;",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-21-goal-continuation-retro.md",
+        "charness-artifacts/retro/2026-08-21-session-retro.md"
+      ]
+    },
+    {
+      "sequence": 37,
+      "event_id": "783-archive-wrong-path-and-target-binding",
+      "lesson_id": "wrong-path-and-target-binding",
+      "action": "archive",
+      "decision_ref": "charness-artifacts/goal-runs/784/783-principle-fold-map.md",
+      "rationale": "#783 joint review 2026-09-03 (principle-fold pass, operator settled by group): never consulted. The lesson's binding premise (nothing binds a release artifact to its target) was false when written: the dry-run refusal it cites is reviewed_input_identity.py doing its job, and the fan-out half is held by command_plan_preflight.py and owned by parallel-execution.md as current fact. The path half is a loud, session-local, immediately failing mistake squarely inside P1, with no docs owner, no recurrence in 13 days, and an identical sibling lesson still active. Zero encounters (never surfaced in any of six preview seeds, same tie-break starvation as uncounted-count) plus the retro's own \"remains a diagnostic class ... no source code mutation is justified\" reads as a one-off note about a working mechanism; a graduate-no-sentence onto parallel-execution.md would be defensible for the binding half but would claim a lesson proved itself when it never met an encounter. Principle: docs/design-north-star.md P1, verbatim: \"Where a mistake stays inside this session's editable state, the default is a short principle plus the agent's judgment; a gate/validator/rule here bears the bu Mechanism: scripts/gates_support/command_plan_preflight.py, docstring lines 13-14 verbatim: \"Missing or ambiguous targets are refusals, not permission to guess a sibling path.\" (refuses an unbound fan-out target",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-21-release-candidate.md"
       ]
     }
   ]

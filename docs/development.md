@@ -4,8 +4,8 @@
 > Source of truth: this page and the executable commands it links
 > Last verified: 2026-09-03
 
-This page answers one question: what is the shortest safe path for changing and
-dogfooding Charness itself? Detailed contracts stay with their owners.
+This page owns the shortest safe path for changing and dogfooding Charness
+itself; detailed contracts stay with their owners.
 
 ## Start
 
@@ -15,9 +15,8 @@ Install the local dependencies once in a clean checkout:
 npm ci
 ```
 
-Then read [implementation discipline](./implementation-discipline.md) and the
-owner page for the surface being changed. [README.md](../README.md) owns
-supported install; this page owns repository development.
+[Implementation discipline](./implementation-discipline.md) owns the change
+loop; [README.md](../README.md) owns supported install.
 
 ## Local dogfood
 
@@ -27,12 +26,11 @@ To make an installed host use this checkout without pulling remote changes:
 charness update --repo-root . --no-pull --skip-cli-install
 ```
 
-To refresh the managed CLI itself, use the managed checkout entrypoint. Return
-to the normal `charness update` path after a release or ordinary operator cycle.
+The managed checkout entrypoint refreshes the managed CLI itself.
 
 ## Goal and issue work
 
-Use the exact provider-backed parent objective for an active goal. This is the
+An active goal is entered by its provider-backed parent objective, the
 Issue-Native Goal Run:
 
 ```bash
@@ -40,15 +38,14 @@ Issue-Native Goal Run:
 ```
 
 [Goal lifecycle](./goal-lifecycle.md) owns parent/cursor state and issue
-membership. [Issue](../skills/public/issue/SKILL.md) owns GitHub writes and
-readback. Do not recreate either state in a local handoff or session hook.
+membership; [issue](../skills/public/issue/SKILL.md) owns GitHub writes and
+readback. Neither exists in a local handoff or session hook.
 
 ## Worktrees and runtime
 
-Use [worktree prepare](./worktree-prepare.md) for isolated mutation. Its
-commands own clean checkout, named branch, scope, and external runtime paths.
-For one-off local commands, keep Python bytecode, pytest cache, coverage, and
-temporary output outside the checkout; `.gitignore` only hides output.
+[Worktree prepare](./worktree-prepare.md) owns isolated mutation: clean
+checkout, named branch, scope, external runtime paths. Bytecode, caches,
+coverage, and temporary output live outside the checkout.
 
 ## Verification and export
 
@@ -65,11 +62,11 @@ python3 scripts/gates_support/run_standing_pytest.py --repo-root .
 ./scripts/run-quality.sh --full --read-only
 ```
 
-Verify in the shape production uses: after an integration step the only green
-that counts is the standing runner followed by the full read-only lane. A green
-from an older tree, a bare pytest, a focused run, or a lane that skipped the
-check is a proxy; a family rerun locates, it does not claim. The slice order
-(commit, changed-line proof, then the broad lane) is owned by
+After an integration step the only green that counts is the standing runner
+followed by the full read-only lane; any other green is a proxy
+([P4](./design-north-star.md)). The slice order (commit, changed-line proof,
+then the broad lane) and the serial `mutate -> sync -> verify -> publish` in
+the parent are owned by
 [parallel execution](./parallel-execution.md#disjoint-writers).
 
 Each rule below names the mechanism that holds it. The mechanism's docstring
@@ -87,19 +84,23 @@ owns the exact form and what it cannot see; this table does not repeat it.
 | A test's verdict never rides on a short deadline | [`check_timeout_bound_form.py`](../scripts/gates/check_timeout_bound_form.py), record shrinking only |
 | A test module is evicted only through [`tests/module_eviction.py`](../tests/module_eviction.py) | [`check_module_eviction_form.py`](../scripts/gates/check_module_eviction_form.py) |
 | A real spawn in a test is the claim, marked `boundary_contract(reason=...)` | [`check_staged_test_boundaries.py`](../scripts/hooks/check_staged_test_boundaries.py) in the commit hook |
-| Inside this repo a skill script runs from the checkout | `script_origin` ([bootstrap resolution](../skills/shared/references/bootstrap-resolution.md)) |
-| A gate's refusal names live surfaces and tokens, never a remembered rule; a documented flag or subcommand is one the script's own argparse accepts | nothing for the refusal text; [`check_documented_command_flags.py`](../scripts/gates/check_documented_command_flags.py) and [`check_documented_subcommands.py`](../scripts/gates/check_documented_subcommands.py) hold the docs half |
-| A layout fact is asserted on what the module bound, never on a global interpreter property; force an arm with a `meta_path` finder | nothing; the distinction is semantic, so review holds it |
+| Inside this repo a skill script runs from the checkout | `script_origin` and `require_repo_local_helper` at write sites ([bootstrap resolution](../skills/shared/references/bootstrap-resolution.md)); nothing refuses a read-only run from a stale copy |
+| A standing run's result outlives the caller that started it | [`standing_pytest_run_record.py`](../scripts/gates_support/standing_pytest_run_record.py), read back with `--print-last-run` |
+| A subagent reads a named base, never whatever tree is on disk | the task run receipt's `base_sha` ([agent task runs](./agent-task-runs.md)) and the critique packet's `reviewed_input_identity`; nothing for a reviewer briefed by hand |
+| A shared-tree review's findings apply only to the tree they were read against | [`reviewer_boundary_fingerprint.py`](../skills/shared/scripts/reviewer_boundary_fingerprint.py) ([reviewers stay read-only](./parallel-execution.md#reviewers-stay-read-only)); nothing for packet identity |
+| In a probe record a field name sits at column 0 and an indented line continues it | [`probe_record_parse.py`](../scripts/evidence/probe_record_parse.py) |
+| A lesson leaves the working set only by a person-settled lifecycle event pointing at a `docs/` page | [`record_lesson_lifecycle.py`](../scripts/lessons/record_lesson_lifecycle.py) holds the form; nothing can see whether a person settled it |
+| A gate's refusal names live surfaces and tokens; a documented flag or subcommand is one argparse accepts | nothing for the refusal text; [`check_documented_command_flags.py`](../scripts/gates/check_documented_command_flags.py) and [`check_documented_subcommands.py`](../scripts/gates/check_documented_subcommands.py) for the docs half |
+| A layout fact is asserted on what the module bound, never on a global interpreter property | nothing; the distinction is semantic |
 
 Tests import the script under test in-process through
 [`tests/script_loader.py`](../tests/script_loader.py),
 [`script_main.py`](../tests/script_main.py), and
-[`script_closure.py`](../tests/script_closure.py), which emulate the child
-interpreter; never load a module under a bare name the code under test imports
-lazily. A test that waits for a child blocks on a FIFO
-([`tests/fifo_witness.py`](../tests/fifo_witness.py)) or drives a controlled
-clock. A failure that passes alone is bisected over the collection set first
-([sibling search](../skills/public/debug/references/sibling-search.md)).
+[`script_closure.py`](../tests/script_closure.py), whose docstrings own the
+child-interpreter emulation. A test that waits for a child blocks on a FIFO
+through [`tests/fifo_witness.py`](../tests/fifo_witness.py) or drives a
+controlled clock. A failure that passes alone is bisected over the collection
+set first ([sibling search](../skills/public/debug/references/sibling-search.md)).
 
 Everything that writes under the cache root (`resolve_cache_home` in
 [`repo_layout.py`](../scripts/core/repo_layout.py)) has a row here, and the
@@ -112,20 +113,20 @@ writer's docstring owns its retention rule.
 | `support-skills` | [`support_sync_lib.py`](../scripts/support_sync_lib.py) |
 | `charness/runtime/<key>` and everything under it | [`runtime_bootstrap.py`](../scripts/runtime_bootstrap.py) writes the key; [`runtime_root_retention.py`](../scripts/gates_support/runtime_root_retention.py) sweeps on every standing run and by hand |
 | `<key>/task-run/<id>` | [`task_run_completion.py`](../scripts/task_run/task_run_completion.py), then the sweep |
+| `<key>/coverage/<repo-key>-<report-stem>` | [`coverage_runtime_paths()`](../scripts/mutation/mutation_sampling_lib.py), one directory per coverage report |
 
-When docs change, run [`check-docs.sh`](../scripts/check-docs.sh). The source
-tree is authoritative; the plugin tree is a generated install surface.
+[`check-docs.sh`](../scripts/check-docs.sh) is the docs gate. The source tree
+is authoritative; the plugin tree is generated.
 
 ### Pushing
 
 Every push goes through the pre-push hook from
 [`install-git-hooks.sh`](../scripts/install-git-hooks.sh). After the
-irreversible close-keyword scan, a push touching anything beyond docs and
+irreversible [close-keyword scan](../scripts/prepush_close_keyword_guard.py), a push touching anything beyond docs and
 artifacts runs `./scripts/run-quality.sh --full --read-only --release`, since
 the standing lane deselects `release_only` and `slow_corpus`. A docs-artifact
-push runs the docs subset; the release lane is indivisible. The hook reads the
-tree it runs in, so push from a clean clone with the hooks installed and the
-mirror regenerated (a fresh clone has no `plugins/`):
+push runs the docs subset. The hook reads the tree it runs in, so push from a
+clean clone with the hooks installed and the mirror regenerated:
 
 ```bash
 git clone --quiet . /tmp/charness-push && cd /tmp/charness-push
@@ -134,8 +135,8 @@ python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .
 git remote set-url origin <origin-url> && git push origin HEAD:main
 ```
 
-Timings and the seeded-refusal proof are recorded in the #778 closeout under
-`charness-artifacts/goal-runs/775/`.
+The #778 closeout under `charness-artifacts/goal-runs/775/` records the
+timings and the seeded refusal.
 
 ## Optional records
 
@@ -149,15 +150,3 @@ that a retro tags again outside the retros its lifecycle event reviewed; the
 move on either is a person's. A lesson graduates only through the three
 questions in
 [lesson-graduation.md](../skills/shared/references/lesson-graduation.md).
-
-## Mutation phase barriers
-
-Keep state-changing work and verification in separate phases:
-
-1. mutate
-2. sync generated surfaces
-3. verify
-4. publish
-
-Read-only inventory may run in parallel. Do not run generated-surface sync,
-version or install changes, or git mutations concurrently with validators.
