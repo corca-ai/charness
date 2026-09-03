@@ -8,19 +8,9 @@ This document explains where `charness` should keep different kinds of
 knowledge. The goal is not one perfect file pattern. The goal is a stable
 default plus explicit exceptions.
 
-## Goal Draft And Execution Lineage
+## Goal lineage
 
-Long-running work has one planning artifact and one provider execution identity.
-The complete Markdown Goal Draft may change before approval, then its bytes are
-frozen and referenced by SHA-256. A sibling Goal Binding records the approved
-parent and initial Work Item graph. Execution evidence carries the shared
-`goal_lineage` record: draft path/hash, binding path/hash, exact parent issue,
-and, when selected, exact Work Item issue/key.
-
-Evidence without that identity must say `planning-only` or `not-goal-bound`; a
-local path, filename, or issue number alone is not execution proof. Routine
-progress is carried by the parent Goal Run cursor, not a second local ledger or
-edits to the frozen draft.
+Goal Draft/Binding identity, the `goal_lineage` record, and the parent cursor are owned by [goal-lifecycle.md](./goal-lifecycle.md); evidence dispositions (`goal-bound`, `planning-only`, `not-goal-bound`) are held by [goal_lineage.py](../scripts/issue/goal_lineage.py).
 
 ## Durability Classes
 
@@ -206,66 +196,6 @@ The inventory reports the adapter class, `artifact_path`, `write_artifact_path`,
 symlink target metadata, and whether the checked-in current pointer is a regular
 file, symlink, rolling file, missing pointer, or adapter-unmanaged workflow.
 
-Current repo examples:
-
-- [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md) — a symlink current pointer at the newest dated debug record.
-- [charness-artifacts/debug/debug-2026-04-20-process-boundary-drift.md](../charness-artifacts/debug/debug-2026-04-20-process-boundary-drift.md) — a dated debug record on unbounded subprocess and daemon lifecycles.
-- [`charness-artifacts/gather/latest.md`](../charness-artifacts/gather/latest.md) — a regular-file current pointer holding the latest gather run.
-- [`charness-artifacts/release/`](../charness-artifacts/release/) — dated release notes; release proof is generated at publication time.
-
-## Current Repo Classification
-
-The repo currently intends these families to be history-default:
-
-- `debug`
-- `gather`
-- `retro`
-- `quality`
-- `release`
-- `announcement`
-- `narrative`
-- `critique`
-- `create-skill`
-- `ideation`
-- `impl`
-
-The repo currently intends these families to be `current`:
-
-- `capability-catalog`, because the value is the current local-first inventory, not a
-  checked-in invocation log
-- `hitl`, because checked-in state is a current human-facing review surface
-  while runtime queues and event logs stay under `.charness/`
-- `hotl`, because the checked-in surface is a current proof packet summary over
-  externally verified loops
-- `setup`, because the checked-in surface is a current bootstrap summary
-  rather than a long-lived audit trail
-
-The repo currently intends these families to be `rolling` or outside an
-adapter-managed `latest.md` flow:
-
-- `spec`, because design contracts already live as checked-in named artifacts
-- `achieve` and `issue`, because their current artifact helpers are
-  workflow-specific rather than `output_dir` adapter-managed `latest.md` flows
-- `create-cli`, because it has no checked-in current artifact family in this
-  repo today
-
-## Current Exceptions
-
-These are intentional exceptions to the simple defaults:
-
-- `spec` work can live in checked-in spec artifacts such as
-  `charness-artifacts/spec/*.md` without a dedicated adapter-managed `latest.md`
-  flow when the repo is keeping a design contract rather than a rolling skill
-  artifact.
-- `capability-catalog` stays current-pointer-first because repeated startup inventory
-  runs would otherwise create low-signal dated churn.
-- `hitl` and `setup` split visible current summary from hidden runtime or
-  bootstrap state rather than keeping a checked-in dated artifact stream by
-  default.
-
-If a new skill or workflow needs a different shape, document the exception in
-the owning adapter contract or repo policy doc instead of silently drifting.
-
 ## Visibility Rule
 
 Prefer visible artifacts when a future maintainer needs to understand:
@@ -311,20 +241,6 @@ When adding a machine-written artifact, classify it first. Purely derived: add
 the recompute gate at write time and a `--check` verify command on its
 [surface](../.agents/surfaces.json). Not purely derived: say so in the surface
 entry, so a later reader sees a decision rather than an omission.
-
-## Anti-Patterns
-
-Avoid these mistakes:
-
-- storing secrets or copied credentials in any artifact
-- treating `latest.md` as the default visible artifact when the repo has not
-  justified why a current pointer is clearer than dated history
-- letting `latest.md` turn into a long archive instead of a current pointer
-- using a dated artifact when a fixed doc should have been edited
-- relying on hidden runtime state as the only explanation of a human-visible
-  decision
-- duplicating the same current summary in both `docs/` and `charness-artifacts/`
-  without naming which one is canonical
 
 ## Related Contracts
 

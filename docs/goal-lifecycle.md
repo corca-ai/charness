@@ -3,16 +3,14 @@
 > Status: current
 > Source of truth: the `achieve` and `issue` skills' Goal Run commands and this page
 > Last verified: 2026-09-03
-> Last reviewed: 2026-09-03
 
 This page answers one question: how does Charness model a long-running goal
 from planning through provider-verified completion?
 
 The issue-native Goal Run is the implemented workflow: planning, binding,
 provider establishment, exact `/goal #N` pickup, child closeout, and the
-guarded parent close have each run live in this repo (the #724 clean-process
-pickup roundtrip, and the Goal Runs recorded under
-`charness-artifacts/goal-runs/`). What this page does not claim: that every
+guarded parent close have each run live in this repo; the recorded runs live
+under `charness-artifacts/goal-runs/`. What this page does not claim: that every
 installed consumer host has exercised the same path; the installed copy is what
 a consumer runs, and that proof is recorded per release, not assumed here.
 
@@ -198,25 +196,7 @@ Required issue-backend operations are:
 - persist one typed provider-attempt observation
 - close a Goal Run through a dedicated guarded operation
 
-The provider implementation keeps those concerns on explicit seams:
-
-- `issue_identity` proves the repository and issue named by provider answers;
-- `issue_backend` renders and probes adapter-declared commands;
-- `issue_json_pages` decodes provider JSON and pagination without policy;
-- `issue_tracker_capabilities` proves the complete bootstrap operation set;
-- `issue_tracker_discovery` owns Work Item discovery and source-bound child sets;
-- `issue_tracker_relationships` owns real sub-issue reads and mutations;
-- `issue_tracker_outcome` owns unresolved-write result shape;
-- `issue_tracker` owns Goal Run metadata, child creation, and body update rules;
-- `issue_tracker_cli` owns immutable observation orchestration,
-  `issue_tracker_cli_preflight` owns read-only readiness, and
-  `issue_tracker_cli_parser` owns only tracker command grammar;
-- `issue_tool` composes command behavior while `issue_tool_parser` composes the
-  tracker and ordinary issue command grammars.
-
-The entrypoint re-exports established constants and call names for compatibility,
-but state-changing behavior remains owned by the modules above. New provider
-behavior extends its owning seam instead of accreting into the entrypoint.
+Provider mechanics split across `issue_identity`, `issue_backend`, `issue_json_pages`, the `issue_tracker_*` family, `issue_tracker_cli` (+`_preflight`/`_parser`), and `issue_tool` (+`_parser`); each module's docstring states its own seam except the `issue_tool` entrypoint, which carries none today, and new provider behavior extends its owning seam rather than the entrypoint.
 
 Every mutation returns a typed Provider Observation: started, no write, verified
 write, unverified write, or partial graph write. `no write` is legal only before
@@ -335,34 +315,4 @@ GitHub is an external declared capability. Local tests can prove schema,
 planning, refusals, and fake-backend behavior; only provider roundtrip proves a
 real graph mutation.
 
-## Cutover And Removal
-
-The existing mutable goal artifact currently owns planning, active/blocked
-status, slice history, closeout, and host activation. The target does not add a
-permanent issue-native branch beside it.
-
-The cutover must:
-
-- retain the full Markdown artifact only as Goal Draft and semantic provenance
-- remove local status/slice mutation as execution coordination
-- replace file-addressed activation guidance with `/goal #N`
-- make Goal Run activation use the canonical Goal Draft producer instead of a copied template
-- move active-goal consumers to parent/binding/provider identity
-- keep evidence records linked to frozen draft provenance and Goal Run identity
-- remove or explicitly mark unsupported old activation, progress, and completion
-  paths
-
-Other existing goal artifacts remain untouched and are not migration inputs,
-supported runtimes, or acceptance constraints.
-
-## Proof And Non-Claims
-
-Implementation is not complete until all canonical and generated surfaces are
-synchronized; deterministic schema/refusal/retry tests pass; a clean consumer
-can execute from `/goal #N` and a child body; the provisional #724 graph is
-reconciled and read back; conditional docs become honest current-state docs; and
-fresh-eye review verifies the repaired proof surfaces.
-
-This design does not claim concurrent-human merge handling, offline execution,
-transactional provider writes, generic cross-host activation, legacy-goal
-migration, or live GitHub success from fake-backend tests.
+Legacy goal artifacts under `charness-artifacts/goals/` are planning provenance only; they are not migrated, activated, or accepted as runtime state.
