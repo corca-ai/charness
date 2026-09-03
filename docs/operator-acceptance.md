@@ -5,7 +5,7 @@
 > Last verified: 2026-09-02
 
 This document translates active work into operator-owned acceptance runs. The
-current plan of record is the active [Goal Run parent issue #765](https://github.com/corca-ai/charness/issues/765).
+plan of record is the active Goal Run parent ([goal lifecycle](./goal-lifecycle.md)).
 Use this page when you want to take over one item directly instead of asking an
 agent to rediscover the whole repo state. A consumer may add an optional
 roadmap surface when active ordered work requires it.
@@ -13,19 +13,11 @@ Each item names the ownership seam, read-first surfaces, and acceptance bar. Res
 
 ## Shared Start
 
-Run these first at the repo root:
-
-```bash
-git status --short
-./scripts/run-quality.sh
-```
-
-If the work touches integrations or packaging, also read:
-
-```bash
-sed -n '1,220p' docs/control-plane.md
-sed -n '1,220p' docs/public-skill-validation.md
-```
+Start from a clean tree and the small quality lane
+([verification and export](./development.md#verification-and-export)). If the
+work touches integrations or packaging, read
+[control plane](./control-plane.md) and
+[public skill validation](./public-skill-validation.md).
 
 ## Progressive Operator Path
 
@@ -33,25 +25,10 @@ See [docs/operator-progressive-path.md](./operator-progressive-path.md) for the 
 
 ## Remaining Items
 
-### 1. Close Deferred Decisions
+The items closed with their Goal Run are recorded in
+[operator-acceptance checklists](../charness-artifacts/goal-runs/765/2026-09-03-operator-acceptance-checklists.md).
 
-Focus: keep deferred product-boundary decisions closed unless a real reopen trigger is active.
-
-Read first:
-
-- [docs/goal-lifecycle.md](./goal-lifecycle.md) — current Goal Run parent/cursor and continuation contract.
-- [docs/deferred-decisions.md](./deferred-decisions.md) — closed product-boundary decisions, record shape, and reopen triggers.
-- [docs/host-packaging.md](./host-packaging.md) — export contract for host plugin layouts and its source-of-truth surfaces.
-- [docs/control-plane.md](./control-plane.md) — external tool manifests, support capability metadata, and lock state rules.
-
-Acceptance:
-
-- [`docs/deferred-decisions.md`](./deferred-decisions.md) stays in sync with current product-boundary choices.
-- The active Goal Run parent/cursor is current and has no stale next-child claim.
-- Any reopened decision records its new choice and impacted docs.
-- [`./scripts/run-quality.sh`](../scripts/run-quality.sh) passes after the doc updates.
-
-### 2. Run Managed CLI Install Experiments
+### Run Managed CLI Install Experiments
 
 Focus: confirm that the managed install/update path changes the host-visible payload, not only the source checkout.
 
@@ -61,9 +38,8 @@ Read first:
 - [docs/host-packaging.md](./host-packaging.md) — export contract for host plugin layouts and its source-of-truth surfaces.
 - [packaging/charness.json](../packaging/charness.json) — shared packaging manifest: identity, version, bundle inputs, host export paths.
 
-Useful local commands. The export line is for a hand run of this experiment; the
-quality and standing runners refresh the generated mirror themselves, as
-[operating-contract.md](./operating-contract.md#generated-surfaces) sets out.
+Useful local commands (the runners refresh the generated mirror themselves:
+[generated surfaces](./operating-contract.md#generated-surfaces)):
 
 ```bash
 python3 scripts/plugin_export/validate_packaging.py --repo-root .
@@ -78,7 +54,6 @@ Suggested operator runs:
 - bootstrap or reuse the managed checkout under `~/.agents/src/charness` with
   `charness init`; use [`./init.sh`](../init.sh) only when the binary is not already
   available on PATH
-- treat initial install/enable as pre-proven unless the host reports otherwise
 - make an explicit upstream payload change that should be visible in a loaded
   skill or plugin manifest
 - run `charness update`
@@ -86,8 +61,6 @@ Suggested operator runs:
   binaries and bundled support skill surfaces refreshed
 - verify Claude by checking that the changed payload is reflected in the
   installed host copy after the documented restart/reload step
-- Codex update propagation is already operator-proven; keep any future rerun as
-  an on-demand regression check rather than a standing acceptance blocker
 - if you need to rerun the update-propagation experiment locally, prefer
   `pytest -q tests/charness_cli/test_update_propagation.py` plus a human host
   spot-check instead of turning it back into a default every-session task
@@ -116,53 +89,6 @@ Acceptance:
 - an upstream skill/plugin payload change is actually observable in the
   installed Claude or Codex host copy after the required refresh step
 - any required doc or manifest tweaks are committed back here
-
-### 3. Raise `create-skill` / `spec` Workflow Gates
-
-Focus: move `create-skill` and `spec` from marker-level checks to stronger workflow smoke.
-
-Read first:
-
-- [skills/public/create-skill/SKILL.md](../skills/public/create-skill/SKILL.md) — the portable skill authoring workflow and its bootstrap reads.
-- [skills/public/spec/SKILL.md](../skills/public/spec/SKILL.md) — the implementation-contract workflow and its bootstrap reads.
-- [docs/public-skill-dogfood.md](./public-skill-dogfood.md) — human-readable contract for the reviewed consumer-prompt registry.
-- [tools/check_skill_contracts.py](../tools/check_skill_contracts.py) — pinned SKILL.md contract phrases and the pin-deletion discipline.
-- [tools/run_evals.py](../tools/run_evals.py) — runner for the repo-owned deterministic skill and adapter scenarios.
-- [tools/validate_public_skill_dogfood.py](../tools/validate_public_skill_dogfood.py) — validator entrypoint for the dogfood registry JSON.
-
-Acceptance:
-
-- at least one stronger deterministic workflow check exists for each targeted
-  skill
-- docs and tests describe the stronger proof honestly
-- [`./scripts/run-quality.sh`](../scripts/run-quality.sh) passes
-
-### 4. Decide Adapter Requirements Per Public Skill
-
-Focus: classify which public skills must fail closed on missing adapters and turn that into a deterministic rule.
-
-Read first:
-
-- [skills/public/impl/SKILL.md](../skills/public/impl/SKILL.md) — the slice implementation workflow and its conditional evidence route to `prove`.
-- [skills/public/quality/SKILL.md](../skills/public/quality/SKILL.md) — the quality posture workflow, adapter bootstrap, and gate planning.
-- [docs/public-skill-validation.md](./public-skill-validation.md) — validation tiers plus per-skill adapter and missing-adapter rules.
-- [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md) — the latest quality review: scope, gates, weak and missing areas.
-
-Useful local commands:
-
-```bash
-for d in skills/public/*; do [ -f "$d/adapter.example.yaml" ] && echo "adapter $d" || echo "no-adapter $d"; done
-python3 scripts/gates/validate_adapters.py --repo-root .
-```
-
-Acceptance:
-
-- the classification is recorded in canonical docs and machine-readable policy
-- missing-adapter behavior is explicit per public skill: `allow`, `visible`,
-  or `block`
-- high-leverage repo-truth, review-state, or release skills do not silently
-  fall back when their adapter contract is missing
-- [`./scripts/run-quality.sh`](../scripts/run-quality.sh) passes
 
 ## Closeout Rule
 
