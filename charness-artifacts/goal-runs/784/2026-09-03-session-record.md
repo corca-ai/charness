@@ -235,9 +235,33 @@ lines over its core budget), both fixed in `a0d2e92b3`. The body's "nine
 classes seeded" acceptance line was met by the #781 closeout; recorded in the
 carrier.
 
-## Remaining for a session with the operator
+## Fourth session, 2026-09-04 (#789 integrated-closeout)
 
+Tree confirmed first: `b5fb69dba` clean and equal to `origin/main`; ledger
+preview seed `goal-784-session4`; `/goal #784` pickup `selected` naming #789
+from the checkout's own script (`script_origin: same-tree`).
 
-- #789 integrated-closeout: standing, full read-only, and release lanes in a
-  clean clone; the scheduled mutation run read from GitHub with #764; every
-  child `verify-closeout`; the guarded parent close after exact readback.
+Three lanes in a clean clone, recorded in `789-clean-clone-lanes.md`: standing
+8863 passed; full read-only 83 passed, 5 not run; release 88 passed, 4 not
+run; the not-run list read from each summary line.
+
+Every closed child read back: `verify-closeout` = `verified` for #785
+(`4057fcb09`), #786 (`ede3ac7a9`), #787 (`170180934`), #788 (`ebfd777ed`),
+#783 (`a5c9bc1e3`), feature, direct-commit, state CLOSED. None carried an
+issue-owned closeout comment yet, as in the #775 run; each got one through
+`close-with-comment` with the carrier commit message as its body
+(`closeouts/issue-<n>.md`, five comments 21:38Z).
+
+Hosted read (`764-recovery-observer-reading.md`, posted on #764): the most
+recent scheduled `mutation-tests.yml` run is 33756376766 on `bce861e15`, after
+#782 and after every #784 code child. `Select mutation sample` succeeded, so
+the baseline the #782 rewrite was waiting on is green; `Run mutation` was
+cancelled at `elapsed=8880.1s` of a 9000 s internal exec timeout by the job's
+`timeout-minutes: 180`, with 118 executable mutants each running the whole
+non-release suite. #764 stays open; the next work recorded there is the
+budget, not a test. Not closed by hand.
+
+Session retro persisted: `charness-artifacts/retro/2026-09-04-goal-784-closeout-retro.md`
+(one class seeded: `inner-timeout-outlives-outer-budget`; ledger 63 lessons,
+26 active). `expected-final-graph.json` (six children, no amendments) and
+`parent-terminal-obligation.md` written for the close.

@@ -1,0 +1,32 @@
+{
+  "kind": "charness.retro_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-03T21:40:08Z",
+  "prepared_for": "goal-784-closeout",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/retro-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/goal-runs/784/764-recovery-observer-reading.md\n- charness-artifacts/goal-runs/784/closeouts/issue-785.md\n- charness-artifacts/goal-runs/784/closeouts/issue-786.md\n- charness-artifacts/goal-runs/784/closeouts/issue-787.md\n- charness-artifacts/goal-runs/784/closeouts/issue-788.md\n- charness-artifacts/goal-runs/784/expected-final-graph.json\n- charness-artifacts/goal-runs/784/parent-terminal-obligation.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/goal-runs/784/764-recovery-observer-reading.md, charness-artifacts/goal-runs/784/closeouts/issue-785.md, charness-artifacts/goal-runs/784/closeouts/issue-786.md, charness-artifacts/goal-runs/784/closeouts/issue-787.md, charness-artifacts/goal-runs/784/closeouts/issue-788.md, charness-artifacts/goal-runs/784/parent-terminal-obligation.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- goal-run-evidence: Durable Goal Run provider plans, operations, observations, graph snapshots, and evidence-lineage records.\n  source matches: charness-artifacts/goal-runs/784/764-recovery-observer-reading.md, charness-artifacts/goal-runs/784/closeouts/issue-785.md, charness-artifacts/goal-runs/784/closeouts/issue-786.md, charness-artifacts/goal-runs/784/closeouts/issue-787.md, charness-artifacts/goal-runs/784/closeouts/issue-788.md, charness-artifacts/goal-runs/784/expected-final-graph.json, charness-artifacts/goal-runs/784/parent-terminal-obligation.md\n  verify: find charness-artifacts/goal-runs -type f -name '*.json' -exec python3 -m json.tool {} \\;\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "rework-issues-by-causing-skill",
+      "title": "Rework Issues By Causing Skill",
+      "content_kind": "script",
+      "producer": "python3 scripts/retro_debug/render_retro_section_rework_issues.py --repo corca-ai/charness",
+      "content": "Rework issues labelled `rework` created since 2026-08-04 (2 issue(s)):\n\n| Causing skill | Issues |\n| --- | --- |\n| achieve | 2 |\n| issue | 1 |\n| retro | 1 |\n\nCounts are per attribution; one issue naming multiple skills is counted once under each skill.\n\n- #774 Charness still projects recent-lessons.md although the operator chose the ledger as the only lesson surface (CLOSED, 2026-09-02; retro, achieve) https://github.com/corca-ai/charness/issues/774\n- #773 Goal Run binding hashes content, not identity: one-line child edits and new Work Items force a full re-bootstrap (CLOSED, 2026-09-02; achieve, issue) https://github.com/corca-ai/charness/issues/773\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true
+}
