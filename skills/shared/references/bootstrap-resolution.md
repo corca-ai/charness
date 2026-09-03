@@ -33,6 +33,20 @@ From the repo root:
 }
 ```
 
+Inside the authoring repo the checkout is the copy to run, even when the host
+reports an installed plugin's skill directory as `$SKILL_DIR`. The authoring
+repo is identified by `<authoring-repo>/packaging/charness.json` (package id `charness`), never
+by a directory name; when that file is present at `--repo-root`, resolve
+`$SKILL_DIR` to `skills/public/<skill-id>` in the checkout and ignore the
+host-reported path. The installed copy is still what a consumer runs, which is
+why the export gates keep proving the installed layout; the rule only says
+which copy an authoring session reads. Entrypoints that read Goal Run state
+report where they ran from as `script_origin` (`same-tree`, `in-sync`,
+`consuming-repo`), and a `drifted` installed copy inside the authoring repo is
+a typed `stale-installed-copy` refusal naming the checkout's own script, so a
+stale tree cannot be read as the current one. The record of the sessions that
+paid for this rule lives in the authoring repo's dated artifacts, not here.
+
 When the command is launched from the Charness source root, this relative
 path pairs with `--repo-root .`. If it is launched from another directory,
 resolve an absolute skill path and pass the consuming repository's absolute

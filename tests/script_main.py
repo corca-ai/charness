@@ -12,6 +12,17 @@ from types import SimpleNamespace
 
 @functools.cache
 def load_script_module(module_name: str, module_path: str | Path) -> object:
+    """Load a script in-process the way a child interpreter would see it.
+
+    A child interpreter puts the script's own directory first on `sys.path`, so a
+    flat sibling import (`from runtime_budget_sizing_lib import ...` inside a lib
+    the script loads) resolves. This loader restores `sys.path` afterwards, which
+    is right, but until 2026-09-03 it never ADDED the directory either, so those
+    imports resolved only when an earlier test happened to have left the directory
+    on the path: the two `render_runtime_summary` / `inventory_ci_recoverable_gates`
+    rows of the YAML contract test passed in the full run and failed in any
+    focused selection, which is where the changed-line gate runs them.
+    """
     path = Path(module_path)
     saved_path = list(sys.path)
     spec = importlib.util.spec_from_file_location(module_name, path)
@@ -20,6 +31,7 @@ def load_script_module(module_name: str, module_path: str | Path) -> object:
     module = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = module
     try:
+        sys.path.insert(0, str(path.resolve().parent))
         spec.loader.exec_module(module)
     finally:
         sys.path[:] = saved_path

@@ -136,6 +136,27 @@ def _target_selector(args: argparse.Namespace) -> str | None:
     return None
 
 
+def _script_origin(repo_root: Path) -> dict[str, Any]:
+    """Which charness tree this planner ran from, judged against `--repo-root`.
+
+    Inside the authoring repo a host may hand the session the installed plugin's
+    copy; the planner is read-only, so it reports rather than refuses, and the
+    publish helper's own entrypoint guard refuses a drifted copy before mutation.
+    The field makes the copy that answered part of the answer (#788).
+    """
+    provenance = SKILL_RUNTIME.load_repo_module_from_skill_script(
+        __file__, "scripts.core.helper_provenance_lib"
+    )
+    verdict = provenance.inspect_helper_provenance(__file__, repo_root, scan="tree")
+    return {
+        "script": verdict.get("invoked") or verdict.get("script"),
+        "status": verdict.get("status"),
+        "own_root": verdict.get("own_root"),
+        "target_root": verdict.get("target_root"),
+        "checkout_script": verdict.get("target_helper"),
+    }
+
+
 def build_plan(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
     refusal = _adapter_version_verdict.unspeakable_version_message(
@@ -216,6 +237,7 @@ def build_plan(args: argparse.Namespace) -> dict[str, Any]:
         next_action=planned_next_action,
         gate_packets=gate_packets(),
         repo_root=str(repo_root),
+        script_origin=_script_origin(repo_root),
         mode="publish-current"
         if args.publish_current
         else "bump-and-publish"

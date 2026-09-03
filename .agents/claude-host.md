@@ -11,6 +11,14 @@ orchestrating session. The common operating contract stays in
   workers, or a host subagent with an EXPLICIT `sonnet` or `opus` model
   override. Never spawn a Claude subagent that inherits the parent
   session's model by omission.
+- Skill scripts in this repo run from the checkout: when Claude Code reports
+  an installed plugin path as the skill's base directory, run
+  `python3 skills/public/<skill>/scripts/<name>.py --repo-root .` from the
+  working tree instead. `goal_run_pickup.py` and `plan_release_run.py` print
+  `script_origin` so the copy that answered is in the output, and a drifted
+  installed copy refuses (`stale-installed-copy`) rather than reading an
+  older contract; the rule and its reason live in
+  [bootstrap-resolution.md](../skills/shared/references/bootstrap-resolution.md).
 - The repo `bounded-reviewer` agent definition declares no model, so an
   omitted override silently inherits the parent model. Always pass the
   model field when spawning it.

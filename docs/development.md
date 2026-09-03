@@ -75,10 +75,11 @@ read as the current state, and every path of that class this repo has paid for
 now has a mechanism: the pre-push hook runs the release lane on every code
 push, the runners refresh or refuse a stale mirror themselves, the quality
 summary names every gate it did not run, and the wall-clock and module-eviction
-form checks keep their records empty. The open path is the installed plugin
-being read ahead of the working tree inside this repo; until the host adapter
-routes skill scripts to the checkout, run repo scripts from `skills/` and
-`scripts/` here.
+form checks keep their records empty, and inside this repo skill scripts
+run from the checkout by the rule in
+[bootstrap-resolution.md](../skills/shared/references/bootstrap-resolution.md):
+the Goal Run pickup and the release planner print `script_origin`, and a
+drifted installed copy refuses instead of reading an older contract.
 
 Production code spawns only through
 [`subprocess_guard.py`](../scripts/core/subprocess_guard.py); the standing

@@ -133,3 +133,23 @@ subtrees, and dead or legacy-idle sibling keys, logs every removal and skip
 with bytes and reason under `<key>/retention/` (bounded to the newest 20), and
 runs from the standing runner hook and by hand. Details and the first run's
 numbers: `runtime-root-sweep.md`.
+
+## Second session, continued (#787 closed; #788 routing half)
+
+#787 pushed from a clean clone (hook lane green; standing runner 8818 passed
+and the full read-only quality lane green on the slice tree, after two more
+structural fixes the lanes named: the canonical bootstrap shim in
+`task_run_completion.py`, and the sweep's `skipped` state declared in
+`attention-state-visibility.json`).
+
+Slice 5, routing half: `goal_run_pickup.py` judges its own copy against
+`--repo-root` through the provenance guard the write sites already use
+(`scripts/core/helper_provenance_lib.py`, tree scan), reports it as
+`script_origin`, and refuses a `drifted` installed copy inside the authoring
+repo as `stale-installed-copy` naming the checkout's script, before any
+provider read. `plan_release_run.py` reports the same field (read-only, so it
+reports rather than refuses; the publish helper's entrypoint guard is the
+refusal). Read back from the checkout: `same-tree`; from this repo's generated
+mirror under `plugins/charness`: `in-sync`. The rule and its reason are in
+`bootstrap-resolution.md`, the Claude host adapter, and `docs/development.md`,
+which no longer names the installed plugin as an open path.

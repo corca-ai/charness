@@ -1,0 +1,350 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-03T09:40:44Z",
+  "prepared_for": "release 8.0.3 lock-in",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-09-03-release-8-0-3-reviewed-paths.txt\n\nOwning surfaces:\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-09-03-release-8-0-3-reviewed-paths.txt\n  verify: python3 scripts/review/validate_critique_artifacts.py --repo-root . --all\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "2f7c4b2bb54db247d8fbe9c5a032805f2b7797ff",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      ".agents/claude-host.md",
+      ".agents/quality-gates.yaml",
+      ".agents/release-adapter.yaml",
+      "AGENTS.md",
+      "README.md",
+      "charness",
+      "docs/agent-task-runs.md",
+      "docs/artifact-policy.md",
+      "docs/authoring-preflight.md",
+      "docs/capability-resolution.md",
+      "docs/cli-reference.md",
+      "docs/control-plane.md",
+      "docs/deferred-decisions.md",
+      "docs/design-north-star.md",
+      "docs/development.md",
+      "docs/docs-graph-checks.md",
+      "docs/documentation-principles.md",
+      "docs/export-boundary.md",
+      "docs/external-integrations.md",
+      "docs/gather-provider-ownership.md",
+      "docs/goal-lifecycle.md",
+      "docs/harness-composition.md",
+      "docs/host-packaging.md",
+      "docs/implementation-discipline.md",
+      "docs/index.md",
+      "docs/narrative-announcement-boundary.md",
+      "docs/operating-contract.md",
+      "docs/operator-acceptance.md",
+      "docs/operator-progressive-path.md",
+      "docs/parallel-execution.md",
+      "docs/prescribed-skill-closeout-contract.md",
+      "docs/proof-semantics-adapter.md",
+      "docs/provenance-placement.md",
+      "docs/public-skill-dogfood.md",
+      "docs/public-skill-validation.md",
+      "docs/runtime-capability-contract.md",
+      "docs/support-skill-policy.md",
+      "docs/surface-driven-adapter-triggers.md",
+      "docs/validator-timing-layers.md",
+      "docs/workflow-routes.md",
+      "docs/worktree-prepare.md",
+      "scripts/gates/check_timeout_bound_form.py",
+      "scripts/gates_support/runtime_root_retention.py",
+      "scripts/runtime_bootstrap.py",
+      "scripts/task_run/task_run_changed_line.py",
+      "scripts/task_run/task_run_completion.py",
+      "skills/public/achieve/SKILL.md",
+      "skills/public/achieve/scripts/goal_run_pickup.py",
+      "skills/public/impl/SKILL.md",
+      "skills/public/issue/SKILL.md",
+      "skills/public/quality/SKILL.md",
+      "skills/public/release/scripts/plan_release_run.py",
+      "skills/public/retro/SKILL.md",
+      "skills/shared/references/bootstrap-resolution.md"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/claude-host.md",
+        "content_sha256": "edec054f9bf49aa0499d782bba8c7d80119e5d21921cb1f7e4baae3aae9fb243"
+      },
+      {
+        "path": ".agents/quality-gates.yaml",
+        "content_sha256": "22f1bfe70d17d09d3f7c09ea96668238169ef8dc60bec7981816d09c3517ed9c"
+      },
+      {
+        "path": ".agents/release-adapter.yaml",
+        "content_sha256": "b89a2cb8e96d3a2e6d5aca57b76cf6c888fd78760212421fefcf4dce42abfc64"
+      },
+      {
+        "path": "AGENTS.md",
+        "content_sha256": "2afa81a35fd0c08ea4605559897a9d4eb10c64b62718b8d4e8bb417d7c569429"
+      },
+      {
+        "path": "README.md",
+        "content_sha256": "49675031fadc1671601ec294827c19de7b6823126f130a57eed756734bb0b02b"
+      },
+      {
+        "path": "charness",
+        "content_sha256": "14df0ff81caf68f5514b0f14a73dc0f4c92add5918a2de5a7341398e694c8cf3"
+      },
+      {
+        "path": "docs/agent-task-runs.md",
+        "content_sha256": "74a7977942baf6a5a07e19d3ce9ce5974919d455e720ec376b91d51bab768850"
+      },
+      {
+        "path": "docs/artifact-policy.md",
+        "content_sha256": "2d50477c69020b99f8245f3285df22f506ea88cd754037097881ec7df2a488e1"
+      },
+      {
+        "path": "docs/authoring-preflight.md",
+        "content_sha256": "a34ddc77e59e5fbaf514528f559afc85d70804bba0bff7d3652f1628a1fe2c34"
+      },
+      {
+        "path": "docs/capability-resolution.md",
+        "content_sha256": "c950cce3857b3bdc748c605723f6c38646336154c935c1c848ec886b87842468"
+      },
+      {
+        "path": "docs/cli-reference.md",
+        "content_sha256": "fc2765d927d6483f485630dc5f359708d59b2ce8c9d004117e24279ed700f66b"
+      },
+      {
+        "path": "docs/control-plane.md",
+        "content_sha256": "15e262e4bb1b875c7e36ba4c06b545e418c4e51b47347ab6a4fdcdf46d49cb80"
+      },
+      {
+        "path": "docs/deferred-decisions.md",
+        "content_sha256": "9edcdcf803e71e754fb284fadcf496e22e14ea5ed1beea600efbbe4754f9add1"
+      },
+      {
+        "path": "docs/design-north-star.md",
+        "content_sha256": "ffff1cac77fa019db4bfd289a2fb55da80e8625a3c01ddbb3a42843089da9d0c"
+      },
+      {
+        "path": "docs/development.md",
+        "content_sha256": "707bd6f962a166861410690611cc964152fbecd885371744b5d923ff07038472"
+      },
+      {
+        "path": "docs/docs-graph-checks.md",
+        "content_sha256": "fc0393671ea197e0caf6f2e0dda8ab9118222cee918451d6b2c1236e9ea8b59f"
+      },
+      {
+        "path": "docs/documentation-principles.md",
+        "content_sha256": "4c10264a050fd534c437b1072e06b4da43db382e8ac405c5644d8c3845886ef2"
+      },
+      {
+        "path": "docs/export-boundary.md",
+        "content_sha256": "d861a04f17091970cbfdbded57909db6f1e9305e0f52da386f9ed1090a5d7764"
+      },
+      {
+        "path": "docs/external-integrations.md",
+        "content_sha256": "77c9a5e5d61d56c6a7432bdbfb707c1e6959eebb781c21e87a239ae274c801b7"
+      },
+      {
+        "path": "docs/gather-provider-ownership.md",
+        "content_sha256": "a5dc89e5d1ec4bfc5b0ab63d54982703a0e562c2369b68a36ac9603fe4084b6f"
+      },
+      {
+        "path": "docs/goal-lifecycle.md",
+        "content_sha256": "13da01ddb74fe6f055c1025c82b7048a45aa75f8a635900e7eebff4bb99b3b3f"
+      },
+      {
+        "path": "docs/harness-composition.md",
+        "content_sha256": "8459c5462bc6b59a8520adfea2ea02e3be31b9732a347a7a5be0f41507345099"
+      },
+      {
+        "path": "docs/host-packaging.md",
+        "content_sha256": "b46c1b1cbf9fd5547dd32b8dd8852b68dba9d0727382fcebe5c307c5bf9245ce"
+      },
+      {
+        "path": "docs/implementation-discipline.md",
+        "content_sha256": "d3476e030cd77f8f458235a5f2574c1d39f08b4fc54b7714e4e5bf85c5d0f869"
+      },
+      {
+        "path": "docs/index.md",
+        "content_sha256": "d64ac25f52ed2c0788e807fcae85daea755d7aa3340488cbe60d86df3b795c0b"
+      },
+      {
+        "path": "docs/narrative-announcement-boundary.md",
+        "content_sha256": "352b66ee15dabce4dbf737ef276df8afa5643da124d35664a6aebb3de3f3e727"
+      },
+      {
+        "path": "docs/operating-contract.md",
+        "content_sha256": "13e3d0b0992e10370a81bd84c6d1210be71ab48c29b4a9f036b42a87bffdd99b"
+      },
+      {
+        "path": "docs/operator-acceptance.md",
+        "content_sha256": "b55fd7c376793256f03d674cc7a28f952b9f91167179fe840a23ed4f6033c1db"
+      },
+      {
+        "path": "docs/operator-progressive-path.md",
+        "content_sha256": "d49c39a53c363211751bf16c027b2a11d1ac96bb6322fd45d673f40a888efec3"
+      },
+      {
+        "path": "docs/parallel-execution.md",
+        "content_sha256": "3a882377d468ea715b40fc1c4d8262b34d9c75ac74ebddaf574bf9c73afe6e3f"
+      },
+      {
+        "path": "docs/prescribed-skill-closeout-contract.md",
+        "content_sha256": "46c75caf780674a487a2c2883ca927682c1877165b97a7de0200c279fcf941d0"
+      },
+      {
+        "path": "docs/proof-semantics-adapter.md",
+        "content_sha256": "94213d7d2792801f0db9a17b70e08acdaf4b680b1e9a77787d8725397eea1ef3"
+      },
+      {
+        "path": "docs/provenance-placement.md",
+        "content_sha256": "d231c3c6086a8b582648fd534f0daa39b14d3cc9fc1a7dd72db8796b6cab5b70"
+      },
+      {
+        "path": "docs/public-skill-dogfood.md",
+        "content_sha256": "94b9b031194f0cbe6136ffd30587c54c29eebeb40f689e4976869bd6a785b747"
+      },
+      {
+        "path": "docs/public-skill-validation.md",
+        "content_sha256": "0baa76f28a2817ed295d038b3c194cd3325f84bc677536e5c9637c7fd315787e"
+      },
+      {
+        "path": "docs/runtime-capability-contract.md",
+        "content_sha256": "439e91562a8e37f4caf36d812d0839266435614bb07af9b41bdd054eb999a7da"
+      },
+      {
+        "path": "docs/support-skill-policy.md",
+        "content_sha256": "842958d7eb866df9c55ab70cf5ee74ef6f42ebdc18584fe165b1d3e7b196f632"
+      },
+      {
+        "path": "docs/surface-driven-adapter-triggers.md",
+        "content_sha256": "12311b903c40eb4ba7a3cfb6def21874209459993dc1f8de2f7ce34bfba119b5"
+      },
+      {
+        "path": "docs/validator-timing-layers.md",
+        "content_sha256": "521a1c3b82b80a43c2c96b3c6a911907fe8fd1934b03ed64033b310935e21754"
+      },
+      {
+        "path": "docs/workflow-routes.md",
+        "content_sha256": "3fb9f3131139904cc139fbf2e5c6785f4299d496a719b2db2930e40482e446f9"
+      },
+      {
+        "path": "docs/worktree-prepare.md",
+        "content_sha256": "eb8ff933b9d5462e1c92e7fe2e60be0ff921391f5c3ffc5f32b7577cbc159acb"
+      },
+      {
+        "path": "scripts/gates/check_timeout_bound_form.py",
+        "content_sha256": "3aa7b9b6c68bd73524998ce42c89e7c4c428288721fc34e3846bcd752fb7438f"
+      },
+      {
+        "path": "scripts/gates_support/runtime_root_retention.py",
+        "content_sha256": "49d09c18ca167437f382e4e573b732e181dbbbd4a590b7e1fb7afb8323d91a9d"
+      },
+      {
+        "path": "scripts/runtime_bootstrap.py",
+        "content_sha256": "707bd745948b313233542d939ec8dba06bb880a8821ba9ad7e2c861a3f93d37b"
+      },
+      {
+        "path": "scripts/task_run/task_run_changed_line.py",
+        "content_sha256": "220debd5c129765ac667889f4c2be42e85959e7458098019e8e857ad4bfcc111"
+      },
+      {
+        "path": "scripts/task_run/task_run_completion.py",
+        "content_sha256": "57a03598592a9a9b0b3cbbfe89bf52470b4bef068941bcad4e8f692a3ab1bb3f"
+      },
+      {
+        "path": "skills/public/achieve/SKILL.md",
+        "content_sha256": "044bfa197f9135cd5cc0754c360b2e1398059bf74dc20d8e181f1118d65bbb00"
+      },
+      {
+        "path": "skills/public/achieve/scripts/goal_run_pickup.py",
+        "content_sha256": "08f0649ea7110a4777d05518e779773861b0f98dc7c047e384b072cbbff37f66"
+      },
+      {
+        "path": "skills/public/impl/SKILL.md",
+        "content_sha256": "d7d8887d9a2a7ee5c921827b74b60d797c15f49e6c745d00db7582d05848d666"
+      },
+      {
+        "path": "skills/public/issue/SKILL.md",
+        "content_sha256": "4a6f6139592f98d2df9890458fd6809abdba6a68f89d44ec625b26c5c2421ec3"
+      },
+      {
+        "path": "skills/public/quality/SKILL.md",
+        "content_sha256": "4245368813dafe656328d35c53e93e3556c1592cd51d67f3a2c6bdecb55d76bc"
+      },
+      {
+        "path": "skills/public/release/scripts/plan_release_run.py",
+        "content_sha256": "31929ad46867d2ee230b36d7a58e1d4c8f60d78f172e8ed466dcf33f13729e32"
+      },
+      {
+        "path": "skills/public/retro/SKILL.md",
+        "content_sha256": "d3d298b5cef2fc4a1b20afceb87c99411fc31da24ec749b1aad36900bd4fdf71"
+      },
+      {
+        "path": "skills/shared/references/bootstrap-resolution.md",
+        "content_sha256": "af34bb22019bcc6385ac221bf8722887246031de6cd3801a54a5998f9b5d9be9"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "8d225218ebcc395c607cd788845641f907ec21674b88347aa60d378db6b01d68"
+  }
+}

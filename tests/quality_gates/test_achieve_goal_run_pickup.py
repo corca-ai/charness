@@ -818,3 +818,82 @@ def test_seeded_run_reestablishes_by_identity_after_amendment_and_prose_edits(  
     with pytest.raises(pickup.PickupError) as exc_info:
         pickup.pickup(tmp_path, "/goal #724")
     assert exc_info.value.code == "cursor-child-closed"
+
+
+# --- checkout-first routing (#788) -------------------------------------------------
+
+
+def _source_tree(tmp_path: Path, *, lib_body: str) -> Path:
+    root = tmp_path / "source"
+    (root / "packaging").mkdir(parents=True)
+    (root / "packaging" / "charness.json").write_text(
+        json.dumps({"package_id": "charness", "version": "8.0.3"}), encoding="utf-8"
+    )
+    (root / "scripts").mkdir()
+    (root / "scripts" / "runtime_bootstrap.py").write_text("# marker\n", encoding="utf-8")
+    (root / "scripts" / "lessons_lib.py").write_text(lib_body, encoding="utf-8")
+    scripts = root / "skills" / "public" / "achieve" / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "goal_run_pickup.py").write_text("# pickup\n", encoding="utf-8")
+    return root
+
+
+def _installed_tree(tmp_path: Path, *, lib_body: str) -> Path:
+    root = tmp_path / "installed"
+    (root / ".claude-plugin").mkdir(parents=True)
+    (root / ".claude-plugin" / "plugin.json").write_text(
+        json.dumps({"name": "charness", "version": "8.0.2"}), encoding="utf-8"
+    )
+    (root / "scripts").mkdir()
+    (root / "scripts" / "runtime_bootstrap.py").write_text("# marker\n", encoding="utf-8")
+    (root / "scripts" / "lessons_lib.py").write_text(lib_body, encoding="utf-8")
+    scripts = root / "skills" / "achieve" / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "goal_run_pickup.py").write_text("# pickup\n", encoding="utf-8")
+    return root
+
+
+def test_pickup_reports_the_checkout_as_its_own_tree() -> None:
+    origin = pickup._script_origin(ROOT)
+    assert origin["status"] == "same-tree"
+    assert origin["script"] == str(SCRIPT)
+    assert origin["target_root"] == str(ROOT)
+    assert "refusal" not in origin
+
+
+def test_a_drifted_installed_copy_inside_the_authoring_repo_is_refused_before_any_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = _source_tree(tmp_path, lib_body="VALUE = 2\n")
+    installed = _installed_tree(tmp_path, lib_body="VALUE = 1\n")
+    origin = pickup._script_origin(
+        source, script_file=installed / "skills" / "achieve" / "scripts" / "goal_run_pickup.py"
+    )
+    assert origin["status"] == "drifted"
+    assert origin["own_version"] == "8.0.2" and origin["target_version"] == "8.0.3"
+    assert origin["checkout_script"].endswith("skills/public/achieve/scripts/goal_run_pickup.py")
+    assert "provenance refusal" in origin["refusal"]
+
+    monkeypatch.setattr(pickup, "_script_origin", lambda _root: origin)
+
+    def never(_path: Path, name: str):
+        raise AssertionError(f"a refused pickup must read nothing, loaded {name}")
+
+    monkeypatch.setattr(pickup, "_load_path", never)
+    with pytest.raises(pickup.PickupError) as excinfo:
+        pickup.pickup(source, "/goal #784")
+    assert excinfo.value.code == "stale-installed-copy"
+    assert "python3 " in str(excinfo.value)
+    assert "skills/public/achieve/scripts/goal_run_pickup.py" in str(excinfo.value)
+    assert excinfo.value.details["status"] == "drifted"
+
+
+def test_an_installed_copy_in_a_consuming_repo_is_not_refused(tmp_path: Path) -> None:
+    installed = _installed_tree(tmp_path, lib_body="VALUE = 1\n")
+    consuming = tmp_path / "consumer"
+    consuming.mkdir()
+    origin = pickup._script_origin(
+        consuming, script_file=installed / "skills" / "achieve" / "scripts" / "goal_run_pickup.py"
+    )
+    assert origin["status"] == "consuming-repo"
+    assert "refusal" not in origin

@@ -176,8 +176,49 @@ def _read_goal_parent(
     return {"parent": parent}, resolved
 
 
+def _script_origin(repo_root: Path, script_file: str | Path = __file__) -> dict[str, Any]:
+    """Which charness tree this pickup runs from, judged against the target repo.
+
+    Inside the authoring repo a host may report the INSTALLED plugin's skill dir,
+    and Goal Run #775 paid for that four times: the installed 8.0.2 pickup refused
+    on a contract the checkout had already replaced, and the agent fell back to the
+    checkout's script by hand each time. The provenance guard the write sites use
+    (`scripts/core/helper_provenance_lib.py`) answers the question at this read
+    seam too: `same-tree` and `in-sync` proceed, `consuming-repo` proceeds (an
+    installed copy is what a consumer runs), and a `drifted` copy inside the
+    authoring repo is a typed refusal that names the checkout's own script.
+    """
+    # The guard is always this running copy's own, whichever script it is asked
+    # to judge; a seeded foreign copy has no tree to load a guard from.
+    provenance = _SKILL_RUNTIME.load_repo_module_from_skill_script(
+        __file__, "scripts.core.helper_provenance_lib"
+    )
+    verdict = provenance.inspect_helper_provenance(script_file, repo_root, scan="tree")
+    origin = {
+        "script": verdict.get("invoked") or verdict.get("script"),
+        "status": verdict.get("status"),
+        "own_root": verdict.get("own_root"),
+        "own_version": verdict.get("own_version"),
+        "target_root": verdict.get("target_root"),
+        "target_version": verdict.get("target_version"),
+        "checkout_script": verdict.get("target_helper"),
+    }
+    if verdict.get("status") in {"drifted", "scope-unestablished", "own-root-unestablished"}:
+        origin["refusal"] = provenance.format_refusal(verdict)
+    return origin
+
+
 def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
     number = parse_objective(objective)
+    origin = _script_origin(repo_root)
+    if "refusal" in origin:
+        raise PickupError(
+            "stale-installed-copy",
+            "this pickup runs from a charness tree that has drifted from the target repo's "
+            "own copy; run the checkout's script instead"
+            + (f": python3 {origin['checkout_script']}" if origin.get("checkout_script") else ""),
+            details=origin,
+        )
     adapter_module = _load_path(_issue_script("resolve_adapter"), "issue_pickup_adapter")
     adapter = adapter_module.load_adapter(repo_root)
     if not adapter["valid"]:
@@ -270,6 +311,7 @@ def pickup(repo_root: Path, objective: str) -> dict[str, Any]:
         "outcome": "verified-read",
         "mutation_invoked": False,
         "objective": objective.strip(),
+        "script_origin": origin,
         "repository": repository,
         "parent": {"repo": repo, "number": number, "url": parent["url"], "state": parent["state"]},
         "metadata": metadata,
