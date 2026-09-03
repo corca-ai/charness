@@ -113,7 +113,7 @@ refusals, and the clean-clone lanes.
   that can break it.** When a ledger, baseline, or record gains its first
   state transition, grep the tests that read the live artifact for the
   implicit "all rows are X" and give them a derived expectation.
-  (recurrence-class: collection-time-pollution)
+  (recurrence-class: live-corpus-invariant-unnamed)
 
 ## Sibling Search
 

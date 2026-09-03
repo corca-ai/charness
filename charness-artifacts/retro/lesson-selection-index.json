@@ -12,7 +12,7 @@
   },
   "as_of_source_date": "2026-09-03",
   "source_artifact_count": 425,
-  "candidate_count": 2206,
+  "candidate_count": 2207,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1366,36 +1366,6 @@
       ]
     },
     {
-      "candidate_id": "class:2166854d89a5",
-      "kind": "next_improvement",
-      "lesson": "**memory — `recurs:` name a live-corpus invariant before the first event that can break it.** When a ledger, baseline, or record gains its first state transition, grep the tests that read the live artifact for the implicit \"all rows are X\" and give them a derived expectation.",
-      "normalized_key": "workflow when a failure passes alone bisect the collection set first under xdist every",
-      "recurrence_class": "collection-time-pollution",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
-      "latest_source_date": "2026-09-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.24,
-      "selection_weight": 1.24,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-09-02-session-retro.md",
-          "date": "2026-09-02",
-          "section": "Next Improvements",
-          "kind": "next_improvement",
-          "lesson": "**workflow — when a failure passes alone, bisect the collection set first.** Under xdist every test module imports in every worker, so a module-level rebind pollutes regardless of runtime order. The nine-run bisect script is in the session record's lesson list; it belongs in `skills/public/debug/references/sibling-search.md` beside the runtime prefix method."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
-          "date": "2026-09-03",
-          "section": "Next Improvements",
-          "kind": "next_improvement",
-          "lesson": "**memory — `recurs:` name a live-corpus invariant before the first event that can break it.** When a ledger, baseline, or record gains its first state transition, grep the tests that read the live artifact for the implicit \"all rows are X\" and give them a derived expectation."
-        }
-      ]
-    },
-    {
       "candidate_id": "class:52b3d54673f7",
       "kind": "repeat_trap",
       "lesson": "**Three full-lane runs were spent on the untracked `plugins/` mirror.** Two standing tests byte-compare the generated export with source; every skill or script edit made the next lane red until `sync_root_plugin_manifests.py` ran. The record from the first session did not name this.",
@@ -1588,6 +1558,29 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "**capability — `novel:` one layout resolver.** Fold `_repo_script` (scaffold_artifact_lib), `_packaged_script`/`_seed_path` (seeding_support), `load_repo_script_module` (public_spec_adapter_policy), and `present_gate` (staged plan helpers) onto one resolver beside `scripts/core/repo_layout.py` that answers \"where does repo script X live\" for flat and packaged layouts. Destination: #772 integrated-closeout, as a follow-up item in its brief. Structural pattern: the same layout question answered independently in four places. Triggering instance(s): the four lookups above, all written this session."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:58e8555a3669",
+      "kind": "next_improvement",
+      "lesson": "**memory — `recurs:` name a live-corpus invariant before the first event that can break it.** When a ledger, baseline, or record gains its first state transition, grep the tests that read the live artifact for the implicit \"all rows are X\" and give them a derived expectation.",
+      "normalized_key": "memory recurs name a live corpus invariant before the first event that can break",
+      "recurrence_class": "live-corpus-invariant-unnamed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+      "latest_source_date": "2026-09-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+          "date": "2026-09-03",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**memory — `recurs:` name a live-corpus invariant before the first event that can break it.** When a ledger, baseline, or record gains its first state transition, grep the tests that read the live artifact for the implicit \"all rows are X\" and give them a derived expectation."
         }
       ]
     },
@@ -1795,6 +1788,29 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "**workflow — use `git -C <worktree>` for every lane-worktree command.** The shell cwd persists across tool calls; two cherry-picks landed in the wrong repository. Trivial, but it recurred within one session."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:2166854d89a5",
+      "kind": "next_improvement",
+      "lesson": "**workflow — when a failure passes alone, bisect the collection set first.** Under xdist every test module imports in every worker, so a module-level rebind pollutes regardless of runtime order. The nine-run bisect script is in the session record's lesson list; it belongs in `skills/public/debug/references/sibling-search.md` beside the runtime prefix method.",
+      "normalized_key": "workflow when a failure passes alone bisect the collection set first under xdist every",
+      "recurrence_class": "collection-time-pollution",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-02-session-retro.md",
+      "latest_source_date": "2026-09-02",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-02-session-retro.md",
+          "date": "2026-09-02",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "**workflow — when a failure passes alone, bisect the collection set first.** Under xdist every test module imports in every worker, so a module-level rebind pollutes regardless of runtime order. The nine-run bisect script is in the session record's lesson list; it belongs in `skills/public/debug/references/sibling-search.md` beside the runtime prefix method."
         }
       ]
     },

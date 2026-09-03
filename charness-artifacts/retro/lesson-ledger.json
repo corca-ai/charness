@@ -367,6 +367,12 @@
       "transition_id": "seed-wrong-path-and-target-binding",
       "lesson_id": "wrong-path-and-target-binding",
       "source_retro": "charness-artifacts/retro/2026-08-21-release-candidate.md"
+    },
+    {
+      "sequence": 62,
+      "transition_id": "seed-live-corpus-invariant-unnamed",
+      "lesson_id": "live-corpus-invariant-unnamed",
+      "source_retro": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md"
     }
   ],
   "score_events": [
@@ -2149,6 +2155,21 @@
     "wrong-path-and-target-binding": {
       "source_retro": "charness-artifacts/retro/2026-08-21-release-candidate.md",
       "transition_id": "seed-wrong-path-and-target-binding",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "live-corpus-invariant-unnamed": {
+      "source_retro": "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
+      "transition_id": "seed-live-corpus-invariant-unnamed",
       "score_total": 0,
       "score_count": 0,
       "outcome_counts": {
