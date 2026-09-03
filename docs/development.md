@@ -78,8 +78,10 @@ summary names every gate it did not run, and the wall-clock and module-eviction
 form checks keep their records empty, and inside this repo skill scripts
 run from the checkout by the rule in
 [bootstrap-resolution.md](../skills/shared/references/bootstrap-resolution.md):
-the Goal Run pickup and the release planner print `script_origin`, and a
-drifted installed copy refuses instead of reading an older contract.
+the Goal Run pickup and the release planner print `script_origin`; the pickup
+refuses a drifted installed copy instead of reading an older contract, the
+read-only planner only reports, and the publish helper's entrypoint guard
+refuses before a release mutation.
 
 Production code spawns only through
 [`subprocess_guard.py`](../scripts/core/subprocess_guard.py); the standing
