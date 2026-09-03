@@ -51,20 +51,10 @@ order, a `CHARNESS_NATIVE_CORE` override, this checkout's own
 `native/repograph/target/release/repograph` (rebuilding it, with an announcement
 on stderr, when the crate source is newer), then the installed binary.
 
-A prebuilt-artifact distribution layer used to live here: a `native_core`
-declaration in the packaging manifest bound a per-version, per-tuple archive
-name and sha256, and a lifecycle downloaded, checksummed, staged, extracted,
-atomically activated, pruned, and rolled it back, projecting twelve phase
-statuses into `charness doctor`. It was retired on 2026-08-30 because the crate
-source ships in the same repository that consumes it: building from the checkout
-you are running makes `stale`, `incompatible`, and `source_drift` structurally
-impossible rather than detectable after the fact, and `charness` already owned a
-control plane that installs missing binaries — three of its tools (`awiki`,
-`lychee`, `tokei`) already install through `cargo`. See
-[the spec](../charness-artifacts/spec/repograph-tool-control-plane.md).
-
 Consequently a charness release publishes no native asset, and the released
-version does not determine which `repograph` a consumer has; the checkout does.
+version does not determine which `repograph` a consumer has; the checkout does
+(the retired prebuilt layer and why:
+[spec](../charness-artifacts/spec/repograph-tool-control-plane.md)).
 
 Generated host layouts are not authoritative. If an exported manifest drifts
 from the shared packaging manifest, regenerate the export instead of editing the
@@ -214,31 +204,17 @@ Guardrails:
 
 ## Repo-Root Install Surface
 
-The repo-root install surface exists for a different reason than temporary
-export trees.
-
-- temporary export trees prove that shared source artifacts can be materialized
-  into a host layout under another root
-- the repo-root plugin tree gives hosts one stable install PATH with the correct
-  flat skill layout — the path is stable, the tree is regenerated, not stored
-
-This means the source repo taxonomy and the host-facing plugin taxonomy are now
-explicitly different on purpose.
+Temporary export trees prove a host layout can be materialized under any root;
+the repo-root `plugins/charness/` tree is the one stable install path,
+regenerated rather than stored (see
+[Shared Bundle Inputs](#shared-bundle-inputs)).
 
 Operationally this means:
 
-- the official operator install path is a thin `charness` CLI rooted at the
-  managed checkout `~/.agents/src/charness`
-- refreshing the maintainer/authoring machine's own managed checkout is a
-  required release-closeout step: after publish, run `charness update` here so
-  the installed plugin surface stays `== repo`. This closes the installed-vs-repo
-  version-skew class (a scaffold or check that cites the installed plugin can
-  otherwise diverge from the repo gate). The `release` skill owns the contract;
+- after publish the maintainer's managed checkout is refreshed as a
+  release-closeout step (`charness update` here); the `release` skill owns it,
   see [install refresh](../skills/public/release/references/install-refresh.md)
-- operators do not need to clone `charness` manually before first install when
-  they already have a usable `charness` binary; `charness init` may materialize
-  that managed checkout internally from its configured repo URL
-- that CLI manages one machine-local exported plugin surface under
+- the CLI manages one machine-local exported plugin surface under
   `~/.codex/plugins/charness`
 - Claude should prefer host-native marketplace and plugin installation driven by
   `charness init` and `charness update`; `claude-charness` remains an optional
