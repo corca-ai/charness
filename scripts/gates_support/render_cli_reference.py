@@ -125,9 +125,8 @@ def render_cli_reference(repo_root: Path) -> str:
         f"> Last verified: {last_verified_date(repo_root)}",
         "",
         "This file is generated from `./charness --help` and subcommand help output in the current checkout.",
-        "Operational command payloads, including structured command failures, are emitted as a single YAML document on stdout; progress and unstructured fatal errors use stderr. Default operational responses are compact summaries: aggregate tool operations report counts and attention tool ids, not every tool record. This replaces the former aggregate `results` payload: automation that consumes individual tool records must request `--detail`. Commands with aggregated host or tool diagnostics expose the full evidence only through `--detail`, which still emits one YAML document.",
-        "Task runs persist one atomic typed result in the external runtime; task status reads exactly that store. Human-readable summaries print the affordance line with the `NEXT:` prefix.",
-        "Regenerate it with `python3 scripts/gates_support/render_cli_reference.py --repo-root . --output docs/cli-reference.md`.",
+        "Operational command payloads, including structured command failures, are emitted as a single YAML document on stdout; progress and unstructured fatal errors use stderr. Default responses are compact; `--detail` returns the full per-item records as one YAML document ([control plane](./control-plane.md#agent-readable-state)).",
+        "Human-readable summaries print the affordance line with the `NEXT:` prefix.",
         "",
     ]
     for title, command in commands:
