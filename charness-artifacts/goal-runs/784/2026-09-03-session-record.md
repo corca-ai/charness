@@ -20,7 +20,11 @@ No child was started.
   `goal-run-read` verified-read; `/goal #784` pickup `selected` → #785.
 - The first parent metadata block went through the direct `update` command;
   `goal-run-apply update-body` refused the blockless parent (`parent-unverified`),
-  as the achieve SKILL.md says it does.
+  as the achieve SKILL.md said it did. Fixed in this session (`fe92c1ca1`): the
+  bootstrap `update-body` with explicit operation identity is now the one
+  operation a blockless parent accepts, so the next establishment runs on the
+  file-backed surface alone. Proven by seeded tests and the changed-line gate
+  (`status: clean` against `5eb3adc15`), not by a live re-bootstrap.
 
 ## Decided in this session (see the draft's Interview Decisions)
 
