@@ -277,3 +277,8 @@ wall-clock form gate does not see it; its claim rides on subprocess drain
 timeouts. Same class as #779/#780, a shape the gate does not cover. For #782
 or a follow-up: extend the census to timeout-bound claims (`communicate(timeout=)`,
 probe deadlines) that decide a verdict rather than bound a hang.
+
+Pushed 2026-09-03 on the third attempt as `a6b48cb6a` (hook release lane 87
+passed, 4 not run named). `verify-closeout` = `verified` for #780 and #781.
+Cursor advanced by `operations/update-parent-progress-782.json` (progress
+6/1/7, revision 3); `/goal #775` pickup names #782 integrated-closeout.
