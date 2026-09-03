@@ -31,9 +31,8 @@ capability metadata is authoritative for `charness`-owned runtime capability
 that still needs machine-readable discovery and doctor context. Lock files are
 authoritative only for what was last synced or observed on one machine.
 
-Support skills are now always materialized. `reference` is no longer a sync
-strategy. If a manifest declares `support_skill_source`, `charness` should
-produce a real local skill surface:
+Support skills are always materialized. If a manifest declares
+`support_skill_source`, `charness` should produce a real local skill surface:
 
 - `upstream_repo`: fetch or reuse the upstream skill root into the user cache,
   then copy it into the installed Charness plugin under `support/<tool-id>/`
@@ -54,8 +53,6 @@ materialize a local skill surface. The difference is binary lifecycle:
 - `external_binary_with_skill`: the skill surface plus install/update/detect/
   healthcheck/readiness contract
 
-## Command Responsibilities
-
 ## Agent-Readable State
 
 Control-plane actions should leave state that a later agent can continue from
@@ -67,8 +64,6 @@ without re-deriving machine conditions.
   probe evidence remains in lock state or an explicit `--detail` YAML response
 - aggregate tool operations report status counts and only the bounded ids that
   need attention; default output must not repeat every per-tool record
-- this replaces the former aggregate `results` payload; automation that needs
-  individual tool records must request `--detail`
 - automatic external-tool updates require a recognized installation provenance;
   an otherwise healthy path installation reports a manual next step instead of
   guessing from another package manager that happens to be on PATH
@@ -239,17 +234,6 @@ responds". Doctor should also fail closed on known runtime-hygiene drift such
 as orphaned daemon trees when `charness` has a repo-owned inspection or cleanup
 surface for that tool.
 
-## Initial Target Set
-
-The first manifest wave should cover:
-
-- `agent-browser`
-- `specdown`
-
-These are concrete manifest instances. Evaluator-specific products and
-consumer-owned behavior evaluators stay outside the Charness control plane;
-they are not required for ordinary tool discovery or lifecycle management.
-
 ## Command Surface
 
 Representative operator path:
@@ -269,3 +253,4 @@ claiming that the host was mutated.
 - vendoring external binaries for convenience
 - hidden forks of upstream support skills
 - profile-specific install logic inside the manifest schema
+- evaluator-specific products and consumer-owned behavior evaluators
