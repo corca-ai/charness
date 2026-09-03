@@ -1543,8 +1543,8 @@
         "read-but-not-applied": 4,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-changed-line-proof-before-broad-quality"
     },
     "conservative-static-verdicts": {
       "source_retro": "charness-artifacts/retro/2026-08-14-session-retro.md",
@@ -2320,6 +2320,21 @@
         "charness-artifacts/retro/2026-09-02-session-retro.md",
         "charness-artifacts/retro/2026-09-03-goal-775-closeout-retro.md",
         "charness-artifacts/retro/2026-09-03-session-retro.md"
+      ]
+    },
+    {
+      "sequence": 15,
+      "event_id": "783-graduate-changed-line-proof-before-broad-quality",
+      "lesson_id": "changed-line-proof-before-broad-quality",
+      "action": "graduate",
+      "decision_ref": "docs/parallel-execution.md",
+      "rationale": "#783 joint review 2026-09-03: helped; 14 of 20 encounters changed an action (slice commit, changed-line proof over base..HEAD, then the broad lane, avoiding a full broad rerun per uncovered line), the 4 read-but-not-applied and 1 not-consulted all before 2026-08-18 with no recurrence since, and the 1 pushed-a-wrong-action corrected the wording to 'after the slice commit'. docs/parallel-execution.md owns the order beside the lane receipt's changed_line_gate; implementation-discipline.md step 4 loses its reversed order and links. Mechanism: the task run receipt's changed_line_gate and the pre-push hook's release lane hold correctness; the serial order itself has no gate, stated on the page with why (the broad lane runs in consumer repos without a mutation pool).",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+        "charness-artifacts/retro/2026-08-16-session-retro-09ff8e62-ba16-4350-a2aa-72f50e6dd988.md",
+        "charness-artifacts/retro/2026-08-16-session-retro.md",
+        "charness-artifacts/retro/2026-08-18-session-retro.md",
+        "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md"
       ]
     }
   ]

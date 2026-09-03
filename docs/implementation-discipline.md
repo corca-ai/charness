@@ -21,9 +21,11 @@ worked, and leave the next change easy to start? It is intentionally short.
    code, wrappers, gates, mirrors, docs, or tests is a valid implementation
    when their consumers have been checked. Do not add a rule to compensate for
    a problem that deletion or derivation removes.
-4. Run focused tests for the changed behavior, then the default core lane when
-   the changed surface has cross-module consumers. Use
-   `./scripts/run-quality.sh --release` for the release-final changed-line
+4. Run focused tests for the changed behavior, commit the slice, run the
+   changed-line proof over `base..HEAD`, and only then the default core lane
+   when the changed surface has cross-module consumers; the order and its cost
+   are owned by [parallel execution](./parallel-execution.md#disjoint-writers).
+   `./scripts/run-quality.sh --release` is the release-final changed-line
    coverage and mutation proof; it is not part of ordinary implementation.
    A slow or conditional gate is not silently part of ordinary implementation.
 5. If a source surface exports a generated mirror, run its canonical exporter
