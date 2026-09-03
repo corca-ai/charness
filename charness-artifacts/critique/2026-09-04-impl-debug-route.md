@@ -115,6 +115,20 @@ worker-delivered; four file-backed Codex workers ran through `run_review.py`. Re
 - Reviewer 2 packet: charness-artifacts/critique/impl-debug-route-raskin-2-packet.json, SHA256 04d6fc96016090314c1886068333c396b06043554d7dc14525c9d494448d7eee, identity 15b1eb5dd241267cb72388feee43ab09a3ce06dcb722157409d8420a70114759, verdict block, three findings.
 - Reviewer 4 read the final tree; the subject identity above is that tree.
 
+## Release Scope
+
+Version: `8.1.1`. Tag: `v8.1.1`. Previous: `8.1.0`.
+
+Change: patch. What changes for a consumer: the installed `impl` skill routes a
+repeated unexplained failure into `debug` instead of a second guess, and reads
+its diff against six waste signals before closing; the README is rewritten as
+the user guide with the install-effects list corrected against `init.sh` and
+the CLI. No public skill, CLI subcommand, adapter key, or install surface
+gained or lost a member; wording that should propagate to installed users is
+the patch shape in `version-policy.md`. The README review was two bounded
+read-only reviewers, separate from the four workers above; their install-list
+findings are the corrections in commit `b528a0add`.
+
 ## Boundary Ownership
 
 - Producer: `skills/public/impl/SKILL.md` states the debug entry rule and the waste signals.
