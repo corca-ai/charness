@@ -201,12 +201,35 @@ must run in the checkout the reviewer reads.
 Cursor advanced by `operations/update-parent-progress-783.json` (progress
 4/2/6, revision 5); `/goal #784` pickup names #783.
 
+## Third session, 2026-09-03 to 09-04 (#783 lesson-review-783, with the operator)
+
+Settled in conversation, one lesson at a time for the first seven and by
+group after that; `783-lesson-dispositions.md` carries every row and the
+three operator rules the session produced: a docs sentence carries the rule
+and the mechanism's name only; docs state what is, never how-to, under a
+1,000-word page budget with a shrink-only record (`check_docs_length.py` in
+`check-docs.sh`); the principle lives in the north star and the worked
+examples are `development.md`'s mechanisms table, so a graduation adds a row
+or a stated gap and never a sentence per lesson.
+
+Mechanisms shipped: lifecycle events record `reviewed_retros`, and
+`check_lesson_ledger.py` names any graduated lesson a later retro tags again
+(the readback the operator asked for before the first graduation; it found
+one mis-tag the same hour, retagged as `live-corpus-invariant-unnamed`).
+
+Two workflow passes mapped every active lesson and every docs page against
+the higher principles already in docs (Sonnet map and refute, session-model
+adversarial judge, Opus editors), evidence in `783-principle-fold-map.md`.
+Result: 15 graduated, 8 archived, 25 active of 50; `docs/` 43,078 -> 31,366
+words with four narratives moved to dated artifacts. Standing lane green at
+the last commit; every docs commit passed `check-docs.sh` and the length
+record.
+
 ## Remaining for a session with the operator
 
-- #783 lesson-review-783: the 34 scored active lessons, one at a time in
-  Korean, with the operator settling each; the four top candidates now have
-  their mechanisms (changed-line done-gate in the lane receipt, timeout-bound
-  form check, retention sweep, checkout-first routing) to graduate onto.
+- #783 close: update the body's first bullet (nine classes seeded) and run
+  `verify-closeout`; the acceptance counts are in the disposition tally.
+
 - #789 integrated-closeout: standing, full read-only, and release lanes in a
   clean clone; the scheduled mutation run read from GitHub with #764; every
   child `verify-closeout`; the guarded parent close after exact readback.

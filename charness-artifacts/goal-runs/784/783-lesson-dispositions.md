@@ -86,3 +86,16 @@ principles loses its dated instances.
 | 49 | boundary-identity-unbound | keep | Never consulted: The mapper's keep is right and no refuter argued otherwise. The class is real and still surfacing (#773) on surfaces the reviewer envelope does not cover, no docs/ page owns the rule, and the one mechanism is scoped to one producer, so neither graduation half exists. Premise holds, so archive is wrong too. Operator: 묶음 동의 (principle-fold pass). | none |
 | 50 | uncounted-count | keep | Never consulted: Zero score events in 17 days, but the mapper's starvation cause checks out from source: 14 active lessons sit at score_count 0 (verified from the ledger), the uncertainty bucket sorts ties by lesson_id ascending (lesson_selection_preview_lib.py line 180), and `lesson_id: uncounted-count` appears in none of seeds 1, 2, 3, 42, 100, 784, so absence of encounters is a selection artifact, not evidence the class resolved.  Operator: 묶음 동의 (principle-fold pass). | none |
 | 51 | live-corpus-invariant-unnamed | keep | Never consulted: A same-day class with one concrete incident, no owning sentence, and no mechanism has nothing to graduate into and no basis to archive. Unlike the other two lessons it is actually exposed: `lesson_id: live-corpus-invariant-unnamed` appears in all six sampled preview seeds (recent bucket), so keeping it active is a real exposure, and the next session that gives a baseline or record its first writer is the encounter th Operator: 묶음 동의 (principle-fold pass). | none |
+
+## Tally
+
+Rows 1-7 one at a time; rows 9-51 by group after the principle-fold pass
+(`783-principle-fold-map.md`), which re-judged every active lesson including
+rows 3 and 4 (both keep again). Graduate 15 (1, 2, 5, 6, 7, and ten in the
+fold pass), archive 8, keep 27 (25 active after events, since two keeps were
+re-judged). Active after events: 25 of 50; 62 lessons, 37 lifecycle events.
+
+The fold pass also cut `docs/`: 35 pages, 43,078 -> 31,366 gate-measured
+words, four narratives moved to dated artifacts, one generator and one gate
+adapter edited for the same reason (dates and duplicate contract text), one
+test re-pointed at the rule's owner. `development.md` 1,929 -> under 1,000.
