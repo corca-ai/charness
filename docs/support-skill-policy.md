@@ -91,11 +91,8 @@ Support capability states should stay explicit:
 - `wrapped-upstream`
 - `integration-only`
 
-These labels matter for later sync/update/doctor behavior.
-
-They should also stay visible in machine-readable operator state so a later
-agent can tell whether a dependency is native, upstream-consumed, or still
-waiting on manual install work.
+The state is recorded in the manifest lock state
+([control-plane.md](./control-plane.md)).
 
 ## Capability Catalog Interaction
 
@@ -122,29 +119,11 @@ Any support capability that is not purely native should eventually have:
 - version expectation
 - degradation rules when absent
 
-When the capability depends on private access:
+Private-access capabilities follow the onboarding order and secrets rule in
+[runtime-capability-contract.md](./runtime-capability-contract.md).
 
-- prefer a runtime grant or authenticated local binary first
-- allow env fallback for ordinary local operator setups when needed
-- never require adapters or checked-in docs to carry raw secret values
+## Consumable Locally
 
-## Session 12 Hook
-
-This policy is the bridge into control-plane work.
-
-Session 12 should turn these rules into:
-
-- sync policy
-- update policy
-- doctor checks
-- manifest instances for real tools
-
-For the current seam, support skills should always be consumable locally:
-
-- if the source is upstream-owned, fetch and materialize the skill root into a
-  user cache and expose it through the installed Charness plugin under
-  `support/<tool-id>/`
-- if the source is a charness-owned wrapper, generate it into the same cache
-  and expose it through the same installed plugin support layout
-- provenance should live in the manifest and lock state rather than in a
-  reference-only pseudo-skill
+Support skills are always materialized into the installed plugin under
+`support/<tool-id>/`; [control-plane.md](./control-plane.md) owns the sync,
+update, doctor, and lock/provenance contract.
