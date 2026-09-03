@@ -28,9 +28,8 @@ heavy as a first-touch surface.
 
 Retros can trigger automatically when a correction exposes a real workflow miss
 or when repo adapter rules require one, but asking explicitly gives the agent a
-stronger improvement loop. For prompt- or behavior-affecting changes, use
-quality's smallest sufficient deterministic check and add explicit reviewer or
-consumer-owned behavioral evidence only when the claim needs it.
+stronger improvement loop. Prompt-affecting changes follow
+[public-skill-validation.md](./public-skill-validation.md#prompt-affecting-changes).
 
 ## Working In An Existing Repo
 
@@ -57,12 +56,9 @@ Use `achieve` when the work is bigger than one ordinary implementation prompt
 and needs a durable objective, boundaries, slice plan, proof record, and honest
 non-claims.
 
-`achieve` first shapes prose into one complete Goal Draft under
-`charness-artifacts/goals/`, freezes it after approval, and binds it to one
-provider-backed Goal Run. Resume with the exact issue-number objective
-`/goal #N`; the parent issue's managed progress cursor carries the next-child
-decision, while the frozen draft remains planning provenance. Full child-graph
-reconciliation is an explicit sync/closeout operation, not routine pickup.
+`achieve` shapes and freezes a Goal Draft, binds it to one Goal Run, and
+resumes with `/goal #N`; [goal-lifecycle.md](./goal-lifecycle.md) owns the
+binding, cursor, and reconciliation model.
 
 `achieve` coordinates existing workflows such as `ideation`, `spec`, `impl`,
 `debug`, `quality`, `issue`, `critique`, and `retro`. It does not replace those
