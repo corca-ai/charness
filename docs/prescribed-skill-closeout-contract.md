@@ -5,8 +5,7 @@
 > Last verified: 2026-09-02
 
 This contract covers the two remaining places where a workflow requires proof
-that a named review actually ran. It does not make every recommendation a gate,
-and it no longer participates in Achieve Goal Draft lifecycle or completion.
+that a named review actually ran. It does not make every recommendation a gate.
 
 ## Remaining owners
 
@@ -28,11 +27,9 @@ the issue and release workflows themselves.
 
 ## Removed ownership
 
-Achieve owns planning until Goal Binding, then reads the provider-backed Goal
-Run cursor. It does not own local completion status, Auto-Retro disposition,
-host-log receipts, prescribed-skill execution receipts, or a second closeout
-ledger. Those former surfaces are historical and must not be reconstructed by
-wrappers, documentation, or tests.
+Achieve owns planning through Goal Binding and then only the provider-backed
+cursor ([goal lifecycle](./goal-lifecycle.md#authority-by-phase)); it holds no
+other closeout state.
 
 ## Honest limits
 
