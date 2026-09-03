@@ -150,7 +150,7 @@ def test_a_malformed_record_is_refused(tmp_path: Path, payload: dict, message: s
 def test_live_repo_has_no_page_above_its_record() -> None:
     counts = gate.measure(ROOT, require_git=True)
     assert counts
-    failures, _prompts = gate.judge(counts, gate.load_baseline(ROOT / gate.DEFAULT_BASELINE_REL))
+    failures, _prompts = gate.judge(counts, gate.load_baseline(ROOT / gate.DEFAULT_BASELINE_REL) or {})
     assert failures == []
 
 

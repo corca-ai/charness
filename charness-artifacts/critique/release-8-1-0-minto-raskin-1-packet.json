@@ -1,0 +1,340 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-03T21:56:32Z",
+  "prepared_for": "release-8-1-0",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-09-04-release-8-1-0-reviewed-paths.txt\n- charness-artifacts/critique/release-8-1-0-gawande-1-packet.json\n- charness-artifacts/critique/release-8-1-0-gawande-1-packet.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/release-8-1-0-gawande-1-packet.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-09-04-release-8-1-0-reviewed-paths.txt, charness-artifacts/critique/release-8-1-0-gawande-1-packet.json, charness-artifacts/critique/release-8-1-0-gawande-1-packet.md\n  verify: python3 scripts/review/validate_critique_artifacts.py --repo-root . --all\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "d90266ea4137d916f2dc604becc3577209841e5f",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      ".agents/quality-gates.yaml",
+      "docs/artifact-policy.md",
+      "docs/authoring-preflight.md",
+      "docs/capability-resolution.md",
+      "docs/cli-reference.md",
+      "docs/control-plane.md",
+      "docs/deferred-decisions.md",
+      "docs/design-north-star.md",
+      "docs/development.md",
+      "docs/docs-graph-checks.md",
+      "docs/documentation-principles.md",
+      "docs/external-integrations.md",
+      "docs/gather-provider-ownership.md",
+      "docs/goal-lifecycle.md",
+      "docs/harness-composition.md",
+      "docs/host-packaging.md",
+      "docs/implementation-discipline.md",
+      "docs/index.md",
+      "docs/narrative-announcement-boundary.md",
+      "docs/operating-contract.md",
+      "docs/operator-acceptance.md",
+      "docs/operator-progressive-path.md",
+      "docs/parallel-execution.md",
+      "docs/prescribed-skill-closeout-contract.md",
+      "docs/proof-semantics-adapter.md",
+      "docs/provenance-placement.md",
+      "docs/public-skill-dogfood.md",
+      "docs/public-skill-validation.md",
+      "docs/runtime-capability-contract.md",
+      "docs/support-skill-policy.md",
+      "docs/surface-driven-adapter-triggers.md",
+      "docs/validator-timing-layers.md",
+      "docs/workflow-routes.md",
+      "docs/worktree-prepare.md",
+      "native/repograph/fixtures/carriers/expected/quality_label_universe.yaml",
+      "scripts/check-docs.sh",
+      "scripts/gates/check_docs_length.py",
+      "scripts/gates_support/render_cli_reference.py",
+      "scripts/lessons/check_lesson_ledger.py",
+      "scripts/lessons/lesson_ledger_lib.py",
+      "scripts/lessons/record_lesson_lifecycle.py",
+      "scripts/lessons/seed_lesson_transitions.py",
+      "skills/public/quality/references/consumer-validator-catalog.yaml",
+      "skills/public/retro/SKILL.md",
+      "skills/shared/references/lesson-graduation.md",
+      "tests/quality_gates/fixtures/.agents/quality-gates.yaml",
+      "tests/quality_gates/support.py",
+      "tests/quality_gates/test_export_self_sufficiency.py",
+      "tests/quality_gates/test_skill_docs_contracts.py",
+      "tests/test_docs_length_gate.py",
+      "tests/test_lesson_lifecycle.py",
+      "tools/export_self_sufficiency_lib.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/quality-gates.yaml",
+        "content_sha256": "6feeea7eaf4fce392aab51416fe306bef3dbce70121b659728b0995287629e33"
+      },
+      {
+        "path": "docs/artifact-policy.md",
+        "content_sha256": "8cbc02b5d4251a0d5f22f963b27121d07018cd5301c1317fdea15eb2988bdda9"
+      },
+      {
+        "path": "docs/authoring-preflight.md",
+        "content_sha256": "8162d021f439a6e22ff992dc647fb89d900119aef4a6b3d54fc2dbf919e56101"
+      },
+      {
+        "path": "docs/capability-resolution.md",
+        "content_sha256": "6aa88861194f1a8f09c4cbe4b085bafc0993e5fee3130eb64052a09c5b51b696"
+      },
+      {
+        "path": "docs/cli-reference.md",
+        "content_sha256": "1e008a0aa3de8d691f3a6eeacee1a2c5d59ed887746b677c8a08eafefa45f697"
+      },
+      {
+        "path": "docs/control-plane.md",
+        "content_sha256": "a19bc0d0618bac8a886e7861639e36e428577f5afb2cbc373bd057218fd76000"
+      },
+      {
+        "path": "docs/deferred-decisions.md",
+        "content_sha256": "220b4dd2d74c5bb1e9e4139d7fc3cebe07fe59f2a821d495bc35280f829696da"
+      },
+      {
+        "path": "docs/design-north-star.md",
+        "content_sha256": "cec035165b27b83417fe7d43ba3030c6507c104494a1626b387d3846f48634f8"
+      },
+      {
+        "path": "docs/development.md",
+        "content_sha256": "3b6c02823a9d1c618a87dfed1969786bd4be11963ea4a2f464ccd86f9549d091"
+      },
+      {
+        "path": "docs/docs-graph-checks.md",
+        "content_sha256": "824ba38745458deaf8dad0932ebf00f8b24a454c7d04c65efd0796093cf9c7de"
+      },
+      {
+        "path": "docs/documentation-principles.md",
+        "content_sha256": "e9fc82673db078bd9139f12eed31dd4a0012bfb6e3ae57126c170c67debb4521"
+      },
+      {
+        "path": "docs/external-integrations.md",
+        "content_sha256": "5938520f3a747bd673ac391b9a9fb9ca74cc72ae53fecf7bdae9dcdd0b36958e"
+      },
+      {
+        "path": "docs/gather-provider-ownership.md",
+        "content_sha256": "6f6a2153db7d25f9e3d1fc1d3bf0a3cf9188ba03a6e6a7a5d8085aec65f5b21e"
+      },
+      {
+        "path": "docs/goal-lifecycle.md",
+        "content_sha256": "70de66f7be7fea52a4d1371f3f5e5c0b8213936dcdfa0175101e6ad82058cff3"
+      },
+      {
+        "path": "docs/harness-composition.md",
+        "content_sha256": "2ab6e2153616f1718d5782a89bb6b951b6f0f6c1c0ac2448fae1ea1efed4075e"
+      },
+      {
+        "path": "docs/host-packaging.md",
+        "content_sha256": "f32c957cd25d1a4422fbe3f0d0e2e3e4018572b7efe22670d15f6f8c55274cb1"
+      },
+      {
+        "path": "docs/implementation-discipline.md",
+        "content_sha256": "4e88c94ab559a20ca371a55ad84cd160e3870c8cbfb93a3fe0097359b27ab8fe"
+      },
+      {
+        "path": "docs/index.md",
+        "content_sha256": "2159e10179716716733c146f445607f1aa89bb43167702bf2f79a98408271b44"
+      },
+      {
+        "path": "docs/narrative-announcement-boundary.md",
+        "content_sha256": "ffd419a844c0b246c5214cd8fc030bafbcaf529bd961ad23b99bd49db9fb8af1"
+      },
+      {
+        "path": "docs/operating-contract.md",
+        "content_sha256": "bffd0a962f256d8cbd6a6c43ff21c0a172eed77731bf84c416e9d6d72c0c8aca"
+      },
+      {
+        "path": "docs/operator-acceptance.md",
+        "content_sha256": "fec7130735496f115c7f8cc588013e070e8ae20d0c1eb62014e905110f461214"
+      },
+      {
+        "path": "docs/operator-progressive-path.md",
+        "content_sha256": "edf394d401306c95ce4ca36e875ff42e7c73258afed6c245afbf18171c27faa4"
+      },
+      {
+        "path": "docs/parallel-execution.md",
+        "content_sha256": "78a7ae852476247dfe63dd892242aead4e8ec5ae397e7e1f793af63ac030c710"
+      },
+      {
+        "path": "docs/prescribed-skill-closeout-contract.md",
+        "content_sha256": "ce2f8b03f26b9de3a6e54d2d758a556eceaf09aaedc05037959ddae9ad04a177"
+      },
+      {
+        "path": "docs/proof-semantics-adapter.md",
+        "content_sha256": "6f7d1c51f8fd76dd1a17fd475e087fa00ae09785595f84dfb07aa17f17618cc2"
+      },
+      {
+        "path": "docs/provenance-placement.md",
+        "content_sha256": "4560f56d4f8c37e04b849379d80c3d658a3496e7d61b46b58e153c425383c60a"
+      },
+      {
+        "path": "docs/public-skill-dogfood.md",
+        "content_sha256": "3dd0efac4efe3d702e23ac63fd34d0215774034c4463557bb16f3738545c87a1"
+      },
+      {
+        "path": "docs/public-skill-validation.md",
+        "content_sha256": "18f9aa95497b2a5be76a7ad608b6f70fa2151f4ce81567fd07affff11ca613ec"
+      },
+      {
+        "path": "docs/runtime-capability-contract.md",
+        "content_sha256": "e08b78f476cd8e89c28be698900eed974e9f35b4bd205393c77ff7c1d4c83c8e"
+      },
+      {
+        "path": "docs/support-skill-policy.md",
+        "content_sha256": "378b6a670a9aaf79acf9e0ef2978bf3452cb88699b110559744fc840c9bef1e2"
+      },
+      {
+        "path": "docs/surface-driven-adapter-triggers.md",
+        "content_sha256": "f7acfc521e5c1b7ab0e299e83530b4888491ed6b6ca51eefa88901939c1fb1ca"
+      },
+      {
+        "path": "docs/validator-timing-layers.md",
+        "content_sha256": "afe942035c1b8fb78e35dbbe2e1d75495afbf270e33df926344fcdb05d517e38"
+      },
+      {
+        "path": "docs/workflow-routes.md",
+        "content_sha256": "b3f01a9a3981fc7ecfaac1418ed3ff39bd6814fec7c2649da2c4ba76f4c8d3f9"
+      },
+      {
+        "path": "docs/worktree-prepare.md",
+        "content_sha256": "06298827b658ad8cf7823259f7ef7aefb1adefcd51c1cb3035157f0ec4ce9a21"
+      },
+      {
+        "path": "native/repograph/fixtures/carriers/expected/quality_label_universe.yaml",
+        "content_sha256": "4e66de9a5af04d6c234c51124f3128b7c6f39bdbc03e69a89bf0959c7aa99919"
+      },
+      {
+        "path": "scripts/check-docs.sh",
+        "content_sha256": "b8190118e39b7be48fe4cb22193afeff24c3e6e70d2f7dc5ad7d6a3880a1ae93"
+      },
+      {
+        "path": "scripts/gates/check_docs_length.py",
+        "content_sha256": "d6d45d57d40107c16899d9bbc221097fb602a323bc6046f04c3c856e5c73760b"
+      },
+      {
+        "path": "scripts/gates_support/render_cli_reference.py",
+        "content_sha256": "3da915917444fea90eb60a08b9ee870b3ff252443a2874d80cf9d436f7145b60"
+      },
+      {
+        "path": "scripts/lessons/check_lesson_ledger.py",
+        "content_sha256": "8d3016cda8f79ce08f137664975a3d9b97b35759b82dd753b93e6021cd17955b"
+      },
+      {
+        "path": "scripts/lessons/lesson_ledger_lib.py",
+        "content_sha256": "e1b374b39b1ffcfec0a86aea9e049adf588dc428a263399a714d1d927c316ddf"
+      },
+      {
+        "path": "scripts/lessons/record_lesson_lifecycle.py",
+        "content_sha256": "160e8309067940e9ebd7a3a38876f8fb21b3ca2ccb606d5f12765086a90cfef4"
+      },
+      {
+        "path": "scripts/lessons/seed_lesson_transitions.py",
+        "content_sha256": "7a7374a4cb83fa7142616148771683dca936846af9dc494c4f6ed7fb9d6741d3"
+      },
+      {
+        "path": "skills/public/quality/references/consumer-validator-catalog.yaml",
+        "content_sha256": "816423ad7602cee7a3e52d9ea6bea5cf238980aa7821b351fa69cb0bd430021d"
+      },
+      {
+        "path": "skills/public/retro/SKILL.md",
+        "content_sha256": "8a406f6ecfaa4ce599d546723458f6c6b099abd9b52c790194dccd3b14844bd2"
+      },
+      {
+        "path": "skills/shared/references/lesson-graduation.md",
+        "content_sha256": "2d2f50eef6d9de6932dbb45a60b9ba17ae0c7361da72c32f2298b66b5741a349"
+      },
+      {
+        "path": "tests/quality_gates/fixtures/.agents/quality-gates.yaml",
+        "content_sha256": "587ab0a929565ab5c7980f623b0c58fe1bb2c9f25e84313892c86eedac2069b1"
+      },
+      {
+        "path": "tests/quality_gates/support.py",
+        "content_sha256": "c7980701d1f7b2453abbcbb1cc116c093e8f94c881ef4bcbfcf783810e409024"
+      },
+      {
+        "path": "tests/quality_gates/test_export_self_sufficiency.py",
+        "content_sha256": "29c9afb64ce5f9353020dc7772267deaf2e86a3f664fd5879f0dc0cd360ceb83"
+      },
+      {
+        "path": "tests/quality_gates/test_skill_docs_contracts.py",
+        "content_sha256": "da18103143edb9d196a14ba7868495386e7c6673cc25b72f00a9f79f8ce6c9e1"
+      },
+      {
+        "path": "tests/test_docs_length_gate.py",
+        "content_sha256": "10cc85139f3833d664f9c62ba1cbe4c71f2a8b79ff575c07737950cccf464c8c"
+      },
+      {
+        "path": "tests/test_lesson_lifecycle.py",
+        "content_sha256": "7cbb5b2210b6edd0ac9d1db2ae3464d43ccaa7a15dee9103556d863b67feae48"
+      },
+      {
+        "path": "tools/export_self_sufficiency_lib.py",
+        "content_sha256": "ce8db6a123d0d9516acf8a2c60e7802b640b48efc4b261b4ad728ac6d4990b0e"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "84eb398279bdf6d0f857546495f391b19880061632e60c502ea70f1cfdc0b2ac"
+  }
+}
