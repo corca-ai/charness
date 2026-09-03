@@ -6,10 +6,7 @@
 
 `charness` should integrate external tools without pretending to own them.
 
-This also applies to provider-specific capability surfaces that sit below one
-public workflow concept. For example, `gather` stays one public skill even
-when it uses separate provider paths such as `gh`, Slack, Google Workspace, or
-published Notion gathering.
+This also applies to provider-specific capability surfaces that sit below one public workflow concept. For example, `gather` stays one public skill even when it uses separate public routes such as `gh` or published-document fetching.
 
 ## Principle
 
@@ -48,25 +45,7 @@ Examples:
 
 ### `gather` is public-source only
 
-`gather` is public-source only. Credentialed organizational data — Slack,
-Notion, private Google Workspace, Drive, or similar — is not a gather source and
-`charness` does not own a credentialed provider runtime for it. Acquiring that
-data is the consuming runtime's responsibility, through its own first-class
-capability/connector surface, so `charness` never holds Slack/Google/Notion
-tokens or ships a token-backed export runtime in a portable skill bundle.
-
-That means:
-
-- Slack / Notion / private Google Workspace / Drive access is reached through the
-  consuming runtime's own capability/connector, not a `charness` gather provider
-- Google Workspace public content is modeled through a host-mediated capability,
-  operator-provided export, or browser-mediated path
-- `gh` remains an external integration for public GitHub content (standard dev
-  tooling), not a credentialed gather provider
-
-The earlier `charness`-owned credentialed gather runtimes (`gather-slack`,
-`gather-notion`) have been removed. See
-[gather-provider-ownership.md](./gather-provider-ownership.md).
+Credentialed organizational data is reached through the consuming runtime's own capability/connector, never a `charness` gather provider; [gather-provider-ownership.md](./gather-provider-ownership.md) owns the boundary and [test_provider_boundary.py](../tests/quality_gates/test_provider_boundary.py) holds it.
 
 ## Runtime Access Principle
 

@@ -20,15 +20,7 @@ provider-CLI route to reach private org data. When a gather request names such a
 source, gather hands it off to the runtime capability or stops with a
 missing-capability explanation.
 
-This is a deliberate narrowing. An earlier design shipped charness-owned
-credentialed provider runtimes (`gather-slack`, `gather-notion`) and a
-`direct-cli` provider mode so a maintainer who owned the grant could pull private
-org data through gather. That surface was dangerous (raw tokens such as
-`SLACK_BOT_TOKEN` on a portable, materialized skill bundle) and became
-pointless once consuming runtimes (e.g. Ceal) moved credentialed access to their
-own connector/integration layer. Those support skills and the credentialed
-`direct-cli` routes have been removed; the token boundary now lives entirely with
-the consuming runtime.
+The earlier charness-owned `gather-slack`/`gather-notion` runtimes and credentialed `direct-cli` routes were removed under #418; [test_provider_boundary.py](../tests/quality_gates/test_provider_boundary.py) refuses their return.
 
 ## Correct Ownership Split
 
@@ -83,12 +75,8 @@ unless the consumer is truly expected to install or sync that repo at runtime.
 
 ## Consumer Contract
 
-When a consumer needs credentialed org data:
+When a consumer needs credentialed org data, the Default Boundary above applies: the consuming runtime's own capability/connector, never gather.
 
-- Slack / Notion / private Google Workspace / Drive:
-  - reach them through the consuming runtime's own capability/connector surface
-  - do not expect charness gather to hold the token or ship the export runtime;
-    gather is public-source only
 - Google (public/published content):
   - prefer a host-mediated capability when one exists
   - otherwise ask for an operator-provided export or use the browser-mediated
@@ -105,31 +93,7 @@ When a consumer needs credentialed org data:
   - preserve attempted, skipped, unavailable, terminal, and selected fallback
     stages in the durable acquisition trace instead of relying on handoff notes
     or chat context for proof of degraded acquisition
-- X/Twitter status posts (exact-source identity):
-  - the `twitter-syndication` route's `domain-specific-route` stage fetches the
-    EXACT post through identity-keyed endpoints (Syndication CDN by status id,
-    then oEmbed) and treats a result as the original ONLY when the returned
-    status id matches the requested one — the proof lives in the trace as
-    `identity_proof.matched`
-  - never substitute a merely-similar public source as if it were the original:
-    a mismatch is `invalid-proof`, an all-blocked outcome is honest. The
-    acquisition exposes `source_identity` ∈ `exact-fetched` / `exact-blocked` /
-    `exact-unavailable` / `not-applicable` so the answer path can distinguish a
-    fetched exact post from a blocked one; `gather` never emits `similar-source`
-  - live X fetching is operator-authorized, not autonomous: the exact-source
-    stage runs against seeded/granted responses by default, and live network
-    fetch is an explicit opt-in (`--live-domain-route`)
-  - `source_resolution.terminal_state` names the terminal operator boundary:
-    `exact-post-acquired`, `exact-post-blocked-by-x`,
-    `authenticated-browser-required`, or `unsupported-route`;
-    `authenticated-browser-required` includes the default non-live policy where
-    exact endpoints were not attempted until an operator-approved live X route,
-    authenticated browser/profile, or exact-source provider is available
-  - the Syndication endpoint is keyed on the post-body status id (genuine
-    existence proof) and is tried first; oEmbed echoes the requested URL, so it
-    proves *requested-id match* only and is accepted as the original solely when
-    it also returns a rendered body (`html`/`author_name`) — a bare URL echo for
-    a deleted/nonexistent post is rejected rather than treated as existence
+- X/Twitter status posts: the `twitter-syndication` route's `domain-specific-route` stage fetches the exact post and never substitutes a similar source; [twitter_exact_source.py](../skills/support/web-fetch/scripts/twitter_exact_source.py) owns the identity proof and the terminal states, live fetch is an explicit opt-in (`--live-domain-route` on [acquire_public_url.py](../skills/support/web-fetch/scripts/acquire_public_url.py)), and [gather SKILL.md](../skills/public/gather/SKILL.md) owns what the answer path does with `source_resolution.terminal_state`.
 
 ## Modeling Rule Going Forward
 
@@ -138,6 +102,4 @@ When a consumer needs credentialed org data:
   consuming runtime's capability/connector surface
 - keep provenance in references or docs instead of pretending it is the active
   runtime owner
-- a Charness-side provider-boundary gate keeps model-facing skill surfaces (and
-  their `plugins/` mirror) free of direct provider-CLI / raw-token wording so the
-  public-only boundary does not silently regress
+- [test_provider_boundary.py](../tests/quality_gates/test_provider_boundary.py) keeps model-facing skill surfaces and their `plugins/` mirror free of raw-token and removed-runtime wording

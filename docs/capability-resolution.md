@@ -4,23 +4,7 @@
 > Source of truth: this page and its linked executable surfaces
 > Last verified: 2026-09-02
 
-## Problem
-
-`charness` already models provider capability metadata for external tools and
-support runtimes, but it does not yet give each repo one local place to say:
-
-- which logical capability ids that repo's skills/scripts care about
-- which provider profile resolves each id on this machine for this repo
-- how skills consume that resolution without reintroducing raw secret env names
-  into committed adapters or skill contracts
-
-The missing seam is not "store secrets in `charness`." The missing seam is a
-portable resolver that maps:
-
-- a skill-facing logical capability id
-- to a repo-local provider profile
-- to one real provider capability already modeled by manifests or support
-  capability metadata
+Capability resolution maps a skill-facing logical capability id to a repo-local provider profile, and that to a provider `charness` already models, without storing secrets in committed files.
 
 ## Current Slice
 
@@ -65,61 +49,6 @@ This slice does not add:
 - Backward compatibility for older machine-global capability config layouts is
   not a goal.
 
-## Non-Goals
-
-- secret storage or encryption
-- generic cross-product credential management
-- replacing `gh auth`, host grants, or existing external auth flows
-- forcing every provider to use env export when authenticated binary or grant
-  is the honest primary path
-
-## Constraints
-
-- installed `charness` CLI must remain runnable from a managed checkout without
-  extra Python dependencies
-- support runtimes should be able to consume resolved env aliases without
-  learning the full config model themselves
-- durable docs must explain the separation between the gitignored real config
-  and the committed example shape
-
-## Success Criteria
-
-- `charness capability resolve <logical-id>` reads
-  `<target-repo-root>/.charness/local/capability.json` and returns the bound
-  profile and provider for that repo.
-- `charness capability env <logical-id>` emits shell exports that alias runtime
-  env names from machine-local source env names without printing secret values.
-- `charness capability init` scaffolds the gitignored real config plus the
-  committed example shape and updates the repo's `.gitignore`.
-- `charness capability doctor <logical-id>` reuses provider manifest metadata
-  to inspect provider readiness for the resolved profile.
-- `charness capability explain <skill-id>` shows which logical capabilities
-  one public skill may need and, for `announcement`, which delivery capability
-  the current repo adapter configured.
-- Slack gather runtime can consume the env export flow before falling back to
-  any operator-only direct-env path.
-- First-run failure messages point to the exact file path and shape that the
-  operator should edit.
-
-## Acceptance Checks
-
-- run `charness capability init --target-repo-root <repo>` against a fresh
-  repo and verify that `<repo>/.charness/local/capability.json`,
-  `<repo>/.charness/capability.example.json`, and a `/.charness/local/`
-  entry in `<repo>/.gitignore` all exist.
-- write a profile with `env_bindings` and verify that
-  `charness capability env github.default` prints alias exports such as
-  `export GH_TOKEN="${GH_TOKEN_ACME_DEV}"` without printing the secret value.
-- verify that the resolved provider (a known integration tool or support
-  capability) can consume that env export path.
-- run repo validators and standing tests after syncing the materialized plugin
-  export surface.
-
-## Canonical Artifact
-
-- this document for the current contract
-- CLI implementation in `charness`
-
 ## Command Surface
 
 ```bash
@@ -155,6 +84,8 @@ charness checkout supplies provider manifests.
   }
 }
 ```
+
+With that profile, `charness capability env github.default` prints `export GH_TOKEN="${GH_TOKEN_ACME_DEV}"` and never the value.
 
 The `provider` must be a provider `charness` already models (an
 `integrations/tools/*.json` tool id or a `skills/support/*/capability.json`

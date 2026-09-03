@@ -10,25 +10,7 @@ runtimes.
 
 ## Core Assumption
 
-`charness` should assume that it may run inside an isolated agent runtime where
-the agent cannot read arbitrary local secret files directly.
-
-That means public skills, support skills, and integration manifests must not
-advertise raw process-environment fallbacks (`SLACK_BOT_TOKEN`,
-`GOOGLE_WORKSPACE_CLI_*`, `GH_TOKEN`, etc.) as agent-consumable paths inside
-their own contracts.
-
-The preferred model is:
-
-1. host grants a capability for one run or one session
-2. support and integration layers resolve how to consume that capability
-3. each repo declares which logical capability ids its skills depend on and
-   how those resolve to provider profiles in its own repo-local capability
-   config
-4. raw env-variable fallbacks may still exist for human/operator CLIs that
-   live outside agent-controlled runtimes, but the support skill, public
-   skill, and integration contracts must not present them as the normal
-   agent-consumable path
+Assume an isolated agent runtime with no arbitrary local-secret-file read; the grant > authenticated binary > env preference is owned by [external-integrations.md](./external-integrations.md#runtime-access-principle). Public skills, support skills, and manifests must not present a raw env-variable fallback (`SLACK_BOT_TOKEN`, `GH_TOKEN`, ...) as the normal agent-consumable path; env fallbacks exist only for operator CLIs outside agent-controlled runtimes.
 
 Repo-local capability config keeps secret-name choices repo-scoped:
 
@@ -114,64 +96,16 @@ setup, or adapter references.
 
 ## Local Resolution Layer
 
-When one repo wants to reuse the same private provider across multiple
-`charness` skills or scripts, model that reuse repo-locally through:
-
-1. logical capability id, for example `github.default`
-2. repo-local profile id, for example `github.acme-dev`
-3. provider id already modeled by manifests or support capability metadata,
-   for example `github-gh` or `web-fetch`
-
-The repo-local capability config (`<repo-root>/.charness/local/capability.json`)
-may record non-secret env var aliases such as:
-
-- runtime env name expected by the provider
-- source env var name currently present on the operator's machine
-
-It must not record:
-
-- the secret value itself
-- a copied token file
-- adapter-local secret plumbing
-- machine-global capability state shared across unrelated repos
+Repo-local capability config models `logical capability id -> repo-local profile -> provider id` and records env-name aliases only, never secret values or machine-global state; [capability-resolution.md](./capability-resolution.md) owns the file, the CLI, and the shape.
 
 ## Gather As Exemplar
 
-`gather` is the clearest example because one user-facing concept may consume
-many capability providers.
-
-Example provider classes:
-
-- GitHub via `grant` or authenticated `gh`
-- Google Workspace via `grant`, operator-provided export, or browser-mediated
-  private-source path
-- Slack via granted connector access or bot-token-backed integration
-- Notion via granted connector access, token-backed fetcher, or published-page
-  fallback
-- generic web via public fetch
-
-The public skill remains one concept: durable knowledge acquisition.
-
-The provider, access mode, and onboarding path stay below the public-skill
-surface.
+`gather` is one public concept (durable knowledge acquisition) over many providers; provider, access mode, and onboarding stay below the skill surface. [gather-provider-ownership.md](./gather-provider-ownership.md) owns the provider boundary.
 
 ## Onboarding Rule
 
-When a public skill depends on an external capability, onboarding should follow
-this order:
-
-1. reuse an already granted runtime capability
-2. reuse an already installed/authenticated local binary
-3. use env/process fallback only when the host does not provide a better grant
-   path
-4. if installation is safe and deterministic, offer to install it
-5. otherwise stop cleanly with an explicit missing-capability explanation
+Order: grant, authenticated binary, env fallback ([external-integrations.md](./external-integrations.md#runtime-access-principle)); then offer install only when it is safe and deterministic, otherwise stop with an explicit missing-capability explanation.
 
 ## Implication For Profiles
 
-Profiles may still group workflow emphasis, but they are not the authority for
-secret transport or runtime access control.
-
-Capability availability should be modeled through integrations, support usage
-guidance, adapters, and host runtime grants rather than through profile
-inheritance.
+Profiles never carry secret transport or access control; capability availability is modeled by manifests, adapters, and host grants. The profile-inheritance decision is [D8](./deferred-decisions.md#d8-profile-inheritance-policy).
