@@ -32,75 +32,32 @@ worked, and leave the next change easy to start? It is intentionally short.
    once after batching source edits, then validate the result. The source is
    authoritative; mirror drift is a release/package concern, not a reason to
    duplicate authoring work.
-6. Commit after verification. Do not push, release, tag, install, or mutate an
-   external issue unless that phase was explicitly requested.
+6. Commit after verification; the external phases that need an explicit request
+   are listed in [operating contract](./operating-contract.md#external-changes).
 
 When a documentation change is unusually broad, [authoring-preflight](./authoring-preflight.md)
 and [check_doc_authoring_preflight.py](../scripts/gates/check_doc_authoring_preflight.py)
 are authoring affordances that forecast the relevant checks. When deleting a
 wrapper or symbol in `docs/` or `skills/`, [check_symbol_residue.py](../scripts/gates/check_symbol_residue.py)
-remains advisory by design
-(#259): use it to find consumers, then let the owning focused test decide.
+remains advisory by design (#259): use it to find consumers, then let the owning
+focused test decide.
 
 ## Worktree and runtime hygiene
 
-The parent worktree is user state. Never reset, restore, stash, clean, or
-mass-delete it to make a proof run convenient. A temporary worktree is the
-owner's disposable execution state and must be created from explicit base and
-target commits with its path scope recorded in the receipt.
-
-Use the repository runtime wrapper or equivalent external locations for
-`PYTHONPYCACHEPREFIX`, pytest's cache directory, coverage data, ruff cache, and
-temporary artifacts. `.gitignore` only hides an ignored file; it does not
-prevent a command from writing into the worktree. A cleanliness check and cache
-isolation are separate facts:
-
-- `git diff --quiet` and `git status --short --untracked-files=all` describe
-  tracked and untracked changes;
-- `git status --ignored --short` describes ignored output;
-- the command environment determines whether the next run creates any of it.
-
-Creation-time cleanliness is a precondition. A run-time or end-of-run check is
-the diagnostic that tells us what the command actually created. Do not claim
-that a clean starting tree guarantees a clean finish.
+Worktree rules are owned by
+[operating contract](./operating-contract.md#git-and-worktrees) and the commands
+by [worktree prepare](./worktree-prepare.md).
 
 ## Proof proportionality
 
-Normal local implementation needs focused tests and, when the surface is broad,
-the default core lane. It does not run changed-line coverage/mutation proof or
-pay its cost. That proof belongs only to the release-final lane. Other evidence
-remains conditional:
-
-- a verdict/proof-surface change gets the narrow proof of the surface it
-  changes;
-- an irreversible external write gets its owning readback and boundary check;
-- a release, compatibility, security, or uncertain deletion change gets the
-  review appropriate to that risk.
-
-The `prove` skill is an evidence formatter for those cases, not a universal
-stop ceremony. `Achieve` owns active goal navigation and progress; there is no
-session-start hook or standalone handoff artifact to keep synchronized.
+Proof proportionality is owned by
+[operating contract](./operating-contract.md#verification); the `prove` skill is
+an evidence formatter for the cases it lists, not a universal stop ceremony.
 
 ## Shared commands
 
-```bash
-# fast core lane
-./scripts/run-quality.sh
-
-# explicit broad lane
-./scripts/run-quality.sh --full --read-only
-
-# source export, only when the source surface changed
-python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .
-
-# documentation receipt when docs changed
-./scripts/check-docs.sh
-```
-
-The export line is here for a direct `pytest` run; the quality and standing
-runners refresh the generated mirror themselves, as
-[operating-contract.md](./operating-contract.md#generated-surfaces) sets out.
-
-If a command fails because a capability is unavailable, report that concrete
-failure. Do not replace an unavailable proof with a prose assertion that it
-ran.
+The quality lanes, the standing runner, and the
+[check-docs.sh](../scripts/check-docs.sh) receipt are in
+[development](./development.md#verification-and-export); the
+direct-`pytest` export line is in
+[operating contract](./operating-contract.md#generated-surfaces).
