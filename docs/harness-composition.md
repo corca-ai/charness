@@ -188,7 +188,6 @@ Authoritative detail lives in:
 Surface:
 
 - `charness-artifacts/**`
-- [goal-lifecycle.md](./goal-lifecycle.md) — the active goal, current state, and parent-cursor pickup
 
 Owns:
 
@@ -227,7 +226,6 @@ Does not own:
 Authoritative detail lives in:
 
 - [artifact-policy.md](./artifact-policy.md) — the visibility rule and the hidden-knowledge durability class
-- [goal-lifecycle.md](./goal-lifecycle.md) when the next maintainer needs the active goal state
 
 ## Precedence Inside `charness`
 
@@ -260,7 +258,7 @@ Use this order when building context for a `charness` task:
 1. Start from the user request and route to the likely public skill.
 2. Read the repo-level operating context that can change the move:
    - [AGENTS.md](../AGENTS.md) — repo-wide stance, routing, and external-boundary rules
-   - [goal-lifecycle.md](./goal-lifecycle.md) — the active goal and current repo state
+   - [goal-lifecycle.md](./goal-lifecycle.md) — how to enter the active Goal Run from its parent cursor
    - any obviously relevant repo policy doc
 3. Resolve the repo-local adapter or manifest for the selected surface.
 4. Read the current visible artifact or runtime state only if it is relevant to
@@ -303,9 +301,3 @@ For a `gather` task:
 
 The gathered artifact records what was collected. It does not become the source
 of truth for integration capability policy.
-
-## Maintenance Rule
-
-If this document starts repeating detailed policy that already exists
-elsewhere, trim it back and link to the owning doc instead. This file should
-stay an index and boundary map.
