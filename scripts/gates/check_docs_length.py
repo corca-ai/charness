@@ -13,7 +13,7 @@ reader skims, and the sentence they needed is the one they skipped.
 The rule: every tracked Markdown page under `docs/` has a word count, measured
 as whitespace-split tokens after fenced code blocks are stripped (a command
 block is quoted evidence, not prose the reader has to hold). A page over
-`WORD_BUDGET` (1500) is red unless the record names it; the record,
+`WORD_BUDGET` (1000) is red unless the record names it; the record,
 `charness-artifacts/quality/docs-length-baseline.json`, maps page path to its
 recorded count and has the wall-clock record's semantics: a page above its
 recorded count is red, a page below its count is a prompt to lower the record,
@@ -59,7 +59,7 @@ iter_matching_repo_files = _repo_file_listing_module.iter_matching_repo_files
 DEFAULT_SCAN_GLOBS = ("docs/*.md", "docs/**/*.md")
 DEFAULT_BASELINE_REL = "charness-artifacts/quality/docs-length-baseline.json"
 BASELINE_SCHEMA = "charness.docs-length-baseline/v1"
-WORD_BUDGET = 1500
+WORD_BUDGET = 1000
 FENCE_MARKERS = ("```", "~~~")
 MOVE = (
     "split the page along one owning question, move dated evidence to "

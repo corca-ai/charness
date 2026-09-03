@@ -26,9 +26,12 @@ Every `docs/*.md` page carries exactly one header line matching
 
 ## Current state only
 
-Keep `docs/` evergreen. Move superseded decisions, experiments, and session
-history to `charness-artifacts/`, or delete them when they have no durable
-value. The index is the entry point; it must not preserve a second catalogue.
+Keep `docs/` evergreen. A page states what is: which mechanism holds a rule,
+where a thing lives, what a command does. Instructions to a reader survive
+only where a command must be typed or no mechanism exists yet; the why, the
+counts, and the dates go to `charness-artifacts/`. Move superseded decisions,
+experiments, and session history there too, or delete them when they have no
+durable value. The index is the entry point; it must not preserve a second catalogue.
 When a decision supersedes a sentence, delete that sentence in the same change:
 a superseded line stays quotable until it is gone, and it will be quoted in good
 faith (a retired flag convention on 2026-08-14; a false claim about the plugin
@@ -57,7 +60,7 @@ the composite receipt.
 Do not hard-wrap prose at 80 columns. A line break is meaningful only when it
 improves a list, code block, or link. Keep examples executable and prefer
 links over copied policy text. A page grows only by displacing something:
-every `docs/` page has a 1,500-word budget held by
+every `docs/` page has a 1,000-word budget held by
 [`check_docs_length.py`](../scripts/gates/check_docs_length.py) inside
 [`check-docs.sh`](../scripts/check-docs.sh),
 with the pages already over it recorded in
