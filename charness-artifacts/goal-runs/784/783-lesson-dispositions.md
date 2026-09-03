@@ -15,7 +15,17 @@ and the middle group is eighteen (fifteen at +1 with one event,
 `cause-named-from-one-observation`, `executed-vs-read-field`). The order of
 conversation is unchanged.
 
+Operator rule, settled after lesson 2 ("will it really work buried between
+docs?" and "docs will grow without bound"): a docs sentence carries the rule and
+the mechanism's name, never the why, the counts, or the dates (those stay in
+this record, the ledger, and the retros); a gate that holds the whole class
+earns one table row, and a paragraph survives only for a stated gap; `docs/`
+pages have a 1,500-word budget (`check_docs_length.py`, record shrinks only);
+and a graduation's readback is the graduated-recurrence advisory in
+`check_lesson_ledger.py` (lifecycle events record `reviewed_retros`). Applied
+retroactively to lessons 1 and 2 in `c20352d45`.
+
 | # | lesson | disposition | settled reason | docs edit |
 | --- | --- | --- | --- | --- |
 | 1 | changed-line-proof-before-broad-quality | graduate | Helped: 14 of 20 encounters changed an action (slice commit → changed-line proof over `base..HEAD` → broad lane, saving a full broad rerun per uncovered line); the 4 read-but-not-applied and 1 not-consulted all predate 2026-08-18 with no recurrence since; the 1 pushed-a-wrong-action (2026-08-16) corrected the wording to "after the slice commit", because the gate reads committed lines. Operator: 동의. Before this lesson the operator asked how a docs-only exposure can be checked at all; answered by the graduated-recurrence advisory shipped one commit earlier (`check_lesson_ledger.py` names a graduated lesson that a retro outside its event's `reviewed_retros` tags again). | docs: `docs/parallel-execution.md` "Disjoint Writers" owns the order beside the lane receipt's `changed_line_gate`, names the two mechanisms (receipt gate, pre-push release lane) and the stated gap (no preamble orders proof before the broad lane, because that lane runs in consumer repos without a mutation pool); `docs/implementation-discipline.md` step 4 loses its reversed order and links. code: none new; the readback for this graduation is the pre-push hook's changed-line refusal count. |
-| 2 | green-test-is-not-covered-line | graduate | Helped: all 11 encounters changed an action (2026-08-17 to 08-22), the same shape each time: a green batch left named lines unreached until the coverage read said so. The two 2026-09-03 re-tags are the lane half (subagents trusting a focused green), which the 8.0.3 lane receipt closes. Operator: 추천대로. | docs: `docs/development.md` "Verify in the shape production uses" owns the sentence beside the proxy-green rule; `parallel-execution.md` keeps the lane half; `.agents/claude-host.md` bullet stays one line plus link. code: none new; `release_changed_line_coverage.py` measures line reach and runs in the lane receipt's `changed_line_gate` and the pre-push hook, so no gap is stated. |
+| 2 | green-test-is-not-covered-line | graduate | Helped: all 11 encounters changed an action (2026-08-17 to 08-22), the same shape each time: a green batch left named lines unreached until the coverage read said so. The two 2026-09-03 re-tags are the lane half (subagents trusting a focused green), which the 8.0.3 lane receipt closes. Operator: 추천대로. | docs: one row in `docs/development.md`'s mechanisms table (rule, mechanism, record, cannot see); the first four-sentence version with ledger history was cut the same day under the operator's docs rule below; `parallel-execution.md` keeps the lane half; `.agents/claude-host.md` bullet stays one line plus link. code: none new; `release_changed_line_coverage.py` measures line reach and runs in the lane receipt's `changed_line_gate` and the pre-push hook, so no gap is stated. |
