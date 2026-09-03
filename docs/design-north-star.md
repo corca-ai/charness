@@ -104,10 +104,9 @@ from the same mental model, so the blind spot in the code and the blind spot in
 its test are the same blind spot, and suite size does not add observations along
 this axis. The distinct observer is a fresh-eye review at the authoring boundary.
 
-What this does **not** license is a gate that checks gates. That is the
-anti-pattern named in the diagnosis above — meeting a gate-quality problem with
-another bespoke gate — applied to itself. The teeth here are a distinct observer
-and a scope a verdict must name, not another green.
+This does not license a gate that checks gates (the Diagnosis anti-pattern
+applied to itself); the teeth here are a distinct observer and a scope a verdict
+must name.
 
 ## Operating stance
 
@@ -126,10 +125,7 @@ ship. Asking it for an observable predicate is a category error; that demand
 belongs to gates.
 
 Adopted from [Tasteful software](https://wiki.g15e.com/pages/Tasteful%20software.md)
-([gathered copy](../charness-artifacts/gather/2026-08-10-wiki-g15e-com-pages-tasteful-software-md-536ebc23.md)),
-where taste is explicitly not innate, not finished, and kept useful only by
-continual unlearning — and where its whole job is stated as choosing among many
-possibilities, "which also means discarding most of them."
+([gathered copy](../charness-artifacts/gather/2026-08-10-wiki-g15e-com-pages-tasteful-software-md-536ebc23.md)).
 
 > **At equal capability, prefer less.**
 >
