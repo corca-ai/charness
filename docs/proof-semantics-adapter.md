@@ -1,4 +1,4 @@
-# Proof-Semantics Adapter (#339)
+# Proof-Semantics Adapter
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
@@ -11,32 +11,16 @@ proof semantics** live entirely in this optional adapter, resolved by
 [`scripts/adapters/proof_semantics_adapter_lib.py`](../scripts/adapters/proof_semantics_adapter_lib.py).
 Charness asks; the adapter answers.
 
-This keeps the gate-and-intelligence split (#253/#329/#337): Charness does only
-generic lookups and a rank/incomparability comparison over the tokens the adapter
-declares — it never hard-codes a domain proof level (`smoke`, `live`) or an
-acceptance class (`reliability`, attachment delivery).
+This keeps the gate-and-intelligence split: Charness does only generic lookups
+and a rank/incomparability comparison over the tokens the adapter declares,
+never a domain proof level or acceptance class.
 
-## Why it exists
-
-Filed from `corca-ai/acme` closeout misses where honest prose non-claims still
-carried a `Close #…`: a Slack multi-image closeout whose acceptance class was
-attachment delivery but whose reached proof was local deterministic adapter
-simulation, and a long-body closeout that recorded provider-observed write/read
-but only `normalized_matched` (not exact-body) verification. Acme added a
-Acme-specific guard; the **portable** gap is that a closeout flow can contain
-honest non-claims and still publish unless the workflow requires a
-machine-checkable acceptance/proof/disposition ledger.
-
-The portable contract: require the adapter to supply the acceptance class and the
-proof-satisfaction mapping, then **block closeout** when
-
-1. a declared acceptance class has **no evaluated proof entry**;
-2. the **reached proof level does not satisfy** the acceptance class; or
-3. the gap **lacks an explicit disposition** — `issue #N` / `applied: <change>` /
-   `accepted-risk: <reason>` / `out-of-scope: <reason>`.
-
-Conditions (1)–(2) are the proof-mismatch detection; (3) is the residual-ledger
-floor. None require Charness to know a domain concept.
+Closes a portable gap: a closeout can carry honest non-claims and still publish
+unless the workflow requires a machine-checkable acceptance/proof/disposition
+ledger (background:
+[339 goal record](../charness-artifacts/goals/2026-06-08-339-portable-disposition-ledger-adapter-proof-semantics.md)).
+The blocking conditions are in [Closeout proof ledger](#closeout-proof-ledger)
+below.
 
 ## Resolution
 
@@ -117,14 +101,16 @@ All domain-blind — they operate only on the declared tokens:
 - `acceptance_map_available(adapter)` — the degradation signal: a valid adapter
   with a non-empty `acceptance_map`.
 
-Charness (Slice 3) wires these into achieve/issue closeout to enforce conditions
-(1)–(3) above. The adapter owns the proof semantics; Charness owns only the
-presence/form floor and the generic comparison.
+Issue closeout
+([`issue_verify_closeout.py`](../skills/public/issue/scripts/issue_verify_closeout.py))
+calls these through
+[`proof_mismatch.py`](../scripts/evidence/proof_mismatch.py) (see
+[Closeout proof ledger](#closeout-proof-ledger)).
 
 > **Note — two distinct `out-of-scope` meanings.** `gap_policy.out_of_scope` is a
 > *policy classification* (the adapter pre-clears a class so its gap needs no
 > issue). The residual-ledger `out-of-scope: <reason>` form is a *human-supplied
-> disposition* in the ledger. Slice 3 must not conflate them: a `gap_policy`
+> disposition* in the ledger. Do not conflate them: a `gap_policy`
 > classification answers "does this gap need a disposition?", while the ledger
 > form is one of the dispositions a human can write.
 
@@ -156,8 +142,7 @@ undispositioned:
   (`applied:` / `issue #N` / `accepted-risk:` / `out-of-scope:`) — a placeholder,
   empty cell, or prose like `defer` is rejected.
 
-The floor fires only when a `## Proof Ledger` is present (no over-fire; no existing
-artifact carries one, so no date grandfathering is needed). A found-but-invalid
+The floor fires only when a `## Proof Ledger` is present. A found-but-invalid
 adapter blocks (fails closed). The columns are located by header name
 (`Acceptance`/`Class`, `Reached`/`Proof`, `Disposition`), so column order is free —
 name them `Acceptance Class`, `Reached Proof`, and `Disposition` exactly (the
