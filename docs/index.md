@@ -5,9 +5,8 @@
 > Last verified: 2026-09-02
 
 This is the flat documentation wiki. Start with the smallest page that answers
-the current question; dated evidence, proposals, and retrospectives belong in
-[`charness-artifacts/`](../charness-artifacts/). [`check-docs.sh`](../scripts/check-docs.sh)
-is the composite docs receipt.
+the current question. [`check-docs.sh`](../scripts/check-docs.sh) is the
+composite docs receipt.
 
 ## Orientation
 
