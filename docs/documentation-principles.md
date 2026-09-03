@@ -43,10 +43,7 @@ faith. Documented flags and subcommands are checked against each command's own
 
 ## One docs lint contract
 
-[`scripts/check-docs.sh`](../scripts/check-docs.sh) is the canonical document lint. It composes Markdown
-syntax, current-doc references, awiki reachability, and lychee link checks. The
-component scripts remain available for diagnosis, but quality and pre-push use
-the composite receipt.
+[`scripts/check-docs.sh`](../scripts/check-docs.sh) is the canonical document lint; its header names the checks it composes, and quality and pre-push read its one receipt.
 
 - [check-docs.sh](../scripts/check-docs.sh) — the composed gate.
 - [Docs graph checks](./docs-graph-checks.md) — what awiki proves and cannot prove.
