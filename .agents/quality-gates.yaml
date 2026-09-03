@@ -624,6 +624,16 @@ phases:
     lane: label-only
     timing_layer: stays
     note: src scripts/run-quality.sh:1108; labels literal (475-479).
+  - label: check-docs-length
+    command:
+    - python3
+    - scripts/gates/check_docs_length.py
+    - --repo-root
+    - $REPO_ROOT
+    - --require-git-file-listing
+    lane: label-only
+    timing_layer: stays
+    note: docs page word budget (2026-09-03); a check-docs component, the record only shrinks.
   - label: docs-graph
     command:
     - python3

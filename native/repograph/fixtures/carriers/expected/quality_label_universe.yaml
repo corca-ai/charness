@@ -58,6 +58,7 @@ labels:
 - check-command-docs
 - check-docs
 - check-doc-links
+- check-docs-length
 - docs-graph
 - check-plugin-doc-links
 - check-markdown
@@ -165,6 +166,7 @@ sources:
   - check-command-docs
   - check-docs
   - check-doc-links
+  - check-docs-length
   - docs-graph
   - check-plugin-doc-links
   - check-markdown

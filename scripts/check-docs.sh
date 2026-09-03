@@ -27,6 +27,7 @@ run_component() {
     check-doc-links) python3 "$REPO_ROOT/scripts/gates/check_doc_links.py" --repo-root "$REPO_ROOT" --require-git-file-listing ;;
     check-plugin-doc-links) python3 -m tools.check_plugin_doc_links --repo-root "$REPO_ROOT" ;;  # export-guard: runs only when tools/__init__.py and packaging/charness.json exist
     check-command-docs) python3 "$REPO_ROOT/scripts/gates/check_command_docs.py" --repo-root "$REPO_ROOT" ;;
+    check-docs-length) python3 "$REPO_ROOT/scripts/gates/check_docs_length.py" --repo-root "$REPO_ROOT" --require-git-file-listing ;;
     docs-graph)
       # Exit 3 is soft only when awiki is genuinely unavailable. Once awiki is
       # present, a 3 means the observer failed to establish a graph verdict.
@@ -45,6 +46,7 @@ declare -a checks=(
   check-markdown
   check-doc-links
   check-command-docs
+  check-docs-length
   docs-graph
   check-links-internal
   check-links-external

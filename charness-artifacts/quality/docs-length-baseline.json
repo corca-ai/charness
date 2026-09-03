@@ -1,0 +1,13 @@
+{
+  "budget": 1500,
+  "pages": {
+    "docs/artifact-policy.md": 1869,
+    "docs/authoring-preflight.md": 2781,
+    "docs/deferred-decisions.md": 10949,
+    "docs/docs-graph-checks.md": 1839,
+    "docs/goal-lifecycle.md": 2646,
+    "docs/host-packaging.md": 1619
+  },
+  "schema": "charness.docs-length-baseline/v1",
+  "total": 21703
+}

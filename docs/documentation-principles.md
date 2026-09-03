@@ -55,9 +55,14 @@ the composite receipt.
 ## Authoring shape
 
 Do not hard-wrap prose at 80 columns. A line break is meaningful only when it
-improves a list, code block, or link. Use a word budget for artifacts that need
-bounded context, not a sentence-length or whole-document gate for evergreen
-docs. Keep examples executable and prefer links over copied policy text.
+improves a list, code block, or link. Keep examples executable and prefer
+links over copied policy text. A page grows only by displacing something:
+every `docs/` page has a 1,500-word budget held by
+[`check_docs_length.py`](../scripts/gates/check_docs_length.py) inside
+[`check-docs.sh`](../scripts/check-docs.sh),
+with the pages already over it recorded in
+[`docs-length-baseline.json`](../charness-artifacts/quality/docs-length-baseline.json),
+a record that only shrinks.
 
 - [Authoring preflight](./authoring-preflight.md) — premise checks before editing.
 - [Goal lifecycle](./goal-lifecycle.md) — the provider-backed continuation record.
