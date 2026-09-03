@@ -274,3 +274,21 @@ six children CLOSED (`observations/goal-784-final-read.yaml`). `/goal #784`
 pickup then refuses `cursor-child-closed` (`goal-784-final-pickup.yaml`): the
 cursor's child is closed and the parent has nothing left to select, which is
 the terminal state the guarded close reads. The parent close follows.
+
+## After the close, 2026-09-04: release 8.1.0
+
+The operator asked whether the run had shipped; the first answer (nothing
+release-worthy since 8.0.3) was wrong: the #783 series changed the shipped
+`check-docs.sh`, a new gate, the lesson scripts, the retro skill, and a shared
+reference. The operator named 8.1.0. Release critique through two file-backed
+Codex reviewers: G1 (the docs-length record re-founded once its map emptied)
+and three docs contradictions, repaired in `8215ca142`; a repair-verification
+reviewer confirmed all four and found one test caller passing the new optional
+record to `judge`, fixed in `e2915c297`. The first `--execute` was refused by
+the release lane on the critique record's own field labels (delivery state,
+identity lines), fixed in `06f5bb25f`. Prepared `b66a55f89`, claims review
+`pass` with five advisory evidence-boundary findings (`30cb5addf`), resumed
+publish: GitHub release `v8.1.0`, `charness version` from the managed checkout
+reports `8.1.0`, verification recorded in `f95a991c5`. The critique record
+`charness-artifacts/critique/release-8-1-0-critique.md` carries the findings
+and dispositions.
