@@ -20,6 +20,13 @@ verified the repairs. No in-process host subagent was used.
 
 ## Reviewed Input Identity
 
+- Packet consumed: charness-artifacts/critique/release-8-1-0-repair-verify-1-packet.json
+- Packet path: charness-artifacts/critique/release-8-1-0-repair-verify-1-packet.json
+- Packet SHA256: aa7c32f3d53d201370918566c65801e332c50f7d7e4844e28428b978e8096b07
+- Identity SHA256: f016d601cbf3738e2f26cec8c5fc704d0158bd6439e4384c2594427350d50835
+- The packet above is the last reviewed identity (the repaired tree
+  `8215ca142`); the one-line test-caller fix reviewer 3 asked for landed after
+  it and was reviewed by no one. Stated rather than hidden.
 - Reviewed-path manifest: `charness-artifacts/critique/2026-09-04-release-8-1-0-reviewed-paths.txt`
   (the non-artifact paths changed since `v8.0.3`; every packet below is a
   `prepared-for` packet over that manifest or over the repaired paths).
@@ -49,8 +56,14 @@ verified the repairs. No in-process host subagent was used.
 - requested spawn fields: file-backed Codex worker through `run_review.py`
   with the adapter's `reviewer_runner` (`mode: file-backed-worker`,
   `backend: codex_exec`); no host subagent spawn.
-- host exposure state: `host-defaulted`; the packet records the request, not
-  the model the host chose. Application state: unverified-by-packet.
+- host exposure state: `host-defaulted`
+- host exposure note: the packet records the request, not the model the host
+  chose.
+- application state: unverified-by-packet.
+- execution mode: `file-backed-worker`
+- Delivery state: `findings-received` for all three workers; `receipt_ok`,
+  `ledger_ok`, `result_schema_ok`, `provenance_ok` all true in each worker
+  report.
 - backend: `codex_exec`, capability status `ready`, capability envelope
   `28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f`;
   `receipt` status `succeeded`, `output_fresh` true, for every worker.

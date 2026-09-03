@@ -1,0 +1,11 @@
+charness-artifacts/release/latest.md
+charness-artifacts/release/v8.1.0-notes.md
+charness-artifacts/release/v8.0.3-notes.md
+packaging/charness.json
+plugins/charness/.claude-plugin/plugin.json
+plugins/charness/.codex-plugin/plugin.json
+.claude-plugin/marketplace.json
+.agents/plugins/marketplace.json
+.agents/release-adapter.yaml
+charness-artifacts/critique/release-8-1-0-critique.md
+charness-artifacts/release/2026-09-04-v8.1.0-install-update-rehearsal.md
