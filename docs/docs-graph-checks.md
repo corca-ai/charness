@@ -19,9 +19,7 @@ this table.
 refuses the ones that do not. `awiki lint` asks **"is this page reachable?"**,
 per graph, and cannot see a broken link at all.
 
-Neither is a superset of the other, which is why the docs-graph question stayed
-unanswered for as long as it did: the green gate was answering a different
-question, honestly, and nobody was asking this one.
+Neither is a superset of the other.
 
 ## Command-level matrix
 
@@ -42,39 +40,22 @@ question, honestly, and nobody was asking this one.
 The repo gates on NAMED METRICS against declared bars, and never on awiki's exit
 code. Three points, all measured:
 
-1. **Nothing else answers the connectivity question.** Before the docs index hub
-   existed, seven pages were unreachable while [`check_doc_links.py`](../scripts/gates/check_doc_links.py) was green —
-   correctly green, because every link in the repo resolved. That is the exact
-   shape of a gate reporting a verdict it never observed, and it is why awiki is
-   worth a lane of its own rather than being folded into the existing one.
-   `orphans` and `islands` are barred at zero.
-2. **`link_only_lines` is gated too, at a RATCHET above zero.** This reverses a
-   decision this page used to record and no longer contains — that the rule was
-   "worth pursuing" but that adopting it "is not what this gate is for" — and the
-   test that pinned it, `test_link_only_lines_alone_do_not_fail_the_gate`, whose
-   retraction is written out by name in
-   [test_docs_graph_gate.py](../tests/test_docs_graph_gate.py). What changed is the instrument, not the
-   measurement: adopting the rule then meant adopting awiki's exit code, which
-   bundles every rule it has and cannot be selected down. A named metric judged
-   against a bar takes the count without the exit code, and can sit above zero
-   where the rule over-reports. The bar is a required value that may only ever
-   decrease; since S6 it lives in the ratchet record below, which
-   [check_docs_graph.py](../scripts/gates/check_docs_graph.py) reads. The
-   console phase line follows the same rule: awiki's findings exit renders as
+1. **Nothing else answers the connectivity question.** `orphans` and `islands`
+   are barred at zero; [`check_doc_links.py`](../scripts/gates/check_doc_links.py)
+   stays green on an unreachable page, because every link in it resolves.
+2. **`link_only_lines` is gated too, at a ratchet above zero.** The gate judges
+   a named metric against a bar, not awiki's exit code, which bundles every rule
+   and cannot be selected down; the bar is the last row of the ratchet record
+   below, which [check_docs_graph.py](../scripts/gates/check_docs_graph.py)
+   reads. The console line renders awiki's findings exit as
    `OBSERVED [docs-graph-awiki]`, never `FAIL`, because the verdict is the
-   gate's and a tree under every bar still exits 1. A timeout or an unknown
-   exit code keeps the guard's `FAIL` line beside the gate's NOT-RUN verdict.
-3. **The residual under that bar is the wrapping population, and the sweep
-   decision still stands.** Recount rather than trusting a number here —
-   `awiki lint -root docs -recursive` prints it and it moves with every docs
-   edit. Measured 2026-08-09, roughly three-fifths of the findings were this
-   repo's own 80-column prose wrapping putting a link alone on a physical line.
-   Re-measured 2026-08-15 — by reading each flagged source line, which is a
-   different question from the count and is not corroborated by it — the
-   wrapping share was nearer two-thirds. The list entries whose link line
-   carried no descriptor were rewritten to carry one. The wrapped-prose
-   remainder was NOT: a reflow sweep across the whole docs tree is still not the
-   way, and the bar is sized to that remainder rather than to zero.
+   gate's; a timeout or unknown exit code keeps the guard's `FAIL` line beside
+   the gate's NOT-RUN verdict.
+3. **The residual under that bar is hard-wrapped prose.**
+   `awiki lint -root docs -recursive` prints the current count and it moves with
+   every docs edit; recount rather than trust a number here. A reflow sweep
+   across the docs tree is not the remedy, so the bar is sized to that remainder
+   rather than to zero.
 
 The gate must therefore SAY what it did not judge — link resolution, page
 accuracy, and whether a counted link-only line is a bare link or wrapped prose —
@@ -83,80 +64,21 @@ unobserved orphan count is not zero.
 
 ## The `link_only_lines` ratchet record
 
-The bar may only ever decrease. That sentence lived only in prose, which made the
-cheapest repair for a red lane "edit one three-digit literal" — the exact
-zero-work move the release contract's Fixed Decision names. This table is the
-second surface.
-
-**This record is now the bar's only home (S6, 2026-08-15).**
-[check_docs_graph.py](../scripts/gates/check_docs_graph.py) READS the last row below
-rather than carrying its own literal, through `ratchet_rows`; when no record is
-present it falls to `DEFAULT_LINK_ONLY_LINES_BAR`, which is `0`. That matters
-because the gate is exported to consuming repos and this page is not: before the
-change, installing charness handed a repo a threshold measured on charness's own
-80-column docs tree, with neither this record nor the test that ratchets it, and
-nothing said so. Absence now falls to the STRICT side —
-a repo with no record refuses every context-free link line rather than inheriting
-a foreign allowance.
-
-**"May only ever decrease" is enforced by the GATE, not only by the test.**
-`ratchet_rows` refuses the whole record when its bars are not non-increasing, so
-the rule travels with the exported artifact. That is what makes this change a net
-strengthening for a consuming repo rather than a weakening: without it, sourcing
-the bar from a consumer-controlled file while leaving monotonicity to a
-non-exported test would let a consumer append an increasing row and go green with
-nothing red anywhere in what they installed. A round-1 reviewer found exactly
-that gap in the first version of this change.
-[test_docs_graph_gate.py](../tests/test_docs_graph_gate.py) then asserts against
-the rows the gate itself parses — the founding row's date and value are
-unchanged, the gate's resolved bar equals the LAST row, an increasing record is
-refused, and no bar constant is bound in the exported module besides the `0`
-default.
-
-It is a speed bump, not a proof. Stated precisely, because the first version of
-this paragraph over-claimed and a round-2 reviewer measured the gap: an author
-can still raise the bar by appending a row here and editing the test that refuses
-it. Since S6 they must also get past the gate's own monotonicity refusal, so a
-raise now means editing the gate as well — the same three-surface cost as before
-the bar moved into this record, and for a consuming repo it is two surfaces where
-it used to be a regenerated literal. `--link-only-lines-bar` remains a per-run
-probe that bypasses all of it and leaves no history; that is deliberate, and it
-is why calibration means recording a row rather than passing the flag. What the
-founding-row anchor buys is that the record must be APPENDED to rather than
-rewritten, so a raise cannot be a quiet in-place edit of the only row present.
-
-### How this repo's founding bar was measured
-
-Moved here from a comment in the exported gate (S6): a number measured on one
-docs tree has no meaning in a file every consuming repo installs.
-
-Measured 2026-08-15. ONE observer: `awiki lint -root docs -recursive` reported
-`link_only_lines=255` — the field the bar is compared against, not the bundled
-finding total, which is a different number whenever another rule fires. An
-earlier draft of this description called that two channels agreeing, counting the
-gate's own parse of the same stdout as a second one. It is the same observer read
-twice, which is what P4 in the [design north star](./design-north-star.md)
-refuses, and it was caught in review rather than by anything executable.
-
-The split came from reading each flagged source line, which awiki's summary does
-not report and cannot corroborate:
-
-- 88 were list entries whose link line carried no descriptor — 83 bare, and 5
-  more whose descriptor had wrapped onto the following line, which reads fine to a
-  human and still leaves a physical line that is only a link. Every one was
-  repaired.
-- 167 were links that landed alone on a physical line inside ordinary wrapped
-  prose, and they are what the bar allows.
-
-Both populations are scoped to what awiki flagged, which is measured by
-construction. That a list entry whose only link is an external URL falls outside
-both is INFERRED from awiki modelling markdown pages inside its root, and is not
-separately reproduced: reading what was flagged cannot establish what would not
-be.
+The bar may only ever decrease.
+[check_docs_graph.py](../scripts/gates/check_docs_graph.py) reads the last row of
+the table under this heading through `ratchet_rows`; an absent, unreadable, or
+rising record falls to `DEFAULT_LINK_ONLY_LINES_BAR` (`0`), so a consuming repo
+without its own record refuses every context-free link line rather than
+inheriting this one.
+[test_docs_graph_gate.py](../tests/test_docs_graph_gate.py) asserts against the
+rows the gate parses. Raising the bar therefore means appending a row here,
+editing that test, and getting past the gate's own refusal.
+`--link-only-lines-bar` is a per-run probe that bypasses the record and leaves no
+history; calibration means recording a row, not passing the flag.
 
 | date | bar | why it moved |
 | --- | --- | --- |
-| 2026-08-15 | 167 | First bar. Every list entry whose link line carried no descriptor was repaired; the remainder is the hard-wrapped-prose population this rule over-reports on, and the bar is sized to it. |
+| 2026-08-15 | 167 | First bar. Every list entry whose link line carried no descriptor was repaired; the remainder is the hard-wrapped-prose population this rule over-reports on, and the bar is sized to it. [How it was measured](../charness-artifacts/quality/2026-09-03-docs-graph-founding-bar.md). |
 
 ## Reproductions
 
