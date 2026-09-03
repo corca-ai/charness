@@ -127,20 +127,13 @@ it. Four push refusals on 2026-09-03 for one commit were this class.
 
 The parent's serial slices follow the same order by hand: commit the slice,
 run `release_changed_line_coverage.py --base-sha <base> --refuse-unestablished`
-over `base..HEAD`, repair what it names, and only then enter a broad lane
-([implementation discipline](./implementation-discipline.md)). The gate reads
-committed lines, so on a dirty tree it returns `unestablished` and proves
-nothing; and a broad lane run first reads its green as coverage proof, which it
-cannot establish, then pays a full rerun (80 to 180 s) per uncovered line the
-proof finds afterwards. Correctness is held by mechanism: the lane receipt
-above, and the pre-push hook's release lane
-([development](./development.md#pushing)) that refuses an unproven line before
-it leaves. The order itself has no gate: `run-quality.sh --full` would have to
-run the changed-line proof as a preamble and stop before the broad lane, and it
-does not, because that lane also runs in consumer repos that have no mutation
-pool. Graduated from the lesson ledger on 2026-09-03 after twenty scored
-encounters; one of them recorded that "before the broad lane" on an
-uncommitted tree is the unestablished case above.
+over `base..HEAD`, repair what it names, then enter a broad lane. The gate
+reads committed lines, so on a dirty tree it returns `unestablished`; a broad
+lane run first reads its green as coverage proof it cannot give, then pays a
+full rerun per line the proof finds afterwards. Correctness is held by the
+lane receipt above and the pre-push hook ([development](./development.md#pushing));
+the order itself has no gate, because `run-quality.sh --full` also runs in
+consumer repos that have no mutation pool.
 
 So `mutate -> sync -> verify -> publish`
 ([implementation discipline](./implementation-discipline.md)) stays serial in the
