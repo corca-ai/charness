@@ -4,9 +4,9 @@
 > Source of truth: this page and the executable surfaces it names
 > Last verified: 2026-09-02
 
-Charness exists to help an agent reach a correct result with less rediscovery.
-Every contract below must either prevent a real escape or make the next action
-obvious. A ritual that only repeats another check is removable.
+This page states the operating floor under
+[design north star](./design-north-star.md); each contract below earns its place
+against that standard.
 
 ## Ownership
 
