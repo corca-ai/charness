@@ -1,0 +1,42 @@
+{
+  "kind": "charness.goal-run-final-proof-index/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 775,
+  "draft_sha256": "6f2f63ecd8264a4502f7feeb9884a2e2cbb5e3f288be22536fd93a2eed010898",
+  "binding_sha256": "ea389dd26293eb3deff01bf502073c6d242dd84bb3a1df42b245fcac729d46b0",
+  "expected_children": {
+    "path": "charness-artifacts/goal-runs/775/expected-final-graph.json",
+    "sha256": "86880161ecbccec1de4da8f0b02e376c1b219725b40d8d606652ea92a34a2ebf"
+  },
+  "parent_obligation": {
+    "path": "charness-artifacts/goal-runs/775/parent-terminal-obligation.md",
+    "sha256": "a9ebffa5cac6be1e69bf8562f4e570f7adf419175be453b17e79bc6d3f60539f"
+  },
+  "evidence": [
+    {
+      "role": "whole-system-reconciliation",
+      "path": "charness-artifacts/goal-runs/775/final-proof.md",
+      "sha256": "c4f8bd781d9b368231661f6df41cbceca377ddc07f88c41739422ca7d44e5e0d"
+    },
+    {
+      "role": "clean-clone-lanes",
+      "path": "charness-artifacts/goal-runs/775/782-clean-clone-lanes.md",
+      "sha256": "c37edd20604ab285d44d6b8b743f2286c23a9a44dd6a97de590dcf47d3a41af0"
+    },
+    {
+      "role": "joint-lesson-review",
+      "path": "charness-artifacts/goal-runs/775/781-lesson-dispositions.md",
+      "sha256": "badb506f7579ba46861d717da3d4ae9ee93078fe50965d72ca6ec2d04f39871d"
+    },
+    {
+      "role": "session-record",
+      "path": "charness-artifacts/goal-runs/775/2026-09-03-session-record.md",
+      "sha256": "1a8da8ff7190ec572ccd9852bd4fe3b1728cd08ebb3b990c4803ecd07eb75fe5"
+    },
+    {
+      "role": "exact-graph-readback",
+      "path": "charness-artifacts/goal-runs/775/observations/goal-775-final-read.yaml",
+      "sha256": "202194dfb360e55461d25865af4d62b7b88b23cabf2b530347262d66cb93d2f2"
+    }
+  ]
+}
