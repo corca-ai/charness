@@ -225,10 +225,18 @@ words with four narratives moved to dated artifacts. Standing lane green at
 the last commit; every docs commit passed `check-docs.sh` and the length
 record.
 
+#783 closed through the carrier commit `a5c9bc1e3` (hook lane: 88 passed on
+the preceding code push `a0d2e92b3`, docs subset on the carrier), `verify-closeout`
+= `verified` (CLOSED), cursor advanced by `operations/update-parent-progress-789.json`
+(progress 5/1/6, revision 6); `/goal #784` pickup names #789. The first code
+push was refused on two gates the push did not change (an export scan reading
+`native/repograph/target` while check-rust built beside it; the retro skill two
+lines over its core budget), both fixed in `a0d2e92b3`. The body's "nine
+classes seeded" acceptance line was met by the #781 closeout; recorded in the
+carrier.
+
 ## Remaining for a session with the operator
 
-- #783 close: update the body's first bullet (nine classes seeded) and run
-  `verify-closeout`; the acceptance counts are in the disposition tally.
 
 - #789 integrated-closeout: standing, full read-only, and release lanes in a
   clean clone; the scheduled mutation run read from GitHub with #764; every
