@@ -27,6 +27,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from tests.module_eviction import evict_module
 from tests.script_main import load_script_module, run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -46,7 +47,8 @@ check_doc_links = load_script_module(
 # module path, and a bare top-level import is invisible to it -- the gate reported
 # this file as mapping to no standing test at all while these tests drove it.
 artifact_violation_report = load_script_module(
-    "artifact_violation_report_degradation_test", ROOT / "scripts" / "artifacts" / "artifact_violation_report.py"
+    "artifact_violation_report_degradation_test",
+    ROOT / "scripts" / "artifacts" / "artifact_violation_report.py",
 )
 
 # --- artifact_violation_report: the scaffold hint must degrade, never raise ----
@@ -270,7 +272,8 @@ def test_preflight_collects_an_unresolved_command_target_finding(tmp_path) -> No
 def test_quality_script_lookup_raises_when_absent(tmp_path) -> None:
     """A missing quality helper must name itself, not fail later as an AttributeError."""
     record_quality_runtime = load_script_module(
-        "record_quality_runtime_degradation_test", ROOT / "scripts" / "gates_support" / "record_quality_runtime.py"
+        "record_quality_runtime_degradation_test",
+        ROOT / "scripts" / "gates_support" / "record_quality_runtime.py",
     )
 
     with pytest.raises(FileNotFoundError) as excinfo:
@@ -394,7 +397,8 @@ def test_lesson_that_is_only_a_class_tag_is_skipped(tmp_path) -> None:
 def test_source_tree_marker_with_unreadable_manifest_is_not_a_source_tree(tmp_path) -> None:
     """A corrupt marker must read as 'not a source tree', never crash the guard."""
     lib = load_script_module(
-        "helper_provenance_lib_degradation_test", ROOT / "scripts" / "core" / "helper_provenance_lib.py"
+        "helper_provenance_lib_degradation_test",
+        ROOT / "scripts" / "core" / "helper_provenance_lib.py",
     )
 
     root = tmp_path / "repo"
@@ -649,7 +653,7 @@ def test_a_scaffold_still_imports_when_the_repo_root_validator_is_absent(
     # reorders the two: the sentinel would make `import` fail via `sys.modules`, the
     # finder would never be consulted, and the test would still pass while asserting
     # the degradation for a mechanism it no longer exercises.
-    monkeypatch.delitem(sys.modules, validator_module, raising=False)
+    evict_module(monkeypatch, validator_module)
     monkeypatch.setattr(sys, "meta_path", [_Refuse(), *sys.meta_path])
 
     path = ROOT / scaffold_rel

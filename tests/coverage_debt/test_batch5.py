@@ -23,6 +23,7 @@ import pytest
 import yaml
 
 from tests.charness_cli.test_managed_install import load_charness_module
+from tests.module_eviction import evict_module
 from tests.quality_gates.support import ROOT
 from tests.script_main import load_script_module, run_loaded_script_main
 
@@ -138,7 +139,7 @@ def test_the_seed_budget_gate_still_finds_its_emitter_when_loaded_by_path(
     root its shim puts on sys.path. The claim kept: a by-path load must not leave the
     emitter unbound -- a gate that cannot load is a gate that never blocks.
     """
-    monkeypatch.delitem(sys.modules, "check_seed_fixture_budget_flat_layout", raising=False)
+    evict_module(monkeypatch, "check_seed_fixture_budget_flat_layout")
 
     path = ROOT / "scripts" / "gates" / "check_seed_fixture_budget.py"
     module = load_script_module("check_seed_fixture_budget_flat_layout", path)

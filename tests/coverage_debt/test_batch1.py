@@ -8,6 +8,7 @@ behaviour breaks, not merely when a line stops executing:
   `NameError` that reads as a charness bug.
 * The scaffolds' refusal arms must refuse rather than overwrite.
 """
+
 from __future__ import annotations
 
 import sys
@@ -17,12 +18,15 @@ import pytest
 import yaml
 
 from scripts.core import scaffold_artifact_lib
+from tests.module_eviction import evict_module
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
 
-CLASSIFY_T_SIGNAL = load_script_module("classify_t_signal_batch1", ROOT / "scripts" / "gates_support" / "classify_t_signal.py")
+CLASSIFY_T_SIGNAL = load_script_module(
+    "classify_t_signal_batch1", ROOT / "scripts" / "gates_support" / "classify_t_signal.py"
+)
 COLLECT_COMMITS = load_script_module(
     "collect_commits_batch1", ROOT / "skills/public/announcement/scripts/collect_commits.py"
 )
@@ -40,7 +44,10 @@ def test_a_records_family_refuses_when_every_dated_path_it_derives_is_taken(tmp_
     answer is a refusal that names every path tried and the remedy, so the author
     can pick a title instead of losing a record.
     """
-    for name in ("2026-08-16-session.md", *(f"2026-08-16-session-{tail}.md" for tail in ("2", "3", "4"))):
+    for name in (
+        "2026-08-16-session.md",
+        *(f"2026-08-16-session-{tail}.md" for tail in ("2", "3", "4")),
+    ):
         (tmp_path / name).write_text("existing record\n", encoding="utf-8")
 
     with pytest.raises(SystemExit) as excinfo:
@@ -93,7 +100,9 @@ def test_the_scaffold_library_names_the_helper_it_could_not_find(
     surfaces as a `NameError` deep inside a scaffold run and reads as a charness
     bug rather than as a broken install.
     """
-    monkeypatch.setattr(scaffold_artifact_lib, "__file__", str(tmp_path / "scaffold_artifact_lib.py"))
+    monkeypatch.setattr(
+        scaffold_artifact_lib, "__file__", str(tmp_path / "scaffold_artifact_lib.py")
+    )
 
     with pytest.raises(ImportError, match=r"scripts/yaml_output\.py not found"):
         scaffold_artifact_lib._load_repo_helper("yaml_output.py")
@@ -131,7 +140,9 @@ def test_a_skill_script_outside_a_charness_tree_names_the_missing_bootstrap(
 # --------------------------------------------------------------------------
 
 
-def test_the_t_signal_cli_prints_a_classification_and_exits_zero_without_git(tmp_path: Path) -> None:
+def test_the_t_signal_cli_prints_a_classification_and_exits_zero_without_git(
+    tmp_path: Path,
+) -> None:
     """This runs inside closeout, where an exit code is a gate result.
 
     A tree with no git history cannot be classified, and the honest answer is a
@@ -177,7 +188,7 @@ def test_the_rca_recorder_loads_when_run_as_a_plain_script(monkeypatch: pytest.M
     # refuses the name outright does not depend on any of that.
     monkeypatch.setattr(sys, "meta_path", [_BlockScriptsPackage()] + sys.meta_path)
     for name in [name for name in sys.modules if name == "scripts" or name.startswith("scripts.")]:
-        monkeypatch.delitem(sys.modules, name)
+        evict_module(monkeypatch, name)
     monkeypatch.syspath_prepend(str(ROOT / "scripts" / "issue"))
 
     before = set(sys.modules)

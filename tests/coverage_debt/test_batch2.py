@@ -8,6 +8,7 @@ against an adapter it must refuse. Those arms are the ones a reader trusts
 without ever seeing them run, which is exactly why they need assertions that go
 red when the behaviour changes rather than assertions that a line executed.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -19,19 +20,23 @@ import pytest
 import yaml
 
 from tests.dsl import Repo, run_at
+from tests.module_eviction import evict_module
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
 
 ROOT = Path(__file__).resolve().parents[2]
 
 CLAIMS = load_script_module(
-    "coverage_debt_release_notes_claims", ROOT / "skills/public/release/scripts/release_notes_claims.py"
+    "coverage_debt_release_notes_claims",
+    ROOT / "skills/public/release/scripts/release_notes_claims.py",
 )
 ROUTE_PUBLIC_FETCH = load_script_module(
-    "coverage_debt_route_public_fetch", ROOT / "skills/support/web-fetch/scripts/route_public_fetch.py"
+    "coverage_debt_route_public_fetch",
+    ROOT / "skills/support/web-fetch/scripts/route_public_fetch.py",
 )
 PREPARE_PACKET = load_script_module(
-    "coverage_debt_critique_prepare_packet", ROOT / "skills/public/critique/scripts/prepare_packet.py"
+    "coverage_debt_critique_prepare_packet",
+    ROOT / "skills/public/critique/scripts/prepare_packet.py",
 )
 NORMALIZE_HOST_DOCS = load_script_module(
     "coverage_debt_normalize_host_docs", ROOT / "skills/public/setup/scripts/normalize_host_docs.py"
@@ -60,7 +65,9 @@ def _notes(*bodies: str) -> str:
     return f"# Notes\n\n{CLAIMS.BLOCK_BEGIN}\n\n{joined}\n\n{CLAIMS.BLOCK_END}\n"
 
 
-def _findings(text: str, surfaces: list[dict[str, object]] | None = None) -> list[dict[str, object]]:
+def _findings(
+    text: str, surfaces: list[dict[str, object]] | None = None
+) -> list[dict[str, object]]:
     return CLAIMS.audit_notes_text(text, [SURFACE] if surfaces is None else surfaces)
 
 
@@ -220,7 +227,10 @@ def test_a_zero_padded_marker_count_disagrees_without_claiming_a_direction() -> 
     Rendering it as an over- or under-claim would put a formatting difference into
     the direction tally the release contract acts on.
     """
-    text = _notes(CLAIMS.render_surface_chunk(SURFACE)) + "\nWe found {{claim:demo-surface.count=02}}.\n"
+    text = (
+        _notes(CLAIMS.render_surface_chunk(SURFACE))
+        + "\nWe found {{claim:demo-surface.count=02}}.\n"
+    )
 
     findings = [f for f in _findings(text) if f["kind"] == "marker-disagrees"]
 
@@ -296,7 +306,7 @@ def test_the_web_fetch_yaml_renderer_walk_stays_bounded_and_names_what_it_wanted
 
 
 def test_a_yaml_renderer_candidate_with_no_loader_ends_the_walk_with_the_named_error(
-    monkeypatch: pytest.MonkeyPatch
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """When a found candidate yields no import spec, refuse — never dereference it.
 
@@ -353,16 +363,19 @@ def test_the_closeout_refusal_lib_still_emits_refusals_in_the_flat_layout(
     for name in [
         n for n in list(sys.modules) if n in ("scripts", "yaml_output") or n.startswith("scripts.")
     ]:
-        monkeypatch.delitem(sys.modules, name)
+        evict_module(monkeypatch, name)
 
     spec = importlib.util.spec_from_file_location(
-        "coverage_debt_flat_closeout_refusal_lib", ROOT / "scripts" / "review" / "closeout_refusal_lib.py"
+        "coverage_debt_flat_closeout_refusal_lib",
+        ROOT / "scripts" / "review" / "closeout_refusal_lib.py",
     )
     assert spec is not None and spec.loader is not None
     flat = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(flat)
 
-    exit_code = flat.emit_refusal("issue-freeze", flat.RefusalError("stale_freeze", "the freeze is stale"))
+    exit_code = flat.emit_refusal(
+        "issue-freeze", flat.RefusalError("stale_freeze", "the freeze is stale")
+    )
     captured = capsys.readouterr()
 
     assert exit_code == 1
@@ -375,7 +388,7 @@ def test_the_closeout_refusal_lib_still_emits_refusals_in_the_flat_layout(
 
 
 def test_the_critique_packet_runner_refuses_an_invalid_adapter_before_writing(
-    tmp_path: Path
+    tmp_path: Path,
 ) -> None:
     """An adapter with a malformed field must stop the run and report the errors.
 
@@ -400,9 +413,7 @@ def test_the_critique_packet_runner_refuses_an_invalid_adapter_before_writing(
     assert not (tmp_path / "charness-artifacts" / "critique").exists()
 
 
-def test_the_host_doc_normalizer_reports_its_plan_on_stdout_without_writing(
-    tmp_path: Path
-) -> None:
+def test_the_host_doc_normalizer_reports_its_plan_on_stdout_without_writing(tmp_path: Path) -> None:
     """A plan-only run must emit the machine-readable actions and touch nothing.
 
     The runner is the surface `setup` reads before deciding to execute. A plan
@@ -521,7 +532,7 @@ def test_the_retro_index_check_refuses_when_the_committed_index_drifted(tmp_path
 
 
 def test_the_retro_index_preview_emits_the_candidate_payload_without_writing(
-    tmp_path: Path
+    tmp_path: Path,
 ) -> None:
     """With no flag the command previews the derived payload and writes nothing.
 

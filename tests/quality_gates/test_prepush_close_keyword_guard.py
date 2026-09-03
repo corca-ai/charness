@@ -25,6 +25,7 @@ import yaml
 
 from scripts.core.repo_layout import repo_script
 from tests.closeout_authorization_world import CROSSWALK_REL, PROTECTED, build_protected_world
+from tests.module_eviction import evict_module
 from tests.quality_gates.prepush_close_keyword_fixtures import (
     commit as _commit,
 )
@@ -963,7 +964,7 @@ def test_the_hook_mode_import_fallback_binds(monkeypatch) -> None:
     finder = RefuseScriptsPackage()
     monkeypatch.setattr(sys, "meta_path", [finder, *sys.meta_path])
     for name in [n for n in list(sys.modules) if n.startswith("scripts.")]:
-        monkeypatch.delitem(sys.modules, name, raising=False)
+        evict_module(monkeypatch, name)
     monkeypatch.syspath_prepend(str(ROOT / "scripts"))
 
     spec = importlib.util.spec_from_file_location(

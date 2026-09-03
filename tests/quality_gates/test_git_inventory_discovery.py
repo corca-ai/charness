@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -77,7 +78,11 @@ def test_visible_repo_files_reuses_a_bound_subject_listing(
     tracked.write_text("x\n", encoding="utf-8")
     calls = 0
 
-    from scripts.core import repo_file_listing as listing
+    # The module object the lib's snapshot class was defined in, not whatever
+    # `scripts.core.repo_file_listing` names right now: an earlier eviction in the
+    # same worker can leave the package attribute on a different object, and a
+    # patch on that one reaches nothing (the #779 push refusal).
+    listing = sys.modules[RepoFileSnapshot.__module__]
 
     def counted(*_args, **_kwargs):
         nonlocal calls

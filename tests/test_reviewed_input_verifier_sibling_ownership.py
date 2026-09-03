@@ -5,12 +5,15 @@ carrier, precisely because there is no trustworthy package context there. So
 "which sibling owns the identity" has to be answered from the file's own
 directory, not from whatever happens to be importable.
 """
+
 from __future__ import annotations
 
 import importlib.util
 import sys
 import types
 from pathlib import Path
+
+from tests.module_eviction import evict_module
 
 ROOT = Path(__file__).resolve().parent.parent
 VERIFIER = ROOT / "scripts" / "review" / "reviewed_input_verification.py"
@@ -58,7 +61,7 @@ def test_an_already_imported_owner_is_reused_when_it_is_the_same_file() -> None:
 
 def test_the_verifier_resolves_its_own_adjacent_sibling(monkeypatch) -> None:
     """With nothing preloaded, the answer still comes from the file's directory."""
-    monkeypatch.delitem(sys.modules, "scripts.review.reviewed_input_identity", raising=False)
+    evict_module(monkeypatch, "scripts.review.reviewed_input_identity")
 
     module = _load_by_path()
 
@@ -76,7 +79,7 @@ def test_the_owner_is_the_same_object_whichever_module_loads_first(monkeypatch) 
     object, and patching either left the other stale. That traded one
     ambient-state dependency for another; a full-suite run caught it.
     """
-    monkeypatch.delitem(sys.modules, "scripts.review.reviewed_input_identity", raising=False)
+    evict_module(monkeypatch, "scripts.review.reviewed_input_identity")
 
     verifier_first = _load_by_path()
     from scripts.review import reviewed_input_identity as owner
@@ -114,7 +117,7 @@ def test_a_consumer_module_cannot_substitute_the_nonblob_binder(monkeypatch) -> 
 
 
 def test_the_nonblob_owner_is_the_same_object_whichever_loads_first(monkeypatch) -> None:
-    monkeypatch.delitem(sys.modules, "scripts.review.reviewed_input_nonblob", raising=False)
+    evict_module(monkeypatch, "scripts.review.reviewed_input_nonblob")
 
     identity_first = _load_identity_by_path()
     from scripts.review import reviewed_input_nonblob as owner
@@ -130,9 +133,10 @@ def test_identity_resolves_the_repository_changed_path_owner(monkeypatch) -> Non
 
     module = _load_identity_by_path()
 
-    assert Path(module._changed_path_owner.__file__).resolve() == (
-        ROOT / "scripts" / "adapters" / "surfaces_lib.py"
-    ).resolve()
+    assert (
+        Path(module._changed_path_owner.__file__).resolve()
+        == (ROOT / "scripts" / "adapters" / "surfaces_lib.py").resolve()
+    )
 
 
 def test_a_consumer_module_cannot_substitute_the_path_selection_owner(monkeypatch) -> None:

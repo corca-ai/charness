@@ -15,6 +15,7 @@ from pathlib import Path
 
 import yaml
 
+from tests.module_eviction import evict_module
 from tests.quality_gates.issue_closeout_support import bug_closeout_body, seed_commit
 from tests.quality_gates.reviewer_capability_support import (
     non_claims_sha256,
@@ -674,7 +675,7 @@ def test_worker_carrier_does_not_import_a_consumer_shadow_helper(
                 return importlib.util.spec_from_file_location(fullname, shadow / f"{fullname}.py")
             return None
 
-    monkeypatch.delitem(sys.modules, "reviewer_delivery_fields", raising=False)
+    evict_module(monkeypatch, "reviewer_delivery_fields")
     monkeypatch.setattr(sys, "meta_path", [ShadowFinder(), *sys.meta_path])
     module = load_script_module("reviewer_worker_carrier_shadow_test", carrier)
     assert module.PARENT_RECEIPT_ID_RE.fullmatch("not a valid receipt") is None

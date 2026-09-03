@@ -35,6 +35,7 @@ from scripts.review import reviewed_input_worktree as reviewed_worktree
 from scripts.setup import setup_inspect_quality_lib
 from scripts.task_run import task_run, task_run_git
 from scripts.worktree import checkout_view
+from tests.module_eviction import evict_module
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.script_loader import load_script_module
 
@@ -724,7 +725,7 @@ def _without_the_scripts_package(
 ) -> None:
     monkeypatch.setattr(sys, "meta_path", [_BlockScriptsPackage(only)] + sys.meta_path)
     for name in [name for name in sys.modules if name == "scripts" or name.startswith("scripts.")]:
-        monkeypatch.delitem(sys.modules, name)
+        evict_module(monkeypatch, name)
     monkeypatch.syspath_prepend(str(ROOT / "scripts"))
 
 
@@ -734,7 +735,11 @@ def _without_the_scripts_package(
         ("scripts/core/helper_provenance_lib.py", "env_bypass_enabled", "env_bypass"),
         ("tools/check_current_pointer_writes.py", "RepoFileSnapshot", "repo_file_listing"),
         ("scripts/gates/check_symbol_residue.py", "RepoFileSnapshot", "repo_file_listing"),
-        ("scripts/gates_support/dup_ratchet_edit_advisory.py", "head_oid_from_files", "git_checkout"),
+        (
+            "scripts/gates_support/dup_ratchet_edit_advisory.py",
+            "head_oid_from_files",
+            "git_checkout",
+        ),
     ],
 )
 def test_a_root_script_binds_its_owners_flat_when_the_package_is_unreachable(
@@ -787,7 +792,8 @@ def test_the_identity_builder_binds_the_sibling_loader_flat(
     before = set(sys.modules)
     try:
         module = load_script_module(
-            "reviewed_input_identity_flat_batch7", ROOT / "scripts/review/reviewed_input_identity.py"
+            "reviewed_input_identity_flat_batch7",
+            ROOT / "scripts/review/reviewed_input_identity.py",
         )
 
         assert module._load_sibling.__module__ == "sibling_module_loader"
@@ -817,7 +823,8 @@ def test_the_premise_tree_observation_lists_the_index_through_the_package(
     before = set(sys.modules)
     try:
         observation = load_script_module(
-            "premise_tree_observation_flat_batch7", ROOT / "scripts/premise/premise_tree_observation.py"
+            "premise_tree_observation_flat_batch7",
+            ROOT / "scripts/premise/premise_tree_observation.py",
         )
 
         assert observation._index_paths(repo) == {b"tracked.py"}
@@ -889,7 +896,7 @@ def test_the_structural_waste_scan_puts_the_repo_root_back_before_importing(
     )
     # A COPY, so the module's own `sys.path.insert` is undone at teardown.
     monkeypatch.setattr(sys, "path", list(sys.path))
-    monkeypatch.delitem(sys.modules, "scripts.core.repo_file_listing", raising=False)
+    evict_module(monkeypatch, "scripts.core.repo_file_listing")
     monkeypatch.setattr(
         sys, "meta_path", [_RefuseOnce("scripts.core.repo_file_listing")] + sys.meta_path
     )

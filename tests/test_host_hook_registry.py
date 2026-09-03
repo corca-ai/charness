@@ -8,11 +8,11 @@ state-tracked hooks whose embedded script path no longer exists.
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 from scripts.hooks import host_hook_install_lib as lib
 from scripts.hooks import host_hook_registry as registry
+from tests.module_eviction import evict_module
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -67,7 +67,7 @@ def test_fourth_intent_is_a_table_row(tmp_path: Path) -> None:
 
 
 def test_import_module_loads_a_nested_package_module(monkeypatch) -> None:
-    monkeypatch.delitem(sys.modules, "scripts.hooks.host_hook_skill_anchor_guard", raising=False)
+    evict_module(monkeypatch, "scripts.hooks.host_hook_skill_anchor_guard")
     module = registry._import_module("scripts.hooks.host_hook_skill_anchor_guard")
     assert module.__name__ == "scripts.hooks.host_hook_skill_anchor_guard"
 
