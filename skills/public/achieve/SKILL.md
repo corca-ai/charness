@@ -80,12 +80,15 @@ After explicit approval of the exact briefing and draft bytes:
 The binding is the frozen identity. The Goal Draft is not edited during
 execution, and no local status or progress mutation is authorized.
 
-Establishment then runs through the issue skill in this order, and the order
-is not optional: the parent's first metadata block is written with the direct
-`issue_tool.py update` command (the file-backed `goal-run-apply` refuses every
-operation, including `update-body`, on a parent that has no block yet); only
-then `create-or-reuse-child`, `add-child`, and the `update-body` that installs
-the progress cursor. Work Item keys are scoped to the parent by the provider's
+Establishment then runs through the issue skill's file-backed `goal-run-apply`
+in this order, and the order is not optional: first the parent `update-body`
+that installs the metadata block (on a parent with no block yet this is the one
+operation accepted, and only when the operation file carries `binding_path`,
+`draft_sha256`, and `binding_sha256` itself, because there is no live block to
+resolve them from; the desired body's block is checked against the binding
+before any write, and every other operation on a blockless parent is refused
+as `parent-unverified`); only then `create-or-reuse-child`, `add-child`, and
+the `update-body` that installs the progress cursor. Work Item keys are scoped to the parent by the provider's
 parent link, so a slice may reuse a name an earlier run used; a key already
 carried by an unlinked open issue is the one real collision, and discovery
 reports it before any write.

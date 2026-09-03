@@ -220,7 +220,11 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" goal-run-apply \
 The plan and operation files are strict `v1` contracts. Each operation names the
 parent, a unique attempt id, and a repo-contained observation directory. A
 provider operation may repeat binding path and draft/binding identity; when
-omitted, those identities are resolved from the live parent metadata. Body and
+omitted, those identities are resolved from the live parent metadata. A parent
+with no metadata block yet accepts exactly one operation, the parent
+`update-body` that installs the first block, and only when the operation
+carries all three identities itself; the desired block is validated against the
+binding before the write, and the result reports `parent_metadata_bootstrap`. Body and
 expected-graph paths are required to stay inside the repository. The provider
 routes every operation through the selected adapter, persists
 started/terminal observations, and returns typed

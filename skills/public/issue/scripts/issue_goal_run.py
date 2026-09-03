@@ -55,15 +55,33 @@ def _parent_summary(issue: dict[str, Any], *, repo: str, number: int) -> dict[st
 
 def _read_parent_metadata(
     repo: str, parent_number: int, *, backend: dict[str, Any]
-) -> dict[str, Any]:
+) -> dict[str, Any] | None:
+    """Read the parent's managed metadata; ``None`` means the body has no block yet."""
     try:
         issue = READ.read_issue_with_comments(repo, parent_number, backend=backend)["issue"]
-        metadata = GUARD.parse_goal_run_metadata(issue.get("body"), context="Goal Run parent body")
+        return GUARD.parse_goal_run_metadata(issue.get("body"), context="Goal Run parent body")
     except RuntimeError as exc:
         raise RuntimeError(f"could not read Goal Run parent identity: {exc}") from exc
-    if metadata is None:
-        raise RuntimeError("Goal Run parent body has no managed metadata identity")
-    return metadata
+
+
+def _is_metadata_bootstrap(operation: dict[str, Any], parent_number: int) -> bool:
+    """The one operation allowed on a parent with no block: install the first block.
+
+    A blockless parent has no identity to resolve, so every other operation is
+    refused as ``parent-unverified``. A parent ``update-body`` that carries all
+    three identities itself is the bootstrap write; the binding is then loaded
+    from the operation's own identity and the desired body's block is validated
+    against it before any provider mutation. This keeps establishment on the one
+    file-backed provider surface instead of a second command for the first write.
+    """
+    return (
+        operation["operation"] == "update-body"
+        and operation["target"].get("number") == parent_number
+        and all(
+            operation.get(field) is not None
+            for field in CONTRACT.OPERATION_IDENTITY_FIELDS
+        )
+    )
 
 
 def _read_graph(repo: str, parent_number: int, backend: dict[str, Any]) -> dict[str, Any]:
@@ -214,6 +232,7 @@ def command_apply(args: Any, *, resolve_backend: Any, emit: Any) -> int:
             emit(_refusal(exc.code, str(exc), repo=args.repo, parent_number=args.number))
             return 2
         binding = None
+        metadata_bootstrap = False
     else:
         try:
             resolved = resolve_backend(args.repo_root.resolve(), target_repo=args.repo)
@@ -240,6 +259,9 @@ def command_apply(args: Any, *, resolve_backend: Any, emit: Any) -> int:
         backend = resolved["backend"]
         try:
             parent_metadata = _read_parent_metadata(args.repo, args.number, backend=backend)
+            metadata_bootstrap = parent_metadata is None
+            if metadata_bootstrap and not _is_metadata_bootstrap(operation, args.number):
+                raise RuntimeError("Goal Run parent body has no managed metadata identity")
             binding = CONTRACT.validate_operation_binding(
                 operation,
                 args.repo_root.resolve(),
@@ -318,5 +340,7 @@ def command_apply(args: Any, *, resolve_backend: Any, emit: Any) -> int:
             "selected_backend": backend,
         }
     result.update(kind="charness.goal-run-apply/v1", attempt_id=operation["attempt_id"])
+    if name != "record-observation" and metadata_bootstrap:
+        result["parent_metadata_bootstrap"] = True
     emit(result)
     return 0 if result["ok"] else 2

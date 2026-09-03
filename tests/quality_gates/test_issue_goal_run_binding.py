@@ -674,3 +674,158 @@ def test_close_refuses_final_expected_set_outside_binding_before_graph(tmp_path:
     assert emitted[0]["status"] == "close-refused"
     assert "approved Work Items" in emitted[0]["error"]
     assert not (tmp_path / "observations").exists()
+
+
+def _blockless_parent_read(current: str) -> SimpleNamespace:
+    return SimpleNamespace(
+        read_issue_with_comments=lambda *_args, **_kwargs: {
+            "issue": {
+                "number": 724,
+                "state": "OPEN",
+                "url": f"https://github.com/{REPO}/issues/724",
+                "body": current,
+                "comments": [],
+            }
+        }
+    )
+
+
+def test_apply_bootstraps_first_parent_metadata_from_explicit_operation_identity(
+    tmp_path: Path,
+) -> None:
+    """A blockless parent accepts exactly one file-backed operation: the bootstrap update-body."""
+    close_inputs(tmp_path)
+    current = "## Situation\n\nhuman prose only, no block yet\n"
+    desired = current + "\n" + parent_body(tmp_path)
+    (tmp_path / "body.md").write_text(desired, encoding="utf-8")
+    module = _provider()
+    module["command_apply"].__globals__["READ"] = _blockless_parent_read(current)
+    seen: dict[str, object] = {}
+
+    def update_issue_body(repo, number, body_file, *, backend, parent_amendment_validator=None, **_kw):
+        assert parent_amendment_validator is not None
+        # The validator sees the live blockless body and the desired bootstrap body.
+        parent_amendment_validator(current, body_file.read_text(encoding="utf-8"))
+        seen.update(repo=repo, number=number, body=body_file.read_text(encoding="utf-8"))
+        return {
+            "ok": True,
+            "status": "verified-write",
+            "outcome": "verified-write",
+            "mutation_invoked": True,
+            "action": "updated",
+            "repo": repo,
+            "number": number,
+            "body_verified": True,
+        }
+
+    module["command_apply"].__globals__["TRACKER"] = SimpleNamespace(update_issue_body=update_issue_body)
+    operation = _bound_operation(
+        tmp_path, "update-body", {"repo": REPO, "number": 724}, body_file="body.md"
+    )
+    emitted: list[dict[str, object]] = []
+
+    rc = module["command_apply"](
+        Namespace(repo=REPO, number=724, operation_file=operation, repo_root=tmp_path),
+        resolve_backend=lambda *_args, **_kwargs: {"adapter_ok": True, "backend": {"id": "gh"}},
+        emit=emitted.append,
+    )
+
+    assert rc == 0, emitted
+    assert emitted[0]["outcome"] == "verified-write"
+    assert emitted[0]["parent_metadata_bootstrap"] is True
+    assert seen["number"] == 724 and seen["body"] == desired
+    assert (tmp_path / "observations/attempt-update-body.terminal.json").is_file()
+
+
+def test_apply_bootstrap_refuses_desired_block_that_differs_from_the_binding(tmp_path: Path) -> None:
+    close_inputs(tmp_path)
+    current = "human prose only\n"
+    metadata = _fixture_metadata(tmp_path)
+    metadata["draft_sha256"] = "e" * 64
+    desired = (
+        current
+        + "\n<!-- charness-goal-run:v1\n"
+        + json.dumps(metadata, sort_keys=True, separators=(",", ":"))
+        + "\n-->\n"
+    )
+    (tmp_path / "body.md").write_text(desired, encoding="utf-8")
+    module = _provider()
+    module["command_apply"].__globals__["READ"] = _blockless_parent_read(current)
+
+    def update_issue_body(repo, number, body_file, *, backend, parent_amendment_validator=None, **_kw):
+        # The tracker runs the validator on the live blockless body before any write.
+        parent_amendment_validator(current, body_file.read_text(encoding="utf-8"))
+        raise AssertionError("a bootstrap block that contradicts the binding must refuse before mutation")
+
+    module["command_apply"].__globals__["TRACKER"] = SimpleNamespace(update_issue_body=update_issue_body)
+    operation = _bound_operation(
+        tmp_path, "update-body", {"repo": REPO, "number": 724}, body_file="body.md"
+    )
+    emitted: list[dict[str, object]] = []
+
+    rc = module["command_apply"](
+        Namespace(repo=REPO, number=724, operation_file=operation, repo_root=tmp_path),
+        resolve_backend=lambda *_args, **_kwargs: {"adapter_ok": True, "backend": {"id": "gh"}},
+        emit=emitted.append,
+    )
+
+    assert rc == 2
+    assert emitted[0]["status"] == "provider-refused"
+    assert emitted[0]["mutation_invoked"] is False
+    assert "draft hash differs" in emitted[0]["error"]
+
+
+@pytest.mark.parametrize(
+    ("operation", "target", "extra"),
+    [
+        ("add-child", {"repo": REPO, "sub_issue_number": 725, "work_item_key": "slice-1"}, {}),
+        ("read-body", {"repo": REPO, "number": 724}, {}),
+        ("update-body", {"repo": REPO, "number": 725, "work_item_key": "slice-1"}, {"body_file": "body.md"}),
+    ],
+)
+def test_apply_still_refuses_every_other_operation_on_a_blockless_parent(
+    tmp_path: Path, operation: str, target: dict[str, object], extra: dict[str, object]
+) -> None:
+    close_inputs(tmp_path)
+    (tmp_path / "body.md").write_text("<!-- charness-work-item-key: slice-1 -->\n", encoding="utf-8")
+    module = _provider()
+    module["command_apply"].__globals__["READ"] = _blockless_parent_read("no block\n")
+    module["command_apply"].__globals__["TRACKER"] = SimpleNamespace()
+    operation_path = _bound_operation(tmp_path, operation, target, **extra)
+    emitted: list[dict[str, object]] = []
+
+    rc = module["command_apply"](
+        Namespace(repo=REPO, number=724, operation_file=operation_path, repo_root=tmp_path),
+        resolve_backend=lambda *_args, **_kwargs: {"adapter_ok": True, "backend": {"id": "gh"}},
+        emit=emitted.append,
+    )
+
+    assert rc == 2
+    assert emitted[0]["status"] == "parent-unverified"
+    assert "no managed metadata identity" in emitted[0]["error"]
+    assert not (tmp_path / "observations").exists()
+
+
+def test_apply_bootstrap_without_explicit_identity_is_refused_before_provider(tmp_path: Path) -> None:
+    close_inputs(tmp_path)
+    (tmp_path / "body.md").write_text("prose\n" + parent_body(tmp_path), encoding="utf-8")
+    module = _provider()
+    module["command_apply"].__globals__["READ"] = _blockless_parent_read("no block\n")
+    module["command_apply"].__globals__["TRACKER"] = SimpleNamespace()
+    operation = _bound_operation(
+        tmp_path, "update-body", {"repo": REPO, "number": 724}, body_file="body.md"
+    )
+    payload = json.loads(operation.read_text(encoding="utf-8"))
+    payload.pop("binding_sha256")
+    operation.write_text(json.dumps(payload), encoding="utf-8")
+    emitted: list[dict[str, object]] = []
+
+    rc = module["command_apply"](
+        Namespace(repo=REPO, number=724, operation_file=operation, repo_root=tmp_path),
+        resolve_backend=lambda *_args, **_kwargs: {"adapter_ok": True, "backend": {"id": "gh"}},
+        emit=emitted.append,
+    )
+
+    assert rc == 2
+    assert emitted[0]["status"] == "parent-unverified"
+    assert not (tmp_path / "observations").exists()
