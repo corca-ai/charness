@@ -461,7 +461,7 @@ phases:
     - --require-git-file-listing
     lane: standard
     timing_layer: stays
-    note: no wall-clock claim in tests/ (#779); the recorded baseline only shrinks.
+    note: no wall-clock claim in tests/ (#779); the record has been empty since #780 and only shrinks.
   - label: check-skill-contracts
     command:
     - python3

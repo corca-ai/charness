@@ -132,3 +132,53 @@ Each failure this session read as a pattern, and the pattern's pattern.
 | Process kill by pattern | `pkill -f` matched my own chain twice | a kill keyed on a substring of a command line hits the caller | the same shape as the runner's group kill lesson: address the tree, not the name | kill by pid or process group only; never `pkill -f` from a chain whose own argv carries the pattern |
 | Module identity split by eviction | the second push refused: `test_git_inventory_discovery` patched `scripts.core.repo_file_listing` reached through the package attribute while the lib held the class from the object `monkeypatch.delitem` had restored; failed only when `test_batch8`'s eviction ran first in the same worker; twelve tests evicted `scripts.*` modules this way | `monkeypatch.delitem(sys.modules, name)` restores the entry and leaves the parent package attribute on the new object | `collection-time-pollution`: identity established at collection diverges from identity at test time | `tests/module_eviction.py::evict_module` pins the parent attribute for restoration; all twelve sites use it; the victim binds to `sys.modules[RepoFileSnapshot.__module__]`; proven by the ordered pair (1 failed before, 2 passed after) |
 | Installed plugin behind the repo | pickup from `~/.agents/src/charness` (8.0.2) refused the parent on a key the current contract dropped | the host adapter reaches the installed copy first inside the repo that authors it | a proxy from an older tree read as the current state (`verification-shape-mismatch` again) | in the charness repo itself, the Claude host adapter should route skill scripts to the working tree; release 8.0.3 also closes it |
+
+## Third session, 2026-09-03 (#780 wall-clock-rewrite-remainder)
+
+Picked up with `/goal #775` (the repo's own `goal_run_pickup.py`; the installed
+8.0.2 plugin still refuses on `current_membership_sha256`). Cursor named #780.
+Standing lane on arrival: 8660 passed. Plugin mirror unchanged.
+
+### Shape of the work
+
+One shared observation replaced the three census shapes: `tests/fifo_witness.py`
+(commit `ca5b1d517`). A test opens a FIFO non-blocking for read; the controlled
+child writes one line when it has reached the observed state and keeps the
+write end open for its life (its descendants inherit it). `wait_line()`
+replaces sleep-then-check, `wait_eof()` replaces sleep-then-"the tree is
+dead", `has_line()` feeds a controlled clock. No timeouts: the standing
+runner's budget is the only bound, and a hang names the test.
+
+The 47 sites in 14 files were then rewritten in parallel on disjoint files:
+`tests/test_subprocess_guard.py` (14) by an opus subagent;
+`test_cli_skill_surface.py`, `conftest.py`, `test_reviewer_delivery_state_machine.py`
+(7) by a second opus subagent; `test_semantic_review_command.py`,
+`test_standing_pytest_run_execution.py`, `test_mutation_recovery.py`,
+`test_gate_summary_names_failures.py` (14) by a Codex lane
+(`task/wall-clock-fifo-four`, cherry-picked as `61ce9e21d`); the remaining six
+files (12) by a sonnet dynamic workflow. The parent reviewed every diff.
+
+| Site kind | Replacement |
+| --- | --- |
+| `elapsed < N` after a timeout (guard ×3, run_quality_engine, codex_cache_refresh) | dropped; the claim is `timed_out` plus the marker that tells the failure modes apart (`DRAIN_UNAVAILABLE` absent or present); the clamp is unit-tested through `_resolve_interval` |
+| deadline poll for a child marker (guard ×2, semantic_review, standing_pytest, mutation_recovery, gate_summary, web_fetch, task_run) | FIFO line the child writes, or a blocking `readline()` on the child's pipe |
+| sleep before "the tree is dead" (guard ×2, task_run, semantic_review, standing_pytest) | `wait_eof()` on the FIFO the whole tree inherited; the controlled children now sleep 3600 s so a survivor cannot end EOF by dying of old age (found by mutation-testing `_kill_tree` down to a direct-child kill: with 30 s children both tests still passed, 50 s late) |
+| poll for a pid to vanish (cli_skill_surface) | `os.pidfd_open` + blocking `select`, identity check kept in front |
+| sleep for a distinct `.used` stamp (seed_cache_eviction) | `seed_cache.time` replaced by a counting clock; exact values asserted |
+| sleep to widen a lock race (reviewer_delivery) | event-ordered interleaving with an exact event log, plus a direct `LOCK_EX|LOCK_NB` refusal probe |
+| sleep so the peer reaches its wait (test_seed_cache) | a spawn `Semaphore` each worker releases before entering; the builder acquires both tokens |
+| JSON-RPC absolute deadline (codex_cache_refresh) | the loaded module's `time` replaced by a stepped clock; exact call sequence asserted. Step is 1000 s because `remaining` is also the real `select` timeout: a small step made a slow child start shorten the sequence (caught in parent review) |
+| session-finish cleanup retry (conftest) | one cleanup, one inspect; a zombie has released its cwd so fail-closed ownership never attributes it to this checkout |
+
+`wall-clock-baseline.json` is now `{}`; the gate rule is "any call is red".
+`docs/development.md`, the gate docstring, the gate note in
+`.agents/quality-gates.yaml`, and the census header say so.
+
+### Smells this session
+
+| Smell | Instance | Structural move |
+| --- | --- | --- |
+| EOF for the wrong reason | a 30 s controlled child lets `wait_eof()` return when it dies of age, so the kill proof is vacuous after 30 s | controlled children behind a kill proof outlive any plausible run (3600 s); recorded in the guard test comments |
+| fake clock leaking into a real timeout | the stepped `monotonic` also sized the real `select` timeout | when the module under test derives a real wait from the clock, the fake's step must dwarf the wait |
+| length cap crossed by a test helper | the pidfd wait pushed `test_cli_skill_surface.py` to 824 code lines; the full read-only lane refused | the probe-boundary tests (own-session spawn, group kill, drain, survivors) moved to `test_cli_skill_surface_probe_boundary.py`, a cohesive split rather than a `_lib` spill (D33) |
+| installed plugin behind the repo (fourth time) | pickup refused from `~/.agents/src/charness` again | unchanged: route skill scripts to the working tree inside the charness repo; release 8.0.3 |

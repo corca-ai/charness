@@ -1,20 +1,5 @@
 {
-  "files": {
-    "tests/charness_cli/test_codex_cache_refresh.py": 4,
-    "tests/charness_cli/test_task_run.py": 1,
-    "tests/conftest.py": 3,
-    "tests/quality_gates/test_cli_skill_surface.py": 3,
-    "tests/quality_gates/test_gate_summary_names_failures.py": 3,
-    "tests/quality_gates/test_mutation_recovery.py": 3,
-    "tests/quality_gates/test_reviewer_delivery_state_machine.py": 1,
-    "tests/quality_gates/test_run_quality_engine.py": 2,
-    "tests/quality_gates/test_seed_cache_eviction.py": 1,
-    "tests/quality_gates/test_semantic_review_command.py": 4,
-    "tests/quality_gates/test_standing_pytest_run_execution.py": 4,
-    "tests/test_seed_cache.py": 1,
-    "tests/test_subprocess_guard.py": 14,
-    "tests/test_web_fetch_cleanup.py": 3
-  },
+  "files": {},
   "schema": "charness.wall-clock-baseline/v1",
-  "total": 47
+  "total": 0
 }

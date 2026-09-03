@@ -6,8 +6,8 @@ import os
 import shutil
 import subprocess
 import sys
-import time
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -303,28 +303,59 @@ def _jsonrpc_child(source: str) -> subprocess.Popen[str]:
     )
 
 
-def test_jsonrpc_response_wait_uses_one_absolute_deadline() -> None:
+def _stepped_monotonic(*, step: float) -> tuple[SimpleNamespace, list[float]]:
+    """A fake ``time`` module whose ``monotonic()`` starts at 0.0 and advances by
+    ``step`` on every call, recording each value it returned. ``step=0.0`` gives a
+    clock that never advances (a deadline computed against it can never expire).
+    """
+    calls: list[float] = []
+    state = {"value": 0.0}
+
+    def monotonic() -> float:
+        value = state["value"]
+        calls.append(value)
+        state["value"] += step
+        return value
+
+    return SimpleNamespace(monotonic=monotonic), calls
+
+
+def test_jsonrpc_response_wait_uses_one_absolute_deadline(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The wait is driven by one absolute deadline checked against a clock, not by
+    real elapsed time. Replace the loaded module's ``time`` with a fake clock that
+    advances a fixed 1000s step on every call, so the number of clock checks the
+    deadline math performs before giving up is exact and derivable from the code:
+    with deadline=2500 the clock returns 0, 1000, 2000, 3000 -- the first three
+    leave `remaining > 0` (one non-matching line consumed each time) and the
+    fourth makes `remaining = deadline - monotonic() <= 0`, so the function raises
+    on its fourth clock check without touching select/readline again. The step is
+    large on purpose: `remaining` is also the real `select` timeout, so a small
+    step would let a slow child start turn the third read into a select timeout
+    and shorten the sequence -- a wall-clock dependency in disguise. At hundreds
+    of seconds the select simply blocks until the child's next line. The child
+    emits an unbounded stream of non-matching messages so the outcome cannot
+    depend on how many of them it managed to print before being torn down.
+    """
     module = load_charness_module("charness_codex_deadline_under_test")
+    fake_time, calls = _stepped_monotonic(step=1000.0)
+    monkeypatch.setattr(module, "time", fake_time)
     proc = _jsonrpc_child(
-        "import json,time\n"
-        "for value in range(20):\n"
-        " print(json.dumps({'id': 100 + value, 'result': {}}), flush=True)\n"
-        " time.sleep(0.015)\n"
+        "import json\n"
+        "while True:\n"
+        " print(json.dumps({'id': 99, 'result': {}}), flush=True)\n"
     )
-    started = time.monotonic()
     try:
         with pytest.raises(module.CharnessError, match="timed out"):
             module.wait_for_jsonrpc_response(
                 proc,
                 expected_id=2,
-                deadline=started + 0.06,
+                deadline=2500.0,
             )
-        elapsed = time.monotonic() - started
     finally:
         proc.terminate()
         proc.wait(timeout=2)
 
-    assert elapsed < 0.15
+    assert calls == [0.0, 1000.0, 2000.0, 3000.0]
 
 
 @pytest.mark.parametrize(
@@ -334,22 +365,30 @@ def test_jsonrpc_response_wait_uses_one_absolute_deadline() -> None:
         ("pass", "exited before returning a response"),
     ],
 )
-def test_jsonrpc_response_wait_reports_malformed_payload_and_eof(source: str, message: str) -> None:
+def test_jsonrpc_response_wait_reports_malformed_payload_and_eof(
+    source: str, message: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
     module = load_charness_module(f"charness_codex_failure_{message.split()[0]}_under_test")
+    fake_time, _calls = _stepped_monotonic(step=0.0)
+    monkeypatch.setattr(module, "time", fake_time)
     proc = _jsonrpc_child(source)
     try:
         with pytest.raises(module.CharnessError, match=message):
             module.wait_for_jsonrpc_response(
                 proc,
                 expected_id=2,
-                deadline=time.monotonic() + 0.5,
+                deadline=60.0,
             )
     finally:
         proc.wait(timeout=2)
 
 
-def test_jsonrpc_response_wait_returns_matching_error_after_unrelated_message() -> None:
+def test_jsonrpc_response_wait_returns_matching_error_after_unrelated_message(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     module = load_charness_module("charness_codex_matching_error_under_test")
+    fake_time, _calls = _stepped_monotonic(step=0.0)
+    monkeypatch.setattr(module, "time", fake_time)
     proc = _jsonrpc_child(
         "import json\n"
         "print(json.dumps({'method': 'progress'}), flush=True)\n"
@@ -359,7 +398,7 @@ def test_jsonrpc_response_wait_returns_matching_error_after_unrelated_message() 
         response = module.wait_for_jsonrpc_response(
             proc,
             expected_id=2,
-            deadline=time.monotonic() + 0.5,
+            deadline=60.0,
         )
     finally:
         proc.wait(timeout=2)

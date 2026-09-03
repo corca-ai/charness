@@ -10,13 +10,15 @@ on 2026-09-03 was that such a test should not exist: it is rewritten to an
 observation the test itself forces, or deleted; never retried, widened, or
 deselected (#779).
 
-The census that named every site is `charness-artifacts/goal-runs/775/wall-clock-census.md`.
-This check holds the line while the remainder is rewritten: the baseline
-records, per test file, how many `time.sleep`, `time.monotonic`, and
-`time.perf_counter` CALLS the file carried when the census was taken. A file
-above its recorded count, or a file the baseline never named, is red. A file
-below its count is a prompt to lower the record, and `--write-baseline`
-refuses to raise any count.
+The census that named every site is `charness-artifacts/goal-runs/775/wall-clock-census.md`;
+#780 rewrote the last of them and the baseline has been EMPTY since. The rule
+is now simply: any `time.sleep`, `time.monotonic`, or `time.perf_counter` CALL
+in a test file is red. The record format is kept so the gate can only ever be
+loosened by a named, reviewed entry: a file above its recorded count (zero,
+for every file) is red, a file below its count is a prompt to lower the
+record, and `--write-baseline` refuses to raise any count. The replacement a
+test reaches for is `tests/fifo_witness.py` (block on a FIFO the controlled
+child holds) or a controlled clock in the module under test.
 
 What is deliberately outside the rule: a sleep inside a seeded child script is
 a string literal, not a call, and the child is the controlled input; a

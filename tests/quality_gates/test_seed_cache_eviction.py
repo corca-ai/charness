@@ -12,7 +12,9 @@ different set of tests fails on each run and the whole thing reads as flakiness.
 """
 from __future__ import annotations
 
+import itertools
 import time
+import types
 from pathlib import Path
 
 import pytest
@@ -118,17 +120,23 @@ def test_get_or_build_prunes_and_marks_use(tmp_path: Path, monkeypatch: pytest.M
     monkeypatch.setenv("CHARNESS_TEST_SEED_CACHE_KEEP", "1")
     stale = _entry(tmp_path, HASHES[0], used=0.0)
 
+    # A controlled clock: `seed_cache.time` is replaced with a private namespace whose
+    # `.time()` hands out 1000.0, 1001.0, ... in order. Patching only `seed_cache.time`
+    # (not the global `time` module) keeps every other user of wall-clock time in the
+    # process unaffected, so the second `.used` marker is deterministically distinct from
+    # the first without sleeping for real time to pass.
+    fake_now = itertools.count(1000)
+    monkeypatch.setattr(seed_cache, "time", types.SimpleNamespace(time=lambda: float(next(fake_now))))
+
     built = seed_cache.get_or_build("demo", lambda path: (path / "f").write_text("x", encoding="utf-8"))
 
     assert built.is_dir()
     assert not stale.exists()
-    assert (tmp_path / ("c" * 32) / ".used").is_file()
+    assert (tmp_path / ("c" * 32) / ".used").read_text(encoding="utf-8") == "1000.0"
 
     # A second call reuses the entry and re-marks it, so reuse keeps it alive.
-    first = (tmp_path / ("c" * 32) / ".used").read_text(encoding="utf-8")
-    time.sleep(0.01)
     seed_cache.get_or_build("demo", lambda path: pytest.fail("must not rebuild a ready entry"))
-    assert (tmp_path / ("c" * 32) / ".used").read_text(encoding="utf-8") != first
+    assert (tmp_path / ("c" * 32) / ".used").read_text(encoding="utf-8") == "1001.0"
 
 
 def _shape(root: Path, name: str, *, used: float) -> Path:

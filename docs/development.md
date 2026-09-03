@@ -79,11 +79,14 @@ by-name `glob` or `rglob` under `scripts/` anywhere else, tests included. A
 test's claim never depends on wall-clock time: no sleep as synchronisation, no
 deadline poll for something the child could signal, no assertion on elapsed
 time. The standing
-[wall-clock form check](../scripts/gates/check_wall_clock_form.py) refuses a
-new `time.sleep`, `time.monotonic`, or `time.perf_counter` call in `tests/`
-and holds the recorded sites in
-[`wall-clock-baseline.json`](../charness-artifacts/quality/wall-clock-baseline.json)
-to a count that only shrinks. Tests
+[wall-clock form check](../scripts/gates/check_wall_clock_form.py) refuses
+any `time.sleep`, `time.monotonic`, or `time.perf_counter` call in `tests/`;
+its record,
+[`wall-clock-baseline.json`](../charness-artifacts/quality/wall-clock-baseline.json),
+reached zero entries in #780 and can only shrink, so the first new call
+anywhere is red. A test that must wait for a child blocks on a FIFO the child
+holds through [`tests/fifo_witness.py`](../tests/fifo_witness.py), or drives
+the module under test with a controlled clock. Tests
 import the script under test in-process through the loaders in
 [`tests/script_loader.py`](../tests/script_loader.py),
 [`script_main.py`](../tests/script_main.py), and

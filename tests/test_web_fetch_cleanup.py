@@ -5,13 +5,13 @@ import shutil
 import signal
 import subprocess
 import sys
-import time
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 import yaml
 
+from tests.fifo_witness import FifoWitness
 from tests.repo_copy import REPO_COPY_IGNORE
 from tests.script_main import load_script_module, run_loaded_script_main
 
@@ -19,11 +19,6 @@ ROOT = Path(__file__).resolve().parents[1]
 WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
 GATHER_SCRIPTS = ROOT / "skills" / "public" / "gather" / "scripts"
 SPA_HTML = '<html><body><div id="root"></div></body></html>'
-# Hang backstop for the SIGTERM-mid-render test's readiness wait, NOT the bar it
-# measures -- that is the child's process state (see the comment at the wait loop).
-# Sized an order of magnitude above the observed cost of reaching the browser stage
-# so a trip means "investigate a hang", not "the lane was busy".
-_HANG_BACKSTOP_SECONDS = 120
 
 _ACQUIRE = load_script_module(
     "acquire_public_url_for_cleanup_test",
@@ -417,11 +412,12 @@ def test_acquire_closes_session_on_sigterm_mid_render(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "calls.log"
+    witness = FifoWitness(tmp_path / "open-witness")
     (bin_dir / "agent-browser").write_text(
         "#!/bin/sh\n"
         f'printf "%s\\n" "$*" >> "{log}"\n'
         'case "$*" in\n'
-        '  *" open "*) sleep 25 ;;\n'
+        f'  *" open "*) exec 3>"{witness.path}"; printf \'open\\n\' >&3; sleep 25 ;;\n'
         "  *) exit 0 ;;\n"
         "esac\n",
         encoding="utf-8",
@@ -454,54 +450,25 @@ def test_acquire_closes_session_on_sigterm_mid_render(tmp_path: Path) -> None:
         text=True,
     )
     try:
-        # WAIT ON PROCESS STATE, NOT ON WALL TIME. The bar here used to be a 10s
-        # deadline, which measures the MACHINE rather than the behavior under test:
-        # everything before the `open` call -- interpreter startup, imports, the
-        # direct-response stage -- is unbounded work whose duration is set by how
-        # many xdist workers happen to be scheduled beside this test. Under the full
-        # parallel lane it exceeded 10s and the suite went red on a green tree, which
-        # is the same class `#668` carries for the pytest budget.
-        #
-        # The real failure this test must catch is "the child reached the browser
-        # stage and never opened a session", and that is observable WITHOUT a clock:
-        # the child would have exited. So the loop breaks on the log line, fails
-        # IMMEDIATELY and distinguishably when the child exits without one -- with
-        # the child's own output, which the wall-clock form never captured -- and
-        # keeps waiting for as long as the child is alive and therefore still
-        # progressing.
-        #
-        # BLIND CLASS, stated because the remaining bound is still a clock: the
-        # `_HANG_BACKSTOP_SECONDS` cap cannot distinguish a genuinely hung child from
-        # a machine slow enough to need more than two minutes to reach the `open`
-        # call. It is sized as a hang backstop, not as the bar -- an order of
-        # magnitude above the observed startup cost -- so tripping it is a signal to
-        # investigate a hang, never a routine load artifact. It does not make the
-        # test load-independent; it makes the load-dependent arm rare and legible
-        # instead of common and silent.
-        deadline = time.monotonic() + _HANG_BACKSTOP_SECONDS
-        while time.monotonic() < deadline:
-            if log.is_file() and any(
-                " open " in line for line in log.read_text(encoding="utf-8").splitlines()
-            ):
-                break
-            if proc.poll() is not None:
-                stdout, stderr = proc.communicate()
-                raise AssertionError(
-                    "acquire_public_url exited before the fake agent-browser logged an open call "
-                    f"(returncode {proc.returncode}); log: "
-                    + (log.read_text(encoding="utf-8") if log.is_file() else "<no log>")
-                    + f"\nstdout:\n{stdout}\nstderr:\n{stderr}"
-                )
-            time.sleep(0.05)
-        else:
-            raise AssertionError(
-                f"fake agent-browser never logged an open call within the {_HANG_BACKSTOP_SECONDS}s "
-                "hang backstop while the child stayed alive: "
-                + (log.read_text(encoding="utf-8") if log.is_file() else "<no log>")
-            )
+        # WAIT ON THE CHILD'S OWN SIGNAL, NOT ON WALL TIME. The bar here used to be
+        # a 10s deadline (later a 120s poll-loop backstop), which measured the
+        # MACHINE rather than the behavior under test. `acquire_public_url.py`
+        # writes its YAML payload to stdout only once, at the very end (`emit_yaml`
+        # in `main()`), so stdout becoming readable before the witness fires can
+        # only mean the child exited without ever opening a session -- that is the
+        # abort condition, and `wait_line` reports it with the child's own
+        # stdout/stderr attached instead of a bare hang. `wait_line` otherwise
+        # blocks for exactly as long as the child is alive and has not yet reached
+        # the `open` branch, with no timeout and no polling interval to tune.
+        try:
+            witness.wait_line(abort_fds=(proc.stdout.fileno(),))
+        except AssertionError as exc:
+            stdout, stderr = proc.communicate()
+            raise AssertionError(f"{exc}\nstdout:\n{stdout}\nstderr:\n{stderr}") from exc
         proc.send_signal(signal.SIGTERM)
         proc.wait(timeout=30)
     finally:
+        witness.close()
         if proc.poll() is None:
             proc.kill()
             proc.wait(timeout=5)

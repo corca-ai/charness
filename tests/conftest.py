@@ -3,11 +3,11 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
-import time
 from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+import yaml
 
 from scripts.core.repo_file_listing import (
     RepoFileSnapshot,
@@ -334,6 +334,27 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     pytest.exit(refusal, returncode=4)
 
 
+def _residue_pids(payload_text: str) -> list[int]:
+    """Every pid `--assert-no-orphans` named in the YAML payload it printed.
+
+    The three residue kinds it counts are the orphan daemon trees it can reap,
+    reparented browser processes whose daemon is gone, and unreaped zombies.
+    A payload that will not parse yields an empty list: the stderr line is
+    diagnostic, so an unreadable payload must not raise out of a session hook.
+    """
+    try:
+        runtime = (yaml.safe_load(payload_text) or {}).get("runtime") or {}
+    except yaml.YAMLError:
+        return []
+    return sorted(
+        {
+            *runtime.get("orphan_tree_pids", []),
+            *runtime.get("reparented_residue_pids", []),
+            *runtime.get("zombie_residue_pids", []),
+        }
+    )
+
+
 def pytest_sessionfinish(session: pytest.Session) -> None:
     # A NESTED session (one a test spawned) must not reap orphans against the real
     # repo while the OUTER run is still going: the cleanup sends SIGTERM/SIGKILL to
@@ -350,13 +371,28 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
     guard_module = load_script_module("agent_browser_runtime_guard_session_cleanup", guard)
     cleanup = ("--repo-root", str(_REPO_ROOT), "--cleanup-orphans", "--execute")
     inspect = ("--repo-root", str(_REPO_ROOT), "--assert-no-orphans")
-    deadline = time.monotonic() + 10
-    while True:
-        try:
-            run_loaded_script_main(str(guard), guard_module, *cleanup)
-            result = run_loaded_script_main(str(guard), guard_module, *inspect)
-        except (OSError, subprocess.SubprocessError):
-            return
-        if result.returncode == 0 or time.monotonic() >= deadline:
-            return
-        time.sleep(1)
+    # ONE cleanup, ONE inspect. The retry used to run this pair once a second for
+    # ten seconds, which only re-ran `ps` and hoped. `cleanup_orphans` already
+    # SIGTERMs the owned orphan tree, waits its own grace, and SIGKILLs whatever
+    # is left, so nothing it targeted can still be alive when it returns. A pid
+    # killed but not yet reaped is a zombie, and `inspect_runtime` attributes
+    # residue by the process working directory -- which a zombie has already
+    # released -- so an unattributable process is fail-closed to NOT this
+    # checkout's and a just-killed pid cannot be why this inspect fails.
+    #
+    # A failure here is therefore real residue the cleanup does not own:
+    # reparented browser processes, or a tree the container init has not reaped.
+    # Report it and let the session end. This hook never failed a run, and still
+    # does not -- it only stops pretending a second look would change the answer.
+    try:
+        run_loaded_script_main(str(guard), guard_module, *cleanup)
+        result = run_loaded_script_main(str(guard), guard_module, *inspect)
+    except (OSError, subprocess.SubprocessError):
+        return
+    if result.returncode == 0:
+        return
+    print(
+        f"agent-browser runtime residue survived session cleanup: "
+        f"pids={_residue_pids(result.stdout)}",
+        file=sys.stderr,
+    )

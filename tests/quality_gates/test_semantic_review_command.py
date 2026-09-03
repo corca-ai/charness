@@ -159,7 +159,7 @@ if sleep_for:
             "_witness.write(str(os.getpid()) + chr(10))\\n"
             "_witness.flush()\\n"
             "import time\\n"
-            "time.sleep(30)\\n"
+            "time.sleep(3600)\\n"
         )
     else:
         child_source = "import time; time.sleep(30)"

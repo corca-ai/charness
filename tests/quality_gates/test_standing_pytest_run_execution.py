@@ -346,7 +346,7 @@ def test_a_wrapper_sigterm_reaps_the_real_child_tree(tmp_path: Path) -> None:
     with FifoWitness(tmp_path / "witness") as witness:
         fake_pytest = tmp_path / "fake_pytest.sh"
         fake_pytest.write_text(
-            f"#!/bin/bash\n{shell_holder_snippet(witness.path, 'started')}\n(sleep 30) &\nsleep 30\n",
+            f"#!/bin/bash\n{shell_holder_snippet(witness.path, 'started')}\n(sleep 3600) &\nsleep 3600\n",
             encoding="utf-8",
         )
         fake_pytest.chmod(0o755)

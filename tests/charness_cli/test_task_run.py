@@ -3,12 +3,12 @@ from __future__ import annotations
 import os
 import shlex
 import signal
-import time
 from pathlib import Path
 
 import pytest
 
 from scripts.task_run import task_run, task_run_execution, task_run_plan, task_run_runtime
+from tests.fifo_witness import FifoWitness, shell_holder_snippet
 
 from .support import run_cli_path
 from .test_task_run_fixtures import _codex, _git, _repo, _run
@@ -741,19 +741,40 @@ def test_timeout_commits_a_typed_wip_candidate_without_satisfying_completion(
 
 
 def test_task_kills_same_group_background_descendants_before_evidence(tmp_path: Path) -> None:
+    """The runtime kills the whole process group before collecting evidence, so a
+    background descendant that survives codex's own exit must not be allowed to
+    keep writing to the worktree.
+
+    A `FifoWitness` proves the descendant existed: it holds descriptor 3 open and
+    writes a line before codex's script writes `module.py`. A second FIFO (`sync`)
+    forces the rendezvous -- codex's main body blocks on a read until the
+    backgrounded descendant has opened descriptor 3 and written its line, so the
+    descendant is PROVABLY alive at the moment codex exits and the group kill
+    runs. `wait_eof()` on the witness then proves the kill: it blocks until the
+    descendant's descriptor 3 closes, which only happens once the descendant is
+    dead. A survivor would still hold it open, its hour-long `sleep` still running, and
+    the read would not return until the standing runner's own budget ends it.
+    """
     repo = _repo(tmp_path)
     late_write = tmp_path / "late-write.txt"
-    executable = _codex(
-        tmp_path,
-        f"(sleep 1; printf late > {shlex.quote(os.fspath(late_write))}) &\n"
-        "printf 'VALUE = 2\\n' > module.py",
-    )
+    sync_path = tmp_path / "sync"
+    os.mkfifo(sync_path)
+    with FifoWitness(tmp_path / "descendant") as witness:
+        executable = _codex(
+            tmp_path,
+            f"({shell_holder_snippet(witness.path, 'held')}; "
+            f"printf go > {shlex.quote(os.fspath(sync_path))}; "
+            f"sleep 3600; printf late > {shlex.quote(os.fspath(late_write))}) &\n"
+            f"read -r _ < {shlex.quote(os.fspath(sync_path))}\n"
+            "printf 'VALUE = 2\\n' > module.py",
+        )
 
-    payload = _run(repo, tmp_path, executable)
-    time.sleep(1.2)
+        payload = _run(repo, tmp_path, executable)
 
-    assert payload["status"] == "completed", payload
-    assert not late_write.exists()
+        assert payload["status"] == "completed", payload
+        assert witness.wait_line() == "held"
+        witness.wait_eof()
+        assert not late_write.exists()
 
 
 def test_non_delivery_with_scoped_candidate_is_validated_partial_result(tmp_path: Path) -> None:

@@ -5,7 +5,6 @@ from __future__ import annotations
 import hashlib
 import json
 import threading
-import time
 
 import pytest
 
@@ -308,27 +307,103 @@ def test_forged_history_is_rejected_on_readback() -> None:
         delivery.DeliveryLedger.from_dict(payload)
 
 
+def _lock_path_for(path) -> object:
+    """The lock file `delivery.ledger_lock` opens for `path`.
+
+    Mirrors `skills/shared/scripts/reviewer_delivery.py::ledger_lock`, which
+    derives it inline (`path.with_name(f".{path.name}.lock")`) rather than
+    through a helper a test could import. Keep the two in step.
+    """
+    return path.with_name(f".{path.name}.lock")
+
+
 def test_ledger_lock_serializes_concurrent_read_modify_write(tmp_path) -> None:
+    """Second writer's read-modify-write starts only after the first one released.
+
+    The window used to be widened with a sleep inside the critical section and
+    the threads raced for it, so a no-op lock could still pass whenever the
+    scheduler happened to interleave kindly. The interleaving is now ORDERED by
+    events with no timeout: B announces its attempt while A is provably inside
+    the lock, and A only finishes once that announcement has landed. A correct
+    lock can then produce exactly one log, because B's acquire cannot precede
+    A's release; a no-op lock puts "b-acquire" before "a-release" every time.
+    """
     path = tmp_path / "delivery.json"
+    a_inside = threading.Event()
+    b_attempted = threading.Event()
+    log: list[str] = []
 
-    def add_attempt(index: int) -> None:
+    def start_attempt(index: int) -> None:
+        ledger = delivery._read(path)
+        ledger.start(
+            attempt_id=f"a{index}",
+            scope=f"scope-{index}",
+            packet_identity=f"packet-{index}",
+            parent_receipt_identity=f"receipt-{index}",
+            boundary_fingerprint=f"fingerprint-{index}",
+            recorded_at=f"2026-08-21T00:00:0{index}Z",
+        )
+        delivery._write(path, ledger)
+
+    def first_writer() -> None:
         with delivery.ledger_lock(path):
-            ledger = delivery._read(path)
-            ledger.start(
-                attempt_id=f"a{index}",
-                scope=f"scope-{index}",
-                packet_identity=f"packet-{index}",
-                parent_receipt_identity=f"receipt-{index}",
-                boundary_fingerprint=f"fingerprint-{index}",
-                recorded_at=f"2026-08-21T00:00:0{index}Z",
-            )
-            time.sleep(0.01)
-            delivery._write(path, ledger)
+            log.append("a-acquire")
+            a_inside.set()
+            b_attempted.wait()
+            start_attempt(0)
+        log.append("a-release")
 
-    threads = [threading.Thread(target=add_attempt, args=(index,)) for index in range(2)]
+    def second_writer() -> None:
+        a_inside.wait()
+        log.append("b-attempt")
+        b_attempted.set()
+        with delivery.ledger_lock(path):
+            log.append("b-acquire")
+            start_attempt(1)
+
+    threads = [
+        threading.Thread(target=first_writer),
+        threading.Thread(target=second_writer),
+    ]
     for thread in threads:
         thread.start()
     for thread in threads:
         thread.join()
+
+    assert log == ["a-acquire", "b-attempt", "a-release", "b-acquire"]
     payload = json.loads(path.read_text(encoding="utf-8"))
     assert {attempt["attempt_id"] for attempt in payload["attempts"]} == {"a0", "a1"}
+
+
+def test_ledger_lock_holds_a_real_exclusive_file_lock(tmp_path) -> None:
+    """While the ledger lock is held, an independent open cannot take it.
+
+    The interleaving test above reads the lock through its effect on a second
+    caller. This reads the primitive directly: `ledger_lock` is an `fcntl.flock`
+    on a per-path lock file, so a separate descriptor on that same file must be
+    refused while a holder is inside. Without it, "serialized" could still be an
+    ordering the events imposed rather than the lock.
+    """
+    # Linux-only, like the runner: `ledger_lock` itself imports fcntl on posix
+    # and msvcrt elsewhere, and the repo has no non-posix runner to exercise.
+    import fcntl
+
+    path = tmp_path / "delivery.json"
+    holder_inside = threading.Event()
+    release_holder = threading.Event()
+
+    def hold_the_lock() -> None:
+        with delivery.ledger_lock(path):
+            holder_inside.set()
+            release_holder.wait()
+
+    holder = threading.Thread(target=hold_the_lock)
+    holder.start()
+    try:
+        holder_inside.wait()
+        with _lock_path_for(path).open("a+b") as handle:
+            with pytest.raises(BlockingIOError):
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    finally:
+        release_holder.set()
+        holder.join()

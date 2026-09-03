@@ -1,5 +1,7 @@
 # Wall-clock census of `tests/` (Goal Run #775, #779)
 
+> Closed by #780 on 2026-09-03: every rewrite-scope site below is gone and `wall-clock-baseline.json` is empty. The kept kinds (`controlled-child`, `clock-as-data`) remain by design. Rewrite record: `2026-09-03-session-record.md`, third session.
+
 Recorded 2026-09-03 before any rewrite, from a grep for `time.sleep(`, `time.monotonic(`, and `time.time(` over `tests/` excluding `tests/fixtures`. One row per site. Kinds:
 
 - `elapsed-claim`: the assertion is on measured elapsed time. Rewrite or delete.

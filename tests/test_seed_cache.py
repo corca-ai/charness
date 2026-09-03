@@ -4,7 +4,6 @@ import hashlib
 import multiprocessing
 import os
 import subprocess
-import time
 from pathlib import Path
 
 import pytest
@@ -136,18 +135,32 @@ def _concurrent_seed_worker(
     cache_root: str,
     counter_path: str,
     start_event,
+    entering,
     result_queue,
 ) -> None:
     os.environ["CHARNESS_TEST_SEED_CACHE_ROOT"] = cache_root
     seed_cache._SOURCE_HASH = "concurrency-contract"
     start_event.wait(timeout=10)
 
+    # Both workers race `get_or_build("shared", ...)`; exactly one of them wins the
+    # per-entry `flock` and runs `build`, the other blocks on `get_or_build`'s own
+    # `with build_lock: pass` (a blocking flock acquire with no timeout -- see
+    # `seed_cache.get_or_build`). Each worker announces "I am about to call
+    # get_or_build" by releasing its token BEFORE making that call, win or lose.
+    # The winner's `build` then blocks on its own two `acquire()`s until BOTH
+    # tokens exist -- its own and the peer's -- so it cannot reach the nested
+    # `get_or_build("dependency")` until the peer has committed to entering (and,
+    # having lost the race, is at or already inside its own flock wait). That
+    # ordering is the whole point: the outer cache must have released its root
+    # lock before the peer starts waiting, or the peer's wait and the builder's
+    # nested lookup would deadlock on the shared root lock.
+    entering.release()
+
     def build(destination: Path) -> None:
         with Path(counter_path).open("a", encoding="utf-8") as counter:
             counter.write("build\n")
-        # Give the peer time to wait for this outer seed. The cache must release its
-        # root lock while waiting so a builder can safely compose another cached seed.
-        time.sleep(0.2)
+        entering.acquire()
+        entering.acquire()
         dependency = seed_cache.get_or_build(
             "dependency",
             lambda nested: (nested / "ready.txt").write_text("ready\n", encoding="utf-8"),
@@ -187,12 +200,13 @@ def _cross_hash_seed_worker(
 def test_seed_cache_builds_once_across_processes(tmp_path: Path) -> None:
     context = multiprocessing.get_context("spawn")
     start_event = context.Event()
+    entering = context.Semaphore(0)
     result_queue = context.Queue()
     counter = tmp_path / "build-count.txt"
     workers = [
         context.Process(
             target=_concurrent_seed_worker,
-            args=(str(tmp_path / "cache"), str(counter), start_event, result_queue),
+            args=(str(tmp_path / "cache"), str(counter), start_event, entering, result_queue),
         )
         for _ in range(2)
     ]

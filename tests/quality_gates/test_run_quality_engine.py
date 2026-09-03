@@ -4,7 +4,6 @@ import json
 import shutil
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 import pytest
@@ -147,11 +146,12 @@ def test_explicit_and_env_opt_in_selection(tmp_path: Path) -> None:
 
 def test_concurrent_completion_and_heartbeat_are_observable(tmp_path: Path) -> None:
     repo, env = _seed(tmp_path)
-    started = time.monotonic()
     result = _run(repo, env, "--labels", "slow,fast", CHARNESS_QUALITY_HEARTBEAT_SECONDS="1")
 
     assert result.returncode == 0, result.stderr
-    assert time.monotonic() - started >= 1
+    # The HEARTBEAT line is only ever emitted once a full heartbeat interval
+    # has elapsed with a check still running, so its presence is itself the
+    # concurrency claim; no separate wall-clock measurement is needed.
     assert "run-quality: BATCH_START checks=2" in result.stderr
     assert "run-quality: HEARTBEAT remaining=1" in result.stderr
     assert result.stdout.index("PASS fast") < result.stdout.index("PASS slow")

@@ -4,7 +4,6 @@ import os
 import signal
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 import pytest
@@ -13,6 +12,7 @@ import scripts.core.subprocess_guard as subprocess_guard
 from scripts.core.subprocess_guard import (
     DEFAULT_HEARTBEAT_SECONDS,
     DRAIN_UNAVAILABLE,
+    MINIMUM_HEARTBEAT_SECONDS,
     TIMEOUT_EXIT_CODE,
     heartbeat_interval_from_env,
     render_display,
@@ -20,6 +20,7 @@ from scripts.core.subprocess_guard import (
     run_process,
     run_processes_in_order,
 )
+from tests.fifo_witness import FifoWitness, shell_holder_snippet
 
 ROOT = Path(__file__).resolve().parents[1]
 pytestmark = pytest.mark.boundary_contract(
@@ -115,25 +116,65 @@ def test_monitored_phase_can_stream_the_body_instead_of_capturing_it(tmp_path: P
     assert "CAPTURED '' ''" in completed.stdout
 
 
-def test_monitored_phase_streaming_still_kills_the_whole_group_on_timeout(tmp_path: Path) -> None:
-    # The property the standing runner actually buys: an untracked xdist tree is
-    # what turned two wrapper timeouts into two lost runs. Streaming must not cost
-    # the group kill, so this is the streamed twin of the captured bound test.
-    marker = tmp_path / "grandchild-survived"
-    outcome = run_monitored_phase(
-        ["/bin/bash", "-c", f"(sleep 20; touch {marker}) & sleep 20"],
-        cwd=tmp_path,
-        phase="streamed-timeout",
-        timeout_seconds=1.0,
-        heartbeat_seconds=0.2,
-        capture=False,
-    )
+def test_monitored_phase_streaming_still_kills_the_whole_group_on_timeout(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """Streaming must not cost the group kill; both observations are forced.
 
-    assert outcome.timed_out
-    assert outcome.returncode == TIMEOUT_EXIT_CODE
-    assert outcome.elapsed_seconds < 15
-    time.sleep(2)
-    assert not marker.exists(), "a backgrounded grandchild outlived the group kill"
+    The property the standing runner actually buys: an untracked xdist tree is
+    what turned two wrapper timeouts into two lost runs.
+
+    The budget is spent on a CONTROLLED clock rather than on the wall. The guard's
+    `time.monotonic` reads 0 until the shell has opened the witness and published
+    its line, and 100 from then on, so the budget is judged spent only once the
+    tree has PROVABLY formed. The previous version slept and then checked a marker
+    file, which passed vacuously whenever the kill landed before the backgrounded
+    grandchild had started at all. `_await_child` still calls
+    `communicate(timeout=interval)` in real time, so it beats every
+    `heartbeat_seconds` and re-reads the fake clock on each beat.
+
+    The kill itself is then proved by EOF on the witness: the shell, the
+    backgrounded subshell that inherited descriptor 3, and both sleeps have all
+    gone. A survivor would still hold the write end and the read would not return.
+    """
+    with FifoWitness(tmp_path / "witness") as witness:
+        budget_spent = False
+
+        def fake_monotonic() -> float:
+            nonlocal budget_spent
+            if not budget_spent and witness.has_line():
+                budget_spent = True
+            return 100.0 if budget_spent else 0.0
+
+        monkeypatch.setattr("scripts.core.subprocess_guard.time.monotonic", fake_monotonic)
+        outcome = run_monitored_phase(
+            [
+                "/bin/bash",
+                "-c",
+                # The holder runs BEFORE the fork, so the background job inherits
+                # descriptor 3 and EOF covers the whole tree rather than the shell.
+                #
+                # The sleeps outlast any plausible run ON PURPOSE. A survivor that
+                # could reach its own end would let `wait_eof()` return for the
+                # wrong reason, and the test would read "killed" off a tree that
+                # merely died of old age.
+                f"{shell_holder_snippet(witness.path, 'tree-up')}; (sleep 3600) & sleep 3600",
+            ],
+            cwd=tmp_path,
+            phase="streamed-timeout",
+            timeout_seconds=1.0,
+            heartbeat_seconds=0.2,
+            capture=False,
+        )
+
+        assert outcome.timed_out
+        assert outcome.returncode == TIMEOUT_EXIT_CODE
+        # The kill proof, and it is the RETURN of this read rather than its value:
+        # EOF arrives exactly when no process holds the write end. A backgrounded
+        # grandchild that outlived the group kill would still hold it, and this
+        # would not return. (The unread `tree-up` line is what it hands back; the
+        # controlled clock peeked at it without consuming it.)
+        witness.wait_eof()
 
 
 def test_monitored_phase_reports_failure_status_and_returncode(tmp_path: Path, capsys) -> None:
@@ -215,7 +256,6 @@ def test_monitored_phase_bound_holds_when_a_grandchild_outlives_the_kill(tmp_pat
     EOF on the PIPES — which a surviving grandchild still holds. Measured before
     the group kill: a 1s budget against this command returned after 25.0s.
     """
-    started = time.monotonic()
     outcome = run_monitored_phase(
         "python3 -c 'import time; time.sleep(25)' & sleep 25",
         cwd=tmp_path,
@@ -225,16 +265,15 @@ def test_monitored_phase_bound_holds_when_a_grandchild_outlives_the_kill(tmp_pat
         shell=True,
         executable="/bin/bash",
     )
-    elapsed = time.monotonic() - started
 
     assert outcome.timed_out
     assert outcome.returncode == TIMEOUT_EXIT_CODE
-    assert elapsed < 10, f"the post-kill drain blocked past the bound: {elapsed:.1f}s"
-    # The load-bearing assertion. `elapsed` alone cannot distinguish "the group kill
-    # worked" from "only the direct child died and the bounded drain gave up" —
-    # the drain bound caps the very number the timing assertion measures. The
-    # grandchild is in the child's group, so a group kill reaches it and the pipes
-    # close; with a direct-child-only kill it survives and the drain fails.
+    # The load-bearing assertion, and the only one that can tell the two outcomes
+    # apart. Measured elapsed time cannot: the drain bound caps it either way, so
+    # "the group kill worked" and "only the direct child died and the bounded
+    # drain gave up" produce the same number. The grandchild is in the child's
+    # group, so a group kill reaches it and the pipes close; with a
+    # direct-child-only kill it survives and the drain fails.
     assert DRAIN_UNAVAILABLE not in outcome.stderr
 
 
@@ -245,7 +284,6 @@ def test_monitored_phase_clamps_a_heartbeat_wider_than_its_own_budget(tmp_path: 
     operator's "quiet the output" knob back into the silent window this primitive
     exists to close.
     """
-    started = time.monotonic()
     outcome = run_monitored_phase(
         ["python3", "-c", "import time; time.sleep(20)"],
         cwd=tmp_path,
@@ -253,11 +291,23 @@ def test_monitored_phase_clamps_a_heartbeat_wider_than_its_own_budget(tmp_path: 
         timeout_seconds=0.5,
         heartbeat_seconds=3600.0,
     )
-    elapsed = time.monotonic() - started
 
+    # A 3600s interval that was NOT clamped could produce neither of these: the
+    # phase would still be waiting on its first beat, silent, well past the bound.
     assert outcome.timed_out
-    assert elapsed < 5, f"the 3600s interval deferred the 0.5s bound: {elapsed:.1f}s"
     assert "HEARTBEAT [wide-beat] elapsed=" in capsys.readouterr().err
+
+
+def test_resolve_interval_clamps_the_beat_to_the_budget() -> None:
+    """The clamp itself, with no child and no clock: the arithmetic the phase relies on."""
+    # Wider than the budget: the beat becomes the budget, so the budget is checked.
+    assert subprocess_guard._resolve_interval(3600.0, 0.5) == 0.5
+    # Narrower than the floor, from either side: the floor wins, so a beat can
+    # never become a busy loop.
+    assert subprocess_guard._resolve_interval(0.01, 0.5) == MINIMUM_HEARTBEAT_SECONDS
+    assert subprocess_guard._resolve_interval(3600.0, 0.01) == MINIMUM_HEARTBEAT_SECONDS
+    # No budget, nothing to clamp against: the caller's interval stands.
+    assert subprocess_guard._resolve_interval(3600.0, None) == 3600.0
 
 
 #: A grandchild that ESCAPES the group kill: its own session, inheriting the pipes.
@@ -277,7 +327,6 @@ def test_monitored_phase_bounds_the_drain_when_a_descendant_escapes_the_kill(tmp
     The grandchild starts its OWN session, so the group kill cannot reach it, and it
     inherits the pipes — exactly the shape that made `communicate()` wait forever.
     """
-    started = time.monotonic()
     outcome = run_monitored_phase(
         ["python3", "-c", _ESCAPING_GRANDCHILD.format(child_sleep=30, exit_code=0)],
         cwd=tmp_path,
@@ -285,12 +334,15 @@ def test_monitored_phase_bounds_the_drain_when_a_descendant_escapes_the_kill(tmp
         timeout_seconds=0.5,
         heartbeat_seconds=0.2,
     )
-    elapsed = time.monotonic() - started
 
     assert outcome.timed_out
     assert outcome.returncode == TIMEOUT_EXIT_CODE
+    # By construction this IS the proof the drain bound fired: the guard only ever
+    # substitutes DRAIN_UNAVAILABLE for the body on the `TimeoutExpired` branch of
+    # `_drain`, so the phase reaching this line at all means `communicate()`
+    # stopped at POST_KILL_DRAIN_SECONDS instead of waiting on the escaped
+    # grandchild's pipes forever. No measured elapsed time can add to that.
     assert outcome.stderr.startswith(DRAIN_UNAVAILABLE)
-    assert elapsed < 20, f"the drain bound did not hold: {elapsed:.1f}s"
 
 
 def test_monitored_phase_does_not_relabel_a_child_that_finished_before_the_kill(tmp_path: Path) -> None:
@@ -323,10 +375,10 @@ def test_monitored_phase_kills_the_child_when_the_wait_raises(monkeypatch, tmp_p
     Without this, an interrupted release publish leaves the quality runner alive and
     mutating the worktree that the rollback path then restores and reports clean.
     """
-    seen: dict[str, int] = {}
+    seen: dict[str, subprocess.Popen] = {}
 
     def exploding_await(process, **_kwargs):
-        seen["pid"] = process.pid
+        seen["process"] = process
         raise KeyboardInterrupt
 
     monkeypatch.setattr("scripts.core.subprocess_guard._await_child", exploding_await)
@@ -339,87 +391,100 @@ def test_monitored_phase_kills_the_child_when_the_wait_raises(monkeypatch, tmp_p
             timeout_seconds=30,
         )
 
-    time.sleep(0.2)
-    with pytest.raises(ProcessLookupError):
-        os.kill(seen["pid"], 0)
+    # A REAPED child is a dead child, and the cleanup path this test exists for --
+    # `_kill_tree`, then `_drain`'s `communicate`, with `Popen.__exit__` behind it
+    # -- reaps it before `run_monitored_phase` re-raises. So `returncode` is set by
+    # the time control returns here, with no waiting to do. Probing the raw pid
+    # with `os.kill(pid, 0)` was the wrong question as well as a timed one: a
+    # reaped pid may already have been recycled, and the probe would then be
+    # asking about whoever holds it now.
+    assert seen["process"].returncode is not None
+    # Killed, not exited: the child was sleeping 30s and had nothing to exit 0 for.
+    assert seen["process"].returncode != 0
 
 
 def test_monitored_phase_kills_the_tree_when_sigterm_interrupts_popen(monkeypatch, tmp_path: Path) -> None:
-    """A signal between fork/exec and Popen binding must not orphan the tree."""
+    """A signal between fork/exec and Popen binding must not orphan the tree.
+
+    The GRANDCHILD holds one FIFO open for its whole life, which turns both halves
+    of this test into observations it forces rather than deadlines it polls:
+
+    - `wait_line()` blocks until the grandchild is running AND holding the witness,
+      so the SIGTERM is injected against a fully formed tree. The marker-file poll
+      it replaces could time out, and worse, could win its race against a tree that
+      had not been built yet.
+    - `wait_eof()` blocks until the grandchild -- the only writer -- is gone, which
+      is exactly the claim. The `os.killpg(pgid, 0)` and `os.kill(pid, 0)` loops it
+      replaces asked a question a recycled pid can answer wrongly.
+    """
     if not hasattr(os, "killpg"):
         pytest.skip("constructor interruption tree proof requires process groups")
 
-    marker = tmp_path / "tree-pids.txt"
-    child_code = (
-        "import os, pathlib, subprocess, sys, time\n"
-        f"grandchild = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(30)'])\n"
-        f"pathlib.Path({str(marker)!r}).write_text(f'{{os.getpid()}} {{grandchild.pid}}')\n"
-        "time.sleep(30)\n"
-    )
-    observed: dict[str, object] = {}
-    original_popen = subprocess_guard.subprocess.Popen
-    original_kill_tree = subprocess_guard._kill_tree
-    kill_calls: list[int] = []
+    with FifoWitness(tmp_path / "witness") as witness:
+        # Built by hand rather than with `holder_snippet`: the line is the pair
+        # (parent pid, own pid), which only the grandchild can compute, at runtime.
+        # Both sleeps outlast any plausible run ON PURPOSE: a grandchild that could
+        # reach its own end would let `wait_eof()` return for the wrong reason.
+        grandchild_code = (
+            "import os, time\n"
+            f"_witness = open({str(witness.path)!r}, 'w')\n"
+            "_witness.write(f'{os.getppid()} {os.getpid()}\\n')\n"
+            "_witness.flush()\n"
+            "time.sleep(3600)\n"
+        )
+        child_code = (
+            "import subprocess, sys, time\n"
+            f"subprocess.Popen([sys.executable, '-c', {grandchild_code!r}])\n"
+            "time.sleep(3600)\n"
+        )
+        observed: dict[str, object] = {}
+        original_popen = subprocess_guard.subprocess.Popen
+        original_kill_tree = subprocess_guard._kill_tree
+        kill_calls: list[int] = []
 
-    def injected_popen(command, **kwargs):
-        process = original_popen(command, **kwargs)
-        observed["process"] = process
-        observed["pgid"] = os.getpgid(process.pid)
-        deadline = time.monotonic() + 5
-        while not marker.exists() and time.monotonic() < deadline:
-            time.sleep(0.01)
-        if not marker.exists():
-            raise AssertionError("child did not publish its process-group fixture")
-        observed["pids"] = tuple(int(value) for value in marker.read_text().split())
-        observed["injection"] = "after-real-Popen-before-return"
-        os.kill(os.getpid(), signal.SIGTERM)
-        return process
+        def injected_popen(command, **kwargs):
+            process = original_popen(command, **kwargs)
+            observed["process"] = process
+            observed["pids"] = tuple(int(value) for value in witness.wait_line().split())
+            observed["injection"] = "after-real-Popen-before-return"
+            os.kill(os.getpid(), signal.SIGTERM)
+            return process
 
-    def record_kill(process):
-        kill_calls.append(process.pid)
-        original_kill_tree(process)
-
-    def raise_sigterm(_signum, _frame):
-        raise KeyboardInterrupt("SIGTERM injected before Popen binding")
-
-    previous_handler = signal.signal(signal.SIGTERM, raise_sigterm)
-    monkeypatch.setattr(subprocess_guard.subprocess, "Popen", injected_popen)
-    monkeypatch.setattr(subprocess_guard, "_kill_tree", record_kill)
-    process = None
-    try:
-        with pytest.raises(KeyboardInterrupt, match="before Popen binding"):
-            run_monitored_phase(
-                [sys.executable, "-c", child_code],
-                cwd=tmp_path,
-                phase="popen-constructor-interrupted",
-                timeout_seconds=30,
-            )
-        process = observed["process"]
-    finally:
-        signal.signal(signal.SIGTERM, previous_handler)
-        process = observed.get("process", process)
-        if process is not None and process.poll() is None:
+        def record_kill(process):
+            kill_calls.append(process.pid)
             original_kill_tree(process)
-            process.communicate(timeout=2)
 
-    assert observed["injection"] == "after-real-Popen-before-return"
-    assert len(kill_calls) == 1
-    assert process.returncode is not None
-    deadline = time.monotonic() + 2
-    while time.monotonic() < deadline:
+        def raise_sigterm(_signum, _frame):
+            raise KeyboardInterrupt("SIGTERM injected before Popen binding")
+
+        previous_handler = signal.signal(signal.SIGTERM, raise_sigterm)
+        monkeypatch.setattr(subprocess_guard.subprocess, "Popen", injected_popen)
+        monkeypatch.setattr(subprocess_guard, "_kill_tree", record_kill)
+        process = None
         try:
-            os.killpg(observed["pgid"], 0)
-        except ProcessLookupError:
-            break
-        time.sleep(0.05)
-    else:
-        pytest.fail(f"process group {observed['pgid']} still exists after cleanup")
-    for pid in observed["pids"]:
-        try:
-            os.kill(pid, 0)
-        except ProcessLookupError:
-            continue
-        pytest.fail(f"process {pid} still exists after cleanup")
+            with pytest.raises(KeyboardInterrupt, match="before Popen binding"):
+                run_monitored_phase(
+                    [sys.executable, "-c", child_code],
+                    cwd=tmp_path,
+                    phase="popen-constructor-interrupted",
+                    timeout_seconds=30,
+                )
+            process = observed["process"]
+        finally:
+            signal.signal(signal.SIGTERM, previous_handler)
+            process = observed.get("process", process)
+            if process is not None and process.poll() is None:
+                original_kill_tree(process)
+                process.communicate(timeout=2)
+
+        assert observed["injection"] == "after-real-Popen-before-return"
+        assert len(kill_calls) == 1
+        assert process.returncode is not None
+        # The witness line names the holder's parent, so this pins the SHAPE the
+        # test claims to have built: the writer really is a grandchild of the guard,
+        # one level below the process the guard itself holds.
+        assert observed["pids"][0] == process.pid
+        assert witness.wait_eof() == b"", "a grandchild outlived the constructor cleanup"
 
 
 def test_monitored_phase_keeps_partial_output_across_a_timeout(tmp_path: Path) -> None:
