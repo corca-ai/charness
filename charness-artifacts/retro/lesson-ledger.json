@@ -1654,8 +1654,8 @@
         "read-but-not-applied": 0,
         "legacy-scalar": 0
       },
-      "state": "active",
-      "last_lifecycle_event_id": null
+      "state": "graduated",
+      "last_lifecycle_event_id": "783-graduate-proof-surface-message-drift"
     },
     "release-candidate-preflight-order": {
       "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md",
@@ -2380,6 +2380,19 @@
       "rationale": "#783 joint review 2026-09-03: helped; 6 of 7 encounters changed an action (2026-08-19 to 08-21: refused a retro bound to another objective, bound candidates separately, reconciled to read-back identities before terminal status) and none failed. docs/goal-lifecycle.md Execution And Closeout already states the mechanism as current fact: the dedicated close operation validates the hash-bound final-proof index before provider selection, reads back after close, and treats a failed readback as unverified, never completion. No docs edit under the third rule.",
       "reviewed_retros": [
         "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
+        "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md"
+      ]
+    },
+    {
+      "sequence": 18,
+      "event_id": "783-graduate-proof-surface-message-drift",
+      "lesson_id": "proof-surface-message-drift",
+      "action": "graduate",
+      "decision_ref": "docs/documentation-principles.md",
+      "rationale": "#783 joint review 2026-09-03: helped; all 5 encounters changed an action (2026-08-21 to 08-23: commands composed from --help and inventory, unsupported forms kept as non-executable evidence, a refusal rewritten to render live tokens), none since. documentation-principles.md already states the command half as fact (documented flags and subcommands are checked against --help by check_documented_command_flags.py and check_documented_subcommands.py); the refusal-text half has no mechanism and is stated as a row in development.md's mechanisms table.",
+      "reviewed_retros": [
+        "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
+        "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
         "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md"
       ]
     }

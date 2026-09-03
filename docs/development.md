@@ -88,6 +88,7 @@ owns the exact form and what it cannot see; this table does not repeat it.
 | A test module is evicted only through [`tests/module_eviction.py`](../tests/module_eviction.py) | [`check_module_eviction_form.py`](../scripts/gates/check_module_eviction_form.py) |
 | A real spawn in a test is the claim, marked `boundary_contract(reason=...)` | [`check_staged_test_boundaries.py`](../scripts/hooks/check_staged_test_boundaries.py) in the commit hook |
 | Inside this repo a skill script runs from the checkout | `script_origin` ([bootstrap resolution](../skills/shared/references/bootstrap-resolution.md)) |
+| A gate's refusal names live surfaces and tokens, never a remembered rule; a documented flag or subcommand is one the script's own argparse accepts | nothing for the refusal text; [`check_documented_command_flags.py`](../scripts/gates/check_documented_command_flags.py) and [`check_documented_subcommands.py`](../scripts/gates/check_documented_subcommands.py) hold the docs half |
 | A layout fact is asserted on what the module bound, never on a global interpreter property; force an arm with a `meta_path` finder | nothing; the distinction is semantic, so review holds it |
 
 Tests import the script under test in-process through
