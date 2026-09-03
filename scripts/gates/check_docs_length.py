@@ -98,9 +98,14 @@ def measure(repo_root: Path, *, require_git: bool) -> dict[str, int]:
     }
 
 
-def load_baseline(path: Path) -> dict[str, int]:
+def load_baseline(path: Path) -> dict[str, int] | None:
+    """The record's pages map, or None when no record exists yet. The distinction
+    matters to the writer: an absent record is founded from the tree, while an
+    existing record with an empty map is a ratchet that reached zero and must
+    not be re-founded (a reviewer found `--write-baseline` re-admitting every
+    over-budget page once the map was empty, 2026-09-04)."""
     if not path.is_file():
-        return {}
+        return None
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict) or payload.get("schema") != BASELINE_SCHEMA:
         raise SystemExit(f"{path}: not a {BASELINE_SCHEMA} record")
@@ -141,9 +146,15 @@ def judge(counts: dict[str, int], baseline: dict[str, int]) -> tuple[list[str], 
     return failures, prompts
 
 
-def write_baseline(path: Path, counts: dict[str, int], previous: dict[str, int]) -> None:
+def write_baseline(
+    path: Path, counts: dict[str, int], previous: dict[str, int] | None
+) -> None:
     pages = {rel: words for rel, words in sorted(counts.items()) if words > WORD_BUDGET}
-    raised = [rel for rel, words in pages.items() if words > previous.get(rel, 0) and previous]
+    raised = (
+        []
+        if previous is None
+        else [rel for rel, words in pages.items() if words > previous.get(rel, 0)]
+    )
     if raised:
         raise SystemExit(
             "refusing to raise the docs-length baseline for: " + ", ".join(raised) + "; "
@@ -184,7 +195,7 @@ def main(argv: list[str] | None = None) -> int:
             f"of {len(counts)} scanned."
         )
         return 0
-    failures, prompts = judge(counts, previous)
+    failures, prompts = judge(counts, previous or {})
     for prompt in prompts:
         print(f"ADVISORY: {prompt}", file=sys.stderr)
     if failures:

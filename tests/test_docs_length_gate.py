@@ -162,7 +162,7 @@ def test_the_module_main_guard_executes(tmp_path: Path, monkeypatch) -> None:
     assert excinfo.value.code == 0
 
 
-def test_the_bootstrap_shim_adds_the_repo_root_once_and_an_absent_record_is_empty(
+def test_the_bootstrap_shim_adds_the_repo_root_once_and_an_absent_record_reads_absent(
     tmp_path: Path, monkeypatch
 ) -> None:
     """The two lines the changed-line proof named: the shim's insert arm and the empty record.
@@ -170,7 +170,8 @@ def test_the_bootstrap_shim_adds_the_repo_root_once_and_an_absent_record_is_empt
     The shim runs at import, when the root is already on ``sys.path`` under the
     standing runner, so its insert arm is reached only when the root is absent.
     An absent record is the state before the first ``--write-baseline``; it must
-    read as empty, not as a refusal, or a fresh consumer repo could never run the gate.
+    read as absent (None, judged as empty), not as a refusal, or a fresh consumer
+    repo could never run the gate.
     """
     root = str(ROOT)
     monkeypatch.setattr(sys, "path", [entry for entry in sys.path if entry != root])
@@ -178,4 +179,21 @@ def test_the_bootstrap_shim_adds_the_repo_root_once_and_an_absent_record_is_empt
     assert sys.path[0] == root
     gate._load_repo_runtime_bootstrap()
     assert sys.path.count(root) == 1
-    assert gate.load_baseline(tmp_path / "absent.json") == {}
+    assert gate.load_baseline(tmp_path / "absent.json") is None
+    assert gate.judge({"docs/a.md": 1}, gate.load_baseline(tmp_path / "absent.json") or {}) == ([], [])
+
+
+def test_the_writer_refuses_a_new_over_budget_page_when_the_record_is_empty(tmp_path: Path) -> None:
+    """A record whose map reached zero is a ratchet at zero, not an absent record:
+    the writer must not re-found it from whatever is over budget now."""
+    repo = _seed(tmp_path, _words(gate.WORD_BUDGET + 1), baseline={})
+    with pytest.raises(SystemExit, match="refusing to raise the docs-length baseline"):
+        gate.main(["--repo-root", str(repo), "--write-baseline"])
+    assert gate.load_baseline(repo / gate.DEFAULT_BASELINE_REL) == {}
+
+
+def test_an_absent_record_is_founded_from_the_tree(tmp_path: Path) -> None:
+    repo = _seed(tmp_path, _words(gate.WORD_BUDGET + 1), baseline=None)
+    assert gate.load_baseline(repo / gate.DEFAULT_BASELINE_REL) is None
+    assert gate.main(["--repo-root", str(repo), "--write-baseline"]) == 0
+    assert gate.load_baseline(repo / gate.DEFAULT_BASELINE_REL) == {"docs/probe.md": gate.WORD_BUDGET + 1}

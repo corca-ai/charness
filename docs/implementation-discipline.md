@@ -32,7 +32,9 @@ worked, and leave the next change easy to start? It is intentionally short.
    once after batching source edits, then validate the result. The source is
    authoritative; mirror drift is a release/package concern, not a reason to
    duplicate authoring work.
-6. Commit after verification; the external phases that need an explicit request
+6. What is pushed is the verified commit: a repair that verification forced
+   lands as a further commit on the same unpushed branch, never as a silent
+   edit after the proof. The external phases that need an explicit request
    are listed in [operating contract](./operating-contract.md#external-changes).
 
 When a documentation change is unusually broad, [authoring-preflight](./authoring-preflight.md)

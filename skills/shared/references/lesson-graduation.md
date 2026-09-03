@@ -67,7 +67,7 @@ violation was folded first.
 Only after 1 and 2 have landed:
 
 ```bash
-python3 <repo-root>/scripts/lessons/record_lesson_lifecycle.py \
+python3 <plugin-dir>/scripts/lessons/record_lesson_lifecycle.py \
   --event-id <id> --lesson-id <lesson-id> --action graduate \
   --decision-ref docs/<owning-page>.md --rationale "<settled reason>"
 ```

@@ -89,7 +89,7 @@ owns the exact form and what it cannot see; this table does not repeat it.
 | A subagent reads a named base, never whatever tree is on disk | the task run receipt's `base_sha` ([agent task runs](./agent-task-runs.md)) and the critique packet's `reviewed_input_identity`; nothing for a reviewer briefed by hand |
 | A shared-tree review's findings apply only to the tree they were read against | [`reviewer_boundary_fingerprint.py`](../skills/shared/scripts/reviewer_boundary_fingerprint.py) ([reviewers stay read-only](./parallel-execution.md#reviewers-stay-read-only)); nothing for packet identity |
 | In a probe record a field name sits at column 0 and an indented line continues it | [`probe_record_parse.py`](../scripts/evidence/probe_record_parse.py) |
-| A lesson leaves the working set only by a person-settled lifecycle event pointing at a `docs/` page | [`record_lesson_lifecycle.py`](../scripts/lessons/record_lesson_lifecycle.py) holds the form; nothing can see whether a person settled it |
+| A lesson leaves the working set only by a person-settled lifecycle event; archive cites any canonical Markdown decision, graduation its owning `docs/` page | [`record_lesson_lifecycle.py`](../scripts/lessons/record_lesson_lifecycle.py) holds the form; nothing can see whether a person settled it |
 | A gate's refusal names live surfaces and tokens; a documented flag or subcommand is one argparse accepts | nothing for the refusal text; [`check_documented_command_flags.py`](../scripts/gates/check_documented_command_flags.py) and [`check_documented_subcommands.py`](../scripts/gates/check_documented_subcommands.py) for the docs half |
 | A layout fact is asserted on what the module bound, never on a global interpreter property | nothing; the distinction is semantic |
 
