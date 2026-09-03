@@ -101,39 +101,28 @@ was, because they are last-writer-wins:
 - checked-in baselines and ratchet files
 - the git index
 
-A brief names every surface the change touches as the lane's deliverable, not
-only the files it edits: the tests that copy those files by path
-(`grep -rn 'ROOT / "scripts"' tests`), the adapters, and the generated
-surfaces the lane cannot write. Whatever the brief leaves unnamed lands on the parent after the
-lane ends, which is how two lanes finished uncommitted on 2026-09-02 and a file
-move left its fixture copies to the parent on 2026-09-03. The sandbox half is
-mechanism now: `charness task run` grants the worktree's `.agents/` to the
-lane. The authoring half has no gate, because which surfaces a change touches
-is a judgment made while writing the brief; this paragraph is where that
-judgment is owed.
+A brief names every surface the change touches as the lane's deliverable:
+the tests that copy those files by path (`grep -rn 'ROOT / "scripts"' tests`),
+the adapters, and the generated surfaces the lane cannot write; whatever it
+leaves unnamed lands on the parent. `charness task run` grants the worktree's
+`.agents/` to the lane. No gate holds the authoring half: which surfaces a
+change touches is judged while writing the brief.
 
-A lane is done only when its receipt's `changed_line_gate` is not blocking:
-`charness task run` runs
+A lane is done only when its receipt's `changed_line_gate` is `clean` or
+`noop`: `charness task run` runs
 [release_changed_line_coverage.py](../scripts/mutation/release_changed_line_coverage.py)
-from the lane tree at completion, over the lane's own base, and a refusal
-demotes the result to `validated-partial-result` with the unproven line named
-in `next_step` ([agent task runs](./agent-task-runs.md)). The definition of
-done for a brief that touches `scripts/` or `skills/` names that field: the
-lane reports done only with `changed_line_gate.status: clean` (or `noop`), and
-the parent reads the receipt before integrating. Measured on the #785 probe
-lane, a one-file candidate against this repo: 23.6 s for the gate plus 0.4 s to
-regenerate the lane's mirror first, against a lane wall time of 12 s without
-it. Four push refusals on 2026-09-03 for one commit were this class.
+over the lane's own base at completion, and a refusal demotes the result to
+`validated-partial-result` with the unproven line in `next_step`
+([agent task runs](./agent-task-runs.md)). The parent reads the receipt before
+integrating.
 
-The parent's serial slices follow the same order by hand: commit the slice,
-run `release_changed_line_coverage.py --base-sha <base> --refuse-unestablished`
-over `base..HEAD`, repair what it names, then enter a broad lane. The gate
-reads committed lines, so on a dirty tree it returns `unestablished`; a broad
-lane run first reads its green as coverage proof it cannot give, then pays a
+The parent's own slices run the same proof by hand, after the slice commit and
+before any broad lane: the gate reads committed lines (a dirty tree returns
+`unestablished`), and a broad lane run first cannot prove coverage and pays a
 full rerun per line the proof finds afterwards. Correctness is held by the
-lane receipt above and the pre-push hook ([development](./development.md#pushing));
-the order itself has no gate, because `run-quality.sh --full` also runs in
-consumer repos that have no mutation pool.
+receipt and the pre-push hook ([development](./development.md#pushing)); the
+order has no gate, because `run-quality.sh --full` also runs in consumer repos
+without a mutation pool.
 
 So `mutate -> sync -> verify -> publish`
 ([implementation discipline](./implementation-discipline.md)) stays serial in the

@@ -35,11 +35,10 @@ Bloat is the *cost of meeting that failure with ever more bespoke gates*. The fi
 is neither more gates nor blind trust. It is **non-terminality at the few
 boundaries that matter, and terse, concept-separated judgment everywhere else.**
 
-The operative variable is the **channel**, not the gate. What works is a check on
-a *distinct* evidence channel; a distinct observer re-reading the same proxy still
-rubber-stamps. The
-[back-test](../charness-artifacts/audit/2026-06-20-north-star-phase0-diagnosis-backtest.md)
-holds the cases.
+The operative variable is the **channel**, not the gate: a check on a *distinct*
+evidence channel works, a distinct observer re-reading the same proxy
+rubber-stamps
+([back-test](../charness-artifacts/audit/2026-06-20-north-star-phase0-diagnosis-backtest.md)).
 
 ## The five facets of the one idea
 
@@ -57,7 +56,9 @@ unread, and unread prose is not a contract.*
 principle behind it, so the reader derives the next case. *Because an enumerated
 "do not X" list rots and still misses the case it never listed.* (Exception: at
 an irreversible boundary, the list of irreducible observables **is** the
-contract — see P5.)
+contract — see P5.) This repo's worked examples are the mechanisms table in
+[development](./development.md#verification-and-export): a rule is held by a
+mechanism or it is prose.
 
 **P4 — At irreversible boundaries, success is provisional.** A passing gate, a
 `CLOSED` state, a readback, an advisor verdict — each is a *claim*, not a
@@ -111,9 +112,8 @@ and a scope a verdict must name, not another green.
 ## Operating stance
 
 Serve the goal first. When a *reversible* surface fights the goal, fix the
-system even at the cost of speed. Irreversible-boundary safeguards are not
-"friction to fix" — they are the goal at the boundary. When goal and system
-genuinely conflict and the call is unclear, ask.
+system even at the cost of speed. Irreversible-boundary safeguards are the goal
+at the boundary, not friction. When the call is unclear, ask.
 
 ## Taste (a preference order — not a sixth facet, not a gate)
 
@@ -167,7 +167,5 @@ its own — capability does. Count only breaks ties among equals.
 
 ## Deliberately not in this document
 
-Per-surface migration checklists, rollback refs, the diagnosis back-test, and
-the per-transition observable checklists are the
-overhaul *plan's* job; they ship with the surfaces. This document is the
-briefing, not the plan.
+Migration checklists, rollback refs, the diagnosis back-test, and per-transition
+observable checklists ship with their surfaces. This is the briefing, not the plan.

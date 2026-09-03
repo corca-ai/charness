@@ -34,10 +34,8 @@ experiments, and session history there too, or delete them when they have no
 durable value. The index is the entry point; it must not preserve a second catalogue.
 When a decision supersedes a sentence, delete that sentence in the same change:
 a superseded line stays quotable until it is gone, and it will be quoted in good
-faith (a retired flag convention on 2026-08-14; a false claim about the plugin
-mirror on 2026-09-03). Documented flags and subcommands are checked against
-each command's own `--help` by the standing lane; every other sentence is held
-only by this rule.
+faith. Documented flags and subcommands are checked against each command's own
+`--help` by the standing lane; every other sentence is held only by this rule.
 
 - [Documentation index](./index.md) — the maintained page map.
 - [Artifact policy](./artifact-policy.md) — where history and evidence live.
