@@ -1,17 +1,20 @@
 # Goal Lifecycle
 
-> Status: conditional — approved design target, not current implementation
-> Source of truth: the active issue-native achieve goal and planning contract
-> Last verified: 2026-09-02
-> Last reviewed: 2026-08-26
+> Status: current
+> Source of truth: the `achieve` and `issue` skills' Goal Run commands and this page
+> Last verified: 2026-09-03
+> Last reviewed: 2026-09-03
 
-This page answers one question: how should Charness model a long-running goal
+This page answers one question: how does Charness model a long-running goal
 from planning through provider-verified completion?
 
-Until the integrated implementation, exported consumer proof, and live dogfood
-are complete, this page describes the intended system. The source tree is in
-transition; live #724 target pickup has a verified clean-process roundtrip, so
-this page still makes no universal installed-consumer claim.
+The issue-native Goal Run is the implemented workflow: planning, binding,
+provider establishment, exact `/goal #N` pickup, child closeout, and the
+guarded parent close have each run live in this repo (the #724 clean-process
+pickup roundtrip, and the Goal Runs recorded under
+`charness-artifacts/goal-runs/`). What this page does not claim: that every
+installed consumer host has exercised the same path; the installed copy is what
+a consumer runs, and that proof is recorded per release, not assumed here.
 
 ## Design Center
 

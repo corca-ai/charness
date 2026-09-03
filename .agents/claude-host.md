@@ -15,9 +15,11 @@ orchestrating session. The common operating contract stays in
   an installed plugin path as the skill's base directory, run
   `python3 skills/public/<skill>/scripts/<name>.py --repo-root .` from the
   working tree instead. `goal_run_pickup.py` and `plan_release_run.py` print
-  `script_origin` so the copy that answered is in the output, and a drifted
-  installed copy refuses (`stale-installed-copy`) rather than reading an
-  older contract; the rule and its reason live in
+  `script_origin` so the copy that answered is in the output. The pickup
+  refuses a drifted installed copy (`stale-installed-copy`) before any
+  provider read; the release planner only reports, because it is read-only,
+  and the publish helper's own entrypoint guard is the refusal before a
+  release mutation. The rule and its reason live in
   [bootstrap-resolution.md](../skills/shared/references/bootstrap-resolution.md).
 - The repo `bounded-reviewer` agent definition declares no model, so an
   omitted override silently inherits the parent model. Always pass the

@@ -368,10 +368,15 @@ def salvage_uncommitted(
     head = git(worktree, "rev-parse", "HEAD")
     if head.returncode != 0:
         return {"status": "unverified", "error": f"rev-parse HEAD failed: {head.stderr.strip()}"}
-    status = git(worktree, "status", "--porcelain", "--untracked-files=all")
+    # `-z`: NUL-separated, unquoted paths. The human porcelain form quotes and
+    # escapes a path with a space, quote, backslash, or non-ASCII byte, and a path
+    # read back from that form need not name the file; the release critique for
+    # 8.0.3 caught that the first cut would then have skipped the file silently and
+    # still reported the salvage complete.
+    status = git(worktree, "status", "--porcelain", "-z", "--untracked-files=all")
     if status.returncode != 0:
         return {"status": "unverified", "error": f"status failed: {status.stderr.strip()}"}
-    lines = [line for line in status.stdout.splitlines() if line.strip()]
+    lines = _porcelain_z_entries(status.stdout)
     if not lines:
         return {"status": "clean", "head": head.stdout.strip()}
     tracked = [line for line in lines if not line.startswith("??")]
@@ -398,12 +403,27 @@ def salvage_uncommitted(
         result["patch_verified"] = True
     if untracked:
         archive = record / SALVAGE_TAR
+        missing = [rel for rel in untracked if not (worktree / rel).exists()]
+        if missing:
+            return {
+                "status": "unverified",
+                "error": f"untracked path(s) reported by git are not on disk: {', '.join(missing[:5])}",
+            }
         with tarfile.open(archive, "w") as tar:
             for rel in untracked:
-                source = worktree / rel
-                if source.exists():
-                    tar.add(source, arcname=rel)
+                tar.add(worktree / rel, arcname=rel)
+        # Read the archive back: every untracked path git named is a member, or the
+        # worktree stays.
+        with tarfile.open(archive) as tar:
+            members = set(tar.getnames())
+        absent = [rel for rel in untracked if rel not in members and rel.rstrip("/") not in members]
+        if absent:
+            return {
+                "status": "unverified",
+                "error": f"salvage archive is missing {len(absent)} untracked path(s): {', '.join(absent[:5])}",
+            }
         result["files"].append(str(archive))
+        result["archive_members"] = len(members)
     (record / SALVAGE_RECORD).write_text(
         json.dumps(
             {"head": result["head"], "tracked": tracked, "untracked": untracked, "files": result["files"]},
@@ -420,6 +440,27 @@ def salvage_uncommitted(
 #: skipped entry with its reason (about 300 KB on this repo's key), so the logs
 #: are themselves bounded: the newest `SWEEP_LOG_KEEP` stay.
 SWEEP_LOG_KEEP = 20
+
+
+def _porcelain_z_entries(stdout: str) -> list[str]:
+    """`XY path` entries from `git status --porcelain -z`.
+
+    A rename entry is `XY new\0old\0`; the second record is the old name and is
+    dropped so it is not read as a separate path.
+    """
+    records = stdout.split("\0")
+    entries: list[str] = []
+    skip_next = False
+    for record in records:
+        if skip_next:
+            skip_next = False
+            continue
+        if not record:
+            continue
+        entries.append(record)
+        if record[:1] in {"R", "C"} or record[1:2] in {"R", "C"}:
+            skip_next = True
+    return entries
 
 
 def write_sweep_log(key_root: Path, report: dict[str, Any]) -> Path | None:

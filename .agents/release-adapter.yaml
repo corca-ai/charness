@@ -38,7 +38,7 @@ cli_skill_surface_change_globs:
 - packaging/**
 - .agents/command-docs.yaml
 update_instructions:
-- Run `charness update` to install the latest published Charness release.
+- Run `charness update` to fast-forward the managed checkout on its configured branch; that branch carries the latest published Charness release and any commits landed after it, and `charness version` names the installed version.
 - Read the GitHub release notes for release-specific behavior changes, migrations, or rollback notes.
 fresh_checkout_probes:
 - ./charness --help >/dev/null

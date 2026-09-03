@@ -505,3 +505,68 @@ def test_the_sweep_marker_write_tolerates_an_unwritable_key(tmp_path: Path) -> N
     (key / retention.REPO_ROOT_MARKER).mkdir(parents=True)
     retention.record_repo_root_marker(key, tmp_path / "repo")
     assert (key / retention.REPO_ROOT_MARKER).is_dir()
+
+
+def test_salvage_keeps_every_untracked_path_git_names_including_awkward_ones(tmp_path: Path) -> None:
+    """The porcelain form quotes a space, a quote, a backslash, or non-ASCII; `-z` does not."""
+    now = time.time()
+    mine, repo = _tree(tmp_path, now=now)
+    worktree = mine / "task-run" / "dirty-lane" / "worktree"
+    awkward = ["with space.txt", 'quo"te.txt', "back\\slash.txt", "한글.txt", "nested/dir/file.txt"]
+    for rel in awkward:
+        (worktree / rel).parent.mkdir(parents=True, exist_ok=True)
+        (worktree / rel).write_text(rel, encoding="utf-8")
+    _age(worktree, 30 * DAY, now=now)
+
+    report = retention.sweep_runtime_root(repo, key_root=mine, now=now)
+
+    entry = next(e for e in report["entries"] if e["path"] == str(worktree))
+    assert entry["action"] == "removed", entry
+    with tarfile.open(mine / "task-run" / "dirty-lane" / retention.SALVAGE_TAR) as tar:
+        names = set(tar.getnames())
+    assert {"new.txt", *awkward} <= names
+    record = json.loads((mine / "task-run" / "dirty-lane" / retention.SALVAGE_RECORD).read_text(encoding="utf-8"))
+    assert sorted(record["untracked"]) == sorted(["new.txt", *awkward])
+
+
+def test_a_salvage_whose_archive_misses_a_path_keeps_the_worktree(tmp_path: Path, monkeypatch) -> None:
+    now = time.time()
+    mine, repo = _tree(tmp_path, now=now)
+    real = retention.Sweep._git
+
+    def git(cwd: Path, *args: str):
+        result = real(cwd, *args)
+        if args[:2] == ("status", "--porcelain"):
+            # git names a path that is not on disk: the salvage must not claim it.
+            result = subprocess.CompletedProcess(args, 0, result.stdout + "?? ghost.txt\0", "")
+        return result
+
+    report = retention.sweep_runtime_root(repo, key_root=mine, now=now, git=git)
+
+    entry = next(e for e in report["entries"] if e["path"].endswith("dirty-lane/worktree"))
+    assert entry["action"] == "skipped"
+    assert "ghost.txt" in entry["reason"]
+    assert (mine / "task-run" / "dirty-lane" / "worktree" / "a.py").exists()
+
+
+def test_porcelain_z_entries_drop_the_old_name_of_a_rename() -> None:
+    stdout = "R  new.txt\0old.txt\0?? loose.txt\0 M a.py\0"
+    assert retention._porcelain_z_entries(stdout) == ["R  new.txt", "?? loose.txt", " M a.py"]
+
+
+def test_a_salvage_archive_that_lost_a_member_keeps_the_worktree(tmp_path: Path, monkeypatch) -> None:
+    now = time.time()
+    mine, repo = _tree(tmp_path, now=now)
+    real_getnames = tarfile.TarFile.getnames
+
+    def lossy(self):
+        return real_getnames(self)[1:]
+
+    monkeypatch.setattr(tarfile.TarFile, "getnames", lossy)
+
+    report = retention.sweep_runtime_root(repo, key_root=mine, now=now)
+
+    entry = next(e for e in report["entries"] if e["path"].endswith("dirty-lane/worktree"))
+    assert entry["action"] == "skipped"
+    assert "archive is missing" in entry["reason"]
+    assert (mine / "task-run" / "dirty-lane" / "worktree" / "a.py").exists()

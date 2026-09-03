@@ -179,9 +179,9 @@ def _read_goal_parent(
 def _script_origin(repo_root: Path, script_file: str | Path = __file__) -> dict[str, Any]:
     """Which charness tree this pickup runs from, judged against the target repo.
 
-    Inside the authoring repo a host may report the INSTALLED plugin's skill dir,
-    and Goal Run #775 paid for that four times: the installed 8.0.2 pickup refused
-    on a contract the checkout had already replaced, and the agent fell back to the
+    Inside the authoring repo a host may report the INSTALLED plugin's skill dir.
+    One session paid for that four times: the installed pickup refused on a
+    contract the checkout had already replaced, and the agent fell back to the
     checkout's script by hand each time. The provenance guard the write sites use
     (`scripts/core/helper_provenance_lib.py`) answers the question at this read
     seam too: `same-tree` and `in-sync` proceed, `consuming-repo` proceeds (an

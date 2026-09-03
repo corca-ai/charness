@@ -21,6 +21,9 @@ The [bootstrap script](https://github.com/corca-ai/charness/blob/main/init.sh) c
 Init materializes the host plugin surface, registers the Codex
 marketplace entry, installs the CLI, and creates the Claude wrapper/marketplace
 surface when available; see [Repo-Root Install Surface](./docs/host-packaging.md#repo-root-install-surface).
+The host loads the plugin at startup, so after `charness init` or
+`charness update` restart Claude Code, or start a new Codex session, before the
+first Charness prompt; the CLI prints the same instruction when it finishes.
 
 Use `charness doctor` to inspect the local install. Run `charness uninstall` to
 remove the managed install surface; add `--delete-checkout` to remove the

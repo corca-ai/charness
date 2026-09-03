@@ -142,7 +142,7 @@ def _script_origin(repo_root: Path) -> dict[str, Any]:
     Inside the authoring repo a host may hand the session the installed plugin's
     copy; the planner is read-only, so it reports rather than refuses, and the
     publish helper's own entrypoint guard refuses a drifted copy before mutation.
-    The field makes the copy that answered part of the answer (#788).
+    The field makes the copy that answered part of the answer.
     """
     provenance = SKILL_RUNTIME.load_repo_module_from_skill_script(
         __file__, "scripts.core.helper_provenance_lib"
