@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "questions": [
+    {
+      "decision": "Whether #783 (second lesson review, 34 scored lessons) is a reused child of this Goal Run or stays a standalone issue outside it",
+      "options": [
+        {
+          "id": "reuse-783-as-child",
+          "summary": "Reuse #783 as slice 3; slices 1 and 2 land the mechanisms its top candidates graduate onto",
+          "tradeoff": "One cursor for review and mechanisms; the review's length sits inside the run"
+        },
+        {
+          "id": "standalone-783",
+          "summary": "Keep #783 outside; the goal holds only the three follow-ups",
+          "tradeoff": "Shorter run; the review must track by hand which mechanism landed in which commit"
+        }
+      ],
+      "recommendation": {
+        "option": "reuse-783-as-child",
+        "reason": "The ordering 'mechanism before the lesson it graduates' only exists inside one run"
+      },
+      "answer": null,
+      "rejected_alternatives": []
+    },
+    {
+      "decision": "Whether release 8.0.3 ships inside this goal (slice 5), or only the checkout-first routing lands and the release decision is recorded",
+      "options": [
+        {
+          "id": "routing-then-release-if-authorized",
+          "summary": "Routing mechanism in-goal; 8.0.3 cut in slice 5 only on explicit operator authorization at that moment",
+          "tradeoff": "The slice may close as 'routing landed, release deferred with reason'"
+        },
+        {
+          "id": "release-required",
+          "summary": "Slice 5 acceptance requires 8.0.3 published and read back",
+          "tradeoff": "Closes the installed-plugin gap for every host; publish is outward-facing and separately authorized"
+        },
+        {
+          "id": "routing-only",
+          "summary": "No release in this goal",
+          "tradeoff": "Consumers stay on 8.0.2 with 173 commits unshipped"
+        }
+      ],
+      "recommendation": {
+        "option": "routing-then-release-if-authorized",
+        "reason": "Routing is the mechanism inside this repo; publishing is a separately authorized outward action"
+      },
+      "answer": null,
+      "rejected_alternatives": []
+    },
+    {
+      "decision": "Mode of the first cross-key sweep of charness/runtime/ (1,871 keys, 340 GB)",
+      "options": [
+        {
+          "id": "report-then-delete",
+          "summary": "Report mode first; the operator reads the report; the deleting sweep applies only the existing dead-key rule",
+          "tradeoff": "One extra step before space is reclaimed"
+        },
+        {
+          "id": "delete-under-existing-rule",
+          "summary": "Run the deleting sweep directly under the dead-key rule already documented for pytest-tmp",
+          "tradeoff": "Faster; the first run deletes hundreds of GB nobody has looked at"
+        }
+      ],
+      "recommendation": {
+        "option": "report-then-delete",
+        "reason": "Deletion at this scale is irreversible and the rule was written for a much smaller tree"
+      },
+      "answer": null,
+      "rejected_alternatives": []
+    },
+    {
+      "decision": "Where the changed-line definition of done binds for lanes and subagents",
+      "options": [
+        {
+          "id": "task-run-mechanism-plus-docs",
+          "summary": "task run completion runs release_changed_line_coverage.py against the lane base and writes blocking_detail into the receipt; docs sentence names it",
+          "tradeoff": "Runtime added to every lane completion; the two top lessons gain a mechanism to graduate onto"
+        },
+        {
+          "id": "docs-sentence-only",
+          "summary": "Brief rule in docs/parallel-execution.md and the host adapter, as the retro proposed",
+          "tradeoff": "No lane cost; the rule binds only if the brief author remembers it"
+        }
+      ],
+      "recommendation": {
+        "option": "task-run-mechanism-plus-docs",
+        "reason": "A brief rule without a gate is the shape rule-exists-but-does-not-bind names"
+      },
+      "answer": null,
+      "rejected_alternatives": []
+    }
+  ],
+  "remaining_consequential_decisions": [
+    "#783 reused as child or standalone",
+    "8.0.3 inside the goal",
+    "first cross-key sweep mode",
+    "changed-line done-gate as mechanism or docs sentence"
+  ]
+}
