@@ -14,8 +14,6 @@ stays as the short human-readable contract for the same reviewed cases.
   public skills
 - make the current acceptance evidence for each reviewed case explicit before
   a slice is called done
-- keep the registry small and current; historical review detail belongs in
-  dated artifacts rather than in the live projection
 
 ## Review Posture
 
@@ -30,5 +28,3 @@ stays as the short human-readable contract for the same reviewed cases.
 
 Add more reviewed cases only when a new public skill lands or an existing one
 changes enough that the current reviewed prompt is no longer load-bearing.
-The next leverage is stronger proof for the weakest reviewed cases, not more
-registry rows for their own sake.
