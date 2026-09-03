@@ -109,9 +109,14 @@ regenerated before any lane.
 5. #782 integrated-closeout after the scheduled mutation run on the pushed tree.
 
 
-Push, `verify-closeout`, and cursor advance (operation files
-`operations/update-parent-progress-77{7,8}.json` prepared) wait on the
-operator's push authorisation.
+Pushed 2026-09-03 after the operator's approval: three hook refusals first
+(release changed-line coverage on 24 unproven lines, four unmapped skill
+scripts rendering PARTIAL, then a module-identity split in the coverage probe),
+each fixed structurally and recorded under "Smells"; the fourth push landed
+`540baf850` with the hook lane at 86 passed in 272 s. `verify-closeout` =
+`verified` for #776, #777, #778, #779. Cursor advanced by
+`operations/update-parent-progress-780.json` (progress 4/3/7 revision 2);
+pickup names #780.
 
 ## Smells, not incidents (operator rule, 2026-09-03)
 
