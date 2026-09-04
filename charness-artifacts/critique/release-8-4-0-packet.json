@@ -1,0 +1,303 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-04T05:46:05Z",
+  "prepared_for": "release 8.4.0 worktree lifetime and issue 793-796",
+  "changed_ref": "2540a61d8d41df6abffc9a76229ad0d93e8caff1..d2c03920660605f65394a1fdc1e7616cfc1bb883",
+  "substrate_mode": "committed-ref",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `2540a61d8d41df6abffc9a76229ad0d93e8caff1..d2c03920660605f65394a1fdc1e7616cfc1bb883`:\n- .agents/command-docs.yaml\n- .agents/worktree-adapter.yaml\n- .githooks/commit-msg\n- .gitignore\n- charness\n- charness-artifacts/critique/2026-09-04-issue-794-hooks-path-resolution.md\n- charness-artifacts/quality/docs-length-baseline.json\n- charness-artifacts/spec/worktree-prepare-doctor.md\n- docs/agent-task-runs.md\n- docs/cli-reference.md\n- docs/development.md\n- docs/validator-timing-layers.md\n- docs/worktree-prepare.md\n- integrations/worktree/adapter.example.yaml\n- scripts/evidence/proof_receipt.py\n- scripts/gates_support/runtime_root_retention.py\n- scripts/hooks/check_release_lane_receipt.py\n- scripts/review/reviewed_input_range.py\n- scripts/run_quality_engine_receipt.py\n- scripts/worktree/worktree_audit.py\n- scripts/worktree/worktree_audit_lib.py\n- scripts/worktree/worktree_create.py\n- scripts/worktree/worktree_create_lib.py\n- scripts/worktree/worktree_doctor_checks.py\n- scripts/worktree/worktree_doctor_lib.py\n- scripts/worktree/worktree_lifetime.py\n- skills/public/critique/references/prepare-packet.md\n- skills/public/critique/scripts/prepare_packet.py\n- skills/public/critique/scripts/run_review.py\n- skills/public/critique/scripts/run_review_hold_out.py\n- skills/public/critique/scripts/run_review_support.py\n- skills/public/quality/references/consumer-validator-catalog.yaml\n- skills/public/setup/scripts/templates/worktree_doctor_default.yaml.txt\n- skills/public/setup/scripts/templates/worktree_doctor_lefthook.yaml.txt\n- tests/charness_cli/test_worktree_audit.py\n- tests/charness_cli/test_worktree_create.py\n- tests/charness_cli/test_worktree_doctor.py\n- tests/charness_cli/test_worktree_doctor_git_snapshot.py\n- tests/charness_cli/test_worktree_lifetime.py\n- tests/coverage_debt/test_batch4.py\n- tests/coverage_debt/test_batch7.py\n- tests/test_critique_prepare_packet.py\n- tests/test_release_lane_receipt.py\n- tests/test_run_review_declared_path_resolution.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: integrations/worktree/adapter.example.yaml, scripts/evidence/proof_receipt.py, scripts/gates_support/runtime_root_retention.py, scripts/hooks/check_release_lane_receipt.py, scripts/review/reviewed_input_range.py, scripts/run_quality_engine_receipt.py, scripts/worktree/worktree_audit.py, scripts/worktree/worktree_audit_lib.py, scripts/worktree/worktree_create.py, scripts/worktree/worktree_create_lib.py, scripts/worktree/worktree_doctor_checks.py, scripts/worktree/worktree_doctor_lib.py, scripts/worktree/worktree_lifetime.py, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_hold_out.py, skills/public/critique/scripts/run_review_support.py, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/setup/scripts/templates/worktree_doctor_default.yaml.txt, skills/public/setup/scripts/templates/worktree_doctor_lefthook.yaml.txt\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: .agents/command-docs.yaml, charness-artifacts/critique/2026-09-04-issue-794-hooks-path-resolution.md, charness-artifacts/spec/worktree-prepare-doctor.md, docs/agent-task-runs.md, docs/cli-reference.md, docs/development.md, docs/validator-timing-layers.md, docs/worktree-prepare.md, skills/public/critique/references/prepare-packet.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/quality/docs-length-baseline.json\n  verify: python3 scripts/gates/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/gates/validate_quality_artifact.py --repo-root ., python3 scripts/gates/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_hold_out.py, skills/public/critique/scripts/run_review_support.py, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/setup/scripts/templates/worktree_doctor_default.yaml.txt, skills/public/setup/scripts/templates/worktree_doctor_lefthook.yaml.txt\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- capability-catalog: Deterministic capability inventory, stale-path resolver, and canonical current-pointer artifacts.\n  source matches: charness\n  verify: python3 -m pytest -q tests/test_capability_catalog.py, python3 -m tools.validate_current_pointer_freshness --repo-root ., python3 -m json.tool .agents/surfaces.json\n- consumer-validator-catalog: Explicit packaged consumer-validator inventory, adoption decisions, and the installed/source-layout checker that enforces the contract.\n  source matches: skills/public/quality/references/consumer-validator-catalog.yaml\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/gates/check_consumer_validator_catalog.py --repo-root . --adoption-path .agents/consumer-validator-adoption.yaml --require-adoption, python3 -m pytest -q tests/test_consumer_validator_catalog.py tests/test_capability_catalog.py\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_hold_out.py, skills/public/critique/scripts/run_review_support.py, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/setup/scripts/templates/worktree_doctor_default.yaml.txt, skills/public/setup/scripts/templates/worktree_doctor_lefthook.yaml.txt\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_hold_out.py, skills/public/critique/scripts/run_review_support.py, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/setup/scripts/templates/worktree_doctor_default.yaml.txt, skills/public/setup/scripts/templates/worktree_doctor_lefthook.yaml.txt\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- adapters: Repo-local adapter contracts and adapter helper libraries.\n  source matches: .agents/worktree-adapter.yaml\n  verify: python3 scripts/gates/validate_adapters.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-09-04-issue-794-hooks-path-resolution.md\n  verify: python3 scripts/review/validate_critique_artifacts.py --repo-root . --all\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  source matches: integrations/worktree/adapter.example.yaml\n  verify: python3 -m tools.validate_integrations --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- maintainer-hooks: Repo-owned maintainer hook and hook bootstrap validation.\n  source matches: .githooks/commit-msg\n  verify: python3 scripts/setup/validate_maintainer_setup.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: .gitignore, charness, scripts/evidence/proof_receipt.py, scripts/gates_support/runtime_root_retention.py, scripts/hooks/check_release_lane_receipt.py, scripts/review/reviewed_input_range.py, scripts/run_quality_engine_receipt.py, scripts/worktree/worktree_audit.py, scripts/worktree/worktree_audit_lib.py, scripts/worktree/worktree_create.py, scripts/worktree/worktree_create_lib.py, scripts/worktree/worktree_doctor_checks.py, scripts/worktree/worktree_doctor_lib.py, scripts/worktree/worktree_lifetime.py, tests/charness_cli/test_worktree_audit.py, tests/charness_cli/test_worktree_create.py, tests/charness_cli/test_worktree_doctor.py, tests/charness_cli/test_worktree_doctor_git_snapshot.py, tests/charness_cli/test_worktree_lifetime.py, tests/coverage_debt/test_batch4.py, tests/coverage_debt/test_batch7.py, tests/test_critique_prepare_packet.py, tests/test_release_lane_receipt.py, tests/test_run_review_declared_path_resolution.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/evidence/proof_receipt.py, scripts/gates_support/runtime_root_retention.py, scripts/hooks/check_release_lane_receipt.py, scripts/review/reviewed_input_range.py, scripts/run_quality_engine_receipt.py, scripts/worktree/worktree_audit.py, scripts/worktree/worktree_audit_lib.py, scripts/worktree/worktree_create.py, scripts/worktree/worktree_create_lib.py, scripts/worktree/worktree_doctor_checks.py, scripts/worktree/worktree_doctor_lib.py, scripts/worktree/worktree_lifetime.py, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_hold_out.py, skills/public/critique/scripts/run_review_support.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "committed-ref",
+    "substrate_mode": "committed-ref",
+    "changed_ref": "2540a61d8d41df6abffc9a76229ad0d93e8caff1..d2c03920660605f65394a1fdc1e7616cfc1bb883",
+    "resolved_changed_ref": [
+      "2540a61d8d41df6abffc9a76229ad0d93e8caff1",
+      "d2c03920660605f65394a1fdc1e7616cfc1bb883"
+    ],
+    "base_head": "d2c03920660605f65394a1fdc1e7616cfc1bb883",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      ".agents/command-docs.yaml",
+      ".agents/worktree-adapter.yaml",
+      ".githooks/commit-msg",
+      ".gitignore",
+      "charness",
+      "charness-artifacts/critique/2026-09-04-issue-794-hooks-path-resolution.md",
+      "charness-artifacts/quality/docs-length-baseline.json",
+      "charness-artifacts/spec/worktree-prepare-doctor.md",
+      "docs/agent-task-runs.md",
+      "docs/cli-reference.md",
+      "docs/development.md",
+      "docs/validator-timing-layers.md",
+      "docs/worktree-prepare.md",
+      "integrations/worktree/adapter.example.yaml",
+      "scripts/evidence/proof_receipt.py",
+      "scripts/gates_support/runtime_root_retention.py",
+      "scripts/hooks/check_release_lane_receipt.py",
+      "scripts/review/reviewed_input_range.py",
+      "scripts/run_quality_engine_receipt.py",
+      "scripts/worktree/worktree_audit.py",
+      "scripts/worktree/worktree_audit_lib.py",
+      "scripts/worktree/worktree_create.py",
+      "scripts/worktree/worktree_create_lib.py",
+      "scripts/worktree/worktree_doctor_checks.py",
+      "scripts/worktree/worktree_doctor_lib.py",
+      "scripts/worktree/worktree_lifetime.py",
+      "skills/public/critique/references/prepare-packet.md",
+      "skills/public/critique/scripts/prepare_packet.py",
+      "skills/public/critique/scripts/run_review.py",
+      "skills/public/critique/scripts/run_review_hold_out.py",
+      "skills/public/critique/scripts/run_review_support.py",
+      "skills/public/quality/references/consumer-validator-catalog.yaml",
+      "skills/public/setup/scripts/templates/worktree_doctor_default.yaml.txt",
+      "skills/public/setup/scripts/templates/worktree_doctor_lefthook.yaml.txt",
+      "tests/charness_cli/test_worktree_audit.py",
+      "tests/charness_cli/test_worktree_create.py",
+      "tests/charness_cli/test_worktree_doctor.py",
+      "tests/charness_cli/test_worktree_doctor_git_snapshot.py",
+      "tests/charness_cli/test_worktree_lifetime.py",
+      "tests/coverage_debt/test_batch4.py",
+      "tests/coverage_debt/test_batch7.py",
+      "tests/test_critique_prepare_packet.py",
+      "tests/test_release_lane_receipt.py",
+      "tests/test_run_review_declared_path_resolution.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/command-docs.yaml",
+        "content_sha256": "08c795a129745c48804007518314bc633e413d8cabc15e2e44bbdb837c4b5052"
+      },
+      {
+        "path": ".agents/worktree-adapter.yaml",
+        "content_sha256": "2478c3f43954f11eb97bbc750b1b4b47236caa1fa02f9a07d8bc9ea444d3a471"
+      },
+      {
+        "path": ".githooks/commit-msg",
+        "content_sha256": "6079a1f9a20ae8b8589d83d16ac740c26f7e4abcc230dcaaa4a2f922e22ecc06"
+      },
+      {
+        "path": ".gitignore",
+        "content_sha256": "a81515d0379799ffe62e146bed34f34158d2df7d136cd033681c4867a4c55c03"
+      },
+      {
+        "path": "charness",
+        "content_sha256": "66f85cff13e7d84680c81f372e56d2cdef2133588dbe53ad59f96fa73906286e"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-09-04-issue-794-hooks-path-resolution.md",
+        "content_sha256": "af8614e8ba44a8810317a538e9e6b0e66fb9daf438870cd1adad6d48dad26ed7"
+      },
+      {
+        "path": "charness-artifacts/quality/docs-length-baseline.json",
+        "content_sha256": "eeaecc45858f9f7a5cc96da751daf60a36b7d0755b8a27d40f7dbbb2881d7b8c"
+      },
+      {
+        "path": "charness-artifacts/spec/worktree-prepare-doctor.md",
+        "content_sha256": "47f5e7adac860c717b8a8861bd201ba57cf2850574872f0c488fe179769f1992"
+      },
+      {
+        "path": "docs/agent-task-runs.md",
+        "content_sha256": "0830eecdef357f384d1cee941b70344dca711b95729dcbc1aad6e2b728c1580f"
+      },
+      {
+        "path": "docs/cli-reference.md",
+        "content_sha256": "0be538c5d7551f169d9db7c972e2ee8542af50cc3d7014fd99de48a8d78282b8"
+      },
+      {
+        "path": "docs/development.md",
+        "content_sha256": "e70d2053f06607355bd7f22c4be7daf13c587730e15a5ad85ba226455b3354bb"
+      },
+      {
+        "path": "docs/validator-timing-layers.md",
+        "content_sha256": "17698cafa0cce1e6502f354dbb0bac4dd6b44a33a29861b965eb11ff3b6221e5"
+      },
+      {
+        "path": "docs/worktree-prepare.md",
+        "content_sha256": "529985fa7ff129066d41514c595945db1eced402551b64cc12ab8cdcb907ac47"
+      },
+      {
+        "path": "integrations/worktree/adapter.example.yaml",
+        "content_sha256": "daf8ab018b0a22e4e3ee3822ae850bb5947496c96d806962065958e278cbfcf3"
+      },
+      {
+        "path": "scripts/evidence/proof_receipt.py",
+        "content_sha256": "f3b1fae900827c81610568fcf68a009706a4f8a6db12bdf3b6369db413109083"
+      },
+      {
+        "path": "scripts/gates_support/runtime_root_retention.py",
+        "content_sha256": "e2474147da95260ddbb12a6246301d8c0487065f64c792c51277b03ed9829960"
+      },
+      {
+        "path": "scripts/hooks/check_release_lane_receipt.py",
+        "content_sha256": "4b81045ecdef7fe6141aa9dde72258fc943b32bccf5d10dd2ee893f16cfee8e7"
+      },
+      {
+        "path": "scripts/review/reviewed_input_range.py",
+        "content_sha256": "691bec8f25cab6a19fc3c35e8e877e05af4db0e0c43f7c0968b4b53a481214ef"
+      },
+      {
+        "path": "scripts/run_quality_engine_receipt.py",
+        "content_sha256": "bd697c0c6e22125644453f17e581c63d2fe3f298b339589995a442d58f7be2e6"
+      },
+      {
+        "path": "scripts/worktree/worktree_audit.py",
+        "content_sha256": "b4c323a1b11d68df7e9f65a0da751a2a49fb7536dfc281ef6d8d24eebb2fd4d7"
+      },
+      {
+        "path": "scripts/worktree/worktree_audit_lib.py",
+        "content_sha256": "7bb4bf7c3f45afd94339d042955d8a54833287801a034da6b9317c7831110757"
+      },
+      {
+        "path": "scripts/worktree/worktree_create.py",
+        "content_sha256": "686aed5759aa6b57d2fe8ecfa73229162792e1cd8743dacebc01bcc1795a4059"
+      },
+      {
+        "path": "scripts/worktree/worktree_create_lib.py",
+        "content_sha256": "97e0eed8cc327c338b75fe761ab13d37db0a158122bad801ab1c80494571aad1"
+      },
+      {
+        "path": "scripts/worktree/worktree_doctor_checks.py",
+        "content_sha256": "d4c5c035cc495a74c7bdc749e2baf33dae4add580d29bb2a15e331eeb3700f1e"
+      },
+      {
+        "path": "scripts/worktree/worktree_doctor_lib.py",
+        "content_sha256": "03effe9e69145cdd73e1aa4185136f711737c7f78ceb8b21ccedf56b7a143132"
+      },
+      {
+        "path": "scripts/worktree/worktree_lifetime.py",
+        "content_sha256": "70400893012c91ce6facf3f354280c8479084bd1aae61f173404253b02ddb687"
+      },
+      {
+        "path": "skills/public/critique/references/prepare-packet.md",
+        "content_sha256": "20acfb1808326bf457ad830a1e162cbfd55f0a24baf605285ca3172ac0eebb6f"
+      },
+      {
+        "path": "skills/public/critique/scripts/prepare_packet.py",
+        "content_sha256": "c4286cebc7ad98ab26697cf3c2eba3a86a77945e232572f3a452708aeab91f24"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review.py",
+        "content_sha256": "4ad6cd1b5491e9138d3ddb155a4abbe72b1b8eaa90efe397808e84d4c880d7be"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_hold_out.py",
+        "content_sha256": "32dad469199cd03f3a2bef9e789502b496de6128b7fc06c23188a335d23ba14e"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_support.py",
+        "content_sha256": "3c04861d761a8fb254b7c63083f79541feb5a369a3ed8950d6a4e207197c9cee"
+      },
+      {
+        "path": "skills/public/quality/references/consumer-validator-catalog.yaml",
+        "content_sha256": "723ea71ac6b1dbe2e414ac8fcef3937ee79ce0d1488c82e6f3c4308ab6032405"
+      },
+      {
+        "path": "skills/public/setup/scripts/templates/worktree_doctor_default.yaml.txt",
+        "content_sha256": "c434ef6bd12d3ad878a55899760c2d5b85a6320fb9c43adefae9163b2fb3fc76"
+      },
+      {
+        "path": "skills/public/setup/scripts/templates/worktree_doctor_lefthook.yaml.txt",
+        "content_sha256": "d4299990bd28a00b1952dc5744bacb3348485e8337c2df0876978008347f5683"
+      },
+      {
+        "path": "tests/charness_cli/test_worktree_audit.py",
+        "content_sha256": "845cfc8f1f511346fec759b45c43d70be933e4df930cd13a556517a2eff09c4f"
+      },
+      {
+        "path": "tests/charness_cli/test_worktree_create.py",
+        "content_sha256": "46f5295741248231fbf2f9dd498d3549e2b00bba1fa55b33c730397fe93fbc03"
+      },
+      {
+        "path": "tests/charness_cli/test_worktree_doctor.py",
+        "content_sha256": "ee884ef1d9a902f0ecce21660d16a47f2ac0d9f0f604635e97b008fef0db8856"
+      },
+      {
+        "path": "tests/charness_cli/test_worktree_doctor_git_snapshot.py",
+        "content_sha256": "c62703f2845ce4caf686e184b114c35aabfad264e56406ee4147edb744e08a8d"
+      },
+      {
+        "path": "tests/charness_cli/test_worktree_lifetime.py",
+        "content_sha256": "c44bc275c6aecc4b390427b83df17a472cdc56429c42e686a7afd040eba4ba1c"
+      },
+      {
+        "path": "tests/coverage_debt/test_batch4.py",
+        "content_sha256": "d31187b708198b4e4a839c62e5e3dab93a22c58981be59080d09b3e089af4a76"
+      },
+      {
+        "path": "tests/coverage_debt/test_batch7.py",
+        "content_sha256": "397518d7f82b7c1e6e65d171c1a590e004d507db7ac6448d195520e5226dc1ad"
+      },
+      {
+        "path": "tests/test_critique_prepare_packet.py",
+        "content_sha256": "de2a5ad8acc63bdaa2f093e668f011588a0f74067355aa3ad868ff95ae2fe499"
+      },
+      {
+        "path": "tests/test_release_lane_receipt.py",
+        "content_sha256": "e309a199a4baa4cba992e425bb8459706fc375cf6df02847f8a4d46f0a6d2b53"
+      },
+      {
+        "path": "tests/test_run_review_declared_path_resolution.py",
+        "content_sha256": "d1d04f3446914ea9e83bc814b5b854384b6d46ecef0c5294170929032bd604ec"
+      }
+    ],
+    "reviewed_patch_sha256": "035b4895c0be8d9328e5e91697f610649ea318bf36e47dd31374980f6756eb5b",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "9765c2042ed2c00db9f6558958551d4db3ae024c4de579532afde0fb2b2ac6d3"
+  }
+}
