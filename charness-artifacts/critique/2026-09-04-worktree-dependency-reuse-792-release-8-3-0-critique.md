@@ -19,8 +19,9 @@ the install command when a link held. `task run` lanes inherit it through
   manifest field, a CLI flag, a payload key) that existing consumers adopt
   without migration; nothing renamed or removed.
 - For consumers: a worktree whose adapter declares `dependency_reuse` prepares
-  in seconds on ext4 instead of a full `npm ci`; the field is absent from every
-  existing manifest, so behavior is unchanged until declared.
+  in seconds on ext4 instead of a full `npm ci`; the field is optional, a
+  manifest that omits it behaves exactly as before, and this repository's own
+  `.agents/worktree-adapter.yaml` declares it in this release.
 
 ## Surface-Lock Inventory
 
