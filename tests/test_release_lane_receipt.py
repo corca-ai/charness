@@ -147,6 +147,13 @@ def test_load_receipt_returns_a_dict(tmp_path: Path) -> None:
     assert receipt_mod.load_receipt(path) == PASSING
 
 
+def test_bootstrap_inserts_the_repo_root(monkeypatch) -> None:
+    root = Path(__file__).resolve().parents[1]
+    monkeypatch.setattr(sys, "path", [p for p in sys.path if Path(p).resolve() != root])
+    receipt_mod._load_repo_runtime_bootstrap()
+    assert str(root) in sys.path
+
+
 def test_module_main_guard_exits(monkeypatch, tmp_path: Path) -> None:
     msg = tmp_path / "COMMIT_EDITMSG"
     msg.write_text("Slice-reopen: main-guard\n", encoding="utf-8")

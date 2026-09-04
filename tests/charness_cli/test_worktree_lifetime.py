@@ -226,7 +226,84 @@ def test_lifetime_error_paths_and_cap_refusal(tmp_path: Path, monkeypatch) -> No
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 
+def test_lifetime_bootstrap_inserts_the_repo_root(monkeypatch) -> None:
+    root = Path(__file__).resolve().parents[2]
+    monkeypatch.setattr(sys, "path", [p for p in sys.path if Path(p).resolve() != root])
+    lifetime._load_repo_runtime_bootstrap()
+    assert str(root) in sys.path
+
+
+def test_throwaway_pytest_tmp_name_is_not_a_runtime_tree() -> None:
+    assert lifetime.path_is_throwaway(Path("/home/pytest-tmp/eval")) is True
+
+
+def test_list_lifetime_skips_invalid_markers(tmp_path: Path) -> None:
+    repo = copy_worktree_seed(tmp_path, "primary")
+    target = tmp_path / "marked"
+    create_lib.run_create(repo, target_path=target, branch="marked", base="main")
+    marker = lifetime._marker_path(target)
+    assert marker is not None
+    marker.write_text("not-json", encoding="utf-8")
+    assert all(record.get("path") != str(target.resolve()) for record in lifetime.list_lifetime_records(repo))
+    marker.write_text("[]\n", encoding="utf-8")
+    assert all(record.get("path") != str(target.resolve()) for record in lifetime.list_lifetime_records(repo))
+
+
+def test_unregister_prune_fallback_when_remove_fails(tmp_path: Path, monkeypatch) -> None:
+    repo = copy_worktree_seed(tmp_path, "primary")
+    target = tmp_path / "gone"
+    create_lib.run_create(repo, target_path=target, branch="gone", base="main")
+    import shutil
+
+    class FailThenOk:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def __call__(self, common, *args):
+            self.calls += 1
+
+            class Result:
+                returncode = 1 if self.calls == 1 else 0
+                stdout = ""
+                stderr = "fail"
+
+            if self.calls == 1:
+                shutil.rmtree(target, ignore_errors=True)
+            return Result()
+
+    monkeypatch.setattr(lifetime, "_git_dir_cmd", FailThenOk())
+    result = lifetime.unregister(target, repo_root=repo)
+    assert result["removed"] is True
+
+
+def test_dirty_exit_lease_is_retained(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(lifetime, "_worktree_is_dirty", lambda _path: True)
+    lifetime._EXIT_LEASES.append((tmp_path, tmp_path / "kept"))
+    lifetime._reclaim_exit_leases()
+    assert lifetime._EXIT_LEASES == []
+
+
+def test_enforce_cap_breaks_when_unregister_does_not_remove(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        lifetime,
+        "list_lifetime_records",
+        lambda _root: [
+            {"kind": lifetime.KIND_EPHEMERAL, "path": str(tmp_path / "a"), "created_at": "1", "pid": None}
+        ],
+    )
+    monkeypatch.setattr(lifetime, "reclaim_expired", lambda _root, **_kwargs: [])
+    monkeypatch.setattr(
+        lifetime,
+        "unregister",
+        lambda *_args, **_kwargs: {"removed": False, "path": str(tmp_path / "a")},
+    )
+    payload = lifetime.enforce_cap(tmp_path, cap=0, reserve=1)
+    assert payload["refused"] is True
+
+
 def test_lifetime_covers_remaining_error_branches(tmp_path: Path, monkeypatch) -> None:
+    repo = copy_worktree_seed(tmp_path, "marker-primary")
+    assert lifetime._marker_path(repo) is None
     pytest_tmp = tmp_path / "pytest-tmp" / "wt"
     pytest_tmp.mkdir(parents=True)
     assert lifetime.path_is_throwaway(pytest_tmp) is True
