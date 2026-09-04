@@ -127,7 +127,7 @@ Checks return `pass`, `fail`, or `skipped` (precondition not met).
 
 ## Wiring with mutate-phase skills
 
-`spec`, `impl`, and `hitl` bootstrap probe `charness worktree doctor` non-fatally before mutating repo content and surface the next action on non-pass; the operator decides whether to run `charness worktree prepare`. Public skills never auto-run prepare; `task run` does, as its documented default.
+`spec` and `hitl` bootstrap probe `charness worktree doctor` non-fatally before mutating repo content and surface the next action on non-pass; the operator decides whether to run `charness worktree prepare`. Public skills never auto-run prepare; `task run` does, as its documented default.
 
 ## Limitations
 

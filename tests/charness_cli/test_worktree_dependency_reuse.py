@@ -264,7 +264,6 @@ def test_the_runtime_fingerprint_names_the_install_tool_and_node(
     assert fingerprint.endswith("/npm=10.9.0/node=v22.1.0")
     monkeypatch.setattr(reuse, "_run_capture", lambda argv, timeout_seconds: (1, "boom", ""))
     assert reuse.runtime_fingerprint(spec) is None
-    assert reuse.cache_entry(Path("/cache"), "digest", spec) is None
     assert reuse.ReuseSpec.from_manifest(
         {
             "commands": [{"id": "install-deps", "argv": ["npm", "ci"]}],
@@ -292,6 +291,36 @@ def test_version_probes_are_not_cached_between_fingerprint_calls(
     second = reuse.runtime_fingerprint(spec)
 
     assert first.endswith("/uv=10.0.0") and second.endswith("/uv=11.0.0")
+
+
+def test_one_fingerprint_observation_keys_both_the_entry_path_and_its_metadata(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    donor = tmp_path / "donor"
+    target = tmp_path / "target"
+    cache = tmp_path / "cache"
+    for root in (donor, target):
+        root.mkdir()
+        (root / "lock.json").write_text("same", encoding="utf-8")
+    _install(donor, "snap")
+    counter = iter(range(1, 100))
+    monkeypatch.setattr(
+        reuse, "runtime_fingerprint", lambda _spec: f"linux/x86_64/tool={next(counter)}"
+    )
+
+    seeded = reuse.seed_cache(donor, SPEC, cache_root=cache)
+    entry = Path(seeded["entry"])
+    meta = json.loads((entry / reuse.CACHE_META_NAME).read_text(encoding="utf-8"))
+
+    assert seeded["seeded"] is True
+    assert entry == reuse.cache_entry(
+        cache, reuse.lockfile_digest(donor / "lock.json"), SPEC, meta["runtime"]
+    )
+    assert meta["runtime"] == "linux/x86_64/tool=1"
+    monkeypatch.setattr(reuse, "runtime_fingerprint", lambda _spec: "linux/x86_64/tool=1")
+    assert reuse.attempt_reuse(target, SPEC, source_root=None, cache_root=cache)["origin"] == (
+        reuse.ORIGIN_CACHE
+    )
 
 
 def test_a_non_node_install_tool_never_probes_node(monkeypatch: pytest.MonkeyPatch) -> None:

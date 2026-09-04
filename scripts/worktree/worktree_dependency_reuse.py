@@ -174,12 +174,13 @@ def runtime_fingerprint(spec: ReuseSpec) -> str | None:
     return "/".join(parts)
 
 
-def cache_entry(cache_root: Path, digest: str, spec: ReuseSpec) -> Path | None:
-    """One cache entry per (lockfile digest, install directory, runtime fingerprint);
-    None when the runtime fingerprint is unknown."""
-    fingerprint = runtime_fingerprint(spec)
-    if fingerprint is None:
-        return None
+def cache_entry(cache_root: Path, digest: str, spec: ReuseSpec, fingerprint: str) -> Path:
+    """One cache entry per (lockfile digest, install directory, runtime fingerprint).
+
+    The fingerprint is an argument, not re-probed here: one observation per
+    operation keys the path AND is written to (or compared with) the metadata,
+    so a runtime that changes between two probes cannot split them.
+    """
     key = hashlib.sha256(f"{digest}\n{spec.directory}\n{fingerprint}".encode("utf-8")).hexdigest()
     return cache_root / key
 
@@ -343,7 +344,7 @@ def attempt_reuse(
             candidates.append((ORIGIN_PARENT, source_root / spec.directory, None))
     if cache_root is not None:
         fingerprint = runtime_fingerprint(spec)
-        entry = cache_entry(cache_root, digest, spec) if fingerprint is not None else None
+        entry = None if fingerprint is None else cache_entry(cache_root, digest, spec, fingerprint)
         if entry is None:
             candidates.append((ORIGIN_CACHE, cache_root, "runtime fingerprint unknown"))
         elif _cache_matches(entry, digest, spec, fingerprint):
@@ -414,10 +415,10 @@ def seed_cache(
         payload["reason"] = f"lockfile {spec.lockfile} unreadable"
         return payload
     fingerprint = runtime_fingerprint(spec)
-    entry = cache_entry(cache_root, digest, spec) if fingerprint is not None else None
-    if entry is None:
+    if fingerprint is None:
         payload["reason"] = "runtime fingerprint unknown; not published to the cache"
         return payload
+    entry = cache_entry(cache_root, digest, spec, fingerprint)
     payload["entry"] = str(entry)
     if _cache_matches(entry, digest, spec, fingerprint):
         payload["reason"] = "cache entry already present"
