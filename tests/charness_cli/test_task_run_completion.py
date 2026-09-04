@@ -223,6 +223,26 @@ def test_persist_incomplete_candidate_commits_dirty_and_untracked(tmp_path: Path
     assert porcelain.strip() == ""
 
 
+def test_commit_lane_snapshot_raises_when_git_commit_fails(tmp_path: Path) -> None:
+    worktree = install_committed_repo(tmp_path / "lane", {"module.py": "VALUE = 1\n"})
+    (worktree / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+
+    def git(cwd: Path, *args: str) -> Any:
+        if args and args[0] == "add":
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        if "commit" in args:
+            return SimpleNamespace(returncode=1, stdout="", stderr="index.lock")
+        return task_run_git._git(cwd, *args)
+
+    with pytest.raises(task_run_git.TaskRunError, match="git commit failed: index.lock"):
+        task_run_git._commit_lane_snapshot(
+            worktree,
+            message=task_run_git.PERSIST_CANDIDATE_COMMIT_MESSAGE,
+            git=git,
+            git_output=task_run_git._git_output,
+        )
+
+
 def test_a_committed_persist_marks_head_complete_when_carrier_refresh_fails(
     tmp_path: Path, monkeypatch
 ) -> None:

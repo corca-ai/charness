@@ -142,6 +142,25 @@ def test_load_and_promote_report_skips_a_non_approval_report(tmp_path: Path) -> 
     assert not (tmp_path / "charness-artifacts" / "critique" / "workers" / "no").exists()
 
 
+def test_promote_worker_report_refuses_a_destination_outside_the_repo(tmp_path: Path) -> None:
+    promotion = _promotion()
+    runtime = tmp_path / "worker-report.yaml"
+    runtime.write_text("schema_version: v1\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="escaped repository root"):
+        promotion.promote_worker_report(tmp_path, "/tmp/outside-attempt", runtime)
+
+
+def test_promotion_refuses_when_support_cannot_load(monkeypatch: pytest.MonkeyPatch) -> None:
+    promotion = _promotion()
+    monkeypatch.setattr(promotion.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
+    monkeypatch.delitem(sys.modules, "charness_run_review_support", raising=False)
+    monkeypatch.delitem(sys.modules, "run_review_support", raising=False)
+
+    with pytest.raises(RuntimeError, match="cannot load run_review_support"):
+        promotion._support()
+
+
 def test_a_file_the_runner_opens_still_refuses_a_symlink(tmp_path: Path) -> None:
     """The discriminator: `allow_symlink` must not leak to the read paths.
 
