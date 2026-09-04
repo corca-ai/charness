@@ -197,6 +197,55 @@ def test_reuse_falls_back_to_the_cache_keyed_by_lockfile_digest(tmp_path: Path) 
     )
 
 
+def test_cache_entries_are_keyed_by_the_runtime_fingerprint(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    donor = tmp_path / "donor"
+    target = tmp_path / "target"
+    cache = tmp_path / "cache"
+    for root in (donor, target):
+        root.mkdir()
+        (root / "lock.json").write_text("same", encoding="utf-8")
+    _install(donor, "old-abi")
+    monkeypatch.setattr(reuse, "runtime_fingerprint", lambda _spec: "linux/x86_64/npm=10/node=v20")
+    seeded = reuse.seed_cache(donor, SPEC, cache_root=cache)
+    assert seeded["seeded"] is True
+    meta = json.loads((Path(seeded["entry"]) / reuse.CACHE_META_NAME).read_text(encoding="utf-8"))
+    assert meta["runtime"] == "linux/x86_64/npm=10/node=v20"
+
+    monkeypatch.setattr(reuse, "runtime_fingerprint", lambda _spec: "linux/x86_64/npm=10/node=v22")
+    result = reuse.attempt_reuse(target, SPEC, source_root=None, cache_root=cache)
+
+    assert result["strategy"] == reuse.STRATEGY_NONE
+    assert not (target / "deps").exists()
+
+
+def test_the_runtime_fingerprint_names_the_install_tool_and_node(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(reuse, "_VERSION_PROBES", {})
+
+    def fake_capture(argv: list[str], timeout_seconds: int):
+        return 0, "", {"npm": "10.9.0\n", "node": "v22.1.0\n"}[argv[0]]
+
+    monkeypatch.setattr(reuse, "_run_capture", fake_capture)
+    spec = reuse.ReuseSpec("install-deps", "package-lock.json", "node_modules", ("npm", "ci"))
+
+    fingerprint = reuse.runtime_fingerprint(spec)
+
+    assert fingerprint.endswith("/npm=10.9.0/node=v22.1.0")
+    assert reuse.ReuseSpec.from_manifest(
+        {
+            "commands": [{"id": "install-deps", "argv": ["npm", "ci"]}],
+            "dependency_reuse": {
+                "command_id": "install-deps",
+                "lockfile": "package-lock.json",
+                "directory": "node_modules",
+            },
+        }
+    ).install_argv == ("npm", "ci")
+
+
 def test_reuse_leaves_an_existing_install_directory_alone(tmp_path: Path) -> None:
     target = tmp_path / "target"
     target.mkdir()

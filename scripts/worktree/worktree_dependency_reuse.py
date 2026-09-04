@@ -72,16 +72,24 @@ class ReuseSpec:
     command_id: str
     lockfile: str
     directory: str
+    install_argv: tuple[str, ...] = ()
 
     @classmethod
     def from_manifest(cls, prepare: dict[str, Any] | None) -> ReuseSpec | None:
         raw = (prepare or {}).get("dependency_reuse")
         if not isinstance(raw, dict):
             return None
+        command_id = str(raw.get("command_id"))
+        install_argv: tuple[str, ...] = ()
+        for entry in (prepare or {}).get("commands") or []:
+            if isinstance(entry, dict) and entry.get("id") == command_id:
+                install_argv = tuple(str(token) for token in entry.get("argv") or [])
+                break
         return cls(
-            command_id=str(raw.get("command_id")),
+            command_id=command_id,
             lockfile=str(raw.get("lockfile")),
             directory=str(raw.get("directory")),
+            install_argv=install_argv,
         )
 
 
@@ -129,17 +137,35 @@ def lockfile_digest(path: Path) -> str | None:
         return None
 
 
-def runtime_fingerprint() -> str:
-    """Platform and architecture: a native module built here does not load elsewhere.
-    Interpreter and package-manager versions are not folded in; a runtime upgrade
-    that changes a native ABI needs the entry removed (documented residual)."""
-    return f"{sys.platform}/{platform.machine()}"
+_VERSION_PROBES: dict[tuple[str, ...], str] = {}
+
+
+def _probe_version(argv: tuple[str, ...]) -> str:
+    """First line of `<tool> --version`, cached per process; `absent` when it is not on PATH."""
+    if argv not in _VERSION_PROBES:
+        exit_code, _stderr, stdout = _run_capture(list(argv), timeout_seconds=30)
+        first = stdout.strip().splitlines()[0].strip() if stdout.strip() else ""
+        _VERSION_PROBES[argv] = first if exit_code == 0 and first else "absent"
+    return _VERSION_PROBES[argv]
+
+
+def runtime_fingerprint(spec: ReuseSpec) -> str:
+    """What an installed tree is built against: platform, architecture, the install
+    tool's version, and `node`'s version (the ABI native addons are compiled for).
+    Two trees whose fingerprints differ never share a cache entry; a tree built by
+    a runtime that has since changed simply stops matching."""
+    parts = [sys.platform, platform.machine()]
+    if spec.install_argv:
+        tool = spec.install_argv[0]
+        parts.append(f"{tool}={_probe_version((tool, '--version'))}")
+    parts.append(f"node={_probe_version(('node', '--version'))}")
+    return "/".join(parts)
 
 
 def cache_entry(cache_root: Path, digest: str, spec: ReuseSpec) -> Path:
-    """One cache entry per (lockfile digest, install directory, platform/arch)."""
+    """One cache entry per (lockfile digest, install directory, runtime fingerprint)."""
     key = hashlib.sha256(
-        f"{digest}\n{spec.directory}\n{runtime_fingerprint()}".encode("utf-8")
+        f"{digest}\n{spec.directory}\n{runtime_fingerprint(spec)}".encode("utf-8")
     ).hexdigest()
     return cache_root / key
 
@@ -175,15 +201,20 @@ def _result(
     }
 
 
-def _run(argv: list[str], timeout_seconds: int) -> tuple[int | None, str]:
+def _run_capture(argv: list[str], timeout_seconds: int) -> tuple[int | None, str, str]:
     try:
         completed = run_process(argv, cwd=Path.cwd(), timeout_seconds=timeout_seconds)
     except FileNotFoundError as exc:
-        return None, f"command not found: {exc.filename or argv[0]}"
+        return None, f"command not found: {exc.filename or argv[0]}", ""
     if completed.returncode == TIMEOUT_EXIT_CODE:
-        return None, f"timed out after {timeout_seconds}s"
+        return None, f"timed out after {timeout_seconds}s", ""
     lines = (completed.stderr or "").strip().splitlines()
-    return completed.returncode, (lines[-1] if lines else "")[-300:]
+    return completed.returncode, (lines[-1] if lines else "")[-300:], completed.stdout or ""
+
+
+def _run(argv: list[str], timeout_seconds: int) -> tuple[int | None, str]:
+    exit_code, stderr, _stdout = _run_capture(argv, timeout_seconds)
+    return exit_code, stderr
 
 
 def _first_regular_file(root: Path) -> Path | None:
@@ -259,7 +290,7 @@ def _cache_matches(entry: Path, digest: str, spec: ReuseSpec) -> bool:
         isinstance(data, dict)
         and data.get("lockfile_digest") == digest
         and data.get("directory") == spec.directory
-        and data.get("runtime") == runtime_fingerprint()
+        and data.get("runtime") == runtime_fingerprint(spec)
         and (entry / CACHE_TREE_NAME).is_dir()
     )
 
@@ -392,7 +423,7 @@ def seed_cache(
                 "lockfile": spec.lockfile,
                 "lockfile_digest": digest,
                 "directory": spec.directory,
-                "runtime": runtime_fingerprint(),
+                "runtime": runtime_fingerprint(spec),
                 "seeded_from": str(target_root),
             },
             indent=2,
