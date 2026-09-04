@@ -60,7 +60,7 @@ Use `charness worktree create --path <path> --branch <branch> --base <ref>` inst
 
 ## When to run `audit`
 
-Run `charness worktree audit` to read the registry. `--doctor` adds readiness. `--prune` reclaims expired ephemerals and missing metadata. Unlabeled raw `git worktree add` residue still needs `cleanup --yes`.
+Run `charness worktree audit` to read the registry. `--doctor` adds readiness. `--prune` reclaims expired ephemerals, idle unlabeled throwaways, and missing metadata. Unlabeled feature paths still need `cleanup --yes`.
 
 ## When to run `cleanup`
 

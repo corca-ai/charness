@@ -2,10 +2,11 @@
 
 Identity, before any rule:
 
-- A worktree is **ephemeral** only when charness wrote ``charness-lifetime``
-  with ``kind: ephemeral`` into that worktree's git admin dir. Unlabeled
-  worktrees (raw ``git worktree add``) and ``kind: owned`` are never
-  auto-removed.
+- A worktree is **ephemeral** when charness wrote ``charness-lifetime`` with
+  ``kind: ephemeral``, or when it is unlabeled (raw ``git worktree add``) and
+  the path is a throwaway. ``kind: owned`` and unlabeled feature paths are
+  never auto-removed. Unlabeled throwaways idle past
+  ``UNLABELED_IDLE_DAYS`` are residue even if they predate this marker.
 - Kind is ``owned`` when the caller asked for it; ``ephemeral`` when the
   caller asked for it, or when the path is a throwaway (temp, pytest, or a
   ``charness/runtime`` tree). Everything else is owned. Feature paths such as
@@ -33,6 +34,7 @@ import json
 import os
 import shutil
 import tempfile
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -58,6 +60,9 @@ MARKER_NAME = "charness-lifetime"
 # Host live-children cap (workflow parallel panel). Beyond this, an ephemeral
 # worktree is residue, not a concurrent lane.
 EPHEMERAL_CAP = 32
+# Same basis as runtime_root_retention.ACTIVE_WINDOW_DAYS: a live pytest or
+# agent session may still be using an unlabeled throwaway; older is residue.
+UNLABELED_IDLE_DAYS = 1.0
 
 _EXIT_LEASES: list[tuple[Path, Path]] = []
 _ATEXIT_INSTALLED = False
@@ -80,7 +85,15 @@ def path_is_throwaway(path: Path) -> bool:
     resolved = path.resolve()
     if path_is_runtime_tree(resolved):
         return True
-    if any(part.startswith("pytest-of-") or part == "pytest-tmp" for part in resolved.parts):
+    parts = resolved.parts
+    if any(part.startswith("pytest-of-") or part == "pytest-tmp" for part in parts):
+        return True
+    if "charness-captures" in parts:
+        return True
+    if ".claude" in parts and "worktrees" in parts:
+        return True
+    posix = resolved.as_posix()
+    if "/.cache/tmp/" in posix or posix.endswith("/.cache/tmp"):
         return True
     roots = [Path(tempfile.gettempdir())]
     for name in ("TMPDIR", "TMP", "TEMP"):
@@ -248,9 +261,59 @@ def _created_stamp(record: dict[str, Any]) -> str:
     return raw if isinstance(raw, str) else ""
 
 
-def reclaim_expired(repo_root: Path) -> list[dict[str, Any]]:
-    """Unregister ephemeral worktrees whose recorded pid is dead."""
+def _primary_path(repo_root: Path) -> Path:
+    layout = layout_from_files(repo_root)
+    if layout is not None and layout.common_dir.name == ".git":
+        return layout.common_dir.parent.resolve()
+    return repo_root.resolve()
+
+
+def _registered_worktrees(repo_root: Path) -> list[dict[str, Any]]:
+    proc = run_process(
+        ["git", "worktree", "list", "--porcelain"],
+        cwd=repo_root,
+        timeout_seconds=None,
+    )
+    if proc.returncode != 0:
+        return []
+    entries: list[dict[str, Any]] = []
+    current: dict[str, Any] = {}
+    for raw in proc.stdout.splitlines():
+        if not raw:
+            if current:
+                entries.append(current)
+                current = {}
+            continue
+        if raw.startswith("worktree "):
+            if current:
+                entries.append(current)
+            current = {"path": Path(raw[len("worktree ") :])}
+        elif raw == "locked" or raw.startswith("locked "):
+            current["locked"] = True
+        elif raw == "prunable" or raw.startswith("prunable "):
+            current["prunable"] = True
+    if current:
+        entries.append(current)
+    return entries
+
+
+def _is_idle(path: Path, *, now: float, idle_days: float) -> bool:
+    if not path.exists():
+        return True
+    try:
+        age = now - path.stat().st_mtime
+    except OSError:
+        return True
+    return age >= idle_days * 86400
+
+
+def reclaim_expired(
+    repo_root: Path, *, now: float | None = None
+) -> list[dict[str, Any]]:
+    """Unregister dead-pid ephemerals and idle unlabeled throwaways."""
+    moment = time.time() if now is None else now
     actions: list[dict[str, Any]] = []
+    seen: set[Path] = set()
     for record in list_lifetime_records(repo_root):
         if record.get("kind") != KIND_EPHEMERAL:
             continue
@@ -262,6 +325,24 @@ def reclaim_expired(repo_root: Path) -> list[dict[str, Any]]:
             continue
         result = unregister(target, repo_root=repo_root)
         result["reason"] = "ephemeral pid is dead"
+        actions.append(result)
+        seen.add(target.resolve())
+    primary = _primary_path(repo_root)
+    for entry in _registered_worktrees(repo_root):
+        path = Path(entry["path"]).resolve()
+        if path in seen or path == primary or entry.get("locked"):
+            continue
+        record = read_lifetime(path) if path.exists() else None
+        if record is not None:
+            continue
+        if not path_is_throwaway(path):
+            continue
+        if not entry.get("prunable") and not _is_idle(
+            path, now=moment, idle_days=UNLABELED_IDLE_DAYS
+        ):
+            continue
+        result = unregister(path, repo_root=repo_root)
+        result["reason"] = "unlabeled throwaway is idle residue"
         actions.append(result)
     return actions
 

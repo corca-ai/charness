@@ -188,7 +188,7 @@ def test_audit_primary_resolution_works_from_linked_worktree(tmp_path: Path) -> 
     assert classifications["feature"] == lib.CLASSIFICATION_ACTIVE
 
 
-def test_prune_count_uses_audit_diff_not_regex(tmp_path: Path) -> None:
+def test_prune_reclaims_missing_throwaway_worktrees(tmp_path: Path) -> None:
     repo = _make_primary(tmp_path)
     a_path = tmp_path / "ghost-a"
     b_path = tmp_path / "ghost-b"
@@ -200,7 +200,9 @@ def test_prune_count_uses_audit_diff_not_regex(tmp_path: Path) -> None:
     shutil.rmtree(b_path)
 
     prune_payload = lib.run_prune(repo)
-    assert prune_payload["pruned_count"] == 2
+    reclaimed_paths = {Path(item["path"]) for item in prune_payload.get("reclaimed") or []}
+    assert a_path.resolve() in reclaimed_paths
+    assert b_path.resolve() in reclaimed_paths
     assert prune_payload["remaining_after_prune"]["prunable"] == 0
 
 
@@ -228,7 +230,10 @@ def test_prune_drops_metadata_for_missing_worktrees(tmp_path: Path) -> None:
 
     prune_payload = lib.run_prune(repo)
     assert prune_payload["status"] == lib.PASS
-    assert prune_payload["pruned_count"] == 1
+    assert any(
+        Path(item["path"]) == missing_path.resolve()
+        for item in prune_payload.get("reclaimed") or []
+    )
 
     audit_after = lib.run_audit(repo)
     assert audit_after["summary"]["prunable"] == 0

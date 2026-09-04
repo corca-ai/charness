@@ -49,6 +49,11 @@ def test_throwaway_paths_are_ephemeral_and_sibling_owned_flag_wins(tmp_path: Pat
     assert lifetime.resolve_kind(feature, ephemeral=True) == lifetime.KIND_EPHEMERAL
     lane = tmp_path / "charness" / "runtime" / "key" / "task-run" / "lane" / "worktree"
     assert lifetime.path_is_task_run_lane(lane)
+    assert lifetime.path_is_throwaway(
+        Path("/home/hwidong/.cache/charness-captures/slice/worktree")
+    )
+    assert lifetime.path_is_throwaway(Path("/home/hwidong/codes/repo/.claude/worktrees/agent-1"))
+    assert lifetime.path_is_throwaway(Path("/home/hwidong/.cache/tmp/charness/proof/x"))
 
 
 def test_create_labels_tmp_ephemeral_and_owned_flag_is_not_reclaimed(tmp_path: Path) -> None:
@@ -95,6 +100,28 @@ def test_reclaim_does_not_touch_live_pid_or_unlabeled_worktrees(tmp_path: Path) 
     assert live.resolve() in paths
     assert unlabeled.resolve() in paths
     assert lifetime.read_lifetime(unlabeled) is None
+
+
+def test_reclaim_removes_idle_unlabeled_throwaways_and_spares_fresh_and_owned(
+    tmp_path: Path,
+) -> None:
+    repo = copy_worktree_seed(tmp_path, "primary")
+    stale = tmp_path / "stale"
+    fresh = tmp_path / "fresh"
+    owned = tmp_path / "kept"
+    _git("worktree", "add", "-b", "stale", str(stale), cwd=repo)
+    _git("worktree", "add", "-b", "fresh", str(fresh), cwd=repo)
+    created = create_lib.run_create(repo, target_path=owned, branch="kept", base="main", owned=True)
+    assert created["created"] is True
+    now = time.time()
+    _age(stale, 2 * DAY, now=now)
+
+    reclaimed = lifetime.reclaim_expired(repo, now=now)
+    paths = _worktree_paths(repo)
+    assert any(Path(item["path"]) == stale.resolve() for item in reclaimed)
+    assert stale.resolve() not in paths
+    assert fresh.resolve() in paths
+    assert owned.resolve() in paths
 
 
 def test_cap_evicts_oldest_ephemeral_and_refuses_when_live_lanes_fill_it(
