@@ -18,7 +18,8 @@ Timings, ordered by feedback latency (earliest first):
    [check_artifact_surface_preflight.py](../scripts/gates/check_artifact_surface_preflight.py)).
 2. **Edit-time hook** — automatic per-edit firing, adapter-declared and
    host-specific (the `skill_anchor_edit_guard` PostToolUse hook; see
-   [authoring-preflight.md](./authoring-preflight.md)).
+   [authoring-preflight.md](./authoring-preflight.md#portable-skill-packages);
+   `--scan-issue-anchors` and [host_hook_registry.py](../scripts/hooks/host_hook_registry.py)).
 3. **Commit-time** — the pre-commit dispatcher
    ([staged_commit_gate_plan.py](../scripts/staged_commit_gate_plan.py)),
    shared verbatim by `.githooks/pre-commit`, plus the commit-msg release-lane

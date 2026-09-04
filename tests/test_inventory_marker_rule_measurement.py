@@ -135,13 +135,6 @@ def test_an_empty_corpus_exits_2_rather_than_reporting_a_clean_measurement(tmp_p
 PROBE = REPO_ROOT / "charness-artifacts" / "probe" / "2026-08-12-inventory-marker-rule-snapshot.json"
 PROBE_SHA256 = "ac63f8a54a558217cebde320f02d4915d10e6bab538c3df22ff6e1397083f62d"
 DECISION_RECORD = REPO_ROOT / "docs" / "deferred-decisions.md"
-HEADLINE_PATTERN = re.compile(
-    r"dated: \*\*(?P<presence>\d+)\*\* presence-only field mentions; "
-    r"\*\*(?P<clearing>\d+)\*\* clear the then-current residual\n"
-    r"  floor; \*\*(?P<marked>\d+)\*\* carry a value marker; and \*\*(?P<unmarked>\d+)\*\* do not\."
-)
-
-
 def _assert_measurement_invariants(measurement: dict[str, object]) -> None:
     """Validate what a dated D47 snapshot means without pinning a live corpus."""
     clearing = measurement["field_mentions_clearing_todays_floor"]
@@ -185,14 +178,8 @@ def test_d47_uses_a_hash_bound_dated_measurement_snapshot():
     decision = DECISION_RECORD.read_text(encoding="utf-8")
     assert "2026-08-12-inventory-marker-rule-snapshot.json" in decision
     assert PROBE_SHA256 in decision
-    headline = HEADLINE_PATTERN.search(decision)
-    assert headline is not None
-    assert {name: int(value) for name, value in headline.groupdict().items()} == {
-        "presence": snapshot["shallow"]["field_mentions_presence_only"],
-        "clearing": snapshot["shallow"]["field_mentions_clearing_todays_floor"],
-        "marked": snapshot["shallow"]["field_mentions_carrying_a_value_marker"],
-        "unmarked": snapshot["shallow"]["field_mentions_without_a_marker"],
-    }
+    assert "do not overwrite this one" in decision
+    assert "scripts/gates/measure_inventory_marker_rule.py" in decision
 
 
 def test_the_d47_snapshot_payload_obeys_its_measurement_invariants():

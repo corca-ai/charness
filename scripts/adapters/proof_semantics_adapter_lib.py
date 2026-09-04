@@ -26,8 +26,8 @@ broken proof map.
 Shared, cross-surface: lives in top-level ``scripts/`` (like ``disposition_form``)
 so achieve and issue closeout both parent-walk/import it via ``scripts.``.
 
-Schema, resolution, degradation, and the three closeout-blocking conditions are
-documented in ``docs/proof-semantics-adapter.md``.
+Schema and resolution live here (``ADAPTER_CANDIDATES``, ``infer_repo_defaults``).
+The operator Proof Ledger table is in ``docs/proof-semantics-adapter.md``.
 """
 from __future__ import annotations
 

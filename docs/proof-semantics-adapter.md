@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 The portable Charness residual/disposition ledger
 ([`scripts/core/disposition_form.py`](../scripts/core/disposition_form.py)) stays
@@ -24,15 +24,10 @@ below.
 
 ## Resolution
 
-The adapter is optional and resolved from the first existing candidate:
-
-```text
-.agents/proof-semantics-adapter.yaml   (canonical)
-.codex/proof-semantics-adapter.yaml
-.claude/proof-semantics-adapter.yaml
-docs/proof-semantics-adapter.yaml
-proof-semantics-adapter.yaml
-```
+The adapter is optional. Identity is `ADAPTER_CANDIDATES` in
+[`proof_semantics_adapter_lib.py`](../scripts/adapters/proof_semantics_adapter_lib.py):
+only `<repo-root>/.agents/proof-semantics-adapter.yaml`. A file under `.codex/`, `.claude/`,
+`docs/`, or the repo root is not resolved.
 
 - **Missing** → degraded, not absent: the portable residual/disposition ledger
   floor still fires, and proof-mismatch detection degrades to *requiring a ledger
@@ -45,74 +40,17 @@ proof-semantics-adapter.yaml
 > proof against. charness closeouts that declare no proof ledger (the norm) are
 > unaffected, and the residual ledger is a separate surface that needs no adapter.
 
-## Schema
-
-```yaml
-version: 1
-repo: <repo-name>
-language: en
-
-# The ordered backbone of proof strength, weakest -> strongest.
-proof_levels:
-  - lint
-  - smoke
-  - integration
-  - live
-
-# Unordered level pairs that do NOT satisfy each other despite their backbone
-# rank (a partial order, not a chain). Each pair is a delimited "a, b" (or "a|b")
-# string, or an [a, b] list. Both elements must be declared proof levels.
-incomparable:
-  - lint, smoke
-
-# Acceptance-class -> the MINIMUM proof level that satisfies it. Each value must
-# be a declared proof level.
-acceptance_map:
-  reliability: integration
-  safety: live
-
-# Proof-level -> a free-form verifier / artifact reference (each key a declared
-# proof level).
-verifier_refs:
-  integration: pytest tests/integration
-  live: provider roundtrip observed
-
-# How a proof gap may be dispositioned per acceptance class.
-gap_policy:
-  acceptable:        # classes whose gap is acceptable without an issue
-    - perf
-  out_of_scope:      # classes explicitly out of scope
-    - telemetry
-  needs_issue: true  # an unclassified gap needs an explicit issue/disposition
-```
-
-## Generic queries (what Charness calls)
-
-All domain-blind — they operate only on the declared tokens:
-
-- `level_satisfies(data, reached, required)` — `True` if equal or higher backbone
-  rank; `False` for a declared-incomparable pair (either direction) or a lower
-  rank; `None` when a level is undeclared (a degraded / no-map case, never a
-  silent pass).
-- `min_level_for_acceptance(data, acceptance_class)` — the required level, or
-  `None` when the class is unmapped.
-- `gap_disposition_for(data, acceptance_class)` — `acceptable` / `out-of-scope` /
-  `needs-issue`.
-- `acceptance_map_available(adapter)` — the degradation signal: a valid adapter
-  with a non-empty `acceptance_map`.
-
-Issue closeout
-([`issue_verify_closeout.py`](../skills/public/issue/scripts/issue_verify_closeout.py))
-calls these through
-[`proof_mismatch.py`](../scripts/evidence/proof_mismatch.py) (see
-[Closeout proof ledger](#closeout-proof-ledger)).
+Field identity and the generic queries (`level_satisfies`,
+`min_level_for_acceptance`, `gap_disposition_for`,
+`acceptance_map_available`) live in
+[`proof_semantics_adapter_lib.py`](../scripts/adapters/proof_semantics_adapter_lib.py).
+Issue closeout calls them through
+[`proof_mismatch.py`](../scripts/evidence/proof_mismatch.py).
 
 > **Note — two distinct `out-of-scope` meanings.** `gap_policy.out_of_scope` is a
 > *policy classification* (the adapter pre-clears a class so its gap needs no
 > issue). The residual-ledger `out-of-scope: <reason>` form is a *human-supplied
-> disposition* in the ledger. Do not conflate them: a `gap_policy`
-> classification answers "does this gap need a disposition?", while the ledger
-> form is one of the dispositions a human can write.
+> disposition* in the ledger. Do not conflate them.
 
 ## Closeout proof ledger
 

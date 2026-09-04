@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 `charness` should integrate external tools without pretending to own them.
 
@@ -100,48 +100,10 @@ ownership.
 
 ## Integration Manifest Contract
 
-Each external tool should eventually get one manifest file under:
-
-```text
-integrations/tools/<tool-id>.json
-```
-
-Expected fields:
-
-- `tool_id`
-- `kind`
-  - `external_binary`
-  - `external_skill`
-  - `external_binary_with_skill`
-- `upstream_repo`
-- `homepage`
-- `install`
-  - command or documented method
-- `update`
-  - command or documented method
-- `detect`
-  - command and success criteria
-- `healthcheck`
-  - optional command and expected signal; omit it when `detect`, readiness, or a
-    public-skill consumer probe is the honest boundary
-  - prefer repo-owned probes or machine-readable read-only consumer commands
-    over help prose or fragile descriptive strings
-- `access_modes`
-  - ordered supported access modes such as `grant`, `binary`, `env`, or
-    `public`
-- `capability_requirements`
-  - non-secret grant ids, env var names, or permission scopes needed to use
-    those access modes
-- `readiness_checks`
-  - optional setup-readiness probes that can fail closed before runtime use
-- `config_layers`
-  - ordered host-neutral precedence such as `grant` ->
-    `authenticated-binary` -> `env` -> `operator-step` -> `public-fallback`
-- `version_expectation`
-- `support_skill_source`
-  - absent when no upstream skill exists
-- `host_notes`
-  - optional host-specific install wrinkles
+Each external tool gets `integrations/tools/<tool-id>.json`. Field identity
+lives in [manifest.schema.json](../integrations/tools/manifest.schema.json).
+Prefer repo-owned read-only consumer probes over help-prose healthchecks.
+User-repo merge and [dependencies.json](../integrations/tools/dependencies.json) exceptions stay below.
 
 ## User-Repo Discovery
 

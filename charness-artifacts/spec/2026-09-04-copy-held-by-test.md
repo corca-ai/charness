@@ -1,7 +1,7 @@
 # Copy-held-by-test: restated identity
 
 Date: 2026-09-04
-Status: first slice landed 2026-09-04. Remaining: deferred D47 essay, proof-semantics-adapter stale path list, more closed-decision bodies, authoring-preflight still over budget on teaching not identity.
+Status: remaining ranked dumps landed 2026-09-04 after Raskin+Gawande deletion critique. Over-budget pages that remain are teaching/north-star/open deferrals, not recopied identity.
 Owner: documentation principles + the mechanisms table in `docs/development.md`
 
 ## Diagnosis

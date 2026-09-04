@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 This document defines when `charness` should ship a support skill, when it
 should consume an upstream one, and when a capability should stay an external
@@ -82,17 +82,7 @@ Examples:
 
 Forking should be exceptional, not the default.
 
-## States
-
-Support capability states should stay explicit:
-
-- `native-support`
-- `upstream-consumed`
-- `wrapped-upstream`
-- `integration-only`
-
-The state is recorded in the manifest lock state
-([control-plane.md](./control-plane.md)).
+Support-state identity lives in [lock.schema.json](../integrations/locks/lock.schema.json) and [control-plane.md](./control-plane.md). Do not recopy the enum here.
 
 ## Capability Catalog Interaction
 
@@ -107,20 +97,7 @@ That keeps hidden availability facts honest without turning inventory into
 semantic workflow routing. Installed skill metadata and model judgment own the
 ordinary route decision.
 
-## Required Contracts
-
-Any support capability that is not purely native should eventually have:
-
-- colocated capability metadata when `charness` owns the runtime
-- an integration manifest only when the ownership boundary is truly external
-- supported runtime access modes
-- install/update guidance
-- detect/healthcheck commands
-- version expectation
-- degradation rules when absent
-
-Private-access capabilities follow the onboarding order and secrets rule in
-[runtime-capability-contract.md](./runtime-capability-contract.md).
+Required contract fields live in the lock/manifest schemas. Private-access capabilities follow [runtime-capability-contract.md](./runtime-capability-contract.md).
 
 ## Consumable Locally
 

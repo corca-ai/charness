@@ -78,8 +78,6 @@ the evidence is sufficient for the boundary at hand.
 
 - Question: Promote `extends` into merged-bundle runtime behavior now?
 - Current choice: Keep `extends` as constrained metadata seam; no broad merged-bundle runtime expansion in this phase.
-- Why now: Avoids broad behavior complexity before evaluator integration.
-- Impact surfaces: [`profiles/profile.schema.json`](../profiles/profile.schema.json), [`tools/validate_profiles.py`](../tools/validate_profiles.py)
 - Reopen trigger: If real profile composition demand appears in downstream consumer repos.
 
 ### D6. Integration Capability Depth
@@ -92,88 +90,66 @@ the evidence is sufficient for the boundary at hand.
 
 - Question: Replace `official` with broader wording (`trusted`/`declared`) now?
 - Current choice: Replace `official` with `trusted` now.
-- Why now: The actual policy boundary is host trust, not brand-official status.
-- Impact surfaces: [`docs/support-skill-policy.md`](./support-skill-policy.md), `scripts/capability_catalog*.py`
 - Reopen trigger: If the trust policy later needs a more precise distinction than one `trusted` bucket.
 
 ### D8. Profile Inheritance Policy
 
 - Question: Allow richer inheritance vs flattened bundles?
 - Current choice: Favor flattened effective bundles for execution, with minimal inheritance metadata retained for authoring convenience only.
-- Why now: Predictable runtime behavior beats expressive inheritance at this stage.
-- Impact surfaces: `profiles/*.json`, [`tools/validate_profiles.py`](../tools/validate_profiles.py), profile docs
 - Reopen trigger: If flattening causes repeated maintenance burden across real consumer profiles.
 
 ### D9. Preset Contract Format
 
 - Question: Move presets to JSON schema now or keep markdown-first catalog?
 - Current choice: Keep markdown-first preset contract with required frontmatter until first downstream organization preset matures.
-- Why now: Current preset surface is maintainer-oriented and stable with markdown validation.
-- Impact surfaces: `presets/*.md`, [`scripts/validate_presets.py`](../scripts/validate_presets.py)
 - Reopen trigger: If org-install preset scale needs stronger machine-only schema guarantees.
 
 ### D10. `ideation` Core Boundary
 
 - Question: How much entity/stage thinking belongs in public core vs references?
 - Current choice: Keep lightweight entity/stage framing in public core; push detailed playbooks, examples, and edge handling into references.
-- Why now: Preserves a short trigger contract and portable defaults while relying on reference discoverability and agent reference-following.
-- Impact surfaces: [`skills/public/ideation/SKILL.md`](../skills/public/ideation/SKILL.md), `skills/public/ideation/references/*`
 - Reopen trigger: If repeated user confusion shows core guidance is too thin.
 
 ### D11. `spec` Weight Control
 
 - Question: How to keep `spec` strong without procedural bloat?
 - Current choice: Keep heuristic core (`Fixed Decisions` / `Probe Questions` / `Deferred Decisions`) and keep procedural detail, examples, and edge handling in references.
-- Why now: Aligns with option-minimalism and current public authoring discipline while relying on reference discoverability and agent reference-following.
-- Impact surfaces: [`skills/public/spec/SKILL.md`](../skills/public/spec/SKILL.md), `skills/public/spec/references/*`
 - Reopen trigger: If implementation handoff quality repeatedly fails due to underspecified core guidance.
 
 ### D12. `quality` Skill Identity
 
 - Question: Is `quality` a proposal skill, gate skill, or both?
 - Current choice: `quality` remains a strong public proposal/review skill; deterministic enforcement stays in repo-owned quality gates/scripts.
-- Why now: Preserves separation between operator guidance and CI/runtime enforcement without weakening the proposal surface into soft advice.
-- Impact surfaces: [`skills/public/quality/SKILL.md`](../skills/public/quality/SKILL.md), [`scripts/run-quality.sh`](../scripts/run-quality.sh), quality docs
 - Reopen trigger: If users need one unified interface that both proposes and enforces without ambiguity.
 
 ### D13. Sample Preset Scope
 
 - Question: Keep sample presets repo-agnostic vs move to host/profile seams?
 - Current choice: Keep `charness`-shipped presets repo-agnostic maintainer examples; make those examples realistic and varied, but keep consumer-specific install surfaces in downstream repos.
-- Why now: Maintains portable source-of-truth boundaries without forcing shipped examples to stay toy-like.
-- Impact surfaces: `presets/*`
 - Reopen trigger: If cross-host install UX requires shipping host-specific presets in-core.
 
 ### D14. Quality Dogfood Proposal Promotion
 
 - Question: Where should Session 10+ gate proposals be implemented?
 - Current choice: Implement only deterministic, repo-owned gates in `charness`; keep evaluator/HITL-heavy checks in an explicit consumer-owned workflow.
-- Why now: Keeps `charness` guarantees honest and runnable in isolation.
-- Impact surfaces: [`scripts/run-quality.sh`](../scripts/run-quality.sh), [`tools/run_evals.py`](../tools/run_evals.py), [`docs/public-skill-validation.md`](./public-skill-validation.md)
 - Reopen trigger: If current repo-owned gates prove insufficient for regression containment.
 
 ### D15. `spec` Mode Strategy
 
 - Question: Keep explicit mode menu or heuristic branch?
 - Current choice: Stay with heuristic branch strategy; explicit mode menu remains retired.
-- Why now: This direction is already implemented and reduces authoring overhead.
-- Impact surfaces: [`skills/public/spec/SKILL.md`](../skills/public/spec/SKILL.md) (the contract-shaping heuristics, formerly `references/contract-modes.md`, are now inlined in the `## Contract Shaping` section)
 - Reopen trigger: If operators repeatedly request explicit mode selection for predictability.
 
 ### D16. `announcement` Delivery Kinds
 
 - Question: How much delivery taxonomy belongs in `announcement` public core?
 - Current choice: `announcement` is human-to-human communication. Public core covers draft shape, audience, and explicit human-facing delivery confirmation; actual delivery backends stay adapter-defined, and `command` is not a public core kind.
-- Why now: `command` describes an implementation seam, not a communication concept.
-- Impact surfaces: [`skills/public/announcement/SKILL.md`](../skills/public/announcement/SKILL.md), announcement references/examples
 - Reopen trigger: If multiple consumers need the same additional human-facing delivery concept beyond draft style plus adapter-defined backend.
 
 ### D17. `hitl` Runtime State Depth
 
 - Question: Keep portable minimum runtime state vs add richer queue/context tooling now?
 - Current choice: Keep portable minimum runtime state model in public core for agent-to-human bounded review; consider richer queue and context tooling as future support-layer work.
-- Why now: Keeps the public contract lean and host-neutral instead of turning `hitl` into a host-specific review product.
-- Impact surfaces: [`skills/public/hitl/SKILL.md`](../skills/public/hitl/SKILL.md), support-layer roadmap
 - Reopen trigger: If current state model cannot sustain real review-loop throughput.
 
 ## Open Deferrals (2026-05-07)
@@ -300,67 +276,10 @@ Newness is keyed on a content fingerprint ([`nose_fingerprint_lib`](../skills/pu
 
 ### D47. Should inventory-field engagement require a value marker?
 
-- Question: `_engages` in [validate_inventory_consumption.py](../scripts/gates/validate_inventory_consumption.py)
-  now requires a field mention to carry ≥5 alphanumerics beyond every declared field name.
-  That closes the stub shapes, but a field whose NAME is an ordinary English word —
-  `scope`, `status`, `notes`, `paths`, `ranking`, `advisory`, `command`, `families` — is
-  engaged by incidental prose. Should a mention additionally require a value marker
-  (`field=`, `field:`, or `` `field` ``)?
-- Current choice: **Defer — measure recorded, refusal not armed.** **Operator call
-  2026-08-01: still not armed, and the repair this entry named is WITHDRAWN as
-  unbuildable. The hand counts are replaced by an executed measurement.**
-- Why now: found by round-1 bounded review while closing sweep row S10, and measured
-  rather than argued; the hand count (51 of 169 field mentions unmarked across 105
-  checked-in quality artifacts) is superseded by the measurement below.
-- Why deferral is right at the time: arming the marker refuses **5 checked-in reviews** that cite
-  `inventory_nose_clones` or `inventory_doc_duplicates`, all of which were only ever
-  passing on incidental prose. The remedy is either
-  rewriting frozen artifacts to satisfy a later gate — the Goodhart move this validator's
-  own docstring exists to refuse — or accepting a standing red. Choosing that toll is the
-  owner's, as in [D45](#d45-should-run-qualitysh-arm---require-evaluated-scope-on-the-cilocal-parity-gate).
-  The dated 2026-08-12 snapshot below records the executed refusal toll; the 2026-08-01
-  measurement recorded 5 citations across 4 artifacts. There is also a better repair available: qualify the generic tokens in
-  [inventory-consumer-fields.json](../skills/public/quality/references/inventory-consumer-fields.json)
-  so a field declares whether its name is distinctive, which is a contract change
-  deserving its own slice.
-- Named remedy premise:
-  - Remedy: qualify generic inventory tokens with a distinctiveness field in [`inventory-consumer-fields.json`](../skills/public/quality/references/inventory-consumer-fields.json).
-  - Premise: the declaration can distinguish the fields whose incidental prose caused the false engagement.
-  - Evidence channel: read the inventory declaration and the cited consumer citations (5 across 4 artifacts when this remedy was assessed on the 2026-08-01 corpus; the dated snapshot below is the later evidence).
-  - Observation: every cited engagement uses ordinary-English field names; declaring them non-distinctive spares the reviews, while declaring them distinctive makes the rule a measured-zero no-op.
-  - Downstream decision delta: withdraw this remedy, keep the marker refusal unarmed, and require a different contract if the issue is reopened.
-  - Status: withdrawn
-- Measurement, headline figures
-  dated: **196** presence-only field mentions; **188** clear the then-current residual
-  floor; **153** carry a value marker; and **35** do not. Payload: [2026-08-12 snapshot](../charness-artifacts/probe/2026-08-12-inventory-marker-rule-snapshot.json) (`sha256: ac63f8a54a558217cebde320f02d4915d10e6bab538c3df22ff6e1397083f62d`), hash-pinned by [test_inventory_marker_rule_measurement.py](../tests/test_inventory_marker_rule_measurement.py).
-- Non-claims: the floor as shipped refuses a stub, not a lie, and not incidental prose
-  about an ordinary word. Nothing here narrows sweep row S11. The snapshot counts only
-  mentions that cleared its capture-time floor, so its split is not comparable to the
-  hand count's 51 over 169. It does not
-  model the gate's `prose_review_status` skill-ergonomics arm; that arm looks inert here
-  (every corpus mention of that field is backticked or `=`-assigned) but it was not
-  measured. It measures this repo's corpus and says nothing about a consumer's. The
-  refused artifacts are not all ones the default runner reaches — the gate is normally
-  handed `latest.md` only — so "would refuse 4 citations" is not "would redden the next
-  quality run". Known and unrepaired, raised by the round-2 review and recorded because
-  round 2 is the review cap: a field name inside a backticked PATH or flag
-  ([`advisory-interpretation-contract.md`](../skills/shared/references/advisory-interpretation-contract.md), `--paths`) scores as marked — the same one-way
-  bias as the bug that was fixed, verified inert in the 2026-08-12 snapshot but able to flip a
-  refusal silently on a later artifact; lines with an odd number of backticks and fenced
-  code blocks are unmodelled; and marker attribution is per LINE, not per occurrence.
-  The gate's pre-contract skip is modelled but is measured-zero in both modes. Nothing was
-  armed, and no frozen artifact was rewritten.
-- Impact surfaces: [validate_inventory_consumption.py](../scripts/gates/validate_inventory_consumption.py),
-  [measure_inventory_consumption_floor.py](../scripts/gates/measure_inventory_consumption_floor.py),
-  [inventory-consumer-fields.json](../skills/public/quality/references/inventory-consumer-fields.json).
-- Reopen trigger: a quality artifact passing the floor on incidental prose and later found
-  not to have consumed the inventory; or the declaration file gaining per-field
-  distinctiveness; or the currently-refused artifacts being rewritten for another reason.
-  **The dated snapshot is output of the recorded probe command** — the hand-measurement
-  caveat this line used to carry is retired. A new decision must run
-  [measure_inventory_marker_rule.py](../scripts/gates/measure_inventory_marker_rule.py) on its
-  then-current corpus and record a new dated snapshot with its own SHA-256; it must not
-  overwrite or recompute this immutable snapshot.
+- Question: Should `_engages` in [validate_inventory_consumption.py](../scripts/gates/validate_inventory_consumption.py) also require a value marker so ordinary-English field names are not engaged by incidental prose?
+- Current choice: **Defer — measure recorded, refusal not armed.** Named remedy (per-field distinctiveness in the inventory declaration) **withdrawn** as unbuildable: declaring names non-distinctive spares the reviews; declaring them distinctive makes the rule a measured-zero no-op.
+- Measurement: [2026-08-12 snapshot](../charness-artifacts/probe/2026-08-12-inventory-marker-rule-snapshot.json) (`sha256: ac63f8a54a558217cebde320f02d4915d10e6bab538c3df22ff6e1397083f62d`), pinned by [test_inventory_marker_rule_measurement.py](../tests/test_inventory_marker_rule_measurement.py). Counts live in that payload. The snapshot does not license arming or consumer claims; unmodelled cases live in [measure_inventory_marker_rule.py](../scripts/gates/measure_inventory_marker_rule.py).
+- Reopen trigger: a quality artifact passing the floor on incidental prose and later found not to have consumed the inventory; or per-field distinctiveness landing in the declaration; or the currently-refused artifacts being rewritten. A new decision must run `python3 scripts/gates/measure_inventory_marker_rule.py --repo-root . --json` on its then-current corpus and record a **new** dated snapshot with its own SHA-256; do not overwrite this one.
 
 ### D48. Should an absent release surface be drift without a self-authored declaration?
 

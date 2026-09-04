@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 Capability resolution maps a skill-facing logical capability id to a repo-local provider profile, and that to a provider `charness` already models, without storing secrets in committed files.
 
@@ -65,34 +65,9 @@ charness checkout supplies provider manifests.
 
 ## File Shape
 
-`<repo-root>/.charness/local/capability.json` (gitignored, real values):
-
-```json
-{
-  "version": 1,
-  "bindings": {
-    "github.default": "github.acme-dev"
-  },
-  "profiles": {
-    "github.acme-dev": {
-      "provider": "github-gh",
-      "access_mode_preference": ["grant", "env"],
-      "env_bindings": {
-        "GH_TOKEN": "GH_TOKEN_ACME_DEV"
-      }
-    }
-  }
-}
-```
-
-With that profile, `charness capability env github.default` prints `export GH_TOKEN="${GH_TOKEN_ACME_DEV}"` and never the value.
-
-The `provider` must be a provider `charness` already models (an
-`integrations/tools/*.json` tool id or a `skills/support/*/capability.json`
-capability id). Credentialed org connectors the consuming runtime owns (Slack,
-Notion, private Drive) are bound the same way against the runtime's own
-provider, not a `charness`-owned one.
-
-`<repo-root>/.charness/capability.example.json` (committed) keeps the same
-shape with placeholder source env names. It must not contain real source env
-names that would identify another repo's secret material.
+Shape identity is the committed example
+`<repo-root>/.charness/capability.example.json` and `charness capability init`.
+Do not recopy the JSON here. `charness capability env <id>` prints `export`
+lines of alias names, never secret values. The `provider` must be a provider
+`charness` already models. Credentialed org connectors bind against the
+consuming runtime's own provider, not a `charness`-owned one.
