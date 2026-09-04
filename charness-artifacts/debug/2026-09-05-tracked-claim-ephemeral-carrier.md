@@ -20,7 +20,7 @@ Given a tracked artifact that claims `worker-delivered`, when a clean checkout v
 
 ## Reproduction
 
-- Cite `.charness/reviewer-round-x/worker-report.yaml` from a tracked worker-delivered artifact; file present locally → validator 0; file absent → 1 with “does not exist inside the repository”.
+- Cite a gitignored reviewer-round `worker-report.yaml` from a tracked worker-delivered artifact; file present locally → validator 0; file absent → 1 with “does not exist inside the repository”. <!-- reproduction-source -->
 
 ## Candidate Causes
 

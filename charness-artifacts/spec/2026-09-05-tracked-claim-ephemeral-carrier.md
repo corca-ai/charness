@@ -10,8 +10,8 @@ Debug handoff: `charness-artifacts/debug/2026-09-05-tracked-claim-ephemeral-carr
 
 When a tracked producer names an on-disk carrier as the proof of a public claim
 (`worker-delivered`, and any later sibling of that shape), a clean clone must
-be able to open that path. Hidden runtime (`.charness/**`, `.artifacts/**`) is
-not that path.
+be able to open that path. Hidden runtime (the Variable Hidden class in
+artifact-policy) is not that path.
 
 ## Worker-delivered
 
