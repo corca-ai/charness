@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 179,
-  "indexed_artifact_count": 164,
+  "source_artifact_count": 180,
+  "indexed_artifact_count": 165,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 8,
-    "none": 68,
+    "none": 69,
     "operator-visible-recovery": 23,
     "repeated-symptom": 18
   },
   "generalization_pressure_counts": {
     "factor-now": 24,
     "monitor": 124,
-    "none": 16
+    "none": 17
   },
   "entries": [
     {
@@ -2310,6 +2310,20 @@
       ],
       "seam": "filesystem token -> Git semantic result",
       "generalization_pressure": "monitor",
+      "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-09-04-debug-review.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "none",
+      "generalization_pressure": "none",
       "critique_required": false,
       "next_step": "impl",
       "handoff_artifact": "none",
