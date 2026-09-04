@@ -8,6 +8,7 @@ taught to bind, then renamed the ones it allowed.
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 
 import pytest
@@ -18,6 +19,17 @@ ROOT = Path(__file__).resolve().parent.parent
 def _support():
     spec = importlib.util.spec_from_file_location(
         "run_review_support", ROOT / "skills/public/critique/scripts/run_review_support.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _promotion():
+    if "run_review_support" not in sys.modules:
+        _support()
+    spec = importlib.util.spec_from_file_location(
+        "run_review_promotion", ROOT / "skills/public/critique/scripts/run_review_promotion.py"
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -82,24 +94,24 @@ def test_hold_out_restores_the_path_after_a_failed_run(tmp_path: Path) -> None:
 
 
 def test_promote_worker_report_copies_only_the_combined_report(tmp_path: Path) -> None:
-    support = _support()
+    promotion = _promotion()
     runtime = tmp_path / ".charness" / "reviewer-round-attempt-1"
     runtime.mkdir(parents=True)
     (runtime / "worker-report.yaml").write_text("schema_version: charness.reviewer_worker_report.v1\n", encoding="utf-8")
     (runtime / "runner.stderr").write_text("noise\n", encoding="utf-8")
 
-    dest = support.promote_worker_report(tmp_path, "attempt-1", runtime / "worker-report.yaml")
+    dest = promotion.promote_worker_report(tmp_path, "attempt-1", runtime / "worker-report.yaml")
 
     assert dest == tmp_path / "charness-artifacts" / "critique" / "workers" / "attempt-1" / "worker-report.yaml"
     assert dest.read_text(encoding="utf-8") == "schema_version: charness.reviewer_worker_report.v1\n"
     assert not (dest.parent / "runner.stderr").exists()
-    assert support.promote_worker_report(tmp_path, "attempt-1", runtime / "missing.yaml") is None
-    with pytest.raises(support.RunReviewError, match="overwrite existing durable worker report"):
-        support.promote_worker_report(tmp_path, "attempt-1", runtime / "worker-report.yaml")
+    assert promotion.promote_worker_report(tmp_path, "attempt-1", runtime / "missing.yaml") is None
+    with pytest.raises(ValueError, match="overwrite existing durable worker report"):
+        promotion.promote_worker_report(tmp_path, "attempt-1", runtime / "worker-report.yaml")
 
 
 def test_load_and_promote_report_rewrites_the_emitted_report_path(tmp_path: Path) -> None:
-    support = _support()
+    promotion = _promotion()
     runtime = tmp_path / ".charness" / "reviewer-round-ok"
     runtime.mkdir(parents=True)
     report = runtime / "worker-report.yaml"
@@ -107,7 +119,7 @@ def test_load_and_promote_report_rewrites_the_emitted_report_path(tmp_path: Path
     paths = {"report": report}
     context = {"paths": {"report": ".charness/reviewer-round-ok/worker-report.yaml"}}
 
-    loaded = support.load_and_promote_report(tmp_path, "ok", paths, context)
+    loaded = promotion.load_and_promote_report(tmp_path, "ok", paths, context)
 
     assert loaded is not None and loaded["approval_eligible"] is True
     cited = "charness-artifacts/critique/workers/ok/worker-report.yaml"
@@ -117,14 +129,14 @@ def test_load_and_promote_report_rewrites_the_emitted_report_path(tmp_path: Path
 
 
 def test_load_and_promote_report_skips_a_non_approval_report(tmp_path: Path) -> None:
-    support = _support()
+    promotion = _promotion()
     runtime = tmp_path / ".charness" / "reviewer-round-no"
     runtime.mkdir(parents=True)
     report = runtime / "worker-report.yaml"
     report.write_text("schema_version: v1\napproval_eligible: false\n", encoding="utf-8")
     context = {"paths": {"report": ".charness/reviewer-round-no/worker-report.yaml"}}
 
-    support.load_and_promote_report(tmp_path, "no", {"report": report}, context)
+    promotion.load_and_promote_report(tmp_path, "no", {"report": report}, context)
 
     assert context["paths"] == {"report": ".charness/reviewer-round-no/worker-report.yaml"}
     assert not (tmp_path / "charness-artifacts" / "critique" / "workers" / "no").exists()

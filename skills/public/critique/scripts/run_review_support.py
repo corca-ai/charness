@@ -291,9 +291,6 @@ def select_backend(
     return backend, timeout
 
 
-DURABLE_WORKER_REPORTS = Path("charness-artifacts") / "critique" / "workers"
-
-
 def new_run_dir(root: Path, attempt: str) -> Path:
     run_dir = (root / ".charness" / f"reviewer-round-{attempt}").resolve()
     try:
@@ -308,46 +305,6 @@ def new_run_dir(root: Path, attempt: str) -> Path:
         )
     run_dir.mkdir(parents=True)
     return run_dir
-
-
-def promote_worker_report(root: Path, attempt: str, runtime_report: Path) -> Path | None:
-    """Copy the combined report into visible knowledge so a clean clone can cite it.
-
-    The run directory stays gitignored. Only `worker-report.yaml` is promoted.
-    """
-    if not runtime_report.is_file():
-        return None
-    dest_dir = (root / DURABLE_WORKER_REPORTS / attempt).resolve()
-    try:
-        dest_dir.relative_to(root.resolve())
-    except ValueError as exc:
-        raise RunReviewError(
-            "path-invalid", "durable worker report directory escaped repository root"
-        ) from exc
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    dest = dest_dir / "worker-report.yaml"
-    if dest.exists() or dest.is_symlink():
-        raise RunReviewError(
-            "stale-artifact-refused",
-            f"refusing to overwrite existing durable worker report: {dest}",
-        )
-    shutil.copyfile(runtime_report, dest)
-    return dest
-
-
-def load_and_promote_report(
-    root: Path, attempt: str, paths: dict[str, Path], context: dict[str, Any]
-) -> dict[str, Any] | None:
-    report = load_mapping(paths["report"])
-    if not (isinstance(report, dict) and report.get("approval_eligible") is True):
-        return report
-    durable = promote_worker_report(root, attempt, paths["report"])
-    if durable is not None:
-        cited = relative(root, durable)
-        context["paths"]["runtime_report"] = context["paths"]["report"]
-        context["paths"]["report"] = cited
-        context["paths"]["durable_report"] = cited
-    return report
 
 
 def run_runner(

@@ -25,7 +25,7 @@ from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 from scripts.task_run import task_run_changed_line as _changed_line  # noqa: E402
 from scripts.task_run import task_run_completion as _completion  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402
-from scripts.task_run.task_run_git import _repo_snapshot  # noqa: E402
+from scripts.task_run.task_run_git import _checkout_own_dir, _repo_snapshot  # noqa: E402
 from scripts.task_run.task_run_plan import resolve_task_inputs as _resolve_task_inputs  # noqa: E402
 from scripts.task_run.task_run_state import (  # noqa: E402
     _abnormal_exit_state,
@@ -105,28 +105,6 @@ def _persist_completion(payload: dict[str, Any], runtime_path: Path) -> None:
                 "Carry the committed_paths and dirty_paths before treating it as integrated."
             )
     _persist(payload, runtime_path)
-
-
-def _checkout_own_dir(create_payload: dict[str, Any]) -> Path:
-    """Validate the checkout-specific Git dir carried by worktree creation."""
-    carrier = create_payload.get("_checkout")
-    if not isinstance(carrier, dict):
-        raise TaskRunError("worktree create payload is missing checkout metadata")
-    raw = carrier.get("own_dir")
-    if not isinstance(raw, str) or not raw or raw != raw.strip():
-        raise TaskRunError("worktree create payload has malformed checkout own_dir")
-    candidate = Path(raw)
-    if not candidate.is_absolute():
-        raise TaskRunError("worktree create payload checkout own_dir must be absolute")
-    try:
-        resolved = candidate.resolve()
-    except (OSError, RuntimeError, ValueError) as exc:
-        raise TaskRunError("worktree create payload has unusable checkout own_dir") from exc
-    if not resolved.is_dir():
-        raise TaskRunError(
-            f"worktree create payload checkout own_dir is not an existing directory: {resolved}"
-        )
-    return resolved
 
 
 def _terminal(
