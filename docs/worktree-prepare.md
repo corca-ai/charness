@@ -2,90 +2,74 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
-`charness worktree` is the structural answer to "agent created a git worktree, hooks went silent, and node_modules was never installed" — and to "eval/bench tools created dozens of throwaway worktrees and never cleaned up."
+`charness worktree` is the structural answer to "agent created a git worktree, hooks went silent, node_modules was never installed" and to "eval tools created dozens of throwaway worktrees and never cleaned up."
 
 Six subcommands keep mutate-phase work honest:
 
-- `charness worktree create` / `charness worktree add` — wraps `git worktree add`, then runs readiness doctor; optional `--prepare` runs the adapter-declared setup immediately.
-- `charness worktree exec` — runs one command in an existing linked worktree with Python, pytest, coverage, and temporary output routed to an external runtime root.
-- `charness worktree doctor` — fast, read-only health probe of a single worktree.
-- `charness worktree prepare` — runs the consumer repo's adapter-declared prepare commands and re-validates.
-- `charness worktree audit` — surveys every worktree registered to the repository and classifies primary/active/prunable/stale. Optional `--doctor` adds readiness summaries for existing worktrees; optional `--prune` drops git metadata for missing worktrees.
-- `charness worktree cleanup` — dry-runs safe teardown for a registered feature worktree, then removes it with `--yes`; optional branch deletion requires local containment proof.
+- `charness worktree create` / `add` — wraps `git worktree add`, then runs readiness doctor; `--prepare` runs the adapter-declared setup immediately.
+- `charness worktree exec` — runs one command in a linked worktree with Python, pytest, coverage, and temporary output routed to an external runtime root.
+- `charness worktree doctor` — fast, read-only health probe of one worktree.
+- `charness worktree prepare` — runs the adapter-declared prepare commands and re-validates.
+- `charness worktree audit` — classifies every registered worktree as primary/active/prunable/stale; `--doctor` adds readiness, `--prune` drops git metadata for missing directories.
+- `charness worktree cleanup` — dry-runs teardown of a feature worktree, removes it with `--yes`; branch deletion requires local containment proof.
 
-`create`, `audit`, and `cleanup` operate from the repository at `--repo-root`. `doctor` and `prepare` operate on the worktree at `--repo-root`.
+`create`, `audit`, and `cleanup` take the repository as `--repo-root`; `doctor` and `prepare` take the worktree.
 
 ## Why this exists
 
-Two silent-hook-skip failure modes: lefthook's `.git/hooks/` shim hardcodes the install-time worktree path, and husky's `.husky/_/` is generated per worktree. The `lefthook_shim` and `husky_dir` canonical checks below hold both; charness never symlinks `node_modules` (Vite/Vitest resolution breaks). Analysis: [worktree-prepare-doctor.md](../charness-artifacts/spec/worktree-prepare-doctor.md).
+Two silent-hook-skip failure modes: lefthook's `.git/hooks/` shim hardcodes the install-time worktree path, and husky's `.husky/_/` is generated per worktree. The `lefthook_shim` and `husky_dir` canonical checks hold both; charness never symlinks `node_modules` (Vite/Vitest resolution breaks). Analysis: [worktree-prepare-doctor.md](../charness-artifacts/spec/worktree-prepare-doctor.md).
 
 ## Quickstart
 
 In a consumer repo that uses `git worktree add` plus a Node hook manager:
 
 ```bash
-# One-time: seed a starter manifest and edit it for your package manager / hooks.
+# One-time: seed a starter manifest (or copy integrations/worktree/adapter.example.yaml).
 python3 "$CHARNESS_REPO/skills/public/setup/scripts/seed_worktree_adapter.py" --repo-root .
 
-# Or copy from the example and edit:
-cp "$CHARNESS_REPO/integrations/worktree/adapter.example.yaml" .agents/worktree-adapter.yaml
-
-# Create a fresh worktree through Charness so readiness is checked immediately:
-charness worktree create --path ../feature-worktree --branch feature-worktree --base main
+# Create a worktree with readiness checked immediately (--prepare runs the adapter setup):
 charness worktree create --path ../feature-worktree --branch feature-worktree --base main --prepare
 charness worktree add --path ../feature-worktree --branch feature-worktree --base main
 
-# If a worktree was created raw or readiness changes later:
-charness worktree doctor          # read-only probe
-charness worktree prepare         # runs adapter prepare, re-validates
-charness worktree prepare --force # run prepare even when doctor already passes
+# Raw worktree, or readiness changed later:
+charness worktree doctor              # read-only probe
+charness worktree prepare [--force]   # adapter prepare, re-validates
 
-# Run ordinary commands with runtime output kept outside the worktree:
+# Ordinary commands with runtime output kept outside the worktree:
 charness worktree exec --repo-root ../feature-worktree -- pytest -q
 
-# Periodically (or before disk pressure builds):
+# Periodically:
 charness worktree audit                          # classify primary/active/prunable/stale
 charness worktree audit --doctor                 # also surface readiness failures
-charness worktree audit --prune                  # also run `git worktree prune`
-charness worktree audit --stale-days 30          # custom stale threshold, YAML output
+charness worktree audit --prune --stale-days 30  # also `git worktree prune`; custom threshold
 
-# After a feature worktree has been merged locally:
-charness worktree cleanup --path ../feature-worktree --delete-merged-branch
+# After a local merge (dry-run without --yes):
 charness worktree cleanup --path ../feature-worktree --delete-merged-branch --yes
 ```
 
-Management commands emit a single machine-readable YAML document on stdout.
-`worktree exec` forwards the child command's output and only emits YAML for its
-own preflight refusal. `doctor` and `prepare` exit 0 only when status is `pass`.
-`create` exits 0 on `pass`, 1 on `warn` (created but readiness still needs
-preparation), and 2 on `fail`. `audit` exits 0 on `pass`, 1 on `warn` (prunable,
-stale, or readiness failures present), 2 on `fail`.
+Management commands emit one YAML document on stdout; `worktree exec` forwards
+the child's output and emits YAML only for its own preflight refusal. `doctor`
+and `prepare` exit 0 only on `pass`. `create` exits 0 on `pass`, 1 on `warn`
+(created, readiness still needs preparation), 2 on `fail`; `audit` exits 1 on
+`warn` (prunable, stale, or readiness failures), 2 on `fail`.
 
 ## When to run `create`
 
-Run `charness worktree create --path <path> --branch <branch> --base <ref>` instead of raw `git worktree add` when an agent or operator is starting an isolated feature, spec, eval, or review slice. The command creates the worktree, runs `worktree doctor` against the new checkout, and returns the exact next action when the adapter reports missing dependencies or hook readiness.
-
-Use `--prepare` when the operator wants Charness to run the repo-declared setup immediately after creation. Without `--prepare`, a readiness failure is a warning with a next action; this keeps dependency installation under operator control while still making the missing step visible at creation time.
+Use `charness worktree create --path <path> --branch <branch> --base <ref>` instead of raw `git worktree add` for an isolated feature, spec, eval, or review slice: it creates the worktree, runs `worktree doctor` on it, and returns the exact next action when readiness is missing. `--prepare` runs the repo-declared setup immediately; without it a readiness failure is a warning with a next action, keeping installation under operator control.
 
 ## When to run `audit`
 
-Run `charness worktree audit` when:
-
-- A repo has been used for eval/bench/agent runs that call `git worktree add` to set up sandboxes. Those tools often skip cleanup; `audit` surfaces the residue.
-- `git worktree list` output gets long enough that activity is hard to read.
-- Disk pressure builds in `~/.cache` or `/tmp` and you want to confirm whether stale worktrees are contributing.
-
-`audit --doctor` runs the same read-only readiness probe that `doctor` runs for each existing registered worktree, so active-but-unprepared worktrees are visible before verification fails. `audit` never deletes worktree directories on its own. `--prune` only invokes `git worktree prune`, which drops git metadata for worktrees whose directory is already gone. Use `git worktree remove --force <path>` to remove a still-existing stale worktree manually.
+Run `charness worktree audit` when eval/bench/agent runs have left `git worktree add` residue, when `git worktree list` is too long to read, or when disk pressure builds under `~/.cache` or `/tmp`. `audit --doctor` runs the read-only readiness probe on each registered worktree. `audit` never deletes directories; `--prune` only runs `git worktree prune` for directories already gone. Remove a still-existing stale worktree with `git worktree remove --force <path>`.
 
 ## When to run `cleanup`
 
-Run `charness worktree cleanup --path <worktree>` after the feature worktree has been merged into the local base you trust. Cleanup refuses the primary worktree, refuses dirty targets unless `--force` is passed, and defaults to dry-run. `--delete-merged-branch` deletes the local branch only when the branch is contained in `--branch-base` (default `HEAD`), then uses `git branch -D` to avoid Git's upstream-aware `-d` refusal when the branch is merged locally but the base has not been pushed yet.
+Run `charness worktree cleanup --path <worktree>` after the worktree is merged into the local base you trust. It refuses the primary worktree, refuses dirty targets without `--force`, and defaults to dry-run. `--delete-merged-branch` deletes the local branch only when `--branch-base` (default `HEAD`) contains it, using `git branch -D` because Git's upstream-aware `-d` refuses a branch whose base was never pushed.
 
 ## Manifest contract
 
-The manifest lives at [.agents/worktree-adapter.yaml](../.agents/worktree-adapter.yaml) in the consumer repo. Schema is at [integrations/worktree/manifest.schema.json](../integrations/worktree/manifest.schema.json) and the canonical example is [integrations/worktree/adapter.example.yaml](../integrations/worktree/adapter.example.yaml).
+The consumer repo owns [.agents/worktree-adapter.yaml](../.agents/worktree-adapter.yaml); the [schema](../integrations/worktree/manifest.schema.json) and the [canonical example](../integrations/worktree/adapter.example.yaml) live under `integrations/worktree/`.
 
 Minimum useful manifest:
 
@@ -110,12 +94,17 @@ prepare:
 
 Notes:
 
-- `argv` lists must use **block-style YAML**. The repo-local YAML loader does not parse inline `[a, b]` arrays.
-- `prepare.skip_if_doctor_passes` defaults to `false`. Set it to `true` only when passing manifest doctor checks explicitly cover every declared prepare command; pass `--force` to bypass an established skip.
-- `doctor.checks` extends the canonical baseline. Each check is an `argv` invocation with optional `expect_exit_code` (default 0), `next_action_hint` surfaced on failure, and `covers`, a list of prepare command ids whose readiness the passing check establishes.
-- A skip is licensed only by the manifest's `doctor.checks[].covers` -> `prepare.commands[].id` relation, established when every prepare command has a unique id covered by a check that passed (`_prepare_coverage` in [worktree_doctor_lib.py](../scripts/worktree/worktree_doctor_lib.py)); the prepare payload reports it under `coverage`.
+- `argv` lists must use **block-style YAML**; the repo-local loader does not parse inline `[a, b]` arrays.
+- `prepare.skip_if_doctor_passes` defaults to `false`; `--force` bypasses an established skip.
+- `doctor.checks` extends the canonical baseline: each is an `argv` invocation with optional `expect_exit_code` (default 0), `next_action_hint` surfaced on failure, and `covers`, the prepare command ids a pass establishes.
+- A skip is licensed only by that `doctor.checks[].covers` -> `prepare.commands[].id` relation, established when every prepare command has a unique id covered by a passing check (`_prepare_coverage` in [worktree_doctor_lib.py](../scripts/worktree/worktree_doctor_lib.py)); the payload reports it under `coverage`.
+- `prepare.dependency_reuse` (optional) names the install command (`command_id`), the lockfile, and the installed directory that [dependency reuse](#dependency-reuse) may link in place of running that command.
 - `doctor.disable_canonical_checks` opts out of a canonical check by id (`git_common_dir`, `hooks_path`, `lefthook_shim`, `husky_dir`). Use only when you genuinely do not use that hook surface.
 - `prepare.commands` are worktree setup commands, not lefthook hook commands. For consumer lefthook `pre-commit`/`pre-push` entries, apply the [hook failure visibility contract](../skills/public/setup/references/hook-failure-visibility.md): declare `fail_text`, retain a stable failure log for long gates, and avoid output-filter pipelines.
+
+## Dependency reuse
+
+Without copy-on-write, every fresh worktree paid a full install before bounded work started ([#792](https://github.com/corca-ai/charness/issues/792)). With `prepare.dependency_reuse` declared, prepare (so `create --prepare` and every `task run` lane) links an installed tree before the install command: first the parent tree when its lockfile digest matches, then the runtime cache `worktree-deps/` keyed by that digest and seeded whenever a fresh install had to run. `cp --reflink=always` is tried, then `cp -al`; when neither holds the install command runs as before. The payload's `dependency_reuse` key records `strategy`, `origin`, `source`, `reason`, and `cache_seed`. `--no-dependency-reuse` disables the step; `--force` does not, because reuse is prepare. Hard links share inodes: package managers replace files, so installs in the lane leave the parent intact, but an in-place edit under the linked directory reaches it. Declaring the field accepts that trade; pnpm users should use its global virtual store instead ([module docstring](../scripts/worktree/worktree_dependency_reuse.py)).
 
 ## Canonical doctor checks
 
@@ -128,20 +117,19 @@ These run regardless of the manifest:
 | `lefthook_shim` | If `pre-commit` shim references lefthook, then `node_modules/lefthook-*/bin/lefthook` or PATH `lefthook` resolves. | Lefthook shim will silently exit 0 — hooks are dead. |
 | `husky_dir` | If `core.hooksPath` points at a husky `_/` directory, that directory exists. | Husky prepare step has not run in this worktree. |
 
-Checks return `pass`, `fail`, or `skipped` (precondition not met — e.g., no `core.hooksPath` set).
+Checks return `pass`, `fail`, or `skipped` (precondition not met, e.g. no `core.hooksPath`).
 
 ## Recommended consumer setups
 
 - **pnpm monorepo:** the cleanest worktree story available today is pnpm's bare repo + `enableGlobalVirtualStore: true`. Worktrees share the global content-addressable store, each worktree's `node_modules` is symlinks only, and `pnpm install` in a new worktree is near-instant. See [pnpm's official guidance](https://pnpm.io/11.x/git-worktrees).
-- **npm or yarn:** prepare commands typically `npm ci && npx husky install` or `yarn install --immutable && yarn lefthook install`. Be aware that file count is the bottleneck, not dependency download.
-- **CoW filesystems (APFS, Btrfs, ZFS):** copy-on-write `cp -c -R node_modules ../new-worktree/node_modules` is fast and safe.
+- **npm or yarn:** prepare commands typically `npm ci && npx husky install` or `yarn install --immutable && yarn lefthook install`. File count is the bottleneck, not dependency download; declare [dependency reuse](#dependency-reuse) so later worktrees link the parent's install instead of repeating it.
+- **CoW filesystems (APFS, Btrfs, ZFS):** dependency reuse takes the reflink path automatically; a manual `cp -c -R node_modules ../new-worktree/node_modules` is the equivalent by hand.
 
 ## Wiring with mutate-phase skills
 
-`spec`, `impl`, and `hitl` bootstrap probe `charness worktree doctor` non-fatally before mutating repo content. On non-pass status, the recommended next action is surfaced; the operator decides whether to run `charness worktree prepare`. charness never auto-runs prepare from inside a public skill.
+`spec`, `impl`, and `hitl` bootstrap probe `charness worktree doctor` non-fatally before mutating repo content and surface the next action on non-pass; the operator decides whether to run `charness worktree prepare`. Public skills never auto-run prepare; `task run` does, as its documented default.
 
 ## Limitations
 
-- The lefthook shim probe is heuristic (substring match on `lefthook`). If lefthook upstream rewrites its codegen, the heuristic may need an update.
-- Multi-package monorepo workspace `node_modules` plurality is a manifest concern; charness only schedules the commands you declare.
-- Consumer repos that want copy-on-write share that responsibility through `prepare.commands`.
+- The lefthook shim probe is a substring match on `lefthook`; a codegen rewrite upstream may need an update.
+- Monorepo `node_modules` plurality is a manifest concern: charness schedules the commands you declare, and dependency reuse links one directory keyed by one lockfile.

@@ -1,0 +1,262 @@
+"""#792: prepare links an installed dependency tree instead of re-running the installer."""
+
+from __future__ import annotations
+
+import json
+import subprocess
+from pathlib import Path
+
+import pytest
+
+from scripts.worktree import worktree_create_lib as create_lib
+from scripts.worktree import worktree_dependency_reuse as reuse
+from scripts.worktree import worktree_doctor_lib as lib
+from tests.charness_cli.worktree_fixtures import copy_worktree_seed
+
+SPEC = reuse.ReuseSpec(command_id="install-deps", lockfile="lock.json", directory="deps")
+
+# The install command writes a marker so a test can tell "reused" from "ran".
+MANIFEST = (
+    "version: 1\n"
+    "prepare:\n"
+    "  commands:\n"
+    "    - id: install-deps\n"
+    "      argv:\n"
+    "        - sh\n"
+    "        - -c\n"
+    "        - 'mkdir -p deps && echo installed > deps/marker && touch installer-ran'\n"
+    "  dependency_reuse:\n"
+    "    command_id: install-deps\n"
+    "    lockfile: lock.json\n"
+    "    directory: deps\n"
+)
+
+
+def _git(*args: str, cwd: Path) -> None:
+    subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True, text=True)
+
+
+def _committed_primary(tmp_path: Path) -> Path:
+    repo = copy_worktree_seed(tmp_path, "primary")
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "worktree-adapter.yaml").write_text(MANIFEST, encoding="utf-8")
+    (repo / "lock.json").write_text('{"v": 1}\n', encoding="utf-8")
+    (repo / ".gitignore").write_text("deps/\ninstaller-ran\n", encoding="utf-8")
+    _git("add", ".", cwd=repo)
+    _git("-c", "core.hooksPath=/dev/null", "commit", "-q", "-m", "adapter", cwd=repo)
+    return repo
+
+
+def _install(root: Path, content: str = "parent") -> None:
+    (root / "deps" / "pkg").mkdir(parents=True)
+    (root / "deps" / "pkg" / "index.js").write_text(content, encoding="utf-8")
+
+
+def _doctor_pass(*_args, **_kwargs):
+    return {"status": "pass", "checks": [], "manifest": {}, "next_step": None}
+
+
+def test_validation_requires_a_declared_command_id_and_relative_paths() -> None:
+    errors: list[str] = []
+    reuse.validate_dependency_reuse(
+        {
+            "commands": [{"id": "install-deps", "argv": ["true"]}],
+            "dependency_reuse": {
+                "command_id": "other",
+                "lockfile": "/abs/lock",
+                "directory": "../deps",
+            },
+        },
+        errors,
+    )
+    assert any("command_id 'other' names no prepare command id" in e for e in errors)
+    assert any("lockfile must be a relative path" in e for e in errors)
+    assert any("directory must be a relative path" in e for e in errors)
+
+
+def test_manifest_validation_reaches_the_reuse_block() -> None:
+    errors = lib.validate_manifest(
+        {
+            "version": 1,
+            "prepare": {
+                "commands": [{"id": "install-deps", "argv": ["true"]}],
+                "dependency_reuse": {"command_id": "install-deps"},
+            },
+        }
+    )
+    assert any("dependency_reuse.lockfile must be a non-empty string" in e for e in errors)
+
+
+def test_reuse_links_the_parent_tree_when_the_lockfile_digest_matches(tmp_path: Path) -> None:
+    parent = tmp_path / "parent"
+    target = tmp_path / "target"
+    for root in (parent, target):
+        root.mkdir()
+        (root / "lock.json").write_text("same", encoding="utf-8")
+    _install(parent)
+
+    result = reuse.attempt_reuse(target, SPEC, source_root=parent, cache_root=tmp_path / "cache")
+
+    assert result["strategy"] in {reuse.STRATEGY_REFLINK, reuse.STRATEGY_HARDLINK}
+    assert result["origin"] == reuse.ORIGIN_PARENT
+    assert (target / "deps" / "pkg" / "index.js").read_text(encoding="utf-8") == "parent"
+    assert not list(target.glob(".deps.charness-reuse-*")), "staging directory left behind"
+
+
+def test_reuse_refuses_a_parent_whose_lockfile_differs(tmp_path: Path) -> None:
+    parent = tmp_path / "parent"
+    target = tmp_path / "target"
+    parent.mkdir()
+    target.mkdir()
+    (parent / "lock.json").write_text("old", encoding="utf-8")
+    (target / "lock.json").write_text("new", encoding="utf-8")
+    _install(parent)
+
+    result = reuse.attempt_reuse(target, SPEC, source_root=parent, cache_root=None)
+
+    assert result["strategy"] == reuse.STRATEGY_NONE
+    assert not (target / "deps").exists()
+    assert result["attempts"][0]["skipped"] == "parent lockfile digest differs"
+
+
+def test_reuse_falls_back_to_the_cache_keyed_by_lockfile_digest(tmp_path: Path) -> None:
+    donor = tmp_path / "donor"
+    target = tmp_path / "target"
+    cache = tmp_path / "cache"
+    for root in (donor, target):
+        root.mkdir()
+        (root / "lock.json").write_text("same", encoding="utf-8")
+    _install(donor, "cached")
+
+    seeded = reuse.seed_cache(donor, SPEC, cache_root=cache)
+    assert seeded["seeded"] is True
+    meta = json.loads((Path(seeded["entry"]) / reuse.CACHE_META_NAME).read_text(encoding="utf-8"))
+    assert meta["directory"] == "deps"
+
+    result = reuse.attempt_reuse(target, SPEC, source_root=None, cache_root=cache)
+
+    assert result["origin"] == reuse.ORIGIN_CACHE
+    assert (target / "deps" / "pkg" / "index.js").read_text(encoding="utf-8") == "cached"
+    assert (
+        reuse.seed_cache(donor, SPEC, cache_root=cache)["reason"] == "cache entry already present"
+    )
+
+
+def test_reuse_leaves_an_existing_install_directory_alone(tmp_path: Path) -> None:
+    target = tmp_path / "target"
+    target.mkdir()
+    (target / "lock.json").write_text("same", encoding="utf-8")
+    _install(target, "mine")
+
+    result = reuse.attempt_reuse(target, SPEC, source_root=None, cache_root=None)
+
+    assert result["strategy"] == reuse.STRATEGY_NONE
+    assert result["reason"] == "install directory already present"
+    assert (target / "deps" / "pkg" / "index.js").read_text(encoding="utf-8") == "mine"
+
+
+def test_prepare_reuses_the_parent_and_skips_the_install_command(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    primary = _committed_primary(tmp_path)
+    _install(primary)
+    monkeypatch.setattr(lib, "run_doctor", _doctor_pass)
+    target = tmp_path / "feature"
+
+    payload = create_lib.run_create(
+        primary,
+        target_path=target,
+        branch="feature",
+        base="main",
+        prepare=True,
+        dependency_cache_root=tmp_path / "cache",
+    )
+
+    prepare = payload["prepare"]
+    assert payload["status"] == create_lib.PASS, payload
+    assert prepare["executed"] == []
+    assert prepare["dependency_reuse"]["origin"] == reuse.ORIGIN_PARENT
+    assert prepare["dependency_reuse"]["command_id"] == "install-deps"
+    assert (target / "deps" / "pkg" / "index.js").read_text(encoding="utf-8") == "parent"
+    assert not (target / "installer-ran").exists()
+
+
+def test_prepare_runs_the_installer_and_seeds_the_cache_when_nothing_matches(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    primary = _committed_primary(tmp_path)
+    monkeypatch.setattr(lib, "run_doctor", _doctor_pass)
+    cache = tmp_path / "cache"
+
+    first = lib.run_prepare(primary, force=True, dependency_cache_root=cache)
+
+    assert first["status"] == "pass"
+    assert [item["id"] for item in first["executed"]] == ["install-deps"]
+    assert first["dependency_reuse"]["strategy"] == reuse.STRATEGY_NONE
+    assert first["dependency_reuse"]["cache_seed"]["seeded"] is True
+
+    # A later worktree with the same lockfile and no parent install reuses the cache.
+    target = tmp_path / "later"
+    target.mkdir()
+    (target / "lock.json").write_text('{"v": 1}\n', encoding="utf-8")
+    (target / ".agents").mkdir()
+    (target / ".agents" / "worktree-adapter.yaml").write_text(MANIFEST, encoding="utf-8")
+    second = lib.run_prepare(target, force=True, dependency_cache_root=cache)
+
+    assert second["executed"] == []
+    assert second["dependency_reuse"]["origin"] == reuse.ORIGIN_CACHE
+    assert (target / "deps" / "marker").read_text(encoding="utf-8").strip() == "installed"
+
+
+def test_prepare_can_disable_reuse_and_records_why(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    primary = _committed_primary(tmp_path)
+    monkeypatch.setattr(lib, "run_doctor", _doctor_pass)
+
+    payload = lib.run_prepare(
+        primary, force=True, dependency_cache_root=tmp_path / "cache", dependency_reuse=False
+    )
+
+    assert [item["id"] for item in payload["executed"]] == ["install-deps"]
+    assert payload["dependency_reuse"]["reason"] == "disabled by --no-dependency-reuse"
+    assert "cache_seed" not in payload["dependency_reuse"]
+
+
+def test_prepare_names_the_reused_tree_when_doctor_rejects_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    primary = _committed_primary(tmp_path)
+    _install(primary)
+    target = tmp_path / "feature"
+    _git("worktree", "add", "-q", "-b", "feature", str(target), "main", cwd=primary)
+    verdicts = iter(
+        [
+            {"status": "fail", "checks": [], "manifest": {}, "next_step": "pre"},
+            {"status": "fail", "checks": [], "manifest": {}, "next_step": "post"},
+        ]
+    )
+    monkeypatch.setattr(lib, "run_doctor", lambda *_a, **_k: next(verdicts))
+
+    payload = lib.run_prepare(target, source_root=primary, dependency_cache_root=tmp_path / "cache")
+
+    assert payload["status"] == "fail"
+    assert "--no-dependency-reuse" in payload["next_step"]
+    assert str(primary.resolve() / "deps") in payload["next_step"]
+
+
+def test_cache_root_defaults_to_the_owning_repo_runtime_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from scripts import runtime_bootstrap
+
+    primary = _committed_primary(tmp_path)
+    target = tmp_path / "feature"
+    _git("worktree", "add", "-q", "-b", "feature", str(target), "main", cwd=primary)
+    monkeypatch.delenv("CHARNESS_RUNTIME_ROOT", raising=False)
+    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "xdg"))
+
+    derived = lib.default_dependency_cache_root(target, None)
+
+    assert derived == runtime_bootstrap.runtime_root(primary) / reuse.CACHE_DIR_NAME
+    assert lib.default_dependency_cache_root(target, primary) == derived

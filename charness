@@ -5167,7 +5167,11 @@ def cmd_worktree_doctor(args: argparse.Namespace) -> int:
 
 def cmd_worktree_prepare(args: argparse.Namespace) -> int:
     lib = _load_worktree_lib(args)
-    payload = lib.run_prepare(_resolve_worktree_target(args), force=args.force)
+    payload = lib.run_prepare(
+        _resolve_worktree_target(args),
+        force=args.force,
+        dependency_reuse=not args.no_dependency_reuse,
+    )
     emit_yaml(payload)
     return 0 if payload.get("status") == lib.PASS else 1
 
@@ -5933,6 +5937,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--force",
         action="store_true",
         help="Run prepare even if doctor already reports pass.",
+    )
+    worktree_prepare_parser.add_argument(
+        "--no-dependency-reuse",
+        action="store_true",
+        help="Skip linking an installed dependency tree; always run the declared install command.",
     )
     add_worktree_lib_args(worktree_prepare_parser)
     worktree_prepare_parser.set_defaults(func=cmd_worktree_prepare)

@@ -58,6 +58,15 @@ DOCTOR_DEFAULT_TEMPLATE = Template(
 DOCTOR_LEFTHOOK_TEMPLATE = Template(
     (TEMPLATE_DIR / "worktree_doctor_lefthook.yaml.txt").read_text(encoding="utf-8")
 )
+DEPENDENCY_REUSE_TEMPLATE = Template(
+    (TEMPLATE_DIR / "worktree_dependency_reuse.yaml.txt").read_text(encoding="utf-8")
+)
+# pnpm is deliberately absent: its global virtual store is the better reuse path.
+REUSABLE_LOCKFILES: dict[str, str] = {
+    "package-lock.json": "node_modules",
+    "yarn.lock": "node_modules",
+    "bun.lockb": "node_modules",
+}
 
 
 @dataclass(frozen=True)
@@ -266,6 +275,16 @@ def _render_doctor_block(detection: WorktreeAdapterDetection) -> str:
     return DOCTOR_LEFTHOOK_TEMPLATE.substitute(package_manager=pm).rstrip("\n")
 
 
+def _render_dependency_reuse(detection: WorktreeAdapterDetection) -> str:
+    """The #792 reuse block, only when a lockfile names a linkable install tree."""
+    lockfile = detection.package_manager_evidence
+    directory = REUSABLE_LOCKFILES.get(lockfile or "")
+    if directory is None or _install_deps_argv(detection) is None:
+        return ""
+    block = DEPENDENCY_REUSE_TEMPLATE.substitute(lockfile=lockfile, directory=directory)
+    return block.rstrip("\n") + "\n"
+
+
 def render_template(detection: WorktreeAdapterDetection) -> str:
     return (
         WORKTREE_ADAPTER_TEMPLATE.substitute(
@@ -273,6 +292,7 @@ def render_template(detection: WorktreeAdapterDetection) -> str:
             language=detection.language,
             install_deps=_render_install_deps(detection),
             install_hooks=_render_install_hooks(detection),
+            dependency_reuse=_render_dependency_reuse(detection),
             doctor_block=_render_doctor_block(detection),
         ).rstrip("\n")
         + "\n"

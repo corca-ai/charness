@@ -57,8 +57,9 @@ and `next_step` name the paths.
 `--timeout-seconds` bounds `codex exec` only (`codex.timeout_scope`); creation
 and prepare are untimed, reported apart: `timestamps` (UTC `launched_at`,
 `create_started_at`, `exec_started_at`, `updated_at`, `finished_at`),
-`timings_ms` (`create`: worktree creation, readiness doctor, and the prepare
-step when enabled; `exec`), and `runner_pid`.
+`timings_ms` (`create`: creation, doctor, prepare when enabled; `exec`),
+`runner_pid`, and `dependency_reuse`
+([dependency reuse](./worktree-prepare.md#dependency-reuse)).
 
 The sole persisted result is atomically published at the external runtime
 directory `task-run/<task-id>/result.json`. It is written as `running` before

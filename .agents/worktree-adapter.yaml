@@ -34,6 +34,13 @@ prepare:
   # `npm ci` on every prepare, which is the correct answer for a doctor that
   # cannot see dependency readiness.
   skip_if_doctor_passes: true
+  # Before install-deps runs, link the parent tree's node_modules (reflink, then
+  # hard links) when its package-lock.json digest matches, else the runtime
+  # cache entry for that digest; npm ci runs only when neither exists (#792).
+  dependency_reuse:
+    command_id: install-deps
+    lockfile: package-lock.json
+    directory: node_modules
 
 # Optional manifest-defined doctor checks layered on top of the canonical suite.
 # The canonical suite (git_common_dir, hooks_path, lefthook_shim, husky_dir) sees

@@ -45,6 +45,11 @@ run_canonical_checks = _checks.run_canonical_checks
 run_canonical_checks_with_facts = _checks.run_canonical_checks_with_facts
 run_manifest_doctor_checks = _checks.run_manifest_doctor_checks
 
+_reuse = import_repo_module(__file__, "scripts.worktree.worktree_dependency_reuse")
+_runtime_bootstrap = import_repo_module(__file__, "scripts.runtime_bootstrap")
+ReuseSpec = _reuse.ReuseSpec
+DEPENDENCY_CACHE_DIR_NAME = _reuse.CACHE_DIR_NAME
+
 
 def load_manifest(repo_root: Path) -> ManifestState:
     manifest_path = repo_root / MANIFEST_RELATIVE_PATH
@@ -98,6 +103,7 @@ def _validate_prepare_section(prepare: Any, errors: list[str]) -> None:
     skip = prepare.get("skip_if_doctor_passes", False)
     if not isinstance(skip, bool):
         errors.append("manifest.prepare.skip_if_doctor_passes must be a boolean")
+    _reuse.validate_dependency_reuse(prepare, errors)
 
 
 def _validate_doctor_section(doctor: Any, errors: list[str]) -> None:
@@ -374,14 +380,37 @@ def _prepare_coverage(manifest: dict[str, Any], doctor: dict[str, Any]) -> dict[
     }
 
 
+def default_dependency_cache_root(repo_root: Path, source_root: Path | None) -> Path:
+    """The shared cache for installed dependency trees, keyed by the owning repo.
+
+    Lanes of one parent repo must land on one cache, so the key is the parent
+    (source) root when the caller names it, else the main worktree the checkout
+    belongs to, else the checkout itself.
+    """
+    owner = source_root
+    if owner is None:
+        facts = _checks.git_checkout_facts(repo_root, include_hooks_path=False)
+        owner = _checks.main_worktree(facts.common_dir) or repo_root
+    return _runtime_bootstrap.runtime_root(owner) / DEPENDENCY_CACHE_DIR_NAME
+
+
 def run_prepare(
     repo_root: Path,
     *,
     force: bool = False,
     require_isolation: bool = False,
     pre_doctor: dict[str, Any] | None = None,
+    source_root: Path | None = None,
+    dependency_cache_root: Path | None = None,
+    dependency_reuse: bool = True,
 ) -> dict[str, Any]:
     """Prepare a worktree, carrying the caller's isolation requirement THROUGH.
+
+    `source_root` names the tree this worktree was created from; with a manifest
+    `prepare.dependency_reuse` declaration its installed tree (or the runtime
+    cache keyed by lockfile digest) is linked in before the install command,
+    which is then skipped (#792). `dependency_reuse=False` disables the whole
+    path; `force` does not, because force re-runs prepare, and reuse IS prepare.
 
     `require_isolation` is threaded rather than defaulted away because
     `worktree create --prepare` replaces its own doctor payload with this
@@ -424,30 +453,18 @@ def run_prepare(
         }
 
     commands = manifest_state.data.get("prepare", {}).get("commands") or []
-    executed: list[CommandResult] = []
-    failure_seen = False
-    for entry in commands:
-        result, failed = _execute_prepare_command(entry, repo_root)
-        executed.append(result)
-        if failed:
-            failure_seen = True
-            break
+    reuse = _DependencyReuse.attempt(
+        manifest_state.data.get("prepare"),
+        repo_root,
+        source_root=source_root,
+        cache_root=dependency_cache_root,
+        enabled=dependency_reuse,
+    )
+    executed, failure_seen = reuse.run_commands(commands, repo_root)
 
     post_doctor = run_doctor(repo_root, require_isolation=require_isolation)
-    if failure_seen:
-        status = FAIL
-        next_step = "A prepare command failed; fix it and re-run `charness worktree prepare`."
-    elif post_doctor["status"] == FAIL:
-        status = FAIL
-        next_step = (
-            post_doctor.get("next_step")
-            or "Doctor still reports failures after prepare; inspect output."
-        )
-    else:
-        status = PASS
-        next_step = None
-
-    return {
+    status, next_step = _prepare_verdict(post_doctor, failure_seen=failure_seen, reuse=reuse)
+    payload: dict[str, Any] = {
         "checked_at": now_iso(),
         "manifest": manifest_state.to_dict(),
         "executed": [item.to_dict() for item in executed],
@@ -456,3 +473,106 @@ def run_prepare(
         "status": status,
         "next_step": next_step,
     }
+    if reuse.payload is not None:
+        payload["dependency_reuse"] = reuse.payload
+    return payload
+
+
+def _prepare_verdict(
+    post_doctor: dict[str, Any], *, failure_seen: bool, reuse: _DependencyReuse
+) -> tuple[str, str | None]:
+    if failure_seen:
+        return FAIL, "A prepare command failed; fix it and re-run `charness worktree prepare`."
+    if post_doctor["status"] != FAIL:
+        return PASS, None
+    if reuse.reused_command_id is not None and reuse.spec is not None and reuse.payload:
+        return FAIL, (
+            f"Doctor rejects the reused {reuse.spec.directory} linked from "
+            f"{reuse.payload['source']}; remove it and re-run "
+            "`charness worktree prepare --no-dependency-reuse`."
+        )
+    return FAIL, (
+        post_doctor.get("next_step")
+        or "Doctor still reports failures after prepare; inspect output."
+    )
+
+
+class _DependencyReuse:
+    """The #792 reuse step around the declared prepare commands.
+
+    `attempt` links a matching installed tree before any command runs and names
+    the command that is therefore skipped; `run_commands` executes the rest and,
+    when the install command had to run, seeds the cache for the next worktree.
+    """
+
+    def __init__(
+        self,
+        spec: ReuseSpec | None,
+        payload: dict[str, Any] | None,
+        *,
+        cache_root: Path | None,
+        enabled: bool,
+    ) -> None:
+        self.spec = spec
+        self.payload = payload
+        self.cache_root = cache_root
+        self.enabled = enabled
+        self.reused_command_id = (
+            spec.command_id
+            if spec is not None
+            and payload is not None
+            and payload["strategy"] != _reuse.STRATEGY_NONE
+            else None
+        )
+
+    @classmethod
+    def attempt(
+        cls,
+        prepare: dict[str, Any] | None,
+        repo_root: Path,
+        *,
+        source_root: Path | None,
+        cache_root: Path | None,
+        enabled: bool,
+    ) -> _DependencyReuse:
+        spec = ReuseSpec.from_manifest(prepare)
+        if spec is None:
+            return cls(None, None, cache_root=None, enabled=enabled)
+        if not enabled:
+            payload = {
+                "command_id": spec.command_id,
+                "directory": spec.directory,
+                "strategy": _reuse.STRATEGY_NONE,
+                "origin": None,
+                "source": None,
+                "lockfile_digest": None,
+                "reason": "disabled by --no-dependency-reuse",
+                "duration_ms": 0,
+                "attempts": [],
+            }
+            return cls(spec, payload, cache_root=None, enabled=False)
+        cache_root = cache_root or default_dependency_cache_root(repo_root, source_root)
+        payload = _reuse.attempt_reuse(
+            repo_root, spec, source_root=source_root, cache_root=cache_root
+        )
+        return cls(spec, payload, cache_root=cache_root, enabled=True)
+
+    def run_commands(
+        self, commands: list[dict[str, Any]], repo_root: Path
+    ) -> tuple[list[CommandResult], bool]:
+        executed: list[CommandResult] = []
+        install_ran = False
+        for entry in commands:
+            if self.reused_command_id is not None and entry.get("id") == self.reused_command_id:
+                continue
+            result, failed = _execute_prepare_command(entry, repo_root)
+            executed.append(result)
+            if failed:
+                return executed, True
+            if self.spec is not None and entry.get("id") == self.spec.command_id:
+                install_ran = True
+        if install_ran and self.enabled and self.payload is not None and self.spec is not None:
+            self.payload["cache_seed"] = _reuse.seed_cache(
+                repo_root, self.spec, cache_root=self.cache_root
+            )
+        return executed, False

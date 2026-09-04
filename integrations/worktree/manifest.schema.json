@@ -63,6 +63,33 @@
           "type": "boolean",
           "default": false,
           "description": "When true, `charness worktree prepare` may skip only when passing doctor checks explicitly cover every declared prepare command. Override with --force."
+        },
+        "dependency_reuse": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "command_id",
+            "lockfile",
+            "directory"
+          ],
+          "description": "Opt-in: before `command_id` runs, link an installed `directory` from the parent tree or the runtime cache when `lockfile` digests match (reflink, then hard links); the install command runs only when no linkable tree exists.",
+          "properties": {
+            "command_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Prepare command id the reuse replaces when it succeeds."
+            },
+            "lockfile": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Worktree-relative lockfile whose digest keys reuse (e.g. package-lock.json)."
+            },
+            "directory": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Worktree-relative installed tree to link (e.g. node_modules)."
+            }
+          }
         }
       }
     },

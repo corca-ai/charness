@@ -38,9 +38,16 @@ def main() -> int:
         action="store_true",
         help="Run prepare even if doctor already reports pass.",
     )
+    parser.add_argument(
+        "--no-dependency-reuse",
+        action="store_true",
+        help="Skip linking an installed dependency tree; always run the declared install command.",
+    )
     args = parser.parse_args()
 
-    payload = run_prepare(args.repo_root, force=args.force)
+    payload = run_prepare(
+        args.repo_root, force=args.force, dependency_reuse=not args.no_dependency_reuse
+    )
     emit_yaml(payload)
     return 0 if payload.get("status") == PASS else 1
 

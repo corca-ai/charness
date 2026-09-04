@@ -874,6 +874,7 @@ options:
 
 ```text
 usage: charness worktree prepare [-h] [--repo-root REPO_ROOT] [--force]
+                                 [--no-dependency-reuse]
                                  [--home-root HOME_ROOT]
                                  [--charness-checkout CHARNESS_CHECKOUT]
 
@@ -883,6 +884,9 @@ options:
                         Worktree to prepare. Defaults to the current working
                         directory.
   --force               Run prepare even if doctor already reports pass.
+  --no-dependency-reuse
+                        Skip linking an installed dependency tree; always run
+                        the declared install command.
   --home-root HOME_ROOT
                         Home root used to locate the managed charness checkout
                         when the entrypoint is a PATH shim.

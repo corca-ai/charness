@@ -39,6 +39,15 @@ prepare:
   # Skipping is opt-in and requires passing doctor checks to declare coverage
   # for every prepare command id via `covers`.
   skip_if_doctor_passes: false
+  # Optional, for npm/yarn/bun on filesystems without copy-on-write: link the
+  # parent tree's installed directory (reflink, then hard links) when the
+  # lockfile digest matches, else the runtime cache entry for that digest, and
+  # skip `command_id`; the install command still runs when nothing matches.
+  # pnpm users should prefer its global virtual store instead.
+  # dependency_reuse:
+  #   command_id: install-deps
+  #   lockfile: package-lock.json
+  #   directory: node_modules
 
 doctor:
   # Optional extra probes layered on top of the canonical checks. Each command

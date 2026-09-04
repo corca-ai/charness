@@ -16,5 +16,5 @@ $install_hooks
   # Skipping is opt-in and requires passing doctor checks to declare coverage
   # for every prepare command id via `covers`.
   skip_if_doctor_passes: false
-
+$dependency_reuse
 $doctor_block

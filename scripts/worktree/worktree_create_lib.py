@@ -91,6 +91,7 @@ def run_create(
     prepare: bool = False,
     dry_run: bool = False,
     force: bool = False,
+    dependency_cache_root: Path | None = None,
 ) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     target_path = target_path.resolve()
@@ -158,10 +159,14 @@ def run_create(
         # `payload["status"]` on the next two lines -- was produced by a doctor
         # run that did not require isolation, silently erasing the verdict on the
         # prescribed `--prepare` path.
+        # `source_root` is the tree the worktree was just created from: its
+        # installed dependencies are the first reuse candidate (#792).
         prepare_payload = _doctor_lib.run_prepare(
             target_path,
             require_isolation=True,
             pre_doctor=doctor,
+            source_root=repo_root,
+            dependency_cache_root=dependency_cache_root,
         )
         payload["prepare"] = prepare_payload
         payload["doctor"] = prepare_payload.get("doctor", doctor)

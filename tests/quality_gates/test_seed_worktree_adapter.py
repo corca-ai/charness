@@ -292,6 +292,12 @@ def test_render_template_uses_worktree_template_asset(tmp_path: Path) -> None:
                 )
                 .rstrip("\n")
             ),
+            dependency_reuse=Template(
+                (TEMPLATE_DIR / "worktree_dependency_reuse.yaml.txt").read_text(encoding="utf-8")
+            )
+            .substitute(lockfile="package-lock.json", directory="node_modules")
+            .rstrip("\n")
+            + "\n",
             doctor_block=Template(
                 (TEMPLATE_DIR / "worktree_doctor_default.yaml.txt").read_text(encoding="utf-8")
             )
@@ -339,6 +345,7 @@ def test_render_template_uses_missing_and_lefthook_template_assets(tmp_path: Pat
                 )
                 .rstrip("\n")
             ),
+            dependency_reuse="",
             doctor_block=Template(
                 (TEMPLATE_DIR / "worktree_doctor_lefthook.yaml.txt").read_text(encoding="utf-8")
             )
