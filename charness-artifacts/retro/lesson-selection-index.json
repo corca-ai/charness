@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-09-04",
-  "source_artifact_count": 427,
-  "candidate_count": 2211,
+  "source_artifact_count": 429,
+  "candidate_count": 2216,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1366,6 +1366,96 @@
       ]
     },
     {
+      "candidate_id": "class:e98ca47cc49c",
+      "kind": "repeat_trap",
+      "lesson": "**A red gate read as a red subject.** The coverage gate crashed on a fixture and I fixed the read, then patched the test I wrote for it, before asking whether the gate's walk was right in scope. It was not: a root-level changed path turned \"same-directory\" into a whole-repo `rglob`. The user had to say \"the verifier is suspect too\" before that question was asked.",
+      "normalized_key": "a red gate read as a red subject the coverage gate crashed on a",
+      "recurrence_class": "red-gate-is-a-candidate-cause",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+      "latest_source_date": "2026-09-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+          "date": "2026-09-04",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**A red gate read as a red subject.** The coverage gate crashed on a fixture and I fixed the read, then patched the test I wrote for it, before asking whether the gate's walk was right in scope. It was not: a root-level changed path turned \"same-directory\" into a whole-repo `rglob`. The user had to say \"the verifier is suspect too\" before that question was asked."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+          "date": "2026-09-04",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "applied — `impl` routes a repeated unexplained failure to `debug`; `debug/references/detection-gap.md` owns \"the verifier that did fire\" with the `scope-too-broad | verifier-defect | subject-defect` vocabulary; the changed-line gate's walk is bounded at the root."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:0db5aebc61a3",
+      "kind": "repeat_trap",
+      "lesson": "**A verification exit code swallowed by a shell pipe.** `pytest | tail -1` inside an `&&` chain reports `tail`'s success, so a failing test committed. The habit that produced it — trimming tool output for my own context — is reasonable; putting the trim *inside* the chain that decides to commit is not. Nothing in the repo holds this rule.",
+      "normalized_key": "a verification exit code swallowed by a shell pipe pytest tail 1 inside an",
+      "recurrence_class": "verification-exit-masked-by-pipe",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+      "latest_source_date": "2026-09-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+          "date": "2026-09-04",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**A verification exit code swallowed by a shell pipe.** `pytest | tail -1` inside an `&&` chain reports `tail`'s success, so a failing test committed. The habit that produced it — trimming tool output for my own context — is reasonable; putting the trim *inside* the chain that decides to commit is not. Nothing in the repo holds this rule."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+          "date": "2026-09-04",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "run the exact lane the boundary will run (`--release --read-only` before the publish helper), and never place a verification command behind a pipe inside the chain that commits — capture to a file, check the exit, then read the file. Structural pattern: a proxy's exit code standing in for the verifier's. Triggering instance(s): commit `67e28cb05`; the 8.2.0 first publish attempt. Destination: repo-local guard candidate — a runner-owned verdict record read by the commit hook — filed only if the class recurs."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:4c681d7c2f60",
+      "kind": "repeat_trap",
+      "lesson": "**Eight gate failures handled one at a time, each as its own surprise.** I wrote, ran a narrow check, committed, and let the next lane tell me the next thing. The class was visible by the third: I was not running the gate that would judge the change before making the change. The fix that ended it was running the exact release lane locally before the publish helper.",
+      "normalized_key": "eight gate failures handled one at a time each as its own surprise i",
+      "recurrence_class": "gate-failures-patched-serially",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+      "latest_source_date": "2026-09-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+          "date": "2026-09-04",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Eight gate failures handled one at a time, each as its own surprise.** I wrote, ran a narrow check, committed, and let the next lane tell me the next thing. The class was visible by the third: I was not running the gate that would judge the change before making the change. The fix that ended it was running the exact release lane locally before the publish helper."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+          "date": "2026-09-04",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "this record, so the three classes reach the next session's selection preview; `gate-failures-patched-serially` is the class the impl route exists to end, and the next retro should say whether it fired."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:11a984b3877b",
       "kind": "repeat_trap",
       "lesson": "**The hosted mutation run recovered its baseline and then lost the job to its own budget.** The #782 fix held (sampler green for the first time since 2026-08-31), but 118 executable mutants times a per-mutant run of the whole non-release suite is about three hours, the job allows 180 minutes minus 33 minutes of setup and sampling, and the exec's internal 9000 s timeout is longer than what the job has left. The job cancel arrives first, so the summary reads UNEXPLAINED instead of the exec's own timeout marker. Two budgets, the inner one wider than the outer one, and nothing checks the order.",
@@ -1486,6 +1576,29 @@
       ]
     },
     {
+      "candidate_id": "current_focus:4236ad41a4be",
+      "kind": "current_focus",
+      "lesson": "The 8.2.0 release session: README rewritten as the user guide; `impl` gained a route into `debug` and a six-signal waste scan; `debug` gained \"the verifier that did fire\"; `charness task run` fixed #790 and #791; the changed-line gate's loader scan was bounded.",
+      "normalized_key": "the 8 2 0 release session readme rewritten as the user guide impl gained",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+      "latest_source_date": "2026-09-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+          "date": "2026-09-04",
+          "section": "Context",
+          "kind": "current_focus",
+          "lesson": "The 8.2.0 release session: README rewritten as the user guide; `impl` gained a route into `debug` and a six-signal waste scan; `debug` gained \"the verifier that did fire\"; `charness task run` fixed #790 and #791; the changed-line gate's loader scan was bounded."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:814f5eefb7bc",
       "kind": "next_improvement",
       "lesson": "**workflow — post the issue-owned closeout comment when the carrier lands, not at the integrated closeout.** The child closeout step in the session recipe runs `close-with-comment` with the carrier body right after `verify-closeout`, so the close proof's evidence identity exists the moment the child is proven. Structural pattern: proof evidence created by the reader, not the writer. Triggering instance(s): five comments posted in this session for closes made in the previous three.",
@@ -1505,6 +1618,29 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "**workflow — post the issue-owned closeout comment when the carrier lands, not at the integrated closeout.** The child closeout step in the session recipe runs `close-with-comment` with the carrier body right after `verify-closeout`, so the close proof's evidence identity exists the moment the child is proven. Structural pattern: proof evidence created by the reader, not the writer. Triggering instance(s): five comments posted in this session for closes made in the previous three."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e9e88036b61a",
+      "kind": "repeat_trap",
+      "lesson": "**A prepared release superseded mid-flight.** The 8.1.1 prepared commit and its claims record were dropped by rebase when #790/#791 joined the release. Not waste in outcome (nothing was pushed) but two reviewer rounds and one claims round were spent on a record that never shipped.",
+      "normalized_key": "a prepared release superseded mid flight the 8 1 1 prepared commit and its",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+      "latest_source_date": "2026-09-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+          "date": "2026-09-04",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**A prepared release superseded mid-flight.** The 8.1.1 prepared commit and its claims record were dropped by rebase when #790/#791 joined the release. Not waste in outcome (nothing was pushed) but two reviewer rounds and one claims round were spent on a record that never shipped."
         }
       ]
     },

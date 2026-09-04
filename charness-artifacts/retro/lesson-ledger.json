@@ -379,6 +379,24 @@
       "transition_id": "seed-inner-timeout-outlives-outer-budget",
       "lesson_id": "inner-timeout-outlives-outer-budget",
       "source_retro": "charness-artifacts/retro/2026-09-04-goal-784-closeout-retro.md"
+    },
+    {
+      "sequence": 64,
+      "transition_id": "seed-gate-failures-patched-serially",
+      "lesson_id": "gate-failures-patched-serially",
+      "source_retro": "charness-artifacts/retro/2026-09-04-session-retro.md"
+    },
+    {
+      "sequence": 65,
+      "transition_id": "seed-red-gate-is-a-candidate-cause",
+      "lesson_id": "red-gate-is-a-candidate-cause",
+      "source_retro": "charness-artifacts/retro/2026-09-04-session-retro.md"
+    },
+    {
+      "sequence": 66,
+      "transition_id": "seed-verification-exit-masked-by-pipe",
+      "lesson_id": "verification-exit-masked-by-pipe",
+      "source_retro": "charness-artifacts/retro/2026-09-04-session-retro.md"
     }
   ],
   "score_events": [
@@ -2191,6 +2209,51 @@
     "inner-timeout-outlives-outer-budget": {
       "source_retro": "charness-artifacts/retro/2026-09-04-goal-784-closeout-retro.md",
       "transition_id": "seed-inner-timeout-outlives-outer-budget",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "gate-failures-patched-serially": {
+      "source_retro": "charness-artifacts/retro/2026-09-04-session-retro.md",
+      "transition_id": "seed-gate-failures-patched-serially",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "red-gate-is-a-candidate-cause": {
+      "source_retro": "charness-artifacts/retro/2026-09-04-session-retro.md",
+      "transition_id": "seed-red-gate-is-a-candidate-cause",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "verification-exit-masked-by-pipe": {
+      "source_retro": "charness-artifacts/retro/2026-09-04-session-retro.md",
+      "transition_id": "seed-verification-exit-masked-by-pipe",
       "score_total": 0,
       "score_count": 0,
       "outcome_counts": {
