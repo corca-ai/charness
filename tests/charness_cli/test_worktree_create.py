@@ -176,11 +176,15 @@ def test_cli_worktree_create_and_add_are_discoverable(tmp_path: Path) -> None:
     assert create_help.returncode == 0, create_help.stderr
     assert "--prepare" in create_help.stdout
     assert "--path" in create_help.stdout
+    assert "--ephemeral" in create_help.stdout
+    assert "--owned" in create_help.stdout
 
     add_help = run_cli_path(ROOT / "charness", "worktree", "add", "--help", cwd=ROOT)
     assert add_help.returncode == 0, add_help.stderr
     assert "--prepare" in add_help.stdout
     assert "--path" in add_help.stdout
+    assert "--ephemeral" in add_help.stdout
+    assert "--owned" in add_help.stdout
 
 
 def test_cli_worktree_create_json_executes_and_reports_doctor(tmp_path: Path) -> None:

@@ -43,9 +43,7 @@ readback. Neither exists in a local handoff or session hook.
 
 ## Worktrees and runtime
 
-[Worktree prepare](./worktree-prepare.md) owns isolated mutation: clean
-checkout, named branch, scope, external runtime paths. Bytecode, caches,
-coverage, and temporary output live outside the checkout.
+[Worktree prepare](./worktree-prepare.md) owns isolated mutation.
 
 ## Verification and export
 
@@ -92,6 +90,7 @@ Each rule names the mechanism that holds it.
 | A lesson leaves the working set only by a person-settled lifecycle event; archive cites any canonical Markdown decision, graduation its owning `docs/` page | [`record_lesson_lifecycle.py`](../scripts/lessons/record_lesson_lifecycle.py) holds the form; nothing can see whether a person settled it |
 | A gate's refusal names live surfaces and tokens; a documented flag or subcommand is one argparse accepts | nothing for the refusal text; [`check_documented_command_flags.py`](../scripts/gates/check_documented_command_flags.py) and [`check_documented_subcommands.py`](../scripts/gates/check_documented_subcommands.py) for the docs half |
 | A layout fact is asserted on what the module bound, never on a global interpreter property | nothing; the distinction is semantic |
+| An ephemeral worktree does not keep a dead git registration | [`worktree_lifetime.py`](../scripts/worktree/worktree_lifetime.py) on create, `audit --prune`, and the runtime sweep |
 
 Tests import the script under test in-process through
 [`tests/script_loader.py`](../tests/script_loader.py),

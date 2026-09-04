@@ -106,9 +106,9 @@ whose commit carries the whole candidate (`carrier_kind: commit-only` and
 `next_step` points at the branch, which the parent integrates from directly
 (`git show`, `git diff <base_sha>..<sha>`, cherry-pick or merge). Any other
 finished lane is retained with the reason, and the runtime-root sweep
-([development](./development.md#local-dogfood)) later salvages its uncommitted
-edits beside `result.json` before removing it. `result.json` and the logs stay
-in every case.
+([development](./development.md#verification-and-export)) later salvages its
+uncommitted edits beside `result.json` before removing it. `result.json` and
+the logs stay in every case.
 
 When `head_is_complete` is false, `next_step` says that lane `HEAD` is not the
 complete candidate (and, for a committed lane, that the commit is a proper

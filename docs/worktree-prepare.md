@@ -8,11 +8,11 @@
 
 Six subcommands keep mutate-phase work honest:
 
-- `charness worktree create` / `add` — wraps `git worktree add`, then runs readiness doctor; `--prepare` runs the adapter-declared setup immediately.
+- `charness worktree create` / `add` — wraps `git worktree add`, then runs readiness doctor; `--prepare` runs the adapter-declared setup immediately. `--ephemeral` / `--owned` select lifetime ([worktree_lifetime.py](../scripts/worktree/worktree_lifetime.py)).
 - `charness worktree exec` — runs one command in a linked worktree with Python, pytest, coverage, and temporary output routed to an external runtime root.
 - `charness worktree doctor` — fast, read-only health probe of one worktree.
 - `charness worktree prepare` — runs the adapter-declared prepare commands and re-validates.
-- `charness worktree audit` — classifies every registered worktree as primary/active/prunable/stale; `--doctor` adds readiness, `--prune` drops git metadata for missing directories.
+- `charness worktree audit` — classifies every registered worktree as primary/active/prunable/stale; `--doctor` adds readiness, `--prune` reclaims expired ephemerals and missing metadata.
 - `charness worktree cleanup` — dry-runs teardown of a feature worktree, removes it with `--yes`; branch deletion requires local containment proof.
 
 `create`, `audit`, and `cleanup` take the repository as `--repo-root`; `doctor` and `prepare` take the worktree.
@@ -40,10 +40,9 @@ charness worktree prepare [--force]   # adapter prepare, re-validates
 # Ordinary commands with runtime output kept outside the worktree:
 charness worktree exec --repo-root ../feature-worktree -- pytest -q
 
-# Periodically:
 charness worktree audit                          # classify primary/active/prunable/stale
 charness worktree audit --doctor                 # also surface readiness failures
-charness worktree audit --prune --stale-days 30  # also `git worktree prune`; custom threshold
+charness worktree audit --prune                  # reclaim expired ephemerals; prune missing dirs
 
 # After a local merge (dry-run without --yes):
 charness worktree cleanup --path ../feature-worktree --delete-merged-branch --yes
@@ -61,7 +60,7 @@ Use `charness worktree create --path <path> --branch <branch> --base <ref>` inst
 
 ## When to run `audit`
 
-Run `charness worktree audit` when eval/bench/agent runs have left `git worktree add` residue, when `git worktree list` is too long to read, or when disk pressure builds under `~/.cache` or `/tmp`. `audit --doctor` runs the read-only readiness probe on each registered worktree. `audit` never deletes directories; `--prune` only runs `git worktree prune` for directories already gone. Remove a still-existing stale worktree with `git worktree remove --force <path>`.
+Run `charness worktree audit` to read the registry. `--doctor` adds readiness. `--prune` reclaims expired ephemerals and missing metadata. Unlabeled raw `git worktree add` residue still needs `cleanup --yes`.
 
 ## When to run `cleanup`
 

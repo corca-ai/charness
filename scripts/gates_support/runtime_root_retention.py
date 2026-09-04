@@ -18,7 +18,9 @@ What it removes, and what it never touches:
   A worktree carrying uncommitted edits is salvaged first: `uncommitted.patch`
   (`git diff HEAD --binary`) and `uncommitted-untracked.tar` beside the result,
   verified with `git apply --check -R` before the worktree goes; a salvage that
-  cannot be verified keeps the worktree and logs why.
+  cannot be verified keeps the worktree and logs why. A linked worktree
+  (``.git`` is a file) is unregistered with `git worktree remove` before the
+  directory is removed, so `.git/worktrees/` does not keep a ghost entry.
 - `xdg-cache/charness/runtime/<nested key>`: a key inside a key, the shape the
   bootstrap fix in #787 stops creating. Removed whole once idle.
 - `pycache`, `coverage`, `tmp`, `ruff`, `npm`, `pip`, `pytest-cache`: removed
@@ -173,7 +175,12 @@ class Sweep:
         action = "would-remove" if self.dry_run else "removed"
         if not self.dry_run:
             try:
-                _rmtree_writable(path)
+                if (path / ".git").is_file():
+                    from scripts.worktree.worktree_lifetime import unregister
+
+                    unregister(path)
+                if path.exists():
+                    _rmtree_writable(path)
             except OSError as exc:
                 self._record("failed", path, f"{reason}; removal failed: {exc}", bytes=size)
                 return False

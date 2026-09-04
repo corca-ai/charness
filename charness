@@ -5227,6 +5227,8 @@ def cmd_worktree_create(args: argparse.Namespace) -> int:
         prepare=args.prepare,
         dry_run=args.dry_run,
         force=args.force,
+        ephemeral=args.ephemeral,
+        owned=args.owned,
     )
     emit_yaml(payload)
     if payload.get("status") == lib.PASS:
@@ -5871,6 +5873,17 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--prepare", action="store_true", help="Run readiness prepare after creation.")
         command.add_argument("--dry-run", action="store_true", help="Print the planned git command without creating the worktree.")
         command.add_argument("--force", action="store_true", help="Pass --force to `git worktree add`.")
+        lifetime = command.add_mutually_exclusive_group()
+        lifetime.add_argument(
+            "--ephemeral",
+            action="store_true",
+            help="Mark the worktree disposable: create reclaims expired leftovers and caps residue.",
+        )
+        lifetime.add_argument(
+            "--owned",
+            action="store_true",
+            help="Keep the worktree until `charness worktree cleanup`; never auto-removed.",
+        )
         add_worktree_lib_args(command)
         command.set_defaults(func=cmd_worktree_create)
 
@@ -5964,7 +5977,7 @@ def build_parser() -> argparse.ArgumentParser:
     worktree_audit_parser.add_argument(
         "--prune",
         action="store_true",
-        help="After audit, run `git worktree prune` to drop metadata for prunable worktrees.",
+        help="After audit, reclaim expired ephemeral worktrees and prune metadata for missing ones.",
     )
     worktree_audit_parser.add_argument(
         "--doctor",

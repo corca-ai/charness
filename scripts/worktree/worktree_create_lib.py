@@ -22,6 +22,7 @@ _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard"
 run_process = _subprocess_guard.run_process
 
 _doctor_lib = import_repo_module(__file__, "scripts.worktree.worktree_doctor_lib")
+_lifetime = import_repo_module(__file__, "scripts.worktree.worktree_lifetime")
 
 PASS = "pass"
 WARN = "warn"
@@ -92,11 +93,16 @@ def run_create(
     dry_run: bool = False,
     force: bool = False,
     dependency_cache_root: Path | None = None,
+    ephemeral: bool = False,
+    owned: bool = False,
 ) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     target_path = target_path.resolve()
     if branch and detach:
         return _fail(repo_root, target_path, "`--branch` and `--detach` cannot be used together.")
+    if ephemeral and owned:
+        return _fail(repo_root, target_path, "`--ephemeral` and `--owned` cannot be used together.")
+    kind = _lifetime.resolve_kind(target_path, ephemeral=ephemeral, owned=owned)
 
     command = _create_command(target_path, branch=branch, base=base, detach=detach, force=force)
     create_action = _action("create-worktree", command, "planned" if dry_run else "running")
@@ -112,8 +118,21 @@ def run_create(
             "dry_run": True,
             "created": False,
             "actions": actions,
+            "lifetime": {"kind": kind, "planned": True},
             "next_step": "Re-run without `--dry-run` to create the worktree and run readiness doctor.",
         }
+
+    cap = _lifetime.prepare_create(repo_root, kind=kind)
+    if cap.get("refused"):
+        return _fail(
+            repo_root,
+            target_path,
+            (
+                f"ephemeral worktree cap {_lifetime.EPHEMERAL_CAP} is filled by live lanes; "
+                "finish or unregister one before creating another"
+            ),
+            actions=actions,
+        )
 
     result = _run_git(repo_root, command)
     create_action["exit_code"] = result.returncode
@@ -130,6 +149,15 @@ def run_create(
             actions=actions,
         )
     create_action["status"] = "done"
+    try:
+        lifetime_record = _lifetime.bind_created(target_path, kind=kind)
+    except OSError as exc:
+        lifetime_record = {"kind": kind, "error": str(exc)}
+    lifetime_record = {
+        **lifetime_record,
+        "expired": cap.get("expired") or [],
+        "evicted": cap.get("evicted") or [],
+    }
 
     # `require_isolation=True` unconditionally: this function JUST created a
     # linked worktree, so the check must pass, and asserting it here is what
@@ -149,6 +177,7 @@ def run_create(
         "dry_run": False,
         "created": True,
         "actions": actions,
+        "lifetime": lifetime_record,
         "doctor": doctor,
         "_checkout": doctor.get("_checkout"),
         "next_step": None,

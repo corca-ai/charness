@@ -21,6 +21,7 @@ from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _doctor_lib = import_repo_module(__file__, "scripts.worktree.worktree_doctor_lib")
 _guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
+_lifetime = import_repo_module(__file__, "scripts.worktree.worktree_lifetime")
 
 PASS = "pass"
 WARN = "warn"
@@ -289,6 +290,7 @@ def run_audit(
 
 def run_prune(repo_root: Path) -> dict[str, Any]:
     repo_root = repo_root.resolve()
+    reclaimed = _lifetime.reclaim_expired(repo_root)
     before = run_audit(repo_root)
     proc = _guard.run_process(
         ["git", "worktree", "prune", "--verbose"],
@@ -305,6 +307,7 @@ def run_prune(repo_root: Path) -> dict[str, Any]:
     return {
         "status": PASS if proc.returncode == 0 else FAIL,
         "repo_root": str(repo_root),
+        "reclaimed": reclaimed,
         "pruned_count": delta,
         "pruned": parsed_names,
         "remaining_after_prune": after["summary"],

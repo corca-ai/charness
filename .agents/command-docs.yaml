@@ -346,6 +346,8 @@ commands:
       - --path
       - --branch
       - --prepare
+      - --ephemeral
+      - --owned
     required_doc_contains:
       - charness worktree create --path
   worktree-add:
@@ -357,6 +359,8 @@ commands:
       - --path
       - --branch
       - --prepare
+      - --ephemeral
+      - --owned
     required_doc_contains:
       - charness worktree add --path
   worktree-exec:

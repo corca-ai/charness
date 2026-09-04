@@ -758,6 +758,7 @@ options:
 usage: charness worktree create [-h] [--repo-root REPO_ROOT] --path PATH
                                 [--branch BRANCH] [--base BASE] [--detach]
                                 [--prepare] [--dry-run] [--force]
+                                [--ephemeral | --owned]
                                 [--home-root HOME_ROOT]
                                 [--charness-checkout CHARNESS_CHECKOUT]
 
@@ -774,6 +775,10 @@ options:
   --dry-run             Print the planned git command without creating the
                         worktree.
   --force               Pass --force to `git worktree add`.
+  --ephemeral           Mark the worktree disposable: create reclaims expired
+                        leftovers and caps residue.
+  --owned               Keep the worktree until `charness worktree cleanup`;
+                        never auto-removed.
   --home-root HOME_ROOT
                         Home root used to locate the managed charness checkout
                         when the entrypoint is a PATH shim.
@@ -789,7 +794,7 @@ options:
 usage: charness worktree add [-h] [--repo-root REPO_ROOT] --path PATH
                              [--branch BRANCH] [--base BASE] [--detach]
                              [--prepare] [--dry-run] [--force]
-                             [--home-root HOME_ROOT]
+                             [--ephemeral | --owned] [--home-root HOME_ROOT]
                              [--charness-checkout CHARNESS_CHECKOUT]
 
 options:
@@ -805,6 +810,10 @@ options:
   --dry-run             Print the planned git command without creating the
                         worktree.
   --force               Pass --force to `git worktree add`.
+  --ephemeral           Mark the worktree disposable: create reclaims expired
+                        leftovers and caps residue.
+  --owned               Keep the worktree until `charness worktree cleanup`;
+                        never auto-removed.
   --home-root HOME_ROOT
                         Home root used to locate the managed charness checkout
                         when the entrypoint is a PATH shim.
@@ -913,8 +922,8 @@ options:
   --stale-days STALE_DAYS
                         Detached-HEAD worktrees older than this many days are
                         reported as stale (default: 14).
-  --prune               After audit, run `git worktree prune` to drop metadata
-                        for prunable worktrees.
+  --prune               After audit, reclaim expired ephemeral worktrees and
+                        prune metadata for missing ones.
   --doctor              Run readiness doctor for existing worktrees and
                         include per-worktree readiness summaries.
   --home-root HOME_ROOT

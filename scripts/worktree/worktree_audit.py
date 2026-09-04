@@ -44,7 +44,7 @@ def main() -> int:
     parser.add_argument(
         "--prune",
         action="store_true",
-        help="After auditing, run `git worktree prune` to drop metadata for missing worktrees.",
+        help="After auditing, reclaim expired ephemeral worktrees and prune metadata for missing ones.",
     )
     parser.add_argument(
         "--doctor",

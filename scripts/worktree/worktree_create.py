@@ -47,6 +47,17 @@ def main() -> int:
         help="Print the planned git command without creating the worktree.",
     )
     parser.add_argument("--force", action="store_true", help="Pass --force to `git worktree add`.")
+    lifetime = parser.add_mutually_exclusive_group()
+    lifetime.add_argument(
+        "--ephemeral",
+        action="store_true",
+        help="Mark the worktree disposable: create reclaims expired leftovers and caps residue.",
+    )
+    lifetime.add_argument(
+        "--owned",
+        action="store_true",
+        help="Keep the worktree until `charness worktree cleanup`; never auto-removed.",
+    )
     args = parser.parse_args()
 
     payload = run_create(
@@ -58,6 +69,8 @@ def main() -> int:
         prepare=args.prepare,
         dry_run=args.dry_run,
         force=args.force,
+        ephemeral=args.ephemeral,
+        owned=args.owned,
     )
     emit_yaml(payload)
     if payload.get("status") == PASS:

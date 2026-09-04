@@ -11,8 +11,8 @@
     "docs/harness-composition.md": 1042,
     "docs/host-packaging.md": 1389,
     "docs/parallel-execution.md": 1078,
-    "docs/worktree-prepare.md": 1187
+    "docs/worktree-prepare.md": 1154
   },
   "schema": "charness.docs-length-baseline/v1",
-  "total": 20074
+  "total": 20038
 }
