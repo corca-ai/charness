@@ -347,9 +347,6 @@ INSTRUCTION_EXEMPT_PATHS = {
         "critique_packet_lib runs through subprocess; the doc must show the runnable "
         "spelling or a consumer copies a broken one"
     ),
-    "skills/critique/references/prepare-packet.md": (
-        "EXECUTED: names the producer for that same `command:` field"
-    ),
     "skills/retro/references/adapter-contract.md": (
         "EXECUTED: documents the retro adapter's `command:` value, same executor"
     ),

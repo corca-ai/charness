@@ -306,7 +306,8 @@ only when the reviewer's findings text is in the parent's own context. Spawn
 one-shot subagents **without** a host addressing or team name; a named spawn
 can select a mailbox channel the parent cannot read. Findings that never
 arrive are a delivery failure to report, never grounds for a same-agent
-substitute.
+substitute. Record delivery state as `findings-received` or
+`spawn-accepted-no-delivery <concrete channel or host signal>`. Boundary clean and findings received are independent claims; neither implies the other.
 
 Run the Charness-owned worker through
 `python3 "$SKILL_DIR/../../shared/scripts/run_reviewer_worker.py" --help`

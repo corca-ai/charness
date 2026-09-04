@@ -82,7 +82,9 @@ Use explicit empty lists to record an intentional opt-out.
   `runtime-signals.json` has nothing for the selected profile.
 - `test_file_discovery` / `lint_ignore_discovery` — let the consuming repo own
   how standing-test-economics and lint-ignore inventories discover their
-  surfaces; inert when omitted.
+  surfaces; inert when omitted. Precedence is a graded fallback; a declared
+  discovery command that cannot run marks the inventory `degraded` rather than
+  going dark.
 - `startup_probes` — startup seam records; reuse `runtime_budgets` for standing
   latency keyed by the same `label`.
 
