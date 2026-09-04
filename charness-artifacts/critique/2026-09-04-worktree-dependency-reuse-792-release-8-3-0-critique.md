@@ -83,13 +83,13 @@ the install command when a link held. `task run` lanes inherit it through
   `skipped` term. Each was a subject defect, repaired, and the lane rerun.
 - Failure classification: subject-defect
 - Negative control: command `charness worktree create --prepare` on the tree before the manifest declaration was committed | expected refusal: no reuse, a full `npm ci` | observed result: link count 1 on the worktree's `node_modules/.package-lock.json`, install ran past the 5-minute window | receipt: session record 2026-09-04, first live run; the reuse path is inert without the declaration. <!-- reproduction-source -->
-- Subject identity: sha256:acceefd65f30cc3e122ee2cee3215dcecdf1816a6c54cd8b49dc0d1823b57543
+- Subject identity: sha256:4b3bda2ece94a26b4b4ca5fcdf16df39987d73c9d3b3e9972d58b1294c2962cb
 - Verifier identity: sha256:fdae081f53f503cfc7eb37bd0790ab07ad0ee04855e2af9f0bf6d47f11c5ae08
 - Input identity: sha256:88cb87e3db1663d0f8833179d631fa5a94df4add395263a3b72b2a92655be34b
 - Failure identity: stable:none
 - Evidence identity: none
 - Retry disposition: first-attempt
-- Retry key: sha256:4754568acd26e55be7e40bdf205281cd46f931da101fd1a0dd1dd8b9e12ac8ad
+- Retry key: sha256:81b4cf7d46ff0c19186cc53f389ec36940b3e97725f6d8330bb55e78013500af
 
 ## Failure Angles
 
@@ -162,6 +162,7 @@ the install command when a link held. `task run` lanes inherit it through
 - F18 | bin: bundle-anyway | evidence: strong | ref: tests/charness_cli/test_worktree_dependency_reuse.py | action: fix | note: reviewer 5 accepted the probe repair but required proof of its two invariants; tests now show consecutive fingerprint calls observe a changed version and a non-Node install tool never probes `node` (reviewer 5 RV-F5-PROBE-TEST-1).
 - F19 | bin: act-before-ship | evidence: strong | ref: scripts/worktree/worktree_dependency_reuse.py | action: fix | note: `cache_entry` re-probed the runtime, so a version change between two probes could key the entry path with one fingerprint and write another to its metadata; the fingerprint is now observed once per seed or reuse and passed through, with a test that the path and metadata agree (reviewer 6 RV-F6-FINGERPRINT-SNAPSHOT).
 - F20 | bin: bundle-anyway | evidence: strong | ref: docs/worktree-prepare.md | action: fix | note: the page claimed `spec`, `impl`, and `hitl` bootstrap the doctor probe; `impl` has no such call (source-of-truth audit, item 4 on #793); corrected to `spec` and `hitl`. Reviewer 7 read this edit as part of the final tree.
+- F21 | bin: bundle-anyway | evidence: strong | ref: skills/public/quality/references/attention-state-visibility.json | action: fix | note: the `skipped` attention-state declaration still named `worktree_doctor_lib.py` after prepare moved out of it; the release lane's visibility gate refused, and the entry now names `worktree_prepare_lib.py`. A gate declaration relocated after reviewer 7, with no code change; not re-reviewed.
 - F17 | bin: act-before-ship | evidence: strong | ref: scripts/worktree/worktree_dependency_reuse.py | action: fix | note: a version probe that failed collapsed to the literal `absent`, so two unknown runtimes could share one cache entry, and a per-process probe cache ignored a PATH change; a probe that does not answer now yields no fingerprint, the cache is neither consumed nor published without one, `node` is probed only for the Node package managers, and nothing is cached across calls (reviewer 4 RV-F5-PROBE-1; test added).
 
 ## Operator Action Required
