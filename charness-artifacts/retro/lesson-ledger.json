@@ -397,6 +397,18 @@
       "transition_id": "seed-verification-exit-masked-by-pipe",
       "lesson_id": "verification-exit-masked-by-pipe",
       "source_retro": "charness-artifacts/retro/2026-09-04-session-retro.md"
+    },
+    {
+      "sequence": 67,
+      "transition_id": "seed-review-packet-range-not-pinned",
+      "lesson_id": "review-packet-range-not-pinned",
+      "source_retro": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md"
+    },
+    {
+      "sequence": 68,
+      "transition_id": "seed-unfinished-record-in-reviewed-tree",
+      "lesson_id": "unfinished-record-in-reviewed-tree",
+      "source_retro": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md"
     }
   ],
   "score_events": [
@@ -2254,6 +2266,36 @@
     "verification-exit-masked-by-pipe": {
       "source_retro": "charness-artifacts/retro/2026-09-04-session-retro.md",
       "transition_id": "seed-verification-exit-masked-by-pipe",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "review-packet-range-not-pinned": {
+      "source_retro": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+      "transition_id": "seed-review-packet-range-not-pinned",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "unfinished-record-in-reviewed-tree": {
+      "source_retro": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+      "transition_id": "seed-unfinished-record-in-reviewed-tree",
       "score_total": 0,
       "score_count": 0,
       "outcome_counts": {

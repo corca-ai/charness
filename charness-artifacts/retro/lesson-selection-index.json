@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-09-04",
-  "source_artifact_count": 429,
-  "candidate_count": 2216,
+  "source_artifact_count": 431,
+  "candidate_count": 2221,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -347,6 +347,50 @@
       ]
     },
     {
+      "candidate_id": "class:4c681d7c2f60",
+      "kind": "repeat_trap",
+      "lesson": "**Eight gate failures handled one at a time, each as its own surprise.** I wrote, ran a narrow check, committed, and let the next lane tell me the next thing. The class was visible by the third: I was not running the gate that would judge the change before making the change. The fix that ended it was running the exact release lane locally before the publish helper.",
+      "normalized_key": "seven gate stops met one at a time again the last retro s first",
+      "recurrence_class": "gate-failures-patched-serially",
+      "source_count": 4,
+      "latest_source_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+      "latest_source_date": "2026-09-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.48,
+      "selection_weight": 2.44,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+          "date": "2026-09-04",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Seven gate stops met one at a time, again.** The last retro's first lesson was exactly this class, and I read it in the ledger preview at session start. I still ran the full release lane only after the first reviewer round instead of before the first commit, and then kept editing after each green. The lane costs 3 to 6 minutes; I ran it six times. The fix that would have ended it is the one the lesson already named: run the exact release lane before the first commit of a slice, and treat every later edit as a new slice that owes the lane again."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+          "date": "2026-09-04",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "before the first commit of a slice, run the exact release lane (`./scripts/run-quality.sh --full --release --read-only`), and after every reviewer-driven edit treat the slice as reopened and owe the lane again before the next review; the focused suite is a proxy. Structural pattern: a green from a narrower lane standing in for the boundary's lane. Triggering instance(s): seven gate stops this session; eight in the 8.2.0 session. Destination: repo-local guard — the last retro's runner-owned verdict record read by the commit hook, now filed as https://github.com/corca-ai/charness/issues/796 (recurs:)."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+          "date": "2026-09-04",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Eight gate failures handled one at a time, each as its own surprise.** I wrote, ran a narrow check, committed, and let the next lane tell me the next thing. The class was visible by the third: I was not running the gate that would judge the change before making the change. The fix that ended it was running the exact release lane locally before the publish helper."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+          "date": "2026-09-04",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "this record, so the three classes reach the next session's selection preview; `gate-failures-patched-serially` is the class the impl route exists to end, and the next retro should say whether it fired."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:6624f88d18e2",
       "kind": "next_improvement",
       "lesson": "**workflow — `recurs:` one runner, one truth.** After any integration step, the only green that counts is `run_standing_pytest.py` followed by the full read-only lane; family reruns are for locating, not for claiming. Structural pattern: a proxy from an older tree read as the current state. Triggering instance(s): the 8568-pass bare run trusted over the runner's 31 failures.",
@@ -523,6 +567,43 @@
       ]
     },
     {
+      "candidate_id": "class:507a931c76a8",
+      "kind": "repeat_trap",
+      "lesson": "**Nine code-review rounds where a design would have been one.** Rounds 3 through 8 each moved the cache key's identity one notch: digest and directory, then platform and architecture, then tool and node versions, then fail-closed on unknown, then one observation per operation, then observed in the worktree. Each reviewer found the next notch on content the previous one had passed. The identity of a cache entry (\"what must be equal for two trees to be interchangeable\") was never written down before code; the reviewers wrote it for me, one clause per round, at five minutes and one commit each.",
+      "normalized_key": "a producer s output version capability scope attempt and lifecycle identity must remain bound",
+      "recurrence_class": "boundary-identity-unbound",
+      "source_count": 3,
+      "latest_source_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+      "latest_source_date": "2026-09-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.36,
+      "selection_weight": 1.72,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-25-consumer-friction-session-retro.md",
+          "date": "2026-08-25",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "a producer's output, version, capability, scope, attempt, and lifecycle identity must remain bound through the final consumer."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+          "date": "2026-09-04",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Nine code-review rounds where a design would have been one.** Rounds 3 through 8 each moved the cache key's identity one notch: digest and directory, then platform and architecture, then tool and node versions, then fail-closed on unknown, then one observation per operation, then observed in the worktree. Each reviewer found the next notch on content the previous one had passed. The identity of a cache entry (\"what must be equal for two trees to be interchangeable\") was never written down before code; the reviewers wrote it for me, one clause per round, at five minutes and one commit each."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+          "date": "2026-09-04",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "for any cache, key, or fingerprint, write the identity sentence (\"two X are interchangeable when ...\") in the spec artifact before code, and ask the first reviewer to attack that sentence rather than the code. Destination: none — a habit, held by the `boundary-identity-unbound` lesson."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:d5f7ccd49e12",
       "kind": "next_improvement",
       "lesson": "**memory — `recurs:` briefs list the seeded-fixture universe.** Any brief that moves files names the tests that copy those files by path (`grep -rn 'ROOT / \"scripts\"' tests`) as a deliverable of the lane, not of the parent.",
@@ -556,80 +637,6 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "**memory — `recurs:` briefs list the seeded-fixture universe.** Any brief that moves files names the tests that copy those files by path (`grep -rn 'ROOT / \"scripts\"' tests`) as a deliverable of the lane, not of the parent."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:e0b7c3ebcc2b",
-      "kind": "next_improvement",
-      "lesson": "**workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: the current achieve contract in skills/public/achieve/references/goal-artifact.md records the structural property; no standalone cadence-owner file remains.`",
-      "normalized_key": "workflow novel when a bar guards a proof surface make it a required value",
-      "recurrence_class": "bar-recorded-as-prose",
-      "source_count": 3,
-      "latest_source_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-      "latest_source_date": "2026-08-22",
-      "age_days": 13,
-      "recency_weight": 0.8185,
-      "alpha": 0.36,
-      "selection_weight": 1.4079,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-14-lesson-loop-625-627-626.md",
-          "date": "2026-08-14",
-          "section": "Next Improvements",
-          "kind": "next_improvement",
-          "lesson": "**workflow** (novel:) when a bar guards a proof surface, make it a required value rather than a comment. A comment can be deleted with nothing red."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-18-session-retro.md",
-          "date": "2026-08-18",
-          "section": "Next Improvements",
-          "kind": "next_improvement",
-          "lesson": "prefer a structural property over an enumerated refusal when the property can be made positional. The record's hidden-content class was closed by emitting the section last after three rounds of enumerating constructs."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-22-proof-cost-portability-cadence-retro.md",
-          "date": "2026-08-22",
-          "section": "Next Improvements",
-          "kind": "next_improvement",
-          "lesson": "**workflow — prefer a structural property over an enumerated refusal.** Slice A's first cut recognised ambiguity with an enumerated four-word negation list (`not|never|without|no`), and round 2 showed it disarmed the floor on genuinely deferring lines. The repair that worked is structural and positional — *decline only when EVERY flag mention on the line is negated* — which is the same shape the lesson names. I committed the enumerated form first. `applied: the current achieve contract in skills/public/achieve/references/goal-artifact.md records the structural property; no standalone cadence-owner file remains.`"
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:c853031906b3",
-      "kind": "repeat_trap",
-      "lesson": "unsupported command forms were encountered during release preparation. They were kept as rejected evidence, while only owned help/inventory-derived commands were counted as checks.",
-      "normalized_key": "workflow when a gate s failure message instructs edits verify each named surface still",
-      "recurrence_class": "proof-surface-message-drift",
-      "source_count": 3,
-      "latest_source_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
-      "latest_source_date": "2026-08-21",
-      "age_days": 14,
-      "recency_weight": 0.806,
-      "alpha": 0.36,
-      "selection_weight": 1.3864,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-14-monitored-execution-retro.md",
-          "date": "2026-08-14",
-          "section": "Next Improvements",
-          "kind": "next_improvement",
-          "lesson": "**workflow**: when a gate's failure message instructs edits, verify each named surface still owns what the message claims before editing — two of the four named here were superseded by #596."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-goal-r2-resume-final.md",
-          "date": "2026-08-21",
-          "section": "Waste",
-          "kind": "repeat_trap",
-          "lesson": "intentionally wrong release command examples were initially rendered as runnable command evidence, so the quality gate treated the documentation as executable. The structural repair is to keep rejected calls non-executable and validate the owning command surface before recording them."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-21-r3-delivery-review-final.md",
-          "date": "2026-08-21",
-          "section": "Waste",
-          "kind": "repeat_trap",
-          "lesson": "unsupported command forms were encountered during release preparation. They were kept as rejected evidence, while only owned help/inventory-derived commands were counted as checks."
         }
       ]
     }
@@ -968,6 +975,50 @@
       ]
     },
     {
+      "candidate_id": "class:4c681d7c2f60",
+      "kind": "repeat_trap",
+      "lesson": "**Eight gate failures handled one at a time, each as its own surprise.** I wrote, ran a narrow check, committed, and let the next lane tell me the next thing. The class was visible by the third: I was not running the gate that would judge the change before making the change. The fix that ended it was running the exact release lane locally before the publish helper.",
+      "normalized_key": "seven gate stops met one at a time again the last retro s first",
+      "recurrence_class": "gate-failures-patched-serially",
+      "source_count": 4,
+      "latest_source_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+      "latest_source_date": "2026-09-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.48,
+      "selection_weight": 2.44,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+          "date": "2026-09-04",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Seven gate stops met one at a time, again.** The last retro's first lesson was exactly this class, and I read it in the ledger preview at session start. I still ran the full release lane only after the first reviewer round instead of before the first commit, and then kept editing after each green. The lane costs 3 to 6 minutes; I ran it six times. The fix that would have ended it is the one the lesson already named: run the exact release lane before the first commit of a slice, and treat every later edit as a new slice that owes the lane again."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+          "date": "2026-09-04",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "before the first commit of a slice, run the exact release lane (`./scripts/run-quality.sh --full --release --read-only`), and after every reviewer-driven edit treat the slice as reopened and owe the lane again before the next review; the focused suite is a proxy. Structural pattern: a green from a narrower lane standing in for the boundary's lane. Triggering instance(s): seven gate stops this session; eight in the 8.2.0 session. Destination: repo-local guard — the last retro's runner-owned verdict record read by the commit hook, now filed as https://github.com/corca-ai/charness/issues/796 (recurs:)."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+          "date": "2026-09-04",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Eight gate failures handled one at a time, each as its own surprise.** I wrote, ran a narrow check, committed, and let the next lane tell me the next thing. The class was visible by the third: I was not running the gate that would judge the change before making the change. The fix that ended it was running the exact release lane locally before the publish helper."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
+          "date": "2026-09-04",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "this record, so the three classes reach the next session's selection preview; `gate-failures-patched-serially` is the class the impl route exists to end, and the next retro should say whether it fired."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:6624f88d18e2",
       "kind": "next_improvement",
       "lesson": "**workflow — `recurs:` one runner, one truth.** After any integration step, the only green that counts is `run_standing_pytest.py` followed by the full read-only lane; family reruns are for locating, not for claiming. Structural pattern: a proxy from an older tree read as the current state. Triggering instance(s): the 8568-pass bare run trusted over the runner's 31 failures.",
@@ -1140,6 +1191,43 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "before a quality batch is formed, inventory hidden files created by every concurrent check and require disjoint paths or an explicit serialization edge. is now carried by the namespace regression and the closeout record."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:507a931c76a8",
+      "kind": "repeat_trap",
+      "lesson": "**Nine code-review rounds where a design would have been one.** Rounds 3 through 8 each moved the cache key's identity one notch: digest and directory, then platform and architecture, then tool and node versions, then fail-closed on unknown, then one observation per operation, then observed in the worktree. Each reviewer found the next notch on content the previous one had passed. The identity of a cache entry (\"what must be equal for two trees to be interchangeable\") was never written down before code; the reviewers wrote it for me, one clause per round, at five minutes and one commit each.",
+      "normalized_key": "a producer s output version capability scope attempt and lifecycle identity must remain bound",
+      "recurrence_class": "boundary-identity-unbound",
+      "source_count": 3,
+      "latest_source_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+      "latest_source_date": "2026-09-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.36,
+      "selection_weight": 1.72,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-25-consumer-friction-session-retro.md",
+          "date": "2026-08-25",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "a producer's output, version, capability, scope, attempt, and lifecycle identity must remain bound through the final consumer."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+          "date": "2026-09-04",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**Nine code-review rounds where a design would have been one.** Rounds 3 through 8 each moved the cache key's identity one notch: digest and directory, then platform and architecture, then tool and node versions, then fail-closed on unknown, then one observation per operation, then observed in the worktree. Each reviewer found the next notch on content the previous one had passed. The identity of a cache entry (\"what must be equal for two trees to be interchangeable\") was never written down before code; the reviewers wrote it for me, one clause per round, at five minutes and one commit each."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+          "date": "2026-09-04",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "for any cache, key, or fingerprint, write the identity sentence (\"two X are interchangeable when ...\") in the spec artifact before code, and ask the first reviewer to attack that sentence rather than the code. Destination: none — a habit, held by the `boundary-identity-unbound` lesson."
         }
       ]
     },
@@ -1396,6 +1484,36 @@
       ]
     },
     {
+      "candidate_id": "class:f7e04a105af5",
+      "kind": "repeat_trap",
+      "lesson": "**A review packet that named its range as `HEAD`.** `run_review.py --range e191e89d4..HEAD` stored the symbolic range; the artifact validator re-resolves it at validation time, so the record went stale the moment its own commit landed. One full reviewer round (round 8) existed only to re-read identical content on a pinned range, and it happened to find a real defect, which masks the waste rather than excusing it.",
+      "normalized_key": "a review packet that named its range as head run review py range e191e89d4",
+      "recurrence_class": "review-packet-range-not-pinned",
+      "source_count": 2,
+      "latest_source_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+      "latest_source_date": "2026-09-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+          "date": "2026-09-04",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**A review packet that named its range as `HEAD`.** `run_review.py --range e191e89d4..HEAD` stored the symbolic range; the artifact validator re-resolves it at validation time, so the record went stale the moment its own commit landed. One full reviewer round (round 8) existed only to re-read identical content on a pinned range, and it happened to find a real defect, which masks the waste rather than excusing it."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+          "date": "2026-09-04",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "`run_review.py` resolves a symbolic `--range`/`--commit` to shas before writing the packet, and accepts a `--hold-out <path>` that moves a named artifact aside for the reviewer's run and restores it after. Destination: https://github.com/corca-ai/charness/issues/795 (novel:)."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:0db5aebc61a3",
       "kind": "repeat_trap",
       "lesson": "**A verification exit code swallowed by a shell pipe.** `pytest | tail -1` inside an `&&` chain reports `tail`'s success, so a failing test committed. The habit that produced it — trimming tool output for my own context — is reasonable; putting the trim *inside* the chain that decides to commit is not. Nothing in the repo holds this rule.",
@@ -1422,36 +1540,6 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "run the exact lane the boundary will run (`--release --read-only` before the publish helper), and never place a verification command behind a pipe inside the chain that commits — capture to a file, check the exit, then read the file. Structural pattern: a proxy's exit code standing in for the verifier's. Triggering instance(s): commit `67e28cb05`; the 8.2.0 first publish attempt. Destination: repo-local guard candidate — a runner-owned verdict record read by the commit hook — filed only if the class recurs."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:4c681d7c2f60",
-      "kind": "repeat_trap",
-      "lesson": "**Eight gate failures handled one at a time, each as its own surprise.** I wrote, ran a narrow check, committed, and let the next lane tell me the next thing. The class was visible by the third: I was not running the gate that would judge the change before making the change. The fix that ended it was running the exact release lane locally before the publish helper.",
-      "normalized_key": "eight gate failures handled one at a time each as its own surprise i",
-      "recurrence_class": "gate-failures-patched-serially",
-      "source_count": 2,
-      "latest_source_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
-      "latest_source_date": "2026-09-04",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.24,
-      "selection_weight": 1.24,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
-          "date": "2026-09-04",
-          "section": "Waste",
-          "kind": "repeat_trap",
-          "lesson": "**Eight gate failures handled one at a time, each as its own surprise.** I wrote, ran a narrow check, committed, and let the next lane tell me the next thing. The class was visible by the third: I was not running the gate that would judge the change before making the change. The fix that ended it was running the exact release lane locally before the publish helper."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-09-04-session-retro.md",
-          "date": "2026-09-04",
-          "section": "Next Improvements",
-          "kind": "next_improvement",
-          "lesson": "this record, so the three classes reach the next session's selection preview; `gate-failures-patched-serially` is the class the impl route exists to end, and the next retro should say whether it fired."
         }
       ]
     },
@@ -1576,6 +1664,29 @@
       ]
     },
     {
+      "candidate_id": "current_focus:1f59c12bb978",
+      "kind": "current_focus",
+      "lesson": "One work unit: issue #792 (every `task run` lane paid a full `npm ci`) was designed, implemented, reviewed, released as charness 8.3.0, and closed in a single session, with a source-of-truth audit of the worktree subsystem folded in at the operator's request.",
+      "normalized_key": "one work unit issue 792 every task run lane paid a full npm ci",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+      "latest_source_date": "2026-09-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+          "date": "2026-09-04",
+          "section": "Context",
+          "kind": "current_focus",
+          "lesson": "One work unit: issue #792 (every `task run` lane paid a full `npm ci`) was designed, implemented, reviewed, released as charness 8.3.0, and closed in a single session, with a source-of-truth audit of the worktree subsystem folded in at the operator's request."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:4236ad41a4be",
       "kind": "current_focus",
       "lesson": "The 8.2.0 release session: README rewritten as the user guide; `impl` gained a route into `debug` and a six-signal waste scan; `debug` gained \"the verifier that did fire\"; `charness task run` fixed #790 and #791; the changed-line gate's loader scan was bounded.",
@@ -1599,6 +1710,29 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:b36ff4806aed",
+      "kind": "next_improvement",
+      "lesson": "this artifact; the ledger seeds the two new classes and re-scores the two recurring ones.",
+      "normalized_key": "this artifact the ledger seeds the two new classes and re scores the two",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+      "latest_source_date": "2026-09-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+          "date": "2026-09-04",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "this artifact; the ledger seeds the two new classes and re-scores the two recurring ones."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:814f5eefb7bc",
       "kind": "next_improvement",
       "lesson": "**workflow — post the issue-owned closeout comment when the carrier lands, not at the integrated closeout.** The child closeout step in the session recipe runs `close-with-comment` with the carrier body right after `verify-closeout`, so the close proof's evidence identity exists the moment the child is proven. Structural pattern: proof evidence created by the reader, not the writer. Triggering instance(s): five comments posted in this session for closes made in the previous three.",
@@ -1618,6 +1752,29 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "**workflow — post the issue-owned closeout comment when the carrier lands, not at the integrated closeout.** The child closeout step in the session recipe runs `close-with-comment` with the carrier body right after `verify-closeout`, so the close proof's evidence identity exists the moment the child is proven. Structural pattern: proof evidence created by the reader, not the writer. Triggering instance(s): five comments posted in this session for closes made in the previous three."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:edb0a02446c9",
+      "kind": "repeat_trap",
+      "lesson": "**A bounded subagent spent 19 minutes idle before reporting.** The SoT audit agent went idle without a report; I repeated the audit in the parent, and its report arrived afterwards with four findings beyond mine. Not waste in outcome, but the host note that such spawns are not budgetable proof held again, and I had no way to ask it for its result.",
+      "normalized_key": "a bounded subagent spent 19 minutes idle before reporting the sot audit agent went",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+      "latest_source_date": "2026-09-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+          "date": "2026-09-04",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**A bounded subagent spent 19 minutes idle before reporting.** The SoT audit agent went idle without a report; I repeated the audit in the parent, and its report arrived afterwards with four findings beyond mine. Not waste in outcome, but the host note that such spawns are not budgetable proof held again, and I had no way to ask it for its result."
         }
       ]
     },
@@ -1664,6 +1821,29 @@
           "section": "Waste",
           "kind": "repeat_trap",
           "lesson": "**Issue-owned closeout comments arrive in a batch at closeout, not at each close.** Same shape as #775: the `Closes #N` carrier closes the issue, and the comment the close proof needs is posted hours later by the integrated closeout. Cheap this time (five commands), but the proof's evidence identity is created by the last session rather than by the close that earned it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:9416b0ac2167",
+      "kind": "repeat_trap",
+      "lesson": "**The unfinished record sat in the tree the reviewer read.** Reviewer 5 blocked partly on the critique record's own TODOs, and the lane's two artifact validators failed twice on it. Holding the record out of the tree during rounds 6 to 9 was a manual `mv` each time.",
+      "normalized_key": "the unfinished record sat in the tree the reviewer read reviewer 5 blocked partly",
+      "recurrence_class": "unfinished-record-in-reviewed-tree",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+      "latest_source_date": "2026-09-04",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
+          "date": "2026-09-04",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "**The unfinished record sat in the tree the reviewer read.** Reviewer 5 blocked partly on the critique record's own TODOs, and the lane's two artifact validators failed twice on it. Holding the record out of the tree during rounds 6 to 9 was a manual `mv` each time."
         }
       ]
     },
@@ -4091,29 +4271,6 @@
           "section": "Context",
           "kind": "current_focus",
           "lesson": "This retro covers the Charness/Ceal consumer-friction work from issue #713 through the #689 requalification, #690/#691 readiness repair, #714 Node TAP window repair, and the external-worker capability envelope."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:507a931c76a8",
-      "kind": "next_improvement",
-      "lesson": "a producer's output, version, capability, scope, attempt, and lifecycle identity must remain bound through the final consumer.",
-      "normalized_key": "a producer s output version capability scope attempt and lifecycle identity must remain bound",
-      "recurrence_class": "boundary-identity-unbound",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-25-consumer-friction-session-retro.md",
-      "latest_source_date": "2026-08-25",
-      "age_days": 10,
-      "recency_weight": 0.8572,
-      "alpha": 0.12,
-      "selection_weight": 0.8572,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-25-consumer-friction-session-retro.md",
-          "date": "2026-08-25",
-          "section": "Next Improvements",
-          "kind": "next_improvement",
-          "lesson": "a producer's output, version, capability, scope, attempt, and lifecycle identity must remain bound through the final consumer."
         }
       ]
     },
