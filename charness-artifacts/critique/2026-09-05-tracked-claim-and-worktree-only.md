@@ -4,9 +4,9 @@ Date: 2026-09-05
 
 ## Decision Under Review
 
-Ship the class fix for a tracked public claim whose only on-disk proof lives in
-hidden runtime (#764 sampler baseline), plus the #797 keep_worktree sibling
-already in this tree.
+Ship the 8.4.2 patch: the class fix for a tracked public claim whose only
+on-disk proof lives in hidden runtime (#764 sampler baseline), plus the #797
+keep_worktree sibling already in this tree.
 
 ## Verification Scope Decision
 
