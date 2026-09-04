@@ -1,25 +1,41 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-09-04T01:00:37Z
+- **Generated**: 2026-09-04T02:31:21Z
 - **Prepared for**: e191e89d4..HEAD
 - **Substrate mode**: `committed-ref`
 - **Changed ref**: `e191e89d4..HEAD`
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `1a288a74c9cea567d4ad4779ba1f95f28b47f5d464f98fc8fa2ea3bb752d0c04`
-- **Reviewed paths**: 17
+- **Reviewed input identity**: `88cb87e3db1663d0f8833179d631fa5a94df4add395263a3b72b2a92655be34b`
+- **Reviewed paths**: 33
   - `.agents/worktree-adapter.yaml`
+  - `.charness/792-reviewed-paths.txt`
   - `charness`
+  - `charness-artifacts/critique/2026-09-04-worktree-dependency-reuse-792-release-8-3-0-critique.md`
+  - `charness-artifacts/critique/release-8-3-0-code-1-packet.json`
+  - `charness-artifacts/critique/release-8-3-0-code-1-packet.md`
+  - `charness-artifacts/critique/release-8-3-0-code-2-packet.json`
+  - `charness-artifacts/critique/release-8-3-0-code-2-packet.md`
+  - `charness-artifacts/critique/release-8-3-0-surface-1-packet.json`
+  - `charness-artifacts/critique/release-8-3-0-surface-1-packet.md`
   - `docs/agent-task-runs.md`
   - `docs/cli-reference.md`
   - `docs/worktree-prepare.md`
   - `integrations/worktree/adapter.example.yaml`
   - `integrations/worktree/manifest.schema.json`
   - `scripts/task_run/task_run.py`
+  - `scripts/task_run/task_run_changed_line.py`
+  - `scripts/task_run/task_run_completion.py`
+  - `scripts/task_run/task_run_evidence.py`
+  - `scripts/task_run/task_run_plan.py`
+  - `scripts/task_run/task_run_scope.py`
+  - `scripts/task_run/task_run_state.py`
+  - `scripts/task_run/task_run_support.py`
   - `scripts/worktree/worktree_create_lib.py`
   - `scripts/worktree/worktree_dependency_reuse.py`
   - `scripts/worktree/worktree_doctor_lib.py`
   - `scripts/worktree/worktree_prepare.py`
+  - `scripts/worktree/worktree_prepare_lib.py`
   - `skills/public/setup/scripts/seed_worktree_adapter_lib.py`
   - `skills/public/setup/scripts/templates/worktree_adapter.yaml.txt`
   - `skills/public/setup/scripts/templates/worktree_dependency_reuse.yaml.txt`
@@ -32,7 +48,7 @@
 Run this exact command from the repository root:
 
 ```sh
-python3 skills/public/critique/scripts/verify_packet.py --repo-root . --packet-path charness-artifacts/critique/release-8-3-0-code-1-packet.json --packet-sha256 78a52c8dc4c410bad8446ab85cbf82d456aa30c9b2726981b98139b5b533271c --identity-sha256 1a288a74c9cea567d4ad4779ba1f95f28b47f5d464f98fc8fa2ea3bb752d0c04
+python3 skills/public/critique/scripts/verify_packet.py --repo-root . --packet-path charness-artifacts/critique/release-8-3-0-code-7-packet.json --packet-sha256 24da3b65e9d8cf321b10e3c175598605519c79755a275c30581397e8e8ca152e --identity-sha256 88cb87e3db1663d0f8833179d631fa5a94df4add395263a3b72b2a92655be34b
 ```
 
 Raw sha256sum is not the contract; the verifier owns the domain-separated packet identity check.
@@ -64,17 +80,33 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 ```text
 Changed paths for ref `e191e89d4..HEAD`:
 - .agents/worktree-adapter.yaml
+- .charness/792-reviewed-paths.txt
 - charness
+- charness-artifacts/critique/2026-09-04-worktree-dependency-reuse-792-release-8-3-0-critique.md
+- charness-artifacts/critique/release-8-3-0-code-1-packet.json
+- charness-artifacts/critique/release-8-3-0-code-1-packet.md
+- charness-artifacts/critique/release-8-3-0-code-2-packet.json
+- charness-artifacts/critique/release-8-3-0-code-2-packet.md
+- charness-artifacts/critique/release-8-3-0-surface-1-packet.json
+- charness-artifacts/critique/release-8-3-0-surface-1-packet.md
 - docs/agent-task-runs.md
 - docs/cli-reference.md
 - docs/worktree-prepare.md
 - integrations/worktree/adapter.example.yaml
 - integrations/worktree/manifest.schema.json
 - scripts/task_run/task_run.py
+- scripts/task_run/task_run_changed_line.py
+- scripts/task_run/task_run_completion.py
+- scripts/task_run/task_run_evidence.py
+- scripts/task_run/task_run_plan.py
+- scripts/task_run/task_run_scope.py
+- scripts/task_run/task_run_state.py
+- scripts/task_run/task_run_support.py
 - scripts/worktree/worktree_create_lib.py
 - scripts/worktree/worktree_dependency_reuse.py
 - scripts/worktree/worktree_doctor_lib.py
 - scripts/worktree/worktree_prepare.py
+- scripts/worktree/worktree_prepare_lib.py
 - skills/public/setup/scripts/seed_worktree_adapter_lib.py
 - skills/public/setup/scripts/templates/worktree_adapter.yaml.txt
 - skills/public/setup/scripts/templates/worktree_dependency_reuse.yaml.txt
@@ -83,11 +115,11 @@ Changed paths for ref `e191e89d4..HEAD`:
 
 Owning surfaces:
 - materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.
-  source matches: integrations/worktree/adapter.example.yaml, integrations/worktree/manifest.schema.json, scripts/task_run/task_run.py, scripts/worktree/worktree_create_lib.py, scripts/worktree/worktree_dependency_reuse.py, scripts/worktree/worktree_doctor_lib.py, scripts/worktree/worktree_prepare.py, skills/public/setup/scripts/seed_worktree_adapter_lib.py, skills/public/setup/scripts/templates/worktree_adapter.yaml.txt, skills/public/setup/scripts/templates/worktree_dependency_reuse.yaml.txt
+  source matches: integrations/worktree/adapter.example.yaml, integrations/worktree/manifest.schema.json, scripts/task_run/task_run.py, scripts/task_run/task_run_changed_line.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_evidence.py, scripts/task_run/task_run_plan.py, scripts/task_run/task_run_scope.py, scripts/task_run/task_run_state.py, scripts/task_run/task_run_support.py, scripts/worktree/worktree_create_lib.py, scripts/worktree/worktree_dependency_reuse.py, scripts/worktree/worktree_doctor_lib.py, scripts/worktree/worktree_prepare.py, scripts/worktree/worktree_prepare_lib.py, skills/public/setup/scripts/seed_worktree_adapter_lib.py, skills/public/setup/scripts/templates/worktree_adapter.yaml.txt, skills/public/setup/scripts/templates/worktree_dependency_reuse.yaml.txt
   sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .
   verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: docs/agent-task-runs.md, docs/cli-reference.md, docs/worktree-prepare.md
+  source matches: charness-artifacts/critique/2026-09-04-worktree-dependency-reuse-792-release-8-3-0-critique.md, charness-artifacts/critique/release-8-3-0-code-1-packet.md, charness-artifacts/critique/release-8-3-0-code-2-packet.md, charness-artifacts/critique/release-8-3-0-surface-1-packet.md, docs/agent-task-runs.md, docs/cli-reference.md, docs/worktree-prepare.md
   verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh
 - skill-packages: Public and support skill packages plus their helper scripts.
   source matches: skills/public/setup/scripts/seed_worktree_adapter_lib.py, skills/public/setup/scripts/templates/worktree_adapter.yaml.txt, skills/public/setup/scripts/templates/worktree_dependency_reuse.yaml.txt
@@ -104,14 +136,17 @@ Owning surfaces:
 - adapters: Repo-local adapter contracts and adapter helper libraries.
   source matches: .agents/worktree-adapter.yaml
   verify: python3 scripts/gates/validate_adapters.py --repo-root .
+- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
+  source matches: charness-artifacts/critique/2026-09-04-worktree-dependency-reuse-792-release-8-3-0-critique.md, charness-artifacts/critique/release-8-3-0-code-1-packet.json, charness-artifacts/critique/release-8-3-0-code-1-packet.md, charness-artifacts/critique/release-8-3-0-code-2-packet.json, charness-artifacts/critique/release-8-3-0-code-2-packet.md, charness-artifacts/critique/release-8-3-0-surface-1-packet.json, charness-artifacts/critique/release-8-3-0-surface-1-packet.md
+  verify: python3 scripts/review/validate_critique_artifacts.py --repo-root . --all
 - integrations-and-control-plane: Integration manifests and control-plane helper scripts.
   source matches: integrations/worktree/adapter.example.yaml, integrations/worktree/manifest.schema.json
   verify: python3 -m tools.validate_integrations --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .
 - repo-python: Repo-owned Python code and tests.
-  source matches: charness, scripts/task_run/task_run.py, scripts/worktree/worktree_create_lib.py, scripts/worktree/worktree_dependency_reuse.py, scripts/worktree/worktree_doctor_lib.py, scripts/worktree/worktree_prepare.py, tests/charness_cli/test_worktree_dependency_reuse.py, tests/quality_gates/test_seed_worktree_adapter.py
+  source matches: charness, scripts/task_run/task_run.py, scripts/task_run/task_run_changed_line.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_evidence.py, scripts/task_run/task_run_plan.py, scripts/task_run/task_run_scope.py, scripts/task_run/task_run_state.py, scripts/task_run/task_run_support.py, scripts/worktree/worktree_create_lib.py, scripts/worktree/worktree_dependency_reuse.py, scripts/worktree/worktree_doctor_lib.py, scripts/worktree/worktree_prepare.py, scripts/worktree/worktree_prepare_lib.py, tests/charness_cli/test_worktree_dependency_reuse.py, tests/quality_gates/test_seed_worktree_adapter.py
   verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only
 - python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.
-  source matches: scripts/task_run/task_run.py, scripts/worktree/worktree_create_lib.py, scripts/worktree/worktree_dependency_reuse.py, scripts/worktree/worktree_doctor_lib.py, scripts/worktree/worktree_prepare.py, skills/public/setup/scripts/seed_worktree_adapter_lib.py
+  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_changed_line.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_evidence.py, scripts/task_run/task_run_plan.py, scripts/task_run/task_run_scope.py, scripts/task_run/task_run_state.py, scripts/task_run/task_run_support.py, scripts/worktree/worktree_create_lib.py, scripts/worktree/worktree_dependency_reuse.py, scripts/worktree/worktree_doctor_lib.py, scripts/worktree/worktree_prepare.py, scripts/worktree/worktree_prepare_lib.py, skills/public/setup/scripts/seed_worktree_adapter_lib.py
   verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing
 
 Planned sync commands before validators:
