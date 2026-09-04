@@ -140,18 +140,22 @@ def lockfile_digest(path: Path) -> str | None:
 NODE_INSTALL_TOOLS = frozenset({"npm", "npx", "yarn", "pnpm", "bun"})
 
 
-def _probe_version(argv: tuple[str, ...]) -> str | None:
-    """First line of `<tool> --version`, or None when the probe did not answer.
+def _probe_version(argv: tuple[str, ...], *, cwd: Path) -> str | None:
+    """First line of `<tool> --version` run IN the worktree, or None when the
+    probe did not answer.
 
-    Not cached: the answer belongs to whatever PATH resolves NOW, and a prepare
-    that changes PATH between two calls must not inherit the earlier executable.
+    The cwd matters: corepack and a `packageManager` field select the tool per
+    tree, and a relative launcher resolves from it, so the version that will
+    install there is the one observed there. Not cached: the answer belongs to
+    whatever PATH resolves NOW, and a prepare that changes PATH between two
+    calls must not inherit the earlier executable.
     """
-    exit_code, _stderr, stdout = _run_capture(list(argv), timeout_seconds=30)
+    exit_code, _stderr, stdout = _run_capture(list(argv), timeout_seconds=30, cwd=cwd)
     first = stdout.strip().splitlines()[0].strip() if stdout.strip() else ""
     return first if exit_code == 0 and first else None
 
 
-def runtime_fingerprint(spec: ReuseSpec) -> str | None:
+def runtime_fingerprint(spec: ReuseSpec, *, cwd: Path) -> str | None:
     """What an installed tree is built against: platform, architecture, the install
     tool's version, and for the Node package managers `node`'s version (the ABI
     native addons are compiled for). Two trees whose fingerprints differ never
@@ -162,12 +166,12 @@ def runtime_fingerprint(spec: ReuseSpec) -> str | None:
     if not spec.install_argv:
         return None
     tool = spec.install_argv[0]
-    version = _probe_version((tool, "--version"))
+    version = _probe_version((tool, "--version"), cwd=cwd)
     if version is None:
         return None
     parts.append(f"{tool}={version}")
     if Path(tool).name in NODE_INSTALL_TOOLS:
-        node = _probe_version(("node", "--version"))
+        node = _probe_version(("node", "--version"), cwd=cwd)
         if node is None:
             return None
         parts.append(f"node={node}")
@@ -216,9 +220,11 @@ def _result(
     }
 
 
-def _run_capture(argv: list[str], timeout_seconds: int) -> tuple[int | None, str, str]:
+def _run_capture(
+    argv: list[str], timeout_seconds: int, *, cwd: Path | None = None
+) -> tuple[int | None, str, str]:
     try:
-        completed = run_process(argv, cwd=Path.cwd(), timeout_seconds=timeout_seconds)
+        completed = run_process(argv, cwd=cwd or Path.cwd(), timeout_seconds=timeout_seconds)
     except FileNotFoundError as exc:
         return None, f"command not found: {exc.filename or argv[0]}", ""
     if completed.returncode == TIMEOUT_EXIT_CODE:
@@ -343,7 +349,7 @@ def attempt_reuse(
         else:
             candidates.append((ORIGIN_PARENT, source_root / spec.directory, None))
     if cache_root is not None:
-        fingerprint = runtime_fingerprint(spec)
+        fingerprint = runtime_fingerprint(spec, cwd=target_root)
         entry = None if fingerprint is None else cache_entry(cache_root, digest, spec, fingerprint)
         if entry is None:
             candidates.append((ORIGIN_CACHE, cache_root, "runtime fingerprint unknown"))
@@ -414,7 +420,7 @@ def seed_cache(
     if digest is None:
         payload["reason"] = f"lockfile {spec.lockfile} unreadable"
         return payload
-    fingerprint = runtime_fingerprint(spec)
+    fingerprint = runtime_fingerprint(spec, cwd=target_root)
     if fingerprint is None:
         payload["reason"] = "runtime fingerprint unknown; not published to the cache"
         return payload

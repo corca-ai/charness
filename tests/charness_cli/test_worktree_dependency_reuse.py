@@ -213,13 +213,17 @@ def test_cache_entries_are_keyed_by_the_runtime_fingerprint(
         root.mkdir()
         (root / "lock.json").write_text("same", encoding="utf-8")
     _install(donor, "old-abi")
-    monkeypatch.setattr(reuse, "runtime_fingerprint", lambda _spec: "linux/x86_64/npm=10/node=v20")
+    monkeypatch.setattr(
+        reuse, "runtime_fingerprint", lambda _spec, **_k: "linux/x86_64/npm=10/node=v20"
+    )
     seeded = reuse.seed_cache(donor, SPEC, cache_root=cache)
     assert seeded["seeded"] is True
     meta = json.loads((Path(seeded["entry"]) / reuse.CACHE_META_NAME).read_text(encoding="utf-8"))
     assert meta["runtime"] == "linux/x86_64/npm=10/node=v20"
 
-    monkeypatch.setattr(reuse, "runtime_fingerprint", lambda _spec: "linux/x86_64/npm=10/node=v22")
+    monkeypatch.setattr(
+        reuse, "runtime_fingerprint", lambda _spec, **_k: "linux/x86_64/npm=10/node=v22"
+    )
     result = reuse.attempt_reuse(target, SPEC, source_root=None, cache_root=cache)
 
     assert result["strategy"] == reuse.STRATEGY_NONE
@@ -253,17 +257,19 @@ def test_an_unanswered_version_probe_neither_publishes_nor_consumes_the_cache(
 def test_the_runtime_fingerprint_names_the_install_tool_and_node(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    def fake_capture(argv: list[str], timeout_seconds: int):
+    def fake_capture(argv: list[str], timeout_seconds: int, *, cwd=None):
         return 0, "", {"npm": "10.9.0\n", "node": "v22.1.0\n"}[argv[0]]
 
     monkeypatch.setattr(reuse, "_run_capture", fake_capture)
     spec = reuse.ReuseSpec("install-deps", "package-lock.json", "node_modules", ("npm", "ci"))
 
-    fingerprint = reuse.runtime_fingerprint(spec)
+    fingerprint = reuse.runtime_fingerprint(spec, cwd=Path("/tree"))
 
     assert fingerprint.endswith("/npm=10.9.0/node=v22.1.0")
-    monkeypatch.setattr(reuse, "_run_capture", lambda argv, timeout_seconds: (1, "boom", ""))
-    assert reuse.runtime_fingerprint(spec) is None
+    monkeypatch.setattr(
+        reuse, "_run_capture", lambda argv, timeout_seconds, cwd=None: (1, "boom", "")
+    )
+    assert reuse.runtime_fingerprint(spec, cwd=Path("/tree")) is None
     assert reuse.ReuseSpec.from_manifest(
         {
             "commands": [{"id": "install-deps", "argv": ["npm", "ci"]}],
@@ -281,14 +287,14 @@ def test_version_probes_are_not_cached_between_fingerprint_calls(
 ) -> None:
     answers = iter(["10.0.0\n", "11.0.0\n"])
 
-    def changing_capture(argv: list[str], timeout_seconds: int):
+    def changing_capture(argv: list[str], timeout_seconds: int, *, cwd=None):
         return 0, "", next(answers)
 
     monkeypatch.setattr(reuse, "_run_capture", changing_capture)
     spec = reuse.ReuseSpec("install-deps", "uv.lock", ".venv", ("uv", "sync"))
 
-    first = reuse.runtime_fingerprint(spec)
-    second = reuse.runtime_fingerprint(spec)
+    first = reuse.runtime_fingerprint(spec, cwd=Path("/tree"))
+    second = reuse.runtime_fingerprint(spec, cwd=Path("/tree"))
 
     assert first.endswith("/uv=10.0.0") and second.endswith("/uv=11.0.0")
 
@@ -305,7 +311,7 @@ def test_one_fingerprint_observation_keys_both_the_entry_path_and_its_metadata(
     _install(donor, "snap")
     counter = iter(range(1, 100))
     monkeypatch.setattr(
-        reuse, "runtime_fingerprint", lambda _spec: f"linux/x86_64/tool={next(counter)}"
+        reuse, "runtime_fingerprint", lambda _spec, **_k: f"linux/x86_64/tool={next(counter)}"
     )
 
     seeded = reuse.seed_cache(donor, SPEC, cache_root=cache)
@@ -317,7 +323,7 @@ def test_one_fingerprint_observation_keys_both_the_entry_path_and_its_metadata(
         cache, reuse.lockfile_digest(donor / "lock.json"), SPEC, meta["runtime"]
     )
     assert meta["runtime"] == "linux/x86_64/tool=1"
-    monkeypatch.setattr(reuse, "runtime_fingerprint", lambda _spec: "linux/x86_64/tool=1")
+    monkeypatch.setattr(reuse, "runtime_fingerprint", lambda _spec, **_k: "linux/x86_64/tool=1")
     assert reuse.attempt_reuse(target, SPEC, source_root=None, cache_root=cache)["origin"] == (
         reuse.ORIGIN_CACHE
     )
@@ -326,7 +332,7 @@ def test_one_fingerprint_observation_keys_both_the_entry_path_and_its_metadata(
 def test_a_non_node_install_tool_never_probes_node(monkeypatch: pytest.MonkeyPatch) -> None:
     probed: list[str] = []
 
-    def trapping_capture(argv: list[str], timeout_seconds: int):
+    def trapping_capture(argv: list[str], timeout_seconds: int, *, cwd=None):
         probed.append(argv[0])
         if argv[0] == "node":
             raise AssertionError("node was probed for a non-Node install tool")
@@ -335,8 +341,35 @@ def test_a_non_node_install_tool_never_probes_node(monkeypatch: pytest.MonkeyPat
     monkeypatch.setattr(reuse, "_run_capture", trapping_capture)
     spec = reuse.ReuseSpec("install-deps", "uv.lock", ".venv", ("uv", "sync"))
 
-    assert reuse.runtime_fingerprint(spec).endswith("/uv=0.4.0")
+    assert reuse.runtime_fingerprint(spec, cwd=Path("/tree")).endswith("/uv=0.4.0")
     assert probed == ["uv"]
+
+
+def test_version_probes_run_in_the_worktree_not_the_launcher_cwd(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    donor = tmp_path / "donor"
+    target = tmp_path / "target"
+    for root in (donor, target):
+        root.mkdir()
+        (root / "lock.json").write_text("same", encoding="utf-8")
+    _install(donor)
+    seen: list[tuple[str, Path | None]] = []
+    real = reuse._run_capture
+
+    def recording(argv: list[str], timeout_seconds: int, *, cwd=None):
+        if argv[-1] == "--version":
+            seen.append((argv[0], cwd))
+            return 0, "", "1.0\n"
+        return real(argv, timeout_seconds, cwd=cwd)
+
+    monkeypatch.setattr(reuse, "_run_capture", recording)
+    monkeypatch.chdir(tmp_path)
+
+    reuse.seed_cache(donor, SPEC, cache_root=tmp_path / "cache")
+    reuse.attempt_reuse(target, SPEC, source_root=None, cache_root=tmp_path / "cache")
+
+    assert seen == [("python3", donor.resolve()), ("python3", target.resolve())]
 
 
 def test_reuse_leaves_an_existing_install_directory_alone(tmp_path: Path) -> None:
