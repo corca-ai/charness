@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 import json
+import runpy
+import sys
 from pathlib import Path
+
+import pytest
 
 from scripts.hooks import check_release_lane_receipt as receipt_mod
 from scripts.hooks.check_release_lane_receipt import evaluate, receipt_matches_index
@@ -125,6 +129,43 @@ def test_main_returns_two_when_the_commit_message_is_unreadable(tmp_path: Path) 
     repo.mkdir()
     missing = tmp_path / "no-such-msg"
     assert receipt_mod.main(["--repo-root", str(repo), "--commit-msg-file", str(missing)]) == 2
+
+
+def test_git_helpers_return_stdout_and_split_paths(monkeypatch, tmp_path: Path) -> None:
+    class Result:
+        returncode = 0
+        stdout = "scripts/a.py\0docs/b.md\0"
+
+    monkeypatch.setattr(receipt_mod, "run_process", lambda *args, **kwargs: Result())
+    assert receipt_mod._git(tmp_path, "write-tree") == "scripts/a.py\0docs/b.md\0"
+    assert receipt_mod.staged_paths(tmp_path) == ["scripts/a.py", "docs/b.md"]
+
+
+def test_load_receipt_returns_a_dict(tmp_path: Path) -> None:
+    path = tmp_path / "last-release-receipt.json"
+    path.write_text(json.dumps(PASSING), encoding="utf-8")
+    assert receipt_mod.load_receipt(path) == PASSING
+
+
+def test_module_main_guard_exits(monkeypatch, tmp_path: Path) -> None:
+    msg = tmp_path / "COMMIT_EDITMSG"
+    msg.write_text("Slice-reopen: main-guard\n", encoding="utf-8")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            str(Path("scripts/hooks/check_release_lane_receipt.py")),
+            "--repo-root",
+            str(tmp_path),
+            "--commit-msg-file",
+            str(msg),
+        ],
+    )
+    with pytest.raises(SystemExit):
+        runpy.run_path(
+            str(Path(__file__).resolve().parents[1] / "scripts/hooks/check_release_lane_receipt.py"),
+            run_name="__main__",
+        )
 
 
 def test_git_helpers_return_none_on_nonzero(monkeypatch, tmp_path: Path) -> None:

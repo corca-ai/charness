@@ -612,6 +612,9 @@ def test_disable_canonical_checks_rejects_duplicates_and_empty_command_ids() -> 
     command_id = lib._validate_command_entry({"id": "", "argv": ["/bin/true"]}, "prepare.commands[0]", errors)
     assert command_id is None
     assert any("non-empty string" in item for item in errors)
+    errors = []
+    assert lib._validate_command_entry("nope", "prepare.commands[0]", errors) is None
+    assert any("must be a mapping" in item for item in errors)
 
 
 def _git_out(*args: str, cwd: Path) -> str:

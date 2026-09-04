@@ -226,6 +226,34 @@ def test_lifetime_error_paths_and_cap_refusal(tmp_path: Path, monkeypatch) -> No
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 
+def test_lifetime_covers_remaining_error_branches(tmp_path: Path, monkeypatch) -> None:
+    pytest_tmp = tmp_path / "pytest-tmp" / "wt"
+    pytest_tmp.mkdir(parents=True)
+    assert lifetime.path_is_throwaway(pytest_tmp) is True
+    assert lifetime._marker_path(tmp_path) is None
+    nope = tmp_path / "nope"
+    nope.mkdir()
+    assert lifetime._primary_path(nope) == nope.resolve()
+    assert lifetime._registered_worktrees(nope) == []
+
+    class Proc:
+        returncode = 0
+        stdout = "worktree /tmp/locked-wt\nlocked\n\nworktree /tmp/other-wt\n"
+        stderr = ""
+
+    monkeypatch.setattr(lifetime, "run_process", lambda *args, **kwargs: Proc())
+    entries = lifetime._registered_worktrees(tmp_path)
+    assert any(entry.get("locked") for entry in entries)
+    assert lifetime._record_path({}) is None
+    assert lifetime._is_idle(tmp_path / "missing", now=time.time(), idle_days=1.0) is True
+    assert lifetime._worktree_is_dirty(tmp_path / "missing") is False
+    owned = lifetime.prepare_create(tmp_path, kind=lifetime.KIND_OWNED)
+    assert owned["refused"] is False
+    lifetime._register_exit_remove(tmp_path / "missing")
+    lifetime._EXIT_LEASES.append((tmp_path, tmp_path / "dirty"))
+    lifetime._reclaim_exit_leases()
+
+
 def test_unregister_falls_back_to_prune_and_skips_locked_entries(
     tmp_path: Path, monkeypatch
 ) -> None:

@@ -61,6 +61,30 @@ def test_create_cli_module_exposes_main() -> None:
     assert callable(create_cli.main)
 
 
+def test_create_script_main_accepts_ephemeral_dry_run(tmp_path: Path, monkeypatch, capsys) -> None:
+    repo = _make_primary(tmp_path)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "worktree_create.py",
+            "--repo-root",
+            str(repo),
+            "--path",
+            str(tmp_path / "eval"),
+            "--branch",
+            "eval",
+            "--base",
+            "main",
+            "--dry-run",
+            "--ephemeral",
+        ],
+    )
+    assert create_cli.main() == 0
+    captured = capsys.readouterr()
+    assert "ephemeral" in captured.out
+
+
 def test_create_records_lifetime_bind_failure(tmp_path: Path, monkeypatch) -> None:
     repo = _make_primary(tmp_path)
 
