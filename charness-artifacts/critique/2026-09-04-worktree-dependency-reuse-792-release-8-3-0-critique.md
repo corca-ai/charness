@@ -52,7 +52,7 @@ the install command when a link held. `task run` lanes inherit it through
   `.agents/worktree-adapter.yaml`, two docs pages, the CLI reference;
   final consumers are `charness worktree prepare` in consumer repos and every
   `task run` lane in this one.
-- Minimum sufficient proof: twenty-four focused tests in
+- Minimum sufficient proof: thirty-seven focused tests in
   `tests/charness_cli/test_worktree_dependency_reuse.py` (parent link, digest
   mismatch refusal, cache seed and fallback, existing directory untouched,
   reflink probed on one file, prepare skips the install command, installer runs
@@ -83,13 +83,13 @@ the install command when a link held. `task run` lanes inherit it through
   `skipped` term. Each was a subject defect, repaired, and the lane rerun.
 - Failure classification: subject-defect
 - Negative control: command `charness worktree create --prepare` on the tree before the manifest declaration was committed | expected refusal: no reuse, a full `npm ci` | observed result: link count 1 on the worktree's `node_modules/.package-lock.json`, install ran past the 5-minute window | receipt: session record 2026-09-04, first live run; the reuse path is inert without the declaration. <!-- reproduction-source -->
-- Subject identity: sha256:b84b84e3382713752e483f1ee06d87f0a71b2b1c66bcf0ae51885068223d24bc
+- Subject identity: sha256:1506eb8ff663c1ddf81459a2b4bd8df157f09308145048f2ae0ab6bea85a1fa5
 - Verifier identity: sha256:fdae081f53f503cfc7eb37bd0790ab07ad0ee04855e2af9f0bf6d47f11c5ae08
 - Input identity: sha256:328112bdceb433b006e880638a0e1d0ca2f38e108ea4a3d150600441d958a9b1
 - Failure identity: stable:none
 - Evidence identity: none
 - Retry disposition: first-attempt
-- Retry key: sha256:798649626bbc2f5540ad0ba709636e3607a137ac802b4469e945ad7b09a3bec6
+- Retry key: sha256:8a99f4b751360859e1dd59b6539946eefeb0b855e37345934e228353f3dce8eb
 
 ## Failure Angles
 
@@ -164,6 +164,7 @@ the install command when a link held. `task run` lanes inherit it through
 - F20 | bin: bundle-anyway | evidence: strong | ref: docs/worktree-prepare.md | action: fix | note: the page claimed `spec`, `impl`, and `hitl` bootstrap the doctor probe; `impl` has no such call (source-of-truth audit, item 4 on #793); corrected to `spec` and `hitl`. Reviewer 7 read this edit as part of the final tree.
 - F21 | bin: bundle-anyway | evidence: strong | ref: skills/public/quality/references/attention-state-visibility.json | action: fix | note: the `skipped` attention-state declaration still named `worktree_doctor_lib.py` after prepare moved out of it; the release lane's visibility gate refused, and the entry now names `worktree_prepare_lib.py`. A gate declaration relocated after reviewer 7, with no code change; not re-reviewed.
 - F22 | bin: act-before-ship | evidence: strong | ref: scripts/worktree/worktree_dependency_reuse.py | action: fix | note: version probes ran in the launcher's working directory, not the worktree, so corepack or a `packageManager` field selecting a tool per tree, or a relative launcher, could key the cache to the wrong runtime; the fingerprint is now observed with the target tree as cwd for both seed and reuse, with a test asserting the cwd (reviewer 8 F1, on content reviewer 7 had passed).
+- F23 | bin: bundle-anyway | evidence: strong | ref: tests/charness_cli/test_worktree_dependency_reuse.py | action: fix | note: the release lane's changed-line coverage gate blocked on uncovered edge branches (probe timeouts, link failures, seed refusals, the CLI script) and on `worktree_prepare.py` mapping to no standing test; thirteen tests were added in commit `ed6ea5a7e` after reviewer 9, with no code change, and the gate now reports `clean`; not re-reviewed.
 - F17 | bin: act-before-ship | evidence: strong | ref: scripts/worktree/worktree_dependency_reuse.py | action: fix | note: a version probe that failed collapsed to the literal `absent`, so two unknown runtimes could share one cache entry, and a per-process probe cache ignored a PATH change; a probe that does not answer now yields no fingerprint, the cache is neither consumed nor published without one, `node` is probed only for the Node package managers, and nothing is cached across calls (reviewer 4 RV-F5-PROBE-1; test added).
 
 ## Operator Action Required
