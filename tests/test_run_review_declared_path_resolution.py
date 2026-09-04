@@ -13,6 +13,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.module_eviction import evict_module
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -154,8 +156,8 @@ def test_promote_worker_report_refuses_a_destination_outside_the_repo(tmp_path: 
 def test_promotion_refuses_when_support_cannot_load(monkeypatch: pytest.MonkeyPatch) -> None:
     promotion = _promotion()
     monkeypatch.setattr(promotion.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
-    monkeypatch.delitem(sys.modules, "charness_run_review_support", raising=False)
-    monkeypatch.delitem(sys.modules, "run_review_support", raising=False)
+    evict_module(monkeypatch, "charness_run_review_support")
+    evict_module(monkeypatch, "run_review_support")
 
     with pytest.raises(RuntimeError, match="cannot load run_review_support"):
         promotion._support()
