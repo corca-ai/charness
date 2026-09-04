@@ -74,9 +74,7 @@ def resolve_task_inputs(
         )
         resolved_base = "HEAD"
         resolved_prepare = not skip_prepare if prepare is None else prepare
-        resolved_require_change = (
-            not allow_no_change if require_change is None else require_change
-        )
+        resolved_require_change = not allow_no_change if require_change is None else require_change
     else:
         if any(value is None for value in (target_path, branch, base)):
             raise TaskRunError(

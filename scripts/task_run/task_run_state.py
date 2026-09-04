@@ -13,6 +13,7 @@ the WIP checkpoint and the reported status from naming two different things abou
 one run. Separating them across modules would put that invariant across a
 boundary no reader crosses by accident.
 """
+
 from __future__ import annotations
 
 from typing import Any

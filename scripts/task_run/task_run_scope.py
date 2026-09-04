@@ -34,8 +34,11 @@ def _normalize_scope(value: str) -> str:
     scope = value.strip()
     if scope.startswith("./"):
         scope = scope[2:]
-    if not scope or scope.startswith("/") or "\\" in scope or any(
-        part in {"", ".", ".."} for part in scope.split("/")
+    if (
+        not scope
+        or scope.startswith("/")
+        or "\\" in scope
+        or any(part in {"", ".", ".."} for part in scope.split("/"))
     ):
         raise TaskRunError(f"scope must be a repository-relative path: {value!r}")
     return scope
@@ -82,9 +85,7 @@ def _expand_braces(value: str) -> list[str]:
             current += char
     alternatives.append(current)
     if len(alternatives) < 2 or any(not alternative for alternative in alternatives):
-        raise TaskRunError(
-            f"scope brace group needs two or more non-empty alternatives: {value!r}"
-        )
+        raise TaskRunError(f"scope brace group needs two or more non-empty alternatives: {value!r}")
     expanded: list[str] = []
     for alternative in alternatives:
         expanded.extend(_expand_braces(value[:start] + alternative + value[end + 1 :]))
@@ -136,9 +137,11 @@ def _glob_path_matches(path: str, pattern: str) -> bool:
             return match(path_index, pattern_index + 1) or (
                 path_index < len(path_parts) and match(path_index + 1, pattern_index)
             )
-        return path_index < len(path_parts) and fnmatch.fnmatchcase(
-            path_parts[path_index], component
-        ) and match(path_index + 1, pattern_index + 1)
+        return (
+            path_index < len(path_parts)
+            and fnmatch.fnmatchcase(path_parts[path_index], component)
+            and match(path_index + 1, pattern_index + 1)
+        )
 
     return match(0, 0)
 
@@ -182,9 +185,7 @@ def _glob_matches(root: Path, pattern: str) -> tuple[list[str], list[str]]:
     return matches, directory_matches
 
 
-def resolve_scope_specs(
-    root: Path, scopes: Sequence[str], base_sha: str
-) -> list[dict[str, Any]]:
+def resolve_scope_specs(root: Path, scopes: Sequence[str], base_sha: str) -> list[dict[str, Any]]:
     """Freeze scope semantics and expand globs from the selected Git tree."""
     tree_paths, tree_directories = _git_tree_paths(root, base_sha)
     specs: list[dict[str, Any]] = []
@@ -274,8 +275,9 @@ def _scope_result(
     allowed = _paths_in_scopes(changed, specs)
     disallowed = sorted(set(changed) - set(allowed))
     if disallowed:
-        verdict, reason = FAIL, (
-            "candidate changes paths outside the declared scope: " + ", ".join(disallowed)
+        verdict, reason = (
+            FAIL,
+            ("candidate changes paths outside the declared scope: " + ", ".join(disallowed)),
         )
     elif require_change and not changed:
         verdict, reason = FAIL, "the task required a change but the worktree is unchanged"
@@ -297,7 +299,9 @@ def _path_cause(path: str) -> str:
     if path.endswith(".pyc") or parts & _SUSPICIOUS_RUNTIME_PARTS:
         return "runtime/cache output appeared inside the worktree; inspect PYTHONPYCACHEPREFIX, pytest cache, coverage, and TMPDIR"
     if "node_modules" in parts:
-        return "dependency/install output appeared inside the worktree; compare with the prepare step"
+        return (
+            "dependency/install output appeared inside the worktree; compare with the prepare step"
+        )
     return "the child command produced a file outside the tracked task candidate; inspect the captured Codex log"
 
 

@@ -276,7 +276,7 @@ def _render_doctor_block(detection: WorktreeAdapterDetection) -> str:
 
 
 def _render_dependency_reuse(detection: WorktreeAdapterDetection) -> str:
-    """The #792 reuse block, only when a lockfile names a linkable install tree."""
+    """The dependency-reuse block, only when a lockfile names a linkable install tree."""
     lockfile = detection.package_manager_evidence
     directory = REUSABLE_LOCKFILES.get(lockfile or "")
     if directory is None or _install_deps_argv(detection) is None:

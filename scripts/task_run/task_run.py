@@ -73,15 +73,6 @@ def _record_timing(payload: dict[str, Any], key: str, origin: float) -> None:
     payload["timings_ms"][key] = int((time.monotonic() - origin) * 1000)
 
 
-def _record_create(payload: dict[str, Any], create_payload: dict[str, Any]) -> None:
-    """Record the create payload, surfacing prepare's dependency path at the top (#792)."""
-    payload["create"] = create_payload
-    payload["created"] = bool(create_payload.get("created"))
-    reuse = (create_payload.get("prepare") or {}).get("dependency_reuse")
-    if isinstance(reuse, dict):
-        payload["dependency_reuse"] = reuse
-
-
 def _persist(payload: dict[str, Any], runtime_path: Path) -> None:
     stamps = payload.setdefault("timestamps", {})
     stamps["updated_at"] = _support.utc_now_iso()
@@ -370,7 +361,7 @@ def run_task(
             next_step="Task worktree creation failed; inspect the error and retry with a fresh path.",
         )
 
-    _record_create(payload, create_payload)
+    _support.record_create(payload, create_payload)
     _record_timing(payload, "create", started_at)
     if not create_payload.get("created") or (
         resolved_prepare and create_payload.get("status") != PASS

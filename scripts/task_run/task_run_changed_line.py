@@ -241,9 +241,8 @@ def run_changed_line_gate(
     )
     detail = summarize_blocking_detail(verdict["blocking_detail"])
     if verdict["blocking"]:
-        verdict["summary"] = (
-            f"changed-line gate {status} (exit {outcome.returncode}): "
-            + (detail or reason or "the gate refused without naming a reason")
+        verdict["summary"] = f"changed-line gate {status} (exit {outcome.returncode}): " + (
+            detail or reason or "the gate refused without naming a reason"
         )
     else:
         verdict["summary"] = f"changed-line gate {status}: {reason}".rstrip(": ")

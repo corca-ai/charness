@@ -31,7 +31,9 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import platform
 import shutil
+import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -101,13 +103,18 @@ def validate_dependency_reuse(prepare: dict[str, Any], errors: list[str]) -> Non
             errors.append(f"{label}.{key} must be a relative path inside the worktree")
     command_id = raw.get("command_id")
     if isinstance(command_id, str) and command_id:
-        declared = {
-            entry.get("id")
+        matches = sum(
+            1
             for entry in prepare.get("commands") or []
-            if isinstance(entry, dict) and isinstance(entry.get("id"), str)
-        }
-        if command_id not in declared:
+            if isinstance(entry, dict) and entry.get("id") == command_id
+        )
+        if matches == 0:
             errors.append(f"{label}.command_id {command_id!r} names no prepare command id")
+        elif matches > 1:
+            errors.append(
+                f"{label}.command_id {command_id!r} names {matches} prepare commands; "
+                "reuse replaces exactly one"
+            )
 
 
 def _is_relative_inside(value: str) -> bool:
@@ -122,10 +129,25 @@ def lockfile_digest(path: Path) -> str | None:
         return None
 
 
+def runtime_fingerprint() -> str:
+    """Platform and architecture: a native module built here does not load elsewhere.
+    Interpreter and package-manager versions are not folded in; a runtime upgrade
+    that changes a native ABI needs the entry removed (documented residual)."""
+    return f"{sys.platform}/{platform.machine()}"
+
+
 def cache_entry(cache_root: Path, digest: str, spec: ReuseSpec) -> Path:
-    """One cache entry per (lockfile digest, install directory) pair."""
-    key = hashlib.sha256(f"{digest}\n{spec.directory}".encode("utf-8")).hexdigest()
+    """One cache entry per (lockfile digest, install directory, platform/arch)."""
+    key = hashlib.sha256(
+        f"{digest}\n{spec.directory}\n{runtime_fingerprint()}".encode("utf-8")
+    ).hexdigest()
     return cache_root / key
+
+
+def disabled_result(spec: ReuseSpec, *, reason: str) -> dict[str, Any]:
+    return _result(
+        strategy=STRATEGY_NONE, reason=reason, command_id=spec.command_id, directory=spec.directory
+    )
 
 
 def _result(
@@ -237,6 +259,7 @@ def _cache_matches(entry: Path, digest: str, spec: ReuseSpec) -> bool:
         isinstance(data, dict)
         and data.get("lockfile_digest") == digest
         and data.get("directory") == spec.directory
+        and data.get("runtime") == runtime_fingerprint()
         and (entry / CACHE_TREE_NAME).is_dir()
     )
 
@@ -281,12 +304,24 @@ def attempt_reuse(
             candidates.append((ORIGIN_CACHE, entry, "no cache entry for this lockfile digest"))
 
     attempts: list[dict[str, Any]] = []
-    for origin, path, skip_reason in candidates:
-        if skip_reason is not None:
-            attempts.append({"origin": origin, "path": str(path), "skipped": skip_reason})
+    for origin, path, decline_reason in candidates:
+        if decline_reason is not None:
+            attempts.append({"origin": origin, "path": str(path), "declined": decline_reason})
             continue
         destination.parent.mkdir(parents=True, exist_ok=True)
         strategy, link_attempts = _link_tree(path, destination, timeout_seconds=timeout_seconds)
+        if (
+            strategy is not None
+            and origin == ORIGIN_PARENT
+            and source_root is not None
+            and lockfile_digest(source_root / spec.lockfile) != digest
+        ):
+            # The parent moved under the copy: the linked tree may mix two installs.
+            _remove_tree(destination)
+            link_attempts.append(
+                {"strategy": strategy, "ok": False, "detail": "parent lockfile changed during link"}
+            )
+            strategy = None
         attempts.append({"origin": origin, "path": str(path), "link": link_attempts})
         if strategy is not None:
             return _result(
@@ -357,6 +392,7 @@ def seed_cache(
                 "lockfile": spec.lockfile,
                 "lockfile_digest": digest,
                 "directory": spec.directory,
+                "runtime": runtime_fingerprint(),
                 "seeded_from": str(target_root),
             },
             indent=2,

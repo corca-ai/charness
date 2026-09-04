@@ -74,6 +74,28 @@ def test_validation_requires_a_declared_command_id_and_relative_paths() -> None:
     assert any("directory must be a relative path" in e for e in errors)
 
 
+def test_reuse_must_name_exactly_one_prepare_command() -> None:
+    errors: list[str] = []
+    reuse.validate_dependency_reuse(
+        {
+            "commands": [
+                {"id": "install-deps", "argv": ["true"]},
+                {"id": "install-deps", "argv": ["false"]},
+            ],
+            "dependency_reuse": {
+                "command_id": "install-deps",
+                "lockfile": "lock.json",
+                "directory": "deps",
+            },
+        },
+        errors,
+    )
+    assert errors == [
+        "manifest.prepare.dependency_reuse.command_id 'install-deps' names 2 prepare commands; "
+        "reuse replaces exactly one"
+    ]
+
+
 def test_manifest_validation_reaches_the_reuse_block() -> None:
     errors = lib.validate_manifest(
         {
@@ -149,7 +171,7 @@ def test_reuse_refuses_a_parent_whose_lockfile_differs(tmp_path: Path) -> None:
 
     assert result["strategy"] == reuse.STRATEGY_NONE
     assert not (target / "deps").exists()
-    assert result["attempts"][0]["skipped"] == "parent lockfile digest differs"
+    assert result["attempts"][0]["declined"] == "parent lockfile digest differs"
 
 
 def test_reuse_falls_back_to_the_cache_keyed_by_lockfile_digest(tmp_path: Path) -> None:
@@ -263,10 +285,24 @@ def test_prepare_names_the_reused_tree_when_doctor_rejects_it(
     _install(primary)
     target = tmp_path / "feature"
     _git("worktree", "add", "-q", "-b", "feature", str(target), "main", cwd=primary)
+    (target / ".agents" / "worktree-adapter.yaml").write_text(
+        MANIFEST
+        + (
+            "doctor:\n"
+            "  checks:\n"
+            "    - id: deps-ready\n"
+            "      covers:\n"
+            "        - install-deps\n"
+            "      argv:\n"
+            "        - '/bin/false'\n"
+        ),
+        encoding="utf-8",
+    )
+    failing = {"id": "deps-ready", "status": "fail"}
     verdicts = iter(
         [
-            {"status": "fail", "checks": [], "manifest": {}, "next_step": "pre"},
-            {"status": "fail", "checks": [], "manifest": {}, "next_step": "post"},
+            {"status": "fail", "checks": [failing], "manifest": {}, "next_step": "pre"},
+            {"status": "fail", "checks": [failing], "manifest": {}, "next_step": "post"},
         ]
     )
     monkeypatch.setattr(lib, "run_doctor", lambda *_a, **_k: next(verdicts))
@@ -276,6 +312,70 @@ def test_prepare_names_the_reused_tree_when_doctor_rejects_it(
     assert payload["status"] == "fail"
     assert "--no-dependency-reuse" in payload["next_step"]
     assert str(primary.resolve() / "deps") in payload["next_step"]
+
+
+def test_an_unrelated_doctor_failure_keeps_the_doctors_own_next_step(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    primary = _committed_primary(tmp_path)
+    _install(primary)
+    target = tmp_path / "feature"
+    _git("worktree", "add", "-q", "-b", "feature", str(target), "main", cwd=primary)
+    hooks = {"id": "hooks_path", "status": "fail"}
+    verdicts = iter(
+        [
+            {"status": "fail", "checks": [hooks], "manifest": {}, "next_step": "pre"},
+            {"status": "fail", "checks": [hooks], "manifest": {}, "next_step": "fix hooks"},
+        ]
+    )
+    monkeypatch.setattr(lib, "run_doctor", lambda *_a, **_k: next(verdicts))
+
+    payload = lib.run_prepare(target, source_root=primary, dependency_cache_root=tmp_path / "cache")
+
+    assert payload["dependency_reuse"]["origin"] == reuse.ORIGIN_PARENT
+    assert payload["next_step"] == "fix hooks"
+
+
+def test_a_fresh_install_the_doctor_rejects_is_not_published_to_the_cache(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    primary = _committed_primary(tmp_path)
+    verdicts = iter(
+        [
+            {"status": "fail", "checks": [], "manifest": {}, "next_step": "pre"},
+            {"status": "fail", "checks": [], "manifest": {}, "next_step": "post"},
+        ]
+    )
+    monkeypatch.setattr(lib, "run_doctor", lambda *_a, **_k: next(verdicts))
+    cache = tmp_path / "cache"
+
+    payload = lib.run_prepare(primary, force=True, dependency_cache_root=cache)
+
+    assert [item["id"] for item in payload["executed"]] == ["install-deps"]
+    assert payload["dependency_reuse"]["cache_seed"]["seeded"] is False
+    assert "doctor rejected" in payload["dependency_reuse"]["cache_seed"]["reason"]
+    assert not cache.exists() or not any(cache.iterdir())
+    later = tmp_path / "later"
+    later.mkdir()
+    (later / "lock.json").write_text('{"v": 1}\n', encoding="utf-8")
+    result = reuse.attempt_reuse(later, SPEC, source_root=None, cache_root=cache)
+    assert result["strategy"] == reuse.STRATEGY_NONE
+
+
+def test_plain_prepare_on_a_linked_worktree_reuses_the_main_worktree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    primary = _committed_primary(tmp_path)
+    _install(primary)
+    target = tmp_path / "feature"
+    _git("worktree", "add", "-q", "-b", "feature", str(target), "main", cwd=primary)
+    monkeypatch.setattr(lib, "run_doctor", _doctor_pass)
+
+    payload = lib.run_prepare(target, dependency_cache_root=tmp_path / "cache")
+
+    assert payload["executed"] == []
+    assert payload["dependency_reuse"]["origin"] == reuse.ORIGIN_PARENT
+    assert payload["dependency_reuse"]["source"] == str(primary.resolve() / "deps")
 
 
 def test_cache_root_defaults_to_the_owning_repo_runtime_root(

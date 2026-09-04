@@ -82,11 +82,7 @@ def _parent_progress(
     refreshed = _refresh_scope_specs(parent_root, specs, glob_matches=glob_matches)
     overlap = _paths_in_scopes(changed, refreshed)
     classification = (
-        "normal"
-        if not changed
-        else "writer-conflict"
-        if overlap
-        else "concurrent-parent-progress"
+        "normal" if not changed else "writer-conflict" if overlap else "concurrent-parent-progress"
     )
     progress = {
         "classification": classification,

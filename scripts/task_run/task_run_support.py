@@ -98,3 +98,12 @@ resolve_scope_specs = _scope.resolve_scope_specs
 def _completion_evidence(*args: Any, **kwargs: Any) -> Any:
     """Delegate evidence while retaining the historical monkeypatch seam."""
     return _evidence._completion_evidence(*args, glob_matches=_glob_matches, **kwargs)
+
+
+def record_create(payload: dict[str, Any], create_payload: dict[str, Any]) -> None:
+    """Record the create payload, surfacing prepare's dependency path at the top (#792)."""
+    payload["create"] = create_payload
+    payload["created"] = bool(create_payload.get("created"))
+    reuse = (create_payload.get("prepare") or {}).get("dependency_reuse")
+    if isinstance(reuse, dict):
+        payload["dependency_reuse"] = reuse

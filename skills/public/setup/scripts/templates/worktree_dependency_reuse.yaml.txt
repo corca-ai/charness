@@ -1,4 +1,4 @@
-  # Opt-in (#792): uncomment to link the parent tree's $directory (reflink,
+  # Opt-in: uncomment to link the parent tree's $directory (reflink,
   # then hard links) when its $lockfile digest matches, else the charness
   # runtime cache entry for that digest, and skip install-deps. Hard links
   # share files between the parent, the cache, and every linked worktree; an

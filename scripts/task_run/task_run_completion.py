@@ -154,8 +154,7 @@ def complete_task(
         )
     else:
         payload["next_step"] = (
-            f"Review the candidate in {resolved_target}; "
-            "the typed result is approval-eligible."
+            f"Review the candidate in {resolved_target}; the typed result is approval-eligible."
         )
     persist(payload, runtime_path)
     retention = release_finished_lane(
