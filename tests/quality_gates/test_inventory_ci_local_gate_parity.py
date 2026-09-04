@@ -699,8 +699,8 @@ def test_real_repo_workflows_or_zero_parity_issues(tmp_path: Path) -> None:
     assert len(payload["exempt_workflows"]) == payload["workflows_scanned"]
     assert payload["workflows_not_exempt"] == 0
     # The uncomfortable fact, pinned rather than left implicit: charness's own
-    # parity gate establishes nothing about charness. See D45 for the open
-    # question of whether run-quality.sh should arm --require-evaluated-scope.
+    # parity gate establishes nothing about charness. Arming
+    # --require-evaluated-scope is declined (archive D45).
     assert payload["jobs_evaluated"] == 0
 
 

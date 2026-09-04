@@ -48,7 +48,7 @@ packet_sections:
   - id: known-deferred-concerns
     title: Known Deferred Concerns
     content_kind: static
-    content_path: docs/deferred-decisions.md
+    content_path: charness-artifacts/spec/2026-09-04-deferred-decisions-archive.md
   - id: non-goals
     title: Non-Goals
     content_kind: static

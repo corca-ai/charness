@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 This document defines how `charness` should reason about external access when
 it runs inside both ordinary local coding environments and isolated agent
@@ -108,4 +108,4 @@ Order: grant, authenticated binary, env fallback ([external-integrations.md](./e
 
 ## Implication For Profiles
 
-Profiles never carry secret transport or access control; capability availability is modeled by manifests, adapters, and host grants. The profile-inheritance decision is [D8](./deferred-decisions.md#d8-profile-inheritance-policy).
+Profiles never carry secret transport or access control; capability availability is modeled by manifests, adapters, and host grants. Execution uses flattened bundles; `extends` is authoring metadata only ([profile.schema.json](../profiles/profile.schema.json)).

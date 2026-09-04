@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Measure what a VALUE-MARKER rule would cost the inventory-consumption floor.
 
-`docs/deferred-decisions.md` D47 asks whether an inventory-field mention should have to
+Archived D47 asks whether an inventory-field mention should have to
 carry a value marker (`field=`, `field:`, or a backticked `` `field` ``) on top of the
 residual-character floor `validate_inventory_consumption.py` already applies. The reason
 is that a field whose NAME is an ordinary English word -- `scope`, `status`, `notes`,
@@ -10,7 +10,7 @@ incidental prose that never cited the inventory at all.
 
 D47 recorded two numbers for that question and said so plainly: they were measured BY
 HAND, and `measure_inventory_consumption_floor.py` does not produce them ("Two numbers
-cited in docs/deferred-decisions.md D47 are NOT produced here"). This script is what
+cited in the D47 archive entry are NOT produced here"). This script is what
 produces them, so the next call on D47 rests on a re-runnable number rather than on a
 sentence someone wrote once.
 

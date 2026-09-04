@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 This document is the short boundary map for how `charness` composes repo-owned
 guidance. It does not replace the owning docs. It points to them.
@@ -99,7 +99,7 @@ Does not own:
 
 Authoritative detail lives in:
 
-- [deferred-decisions.md](./deferred-decisions.md) for closed product-boundary choices
+- owning pages for product-boundary choices
 - [runtime-capability-contract.md](./runtime-capability-contract.md) for access-layer policy
 - [external-integrations.md](./external-integrations.md) for integration ownership
 - [artifact-policy.md](./artifact-policy.md) for durability classes

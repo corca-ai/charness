@@ -134,7 +134,11 @@ def test_an_empty_corpus_exits_2_rather_than_reporting_a_clean_measurement(tmp_p
 
 PROBE = REPO_ROOT / "charness-artifacts" / "probe" / "2026-08-12-inventory-marker-rule-snapshot.json"
 PROBE_SHA256 = "ac63f8a54a558217cebde320f02d4915d10e6bab538c3df22ff6e1397083f62d"
-DECISION_RECORD = REPO_ROOT / "docs" / "deferred-decisions.md"
+DECISION_RECORD = (
+    REPO_ROOT / "charness-artifacts" / "spec" / "2026-09-04-deferred-decisions-archive.md"
+)
+
+
 def _assert_measurement_invariants(measurement: dict[str, object]) -> None:
     """Validate what a dated D47 snapshot means without pinning a live corpus."""
     clearing = measurement["field_mentions_clearing_todays_floor"]

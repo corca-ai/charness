@@ -342,7 +342,7 @@ def validate_file_length(path: Path, root: Path, *, code_lines: int) -> str | No
         raise ValidationError(
             f"{relative}: {measurement} {code_lines} exceed limit {limit}. Split the file "
             "into a cohesive new module or delete code; do not mechanically spill into an "
-            "_extra_lib/_lib companion to dodge the cap (docs/deferred-decisions.md D33)."
+            "_extra_lib/_lib companion to dodge the cap."
         )
     warn = file_warn_for(path, root)
     if code_lines >= warn:

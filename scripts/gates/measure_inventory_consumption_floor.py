@@ -33,7 +33,7 @@ while the gate applies the four label floors only when `inventory_skill_ergonomi
 cited — so `label_value_residuals.below_floor` is an upper bound on cost, not a
 gate-scoped count.
 
-Two numbers cited in `docs/deferred-decisions.md` D47 are not produced here: how many
+Two numbers cited in the D47 archive entry are not produced here: how many
 field mentions carry a value marker, and how many citations a marker rule would refuse.
 They now have their own script, `measure_inventory_marker_rule.py`, which also reproduces
 THIS script's `field_mention_residuals.count` as its presence-only total so the two

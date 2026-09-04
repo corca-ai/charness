@@ -4,7 +4,7 @@
 Two scripts measure what a floor would cost this repo's checked-in quality artifacts:
 `measure_inventory_consumption_floor.py` (the residual-character floor, sweep rows
 S9/S10) and `measure_inventory_marker_rule.py` (the value-marker counterfactual,
-[D47](../docs/deferred-decisions.md)). They ask different questions of the same corpus,
+[D47](../../charness-artifacts/spec/2026-09-04-deferred-decisions-archive.md)). They ask different questions of the same corpus,
 so they share how the corpus is resolved, how an artifact is split into its
 commands-run and body halves, and the class rule that an empty corpus is refused rather
 than reported clean.

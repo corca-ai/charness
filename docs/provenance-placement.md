@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 Standing/contract docs state the **timeless rule**. Provenance — *why* a rule
 exists, *when* it was added, *which* incident drove it — lives in the **record
@@ -58,7 +58,7 @@ The policy does **not** blanket-strip refs. The doc classes, strictest first:
   [prescribed-skill-closeout-contract.md](./prescribed-skill-closeout-contract.md)).
   Here, dates / multiple issue refs in rule prose are the smell to fix.
 - **Tracking docs** — their content *is* a ledger; the refs are load-bearing
-  (e.g. [deferred-decisions.md](./deferred-decisions.md),
+  (e.g. [the deferred-decisions archive](../charness-artifacts/spec/2026-09-04-deferred-decisions-archive.md),
   [artifact-policy.md](./artifact-policy.md)). These are **allowlisted**.
 - **Record-layer artifacts** — `retro/*`, `debug/*`, `*/latest.md`,
   `charness-artifacts/*`. These *are* the provenance home and are never scanned.

@@ -115,8 +115,8 @@ STUB_PHRASE_RE = re.compile(
 #     `field_mentions_clearing_todays_floor`, `field_mentions_without_a_marker`, and
 #     `citations_refused_by_the_marker_rule` — rather than from this comment. Requiring a
 #     marker (`field=`, `field:`, `` `field` ``) would refuse the sampled incidental
-#     cases, though not all of them, since a marker can appear in prose too. It is
-#     deferred as D47.
+#     cases, though not all of them, since a marker can appear in prose too.
+#     Arming that marker is declined (archive D47).
 #     Deliberately not transcribed: this comment carried `190 / 182 / 29 / 3 refused
 #     citations across 2 artifacts` for two refresh cycles after the probe moved, and
 #     before that a 51-of-169 hand count. The numbers change on every quality write; the

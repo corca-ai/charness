@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this index plus the linked owning page
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 This is the flat documentation wiki. Start with the smallest page that answers
 the current question. [`check-docs.sh`](../scripts/check-docs.sh) is the
@@ -59,4 +59,4 @@ composite docs receipt.
 
 ## Current contracts
 
-- [Deferred decisions](./deferred-decisions.md) — open decision register.
+- [Deferred decisions](./deferred-decisions.md) — how to record a product-boundary choice that is not yet held by a mechanism.

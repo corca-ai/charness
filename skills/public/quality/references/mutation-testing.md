@@ -297,9 +297,14 @@ When the final lane cannot use the coverage it produced — absent report, stale
 fingerprint, or an unmapped changed file — it exits nonzero and names the missing
 scope. Repair the mapping or standing test, then rerun the release lane once. The
 scheduled broad mutation workflow remains an independent diagnostic; it is not a
-second closeout fallback. The incremental direction is safe: coverage from a test
-subset is a subset of full coverage, so it can cost a false stop but cannot grant a
-false pass.
+second closeout fallback. The incremental direction is safe for a *fresh* subset producer run: coverage
+from a test subset is a subset of full coverage, so it can cost a false stop
+but cannot grant a false pass. The freshness marker is **pool-scoped**: it
+hashes mutation-pool files only (`scripts/`, `tools/`, skill helpers), not
+`tests/`. Deleting or renaming tests that supplied the proof, while pool files
+stay put, leaves `--require-fresh-coverage` matching the old JSON. That hole
+is declined to widen; do not read a matching marker as "the tests that
+produced this coverage still exist."
 
 ### The false-green dry-run trap
 

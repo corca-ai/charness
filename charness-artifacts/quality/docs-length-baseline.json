@@ -1,8 +1,7 @@
 {
   "budget": 1000,
   "pages": {
-    "docs/artifact-policy.md": 1245,
-    "docs/deferred-decisions.md": 4464,
+    "docs/artifact-policy.md": 1242,
     "docs/design-north-star.md": 1394,
     "docs/external-integrations.md": 1026,
     "docs/goal-lifecycle.md": 1279,
@@ -11,5 +10,5 @@
     "docs/parallel-execution.md": 1052
   },
   "schema": "charness.docs-length-baseline/v1",
-  "total": 12583
+  "total": 8116
 }
