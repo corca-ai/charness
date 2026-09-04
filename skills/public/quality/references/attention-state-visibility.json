@@ -489,7 +489,7 @@
       ],
       "rationale": "Cleanup actions report skipped action state and reason in the action payload."
     },
-    "scripts/worktree/worktree_doctor_lib.py": {
+    "scripts/worktree/worktree_prepare_lib.py": {
       "states": [
         "skipped"
       ],
