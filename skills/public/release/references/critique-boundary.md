@@ -39,89 +39,26 @@ people, later, with less context, and is the hardest to correct after the fact.
 When the host cannot provide a distinct observer, record the concrete signal and
 publish with the review unproven rather than substituting a same-agent reread.
 
-### Claims Record Shape
-
-The claims round's record is a `charness.release.claims-review.v4` JSON file
-
-under `charness-artifacts/release-review/`, committed as the direct child of the
-marked prepared release commit, together with the review narrative it names and
-nothing else.
-
-A `pass` must additionally declare `review_scope` (`blocking_paths` /
-`advisory_paths`), `scope_basis` (the previous tag plus the exact changed-path
-digest/count), and `advisory_findings`. The split exists because a claims
-round that reviews the session narrative shipping inside its own bundle cannot
-converge: repairing a narrative finding changes the bundle, which changes the
-record and the counts, which needs new prose nothing has reviewed. Two releases
-stalled on that loop. Shipped surfaces gate the tag; session narrative is
-reported, published as known-inaccurate, and repaired on a later pass. The
-required fields are what stop the split becoming a way to launder findings —
-`advisory_findings: []` is a claim that the advisory scope was clean, not
-permission to skip it.
-
-Distinctness is a RECORDED observable, in the same shape
-`publication-boundary.md` already requires of the other release verdict — each
-verdict record names its observer identity explicitly rather than leaving it to
-be inferred. The record carries the prepared-record bindings (`prepared_commit`,
-`release_record_path`, `release_record_sha256`, `target_version`, `tag_name`), a
-`verdict`, a `preparer_context` and `reviewer_context` (still required as distinct
-nonempty strings — a weak leftover from the previous shape, kept because it names
-the two sides in the operator's own words), and an `observer_distinctness` object:
-
-- `kind`: one of `separate-agent-context`, `separate-host`, `separate-operator`
-  for a `pass`, or `unproven`. There is deliberately no `same-agent` value — a
-  same-agent reread is the observer this floor exists to exclude.
-- `signal`: the concrete signal behind that kind (which reviewer ran, on what
-  host, or the host refusal that blocked the spawn). One line, under 600 bytes,
-  and it may not contain the prepared-stop marker: it is rendered verbatim into
-  the published release record, which other gates parse, so a newline there
-  injects arbitrary lines into that document. The reasoning belongs in the
-  review's own narrative.
-- `review_artifact`: for a `pass`, the Markdown narrative the round produced,
-  naming the prepared commit and target version so an earlier release's record
-  cannot be re-pointed. `null` for `unproven`.
-
-`verdict: unproven` is a first-class state, not a failure: it is how the
-paragraph above is actually written down. Publication may proceed on it, and the
-claims-review record says plainly that the distinct-observer property was never
-established. The published release record mirrors it: every record written after
-a validated claims review carries a `## Claims Review` section naming the record
-path, the verdict, the distinctness kind and its signal, and the review
-narrative — and for `unproven` it states the negative property rather than the
-bare token, so a reader of the record alone can tell a release whose claims round
-had a distinct observer from one where none was ever established.
-
-The record's own location comes from the release adapter's `output_dir` (see
-[adapter-contract.md](./adapter-contract.md)), not from a fixed path. The floor
-derives it by joining `output_dir` and `latest.md` without normalizing the
-declared value, because any normalization applied on one side only is a way for
-the floor and the writer to name two different files. A repo whose adapter
-declares no `output_dir` at all, or whose release record is not readable at the
-derived path — including one whose release output directory is untracked — is
-refused rather than published through a lane that validates no claims review.
+### Claims Record
 
 Do not copy a historical record as a template. After the reviewer writes a new
 narrative, run the planner-emitted `scaffold_claims_review.py` command. It reads
 the exact prepared commit and derives record identity, target/tag, both complete
 scope lists, and `scope_basis`; reviewer identity, distinctness, findings, and
-the narrative remain explicit human/agent judgment inputs.
+the narrative remain explicit human/agent judgment inputs. The live schema is
+owned by `claims_review_schema.py` and the scaffold — not by this page.
 
-An already-committed pre-`v4` record is repaired by AMENDING that commit in place; a
-follow-on commit is not the direct child of the prepared record and is refused,
-and an already-pushed record needs a force-push to the release branch.
-
-Every pre-`v4` shape is refused by name. The early shapes' only distinctness test was that
-`preparer_context` and `reviewer_context` were unequal strings, so one agent
-writing two different strings satisfied the distinct-observer floor completely,
-and a spawn-blocked session had `verdict: pass` as its only path forward.
+The record's own location comes from the release adapter's `output_dir` (see
+[adapter-contract.md](./adapter-contract.md)), not from a fixed path. A repo
+whose adapter declares no `output_dir`, or whose release record is not readable
+at the derived path, is refused rather than published through a lane that
+validates no claims review.
 
 **Non-claim, and the honest size of the residual.** Nothing runnable on the
 publishing machine proves a distinct observer existed. What the validator does is
-refuse the shapes that made the claim unfalsifiable: an undeclared relationship, a
-same-agent reread with nowhere to say so, and a `pass` carrying no product of the
-review it asserts. Unlike the publication verdict — whose recorded observer is
-paired with a mechanical channel check — the claims side has no mechanical arm:
-`signal` is free text.
+refuse the shapes that made the claim unfalsifiable. Unlike the publication
+verdict — whose recorded observer is paired with a mechanical channel check —
+the claims side has no mechanical arm: the distinctness signal is free text.
 
 State the residual at its real size rather than at the cost of forging a `pass`.
 The floor is keyed on a marker the same agent writes and may rewrite, and nothing

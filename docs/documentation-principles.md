@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and the linked validators
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 Charness documentation is a flat, current-state wiki. Each page answers one
 question, starts with a heading and a short orientation paragraph, and links to
@@ -19,6 +19,7 @@ Keep documentation easy to trust and easy to navigate:
 - Keep the entry surfaces small: [`README.md`](../README.md) is the minimal
   user guide, while [`AGENTS.md`](../AGENTS.md) is a minimal router pointing at
   [`docs/index.md`](./index.md).
+- Identity lives in a mechanism. Docs name that mechanism and, when the operator must type something, the command. Recopying enums, field grammars, numeric defaults, or exit tables is waste. A test that greps a doc for a code constant is proof the copy should not exist: delete the copy, keep the pointer, delete that test. [`check_documented_command_flags.py`](../scripts/gates/check_documented_command_flags.py) and [`check_documented_subcommands.py`](../scripts/gates/check_documented_subcommands.py) hold typed flags and subcommands against `--help`; they are not a license to copy the rest. Diagnosis: [copy-held-by-test](../charness-artifacts/spec/2026-09-04-copy-held-by-test.md).
 
 Every `docs/*.md` page carries exactly one header line matching
 `> Last verified: YYYY-MM-DD`. Update it when the page is materially verified;

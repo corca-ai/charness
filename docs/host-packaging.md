@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 This document defines the first host-packaging contract for exporting the
 host-neutral `charness` repo into Claude-compatible, Codex-compatible, and
@@ -62,72 +62,18 @@ host file by hand.
 
 ## Shared Bundle Inputs
 
-The first contract keeps these repo directories host-neutral:
-
-- `skills/`
-- `profiles/`
-- `presets/`
-- `integrations/tools/`
-- [`README.md`](../README.md) — operator quick start, install path, and skill map
-
-That means the export script can materialize a host plugin layout without
-needing a second skill taxonomy or a second profile catalog.
-
-The repo also materializes a generated plugin tree on demand so hosts get one
-stable install path. That tree is NOT in git:
-[`scripts/plugin_export/sync_root_plugin_manifests.py`](../scripts/plugin_export/sync_root_plugin_manifests.py)
-writes it, `charness init` and `charness update` run that producer, and a bare
-clone has no `plugins/` at all until something does. Run the producer before the
-next two links resolve:
-
-- [`plugins/charness/.claude-plugin/plugin.json`](../plugins/charness/.claude-plugin/plugin.json) — Claude plugin identity: name, version, author, repository
-- [`plugins/charness/.codex-plugin/plugin.json`](../plugins/charness/.codex-plugin/plugin.json) — Codex plugin identity plus skills path and interface metadata
-
-The two marketplace files that point AT that tree are tracked, so they resolve
-in a bare clone:
-
-- [`.claude-plugin/marketplace.json`](../.claude-plugin/marketplace.json) — Claude marketplace entry pointing at the generated plugin root
-- [`.agents/plugins/marketplace.json`](../.agents/plugins/marketplace.json) — Codex repo marketplace with the local plugin source and install policy
-
-These files are generated from the shared packaging manifest and validated
-against it. They are still derived artifacts, not the source of truth.
+Host-neutral inputs and generated plugin/marketplace paths live in
+[`packaging/charness.json`](../packaging/charness.json).
+[`sync_root_plugin_manifests.py`](../scripts/plugin_export/sync_root_plugin_manifests.py)
+writes the untracked `plugins/` tree; marketplace files that point at it are
+tracked. Do not recopy those path inventories here.
 
 ## Host Mapping
 
-### Codex
-
-The Codex export must map the shared bundle into:
-
-- `.codex-plugin/plugin.json`
-- `skills/` with flat public skill directories
-- `support/` for non-discoverable support assets
-- optional future `.mcp.json`, `.app.json`, and `assets/`
-- optional repo marketplace at [`.agents/plugins/marketplace.json`](../.agents/plugins/marketplace.json)
-
-Codex does not discover Claude-style markdown files from a plugin-root
-`agents/` directory. Bounded fresh-eye reviewers therefore use Codex's native
-`explorer` agent with the bounded review packet. Reviewer-tier spawn fields are
-passed when exposed; this is not the Claude tool envelope. Use an isolated
-reviewer or, when sharing the parent is unavoidable, the parent-side fingerprint
-fallback.
-
-The current contract fixes the Codex repo-marketplace path because the official
-Codex plugin docs use that location for repo-scoped plugin catalogs.
-
-### Claude
-
-The Claude export must map the shared bundle into:
-
-- `.claude-plugin/plugin.json`
-- `skills/` with flat public skill directories
-- `support/` for non-discoverable support assets
-- optional future `.mcp.json`
-- plugin-native `agents/` with the bounded reviewer envelope
-- optional future `commands/`
-
-`commands/` remains a future host-specific output and should only appear when
-a future export iteration has a clear shared source or a clearly bounded host
-adapter.
+Codex and Claude export layouts are the packaging manifest's host mapping.
+Codex does not discover Claude-style markdown from a plugin-root `agents/`
+directory; bounded reviewers use Codex's native `explorer` agent. Claude ships
+plugin-native `agents/` with the bounded reviewer envelope.
 
 ### Grok Build
 

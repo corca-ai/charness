@@ -38,13 +38,16 @@ def test_authoring_preflight_reference_exists_and_is_discoverable() -> None:
     assert "authoring-preflight.md" in DISCIPLINE_DOC.read_text(encoding="utf-8")
 
 
-def test_authoring_preflight_lists_current_attention_vocabulary() -> None:
-    # #308 drift guard: the reference must list every banned attention-state term
-    # the gate actually checks, so the preflight cannot silently go stale when the
-    # validator's ATTENTION_TERMS changes.
+def test_authoring_preflight_does_not_recopy_attention_terms() -> None:
+    # Recopying ATTENTION_TERMS into the preflight, then grepping the doc to keep
+    # the copy honest, is the class this test refuses. Point at the validator.
     text = PREFLIGHT_DOC.read_text(encoding="utf-8")
-    missing = [term for term in _attention_terms() if f"`{term}`" not in text]
-    assert not missing, f"authoring-preflight.md is missing banned terms: {missing}"
+    recopied = [term for term in _attention_terms() if f"- `{term}`" in text]
+    assert not recopied, (
+        "authoring-preflight.md recopies banned terms "
+        f"{recopied}; point at ATTENTION_TERMS in validate_attention_state_visibility.py"
+    )
+    assert "ATTENTION_TERMS" in text
 
 
 # The headroom affordance the reference points at (check_code_lengths --headroom)

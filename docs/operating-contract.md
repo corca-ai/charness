@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and the executable surfaces it names
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 This page states the operating floor under
 [design north star](./design-north-star.md); each contract below earns its place
@@ -65,18 +65,10 @@ omitted a check says so in its last line.
 
 ## Generated surfaces
 
-The materialized `plugins/` mirror is derived from `skills/` and `scripts/`, so
-every source edit leaves it stale until the exporter runs again, and around
-thirty standing tests read that on-disk tree. Both entry points into the suite
-now settle this themselves through
-[`plugin_mirror_preamble.py`](../scripts/gates_support/plugin_mirror_preamble.py):
-the standing pytest runner and the quality engine regenerate the mirror in a
-writing run, and in read-only they validate it against a fresh export and refuse
-with the exact regenerate command rather than letting an unrun exporter surface
-as unrelated red tests. Both stay inert unless
-[`packaging/charness.json`](../packaging/charness.json) resolves a materialized
-plugin root that git ignores; a bare `plugins/` directory in a consuming repo is
-never sufficient.
+The materialized `plugins/` mirror is derived from `skills/` and `scripts/`.
+[`plugin_mirror_preamble.py`](../scripts/gates_support/plugin_mirror_preamble.py)
+regenerates it in a writing run and refuses a stale tree in read-only; a bare
+`plugins/` directory in a consuming repo is never sufficient.
 
 So batch source edits instead of exporting after each one, and run the exporter
 yourself only when you invoke `pytest` directly, which is the one path with no

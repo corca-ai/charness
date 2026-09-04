@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 Know the deterministic constraint *before* you author into a gated surface, so an
 existing gate (or a fresh-eye reviewer) does not catch an avoidable rework cycle
@@ -29,19 +29,7 @@ A module that uses one of these as a status fails the gate unless it is declared
 [skills/public/quality/references/attention-state-visibility.json](../skills/public/quality/references/attention-state-visibility.json)
 with a visibility and rationale.
 
-Current banned terms (the canonical list is `ATTENTION_TERMS` in the validator;
-the drift guard
-[tests/test_authoring_preflight_reference.py](../tests/test_authoring_preflight_reference.py)
-keeps this list in sync):
-
-- `no_adapter`
-- `no_records`
-- `disabled`
-- `not_configured`
-- `not_evaluable`
-- `skipped`
-- `advisory-only`
-- `prose_review_status`
+The terms live in `ATTENTION_TERMS` in that validator. Do not recopy them here.
 
 Before authoring: if the module genuinely reports one of these states, make it
 visible (a `WARN:`/`ADVISORY:`-prefixed line, an artifact-visible status, or a
@@ -69,10 +57,11 @@ outside the exempt `## Load-Bearing Anchors` / `## References` /
 `## Closeout Vocabulary` sections — exempt only up to each heading's budget in
 [`scripts/gates_support/skill_core_density.py`](../scripts/gates_support/skill_core_density.py), with the
 overflow charged back to the count) is governed
-by *two* separate limits: a hard `core_nonempty` ceiling of **160** lines, and a
-broad-gate test that additionally requires at least **4** lines of headroom below
-that ceiling. Authoring a core to exactly 160 (0 headroom) passes the hard limit
-but fails the headroom buffer.
+by two limits held in
+[`check_skill_surface_preflight.py`](../scripts/gates/check_skill_surface_preflight.py):
+`MAX_CORE_NONEMPTY_LINES` and `CORE_NONEMPTY_HEADROOM_BUFFER`. Authoring a core
+to the ceiling (0 headroom) passes the hard limit but fails the headroom buffer.
+Run the command below rather than recopying the numbers.
 
 **The preflight's `core nonempty` is not the quality inventory's
 `core_nonempty_lines`.** [skill_ergonomics_lib.py](../skills/public/quality/scripts/skill_ergonomics_lib.py)
@@ -90,7 +79,7 @@ recomputes it and hard-fails a mismatch.
 gates this buffer at the commit boundary for *changed* SKILL.md files (it runs in
 [staged_commit_gate_plan.py](../scripts/staged_commit_gate_plan.py) and so in
 the pre-commit dispatcher), instead of only in the broad gate. It
-is a ratchet: a change that drops a core below the 4-line buffer is blocked, but a
+is a ratchet: a change that drops a core below the buffer is blocked, but a
 skill already under buffer is grandfathered until an edit erodes it further. Check
 headroom before authoring. On a block, separate a concept into its own surface or
 delete one — never shave lines or displace overflow into `references/` just to

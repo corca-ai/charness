@@ -144,11 +144,12 @@ def test_issue_shaping_requires_external_source_identity() -> None:
     assert "Slack thread" in shaping
     assert "preserve the original user context" in shaping
     assert "External-Source Identity" in closeout
-    assert "gathered" in closeout
-    # #324: the Source block must mark an external origin and require one
-    # auditable preservation form (Source text / Re-read obligation / degraded).
-    assert "Source origin:" in closeout
-    assert "Re-read obligation:" in closeout
+    # Field forms live in the describe script, not recopied in closeout prose.
+    describe = _read(ROOT / "skills/public/issue/scripts/describe_closeout_draft_shape.py")
+    assert "Source origin:" in describe
+    assert "Re-read obligation:" in describe
+    assert "Source origin:" in shaping
+    assert "Re-read obligation:" in shaping
     assert "source identity/preservation" in skill
 
 
@@ -216,11 +217,10 @@ def test_issue_closeout_draft_gate_names_the_stub_producer_not_only_the_validato
 
 def test_issue_closeout_covers_release_helper_issue_verification() -> None:
     closeout = _read(CLOSEOUT)
-    resolve_flow = _read(RESOLVE_FLOW)
     publication_boundary = _read(ROOT / "skills" / "public" / "release" / "references" / "publication-boundary.md")
 
     assert "Release-driven direct-to-default work follows the same linkage" in closeout
-    assert "post-push issue verification payload" in resolve_flow
+    assert "--close-issue" in closeout
     # The PARSER, not a substring of the file that builds it. As a source-text check this
     # survived deleting the flag it guards: `--close-issue` still occurs in `--close-issue-repo`
     # and in five help strings, so the assertion stayed green while the promised flag was gone.

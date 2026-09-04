@@ -152,86 +152,13 @@ Non-claim: no host is known to substitute `<plugin-dir>/` textually. It is
 resolved by the agent following this section, and the checker proves only that the
 target exists in the package this repo generates.
 
-## Enforced for write helpers inside the charness source tree
+## Write helpers: authoring checkout owns writes
 
-The "use the repo's own copy" rule above is now enforced, not just documented.
-Write helpers that persist repo state — `refresh_recent_lessons.py`,
-`persist_retro_artifact.py`, `build_debug_seam_risk_index.py` — call
-`require_repo_local_helper` from
-`<plugin-dir>/scripts/core/helper_provenance_lib.py`
-before doing any work. `build_retro_lesson_selection_index.py` is guarded
-indirectly and later, at the moment `recent_lessons_lib` writes;
-`publish_release.py` is guarded at the entrypoint instead (below).
-
-Two placements, with different scans:
-
-- **Write sites** (the helpers above) check at the moment they persist state, and
-  compare the loaded anchors plus already-imported modules.
-- **Irreversible entrypoints** — `publish_release.py` and
-  `issue_tool.py close-with-comment` — check before any mutation, and compare *every* Python
-  module in both trees (`scan="tree"`). The wider scan is required because the
-  module that drifts is usually imported lazily, long after the entrypoint, and
-  because `publish_release` bumps the target version only after that point, so
-  neither the import-anchor nor the version signal is available yet.
-
-Its drift refusal (exit status 2) fires only when all of these hold: the running
-script belongs to a different charness tree than `--repo-root`, that `--repo-root`
-is a charness **source** checkout, and the two copies differ by declared version or by
-compared module content. It refuses for two further reasons that are *not* drift,
-both recorded below: `scope-unestablished` (a verdict reached with no counterpart
-resolved at all) and `own-root-unestablished` (the running script's own tree could
-not be located, so there is nothing to compare *from*).
-"A different tree" includes one *contained* in the
-target — the materialized `plugins/<pkg>` export is a second charness tree, and it
-is stale during every `mutate -> sync` window, so it is compared rather than
-exempted. When the target carries its own copy of the invoked helper, the refusal
-names it and rewrites the invocation's own arguments in place — the repo root
-retargeted to `.` where the operator put it, so a subcommand CLI stays runnable —
-because that is the only remediation that terminates; re-running the drifted copy
-overwrites the fix. For the repo's own materialized `plugins/<pkg>` export the
-refusal names the resync instead, since that is the one command that ends its
-staleness. For any other copy with no counterpart in the target, the refusal says
-so and asks the operator to stop and decide rather than resync and retry, since
-the resync can be what removes the entry point. `--help` and the read-only
-`--prep-update-instructions` affordance are not refused. Runs against an ordinary
-consuming repo are untouched, since a consuming repo owns no competing copy.
-A verdict reached with no counterpart resolved at all is refused as
-`scope-unestablished` rather than passed: "found no drift" and "compared nothing"
-are different facts. A run whose *own* tree cannot be located — no
-`<plugin-dir>/scripts/runtime_bootstrap.py` marker
-above the invoked copy, so the guard cannot
-name the tree it is comparing from — is refused as `own-root-unestablished` for
-the same reason, and its refusal message names the missing marker rather than
-claiming a comparison that never ran. That refusal is scoped to **source-tree
-targets**: against an ordinary consuming repo, where no competing copy exists, an
-unlocatable own root stays `consuming-repo` and is allowed.
-`CHARNESS_ALLOW_FOREIGN_HELPER=1` downgrades any of these refusals to
-a warning when the copies are known to be compatible.
-
-**Known bypass.** `CHARNESS_REPO_ROOT` retargets
-`<plugin-dir>/scripts/runtime_bootstrap.py`'s module
-loader, so a guarded library imported through it belongs to the override root and
-classifies `same-tree`. The code that runs is then the target's own, but the
-invoking entry script's drift goes unchecked. Treat it as a second override
-alongside `CHARNESS_ALLOW_FOREIGN_HELPER`, not as a supported way to write
-through a stale copy.
-
-That bypass covers library-site guards, which pass their own `__file__`. It does
-**not** cover skill entry scripts, which pass the *invoked script's* `__file__`:
-a markerless copy of one of those, run with `CHARNESS_REPO_ROOT` pointed at a
-source checkout, is refused as `own-root-unestablished` rather than classified
-`same-tree`.
-
-**What this cannot do.** Every one of these checks lives in the copy being
-invoked, so a copy old enough to predate the check does not carry it — which is
-exactly how two `v2.11.2` publishes got through. That includes the contained
-`plugins/<pkg>` mirror: the guard module a mirror invocation loads is the
-mirror's own, so a change to the guard itself is unenforced until the next sync
-(one window, not one update cycle)
-(RCA in `<authoring-repo>/charness-artifacts/debug/2026-07-27-absent-guard-not-dead-guard.md`).
-Treat it as a fast, well-worded failure for copies that carry it, not as closure
-of the foreign-write class; the target repo's own validators remain the
-enforcement that does not depend on the caller's age.
+Inside a charness source checkout, write helpers must run from the checkout's
+own copy. Foreign or drifted helpers refuse before they persist state. The
+guard, refusal statuses, and remediation text live in
+`<authoring-repo>/scripts/core/helper_provenance_lib.py` (`require_repo_local_helper`); do not
+recopy that encyclopedia here.
 
 ## Resolve `$CHARNESS_SUPPORT_DIR` (split monorepo only)
 

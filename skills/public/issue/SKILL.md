@@ -88,13 +88,12 @@ closing anything.
 6. Implement the smallest complete fix, preserving the issue's JTBD as the
    acceptance boundary. For siblings surfaced by review, bundle only cheap
    in-scope prevention; otherwise ask before filing or record a deferred item.
-7. Publish the closeout carrier and verify the target state with
-   `issue_tool.py verify-closeout --expect-state CLOSED`. Add critique or a
-   second observer only when the change crosses a material boundary or the
-   requested claim needs it; a process exit or prose-only status is never
-   evidence of a remote write.
-8. Render the per-issue behavior verdict or typed disposition from a channel
-   distinct from `CLOSED` state and the carrier body.
+7. Prefer auto-close carriers, then publish and verify with
+   `issue_tool.py verify-closeout --expect-state CLOSED`. Closeout contracts and
+   the per-issue behavioral verdict live in `references/closeout-discipline.md`.
+   Add critique or a second observer only when the change crosses a material
+   boundary or the requested claim needs it; a process exit or prose-only
+   status is never evidence of a remote write.
 
 Issue-native tracker mechanics are adapter-routed. Goal Run pickup, the
 file-backed provider contract, parent amendments, observation binding, graph
@@ -112,7 +111,8 @@ repository owns any broader lifecycle policy.
   default to `bug` when unsure about real-world divergence, and default to
   `feature` when unsure between `feature` and discussion-only.
 - Do not close before the fix carrier is published and verified through GitHub
-  readback. `carrier_verified` and `CLOSED` are necessary, not sufficient.
+  readback. Tracker/`verify-closeout` success is necessary, not sufficient; see
+  `references/closeout-discipline.md`.
 - When an active issue-native `achieve` receipt exists, file or defer off-goal
   findings here and link a new child only when it is independently closable and
   in scope. Do not mirror routine progress into the receipt.

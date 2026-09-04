@@ -14,9 +14,7 @@ the claim and its affected consumers.
 ## Consumer-repo health
 
 When this skill is used in a consuming repository, the primary quality question
-is whether the repository can reach correct changes with less friction. Treat
-its existing gates, hooks, validators, wrappers, mirrors, and generated reports
-as suspects, not as requirements. For each one, map the claim, inputs, owner,
+is whether the repository can reach correct changes with less friction. Treat its existing gates, hooks, validators, wrappers, mirrors, and generated reports as suspects, not as requirements. For each one, map the claim, inputs, owner,
 runtime cost, and failure value. Then recommend one of:
 
 - keep one canonical owner;
@@ -95,13 +93,13 @@ not install tools, register hooks, or migrate gates without approval.
    scope. Treat `declared-only`, `unreachable`, `missing`, and `not-run` as
    non-verdicts; planner routing proves reachability, not success.
 4. Run applicable `gate_packets` as report-first evidence after reading only the
-   planner reads needed by the selected claim. Use `trust_model`, `cost_tier`,
-   `parallel_group`, and `run_when` to choose the cheapest sufficient set and
-   parallelize independent work; they are selection hints, not an obligation to
-   execute every packet. Before a broad gate, state the claim, affected consumer
-   closure, and minimum sufficient proof. A failure does not widen the scope or
-   justify an unrelated rerun. Inspect a changed validator and one cheap
-   negative control only when the validator itself is the claim.
+   planner reads needed by the selected claim. Choose the cheapest sufficient
+   set and parallelize independent work; planner packet fields are selection
+   hints, not an obligation to execute every packet. Before a broad gate, state
+   the claim, affected consumer closure, and minimum sufficient proof. A failure
+   does not widen the scope or justify an unrelated rerun. Inspect a changed
+   validator and one cheap negative control only when the validator itself is
+   the claim.
 5. If a planner emits `structural_review_packet`, answer it only for the
    affected target. Separate target-skill findings, ambient failures,
    opportunistic repairs, and non-claims; name the capability before proposing a
@@ -120,15 +118,14 @@ not install tools, register hooks, or migrate gates without approval.
 8. If writing a quality artifact, `resolve_quality_artifact.py --repo-root .
    --intent record` names a dated record and `--intent current` names an explicit
    rolling summary. Do NOT trust the scaffold payload's `write_artifact_path`
-   without reading its `write_artifact_effect` and `write_artifact_subject_match`:
-   only `match` permits the
-   write. `unknown` and `routed` require using the named
-   `refused_write_artifact_path`; never silently replace an unrelated record.
-   never silently replace it when the target is not the current review.
-   The resolver owns `refresh_current_pointer_command` and
-   `update_current_pointer_after_write`. Validate once with
-   `validate_quality_artifact.py`, fixing all reported violations together. Fill
-   the `## Surface Contract Review` packet only when that surface is in scope.
+   without reading emitted effect fields `write_artifact_effect` and
+   `write_artifact_subject_match`: only `match` permits the write. `unknown` and
+   `routed` require the named `refused_write_artifact_path`; never silently replace it
+   when the target is not the current review. The resolver owns
+   `refresh_current_pointer_command` and `update_current_pointer_after_write`.
+   Validate once with `validate_quality_artifact.py`, fixing all reported
+   violations together. Fill the `## Surface Contract Review` packet only when
+   that surface is in scope.
 9. Use bounded fresh-eye review only for an explicit operator request or a
    release, proof-surface, external, security, deletion, or other irreversible
    boundary. When selected, apply host-exposed `reviewer_tiers.high-leverage`

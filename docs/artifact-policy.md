@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 This document explains where `charness` should keep different kinds of
 knowledge. The goal is not one perfect file pattern. The goal is a stable
@@ -160,28 +160,15 @@ python3 scripts/artifacts/resolve_artifact_path.py --repo-root . --skill-id <ski
 python3 scripts/artifacts/resolve_artifact_path.py --repo-root . --skill-id <skill-id> --slug <slug> --intent current
 ```
 
-Use `--intent record` when preserving point-in-time evidence. It returns the
-dated `write_artifact_path` when the skill is history-default and tells the
-caller to refresh the current pointer afterward. Use `--intent current` only
-when the work is deliberately updating the rolling summary; if `latest.md` is a
-symlink, edit the returned symlink target rather than first mutating
-`latest.md` and then rediscovering the target.
-
-After writing a dated record, refresh the visible current pointer through the
-helper instead of editing `latest.md` directly:
+`--intent` and `artifact_class` identity live in
+[`artifact_naming_lib.py`](../scripts/artifacts/artifact_naming_lib.py) and
+`resolve_artifact_path.py --help`. Do not recopy the enum here. After writing a
+dated record, refresh the current pointer through the helper instead of editing
+`latest.md` directly:
 
 ```bash
 python3 scripts/artifacts/refresh_current_pointer.py --repo-root . --skill-id <skill-id> --record-artifact-path <record-path> --execute
 ```
-
-The helper defaults to copying when the current pointer is a regular file and
-repointing the symlink when the current pointer is already a symlink.
-
-Artifact resolver behavior is owned by the adapter's `artifact_class`:
-
-- `history`: dated records are supported, with an optional current pointer
-- `current`: the checked-in artifact is the current surface, not a dated log
-- `rolling`: a deliberately maintained canonical summary outside the dated-record flow
 
 Do not add skill-id exception lists for artifact behavior. Declare the class in
 the owning adapter resolver or policy document.

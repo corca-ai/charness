@@ -10,79 +10,12 @@ problems that only show up after rendering. This support seam keeps that check
 available to workflows such as `narrative`, `announcement`, or `specdown`
 without turning "preview docs" into a new public skill.
 
+## Specdown
+
 The renderer choice follows the source's authoritative human surface. Ordinary
 Markdown prose can use terminal snapshots. Executable `*.spec.md` documents
 whose reader surface is a Specdown report should be reviewed through that
 rendered report; a raw Markdown terminal preview is only a secondary fallback.
-
-## Backend Posture
-
-- preferred backend: `glow`
-- preferred output: width-specific `.txt` snapshots plus a machine-readable
-  `manifest.json`
-- fallback posture: degraded artifact with explicit backend-missing notice and
-  the raw source copied only as a reference aid
-- backend-error posture: an installed backend failed or produced blank output
-  for non-empty Markdown; persist an explicit backend-error artifact, but do
-  not treat it as rendered readability proof
-- backend timeout: `CHARNESS_MARKDOWN_PREVIEW_TIMEOUT_SECONDS` may override the
-  default 20s wall-clock bound for `glow` probes and renders
-- supported backend values are explicit, not open-ended; unsupported backend
-  config should fail fast instead of pretending the problem is just missing PATH
-
-Degraded output is honest but weaker. It helps later sessions understand what
-happened, but it does not count as equivalent proof that the rendered document
-was reviewed.
-
-## Config Shape
-
-The helper accepts a small YAML mapping. Keep it simple enough for the repo's
-lightweight YAML loader:
-
-```yaml
-enabled: true
-backend: glow
-widths:
-  - 80
-  - 100
-include:
-  - README.md
-  - docs/**/*.md
-on_change_only: true
-artifact_dir: .artifacts/markdown-preview
-```
-
-Field meanings:
-
-- `enabled`: disable the preview run without deleting the config file
-- `backend`: current supported value is `glow`
-- `widths`: explicit render widths
-- `include`: repo-relative file paths or glob patterns
-- `on_change_only`: keep only changed Markdown targets from the configured
-  scope
-- `artifact_dir`: directory for preview artifacts and `manifest.json`
-
-## Artifact Shape
-
-Recommended artifact naming:
-
-- `README.w80.txt`
-- `README.w100.txt`
-- `docs__specs__index.spec.w100.txt`
-- `manifest.json`
-
-`manifest.json` should preserve:
-
-- selected backend
-- backend version when detected
-- whether rendering was real or degraded
-- renderer status: `rendered`, `degraded`, or `backend-error`
-- config path used, if any
-- source fingerprints for each rendered file
-- current git HEAD when available
-- widths requested
-- target files and generated artifact paths
-- warnings such as missing backend or skipped files
 
 ## Scope Selection
 
@@ -92,3 +25,7 @@ documents matter for that repo's landing-doc or spec-review loop.
 
 `on_change_only` should narrow from the configured include set, not invent a
 new scope from every changed file in the repo.
+
+YAML config keys, backend posture enums, and `manifest.json` field lists are
+owned by `scripts/render_markdown_preview.py` and its config loader, not
+restated here.

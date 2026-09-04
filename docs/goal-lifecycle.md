@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: the `achieve` and `issue` skills' Goal Run commands and this page
-> Last verified: 2026-09-03
+> Last verified: 2026-09-04
 
 This page answers one question: how does Charness model a long-running goal
 from planning through provider-verified completion?
@@ -63,11 +63,9 @@ These names describe observed conditions. The binding does not carry a mutable
 and durable history. It accumulates one full Goal Draft and asks only questions
 whose answers are consequential and not discoverable.
 
-The adapter controls `interview.max_questions`; the default is 15. The ceiling
-is shared by the initial interview and non-obvious findings from both critique
-rounds. Each question supplies options, option-specific tradeoffs, a
-recommendation, and its reason. Exhausting the ceiling with unresolved
-consequential ambiguity stops planning.
+The adapter controls `interview.max_questions`. The ceiling is a cap, not a
+quota; identity lives in [`interview_contract.py`](../skills/public/achieve/scripts/interview_contract.py).
+Exhausting it with unresolved consequential ambiguity stops planning.
 
 Before approval, the workflow runs:
 
@@ -82,68 +80,19 @@ mutation.
 
 ## Goal Binding
 
-The canonical sidecar path replaces the Goal Draft's `.md` suffix with
-`.binding.json`. Its schema id is `charness.goal-binding/v1`.
-
-The complete canonical V1 JSON file is immutable and its SHA-256 is the approval
-anchor. It contains:
-
-- complete frozen-draft repository path and SHA-256
-- final briefing digest, approval response identity, and approval observation
-- exact parent repository, issue number, and canonical URL
-- canonical key-sorted `approved_work_items`
-- SHA-256 of the canonical work-item JSON representation
-- deterministic execution rank and dependency keys for each initial Work Item
-
-Each approved work item declares a stable key, create-or-reuse intent, existing
-issue identity when known, dependency keys, execution rank, and body ownership.
-Optional body-policy fields are retained only for compatibility with older
-bindings. A child is identified by its Work Item marker and issue identity;
-prose may be corrected without invalidating the run. Reused closed issues
-retain `preserve-closed-evidence`, which protects state-owned evidence rather
-than prose bytes.
-
-A valid binding contains no observation references, progress, percentage,
-current-child pointer, host-goal identity, provider-state cache, or copied
-parent body.
-
-Provider-less planning fallback creates no binding. After readiness and exact
-parent readback, any frozen-draft, approval, parent, or initial-manifest change
-requires explicit re-approval and a new binding. Unknown schema, missing files,
-path escape, byte-hash mismatch, parent mismatch, binding-byte mismatch, and
-initial-graph mismatch are typed refusals.
-
-Provider observations are separate immutable
-`charness.goal-run-observation/v1` receipts. Each binds the binding/draft/parent,
-operation and attempt, target key/identity, before state, returned identity,
-readback, outcome, and next action. This is bounded proof of one provider
-attempt, not an event-sourced progress ledger.
+Binding, parent-metadata, and observation identity live in
+[`goal_binding.py`](../skills/public/achieve/scripts/goal_binding.py) and the
+`issue` Goal Run helpers. The sidecar is the draft path with `.binding.json`;
+the SHA-256 of the immutable V1 file is the approval anchor. A valid binding
+contains no observation, progress, or copied parent body. Provider-less
+planning creates no binding. Field inventories are not recopied here.
 
 ## Parent Metadata
 
-The Goal Run body contains exactly one machine-managed block beginning
-`<!-- charness-goal-run:v1` and ending `-->`. Its interior is canonical JSON
-with:
-
-- binding schema, repository-relative binding path, and complete binding SHA-256
-- frozen draft path and SHA-256
-- initial graph SHA-256 and current provider membership
-- mutable `progress` cursor: schema, revision, reconciled counts, and one exact
-  next-child identity
-- establishment and optional terminal observation path/SHA-256; terminal
-  fields are written only after the immutable terminal receipt exists
-- a planning-reset note when a provisional parent is being reconciled
-
-The rest of the body is normal human-readable Markdown. During bootstrap, the
-metadata block establishes the parent identity without binding surrounding
-prose bytes. After the block exists, parent `update-body` preserves the
-machine-managed identity and cursor; provider edit history owns reversible
-prose changes. A consumer may carry the optional
-`amendment_authorization_file` for a parent/binding identity, reason, and
-explicit approval response/session/timestamp. The bound validator checks that
-receipt only after reading the live body and before provider mutation. Duplicate,
-malformed, foreign-version, stripped, or identity-mutated blocks refuse before
-provider mutation.
+The Goal Run body contains one machine-managed `<!-- charness-goal-run:v1` block.
+`update-body` preserves that identity and cursor; provider edit history owns
+reversible prose. Duplicate, malformed, or identity-mutated blocks refuse
+before provider mutation. Schema identity is in [`goal_binding.py`](../skills/public/achieve/scripts/goal_binding.py).
 
 ## Activation And Pickup
 
@@ -184,116 +133,29 @@ state fallback or a hidden full graph scan.
 ## Provider Operations
 
 `issue` owns provider mechanics; `achieve` owns lifecycle policy and order.
-Required issue-backend operations are:
-
-- preflight adapter validity, binary/auth, exact repository, and the complete
-  primitive capability closure needed by the planned operation
-- read and byte-verify parent body
-- update parent body and read it back
-- create or reuse a child with exact identity
-- list, add, and remove real sub-issue relationships with readback
-- inspect exact parent and child state
-- persist one typed provider-attempt observation
-- close a Goal Run through a dedicated guarded operation
-
-Provider mechanics split across `issue_identity`, `issue_backend`, `issue_json_pages`, the `issue_tracker_*` family, `issue_tracker_cli` (+`_preflight`/`_parser`), and `issue_tool` (+`_parser`); each module's docstring states its own seam except the `issue_tool` entrypoint, which carries none today, and new provider behavior extends its owning seam rather than the entrypoint.
-
-Every mutation returns a typed Provider Observation: started, no write, verified
-write, unverified write, or partial graph write. `no write` is legal only before
-provider invocation. Missing, unavailable, and unknown readiness all refuse
-before mutation. Alternate backends must declare every primitive explicitly;
-command absence is not permission to improvise with another client.
+Required operations, observation outcomes, and module seams live in the `issue`
+Goal Run scripts and [issue-backend.md](../skills/public/issue/references/issue-backend.md).
+Every mutation returns a typed Provider Observation. `no write` is legal only
+before provider invocation. Command absence is not permission to improvise.
 
 ## Reconciliation And Recovery
 
-Graph establishment is resumable, not transactional. Before every mutation the
-workflow re-reads current provider state and persists a bounded started attempt
-with target/key/submitted digest. Already-correct objects are reused; only
-missing or mismatched managed elements are changed.
-
-| Observation | Claim allowed | Next action |
-| --- | --- | --- |
-| started | invocation may occur | never advance; collect the terminal observation |
-| no write | provider was not invoked | repair readiness or input, then retry |
-| verified write | exact intended object/relationship observed | continue to next manifest item |
-| unverified write | provider may have changed | stop and re-read in a clean process |
-| partial graph | named subset verified, remainder unresolved | preserve identities, re-read all, reconcile remainder |
-
-Create-or-reuse uses a stable Work Item key in managed child metadata and
-read-only provider discovery. If an invoked create has no discoverable identity,
-the workflow stops for operator disposition and never retries create blindly.
-
-Tests interrupt reconciliation after every mutation boundary and retry from a
-clean process. Initial establishment succeeds only when exact child identities
-and relationships equal the immutable initial manifest, not merely when counts
-match.
-
-An adapter may explicitly allow planning-only fallback when GitHub is
-unavailable. Drafting, critique, docs, alignment, and briefing may continue;
-neither parent nor binding is created, and activation, implementation, child
-progress, and completion may not.
-
-After establishment the GitHub parent owns current graph membership. An in-scope
-new Work Item or deferral updates the real relationships and records an
-approved parent-metadata amendment with an exact reason, successor mapping when
-applicable, and provider observation. The immutable binding remains the initial approved
-baseline. Objective, non-goal, success-criterion, or proof-policy changes require
-explicit operator approval before the parent contract changes.
+Graph establishment is resumable, not transactional. Observation outcome
+identity lives in the Goal Run observation schema; do not recopy the
+claim/next-action table here. Create-or-reuse uses a stable Work Item key. If an
+invoked create has no discoverable identity, stop; never retry create blindly.
+Planning-only fallback (when the adapter allows it) creates neither parent nor
+binding. After establishment the GitHub parent owns current graph membership;
+the immutable binding remains the initial approved baseline.
 
 ## Execution And Closeout
 
-Routine execution enters the Work Item named by the parent cursor and follows
-its own implementation/proof workflow. Closing a child is provider progress,
-not behavioral proof; the child issue's closeout comment/provider receipt names
-and binds the required evidence. The parent cursor advances with the published
-transition; there is no second local child-acceptance ledger.
-
-Parent body updates preserve the machine-managed identity and cursor contract;
-prose edits are reversible and do not invalidate a run. An authorized bound
-update may record a parent-metadata amendment with its identity, reason, and
-approval. Bootstrap and later updates validate current and desired metadata
-against the immutable binding, while provider readback proves the target
-identity. One agent owns those updates;
-optimistic concurrency is not part of the default model. Full graph
-reconciliation remains explicit rather than running on every ordinary pickup.
-
-A deferred child moves to a successor Goal Run with a durable reason and exact
-remove/add readback. Merely unlinking it cannot make the current parent closable.
-
-Every Charness-owned generic update or close/comment-close reads and parses the
-target first. Generic update refuses to strip/alter Goal Run metadata; generic
-close refuses before any comment or provider write. Only the dedicated close
-operation may reach the internal close primitive. It:
-
-1. reads every linked child
-2. refuses any open child
-3. verifies that every approved issue-owned closeout comment identity still
-   exists on its child, including historical closed children
-4. validates the separately bound final-proof index before provider selection;
-   the index hash-binds the expected-child file, parent-obligation bytes, and
-   role-labelled evidence artifacts selected by the Goal agent
-5. persists the terminal attempt and closes the parent
-6. performs distinct post-close provider readback
-7. finalizes the immutable terminal observation
-8. updates only mutable parent terminal metadata with its path/hash through
-    the binding-aware update, and independently reads the still-closed parent
-    back again
-
-Comment-written/close-failed, close-invoked/readback-unknown, and
-closed/readback-failed are distinct partial outcomes. A terminal metadata
-update or its independent CLOSED readback is also a distinct
-`unverified-write` outcome; it is not atomic with close. Retry reads first,
-resumes close without posting a second comment when the prior receipt proves
-the comment landed, and repairs terminal metadata without re-closing when the
-provider now reads `CLOSED`. It never re-closes an already-closed parent. An
-already-closed result is valid only when its
-local terminal receipt pair is hash- and identity-verified. Failed exact
-readback is `unverified`, never completion.
-
-The close ingress validates artifact identity and byte binding, not the
-Goal-specific meaning of CI, docs, or whole-system evidence. The agent running
-the Goal owns that composition and records its selected artifacts in the
-generic role-labelled index.
+Closing a child is provider progress, not behavioral proof. Only the
+dedicated close operation may close the parent; it performs distinct
+post-close provider readback and never re-closes an already-closed parent.
+Generic update refuses to strip Goal Run metadata; generic close refuses
+before any comment or provider write. Failed exact readback is `unverified`,
+never completion. Partial outcomes live in the `achieve`/`issue` close helpers.
 
 ## Ownership And Portability
 

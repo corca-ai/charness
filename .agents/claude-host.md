@@ -45,35 +45,10 @@ orchestrating session. The common operating contract stays in
   adversarial verification, integration, generated-surface sync, and
   final proof.
 
-## Lane-orchestration lessons this repo has already paid for
+## Lane orchestration
 
-- A brief names every surface the change touches as the lane's deliverable,
-  and `--scope` carries every one of them; the rule and its two paid instances
-  live in [docs/parallel-execution.md](../docs/parallel-execution.md#disjoint-writers).
-- An in-process subagent brief that touches `scripts/` or `skills/` has no
-  lane receipt, so its definition of done names the gate by hand: the
-  subagent runs `python3 scripts/mutation/release_changed_line_coverage.py
-  --repo-root . --base-sha <base> --refuse-unestablished` on its own diff and
-  reports done only with `status: clean` (or `noop`), quoting the payload.
-  A `task run` lane gets the same verdict in its receipt's
-  `changed_line_gate` ([docs/parallel-execution.md](../docs/parallel-execution.md#disjoint-writers)).
-- Lane self-reports are not proof: re-run the battery in the integrated
-  tree, and run the FULL standing gates before treating a
-  production-surface change as done — focused per-lane checks miss
-  standing regressions.
-- `.agents/*-adapter.yaml` checklist entries must be single-line quoted
-  strings; the adapter readers are line-based and refuse multi-line
-  continuations.
-- Integrate candidate-first: a lane's commit is inspectable on its
-  `task/<lane>` branch as soon as the lane commits, so review and integrate
-  from there instead of idling on the wrapper process; a `completed`
-  commit-only lane releases its worktree at completion (#787), and the
-  receipt's `retention.carrier` names the branch and sha. When a lane times out,
-  salvage its worktree commit (and any uncommitted work in it) rather
-  than re-running the lane; a timeout destroys the wrapper, not the
-  work. Background-waiting on a finished candidate is the antipattern
-  this repo has already paid for twice.
-- Run the disconfirming probe FIRST at integration — compare the
-  candidate's behavior against the real repository before running its
-  confirming test suite. Both defects that escaped lane tests in the
-  #748 slice-1 session were caught this way, and only this way.
+Parallel channels, disjoint writers, proof floor, and integration order live in
+[docs/parallel-execution.md](../docs/parallel-execution.md). Do not restate them
+here. Host-specific notes that remain: `.agents/*-adapter.yaml` checklist
+entries must be single-line quoted strings (line-based readers refuse
+multi-line continuations).

@@ -15,23 +15,7 @@ is an executable `*.spec.md` whose authoritative reader surface is a Specdown
 report, review the rendered Specdown report instead of treating a raw Markdown
 preview as equivalent.
 
-## Runtime Contract
-
-- prefer `glow` for terminal-faithful Markdown rendering when it is available
-- render checked-in Markdown at explicit widths and persist the result as text
-  artifacts
-- search for repo-local config at `<repo-root>/.agents/markdown-preview.yaml`,
-  `<repo-root>/.codex/markdown-preview.yaml`, `<repo-root>/.claude/markdown-preview.yaml`,
-  `<repo-root>/docs/markdown-preview.yaml`, and `<repo-root>/markdown-preview.yaml`
-- when `glow` is missing, write degraded artifacts that say so explicitly
-  instead of pretending source-only review is equivalent
-- distinguish `rendered`, `degraded`, and `backend-error`; an installed backend
-  that fails or renders blank output for non-empty Markdown is `backend-error`,
-  not an acceptable raw-source fallback
-- verify `glow` by rendering a tiny Markdown sample and confirming non-empty
-  output, not only by checking that the binary exists
-
-Use the helper. Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then run:
+Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then run:
 
 ```bash
 python3 "$SKILL_DIR/scripts/render_markdown_preview.py" --repo-root . --file README.md --width 80 --width 100

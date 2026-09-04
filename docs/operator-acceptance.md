@@ -2,7 +2,7 @@
 
 > Status: conditional (operator takeover path)
 > Source of truth: functional checks, the active Goal Run parent/cursor, and the active plan
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 This document translates active work into operator-owned acceptance runs. The
 plan of record is the active Goal Run parent ([goal lifecycle](./goal-lifecycle.md)).
@@ -67,34 +67,13 @@ Suggested operator runs:
 - if you want the full local install/update regression suite before or after
   host testing, run [`./scripts/self-validate-install-update.sh`](../scripts/self-validate-install-update.sh)
 
-Acceptance:
-
-- install works from the documented managed local install surface rooted at `~/.agents/src/charness`
-- explicit operator clone is not required when a standalone `charness` binary
-  is already available and can bootstrap that managed checkout internally
-- non-managed `--repo-root` runs stay proof/development-only and do not become the installed CLI source
-- `charness init` deterministically creates the Codex source plugin root and
-  personal marketplace entry
-- `charness doctor` distinguishes “surface prepared” from “host install/enable
-  still required”
-- `charness init` and `charness update` return nonzero for an explicit failed
-  host-install/cache-readback status; optional `skipped` or `unavailable`
-  host states remain typed in YAML rather than being treated as failures
-- `charness tool install/update/doctor` leave machine-readable lock state for
-  external dependencies and any remaining manual steps
-- `charness update` refreshes the installed CLI itself before judging downstream
-  host behavior
-- `charness update all` keeps the same self-update contract and also runs the
-  tracked external tool update/support-refresh flow in one command
-- an upstream skill/plugin payload change is actually observable in the
-  installed Claude or Codex host copy after the required refresh step
-- any required doc or manifest tweaks are committed back here
+Acceptance is the install/update/doctor contract on
+[host packaging](./host-packaging.md), [cli-reference](./cli-reference.md), and
+[control plane](./control-plane.md). Run the commands above; do not recopy
+those semantics here.
 
 ## Closeout Rule
 
-For any accepted item:
-
-1. update the canonical doc(s)
-2. run the strongest honest local validation
-3. commit the work
-4. update the active Goal Run parent cursor if the next operator's first move changed
+[Implementation discipline](./implementation-discipline.md) and
+[goal lifecycle](./goal-lifecycle.md) own mutate/verify/publish and cursor
+advance.

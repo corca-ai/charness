@@ -51,22 +51,19 @@ must render only from the verified `{repo, number, url}` ledger. See
 `closeout-discipline.md` for the full contract.
 
 For `issue resolve`, make GitHub auto-close the normal closeout path when the
-backend supports it. In PR-based work, put explicit close keywords and the
-classification-specific closeout summary in the PR body so merge closes the
-issue. In direct-to-default work, put the same keywords and summary in the
-commit body before push. If the repository squashes or rewrites merge commits,
-verify the final merge body still contains the close keywords before treating
-the issue as closable. Manual close-with-comment is reserved for cases where
-auto-close is unsupported or did not close after the remote state was verified.
-If direct work is bundled into a release helper run, pass the resolved issue
-numbers to the helper and require its post-push issue verification payload
-before reporting the issue resolved.
+backend supports it. Prefer auto-close over manual close whenever the backend
+can carry close keywords into default-branch history. In PR-based work, put
+explicit close keywords and the classification-specific closeout summary in the
+PR body so merge closes the issue. In direct-to-default work, put the same
+keywords and summary in the commit body before push. If the repository squashes
+or rewrites merge commits, verify the final merge body still contains the close
+keywords before treating the issue as closable. Manual close-with-comment is
+reserved for cases where auto-close is unsupported or did not close after the
+remote state was verified. If direct work is bundled into a release helper run,
+pass the resolved issue numbers to the helper and require its post-push issue
+verification payload before reporting the issue resolved.
 
-Use `issue_tool.py verify-closeout` as the ordinary issue-resolution final gate.
-Without `--expect-state`, the verifier can only report `carrier_verified` for a
-pre-push or pre-merge carrier audit. Final handoff requires
-`--expect-state CLOSED` and `status: verified`; otherwise the issue lifecycle is
-not closed. `status: verified` confirms the tracker flipped, not that the fix's
-user-facing behavior happened: at this irreversible boundary the per-issue
-behavioral verdict in `closeout-discipline.md` (*Per-Issue Behavioral Verdict At
-Close*) is also required before reporting the issue resolved.
+Closeout contracts, the P4 necessary≠sufficient behavioral verdict, and carrier
+grammar live in `closeout-discipline.md`. Use
+`issue_tool.py verify-closeout --expect-state CLOSED` as the ordinary
+issue-resolution final gate.

@@ -296,155 +296,28 @@ closeout commit.
 
 ## Result Delivery
 
-The default worker path is the canonical consumer path. A worker run is
-complete only when `reviewer_worker_report.py` returns a typed report with
-`approval_eligible: true`; the report requires a succeeded worker receipt, a
-fresh output hash, and a matching `findings-received` delivery-ledger attempt.
-This keeps the report media-neutral: `codex_exec` and `claude_p` are adapter
-choices, not verdict categories. The delivery CLI's `delivery_complete` field
-is only a state-machine observation; it is intentionally not
-`approval_eligible`. Only the combined worker report may emit that approval
-field, after it joins the receipt, attempt, packet/input identities, and result
-hash. The result itself must pass the canonical bounded-review result schema
-and carry `verdict: pass`; a syntactically valid JSON file, a non-empty file, or
-`findings-received` alone is not approval. The carrier also parses the canonical
-delivery-attempt history and transition ledger, rather than trusting only the
-final state/hash fields, and binds the packet repository as well as issue number.
+A worker run is approval-eligible only when
+`reviewer_worker_report.py` returns `approval_eligible: true`. A non-empty
+file, process exit code, succeeded receipt, or `findings-received` alone is
+not approval.
 
-For the optional typed-subagent path, **A spawned reviewer is not a received
-review.** The parent holds the review only when the reviewer's findings text is in
-the parent's own context. Spawn
-acceptance, a clean boundary result, and an idle or completion notification
-are each individually compatible with findings that never arrived — the
-reviewer can run correctly, keep its boundary clean, write a complete final
-message, and still deliver nothing the parent can read.
+**A spawned reviewer is not a received review.** The parent holds the review
+only when the reviewer's findings text is in the parent's own context. Spawn
+one-shot subagents **without** a host addressing or team name; a named spawn
+can select a mailbox channel the parent cannot read. Findings that never
+arrive are a delivery failure to report, never grounds for a same-agent
+substitute.
 
-Some hosts deliver a reviewer's final message on more than one channel, and
-there the **spawn call shape selects the channel**. A spawn that carries a host
-addressing or team name is routed to a mailbox-style channel whose only
-retrieval path is that host's message-sending tool; a parent to which the host
-does not expose that tool never receives the findings at all. This is a
-recorded failure, and it recurred because the correct spawn shape was known
-only as a rolling retro lesson that decayed before it reached any contract —
-which is why the rule lives here.
-
-On at least one host this is a known, still-open upstream defect rather than
-intended behavior: the name parameter silently switches the spawn onto a
-teammate protocol, so completion emits an idle notification to a team inbox
-instead of returning the result. Treat the unnamed-shape rule as a workaround
-for a live host bug, not a permanent fact about spawning — when the upstream
-defect closes, re-probe and the rule may relax to a preference. The invariant
-above ("a spawned reviewer is not a received review") does not relax; it is what
-makes the failure diagnosable at all.
-
-Typed-subagent delivery is a per-host live claim, proven by the step-1 probe
-below and never assumed — the same standing as envelope binding in rail 2. The channel-selection
-differential above is recorded on one host at one version and corroborated by the
-upstream report. The named arm has since been observed in a second session
-(`n=2`); explicit background spawns and multi-reviewer concurrency remain
-uninspected. The scope record, upstream lineage, and non-claims live in
-`<repo-root>/charness-artifacts/debug/2026-07-25-bounded-reviewer-result-delivery.md`
-and its recurrence record
-`<repo-root>/charness-artifacts/debug/2026-07-27-named-spawn-recurrence.md`.
-On a host whose spawn surface exposes no addressing or team parameter, or where
-the named shape is the delivering one, the unnamed-shape rule is a no-op and
-only the "findings text in your context" test carries. The current Codex
-`explorer` path is not inspected.
-
-- If the adapter selects the optional typed-subagent path, spawn one-shot
-  subagents **without** a host addressing or team name. This
-  applies to EVERY spawn, not only bounded reviewers: the always-loaded contract in
-  `<repo-root>/AGENTS.md` states the same rule for any spawn, because scoping the
-  rule to review is what let it fail to bind at all. Reserve named spawns for agents the
-  parent will address repeatedly, and only when the host exposes the matching
-  retrieval tool in that same session.
-- A tool named in host documentation is not a tool available in the session.
-  Resolve it the way the host exposes tools before depending on it, the same
-  way availability uncertainty is resolved below.
-- Findings that never arrive are a **delivery failure to report**, never a
-  reviewer that returned nothing and never grounds for a same-agent
-  substitute. Re-spawn once under the unnamed shape before concluding
-  anything about the host.
-- Record delivery state in the closeout artifact next to the reviewer-tier
-  evidence, as a field distinct from boundary state: `findings-received`, or
-  `spawn-accepted-no-delivery <concrete channel or host signal>`. Boundary
-  clean and findings received are independent claims; neither implies the
-  other, and the selected boundary mode proves only the first.
-
-Where a host persists subagent transcripts on disk, reading a stranded
-reviewer's final message from its transcript is a legitimate **diagnostic** for
-telling "reviewer produced nothing" apart from "delivery dropped it". It is not
-the contract path: it is host-specific, it is not available on every host, and
-a review recovered that way should be recorded with the delivery failure that
-made it necessary.
-
-Do that diagnostic with
-`python3 "$SKILL_DIR/../../shared/scripts/reviewer_result.py" get --agent <name-or-id> --repo-root <repo-root>`
-(`list` enumerates the session's reviewers) rather than improvising a transcript
-reader. It returns only the final assistant text block under a size cap, with a
-typed `found` / `partial` / `still-running` / `not-found` / `ambiguous` status,
-and reports `layout-not-found` on a host whose transcript layout it cannot
-resolve instead of guessing. Read it once: a `still-running` result is not an
-invitation to poll, and using it at all still means recording a delivery
-failure.
-
-For the default Charness-owned worker, use the one runner that binds the
-producer paths and run id into the parent-side ledger before launch, then
-collects the typed result through the same contract. Do not assemble
+Run the Charness-owned worker through
+`python3 "$SKILL_DIR/../../shared/scripts/run_reviewer_worker.py" --help`
+(and the owning skill's adapter/capability files). Do not assemble
 `reviewer_delivery.py`, `reviewer_worker.py`, and `reviewer_worker_report.py`
-as separate shell steps: that split can create a findings-received ledger with
-no producer binding. Do not infer delivery from a non-empty output file,
-process exit code, or worker receipt status alone. Require the generated report
-to say `collection_ready: true`; a shipping approval additionally requires
-`approval_eligible: true`:
+as separate shell steps, and do not recopy the runner's flag or receipt-field
+surface here.
 
-The same runner exposes in-progress work as typed `spawn-accepted`, `running`,
-or `partial` delivery states. A partial carrier is an identity-bound descriptor
-of preserved bytes (`schema_version`, kind, path, size, and SHA-256), not a
-review result. Timeout or interruption retains that descriptor while projecting
-the terminal non-delivery signal, and late bytes cannot resurrect the attempt;
-only `findings-received` with a terminal schema- and identity-checked result can
-be approval-eligible.
-
-```bash
-python3 "$SKILL_DIR/../../shared/scripts/run_reviewer_worker.py" \
-  --repo-root "$REPO_ROOT" \
-  --prompt-file "$RUN_DIR/prompt.md" \
-  --capability-file "$RUN_DIR/capability.json" \
-  --attempt-id "$ATTEMPT_ID" \
-  --scope "$SCOPE_ID" \
-  --packet-identity "$PACKET_SHA256" \
-  --reviewed-input-identity "$INPUT_IDENTITY_SHA256" \
-  --parent-receipt-identity "$RECEIPT_ID" \
-  --boundary-mode read-only-worker \
-  --ledger-file "$RUN_DIR/delivery.json" \
-  --output-file "$RUN_DIR/result.json" \
-  --receipt-file "$RUN_DIR/receipt.json" \
-  --report-file "$RUN_DIR/report.yaml" \
-  --execution-mode file-backed-worker \
-  --backend "$BACKEND" \
-  --timeout-seconds 900 \
-  --run-id "$ATTEMPT_ID"
-```
-
-The backend runner itself must publish a typed receipt and a schema-validated
-fresh result before the parent calls the `findings` operation. It resolves every
-relative prompt/schema/output/receipt/ledger/report path against the explicit
-repository root and refuses paths outside that root; launch `cwd` is not an
-identity boundary. The receipt must
-carry the attempt, scope, packet/input, mode/backend, prompt/schema, and result
-identities so a foreign run cannot be paired with the current ledger. A finite timeout,
-absolute paths resolved before `cwd`, unique run artifacts, and a pre-existing
-output refusal are part of that runner boundary; a result file's presence is
-not a terminal success signal.
-
-The launch capability envelope owns `capability_non_claims` and
-`capability_non_claims_sha256`. A reviewer prompt must tell the worker to copy
-those exact values; semantic limits such as “no live provider behavior was
-tested” belong in the result's ordinary `non_claims` array. Do not invite the
-worker to synthesize capability non-claims from semantic review limits: an
-otherwise useful review then fails collection because it no longer matches the
-launch envelope.
+For stranded-transcript diagnostics only:
+`python3 "$SKILL_DIR/../../shared/scripts/reviewer_result.py" get --agent <name-or-id> --repo-root <repo-root>`.
+Record a delivery failure when that path is needed.
 
 ## Required Before Declaring The Canonical Path Blocked
 

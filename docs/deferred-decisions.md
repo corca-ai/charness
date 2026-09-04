@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 This document is the canonical closure surface for deferred product-boundary
 decisions that were previously carried in session state.
@@ -59,25 +59,19 @@ the evidence is sufficient for the boundary at hand.
 ### D1. Shared Packaging Canonical Source
 
 - Question: Which shared packaging manifest is canonical for Claude/Codex dual support?
-- Current choice: [`packaging/charness.json`](../packaging/charness.json) stays the single source of truth.
-- Why now: This is already how the checked-in plugin install surface and root marketplace files are generated and validated.
-- Impact surfaces: [`docs/host-packaging.md`](./host-packaging.md), [`scripts/plugin_export/sync_root_plugin_manifests.py`](../scripts/plugin_export/sync_root_plugin_manifests.py), [`scripts/plugin_export/validate_packaging.py`](../scripts/plugin_export/validate_packaging.py)
+- Current choice: [`packaging/charness.json`](../packaging/charness.json). Detail: [host-packaging](./host-packaging.md).
 - Reopen trigger: If host-specific metadata can no longer be represented as generated output from one shared manifest.
 
 ### D3. Packaging Version Ownership
 
-- Question: Should shared packaging manifest carry release version directly or rely on export-time override?
-- Current choice: Shared manifest remains canonical for default version; export-time override is allowed for host-specific release workflows.
-- Why now: Preserves reproducibility while keeping release operations flexible.
-- Impact surfaces: [`packaging/charness.json`](../packaging/charness.json), [`scripts/plugin_export/export_plugin.py`](../scripts/plugin_export/export_plugin.py), [`docs/host-packaging.md`](./host-packaging.md)
+- Question: Should the shared packaging manifest carry release version directly or rely on export-time override?
+- Current choice: Shared manifest is canonical for default version; export-time override is allowed. Detail: [host-packaging](./host-packaging.md).
 - Reopen trigger: If release tooling requires immutable manifest-only versioning with no override path.
 
 ### D4. Generated Export Tree Storage
 
 - Question: Store generated Claude/Codex export trees as fixtures or keep script+temp smoke canonical?
-- Current choice: Keep script-driven temporary materialization canonical; do not commit generated export trees.
-- Why now: Avoids drift and duplicate source-of-truth risk.
-- Impact surfaces: [`scripts/plugin_export/export_plugin.py`](../scripts/plugin_export/export_plugin.py), [`scripts/plugin_export/sync_root_plugin_manifests.py`](../scripts/plugin_export/sync_root_plugin_manifests.py), packaging docs
+- Current choice: Script-driven temporary materialization; do not commit generated export trees. Detail: [host-packaging](./host-packaging.md).
 - Reopen trigger: If a downstream installer requires committed generated trees as contract artifacts.
 
 ### D5. `profile.extends` Depth
@@ -91,9 +85,7 @@ the evidence is sufficient for the boundary at hand.
 ### D6. Integration Capability Depth
 
 - Question: How deep should capability grants/authenticated binary/env fallback go beyond metadata?
-- Current choice: Keep metadata + validation contracts (`access_modes`, `capability_requirements`, `readiness_checks`, `config_layers`) without automating secretful runtime orchestration in `charness`.
-- Why now: Matches host-neutral product boundary.
-- Impact surfaces: [`integrations/tools/manifest.schema.json`](../integrations/tools/manifest.schema.json), [`tools/validate_integrations.py`](../tools/validate_integrations.py), [`scripts/doctor.py`](../scripts/doctor.py)
+- Current choice: Metadata + validation only; no secretful runtime orchestration. Schema: [manifest.schema.json](../integrations/tools/manifest.schema.json).
 - Reopen trigger: If multiple consumers need standardized executable orchestration beyond current manifest metadata.
 
 ### D7. `official` Terminology in Discovery Policy

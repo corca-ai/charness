@@ -91,6 +91,7 @@ Each rule names the mechanism that holds it.
 | A gate's refusal names live surfaces and tokens; a documented flag or subcommand is one argparse accepts | nothing for the refusal text; [`check_documented_command_flags.py`](../scripts/gates/check_documented_command_flags.py) and [`check_documented_subcommands.py`](../scripts/gates/check_documented_subcommands.py) for the docs half |
 | A layout fact is asserted on what the module bound, never on a global interpreter property | nothing; the distinction is semantic |
 | An ephemeral worktree does not keep a dead git registration | [`worktree_lifetime.py`](../scripts/worktree/worktree_lifetime.py) on create, `audit --prune`, and the runtime sweep |
+| A doc does not recopy identity a mechanism already holds | the owning script; [`test_authoring_preflight_does_not_recopy_attention_terms`](../tests/test_authoring_preflight_reference.py) refuses the attention-term list form |
 
 Tests import the script under test in-process through
 [`tests/script_loader.py`](../tests/script_loader.py),
@@ -121,11 +122,10 @@ is authoritative; the plugin tree is generated.
 
 Every push goes through the pre-push hook from
 [`install-git-hooks.sh`](../scripts/install-git-hooks.sh). After the
-irreversible [close-keyword scan](../scripts/prepush_close_keyword_guard.py), a push touching anything beyond docs and
-artifacts runs `./scripts/run-quality.sh --full --read-only --release`, since
-the standing lane deselects `release_only` and `slow_corpus`. A docs-artifact
-push runs the docs subset. The hook reads the tree it runs in, so push from a
-clean clone with the hooks installed and the mirror regenerated:
+irreversible [close-keyword scan](../scripts/prepush_close_keyword_guard.py),
+the hook chooses the lane ([`classify_push_diff_lib.py`](../scripts/hooks/classify_push_diff_lib.py)).
+The hook reads the tree it runs in, so push from a clean clone with the hooks
+installed and the mirror regenerated:
 
 ```bash
 git clone --quiet . /tmp/charness-push && cd /tmp/charness-push
@@ -133,9 +133,6 @@ git clone --quiet . /tmp/charness-push && cd /tmp/charness-push
 python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .
 git remote set-url origin <origin-url> && git push origin HEAD:main
 ```
-
-The #778 closeout under `charness-artifacts/goal-runs/775/` records the
-timings and the seeded refusal.
 
 ## Optional records
 

@@ -1,21 +1,12 @@
 # Codex Host Notes
 
-This file owns Charness-repository Codex effort choices. `charness task` fixes
-its model to `gpt-5.6-luna`; callers choose only the reasoning effort.
+This file owns Charness-repository Codex effort *judgment*. Model identity and
+allowed effort tokens are held by `scripts/task_run/task_run_contract.py`;
+callers choose only the reasoning effort for a lane.
 
-## Parallel routing
+## Effort judgment
 
-Use the live host subagent API for bounded read-only investigation or short
-judgment work. Use `charness task run` for independently writable work that
-needs a named branch, isolated worktree, external runtime, exact scope, and a
-durable result. The parent owns design, integration, final verification, and
-provider mutations. Task prompts forbid descendant agents unless the operator
-explicitly asks for nested delegation.
-
-## Model and effort presets
-
-Use `gpt-5.6-luna` for Charness lanes and choose effort from the work, not from
-the fact that a lane exists:
+Choose effort from the work, not from the fact that a lane exists:
 
 | Work | Effort | Default stop shape |
 | --- | --- | --- |
@@ -52,6 +43,11 @@ charness task run \
 The task result is the only lane result carrier. Review the retained worktree
 and receipt, then integrate serially. A successful process or commit is not by
 itself integration proof.
+
+Channel choice (host subagent vs `charness task run`) lives in
+[docs/parallel-execution.md](../docs/parallel-execution.md).
+
+## Sandbox / network
 
 On this host, Codex lanes run `--sandbox workspace-write` with
 `network_access = true` set in `~/.codex/config.toml` (operator-approved

@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 This guide owns the route and procedure examples that would make the README too
 heavy as a first-touch surface.
@@ -52,17 +52,8 @@ stronger improvement loop. Prompt-affecting changes follow
 
 ## Long-Running Or Autonomous Goals
 
-Use `achieve` when the work is bigger than one ordinary implementation prompt
-and needs a durable objective, boundaries, slice plan, proof record, and honest
-non-claims.
-
-`achieve` shapes and freezes a Goal Draft, binds it to one Goal Run, and
-resumes with `/goal #N`; [goal-lifecycle.md](./goal-lifecycle.md) owns the
-binding, cursor, and reconciliation model.
-
-`achieve` coordinates existing workflows such as `ideation`, `spec`, `impl`,
-`debug`, `quality`, `issue`, `critique`, and `retro`. It does not replace those
-skills, ship the host objective command, or create a separate execution engine.
+Route: `achieve`. Binding, cursor, and `/goal #N` live in
+[goal-lifecycle.md](./goal-lifecycle.md).
 
 ## Direct Invocation
 

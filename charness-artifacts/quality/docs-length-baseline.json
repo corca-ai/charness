@@ -1,18 +1,16 @@
 {
   "budget": 1000,
   "pages": {
-    "docs/artifact-policy.md": 1359,
-    "docs/authoring-preflight.md": 2340,
-    "docs/control-plane.md": 1403,
-    "docs/deferred-decisions.md": 5367,
+    "docs/artifact-policy.md": 1245,
+    "docs/authoring-preflight.md": 2307,
+    "docs/deferred-decisions.md": 5285,
     "docs/design-north-star.md": 1394,
     "docs/external-integrations.md": 1166,
-    "docs/goal-lifecycle.md": 2346,
+    "docs/goal-lifecycle.md": 1279,
     "docs/harness-composition.md": 1042,
-    "docs/host-packaging.md": 1389,
-    "docs/parallel-execution.md": 1078,
-    "docs/worktree-prepare.md": 1154
+    "docs/host-packaging.md": 1081,
+    "docs/parallel-execution.md": 1052
   },
   "schema": "charness.docs-length-baseline/v1",
-  "total": 20038
+  "total": 15851
 }

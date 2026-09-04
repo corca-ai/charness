@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 This document owns the detail behind the parallel-work rule in
 [AGENTS.md](../AGENTS.md). The root file states the default; this one states
@@ -76,11 +76,10 @@ worktree preflight. Do not create a second plan for that path. Use
 ref, or flag resolution is otherwise ambiguous, or when an irreversible/review
 boundary explicitly needs that receipt. It is a plan checker, not a runner.
 
-Each command declares `owner_target` and the standalone
-`{target:<owner_target>}` token in `argv` and `help_argv`; the checker refuses a
-mismatch or an embedded form such as `--input={target:<id>}`, and a plan outside
-the repo root. Preserve the report with the slice evidence when the fan-out
-crosses a release or review boundary.
+Token-binding identity lives in
+[`command_plan_preflight.py`](../scripts/gates_support/command_plan_preflight.py)
+(`_validate_owner_binding`). Preserve the report with the slice evidence when
+the fan-out crosses a release or review boundary.
 
 ## Disjoint Writers
 

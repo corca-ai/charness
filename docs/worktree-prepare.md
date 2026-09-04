@@ -6,16 +6,7 @@
 
 `charness worktree` is the structural answer to "agent created a git worktree, hooks went silent, node_modules was never installed" and to "eval tools created dozens of throwaway worktrees and never cleaned up."
 
-Six subcommands keep mutate-phase work honest:
-
-- `charness worktree create` / `add` — wraps `git worktree add`, then runs readiness doctor; `--prepare` runs the adapter-declared setup immediately. `--ephemeral` / `--owned` select lifetime ([worktree_lifetime.py](../scripts/worktree/worktree_lifetime.py)).
-- `charness worktree exec` — runs one command in a linked worktree with Python, pytest, coverage, and temporary output routed to an external runtime root.
-- `charness worktree doctor` — fast, read-only health probe of one worktree.
-- `charness worktree prepare` — runs the adapter-declared prepare commands and re-validates.
-- `charness worktree audit` — classifies every registered worktree as primary/active/prunable/stale; `--doctor` adds readiness, `--prune` reclaims expired ephemerals and missing metadata.
-- `charness worktree cleanup` — dry-runs teardown of a feature worktree, removes it with `--yes`; branch deletion requires local containment proof.
-
-`create`, `audit`, and `cleanup` take the repository as `--repo-root`; `doctor` and `prepare` take the worktree.
+Subcommands, flags, and exits live in [cli-reference](./cli-reference.md) and the argparse of each command. Lifetime identity lives in [worktree_lifetime.py](../scripts/worktree/worktree_lifetime.py). Canonical doctor checks live in [worktree_doctor_checks.py](../scripts/worktree/worktree_doctor_checks.py). Do not recopy those catalogs here.
 
 ## Why this exists
 
@@ -47,12 +38,6 @@ charness worktree audit --prune                  # reclaim expired ephemerals; p
 # After a local merge (dry-run without --yes):
 charness worktree cleanup --path ../feature-worktree --delete-merged-branch --yes
 ```
-
-Management commands emit one YAML document on stdout; `worktree exec` forwards
-the child's output and emits YAML only for its own preflight refusal. `doctor`
-and `prepare` exit 0 only on `pass`. `create` exits 0 on `pass`, 1 on `warn`
-(created, readiness still needs preparation), 2 on `fail`; `audit` exits 1 on
-`warn` (prunable, stale, or readiness failures), 2 on `fail`.
 
 ## When to run `create`
 
@@ -91,36 +76,12 @@ prepare:
         - install
 ```
 
-Notes:
-
-- `argv` lists must use **block-style YAML**; the repo-local loader does not parse inline `[a, b]` arrays.
-- `prepare.skip_if_doctor_passes` defaults to `false`; `--force` bypasses an established skip.
-- `doctor.checks` extends the canonical baseline: each is an `argv` invocation with optional `expect_exit_code` (default 0), `next_action_hint` surfaced on failure, and `covers`, the prepare command ids a pass establishes.
-- A skip is licensed only by that `doctor.checks[].covers` -> `prepare.commands[].id` relation, established when every prepare command has a unique id covered by a passing check (`_prepare_coverage` in [worktree_prepare_lib.py](../scripts/worktree/worktree_prepare_lib.py)); the payload reports it under `coverage`.
-- `prepare.dependency_reuse` (optional) names the install command (`command_id`), the lockfile, and the installed directory that [dependency reuse](#dependency-reuse) may link in place of running that command.
-- `doctor.disable_canonical_checks` opts out of a canonical check by id (`git_common_dir`, `hooks_path`, `lefthook_shim`, `husky_dir`). Use only when you genuinely do not use that hook surface.
-- `prepare.commands` are worktree setup commands, not lefthook hook commands. For consumer lefthook `pre-commit`/`pre-push` entries, apply the [hook failure visibility contract](../skills/public/setup/references/hook-failure-visibility.md): declare `fail_text`, retain a stable failure log for long gates, and avoid output-filter pipelines.
-
-## Dependency reuse
-
-Without copy-on-write, every fresh worktree paid a full install before bounded work started ([#792](https://github.com/corca-ai/charness/issues/792)). With `prepare.dependency_reuse` declared, prepare (so `create --prepare` and every `task run` lane) links an installed tree before the install command: first the parent (main) worktree when its lockfile digest matches, then the runtime cache `worktree-deps/` keyed by digest, directory, platform, architecture, install-tool and `node` versions, seeded when a fresh install passes doctor. `cp --reflink=always` is tried, then `cp -al`; when neither holds the install command runs. The payload's `dependency_reuse` key records `strategy`, `origin`, `source`, `reason`, and `cache_seed`. `--no-dependency-reuse` disables linking (a doctor-licensed skip still needs `--force`); `--force` alone does not disable reuse, because reuse is prepare. Hard links share inodes between the parent, the cache entry, and every worktree linked from either: package managers replace files, so installs in a lane leave the others intact, but an in-place edit under the linked directory reaches all of them. Recovery: delete the cache entry, prepare with `--no-dependency-reuse`. pnpm users should use the global virtual store ([module docstring](../scripts/worktree/worktree_dependency_reuse.py)).
-
-## Canonical doctor checks
-
-| id | What it checks | Failure means |
-| --- | --- | --- |
-| `git_common_dir` | `git rev-parse --git-common-dir` resolves. | Path is not a git checkout. |
-| `worktree_isolation` | Linked worktree vs main. `FAIL` only with `--require-isolation`; cannot be disabled. | A write-capable agent shares the parent index. |
-| `hooks_path` | If `core.hooksPath` is set, the resolved directory exists in this worktree. | Hook manager state is missing for this worktree. |
-| `lefthook_shim` | If `pre-commit` shim references lefthook, then `node_modules/lefthook-*/bin/lefthook` or PATH `lefthook` resolves. | Lefthook shim will silently exit 0 — hooks are dead. |
-| `husky_dir` | If `core.hooksPath` points at a husky `_/` directory, that directory exists. | Husky prepare step has not run in this worktree. |
-
-Checks return `pass`, `fail`, or `skipped` (precondition not met).
+Manifest field identity, skip coverage, and dependency-reuse linking live in the [schema](../integrations/worktree/manifest.schema.json), [worktree_prepare_lib.py](../scripts/worktree/worktree_prepare_lib.py) (`_prepare_coverage`), and [worktree_dependency_reuse.py](../scripts/worktree/worktree_dependency_reuse.py). `argv` lists use block-style YAML. `prepare.commands` are worktree setup, not lefthook hook commands; consumer lefthook entries follow the [hook failure visibility contract](../skills/public/setup/references/hook-failure-visibility.md).
 
 ## Recommended consumer setups
 
 - **pnpm monorepo:** pnpm's bare repo + `enableGlobalVirtualStore: true`; worktrees share the global store, `node_modules` is symlinks only, and `pnpm install` is near-instant ([pnpm guidance](https://pnpm.io/11.x/git-worktrees)).
-- **npm or yarn:** prepare commands typically `npm ci && npx husky install` or `yarn install --immutable && yarn lefthook install`; declare [dependency reuse](#dependency-reuse) so later worktrees link the parent's install.
+- **npm or yarn:** prepare commands typically `npm ci && npx husky install` or `yarn install --immutable && yarn lefthook install`; declare [dependency reuse](../scripts/worktree/worktree_dependency_reuse.py) so later worktrees link the parent's install.
 - **CoW filesystems (APFS, Btrfs, ZFS):** reuse takes the reflink path.
 
 ## Wiring with mutate-phase skills

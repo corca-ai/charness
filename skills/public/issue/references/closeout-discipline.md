@@ -6,6 +6,11 @@ Target Durability, and External-Source Identity sections below are the
 issue-specific instantiation of the shared
 `../../../shared/references/closeout-discipline.md` patterns.
 
+Ledger fields, critique/behavior/HOTL/consolidated carrier grammar, and
+source-preservation forms are rendered live by
+`$SKILL_DIR/scripts/describe_closeout_draft_shape.py` (use `--stub`
+for a starter carrier). Do not rediscover them by failing the validator.
+
 ## Created-Issue Ledger
 
 `issue new` closeout must render only from a verified ledger.
@@ -77,12 +82,12 @@ A second call without `target` is "reuse intent", not "rediscover from cwd".
 
 Resolution critique evidence is consumed at the close boundary, not only at
 commit time. For the default file-backed reviewer path, the consumer must read
-the durable worker report and require `approval_eligible: true`,
-`findings-received`, matching packet/input/result/parent identities, and the
-artifact's own Reviewed Input Identity. A `worker-delivered` line without that
-carrier is a refusal; process success or a non-empty output is not approval.
-The optional typed-subagent values remain a distinct execution branch and must
-not be silently reinterpreted as file-backed delivery.
+the durable worker report and require approval-eligible delivery with matching
+packet/input/result/parent identities and the artifact's own Reviewed Input
+Identity. A worker-delivered line without that carrier is a refusal; process
+success or a non-empty output is not approval. The optional typed-subagent
+values remain a distinct execution branch and must not be silently
+reinterpreted as file-backed delivery.
 
 `issue resolve` should prefer GitHub's built-in auto-close path over a manual
 close command whenever the backend can carry close keywords into default-branch
@@ -111,14 +116,18 @@ unsupported by the backend or failed after the pushed or merged remote state was
 verified. When manual close is used, say why auto-close was unavailable or
 insufficient, then run `issue_tool.py verify-closeout` with
 `--carrier manual-fallback`, `--manual-fallback-reason <reason>`, and
-`--expect-state CLOSED`. The helper and verifier must re-read GitHub state after comment plus close; they fail unless the final state is `CLOSED`. command success alone is not closeout, and carrier text alone is not closeout.
+`--expect-state CLOSED`. The helper and verifier must re-read GitHub state after comment plus close; they fail unless the final state is `CLOSED`; command success alone is not closeout, and carrier text alone is not closeout.
 
 Render the required shape BEFORE drafting the carrier, not after the validator
-rejects it: `describe_closeout_draft_shape.py --stub` prints a starter carrier,
-and without `--stub` it prints the full enforced shape — every classification's
-ledger fields, carrier rules, and manual-fallback reasons, rendered from the
-live verifier constants so it cannot drift from the gate. Discovering this shape
-by failing the validator is the documented waste this line exists to stop.
+rejects it:
+
+```bash
+python3 "$SKILL_DIR/scripts/describe_closeout_draft_shape.py" --stub
+python3 "$SKILL_DIR/scripts/describe_closeout_draft_shape.py"
+```
+
+Without `--stub` the script prints the full enforced shape from the live
+verifier constants so it cannot drift from the gate.
 
 Before a PR body, direct commit body, or manual close comment is published, run
 `issue_tool.py validate-closeout-draft` against the exact draft body. For a
@@ -137,40 +146,21 @@ manual fallback that closes the issue. Later lifecycle/audit artifacts
 they are separate publication surfaces and do not require a second issue
 closeout push once the carrier and GitHub state are verified.
 
-`verify-closeout` returns `carrier_verified` when close keywords and the
-classification ledger are present but no `--expect-state` was provided. That
-status is useful before push or merge, but it is not final closeout. Final
-issue-resolution closeout requires `status: verified`, which means every selected
-issue matched the expected GitHub state.
-
-The status tokens are compatibility vocabulary, not endpoints: each means only
-that this observer's checks passed over its channel. The payload therefore also
-carries an additive `confirmation` object — `observer`, `channel`, `scope`, and
-a pre-rendered `line` whose verb tracks the scope: it renders
-`confirmed: <observer> via <channel> (<scope>)` only for the final
-state-checked verdict, and the `carrier-checked:` verb with the same shape
-when only carrier-body checks ran, so a pre-publication pass never renders the
-stronger claim. **`line` is `None` whenever the verdict is not ok** — including
-when a later fold or a carrier check refuses the payload AFTER the line was
-rendered, which is how a refused verdict once shipped a `carrier-checked:`
-sentence (sweep row S23). When it is `None` there is nothing to quote: render
-the refusal and its reasons, never the bare status token. Final closeout records and
-closeout prose should render that line instead of re-claiming a bare
-`verified`, so the claim never sounds stronger than the observation. The line names the verifier's own
-observer and channel; it is not the distinct-observer behavioral confirmation
-the next section mandates. Existing artifacts that recorded bare status tokens
-are grandfathered as-written; do not reinterpret or rewrite them.
+Final closeout records should render the verifier's confirmation line when the
+payload is ok, and the refusal with its reasons when it is not — never a bare
+status token that sounds stronger than the observation. Existing artifacts that
+recorded bare status tokens are grandfathered as-written; do not reinterpret or
+rewrite them.
 
 ## Per-Issue Behavioral Verdict At Close (the irreversible-boundary mandate)
 
 Closing a GitHub issue — and merging a PR that closes it — is an **irreversible
 boundary**: others read the issue as "done", and a merge enters shared history
 others build on (a reopen does not undo that it was already read as resolved). So
-per *P4* of the authoring-repo-internal `<authoring-repo>/docs/design-north-star.md`, a
-`status: verified` / `CLOSED` state and a passing carrier are *claims* — the
-tracker flipped, the close keyword carried — **not** proof the reporter's
-job-to-be-done behavior actually happened. `status: verified` is **necessary but
-not sufficient.**
+per *P4* of the authoring-repo-internal `<authoring-repo>/docs/design-north-star.md`,
+a closed tracker state and a passing carrier are *claims* — the tracker flipped,
+the close keyword carried — **not** proof the reporter's job-to-be-done behavior
+actually happened. Tracker/`verify-closeout` success is **necessary but not sufficient.**
 
 Before reporting an issue resolved, for **each** closed issue render a behavioral
 verdict: confirm the issue's user-facing behavior — the reporter's JTBD acceptance
@@ -178,16 +168,16 @@ boundary — through an evidence channel **distinct from** the `CLOSED` state an
 the carrier body (a behavior test that exercises the fix, a provider/connector
 roundtrip, a fetch/readback of the affected surface, the actual artifact
 observation). When the behavior cannot be reached, record an explicit
-non-`verified` disposition naming why (the HOTL ledger statuses, or
+non-verified disposition naming why (the HOTL ledger statuses, or
 `local-only-by-contract` for a surface that is local by the resolution contract;
 see `../../hotl/references/ledger-and-dispositions.md`). **Re-reading
 `verify-closeout`'s `CLOSED` result or the carrier body is not this
 confirmation** — that is the same-proxy re-read *P4* names. The fresh-eye
-resolution critique (next section) is the natural distinct observer; render the
-per-issue verdict there. A `question`/`decision-needed` issue with no behavior
-change has nothing to confirm, so *this* floor is exempt — but the state check does
-NOT stand alone: the AI-provenance marker below applies to every classification, and
-a presented HOTL entry is judged whatever the classification claims to be.
+resolution critique is the natural distinct observer; render the per-issue
+verdict there. A `question`/`decision-needed` issue with no behavior change has
+nothing to confirm, so *this* floor is exempt — but the state check does NOT
+stand alone: the AI-provenance marker applies to every classification, and a
+presented HOTL entry is judged whatever the classification claims to be.
 
 This is a per-issue **question to render, never a completion condition to
 declare**: "confirm each issue, then close when all are confirmed" re-creates the
@@ -195,72 +185,16 @@ declare**: "confirm each issue, then close when all are confirmed" re-creates th
 remove — the obligation is to render the verdict-or-disposition per issue, not to
 gate the close on an aggregate "all confirmed".
 
-A **rung-1 presence floor** enforces exactly that obligation and no more.
-`verify-closeout` / `validate-closeout-draft` refuse a `bug` / `feature` /
-`deferred-work` carrier that is **silent** on a closed issue: it must carry a
-`Behavior #N: <…>` line naming the distinct evidence channel the behavior was
-confirmed through, **or** a typed non-`verified` disposition (a HOTL status, or
-`local-only-by-contract`); a single-issue carrier may use the `Behavior:`
-shorthand. The floor is **presence/form only** — it refuses *silence*, it never
-declares completion: `status: verified` stays necessary-not-sufficient, a typed
-non-`verified` disposition satisfies it exactly as a confirmation does, and
-whether the named channel is genuinely distinct from `CLOSED`/the carrier (or the
-disposition real) remains human or reviewer judgment, never the floor's. This is
-the third option between judgment-only prose and a terminal-green
-gate: a gate may *force the question*; it may not *declare* the behavior proven.
-Alongside it, an `AI-provenance:` marker is required on the agent-authored carrier
-so the irreversible external write is legible to that distinct observer. **That marker
-is required for EVERY classification**, not only the behavior-bearing ones: authorship
-is not a fact about behavior change, and an agent-posted `question` close comment is
-exactly as agent-authored as a `bug` one. A light close is lighter by two floors, not
-four.
-
-A sibling **rung-1 HOTL-disposition floor** (Direction-3) refuses an
-*undispositioned HOTL entry*. It is **presence-gated**: a carrier that presents no
-HOTL entry is inert (no live loop to dispose). When a `HOTL #N: <…>` entry
-(single-issue shorthand `HOTL: <…>`) IS present, its value must **lead with** one
-of the typed HOTL ledger statuses (`../../hotl/references/ledger-and-dispositions.md`)
-or `local-only-by-contract`; an entry that merely *mentions* one is refused. Leading
-is what separates a disposition from a report about one: an anchored recognizer
-refuses `not verified` and `a known issue with the provider`, which a
-carry-anywhere recognizer accepts as dispositioned. This is the
-first *typed* HOTL-status recognizer — the behavioral-verdict floor above accepts
-a HOTL status only as an opaque value. It reads the **carrier body** (never a
-fixed ledger path — the ledger schema/path is adapter-owned), and stays
-presence/form-only: it refuses *silence/malformation* on the typed status, never
-whether the disposition is *honest*.
-
-## Resolution-Critique Carrier Header
-
-For `bug` classifications, the carrier body
-must carry one of the following lines so `verify-closeout` can prove the
-resolution-critique sub-skill ran and is bound to the selected issue(s) (closing
-the self-substitution pattern):
-
-- `Critique: <path>` — a checked-in critique artifact under
-  `charness-artifacts/critique/` referencing the resolution. This shorthand is
-  valid only for one selected issue; the file must exist, be non-empty, and bind
-  to that issue number by basename or content.
-- `Critique: blocked <host-signal>` — the single-issue shorthand when the host
-  genuinely could not spawn the bounded fresh-eye subagent.
-- `Critique #N: <path>` or `Critique #N #M: <path>` — issue-bound or explicit
-  bundle critique evidence for multi-issue carriers. Every selected issue must
-  be bound by one of these lines.
-- `Critique #N: blocked <host-signal>` — when the host genuinely could not
-  spawn the bounded fresh-eye subagent. The **signal you write** must itself be
-  at least 20 characters; the `host-blocked-subagent:` head the skill prepends
-  does not count toward it, so terse signals like `host-down` are rejected. A
-  skipped critique also prints a non-blocking `REVIEW:` advisory naming the
-  skip — no fresh-eye review of that resolution exists, and the top-level
-  verdict alone does not say so.
+Presence/form of behavior, HOTL, critique, consolidated, and provenance lines is
+enforced by `validate-closeout-draft` / `verify-closeout`. Discover the live
+grammar with `describe_closeout_draft_shape.py` rather than copying it here. The
+floor forces the question; it does not declare the behavior proven. Whether a
+named channel is genuinely distinct from `CLOSED`/the carrier remains human or
+reviewer judgment.
 
 Routine `feature`, `deferred-work`, `question`, and `decision-needed`
-classifications skip this gate. A caller may still request critique when a
-feature or deferred close crosses a material boundary; that judgment does not
-create a mandatory checked-in artifact for every close. The bug gate runs before the
-existing ledger checks (`missing_close_keywords`, `missing_fields`,
-`state_mismatches`, `manual_comment_missing`) and the existing
-`_classification_requirements` field set is **not** extended. The full
+classifications skip the bug-only critique gate. A caller may still request
+critique when a feature or deferred close crosses a material boundary. The full
 contract lives at the authoring-repo-internal
 `<authoring-repo>/docs/prescribed-skill-closeout-contract.md`.
 
@@ -275,50 +209,17 @@ This release helper path is already its own verifier surface; ordinary
 `issue resolve` work uses `issue_tool.py verify-closeout` instead of reworking
 the release helper.
 
-## Consolidated Closes (a close that claims nothing about the defect)
+## Consolidated Closes
 
-`consolidated` is the sixth classification. It says the issue MOVED to an
-umbrella; it says nothing about whether the defect was fixed. It is **not**
-floor-exempt — it swaps the resolution floor for its own, and every check is
-machine-verifiable rather than prose a reviewer grades.
+`consolidated` says the issue MOVED to an umbrella; it says nothing about
+whether the defect was fixed. It swaps the resolution floor for a destination
+floor that is machine-verifiable. Meeting a resolution floor with false
+`Implementation:` / `Prevention:` sentences is worse than no floor.
 
-Why a sixth classification rather than reusing one. The resolution
-classifications demand `Implementation:` and `Prevention:`, so meeting that floor
-with a consolidation means writing sentences that are not true — and a floor met
-by writing false sentences is worse than no floor, because the false sentences
-become checked-in evidence. The exempt classifications (`question`,
-`decision-needed`) fit no better: they would misclassify the issue and open a
-path where any inconvenient bug reaches the light floor by relabelling.
-
-What a consolidated close owes:
-
-- `Consolidated into: #N` — present, naming exactly ONE destination, not a
-  self-reference, and not an issue the same carrier is closing.
-- **No repair claim.** `Implementation:`, `Prevention:`, `Resolution brief:`,
-  `Behavior #N:`, `HOTL #N:`, `Critique #N:`, or a `Fixes`/`Resolves` close
-  keyword is REFUSED. Diagnostic and scoping fields (`Root cause:`, `Siblings:`,
-  `Boundary:`) are fine — an unfixed issue can carry all three, and consolidating
-  a cluster IS a sibling search.
-- **A non-auto-closing carrier.** GitHub renders a keyword close as `completed`
-  with no reason argv to intercept, which asserts the repair this disposition
-  refuses. So it must close via
-  `issue_tool.py close-with-comment --reason "not planned"`, and `issue_close`
-  enforces that reason. `direct-commit` and `pr-body` are refused.
-- **An `AI-provenance:` marker**, same as every other classification. The
-  provenance floor is not scoped to the behavior-bearing classifications:
-  authorship is not a fact about behavior change, and this disposition's only
-  legal carriers are the two that write to GitHub directly. A consolidated body
-  with the three items above and no marker is refused before the mutation.
-
-Four facts are then read back from the TRACKER before the close lands: the
-destination exists, is OPEN at close time, its body names the issue moving into
-it, and it is not itself a consolidation. The third is load-bearing — only an
-edit to the DESTINATION can satisfy it, so the umbrella must name its members
-BEFORE its members close.
-
-An umbrella's OWN close carries the normal resolution floor and must state an
-outcome for every member it absorbed. Without that rule, consolidation is a
-laundering path: fifteen issues close quietly when one umbrella closes.
+Close via `issue_tool.py close-with-comment --reason "not planned"` — not via
+auto-closing carriers. Live destination/body grammar is in
+`describe_closeout_draft_shape.py` (rerun with `--classification consolidated`).
+An umbrella's own close must state an outcome for every member it absorbed.
 
 NOT YET EXERCISED END TO END. As shipped, no umbrella has been filed and no
 member closed through this path against a live tracker. The refusals are tested;
@@ -334,74 +235,14 @@ gather) may satisfy it, but only when the issue points to the asset/source
 identity clearly enough for a fresh session.
 
 When the issue is filed from an external originating context, the body must
-carry a `Source` block that (a) marks the external origin, and (b) **preserves
-the original user context** so a future resolver understands the requested
-intent without the current session's memory.
+mark that origin and preserve enough original user context that a future
+resolver understands the requested intent without the current session's memory.
+Internal-only issues are exempt. The discriminator is *did the originating
+context live outside this repo*.
 
-Required marker:
-
-- `Source origin:` — the external provider (`slack`, `notion`,
-  `google-workspace`, `browser`, `web`, …). Its presence is what makes the
-  preservation requirement apply; internal-only issues omit it.
-
-Identity fields (use a stable identity so a fresh session can re-find the
-source):
-
-- `Source identity:` — canonical URL or stable identifier of the source
-- `gathered:` — local gathered-artifact path when captured by `gather`
-  (typically under `charness-artifacts/gather/<date>-<topic>.md`)
-- `access:` — access mode (`public`, `private-grant`, `browser-mediated`, …)
-- `freshness:` — the `gather` artifact date or last-fetched timestamp
-
-Preservation — supply **at least one** of these auditable forms:
-
-1. `Source text:` — relevant original source text, verbatim enough that a
-   future resolver understands the intent without session memory. Form 1 is
-   **allowed and encouraged** for distributed-thread intent: paste the
-   load-bearing excerpt (keep it scoped; do not dump the whole thread). Quote
-   it with `>` prefixes so inner `key: value` lines are not misread as fields.
-2. `Re-read obligation:` — a stable `Source identity:` plus an explicit duty
-   that the resolving agent must re-read / verify that source before resolving
-   or closing.
-3. `Source degraded reason:` — when the source is **inaccessible** during
-   resolution, say so explicitly here; the closeout then classifies the proof
-   as degraded rather than silently closing on missing context.
-
-Format suggestion (form 1 + identity):
-
-```text
-## Source
-
-- Source origin: slack
-- Source identity: https://corca.slack.com/archives/.../p<ts>
-- gathered: charness-artifacts/gather/2026-05-09-<topic>.md
-- access: private-grant (slack-bot)
-- freshness: 2026-05-09T02:14Z
-- Source preservation: source-text
-- Source text: |
-    > earlier: "managed/dynamic progress tips, not hard-coded copy"
-    > now: "and the raw timestamp needs a shared time-rendering rule"
-```
-
-Form 2 swaps the last two lines for:
-
-```text
-- Source preservation: re-read-required
-- Re-read obligation: resolver must re-read Source identity before resolving or closing
-```
-
-Internal-only issues (filed from current repo state, failing commands, or
-local files) carry no `Source origin:` and are exempt. The discriminator is
-*did the originating context live outside this repo*; when yes, the marker +
-one preservation form are required, when no, the existing evidence/JTBD is
-enough.
-
-Enforcement: `issue_tool.py verify-closeout` and `validate-closeout-draft`
-fail (block) when the carrier body marks an external `Source origin:` but
-carries none of the three preservation forms — missing source preservation is
-a workflow risk, not optional prose style.
+Live field forms are in `describe_closeout_draft_shape.py`. Enforcement:
+`issue_tool.py verify-closeout` and `validate-closeout-draft` fail when an
+external origin is marked without a preservation form.
 `issue_tool.py check-source-preservation --body-file <path>` runs the same
-check over a created issue body or local artifact (add `--require-external` to assert the
-issue must be externally sourced). This consumes `gather` output by reference
-for identity, but form 1 deliberately preserves the load-bearing excerpt
-in-body.
+check over a created issue body or local artifact (add `--require-external` to
+assert the issue must be externally sourced).

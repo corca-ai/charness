@@ -1,36 +1,6 @@
 # Integration Locks
 
-`integrations/locks/*.json` is generated state.
+`integrations/locks/*.json` is generated state. Source policy lives in
+[`integrations/tools`](../tools). Do not hand-edit lock files.
 
-Source policy still lives in [integrations/tools](../tools).
-
-## Purpose
-
-Lock files record what one machine most recently observed or synced.
-
-Each per-tool file should keep one stable top-level shape:
-
-- `schema_version`
-- `tool_id`
-- `manifest_path`
-- optional `support`
-- optional `doctor`
-- optional `update`
-
-That lets `sync-support`, `doctor`, and `update-tools` contribute to one lock
-without overwriting each other's state.
-
-The sections mean:
-
-- `support`: support capability state, source path, cache path, content digest,
-  materialized repo-local paths, and last sync timestamp
-- `doctor`: detect and healthcheck results, version evaluation, and current
-  doctor status
-- `update`: last update attempt result plus post-update detect and healthcheck
-
-## Guardrails
-
-- do not edit lock files by hand
-- do not treat a lock file as portable source-of-truth policy
-- do not require a host-specific path in the manifest just to make a lock file
-  easier to write
+Schema: [`lock.schema.json`](./lock.schema.json).

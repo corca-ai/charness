@@ -356,31 +356,16 @@ command templates do not silently grow undocumented variables.
 ## Verify Closeout
 
 `issue_tool.py verify-closeout` audits an issue-resolution carrier before final
-closeout:
+closeout. Pass `--expect-state CLOSED` for the final GitHub state check; omit
+it only for a pre-push or pre-merge carrier-body audit. Carrier mode,
+classification ledger, and manual-fallback reasons are owned by the verifier
+and rendered by `describe_closeout_draft_shape.py`.
 
 ```bash
 python3 "$SKILL_DIR/scripts/issue_tool.py" verify-closeout \
   --repo <full_name> --number <n> --classification bug \
   --carrier direct-commit --commit-ref HEAD --expect-state CLOSED
 ```
-
-Carrier modes:
-
-- `direct-commit`: reads `git show -s --format=%B <commit-ref>` and requires
-  GitHub closing keywords for every `--number`.
-- `pr-body`: reads `--body-file` and requires closing keywords for every
-  `--number`; use this as a pre-merge carrier audit unless paired with final
-  `--expect-state CLOSED`.
-- `manual-fallback`: reads `--body-file`, requires
-  `--manual-fallback-reason` (`auto-close-unsupported`,
-  `auto-close-failed-after-remote-verification`, or
-  `operator-directed-manual-close`), and checks the manual close comment ledger.
-
-All carriers require an explicit `--classification` so the verifier can check
-the classification-specific closeout ledger. Without `--expect-state`, success
-means `status: carrier_verified`, not final issue closeout. Final issue closeout
-requires `--expect-state CLOSED`, which uses the selected backend's `view`
-operation and reports `status: verified` only when every issue is closed.
 
 For pre-push direct-to-default commits, use `validate-closeout-draft` instead of
 `verify-closeout`:
@@ -391,9 +376,8 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" validate-closeout-draft \
   --carrier direct-commit --commit-message-file <path>
 ```
 
-Success means `publication_status: ready_to_commit_push`; it does not prove
-remote issue state. After push, run `verify-closeout` with
-`--carrier direct-commit`, `--commit-ref <ref>`, and `--expect-state CLOSED`.
+After push, run `verify-closeout` with `--carrier direct-commit`,
+`--commit-ref <ref>`, and `--expect-state CLOSED`.
 
 ## Placeholders
 
@@ -473,18 +457,10 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" create \
   issue a second `create` command to verify the first one.
 - Never construct `gh issue create --body "<multi-line>"` (or the equivalent on
   another backend) from a raw body string — that is the body-corruption path.
-- After creating, the helper reads the issue back (`view --json number,body,url`),
-  confirms the returned issue number and repository identity, and reports
-  `body_verified`: `true` = stored body byte-identical; `false` =
-  mismatch (with a `stored_body_bytes` count); `null` = read-back not feasible
-  (number unparseable or view failed) and carries a `verify_error`. Treat
-  anything other than `true` as an unconfirmed write and re-check before
-  reporting success. A `false` can also mean the backend normalized the body
-  server-side (e.g. CRLF→LF or a trailing-newline tweak), not corruption —
-  inspect the diff rather than assuming a body-safety regression.
-- The create payload also carries `body_preview`, a bounded excerpt of the
-  submitted body for user-facing closeout summaries. It is context for what was
-  filed, not a substitute for `body_verified`.
+- After creating, treat anything other than a verified body readback as an
+  unconfirmed write and re-check before reporting success. The create helper
+  also returns `body_preview` for user-facing closeout summaries — context for
+  what was filed, not a substitute for body verification.
 - Provider-agnostic: a non-gh backend declares `commands.create` (and
   `commands.view`) with the `{repo}`/`{title}`/`{body_file}` and
   `{repo}`/`{number}`/`{json_fields}` placeholders; labels/milestone are

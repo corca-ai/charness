@@ -26,39 +26,16 @@ bash /tmp/charness-init.sh
 ```
 
 The [bootstrap script](https://github.com/corca-ai/charness/blob/main/init.sh)
-creates or reuses a managed checkout at `~/.agents/src/charness`, bootstraps its
-Python runtime, and runs `charness init`. That is what changes on your machine:
-
-- the managed checkout at `~/.agents/src/charness`, with the Python
-  environment it bootstraps under its ignored `.charness/` directory
-- the `charness` CLI and an optional `claude-charness` wrapper at `~/.local/bin`
-  (init does not edit your PATH)
-- the exported plugin under `~/.codex/plugins/charness` and the personal
-  marketplace at `~/.agents/plugins/marketplace.json`; when the Codex CLI is
-  present, Codex itself records the plugin cache and enabled entry under
-  `~/.codex/`
-- Claude marketplace and plugin registration under `~/.claude/plugins` when
-  Claude Code is installed, and a Grok Build copy at `~/.grok/plugins/charness`
-- install, host, and version state under `~/.local/state/charness/`
-
-Details are in [host packaging](./docs/host-packaging.md), under
-[Repo-Root Install Surface](./docs/host-packaging.md#repo-root-install-surface).
+creates or reuses a managed checkout and runs `charness init`. Paths and
+lifecycle identity live in [host packaging](./docs/host-packaging.md).
+The CLI is there so humans and agents can inspect local harness state instead of guessing.
+`charness --help` lists the surface; [CLI Reference](./docs/cli-reference.md)
+documents every command. `charness doctor` inspects the local install.
+Refresh the installed surface with `charness update`; `charness update all` also
+updates tracked external integrations. After `charness init` or
+`charness update`, restart the host before the first prompt.
 
 Your own repositories are only modified when you ask a skill to modify them.
-
-Hosts load the plugin at startup, so after `charness init` or `charness update`,
-restart Claude Code or start a new Codex session before your first prompt. The
-CLI prints the same instruction when it finishes.
-
-`charness update` fast-forwards the managed checkout and reinstalls the
-surfaces; `charness update all` also runs `charness tool update` for every
-tracked external integration. `charness doctor` inspects the local install.
-`charness uninstall` removes the install surface, with `--delete-checkout` and
-`--delete-cli` for the checkout and the CLI.
-
-The CLI is there so humans and agents can inspect local harness state instead of
-guessing. `charness --help` lists the surface; the
-[CLI Reference](./docs/cli-reference.md) documents every command.
 
 ## Use
 
@@ -92,15 +69,7 @@ it proposes.
 
 ## What it is
 
-- **Optimized for long workflows.** The interesting unit is a multi-session
-  objective, not a single prompt.
-- **Adapted, not adopted.** Adapters bend the workflows to your repository and
-  your taste instead of asking you to accept the defaults.
-- **Documentation treated as code**, with an obsession for progressive
-  disclosure — [AGENTS.md](./AGENTS.md) is the worked example.
-- **A public/support skill split**, so workflow names stay few and tool-specific
-  knowledge stays underneath them.
-- **A retro loop with lesson promotion and retirement**, so what a session
-  learned reaches the next one and what stopped earning its place leaves.
-- **An obsession with code quality**, including deleting what no longer pays for
-  itself.
+The north star, public/support split, and docs-as-code contract live on their
+owning pages: [design north star](./docs/design-north-star.md),
+[support skill policy](./docs/support-skill-policy.md),
+[documentation principles](./docs/documentation-principles.md).
