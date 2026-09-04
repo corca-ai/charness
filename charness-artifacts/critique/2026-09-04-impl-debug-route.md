@@ -34,11 +34,11 @@ reviewed separately by a bounded read-only reviewer.
 - Negative control: none with rationale: the reviewers' `block` verdicts on the first draft are the evidence that the review channel discriminates; no refusal path is claimed.
 - Subject identity: sha256:cb076af724e11db86e573c174976f715268c207358b86cf966ebedc93ecace0c
 - Verifier identity: sha256:fdae081f53f503cfc7eb37bd0790ab07ad0ee04855e2af9f0bf6d47f11c5ae08
-- Input identity: sha256:c173dd153b9b410283a5c2d6afc77790f656da74bb292fce9fd92420431ed2ee
+- Input identity: sha256:11b2ff9f9bc22d453d9363bfd489fe37e94d56f321cf770201774f18ae80107e
 - Failure identity: stable:none
 - Evidence identity: none
 - Retry disposition: first-attempt
-- Retry key: sha256:688d992c299b9635b91f89a82f991c5ebd7d04fdcc5c319ec52165a507db64f7
+- Retry key: sha256:b5779cf43ea6dfbe1ab0dcf4c539bad747effe9c0666e78fd3382ad7186aa6c9
 
 ## Failure Angles
 
@@ -112,30 +112,31 @@ make no wall-clock call). Its packet is named under Reviewed Input Identity.
 - Application state: unverified-by-packet; the packet records the request, not the model the host chose.
 - Delivery state: findings-received
 - Execution mode: file-backed-worker
-- Worker report: .charness/reviewer-round-impl-debug-route-final-1/worker-report.yaml
-- Earlier rounds: `.charness/reviewer-round-impl-debug-route-weinberg-1/`, `-raskin-2/`, `-repair-verify-1/` (run state, not tracked).
-- Worker report identity: 2c5bcb8e647bf00259494b1306893d1202c90e713cda2c21bb52753778375818
+- Worker report: .charness/reviewer-round-impl-debug-route-final-2/worker-report.yaml
+- Earlier rounds: `.charness/reviewer-round-impl-debug-route-weinberg-1/`, `-raskin-2/`, `-repair-verify-1/`, `-final-1/` (run state, not tracked).
+- Worker report identity: 706a8f92ac5f910810276706abcd8c8b85b8309af213670cb97f236bc7b4153c
 - Worker report approval: approval_eligible: true
 - Worker report delivery: findings-received
-- Worker report packet identity: b3d8083fb9433fd5c41f02a127335ebec28db0837367e2dba9efe9687bc62bc1
-- Worker report input identity: c173dd153b9b410283a5c2d6afc77790f656da74bb292fce9fd92420431ed2ee
-- Worker report parent receipt identity: parent-7e5ed93e44da821706046c28b2c0dec8bb471e9972a21e79
-- Worker report findings identity: 7f3e5f4c16dc19b510e14b9e4c69c92c29f7cec6e905d63aa0f386422227fd7b
+- Worker report packet identity: 66ad724a3e5a75311da6aa8b814dda21ba0065a2659342e41a6b650cb8e78de4
+- Worker report input identity: 11b2ff9f9bc22d453d9363bfd489fe37e94d56f321cf770201774f18ae80107e
+- Worker report parent receipt identity: parent-c602a6c0868002a92bf1f3c633417518336393a41a79d840
+- Worker report findings identity: 6b734843e958446fb64a08e95e9a6719961e5902671a0bfc522fea68019830e6
 
 ## Fresh-Eye Satisfaction
 
-worker-delivered; four file-backed Codex workers ran through `run_review.py`. Reviewers 1 and 2 (Weinberg/Ousterhout ownership, Raskin first-reader) delivered `block` on the first draft; reviewer 3 (repair verification) delivered `block` with three wording gaps; reviewer 4 (final bytes) delivered `pass`, `approval_eligible: true`, on the exact subject identity above. No same-context substitute was used.
+worker-delivered; five file-backed Codex workers ran through `run_review.py` on the two skill surfaces. Reviewers 1 and 2 (Weinberg/Ousterhout ownership, Raskin first-reader) delivered `block` on the first draft; reviewer 3 (repair verification) delivered `block` with three wording gaps; reviewer 4 (final bytes) delivered `pass`, `approval_eligible: true`, on the impl subject identity above; reviewer 5 (final-2) read impl unchanged plus the one-bullet debug change and delivered `pass`, `approval_eligible: true`. No same-context substitute was used.
 
 ## Reviewed Input Identity
 
-- Packet consumed: charness-artifacts/critique/impl-debug-route-final-1-packet.json
-- Packet path: charness-artifacts/critique/impl-debug-route-final-1-packet.json
-- Packet SHA256: b3d8083fb9433fd5c41f02a127335ebec28db0837367e2dba9efe9687bc62bc1
-- Identity SHA256: c173dd153b9b410283a5c2d6afc77790f656da74bb292fce9fd92420431ed2ee
+- Packet consumed: charness-artifacts/critique/impl-debug-route-final-2-packet.json
+- Packet path: charness-artifacts/critique/impl-debug-route-final-2-packet.json
+- Packet SHA256: 66ad724a3e5a75311da6aa8b814dda21ba0065a2659342e41a6b650cb8e78de4
+- Identity SHA256: 11b2ff9f9bc22d453d9363bfd489fe37e94d56f321cf770201774f18ae80107e
+- Reviewer 4 packet: charness-artifacts/critique/impl-debug-route-final-1-packet.json, SHA256 b3d8083fb9433fd5c41f02a127335ebec28db0837367e2dba9efe9687bc62bc1, identity c173dd153b9b410283a5c2d6afc77790f656da74bb292fce9fd92420431ed2ee, verdict pass, approval-eligible (impl final bytes).
 - Reviewer 3 packet: charness-artifacts/critique/impl-debug-route-repair-verify-1-packet.json, SHA256 659fc911267111bf17bfa4cc6da76354efa6bc56e597cadf990a08d15283450e, identity 7ae92ecbdae1723ebff33dcfba92f5db4fb8cecb847fe20b8fd4efa827e558df, verdict block, three wording gaps.
 - Reviewer 1 packet: charness-artifacts/critique/impl-debug-route-weinberg-1-packet.json, SHA256 4bca88c074ec041de97af5b0acf73faaae98066757e87181720f1935996b45a7, identity 028c40b32436808e24e97b113cd46c73fa5d36b08fdc07b26b2bded0c5844b72, verdict block, three findings.
 - Reviewer 2 packet: charness-artifacts/critique/impl-debug-route-raskin-2-packet.json, SHA256 04d6fc96016090314c1886068333c396b06043554d7dc14525c9d494448d7eee, identity 15b1eb5dd241267cb72388feee43ab09a3ce06dcb722157409d8420a70114759, verdict block, three findings.
-- Reviewer 4 read the final tree; the subject identity above is that tree.
+- Reviewer 5 read the final tree of both skills; the impl subject identity above is unchanged since reviewer 4.
 - Task-run code critique packet: charness-artifacts/critique/task-run-790-791-code-1-packet.json, SHA256 75c24e38251fdaeb43001dba91ddf435955169b6db1cbbe0f9bc4736d7a24f51, identity d5d33a1987362b178a096e70e4e2eab270926912603c3cb7a41b3c9dbb131cd1, verdict block, four findings (commit 793758b6a).
 - Task-run repair-verification packet: charness-artifacts/critique/task-run-790-791-repair-verify-1-packet.json, SHA256 23b8998eef52f1222274c26cc809ec7768fca07a55b4bc52d4e9ccda0949ee7b, identity 5ade27d84510d40a597d39626f7ad289dd21e1c35b19626da51e04db56599beb, verdict pass, approval-eligible (commit 286a2a745).
 
@@ -156,7 +157,13 @@ without migration, which is the minor shape in `version-policy.md`; no public
 skill, CLI subcommand, adapter key, or install surface gained or lost a
 member. The README review was two bounded read-only reviewers, separate from
 the four workers above; their install-list findings are the corrections in
-commit `b528a0add`. The task-run change has its own code critique below.
+commit `b528a0add`. The task-run change has its own code critique below. Two further changes
+ride in this release: `debug` step 5 now names the verifier as a candidate
+cause when the symptom is its verdict (one bullet; ergonomics and core
+headroom 155/160 pass), and the release changed-line gate's loader scan stays
+flat at the repo root and skips an undecodable file (verifier defect found by
+this release's own lane; debug record
+`charness-artifacts/debug/2026-09-04-debug-review.md`).
 
 ## Boundary Ownership
 
