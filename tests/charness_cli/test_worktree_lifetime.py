@@ -420,12 +420,13 @@ def test_lifetime_covers_remaining_error_branches(tmp_path: Path, monkeypatch) -
 
     class Proc:
         returncode = 0
-        stdout = "worktree /tmp/locked-wt\nlocked\n\nworktree /tmp/other-wt\n"
+        stdout = "worktree /tmp/locked-wt\nlocked\nworktree /tmp/other-wt\n"
         stderr = ""
 
     monkeypatch.setattr(lifetime, "run_process", lambda *args, **kwargs: Proc())
     entries = lifetime._registered_worktrees(tmp_path)
     assert any(entry.get("locked") for entry in entries)
+    assert len(entries) == 2
     assert lifetime._record_path({}) is None
     assert lifetime._is_idle(tmp_path / "missing", now=time.time(), idle_days=1.0) is True
     assert lifetime._worktree_is_dirty(tmp_path / "missing") is False
