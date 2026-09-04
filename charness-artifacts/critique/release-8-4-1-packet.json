@@ -1,0 +1,458 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-04T08:38:18Z",
+  "prepared_for": "release-8.4.1-docs-cut",
+  "changed_ref": "85ede6996471d7867fdff1f49bb32885251ead53..1e9c5e2e899d1209cdebd05a31f51a1080efd910",
+  "substrate_mode": "committed-ref",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `85ede6996471d7867fdff1f49bb32885251ead53..1e9c5e2e899d1209cdebd05a31f51a1080efd910`:\n- .agents/claude-host.md\n- .agents/codex-host.md\n- .agents/quality-adapter.yaml\n- AGENTS.md\n- README.md\n- charness-artifacts/probe/2026-09-04-v8.4.0-release-observer.json\n- charness-artifacts/quality/docs-length-baseline.json\n- charness-artifacts/release-review/2026-09-04-v8.4.0-claims-review.md\n- charness-artifacts/release-review/2026-09-04-v8.4.0-prepared-claims-review.json\n- charness-artifacts/release/latest.md\n- charness-artifacts/spec/2026-09-04-copy-held-by-test.md\n- charness-artifacts/spec/2026-09-04-deferred-decisions-archive.md\n- docs/agent-task-runs.md\n- docs/artifact-policy.md\n- docs/authoring-preflight.md\n- docs/capability-resolution.md\n- docs/control-plane.md\n- docs/development.md\n- docs/documentation-principles.md\n- docs/export-boundary.md\n- docs/external-integrations.md\n- docs/goal-lifecycle.md\n- docs/harness-composition.md\n- docs/host-packaging.md\n- docs/index.md\n- docs/operating-contract.md\n- docs/operator-acceptance.md\n- docs/parallel-execution.md\n- docs/proof-semantics-adapter.md\n- docs/provenance-placement.md\n- docs/runtime-capability-contract.md\n- docs/support-skill-policy.md\n- docs/validator-timing-layers.md\n- docs/workflow-routes.md\n- docs/worktree-prepare.md\n- integrations/locks/README.md\n- integrations/tools/README.md\n- scripts/adapters/proof_semantics_adapter_lib.py\n- scripts/gates/check_code_lengths.py\n- scripts/gates/inventory_measurement_lib.py\n- scripts/gates/measure_inventory_consumption_floor.py\n- scripts/gates/measure_inventory_marker_rule.py\n- scripts/gates/validate_inventory_consumption.py\n- scripts/gates_support/classify_t_signal.py\n- scripts/gates_support/command_carrier_discovery.py\n- scripts/gates_support/operator_acceptance_lib.py\n- skills/public/announcement/references/delivery-seams.md\n- skills/public/critique/adapter.example.yaml\n- skills/public/critique/references/adapter-contract.md\n- skills/public/critique/references/prepare-packet.md\n- skills/public/issue/SKILL.md\n- skills/public/issue/references/closeout-discipline.md\n- skills/public/issue/references/issue-backend.md\n- skills/public/issue/references/resolve-flow.md\n- skills/public/issue/scripts/resolve_adapter.py\n- skills/public/quality/SKILL.md\n- skills/public/quality/references/adapter-contract.md\n- skills/public/quality/references/mutation-testing.md\n- skills/public/quality/references/standing-doc-provenance.md\n- skills/public/release/SKILL.md\n- skills/public/release/references/critique-boundary.md\n- skills/public/setup/references/operator-acceptance-synthesis.md\n- skills/shared/references/bootstrap-resolution.md\n- skills/shared/references/fresh-eye-subagent-review.md\n- skills/support/markdown-preview/SKILL.md\n- skills/support/markdown-preview/references/runtime-contract.md\n- skills/support/web-fetch/SKILL.md\n- skills/support/web-fetch/references/routing-table.md\n- skills/support/web-fetch/references/runtime-contract.md\n- tests/coverage_debt/test_batch7.py\n- tests/quality_gates/test_inventory_ci_local_gate_parity.py\n- tests/quality_gates/test_issue_closeout_discipline.py\n- tests/test_authoring_preflight_reference.py\n- tests/test_classify_t_signal.py\n- tests/test_inventory_marker_rule_measurement.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: README.md, integrations/locks/README.md, integrations/tools/README.md, scripts/adapters/proof_semantics_adapter_lib.py, scripts/gates/check_code_lengths.py, scripts/gates/inventory_measurement_lib.py, scripts/gates/measure_inventory_consumption_floor.py, scripts/gates/measure_inventory_marker_rule.py, scripts/gates/validate_inventory_consumption.py, scripts/gates_support/classify_t_signal.py, scripts/gates_support/command_carrier_discovery.py, scripts/gates_support/operator_acceptance_lib.py, skills/public/announcement/references/delivery-seams.md, skills/public/critique/adapter.example.yaml, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/prepare-packet.md, skills/public/issue/SKILL.md, skills/public/issue/references/closeout-discipline.md, skills/public/issue/references/issue-backend.md, skills/public/issue/references/resolve-flow.md, skills/public/issue/scripts/resolve_adapter.py, skills/public/quality/SKILL.md, skills/public/quality/references/adapter-contract.md, skills/public/quality/references/mutation-testing.md, skills/public/quality/references/standing-doc-provenance.md, skills/public/release/SKILL.md, skills/public/release/references/critique-boundary.md, skills/public/setup/references/operator-acceptance-synthesis.md, skills/shared/references/bootstrap-resolution.md, skills/shared/references/fresh-eye-subagent-review.md, skills/support/markdown-preview/SKILL.md, skills/support/markdown-preview/references/runtime-contract.md, skills/support/web-fetch/SKILL.md, skills/support/web-fetch/references/routing-table.md, skills/support/web-fetch/references/runtime-contract.md\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: AGENTS.md, README.md, charness-artifacts/release-review/2026-09-04-v8.4.0-claims-review.md, charness-artifacts/release/latest.md, charness-artifacts/spec/2026-09-04-copy-held-by-test.md, charness-artifacts/spec/2026-09-04-deferred-decisions-archive.md, docs/agent-task-runs.md, docs/artifact-policy.md, docs/authoring-preflight.md, docs/capability-resolution.md, docs/control-plane.md, docs/development.md, docs/documentation-principles.md, docs/export-boundary.md, docs/external-integrations.md, docs/goal-lifecycle.md, docs/harness-composition.md, docs/host-packaging.md, docs/index.md, docs/operating-contract.md, docs/operator-acceptance.md, docs/parallel-execution.md, docs/proof-semantics-adapter.md, docs/provenance-placement.md, docs/runtime-capability-contract.md, docs/support-skill-policy.md, docs/validator-timing-layers.md, docs/workflow-routes.md, docs/worktree-prepare.md, integrations/locks/README.md, integrations/tools/README.md, skills/public/announcement/references/delivery-seams.md, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/prepare-packet.md, skills/public/issue/SKILL.md, skills/public/issue/references/closeout-discipline.md, skills/public/issue/references/issue-backend.md, skills/public/issue/references/resolve-flow.md, skills/public/quality/SKILL.md, skills/public/quality/references/adapter-contract.md, skills/public/quality/references/mutation-testing.md, skills/public/quality/references/standing-doc-provenance.md, skills/public/release/SKILL.md, skills/public/release/references/critique-boundary.md, skills/public/setup/references/operator-acceptance-synthesis.md, skills/shared/references/bootstrap-resolution.md, skills/shared/references/fresh-eye-subagent-review.md, skills/support/markdown-preview/SKILL.md, skills/support/markdown-preview/references/runtime-contract.md, skills/support/web-fetch/SKILL.md, skills/support/web-fetch/references/routing-table.md, skills/support/web-fetch/references/runtime-contract.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/quality/docs-length-baseline.json, charness-artifacts/release/latest.md\n  verify: python3 scripts/gates/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/gates/validate_quality_artifact.py --repo-root ., python3 scripts/gates/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/announcement/references/delivery-seams.md, skills/public/critique/adapter.example.yaml, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/prepare-packet.md, skills/public/issue/SKILL.md, skills/public/issue/references/closeout-discipline.md, skills/public/issue/references/issue-backend.md, skills/public/issue/references/resolve-flow.md, skills/public/issue/scripts/resolve_adapter.py, skills/public/quality/SKILL.md, skills/public/quality/references/adapter-contract.md, skills/public/quality/references/mutation-testing.md, skills/public/quality/references/standing-doc-provenance.md, skills/public/release/SKILL.md, skills/public/release/references/critique-boundary.md, skills/public/setup/references/operator-acceptance-synthesis.md, skills/shared/references/bootstrap-resolution.md, skills/shared/references/fresh-eye-subagent-review.md, skills/support/markdown-preview/SKILL.md, skills/support/markdown-preview/references/runtime-contract.md, skills/support/web-fetch/SKILL.md, skills/support/web-fetch/references/routing-table.md, skills/support/web-fetch/references/runtime-contract.md\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/announcement/references/delivery-seams.md, skills/public/critique/adapter.example.yaml, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/prepare-packet.md, skills/public/issue/SKILL.md, skills/public/issue/references/closeout-discipline.md, skills/public/issue/references/issue-backend.md, skills/public/issue/references/resolve-flow.md, skills/public/issue/scripts/resolve_adapter.py, skills/public/quality/SKILL.md, skills/public/quality/references/adapter-contract.md, skills/public/quality/references/mutation-testing.md, skills/public/quality/references/standing-doc-provenance.md, skills/public/release/SKILL.md, skills/public/release/references/critique-boundary.md, skills/public/setup/references/operator-acceptance-synthesis.md, skills/shared/references/bootstrap-resolution.md, skills/shared/references/fresh-eye-subagent-review.md\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/announcement/references/delivery-seams.md, skills/public/critique/adapter.example.yaml, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/prepare-packet.md, skills/public/issue/SKILL.md, skills/public/issue/references/closeout-discipline.md, skills/public/issue/references/issue-backend.md, skills/public/issue/references/resolve-flow.md, skills/public/issue/scripts/resolve_adapter.py, skills/public/quality/SKILL.md, skills/public/quality/references/adapter-contract.md, skills/public/quality/references/mutation-testing.md, skills/public/quality/references/standing-doc-provenance.md, skills/public/release/SKILL.md, skills/public/release/references/critique-boundary.md, skills/public/setup/references/operator-acceptance-synthesis.md, skills/shared/references/bootstrap-resolution.md, skills/shared/references/fresh-eye-subagent-review.md\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- adapters: Repo-local adapter contracts and adapter helper libraries.\n  source matches: .agents/quality-adapter.yaml, scripts/adapters/proof_semantics_adapter_lib.py\n  verify: python3 scripts/gates/validate_adapters.py --repo-root .\n- release-claims-review-evidence: Committed, machine-readable claims-review evidence that binds a prepared local release record before publication may resume.\n  source matches: charness-artifacts/release-review/2026-09-04-v8.4.0-claims-review.md, charness-artifacts/release-review/2026-09-04-v8.4.0-prepared-claims-review.json\n  verify: for review_record in charness-artifacts/release-review/*.json; do [ -e \"$review_record\" ] && python3 -m json.tool \"$review_record\" >/dev/null || exit $?; done\n- mutation-testing-workflow: Repo-owned scheduled mutation testing workflow, runner config, and adapter slot behavior.\n  source matches: .agents/quality-adapter.yaml\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 -m pytest -q tests/quality_gates/test_quality_mutation_testing.py, python3 -m pytest -q tests/quality_gates/test_coverage_builder_policy_parity.py, python3 scripts/gates/check_github_actions.py --repo-root ., python3 scripts/gates/validate_adapters.py --repo-root ., python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-09-04-v8.4.0-release-observer.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- external-tool-control-plane: External tool manifests and install, update, doctor, support-sync, and upstream-release helpers whose behavior depends on host state.\n  source matches: integrations/tools/README.md\n  verify: python3 -m tools.validate_integrations --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  source matches: integrations/locks/README.md, integrations/tools/README.md\n  verify: python3 -m tools.validate_integrations --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/adapters/proof_semantics_adapter_lib.py, scripts/gates/check_code_lengths.py, scripts/gates/inventory_measurement_lib.py, scripts/gates/measure_inventory_consumption_floor.py, scripts/gates/measure_inventory_marker_rule.py, scripts/gates/validate_inventory_consumption.py, scripts/gates_support/classify_t_signal.py, scripts/gates_support/command_carrier_discovery.py, scripts/gates_support/operator_acceptance_lib.py, tests/coverage_debt/test_batch7.py, tests/quality_gates/test_inventory_ci_local_gate_parity.py, tests/quality_gates/test_issue_closeout_discipline.py, tests/test_authoring_preflight_reference.py, tests/test_classify_t_signal.py, tests/test_inventory_marker_rule_measurement.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- inference-interpretation-contract: Advisory-interpretation contract meta-validator (#330): the inference-layer surface registry plus every registered Python/prose declaration and its paired consumer reference.\n  source matches: scripts/gates/check_code_lengths.py\n  verify: python3 -m tools.validate_inference_interpretation --repo-root . --require-git-file-listing\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/adapters/proof_semantics_adapter_lib.py, scripts/gates/check_code_lengths.py, scripts/gates/inventory_measurement_lib.py, scripts/gates/measure_inventory_consumption_floor.py, scripts/gates/measure_inventory_marker_rule.py, scripts/gates/validate_inventory_consumption.py, scripts/gates_support/classify_t_signal.py, scripts/gates_support/command_carrier_discovery.py, scripts/gates_support/operator_acceptance_lib.py, skills/public/issue/scripts/resolve_adapter.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "committed-ref",
+    "substrate_mode": "committed-ref",
+    "changed_ref": "85ede6996471d7867fdff1f49bb32885251ead53..1e9c5e2e899d1209cdebd05a31f51a1080efd910",
+    "resolved_changed_ref": [
+      "85ede6996471d7867fdff1f49bb32885251ead53",
+      "1e9c5e2e899d1209cdebd05a31f51a1080efd910"
+    ],
+    "base_head": "1e9c5e2e899d1209cdebd05a31f51a1080efd910",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      ".agents/claude-host.md",
+      ".agents/codex-host.md",
+      ".agents/quality-adapter.yaml",
+      "AGENTS.md",
+      "README.md",
+      "charness-artifacts/probe/2026-09-04-v8.4.0-release-observer.json",
+      "charness-artifacts/quality/docs-length-baseline.json",
+      "charness-artifacts/release-review/2026-09-04-v8.4.0-claims-review.md",
+      "charness-artifacts/release-review/2026-09-04-v8.4.0-prepared-claims-review.json",
+      "charness-artifacts/release/latest.md",
+      "charness-artifacts/spec/2026-09-04-copy-held-by-test.md",
+      "charness-artifacts/spec/2026-09-04-deferred-decisions-archive.md",
+      "docs/agent-task-runs.md",
+      "docs/artifact-policy.md",
+      "docs/authoring-preflight.md",
+      "docs/capability-resolution.md",
+      "docs/control-plane.md",
+      "docs/development.md",
+      "docs/documentation-principles.md",
+      "docs/export-boundary.md",
+      "docs/external-integrations.md",
+      "docs/goal-lifecycle.md",
+      "docs/harness-composition.md",
+      "docs/host-packaging.md",
+      "docs/index.md",
+      "docs/operating-contract.md",
+      "docs/operator-acceptance.md",
+      "docs/parallel-execution.md",
+      "docs/proof-semantics-adapter.md",
+      "docs/provenance-placement.md",
+      "docs/runtime-capability-contract.md",
+      "docs/support-skill-policy.md",
+      "docs/validator-timing-layers.md",
+      "docs/workflow-routes.md",
+      "docs/worktree-prepare.md",
+      "integrations/locks/README.md",
+      "integrations/tools/README.md",
+      "scripts/adapters/proof_semantics_adapter_lib.py",
+      "scripts/gates/check_code_lengths.py",
+      "scripts/gates/inventory_measurement_lib.py",
+      "scripts/gates/measure_inventory_consumption_floor.py",
+      "scripts/gates/measure_inventory_marker_rule.py",
+      "scripts/gates/validate_inventory_consumption.py",
+      "scripts/gates_support/classify_t_signal.py",
+      "scripts/gates_support/command_carrier_discovery.py",
+      "scripts/gates_support/operator_acceptance_lib.py",
+      "skills/public/announcement/references/delivery-seams.md",
+      "skills/public/critique/adapter.example.yaml",
+      "skills/public/critique/references/adapter-contract.md",
+      "skills/public/critique/references/prepare-packet.md",
+      "skills/public/issue/SKILL.md",
+      "skills/public/issue/references/closeout-discipline.md",
+      "skills/public/issue/references/issue-backend.md",
+      "skills/public/issue/references/resolve-flow.md",
+      "skills/public/issue/scripts/resolve_adapter.py",
+      "skills/public/quality/SKILL.md",
+      "skills/public/quality/references/adapter-contract.md",
+      "skills/public/quality/references/mutation-testing.md",
+      "skills/public/quality/references/standing-doc-provenance.md",
+      "skills/public/release/SKILL.md",
+      "skills/public/release/references/critique-boundary.md",
+      "skills/public/setup/references/operator-acceptance-synthesis.md",
+      "skills/shared/references/bootstrap-resolution.md",
+      "skills/shared/references/fresh-eye-subagent-review.md",
+      "skills/support/markdown-preview/SKILL.md",
+      "skills/support/markdown-preview/references/runtime-contract.md",
+      "skills/support/web-fetch/SKILL.md",
+      "skills/support/web-fetch/references/routing-table.md",
+      "skills/support/web-fetch/references/runtime-contract.md",
+      "tests/coverage_debt/test_batch7.py",
+      "tests/quality_gates/test_inventory_ci_local_gate_parity.py",
+      "tests/quality_gates/test_issue_closeout_discipline.py",
+      "tests/test_authoring_preflight_reference.py",
+      "tests/test_classify_t_signal.py",
+      "tests/test_inventory_marker_rule_measurement.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/claude-host.md",
+        "content_sha256": "1f906bc15e9b487aedad31f4adf71cf0dfc624c95e901d228511a53cf0c56301"
+      },
+      {
+        "path": ".agents/codex-host.md",
+        "content_sha256": "549a26c98de26b19852a4f6479aba7487ee5f10a1a892009758a2ee7dcfd3440"
+      },
+      {
+        "path": ".agents/quality-adapter.yaml",
+        "content_sha256": "4a4e162b208e9182a8f17dfe3d610b5374bf9175dbc184fe362d4b5d687bde86"
+      },
+      {
+        "path": "AGENTS.md",
+        "content_sha256": "20289f8980cb89a799f0c8184cb841d3077ada821c7278ee4df21624d004b154"
+      },
+      {
+        "path": "README.md",
+        "content_sha256": "0015ac0b43a197c79a7828db96f573942fedbdc9409a53f1d25ce8a69681f068"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-04-v8.4.0-release-observer.json",
+        "content_sha256": "4c26ef8d047641bdcf9e32cac4d187806db5727bac83b6735ab42adf493906f0"
+      },
+      {
+        "path": "charness-artifacts/quality/docs-length-baseline.json",
+        "content_sha256": "a0d5de6cbcb68b45f4c19618960113de17001f50028c2ad0bd5900918ecb5962"
+      },
+      {
+        "path": "charness-artifacts/release-review/2026-09-04-v8.4.0-claims-review.md",
+        "content_sha256": "39f3f2b86eacc5b714ccfbf1d7db4b7cd75359e9b072470751caa8a4253922a1"
+      },
+      {
+        "path": "charness-artifacts/release-review/2026-09-04-v8.4.0-prepared-claims-review.json",
+        "content_sha256": "077504283dfaad28be3890289be43e146307cb4d5b2104cf45158166da4cd5d1"
+      },
+      {
+        "path": "charness-artifacts/release/latest.md",
+        "content_sha256": "ef355553851e28943f391a33dd23be18041d8538d0a9c927d899c7da13c8d5a0"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-09-04-copy-held-by-test.md",
+        "content_sha256": "fd7f02b508d9eec19e33312927eba6bf17379475d6c9506b971dbacad9c35675"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-09-04-deferred-decisions-archive.md",
+        "content_sha256": "c781ba58d592dc1d397266e5fe6654c7a14a852d43b3b041049a24b1e0e47a6b"
+      },
+      {
+        "path": "docs/agent-task-runs.md",
+        "content_sha256": "25124077b890e83bb398f2b69e147754477760b5a830b519a4f6724b1f86ec07"
+      },
+      {
+        "path": "docs/artifact-policy.md",
+        "content_sha256": "ca933c0819742cbead67fad4d848839817b25b92f96114551f1539cc1c676033"
+      },
+      {
+        "path": "docs/authoring-preflight.md",
+        "content_sha256": "d906c9e31582ad3ffd26ed91b7eb26f0802c8c6f58e35a217e64757255067fa0"
+      },
+      {
+        "path": "docs/capability-resolution.md",
+        "content_sha256": "f509e00e9103fac03426d96353f4a03d23273e963a6baf4eeb6ed1bebe8a220b"
+      },
+      {
+        "path": "docs/control-plane.md",
+        "content_sha256": "0c400570596718a71fe907a15ec94dba50344ca49dea87c66def1114d64f007b"
+      },
+      {
+        "path": "docs/development.md",
+        "content_sha256": "26b93c33948c3a8e6359999465996dd24d1ba5154437d2f2043d7fdc0e79ff56"
+      },
+      {
+        "path": "docs/documentation-principles.md",
+        "content_sha256": "3e5c704dd874931cd69578a18c73ddc29821a2f63493265fb2ea1768d3322fdd"
+      },
+      {
+        "path": "docs/export-boundary.md",
+        "content_sha256": "cb3707e0b7560a05d4d0a222bd46f41b7bd96cd29d1401f9f7e12ff98e63d9b8"
+      },
+      {
+        "path": "docs/external-integrations.md",
+        "content_sha256": "236effb1af59aed53c418bda2470fbf68174a9782905397c2194e18de5ac7a3f"
+      },
+      {
+        "path": "docs/goal-lifecycle.md",
+        "content_sha256": "e857e3729414bcd12c4df187f60ea333a6fd7da4f9d965a54027d532fc7b27f8"
+      },
+      {
+        "path": "docs/harness-composition.md",
+        "content_sha256": "309bfe086dd6cb3fc8e9af8743b72649e80c2fb88b45c2ba7e26613d83eba499"
+      },
+      {
+        "path": "docs/host-packaging.md",
+        "content_sha256": "e3e70a0f5c6e2170f61c45effdddfbd581ad2b6ad658ddba40d15e0a066c5691"
+      },
+      {
+        "path": "docs/index.md",
+        "content_sha256": "dc8fca3c48daf3a2ef133364a16ac0ea972ef2eee55acea8d8625801d1e863bf"
+      },
+      {
+        "path": "docs/operating-contract.md",
+        "content_sha256": "414cf5d58c401a51265b84fd117f966c05bf18aac563e92191a9cafa7621066f"
+      },
+      {
+        "path": "docs/operator-acceptance.md",
+        "content_sha256": "a67febee1d73a43c506ae7c3205b185a0b0d6d0fa08d1e9fad8cbd9efe1f4095"
+      },
+      {
+        "path": "docs/parallel-execution.md",
+        "content_sha256": "721b30f3f195994890e5c39fa2224d463378ba1ad350a25aa503b237b9e62c30"
+      },
+      {
+        "path": "docs/proof-semantics-adapter.md",
+        "content_sha256": "7d84d57446e0b9c37d2dace4ee92b8da43917630c37d933e7f00a32fc32a1adf"
+      },
+      {
+        "path": "docs/provenance-placement.md",
+        "content_sha256": "50b656b894a1c17dc92747fe9508160897937733d2601dccd2c668f21086d79a"
+      },
+      {
+        "path": "docs/runtime-capability-contract.md",
+        "content_sha256": "96775035d257c4cc13d0aebee56407d6aca86d12b315ec0af7a7441a665713de"
+      },
+      {
+        "path": "docs/support-skill-policy.md",
+        "content_sha256": "51d7ded84d804db80ea3708a0e72c11f135f85e9bfdf9a7ae2cabcea39c4ec8d"
+      },
+      {
+        "path": "docs/validator-timing-layers.md",
+        "content_sha256": "cca183ce78e6710e04a4c35ac7bce44d679d178aab1f9d6ac8336ce9473e0b7b"
+      },
+      {
+        "path": "docs/workflow-routes.md",
+        "content_sha256": "02f7d422fbb66d3eb96c398b7759831cc0b43d0dfa024551bc7e7a194649f99a"
+      },
+      {
+        "path": "docs/worktree-prepare.md",
+        "content_sha256": "4344ed724d88170ccc6627b4781f204dac4fc2c8217875afa2eb0c9eca0bcd5e"
+      },
+      {
+        "path": "integrations/locks/README.md",
+        "content_sha256": "3285ebc185e5a6c4682c8b039f6f49943964ec52e04d89dc3059fcd11f6af12f"
+      },
+      {
+        "path": "integrations/tools/README.md",
+        "content_sha256": "19e1346442cc47771163fe8cbd4cf5ddc3049682a4cda8741a17b323e26e4b94"
+      },
+      {
+        "path": "scripts/adapters/proof_semantics_adapter_lib.py",
+        "content_sha256": "578447a9aab3d020c3389740f5b9690134f4c6d793669348ffdd926007cfcf7e"
+      },
+      {
+        "path": "scripts/gates/check_code_lengths.py",
+        "content_sha256": "f64c39b1a4b70e1e9783083e5932e1867c9d29fac47485b8267a2161f6a8d618"
+      },
+      {
+        "path": "scripts/gates/inventory_measurement_lib.py",
+        "content_sha256": "ba2690edd818999097f71b1baf47cad2432a59b9cbd470e90046e9f26afdaa3c"
+      },
+      {
+        "path": "scripts/gates/measure_inventory_consumption_floor.py",
+        "content_sha256": "e9e3e4d44accf08938b4ebe2f17911d1489c2bcff9d3c9ee8fe477facb06df66"
+      },
+      {
+        "path": "scripts/gates/measure_inventory_marker_rule.py",
+        "content_sha256": "351d341e9378b969e26dfc637a7e0e18b618c54c444f3f1a55e763fb1d2dc2f9"
+      },
+      {
+        "path": "scripts/gates/validate_inventory_consumption.py",
+        "content_sha256": "c0cb376e18317da657c572623285d5db40674eef85986c39109f20ba54a155ca"
+      },
+      {
+        "path": "scripts/gates_support/classify_t_signal.py",
+        "content_sha256": "35ce2a73d77d1a33abb75f9dcfba70cc86441d97231ee090905b08cc8f165236"
+      },
+      {
+        "path": "scripts/gates_support/command_carrier_discovery.py",
+        "content_sha256": "92414d7df4f9abe16bf076c42d030234136a75a3fea80e5094ef18983457245a"
+      },
+      {
+        "path": "scripts/gates_support/operator_acceptance_lib.py",
+        "content_sha256": "7a192a0b2d7f13cad70665742c32c2dc0b1b3a97c981bfdeb9e9baf3bdbf00a6"
+      },
+      {
+        "path": "skills/public/announcement/references/delivery-seams.md",
+        "content_sha256": "01bdc201f8e68f40a598767852b25728994f384d85178071b8e738151867d3e7"
+      },
+      {
+        "path": "skills/public/critique/adapter.example.yaml",
+        "content_sha256": "7f448559a2c4bba93ca07b26470ecd851ae2e54cca26aa3037bbb99df8e4bb37"
+      },
+      {
+        "path": "skills/public/critique/references/adapter-contract.md",
+        "content_sha256": "bd387910ede811cea15ca418140a3740d6856dd081ee2edeb5264ee79da6c70f"
+      },
+      {
+        "path": "skills/public/critique/references/prepare-packet.md",
+        "content_sha256": "e8b411bf1dfa2669e81aafb587b79f097025351f46d50df45600f28bac4d68a0"
+      },
+      {
+        "path": "skills/public/issue/SKILL.md",
+        "content_sha256": "f50df61f09e27320cd5190fa2b8f11a535f8603c050fa8ee4f76d7490da35b40"
+      },
+      {
+        "path": "skills/public/issue/references/closeout-discipline.md",
+        "content_sha256": "6739a04a19169c2d89b5962a883cf0b2a25098c22cbd852a809f7b321e233261"
+      },
+      {
+        "path": "skills/public/issue/references/issue-backend.md",
+        "content_sha256": "21e0e6c3d545b0ccecee8bb0efbdfac4d8701a58b85e59ca1c8671ffa8c5815d"
+      },
+      {
+        "path": "skills/public/issue/references/resolve-flow.md",
+        "content_sha256": "5100b9837d991a7e27651afe60d7e25d8a7f6f8c1dfd2798d447c50244716fe6"
+      },
+      {
+        "path": "skills/public/issue/scripts/resolve_adapter.py",
+        "content_sha256": "11b6f94ee028afffc926c9a03d972d6aa1ab78e19ac39d133993885929b0b6fd"
+      },
+      {
+        "path": "skills/public/quality/SKILL.md",
+        "content_sha256": "8252b2f2de1236984f66e50848456d2a221169bc664aa6179bf4917a748e3af5"
+      },
+      {
+        "path": "skills/public/quality/references/adapter-contract.md",
+        "content_sha256": "d5ff7d3eba3bc73d8fdd3b308d603ed4580291096bc41ee56fb9fc9d035a7390"
+      },
+      {
+        "path": "skills/public/quality/references/mutation-testing.md",
+        "content_sha256": "9e7171b0aceb482fdb8d217446746f6efc73c767d86f53d69b52b6afb66bb54e"
+      },
+      {
+        "path": "skills/public/quality/references/standing-doc-provenance.md",
+        "content_sha256": "4b23e95096312bf15950bb12d1d1a84a7031f83b1e543b261e8262faff3e580f"
+      },
+      {
+        "path": "skills/public/release/SKILL.md",
+        "content_sha256": "24f4d80487fd30576c4563f6070ff70a0d017bb20f02f951fc2110039a4514e5"
+      },
+      {
+        "path": "skills/public/release/references/critique-boundary.md",
+        "content_sha256": "504d261ac4180a83f2ee3c817c889b723311ae7912ad6538ec0873ef28f872b7"
+      },
+      {
+        "path": "skills/public/setup/references/operator-acceptance-synthesis.md",
+        "content_sha256": "09028f7491eb3f281021102f8a760fd80980d4eeefd1d7c8bd9e281badef4afd"
+      },
+      {
+        "path": "skills/shared/references/bootstrap-resolution.md",
+        "content_sha256": "2460e7a74535862dda5fc6ee437f8ff3d8f2b6f06d6e67fd08df7ee6852e9993"
+      },
+      {
+        "path": "skills/shared/references/fresh-eye-subagent-review.md",
+        "content_sha256": "e67eafc93f307880f9d36eafed46cf0f1c14778bd82786809e65d8733ab88026"
+      },
+      {
+        "path": "skills/support/markdown-preview/SKILL.md",
+        "content_sha256": "740bf4f9511eaaf68f888c39a090a0dd42c017a94be41737044517562635bd64"
+      },
+      {
+        "path": "skills/support/markdown-preview/references/runtime-contract.md",
+        "content_sha256": "fe86ce11bb44a2eb820ab604fc2d9c18aa172c586d8b20738fe55f25e6f78c44"
+      },
+      {
+        "path": "skills/support/web-fetch/SKILL.md",
+        "content_sha256": "bde6749d0b5ff6a9aec9cd1ea2223444307b2c1b88bdc0565cd8ea01931ae9d9"
+      },
+      {
+        "path": "skills/support/web-fetch/references/routing-table.md",
+        "content_sha256": "2809dab4a8bfd9df19a0d0f67786d32dd777ee385560f9d445d6cc3c2bf17a99"
+      },
+      {
+        "path": "skills/support/web-fetch/references/runtime-contract.md",
+        "content_sha256": "674e7918a76b77c37fc53c930568ea60fb512cdcb5b1b323023e232f7c135571"
+      },
+      {
+        "path": "tests/coverage_debt/test_batch7.py",
+        "content_sha256": "c5432eb6d79850901f8296613453e728d6cae135c58c14d301cc73997f97e99b"
+      },
+      {
+        "path": "tests/quality_gates/test_inventory_ci_local_gate_parity.py",
+        "content_sha256": "c6ade9eb2696d0c4dc6d1e680d922b4645b0505450d3ef7318d66f9e03dc3487"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_closeout_discipline.py",
+        "content_sha256": "83a2e32d182088ab4dcbd98f24ea0e01964125de9c4d4544bdac614fddc4481e"
+      },
+      {
+        "path": "tests/test_authoring_preflight_reference.py",
+        "content_sha256": "5de2c68e0a41d353cccd3e84cf2e182db551c12c912b439ad0a729da57e295a1"
+      },
+      {
+        "path": "tests/test_classify_t_signal.py",
+        "content_sha256": "894336085849abc6b84f825032f38fd5b6cbd7e653301c7c17c118ba3f9c171c"
+      },
+      {
+        "path": "tests/test_inventory_marker_rule_measurement.py",
+        "content_sha256": "ab2b9144d84b5a107e6d9f2311bf586bcb2f38be466745f976269b3cf14ba504"
+      }
+    ],
+    "reviewed_patch_sha256": "03cfdeeb97bc2c7606e2286515c4f4bc8360a0effaba196e1a1a47a92dfd6d8e",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "1b35f452f6e01106fc572fd2f9b6be9ee4bc3ebf77ac1a5f15962e7c52133c15"
+  }
+}
