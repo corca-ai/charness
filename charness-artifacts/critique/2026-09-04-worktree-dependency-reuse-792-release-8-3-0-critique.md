@@ -52,7 +52,7 @@ the install command when a link held. `task run` lanes inherit it through
   `.agents/worktree-adapter.yaml`, two docs pages, the CLI reference;
   final consumers are `charness worktree prepare` in consumer repos and every
   `task run` lane in this one.
-- Minimum sufficient proof: twenty-three focused tests in
+- Minimum sufficient proof: twenty-four focused tests in
   `tests/charness_cli/test_worktree_dependency_reuse.py` (parent link, digest
   mismatch refusal, cache seed and fallback, existing directory untouched,
   reflink probed on one file, prepare skips the install command, installer runs
@@ -67,7 +67,7 @@ the install command when a link held. `task run` lanes inherit it through
   `hardlink`, origin `parent`, 178 ms) and a raw `git worktree add` followed by
   plain `worktree prepare` (hardlink from the parent, 1 s), `npm ls --depth=0`
   passing in both; `./scripts/check-docs.sh`; the full release read-only lane
-  `./scripts/run-quality.sh --full --release --read-only`; seven file-backed
+  `./scripts/run-quality.sh --full --release --read-only`; nine file-backed
   fresh-eye reviews.
 - Deliberately omitted checks: no CoW-filesystem live proof (no APFS/Btrfs/ZFS
   host available; the reflink branch is covered by the probe test and its
@@ -83,13 +83,13 @@ the install command when a link held. `task run` lanes inherit it through
   `skipped` term. Each was a subject defect, repaired, and the lane rerun.
 - Failure classification: subject-defect
 - Negative control: command `charness worktree create --prepare` on the tree before the manifest declaration was committed | expected refusal: no reuse, a full `npm ci` | observed result: link count 1 on the worktree's `node_modules/.package-lock.json`, install ran past the 5-minute window | receipt: session record 2026-09-04, first live run; the reuse path is inert without the declaration. <!-- reproduction-source -->
-- Subject identity: sha256:4b3bda2ece94a26b4b4ca5fcdf16df39987d73c9d3b3e9972d58b1294c2962cb
+- Subject identity: sha256:b84b84e3382713752e483f1ee06d87f0a71b2b1c66bcf0ae51885068223d24bc
 - Verifier identity: sha256:fdae081f53f503cfc7eb37bd0790ab07ad0ee04855e2af9f0bf6d47f11c5ae08
-- Input identity: sha256:88cb87e3db1663d0f8833179d631fa5a94df4add395263a3b72b2a92655be34b
+- Input identity: sha256:328112bdceb433b006e880638a0e1d0ca2f38e108ea4a3d150600441d958a9b1
 - Failure identity: stable:none
 - Evidence identity: none
 - Retry disposition: first-attempt
-- Retry key: sha256:81b4cf7d46ff0c19186cc53f389ec36940b3e97725f6d8330bb55e78013500af
+- Retry key: sha256:798649626bbc2f5540ad0ba709636e3607a137ac802b4469e945ad7b09a3bec6
 
 ## Failure Angles
 
@@ -163,6 +163,7 @@ the install command when a link held. `task run` lanes inherit it through
 - F19 | bin: act-before-ship | evidence: strong | ref: scripts/worktree/worktree_dependency_reuse.py | action: fix | note: `cache_entry` re-probed the runtime, so a version change between two probes could key the entry path with one fingerprint and write another to its metadata; the fingerprint is now observed once per seed or reuse and passed through, with a test that the path and metadata agree (reviewer 6 RV-F6-FINGERPRINT-SNAPSHOT).
 - F20 | bin: bundle-anyway | evidence: strong | ref: docs/worktree-prepare.md | action: fix | note: the page claimed `spec`, `impl`, and `hitl` bootstrap the doctor probe; `impl` has no such call (source-of-truth audit, item 4 on #793); corrected to `spec` and `hitl`. Reviewer 7 read this edit as part of the final tree.
 - F21 | bin: bundle-anyway | evidence: strong | ref: skills/public/quality/references/attention-state-visibility.json | action: fix | note: the `skipped` attention-state declaration still named `worktree_doctor_lib.py` after prepare moved out of it; the release lane's visibility gate refused, and the entry now names `worktree_prepare_lib.py`. A gate declaration relocated after reviewer 7, with no code change; not re-reviewed.
+- F22 | bin: act-before-ship | evidence: strong | ref: scripts/worktree/worktree_dependency_reuse.py | action: fix | note: version probes ran in the launcher's working directory, not the worktree, so corepack or a `packageManager` field selecting a tool per tree, or a relative launcher, could key the cache to the wrong runtime; the fingerprint is now observed with the target tree as cwd for both seed and reuse, with a test asserting the cwd (reviewer 8 F1, on content reviewer 7 had passed).
 - F17 | bin: act-before-ship | evidence: strong | ref: scripts/worktree/worktree_dependency_reuse.py | action: fix | note: a version probe that failed collapsed to the literal `absent`, so two unknown runtimes could share one cache entry, and a per-process probe cache ignored a PATH change; a probe that does not answer now yields no fingerprint, the cache is neither consumed nor published without one, `node` is probed only for the Node package managers, and nothing is cached across calls (reviewer 4 RV-F5-PROBE-1; test added).
 
 ## Operator Action Required
@@ -184,25 +185,27 @@ the install command when a link held. `task run` lanes inherit it through
 - Application state: unverified-by-packet; the packet records the request, not the model the host chose.
 - Delivery state: findings-received
 - Execution mode: file-backed-worker
-- Worker report: .charness/reviewer-round-release-8-3-0-code-7/worker-report.yaml
-- Worker report identity: bf91dd98a9fcfc3f2cb8d69494402fdda5b6e9c4e80ad4433d5a742645aa60ba
+- Worker report: .charness/reviewer-round-release-8-3-0-code-9/worker-report.yaml
+- Worker report identity: a69d9347e2f6ba63756d8c6758ce0ddc69d8a696e27333fe5cb67cd259cdb2b4
 - Worker report approval: approval_eligible: true
 - Worker report delivery: findings-received
-- Worker report packet identity: 24da3b65e9d8cf321b10e3c175598605519c79755a275c30581397e8e8ca152e
-- Worker report input identity: 88cb87e3db1663d0f8833179d631fa5a94df4add395263a3b72b2a92655be34b
-- Worker report parent receipt identity: parent-c0a52c1a38999bca175fdf878b0c848a1c98f28553212c38
-- Worker report findings identity: f4bff9dd59e5097e092e5a9647da4913bd2526e50bee5f0ba41c32c39c6f3e3b
+- Worker report packet identity: aa257fac51e9a200bce6cae7f0b9a1363725af7a03559153162eb5461e6974cb
+- Worker report input identity: 328112bdceb433b006e880638a0e1d0ca2f38e108ea4a3d150600441d958a9b1
+- Worker report parent receipt identity: parent-79f1302903fd86eeae5cab8ae49b02e7a8f42f81e12ff756
+- Worker report findings identity: 176879469356c3b38ddf1dd4afad40dad4705f845be1892fd48ba02d695455c1
 
 ## Fresh-Eye Satisfaction
 
-worker-delivered; seven file-backed Codex workers ran through `run_review.py`. Reviewer 1 (attempt `release-8-3-0-surface-1`, release lens: Gawande checklist and Raskin interface over the operator surface) read commits `ea20b31c3..d9509087e` and delivered `block` with five findings, four repaired in commit `d3ba6869e` (F1 to F5). Reviewer 2 (attempt `release-8-3-0-code-2`, code lens over hard-link failure modes) read `e191e89d4..d3ba6869e` and delivered `block` with six findings, repaired or dispositioned in commit `3be0cd98b` (F10 to F15). Reviewer 3 (attempt `release-8-3-0-code-3`, repair verification over `e191e89d4..3be0cd98b`) confirmed F1, F3, F4, and F6 of round 2 resolved and delivered `block` on one finding, RV-F5, repaired in commit `2d228d022` (F15). Reviewer 4 (attempt `release-8-3-0-code-4`, repair verification over `e191e89d4..2d228d022`) confirmed RV-F5 resolved and delivered `block` on one finding, RV-F5-PROBE-1, repaired in commit `68b7da9f3` (F17). Reviewer 5 (attempt `release-8-3-0-code-5`, over `e191e89d4..68b7da9f3`) confirmed the probe repair and delivered `block` for two missing tests and for this record's then-unfinished state; the tests landed in commit `6f20511c4` (F18). Reviewer 6 (attempt `release-8-3-0-code-6`, over `e191e89d4..6f20511c4`, with this record held out of the tree because it is written from the review's result) delivered `block` on one finding, RV-F6-FINGERPRINT-SNAPSHOT, repaired in commit `5fe84b296` (F19). Reviewer 7 (attempt `release-8-3-0-code-7`, repair verification over the final tree `e191e89d4..5fe84b296`, same hold-out) delivered `pass`, `approval_eligible: true`, with no findings. No same-context substitute was used for any of the seven. A bounded `Explore` subagent spawned for the source-of-truth audit reported only after the parent had repeated the audit against the real tree; its report confirmed F8 and F9 and added four more divergences plus one behavior defect, recorded on #793 and #794 and, for the false `impl` sentence, repaired here as F20.
+worker-delivered; nine file-backed Codex workers ran through `run_review.py`. Reviewer 1 (attempt `release-8-3-0-surface-1`, release lens: Gawande checklist and Raskin interface over the operator surface) read commits `ea20b31c3..d9509087e` and delivered `block` with five findings, four repaired in commit `d3ba6869e` (F1 to F5). Reviewer 2 (attempt `release-8-3-0-code-2`, code lens over hard-link failure modes) read `e191e89d4..d3ba6869e` and delivered `block` with six findings, repaired or dispositioned in commit `3be0cd98b` (F10 to F15). Reviewer 3 (attempt `release-8-3-0-code-3`, repair verification over `e191e89d4..3be0cd98b`) confirmed F1, F3, F4, and F6 of round 2 resolved and delivered `block` on one finding, RV-F5, repaired in commit `2d228d022` (F15). Reviewer 4 (attempt `release-8-3-0-code-4`, repair verification over `e191e89d4..2d228d022`) confirmed RV-F5 resolved and delivered `block` on one finding, RV-F5-PROBE-1, repaired in commit `68b7da9f3` (F17). Reviewer 5 (attempt `release-8-3-0-code-5`, over `e191e89d4..68b7da9f3`) confirmed the probe repair and delivered `block` for two missing tests and for this record's then-unfinished state; the tests landed in commit `6f20511c4` (F18). Reviewer 6 (attempt `release-8-3-0-code-6`, over `e191e89d4..6f20511c4`, with this record held out of the tree because it is written from the review's result) delivered `block` on one finding, RV-F6-FINGERPRINT-SNAPSHOT, repaired in commit `5fe84b296` (F19). Reviewer 7 (attempt `release-8-3-0-code-7`, repair verification over the final tree `e191e89d4..5fe84b296`, same hold-out) delivered `pass`, `approval_eligible: true`, with no findings. Reviewer 8 (attempt `release-8-3-0-code-8`, the same content on the commit-pinned range `e191e89d4..5fe84b296`, same hold-out) delivered `block` on one finding, the probe cwd, repaired in commit `5a332d7e8` (F22). Reviewer 9 (attempt `release-8-3-0-code-9`, final verification over the commit-pinned range `e191e89d4..5a332d7e8`, same hold-out) delivered `pass`, `approval_eligible: true`, with no findings. No same-context substitute was used for any of the nine. A bounded `Explore` subagent spawned for the source-of-truth audit reported only after the parent had repeated the audit against the real tree; its report confirmed F8 and F9 and added four more divergences plus one behavior defect, recorded on #793 and #794 and, for the false `impl` sentence, repaired here as F20.
 
 ## Reviewed Input Identity
 
-- Packet consumed: charness-artifacts/critique/release-8-3-0-code-7-packet.json
-- Packet path: charness-artifacts/critique/release-8-3-0-code-7-packet.json
-- Packet SHA256: 24da3b65e9d8cf321b10e3c175598605519c79755a275c30581397e8e8ca152e
-- Identity SHA256: 88cb87e3db1663d0f8833179d631fa5a94df4add395263a3b72b2a92655be34b
+- Packet consumed: charness-artifacts/critique/release-8-3-0-code-9-packet.json
+- Packet path: charness-artifacts/critique/release-8-3-0-code-9-packet.json
+- Packet SHA256: aa257fac51e9a200bce6cae7f0b9a1363725af7a03559153162eb5461e6974cb
+- Identity SHA256: 328112bdceb433b006e880638a0e1d0ca2f38e108ea4a3d150600441d958a9b1
+- Reviewer 8 packet: charness-artifacts/critique/release-8-3-0-code-8-packet.json, SHA256 b9ab6a3207038140752e0cb68775ea54a74e6b571cca4c6b9ad1196bc6ac1e0b, identity 553d8c6c801846308b56ddbbdc41e516e39ca2388384f0b03c036fc92d010b08, verdict block, one finding (probe cwd), worker report `.charness/reviewer-round-release-8-3-0-code-8/worker-report.yaml` (SHA256 8d5247706fca40a805f5de44217c07de7372c0c7a79cb0947689a6e61bc44e82), findings identity 6dc636abb4d5c6f1bcd30aea77844ca8cdf53a26051090f0fe3fa9087b71f444, parent receipt parent-ef9628821cad07de345f0dbf39ecf89ad8e5492bb70f4d83. <!-- reproduction-source -->
+- Reviewer 7 packet: charness-artifacts/critique/release-8-3-0-code-7-packet.json, SHA256 24da3b65e9d8cf321b10e3c175598605519c79755a275c30581397e8e8ca152e, identity 88cb87e3db1663d0f8833179d631fa5a94df4add395263a3b72b2a92655be34b, verdict pass, approval-eligible, no findings, worker report `.charness/reviewer-round-release-8-3-0-code-7/worker-report.yaml` (SHA256 bf91dd98a9fcfc3f2cb8d69494402fdda5b6e9c4e80ad4433d5a742645aa60ba), findings identity f4bff9dd59e5097e092e5a9647da4913bd2526e50bee5f0ba41c32c39c6f3e3b, parent receipt parent-c0a52c1a38999bca175fdf878b0c848a1c98f28553212c38. Its packet named the range as `e191e89d4..HEAD`, which the binding check re-resolves at the current HEAD, so it could not stay current once the record itself was committed; reviewer 8 re-read the same content on the commit-pinned range. <!-- reproduction-source -->
 - Reviewer 6 packet: charness-artifacts/critique/release-8-3-0-code-6-packet.json, SHA256 7c6f728b09eb103a695b543c36a2d5e3eee540aa31f1612f094445c5d170e62c, identity f053e5adee2664c49120318de0727d951c3be37f1390505dc73b29c2d218b835, verdict block, one finding (RV-F6-FINGERPRINT-SNAPSHOT), worker report `.charness/reviewer-round-release-8-3-0-code-6/worker-report.yaml` (SHA256 eacf056cf6cc52845366039a371d468c72f34a8e98f38c51b2efd3f9ae26dbcb), findings identity 6b7c0f77dd002cf8135ba75a988da784282c2d45f3cdd0b288e5563515892118, parent receipt parent-dc56d6bf40b12040996ddaae931dda79dae0e0f3fc62c2b0. <!-- reproduction-source -->
 - Reviewer 5 packet: charness-artifacts/critique/release-8-3-0-code-5-packet.json, SHA256 5a016067d9d2c0b1a1cfa6cca106b383e2107825d7329c8742aa5b6184b88f8b, identity 4e19a911f8399d4267e550d63c01157d062ada8a4c2e78e8e219db77d7f97716, verdict block, two findings (RV-F5-PROBE-TEST-1 on missing tests; RV-RECORD-1 on this record's then-unfinished state), worker report `.charness/reviewer-round-release-8-3-0-code-5/worker-report.yaml` (SHA256 3a72a7079e847c6ce919c89235d0d8ee55fc29fd44a6e59a8482489a31c1d122), findings identity 2e479a8ac31b5d718aae496d995aefa29dfbc0bc5322e651da3c5b19614cb8ac, parent receipt parent-85877dca8d40e2e14d2866693b822ee495ca6cb4d5c559fd. <!-- reproduction-source -->
 - Reviewer 4 packet: charness-artifacts/critique/release-8-3-0-code-4-packet.json, SHA256 2ca78e0099891cf24aac248d29ad0b7f822484fca0de0f3262fafc9ae73203e9, identity 551864768352ebddffb7bfa2111d18d55593c7a744403166fc750f31e7b83605, verdict block, one finding (RV-F5-PROBE-1), worker report `.charness/reviewer-round-release-8-3-0-code-4/worker-report.yaml` (SHA256 3c5c44d09b742134bad5e269a5e25788f3dfb5ab54a30628a94266613ae63442), findings identity 088a6ac7cff5001f4a7e0b269d0444ee5c3bdc0c0a2cda397ea5028b6042917b, parent receipt parent-cba8d75055cad390633e1d9f2aec7147febace9d85898696. <!-- reproduction-source -->
