@@ -21,18 +21,6 @@ question; it is not a second operating manual.
 
 ## Documentation
 
-Documentation is treated like code. Search and read the owning page before
-you touch anything; update it after you touch anything.
-
-- Reduce duplication, reveal intent, keep pages clear and simple. One page owns
-  one question; link related pages like a wiki instead of restating them.
-- [docs/index.md](./docs/index.md) is the entry point of all documentation.
-  Keep this file minimal and route to `docs/`; put detail in the owning page.
-- [README.md](./README.md) is the public user guide for people installing and
-  using charness. `docs/index.md` links it; it duplicates no `docs/` page.
-- Superseded decisions and dated evidence go to `charness-artifacts/`, not
-  `docs/`. [docs/documentation-principles.md](./docs/documentation-principles.md)
-  owns the authoring detail.
-
-`CLAUDE.md` is a compatibility symlink to this file; changing either needs the
-operator's explicit approval, and neither is a second source of truth.
+[docs/documentation-principles.md](./docs/documentation-principles.md) owns
+how current docs are written. Changing `AGENTS.md` or its `CLAUDE.md` symlink
+needs the operator's explicit approval.
