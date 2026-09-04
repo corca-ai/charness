@@ -277,6 +277,39 @@ def test_the_runtime_fingerprint_names_the_install_tool_and_node(
     ).install_argv == ("npm", "ci")
 
 
+def test_version_probes_are_not_cached_between_fingerprint_calls(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    answers = iter(["10.0.0\n", "11.0.0\n"])
+
+    def changing_capture(argv: list[str], timeout_seconds: int):
+        return 0, "", next(answers)
+
+    monkeypatch.setattr(reuse, "_run_capture", changing_capture)
+    spec = reuse.ReuseSpec("install-deps", "uv.lock", ".venv", ("uv", "sync"))
+
+    first = reuse.runtime_fingerprint(spec)
+    second = reuse.runtime_fingerprint(spec)
+
+    assert first.endswith("/uv=10.0.0") and second.endswith("/uv=11.0.0")
+
+
+def test_a_non_node_install_tool_never_probes_node(monkeypatch: pytest.MonkeyPatch) -> None:
+    probed: list[str] = []
+
+    def trapping_capture(argv: list[str], timeout_seconds: int):
+        probed.append(argv[0])
+        if argv[0] == "node":
+            raise AssertionError("node was probed for a non-Node install tool")
+        return 0, "", "0.4.0\n"
+
+    monkeypatch.setattr(reuse, "_run_capture", trapping_capture)
+    spec = reuse.ReuseSpec("install-deps", "uv.lock", ".venv", ("uv", "sync"))
+
+    assert reuse.runtime_fingerprint(spec).endswith("/uv=0.4.0")
+    assert probed == ["uv"]
+
+
 def test_reuse_leaves_an_existing_install_directory_alone(tmp_path: Path) -> None:
     target = tmp_path / "target"
     target.mkdir()
