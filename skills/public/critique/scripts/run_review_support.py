@@ -179,6 +179,13 @@ def repo_path(
     return lexical if lexical.is_symlink() else candidate
 
 
+def hold_out(root: Path, relative_paths: list[str]) -> Any:
+    module = load_module(Path(__file__).with_name("run_review_hold_out.py"), "charness_run_review_hold_out")
+    return module.hold_out(
+        root, relative_paths, resolve_path=repo_path, error_cls=RunReviewError
+    )
+
+
 def relative(root: Path, path: Path) -> str:
     """Repo-relative spelling of a path, WITHOUT following a symlink.
 
@@ -343,6 +350,21 @@ def run_runner(
                 signal.signal(signum, handler)
             except (ValueError, OSError):
                 pass
+
+
+def run_runner_held_out(
+    command: list[str],
+    *,
+    root: Path,
+    stdout_path: Path,
+    stderr_path: Path,
+    timeout: int,
+    hold_out_paths: list[str],
+) -> tuple[int | None, str, bool, str | None]:
+    with hold_out(root, hold_out_paths):
+        return run_runner(
+            command, root=root, stdout_path=stdout_path, stderr_path=stderr_path, timeout=timeout
+        )
 
 
 def load_mapping(path: Path) -> dict[str, Any] | None:

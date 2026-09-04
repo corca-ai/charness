@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and the executable commands it links
-> Last verified: 2026-09-03
+> Last verified: 2026-09-04
 
 This page owns the shortest safe path for changing and dogfooding Charness
 itself; detailed contracts stay with their owners.
@@ -69,12 +69,12 @@ then the broad lane) and the serial `mutate -> sync -> verify -> publish` in
 the parent are owned by
 [parallel execution](./parallel-execution.md#disjoint-writers).
 
-Each rule below names the mechanism that holds it. The mechanism's docstring
-owns the exact form and what it cannot see; this table does not repeat it.
+Each rule names the mechanism that holds it.
 
 | Rule | Held by |
 | --- | --- |
 | A code push runs the full read-only and release lanes | the pre-push hook ([pushing](#pushing)) |
+| `scripts/`/`skills/`/`docs/` commits need a matching release-lane receipt or `Slice-reopen:` | commit-msg [`check_release_lane_receipt.py`](../scripts/hooks/check_release_lane_receipt.py) |
 | A stale `plugins/` mirror is regenerated or refused, never read as a failure | the standing runner and the quality engine ([generated surfaces](./operating-contract.md#generated-surfaces)) |
 | A skipped gate is not a passed gate | the quality summary ([operating contract](./operating-contract.md#verification)) |
 | A passing test is not a covered line | [`release_changed_line_coverage.py`](../scripts/mutation/release_changed_line_coverage.py), in the lane receipt and the pre-push hook |

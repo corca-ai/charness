@@ -111,6 +111,26 @@ def test_effective_custom_hooks_path_preserves_relative_and_absolute_targets(
     assert str(hooks_dir.resolve()) in hooks["detail"]
 
 
+def test_include_path_hooks_path_is_not_skipped_as_default(tmp_path: Path) -> None:
+    """Git's include cascade is the effective hooksPath; a local-file walk is not."""
+    repo = _repo(tmp_path)
+    hooks_dir = repo / ".myhooks"
+    hooks_dir.mkdir()
+    included = tmp_path / "extra.gitconfig"
+    included.write_text("[core]\n\thooksPath = .myhooks\n", encoding="utf-8")
+    _git("config", "include.path", str(included), cwd=repo)
+
+    facts = checks.git_checkout_facts(repo)
+    assert facts.hooks_path == hooks_dir.resolve()
+    assert facts.common_dir is not None
+    assert facts.hooks_path != facts.common_dir / "hooks"
+
+    payload = lib.run_doctor(repo)
+    hooks = next(check for check in payload["checks"] if check["id"] == "hooks_path")
+    assert hooks["status"] == "pass"
+    assert str(hooks_dir.resolve()) in hooks["detail"]
+
+
 def test_malformed_hooks_snapshot_fails_closed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

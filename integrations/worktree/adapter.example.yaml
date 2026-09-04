@@ -5,8 +5,10 @@
 # worktree usable, and which extra `charness worktree doctor` checks should
 # decide whether the worktree is ready before mutate-phase work proceeds.
 #
-# charness always runs canonical checks (git common dir, core.hooksPath,
-# lefthook shim resolution, husky `_` directory). The fields below extend or
+# charness always runs canonical checks (git common dir, worktree isolation,
+# core.hooksPath, lefthook shim resolution, husky `_` directory). Isolation is
+# reported on every run and cannot be disabled; `--require-isolation` is what
+# turns a main-worktree result into a failure. The fields below extend or
 # narrow that baseline; they never replace the canonical suite unless you
 # disable a check explicitly.
 #

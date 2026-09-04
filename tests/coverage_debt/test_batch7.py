@@ -525,53 +525,13 @@ def test_a_git_output_path_that_cannot_be_resolved_names_no_path(tmp_path: Path)
     assert worktree_checks._resolved_git_output_path(tmp_path, str(left)) is None
 
 
-def test_an_empty_hookspath_setting_is_skipped_for_a_later_real_one(tmp_path: Path) -> None:
-    """`hooksPath =` with no value declares nothing; the next setting still counts.
-
-    An empty value is what a half-edited config leaves behind. Accepting it would
-    make the doctor report the repository root as the hooks directory and then
-    announce every file in the repo as an unexpected hook.
-    """
-    git_dir = _install_git_dir(tmp_path / "repo")
-    (git_dir / "config").write_text(
-        "[core]\n\thooksPath =\n\thooksPath = custom-hooks\n", encoding="utf-8"
-    )
-    layout = checkout.CheckoutLayout(git_dir, git_dir)
-
-    assert worktree_checks._hooks_path_from_layout(tmp_path / "repo", layout) == (
-        tmp_path / "repo" / "custom-hooks"
-    )
-
-
-def test_an_unresolvable_hooks_path_is_reported_unresolved_rather_than_dropped(
-    tmp_path: Path,
+def test_git_hooks_path_probe_returns_none_when_git_does_not_answer(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """When the hooks path cannot be resolved, the UNRESOLVED path is still
-    reported -- the doctor names something rather than nothing.
+    """A non-answer from Git is reported as no hooks path, not a guessed default."""
+    monkeypatch.setattr(worktree_checks, "_git_output", lambda *_args, **_kwargs: None)
 
-    Produced for real by removing the process working directory, which is what
-    makes resolving a relative path fail. Falling back to the literal path keeps
-    the doctor's message actionable ("hooks are configured at `custom-hooks`")
-    instead of silently reporting the default `hooks` directory, which would tell
-    the operator their configured hooks are missing from a place they never
-    configured.
-    """
-    repo = tmp_path / "repo"
-    git_dir = _install_git_dir(repo)
-    (git_dir / "config").write_text("[core]\n\thooksPath = custom-hooks\n", encoding="utf-8")
-    layout = checkout.CheckoutLayout(git_dir, git_dir)
-    doomed = tmp_path / "doomed"
-    doomed.mkdir()
-    previous = os.getcwd()
-    os.chdir(doomed)
-    try:
-        doomed.rmdir()
-
-        assert worktree_checks._hooks_path_from_layout(Path("relative"), layout) == Path(
-            "relative/custom-hooks"
-        )
-    finally:
-        os.chdir(previous)
+    assert worktree_checks._hooks_path_from_git(tmp_path / "repo") is None
 
 
 # --- scripts/checkout_view ------------------------------------------------------

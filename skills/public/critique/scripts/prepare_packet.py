@@ -37,6 +37,12 @@ _critique_packet_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.review.critique_packet_lib"
 )
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+_range = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.review.reviewed_input_range"
+)
+_guard = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.core.subprocess_guard"
+)
 load_adapter = _critique_adapter_lib.load_adapter
 adapter_has_sections = _critique_adapter_lib.adapter_has_sections
 build_packet = _critique_packet_lib.build_packet
@@ -47,6 +53,13 @@ ReviewedInputError = _critique_packet_lib.ReviewedInputError
 write_packet = _critique_packet_lib.write_packet
 packet_file_sha256 = _critique_packet_lib.packet_file_sha256
 render_markdown = _critique_packet_lib.render_markdown
+
+
+def _git_bytes_optional(repo_root: Path, *args: str) -> bytes | None:
+    result = _guard.run_process(["git", *args], cwd=repo_root, timeout_seconds=None)
+    if result.returncode != 0:
+        return None
+    return result.stdout.encode("utf-8", errors="surrogateescape")
 
 
 def _default_slug() -> str:
@@ -109,6 +122,22 @@ def main() -> int:
         commit=args.commit,
         changed_range=args.changed_range,
     )
+    if changed_ref:
+        try:
+            changed_ref = _range.pin_changed_ref(
+                repo_root, changed_ref, _git_bytes_optional
+            )
+        except _range.UnresolvableRange as exc:
+            yaml_output.emit_yaml(
+                {
+                    "ok": False,
+                    "status": "refused",
+                    "reason_code": "unresolvable-range",
+                    "error": str(exc),
+                    "changed_ref": changed_ref,
+                }
+            )
+            return 1
     substrate_mode = args.substrate_mode or ("committed-ref" if changed_ref else "working-tree")
     refusal = substrate_refusal(substrate_mode=substrate_mode, changed_ref=changed_ref)
     if refusal is not None:

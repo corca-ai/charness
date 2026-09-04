@@ -44,7 +44,9 @@ python3 "$SKILL_DIR/scripts/run_review.py" \
 Remove `--dry-run` only when the derived carrier is ready to start the review.
 The wrapper owns packet verification, packet/input identities, canonical schema
 materialization, the default read-only capability envelope, artifact paths,
-boundary mode, Goal Run lineage, and lifecycle output. An existing packet can be supplied
+boundary mode, Goal Run lineage, and lifecycle output. Repeatable `--hold-out
+<path>` hides a named in-progress artifact from the reviewer tree for the live
+run and restores it afterwards. An existing packet can be supplied
 with `--packet-file <repo-relative-path>`; its current binding is verified
 before a reviewer starts. The low-level `run_reviewer_worker.py` interface
 remains available for compatibility and diagnostics, not as the normal manual
@@ -101,6 +103,10 @@ use `run_review.py --reviewed-paths-file <manifest>` to declare the exact
 changed-ref set. The resulting identity is still checked against that set, so
 changing the packet declaration or any bound subject path cannot silently move
 the review to another subject.
+
+`--commit` and `--range` are stored as pinned object ids, not the symbolic
+text. `--range <sha>..HEAD` becomes `<left-sha>..<right-sha>` in
+`changed_ref` so a later commit on `HEAD` cannot invalidate the packet.
 
 The runner passes that value to script sections as
 `CHARNESS_CRITIQUE_CHANGED_REF`. Producers that inspect changed files should

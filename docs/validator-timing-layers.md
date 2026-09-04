@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-02
+> Last verified: 2026-09-04
 
 One portable validator, invoked at as many cheap timings as fit — never a
 forked rule copy per timing. The validator stays the single source of truth;
@@ -21,7 +21,8 @@ Timings, ordered by feedback latency (earliest first):
    [authoring-preflight.md](./authoring-preflight.md)).
 3. **Commit-time** — the pre-commit dispatcher
    ([staged_commit_gate_plan.py](../scripts/staged_commit_gate_plan.py)),
-   shared verbatim by `.githooks/pre-commit`.
+   shared verbatim by `.githooks/pre-commit`, plus the commit-msg release-lane
+   receipt check (`Slice-reopen:` is the slice exception).
 4. **Bundle boundary** — the broad gate
    ([run-quality.sh](../scripts/run-quality.sh)) plus the pre-push hook.
    Ordinary implementation stops at focused tests plus the default core lane;

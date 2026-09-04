@@ -17,6 +17,7 @@ mutants/
 .charness/quality/runtime-signals.json
 .charness/quality/runtime-smoothing.json
 .charness/quality/history/runtime-signals-*.jsonl
+.charness/quality/last-release-receipt.json
 .charness/bootstrap-python/
 # The plugin export is GENERATED, not authored. `charness init`/`update`
 # (charness:2589) and the release version bump (`bump_version.py` runs the release

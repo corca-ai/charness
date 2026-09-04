@@ -208,6 +208,7 @@ def _quality_cli(args: argparse.Namespace) -> int:
             "full_queue": args.full_queue,
             "non_claim": args.non_claim,
             "not_run": [_parse_not_run_spec(spec) for spec in args.not_run],
+            **({"index_tree": args.index_tree} if args.index_tree else {}),
         },
     )
     write_failed = False
@@ -240,6 +241,11 @@ def _parser() -> argparse.ArgumentParser:
     quality.add_argument("--unproven-subject", action="append", default=[])
     quality.add_argument("--not-run", action="append", default=[], metavar="LABEL:REASON")
     quality.add_argument("--json-path")
+    quality.add_argument(
+        "--index-tree",
+        default="",
+        help="Git index tree object id verified by this quality run.",
+    )
     quality.set_defaults(handler=_quality_cli)
     return parser
 

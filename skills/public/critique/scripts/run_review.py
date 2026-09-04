@@ -44,6 +44,12 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--backend", choices=("codex_exec", "claude_p"))
     parser.add_argument("--goal-lineage-file", help="Repo-relative full Goal Run evidence-lineage JSON")
     parser.add_argument("--dry-run", action="store_true", help="Derive and validate the run without starting a reviewer")
+    parser.add_argument(
+        "--hold-out",
+        action="append",
+        default=None,
+        help="Repo-relative path to hide from the reviewer tree for this run (repeatable)",
+    )
     return parser
 
 
@@ -256,9 +262,10 @@ def main(argv: list[str] | None = None) -> int:
             packet_sha=packet_sha, input_sha=input_sha, parent_receipt=parent_receipt,
             boundary_mode=boundary_mode, boundary_sha=boundary_sha,
         )
-        returncode, status, started, error = SUPPORT.run_runner(
+        returncode, status, started, error = SUPPORT.run_runner_held_out(
             command, root=root, stdout_path=paths["runner_stdout"],
             stderr_path=paths["runner_stderr"], timeout=timeout,
+            hold_out_paths=list(args.hold_out or []),
         )
         returncode, status, started, error = SUPPORT.classify_runner_output(
             paths["runner_stdout"], returncode=returncode, status=status,

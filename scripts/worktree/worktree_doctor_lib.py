@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -46,6 +47,35 @@ run_manifest_doctor_checks = _checks.run_manifest_doctor_checks
 
 _reuse = import_repo_module(__file__, "scripts.worktree.worktree_dependency_reuse")
 
+_DOCTOR_CHECK_ID_PATTERN = re.compile(r"^[a-z][a-z0-9_.-]*$")
+_ROOT_KEYS = frozenset({"version", "repo", "language", "prepare", "doctor"})
+_PREPARE_KEYS = frozenset({"commands", "skip_if_doctor_passes", "dependency_reuse"})
+_PREPARE_COMMAND_KEYS = frozenset({"id", "argv", "description", "timeout_seconds"})
+_DOCTOR_KEYS = frozenset({"checks", "disable_canonical_checks"})
+_DOCTOR_CHECK_KEYS = frozenset(
+    {
+        "id",
+        "argv",
+        "description",
+        "expect_exit_code",
+        "next_action_hint",
+        "covers",
+        "timeout_seconds",
+    }
+)
+
+
+def _is_strict_int(value: object) -> bool:
+    return type(value) is int
+
+
+def _reject_unknown_keys(
+    mapping: dict[str, Any], allowed: frozenset[str], label: str, errors: list[str]
+) -> None:
+    for key in mapping:
+        if key not in allowed:
+            errors.append(f"{label} has unknown key {key!r}")
+
 
 def load_manifest(repo_root: Path) -> ManifestState:
     manifest_path = repo_root / MANIFEST_RELATIVE_PATH
@@ -81,6 +111,7 @@ def validate_manifest(data: Any) -> list[str]:
     version_errors: list[str] = []
     validate_adapter_version(data, {}, version_errors, required=True)
     errors.extend(f"manifest.{error}" for error in version_errors)
+    _reject_unknown_keys(data, _ROOT_KEYS, "manifest", errors)
     _validate_prepare_section(data.get("prepare"), errors)
     _validate_doctor_section(data.get("doctor"), errors)
     return errors
@@ -90,12 +121,24 @@ def _validate_prepare_section(prepare: Any, errors: list[str]) -> None:
     if not isinstance(prepare, dict):
         errors.append("manifest.prepare must be a mapping with `commands`")
         return
+    _reject_unknown_keys(prepare, _PREPARE_KEYS, "manifest.prepare", errors)
     commands = prepare.get("commands")
     if not isinstance(commands, list) or not commands:
         errors.append("manifest.prepare.commands must be a non-empty list")
     else:
+        seen_ids: list[str] = []
         for index, entry in enumerate(commands):
-            _validate_command_entry(entry, f"manifest.prepare.commands[{index}]", errors)
+            command_id = _validate_command_entry(
+                entry, f"manifest.prepare.commands[{index}]", errors
+            )
+            if command_id is not None:
+                if command_id in seen_ids:
+                    errors.append(
+                        f"manifest.prepare.commands[{index}].id {command_id!r} is "
+                        "duplicated within manifest.prepare.commands"
+                    )
+                else:
+                    seen_ids.append(command_id)
     skip = prepare.get("skip_if_doctor_passes", False)
     if not isinstance(skip, bool):
         errors.append("manifest.prepare.skip_if_doctor_passes must be a boolean")
@@ -108,6 +151,7 @@ def _validate_doctor_section(doctor: Any, errors: list[str]) -> None:
     if not isinstance(doctor, dict):
         errors.append("manifest.doctor must be a mapping")
         return
+    _reject_unknown_keys(doctor, _DOCTOR_KEYS, "manifest.doctor", errors)
     checks = doctor.get("checks")
     if checks is not None:
         if not isinstance(checks, list):
@@ -127,6 +171,8 @@ def _validate_disabled_checks(disabled: Any, errors: list[str]) -> None:
     if not isinstance(disabled, list):
         errors.append("manifest.doctor.disable_canonical_checks must be a list")
         return
+    if len(disabled) != len(set(disabled)):
+        errors.append("manifest.doctor.disable_canonical_checks must not contain duplicates")
     for entry in disabled:
         if entry not in CANONICAL_CHECK_IDS:
             errors.append(
@@ -134,14 +180,20 @@ def _validate_disabled_checks(disabled: Any, errors: list[str]) -> None:
             )
 
 
-def _validate_command_entry(entry: Any, label: str, errors: list[str]) -> None:
+def _validate_command_entry(entry: Any, label: str, errors: list[str]) -> str | None:
     if not isinstance(entry, dict):
         errors.append(f"{label} must be a mapping")
-        return
+        return None
+    _reject_unknown_keys(entry, _PREPARE_COMMAND_KEYS, label, errors)
+    command_id = entry.get("id")
+    if command_id is not None and (not isinstance(command_id, str) or not command_id):
+        errors.append(f"{label}.id must be a non-empty string")
+        command_id = None
     _validate_argv(entry.get("argv"), f"{label}.argv", errors)
     timeout = entry.get("timeout_seconds")
-    if timeout is not None and not (isinstance(timeout, int) and 1 <= timeout <= 1800):
+    if timeout is not None and not (_is_strict_int(timeout) and 1 <= timeout <= 1800):
         errors.append(f"{label}.timeout_seconds must be an integer between 1 and 1800")
+    return command_id if isinstance(command_id, str) else None
 
 
 def _validate_argv(argv: Any, label: str, errors: list[str]) -> None:
@@ -167,9 +219,14 @@ def _validate_doctor_check_entry(
     if not isinstance(entry, dict):
         errors.append(f"{label} must be a mapping")
         return
+    _reject_unknown_keys(entry, _DOCTOR_CHECK_KEYS, label, errors)
     check_id = entry.get("id")
     if not isinstance(check_id, str) or not check_id:
         errors.append(f"{label}.id must be a non-empty string")
+    elif not _DOCTOR_CHECK_ID_PATTERN.fullmatch(check_id):
+        errors.append(
+            f"{label}.id {check_id!r} must match {_DOCTOR_CHECK_ID_PATTERN.pattern}"
+        )
     elif check_id in seen_ids:
         errors.append(f"{label}.id {check_id!r} is duplicated within manifest.doctor.checks")
     else:
@@ -181,11 +238,13 @@ def _validate_doctor_check_entry(
             errors.append(f"{label}.covers must be a list of prepare command ids")
         elif any(not isinstance(command_id, str) or not command_id for command_id in covers):
             errors.append(f"{label}.covers must contain only non-empty strings")
+        elif len(covers) != len(set(covers)):
+            errors.append(f"{label}.covers must not contain duplicates")
     expect = entry.get("expect_exit_code", 0)
-    if not isinstance(expect, int):
+    if not _is_strict_int(expect):
         errors.append(f"{label}.expect_exit_code must be an integer")
     timeout = entry.get("timeout_seconds")
-    if timeout is not None and not (isinstance(timeout, int) and 1 <= timeout <= 120):
+    if timeout is not None and not (_is_strict_int(timeout) and 1 <= timeout <= 120):
         errors.append(f"{label}.timeout_seconds must be an integer between 1 and 120")
 
 

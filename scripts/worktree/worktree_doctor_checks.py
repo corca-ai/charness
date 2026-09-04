@@ -88,28 +88,17 @@ def _resolved_git_output_path(
     return resolved if not require_directory or resolved.is_dir() else None
 
 
-def _hooks_path_from_layout(repo_root: Path, layout) -> Path:
-    for config in (layout.git_dir / "config", layout.common_dir / "config"):
-        try:
-            text = config.read_text(encoding="utf-8")
-        except OSError:
-            continue
-        for line in text.splitlines():
-            stripped = line.strip()
-            if not stripped.lower().startswith("hookspath"):
-                continue
-            _, _, value = stripped.partition("=")
-            value = value.strip().strip('"')
-            if not value:
-                continue
-            path = Path(value)
-            if not path.is_absolute():
-                path = repo_root / path
-            try:
-                return path.resolve()
-            except OSError:
-                return path
-    return layout.common_dir / "hooks"
+def _hooks_path_from_git(repo_root: Path) -> Path | None:
+    """Effective hooks directory according to Git, including include/global/system.
+
+    Layout files are a valid source for git-dir and common-dir. They are not a
+    source for `core.hooksPath`: that value is a config-cascade fact, so Git
+    itself is the only owner.
+    """
+    raw = _git_output(repo_root, "rev-parse", "--git-path", "hooks")
+    if raw is None:
+        return None
+    return _resolved_git_output_path(repo_root, raw, require_directory=False)
 
 
 def git_checkout_facts(repo_root: Path, *, include_hooks_path: bool = True) -> GitCheckoutFacts:
@@ -122,7 +111,7 @@ def git_checkout_facts(repo_root: Path, *, include_hooks_path: bool = True) -> G
             layout.common_dir,
             layout.git_dir,
             is_bare_repository(repo_root),
-            _hooks_path_from_layout(repo_root, layout) if include_hooks_path else None,
+            _hooks_path_from_git(repo_root) if include_hooks_path else None,
         )
     rev_parse_args = [
         "rev-parse",

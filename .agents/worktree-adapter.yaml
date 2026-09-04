@@ -43,8 +43,10 @@ prepare:
     directory: node_modules
 
 # Optional manifest-defined doctor checks layered on top of the canonical suite.
-# The canonical suite (git_common_dir, hooks_path, lefthook_shim, husky_dir) sees
-# nothing about installed dependencies, so it cannot license skipping install-deps.
+# The disable-able canonical suite (git_common_dir, hooks_path, lefthook_shim,
+# husky_dir) sees nothing about installed dependencies, so it cannot license
+# skipping install-deps. `worktree_isolation` also always runs and cannot be
+# disabled.
 doctor:
   checks:
     - id: npm_dependencies_installed

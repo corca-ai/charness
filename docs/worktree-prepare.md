@@ -19,7 +19,7 @@ Six subcommands keep mutate-phase work honest:
 
 ## Why this exists
 
-Two silent-hook-skip failure modes: lefthook's `.git/hooks/` shim hardcodes the install-time worktree path, and husky's `.husky/_/` is generated per worktree. The `lefthook_shim` and `husky_dir` canonical checks hold both; charness never symlinks `node_modules` (Vite/Vitest resolution breaks). Analysis: [worktree-prepare-doctor.md](../charness-artifacts/spec/worktree-prepare-doctor.md).
+Two silent-hook-skip failure modes: lefthook's `.git/hooks/` shim hardcodes the install-time worktree path, and husky's `.husky/_/` is generated per worktree. The `lefthook_shim` and `husky_dir` canonical checks hold both; charness never symlinks `node_modules` (Vite/Vitest resolution breaks). Superseded analysis: [worktree-prepare-doctor.md](../charness-artifacts/spec/worktree-prepare-doctor.md) (shipped commands emit one YAML document, not `--json`).
 
 ## Quickstart
 
@@ -104,15 +104,14 @@ Notes:
 
 ## Dependency reuse
 
-Without copy-on-write, every fresh worktree paid a full install before bounded work started ([#792](https://github.com/corca-ai/charness/issues/792)). With `prepare.dependency_reuse` declared, prepare (so `create --prepare` and every `task run` lane) links an installed tree before the install command: first the parent (main) worktree when its lockfile digest matches, then the runtime cache `worktree-deps/` keyed by digest, directory, platform, architecture, install-tool and `node` versions, seeded when a fresh install passes doctor. `cp --reflink=always` is tried, then `cp -al`; when neither holds the install command runs. The payload's `dependency_reuse` key records `strategy`, `origin`, `source`, `reason`, and `cache_seed`. `--no-dependency-reuse` disables linking (a doctor-licensed skip still needs `--force`); `--force` alone does not disable reuse, because reuse is prepare. Hard links share inodes between the parent, the cache entry, and every worktree linked from either: package managers replace files, so installs in a lane leave the others intact, but an in-place edit under the linked directory reaches all of them. Recovery: delete the cache entry, prepare with `--no-dependency-reuse`. Declaring the field accepts that trade; the seeder emits it commented out, and pnpm users should use the global virtual store instead ([module docstring](../scripts/worktree/worktree_dependency_reuse.py)).
+Without copy-on-write, every fresh worktree paid a full install before bounded work started ([#792](https://github.com/corca-ai/charness/issues/792)). With `prepare.dependency_reuse` declared, prepare (so `create --prepare` and every `task run` lane) links an installed tree before the install command: first the parent (main) worktree when its lockfile digest matches, then the runtime cache `worktree-deps/` keyed by digest, directory, platform, architecture, install-tool and `node` versions, seeded when a fresh install passes doctor. `cp --reflink=always` is tried, then `cp -al`; when neither holds the install command runs. The payload's `dependency_reuse` key records `strategy`, `origin`, `source`, `reason`, and `cache_seed`. `--no-dependency-reuse` disables linking (a doctor-licensed skip still needs `--force`); `--force` alone does not disable reuse, because reuse is prepare. Hard links share inodes between the parent, the cache entry, and every worktree linked from either: package managers replace files, so installs in a lane leave the others intact, but an in-place edit under the linked directory reaches all of them. Recovery: delete the cache entry, prepare with `--no-dependency-reuse`. pnpm users should use the global virtual store ([module docstring](../scripts/worktree/worktree_dependency_reuse.py)).
 
 ## Canonical doctor checks
-
-These run regardless of the manifest:
 
 | id | What it checks | Failure means |
 | --- | --- | --- |
 | `git_common_dir` | `git rev-parse --git-common-dir` resolves. | Path is not a git checkout. |
+| `worktree_isolation` | Linked worktree vs main. `FAIL` only with `--require-isolation`; cannot be disabled. | A write-capable agent shares the parent index. |
 | `hooks_path` | If `core.hooksPath` is set, the resolved directory exists in this worktree. | Hook manager state is missing for this worktree. |
 | `lefthook_shim` | If `pre-commit` shim references lefthook, then `node_modules/lefthook-*/bin/lefthook` or PATH `lefthook` resolves. | Lefthook shim will silently exit 0 — hooks are dead. |
 | `husky_dir` | If `core.hooksPath` points at a husky `_/` directory, that directory exists. | Husky prepare step has not run in this worktree. |
@@ -123,11 +122,11 @@ Checks return `pass`, `fail`, or `skipped` (precondition not met).
 
 - **pnpm monorepo:** pnpm's bare repo + `enableGlobalVirtualStore: true`; worktrees share the global store, `node_modules` is symlinks only, and `pnpm install` is near-instant ([pnpm guidance](https://pnpm.io/11.x/git-worktrees)).
 - **npm or yarn:** prepare commands typically `npm ci && npx husky install` or `yarn install --immutable && yarn lefthook install`; declare [dependency reuse](#dependency-reuse) so later worktrees link the parent's install.
-- **CoW filesystems (APFS, Btrfs, ZFS):** dependency reuse takes the reflink path automatically.
+- **CoW filesystems (APFS, Btrfs, ZFS):** reuse takes the reflink path.
 
 ## Wiring with mutate-phase skills
 
-`spec` and `hitl` bootstrap probe `charness worktree doctor` non-fatally before mutating repo content and surface the next action on non-pass; the operator decides whether to run `charness worktree prepare`. Public skills never auto-run prepare; `task run` does, as its documented default.
+`spec` and `hitl` bootstrap probe `charness worktree doctor` non-fatally before mutating repo content and surface the next action on non-pass. Public skills never auto-run prepare; `task run` does, as its documented default.
 
 ## Limitations
 

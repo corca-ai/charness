@@ -377,6 +377,7 @@ commands:
       - docs/worktree-prepare.md
     required_help_contains:
       - --repo-root
+      - --require-isolation
     required_doc_contains:
       - charness worktree doctor
   worktree-prepare:

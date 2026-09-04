@@ -14,6 +14,34 @@ def is_range(changed_ref: str) -> bool:
     return ".." in changed_ref
 
 
+def pin_changed_ref(
+    repo_root: Path,
+    changed_ref: str,
+    git_bytes_optional: Callable[..., bytes | None],
+) -> str:
+    """Replace symbolic endpoints with object ids so a stored ref cannot move.
+
+    `a...b` stays a three-dot range; `a..b` stays two-dot; a single commit
+    becomes that commit's object id. Endpoints are resolved before the packet
+    is written so later `HEAD` motion cannot change the reviewed set.
+    """
+    range_endpoints(repo_root, changed_ref, git_bytes_optional)
+
+    def resolve(ref: str) -> str:
+        raw = git_bytes_optional(repo_root, "rev-parse", "--verify", f"{ref}^{{commit}}")
+        if raw is None:
+            raise UnresolvableRange(f"changed ref `{changed_ref}` does not resolve `{ref}`")
+        return raw.decode().strip()
+
+    if "..." in changed_ref:
+        left, right = changed_ref.split("...", 1)
+        return f"{resolve(left or 'HEAD')}...{resolve(right or 'HEAD')}"
+    if ".." in changed_ref:
+        left, right = changed_ref.split("..", 1)
+        return f"{resolve(left or 'HEAD')}..{resolve(right or 'HEAD')}"
+    return resolve(changed_ref)
+
+
 def range_endpoints(
     repo_root: Path,
     changed_ref: str,

@@ -49,6 +49,31 @@ def test_a_declared_current_pointer_keeps_its_own_name(tmp_path: Path) -> None:
     assert support.relative(root, resolved) == "charness-artifacts/quality/latest.md"
 
 
+def test_hold_out_hides_the_path_during_the_run_and_restores_it(tmp_path: Path) -> None:
+    support = _support()
+    target = tmp_path / "in-progress.md"
+    target.write_text("TODO\n", encoding="utf-8")
+    seen_inside: list[bool] = []
+
+    with support.hold_out(tmp_path, ["in-progress.md"]):
+        seen_inside.append(target.exists())
+
+    assert seen_inside == [False]
+    assert target.read_text(encoding="utf-8") == "TODO\n"
+
+
+def test_hold_out_restores_the_path_after_a_failed_run(tmp_path: Path) -> None:
+    support = _support()
+    target = tmp_path / "in-progress.md"
+    target.write_text("TODO\n", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="boom"):
+        with support.hold_out(tmp_path, ["in-progress.md"]):
+            raise RuntimeError("boom")
+
+    assert target.read_text(encoding="utf-8") == "TODO\n"
+
+
 def test_a_file_the_runner_opens_still_refuses_a_symlink(tmp_path: Path) -> None:
     """The discriminator: `allow_symlink` must not leak to the read paths.
 

@@ -822,12 +822,15 @@ def test_runner_cli_json_changed_ref_with_default_surface_producer(tmp_path: Pat
     # packet is always written, and stdout carries a YAML receipt that points at it —
     # so the section content is asserted where it now lives, on disk.
     receipt = yaml.safe_load(result.stdout)
+    head = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=tmp_path, text=True
+    ).strip()
     assert receipt["ok"] is True
-    assert receipt["changed_ref"] == "HEAD"
+    assert receipt["changed_ref"] == head
     assert receipt["adapter_path"] == ".agents/critique-adapter.yaml"
     packet = json.loads((tmp_path / receipt["json_path"]).read_text(encoding="utf-8"))
     assert "README.md" in packet["sections"][0]["content"]
-    assert "Changed paths for ref `HEAD`:" in packet["sections"][0]["content"]
+    assert f"Changed paths for ref `{head}`:" in packet["sections"][0]["content"]
 
 
 def test_runner_cli_commit_alias_sets_changed_ref_and_prepared_for(tmp_path: Path) -> None:
@@ -839,10 +842,43 @@ def test_runner_cli_commit_alias_sets_changed_ref_and_prepared_for(tmp_path: Pat
     # Same `--json`-was-a-MODE removal as above. `prepared_for` is not on the
     # receipt, so the alias is proven against the written packet, which is the
     # artifact a reviewer actually consumes.
+    head = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=tmp_path, text=True
+    ).strip()
     receipt = yaml.safe_load(result.stdout)
-    assert receipt["changed_ref"] == "HEAD"
+    assert receipt["changed_ref"] == head
     packet = json.loads((tmp_path / receipt["json_path"]).read_text(encoding="utf-8"))
-    assert packet["changed_ref"] == "HEAD"
-    assert packet["prepared_for"] == "HEAD"
-    assert "Changed paths for ref `HEAD`:" in packet["sections"][0]["content"]
+    assert packet["changed_ref"] == head
+    assert packet["prepared_for"] == head
+    assert f"Changed paths for ref `{head}`:" in packet["sections"][0]["content"]
     assert "README.md" in packet["sections"][0]["content"]
+
+
+def test_prepare_packet_pins_a_symbolic_range_so_later_head_motion_cannot_move_it(
+    tmp_path: Path,
+) -> None:
+    _two_commit_prepare_repo(tmp_path)
+    start = subprocess.check_output(
+        ["git", "rev-parse", "HEAD~1"], cwd=tmp_path, text=True
+    ).strip()
+    head = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=tmp_path, text=True
+    ).strip()
+
+    result = run_script(
+        PREPARE,
+        "--repo-root",
+        str(tmp_path),
+        "--range",
+        f"{start[:12]}..HEAD",
+        "--slug",
+        "pinned",
+    )
+
+    assert result.returncode == 0, result.stderr
+    receipt = yaml.safe_load(result.stdout)
+    assert receipt["changed_ref"] == f"{start}..{head}"
+    _run_git(tmp_path, "commit", "--allow-empty", "-m", "later")
+    packet = json.loads((tmp_path / receipt["json_path"]).read_text(encoding="utf-8"))
+    assert packet["changed_ref"] == f"{start}..{head}"
+    assert packet["reviewed_input_identity"]["changed_ref"] == f"{start}..{head}"

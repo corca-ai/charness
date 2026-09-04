@@ -1,6 +1,8 @@
 # Spec — Worktree Prepare/Doctor Contract
 
 Date: 2026-05-07
+Status: superseded by [docs/worktree-prepare.md](../../docs/worktree-prepare.md).
+The shipped commands emit one YAML document and have no `--json` flag; mutate-phase public skills that probe doctor are `spec` and `hitl`, not `impl`.
 
 ## Problem
 
@@ -19,7 +21,7 @@ Canonical surfaces:
 1. `.agents/worktree-adapter.yaml` — consumer-repo-owned manifest. Declares the `prepare` command(s) the repo wants charness to run after a fresh worktree appears, and the `doctor` health probes that decide whether a worktree is usable without running `prepare` again.
 2. `charness worktree doctor` — read-only, fast, deterministic. Inspects `core.hooksPath`, lefthook/husky shim resolution, and the manifest's declared `doctor.checks`. Exit 0 = ready, non-zero = next-action surfaced.
 3. `charness worktree prepare` — runs the manifest's `prepare.commands`, then re-runs `doctor` and reports. No-op when `doctor` already passes unless `--force` is passed.
-4. Mutate-phase public skills (`impl`, `hitl`) call `charness worktree doctor` in their bootstrap. On failure they surface `charness worktree prepare` as the next action — they do not auto-run it.
+4. Mutate-phase public skills (`spec`, `hitl`) call `charness worktree doctor` in their bootstrap. On failure they surface `charness worktree prepare` as the next action — they do not auto-run it.
 5. `setup` seeds `.agents/worktree-adapter.yaml` from a portable preset when a consumer repo opts in, and links `docs/worktree-prepare.md` as the operator surface.
 
 Canonical doctor checks (always run, manifest-independent):

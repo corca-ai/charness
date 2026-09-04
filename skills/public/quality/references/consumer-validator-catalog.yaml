@@ -213,6 +213,10 @@ validators:
     consumer_facing: false
     decision: exclude
     reason: "Charness-internal quality, packaging, or development gate, not a consumer-authored artifact contract"
+  - path: scripts/hooks/check_release_lane_receipt.py
+    consumer_facing: false
+    decision: exclude
+    reason: "Charness-maintainer commit-msg receipt check for this repo's release lane, not a consumer-authored artifact contract"
   - path: scripts/gates/check_standalone_imports.py
     consumer_facing: false
     decision: exclude

@@ -249,8 +249,8 @@ def test_audit_cli_emits_a_parseable_payload_unconditionally(tmp_path: Path) -> 
     )
 
     decoded = yaml.safe_load(completed.stdout)
-    assert decoded["repo_root"] == str(repo.resolve())
-    assert decoded["summary"]["primary"] == 1
+    assert decoded["audit"]["repo_root"] == str(repo.resolve())
+    assert decoded["audit"]["summary"]["primary"] == 1
 
 
 def test_audit_cli_rejects_the_removed_json_flag(tmp_path: Path) -> None:

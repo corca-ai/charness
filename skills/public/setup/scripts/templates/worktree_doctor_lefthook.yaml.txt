@@ -1,5 +1,6 @@
 # Optional manifest-defined doctor checks layered on top of the canonical suite
-# (git_common_dir, hooks_path, lefthook_shim, husky_dir).
+# (git_common_dir, worktree_isolation, hooks_path, lefthook_shim, husky_dir).
+# worktree_isolation cannot be disabled.
 # doctor:
 #   checks:
 #     - id: lefthook_self_check

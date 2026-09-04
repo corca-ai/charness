@@ -798,3 +798,86 @@ def test_a_repo_local_adapter_cannot_disable_the_isolation_check(tmp_path: Path)
 
     assert payload["manifest"]["valid"] is False
     assert any("worktree_isolation" in error for error in payload["manifest"]["errors"])
+
+
+def _valid_manifest() -> dict[str, object]:
+    return {
+        "version": 1,
+        "prepare": {
+            "commands": [
+                {
+                    "id": "install-deps",
+                    "argv": ["true"],
+                }
+            ]
+        },
+    }
+
+
+def test_runtime_manifest_refuses_unknown_command_and_check_keys() -> None:
+    command_errors = lib.validate_manifest(
+        {
+            **_valid_manifest(),
+            "prepare": {
+                "commands": [{"id": "install-deps", "argv": ["true"], "shell": True}]
+            },
+        }
+    )
+    check_errors = lib.validate_manifest(
+        {
+            **_valid_manifest(),
+            "doctor": {"checks": [{"id": "extra_check", "argv": ["true"], "owner": "ops"}]},
+        }
+    )
+    assert any("unknown key 'shell'" in error for error in command_errors)
+    assert any("unknown key 'owner'" in error for error in check_errors)
+
+
+def test_runtime_manifest_refuses_boolean_as_integer() -> None:
+    errors = lib.validate_manifest(
+        {
+            **_valid_manifest(),
+            "prepare": {"commands": [{"id": "install-deps", "argv": ["true"], "timeout_seconds": True}]},
+        }
+    )
+    assert any("timeout_seconds must be an integer" in error for error in errors)
+
+
+def test_runtime_manifest_refuses_doctor_id_outside_the_schema_pattern() -> None:
+    errors = lib.validate_manifest(
+        {
+            **_valid_manifest(),
+            "doctor": {"checks": [{"id": "Extra Check", "argv": ["true"]}]},
+        }
+    )
+    assert any("must match" in error for error in errors)
+
+
+def test_runtime_manifest_refuses_duplicate_covers_and_prepare_ids() -> None:
+    cover_errors = lib.validate_manifest(
+        {
+            **_valid_manifest(),
+            "doctor": {
+                "checks": [
+                    {
+                        "id": "deps_ready",
+                        "argv": ["true"],
+                        "covers": ["install-deps", "install-deps"],
+                    }
+                ]
+            },
+        }
+    )
+    id_errors = lib.validate_manifest(
+        {
+            "version": 1,
+            "prepare": {
+                "commands": [
+                    {"id": "install-deps", "argv": ["true"]},
+                    {"id": "install-deps", "argv": ["true"]},
+                ]
+            },
+        }
+    )
+    assert any("covers must not contain duplicates" in error for error in cover_errors)
+    assert any("duplicated within manifest.prepare.commands" in error for error in id_errors)

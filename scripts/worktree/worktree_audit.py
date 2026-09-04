@@ -56,7 +56,7 @@ def main() -> int:
     audit_payload = run_audit(
         args.repo_root, stale_days=args.stale_days, include_doctor=args.doctor
     )
-    emit_yaml(audit_payload)
+    output: dict[str, object] = {"audit": audit_payload}
 
     if audit_payload.get("status") == PASS:
         exit_code = 0
@@ -67,18 +67,14 @@ def main() -> int:
 
     if args.prune and audit_payload.get("status") != "fail":
         prune_payload = run_prune(args.repo_root)
-        # A prune run emits a SECOND payload on the same stdout. Two YAML mappings
-        # concatenated are not one document, so the explicit `---` start marker keeps
-        # the stream readable with `yaml.safe_load_all`; without it a --prune run
-        # would print output no YAML reader could parse.
-        print("---")
-        emit_yaml(prune_payload)
+        output["prune"] = prune_payload
         if prune_payload["status"] != PASS:
             exit_code = max(exit_code, 2)
         else:
             remaining = prune_payload.get("remaining_after_prune") or {}
             if remaining.get("prunable", 0) == 0 and remaining.get("stale", 0) == 0:
                 exit_code = 0
+    emit_yaml(output)
     return exit_code
 
 

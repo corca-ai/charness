@@ -439,13 +439,10 @@ def test_prescribed_gate_refuses_a_malformed_evidence_argument(tmp_path: Path) -
 # --------------------------------------------------------------------------- #
 
 
-def test_worktree_audit_prune_emits_a_second_yaml_document_behind_a_start_marker(
+def test_worktree_audit_prune_emits_one_mapping_with_audit_and_prune(
     tmp_path: Path,
 ) -> None:
-    """A `--prune` run writes a SECOND payload to the same stdout. Two concatenated
-    mappings are not one YAML document, so without the explicit `---` start marker the
-    combined output is unreadable to every YAML consumer. Parsed with `safe_load_all`
-    here because that is what a caller must do."""
+    """`--prune` is one YAML document, matching `charness worktree audit --prune`."""
     repo = _seed_git_repo(tmp_path / "repo")
 
     result = run_loaded_script_main(
@@ -454,12 +451,12 @@ def test_worktree_audit_prune_emits_a_second_yaml_document_behind_a_start_marker
 
     assert result.returncode == 0, result.stderr
     documents = list(yaml.safe_load_all(result.stdout))
-    assert len(documents) == 2
-    audit, prune = documents
-    assert audit["status"] == WORKTREE_AUDIT.PASS
-    assert audit["summary"]["primary"] == 1
-    assert prune["status"] == WORKTREE_AUDIT.PASS
-    assert "remaining_after_prune" in prune
+    assert len(documents) == 1
+    payload = documents[0]
+    assert payload["audit"]["status"] == WORKTREE_AUDIT.PASS
+    assert payload["audit"]["summary"]["primary"] == 1
+    assert payload["prune"]["status"] == WORKTREE_AUDIT.PASS
+    assert "remaining_after_prune" in payload["prune"]
 
 
 # --------------------------------------------------------------------------- #
