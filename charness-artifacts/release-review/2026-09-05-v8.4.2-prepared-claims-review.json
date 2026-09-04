@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.release.claims-review.v4",
+  "prepared_commit": "132c28f4647315a0fc8184dbb2b31dd847a0c09f",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "233bf360fc1debdfbc71c4c067f6c8562f2766e015e12c3ccbeaa60fca3920c0",
+  "target_version": "8.4.2",
+  "tag_name": "v8.4.2",
+  "verdict": "pass",
+  "preparer_context": "Grok session that ran publish_release.py --execute to prepared commit 132c28f4647315a0fc8184dbb2b31dd847a0c09f",
+  "reviewer_context": "parent-delegated charness:bounded-reviewer claims lens; findings-received",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "typed host bounded-reviewer spawned from the preparing Grok session with a claims-only brief; delivery state findings-received",
+    "review_artifact": "charness-artifacts/release-review/2026-09-05-v8.4.2-claims-review.md"
+  },
+  "review_scope": {
+    "blocking_paths": [
+      ".claude-plugin/marketplace.json",
+      "charness-artifacts/critique/workers/impl-debug-route-final-3/worker-report.yaml",
+      "charness-artifacts/critique/workers/release-8-3-0-code-9/worker-report.yaml",
+      "charness-artifacts/debug/2026-09-05-tracked-claim-ephemeral-carrier.md",
+      "charness-artifacts/debug/2026-09-05-worktree-only-candidate-deleted.md",
+      "charness-artifacts/debug/latest.md",
+      "charness-artifacts/debug/seam-risk-index.json",
+      "charness-artifacts/probe/2026-09-04-v8.4.1-release-observer.json",
+      "charness-artifacts/release-review/2026-09-04-v8.4.1-prepared-claims-review.json",
+      "charness-artifacts/release/latest.md",
+      "charness-artifacts/spec/2026-09-05-tracked-claim-ephemeral-carrier.md",
+      "docs/agent-task-runs.md",
+      "packaging/charness.json",
+      "scripts/gates_support/runtime_root_retention.py",
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_completion.py",
+      "scripts/task_run/task_run_git.py",
+      "scripts/task_run/task_run_support.py",
+      "skills/public/critique/scripts/run_review.py",
+      "skills/public/critique/scripts/run_review_promotion.py",
+      "skills/public/critique/scripts/scaffold_critique_artifact.py",
+      "skills/shared/scripts/reviewer_worker_carrier_support.py",
+      "tests/charness_cli/test_task_run.py",
+      "tests/charness_cli/test_task_run_completion.py",
+      "tests/charness_cli/test_task_run_result.py",
+      "tests/charness_cli/test_task_run_scope.py",
+      "tests/quality_gates/test_critique_enforcement_scope.py",
+      "tests/test_run_review_declared_path_resolution.py",
+      "tests/test_runtime_root_retention.py"
+    ],
+    "advisory_paths": [
+      "charness-artifacts/critique/2026-09-04-impl-debug-route.md",
+      "charness-artifacts/critique/2026-09-04-worktree-dependency-reuse-792-release-8-3-0-critique.md",
+      "charness-artifacts/critique/2026-09-05-tracked-claim-and-worktree-only.md",
+      "charness-artifacts/release-review/2026-09-04-v8.4.1-claims-review.md"
+    ]
+  },
+  "scope_basis": {
+    "base_ref": "refs/tags/v8.4.1",
+    "changed_paths_sha256": "782b5e4a2509dd3cd08a509979b590011b18917e40913a131967b6543777a6cb",
+    "changed_path_count": 33
+  },
+  "advisory_findings": [
+    "Quality 320.0s / exit 0 is helper-measured; a gitignored local receipt corroborates pass but is not in the prepared commit.",
+    "Runtime figures exist only in the helper record.",
+    "current_release.py was not re-executed by the reviewer; versions were re-derived from files.",
+    "Fresh-checkout passed has no raw receipt; the three listed commands match the adapter.",
+    "Adapter-unchanged was not git-diffed against v8.4.1.",
+    "The two-bug-class-repairs half of the bump rationale is operator prose citing the critique, not a helper measurement."
+  ]
+}
