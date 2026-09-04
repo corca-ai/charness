@@ -1,11 +1,12 @@
 # Deferred-decisions archive
 
 Date: 2026-09-04
-Status: archived from `docs/deferred-decisions.md`
+Status: archived; `docs/deferred-decisions.md` was deleted
 
-The live page no longer holds a register. Closed choices live in their owning
-mechanisms and docs. Resolved, declined, and "not now" entries live here so a
-reopener can quote the trigger without a second operating manual in `docs/`.
+There is no live register and no how-to-defer page. Closed choices live in
+their owning mechanisms and docs. Resolved, declined, and "not now" entries
+live here so a reopener can quote the trigger without a second operating
+manual in `docs/`.
 
 The pasted body below was copied from `docs/` and is **historical**. Its
 `Status: current` header and relative links are frozen as of that tree; do not
@@ -40,8 +41,8 @@ Do not implement. The current mechanism, or an explicit decline, is the answer.
 | D51 | decline waiting on GitHub Actions before tag | `skills/public/release/SKILL.md` and `references/publication-boundary.md`: local `--release`, then tag/push, then distinct-channel readback. Distinct-channel is post-publication, not a different-observer CI wait before tag. |
 | D54 | decline a CPU-time SLO | wall-clock stays advisory telemetry |
 
-Reopen from the trigger on the archived entry, then add a **new** live row on
-`docs/deferred-decisions.md` only while no mechanism holds the choice.
+Reopen from the trigger on the archived entry, then decide in the owning
+mechanism or docs page. Do not recreate a register.
 
 ---
 

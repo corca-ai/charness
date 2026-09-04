@@ -1,14 +1,14 @@
 {
   "budget": 1000,
   "pages": {
-    "docs/artifact-policy.md": 1242,
+    "docs/artifact-policy.md": 1233,
     "docs/design-north-star.md": 1394,
     "docs/external-integrations.md": 1026,
     "docs/goal-lifecycle.md": 1279,
-    "docs/harness-composition.md": 1042,
+    "docs/harness-composition.md": 1041,
     "docs/host-packaging.md": 1081,
     "docs/parallel-execution.md": 1052
   },
   "schema": "charness.docs-length-baseline/v1",
-  "total": 8116
+  "total": 8106
 }

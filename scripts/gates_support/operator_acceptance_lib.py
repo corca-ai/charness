@@ -141,7 +141,6 @@ def _human_judgment_items(repo_root: Path) -> list[dict[str, str]]:
     for path, summary in (
         ("docs/index.md", "Review the documentation entry point and follow the owning page for current context."),
         ("docs/roadmap.md", "Review remaining work ordering and confirm which items are still operator-owned."),
-        ("docs/deferred-decisions.md", "How to record a product-boundary deferral; closed rows are in the archive, not this page."),
     ):
         if (repo_root / path).is_file():
             items.append({"source_path": path, "summary": summary})

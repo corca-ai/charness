@@ -56,7 +56,3 @@ composite docs receipt.
 - [Operator acceptance](./operator-acceptance.md) — takeover checks.
 - [Progressive operator path](./operator-progressive-path.md) — capability horizons.
 - [CLI reference](./cli-reference.md) — generated command reference.
-
-## Current contracts
-
-- [Deferred decisions](./deferred-decisions.md) — how to record a product-boundary choice that is not yet held by a mechanism.

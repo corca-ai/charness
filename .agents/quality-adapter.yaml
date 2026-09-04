@@ -191,10 +191,11 @@ runtime_budget_profiles:
       #
       # This preserves the regression defence -- a seed footprint that genuinely grew
       # would still blow the bar -- while removing a bar that measures the runner's
-      # fan-out. That the bar measures the wrong thing at all is the deeper defect and
-      # is tracked as D54 in docs/deferred-decisions.md; relevelling does not close it.
-      # D54 also names the sibling bars in the same shape (charness-version,
-      # check-inventory-declaration-coverage), which were confirmed but not re-derived.
+      # fan-out. That the bar measures the wrong thing at all is the deeper defect.
+      # D54 declined a CPU-time SLO; wall-clock stays advisory telemetry.
+      # Relevelling does not close it. Sibling bars in the same shape
+      # (charness-version, check-inventory-declaration-coverage) were confirmed
+      # but not re-derived.
       #
       # 2026-08-11 relevel, by the SAME derivation on current samples: n=20, range
       # 1611-2189ms, 1.4x worst = 3065. ATTRIBUTED, not tuned to green: the ruling-1
@@ -791,7 +792,6 @@ standing_doc_provenance:
     - docs/provenance-placement.md
     - docs/prescribed-skill-closeout-contract.md
   tracking_allowlist:
-    - docs/deferred-decisions.md
     - docs/artifact-policy.md
   inline_allow_marker: provenance-allow
 # The forward-looking prose surfaces this repo gates against transcribed facts,
@@ -809,10 +809,6 @@ regenerable_facts:
     - skills/*/*/references/*.md
     - skills/shared/references/*.md
   exemptions:
-    docs/deferred-decisions.md: >-
-      historical context: every entry records the figures its decision was TAKEN
-      on, and rewriting them to today's numbers would falsify why the decision was
-      made. An entry quoting a LIVE toll still owes the command that regenerates it.
     docs/validator-timing-layers.md: >-
       each row cites the commit that MOVED a gate between timing layers; the sha is
       provenance for a past decision, not a claim about today's tree.

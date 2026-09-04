@@ -56,7 +56,7 @@ shape is
 | Class | Examples | Provenance in rule prose? |
 | --- | --- | --- |
 | Standing-rule (scan) | `operating-contract.md`, `implementation-discipline.md`, `authoring-preflight.md`, `prescribed-skill-closeout-contract.md` | dates / multiple refs = the smell |
-| Tracking (allowlist) | `deferred-decisions.md`, `artifact-policy.md` | refs are load-bearing → allowed |
+| Tracking (allowlist) | `artifact-policy.md` | refs are load-bearing → allowed |
 | Record layer (never scanned) | `retro/*`, `debug/*`, `*/latest.md`, `charness-artifacts/*` | this *is* the provenance home |
 
 ## See Also

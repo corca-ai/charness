@@ -28,7 +28,6 @@ Put it in:
 
 Examples:
 
-- [deferred-decisions.md](./deferred-decisions.md) — how to defer a product-boundary choice.
 - [runtime-capability-contract.md](./runtime-capability-contract.md) — how host capability grants replace raw env-secret fallbacks.
 - [external-integrations.md](./external-integrations.md) — what upstream tools own versus what charness owns.
 - `skills/public/<skill-id>/SKILL.md`

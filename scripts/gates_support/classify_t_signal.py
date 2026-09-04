@@ -3,9 +3,9 @@
 
 Inspects ``git diff --name-status HEAD~1..HEAD`` plus the HEAD commit message
 and applies a rule catalog to determine whether the slice produced a durable
-improvement to memory, gates, conventions, skills, deferred decisions, debug
-RCA, or closed a GitHub issue. One strongest-confidence rule wins; ties are
-broken by ``rule_id`` alphabetical order for determinism.
+improvement to memory, gates, conventions, skills, debug RCA, or closed a
+GitHub issue. One strongest-confidence rule wins; ties are broken by
+``rule_id`` alphabetical order for determinism.
 """
 
 from __future__ import annotations
@@ -54,9 +54,7 @@ CONVENTION_DOC_PATHS = frozenset(
     }
 )
 SKILL_FILE_RE = re.compile(r"^skills/public/[^/]+/(SKILL\.md|references/.+)$")
-DEFERRED_DECISIONS_PATH = "docs/deferred-decisions.md"
 ISSUE_CLOSE_RE = re.compile(r"\b(?:close[sd]?|fix(?:e[sd])?)\s+#\d+\b", re.IGNORECASE)
-DEFERRED_DECISION_HEADING_RE = re.compile(r"^## (D\d+)\b")
 
 
 def _run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -123,28 +121,6 @@ def _filter(
         if predicate(path):
             matched.append((status, path))
     return matched
-
-
-def _deferred_decision_ids_from_text(text: str) -> set[str]:
-    ids: set[str] = set()
-    for line in text.splitlines():
-        match = DEFERRED_DECISION_HEADING_RE.match(line)
-        if match:
-            ids.add(match.group(1))
-    return ids
-
-
-def _deferred_decision_ids(repo_root: Path, ref: str) -> set[str]:
-    show_result = _run_git(repo_root, "show", f"{ref}:{DEFERRED_DECISIONS_PATH}")
-    if show_result.returncode != 0:
-        return set()
-    return _deferred_decision_ids_from_text(show_result.stdout)
-
-
-def _deferred_decision_added(repo_root: Path, parent_sha: str, head_sha: str) -> bool:
-    before = _deferred_decision_ids(repo_root, parent_sha)
-    after = _deferred_decision_ids(repo_root, head_sha)
-    return bool(after - before)
 
 
 def _candidate(
@@ -239,26 +215,12 @@ def _collect_candidates(
     entries: list[tuple[str, str]],
     head_sha: str,
     head_message: str,
-    *,
-    deferred_heading_added: bool = False,
 ) -> list[dict]:
     candidates: list[dict] = []
     for rule in DIFF_RULES:
         candidate = _diff_rule_candidate(rule, entries, head_sha)
         if candidate is not None:
             candidates.append(candidate)
-
-    if deferred_heading_added and any(path == DEFERRED_DECISIONS_PATH for _, path in entries):
-        candidates.append(
-            _candidate(
-                "deferred-decision-added",
-                "deferred_decision_added",
-                "medium",
-                "modified",
-                [DEFERRED_DECISIONS_PATH],
-                head_sha,
-            )
-        )
 
     if ISSUE_CLOSE_RE.search(head_message):
         candidates.append(
@@ -306,22 +268,18 @@ def classify_from_observation(
     entries: list[tuple[str, str]],
     head_message: str,
     head_sha: str,
-    *,
-    deferred_heading_added: bool = False,
 ) -> dict:
     """Classify a T-signal from already-observed diff entries and the HEAD message.
 
     Callers that already have the name-status list and commit message project
     from this; they do not re-ask Git. ``classify_t_signal`` observes once, then
-    calls here. ``deferred_heading_added`` is the blob observation for a new
-    ``## D<n>`` heading — not a second parse of the path list.
+    calls here.
     """
     winner = _select_strongest(
         _collect_candidates(
             entries,
             head_sha,
             head_message,
-            deferred_heading_added=deferred_heading_added,
         )
     )
     if winner is None:
@@ -357,14 +315,10 @@ def classify_t_signal(repo_root: Path, head_sha: str | None = None) -> dict:
         return _empty_result("diff_unavailable")
 
     entries = _parse_name_status(diff_result.stdout)
-    deferred_heading_added = any(
-        path == DEFERRED_DECISIONS_PATH for _, path in entries
-    ) and _deferred_decision_added(repo_root, parent_sha, head)
     return classify_from_observation(
         entries,
         head_message,
         head,
-        deferred_heading_added=deferred_heading_added,
     )
 
 

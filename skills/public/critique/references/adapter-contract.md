@@ -45,10 +45,6 @@ packet_sections:
     title: Changed Files And Owning Surfaces
     content_kind: script
     command: "python3 scripts/review/render_critique_section_changed_surfaces.py"
-  - id: known-deferred-concerns
-    title: Known Deferred Concerns
-    content_kind: static
-    content_path: charness-artifacts/spec/2026-09-04-deferred-decisions-archive.md
   - id: non-goals
     title: Non-Goals
     content_kind: static

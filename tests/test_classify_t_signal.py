@@ -83,14 +83,12 @@ def _observe(
     entries: list[tuple[str, str]],
     message: str = "msg",
     *,
-    deferred_heading_added: bool = False,
     head: str = HEAD,
 ):
     return module.classify_from_observation(
         entries,
         message,
         head,
-        deferred_heading_added=deferred_heading_added,
     )
 
 
@@ -169,39 +167,6 @@ def test_skill_or_reference_modified(module) -> None:
     assert result["confidence"] == "low"
 
 
-def test_deferred_decision_ids_come_from_headings(module) -> None:
-    before = module._deferred_decision_ids_from_text("# Deferred Decisions\n\n## D1 — first\n")
-    added = module._deferred_decision_ids_from_text(
-        "# Deferred Decisions\n\n## D1 — first\n\n## D2 — second\n"
-    )
-    edited = module._deferred_decision_ids_from_text(
-        "# Deferred Decisions\n\n## D1 — first edited\n"
-    )
-    assert added - before == {"D2"}
-    assert edited - before == set()
-
-
-def test_deferred_decision_added_when_new_d_heading(module) -> None:
-    result = _observe(
-        module,
-        [("M", "docs/deferred-decisions.md")],
-        deferred_heading_added=True,
-    )
-    assert result["rule_id"] == "deferred-decision-added"
-    assert result["t_status"] == "deferred_decision_added"
-    assert result["confidence"] == "medium"
-
-
-def test_deferred_decision_modification_without_new_heading_does_not_match(module) -> None:
-    result = _observe(
-        module,
-        [("M", "docs/deferred-decisions.md")],
-        deferred_heading_added=False,
-    )
-    assert result["rule_id"] != "deferred-decision-added"
-    assert result["t_status"] == "none"
-
-
 def test_issue_closed_via_commit_message(module) -> None:
     result = _observe(
         module,
@@ -249,24 +214,6 @@ def test_no_rule_match_returns_none(module) -> None:
     assert result["t_status"] == "none"
     assert result["skipped_reason"] is None
     assert result["rule_id"] is None
-
-
-def test_deferred_heading_added_is_observed_from_git_show(tmp_path: Path, classify) -> None:
-    repo = tmp_path / "repo"
-    env = _setup_with_baseline(repo)
-    _write(repo, "docs/deferred-decisions.md", "# Deferred Decisions\n\n## D1 — first\n")
-    _commit(repo, "seed deferred", env)
-    _write(
-        repo,
-        "docs/deferred-decisions.md",
-        "# Deferred Decisions\n\n## D1 — first\n\n## D2 — second\n",
-    )
-    _commit(repo, "add deferred decision", env)
-
-    result = classify(repo)
-
-    assert result["rule_id"] == "deferred-decision-added"
-    assert result["t_status"] == "deferred_decision_added"
 
 
 def test_no_parent_returns_skipped(tmp_path: Path, classify) -> None:

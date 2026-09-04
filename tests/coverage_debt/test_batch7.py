@@ -490,22 +490,6 @@ def test_a_truncated_or_headless_commit_record_yields_no_metadata(
     assert t_signal._commit_metadata_snapshot(repo, None) is None
 
 
-def test_a_history_without_the_deferred_decisions_doc_declares_no_decision_ids(
-    tmp_path: Path,
-) -> None:
-    """A ref that does not carry the decisions document contributes no ids.
-
-    The classifier compares the id sets at two refs to decide whether a slice
-    ADDED a deferred decision. An unreadable `git show` has to contribute the
-    empty set rather than propagate an error, or the first repository that has
-    never had the document would make the whole classification fail instead of
-    reporting no deferred-decision signal.
-    """
-    repo = install_committed_repo(tmp_path / "repo", {"tracked.py": "base\n"})
-
-    assert t_signal._deferred_decision_ids(repo, "HEAD") == set()
-
-
 # --- scripts/worktree_doctor_checks ---------------------------------------------
 
 

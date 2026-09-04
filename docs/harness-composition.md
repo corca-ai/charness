@@ -46,9 +46,8 @@ Does not own:
 Authoritative detail lives in:
 
 - skill references under `skills/public/<skill-id>/references/`
-- repo policy docs such as [runtime-capability-contract.md](./runtime-capability-contract.md),
-  [external-integrations.md](./external-integrations.md), and
-  [deferred-decisions.md](./deferred-decisions.md)
+- repo policy docs such as [runtime-capability-contract.md](./runtime-capability-contract.md)
+  and [external-integrations.md](./external-integrations.md)
 - repo-local adapters under `.agents/`
 
 ### References
