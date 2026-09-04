@@ -103,6 +103,39 @@ def test_reuse_links_the_parent_tree_when_the_lockfile_digest_matches(tmp_path: 
     assert not list(target.glob(".deps.charness-reuse-*")), "staging directory left behind"
 
 
+def test_reflink_is_probed_on_one_file_before_the_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    parent = tmp_path / "parent"
+    target = tmp_path / "target"
+    for root in (parent, target):
+        root.mkdir()
+        (root / "lock.json").write_text("same", encoding="utf-8")
+    _install(parent)
+    calls: list[list[str]] = []
+    real_run = reuse._run
+
+    def recording_run(argv: list[str], timeout_seconds: int):
+        calls.append(list(argv))
+        if "--reflink=always" in argv:
+            return 1, "cp: failed to clone: Operation not supported"
+        return real_run(argv, timeout_seconds)
+
+    monkeypatch.setattr(reuse, "_run", recording_run)
+
+    result = reuse.attempt_reuse(target, SPEC, source_root=parent, cache_root=None)
+
+    reflink_calls = [argv for argv in calls if "--reflink=always" in argv]
+    assert len(reflink_calls) == 1 and "-a" not in reflink_calls[0], calls
+    assert result["strategy"] == reuse.STRATEGY_HARDLINK
+    assert result["attempts"][0]["link"][0] == {
+        "strategy": reuse.STRATEGY_REFLINK,
+        "ok": False,
+        "detail": "cp: failed to clone: Operation not supported",
+    }
+    assert not list(target.glob(".charness-reflink-probe-*"))
+
+
 def test_reuse_refuses_a_parent_whose_lockfile_differs(tmp_path: Path) -> None:
     parent = tmp_path / "parent"
     target = tmp_path / "target"

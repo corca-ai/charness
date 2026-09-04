@@ -142,7 +142,31 @@ def _run(argv: list[str], timeout_seconds: int) -> tuple[int | None, str]:
         return None, f"command not found: {exc.filename or argv[0]}"
     except subprocess.TimeoutExpired:
         return None, f"timed out after {timeout_seconds}s"
-    return completed.returncode, (completed.stderr or "").strip()[-500:]
+    lines = (completed.stderr or "").strip().splitlines()
+    return completed.returncode, (lines[-1] if lines else "")[-300:]
+
+
+def _first_regular_file(root: Path) -> Path | None:
+    for path in root.rglob("*"):
+        if path.is_file() and not path.is_symlink():
+            return path
+    return None
+
+
+def _reflink_supported(source: Path, destination_parent: Path) -> tuple[bool, str]:
+    """Clone ONE file before the tree: on ext4 `--reflink=always` fails per file,
+    so a whole-tree attempt would spend a full walk to learn what one file says."""
+    probe_source = _first_regular_file(source)
+    if probe_source is None:
+        return False, "no regular file to probe"
+    probe = destination_parent / f".charness-reflink-probe-{os.getpid()}"
+    try:
+        exit_code, stderr = _run(
+            ["cp", "--reflink=always", str(probe_source), str(probe)], timeout_seconds=30
+        )
+    finally:
+        probe.unlink(missing_ok=True)
+    return exit_code == 0, stderr
 
 
 def _link_tree(
@@ -151,10 +175,13 @@ def _link_tree(
     """Link `source` to `destination` atomically; return the strategy that held."""
     attempts: list[dict[str, Any]] = []
     staging = destination.parent / f".{destination.name}.charness-reuse-{os.getpid()}"
-    for strategy, flags in (
-        (STRATEGY_REFLINK, ["-a", "--reflink=always"]),
-        (STRATEGY_HARDLINK, ["-al"]),
-    ):
+    strategies = [(STRATEGY_HARDLINK, ["-al"])]
+    supported, detail = _reflink_supported(source, destination.parent)
+    if supported:
+        strategies.insert(0, (STRATEGY_REFLINK, ["-a", "--reflink=always"]))
+    else:
+        attempts.append({"strategy": STRATEGY_REFLINK, "ok": False, "detail": detail})
+    for strategy, flags in strategies:
         _remove_tree(staging)
         exit_code, stderr = _run(
             ["cp", *flags, str(source), str(staging)], timeout_seconds=timeout_seconds
