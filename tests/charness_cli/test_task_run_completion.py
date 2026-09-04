@@ -14,7 +14,8 @@ from typing import Any
 
 import pytest
 
-from scripts.task_run import task_run_completion
+from scripts.task_run import task_run_completion, task_run_git
+from tests.quality_gates.repo_shapes import install_committed_repo
 
 
 def _complete(
@@ -86,7 +87,8 @@ def test_a_blocked_scope_names_the_blocker_instead_of_a_review_invitation(
     payload = _complete(tmp_path, result_state="completed", scope_verdict="fail")
 
     assert payload["next_step"] == (
-        "Inspect the retained worktree, typed result, and captured logs; scope drifted."
+        f"Inspect the retained candidate in {tmp_path / 'worktree'}, typed result, "
+        "and captured logs; scope drifted."
     )
     capsys.readouterr()
 
@@ -132,8 +134,8 @@ def test_a_changed_line_refusal_demotes_a_completed_lane_and_names_the_line(
         "scripts/x.py": {"changed_and_missing": [7]}
     }
     assert payload["next_step"] == (
-        "Inspect the retained worktree, typed result, and captured logs; "
-        "changed-line gate blocked (exit 1): scripts/x.py lines 7."
+        f"Inspect the retained candidate in {tmp_path / 'worktree'}, typed result, "
+        "and captured logs; changed-line gate blocked (exit 1): scripts/x.py lines 7."
     )
     capsys.readouterr()
 
@@ -179,9 +181,10 @@ def _released(tmp_path: Path, *, candidate: dict[str, Any], status: str = "compl
 
 def test_only_a_completed_commit_only_lane_is_released(tmp_path: Path) -> None:
     complete = {"carrier_kind": "commit-only", "head_is_complete": True}
-    assert _released(tmp_path, candidate=complete, status="validated-partial-result")[0] is None
+    partial, _ = _released(tmp_path, candidate=complete, status="validated-partial-result")
+    assert partial is not None and partial["worktree"] == "removed"
     retained, _ = _released(tmp_path, candidate={"carrier_kind": "worktree-only", "head_is_complete": False})
-    assert retained["worktree"] == "retained" and "not carried whole" in retained["reason"]
+    assert retained["worktree"] == "retained" and "keep_worktree stays true" in retained["reason"]
     released, record = _released(tmp_path, candidate=complete)
     assert released == {
         "worktree": "removed",
@@ -199,6 +202,83 @@ def test_a_failed_worktree_removal_retains_with_the_git_error(tmp_path: Path) ->
     assert retained["worktree"] == "retained"
     assert "fatal: locked" in retained["reason"]
     assert (record / "runtime").is_dir()
+
+
+def test_persist_incomplete_candidate_commits_dirty_and_untracked(tmp_path: Path) -> None:
+    worktree = install_committed_repo(tmp_path / "lane", {"module.py": "VALUE = 1\n"})
+    (worktree / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+    (worktree / "new.py").write_text("NEW = 1\n", encoding="utf-8")
+
+    snapshot = task_run_completion.persist_incomplete_candidate(
+        worktree,
+        git=task_run_git._git,
+        git_output=task_run_git._git_output,
+    )
+
+    assert snapshot["status"] == "committed"
+    assert snapshot["message"] == task_run_git.PERSIST_CANDIDATE_COMMIT_MESSAGE
+    show = task_run_git._git_output(worktree, "show", f"{snapshot['sha']}:new.py")
+    assert show == "NEW = 1\n"
+    porcelain = task_run_git._git_output(worktree, "status", "--porcelain")
+    assert porcelain.strip() == ""
+
+
+def test_a_committed_persist_marks_head_complete_when_carrier_refresh_fails(
+    tmp_path: Path, monkeypatch
+) -> None:
+    worktree = install_committed_repo(tmp_path / "lane", {"module.py": "VALUE = 1\n"})
+    (worktree / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+
+    def boom(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        raise task_run_completion.TaskRunError("carrier refresh failed")
+
+    def _git_without_worktree_remove(cwd: Path, *args: str) -> Any:
+        if args[:2] == ("worktree", "remove"):
+            return SimpleNamespace(returncode=128, stderr="not a linked worktree")
+        return task_run_git._git(cwd, *args)
+
+    monkeypatch.setattr(task_run_completion, "_candidate_carrier", boom)
+    payload = task_run_completion.complete_task(
+        {"task_id": "lane-1", "target_branch": "lane/task-run"},
+        runtime_path=tmp_path / "runtime",
+        resolved_target=worktree,
+        resolved_repo=tmp_path / "repo",
+        before_exec={},
+        base_sha="0" * 40,
+        scope_specs=[],
+        require_change=False,
+        parent_before={},
+        parent_before_head="0" * 40,
+        stdout_log=tmp_path / "stdout.log",
+        execution={},
+        started_at=0.0,
+        persist=lambda _payload, _path: None,
+        result_delivery=lambda _log: {"status": "delivered"},
+        completion_evidence=lambda **_kwargs: (
+            {"populations": {}},
+            {"verdict": "pass", "reason": ""},
+            {"blocking": False, "classification": "no-parent-progress"},
+        ),
+        execution_state=lambda _execution, _delivery: "completed",
+        candidate_result_state=lambda **_kwargs: (
+            {
+                "status": "validated",
+                "useful": True,
+                "head_is_complete": False,
+                "carrier_kind": "worktree-only",
+            },
+            "completed",
+        ),
+        candidate_commit=None,
+        git=_git_without_worktree_remove,
+        git_output=task_run_git._git_output,
+        pass_value="pass",
+    )
+
+    assert payload["candidate"]["persist"]["status"] == "committed"
+    assert payload["candidate"]["head_is_complete"] is True
+    assert payload["candidate"]["carrier_kind"] == "commit-only"
+    assert "no lane commit exists" not in payload["next_step"]
 
 
 def test_a_failed_runtime_removal_and_an_absent_runtime_are_both_named(tmp_path: Path, monkeypatch) -> None:

@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and the `charness task run/status` implementation
-> Last verified: 2026-09-04
+> Last verified: 2026-09-05
 
 `charness task` provides `task run` for one bounded Codex lane and `task status`
 for reading its external result store. It does not add a scheduler lifecycle.
@@ -31,9 +31,10 @@ opt-outs. The fully explicit `--path/--branch/--base` form remains for
 exceptional host setup.
 
 The parent reads the receipt before integrating. A lane is done only when
-`changed_line_gate` is `clean` or `noop`. When `head_is_complete` is false, the
-parent must carry committed and dirty populations together; `task run` does not
-integrate them. Parent path-delta classes (`normal`,
+`changed_line_gate` is `clean` or `noop`. A useful candidate whose worker left a
+dirty tree is committed onto the lane branch before retention, so `target_sha`
+carries the files; if that persist fails, `keep_worktree` stays true and the
+runtime sweep will not delete the worktree. Parent path-delta classes (`normal`,
 `concurrent-parent-progress`, `writer-conflict`) are on the receipt.
 
 ## Status

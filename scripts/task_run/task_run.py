@@ -83,10 +83,14 @@ def _persist(payload: dict[str, Any], runtime_path: Path) -> None:
 
 def _persist_completion(payload: dict[str, Any], runtime_path: Path) -> None:
     candidate = payload.get("candidate")
+    persist_status = (
+        candidate.get("persist", {}).get("status") if isinstance(candidate, dict) else None
+    )
     if (
         payload.get("status") == "completed"
         and isinstance(candidate, dict)
         and candidate.get("status") == "validated"
+        and persist_status != "committed"
         and not candidate.get("head_is_complete", True)
     ):
         if candidate.get("carrier_kind") == "worktree-only":

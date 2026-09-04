@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-04
+> Last verified: 2026-09-05
 
 This document explains where `charness` should keep different kinds of
 knowledge. The goal is not one perfect file pattern. The goal is a stable
@@ -130,6 +130,9 @@ Do not let hidden runtime state become the only copy of:
 - a user-visible decision
 - the next-session pickup path
 - a durable explanation another maintainer will need
+- an on-disk carrier named by a tracked public claim (`worker-delivered`
+  worker reports live under `charness-artifacts/critique/workers/`, not
+  `.charness/reviewer-round-*/`)
 
 ## Default Placement Rules
 

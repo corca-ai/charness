@@ -20,6 +20,12 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.gates_support.runtime_root_retention import _rmtree_writable  # noqa: E402
+from scripts.task_run.task_run_contract import TaskRunError  # noqa: E402
+from scripts.task_run.task_run_git import (  # noqa: E402
+    PERSIST_CANDIDATE_COMMIT_MESSAGE,
+    _candidate_carrier,
+    _commit_lane_snapshot,
+)
 
 
 def complete_task(
@@ -124,6 +130,15 @@ def complete_task(
 
     payload["status"] = result_state
     payload["approval_eligibility"] = "eligible" if result_state == "completed" else "ineligible"
+    _persist_useful_dirty_candidate(
+        payload,
+        candidate,
+        resolved_target=resolved_target,
+        base_sha=base_sha,
+        execution_status=execution_status,
+        git=git,
+        git_output=git_output,
+    )
 
     warnings = [
         f"{population}: {data['reason']}"
@@ -135,47 +150,159 @@ def complete_task(
     if warnings:
         payload["warnings"] = warnings
 
+    payload["next_step"] = _next_step(
+        payload,
+        resolved_target=resolved_target,
+        candidate=candidate,
+        execution_status=execution_status,
+        result_state=result_state,
+        blockers=blockers,
+    )
+    persist(payload, runtime_path)
+    _apply_lane_retention(
+        payload,
+        candidate,
+        result_state=result_state,
+        resolved_repo=resolved_repo,
+        resolved_target=resolved_target,
+        record_dir=stdout_log.parent,
+        git=git,
+        persist=persist,
+        runtime_path=runtime_path,
+    )
+    print(f"task run: {payload['status']} ({payload['task_id']})", file=sys.stderr)
+    return payload
+
+
+def _persist_useful_dirty_candidate(
+    payload: dict[str, Any],
+    candidate: dict[str, Any],
+    *,
+    resolved_target: Path,
+    base_sha: str,
+    execution_status: str,
+    git: Callable[..., Any],
+    git_output: Callable[..., str],
+) -> None:
+    if (
+        execution_status != "completed"
+        or not candidate.get("useful")
+        or candidate.get("head_is_complete")
+    ):
+        return
+    snapshot = persist_incomplete_candidate(
+        resolved_target, git=git, git_output=git_output
+    )
+    candidate["persist"] = snapshot
+    if snapshot.get("status") != "committed":
+        return
+    payload["target_sha"] = str(snapshot["sha"])
+    try:
+        candidate.update(
+            _candidate_carrier(
+                resolved_target,
+                base_sha,
+                head=str(snapshot["sha"]),
+                branch=payload.get("target_branch"),
+            )
+        )
+    except (OSError, TaskRunError, TypeError, ValueError):
+        candidate["head_sha"] = snapshot["sha"]
+        candidate["carrier_kind"] = "commit-only"
+        candidate["head_is_complete"] = True
+        candidate["dirty_paths"] = []
+
+
+def _next_step(
+    payload: Mapping[str, Any],
+    *,
+    resolved_target: Path,
+    candidate: Mapping[str, Any],
+    execution_status: str,
+    result_state: str,
+    blockers: list[str],
+) -> str:
+    location = _candidate_location(payload, resolved_target, candidate)
     if execution_status == "timed-out":
-        payload["next_step"] = (
+        suffix = f"; {'; '.join(blockers)}." if blockers else "."
+        return (
             f"Review the committed WIP candidate in {resolved_target}; "
             "interrupted mid-edit — state unknown; the commit is not a correctness claim"
-            + (f"; {'; '.join(blockers)}." if blockers else ".")
+            + suffix
         )
-    elif blockers:
-        payload["next_step"] = (
-            "Inspect the retained worktree, typed result, and captured logs; "
+    if blockers:
+        return (
+            f"Inspect the retained candidate {location}, typed result, and captured logs; "
             + "; ".join(blockers)
             + "."
         )
-    elif result_state == "validated-partial-result":
-        payload["next_step"] = (
-            f"Review the validated candidate in {resolved_target}; "
+    if result_state == "validated-partial-result":
+        return (
+            f"Review the validated candidate {location}; "
             "it is useful but not approval-eligible."
         )
-    else:
-        payload["next_step"] = (
-            f"Review the candidate in {resolved_target}; the typed result is approval-eligible."
-        )
-    persist(payload, runtime_path)
+    return f"Review the candidate {location}; the typed result is approval-eligible."
+
+
+def _apply_lane_retention(
+    payload: dict[str, Any],
+    candidate: Mapping[str, Any],
+    *,
+    result_state: str,
+    resolved_repo: Path,
+    resolved_target: Path,
+    record_dir: Path,
+    git: Callable[..., Any],
+    persist: Callable[[dict[str, Any], Path], None],
+    runtime_path: Path,
+) -> None:
     retention = release_finished_lane(
         payload,
         resolved_repo=resolved_repo,
         resolved_target=resolved_target,
-        record_dir=stdout_log.parent,
+        record_dir=record_dir,
         git=git,
     )
     if retention is not None:
         payload["retention"] = retention
         payload["keep_worktree"] = retention.get("worktree") != "removed"
         if retention.get("worktree") == "removed":
-            payload["next_step"] = (
-                f"Review the candidate on branch {payload.get('target_branch')} at "
-                f"{payload.get('target_sha')}; the typed result is approval-eligible and the "
-                "lane worktree was released because that commit carries the whole candidate."
+            payload["next_step"] = payload["next_step"].rstrip(".") + (
+                "; the lane worktree was released because that commit carries the whole candidate."
             )
         persist(payload, runtime_path)
-    print(f"task run: {payload['status']} ({payload['task_id']})", file=sys.stderr)
-    return payload
+        return
+    if result_state in {"completed", "validated-partial-result", "failed"}:
+        payload["keep_worktree"] = bool(
+            candidate.get("useful") and not candidate.get("head_is_complete")
+        )
+        persist(payload, runtime_path)
+
+
+def persist_incomplete_candidate(
+    worktree: Path,
+    *,
+    git: Callable[..., Any],
+    git_output: Callable[..., str],
+) -> dict[str, Any]:
+    """Copy a useful dirty candidate onto the lane branch so HEAD carries it (#797)."""
+    try:
+        return _commit_lane_snapshot(
+            worktree,
+            message=PERSIST_CANDIDATE_COMMIT_MESSAGE,
+            git=git,
+            git_output=git_output,
+        )
+    except (OSError, TaskRunError, TypeError, AttributeError, ValueError) as exc:
+        return {"status": "failed", "error": str(exc), "correctness_verified": False}
+
+
+def _candidate_location(
+    payload: Mapping[str, Any], resolved_target: Path, candidate: Mapping[str, Any]
+) -> str:
+    if candidate.get("head_is_complete") and payload.get("target_branch") and payload.get("target_sha"):
+        return f"on branch {payload['target_branch']} at {payload['target_sha']}"
+    return f"in {resolved_target}"
 
 
 def release_finished_lane(
@@ -192,12 +319,15 @@ def release_finished_lane(
     receipt, 254 times over, and no rule reached them (#787). The candidate a
     parent integrates is the lane branch's commit; once `head_is_complete` says
     that commit IS the candidate, the worktree adds nothing the branch does not
-    hold. A worktree-only or commit-plus-dirty candidate is retained: its dirty
-    half exists nowhere else, and the retention sweep salvages it as a patch
-    before it goes.
+    hold. A useful incomplete candidate is committed onto the lane branch first
+    (#797); if that persist fails, the worktree stays and `keep_worktree` stays
+    true so the sweep cannot delete the only copy.
     """
     candidate = payload.get("candidate")
-    if not isinstance(candidate, Mapping) or payload.get("status") != "completed":
+    if not isinstance(candidate, Mapping) or payload.get("status") not in {
+        "completed",
+        "validated-partial-result",
+    }:
         return None
     if not candidate.get("head_is_complete") or candidate.get("carrier_kind") != "commit-only":
         return {
@@ -205,7 +335,7 @@ def release_finished_lane(
             "runtime": "retained",
             "reason": (
                 f"carrier {candidate.get('carrier_kind')!r} is not carried whole by lane HEAD; "
-                "the sweep salvages uncommitted edits before removing it"
+                "keep_worktree stays true so the sweep cannot delete the named copy"
             ),
         }
     retention: dict[str, Any] = {"worktree": "retained", "runtime": "retained"}

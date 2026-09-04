@@ -118,14 +118,16 @@ def test_worktree_only_receipt_names_untracked_bytes_as_the_complete_candidate(
     candidate = payload["candidate"]
     assert payload["status"] == "completed", payload
     assert candidate["changed_paths"] == ["new_module.py"]
-    assert candidate["carrier_kind"] == "worktree-only"
-    assert candidate["committed_paths"] == []
-    assert candidate["dirty_paths"] == ["new_module.py"]
-    assert candidate["head_sha"] is None
-    assert candidate["head_is_complete"] is False
+    assert candidate["persist"]["status"] == "committed"
+    assert candidate["carrier_kind"] == "commit-only"
+    assert candidate["committed_paths"] == ["new_module.py"]
+    assert candidate["dirty_paths"] == []
+    assert candidate["head_sha"] == payload["target_sha"]
+    assert candidate["head_is_complete"] is True
     assert candidate["content_digest"]
-    assert "no lane commit exists" in payload["next_step"]
-    assert "not the complete candidate" in payload["next_step"]
+    assert payload["target_sha"] != payload["base_sha"]
+    assert "no lane commit exists" not in payload["next_step"]
+    assert "that commit carries the whole candidate" in payload["next_step"]
 
 
 def test_mixed_receipt_says_lane_head_is_only_a_proper_subset(tmp_path: Path) -> None:
@@ -143,29 +145,29 @@ def test_mixed_receipt_says_lane_head_is_only_a_proper_subset(tmp_path: Path) ->
     candidate = payload["candidate"]
     assert payload["status"] == "completed", payload
     assert candidate["changed_paths"] == ["extra.py", "module.py"]
-    assert candidate["carrier_kind"] == "commit-plus-dirty"
-    assert candidate["committed_paths"] == ["module.py"]
-    assert candidate["dirty_paths"] == ["extra.py"]
+    assert candidate["persist"]["status"] == "committed"
+    assert candidate["carrier_kind"] == "commit-only"
+    assert candidate["committed_paths"] == ["extra.py", "module.py"]
+    assert candidate["dirty_paths"] == []
     assert candidate["head_sha"] == payload["target_sha"]
-    assert candidate["head_is_complete"] is False
+    assert candidate["head_is_complete"] is True
     assert candidate["content_digest"]
-    assert "lane HEAD commit is a proper subset" in payload["next_step"]
-    assert "approval-eligible" not in payload["next_step"]
+    assert "lane HEAD commit is a proper subset" not in payload["next_step"]
+    assert "that commit carries the whole candidate" in payload["next_step"]
 
 
-def test_candidate_digest_detects_retained_worktree_byte_drift(tmp_path: Path) -> None:
+def test_candidate_digest_detects_worktree_byte_drift(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
-    executable = _codex(tmp_path, "printf 'NEW = 1\\n' > new_module.py")
+    (repo / "new_module.py").write_text("NEW = 1\n", encoding="utf-8")
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    original = task_run_git._candidate_carrier(repo, base)
+    (repo / "new_module.py").write_bytes(b"NEW = 2\n")
 
-    payload = _run(repo, tmp_path, executable, scopes=["new_module.py"])
-    worktree = Path(payload["worktree_path"])
-    original_digest = payload["candidate"]["content_digest"]
-    (worktree / "new_module.py").write_bytes(b"NEW = 2\n")
+    moved = task_run_git._candidate_carrier(repo, base)
 
-    moved = task_run_git._candidate_carrier(worktree, payload["base_sha"])
-
+    assert original["changed_paths"] == ["new_module.py"]
     assert moved["changed_paths"] == ["new_module.py"]
-    assert moved["content_digest"] != original_digest
+    assert moved["content_digest"] != original["content_digest"]
 
 
 def test_candidate_carrier_reuses_equal_head_worktree_reads(
@@ -360,7 +362,16 @@ def test_task_creation_uses_the_preflight_resolved_base_sha(
     assert payload["base"] == "moving-base"
     assert payload["base_sha"] == frozen_sha
     assert observed["base"] == frozen_sha
-    assert _git(Path(payload["worktree_path"]), "rev-parse", "HEAD").stdout.strip() == frozen_sha
+    assert payload["target_sha"] != frozen_sha
+    _git(repo, "merge-base", "--is-ancestor", frozen_sha, payload["target_sha"])
+    missing = subprocess.run(
+        ["git", "cat-file", "-e", f"{payload['target_sha']}:later.py"],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert missing.returncode != 0
 
 
 def test_explicit_base_glob_does_not_use_current_parent_head(tmp_path: Path) -> None:

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts.gates_support import runtime_root_retention as retention
 from scripts.task_run import task_run, task_run_execution, task_run_plan, task_run_runtime
 from tests.fifo_witness import FifoWitness, shell_holder_snippet
 
@@ -320,7 +321,8 @@ def test_task_run_creates_named_lane_and_keeps_runtime_external(tmp_path: Path) 
     assert Path(payload["runtime_root"]).is_absolute()
     assert not Path(payload["runtime_root"]).is_relative_to(repo)
     assert not Path(payload["runtime_root"]).is_relative_to(payload["worktree_path"])
-    assert (tmp_path / "lane" / "module.py").read_text(encoding="utf-8") == "VALUE = 2\n"
+    assert payload["keep_worktree"] is False
+    assert "VALUE = 2" in _git(repo, "show", f"{payload['target_sha']}:module.py").stdout
 
 
 def test_task_run_reuses_doctor_checkout_dir_without_target_resnapshot(
@@ -340,7 +342,8 @@ def test_task_run_reuses_doctor_checkout_dir_without_target_resnapshot(
 
     assert payload["status"] == "completed", payload
     assert snapshot_roots == [repo.resolve()]
-    assert Path(payload["git_worktree_dir"]).is_dir()
+    assert payload["git_worktree_dir"]
+    assert _git(repo, "rev-parse", payload["target_branch"]).stdout.strip() == payload["target_sha"]
 
 
 @pytest.mark.parametrize(
@@ -421,19 +424,30 @@ def test_task_run_assigns_distinct_lane_runtime_roots_and_releases_finished_lane
     assert "lane-runtime-one" not in _git(repo, "worktree", "list").stdout
 
 
-def test_a_worktree_only_candidate_keeps_its_lane_worktree(tmp_path: Path) -> None:
+def test_a_worktree_only_candidate_is_persisted_onto_the_lane_branch(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     executable = _codex(tmp_path, "printf 'VALUE = 2\\n' > module.py")
 
     payload = _run(repo, tmp_path, executable)
 
     assert payload["status"] == "completed", payload
-    assert payload["candidate"]["carrier_kind"] == "worktree-only"
-    assert payload["retention"]["worktree"] == "retained"
-    assert "not carried whole by lane HEAD" in payload["retention"]["reason"]
-    assert payload["keep_worktree"] is True
-    assert Path(payload["worktree_path"]).is_dir()
-    assert Path(payload["execution_runtime_root"]).is_dir()
+    assert payload["candidate"]["persist"]["status"] == "committed"
+    assert payload["candidate"]["persist"]["sha"] == payload["target_sha"]
+    assert payload["candidate"]["carrier_kind"] == "commit-only"
+    assert payload["candidate"]["head_is_complete"] is True
+    assert payload["candidate"]["committed_paths"] == ["module.py"]
+    assert payload["target_sha"] != payload["base_sha"]
+    assert payload["retention"]["worktree"] == "removed"
+    assert payload["keep_worktree"] is False
+    assert not Path(payload["worktree_path"]).exists()
+    assert _git(repo, "rev-parse", payload["target_branch"]).stdout.strip() == payload["target_sha"]
+    assert "VALUE = 2" in _git(repo, "show", f"{payload['target_sha']}:module.py").stdout
+    assert "that commit carries the whole candidate" in payload["next_step"]
+    retention.sweep_runtime_root(repo, key_root=Path(payload["runtime_root"]))
+    assert _git(repo, "rev-parse", payload["target_branch"]).stdout.strip() == payload["target_sha"]
+    assert "VALUE = 2" in _git(repo, "show", f"{payload['target_sha']}:module.py").stdout
+    assert payload["keep_worktree"] is False
+    assert not Path(payload["worktree_path"]).exists()
 
 
 def test_task_run_grants_codex_git_and_lane_runtime_dirs(
@@ -591,7 +605,7 @@ def test_task_run_cli_accepts_repo_root_after_subcommand(tmp_path: Path) -> None
 
     assert result.returncode == 0, result.stderr
     assert "status: completed" in result.stdout
-    assert (tmp_path / "lane" / "module.py").read_text(encoding="utf-8") == "VALUE = 3\n"
+    assert "VALUE = 3" in _git(repo, "show", "lane/cli:module.py").stdout
 
 
 def test_task_status_reads_the_external_result_store(tmp_path: Path) -> None:

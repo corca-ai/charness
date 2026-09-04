@@ -8,6 +8,7 @@ import re
 import stat
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -56,6 +57,7 @@ from scripts.task_run.task_run_contract import (  # noqa: E402
 )
 
 WIP_CANDIDATE_COMMIT_MESSAGE = "task-run: WIP candidate — interrupted mid-edit — state unknown"
+PERSIST_CANDIDATE_COMMIT_MESSAGE = "task-run: persist validated candidate onto the lane branch"
 
 
 def _git_env() -> dict[str, str]:
@@ -134,36 +136,60 @@ def _repo_snapshot(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _commit_wip_candidate(repo_root: Path) -> dict[str, Any]:
-    """Checkpoint all non-ignored lane output as an explicitly unverified WIP."""
-    staged = _git(repo_root, "add", "--all", "--", ".")
+def _commit_lane_snapshot(
+    repo_root: Path,
+    *,
+    message: str,
+    allow_empty: bool = False,
+    git: Callable[..., Any] | None = None,
+    git_output: Callable[..., str] | None = None,
+) -> dict[str, Any]:
+    """Commit all non-ignored lane output onto the current branch."""
+    git_run = git if git is not None else _git
+    read_output = git_output if git_output is not None else _git_output
+    staged = git_run(repo_root, "add", "--all", "--", ".")
     if staged.returncode != 0:
-        detail = staged.stderr.strip() or staged.stdout.strip() or "git add failed"
+        detail = str(
+            getattr(staged, "stderr", None) or getattr(staged, "stdout", None) or "git add failed"
+        ).strip()
         raise TaskRunError(f"git add failed: {detail}")
-
-    committed = _git(
+    commit_cmd = ["commit"]
+    if allow_empty:
+        commit_cmd.append("--allow-empty")
+    commit_cmd.extend(["--no-verify", "--message", message])
+    committed = git_run(
         repo_root,
         "-c",
         "user.email=charness-task-run@localhost",
         "-c",
         "user.name=charness task run",
-        "commit",
-        "--allow-empty",
-        "--no-verify",
-        "--message",
-        WIP_CANDIDATE_COMMIT_MESSAGE,
+        *commit_cmd,
     )
     if committed.returncode != 0:
-        detail = committed.stderr.strip() or committed.stdout.strip() or "git commit failed"
+        detail = str(
+            getattr(committed, "stderr", None)
+            or getattr(committed, "stdout", None)
+            or "git commit failed"
+        ).strip()
         raise TaskRunError(f"git commit failed: {detail}")
-
+    sha = _head_sha_from_checkout(repo_root) if git is None else None
+    if not sha:
+        sha = read_output(repo_root, "rev-parse", "HEAD").strip()
     return {
         "status": "committed",
-        "sha": _head_sha_from_checkout(repo_root)
-        or _git_output(repo_root, "rev-parse", "HEAD").strip(),
-        "message": WIP_CANDIDATE_COMMIT_MESSAGE,
+        "sha": sha,
+        "message": message,
         "correctness_verified": False,
     }
+
+
+def _commit_wip_candidate(repo_root: Path) -> dict[str, Any]:
+    """Checkpoint all non-ignored lane output as an explicitly unverified WIP."""
+    return _commit_lane_snapshot(
+        repo_root,
+        message=WIP_CANDIDATE_COMMIT_MESSAGE,
+        allow_empty=True,
+    )
 
 
 def _require_git_root(repo_root: Path) -> Path:

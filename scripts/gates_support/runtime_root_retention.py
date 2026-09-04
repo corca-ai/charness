@@ -18,9 +18,12 @@ What it removes, and what it never touches:
   A worktree carrying uncommitted edits is salvaged first: `uncommitted.patch`
   (`git diff HEAD --binary`) and `uncommitted-untracked.tar` beside the result,
   verified with `git apply --check -R` before the worktree goes; a salvage that
-  cannot be verified keeps the worktree and logs why. A linked worktree
-  (``.git`` is a file) is unregistered with `git worktree remove` before the
-  directory is removed, so `.git/worktrees/` does not keep a ghost entry.
+  cannot be verified keeps the worktree and logs why. A receipt with
+  `keep_worktree: true` keeps the worktree even after a verified salvage, because
+  that flag is the producer saying the directory is still the named copy (#797).
+  A linked worktree (``.git`` is a file) is unregistered with `git worktree
+  remove` before the directory is removed, so `.git/worktrees/` does not keep a
+  ghost entry.
 - `xdg-cache/charness/runtime/<nested key>`: a key inside a key, the shape the
   bootstrap fix in #787 stops creating. Removed whole once idle.
 - `pycache`, `coverage`, `tmp`, `ruff`, `npm`, `pip`, `pytest-cache`: removed
@@ -232,11 +235,24 @@ class Sweep:
             reason = f"{state} and the record is idle past the active window"
         if worktree.is_dir():
             salvage = salvage_uncommitted(worktree, record, git=self.git, dry_run=self.dry_run)
-            if salvage.get("status") == "unverified":
+            if payload is not None and payload.get("keep_worktree") is True:
+                extra = (
+                    "; salvage written beside the result"
+                    if salvage.get("status") in {"salvaged", "would-salvage"}
+                    else ""
+                )
+                self._record(
+                    "skipped",
+                    worktree,
+                    f"keep_worktree retains the named worktree{extra}",
+                    salvage=salvage,
+                )
+            elif salvage.get("status") == "unverified":
                 self._record("skipped", worktree, f"uncommitted edits could not be salvaged verifiably: {salvage.get('error')}")
                 return
-            self._remove_tree(worktree, reason, salvage=salvage)
-        if runtime.exists():
+            else:
+                self._remove_tree(worktree, reason, salvage=salvage)
+        if runtime.exists() and not (payload is not None and payload.get("keep_worktree") is True):
             self._remove_tree(runtime, reason)
 
     # -- nested keys and idle subtrees -----------------------------------

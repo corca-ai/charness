@@ -202,7 +202,7 @@ def render_template(*, title: str, date_text: str, evidence_mode: bool = False) 
             "<!-- If Fresh-Eye Satisfaction is `worker-delivered`, also record the "
             "durable combined report carrier below. Approval is owned by that report, "
             "not by this artifact's prose. -->",
-            "- Worker report: TODO repo-relative path to reviewer_worker_report output",
+            "- Worker report: TODO tracked path under charness-artifacts/critique/workers/<attempt>/worker-report.yaml (not .charness/)",
             "- Worker report identity: TODO lowercase SHA-256 of the report carrier",
             "- Worker report approval: TODO approval_eligible: true after report validation",
             "- Worker report delivery: TODO findings-received after parent delivery",

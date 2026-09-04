@@ -19,7 +19,7 @@ import pytest
 from scripts.task_run import task_run, task_run_runtime, task_run_support
 from skills.shared.scripts import reviewer_lifecycle
 
-from .test_task_run_fixtures import _codex, _repo, _run
+from .test_task_run_fixtures import _codex, _git, _repo, _run
 
 
 def _with_liveness(payload: dict[str, object]) -> dict[str, object]:
@@ -172,7 +172,7 @@ def test_running_result_is_visible_to_the_child(tmp_path: Path) -> None:
     )
 
     assert payload["status"] == "completed", payload
-    assert (tmp_path / "lane/running.txt").read_text(encoding="utf-8").strip() == '"status": "running",'
+    assert _git(repo, "show", f"{payload['target_sha']}:running.txt").stdout.strip() == '"status": "running",'
 
 
 def test_interruption_is_a_distinct_terminal_state(tmp_path: Path, monkeypatch) -> None:

@@ -236,6 +236,47 @@ def test_the_sweep_removes_what_the_rule_names_and_nothing_else(tmp_path: Path) 
     assert any("removed" in line and "MiB" in line for line in lines)
 
 
+def test_the_sweep_does_not_delete_a_keep_worktree_named_copy(tmp_path: Path) -> None:
+    now = time.time()
+    keys = tmp_path / "cache" / "charness" / "runtime"
+    mine = keys / "0000000000000001"
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    lane = mine / "task-run" / "kept-lane"
+    install_committed_repo(lane / "worktree", {"a.py": "A = 1\n"})
+    (lane / "worktree" / "a.py").write_text("A = 2\n", encoding="utf-8")
+    (lane / "worktree" / "new.txt").write_text("untracked\n", encoding="utf-8")
+    (lane / "runtime").mkdir(parents=True)
+    (lane / "result.json").write_text(
+        json.dumps(
+            {
+                "phase": "terminal",
+                "status": "validated-partial-result",
+                "keep_worktree": True,
+                "candidate": {
+                    "useful": True,
+                    "carrier_kind": "worktree-only",
+                    "head_is_complete": False,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    _age(mine, 30 * DAY, now=now)
+
+    report = retention.sweep_runtime_root(repo, key_root=mine, now=now)
+
+    entry = next(e for e in report["entries"] if e["path"] == str(lane / "worktree"))
+    assert entry["action"] == "skipped"
+    assert "keep_worktree retains the named worktree" in entry["reason"]
+    assert entry["salvage"]["status"] == "salvaged"
+    assert (lane / "worktree" / "a.py").is_file()
+    assert (lane / "worktree" / "new.txt").is_file()
+    assert (lane / retention.SALVAGE_PATCH).is_file()
+    assert (lane / retention.SALVAGE_TAR).is_file()
+    assert (lane / "runtime").is_dir()
+
+
 def test_a_dry_run_plans_the_same_and_removes_nothing(tmp_path: Path) -> None:
     now = time.time()
     mine, repo = _tree(tmp_path, now=now)

@@ -1,0 +1,85 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Final-bytes check after the debug body hit its 200-line cap: skills/public/impl/SKILL.md
+  unchanged since final-2; skills/public/debug/SKILL.md step 5 now folds the verifier
+  into the existing causes bullet with a pointer to references/detection-gap.md (body
+  back at exactly 200 lines); references/detection-gap.md gains a section ''The verifier
+  that did fire'' owning the rule: check the verifier''s logic, its scope over the
+  subject, and whether it guards a consumer; classify scope-too-broad | verifier-defect
+  | subject-defect; repair the subject only under subject-defect; a crash in a gate
+  is a verifier defect; a gate right in logic and scope that guards nothing is a deletion
+  candidate.'
+attempt_id: impl-debug-route-final-3
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 7af31e4a55377b3403f5d67bbab5ecea99da3b422033296f1048fe993aeaf688
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-impl-debug-route-final-3/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-impl-debug-route-final-3/delivery.json
+producer_run_id: run-impl-debug-route-final-3
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-impl-debug-route-final-3/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-impl-debug-route-final-3/receipt.json
+  producer_run_id: run-impl-debug-route-final-3
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: a53538d5ca44f158f9e6c97cd1b4a8f144dc94dad7f36fe7dd48015bca4824b2
+receipt_output_sha256: a53538d5ca44f158f9e6c97cd1b4a8f144dc94dad7f36fe7dd48015bca4824b2
+packet_identity: 50d28c55f4ebde222bdaf0b9b66ba448be65958fe8f80b640b843cf6a9bfdd35
+reviewed_input_identity: 016b31974c218992879d81eae53e63bb3e9d5d090706080f29d026c33a8c804d
+parent_receipt_identity: parent-45302a2897776a4cf36ab0a88ab68f2ad357a10b2f96d837
+provenance:
+  scope: 'Final-bytes check after the debug body hit its 200-line cap: skills/public/impl/SKILL.md
+    unchanged since final-2; skills/public/debug/SKILL.md step 5 now folds the verifier
+    into the existing causes bullet with a pointer to references/detection-gap.md
+    (body back at exactly 200 lines); references/detection-gap.md gains a section
+    ''The verifier that did fire'' owning the rule: check the verifier''s logic, its
+    scope over the subject, and whether it guards a consumer; classify scope-too-broad
+    | verifier-defect | subject-defect; repair the subject only under subject-defect;
+    a crash in a gate is a verifier defect; a gate right in logic and scope that guards
+    nothing is a deletion candidate.'
+  packet_identity: 50d28c55f4ebde222bdaf0b9b66ba448be65958fe8f80b640b843cf6a9bfdd35
+  reviewed_input_identity: 016b31974c218992879d81eae53e63bb3e9d5d090706080f29d026c33a8c804d
+  parent_receipt_identity: parent-45302a2897776a4cf36ab0a88ab68f2ad357a10b2f96d837
+  attempt_id: impl-debug-route-final-3
+  attempt_scope: 'Final-bytes check after the debug body hit its 200-line cap: skills/public/impl/SKILL.md
+    unchanged since final-2; skills/public/debug/SKILL.md step 5 now folds the verifier
+    into the existing causes bullet with a pointer to references/detection-gap.md
+    (body back at exactly 200 lines); references/detection-gap.md gains a section
+    ''The verifier that did fire'' owning the rule: check the verifier''s logic, its
+    scope over the subject, and whether it guards a consumer; classify scope-too-broad
+    | verifier-defect | subject-defect; repair the subject only under subject-defect;
+    a crash in a gate is a verifier defect; a gate right in logic and scope that guards
+    nothing is a deletion candidate.'
+  attempt_packet_identity: 50d28c55f4ebde222bdaf0b9b66ba448be65958fe8f80b640b843cf6a9bfdd35
+  attempt_parent_receipt_identity: parent-45302a2897776a4cf36ab0a88ab68f2ad357a10b2f96d837
+  result_packet_identity: 50d28c55f4ebde222bdaf0b9b66ba448be65958fe8f80b640b843cf6a9bfdd35
+  result_reviewed_input_identity: 016b31974c218992879d81eae53e63bb3e9d5d090706080f29d026c33a8c804d
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 7af31e4a55377b3403f5d67bbab5ecea99da3b422033296f1048fe993aeaf688
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

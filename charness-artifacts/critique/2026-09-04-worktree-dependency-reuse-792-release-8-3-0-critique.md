@@ -187,7 +187,7 @@ the install command when a link held. `task run` lanes inherit it through
 - Application state: unverified-by-packet; the packet records the request, not the model the host chose.
 - Delivery state: findings-received
 - Execution mode: file-backed-worker
-- Worker report: .charness/reviewer-round-release-8-3-0-code-9/worker-report.yaml
+- Worker report: charness-artifacts/critique/workers/release-8-3-0-code-9/worker-report.yaml
 - Worker report identity: a69d9347e2f6ba63756d8c6758ce0ddc69d8a696e27333fe5cb67cd259cdb2b4
 - Worker report approval: approval_eligible: true
 - Worker report delivery: findings-received

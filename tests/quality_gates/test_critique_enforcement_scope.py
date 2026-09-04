@@ -209,6 +209,60 @@ def test_worker_delivered_requires_report_approval_and_result_identities(tmp_pat
     assert _validate(repo, relpath, "--all").returncode == 0
 
 
+def test_worker_delivered_refuses_a_hidden_runtime_carrier_even_when_the_file_exists(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    packet_tail = _packet_binding(repo)
+    report = _write_report(
+        repo,
+        _approval_report(),
+        ".charness/reviewer-round-x/worker-report.yaml",
+    )
+    report_identity = hashlib.sha256(report.read_bytes()).hexdigest()
+    tier = (
+        _TIER_BLOCK.format(host="host-defaulted", delivery="findings-received")
+        + "- Worker report: .charness/reviewer-round-x/worker-report.yaml\n"
+        + f"- Worker report identity: {report_identity}\n"
+        + "- Worker report approval: approval_eligible: true\n"
+        + "- Worker report delivery: findings-received\n"
+        + f"- Worker report packet identity: {'a' * 64}\n"
+        + f"- Worker report input identity: {'c' * 64}\n"
+        + "- Worker report parent receipt identity: parent-receipt-1\n"
+        + f"- Worker report findings identity: {'b' * 64}\n"
+    )
+    relpath = _artifact(
+        repo,
+        "2026-09-05-worker-hidden-runtime.md",
+        _body(fresh="worker-delivered", tier=tier, tail=packet_tail),
+    )
+
+    result = _validate(repo, relpath)
+    assert result.returncode == 1
+    assert "hidden runtime" in result.stderr
+    assert report.is_file()
+
+    abs_tier = (
+        _TIER_BLOCK.format(host="host-defaulted", delivery="findings-received")
+        + f"- Worker report: {report.resolve()}\n"
+        + f"- Worker report identity: {report_identity}\n"
+        + "- Worker report approval: approval_eligible: true\n"
+        + "- Worker report delivery: findings-received\n"
+        + f"- Worker report packet identity: {'a' * 64}\n"
+        + f"- Worker report input identity: {'c' * 64}\n"
+        + "- Worker report parent receipt identity: parent-receipt-1\n"
+        + f"- Worker report findings identity: {'b' * 64}\n"
+    )
+    abs_relpath = _artifact(
+        repo,
+        "2026-09-05-worker-hidden-absolute.md",
+        _body(fresh="worker-delivered", tier=abs_tier, tail=packet_tail),
+    )
+    abs_result = _validate(repo, abs_relpath)
+    assert abs_result.returncode == 1
+    assert "hidden runtime" in abs_result.stderr
+
+
 def test_worker_delivered_requires_artifact_reviewed_input_binding(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     report = _write_report(repo, _approval_report(), "charness-artifacts/critique/reports/report.yaml")

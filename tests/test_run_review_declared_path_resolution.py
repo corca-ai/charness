@@ -81,6 +81,55 @@ def test_hold_out_restores_the_path_after_a_failed_run(tmp_path: Path) -> None:
     assert target.read_text(encoding="utf-8") == "TODO\n"
 
 
+def test_promote_worker_report_copies_only_the_combined_report(tmp_path: Path) -> None:
+    support = _support()
+    runtime = tmp_path / ".charness" / "reviewer-round-attempt-1"
+    runtime.mkdir(parents=True)
+    (runtime / "worker-report.yaml").write_text("schema_version: charness.reviewer_worker_report.v1\n", encoding="utf-8")
+    (runtime / "runner.stderr").write_text("noise\n", encoding="utf-8")
+
+    dest = support.promote_worker_report(tmp_path, "attempt-1", runtime / "worker-report.yaml")
+
+    assert dest == tmp_path / "charness-artifacts" / "critique" / "workers" / "attempt-1" / "worker-report.yaml"
+    assert dest.read_text(encoding="utf-8") == "schema_version: charness.reviewer_worker_report.v1\n"
+    assert not (dest.parent / "runner.stderr").exists()
+    assert support.promote_worker_report(tmp_path, "attempt-1", runtime / "missing.yaml") is None
+    with pytest.raises(support.RunReviewError, match="overwrite existing durable worker report"):
+        support.promote_worker_report(tmp_path, "attempt-1", runtime / "worker-report.yaml")
+
+
+def test_load_and_promote_report_rewrites_the_emitted_report_path(tmp_path: Path) -> None:
+    support = _support()
+    runtime = tmp_path / ".charness" / "reviewer-round-ok"
+    runtime.mkdir(parents=True)
+    report = runtime / "worker-report.yaml"
+    report.write_text("schema_version: v1\napproval_eligible: true\n", encoding="utf-8")
+    paths = {"report": report}
+    context = {"paths": {"report": ".charness/reviewer-round-ok/worker-report.yaml"}}
+
+    loaded = support.load_and_promote_report(tmp_path, "ok", paths, context)
+
+    assert loaded is not None and loaded["approval_eligible"] is True
+    cited = "charness-artifacts/critique/workers/ok/worker-report.yaml"
+    assert context["paths"]["report"] == cited
+    assert context["paths"]["durable_report"] == cited
+    assert context["paths"]["runtime_report"] == ".charness/reviewer-round-ok/worker-report.yaml"
+
+
+def test_load_and_promote_report_skips_a_non_approval_report(tmp_path: Path) -> None:
+    support = _support()
+    runtime = tmp_path / ".charness" / "reviewer-round-no"
+    runtime.mkdir(parents=True)
+    report = runtime / "worker-report.yaml"
+    report.write_text("schema_version: v1\napproval_eligible: false\n", encoding="utf-8")
+    context = {"paths": {"report": ".charness/reviewer-round-no/worker-report.yaml"}}
+
+    support.load_and_promote_report(tmp_path, "no", {"report": report}, context)
+
+    assert context["paths"] == {"report": ".charness/reviewer-round-no/worker-report.yaml"}
+    assert not (tmp_path / "charness-artifacts" / "critique" / "workers" / "no").exists()
+
+
 def test_a_file_the_runner_opens_still_refuses_a_symlink(tmp_path: Path) -> None:
     """The discriminator: `allow_symlink` must not leak to the read paths.
 

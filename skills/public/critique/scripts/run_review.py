@@ -271,7 +271,7 @@ def main(argv: list[str] | None = None) -> int:
             paths["runner_stdout"], returncode=returncode, status=status,
             started=started, error=error,
         )
-        report = SUPPORT.load_mapping(paths["report"])
+        report = SUPPORT.load_and_promote_report(root, attempt, paths, context)
         stream_evidence = SUPPORT.compare_report_stream(paths["runner_stdout"], paths["report"])
         boundary_ok = True
         carrier = lifecycle.build_lifecycle(

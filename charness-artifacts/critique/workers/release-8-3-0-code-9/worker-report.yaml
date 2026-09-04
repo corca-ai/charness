@@ -1,0 +1,70 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'worktree dependency reuse (#792) final code tree e191e89d4..5a332d7e8 after
+  eight critique rounds: scripts/worktree/worktree_prepare_lib.py, worktree_dependency_reuse.py,
+  worktree_doctor_lib.py, worktree_create_lib.py, task_run.py and task_run_support.py,
+  manifest schema and validator, seed template, CLI flag, docs, tests'
+attempt_id: release-8-3-0-code-9
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: e5a1a1319082078b1fd3b718f305d8c3ceb9da6db5d1806afa9b06f689de13b2
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-3-0-code-9/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-3-0-code-9/delivery.json
+producer_run_id: run-release-8-3-0-code-9
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-3-0-code-9/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-3-0-code-9/receipt.json
+  producer_run_id: run-release-8-3-0-code-9
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 176879469356c3b38ddf1dd4afad40dad4705f845be1892fd48ba02d695455c1
+receipt_output_sha256: 176879469356c3b38ddf1dd4afad40dad4705f845be1892fd48ba02d695455c1
+packet_identity: aa257fac51e9a200bce6cae7f0b9a1363725af7a03559153162eb5461e6974cb
+reviewed_input_identity: 328112bdceb433b006e880638a0e1d0ca2f38e108ea4a3d150600441d958a9b1
+parent_receipt_identity: parent-79f1302903fd86eeae5cab8ae49b02e7a8f42f81e12ff756
+provenance:
+  scope: 'worktree dependency reuse (#792) final code tree e191e89d4..5a332d7e8 after
+    eight critique rounds: scripts/worktree/worktree_prepare_lib.py, worktree_dependency_reuse.py,
+    worktree_doctor_lib.py, worktree_create_lib.py, task_run.py and task_run_support.py,
+    manifest schema and validator, seed template, CLI flag, docs, tests'
+  packet_identity: aa257fac51e9a200bce6cae7f0b9a1363725af7a03559153162eb5461e6974cb
+  reviewed_input_identity: 328112bdceb433b006e880638a0e1d0ca2f38e108ea4a3d150600441d958a9b1
+  parent_receipt_identity: parent-79f1302903fd86eeae5cab8ae49b02e7a8f42f81e12ff756
+  attempt_id: release-8-3-0-code-9
+  attempt_scope: 'worktree dependency reuse (#792) final code tree e191e89d4..5a332d7e8
+    after eight critique rounds: scripts/worktree/worktree_prepare_lib.py, worktree_dependency_reuse.py,
+    worktree_doctor_lib.py, worktree_create_lib.py, task_run.py and task_run_support.py,
+    manifest schema and validator, seed template, CLI flag, docs, tests'
+  attempt_packet_identity: aa257fac51e9a200bce6cae7f0b9a1363725af7a03559153162eb5461e6974cb
+  attempt_parent_receipt_identity: parent-79f1302903fd86eeae5cab8ae49b02e7a8f42f81e12ff756
+  result_packet_identity: aa257fac51e9a200bce6cae7f0b9a1363725af7a03559153162eb5461e6974cb
+  result_reviewed_input_identity: 328112bdceb433b006e880638a0e1d0ca2f38e108ea4a3d150600441d958a9b1
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: e5a1a1319082078b1fd3b718f305d8c3ceb9da6db5d1806afa9b06f689de13b2
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

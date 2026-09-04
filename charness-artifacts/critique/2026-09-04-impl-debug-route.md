@@ -112,7 +112,7 @@ make no wall-clock call). Its packet is named under Reviewed Input Identity.
 - Application state: unverified-by-packet; the packet records the request, not the model the host chose.
 - Delivery state: findings-received
 - Execution mode: file-backed-worker
-- Worker report: .charness/reviewer-round-impl-debug-route-final-3/worker-report.yaml
+- Worker report: charness-artifacts/critique/workers/impl-debug-route-final-3/worker-report.yaml
 - Earlier rounds: `.charness/reviewer-round-impl-debug-route-weinberg-1/`, `-raskin-2/`, `-repair-verify-1/`, `-final-1/`, `-final-2/` (run state, not tracked).
 - Worker report identity: 28b7941f885e0849b5f304ef431955e36ba80175031b4e5d065f8c557be0e956
 - Worker report approval: approval_eligible: true

@@ -113,16 +113,30 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _report_path(repo_root: Path, value: str) -> Path:
+HIDDEN_RUNTIME_ROOTS = frozenset({".charness", ".artifacts"})
+
+
+def _hidden_runtime_relative(rel: Path) -> bool:
+    """True when the carrier sits in Variable Hidden Knowledge (`docs/artifact-policy.md`)."""
+    return bool(rel.parts) and rel.parts[0] in HIDDEN_RUNTIME_ROOTS
+
+
+def _report_path(repo_root: Path, value: str, *, allow_hidden: bool = False) -> Path:
     report_path = Path(value.strip().strip("`"))
     if not report_path.is_absolute() and ".." in report_path.parts:
         raise WorkerCarrierError("worker report path must be a safe repo-relative path without traversal, or an absolute path resolved inside the repository")
     resolved_root = repo_root.resolve()
     report_file = (report_path if report_path.is_absolute() else resolved_root / report_path).resolve()
     try:
-        report_file.relative_to(resolved_root)
+        rel = report_file.relative_to(resolved_root)
     except ValueError as exc:
         raise WorkerCarrierError(f"worker report carrier path resolves outside the repository: {value}") from exc
+    cited_hidden = (not report_path.is_absolute() and _hidden_runtime_relative(report_path)) or _hidden_runtime_relative(rel)
+    if cited_hidden and not allow_hidden:
+        raise WorkerCarrierError(
+            f"worker report carrier is hidden runtime, not a durable tracked copy: {value}. "
+            "Promote worker-report.yaml under charness-artifacts/critique/workers/<attempt>/ and cite that path."
+        )
     if not report_file.is_file():
         raise WorkerCarrierError(f"worker report carrier does not exist inside the repository: {value}")
     return report_file
@@ -186,7 +200,7 @@ def _validate_receipt_and_result(
     receipt_value = report.get("receipt_path")
     if not isinstance(receipt_value, str):
         raise WorkerCarrierError("worker report has no repo-readable receipt path")
-    receipt = _read_json(_report_path(repo_root, receipt_value), "worker receipt")
+    receipt = _read_json(_report_path(repo_root, receipt_value, allow_hidden=True), "worker receipt")
     if receipt.get("schema_version") != "charness.reviewer_worker.v1":
         raise WorkerCarrierError("worker receipt has the wrong schema")
     if receipt.get("status") != "succeeded" or receipt.get("terminal") is not True:
@@ -203,7 +217,7 @@ def _validate_receipt_and_result(
     output_value = receipt.get("output_file")
     if not isinstance(output_value, str):
         raise WorkerCarrierError("worker receipt has no output file")
-    output = _report_path(repo_root, output_value)
+    output = _report_path(repo_root, output_value, allow_hidden=True)
     output_hash = _sha256(output)
     if output_hash != receipt.get("output_sha256") or output.stat().st_size != receipt.get("output_size"):
         raise WorkerCarrierError("worker output does not match the typed receipt hash/size")
@@ -268,7 +282,7 @@ def _validate_ledger(
         raise WorkerCarrierError("worker report has no repo-readable ledger path")
     if not isinstance(provenance, dict) or not provenance.get("attempt_id"):
         raise WorkerCarrierError("worker report has no typed attempt provenance")
-    ledger = _read_json(_report_path(repo_root, ledger_value), "delivery ledger")
+    ledger = _read_json(_report_path(repo_root, ledger_value, allow_hidden=True), "delivery ledger")
     if ledger.get("schema_version") != "charness.reviewer_delivery.v1":
         raise WorkerCarrierError("delivery ledger has the wrong schema")
     attempts = ledger.get("attempts")
