@@ -41,7 +41,7 @@ def main() -> int:
     parser.add_argument(
         "--no-dependency-reuse",
         action="store_true",
-        help="Skip linking an installed dependency tree; always run the declared install command.",
+        help="Do not link an installed dependency tree; the declared install command runs unless doctor coverage skips prepare (add --force to override that).",
     )
     args = parser.parse_args()
 

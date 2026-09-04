@@ -104,7 +104,7 @@ Notes:
 
 ## Dependency reuse
 
-Without copy-on-write, every fresh worktree paid a full install before bounded work started ([#792](https://github.com/corca-ai/charness/issues/792)). With `prepare.dependency_reuse` declared, prepare (so `create --prepare` and every `task run` lane) links an installed tree before the install command: first the parent tree when its lockfile digest matches, then the runtime cache `worktree-deps/` keyed by that digest and seeded whenever a fresh install had to run. `cp --reflink=always` is tried, then `cp -al`; when neither holds the install command runs as before. The payload's `dependency_reuse` key records `strategy`, `origin`, `source`, `reason`, and `cache_seed`. `--no-dependency-reuse` disables the step; `--force` does not, because reuse is prepare. Hard links share inodes: package managers replace files, so installs in the lane leave the parent intact, but an in-place edit under the linked directory reaches it. Declaring the field accepts that trade; pnpm users should use its global virtual store instead ([module docstring](../scripts/worktree/worktree_dependency_reuse.py)).
+Without copy-on-write, every fresh worktree paid a full install before bounded work started ([#792](https://github.com/corca-ai/charness/issues/792)). With `prepare.dependency_reuse` declared, prepare (so `create --prepare` and every `task run` lane) links an installed tree before the install command: first the parent tree when its lockfile digest matches, then the runtime cache `worktree-deps/` keyed by that digest and seeded whenever a fresh install had to run. `cp --reflink=always` is tried, then `cp -al`; when neither holds the install command runs as before. The payload's `dependency_reuse` key records `strategy`, `origin`, `source`, `reason`, and `cache_seed`. `--no-dependency-reuse` disables linking (a doctor-licensed skip still needs `--force`); `--force` alone does not disable reuse, because reuse is prepare. Hard links share inodes between the parent, the cache entry, and every worktree linked from either: package managers replace files, so installs in a lane leave the others intact, but an in-place edit under the linked directory reaches all of them. Recovery: delete the cache entry, prepare with `--no-dependency-reuse`. Declaring the field accepts that trade; the setup seeder emits it commented out, and pnpm users should use its global virtual store instead ([module docstring](../scripts/worktree/worktree_dependency_reuse.py)).
 
 ## Canonical doctor checks
 
@@ -117,13 +117,13 @@ These run regardless of the manifest:
 | `lefthook_shim` | If `pre-commit` shim references lefthook, then `node_modules/lefthook-*/bin/lefthook` or PATH `lefthook` resolves. | Lefthook shim will silently exit 0 — hooks are dead. |
 | `husky_dir` | If `core.hooksPath` points at a husky `_/` directory, that directory exists. | Husky prepare step has not run in this worktree. |
 
-Checks return `pass`, `fail`, or `skipped` (precondition not met, e.g. no `core.hooksPath`).
+Checks return `pass`, `fail`, or `skipped` (precondition not met).
 
 ## Recommended consumer setups
 
-- **pnpm monorepo:** the cleanest worktree story available today is pnpm's bare repo + `enableGlobalVirtualStore: true`. Worktrees share the global content-addressable store, each worktree's `node_modules` is symlinks only, and `pnpm install` in a new worktree is near-instant. See [pnpm's official guidance](https://pnpm.io/11.x/git-worktrees).
-- **npm or yarn:** prepare commands typically `npm ci && npx husky install` or `yarn install --immutable && yarn lefthook install`. File count is the bottleneck, not dependency download; declare [dependency reuse](#dependency-reuse) so later worktrees link the parent's install instead of repeating it.
-- **CoW filesystems (APFS, Btrfs, ZFS):** dependency reuse takes the reflink path automatically; a manual `cp -c -R node_modules ../new-worktree/node_modules` is the equivalent by hand.
+- **pnpm monorepo:** pnpm's bare repo + `enableGlobalVirtualStore: true`; worktrees share the global store, `node_modules` is symlinks only, and `pnpm install` is near-instant ([pnpm guidance](https://pnpm.io/11.x/git-worktrees)).
+- **npm or yarn:** prepare commands typically `npm ci && npx husky install` or `yarn install --immutable && yarn lefthook install`. File count is the bottleneck; declare [dependency reuse](#dependency-reuse) so later worktrees link the parent's install.
+- **CoW filesystems (APFS, Btrfs, ZFS):** dependency reuse takes the reflink path automatically.
 
 ## Wiring with mutate-phase skills
 

@@ -885,8 +885,9 @@ options:
                         directory.
   --force               Run prepare even if doctor already reports pass.
   --no-dependency-reuse
-                        Skip linking an installed dependency tree; always run
-                        the declared install command.
+                        Do not link an installed dependency tree; the declared
+                        install command runs unless doctor coverage skips
+                        prepare (add --force to override that).
   --home-root HOME_ROOT
                         Home root used to locate the managed charness checkout
                         when the entrypoint is a PATH shim.

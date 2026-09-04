@@ -1,9 +1,9 @@
-  # Before install-deps runs, link the parent tree's $directory (reflink, then
-  # hard links) when its $lockfile digest matches, else the charness runtime
-  # cache entry for that digest; the install command runs only when neither
-  # exists. Hard links share files with the parent tree; in-place rewrites
-  # inside $directory would reach it.
-  dependency_reuse:
-    command_id: install-deps
-    lockfile: $lockfile
-    directory: $directory
+  # Opt-in (#792): uncomment to link the parent tree's $directory (reflink,
+  # then hard links) when its $lockfile digest matches, else the charness
+  # runtime cache entry for that digest, and skip install-deps. Hard links
+  # share files between the parent, the cache, and every linked worktree; an
+  # in-place rewrite inside $directory reaches all of them.
+  # dependency_reuse:
+  #   command_id: install-deps
+  #   lockfile: $lockfile
+  #   directory: $directory

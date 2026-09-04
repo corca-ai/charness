@@ -16,11 +16,14 @@ refuses -- leaves the worktree untouched and the declared install command runs
 as before. The result records which path was taken so the operator can read it
 from the prepare payload (and `task run`'s `result.json`) instead of `pstree`.
 
-Hard links share inodes with the source tree. Package managers replace files
-rather than editing them in place, so the parent stays intact through an
-install in the lane; a tool that rewrites a file inside the install directory
-in place would reach the parent as well. The manifest opt-in is where a
-consumer accepts that.
+Hard links share inodes with the source tree, and a cache entry is itself a
+hard-link copy of the first install that seeded it, so the donor worktree, the
+cache, and every later worktree linked from it share one set of files. Package
+managers replace files rather than editing them in place, so an install in a
+lane leaves the others intact; a tool that rewrites a file inside the install
+directory in place reaches all of them. Recovery is deleting the cache entry
+(`cache_entry`) and preparing with `--no-dependency-reuse`. The manifest opt-in
+is where a consumer accepts that.
 """
 
 from __future__ import annotations
@@ -29,11 +32,28 @@ import hashlib
 import json
 import os
 import shutil
-import subprocess
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+
+_subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
+run_process = _subprocess_guard.run_process
+TIMEOUT_EXIT_CODE = _subprocess_guard.TIMEOUT_EXIT_CODE
 
 CACHE_TREE_NAME = "tree"
 CACHE_META_NAME = "meta.json"
@@ -135,12 +155,10 @@ def _result(
 
 def _run(argv: list[str], timeout_seconds: int) -> tuple[int | None, str]:
     try:
-        completed = subprocess.run(
-            argv, capture_output=True, text=True, timeout=timeout_seconds, check=False
-        )
+        completed = run_process(argv, cwd=Path.cwd(), timeout_seconds=timeout_seconds)
     except FileNotFoundError as exc:
         return None, f"command not found: {exc.filename or argv[0]}"
-    except subprocess.TimeoutExpired:
+    if completed.returncode == TIMEOUT_EXIT_CODE:
         return None, f"timed out after {timeout_seconds}s"
     lines = (completed.stderr or "").strip().splitlines()
     return completed.returncode, (lines[-1] if lines else "")[-300:]

@@ -5941,7 +5941,7 @@ def build_parser() -> argparse.ArgumentParser:
     worktree_prepare_parser.add_argument(
         "--no-dependency-reuse",
         action="store_true",
-        help="Skip linking an installed dependency tree; always run the declared install command.",
+        help="Do not link an installed dependency tree; the declared install command runs unless doctor coverage skips prepare (add --force to override that).",
     )
     add_worktree_lib_args(worktree_prepare_parser)
     worktree_prepare_parser.set_defaults(func=cmd_worktree_prepare)
