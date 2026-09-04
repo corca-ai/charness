@@ -15,7 +15,7 @@ from.
 
 That is a concept boundary, not a length boundary, which is what separates it
 from the `_lib` spill the file-length cap exists to reject
-(the `_lib` spill the file-length cap exists to reject). The seam is the one the widening itself drew.
+(`docs/deferred-decisions.md` D33). The seam is the one the widening itself drew.
 This gate scanned markdown only, until the `--json` residue class proved markdown
 is where a flag claim is WRITTEN and not where it is EXECUTED: seven live callers
 passed a flag their callee had stopped accepting, and exactly ONE of them was in
@@ -38,8 +38,8 @@ still unseen, which is the second hole this module closes: `BACKTICK_CONTENT_RE`
 excludes newlines and the fenced multi-line join only fires on a trailing
 backslash, so a backtick span WRAPPING across a prose line break formed no
 carrier at all -- not checked, and not counted in the `skipped` bucket that exists
-to keep a pass from over-claiming coverage. Wrapped inline-code across a prose
-line break is exactly that shape.
+to keep a pass from over-claiming coverage. `docs/deferred-decisions.md` writes
+exactly that shape.
 
 Non-claims. An argv sequence assembled through a variable, a loop, or a helper
 that appends flags after the call site is not reconstructed here; only literal
