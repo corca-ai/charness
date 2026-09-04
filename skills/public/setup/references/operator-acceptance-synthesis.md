@@ -12,7 +12,7 @@ Start from:
 - repo-owned install, update, doctor, or reset commands
 - the repo's named probe surface when install and health/readiness semantics
   are split across multiple commands
-- remaining roadmap or deferred-decision items
+- remaining roadmap items
 - known human-only takeover steps
 
 Then classify each item explicitly:

@@ -290,7 +290,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     # This file is consumer-authored, so refusing it would turn a consumer's whole issue
     # lane red for a typo, and the only corpus that could justify arming the refusal —
     # consumer `.agents/issue-adapter.yaml` files — is one this repo cannot enumerate.
-    # Whether to arm it is a numbered deferred decision, not a judgment this slice makes.
+    # Arming is declined (archive D46); uninterpreted lines stay warnings.
     data = dict(defaults)
     errors: list[str] = []
     warnings: list[str] = []

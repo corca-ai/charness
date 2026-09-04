@@ -5,10 +5,10 @@
     "docs/design-north-star.md": 1394,
     "docs/external-integrations.md": 1026,
     "docs/goal-lifecycle.md": 1279,
-    "docs/harness-composition.md": 1041,
-    "docs/host-packaging.md": 1081,
+    "docs/harness-composition.md": 1028,
+    "docs/host-packaging.md": 1041,
     "docs/parallel-execution.md": 1052
   },
   "schema": "charness.docs-length-baseline/v1",
-  "total": 8106
+  "total": 8053
 }

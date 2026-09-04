@@ -11,8 +11,8 @@ incidental prose that never cited the inventory at all.
 D47 recorded two numbers for that question and said so plainly: they were measured BY
 HAND, and `measure_inventory_consumption_floor.py` does not produce them ("Two numbers
 cited in the D47 archive entry are NOT produced here"). This script is what
-produces them, so the next call on D47 rests on a re-runnable number rather than on a
-sentence someone wrote once.
+produces them, so a reopen from the archive trigger has a re-runnable number
+rather than a sentence someone wrote once.
 
 **What it does NOT license.** It measures THIS repo's checked-in quality artifacts and
 says nothing about a consumer repo's corpus. It is evidence that arming costs this repo
@@ -23,8 +23,7 @@ that D47's own named repair -- per-field distinctiveness in
 `inventory-consumer-fields.json` -- cannot be built as described: the fields the corpus
 actually engages ARE the ordinary-English ones, so declaring them non-distinctive refuses
 the cited reviews while declaring them distinctive makes the marker rule apply to nothing
-and ship as a measured-zero no-op. Measuring is the move that makes the next decision
-real.
+and ship as a measured-zero no-op. Measuring stays; arming is declined.
 
 Corpus scope is reported, never assumed. The gate's own sibling scans a NON-RECURSIVE
 `*.md`, which silently excludes `charness-artifacts/quality/history/`; `--recursive`

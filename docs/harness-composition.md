@@ -86,7 +86,6 @@ Owns:
 
 - repo-wide operating stance
 - source-of-truth policy
-- closed decisions
 - cross-skill rules
 - durable documentation for future maintainers
 
@@ -98,7 +97,6 @@ Does not own:
 
 Authoritative detail lives in:
 
-- owning pages for product-boundary choices
 - [runtime-capability-contract.md](./runtime-capability-contract.md) for access-layer policy
 - [external-integrations.md](./external-integrations.md) for integration ownership
 - [artifact-policy.md](./artifact-policy.md) for durability classes
@@ -233,7 +231,7 @@ When repo-owned surfaces disagree, use this local precedence order:
 1. Deterministic enforced behavior from scripts, validators, hooks, and tests
 2. Checked-in repo-local adapter and manifest fields for paths, defaults, and
    integration metadata
-3. Repo-wide policy docs and closed decision docs
+3. Repo-wide policy docs
 4. Public skill core
 5. References and examples
 6. Prior artifacts and history
