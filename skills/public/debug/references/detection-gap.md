@@ -31,6 +31,20 @@ map the chosen move to the artifact `## Prevention` section.
 - **human-only detection** — the failure class is judgment-bound and an automated
   gate would either over-fire or miss the real concern
 
+## The verifier that did fire
+
+When the symptom *is* a verifier's verdict (a red gate, a failing check, a
+blocking review), the verifier is a candidate cause before the subject is.
+Check three things: its logic (does the code implement the rule it states),
+its scope over this subject (does the rule apply to what changed, or did the
+delta drag in a universe it was never meant to read), and whether it guards a
+consumer at all (what rework does a green here prevent). Classify the failure
+with the vocabulary `critique` and `release` already use — `scope-too-broad`,
+`verifier-defect`, or `subject-defect` — and repair the subject only under
+`subject-defect`. A crash inside a gate is a verifier defect, not a red
+subject; a gate that is right in logic and scope but guards nothing is a
+deletion candidate, not a reason to satisfy it.
+
 ## Trivial-bug short-circuit
 
 When the fix is a single-file typo, rename, or comment correction with no

@@ -97,13 +97,8 @@ For every reproduced or recurring finding, use `references/pattern-ladder.md`: r
      pretending the problem disappeared
 5. Enumerate diverse causes.
    - list at least three plausible causes before verifying any one of them
-   - include environment, dependency, state, and control-flow causes alongside
-     obvious logic bugs
-   - when the symptom is a verifier's verdict, the verifier is a candidate too:
-     check its logic, its scope over this subject, and whether it guards a
-     consumer at all; classify `scope-too-broad`, `verifier-defect`, or
-     `subject-defect` before repairing the subject (a crash in a gate is a
-     verifier defect, not a red subject)
+   - include environment, dependency, state, control-flow, and — when the
+     symptom is a verdict — the verifier (`references/detection-gap.md`)
    - walk from symptom to structural cause per
      `references/five-whys-causal-chain.md`
    - complete the Pattern Ladder before naming a root cause; nearby keywords are
