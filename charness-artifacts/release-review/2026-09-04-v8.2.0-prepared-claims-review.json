@@ -1,0 +1,82 @@
+{
+  "schema_version": "charness.release.claims-review.v4",
+  "prepared_commit": "f4b85e906365f021fb2dae9d9815043fc942c2b8",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "dee081030e2f57a9e843046a055278b3dc660a5196b38752e5715c847c210ed6",
+  "target_version": "8.2.0",
+  "tag_name": "v8.2.0",
+  "verdict": "pass",
+  "preparer_context": "this session's Claude Code agent, which ran publish_release.py --execute and wrote the prepared record",
+  "reviewer_context": "file-backed Codex worker release-8-2-0-claims-1 via run_review.py (codex_exec, read-only-worker), separate process and context",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "run_review.py attempt release-8-2-0-claims-1 delivered findings-received verdict pass; packet 518a44081a40dfa2f98bc9e6f0b15bdfe0bc7a1413a594cf788bf0300fca5071",
+    "review_artifact": "charness-artifacts/release-review/2026-09-04-v8.2.0-claims-review.md"
+  },
+  "review_scope": {
+    "blocking_paths": [
+      ".claude-plugin/marketplace.json",
+      "README.md",
+      "charness",
+      "charness-artifacts/critique/impl-debug-route-final-1-packet.json",
+      "charness-artifacts/critique/impl-debug-route-final-1-packet.md",
+      "charness-artifacts/critique/impl-debug-route-final-2-packet.json",
+      "charness-artifacts/critique/impl-debug-route-final-2-packet.md",
+      "charness-artifacts/critique/impl-debug-route-final-3-packet.json",
+      "charness-artifacts/critique/impl-debug-route-final-3-packet.md",
+      "charness-artifacts/critique/impl-debug-route-raskin-2-packet.json",
+      "charness-artifacts/critique/impl-debug-route-raskin-2-packet.md",
+      "charness-artifacts/critique/impl-debug-route-repair-verify-1-packet.json",
+      "charness-artifacts/critique/impl-debug-route-repair-verify-1-packet.md",
+      "charness-artifacts/critique/impl-debug-route-weinberg-1-packet.json",
+      "charness-artifacts/critique/impl-debug-route-weinberg-1-packet.md",
+      "charness-artifacts/critique/release-8-1-0-claims-1-packet.json",
+      "charness-artifacts/critique/release-8-1-0-claims-1-packet.md",
+      "charness-artifacts/critique/task-run-790-791-code-1-packet.json",
+      "charness-artifacts/critique/task-run-790-791-code-1-packet.md",
+      "charness-artifacts/critique/task-run-790-791-repair-verify-1-packet.json",
+      "charness-artifacts/critique/task-run-790-791-repair-verify-1-packet.md",
+      "charness-artifacts/debug/2026-09-04-debug-review.md",
+      "charness-artifacts/debug/seam-risk-index.json",
+      "charness-artifacts/goal-runs/784/2026-09-03-session-record.md",
+      "charness-artifacts/probe/2026-09-03-v8.1.0-release-observer.json",
+      "charness-artifacts/release-review/2026-09-04-v8.1.0-prepared-claims-review.json",
+      "charness-artifacts/release/latest.md",
+      "docs/agent-task-runs.md",
+      "docs/cli-reference.md",
+      "packaging/charness.json",
+      "scripts/mutation/suggest_mutation_coverage_command.py",
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_runtime.py",
+      "scripts/task_run/task_run_scope.py",
+      "scripts/task_run/task_run_state.py",
+      "scripts/task_run/task_run_support.py",
+      "skills/public/debug/SKILL.md",
+      "skills/public/debug/references/detection-gap.md",
+      "skills/public/impl/SKILL.md",
+      "tests/charness_cli/test_task_run.py",
+      "tests/charness_cli/test_task_run_result.py",
+      "tests/charness_cli/test_task_run_scope.py",
+      "tests/quality_gates/test_release_changed_line_coverage.py"
+    ],
+    "advisory_paths": [
+      "charness-artifacts/critique/2026-09-04-impl-debug-route.md",
+      "charness-artifacts/release-review/2026-09-04-v8.1.0-claims-review.md"
+    ]
+  },
+  "scope_basis": {
+    "base_ref": "refs/tags/v8.1.0",
+    "changed_paths_sha256": "3a312812b4d51fed0fde4961ff2752b843b352eaf7376d6e2367dea700769766",
+    "changed_path_count": 45
+  },
+  "advisory_findings": [
+    "CLAIM-001 medium: lane, timings, and probe results asserted by the helper without raw receipts; measured in this prepare and standalone",
+    "CLAIM-002 low: exact current_release.py result not bound",
+    "CLAIM-003 medium: adapter-unchanged reason not re-derivable from packet; measured empty diff v8.1.0..f4b85e906",
+    "CLAIM-004 medium: no-member-change claim not provable from bound surfaces; measured identical skill, adapter, and subcommand sets",
+    "CLAIM-005 medium: task-run runtime behaviour and 'in every record' proven by tests, not by the packet",
+    "CLAIM-006 medium: critique record is a narrative; the six reviewer packets are tracked with SHA256s",
+    "CLAIM-007 low: minor-bump reading and prepared Git state are authored judgment; policy is version-policy.md Minor",
+    "CLAIM-008 low: README corrected-against-init.sh claim exceeds the packet; corrections are commit b528a0add"
+  ]
+}
