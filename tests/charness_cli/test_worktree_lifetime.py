@@ -226,6 +226,111 @@ def test_lifetime_error_paths_and_cap_refusal(tmp_path: Path, monkeypatch) -> No
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 
+def test_throwaway_skips_unresolvable_temp_roots(monkeypatch) -> None:
+    real_resolve = Path.resolve
+
+    def boom(self, *args, **kwargs):
+        if "unresolvable-temp" in str(self):
+            raise OSError("nope")
+        return real_resolve(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "resolve", boom)
+    monkeypatch.setenv("TMPDIR", "/unresolvable-temp")
+    assert lifetime.path_is_throwaway(Path("/home/operator/src/feature-worktree")) is False
+
+
+def test_marker_path_returns_none_when_git_dir_cannot_resolve(monkeypatch) -> None:
+    class Boom:
+        def resolve(self):
+            raise OSError("nope")
+
+    monkeypatch.setattr(lifetime, "git_dir_at", lambda _path: Boom())
+    assert lifetime._marker_path(Path("/tmp/x")) is None
+
+
+def test_worktree_dirty_check_on_a_real_repo(tmp_path: Path) -> None:
+    repo = copy_worktree_seed(tmp_path, "dirty-primary")
+    assert lifetime._worktree_is_dirty(repo) is False
+    (repo / "extra.txt").write_text("x\n", encoding="utf-8")
+    assert lifetime._worktree_is_dirty(repo) is True
+
+
+def test_reclaim_skips_dead_pid_records_without_a_path(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(
+        lifetime,
+        "list_lifetime_records",
+        lambda _root: [{"kind": lifetime.KIND_EPHEMERAL, "pid": 999_999_999}],
+    )
+    monkeypatch.setattr(lifetime, "_registered_worktrees", lambda _root: [])
+    assert lifetime.reclaim_expired(tmp_path) == []
+
+
+def test_reclaim_skips_unlabeled_non_throwaway_paths(tmp_path: Path, monkeypatch) -> None:
+    repo = copy_worktree_seed(tmp_path, "primary")
+    feature = tmp_path / "feature"
+    _git("worktree", "add", "-b", "feature", str(feature), cwd=repo)
+    monkeypatch.setattr(lifetime, "path_is_throwaway", lambda _path: False)
+    assert lifetime.reclaim_expired(repo, now=time.time() + 10 * DAY) == []
+    assert feature.exists()
+
+
+def test_enforce_cap_uses_module_default(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(lifetime, "list_lifetime_records", lambda _root: [])
+    monkeypatch.setattr(lifetime, "reclaim_expired", lambda _root, **_kwargs: [])
+    payload = lifetime.enforce_cap(tmp_path)
+    assert payload["refused"] is False
+
+
+def test_enforce_cap_breaks_when_oldest_has_no_path(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        lifetime,
+        "list_lifetime_records",
+        lambda _root: [{"kind": lifetime.KIND_EPHEMERAL, "pid": None, "created_at": "1"}],
+    )
+    monkeypatch.setattr(lifetime, "reclaim_expired", lambda _root, **_kwargs: [])
+    payload = lifetime.enforce_cap(tmp_path, cap=0, reserve=1)
+    assert payload["refused"] is True
+
+
+def test_is_idle_when_stat_raises(tmp_path: Path, monkeypatch) -> None:
+    target = tmp_path / "stat-me"
+    target.mkdir()
+    real_stat = Path.stat
+    real_exists = Path.exists
+
+    def fake_exists(self):
+        if self == target:
+            return True
+        return real_exists(self)
+
+    def boom(self, *args, **kwargs):
+        if self == target:
+            raise OSError("stat")
+        return real_stat(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "exists", fake_exists)
+    monkeypatch.setattr(Path, "stat", boom)
+    assert lifetime._is_idle(target, now=time.time(), idle_days=1.0) is True
+
+
+def test_unregister_rmtrees_when_git_remove_fails_and_path_remains(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = copy_worktree_seed(tmp_path, "primary")
+    target = tmp_path / "sticky"
+    create_lib.run_create(repo, target_path=target, branch="sticky", base="main")
+
+    class AlwaysFail:
+        returncode = 1
+        stdout = ""
+        stderr = "fail"
+
+    monkeypatch.setattr(lifetime, "_git_dir_cmd", lambda *args, **kwargs: AlwaysFail())
+    result = lifetime.unregister(target, repo_root=repo)
+    assert result["via"] == "rmtree-prune"
+    assert result["removed"] is True
+
+
 def test_lifetime_bootstrap_inserts_the_repo_root(monkeypatch) -> None:
     root = Path(__file__).resolve().parents[2]
     monkeypatch.setattr(sys, "path", [p for p in sys.path if Path(p).resolve() != root])
