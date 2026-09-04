@@ -218,7 +218,12 @@ def _local_loader_ancestor_levels(repo_root: Path, path: str) -> list[list[str]]
             directory = repo_root / child.parent
             if not directory.is_dir():
                 continue
-            for candidate in directory.rglob("*.py"):
+            # "Same-directory" is the contract. A root-level changed path used to
+            # turn this into a whole-repo rglob that reached the non-UTF-8
+            # fixture under native/ and died before any verdict; at the root
+            # the walk stays flat.
+            walk = directory.glob("*.py") if child.parent == Path(".") else directory.rglob("*.py")
+            for candidate in walk:
                 relative = candidate.relative_to(repo_root).as_posix()
                 if relative in related:
                     continue

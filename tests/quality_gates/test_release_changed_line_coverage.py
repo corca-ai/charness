@@ -751,10 +751,27 @@ def test_loader_scan_skips_a_non_utf8_sibling_instead_of_dying(tmp_path: Path) -
     (tmp_path / "pkg").mkdir()
     (tmp_path / "pkg" / "mod.py").write_text("VALUE = 1\n", encoding="utf-8")
     (tmp_path / "pkg" / "loader.py").write_text(
-        "from . import mod\n", encoding="utf-8"
+        'mod = _load_sibling("mod")\n', encoding="utf-8"
     )
     (tmp_path / "pkg" / "non_utf8.py").write_bytes(b"\xff\xfe# not utf-8\n")
 
     levels = suggest._local_loader_ancestor_levels(tmp_path, "pkg/mod.py")
 
     assert levels == [["pkg/loader.py"]]
+
+
+def test_loader_scan_for_a_root_level_path_stays_flat(tmp_path: Path) -> None:
+    """The contract is same-directory loaders; for a root-level changed file
+    the walk must not become a whole-repo rglob (that is how it reached the
+    non-UTF-8 fixture in the first place)."""
+    from scripts.mutation import suggest_mutation_coverage_command as suggest
+
+    (tmp_path / "tool.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (tmp_path / "root_loader.py").write_text('tool = _load_sibling("tool")\n', encoding="utf-8")
+    (tmp_path / "deep" / "fixtures").mkdir(parents=True)
+    (tmp_path / "deep" / "fixtures" / "nested_loader.py").write_text(
+        'tool = _load_sibling("tool")\n', encoding="utf-8"
+    )
+    (tmp_path / "deep" / "fixtures" / "non_utf8.py").write_bytes(b"\xff\xfe")
+
+    assert suggest._local_loader_ancestor_levels(tmp_path, "tool.py") == [["root_loader.py"]]
