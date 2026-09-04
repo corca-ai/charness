@@ -604,6 +604,16 @@ def test_disable_canonical_check_honored(tmp_path: Path) -> None:
     assert all(check["id"] != "lefthook_shim" for check in payload["checks"])
 
 
+def test_disable_canonical_checks_rejects_duplicates_and_empty_command_ids() -> None:
+    errors: list[str] = []
+    lib._validate_disabled_checks(["lefthook_shim", "lefthook_shim"], errors)
+    assert any("duplicates" in item for item in errors)
+    errors = []
+    command_id = lib._validate_command_entry({"id": "", "argv": ["/bin/true"]}, "prepare.commands[0]", errors)
+    assert command_id is None
+    assert any("non-empty string" in item for item in errors)
+
+
 def _git_out(*args: str, cwd: Path) -> str:
     result = subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True, text=True)
     return result.stdout

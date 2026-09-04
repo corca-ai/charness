@@ -7,6 +7,7 @@ from pathlib import Path
 
 import yaml
 
+from scripts.worktree import worktree_create as create_cli
 from scripts.worktree import worktree_create_lib as lib
 from tests.charness_cli.worktree_fixtures import copy_worktree_seed
 
@@ -39,6 +40,37 @@ def _install_lefthook_shim(repo: Path) -> None:
     shim = hooks_dir / "pre-commit"
     shim.write_text("#!/bin/sh\nexec lefthook run pre-commit\n", encoding="utf-8")
     shim.chmod(0o755)
+
+
+def test_create_refuses_ephemeral_and_owned_together(tmp_path: Path) -> None:
+    repo = _make_primary(tmp_path)
+    payload = lib.run_create(
+        repo,
+        target_path=tmp_path / "feature",
+        branch="feature",
+        base="main",
+        ephemeral=True,
+        owned=True,
+    )
+    assert payload["status"] == lib.FAIL
+    assert "cannot be used together" in payload["error"]
+    assert payload["created"] is False
+
+
+def test_create_cli_module_exposes_main() -> None:
+    assert callable(create_cli.main)
+
+
+def test_create_records_lifetime_bind_failure(tmp_path: Path, monkeypatch) -> None:
+    repo = _make_primary(tmp_path)
+
+    def boom(*_args, **_kwargs):
+        raise OSError("no admin dir")
+
+    monkeypatch.setattr(lib._lifetime, "bind_created", boom)
+    payload = lib.run_create(repo, target_path=tmp_path / "wt", branch="wt", base="main")
+    assert payload["created"] is True
+    assert "error" in payload["lifetime"]
 
 
 def test_create_dry_run_plans_git_worktree_add(tmp_path: Path) -> None:

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -171,6 +172,82 @@ def test_audit_prune_reclaims_dead_pid_ephemeral(tmp_path: Path) -> None:
     assert pruned["status"] == audit_lib.PASS
     assert any(Path(item["path"]) == target.resolve() for item in pruned["reclaimed"])
     assert target.resolve() not in _worktree_paths(repo)
+
+
+def test_lifetime_error_paths_and_cap_refusal(tmp_path: Path, monkeypatch) -> None:
+    repo = copy_worktree_seed(tmp_path, "primary")
+    assert lifetime.read_lifetime(tmp_path / "missing") is None
+    assert lifetime.list_lifetime_records(tmp_path / "not-a-repo") == []
+    assert lifetime.pid_is_live(None) is False
+    assert lifetime.pid_is_live(-1) is False
+
+    def kill_permission(_pid: int, _sig: int) -> None:
+        raise PermissionError("denied")
+
+    monkeypatch.setattr(os, "kill", kill_permission)
+    assert lifetime.pid_is_live(1) is True
+
+    def kill_oserror(_pid: int, _sig: int) -> None:
+        raise OSError("boom")
+
+    monkeypatch.setattr(os, "kill", kill_oserror)
+    assert lifetime.pid_is_live(1) is False
+    monkeypatch.undo()
+
+    broken = tmp_path / "not-a-worktree"
+    broken.mkdir()
+    try:
+        lifetime.write_lifetime(broken, kind=lifetime.KIND_EPHEMERAL)
+    except FileNotFoundError:
+        pass
+    else:
+        raise AssertionError("expected FileNotFoundError")
+
+    marker = tmp_path / "junk.json"
+    monkeypatch.setattr(lifetime, "_marker_path", lambda _path: marker)
+    marker.write_text("{not-json", encoding="utf-8")
+    assert lifetime.read_lifetime(tmp_path) is None
+    monkeypatch.undo()
+
+    monkeypatch.setattr(create_lib._lifetime, "EPHEMERAL_CAP", 1)
+    first = tmp_path / "charness" / "runtime" / "k" / "task-run" / "a" / "worktree"
+    first.parent.mkdir(parents=True)
+    create_lib.run_create(repo, target_path=first, branch="a", base="main")
+    refused = create_lib.run_create(
+        repo,
+        target_path=tmp_path / "charness" / "runtime" / "k" / "task-run" / "b" / "worktree",
+        branch="b",
+        base="main",
+    )
+    assert refused["created"] is False
+    assert "cap" in refused["error"]
+
+    lifetime._load_repo_runtime_bootstrap()
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+
+def test_unregister_falls_back_to_prune_and_skips_locked_entries(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = copy_worktree_seed(tmp_path, "primary")
+    target = tmp_path / "ghost"
+    _git("worktree", "add", "--detach", str(target), cwd=repo)
+    import shutil
+
+    shutil.rmtree(target)
+    result = lifetime.unregister(target, repo_root=repo)
+    assert result["removed"] is True
+
+    locked = tmp_path / "locked"
+    _git("worktree", "add", "-b", "locked", str(locked), cwd=repo)
+    monkeypatch.setattr(
+        lifetime,
+        "_registered_worktrees",
+        lambda _root: [{"path": locked, "locked": True}],
+    )
+    monkeypatch.setattr(lifetime, "path_is_throwaway", lambda _path: True)
+    assert lifetime.reclaim_expired(repo, now=time.time() + 10 * DAY) == []
+    assert locked.exists()
 
 
 def test_sweep_unregisters_a_linked_lane_worktree(tmp_path: Path) -> None:

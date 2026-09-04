@@ -62,6 +62,13 @@ def test_hold_out_hides_the_path_during_the_run_and_restores_it(tmp_path: Path) 
     assert target.read_text(encoding="utf-8") == "TODO\n"
 
 
+def test_hold_out_refuses_a_missing_path(tmp_path: Path) -> None:
+    support = _support()
+    with pytest.raises(support.RunReviewError, match="hold-out path does not exist"):
+        with support.hold_out(tmp_path, ["gone.md"]):
+            pass
+
+
 def test_hold_out_restores_the_path_after_a_failed_run(tmp_path: Path) -> None:
     support = _support()
     target = tmp_path / "in-progress.md"

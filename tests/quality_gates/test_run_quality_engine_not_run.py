@@ -273,3 +273,59 @@ def test_receipt_fallback_summary_keeps_the_not_run_clause(
         "Quality summary: 2 passed, 1 failed, 2 not run "
         "(dead-code: opt-in unmet; profiled: condition unmet), total 7ms"
     )
+
+
+def test_bind_receipt_stamps_the_last_release_path(tmp_path: Path) -> None:
+    args, copy_to, written = RECEIPT._bind_receipt_outputs(
+        ["proof"],
+        repo_root=tmp_path,
+        status="pass",
+        release=True,
+        full_queue=True,
+        receipt_json="",
+    )
+    assert "--json-path" in args
+    assert (tmp_path / ".charness" / "quality").is_dir()
+    assert copy_to is None
+    assert written == ""
+
+
+def test_finish_swallows_a_failed_receipt_copy(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(RECEIPT, "record_runtime_single", lambda *args, **kwargs: None)
+    monkeypatch.setattr(RECEIPT, "timestamp", lambda: "t")
+    monkeypatch.setattr(RECEIPT, "format_elapsed", lambda elapsed_ms: "1ms")
+    monkeypatch.setattr(RECEIPT, "_index_tree", lambda _root: None)
+
+    class Result:
+        returncode = 0
+        stdout = ""
+        stderr = ""
+
+    monkeypatch.setattr(RECEIPT, "run_process", lambda *args, **kwargs: Result())
+
+    def boom(*_args, **_kwargs):
+        raise OSError("disk")
+
+    monkeypatch.setattr(RECEIPT.shutil, "copyfile", boom)
+    written = tmp_path / "written.json"
+    written.write_text("{}", encoding="utf-8")
+    context = RECEIPT.RuntimeContext(
+        repo_root=tmp_path,
+        environment=dict(os.environ),
+        runtime_root=tmp_path / "runtime",
+        state_args=(),
+        temp_dir=tmp_path / "tmp",
+        regime="",
+    )
+    RECEIPT.finish(
+        context,
+        RECEIPT.Ledger(passed=1, failed=0),
+        started_at=0.0,
+        mode="full",
+        release=True,
+        full_queue=True,
+        non_claim="",
+        receipt_json=str(written),
+        labels="core",
+        overall_rc=0,
+    )
