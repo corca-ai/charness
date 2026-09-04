@@ -13,7 +13,12 @@ from scripts.worktree import worktree_dependency_reuse as reuse
 from scripts.worktree import worktree_doctor_lib as lib
 from tests.charness_cli.worktree_fixtures import copy_worktree_seed
 
-SPEC = reuse.ReuseSpec(command_id="install-deps", lockfile="lock.json", directory="deps")
+SPEC = reuse.ReuseSpec(
+    command_id="install-deps",
+    lockfile="lock.json",
+    directory="deps",
+    install_argv=("python3", "-c", "pass"),
+)
 
 # The install command writes a marker so a test can tell "reused" from "ran".
 MANIFEST = (
@@ -22,9 +27,10 @@ MANIFEST = (
     "  commands:\n"
     "    - id: install-deps\n"
     "      argv:\n"
-    "        - sh\n"
+    "        - python3\n"
     "        - -c\n"
-    "        - 'mkdir -p deps && echo installed > deps/marker && touch installer-ran'\n"
+    "        - \"import pathlib; pathlib.Path('deps').mkdir(exist_ok=True); "
+    "pathlib.Path('deps/marker').write_text('installed'); pathlib.Path('installer-ran').touch()\"\n"
     "  dependency_reuse:\n"
     "    command_id: install-deps\n"
     "    lockfile: lock.json\n"
@@ -220,11 +226,33 @@ def test_cache_entries_are_keyed_by_the_runtime_fingerprint(
     assert not (target / "deps").exists()
 
 
+def test_an_unanswered_version_probe_neither_publishes_nor_consumes_the_cache(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    donor = tmp_path / "donor"
+    target = tmp_path / "target"
+    cache = tmp_path / "cache"
+    for root in (donor, target):
+        root.mkdir()
+        (root / "lock.json").write_text("same", encoding="utf-8")
+    _install(donor)
+    good = reuse.seed_cache(donor, SPEC, cache_root=cache)
+    assert good["seeded"] is True
+    unknown = reuse.ReuseSpec("install-deps", "lock.json", "deps", ("no-such-tool-792",))
+
+    refused = reuse.seed_cache(donor, unknown, cache_root=cache)
+    result = reuse.attempt_reuse(target, unknown, source_root=None, cache_root=cache)
+
+    assert refused["seeded"] is False
+    assert refused["reason"] == "runtime fingerprint unknown; not published to the cache"
+    assert result["strategy"] == reuse.STRATEGY_NONE
+    assert result["attempts"][0]["declined"] == "runtime fingerprint unknown"
+    assert len(list(cache.iterdir())) == 1
+
+
 def test_the_runtime_fingerprint_names_the_install_tool_and_node(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(reuse, "_VERSION_PROBES", {})
-
     def fake_capture(argv: list[str], timeout_seconds: int):
         return 0, "", {"npm": "10.9.0\n", "node": "v22.1.0\n"}[argv[0]]
 
@@ -234,6 +262,9 @@ def test_the_runtime_fingerprint_names_the_install_tool_and_node(
     fingerprint = reuse.runtime_fingerprint(spec)
 
     assert fingerprint.endswith("/npm=10.9.0/node=v22.1.0")
+    monkeypatch.setattr(reuse, "_run_capture", lambda argv, timeout_seconds: (1, "boom", ""))
+    assert reuse.runtime_fingerprint(spec) is None
+    assert reuse.cache_entry(Path("/cache"), "digest", spec) is None
     assert reuse.ReuseSpec.from_manifest(
         {
             "commands": [{"id": "install-deps", "argv": ["npm", "ci"]}],

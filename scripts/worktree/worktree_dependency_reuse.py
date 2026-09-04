@@ -137,36 +137,50 @@ def lockfile_digest(path: Path) -> str | None:
         return None
 
 
-_VERSION_PROBES: dict[tuple[str, ...], str] = {}
+NODE_INSTALL_TOOLS = frozenset({"npm", "npx", "yarn", "pnpm", "bun"})
 
 
-def _probe_version(argv: tuple[str, ...]) -> str:
-    """First line of `<tool> --version`, cached per process; `absent` when it is not on PATH."""
-    if argv not in _VERSION_PROBES:
-        exit_code, _stderr, stdout = _run_capture(list(argv), timeout_seconds=30)
-        first = stdout.strip().splitlines()[0].strip() if stdout.strip() else ""
-        _VERSION_PROBES[argv] = first if exit_code == 0 and first else "absent"
-    return _VERSION_PROBES[argv]
+def _probe_version(argv: tuple[str, ...]) -> str | None:
+    """First line of `<tool> --version`, or None when the probe did not answer.
+
+    Not cached: the answer belongs to whatever PATH resolves NOW, and a prepare
+    that changes PATH between two calls must not inherit the earlier executable.
+    """
+    exit_code, _stderr, stdout = _run_capture(list(argv), timeout_seconds=30)
+    first = stdout.strip().splitlines()[0].strip() if stdout.strip() else ""
+    return first if exit_code == 0 and first else None
 
 
-def runtime_fingerprint(spec: ReuseSpec) -> str:
+def runtime_fingerprint(spec: ReuseSpec) -> str | None:
     """What an installed tree is built against: platform, architecture, the install
-    tool's version, and `node`'s version (the ABI native addons are compiled for).
-    Two trees whose fingerprints differ never share a cache entry; a tree built by
-    a runtime that has since changed simply stops matching."""
+    tool's version, and for the Node package managers `node`'s version (the ABI
+    native addons are compiled for). Two trees whose fingerprints differ never
+    share a cache entry. None when a required probe did not answer: an unknown
+    runtime is never a cache key, so two unknowns cannot collapse onto one entry.
+    """
     parts = [sys.platform, platform.machine()]
-    if spec.install_argv:
-        tool = spec.install_argv[0]
-        parts.append(f"{tool}={_probe_version((tool, '--version'))}")
-    parts.append(f"node={_probe_version(('node', '--version'))}")
+    if not spec.install_argv:
+        return None
+    tool = spec.install_argv[0]
+    version = _probe_version((tool, "--version"))
+    if version is None:
+        return None
+    parts.append(f"{tool}={version}")
+    if Path(tool).name in NODE_INSTALL_TOOLS:
+        node = _probe_version(("node", "--version"))
+        if node is None:
+            return None
+        parts.append(f"node={node}")
     return "/".join(parts)
 
 
-def cache_entry(cache_root: Path, digest: str, spec: ReuseSpec) -> Path:
-    """One cache entry per (lockfile digest, install directory, runtime fingerprint)."""
-    key = hashlib.sha256(
-        f"{digest}\n{spec.directory}\n{runtime_fingerprint(spec)}".encode("utf-8")
-    ).hexdigest()
+def cache_entry(cache_root: Path, digest: str, spec: ReuseSpec) -> Path | None:
+    """One cache entry per (lockfile digest, install directory, runtime fingerprint);
+    None when the runtime fingerprint is unknown."""
+    fingerprint = runtime_fingerprint(spec)
+    if fingerprint is None:
+        return None
+    key = hashlib.sha256(f"{digest}\n{spec.directory}\n{fingerprint}".encode("utf-8")).hexdigest()
     return cache_root / key
 
 
@@ -280,7 +294,7 @@ def _remove_tree(path: Path) -> None:
         shutil.rmtree(path, ignore_errors=True)
 
 
-def _cache_matches(entry: Path, digest: str, spec: ReuseSpec) -> bool:
+def _cache_matches(entry: Path, digest: str, spec: ReuseSpec, fingerprint: str) -> bool:
     meta = entry / CACHE_META_NAME
     try:
         data = json.loads(meta.read_text(encoding="utf-8"))
@@ -290,7 +304,7 @@ def _cache_matches(entry: Path, digest: str, spec: ReuseSpec) -> bool:
         isinstance(data, dict)
         and data.get("lockfile_digest") == digest
         and data.get("directory") == spec.directory
-        and data.get("runtime") == runtime_fingerprint(spec)
+        and data.get("runtime") == fingerprint
         and (entry / CACHE_TREE_NAME).is_dir()
     )
 
@@ -328,8 +342,11 @@ def attempt_reuse(
         else:
             candidates.append((ORIGIN_PARENT, source_root / spec.directory, None))
     if cache_root is not None:
-        entry = cache_entry(cache_root, digest, spec)
-        if _cache_matches(entry, digest, spec):
+        fingerprint = runtime_fingerprint(spec)
+        entry = cache_entry(cache_root, digest, spec) if fingerprint is not None else None
+        if entry is None:
+            candidates.append((ORIGIN_CACHE, cache_root, "runtime fingerprint unknown"))
+        elif _cache_matches(entry, digest, spec, fingerprint):
             candidates.append((ORIGIN_CACHE, entry / CACHE_TREE_NAME, None))
         else:
             candidates.append((ORIGIN_CACHE, entry, "no cache entry for this lockfile digest"))
@@ -396,9 +413,13 @@ def seed_cache(
     if digest is None:
         payload["reason"] = f"lockfile {spec.lockfile} unreadable"
         return payload
-    entry = cache_entry(cache_root, digest, spec)
+    fingerprint = runtime_fingerprint(spec)
+    entry = cache_entry(cache_root, digest, spec) if fingerprint is not None else None
+    if entry is None:
+        payload["reason"] = "runtime fingerprint unknown; not published to the cache"
+        return payload
     payload["entry"] = str(entry)
-    if _cache_matches(entry, digest, spec):
+    if _cache_matches(entry, digest, spec, fingerprint):
         payload["reason"] = "cache entry already present"
         return payload
     staging = entry.parent / f".{entry.name}.seed-{os.getpid()}"
@@ -423,7 +444,7 @@ def seed_cache(
                 "lockfile": spec.lockfile,
                 "lockfile_digest": digest,
                 "directory": spec.directory,
-                "runtime": runtime_fingerprint(spec),
+                "runtime": fingerprint,
                 "seeded_from": str(target_root),
             },
             indent=2,
