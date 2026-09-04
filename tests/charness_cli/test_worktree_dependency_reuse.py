@@ -568,3 +568,239 @@ def test_cache_root_defaults_to_the_owning_repo_runtime_root(
 
     assert derived == runtime_bootstrap.runtime_root(primary) / reuse.CACHE_DIR_NAME
     assert lib.default_dependency_cache_root(target, primary) == derived
+
+
+# --- edge branches the release changed-line gate requires to be exercised ---
+
+
+def _spec(**overrides) -> reuse.ReuseSpec:
+    base = dict(
+        command_id="install-deps",
+        lockfile="lock.json",
+        directory="deps",
+        install_argv=("python3", "-c", "pass"),
+    )
+    base.update(overrides)
+    return reuse.ReuseSpec(**base)
+
+
+def test_validation_rejects_a_non_mapping_reuse_block() -> None:
+    errors: list[str] = []
+    reuse.validate_dependency_reuse({"commands": [], "dependency_reuse": "yes"}, errors)
+    assert errors == ["manifest.prepare.dependency_reuse must be a mapping"]
+
+
+def test_lockfile_digest_is_none_for_a_missing_file(tmp_path: Path) -> None:
+    assert reuse.lockfile_digest(tmp_path / "absent") is None
+
+
+def test_fingerprint_is_unknown_without_an_install_argv_or_without_node(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    assert reuse.runtime_fingerprint(_spec(install_argv=()), cwd=Path("/tree")) is None
+
+    def npm_only(argv: list[str], timeout_seconds: int, *, cwd=None):
+        return (0, "", "10.0.0\n") if argv[0] == "npm" else (1, "", "")
+
+    monkeypatch.setattr(reuse, "_run_capture", npm_only)
+    assert reuse.runtime_fingerprint(_spec(install_argv=("npm", "ci")), cwd=Path("/t")) is None
+
+
+def test_run_capture_reports_a_timeout_and_a_missing_binary(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import subprocess as sp
+
+    monkeypatch.setattr(
+        reuse,
+        "run_process",
+        lambda argv, cwd, timeout_seconds: sp.CompletedProcess(
+            argv, reuse.TIMEOUT_EXIT_CODE, "", ""
+        ),
+    )
+    assert reuse._run_capture(["slow"], 1) == (None, "timed out after 1s", "")
+    monkeypatch.undo()
+    assert reuse._run(["no-such-binary-792-x"], 1)[1].startswith("command not found")
+
+
+def test_reflink_probe_declines_an_empty_source(tmp_path: Path) -> None:
+    (tmp_path / "empty").mkdir()
+    assert reuse._reflink_supported(tmp_path / "empty", tmp_path) == (
+        False,
+        "no regular file to probe",
+    )
+
+
+def test_link_tree_tries_reflink_first_when_the_probe_says_supported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "src"
+    _install(source)
+    monkeypatch.setattr(reuse, "_reflink_supported", lambda *_a: (True, ""))
+    tried: list[list[str]] = []
+    real_run = reuse._run
+
+    def recording(argv: list[str], timeout_seconds: int):
+        tried.append(argv[:2])
+        return real_run(argv, timeout_seconds)
+
+    monkeypatch.setattr(reuse, "_run", recording)
+    strategy, attempts = reuse._link_tree(source / "deps", tmp_path / "dst", timeout_seconds=30)
+    assert tried[0][1] == "-a" and strategy in {reuse.STRATEGY_REFLINK, reuse.STRATEGY_HARDLINK}
+    assert attempts[-1]["ok"] is True
+
+
+def test_link_tree_reports_a_failed_rename_and_a_total_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "src"
+    _install(source)
+
+    def boom(*_a, **_k):
+        raise OSError("rename refused")
+
+    monkeypatch.setattr(reuse.os, "rename", boom)
+    strategy, attempts = reuse._link_tree(source / "deps", tmp_path / "dst", timeout_seconds=30)
+    assert strategy is None and attempts[-1]["detail"] == "rename refused"
+    assert not list(tmp_path.glob(".dst.charness-reuse-*"))
+
+    monkeypatch.setattr(reuse, "_run", lambda argv, timeout_seconds: (1, "nope"))
+    strategy, attempts = reuse._link_tree(source / "deps", tmp_path / "dst2", timeout_seconds=30)
+    assert strategy is None and all(not a["ok"] for a in attempts)
+
+
+def test_remove_tree_handles_files_and_directories(tmp_path: Path) -> None:
+    f = tmp_path / "f"
+    f.write_text("x", encoding="utf-8")
+    d = tmp_path / "d"
+    (d / "inner").mkdir(parents=True)
+    reuse._remove_tree(f)
+    reuse._remove_tree(d)
+    assert not f.exists() and not d.exists()
+
+
+def test_attempt_reuse_declines_unreadable_lockfile_self_parent_and_uninstalled_parent(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "target"
+    target.mkdir()
+    assert (
+        "unreadable"
+        in reuse.attempt_reuse(target, SPEC, source_root=None, cache_root=None)["reason"]
+    )
+    (target / "lock.json").write_text("same", encoding="utf-8")
+    result = reuse.attempt_reuse(target, SPEC, source_root=target, cache_root=None)
+    assert result["attempts"][0]["declined"] == "parent is the worktree itself"
+    parent = tmp_path / "parent"
+    parent.mkdir()
+    (parent / "lock.json").write_text("same", encoding="utf-8")
+    result = reuse.attempt_reuse(target, SPEC, source_root=parent, cache_root=None)
+    assert result["attempts"][0]["declined"] == "parent has no install directory"
+
+
+def test_a_parent_whose_lockfile_changes_during_the_link_is_discarded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    parent = tmp_path / "parent"
+    target = tmp_path / "target"
+    for root in (parent, target):
+        root.mkdir()
+        (root / "lock.json").write_text("same", encoding="utf-8")
+    _install(parent)
+    real_link = reuse._link_tree
+
+    def racing(source: Path, destination: Path, *, timeout_seconds: int):
+        result = real_link(source, destination, timeout_seconds=timeout_seconds)
+        (parent / "lock.json").write_text("moved", encoding="utf-8")
+        return result
+
+    monkeypatch.setattr(reuse, "_link_tree", racing)
+    result = reuse.attempt_reuse(target, SPEC, source_root=parent, cache_root=None)
+    assert result["strategy"] == reuse.STRATEGY_NONE
+    assert result["attempts"][0]["link"][-1]["detail"] == "parent lockfile changed during link"
+    assert not (target / "deps").exists()
+
+
+def test_seed_cache_names_every_reason_it_declines(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    donor = tmp_path / "donor"
+    donor.mkdir()
+    assert reuse.seed_cache(donor, SPEC, cache_root=None)["reason"] == "no cache root"
+    assert "absent" in reuse.seed_cache(donor, SPEC, cache_root=tmp_path / "c")["reason"]
+    _install(donor)
+    assert "unreadable" in reuse.seed_cache(donor, SPEC, cache_root=tmp_path / "c")["reason"]
+    (donor / "lock.json").write_text("same", encoding="utf-8")
+    blocker = tmp_path / "blocker"
+    blocker.write_text("not a dir", encoding="utf-8")
+    assert "not writable" in reuse.seed_cache(donor, SPEC, cache_root=blocker / "c")["reason"]
+
+    monkeypatch.setattr(reuse, "_run", lambda argv, timeout_seconds: (1, "cp refused"))
+    failed = reuse.seed_cache(donor, SPEC, cache_root=tmp_path / "c2")
+    assert failed["reason"].startswith("hard-link into cache failed: cp refused")
+    monkeypatch.undo()
+
+    def boom(*_a, **_k):
+        raise OSError("exists")
+
+    monkeypatch.setattr(reuse.os, "rename", boom)
+    raced = reuse.seed_cache(donor, SPEC, cache_root=tmp_path / "c3")
+    assert raced["reason"] == "cache entry appeared concurrently" and raced["seeded"] is False
+
+
+def test_prepare_command_missing_binary_and_timeout_are_reported(tmp_path: Path) -> None:
+    from scripts.worktree import worktree_prepare_lib as prepare_lib
+
+    result, failed = prepare_lib._execute_prepare_command(
+        {"id": "x", "argv": ["no-such-binary-792"]}, tmp_path
+    )
+    assert failed and result.exit_code is None and "command not found" in result.stderr_tail
+    result, failed = prepare_lib._execute_prepare_command(
+        {"id": "slow", "argv": ["sleep", "5"], "timeout_seconds": 1}, tmp_path
+    )
+    assert failed and result.timed_out is True
+    assert (
+        prepare_lib._covers_by_check({"doctor": {"checks": ["not-a-mapping", {"id": "a"}]}}) == {}
+    )
+
+
+def test_task_run_records_the_dependency_path_beside_the_create_payload() -> None:
+    from scripts.task_run import task_run_support
+
+    payload: dict = {}
+    task_run_support.record_create(
+        payload, {"created": True, "prepare": {"dependency_reuse": {"strategy": "hardlink"}}}
+    )
+    assert payload["created"] is True and payload["dependency_reuse"] == {"strategy": "hardlink"}
+
+
+def test_the_prepare_script_and_the_reuse_modules_run_as_scripts(tmp_path: Path) -> None:
+    import subprocess as sp
+    import sys
+
+    primary = _committed_primary(tmp_path)
+    root = Path(__file__).resolve().parents[2]
+    out = sp.run(
+        [
+            sys.executable,
+            str(root / "scripts/worktree/worktree_prepare.py"),
+            "--repo-root",
+            str(primary),
+            "--no-dependency-reuse",
+            "--force",
+        ],
+        capture_output=True,
+        text=True,
+        cwd=tmp_path,
+        check=False,
+    )
+    assert "disabled by --no-dependency-reuse" in out.stdout, out.stderr
+    for module in ("worktree_dependency_reuse.py", "worktree_prepare_lib.py"):
+        assert (
+            sp.run(
+                [sys.executable, str(root / "scripts/worktree" / module)],
+                cwd=tmp_path,
+                capture_output=True,
+            ).returncode
+            == 0
+        )
