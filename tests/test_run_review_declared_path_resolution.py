@@ -153,6 +153,13 @@ def test_promote_worker_report_refuses_a_destination_outside_the_repo(tmp_path: 
         promotion.promote_worker_report(tmp_path, "/tmp/outside-attempt", runtime)
 
 
+def test_promotion_reuses_an_already_loaded_support_module() -> None:
+    promotion = _promotion()
+    first = promotion._support()
+    second = promotion._support()
+    assert first is second
+
+
 def test_promotion_refuses_when_support_cannot_load(monkeypatch: pytest.MonkeyPatch) -> None:
     promotion = _promotion()
     monkeypatch.setattr(promotion.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
