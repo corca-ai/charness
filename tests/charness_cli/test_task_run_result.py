@@ -288,6 +288,14 @@ def test_task_status_projects_an_advisory_runner_pid_check(
         "runner_pid": dead_pid,
         "alive": False,
     }
+
+    def kill_forbidden(pid: int, sig: int) -> None:
+        raise PermissionError(pid)
+
+    monkeypatch.setattr(task_run_runtime.os, "kill", kill_forbidden)
+    # Another user's live process answers EPERM, not ESRCH: it exists.
+    assert task_run_runtime.runner_liveness({"runner_pid": 1, "phase": "exec"})["alive"] is True
+    monkeypatch.setattr(task_run_runtime.os, "kill", kill)
     assert task_run_runtime.runner_liveness({"phase": "exec"}) == {
         "runner_pid": None,
         "alive": None,

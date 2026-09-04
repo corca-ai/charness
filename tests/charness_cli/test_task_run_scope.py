@@ -627,16 +627,22 @@ def test_scope_brace_groups_expand_after_literal_precedence(tmp_path: Path) -> N
     _commit(repo, "seed roots")
     base = _git(repo, "rev-parse", "HEAD").stdout.strip()
 
-    declared = task_run_scope.normalize_scopes(["{packages,gateway}/**", "lit{a,b}.py"])
-    assert declared == ["lit{a,b}.py", "{packages,gateway}/**"]
+    declared = task_run_scope.normalize_scopes(
+        ["{packages,gateway}/**", "lit{a,b}.py", "{packages,gateway}/one.py"]
+    )
+    assert declared == ["lit{a,b}.py", "{packages,gateway}/**", "{packages,gateway}/one.py"]
 
     specs = task_run_scope.resolve_scope_specs(repo, declared, base)
     assert [(spec["path"], spec["kind"], spec.get("expanded_from")) for spec in specs] == [
         ("lit{a,b}.py", "exact", None),
         ("packages/**", "glob", "{packages,gateway}/**"),
         ("gateway/**", "glob", "{packages,gateway}/**"),
+        # an expanded alternative that names an existing file is a literal
+        ("packages/one.py", "exact", "{packages,gateway}/one.py"),
+        ("gateway/one.py", "exact", "{packages,gateway}/one.py"),
     ]
 
+    assert task_run_scope._expand_braces("a/{b,{c,d}}.py") == ["a/b.py", "a/c.py", "a/d.py"]
     assert task_run_scope._expand_braces("a/{b,c}/{d,e}.py") == [
         "a/b/d.py",
         "a/b/e.py",
