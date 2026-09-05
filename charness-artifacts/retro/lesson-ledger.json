@@ -409,6 +409,18 @@
       "transition_id": "seed-unfinished-record-in-reviewed-tree",
       "lesson_id": "unfinished-record-in-reviewed-tree",
       "source_retro": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md"
+    },
+    {
+      "sequence": 69,
+      "transition_id": "seed-coverage-subset-false-uncover",
+      "lesson_id": "coverage-subset-false-uncover",
+      "source_retro": "charness-artifacts/retro/2026-09-05-session-retro.md"
+    },
+    {
+      "sequence": 70,
+      "transition_id": "seed-docs-recopy-grows-length-record",
+      "lesson_id": "docs-recopy-grows-length-record",
+      "source_retro": "charness-artifacts/retro/2026-09-05-session-retro.md"
     }
   ],
   "score_events": [
@@ -2296,6 +2308,36 @@
     "unfinished-record-in-reviewed-tree": {
       "source_retro": "charness-artifacts/retro/2026-09-04-issue-792-release-8-3-0-retro.md",
       "transition_id": "seed-unfinished-record-in-reviewed-tree",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "coverage-subset-false-uncover": {
+      "source_retro": "charness-artifacts/retro/2026-09-05-session-retro.md",
+      "transition_id": "seed-coverage-subset-false-uncover",
+      "score_total": 0,
+      "score_count": 0,
+      "outcome_counts": {
+        "changed-an-action": 0,
+        "not-consulted": 0,
+        "pushed-a-wrong-action": 0,
+        "read-but-not-applied": 0,
+        "legacy-scalar": 0
+      },
+      "state": "active",
+      "last_lifecycle_event_id": null
+    },
+    "docs-recopy-grows-length-record": {
+      "source_retro": "charness-artifacts/retro/2026-09-05-session-retro.md",
+      "transition_id": "seed-docs-recopy-grows-length-record",
       "score_total": 0,
       "score_count": 0,
       "outcome_counts": {
