@@ -6,6 +6,9 @@ import yaml
 
 from .seeding_support import write_quality_adapter, write_skill, write_text
 from .skill_ergonomics_support import run_inventory_skill_ergonomics as _run
+from .support import ROOT
+
+assert (ROOT / "skills/public/quality/scripts/skill_ergonomics_lib.py").is_file()
 
 
 def test_inventory_skill_ergonomics_reports_advisory_flags(tmp_path: Path) -> None:
