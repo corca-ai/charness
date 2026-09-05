@@ -135,6 +135,17 @@ def pressure_exempt_overflow(exempt_blocks: dict[str, list[list[str]]]) -> dict[
 
 
 
+def classified_core_lines(text: str) -> list[str]:
+    """Body lines that count as core after the shared exemption walk.
+
+    Overflow from over-budget or fenced exempt blocks still pays the numeric
+    density surcharge in `core_nonempty_lines`; heuristics that need the same
+    *population* as the count's kept lines should call this, not a second walker.
+    """
+    kept, _exempt_blocks = split_pressure_exempt_sections(strip_frontmatter(text).splitlines())
+    return kept
+
+
 def core_nonempty_lines(text: str) -> int:
     kept, exempt_blocks = split_pressure_exempt_sections(strip_frontmatter(text).splitlines())
     core = sum(1 for line in kept if line.strip())

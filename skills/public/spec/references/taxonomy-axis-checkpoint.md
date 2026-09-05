@@ -15,9 +15,14 @@ annotation.
 A new axis is a new field. Do not add a value that belongs on a different axis
 to an existing enum.
 
-Absence is omit, not a sentinel. Install/update `mode` is an install method
-(`manual`, `script`, `package_manager`, `git_checkout`). There is no `none`:
-a tool that does not install is not represented by a fake method.
+Absence is omit, not a sentinel. Do not put an absence value (`none`) on an
+install-method enum.
+
+Install/update `mode` is an install method (`manual`, `script`,
+`package_manager`, `git_checkout`). Every integration manifest has both
+actions; this schema is not the place for a tool that does not install or
+update. Required actions stay required — omit applies only to fields that are
+actually optional.
 
 `python3 scripts/gates/check_schema_enum_axis.py --repo-root .` refuses a
 generic enum that omits `x-axis`.

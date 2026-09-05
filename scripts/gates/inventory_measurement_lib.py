@@ -87,7 +87,7 @@ def build_parser(description: str, *, recursive_flag: bool = False):
 def cited_inventories(commands: str, inventories: dict):
     """Yield `(inventory_name, declared_fields)` for each declared inventory cited in the
     commands-run section. An inventory with no declared fields is skipped: it opted out."""
-    for inventory in sorted(set(gate.INVENTORY_FILE_RE.findall(commands))):
+    for inventory in gate.cited_quality_inventory_names(commands):
         fields = (inventories.get(inventory) or {}).get("non_headline_fields") or []
         if fields:
             yield inventory, tuple(fields)

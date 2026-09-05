@@ -352,9 +352,11 @@ parsing per skill.
 
 `<plugin-dir>/scripts/gates/validate_skill_output_schemas.py` refuses a public skill whose
 `Output Shape` carries a pipe-delimited classifier key (`bin`, `severity`,
-`urgency`, `decision`, `evidence`, `action`) and names no matching
-`validate_*_artifact.py` / `validate_*_output.py`. Prose-only output shapes are
-not that form.
+`urgency`, `decision`, `evidence`, `action`) and has no matching
+`validate_*_artifact.py` / `validate_*_output.py` that parses as Python with a
+non-docstring statement. A comment-only stub does not name a validator. The
+gate does not execute the validator; refusal of missing or free-form classifier
+fields stays the named script's job. Prose-only output shapes are not that form.
 
 ## Argparse Help Rule
 

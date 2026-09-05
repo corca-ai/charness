@@ -35,6 +35,7 @@ is_vendored = _scripts_vendored_path_lib_module.is_vendored
 is_vendored_relative = _scripts_vendored_path_lib_module.is_vendored_relative
 
 MARKDOWN_HELPERS = {
+    "classified_core_lines": _scripts_skill_core_density_module.classified_core_lines,
     "count_fence_blocks": _scripts_skill_markdown_lib_module.count_fence_blocks,
     "core_nonempty_lines": _scripts_skill_core_density_module.core_nonempty_lines,
     "extract_h2_section_lines": _scripts_skill_markdown_lib_module.extract_h2_section_lines,

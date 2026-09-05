@@ -94,6 +94,57 @@ def test_inventory_skill_ergonomics_flags_portable_helper_path_ambiguity(tmp_pat
     assert any("installed-bundle portability" in item for item in skill["review_prompts"])
 
 
+def test_inventory_skill_ergonomics_ignores_closeout_vocabulary_mode_terms(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    write_skill(
+        repo,
+        [
+            "Use this when the repo needs a demo skill.",
+            "",
+            "## Closeout Vocabulary",
+            "",
+            "- mode: one of `manual` / `script`.",
+            "- option: one of `keep` / `drop`.",
+            "",
+            "## References",
+            "",
+            "- `references/note.md`",
+        ],
+    )
+    write_text(repo / "skills" / "public" / "demo" / "references" / "note.md", "# Note\n")
+
+    result = _run("--repo-root", str(repo), "--detail")
+    assert result.returncode == 0, result.stderr
+    skill = yaml.safe_load(result.stdout)["skills"][0]
+    assert "mode_pressure_terms_present" not in skill["heuristics"]
+    assert "option_pressure_terms_present" not in skill["heuristics"]
+
+
+def test_inventory_skill_ergonomics_does_not_treat_fenced_references_as_a_heading(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    write_skill(
+        repo,
+        [
+            "Use this when the repo needs a demo skill.",
+            "",
+            "```markdown",
+            "## References",
+            "- `references/note.md`",
+            "```",
+            "",
+            "Mode choice matters in this mode-heavy workflow.",
+            "Another mode note keeps the mode pressure explicit.",
+        ],
+    )
+
+    result = _run("--repo-root", str(repo), "--detail")
+    assert result.returncode == 0, result.stderr
+    skill = yaml.safe_load(result.stdout)["skills"][0]
+    assert "mode_pressure_terms_present" in skill["heuristics"]
+
+
 def test_inventory_skill_ergonomics_ignores_inline_code_for_pressure_terms(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     skill_dir = write_skill(

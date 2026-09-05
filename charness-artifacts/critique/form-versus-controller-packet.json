@@ -1,0 +1,237 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-05T02:32:38Z",
+  "prepared_for": "5bd6075ccd9fa7205b16be573b60bb64699a26f4",
+  "changed_ref": "5bd6075ccd9fa7205b16be573b60bb64699a26f4",
+  "substrate_mode": "committed-ref",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `5bd6075ccd9fa7205b16be573b60bb64699a26f4`:\n- docs/authoring-preflight.md\n- integrations/locks/lock.schema.json\n- integrations/tools/manifest.schema.json\n- scripts/adapters/quality_artifact_skill_ergonomics.py\n- scripts/gates/check_coverage_lib.py\n- scripts/gates/check_schema_enum_axis.py\n- scripts/gates/validate_inventory_consumption.py\n- scripts/gates/validate_skill_output_schemas.py\n- scripts/gates_support/skill_core_density.py\n- scripts/install_tools.py\n- scripts/update_tools.py\n- skills/public/create-skill/SKILL.md\n- skills/public/create-skill/references/portable-authoring.md\n- skills/public/impl/SKILL.md\n- skills/public/quality/SKILL.md\n- skills/public/quality/references/inventory-consumer-fields.json\n- skills/public/quality/scripts/inventory_skill_ergonomics.py\n- skills/public/quality/scripts/skill_ergonomics_lib.py\n- skills/public/setup/SKILL.md\n- skills/public/spec/SKILL.md\n- skills/public/spec/references/taxonomy-axis-checkpoint.md\n- tests/control_plane/test_upstream_support_drift.py\n- tests/quality_gates/test_inventory_consumption.py\n- tests/quality_gates/test_skill_docs_contracts.py\n- tests/quality_gates/test_skill_reference_index.py\n- tests/test_schema_enum_axis.py\n- tests/test_skill_output_schemas.py\n- tools/check_inventory_declaration_coverage.py\n- tools/check_skill_contracts.py\n- tools/validate_integrations.py\n- tools/validate_inventory_consumption_declaration.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: integrations/locks/lock.schema.json, integrations/tools/manifest.schema.json, scripts/adapters/quality_artifact_skill_ergonomics.py, scripts/gates/check_coverage_lib.py, scripts/gates/check_schema_enum_axis.py, scripts/gates/validate_inventory_consumption.py, scripts/gates/validate_skill_output_schemas.py, scripts/gates_support/skill_core_density.py, scripts/install_tools.py, scripts/update_tools.py, skills/public/create-skill/SKILL.md, skills/public/create-skill/references/portable-authoring.md, skills/public/impl/SKILL.md, skills/public/quality/SKILL.md, skills/public/quality/references/inventory-consumer-fields.json, skills/public/quality/scripts/inventory_skill_ergonomics.py, skills/public/quality/scripts/skill_ergonomics_lib.py, skills/public/setup/SKILL.md, skills/public/spec/SKILL.md, skills/public/spec/references/taxonomy-axis-checkpoint.md\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: docs/authoring-preflight.md, skills/public/create-skill/SKILL.md, skills/public/create-skill/references/portable-authoring.md, skills/public/impl/SKILL.md, skills/public/quality/SKILL.md, skills/public/setup/SKILL.md, skills/public/spec/SKILL.md, skills/public/spec/references/taxonomy-axis-checkpoint.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/create-skill/SKILL.md, skills/public/create-skill/references/portable-authoring.md, skills/public/impl/SKILL.md, skills/public/quality/SKILL.md, skills/public/quality/references/inventory-consumer-fields.json, skills/public/quality/scripts/inventory_skill_ergonomics.py, skills/public/quality/scripts/skill_ergonomics_lib.py, skills/public/setup/SKILL.md, skills/public/spec/SKILL.md, skills/public/spec/references/taxonomy-axis-checkpoint.md\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/create-skill/SKILL.md, skills/public/create-skill/references/portable-authoring.md, skills/public/impl/SKILL.md, skills/public/quality/SKILL.md, skills/public/quality/references/inventory-consumer-fields.json, skills/public/quality/scripts/inventory_skill_ergonomics.py, skills/public/quality/scripts/skill_ergonomics_lib.py, skills/public/setup/SKILL.md, skills/public/spec/SKILL.md, skills/public/spec/references/taxonomy-axis-checkpoint.md\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/create-skill/SKILL.md, skills/public/create-skill/references/portable-authoring.md, skills/public/impl/SKILL.md, skills/public/quality/SKILL.md, skills/public/quality/references/inventory-consumer-fields.json, skills/public/quality/scripts/inventory_skill_ergonomics.py, skills/public/quality/scripts/skill_ergonomics_lib.py, skills/public/setup/SKILL.md, skills/public/spec/SKILL.md, skills/public/spec/references/taxonomy-axis-checkpoint.md\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- external-tool-control-plane: External tool manifests and install, update, doctor, support-sync, and upstream-release helpers whose behavior depends on host state.\n  source matches: integrations/tools/manifest.schema.json, scripts/install_tools.py, scripts/update_tools.py\n  verify: python3 -m tools.validate_integrations --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  source matches: integrations/locks/lock.schema.json, integrations/tools/manifest.schema.json, scripts/install_tools.py, scripts/update_tools.py\n  verify: python3 -m tools.validate_integrations --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/adapters/quality_artifact_skill_ergonomics.py, scripts/gates/check_coverage_lib.py, scripts/gates/check_schema_enum_axis.py, scripts/gates/validate_inventory_consumption.py, scripts/gates/validate_skill_output_schemas.py, scripts/gates_support/skill_core_density.py, scripts/install_tools.py, scripts/update_tools.py, tests/control_plane/test_upstream_support_drift.py, tests/quality_gates/test_inventory_consumption.py, tests/quality_gates/test_skill_docs_contracts.py, tests/quality_gates/test_skill_reference_index.py, tests/test_schema_enum_axis.py, tests/test_skill_output_schemas.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- inference-interpretation-contract: Advisory-interpretation contract meta-validator (#330): the inference-layer surface registry plus every registered Python/prose declaration and its paired consumer reference.\n  source matches: skills/public/quality/scripts/inventory_skill_ergonomics.py\n  verify: python3 -m tools.validate_inference_interpretation --repo-root . --require-git-file-listing\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/adapters/quality_artifact_skill_ergonomics.py, scripts/gates/check_coverage_lib.py, scripts/gates/check_schema_enum_axis.py, scripts/gates/validate_inventory_consumption.py, scripts/gates/validate_skill_output_schemas.py, scripts/gates_support/skill_core_density.py, scripts/install_tools.py, scripts/update_tools.py, skills/public/quality/scripts/inventory_skill_ergonomics.py, skills/public/quality/scripts/skill_ergonomics_lib.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "committed-ref",
+    "substrate_mode": "committed-ref",
+    "changed_ref": "5bd6075ccd9fa7205b16be573b60bb64699a26f4",
+    "resolved_changed_ref": [
+      "5bd6075ccd9fa7205b16be573b60bb64699a26f4"
+    ],
+    "base_head": "5bd6075ccd9fa7205b16be573b60bb64699a26f4",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      "docs/authoring-preflight.md",
+      "integrations/locks/lock.schema.json",
+      "integrations/tools/manifest.schema.json",
+      "scripts/adapters/quality_artifact_skill_ergonomics.py",
+      "scripts/gates/check_coverage_lib.py",
+      "scripts/gates/check_schema_enum_axis.py",
+      "scripts/gates/validate_inventory_consumption.py",
+      "scripts/gates/validate_skill_output_schemas.py",
+      "scripts/gates_support/skill_core_density.py",
+      "scripts/install_tools.py",
+      "scripts/update_tools.py",
+      "skills/public/create-skill/SKILL.md",
+      "skills/public/create-skill/references/portable-authoring.md",
+      "skills/public/impl/SKILL.md",
+      "skills/public/quality/SKILL.md",
+      "skills/public/quality/references/inventory-consumer-fields.json",
+      "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+      "skills/public/quality/scripts/skill_ergonomics_lib.py",
+      "skills/public/setup/SKILL.md",
+      "skills/public/spec/SKILL.md",
+      "skills/public/spec/references/taxonomy-axis-checkpoint.md",
+      "tests/control_plane/test_upstream_support_drift.py",
+      "tests/quality_gates/test_inventory_consumption.py",
+      "tests/quality_gates/test_skill_docs_contracts.py",
+      "tests/quality_gates/test_skill_reference_index.py",
+      "tests/test_schema_enum_axis.py",
+      "tests/test_skill_output_schemas.py",
+      "tools/check_inventory_declaration_coverage.py",
+      "tools/check_skill_contracts.py",
+      "tools/validate_integrations.py",
+      "tools/validate_inventory_consumption_declaration.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "docs/authoring-preflight.md",
+        "content_sha256": "5238cd4dec8bd6a0aee7c404222332898982116b077ee5a3da15fe982aa12707"
+      },
+      {
+        "path": "integrations/locks/lock.schema.json",
+        "content_sha256": "4e63a71b32f35b5ee95eb9e70da3048afff5a8fce33663c4a40d34324e2cd577"
+      },
+      {
+        "path": "integrations/tools/manifest.schema.json",
+        "content_sha256": "d0ef573f6bf7d7894c347ca4fe4da2cb309f6cd188dcf309753946f6d4d05f0f"
+      },
+      {
+        "path": "scripts/adapters/quality_artifact_skill_ergonomics.py",
+        "content_sha256": "f0f0c8455643620faa2dcddfb8d41c0a63b3f967c39031da05c8b2715375d641"
+      },
+      {
+        "path": "scripts/gates/check_coverage_lib.py",
+        "content_sha256": "fed847bc611172e8a546f0a053290825569b90a914b0782ce834ec394581dc53"
+      },
+      {
+        "path": "scripts/gates/check_schema_enum_axis.py",
+        "content_sha256": "44a54b21dcb168f69db25d0342cfb3063e4e31324e1a4a9734cd4a3878302c5f"
+      },
+      {
+        "path": "scripts/gates/validate_inventory_consumption.py",
+        "content_sha256": "e274f81da3df63e162b648f9bc121ede06bec9bb435a5ae76ada64cbaab56828"
+      },
+      {
+        "path": "scripts/gates/validate_skill_output_schemas.py",
+        "content_sha256": "bfc08329c14dc7eb13acd1f71c97d81a86103c89cee84677a96afdedf47dadb8"
+      },
+      {
+        "path": "scripts/gates_support/skill_core_density.py",
+        "content_sha256": "456abb0607befc1d249fabc40ceb26bc81221545db33911e6ad07b4055d9aa6f"
+      },
+      {
+        "path": "scripts/install_tools.py",
+        "content_sha256": "b6437c5f252bb5d4548e0dd38f5bf966c87a3c3374d03935008d01d46a2943e7"
+      },
+      {
+        "path": "scripts/update_tools.py",
+        "content_sha256": "69a2821758c19a44d3c8ffb52f0eac70aa2bc97d363e46aa8d221f1b41ab7d48"
+      },
+      {
+        "path": "skills/public/create-skill/SKILL.md",
+        "content_sha256": "23cfdb3db88303c8118ebc328710b6bfac2d0782d520f76432339656e4bd30dd"
+      },
+      {
+        "path": "skills/public/create-skill/references/portable-authoring.md",
+        "content_sha256": "56339084b0a95ccc9a83da048f8c32848ae3e4572e162a19809b416b824f8329"
+      },
+      {
+        "path": "skills/public/impl/SKILL.md",
+        "content_sha256": "d439d725019c846d3508a9af97da878e3a347e41d7f02241db0e22c2a0bed4e7"
+      },
+      {
+        "path": "skills/public/quality/SKILL.md",
+        "content_sha256": "668c1cd407ddc4866c79ca2a640b169f1001dbf5ecc212141e6f3b18ac740b01"
+      },
+      {
+        "path": "skills/public/quality/references/inventory-consumer-fields.json",
+        "content_sha256": "7ec81a7796d2b3cd52191e70c7c13feb4aeca2a89b91516468b264d4338d6ea9"
+      },
+      {
+        "path": "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "content_sha256": "482d9c71ed3eed135ffa36bb50163c08f435f28810ef0f6bad0af8dc9e8a8d51"
+      },
+      {
+        "path": "skills/public/quality/scripts/skill_ergonomics_lib.py",
+        "content_sha256": "bb2f051a896b8d03ccbb7ecde8aff8714843d25d3d125529dc28478371f04089"
+      },
+      {
+        "path": "skills/public/setup/SKILL.md",
+        "content_sha256": "1ac95d7276c594d440726a6f4aee5578a3e24a8ae84793901b2b4a1570035f96"
+      },
+      {
+        "path": "skills/public/spec/SKILL.md",
+        "content_sha256": "d0240604f31bd01f2a1e8cb2e7b13cd1327e8efc49feecd896b81995d0a701cf"
+      },
+      {
+        "path": "skills/public/spec/references/taxonomy-axis-checkpoint.md",
+        "content_sha256": "e3dd453d9b32c42abb1c9ee2bdbc00afd4906c86895413dea727f782733afc7f"
+      },
+      {
+        "path": "tests/control_plane/test_upstream_support_drift.py",
+        "content_sha256": "d66316e9fc6d1c0870a2aaf88871f195c40799982b4a1b7d12c5ea53ed2feb28"
+      },
+      {
+        "path": "tests/quality_gates/test_inventory_consumption.py",
+        "content_sha256": "eebb91ae13154486f59ba834b60af63565eca1e6e17d64b4f7a57e62dd3aedff"
+      },
+      {
+        "path": "tests/quality_gates/test_skill_docs_contracts.py",
+        "content_sha256": "6af0e4170da41806693662d96d39c0c61258e5363201acfc2fb15e3ea96c0e8f"
+      },
+      {
+        "path": "tests/quality_gates/test_skill_reference_index.py",
+        "content_sha256": "d1d0ba7bd80a817fa32b5481af77c849f312d1b95749273c750355553f3ebcfa"
+      },
+      {
+        "path": "tests/test_schema_enum_axis.py",
+        "content_sha256": "e660f2c386f75f2fdcbb6a39221b9f112882a67c6dc77c347b9796a22256603a"
+      },
+      {
+        "path": "tests/test_skill_output_schemas.py",
+        "content_sha256": "d44afee79019c52c233b77dade6b5639aedfed1e3c8cafa25b4c75c79fe41fb7"
+      },
+      {
+        "path": "tools/check_inventory_declaration_coverage.py",
+        "content_sha256": "1459d173adad3d15222fa35aec07fc990bde81d27ecb6c375a110069431520a0"
+      },
+      {
+        "path": "tools/check_skill_contracts.py",
+        "content_sha256": "d89125fea26b38877a97ccbbef37b4be5922f16545713901fd727485576606eb"
+      },
+      {
+        "path": "tools/validate_integrations.py",
+        "content_sha256": "af0638522539d6aa0e5a44560a418af42b8288261410c524bff6fa970021b6f3"
+      },
+      {
+        "path": "tools/validate_inventory_consumption_declaration.py",
+        "content_sha256": "2471c279bdc0833d45ef45c31897384169f09673d4e13b3d90208910871b5ab5"
+      }
+    ],
+    "reviewed_patch_sha256": "b44148c082cb04641a4ef10c1ba11397655cc6b9268d99785224f9ac7dc32796",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "b9928261f59364692ea01f498d9714375ce9f3a3448594dc4e62f5f7741a037c"
+  }
+}

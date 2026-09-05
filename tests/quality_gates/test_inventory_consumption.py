@@ -168,6 +168,37 @@ def test_single_field_declaration_still_requires_only_one(tmp_path: Path) -> Non
     assert result.returncode == 0, result.stderr
 
 
+def test_non_quality_inventory_path_is_out_of_scope(tmp_path: Path) -> None:
+    artifact = (
+        "# Quality Review\n"
+        "## Healthy\n- adapter gate design clean (no findings reported).\n"
+        "## Commands Run\n- `python3 scripts/gates/inventory_boundary_bypass.py --repo-root .`\n"
+        "## History\n"
+    )
+    repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
+
+    result = _run(repo)
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_quality_path_undeclared_inventory_is_still_refused(tmp_path: Path) -> None:
+    artifact = (
+        "# Quality Review\n"
+        "## Healthy\n- adapter gate design clean (no findings reported).\n"
+        "## Commands Run\n"
+        "- `python3 skills/public/quality/scripts/inventory_adapter_gate_design.py --repo-root . --detail`\n"
+        "## History\n"
+    )
+    repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
+
+    result = _run(repo)
+
+    assert result.returncode == 1, result.stdout
+    assert "inventory_adapter_gate_design.py" in result.stderr
+    assert "is not declared" in result.stderr
+
+
 def test_inventory_outside_declaration_is_refused(tmp_path: Path) -> None:
     artifact = (
         "# Quality Review\n"

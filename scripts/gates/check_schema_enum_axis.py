@@ -65,54 +65,187 @@ def _enum_values(node: dict) -> list[object] | None:
     return None
 
 
-def _walk_properties(properties: object, path: str, findings: list[str]) -> None:
-    if not isinstance(properties, dict):
-        return
-    for name, schema in properties.items():
-        child = f"{path}.properties.{name}"
-        _walk_schema(schema, child, field_name=str(name), findings=findings)
+def _resolve_local_ref(document: dict, ref: str) -> object | None:
+    if not isinstance(ref, str) or not ref.startswith("#/"):
+        return None
+    node: object = document
+    for part in ref[2:].split("/"):
+        part = part.replace("~1", "/").replace("~0", "~")
+        if not isinstance(node, dict) or part not in node:
+            return None
+        node = node[part]
+    return node
 
 
-def _walk_schema(
-    node: object, path: str, *, field_name: str | None, findings: list[str]
+def _walk_into(
+    node: object,
+    path: str,
+    *,
+    field_name: str | None,
+    findings: list[str],
+    document: dict,
+    visiting: set[tuple[str, str | None]],
 ) -> None:
-    if isinstance(node, list):
-        for index, item in enumerate(node):
-            _walk_schema(item, f"{path}[{index}]", field_name=None, findings=findings)
+    _walk_schema(
+        node,
+        path,
+        field_name=field_name,
+        findings=findings,
+        document=document,
+        visiting=visiting,
+    )
+
+
+def _follow_ref(
+    node: dict,
+    path: str,
+    *,
+    field_name: str | None,
+    findings: list[str],
+    document: dict,
+    visiting: set[tuple[str, str | None]],
+) -> None:
+    ref = node.get("$ref")
+    if not isinstance(ref, str) or not ref.startswith("#/"):
         return
-    if not isinstance(node, dict):
+    visit_key = (ref, field_name)
+    if visit_key in visiting:
         return
+    visiting.add(visit_key)
+    resolved = _resolve_local_ref(document, ref)
+    if resolved is not None:
+        _walk_into(
+            resolved,
+            f"{path}($ref)",
+            field_name=field_name,
+            findings=findings,
+            document=document,
+            visiting=visiting,
+        )
+    visiting.discard(visit_key)
+
+
+def _record_generic_enum(node: dict, path: str, field_name: str | None, findings: list[str]) -> None:
     values = _enum_values(node)
-    if field_name in GENERIC_ENUM_FIELDS and values is not None:
-        axis = node.get("x-axis")
-        if axis not in AXES:
-            findings.append(
-                f"{path}: generic `{field_name}` enum {values!r} needs "
-                f"`x-axis` from {sorted(AXES)}"
+    if field_name not in GENERIC_ENUM_FIELDS or values is None:
+        return
+    if node.get("x-axis") not in AXES:
+        findings.append(
+            f"{path}: generic `{field_name}` enum {values!r} needs "
+            f"`x-axis` from {sorted(AXES)}"
+        )
+
+
+def _walk_children(
+    node: dict,
+    path: str,
+    *,
+    field_name: str | None,
+    findings: list[str],
+    document: dict,
+    visiting: set[tuple[str, str | None]],
+) -> None:
+    properties = node.get("properties")
+    if isinstance(properties, dict):
+        for name, schema in properties.items():
+            _walk_into(
+                schema,
+                f"{path}.properties.{name}",
+                field_name=str(name),
+                findings=findings,
+                document=document,
+                visiting=visiting,
             )
-    if "properties" in node:
-        _walk_properties(node["properties"], path, findings)
     for key in ("definitions", "$defs"):
         defs = node.get(key)
         if isinstance(defs, dict):
             for name, schema in defs.items():
-                _walk_schema(
-                    schema, f"{path}.{key}.{name}", field_name=None, findings=findings
+                _walk_into(
+                    schema,
+                    f"{path}.{key}.{name}",
+                    field_name=None,
+                    findings=findings,
+                    document=document,
+                    visiting=visiting,
                 )
     for key in ("items", "additionalProperties", "not"):
         if key in node:
-            _walk_schema(node[key], f"{path}.{key}", field_name=None, findings=findings)
+            _walk_into(
+                node[key],
+                f"{path}.{key}",
+                field_name=None,
+                findings=findings,
+                document=document,
+                visiting=visiting,
+            )
     for key in ("oneOf", "anyOf", "allOf"):
         if key in node:
-            _walk_schema(node[key], f"{path}.{key}", field_name=None, findings=findings)
+            _walk_into(
+                node[key],
+                f"{path}.{key}",
+                field_name=field_name,
+                findings=findings,
+                document=document,
+                visiting=visiting,
+            )
+
+
+def _walk_schema(
+    node: object,
+    path: str,
+    *,
+    field_name: str | None,
+    findings: list[str],
+    document: dict,
+    visiting: set[tuple[str, str | None]],
+) -> None:
+    if isinstance(node, list):
+        for index, item in enumerate(node):
+            _walk_into(
+                item,
+                f"{path}[{index}]",
+                field_name=field_name,
+                findings=findings,
+                document=document,
+                visiting=visiting,
+            )
+        return
+    if not isinstance(node, dict):
+        return
+    _follow_ref(
+        node,
+        path,
+        field_name=field_name,
+        findings=findings,
+        document=document,
+        visiting=visiting,
+    )
+    _record_generic_enum(node, path, field_name, findings)
+    _walk_children(
+        node,
+        path,
+        field_name=field_name,
+        findings=findings,
+        document=document,
+        visiting=visiting,
+    )
 
 
 def findings_for(repo_root: Path) -> list[str]:
     findings: list[str] = []
     for path in schema_paths(repo_root):
         document = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(document, dict):
+            continue
         relative = path.relative_to(repo_root).as_posix()
-        _walk_schema(document, relative, field_name=None, findings=findings)
+        _walk_schema(
+            document,
+            relative,
+            field_name=None,
+            findings=findings,
+            document=document,
+            visiting=set(),
+        )
     return findings
 
 

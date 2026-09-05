@@ -43,6 +43,49 @@ def test_named_axis_field_does_not_need_x_axis(tmp_path: Path) -> None:
     assert _check.findings_for(tmp_path) == []
 
 
+def test_generic_mode_enum_inside_oneof_needs_x_axis(tmp_path: Path) -> None:
+    schema = {
+        "type": "object",
+        "properties": {
+            "mode": {"oneOf": [{"type": "string", "enum": ["manual", "script"]}]}
+        },
+    }
+    (tmp_path / "demo.schema.json").write_text(json.dumps(schema), encoding="utf-8")
+    findings = _check.findings_for(tmp_path)
+    assert findings
+    assert "generic `mode` enum" in findings[0]
+
+
+def test_generic_mode_ref_enum_needs_x_axis(tmp_path: Path) -> None:
+    schema = {
+        "type": "object",
+        "properties": {"mode": {"$ref": "#/definitions/installMode"}},
+        "definitions": {
+            "installMode": {"type": "string", "enum": ["manual", "script"]}
+        },
+    }
+    (tmp_path / "demo.schema.json").write_text(json.dumps(schema), encoding="utf-8")
+    findings = _check.findings_for(tmp_path)
+    assert findings
+    assert "generic `mode` enum" in findings[0]
+
+
+def test_generic_mode_ref_enum_with_x_axis_passes(tmp_path: Path) -> None:
+    schema = {
+        "type": "object",
+        "properties": {"mode": {"$ref": "#/definitions/installMode"}},
+        "definitions": {
+            "installMode": {
+                "type": "string",
+                "x-axis": "install-method",
+                "enum": ["manual", "script"],
+            }
+        },
+    }
+    (tmp_path / "demo.schema.json").write_text(json.dumps(schema), encoding="utf-8")
+    assert _check.findings_for(tmp_path) == []
+
+
 def test_manifest_action_mode_rejects_none_sentinel() -> None:
     schema = json.loads(
         (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(encoding="utf-8")

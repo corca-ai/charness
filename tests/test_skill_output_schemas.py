@@ -44,7 +44,7 @@ def test_survey_flags_classifier_schema_without_validator(tmp_path: Path) -> Non
     assert payload["gap_count"] == 1
 
 
-def test_survey_clears_gap_when_validator_file_exists(tmp_path: Path) -> None:
+def test_survey_keeps_gap_when_validator_file_is_comment_only(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_skill(
         repo,
@@ -54,6 +54,46 @@ def test_survey_clears_gap_when_validator_file_exists(tmp_path: Path) -> None:
     scripts_dir = repo / "scripts"
     scripts_dir.mkdir(parents=True)
     (scripts_dir / "validate_demo_artifact.py").write_text("# stub\n", encoding="utf-8")
+    payload = _survey_payload(repo)
+    demo = next(row for row in payload["skills"] if row["skill"] == "demo")
+    assert demo["classifier_schema"] is True
+    assert demo["gap"] is True
+    assert demo["validator"] is None
+
+
+def test_survey_resolves_a_code_bearing_validator_under_scripts(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_skill(
+        repo,
+        "demo",
+        "- Q1 | urgency: must-resolve | depends-on: null | action: spec | note: x\n"
+        "Gate: `scripts/review/validate_demo_artifacts.py`.\n",
+    )
+    review = repo / "scripts" / "review"
+    review.mkdir(parents=True)
+    (review / "validate_demo_artifacts.py").write_text(
+        "def main() -> int:\n    return 0\n",
+        encoding="utf-8",
+    )
+    payload = _survey_payload(repo)
+    demo = next(row for row in payload["skills"] if row["skill"] == "demo")
+    assert demo["gap"] is False
+    assert demo["validator"] == "validate_demo_artifacts.py"
+
+
+def test_survey_clears_gap_when_validator_file_has_code(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_skill(
+        repo,
+        "demo",
+        "- Q1 | urgency: must-resolve | depends-on: null | action: spec | note: x\n",
+    )
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True)
+    (scripts_dir / "validate_demo_artifact.py").write_text(
+        "def main() -> int:\n    return 0\n",
+        encoding="utf-8",
+    )
     payload = _survey_payload(repo)
     demo = next(row for row in payload["skills"] if row["skill"] == "demo")
     assert demo["classifier_schema"] is True
@@ -87,7 +127,8 @@ def test_survey_main_emits_yaml(monkeypatch, capsys) -> None:
     assert payload["gap_count"] == 0, payload
     assert "advisory" not in payload
     assert payload["gap_skills"] == []
-    assert "Closeout Schema Rule satisfied" in payload["gap_summary"]
+    assert "code-bearing validator file" in payload["gap_summary"]
+    assert "Closeout Schema Rule satisfied" not in payload["gap_summary"]
     assert "portable-authoring.md" in payload["rule_reference"]
 
 

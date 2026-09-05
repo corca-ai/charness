@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""Refuse a classifier-bearing `Output Shape` that names no validator.
+"""Refuse a classifier-bearing `Output Shape` that names no code-bearing validator.
 
 The Closeout Schema Rule
-(`skills/public/create-skill/references/portable-authoring.md`): when a skill's
-`Output Shape` declares classifier fields the caller must act on, ship a
-validator that fails when those fields are missing or free-form. A pipe-delimited
-schema bullet with a classifier key is that form; prose-only output is not.
-Exit 1 when any public skill has the form and no named validator.
+(`skills/public/create-skill/references/portable-authoring.md`) still asks the
+named validator to refuse missing or free-form classifier fields. This gate
+only proves the file exists and contains Python code — not that the validator
+runs. A comment-only stub is not a validator. Exit 1 when any public skill has
+the classifier form and no code-bearing named validator.
 """
 
 from __future__ import annotations
 
 import argparse
+import ast
 import re
 from pathlib import Path
 
@@ -61,17 +62,53 @@ def has_classifier_schema(text: str) -> bool:
     return any(_SCHEMA_BULLET_RE.match(line) for line in text.splitlines())
 
 
+def python_file_has_code(path: Path) -> bool:
+    """True when the file parses as Python and has a non-docstring statement."""
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, SyntaxError):
+        return False
+    for node in tree.body:
+        if isinstance(node, ast.Expr) and isinstance(getattr(node, "value", None), ast.Constant):
+            continue
+        return True
+    return False
+
+
 def named_validator(text: str) -> str | None:
     match = _VALIDATOR_MENTION_RE.search(text)
     return match.group(0) if match else None
 
 
+def validator_path_for_name(repo_root: Path, name: str) -> Path | None:
+    scripts = repo_root / "scripts"
+    direct = scripts / name
+    candidates = [direct] if direct.is_file() else []
+    if not candidates and scripts.is_dir():
+        candidates = sorted(
+            path
+            for path in scripts.rglob(name)
+            if path.is_file() and "mutants" not in path.parts and "__pycache__" not in path.parts
+        )
+    for candidate in candidates:
+        if python_file_has_code(candidate):
+            return candidate
+    return None
+
+
 def validator_file_for(repo_root: Path, skill_id: str) -> str | None:
     for suffix in _VALIDATOR_SUFFIXES:
-        candidate = repo_root / "scripts" / f"validate_{skill_id}{suffix}.py"
-        if candidate.is_file():
-            return candidate.name
+        found = validator_path_for_name(repo_root, f"validate_{skill_id}{suffix}.py")
+        if found is not None:
+            return found.name
     return None
+
+
+def resolve_validator(repo_root: Path, skill_id: str, text: str) -> str | None:
+    mentioned = named_validator(text)
+    if mentioned and validator_path_for_name(repo_root, mentioned) is not None:
+        return mentioned
+    return validator_file_for(repo_root, skill_id)
 
 
 def survey(repo_root: Path) -> list[dict[str, object]]:
@@ -80,7 +117,7 @@ def survey(repo_root: Path) -> list[dict[str, object]]:
         skill_id = skill_dir.name
         text = _skill_text(skill_dir)
         classifier = has_classifier_schema(text)
-        validator = named_validator(text) or validator_file_for(repo_root, skill_id)
+        validator = resolve_validator(repo_root, skill_id, text)
         rows.append(
             {
                 "skill": skill_id,
@@ -113,9 +150,9 @@ def main() -> int:
         "gap_count": len(gaps),
         "gap_skills": [str(row["skill"]) for row in gaps],
         "gap_summary": (
-            f"{len(gaps)} skill(s) with a classifier-bearing Output Shape and no named validator."
+            f"{len(gaps)} skill(s) with a classifier-bearing Output Shape and no code-bearing validator file."
             if gaps
-            else "No classifier-bearing Output Shape without a validator. Closeout Schema Rule satisfied."
+            else "No classifier-bearing Output Shape without a code-bearing validator file."
         ),
     }
     emit_yaml(payload)

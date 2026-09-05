@@ -55,6 +55,37 @@ except ModuleNotFoundError:  # executed directly from scripts/
 DEFAULT_ARTIFACT_PATH = "charness-artifacts/quality/latest.md"
 DEFAULT_CONSUMER_FIELDS_PATH = "skills/public/quality/references/inventory-consumer-fields.json"
 INVENTORY_FILE_RE = re.compile(r"inventory_[A-Za-z0-9_]+\.py")
+INVENTORY_CITE_RE = re.compile(
+    r"(?P<prefix>(?:\$SKILL_DIR/|(?:\./)?(?:[A-Za-z0-9_.$-]+/)*)?)(?P<name>inventory_[A-Za-z0-9_]+\.py)"
+)
+QUALITY_SCRIPTS_MARKERS = ("/quality/scripts/",)
+
+
+def in_quality_inventory_namespace(prefix: str) -> bool:
+    """True when the citation is a quality inventory, including a bare basename.
+
+    A path that names another directory is out of scope for this declaration.
+    Bare names stay fail-closed inside the quality namespace.
+    """
+    cleaned = prefix.replace("`", "").replace("\\", "/")
+    if not cleaned or cleaned in {"./", "/"}:
+        return True
+    combined = cleaned if cleaned.startswith("/") else f"/{cleaned}"
+    if any(marker in combined for marker in QUALITY_SCRIPTS_MARKERS):
+        return True
+    if cleaned in {"$SKILL_DIR/scripts/", "$SKILL_DIR/scripts"}:
+        return True
+    if "/" in cleaned:
+        return False
+    return True
+
+
+def cited_quality_inventory_names(commands_run: str) -> list[str]:
+    names: set[str] = set()
+    for match in INVENTORY_CITE_RE.finditer(commands_run):
+        if in_quality_inventory_namespace(match.group("prefix") or ""):
+            names.add(match.group("name"))
+    return sorted(names)
 COMMANDS_RUN_HEADER = "## Commands Run"
 ARTIFACT_DATE_RE = re.compile(r"^Date:\s*(\d{4}-\d{2}-\d{2})", re.MULTILINE)
 ENFORCED_FROM_DATE = date(2026, 5, 13)
@@ -411,7 +442,7 @@ def main() -> int:
     raw = json.loads(consumer_fields_path.read_text(encoding="utf-8"))
     inventories: dict[str, dict] = raw.get("inventories", {})
 
-    cited = sorted(set(INVENTORY_FILE_RE.findall(commands_run)))
+    cited = cited_quality_inventory_names(commands_run)
     failures: list[str] = []
     declared_consumed: list[str] = []
 
