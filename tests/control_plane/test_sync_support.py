@@ -25,6 +25,17 @@ def write_manifest_schema(repo: Path) -> None:
     )
 
 
+def test_update_one_refuses_script_mode_without_commands(tmp_path: Path) -> None:
+    repo = seed_control_plane_repo(tmp_path)
+    manifest_path = repo / "integrations" / "tools" / "demo-tool.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["lifecycle"]["update"] = {"mode": "script"}
+    payload = update_one(repo, manifest, execute=False)
+    assert payload["status"] == "failed"
+    assert payload["mode"] == "script"
+    assert payload["commands"] == []
+
+
 def test_update_status_version_transition_classification_requires_two_observed_versions() -> None:
     assert _version_transition_changed({"from": "0.17.0", "to": "0.18.0"}) is True
     assert _version_transition_changed({"from": "0.18.0", "to": "0.18.0"}) is False
