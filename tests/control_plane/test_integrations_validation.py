@@ -762,6 +762,15 @@ def test_validate_integrations_rejects_dependencies_with_unknown_tool(tmp_path: 
     assert "ghost-tool" in result.stderr
 
 
+def test_passive_install_status_is_manual_when_detect_or_healthcheck_fails() -> None:
+    assert (
+        install_tools_module.passive_install_status(
+            {"ok": False}, {"ok": True}, {"ok": True}
+        )
+        == "manual"
+    )
+
+
 def test_install_tools_add_dependency_creates_and_extends_dependencies_file(tmp_path: Path) -> None:
     repo = seed_control_plane_repo(tmp_path)
     (repo / "integrations" / "tools" / "dependencies.schema.json").write_text(

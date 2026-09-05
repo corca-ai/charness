@@ -30,6 +30,17 @@ def _survey_payload(repo: Path) -> dict[str, object]:
     return {"skills": rows, "gap_count": len(gaps)}
 
 
+def test_python_file_has_code_refuses_unreadable_and_docstring_only(tmp_path: Path) -> None:
+    missing = tmp_path / "missing.py"
+    assert _validate_skill_output_schemas.python_file_has_code(missing) is False
+    broken = tmp_path / "broken.py"
+    broken.write_text("def (\n", encoding="utf-8")
+    assert _validate_skill_output_schemas.python_file_has_code(broken) is False
+    docstring_only = tmp_path / "doc.py"
+    docstring_only.write_text('"""only a docstring"""\n', encoding="utf-8")
+    assert _validate_skill_output_schemas.python_file_has_code(docstring_only) is False
+
+
 def test_survey_flags_classifier_schema_without_validator(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_skill(
