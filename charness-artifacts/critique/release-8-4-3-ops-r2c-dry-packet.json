@@ -1,0 +1,353 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-05T03:29:56Z",
+  "prepared_for": "5d529fbfaefd973280df7f32eebc682c69a3c447..c7f12854f643fb9a962aa34f3b0eee321ce2bf8c",
+  "changed_ref": "5d529fbfaefd973280df7f32eebc682c69a3c447..c7f12854f643fb9a962aa34f3b0eee321ce2bf8c",
+  "substrate_mode": "committed-ref",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `5d529fbfaefd973280df7f32eebc682c69a3c447..c7f12854f643fb9a962aa34f3b0eee321ce2bf8c`:\n- .agents/quality-gates.yaml\n- .githooks/pre-commit\n- charness-artifacts/critique/2026-09-05-form-identity-commit-5bd6075cc.md\n- charness-artifacts/critique/2026-09-05-form-identity-repair-closeout.md\n- charness-artifacts/critique/form-identity-r3-blast-packet.json\n- charness-artifacts/critique/form-identity-r3-blast-packet.md\n- charness-artifacts/critique/form-identity-r3-form-packet.json\n- charness-artifacts/critique/form-identity-r3-form-packet.md\n- charness-artifacts/critique/form-versus-controller-packet.json\n- charness-artifacts/critique/form-versus-controller-packet.md\n- charness-artifacts/critique/repo-decided-blast-radius-packet.json\n- charness-artifacts/critique/repo-decided-blast-radius-packet.md\n- docs/authoring-preflight.md\n- docs/validator-timing-layers.md\n- integrations/locks/lock.schema.json\n- integrations/tools/manifest.schema.json\n- scripts/adapters/quality_artifact_skill_ergonomics.py\n- scripts/gates/check_coverage_lib.py\n- scripts/gates/check_schema_enum_axis.py\n- scripts/gates/inventory_measurement_lib.py\n- scripts/gates/validate_inventory_consumption.py\n- scripts/gates/validate_skill_output_schemas.py\n- scripts/gates_support/skill_core_density.py\n- scripts/hooks/check_release_lane_receipt.py\n- scripts/hooks/check_staged_cheap_owners.py\n- scripts/install_tools.py\n- scripts/staged_commit_gate_plan.py\n- scripts/update_tools.py\n- skills/public/create-skill/SKILL.md\n- skills/public/create-skill/references/portable-authoring.md\n- skills/public/impl/SKILL.md\n- skills/public/quality/SKILL.md\n- skills/public/quality/references/consumer-validator-catalog.yaml\n- skills/public/quality/references/inventory-consumer-fields.json\n- skills/public/quality/scripts/inventory_skill_ergonomics.py\n- skills/public/quality/scripts/skill_ergonomics_lib.py\n- skills/public/setup/SKILL.md\n- skills/public/spec/SKILL.md\n- skills/public/spec/references/taxonomy-axis-checkpoint.md\n- tests/control_plane/test_integrations_validation.py\n- tests/control_plane/test_upstream_support_drift.py\n- tests/quality_gates/test_inventory_consumption.py\n- tests/quality_gates/test_mutation_recovery.py\n- tests/quality_gates/test_quality_skill_ergonomics.py\n- tests/quality_gates/test_skill_docs_contracts.py\n- tests/quality_gates/test_skill_reference_index.py\n- tests/quality_gates/test_staged_cheap_owners.py\n- tests/quality_gates/test_staged_commit_gate_plan.py\n- tests/test_schema_enum_axis.py\n- tests/test_skill_output_schemas.py\n- tools/check_inventory_declaration_coverage.py\n- tools/check_skill_contracts.py\n- tools/validate_integrations.py\n- tools/validate_inventory_consumption_declaration.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: integrations/locks/lock.schema.json, integrations/tools/manifest.schema.json, scripts/adapters/quality_artifact_skill_ergonomics.py, scripts/gates/check_coverage_lib.py, scripts/gates/check_schema_enum_axis.py, scripts/gates/inventory_measurement_lib.py, scripts/gates/validate_inventory_consumption.py, scripts/gates/validate_skill_output_schemas.py, scripts/gates_support/skill_core_density.py, scripts/hooks/check_release_lane_receipt.py, scripts/hooks/check_staged_cheap_owners.py, scripts/install_tools.py, scripts/staged_commit_gate_plan.py, scripts/update_tools.py, skills/public/create-skill/SKILL.md, skills/public/create-skill/references/portable-authoring.md, skills/public/impl/SKILL.md, skills/public/quality/SKILL.md, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/quality/references/inventory-consumer-fields.json, skills/public/quality/scripts/inventory_skill_ergonomics.py, skills/public/quality/scripts/skill_ergonomics_lib.py, skills/public/setup/SKILL.md, skills/public/spec/SKILL.md, skills/public/spec/references/taxonomy-axis-checkpoint.md\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-09-05-form-identity-commit-5bd6075cc.md, charness-artifacts/critique/2026-09-05-form-identity-repair-closeout.md, charness-artifacts/critique/form-identity-r3-blast-packet.md, charness-artifacts/critique/form-identity-r3-form-packet.md, charness-artifacts/critique/form-versus-controller-packet.md, charness-artifacts/critique/repo-decided-blast-radius-packet.md, docs/authoring-preflight.md, docs/validator-timing-layers.md, skills/public/create-skill/SKILL.md, skills/public/create-skill/references/portable-authoring.md, skills/public/impl/SKILL.md, skills/public/quality/SKILL.md, skills/public/setup/SKILL.md, skills/public/spec/SKILL.md, skills/public/spec/references/taxonomy-axis-checkpoint.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/create-skill/SKILL.md, skills/public/create-skill/references/portable-authoring.md, skills/public/impl/SKILL.md, skills/public/quality/SKILL.md, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/quality/references/inventory-consumer-fields.json, skills/public/quality/scripts/inventory_skill_ergonomics.py, skills/public/quality/scripts/skill_ergonomics_lib.py, skills/public/setup/SKILL.md, skills/public/spec/SKILL.md, skills/public/spec/references/taxonomy-axis-checkpoint.md\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- consumer-validator-catalog: Explicit packaged consumer-validator inventory, adoption decisions, and the installed/source-layout checker that enforces the contract.\n  source matches: scripts/staged_commit_gate_plan.py, skills/public/quality/references/consumer-validator-catalog.yaml\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/gates/check_consumer_validator_catalog.py --repo-root . --adoption-path .agents/consumer-validator-adoption.yaml --require-adoption, python3 -m pytest -q tests/test_consumer_validator_catalog.py tests/test_capability_catalog.py\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/create-skill/SKILL.md, skills/public/create-skill/references/portable-authoring.md, skills/public/impl/SKILL.md, skills/public/quality/SKILL.md, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/quality/references/inventory-consumer-fields.json, skills/public/quality/scripts/inventory_skill_ergonomics.py, skills/public/quality/scripts/skill_ergonomics_lib.py, skills/public/setup/SKILL.md, skills/public/spec/SKILL.md, skills/public/spec/references/taxonomy-axis-checkpoint.md\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/create-skill/SKILL.md, skills/public/create-skill/references/portable-authoring.md, skills/public/impl/SKILL.md, skills/public/quality/SKILL.md, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/quality/references/inventory-consumer-fields.json, skills/public/quality/scripts/inventory_skill_ergonomics.py, skills/public/quality/scripts/skill_ergonomics_lib.py, skills/public/setup/SKILL.md, skills/public/spec/SKILL.md, skills/public/spec/references/taxonomy-axis-checkpoint.md\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-09-05-form-identity-commit-5bd6075cc.md, charness-artifacts/critique/2026-09-05-form-identity-repair-closeout.md, charness-artifacts/critique/form-identity-r3-blast-packet.json, charness-artifacts/critique/form-identity-r3-blast-packet.md, charness-artifacts/critique/form-identity-r3-form-packet.json, charness-artifacts/critique/form-identity-r3-form-packet.md, charness-artifacts/critique/form-versus-controller-packet.json, charness-artifacts/critique/form-versus-controller-packet.md, charness-artifacts/critique/repo-decided-blast-radius-packet.json, charness-artifacts/critique/repo-decided-blast-radius-packet.md\n  verify: python3 scripts/review/validate_critique_artifacts.py --repo-root . --all\n- external-tool-control-plane: External tool manifests and install, update, doctor, support-sync, and upstream-release helpers whose behavior depends on host state.\n  source matches: integrations/tools/manifest.schema.json, scripts/install_tools.py, scripts/update_tools.py\n  verify: python3 -m tools.validate_integrations --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  source matches: integrations/locks/lock.schema.json, integrations/tools/manifest.schema.json, scripts/install_tools.py, scripts/update_tools.py\n  verify: python3 -m tools.validate_integrations --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- maintainer-hooks: Repo-owned maintainer hook and hook bootstrap validation.\n  source matches: .githooks/pre-commit\n  verify: python3 scripts/setup/validate_maintainer_setup.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/adapters/quality_artifact_skill_ergonomics.py, scripts/gates/check_coverage_lib.py, scripts/gates/check_schema_enum_axis.py, scripts/gates/inventory_measurement_lib.py, scripts/gates/validate_inventory_consumption.py, scripts/gates/validate_skill_output_schemas.py, scripts/gates_support/skill_core_density.py, scripts/hooks/check_release_lane_receipt.py, scripts/hooks/check_staged_cheap_owners.py, scripts/install_tools.py, scripts/staged_commit_gate_plan.py, scripts/update_tools.py, tests/control_plane/test_integrations_validation.py, tests/control_plane/test_upstream_support_drift.py, tests/quality_gates/test_inventory_consumption.py, tests/quality_gates/test_mutation_recovery.py, tests/quality_gates/test_quality_skill_ergonomics.py, tests/quality_gates/test_skill_docs_contracts.py, tests/quality_gates/test_skill_reference_index.py, tests/quality_gates/test_staged_cheap_owners.py, tests/quality_gates/test_staged_commit_gate_plan.py, tests/test_schema_enum_axis.py, tests/test_skill_output_schemas.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- inference-interpretation-contract: Advisory-interpretation contract meta-validator (#330): the inference-layer surface registry plus every registered Python/prose declaration and its paired consumer reference.\n  source matches: skills/public/quality/scripts/inventory_skill_ergonomics.py\n  verify: python3 -m tools.validate_inference_interpretation --repo-root . --require-git-file-listing\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/adapters/quality_artifact_skill_ergonomics.py, scripts/gates/check_coverage_lib.py, scripts/gates/check_schema_enum_axis.py, scripts/gates/inventory_measurement_lib.py, scripts/gates/validate_inventory_consumption.py, scripts/gates/validate_skill_output_schemas.py, scripts/gates_support/skill_core_density.py, scripts/hooks/check_release_lane_receipt.py, scripts/hooks/check_staged_cheap_owners.py, scripts/install_tools.py, scripts/staged_commit_gate_plan.py, scripts/update_tools.py, skills/public/quality/scripts/inventory_skill_ergonomics.py, skills/public/quality/scripts/skill_ergonomics_lib.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "committed-ref",
+    "substrate_mode": "committed-ref",
+    "changed_ref": "5d529fbfaefd973280df7f32eebc682c69a3c447..c7f12854f643fb9a962aa34f3b0eee321ce2bf8c",
+    "resolved_changed_ref": [
+      "5d529fbfaefd973280df7f32eebc682c69a3c447",
+      "c7f12854f643fb9a962aa34f3b0eee321ce2bf8c"
+    ],
+    "base_head": "c7f12854f643fb9a962aa34f3b0eee321ce2bf8c",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      ".agents/quality-gates.yaml",
+      ".githooks/pre-commit",
+      "charness-artifacts/critique/2026-09-05-form-identity-commit-5bd6075cc.md",
+      "charness-artifacts/critique/2026-09-05-form-identity-repair-closeout.md",
+      "charness-artifacts/critique/form-identity-r3-blast-packet.json",
+      "charness-artifacts/critique/form-identity-r3-blast-packet.md",
+      "charness-artifacts/critique/form-identity-r3-form-packet.json",
+      "charness-artifacts/critique/form-identity-r3-form-packet.md",
+      "charness-artifacts/critique/form-versus-controller-packet.json",
+      "charness-artifacts/critique/form-versus-controller-packet.md",
+      "charness-artifacts/critique/repo-decided-blast-radius-packet.json",
+      "charness-artifacts/critique/repo-decided-blast-radius-packet.md",
+      "docs/authoring-preflight.md",
+      "docs/validator-timing-layers.md",
+      "integrations/locks/lock.schema.json",
+      "integrations/tools/manifest.schema.json",
+      "scripts/adapters/quality_artifact_skill_ergonomics.py",
+      "scripts/gates/check_coverage_lib.py",
+      "scripts/gates/check_schema_enum_axis.py",
+      "scripts/gates/inventory_measurement_lib.py",
+      "scripts/gates/validate_inventory_consumption.py",
+      "scripts/gates/validate_skill_output_schemas.py",
+      "scripts/gates_support/skill_core_density.py",
+      "scripts/hooks/check_release_lane_receipt.py",
+      "scripts/hooks/check_staged_cheap_owners.py",
+      "scripts/install_tools.py",
+      "scripts/staged_commit_gate_plan.py",
+      "scripts/update_tools.py",
+      "skills/public/create-skill/SKILL.md",
+      "skills/public/create-skill/references/portable-authoring.md",
+      "skills/public/impl/SKILL.md",
+      "skills/public/quality/SKILL.md",
+      "skills/public/quality/references/consumer-validator-catalog.yaml",
+      "skills/public/quality/references/inventory-consumer-fields.json",
+      "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+      "skills/public/quality/scripts/skill_ergonomics_lib.py",
+      "skills/public/setup/SKILL.md",
+      "skills/public/spec/SKILL.md",
+      "skills/public/spec/references/taxonomy-axis-checkpoint.md",
+      "tests/control_plane/test_integrations_validation.py",
+      "tests/control_plane/test_upstream_support_drift.py",
+      "tests/quality_gates/test_inventory_consumption.py",
+      "tests/quality_gates/test_mutation_recovery.py",
+      "tests/quality_gates/test_quality_skill_ergonomics.py",
+      "tests/quality_gates/test_skill_docs_contracts.py",
+      "tests/quality_gates/test_skill_reference_index.py",
+      "tests/quality_gates/test_staged_cheap_owners.py",
+      "tests/quality_gates/test_staged_commit_gate_plan.py",
+      "tests/test_schema_enum_axis.py",
+      "tests/test_skill_output_schemas.py",
+      "tools/check_inventory_declaration_coverage.py",
+      "tools/check_skill_contracts.py",
+      "tools/validate_integrations.py",
+      "tools/validate_inventory_consumption_declaration.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/quality-gates.yaml",
+        "content_sha256": "cb28dbf8880f44d7a19b52a4a7e8caea4073622e49a741714e0b030fdde3279f"
+      },
+      {
+        "path": ".githooks/pre-commit",
+        "content_sha256": "c7af9365ca2d1a11b879b9be32701b1f8c3634fec871197793dd8fe98a940fd0"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-09-05-form-identity-commit-5bd6075cc.md",
+        "content_sha256": "343eab44fc63318d5afb376ec141d0ded6506ab627e45e0b1dd6f62bc9248598"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-09-05-form-identity-repair-closeout.md",
+        "content_sha256": "e5e940a66b07717c2100291f02c0e89dd83f7f47aa8e9b2b0e3622588846802e"
+      },
+      {
+        "path": "charness-artifacts/critique/form-identity-r3-blast-packet.json",
+        "content_sha256": "6865e45e02c83cd36a5c27f4f84f371d8bff35561156add1bfb9a30fc7b5a309"
+      },
+      {
+        "path": "charness-artifacts/critique/form-identity-r3-blast-packet.md",
+        "content_sha256": "cee50a755cb9bb52c35e1a973a728db1b288c061d5af9c1201f0ab622760c70b"
+      },
+      {
+        "path": "charness-artifacts/critique/form-identity-r3-form-packet.json",
+        "content_sha256": "6865e45e02c83cd36a5c27f4f84f371d8bff35561156add1bfb9a30fc7b5a309"
+      },
+      {
+        "path": "charness-artifacts/critique/form-identity-r3-form-packet.md",
+        "content_sha256": "5f8993908f2c988707e20e047a8fb325f41875ad63fc9be956426c64efd1387e"
+      },
+      {
+        "path": "charness-artifacts/critique/form-versus-controller-packet.json",
+        "content_sha256": "ebcbc32de6d4616a047fe33405b15b8d04709c1726d0af084061f039831c9631"
+      },
+      {
+        "path": "charness-artifacts/critique/form-versus-controller-packet.md",
+        "content_sha256": "4033f8ef7cfdca444285c79884a2ba62f2e27e0b462578349394f1afbc8311b6"
+      },
+      {
+        "path": "charness-artifacts/critique/repo-decided-blast-radius-packet.json",
+        "content_sha256": "ebcbc32de6d4616a047fe33405b15b8d04709c1726d0af084061f039831c9631"
+      },
+      {
+        "path": "charness-artifacts/critique/repo-decided-blast-radius-packet.md",
+        "content_sha256": "dcd06c9219f59b332aab29089fcd54c1e8b3a63a4d388b6b176c21c2dded5eca"
+      },
+      {
+        "path": "docs/authoring-preflight.md",
+        "content_sha256": "5238cd4dec8bd6a0aee7c404222332898982116b077ee5a3da15fe982aa12707"
+      },
+      {
+        "path": "docs/validator-timing-layers.md",
+        "content_sha256": "288b629389c5b7dbfb50fc1fd81dfec4b55be2835aa9b4fdb6d35dbc6edc5bcb"
+      },
+      {
+        "path": "integrations/locks/lock.schema.json",
+        "content_sha256": "4e63a71b32f35b5ee95eb9e70da3048afff5a8fce33663c4a40d34324e2cd577"
+      },
+      {
+        "path": "integrations/tools/manifest.schema.json",
+        "content_sha256": "d0ef573f6bf7d7894c347ca4fe4da2cb309f6cd188dcf309753946f6d4d05f0f"
+      },
+      {
+        "path": "scripts/adapters/quality_artifact_skill_ergonomics.py",
+        "content_sha256": "f0f0c8455643620faa2dcddfb8d41c0a63b3f967c39031da05c8b2715375d641"
+      },
+      {
+        "path": "scripts/gates/check_coverage_lib.py",
+        "content_sha256": "fed847bc611172e8a546f0a053290825569b90a914b0782ce834ec394581dc53"
+      },
+      {
+        "path": "scripts/gates/check_schema_enum_axis.py",
+        "content_sha256": "2486a5fe3c9221349115711680be51e7376dc504d946de19a765f660e2f04706"
+      },
+      {
+        "path": "scripts/gates/inventory_measurement_lib.py",
+        "content_sha256": "0bb2d774000f477452abefcb84dac4810f72eee5d5f2b679e35304ae86a1f59a"
+      },
+      {
+        "path": "scripts/gates/validate_inventory_consumption.py",
+        "content_sha256": "2d3a74830eeade02ef240ccca0542ad9bb6beae74c37293d0b2d44119163b876"
+      },
+      {
+        "path": "scripts/gates/validate_skill_output_schemas.py",
+        "content_sha256": "ff858cee238bee1e15188c91bb7879542a0109e7925df010dd62e28d316ca725"
+      },
+      {
+        "path": "scripts/gates_support/skill_core_density.py",
+        "content_sha256": "efa96515f0a311ea17c07422b066405c90862b196737b21cf0d496205482d228"
+      },
+      {
+        "path": "scripts/hooks/check_release_lane_receipt.py",
+        "content_sha256": "b6f7a2264bb116b5b46ecf61e414f5581e351138b54b7705ccb490edccd095bc"
+      },
+      {
+        "path": "scripts/hooks/check_staged_cheap_owners.py",
+        "content_sha256": "22c350adc7c08d12baf055ebb61450b7b692271dbe94406f76ccfd8bdce0dc73"
+      },
+      {
+        "path": "scripts/install_tools.py",
+        "content_sha256": "b6437c5f252bb5d4548e0dd38f5bf966c87a3c3374d03935008d01d46a2943e7"
+      },
+      {
+        "path": "scripts/staged_commit_gate_plan.py",
+        "content_sha256": "1e77ff18cf785cfc1201a485d0fbce953f167a6bb45ca028db63ad9a3aa5929c"
+      },
+      {
+        "path": "scripts/update_tools.py",
+        "content_sha256": "69a2821758c19a44d3c8ffb52f0eac70aa2bc97d363e46aa8d221f1b41ab7d48"
+      },
+      {
+        "path": "skills/public/create-skill/SKILL.md",
+        "content_sha256": "23cfdb3db88303c8118ebc328710b6bfac2d0782d520f76432339656e4bd30dd"
+      },
+      {
+        "path": "skills/public/create-skill/references/portable-authoring.md",
+        "content_sha256": "0ce0de0787d319881f67798ed3c06722fc73b1baee3c5e00a2c4171c4df97f9c"
+      },
+      {
+        "path": "skills/public/impl/SKILL.md",
+        "content_sha256": "d439d725019c846d3508a9af97da878e3a347e41d7f02241db0e22c2a0bed4e7"
+      },
+      {
+        "path": "skills/public/quality/SKILL.md",
+        "content_sha256": "668c1cd407ddc4866c79ca2a640b169f1001dbf5ecc212141e6f3b18ac740b01"
+      },
+      {
+        "path": "skills/public/quality/references/consumer-validator-catalog.yaml",
+        "content_sha256": "c1ea3feae2aeeef489cce04500d6bbc9e69e9af55edf5c2cc2335433fb86c769"
+      },
+      {
+        "path": "skills/public/quality/references/inventory-consumer-fields.json",
+        "content_sha256": "7ec81a7796d2b3cd52191e70c7c13feb4aeca2a89b91516468b264d4338d6ea9"
+      },
+      {
+        "path": "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "content_sha256": "cf20b3d45e4d0cbc09be12773adf7efae143da9246b89759c3654c2d3b99a4f4"
+      },
+      {
+        "path": "skills/public/quality/scripts/skill_ergonomics_lib.py",
+        "content_sha256": "1554a756b6bf84c0211b859fba184c09490cdd71d50c48786a8e65fdbd0e9b0f"
+      },
+      {
+        "path": "skills/public/setup/SKILL.md",
+        "content_sha256": "1ac95d7276c594d440726a6f4aee5578a3e24a8ae84793901b2b4a1570035f96"
+      },
+      {
+        "path": "skills/public/spec/SKILL.md",
+        "content_sha256": "d0240604f31bd01f2a1e8cb2e7b13cd1327e8efc49feecd896b81995d0a701cf"
+      },
+      {
+        "path": "skills/public/spec/references/taxonomy-axis-checkpoint.md",
+        "content_sha256": "e885c25ad65fea45e296387f52c5d6e11501c119207063fc77d18d55de3002a6"
+      },
+      {
+        "path": "tests/control_plane/test_integrations_validation.py",
+        "content_sha256": "68ed35097af5019e03a74e3e2ce87515ab6c06088afebfd7d7f95f0871696833"
+      },
+      {
+        "path": "tests/control_plane/test_upstream_support_drift.py",
+        "content_sha256": "d66316e9fc6d1c0870a2aaf88871f195c40799982b4a1b7d12c5ea53ed2feb28"
+      },
+      {
+        "path": "tests/quality_gates/test_inventory_consumption.py",
+        "content_sha256": "64a826c074d947edb4193556520aecd0e0608f1769e2d1ed55d0768fa03069f1"
+      },
+      {
+        "path": "tests/quality_gates/test_mutation_recovery.py",
+        "content_sha256": "3833f0fae8bf4f4b6f2ad1c95459f84f3c9d32c0205aec098480f0dc9a2faf30"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_skill_ergonomics.py",
+        "content_sha256": "05822a7fbc7862f52e49b01379cc23b17a2f4a785b648d94985abfbca56424e6"
+      },
+      {
+        "path": "tests/quality_gates/test_skill_docs_contracts.py",
+        "content_sha256": "6af0e4170da41806693662d96d39c0c61258e5363201acfc2fb15e3ea96c0e8f"
+      },
+      {
+        "path": "tests/quality_gates/test_skill_reference_index.py",
+        "content_sha256": "d1d0ba7bd80a817fa32b5481af77c849f312d1b95749273c750355553f3ebcfa"
+      },
+      {
+        "path": "tests/quality_gates/test_staged_cheap_owners.py",
+        "content_sha256": "e518aeed71363745739157275d19683f23a9d531da9d636e5c8401c52a0e80a2"
+      },
+      {
+        "path": "tests/quality_gates/test_staged_commit_gate_plan.py",
+        "content_sha256": "b23fbf9b82ab4af0bb8209e2fa0698daa14699466cbff1996bfa56d9efe0f6e7"
+      },
+      {
+        "path": "tests/test_schema_enum_axis.py",
+        "content_sha256": "ffc11e303ee2d428fd9b746c9460fe88a2c48abaeda0fae796c3dbe4d6e53e8f"
+      },
+      {
+        "path": "tests/test_skill_output_schemas.py",
+        "content_sha256": "ab55ec1276191bd476486938386d70426953370d8cfa5f372e49b82a4906f6f2"
+      },
+      {
+        "path": "tools/check_inventory_declaration_coverage.py",
+        "content_sha256": "1459d173adad3d15222fa35aec07fc990bde81d27ecb6c375a110069431520a0"
+      },
+      {
+        "path": "tools/check_skill_contracts.py",
+        "content_sha256": "d89125fea26b38877a97ccbbef37b4be5922f16545713901fd727485576606eb"
+      },
+      {
+        "path": "tools/validate_integrations.py",
+        "content_sha256": "af0638522539d6aa0e5a44560a418af42b8288261410c524bff6fa970021b6f3"
+      },
+      {
+        "path": "tools/validate_inventory_consumption_declaration.py",
+        "content_sha256": "2471c279bdc0833d45ef45c31897384169f09673d4e13b3d90208910871b5ab5"
+      }
+    ],
+    "reviewed_patch_sha256": "0db7219a6e49c3b49b0856c232d55b7a4d6429e49d197b22ed15b2d665b9fed5",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "e8399c803ff026a418304fcbdf1ee7cca96640be7d00ce6a96dba2a49293c75d"
+  }
+}

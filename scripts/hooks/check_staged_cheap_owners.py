@@ -88,6 +88,20 @@ def cheap_owner_gates(
                 ),
             )
         )
+    if any(path.endswith(".schema.json") for path in paths) and (
+        repo_root / "scripts/gates/check_schema_enum_axis.py"
+    ).is_file():
+        gates.append(
+            GateCommand(
+                "check-schema-enum-axis (staged)",
+                (
+                    "python3",
+                    "scripts/gates/check_schema_enum_axis.py",
+                    "--repo-root",
+                    str(repo_root),
+                ),
+            )
+        )
     return gates
 
 

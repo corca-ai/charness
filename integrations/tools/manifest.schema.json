@@ -238,7 +238,30 @@
         "notes": {
           "$ref": "#/definitions/stringList"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "enum": [
+                  "script",
+                  "package_manager",
+                  "git_checkout"
+                ]
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "required": [
+              "commands"
+            ]
+          }
+        }
+      ]
     },
     "repoFollowup": {
       "type": "object",

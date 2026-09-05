@@ -22,7 +22,8 @@ Install/update `mode` is an install method (`manual`, `script`,
 `package_manager`, `git_checkout`). Every integration manifest has both
 actions; this schema is not the place for a tool that does not install or
 update. Required actions stay required — omit applies only to fields that are
-actually optional.
+actually optional. An executable method (`script`, `package_manager`,
+`git_checkout`) requires `commands`; omit of `commands` is only for `manual`.
 
 `python3 <plugin-dir>/scripts/gates/check_schema_enum_axis.py --repo-root .`
 refuses a generic enum that omits `x-axis`.

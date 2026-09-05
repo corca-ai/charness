@@ -111,6 +111,16 @@ def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload
     release = probe_release(manifest)
     provenance = capture_provenance(manifest)
 
+    if lifecycle.executable_action_missing_commands(mode, install_action):
+        result = base_result(
+            repo_root,
+            manifest,
+            install_action,
+            status="failed",
+            mode=mode,
+            commands=[],
+        )
+        return lifecycle.attach_release_metadata(result, provenance=provenance, release=release)
     if mode == "manual":
         detect_result, healthcheck_result = lifecycle.detect_and_healthcheck(
             repo_root, manifest, failure_reason="detect failed; healthcheck skipped"

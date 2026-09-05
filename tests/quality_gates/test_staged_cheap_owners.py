@@ -36,6 +36,12 @@ def test_a_debug_path_selects_the_seam_index() -> None:
     assert "validate-debug-seam-index (staged)" in _labels([path])
 
 
+def test_a_schema_path_selects_enum_axis() -> None:
+    path = "integrations/tools/manifest.schema.json"
+    assert "check-schema-enum-axis (staged)" in _labels([path])
+    assert "check-docs-length (staged)" not in _labels([path])
+
+
 def test_an_unrelated_path_selects_no_cheap_owner() -> None:
     assert _labels(["README.md"]) == []
 

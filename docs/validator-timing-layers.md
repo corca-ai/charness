@@ -29,7 +29,8 @@ Timings, ordered by feedback latency (earliest first):
 4. **Bundle boundary** — the broad gate
    ([run-quality.sh](../scripts/run-quality.sh)) plus the pre-push hook.
    Ordinary implementation stops at focused tests plus the default core lane;
-   changed-line coverage and mutation have one owner in the release-final lane.
+   changed-line coverage has one owner in the release-final lane. Mutation is
+   the scheduled CI owner in [mutation-tests.yml](../.github/workflows/mutation-tests.yml).
 5. **CI / scheduled** —
    [quality-core.yml](../.github/workflows/quality-core.yml) (push/tag/PR)
    and [mutation-tests.yml](../.github/workflows/mutation-tests.yml) (cron

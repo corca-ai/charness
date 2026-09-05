@@ -73,6 +73,18 @@ def evaluate_readiness(manifest: dict[str, Any], repo_root: Path) -> dict[str, A
     }
 
 
+EXECUTABLE_ACTION_MODES = frozenset({"script", "package_manager", "git_checkout"})
+
+
+def action_commands(action: dict[str, Any]) -> list[str]:
+    raw = action.get("commands")
+    return [item for item in raw if isinstance(item, str)] if isinstance(raw, list) else []
+
+
+def executable_action_missing_commands(mode: str, action: dict[str, Any]) -> bool:
+    return mode in EXECUTABLE_ACTION_MODES and not action_commands(action)
+
+
 def run_command_payloads(commands: list[str], repo_root: Path) -> list[dict[str, Any]]:
     return [command_result_payload(run_shell(command, repo_root)) for command in commands]
 

@@ -12,7 +12,12 @@ import yaml
 import scripts.doctor as doctor_module
 import scripts.install_tools as install_tools_module
 import tools.validate_integrations as validate_integrations_module
-from scripts.adapters.control_plane_lib import load_capabilities
+from scripts.adapters.control_plane_lib import (
+    load_capabilities,
+    load_manifest_schema,
+    validate_manifest_data,
+)
+from scripts.adapters.control_plane_lifecycle_lib import executable_action_missing_commands
 from scripts.doctor import inspect_manifest
 from scripts.sync_support import sync_one
 from tests.dsl import Repo
@@ -427,6 +432,39 @@ def test_advisory_doctor_policy_requires_a_declared_degraded_mode() -> None:
             "degraded path; a declared `degraded` access mode is this check's proxy for that, not "
             "the README rule itself. If this tool's consumer really degrades, say so in access_modes"
         )
+
+
+def test_schema_refuses_an_executable_install_without_commands() -> None:
+    schema = load_manifest_schema()
+    manifest = json.loads((ROOT / "integrations" / "tools" / "vulture.json").read_text())
+    del manifest["lifecycle"]["install"]["commands"]
+    with pytest.raises(Exception, match="commands"):
+        validate_manifest_data(manifest, schema, ROOT / "integrations" / "tools" / "vulture.json")
+
+
+def test_schema_keeps_manual_update_without_commands() -> None:
+    schema = load_manifest_schema()
+    manifest = json.loads((ROOT / "integrations" / "tools" / "vulture.json").read_text())
+    assert manifest["lifecycle"]["update"]["mode"] == "manual"
+    assert "commands" not in manifest["lifecycle"]["update"]
+    validate_manifest_data(manifest, schema, ROOT / "integrations" / "tools" / "vulture.json")
+
+
+def test_empty_executable_action_is_missing_commands() -> None:
+    assert executable_action_missing_commands("script", {}) is True
+    assert executable_action_missing_commands("script", {"commands": ["tool install"]}) is False
+    assert executable_action_missing_commands("manual", {}) is False
+
+
+def test_install_one_refuses_script_mode_without_commands(tmp_path: Path) -> None:
+    repo = seed_control_plane_repo(tmp_path)
+    manifest_path = repo / "integrations" / "tools" / "demo-tool.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["lifecycle"]["install"] = {"mode": "script"}
+    payload = install_tools_module.install_one(repo, manifest, execute=False)
+    assert payload["status"] == "failed"
+    assert payload["mode"] == "script"
+    assert payload["commands"] == []
 
 
 def test_nose_stays_blocking_because_it_has_no_degraded_path() -> None:

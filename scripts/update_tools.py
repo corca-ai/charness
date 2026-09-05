@@ -35,6 +35,9 @@ attach_release_metadata = _scripts_control_plane_lifecycle_lib_module.attach_rel
 command_result_payload = _scripts_control_plane_lifecycle_lib_module.command_result_payload
 detect_and_healthcheck = _scripts_control_plane_lifecycle_lib_module.detect_and_healthcheck
 evaluate_readiness = _scripts_control_plane_lifecycle_lib_module.evaluate_readiness
+executable_action_missing_commands = (
+    _scripts_control_plane_lifecycle_lib_module.executable_action_missing_commands
+)
 has_any_status = _scripts_control_plane_lifecycle_lib_module.has_any_status
 print_update_advisories = _scripts_control_plane_lifecycle_lib_module.print_update_advisories
 select_by_tool_id = _scripts_control_plane_lifecycle_lib_module.select_by_tool_id
@@ -201,6 +204,17 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
             execute=execute,
             release=release,
             provenance=provenance,
+        )
+    if executable_action_missing_commands(mode, update_action):
+        return attach_release_metadata(
+            {
+                "tool_id": manifest["tool_id"],
+                "status": "failed",
+                "mode": mode,
+                "commands": [],
+            },
+            provenance=provenance,
+            release=release,
         )
     if not execute:
         return attach_release_metadata(
