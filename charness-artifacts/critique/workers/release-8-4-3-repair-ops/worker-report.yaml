@@ -1,0 +1,61 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'commit e87cb5ecc: enum-axis cheap-owner and executable-action refusal'
+attempt_id: release-8-4-3-repair-ops
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 4ed27a6dc40266179549330885aee3e0ff08a418128f6990395d6bb588961ca5
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-4-3-repair-ops/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-4-3-repair-ops/delivery.json
+producer_run_id: run-release-8-4-3-repair-ops
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-4-3-repair-ops/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-4-3-repair-ops/receipt.json
+  producer_run_id: run-release-8-4-3-repair-ops
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 600302d1199397aaf8553c436aa275c2e47afc989457af304577023daa169ee0
+receipt_output_sha256: 600302d1199397aaf8553c436aa275c2e47afc989457af304577023daa169ee0
+packet_identity: 4da914801070912223277c91005504ad85b0ebdb01df2cd4861c2b97469708c0
+reviewed_input_identity: bf1fd273137af32be79b2137db7003263489ffd7d2c709747a037115e63d030b
+parent_receipt_identity: parent-564bd1707f9c838263b98d1951d49e47e89692045d92a5d5
+provenance:
+  scope: 'commit e87cb5ecc: enum-axis cheap-owner and executable-action refusal'
+  packet_identity: 4da914801070912223277c91005504ad85b0ebdb01df2cd4861c2b97469708c0
+  reviewed_input_identity: bf1fd273137af32be79b2137db7003263489ffd7d2c709747a037115e63d030b
+  parent_receipt_identity: parent-564bd1707f9c838263b98d1951d49e47e89692045d92a5d5
+  attempt_id: release-8-4-3-repair-ops
+  attempt_scope: 'commit e87cb5ecc: enum-axis cheap-owner and executable-action refusal'
+  attempt_packet_identity: 4da914801070912223277c91005504ad85b0ebdb01df2cd4861c2b97469708c0
+  attempt_parent_receipt_identity: parent-564bd1707f9c838263b98d1951d49e47e89692045d92a5d5
+  result_packet_identity: 4da914801070912223277c91005504ad85b0ebdb01df2cd4861c2b97469708c0
+  result_reviewed_input_identity: bf1fd273137af32be79b2137db7003263489ffd7d2c709747a037115e63d030b
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 4ed27a6dc40266179549330885aee3e0ff08a418128f6990395d6bb588961ca5
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes
