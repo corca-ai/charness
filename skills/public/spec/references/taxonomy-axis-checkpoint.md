@@ -24,8 +24,8 @@ actions; this schema is not the place for a tool that does not install or
 update. Required actions stay required — omit applies only to fields that are
 actually optional.
 
-`python3 scripts/gates/check_schema_enum_axis.py --repo-root .` refuses a
-generic enum that omits `x-axis`.
+`python3 <plugin-dir>/scripts/gates/check_schema_enum_axis.py --repo-root .`
+refuses a generic enum that omits `x-axis`.
 
 ## Contracts that are not yet schema-backed
 

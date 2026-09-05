@@ -92,7 +92,7 @@ blocker.
 - Application state: adapter selected file-backed `codex_exec`; no independent provider-application signal
 - Delivery state: findings-received
 - Execution mode: file-backed-worker
-- Worker report: `.charness/reviewer-round-form-versus-controller/worker-report.yaml` (run state, not a public approval carrier)
+- Worker report: `.charness/reviewer-round-form-versus-controller/worker-report.yaml` <!-- reproduction-source -->
 - Worker report identity: 805fbc492b2c5263234c4a36a745dd69eafa0381fc2fd3eef1c1274779fa04b0
 - Worker report approval: approval_eligible: false
 - Worker report delivery: findings-received
@@ -100,7 +100,7 @@ blocker.
 - Worker report input identity: b9928261f59364692ea01f498d9714375ce9f3a3448594dc4e62f5f7741a037c
 - Worker report parent receipt identity: parent-95c3a3464af605e3948127c16b72e22bcb27657405808159
 - Worker report findings identity: 7c9424485325f3a793b440a50c793e57e8bed3471c7ac8fcb7af9d80b4aff1df
-- Second worker report: `.charness/reviewer-round-repo-decided-blast-radius/worker-report.yaml` identity `37926b559b6d6bbcd7dd8f82c9aefde0a5497359f9cda4a8c66db405efaf4717`, findings `9cff104c5c4ade16ce241ae3617b28011a8fde406a9c16e4cf992c4d4b4e6109`, parent receipt `parent-3a7460e8e1dc6773ed3fec9b3a9179163b928a1f1e361bdc`, also `approval_eligible: false` / `findings-received` / verdict `block`
+- Second worker report: `.charness/reviewer-round-repo-decided-blast-radius/worker-report.yaml` identity `37926b559b6d6bbcd7dd8f82c9aefde0a5497359f9cda4a8c66db405efaf4717`, findings `9cff104c5c4ade16ce241ae3617b28011a8fde406a9c16e4cf992c4d4b4e6109`, parent receipt `parent-3a7460e8e1dc6773ed3fec9b3a9179163b928a1f1e361bdc`, also `approval_eligible: false` / `findings-received` / verdict `block` <!-- reproduction-source -->
 
 ## Fresh-Eye Satisfaction
 

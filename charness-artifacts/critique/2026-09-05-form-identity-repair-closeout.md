@@ -78,7 +78,7 @@ here and did not spawn a fourth worker.
 - Application state: host ran file-backed workers; no independent provider-application signal
 - Delivery state: findings-received
 - Execution mode: file-backed-worker
-- Worker report: `.charness/reviewer-round-form-identity-r3-form/worker-report.yaml` (run state, not a public approval carrier)
+- Worker report: `.charness/reviewer-round-form-identity-r3-form/worker-report.yaml` <!-- reproduction-source -->
 - Worker report identity: 1c6bee16724a9342335b70ff6a9e788d79ca71c55626eb344deefbb4be07383d
 - Worker report approval: approval_eligible: false
 - Worker report delivery: findings-received
@@ -86,7 +86,7 @@ here and did not spawn a fourth worker.
 - Worker report input identity: b8adaf3966d99ac38fed4aaa31bc465719c957b903b86d0f520d38dfc242d51c
 - Worker report parent receipt identity: parent-76e448b90d3c9ec6cbb690dbcf38d89c0547053376527eeb
 - Worker report findings identity: 2ed7b36c25733bd4246ef3ba69581c0e657795ccd9faee8a109be8e77d1e8fc8
-- Second worker report: `.charness/reviewer-round-form-identity-r3-blast/worker-report.yaml` identity `175b59ee1f4db74766c2d406ab4e4c55c9224c281693eb58b7a199dcfbae4af6`, findings `2df92412759559a443368db3f480f221501877ff4f69cb584d1adfd342833f59`, parent receipt `parent-0c78e40b119eb928c9c0af21e8832e1f8452a4b9179fcdbc`
+- Second worker report: `.charness/reviewer-round-form-identity-r3-blast/worker-report.yaml` identity `175b59ee1f4db74766c2d406ab4e4c55c9224c281693eb58b7a199dcfbae4af6`, findings `2df92412759559a443368db3f480f221501877ff4f69cb584d1adfd342833f59`, parent receipt `parent-0c78e40b119eb928c9c0af21e8832e1f8452a4b9179fcdbc` <!-- reproduction-source -->
 
 ## Fresh-Eye Satisfaction
 

@@ -28,8 +28,10 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
+from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
+
+_layout = import_repo_module(__file__, "scripts.core.repo_layout")
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -81,18 +83,9 @@ def named_validator(text: str) -> str | None:
 
 
 def validator_path_for_name(repo_root: Path, name: str) -> Path | None:
-    scripts = repo_root / "scripts"
-    direct = scripts / name
-    candidates = [direct] if direct.is_file() else []
-    if not candidates and scripts.is_dir():
-        candidates = sorted(
-            path
-            for path in scripts.rglob(name)
-            if path.is_file() and "mutants" not in path.parts and "__pycache__" not in path.parts
-        )
-    for candidate in candidates:
-        if python_file_has_code(candidate):
-            return candidate
+    found = _layout.find_repo_script(repo_root, name)
+    if found is not None and python_file_has_code(found):
+        return found
     return None
 
 
