@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-"""Advisory survey of caller-action `Output Shape` fields and their validators.
+"""Refuse a classifier-bearing `Output Shape` that names no validator.
 
 The Closeout Schema Rule
-(`skills/public/create-skill/references/portable-authoring.md`) asks: when a
-skill's `Output Shape` declares classifier fields the caller must act on, ship a
-validator that fails when those fields are missing or free-form. Whether a given
-field needs a validator is a semantic judgment, not a lexical one, so this
-survey is ADVISORY: it reports skills whose output carries a recognized
-classifier schema but names no matching validator, and always exits 0. Authors
-use the report to decide; CI does not hard-fail on the heuristic.
+(`skills/public/create-skill/references/portable-authoring.md`): when a skill's
+`Output Shape` declares classifier fields the caller must act on, ship a
+validator that fails when those fields are missing or free-form. A pipe-delimited
+schema bullet with a classifier key is that form; prose-only output is not.
+Exit 1 when any public skill has the form and no named validator.
 """
 
 from __future__ import annotations
@@ -107,18 +105,7 @@ def main() -> int:
     repo_root = args.repo_root.resolve()
     rows = survey(repo_root)
     gaps = [row for row in rows if row["gap"]]
-
-    # Unconditional YAML. The retired human survey said four things the bare
-    # `{skills, gap_count}` payload did not: that this lane is ADVISORY and always
-    # exits 0 (so a zero exit is not a passing gate), the per-skill gap verdict, the
-    # names of the gap skills, and where the rule is written down. Dropping them
-    # would leave an advisory survey reading like a green gate.
     payload = {
-        "advisory": (
-            "Advisory survey, not a gate: it always exits 0. Whether a classifier field "
-            "needs a validator is a semantic judgment; a gap below is a prompt for an "
-            "author, not a failure."
-        ),
         "rule_reference": (
             "skills/public/create-skill/references/portable-authoring.md 'Closeout Schema Rule'"
         ),
@@ -132,7 +119,7 @@ def main() -> int:
         ),
     }
     emit_yaml(payload)
-    return 0
+    return 1 if gaps else 0
 
 
 if __name__ == "__main__":

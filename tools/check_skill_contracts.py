@@ -195,7 +195,8 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "`Interrupt Source`, `Seam Summary`, `Chosen Next Step`, `Impl Status`",
     ),
     "skills/public/impl/SKILL.md": (
-        "Use `prove` when the user or the boundary explicitly requires its evidence format",
+        "Additional proof is conditional",
+        "`../prove/SKILL.md` (only when its evidence format is explicitly needed)",
     ),
     "skills/public/release/SKILL.md": (
         "`publish_release.py --execute` refuses unless exactly one",

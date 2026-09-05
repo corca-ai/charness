@@ -24,6 +24,9 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _scripts_skill_markdown_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.core.skill_markdown_lib")
+_scripts_skill_core_density_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.gates_support.skill_core_density"
+)
 _scripts_quality_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapters.quality_adapter_lib")
 _scripts_vendored_path_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.core.vendored_path_lib")
 load_quality_adapter = _scripts_quality_adapter_lib_module.load_quality_adapter_permissive
@@ -33,6 +36,7 @@ is_vendored_relative = _scripts_vendored_path_lib_module.is_vendored_relative
 
 MARKDOWN_HELPERS = {
     "count_fence_blocks": _scripts_skill_markdown_lib_module.count_fence_blocks,
+    "core_nonempty_lines": _scripts_skill_core_density_module.core_nonempty_lines,
     "extract_h2_section_lines": _scripts_skill_markdown_lib_module.extract_h2_section_lines,
     "strip_fenced_lines": _scripts_skill_markdown_lib_module.strip_fenced_lines,
     "strip_frontmatter": _scripts_skill_markdown_lib_module.strip_frontmatter,

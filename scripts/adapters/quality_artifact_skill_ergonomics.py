@@ -27,7 +27,7 @@ _load_repo_runtime_bootstrap()
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _artifact_validator = import_repo_module(__file__, "scripts.artifacts.artifact_validator")
-_skill_markdown_lib = import_repo_module(__file__, "scripts.core.skill_markdown_lib")
+_density = import_repo_module(__file__, "scripts.gates_support.skill_core_density")
 ValidationError = _artifact_validator.ValidationError
 
 SKILL_ERGONOMICS_COUNT_RE = re.compile(
@@ -37,7 +37,6 @@ SKILL_ERGONOMICS_COUNT_RE = re.compile(
     re.DOTALL,
 )
 BACKTICKED_TOKEN_RE = re.compile(r"`([a-z0-9-]+)`")
-PRESSURE_EXEMPT_H2_SECTIONS = {"Load-Bearing Anchors", "References"}
 
 
 def _count_files(path: Path) -> int:
@@ -53,18 +52,10 @@ def _skill_ergonomics_counts(repo_root: Path, skill_id: str) -> dict[str, int]:
             f"quality artifact cites skill ergonomics counts for missing skill `{skill_id}`"
         )
     skill_dir = skill_path.parent
-    body_lines: list[str] = []
-    active_section: str | None = None
-    for raw in _skill_markdown_lib.strip_frontmatter(
-        skill_path.read_text(encoding="utf-8")
-    ).splitlines():
-        stripped = raw.strip()
-        if stripped.startswith("## "):
-            active_section = stripped[3:].strip()
-        if active_section not in PRESSURE_EXEMPT_H2_SECTIONS:
-            body_lines.append(raw)
     return {
-        "core_nonempty_lines": sum(1 for line in body_lines if line.strip()),
+        "core_nonempty_lines": _density.core_nonempty_lines(
+            skill_path.read_text(encoding="utf-8")
+        ),
         "reference_file_count": _count_files(skill_dir / "references"),
         "script_file_count": _count_files(skill_dir / "scripts"),
     }

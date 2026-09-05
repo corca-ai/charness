@@ -360,7 +360,6 @@ def exercise_lifecycle_scenarios() -> None:
         "update": {"mode": "script", "commands": ["demo update"], "docs_url": "https://example.com/update"},
     }
     manual_manifest = {**manifest, "lifecycle": {"install": {"mode": "manual"}, "update": {"mode": "manual"}}}
-    none_manifest = {**manifest, "lifecycle": {"install": {"mode": "none"}, "update": {"mode": "none"}}}
     detect_ok = {"ok": True, "results": [], "failure_details": [], "failure_hint": None}
     health_ok = {"ok": True, "results": [], "failure_details": [], "failure_hint": None}
     provenance = {"status": "detected", "install_method": "path", "package_name": None}
@@ -381,7 +380,6 @@ def exercise_lifecycle_scenarios() -> None:
             with mock.patch.object(install_tools, "capture_provenance", return_value=dict(provenance)):
                 with mock.patch.object(install_tools.lifecycle, "detect_and_healthcheck", return_value=(detect_ok, health_ok)):
                     with mock.patch.object(install_tools, "persist_install_lock"):
-                        install_tools.install_one(repo, none_manifest, execute=True)
                         install_tools.install_one(repo, manual_manifest, execute=True)
                         install_tools.install_one(repo, manifest, execute=False)
                         with mock.patch.object(install_tools.lifecycle, "run_command_payloads", return_value=install_ok):
@@ -397,8 +395,8 @@ def exercise_lifecycle_scenarios() -> None:
                 update_tools.capture_provenance(manifest)
                 update_tools.readiness_after_successful_checks(repo, manifest, {"ok": False}, health_ok)
                 update_tools.update_payload(
-                    status="noop",
-                    mode="none",
+                    status="manual",
+                    mode="manual",
                     commands=[],
                     detect_result=detect_ok,
                     healthcheck_result=health_ok,
@@ -408,7 +406,6 @@ def exercise_lifecycle_scenarios() -> None:
                     with mock.patch.object(update_tools, "detect_and_healthcheck", return_value=(detect_ok, health_ok)):
                         with mock.patch.object(update_tools, "upsert_lock") as upsert:
                             update_tools.persist_update_lock(repo, manifest, release=release, provenance=provenance, payload={})
-                            update_tools.update_one(repo, none_manifest, execute=True)
                             update_tools.update_one(repo, manual_manifest, execute=True)
                             update_tools.update_one(repo, manifest, execute=False)
                             with mock.patch.object(update_tools, "run_shell", return_value=CommandResult("demo update", 0, "ok\n", "")):

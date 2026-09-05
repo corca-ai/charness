@@ -126,10 +126,8 @@ canonical adapter when the repo should own topology terms.
    - trigger collision check against adjacent skills
    - path check for every file named in the skill
    - schema or example validation for any profile, preset, or manifest touched
-   - when the skill's `Output Shape` declares classifier fields the caller must
-     act on, apply the `references/portable-authoring.md` "Closeout Schema Rule"
-     — ship a section-gated validator; that rule names the advisory survey that
-     lists skills still carrying a classifier-bearing Output Shape without one
+   - when `Output Shape` has caller-action classifier fields, ship a
+     section-gated validator (`references/portable-authoring.md` "Closeout Schema Rule")
 
 ## Rules
 

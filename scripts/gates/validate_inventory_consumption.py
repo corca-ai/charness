@@ -418,6 +418,13 @@ def main() -> int:
     for inventory in cited:
         entry = inventories.get(inventory)
         if entry is None:
+            declaration_relative = _display_path(consumer_fields_path, repo_root)
+            failures.append(
+                f"inventory `{inventory}` is cited in `{COMMANDS_RUN_HEADER}` but is not "
+                f"declared in {declaration_relative}. Add `non_headline_fields` for "
+                "artifact-body engagement, or an empty list plus `opt_out_reason` when "
+                "the reader is a gate or another artifact, not this body."
+            )
             continue
         fields: list[str] = entry.get("non_headline_fields") or []
         if not fields:

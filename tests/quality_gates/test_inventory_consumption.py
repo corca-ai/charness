@@ -168,7 +168,7 @@ def test_single_field_declaration_still_requires_only_one(tmp_path: Path) -> Non
     assert result.returncode == 0, result.stderr
 
 
-def test_inventory_outside_declaration_is_exempt(tmp_path: Path) -> None:
+def test_inventory_outside_declaration_is_refused(tmp_path: Path) -> None:
     artifact = (
         "# Quality Review\n"
         "## Healthy\n- adapter gate design clean (no findings reported).\n"
@@ -176,6 +176,30 @@ def test_inventory_outside_declaration_is_exempt(tmp_path: Path) -> None:
         "## History\n"
     )
     repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
+
+    result = _run(repo)
+
+    assert result.returncode == 1, result.stdout
+    assert "inventory_adapter_gate_design.py" in result.stderr
+    assert "is not declared" in result.stderr
+
+
+def test_opted_out_inventory_citation_does_not_require_body_fields(tmp_path: Path) -> None:
+    artifact = (
+        "# Quality Review\n"
+        "## Healthy\n- gitignore scan hygiene ran as a gate.\n"
+        "## Commands Run\n- `python3 inventory_gitignore_scan_hygiene.py --repo-root .`\n"
+        "## History\n"
+    )
+    declaration = {
+        "inventories": {
+            "inventory_gitignore_scan_hygiene.py": {
+                "non_headline_fields": [],
+                "opt_out_reason": "consumed by a gate, not this artifact body",
+            }
+        }
+    }
+    repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=declaration)
 
     result = _run(repo)
 
@@ -321,3 +345,69 @@ def test_real_repo_artifact_passes() -> None:
     result = _run(ROOT)
 
     assert result.returncode == 0, result.stderr
+
+
+COVERAGE_SCRIPT = ROOT / "tools" / "check_inventory_declaration_coverage.py"
+
+
+def _run_coverage(repo_root: Path) -> subprocess.CompletedProcess[str]:
+    return run_script(str(COVERAGE_SCRIPT), "--repo-root", str(repo_root))
+
+
+@pytest.mark.boundary_contract(reason="prove the coverage checker exit code on a seeded inventory tree")
+def test_declaration_coverage_allows_undeclared_inventory_scripts(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    scripts = repo / "skills" / "public" / "quality" / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "inventory_used.py").write_text("# used\n", encoding="utf-8")
+    (scripts / "inventory_unused.py").write_text("# unused\n", encoding="utf-8")
+    refs = repo / "skills" / "public" / "quality" / "references"
+    refs.mkdir(parents=True)
+    (refs / "inventory-consumer-fields.json").write_text(
+        json.dumps(
+            {
+                "inventories": {
+                    "inventory_used.py": {"non_headline_fields": ["alpha", "beta"]}
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = _run_coverage(repo)
+
+    assert result.returncode == 0, result.stderr
+    assert "1 undeclared inventory script(s) are not in the consumption contract" in result.stdout
+
+
+@pytest.mark.boundary_contract(reason="prove the coverage checker exit code when a declared script is missing")
+def test_declaration_coverage_still_refuses_declared_missing_script(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    scripts = repo / "skills" / "public" / "quality" / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "inventory_used.py").write_text("# used\n", encoding="utf-8")
+    refs = repo / "skills" / "public" / "quality" / "references"
+    refs.mkdir(parents=True)
+    (refs / "inventory-consumer-fields.json").write_text(
+        json.dumps(
+            {
+                "inventories": {
+                    "inventory_ghost.py": {"non_headline_fields": ["alpha", "beta"]}
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = _run_coverage(repo)
+
+    assert result.returncode == 1
+    assert "inventory_ghost.py" in result.stderr
+
+
+@pytest.mark.boundary_contract(reason="prove the live consumption declaration coverage exit code")
+def test_real_repo_declaration_coverage_passes() -> None:
+    result = _run_coverage(ROOT)
+
+    assert result.returncode == 0, result.stderr
+    assert "undeclared inventory script(s) are not in the consumption contract" in result.stdout

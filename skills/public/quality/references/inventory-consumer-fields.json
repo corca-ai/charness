@@ -1,6 +1,6 @@
 {
   "_purpose": "Map quality inventory scripts to non-headline fields a consuming quality artifact should engage with. Used by scripts/gates/validate_inventory_consumption.py to close the consumer-side review-state gap: helpers expose review-state, but agents were collapsing them into headline-only summaries.",
-  "_contract": "Every inventory_*.py in skills/public/quality/scripts/ must have an entry. Either declare `non_headline_fields` (\u22652 distinct fields; consumer must engage with at least 2 when \u22652 are declared, otherwise at least 1) or declare an empty `non_headline_fields: []` with a non-empty `opt_out_reason` string. The repository-only inventory declaration gates assert that each declared field actually appears as a key in the inventory's YAML output and that every inventory_*.py is listed.",
+  "_contract": "An inventory belongs here only when a quality artifact cites it in Commands Run, or when citation is expected but engagement lives on a gate or another artifact. Declared entries need `non_headline_fields` (\u22652 distinct; consumer must engage with at least 2 when \u22652 are declared, otherwise at least 1) or an empty list plus a non-empty `opt_out_reason`. An undeclared inventory_*.py on disk is not a consumption-contract concern. Citing an undeclared inventory in Commands Run is a refusal. Declared field names must appear as keys in that inventory's YAML output.",
   "_scope": "Coverage applies to skills/public/quality/scripts/inventory_*.py only. The capability catalog inventory has its own consumer and audit trail. If a non-quality inventory should also be guarded, lift the declaration into the consuming skill rather than expanding this file's scope.",
   "inventories": {
     "inventory_skill_ergonomics.py": {
@@ -60,14 +60,6 @@
         "executable_block_count"
       ]
     },
-    "inventory_adapter_gate_design.py": {
-      "non_headline_fields": [],
-      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
-    },
-    "inventory_brittle_source_guards.py": {
-      "non_headline_fields": [],
-      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
-    },
     "inventory_ci_local_gate_parity.py": {
       "non_headline_fields": [],
       "opt_out_reason": "consumed by the run-quality phase that fails on parity_issues; consumer-side engagement is the gate's pass/fail status, not artifact-body field citation."
@@ -84,10 +76,6 @@
         "broad_scanner_candidates",
         "interpretation"
       ]
-    },
-    "inventory_cli_ergonomics.py": {
-      "non_headline_fields": [],
-      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
     },
     "inventory_nose_clones.py": {
       "non_headline_fields": [
@@ -131,14 +119,6 @@
         "findings"
       ]
     },
-    "inventory_cli_side_effect_probes.py": {
-      "non_headline_fields": [],
-      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
-    },
-    "inventory_dual_implementation.py": {
-      "non_headline_fields": [],
-      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
-    },
     "inventory_gitignore_scan_hygiene.py": {
       "non_headline_fields": [],
       "opt_out_reason": "consumed by the run-quality phase that fails on findings via --require-empty; consumer-side engagement is the gate's pass/fail status, not artifact-body field citation."
@@ -151,16 +131,11 @@
       "non_headline_fields": [],
       "opt_out_reason": "writes a separate sloc-inventory artifact; consumer engagement happens through that artifact, not via citation in the main quality artifact body."
     },
-    "inventory_standing_gate_verbosity.py": {
-      "non_headline_fields": [],
-      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
-    },
     "inventory_command_dominance.py": {
       "non_headline_fields": [
         "registry_state",
         "exempt_findings"
-      ],
-      "opt_out_reason": ""
+      ]
     },
     "inventory_empty_scope_honesty.py": {
       "non_headline_fields": [
@@ -169,8 +144,7 @@
         "evidence",
         "first_line",
         "exit_code"
-      ],
-      "opt_out_reason": ""
+      ]
     }
   }
 }

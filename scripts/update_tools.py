@@ -192,7 +192,7 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
     update_action = routed_action or configured_action
     mode = update_action["mode"]
     release = probe_release(manifest)
-    if mode in {"none", "manual"}:
+    if mode == "manual":
         return passive_update(
             repo_root,
             manifest,

@@ -203,7 +203,7 @@ def test_prove_skill_keeps_claim_proof_and_owner_routing_explicit() -> None:
     ).read_text(encoding="utf-8")
 
     assert "Use Prove only when the user, current contract, or boundary owner explicitly selects it." in normalized_skill
-    assert "ordinary reversible implementation" in skill_text
+    assert "ordinary reversible implementation can finish with focused evidence in its own" in skill_text
     assert "Identify the claim." in skill_text
     assert "narrowest strongest evidence." in skill_text
     assert "actual truth surfaces." in skill_text
@@ -396,18 +396,15 @@ def test_prove_skill_carries_truth_surface_sync_guardrail() -> None:
 
 def test_impl_skill_defaults_to_autonomous_continuation() -> None:
     skill_text = IMPL_SKILL
-    normalized_skill = " ".join(skill_text.split())
     assert "autonomous continuation" in skill_text.lower()
     assert "continuation" in skill_text and "checkpoints" in skill_text
     assert "irreversible" in skill_text and "external side effect" in skill_text
     assert "focused tests for the changed module or user flow" in skill_text
-    assert "Use `prove` when the user or the boundary explicitly requires its evidence format" in normalized_skill
 
 
 def test_impl_keeps_optional_proof_conditional() -> None:
     skill_text = IMPL_SKILL
-    assert "No separate session-start hook" in skill_text
-    assert "risk-interrupt planner" in skill_text
+    assert "the parent issue is the resume state" in skill_text
     assert "Additional proof is conditional" in skill_text
     assert "does not require a fresh-eye review" in skill_text
     assert "changed-line proof" in skill_text

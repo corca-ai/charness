@@ -96,12 +96,11 @@ def readiness_after_successful_checks(repo_root: Path, manifest: Payload, detect
     }
 
 
-def passive_install_status(mode: str, detect_result: Payload, healthcheck_result: Payload, readiness_result: Payload) -> str:
-    status = "noop" if mode == "none" else "manual"
+def passive_install_status(detect_result: Payload, healthcheck_result: Payload, readiness_result: Payload) -> str:
     if not (detect_result["ok"] and healthcheck_result["ok"]):
-        return status
+        return "manual"
     if readiness_result["ok"]:
-        return "noop" if mode == "none" else "already-installed"
+        return "already-installed"
     return "installed-not-ready"
 
 
@@ -112,12 +111,12 @@ def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload
     release = probe_release(manifest)
     provenance = capture_provenance(manifest)
 
-    if mode in {"none", "manual"}:
+    if mode == "manual":
         detect_result, healthcheck_result = lifecycle.detect_and_healthcheck(
             repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
         )
         readiness_result = readiness_after_successful_checks(repo_root, manifest, detect_result, healthcheck_result)
-        status = passive_install_status(mode, detect_result, healthcheck_result, readiness_result)
+        status = passive_install_status(detect_result, healthcheck_result, readiness_result)
         if execute:
             persist_install_lock(
                 repo_root,

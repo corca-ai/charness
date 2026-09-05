@@ -117,8 +117,6 @@ def validate_support_install_entrypoint(manifest: dict[str, object], path: Path)
     install = lifecycle.get("install")
     if not isinstance(install, dict):
         return
-    if install.get("mode") == "none":
-        return
     install_url = install.get("install_url")
     if not isinstance(install_url, str) or not install_url:
         raise ValidationError(

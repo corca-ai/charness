@@ -361,6 +361,7 @@
         },
         "kind": {
           "type": "string",
+          "x-axis": "lock-entry-class",
           "enum": [
             "external_binary",
             "external_skill",
@@ -645,12 +646,12 @@
         },
         "mode": {
           "type": "string",
+          "x-axis": "install-method",
           "enum": [
             "manual",
             "script",
             "package_manager",
-            "git_checkout",
-            "none"
+            "git_checkout"
           ]
         },
         "commands": {
@@ -726,12 +727,12 @@
         },
         "mode": {
           "type": "string",
+          "x-axis": "install-method",
           "enum": [
             "manual",
             "script",
             "package_manager",
-            "git_checkout",
-            "none"
+            "git_checkout"
           ]
         },
         "commands": {

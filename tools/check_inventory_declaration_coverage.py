@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
 
-"""Fail when an inventory_*.py under skills/public/quality/scripts/ is not declared
-in skills/public/quality/references/inventory-consumer-fields.json.
+"""Hold declared consumption entries; do not require every inventory script.
 
-Closes the opt-in gap in the issue #145 v2 consumer contract: previously,
-`validate_inventory_consumption.py` only enforced consumer engagement for
-inventories explicitly listed in the JSON. A new inventory could ship without
-ever appearing in the declaration, and the headline-only summary trap would
-re-open silently. This validator forces a conscious choice for every inventory:
-either declare non_headline_fields (≥2 distinct) or opt out with a
-non-empty `opt_out_reason`.
+`validate_inventory_consumption.py` refuses a Commands Run citation of an
+undeclared inventory. That is the opt-in hole. This checker only validates
+entries that are already in the declaration: they must exist on disk, carry
+`non_headline_fields` (≥2 distinct) or an empty list plus `opt_out_reason`,
+and must not name a missing script.
+
+An undeclared `inventory_*.py` on disk is not a consumption-contract concern
+until an artifact cites it.
 
 Scope: skills/public/quality/scripts/inventory_*.py only. Inventory scripts
-elsewhere in the repo (skills/public/<other-skill>/scripts/inventory_*.py,
-scripts/inventory_*.py) are out of scope by design — they have their own
-consumers. See the `_scope` field of the declaration JSON for the canonical
-contract.
+elsewhere in the repo are out of scope by design. See the `_scope` field of
+the declaration JSON for the canonical contract.
 """
 
 from __future__ import annotations
@@ -64,16 +62,6 @@ def main() -> int:
     )
     failures: list[str] = []
 
-    missing = [name for name in on_disk if name not in declared]
-    if missing:
-        relative = consumer_fields_path.relative_to(repo_root)
-        failures.append(
-            "inventory script(s) missing from "
-            f"{relative}: {', '.join(missing)}. "
-            "Add either `non_headline_fields: [<field>, ...]` (≥2 distinct fields) or "
-            "`non_headline_fields: []` with a non-empty `opt_out_reason`."
-        )
-
     extra = [name for name in declared if name not in set(on_disk)]
     if extra:
         relative = consumer_fields_path.relative_to(repo_root)
@@ -113,10 +101,13 @@ def main() -> int:
             print(failure, file=sys.stderr)
         return 1
 
+    with_fields = sum(1 for entry in declared.values() if entry.get("non_headline_fields"))
+    opted_out = sum(1 for entry in declared.values() if not entry.get("non_headline_fields"))
+    undeclared = len(on_disk) - len(declared)
     print(
-        f"Validated declaration coverage for {len(on_disk)} inventory script(s) "
-        f"({sum(1 for n, e in declared.items() if e.get('non_headline_fields'))} declared, "
-        f"{sum(1 for n, e in declared.items() if not e.get('non_headline_fields'))} opted out)."
+        f"Validated {len(declared)} consumption declaration(s) "
+        f"({with_fields} with fields, {opted_out} opted out); "
+        f"{undeclared} undeclared inventory script(s) are not in the consumption contract."
     )
     return 0
 

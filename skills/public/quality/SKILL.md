@@ -113,8 +113,7 @@ not install tools, register hooks, or migrate gates without approval.
 7. Decide whether the review needs durable findings. For a repo-wide review that
    does, scaffold and validate one quality artifact with
    `scaffold_quality_artifact.py` and `validate_quality_artifact.py`. A focused
-   question may report in chat and reuse an existing artifact; it does not create
-   a progress mirror.
+   question may report in chat and reuse an existing artifact.
 8. If writing a quality artifact, `resolve_quality_artifact.py --repo-root .
    --intent record` names a dated record and `--intent current` names an explicit
    rolling summary. Do NOT trust the scaffold payload's `write_artifact_path`

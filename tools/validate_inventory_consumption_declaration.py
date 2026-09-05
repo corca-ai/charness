@@ -11,8 +11,9 @@ the consumer-side declaration silently goes stale, so
 still matches by accident) or fail with no clear root cause.
 
 Only entries with `non_headline_fields` non-empty are executed; opted-out
-entries (empty list + `opt_out_reason`) are skipped here — coverage is owned
-by tools/check_inventory_declaration_coverage.py.
+entries (empty list + `opt_out_reason`) are skipped here. Undeclared inventory
+scripts are not this checker's concern; citing one in Commands Run is refused
+by `validate_inventory_consumption.py`.
 """
 
 from __future__ import annotations

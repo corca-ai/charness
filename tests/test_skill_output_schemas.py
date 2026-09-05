@@ -85,14 +85,28 @@ def test_survey_main_emits_yaml(monkeypatch, capsys) -> None:
     assert _validate_skill_output_schemas.main() == 0
     payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["gap_count"] == 0, payload
-    # The deleted human report said four things the bare `{skills, gap_count}` pair
-    # did not, and each now has to be carried by the payload itself: that a zero exit
-    # is advisory rather than a passing gate, the gap verdict in words, the names of
-    # the gap skills, and where the rule is written down.
-    assert "always exits 0" in payload["advisory"]
+    assert "advisory" not in payload
     assert payload["gap_skills"] == []
     assert "Closeout Schema Rule satisfied" in payload["gap_summary"]
     assert "portable-authoring.md" in payload["rule_reference"]
+
+
+def test_survey_main_exits_nonzero_when_gap(tmp_path: Path, monkeypatch, capsys) -> None:
+    repo = tmp_path / "repo"
+    _seed_skill(
+        repo,
+        "demo",
+        "- F1 | bin: act-before-ship | evidence: strong | action: fix | note: x\n",
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["validate_skill_output_schemas.py", "--repo-root", str(repo)],
+    )
+    assert _validate_skill_output_schemas.main() == 1
+    payload = yaml.safe_load(capsys.readouterr().out)
+    assert payload["gap_count"] == 1
+    assert payload["gap_skills"] == ["demo"]
 
 
 def test_survey_main_report_flag_is_accepted_and_inert(monkeypatch, capsys) -> None:

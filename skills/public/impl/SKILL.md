@@ -22,9 +22,7 @@ evidence that the next decision does not require rework.
    worktree changes. When using an implementation worktree, it must be clean at
    entry and its runtime/cache paths must be outside the worktree.
 
-No separate session-start hook, handoff file, risk-interrupt planner, or
-progress mirror is required for ordinary implementation. Achieve owns active
-goal navigation; the parent issue is the resume state.
+Achieve owns active goal navigation; the parent issue is the resume state.
 
 ## Continuation
 
@@ -44,9 +42,8 @@ stronger proof, or conflicting evidence.
 - Keep provider selection explicit and resolve it once per operation. Do not add
   a second capability probe when the mutation already performs target
   readback.
-- Do not create a local progress, session, or closeout artifact merely because
-  a goal is active. Update the goal parent only when a child transition or
-  externally visible decision actually changes.
+- Update the goal parent only when a child transition or externally visible
+  decision actually changes.
 - Fix the class, not the instance. Before the change closes, read the diff once
   against these six signals; they overlap, and every one that matches is repaired:
   - a value hardcoded with no stated basis
@@ -94,8 +91,7 @@ an irreversible external mutation as the north star defines it, a release
 surface, or a deletion with
 uncertain consumers needs that surface's owner and readback. Ordinary
 reversible local work does not require a fresh-eye review, changed-line proof,
-or a separate closeout ledger. Use `prove` when the user or the boundary
-explicitly requires its evidence format, not as a universal stop gate.
+or a separate closeout ledger.
 
 ## Finish
 

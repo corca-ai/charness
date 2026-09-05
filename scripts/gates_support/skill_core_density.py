@@ -3,9 +3,10 @@
 audit that keeps the exemption honest.
 
 Split out of `check_skill_surface_preflight.py` because it is one cohesive
-concept — how many lines of decision prose a skill core is spending — used by the
-preflight's headroom report and by its commit-boundary ratchet. The preflight
-owns the verdict and the CLI; this module owns the count.
+concept — how many lines of decision prose a skill core is spending. The
+preflight owns the verdict and the CLI; this module owns the count. The quality
+inventory and the quality-artifact count check call the same function, so a
+quoted `core_nonempty_lines` cannot drift from the authoring cap.
 
 The exemption's contract, in one line: a heading is exempt only up to a budget,
 and whatever is exempted is also audited. Exempting more than the audit reads is
@@ -37,13 +38,13 @@ CLOSEOUT_VOCAB_SECTION = "Closeout Vocabulary"
 PRESSURE_EXEMPT_H2_SECTIONS = {"Load-Bearing Anchors", "References", CLOSEOUT_VOCAB_SECTION}
 # A `## Closeout Vocabulary` block is token-shaped: at most this many non-empty
 # lines, each a label + one clause, never multi-sentence prose.
-CLOSEOUT_VOCAB_MAX_LINES = 10
+CLOSEOUT_VOCAB_MAX_LINES = 9
 # The exemption is BOUNDED, per heading and summed across every block carrying
 # that heading: a skill gets this many exempt non-empty lines, and every line past
 # the budget pays core density like ordinary prose. An unbounded exemption was a
 # density hatch — 60 lines of prose under a second `## Closeout Vocabulary`, or
 # under the first `## References`, counted as zero. Budgets sit just above the
-# live corpus maxima (References 24, Closeout Vocabulary 9, Load-Bearing Anchors
+# live corpus maxima (References 24, Closeout Vocabulary 3, Load-Bearing Anchors
 # absent) rather than far above: overflow only charges density, so a tight budget
 # costs an over-long list some headroom, never a block.
 PRESSURE_EXEMPT_BUDGET = {

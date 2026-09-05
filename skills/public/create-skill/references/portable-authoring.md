@@ -315,12 +315,8 @@ in both cases across *every* block of the heading rather than only the first:
   blocking finding, whichever exempt heading it sits under,
 - the total `SKILL.md` line ceiling still counts the whole block.
 
-Caveat, and it matters if you quote a number: the `quality` skill's own skill
-inventory computes `core_nonempty_lines` with the older unbounded rules (no
-budget, no audit, `## Closeout Vocabulary` not exempt), so the two numbers differ
-for a skill with a Closeout Vocabulary block, an over-budget `## References`
-block, or a fenced example inside an exempt section. Quote the inventory's number
-in a quality artifact; its validator recomputes and refuses a mismatch.
+The count is `<plugin-dir>/scripts/gates_support/skill_core_density.py`. Quality
+inventory and quality-artifact claims call that function.
 
 The honest bound: it is the BUDGET, not the audit, that limits the hatch. A short
 single-sentence line under an exempt heading is still exempt and unread, so a
@@ -354,12 +350,11 @@ Reuse the shared grammar in `<plugin-dir>/scripts/artifacts/artifact_validator.p
 `validate_sibling_followups`) instead of re-implementing follow-up or enum
 parsing per skill.
 
-`scripts/gates/validate_skill_output_schemas.py --report` surveys
-`skills/public/*/SKILL.md` for classifier-bearing `Output Shape` fields that
-lack a matching `validate_*_artifact.py` / `validate_*_output.py`. It is
-advisory by design: the "does this field need a validator?" judgment is
-semantic, not lexical, so the survey informs the author rather than hard-failing
-CI on a heuristic.
+`<plugin-dir>/scripts/gates/validate_skill_output_schemas.py` refuses a public skill whose
+`Output Shape` carries a pipe-delimited classifier key (`bin`, `severity`,
+`urgency`, `decision`, `evidence`, `action`) and names no matching
+`validate_*_artifact.py` / `validate_*_output.py`. Prose-only output shapes are
+not that form.
 
 ## Argparse Help Rule
 

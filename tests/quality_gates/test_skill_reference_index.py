@@ -143,6 +143,22 @@ def test_inventory_skill_ergonomics_accepts_reference_index_for_discoverability(
     assert skill["unlisted_reference_count"] == 0
 
 
+def test_inventory_core_nonempty_matches_preflight_on_closeout_vocabulary() -> None:
+    """spec has `## Closeout Vocabulary`; that was the documented divergence case."""
+    from scripts.adapters.quality_artifact_skill_ergonomics import _skill_ergonomics_counts
+
+    skill_path = ROOT / "skills" / "public" / "spec" / "SKILL.md"
+    text = skill_path.read_text(encoding="utf-8")
+    expected = preflight._core_nonempty_lines(text)
+    inventory = inventory_skill_ergonomics.inventory_skill(
+        ROOT,
+        skill_path,
+        max_core_lines=160,
+    )
+    assert inventory["core_nonempty_lines"] == expected
+    assert _skill_ergonomics_counts(ROOT, "spec")["core_nonempty_lines"] == expected
+
+
 def test_achieve_root_uses_reference_index_with_core_headroom() -> None:
     skill_path = ROOT / "skills" / "public" / "achieve" / "SKILL.md"
     index_path = ROOT / "skills" / "public" / "achieve" / "references" / "index.md"

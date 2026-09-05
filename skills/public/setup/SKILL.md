@@ -42,10 +42,9 @@ By default, setup records its plan under
 it only when a real install, deployment, or takeover path exists.
 
 Read `AGENTS.md`, `<repo-root>/docs/index.md` <!-- not vendored: consumer-repo path -->, and only the owner page needed for the current
-surface. There is no required session-start hook, handoff artifact, routing
-block, or second progress channel: active Goal Runs resume from the provider
-parent and cursor, and ordinary work follows installed skill metadata through
-the normal progressive-disclosure path.
+surface. Active Goal Runs resume from the provider parent and cursor, and
+ordinary work follows installed skill metadata through the normal
+progressive-disclosure path.
 
 Load references only when their trigger is present:
 

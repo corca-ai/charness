@@ -44,7 +44,13 @@ def _seed_manifest(tmp_path: Path, **support_skill_source: object) -> Path:
         "homepage": "https://github.com/demo/upstream",
         "platforms": ["linux"],
         "status": "active",
-        "lifecycle": {"install": {"mode": "none"}},
+        "lifecycle": {
+            "install": {
+                "mode": "manual",
+                "install_url": "https://example.com/install",
+            },
+            "update": {"mode": "manual"},
+        },
         "checks": {
             "detect": {"commands": ["demo --version"], "success_criteria": ["exit_code:0"], "failure_hint": "."},
         },

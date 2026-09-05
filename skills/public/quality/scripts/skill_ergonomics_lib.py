@@ -110,9 +110,10 @@ def inventory_skill(
     skill_dir = skill_path.parent
     relative_skill = skill_dir.relative_to(repo_root)
     skill_type = classify_skill_type(relative_skill, is_runtime_install)
-    body = markdown_helpers["strip_frontmatter"](skill_path.read_text(encoding="utf-8"))
+    text = skill_path.read_text(encoding="utf-8")
+    body = markdown_helpers["strip_frontmatter"](text)
     body_lines = remove_pressure_exempt_sections(body.splitlines())
-    nonempty_lines = [line for line in body_lines if line.strip()]
+    core_nonempty_lines = markdown_helpers["core_nonempty_lines"](text)
     prose_lines = markdown_helpers["strip_fenced_lines"](body_lines)
     prose = strip_inline_code("\n".join(prose_lines))
     bootstrap_lines = markdown_helpers["extract_h2_section_lines"](body, "Bootstrap")
@@ -132,9 +133,9 @@ def inventory_skill(
         reference_findings = tqlib.reference_discoverability_findings(repo_root, skill_path, body)
         argparse_help_findings = tqlib.argparse_missing_help_findings(repo_root, skill_dir)
     heuristics: list[str] = []
-    if len(nonempty_lines) > max_core_lines:
+    if core_nonempty_lines > max_core_lines:
         heuristics.append("long_core")
-    if reference_count == 0 and script_count == 0 and len(nonempty_lines) > 80:
+    if reference_count == 0 and script_count == 0 and core_nonempty_lines > 80:
         heuristics.append("progressive_disclosure_risk")
     if len(MODE_TERMS_RE.findall(prose)) >= 2:
         heuristics.append("mode_pressure_terms_present")
@@ -185,7 +186,7 @@ def inventory_skill(
         "skill_id": skill_dir.name,
         "skill_type": skill_type,
         "skill_path": str(skill_path.relative_to(repo_root)),
-        "core_nonempty_lines": len(nonempty_lines),
+        "core_nonempty_lines": core_nonempty_lines,
         "reference_file_count": reference_count,
         "script_file_count": script_count,
         "code_fence_count": code_fence_count,

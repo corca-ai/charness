@@ -44,7 +44,7 @@ and have the operator confirm before continuing.
 Choose the lightest honest contract shape.
 Carry forward the capability or failure from `ideation`; if missing, name the
 actor, capability delta, and acceptance boundary before enumerating features.
-When implementation churn would be expensive, reduce ambiguity earlier and make the slice more explicit before coding starts. If some answers will emerge only while building, keep the contract probe-friendly and visible instead of inventing a user-facing taxonomy choice. Before adding public kind/strategy/profile/target vocabulary, run `references/taxonomy-axis-checkpoint.md`.
+When implementation churn would be expensive, reduce ambiguity earlier and make the slice more explicit before coding starts. If some answers will emerge only while building, keep the contract probe-friendly and visible instead of inventing a user-facing taxonomy choice. Before adding public kind/strategy/profile/target vocabulary, the schema's `x-axis` must already name the axis; see `references/taxonomy-axis-checkpoint.md`.
 
 If the repo already treats executable checks as contract artifacts, push acceptance into those checks instead of managing a separate prose-only branch. For public executable pages, keep current-state claims and bounded proof only; move future-state planning, source inventory, and low-level implementation guards down a layer. If the repo wants the latest on-demand validation visible to readers, project the checked artifact into a viewer-style executable page instead of rebuilding the evaluator logic inline or promoting source guards into the public spec.
 
@@ -78,7 +78,7 @@ as a lens, not as a required form.
      user-visible behavior, acceptance, sequencing, dependency choice, or risk
    - if a reasonable default is clear, recommend it with reasons instead of
      opening broad branch trees
-   - check taxonomy-axis consistency before adding public enum vocabulary
+   - a new public enum value must fit the field's `x-axis`; a new axis is a new field
 4. Define the current execution contract.
    - capability contract, current slice, non-goals, constraints, success criteria, and acceptance checks
    - deliberately not doing or rejected alternatives when future readers may reopen the branch
@@ -111,15 +111,7 @@ as a lens, not as a required form.
      executable contract artifacts
    - if implementation discovers a fact that changes scope or acceptance, update
      the spec instead of leaving chat-only drift
-7. Use `prove` only when the user, contract, or a named boundary explicitly
-   selects its evidence format.
-   - ordinary reversible implementation may finish with focused evidence in
-     `impl`; `prove` is not a universal stop ceremony
-   - when selected, it reports the claim, evidence, synchronized truth
-     surfaces, and non-claims without taking ownership from the boundary skill
-   - keep future re-litigation low by writing the important rejected paths into
-     the spec itself instead of leaving them in chat-only memory
-8. End with the next execution state.
+7. End with the next execution state.
    - whether the current contract is ready for `impl`
    - what the first or next implementation slice should be
    - which artifact is canonical during implementation
@@ -152,8 +144,7 @@ as `Entities` or `Stages` instead of recreating them under new names.
 Emittable-verbatim acceptance-check tokens (a reader/validator substring-matches these); the teaching prose stays in `references/acceptance-checks.md`.
 
 - Verification type is one of `manual` / `unit` / `integration` / `e2e` / `eval` / `specdown`.
-- Evidence formats remain with the selected boundary owner; `prove` is a
-  conditional formatter and does not define a universal closeout vocabulary.
+- Evidence formats remain with the selected boundary owner.
 
 ## Guardrails
 

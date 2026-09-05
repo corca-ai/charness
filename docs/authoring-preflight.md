@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-04
+> Last verified: 2026-09-05
 
 Know the deterministic constraint *before* you author into a gated surface, so an
 existing gate (or a fresh-eye reviewer) does not catch an avoidable rework cycle
@@ -63,17 +63,12 @@ by two limits held in
 to the ceiling (0 headroom) passes the hard limit but fails the headroom buffer.
 Run the command below rather than recopying the numbers.
 
-**The preflight's `core nonempty` is not the quality inventory's
-`core_nonempty_lines`.** [skill_ergonomics_lib.py](../skills/public/quality/scripts/skill_ergonomics_lib.py)
-keeps its own exemption walk — it must stay skill-local-portable, so it cannot
-import the repo module — and that copy exempts only `## Load-Bearing Anchors` /
-`## References`, without a budget, without an audit, and without fence awareness
-(a literal `## References` inside a code fence still opens a real exempt block
-there). The two numbers therefore
-diverge on any skill carrying a `## Closeout Vocabulary` block or an over-budget
-exempt section. Quote the **inventory's** number in a quality artifact:
+The count is
+[`core_nonempty_lines`](../scripts/gates_support/skill_core_density.py).
+The quality inventory and the quality-artifact count check call that function.
+Quote it in a quality artifact;
 [validate_quality_artifact.py](../scripts/gates/validate_quality_artifact.py)
-recomputes it and hard-fails a mismatch.
+recomputes it and refuses a mismatch.
 
 The commit-boundary ratchet is in
 [check_skill_surface_preflight.py](../scripts/gates/check_skill_surface_preflight.py).
