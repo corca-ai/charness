@@ -58,10 +58,7 @@ INVENTORY_FILE_RE = re.compile(r"inventory_[A-Za-z0-9_]+\.py")
 INVENTORY_CITE_RE = re.compile(
     r"(?P<prefix>(?:\$SKILL_DIR/|(?:\./)?(?:[A-Za-z0-9_.$-]+/)*)?)(?P<name>inventory_[A-Za-z0-9_]+\.py)"
 )
-QUALITY_SCRIPTS_PREFIXES = (
-    "skills/public/quality/scripts/",
-    "skills/quality/scripts/",
-)
+QUALITY_SCRIPTS_DIR = "skills/public/quality/scripts/"
 
 
 def in_quality_inventory_namespace(prefix: str) -> bool:
@@ -73,16 +70,13 @@ def in_quality_inventory_namespace(prefix: str) -> bool:
     cleaned = prefix.replace("`", "").replace("\\", "/").lstrip("./")
     if not cleaned or cleaned == "/":
         return True
-    if cleaned in {"$SKILL_DIR/scripts/", "$SKILL_DIR/scripts"} or cleaned.startswith(
-        "$SKILL_DIR/scripts/"
-    ):
+    parts = [part for part in cleaned.split("/") if part]
+    if any(part in {".", ".."} for part in parts):
+        return False
+    if parts[:2] == ["$SKILL_DIR", "scripts"]:
         return True
     normalized = cleaned if cleaned.endswith("/") else f"{cleaned}/"
-    if any(normalized.endswith(marker) for marker in QUALITY_SCRIPTS_PREFIXES):
-        return True
-    if "/" in cleaned:
-        return False
-    return True
+    return normalized == QUALITY_SCRIPTS_DIR
 
 
 def cited_quality_inventory_names(commands_run: str) -> list[str]:

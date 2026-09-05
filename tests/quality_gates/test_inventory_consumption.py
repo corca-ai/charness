@@ -196,6 +196,65 @@ def test_noncanonical_quality_scripts_path_is_out_of_scope(tmp_path: Path) -> No
     assert result.returncode == 0, result.stderr
 
 
+def test_skill_dir_parent_escape_is_out_of_scope(tmp_path: Path) -> None:
+    artifact = (
+        "# Quality Review\n"
+        "## Healthy\n- adapter gate design clean (no findings reported).\n"
+        "## Commands Run\n- `python3 $SKILL_DIR/scripts/../gates/inventory_boundary_bypass.py`\n"
+        "## History\n"
+    )
+    repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
+
+    result = _run(repo)
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_exported_plugin_quality_scripts_path_is_out_of_scope(tmp_path: Path) -> None:
+    artifact = (
+        "# Quality Review\n"
+        "## Healthy\n- adapter gate design clean (no findings reported).\n"
+        "## Commands Run\n- `python3 skills/quality/scripts/inventory_example.py --repo-root .`\n"
+        "## History\n"
+    )
+    repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
+
+    result = _run(repo)
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_prefixed_lookalike_quality_scripts_path_is_out_of_scope(tmp_path: Path) -> None:
+    artifact = (
+        "# Quality Review\n"
+        "## Healthy\n- adapter gate design clean (no findings reported).\n"
+        "## Commands Run\n"
+        "- `python3 vendor/skills/public/quality/scripts/inventory_example.py --repo-root .`\n"
+        "## History\n"
+    )
+    repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
+
+    result = _run(repo)
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_skill_dir_scripts_undeclared_inventory_is_still_refused(tmp_path: Path) -> None:
+    artifact = (
+        "# Quality Review\n"
+        "## Healthy\n- adapter gate design clean (no findings reported).\n"
+        "## Commands Run\n- `python3 $SKILL_DIR/scripts/inventory_adapter_gate_design.py --detail`\n"
+        "## History\n"
+    )
+    repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
+
+    result = _run(repo)
+
+    assert result.returncode == 1, result.stdout
+    assert "inventory_adapter_gate_design.py" in result.stderr
+    assert "is not declared" in result.stderr
+
+
 def test_quality_path_undeclared_inventory_is_still_refused(tmp_path: Path) -> None:
     artifact = (
         "# Quality Review\n"
