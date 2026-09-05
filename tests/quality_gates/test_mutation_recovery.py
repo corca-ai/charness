@@ -733,16 +733,22 @@ def test_commit_and_quality_consumers_refuse_pending_recovery_then_unblock(tmp_p
     (commit_repo / "scripts" / "hooks").mkdir(parents=True)
     subprocess.run(["git", "init", "-q"], cwd=commit_repo, check=True)
     shutil.copy2(ROOT / ".githooks" / "pre-commit", commit_repo / ".githooks" / "pre-commit")
-    # Both hook-invoked gates are stubbed clean: this test's subject is the
-    # mutation-recovery arm, and neither gate's own behavior is under test here.
-    # They stay UNGUARDED in the hook itself -- a `[[ -f ]]` around a refusal gate
-    # is a disarm vector, so the absent-script case is a stub here rather than a
-    # skip there.
-    for gate in (
-        "gates/check_git_identity.py",
-        "hooks/check_staged_router_change.py",
-        "hooks/check_staged_test_boundaries.py",
-    ):
+    # Unguarded hook-invoked scripts are stubbed clean: this test's subject is
+    # the mutation-recovery arm, not those gates' own behavior. They stay
+    # UNGUARDED in the hook itself -- a `[[ -f ]]` around a refusal gate is a
+    # disarm vector, so the absent-script case is a stub here rather than a
+    # skip there. Advisory `if ! python3` arms are not in this set; missing
+    # they print and continue. The set is derived from the hook so a new
+    # unguarded `python3 -B scripts/...` line cannot fail this consumer with
+    # ENOENT after a serial patch.
+    hook_text = (ROOT / ".githooks" / "pre-commit").read_text(encoding="utf-8")
+    unguarded = tuple(
+        line.strip().removeprefix("python3 -B scripts/").split()[0]
+        for line in hook_text.splitlines()
+        if line.strip().startswith("python3 -B scripts/")
+    )
+    assert unguarded, "pre-commit has no unguarded python3 scripts to stub"
+    for gate in unguarded:
         gate_path = commit_repo / "scripts" / gate
         gate_path.parent.mkdir(parents=True, exist_ok=True)
         gate_path.write_text("raise SystemExit(0)\n", encoding="utf-8")
