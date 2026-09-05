@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import json
+import runpy
 import sys
 from pathlib import Path
+
+import pytest
 
 from runtime_bootstrap import import_repo_module
 
@@ -160,6 +163,17 @@ def test_main_exits_zero_on_the_live_repo(monkeypatch, capsys) -> None:
     )
     assert _check.main() == 0
     assert "All generic schema enums declare x-axis." in capsys.readouterr().out
+
+
+def test_script_main_guard_exits_through_main(monkeypatch) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["check_schema_enum_axis.py", "--repo-root", str(ROOT)],
+    )
+    with pytest.raises(SystemExit) as exc_info:
+        runpy.run_path(str(ROOT / "scripts" / "gates" / "check_schema_enum_axis.py"), run_name="__main__")
+    assert exc_info.value.code == 0
 
 
 def test_bootstrap_inserts_the_repo_root_when_missing(monkeypatch) -> None:
