@@ -25,6 +25,7 @@ from scripts.yaml_output import emit_yaml  # noqa: E402
 
 _surfaces_lib = import_repo_module(__file__, "scripts.adapters.surfaces_lib")
 _plan_helpers = import_repo_module(__file__, "scripts.staged_commit_gate_plan_helpers")
+_cheap_owners = import_repo_module(__file__, "scripts.hooks.check_staged_cheap_owners")
 
 GateCommand = _plan_helpers.GateCommand
 collect_staged_scope_paths = _plan_helpers.collect_staged_scope_paths
@@ -369,19 +370,7 @@ def staged_commit_gate_plan(
         plan.append(GateCommand("py_compile (staged)", ("python3", "-m", "py_compile", *staged_py)))
         if ruff:
             plan.append(GateCommand("ruff (staged)", ("ruff", "check", *staged_py)))
-        plan.append(
-            GateCommand(
-                "check-python-lengths (staged)",
-                (
-                    "python3",
-                    "scripts/gates/check_code_lengths.py",
-                    "--repo-root",
-                    str(repo_root),
-                    "--paths",
-                    *staged_py,
-                ),
-            )
-        )
+    plan.extend(_cheap_owners.cheap_owner_gates(repo_root, paths, existing))
 
     if any(
         path.endswith(".py")

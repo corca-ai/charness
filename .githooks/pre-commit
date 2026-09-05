@@ -45,3 +45,8 @@ python3 -B scripts/gates/check_git_identity.py --repo-root "$REPO_ROOT"
 # own. This refusal makes stopping the default; CHARNESS_ALLOW_ROUTER_CHANGE=1 is
 # how the operator's approval takes effect.
 python3 -B scripts/hooks/check_staged_router_change.py --repo-root "$REPO_ROOT"
+
+# Slice-reopen skips the release-lane receipt, not these owners. Docs-length,
+# Python tokei caps, and the debug seam-risk index are the cheap class that
+# the full --release lane was naming one miss at a time.
+python3 -B scripts/hooks/check_staged_cheap_owners.py --repo-root "$REPO_ROOT"

@@ -49,6 +49,13 @@ def test_staged_commit_plan_includes_commit_only_python_gates() -> None:
     assert "validate-attention-state-visibility" in labels
 
 
+def test_staged_commit_plan_includes_docs_length_and_seam_index_owners() -> None:
+    docs = _labels(["docs/artifact-policy.md"])
+    assert "check-docs-length (staged)" in docs
+    debug = _labels(["charness-artifacts/debug/latest.md"])
+    assert "validate-debug-seam-index (staged)" in debug
+
+
 def test_staged_commit_plan_gates_git_identity_when_script_present() -> None:
     # #432: the effective-identity refusal gate runs whenever ANY path is
     # staged (identity applies to the commit as a whole, not per-path), scoped

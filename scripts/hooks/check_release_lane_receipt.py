@@ -6,7 +6,8 @@ lane is only forced at push. This checker looks at a cheap receipt, not the
 lane: a passing ``run-quality.sh --full --release`` stamps
 ``.charness/quality/last-release-receipt.json`` with the index tree it verified.
 A later commit of a different index is refused. ``Slice-reopen:`` in the commit
-message is the explicit slice exception.
+message is the explicit slice exception for that receipt; it does not skip the
+cheap owners of staged files (``check_staged_cheap_owners.py`` in pre-commit).
 """
 
 from __future__ import annotations

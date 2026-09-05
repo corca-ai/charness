@@ -249,8 +249,8 @@ phases:
     - $REPO_ROOT
     - --check
     lane: standard
-    timing_layer: stays
-    note: src scripts/run-quality.sh:1023; labels literal (475-479).
+    timing_layer: pulled → commit-time
+    note: src scripts/run-quality.sh:1023; labels literal (475-479). Cheap owner of staged charness-artifacts/debug/; Slice-reopen does not skip it.
   - label: validate-retro-lesson-index
     command:
     - python3
@@ -632,8 +632,8 @@ phases:
     - $REPO_ROOT
     - --require-git-file-listing
     lane: label-only
-    timing_layer: stays
-    note: docs page word budget (2026-09-03); a check-docs component, the record only shrinks.
+    timing_layer: pulled → commit-time
+    note: docs page word budget (2026-09-03); a check-docs component, the record only shrinks. Cheap owner of staged docs/; Slice-reopen does not skip it.
   - label: docs-graph
     command:
     - python3
