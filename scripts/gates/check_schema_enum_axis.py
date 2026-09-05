@@ -77,19 +77,26 @@ def _resolve_local_ref(document: dict, ref: str) -> object | None:
     return node
 
 
+def _effective_axis(node: dict, inherited: str | None) -> str | None:
+    axis = node.get("x-axis")
+    return axis if axis in AXES else inherited
+
+
 def _walk_into(
     node: object,
     path: str,
     *,
     field_name: str | None,
+    inherited_axis: str | None,
     findings: list[str],
     document: dict,
-    visiting: set[tuple[str, str | None]],
+    visiting: set[tuple[str, str | None, str | None]],
 ) -> None:
     _walk_schema(
         node,
         path,
         field_name=field_name,
+        inherited_axis=inherited_axis,
         findings=findings,
         document=document,
         visiting=visiting,
@@ -101,14 +108,15 @@ def _follow_ref(
     path: str,
     *,
     field_name: str | None,
+    inherited_axis: str | None,
     findings: list[str],
     document: dict,
-    visiting: set[tuple[str, str | None]],
+    visiting: set[tuple[str, str | None, str | None]],
 ) -> None:
     ref = node.get("$ref")
     if not isinstance(ref, str) or not ref.startswith("#/"):
         return
-    visit_key = (ref, field_name)
+    visit_key = (ref, field_name, inherited_axis)
     if visit_key in visiting:
         return
     visiting.add(visit_key)
@@ -118,6 +126,7 @@ def _follow_ref(
             resolved,
             f"{path}($ref)",
             field_name=field_name,
+            inherited_axis=inherited_axis,
             findings=findings,
             document=document,
             visiting=visiting,
@@ -125,11 +134,17 @@ def _follow_ref(
     visiting.discard(visit_key)
 
 
-def _record_generic_enum(node: dict, path: str, field_name: str | None, findings: list[str]) -> None:
+def _record_generic_enum(
+    node: dict,
+    path: str,
+    field_name: str | None,
+    inherited_axis: str | None,
+    findings: list[str],
+) -> None:
     values = _enum_values(node)
     if field_name not in GENERIC_ENUM_FIELDS or values is None:
         return
-    if node.get("x-axis") not in AXES:
+    if _effective_axis(node, inherited_axis) not in AXES:
         findings.append(
             f"{path}: generic `{field_name}` enum {values!r} needs "
             f"`x-axis` from {sorted(AXES)}"
@@ -141,10 +156,12 @@ def _walk_children(
     path: str,
     *,
     field_name: str | None,
+    inherited_axis: str | None,
     findings: list[str],
     document: dict,
-    visiting: set[tuple[str, str | None]],
+    visiting: set[tuple[str, str | None, str | None]],
 ) -> None:
+    child_axis = _effective_axis(node, inherited_axis)
     properties = node.get("properties")
     if isinstance(properties, dict):
         for name, schema in properties.items():
@@ -152,6 +169,7 @@ def _walk_children(
                 schema,
                 f"{path}.properties.{name}",
                 field_name=str(name),
+                inherited_axis=None,
                 findings=findings,
                 document=document,
                 visiting=visiting,
@@ -164,6 +182,7 @@ def _walk_children(
                     schema,
                     f"{path}.{key}.{name}",
                     field_name=None,
+                    inherited_axis=None,
                     findings=findings,
                     document=document,
                     visiting=visiting,
@@ -174,6 +193,7 @@ def _walk_children(
                 node[key],
                 f"{path}.{key}",
                 field_name=None,
+                inherited_axis=None,
                 findings=findings,
                 document=document,
                 visiting=visiting,
@@ -184,6 +204,7 @@ def _walk_children(
                 node[key],
                 f"{path}.{key}",
                 field_name=field_name,
+                inherited_axis=child_axis,
                 findings=findings,
                 document=document,
                 visiting=visiting,
@@ -195,9 +216,10 @@ def _walk_schema(
     path: str,
     *,
     field_name: str | None,
+    inherited_axis: str | None,
     findings: list[str],
     document: dict,
-    visiting: set[tuple[str, str | None]],
+    visiting: set[tuple[str, str | None, str | None]],
 ) -> None:
     if isinstance(node, list):
         for index, item in enumerate(node):
@@ -205,6 +227,7 @@ def _walk_schema(
                 item,
                 f"{path}[{index}]",
                 field_name=field_name,
+                inherited_axis=inherited_axis,
                 findings=findings,
                 document=document,
                 visiting=visiting,
@@ -212,19 +235,22 @@ def _walk_schema(
         return
     if not isinstance(node, dict):
         return
+    child_axis = _effective_axis(node, inherited_axis)
     _follow_ref(
         node,
         path,
         field_name=field_name,
+        inherited_axis=child_axis,
         findings=findings,
         document=document,
         visiting=visiting,
     )
-    _record_generic_enum(node, path, field_name, findings)
+    _record_generic_enum(node, path, field_name, inherited_axis, findings)
     _walk_children(
         node,
         path,
         field_name=field_name,
+        inherited_axis=inherited_axis,
         findings=findings,
         document=document,
         visiting=visiting,
@@ -242,6 +268,7 @@ def findings_for(repo_root: Path) -> list[str]:
             document,
             relative,
             field_name=None,
+            inherited_axis=None,
             findings=findings,
             document=document,
             visiting=set(),

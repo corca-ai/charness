@@ -70,6 +70,34 @@ def test_generic_mode_ref_enum_needs_x_axis(tmp_path: Path) -> None:
     assert "generic `mode` enum" in findings[0]
 
 
+def test_generic_mode_oneof_with_wrapper_x_axis_passes(tmp_path: Path) -> None:
+    schema = {
+        "type": "object",
+        "properties": {
+            "mode": {
+                "x-axis": "install-method",
+                "oneOf": [{"type": "string", "enum": ["manual", "script"]}],
+            }
+        },
+    }
+    (tmp_path / "demo.schema.json").write_text(json.dumps(schema), encoding="utf-8")
+    assert _check.findings_for(tmp_path) == []
+
+
+def test_generic_mode_ref_with_wrapper_x_axis_passes(tmp_path: Path) -> None:
+    schema = {
+        "type": "object",
+        "properties": {
+            "mode": {"x-axis": "install-method", "$ref": "#/definitions/installMode"}
+        },
+        "definitions": {
+            "installMode": {"type": "string", "enum": ["manual", "script"]}
+        },
+    }
+    (tmp_path / "demo.schema.json").write_text(json.dumps(schema), encoding="utf-8")
+    assert _check.findings_for(tmp_path) == []
+
+
 def test_generic_mode_ref_enum_with_x_axis_passes(tmp_path: Path) -> None:
     schema = {
         "type": "object",

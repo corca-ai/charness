@@ -58,7 +58,10 @@ INVENTORY_FILE_RE = re.compile(r"inventory_[A-Za-z0-9_]+\.py")
 INVENTORY_CITE_RE = re.compile(
     r"(?P<prefix>(?:\$SKILL_DIR/|(?:\./)?(?:[A-Za-z0-9_.$-]+/)*)?)(?P<name>inventory_[A-Za-z0-9_]+\.py)"
 )
-QUALITY_SCRIPTS_MARKERS = ("/quality/scripts/",)
+QUALITY_SCRIPTS_PREFIXES = (
+    "skills/public/quality/scripts/",
+    "skills/quality/scripts/",
+)
 
 
 def in_quality_inventory_namespace(prefix: str) -> bool:
@@ -67,13 +70,15 @@ def in_quality_inventory_namespace(prefix: str) -> bool:
     A path that names another directory is out of scope for this declaration.
     Bare names stay fail-closed inside the quality namespace.
     """
-    cleaned = prefix.replace("`", "").replace("\\", "/")
-    if not cleaned or cleaned in {"./", "/"}:
+    cleaned = prefix.replace("`", "").replace("\\", "/").lstrip("./")
+    if not cleaned or cleaned == "/":
         return True
-    combined = cleaned if cleaned.startswith("/") else f"/{cleaned}"
-    if any(marker in combined for marker in QUALITY_SCRIPTS_MARKERS):
+    if cleaned in {"$SKILL_DIR/scripts/", "$SKILL_DIR/scripts"} or cleaned.startswith(
+        "$SKILL_DIR/scripts/"
+    ):
         return True
-    if cleaned in {"$SKILL_DIR/scripts/", "$SKILL_DIR/scripts"}:
+    normalized = cleaned if cleaned.endswith("/") else f"{cleaned}/"
+    if any(normalized.endswith(marker) for marker in QUALITY_SCRIPTS_PREFIXES):
         return True
     if "/" in cleaned:
         return False

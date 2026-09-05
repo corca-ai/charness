@@ -182,6 +182,20 @@ def test_non_quality_inventory_path_is_out_of_scope(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_noncanonical_quality_scripts_path_is_out_of_scope(tmp_path: Path) -> None:
+    artifact = (
+        "# Quality Review\n"
+        "## Healthy\n- adapter gate design clean (no findings reported).\n"
+        "## Commands Run\n- `python3 tools/quality/scripts/inventory_example.py --repo-root .`\n"
+        "## History\n"
+    )
+    repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
+
+    result = _run(repo)
+
+    assert result.returncode == 0, result.stderr
+
+
 def test_quality_path_undeclared_inventory_is_still_refused(tmp_path: Path) -> None:
     artifact = (
         "# Quality Review\n"
