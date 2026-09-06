@@ -31,8 +31,9 @@ def _run(command: list[str], *, cwd: Path, check: bool = True):
 
 def test_the_claims_review_section_renders_each_state_it_can_be_in() -> None:
     """The section is the only channel that reaches readers outside the session, so every
-    state it can be in has to say the right thing on its own. The end-to-end publish tests
-    drive this through `subprocess` and cannot see the branches."""
+    state it can be in has to say the right thing on its own. Advisory finding text is
+    carried as supplied evidence; this renderer does not infer a type from its wording.
+    The end-to-end publish tests drive this through `subprocess` and cannot see the branches."""
     heading = "## Claims Review"
 
     # `pass`: the record path, verdict, distinctness kind, its signal, and the narrative.
@@ -135,6 +136,72 @@ def test_the_claims_review_section_renders_each_state_it_can_be_in() -> None:
         ),
     ):
         assert [line for line in lines if line.startswith("## ")] == [heading]
+
+
+@pytest.mark.parametrize(
+    "findings",
+    [
+        [{"file": "review.md", "summary": "quality pass has no committed raw receipt"}],
+        [{"file": "review.md", "summary": "the release record cites the wrong path"}],
+        [
+            {"file": "review.md", "summary": "runtime figure has no durable receipt"},
+            {"file": "review.md", "summary": "the release record cites the wrong path"},
+        ],
+    ],
+    ids=["evidence-limit-only", "confirmed-error", "mixed"],
+)
+def test_final_claims_review_lines_preserve_each_advisory_finding_kind(
+    findings: list[object],
+) -> None:
+    """Evidence-limit and confirmed-error examples share one opaque carrier.
+
+    The label is test provenance only: production rendering must preserve each
+    supplied item and never decide its epistemic meaning from free text.
+    """
+    rendered = "\n".join(
+        SECTIONS.claims_review_lines(
+            {
+                "path": "charness-artifacts/release-review/r.json",
+                "verdict": "pass",
+                "observer_distinctness": {
+                    "kind": "separate-agent-context",
+                    "signal": "bounded reviewer ran",
+                    "review_artifact": "charness-artifacts/release-review/r.md",
+                },
+                "review_scope": {
+                    "blocking_paths": ["scripts/a.py"],
+                    "advisory_paths": ["charness-artifacts/release-review/2026-09-06-r.md"],
+                },
+                "advisory_findings": findings,
+            }
+        )
+    )
+
+    assert f"{len(findings)} finding(s) recorded in advisory scope" in rendered
+    assert "carried into this release record without gating this tag:" in rendered
+    assert [line for line in rendered.splitlines() if line.startswith("  - ")] == [
+        f"  - `{finding['file']}`: {finding['summary']}" for finding in findings
+    ]
+
+
+def test_final_claims_review_lines_explicitly_reports_an_empty_advisory_list() -> None:
+    rendered = "\n".join(
+        SECTIONS.claims_review_lines(
+            {
+                "path": "charness-artifacts/release-review/r.json",
+                "verdict": "pass",
+                "observer_distinctness": {
+                    "kind": "separate-agent-context",
+                    "signal": "bounded reviewer ran",
+                    "review_artifact": "charness-artifacts/release-review/r.md",
+                },
+                "review_scope": {"blocking_paths": ["scripts/a.py"], "advisory_paths": []},
+                "advisory_findings": [],
+            }
+        )
+    )
+
+    assert "Advisory findings: none recorded by this review." in rendered
 
 
 def test_claims_review_helper_refusals_are_exercised_in_process(tmp_path: Path) -> None:

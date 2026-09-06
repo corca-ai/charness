@@ -412,14 +412,18 @@ def _rendered(**overrides) -> str:
     return "\n".join(_sections_module().claims_review_lines(claims))
 
 
-def test_the_published_record_names_what_shipped_known_inaccurate() -> None:
-    """`published as known-inaccurate` was the design intent and was untrue at
-    the one surface outside readers get: the fields were validated and then
-    dropped before the renderer. A record saying only `verdict: pass` hides
-    exactly what the scope split waived."""
+def test_the_published_record_carries_advisory_findings_without_reclassifying_them() -> None:
+    """The final consumer must retain an advisory finding's supplied meaning.
+
+    A finding can be an evidence limit or a demonstrated error; the renderer
+    has no basis for choosing between those meanings from free text.
+    """
     text = _rendered(advisory_findings=[{"file": "r.md", "summary": "blocker tally drifted"}])
 
-    assert "SHIPPED KNOWN-INACCURATE" in text
+    assert (
+        "1 finding(s) recorded in advisory scope and carried into this release record "
+        "without gating this tag:"
+    ) in text
     assert "`r.md`: blocker tally drifted" in text
 
 
@@ -591,17 +595,26 @@ def test_a_known_previous_version_is_preferred_over_reachability() -> None:
     assert not any("describe" in c for c in calls), "should not guess when told"
 
 
-def test_a_non_dict_advisory_finding_still_renders_flattened() -> None:
-    """Findings may be bare strings. That branch renders them, and it must
-    flatten too -- a record written under an older build never saw the
-    validator's newline refusal, and this document is pushed after the tag."""
+def test_legacy_string_and_dictionary_findings_still_render_flattened() -> None:
+    """Legacy strings and `{file, summary}` findings remain visible in order.
+
+    Render-time flattening protects the final document when an older record
+    predates the validator's newline refusal.
+    """
     text = "\n".join(_sections_module().claims_review_lines({
         "path": "x.json",
         "verdict": "pass",
         "observer_distinctness": {"kind": "k", "signal": "s", "review_artifact": "n.md"},
         "review_scope": {"blocking_paths": ["scripts/a.py"], "advisory_paths": []},
-        "advisory_findings": ["tally drifted\n- target version: 9.9.9"],
+        "advisory_findings": [
+            "evidence limit\nwithout a raw receipt",
+            {"file": "review\n.md", "summary": "confirmed\nerror"},
+        ],
     }))
 
+    assert "2 finding(s) recorded in advisory scope" in text
+    assert [line for line in text.splitlines() if line.startswith("  - ")] == [
+        "  - evidence limit without a raw receipt",
+        "  - `review .md`: confirmed error",
+    ]
     assert "\n- target version:" not in text
-    assert "  - tally drifted - target version: 9.9.9" in text

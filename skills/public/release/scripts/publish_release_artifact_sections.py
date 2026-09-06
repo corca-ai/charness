@@ -74,15 +74,14 @@ def flatten_signal(signal: object) -> str:
 
 
 def _scope_lines(claims_review: dict[str, Any]) -> list[str]:
-    """What the `pass` covered, and what it saw and did NOT block on.
+    """Render the declared scope and carry its advisory findings to readers.
 
     A record reading `Claims review verdict: pass` with nothing else hides the
-    whole point of the scope split. Narrative defects are published as
-    known-inaccurate rather than repaired into a new prepared commit -- so the
-    record has to NAME them, or "known-inaccurate" is known to nobody. A
-    fresh-eye round found these fields validated and then dropped before this
-    renderer, which made the design intent untrue at the one surface outside
-    readers get.
+    whole point of the scope split. Advisory findings can describe evidence
+    limits, confirmed errors, or a mixture of both; this renderer carries the
+    supplied findings without inferring which meaning applies. A fresh-eye
+    round found these fields validated and then dropped before this renderer,
+    which made the design intent untrue at the one surface outside readers get.
     """
     scope = claims_review.get("review_scope") or {}
     if not scope:
@@ -100,8 +99,8 @@ def _scope_lines(claims_review: dict[str, Any]) -> list[str]:
         lines.append("- Advisory findings: none recorded by this review.")
         return lines
     lines.append(
-        f"- Advisory findings: {len(findings)} defect(s) recorded in the advisory scope and "
-        "SHIPPED KNOWN-INACCURATE rather than repaired before this tag:"
+        f"- Advisory findings: {len(findings)} finding(s) recorded in advisory scope and "
+        "carried into this release record without gating this tag:"
     )
     for finding in findings:
         # Flattened at RENDER time as well as refused at the validator, for the
