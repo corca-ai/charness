@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-04
+> Last verified: 2026-09-06
 
 This document owns the detail behind the parallel-work rule in
 [AGENTS.md](../AGENTS.md). The root file states the default; this one states
@@ -10,6 +10,10 @@ what the default covers, where it stops, and what it never buys.
 
 The rule in one line: **parallel authoring, serialized integration, undiminished
 proof.**
+
+[Operating contract](./operating-contract.md#verification) owns applicability;
+this page owns parallel authoring and integrated proof. [Development](./development.md#verification-and-export)
+owns commands.
 
 ## Channels, Not Product Names
 
@@ -105,13 +109,11 @@ A lane is done only when its receipt's `changed_line_gate` is `clean` or `noop`
 ([agent task runs](./agent-task-runs.md)); the parent reads the receipt before
 integrating.
 
-The parent's slices run the same proof by hand, after the slice commit and
-before any broad lane: the gate reads committed lines (a dirty tree returns
-`unestablished`), and a broad lane run first pays a full rerun per line the
-proof finds afterwards. Correctness is held by the
-receipt and the pre-push hook ([development](./development.md#pushing)); the
-order has no gate, because `run-quality.sh --full` also runs in consumer repos
-without a mutation pool.
+On a Charness slice, the parent runs applicable proof after commit and before
+any broad lane: the gate reads committed lines (`unestablished` if dirty), and
+a broad-first run pays a full rerun per found line. The receipt and pre-push
+hook hold correctness ([development](./development.md#pushing));
+`run-quality.sh --full` also runs in consumer repos without a mutation pool.
 
 So `mutate -> sync -> verify -> publish`
 ([implementation discipline](./implementation-discipline.md)) stays serial in the

@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and the executable commands it links
-> Last verified: 2026-09-04
+> Last verified: 2026-09-06
 
 This page owns the shortest safe path for changing and dogfooding Charness
 itself; detailed contracts stay with their owners.
@@ -47,9 +47,9 @@ readback. Neither exists in a local handoff or session hook.
 
 ## Verification and export
 
-Run focused tests for ordinary changes, the small quality lane when the core
-contract is relevant, and the explicit full lane for broad, release, or review
-work. [The standing pytest runner](../scripts/gates_support/run_standing_pytest.py)
+[Operating contract](./operating-contract.md#verification) owns verification
+applicability. This page owns the commands used when authoring and integrating
+Charness itself. [The standing pytest runner](../scripts/gates_support/run_standing_pytest.py)
 is the pytest owner (xdist workers, chunk sizing, an external basetemp); a bare
 `python3 -m pytest` gets none of them and is refused for a broad selection.
 
@@ -60,11 +60,12 @@ python3 scripts/gates_support/run_standing_pytest.py --repo-root .
 ./scripts/run-quality.sh --full --read-only
 ```
 
-After an integration step the only green that counts is the standing runner
-followed by the full read-only lane; any other green is a proxy
-([P4](./design-north-star.md)). The slice order (commit, changed-line proof,
-then the broad lane) and the serial `mutate -> sync -> verify -> publish` in
-the parent are owned by
+For Charness authoring, after an integration step the only green that counts is
+the standing runner followed by the full read-only lane; any other green is a
+proxy ([P4](./design-north-star.md)). This integration safeguard does not
+replace the ordinary-consumer rule in the operating contract. The slice order
+(commit, changed-line proof, then the broad lane) and the serial
+`mutate -> sync -> verify -> publish` in the parent are owned by
 [parallel execution](./parallel-execution.md#disjoint-writers).
 
 Each rule names the mechanism that holds it.

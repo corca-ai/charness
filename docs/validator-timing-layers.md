@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-04
+> Last verified: 2026-09-06
 
 One portable validator, invoked at as many cheap timings as fit — never a
 forked rule copy per timing. The validator stays the single source of truth;
@@ -28,8 +28,9 @@ Timings, ordered by feedback latency (earliest first):
    (`Slice-reopen:` skips that receipt, not the cheap owners).
 4. **Bundle boundary** — the broad gate
    ([run-quality.sh](../scripts/run-quality.sh)) plus the pre-push hook.
-   Ordinary implementation stops at focused tests plus the default core lane;
-   changed-line coverage has one owner in the release-final lane. Mutation is
+   [Verification applicability](./operating-contract.md#verification) is owned
+   by the operating contract; this page assigns timing and mechanism only.
+   Changed-line coverage has one owner in the release-final lane. Mutation is
    the scheduled CI owner in [mutation-tests.yml](../.github/workflows/mutation-tests.yml).
 5. **CI / scheduled** —
    [quality-core.yml](../.github/workflows/quality-core.yml) (push/tag/PR)

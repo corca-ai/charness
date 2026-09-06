@@ -4,10 +4,11 @@
 
 ## Principle
 
-If a useful gate is missing, propose the smallest concrete setup that would
-improve confidence materially.
-
-If the issue is automatable, propose the gate before proposing more prose.
+Use reduction/reuse first. When a useful gate appears missing, first check
+whether an existing gate, owner, or narrower scope already covers the seam;
+prefer deleting, merging, narrowing, or routing to that existing protection.
+Propose a new gate only for a distinct deterministic gap that existing proof
+cannot cover and whose added cost is justified by the claim.
 
 ## Good Proposals
 

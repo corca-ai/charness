@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and the executable surfaces it names
-> Last verified: 2026-09-04
+> Last verified: 2026-09-06
 
 This page states the operating floor under
 [design north star](./design-north-star.md); each contract below earns its place
@@ -32,18 +32,20 @@ start is not proof of a clean finish, so the runner reports both.
 
 ## Verification
 
-- Start with focused tests for the changed behavior.
-- The default quality lane is the small core lane: [`run-quality.sh`](../scripts/run-quality.sh).
-- Broad and review checks are explicit:
-  [`run-quality.sh`](../scripts/run-quality.sh) `--full --read-only`.
-  Release checks use the separate `--release` lane.
-- Changed-line mutation proof, full-suite proof, and artifact ledgers are not
-  universal implementation requirements. Use them when a verdict/proof surface,
-  release, or claim actually depends on them.
-- A proof-surface or [irreversible external change](./design-north-star.md#the-boundary-load-bearing) gets the narrow additional
-  evidence that can catch its failure. A routine reversible code/doc change may
-  finish with deterministic focused proof; it does not need a fresh-eye review
-  merely because it is large.
+- This section owns verification applicability. [Development](./development.md#verification-and-export)
+  owns Charness authoring command recipes and the integration sequence;
+  [validator timing](./validator-timing-layers.md) owns when existing validators
+  run; and [parallel execution](./parallel-execution.md#disjoint-writers) owns
+  serialized parent integration. Those pages link here instead of redefining
+  the change classes.
+
+| Change class | Applicable proof |
+| --- | --- |
+| Ordinary consumer reversible edit | Run deterministic focused tests or checks for the changed behavior. Use the default core lane when the changed surface has cross-module consumers. Full/read-only, release, changed-line mutation, artifact-ledger, and fresh-eye proof are not universal requirements. |
+| Charness authoring integration | After source integration, run the standing runner followed by the full read-only lane. Development supplies the commands. This is the authoring-repository integration safeguard, not the default for an ordinary consumer edit. |
+| Proof-surface repair or verdict logic | Add the narrow evidence that can catch the failure, including an independent observer when authoring or changing a proof surface and changed-line/mutation proof when the verdict or claim depends on it. |
+| Release or other irreversible external boundary | Use the boundary owner's full/read-only and release checks, captured readback, and any required distinct observer. Push, publication, installation, and other external actions remain separately authorized; development owns their command recipes. |
+
 - If an independent observer is unavailable, record that limitation as a
   non-claim. Never describe a same-agent reread as independent evidence.
 
