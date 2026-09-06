@@ -78,3 +78,21 @@ and inventory assertion. Its workflow-routing assertions remain; the existing
 validator and checks the actual invariant fields. This is an additional narrow
 test-owner repair, not restoration of the deleted prose or a weakened artifact
 contract. The full lane did not start after that failed prerequisite.
+
+After the test-owner repair, its focused proof passed. At `d7f7d5ec3`, the
+required standing run passed in 91.64s and the subsequent full read-only lane
+passed in 168.8s (83 passed, zero failed; five explicitly non-run optional or
+read-only-inapplicable checks). The candidate export was then copied and
+hash-frozen before any pilot output. No further implementation is planned
+before the accepted comparison.
+
+The frozen comparison is now complete; its original results and invalid-cell
+disposition are in `charness-artifacts/probe/2026-09-06-delegation-net-value/results.md`.
+Archive bytes and all frozen input hashes match the originals. Focused Markdown,
+derived release-note claims and narrative checks passed. The new evidence also
+passed the existing secret gate in 8.3s without any further exception. One
+mistyped label selection refused before executing a check; it was corrected to
+the existing `check-secrets` label, not treated as a pass. Production and the
+frozen candidate remain unchanged; these artifact-only additions do not justify
+repeating the already accepted integration subject suite before the required
+release-owned boundary.

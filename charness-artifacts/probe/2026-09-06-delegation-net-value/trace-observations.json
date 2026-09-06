@@ -1,0 +1,751 @@
+{
+  "measurement_definition": "Usage fields are CLI-reported, not backend identity attestation. Input includes cached input; output and reasoning-output are retained separately and must not be blindly summed. Completed tool events count unique command_execution/file_change item.completed IDs; raw failed/blocked calls without item IDs are separate. Read path list excludes paths merely mentioned inside authored files. No dollars, hidden total-token ceiling, or parent-session cost measurement is claimed.",
+  "metrics": {
+    "low-baseline": {
+      "1": {
+        "usage": {
+          "input_tokens": 97513,
+          "cached_input_tokens": 81920,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1976,
+          "reasoning_output_tokens": 508
+        },
+        "completed_tool_events": 6,
+        "tool_events": [
+          {
+            "line": 8,
+            "id": "item_2",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 10,
+            "id": "item_3",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 12,
+            "id": "item_4",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 20,
+            "id": "item_6",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 22,
+            "id": "item_7",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 25,
+            "id": "item_9",
+            "type": "command_execution",
+            "exit_code": 0
+          }
+        ],
+        "tool_return_utf8_bytes": 3940,
+        "package_markdown_paths_in_read_commands": [],
+        "raw_sha256": "0306d50a36b5d69ac0079c7dd859b8b26525310842709a85cd138353b305165e"
+      },
+      "2": {
+        "usage": {
+          "input_tokens": 193795,
+          "cached_input_tokens": 173824,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 4948,
+          "reasoning_output_tokens": 1106
+        },
+        "completed_tool_events": 11,
+        "tool_events": [
+          {
+            "line": 8,
+            "id": "item_2",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 10,
+            "id": "item_3",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 13,
+            "id": "item_5",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 15,
+            "id": "item_6",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 17,
+            "id": "item_7",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 20,
+            "id": "item_9",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 22,
+            "id": "item_10",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 25,
+            "id": "item_11",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 27,
+            "id": "item_12",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 29,
+            "id": "item_13",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 31,
+            "id": "item_14",
+            "type": "command_execution",
+            "exit_code": 0
+          }
+        ],
+        "tool_return_utf8_bytes": 10953,
+        "package_markdown_paths_in_read_commands": [],
+        "raw_sha256": "6973c93043fdfe9b6f91fc162d0e98d66588f1920e901eaa51c1d72b96c3e628"
+      }
+    },
+    "high-candidate": {
+      "1": {
+        "usage": {
+          "input_tokens": 124886,
+          "cached_input_tokens": 106496,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 3497,
+          "reasoning_output_tokens": 60
+        },
+        "completed_tool_events": 8,
+        "tool_events": [
+          {
+            "line": 8,
+            "id": "item_2",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 10,
+            "id": "item_3",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 12,
+            "id": "item_4",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 15,
+            "id": "item_6",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 17,
+            "id": "item_7",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 19,
+            "id": "item_8",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 22,
+            "id": "item_10",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 24,
+            "id": "item_11",
+            "type": "command_execution",
+            "exit_code": 0
+          }
+        ],
+        "tool_return_utf8_bytes": 43984,
+        "package_markdown_paths_in_read_commands": [
+          "/tmp/package/skills/spec/SKILL.md",
+          "/tmp/package/skills/hotl/SKILL.md",
+          "/tmp/package/shared/references/bootstrap-resolution.md",
+          "/tmp/package/skills/ideation/references/spec-boundary.md",
+          "/tmp/package/skills/spec/references/public-executable-contracts.md",
+          "/tmp/package/skills/spec/references/design-lenses.md",
+          "/tmp/package/skills/spec/references/evidence-durability.md",
+          "/tmp/package/shared/references/success-criteria-review.md",
+          "/tmp/package/shared/references/boundary-ownership-brief.md"
+        ],
+        "raw_sha256": "7e66958666761a6ccaadd270c8a7c3b6a96a1777efe4bf03286d722687644063"
+      },
+      "2": {
+        "usage": {
+          "input_tokens": 247707,
+          "cached_input_tokens": 207872,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 6536,
+          "reasoning_output_tokens": 55
+        },
+        "completed_tool_events": 10,
+        "tool_events": [
+          {
+            "line": 8,
+            "id": "item_2",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 10,
+            "id": "item_3",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 12,
+            "id": "item_4",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 15,
+            "id": "item_6",
+            "type": "command_execution",
+            "exit_code": 1
+          },
+          {
+            "line": 17,
+            "id": "item_7",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 21,
+            "id": "item_8",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 23,
+            "id": "item_9",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 25,
+            "id": "item_10",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 28,
+            "id": "item_12",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 30,
+            "id": "item_13",
+            "type": "command_execution",
+            "exit_code": 0
+          }
+        ],
+        "tool_return_utf8_bytes": 53650,
+        "package_markdown_paths_in_read_commands": [
+          "/tmp/package/skills/hotl/SKILL.md",
+          "/tmp/package/skills/impl/SKILL.md",
+          "/tmp/package/skills/prove/SKILL.md",
+          "/tmp/package/skills/impl/references/contract-consumption.md",
+          "/tmp/package/skills/impl/references/design-lenses.md",
+          "/tmp/package/shared/references/source-bound-records.md"
+        ],
+        "raw_sha256": "65813a3e6fad76c71085565afa31790f9a8c0d93bbb5b3990ef40d54aa3ec493"
+      }
+    },
+    "high-baseline": {
+      "1": {
+        "usage": {
+          "input_tokens": 104895,
+          "cached_input_tokens": 98176,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1968,
+          "reasoning_output_tokens": 90
+        },
+        "completed_tool_events": 6,
+        "tool_events": [
+          {
+            "line": 8,
+            "id": "item_2",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 10,
+            "id": "item_3",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 12,
+            "id": "item_4",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 15,
+            "id": "item_6",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 17,
+            "id": "item_7",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 19,
+            "id": "item_8",
+            "type": "command_execution",
+            "exit_code": 0
+          }
+        ],
+        "tool_return_utf8_bytes": 4876,
+        "package_markdown_paths_in_read_commands": [],
+        "raw_sha256": "321d52a1f5c09586c41df9725f44e4c43caa25e46c5be54c06b0781969fe1f34"
+      },
+      "2": {
+        "usage": {
+          "input_tokens": 120594,
+          "cached_input_tokens": 109568,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 5103,
+          "reasoning_output_tokens": 39
+        },
+        "completed_tool_events": 7,
+        "tool_events": [
+          {
+            "line": 8,
+            "id": "item_2",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 10,
+            "id": "item_3",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 13,
+            "id": "item_5",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 16,
+            "id": "item_6",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 18,
+            "id": "item_7",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 21,
+            "id": "item_8",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 24,
+            "id": "item_10",
+            "type": "command_execution",
+            "exit_code": 0
+          }
+        ],
+        "tool_return_utf8_bytes": 11046,
+        "package_markdown_paths_in_read_commands": [],
+        "raw_sha256": "994407090cd2debffb62b6ffa9010bf87c8f49c566be4ead588dc3449feea8c2"
+      }
+    },
+    "low-candidate": {
+      "1": {
+        "usage": {
+          "input_tokens": 112345,
+          "cached_input_tokens": 77568,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 2766,
+          "reasoning_output_tokens": 802
+        },
+        "completed_tool_events": 6,
+        "tool_events": [
+          {
+            "line": 8,
+            "id": "item_2",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 11,
+            "id": "item_4",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 13,
+            "id": "item_5",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 16,
+            "id": "item_7",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 19,
+            "id": "item_9",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 21,
+            "id": "item_10",
+            "type": "command_execution",
+            "exit_code": 0
+          }
+        ],
+        "tool_return_utf8_bytes": 30873,
+        "package_markdown_paths_in_read_commands": [
+          "/tmp/package/skills/spec/SKILL.md",
+          "/tmp/package/skills/spec/references/evidence-durability.md",
+          "/tmp/package/skills/spec/references/acceptance-checks.md",
+          "/tmp/package/skills/spec/references/success-criteria.md"
+        ],
+        "raw_sha256": "d2cbbd4f49b37105bdf23d5105bba292ec61d54079cd2e5df6972513973748cf"
+      },
+      "2": {
+        "usage": {
+          "input_tokens": 456430,
+          "cached_input_tokens": 420352,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 9683,
+          "reasoning_output_tokens": 1738
+        },
+        "completed_tool_events": 17,
+        "tool_events": [
+          {
+            "line": 8,
+            "id": "item_2",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 11,
+            "id": "item_4",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 13,
+            "id": "item_5",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 15,
+            "id": "item_6",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 17,
+            "id": "item_7",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 19,
+            "id": "item_8",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 21,
+            "id": "item_9",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 23,
+            "id": "item_10",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 27,
+            "id": "item_12",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 29,
+            "id": "item_13",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 33,
+            "id": "item_15",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 37,
+            "id": "item_16",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 41,
+            "id": "item_17",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 43,
+            "id": "item_18",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 45,
+            "id": "item_19",
+            "type": "file_change",
+            "exit_code": null
+          },
+          {
+            "line": 47,
+            "id": "item_20",
+            "type": "command_execution",
+            "exit_code": 0
+          },
+          {
+            "line": 49,
+            "id": "item_21",
+            "type": "command_execution",
+            "exit_code": 0
+          }
+        ],
+        "tool_return_utf8_bytes": 59770,
+        "package_markdown_paths_in_read_commands": [
+          "/tmp/package/skills/quality/SKILL.md",
+          "/tmp/package/skills/spec/SKILL.md",
+          "/tmp/package/skills/prove/SKILL.md",
+          "/tmp/package/skills/impl/SKILL.md",
+          "/tmp/package/skills/achieve/SKILL.md"
+        ],
+        "raw_sha256": "890ff53bc50ccea0236680ceb8d742bf0802bb88154c76ca11d980b3d2468216"
+      }
+    }
+  },
+  "trace_judgments": {
+    "lowbaseline": {
+      "initial_contract": {
+        "status": "pass",
+        "artifact": "phase1-workspace/README.md",
+        "evidence": "phase1.jsonl item_7 writes design after current task/source reads; snapshot describes no-chains rule and concrete next actions"
+      },
+      "resume_reads": {
+        "status": "pass",
+        "evidence": "phase2.jsonl item_2 line8 reads revision2; item_3 line10 reads durable README before source change item_5 line13"
+      },
+      "reconciliation": {
+        "status": "pass",
+        "evidence": "phase2.jsonl item_12/13 lines27/29 revise README before final claim item_15 line32; inspected final README contains forward-chain rules and canonical_key"
+      },
+      "baseline_file": {
+        "status": "fail",
+        "detail": "Original test_catalog.py is byte-changed by adding nine methods; original two test methods are retained unchanged. Frozen protocol's whole-file condition fails; do not infer regression-test weakening from this."
+      },
+      "interventions": 0,
+      "external_calls": "none observed in complete command trace",
+      "contamination": "no Charness path/instruction read observed in baseline",
+      "rework": {
+        "patch_failures": 2,
+        "phase1": 1,
+        "phase2": 1,
+        "evidence": "Non-JSON apply_patch verification-failed diagnostics at phase1 line14 and phase2 line23"
+      },
+      "limitations": [
+        "README still labels implementation/test steps as future next actions, while .task/checkpoint.md separately records completion.",
+        "The protected-test condition is whole-file byte equality; adding test methods violates that frozen condition without modifying the original two methods."
+      ]
+    },
+    "highcandidate": {
+      "continuation": {
+        "initial": {
+          "pass": true,
+          "evidence": "phase1 item_10 line22 creates docs/catalog-alias-design.md and CHECKPOINT.md; initial no-chains/ordered-validation contract and restart sequence read in phase1 snapshot"
+        },
+        "read_before_mutation": {
+          "pass": true,
+          "evidence": "phase2 item_3 line10 reads revision2; item_4 line12 reads CHECKPOINT.md and prior design; first source mutation item_9 line23"
+        },
+        "reconcile_before_claim": {
+          "pass": true,
+          "evidence": "phase2 item_8 line21 writes revision2 design (chains + canonical_key + structural precedence); source item_9 line23; final item_14 line31; final README and CHECKPOINT current"
+        }
+      },
+      "phase1_no_hidden_implementation": true,
+      "external_or_out_of_scope_commands": false,
+      "semantic_rework": 1,
+      "rework_evidence": "phase2 raw line18 apply_patch multiple operations same design path rejected; item_8 shell rewrite succeeds. No rescue.",
+      "benign_nonzero": "phase2 item_6 exit1 from final rg missing AGENTS.md/index.md; not failed implementation, not repeated repair",
+      "overhead": "phase1 spec+HOTL and seven shared/reference reads; phase2 broad package markdown path inventory, HOTL+impl+Prove plus three references. Package tooling optional and not executed. One phase1 baseline test; one phase2 final suite. git diff --check untracked-file limitation explicitly disclosed."
+    },
+    "highbaseline": {
+      "continuation": {
+        "initial": {
+          "pass": true,
+          "evidence": "phase1 item_6 line15 DESIGN.md + CHECKPOINT.md; initial no-chains contract and actionable restart"
+        },
+        "read_before_mutation": {
+          "pass": true,
+          "evidence": "phase2 item_3 line10 reads current revision2 and CHECKPOINT/DESIGN before source mutation item_6 line16"
+        },
+        "reconcile_before_claim": {
+          "pass": true,
+          "evidence": "phase2 item_7 line18 reconciles DESIGN.md/README chains and canonical_key; item_11 line25 final; CHECKPOINT current"
+        }
+      },
+      "phase1_no_hidden_implementation": true,
+      "external_or_out_of_scope_commands": false,
+      "semantic_rework": 1,
+      "rework_evidence": "phase2 raw line14 apply_patch multiple operations same DESIGN.md; retried via Python write. No rescue.",
+      "overhead": "phase1 unit tests create bytecode then item_8 cleans exact generated pyc files; phase2 reruns unchanged seed unit suite before implementation (phase1 same subject/tests/Python; repeated boundary only agent fresh-context choice, not plugin). Final producer unit suite once."
+    },
+    "lowcandidate": {
+      "continuation": {
+        "initial": {
+          "pass": true,
+          "evidence": "phase1 item_9 line19 .task/catalog-alias-design.md: initial no-chains contract, acceptance, next implementation slice"
+        },
+        "read_before_mutation": {
+          "pass": true,
+          "evidence": "phase2 item_2 line8 reads revision2, item_9 line21 reads durable .task design; first source change item_12 line27"
+        },
+        "reconcile_before_claim": {
+          "pass": true,
+          "evidence": "phase2 item_12 line27 README includes chains/canonical_key; item_18 line43 and item_19 line45 update durable design/completion; item_23 line52 final"
+        }
+      },
+      "phase1_no_hidden_implementation": true,
+      "external_network_commands": false,
+      "contamination": {
+        "status": "invalid-pure-candidate-attribution",
+        "evidence": "phase1 item_7 line16 invokes PATH charness worktree doctor from /home/hwidong/.local/bin/charness; script resolver loads /home/hwidong/.agents/src/charness (unmasked managed checkout), HEAD 1e918c655798fdd7b8ee65fb58b4fc10c4f895ef; outside frozen package",
+        "cli_sha256": "1080bf4e0c33724d9f80254f064a6eb722feb0abcd36a1e9625e3f9643b2a6cc",
+        "note": "CLI bytes equal authoring charness, but managed modules were not frozen as treatment. Other three cells did not invoke CLI/host Charness helpers."
+      },
+      "semantic_rework": 3,
+      "rework_evidence": "phase2 raw line25 duplicate src operations; lines34 and38 wrong design hunk text; successful item12,18,19 retained",
+      "blocked_cleanup": 1,
+      "blocked_cleanup_evidence": "phase2 raw line51 rm -f command rejected by host; no cleanup executed and no retry",
+      "limitations": [
+        "Final design Problem/Planned acceptance/README ownership language remains future-looking despite completion; required changed-chain/canonical_key facts are reconciled.",
+        "Both lower-tier arms add tests to original test file; no original method removed or altered (must confirm actual diff).",
+        "Wrong /tmp/package/skills/shared planner path guarded by -x so planner silently not run; no planner success claim made."
+      ],
+      "overhead": "phase1 spec+3refs, extra installed host doctor; phase2 quality/spec/prove/impl/achieve five instruction reads, broad repo grep. Final test suite twice with added test between, not unchanged-input duplication; py_compile overlaps imported source syntax. 0 parent rescues."
+    }
+  },
+  "contamination": {
+    "post_run_visibility_command": [
+      "bwrap",
+      "--die-with-parent",
+      "--unshare-pid",
+      "--ro-bind",
+      "/",
+      "/",
+      "--proc",
+      "/proc",
+      "--dev",
+      "/dev",
+      "--tmpfs",
+      "/tmp",
+      "--tmpfs",
+      "/home/hwidong/codes",
+      "--tmpfs",
+      "/home/hwidong/.cache",
+      "--tmpfs",
+      "/home/hwidong/.codex",
+      "--bind",
+      "/tmp/charness-goal805-low-candidate-1/work",
+      "/tmp/work",
+      "--ro-bind",
+      "/home/hwidong/.codex/auth.json",
+      "/home/hwidong/.codex/auth.json",
+      "--ro-bind",
+      "/home/hwidong/.codex/models_cache.json",
+      "/home/hwidong/.codex/models_cache.json",
+      "--ro-bind",
+      "/tmp/charness-goal805-package.dyPRfI",
+      "/tmp/package",
+      "--chdir",
+      "/tmp/work",
+      "/bin/sh",
+      "-c",
+      "command -v charness; sha256sum /home/hwidong/.local/bin/charness /home/hwidong/.agents/src/charness/scripts/worktree/worktree_doctor_lib.py; test -f /home/hwidong/.agents/src/charness/packaging/charness.json"
+    ],
+    "exit_code": 0,
+    "stdout": "/home/hwidong/.local/bin/charness\n1080bf4e0c33724d9f80254f064a6eb722feb0abcd36a1e9625e3f9643b2a6cc  /home/hwidong/.local/bin/charness\n03effe9e69145cdd73e1aa4185136f711737c7f78ceb8b21ccedf56b7a143132  /home/hwidong/.agents/src/charness/scripts/worktree/worktree_doctor_lib.py\n",
+    "stderr": "",
+    "managed_checkout_head": "1e918c655798fdd7b8ee65fb58b4fc10c4f895ef",
+    "treatment_utf8_bytes_per_phase": 647,
+    "frozen_package_bytes": 8674236,
+    "source_note": "Producer phase1 item_7 ran charness worktree doctor. The installed entrypoint resolves its managed checkout and imports scripts.worktree.worktree_doctor_lib; these dependencies were visible but absent from candidate-inputs.json. The follow-up only checks visibility/hashes and does not rerun the doctor or alter any producer output."
+  },
+  "interventions": {
+    "semantic_rescue": 0,
+    "clarification": 0,
+    "initial_pilot_retries": 0,
+    "scheduled_task_replacement_per_cell": 1,
+    "repair_validation_rounds": 0
+  }
+}

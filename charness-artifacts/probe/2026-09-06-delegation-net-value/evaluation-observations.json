@@ -1,0 +1,214 @@
+{
+  "low-baseline": {
+    "phases": {
+      "phase1": {
+        "exit_code": 0,
+        "timeout": false,
+        "wall_seconds": 53.586,
+        "baseline_tests_unchanged": true,
+        "task_channel_unchanged": true,
+        "escaping_symlinks": [],
+        "source_and_test_inventory_unchanged": true,
+        "snapshot_escaping_symlinks": []
+      },
+      "phase2": {
+        "exit_code": 0,
+        "timeout": false,
+        "wall_seconds": 112.148,
+        "baseline_tests_unchanged": false,
+        "task_channel_unchanged": true,
+        "escaping_symlinks": [],
+        "snapshot_escaping_symlinks": []
+      }
+    },
+    "oracle": {
+      "command": [
+        "python3",
+        "/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py",
+        "/tmp/charness-goal805-low-baseline-1/phase2-workspace"
+      ],
+      "cwd": "/tmp/charness-goal805-low-baseline-1/phase2-workspace",
+      "exit_code": 0,
+      "timeout": false,
+      "stdout": "{\"successful\": true, \"tests\": 5, \"failures\": 0, \"errors\": 0}\n",
+      "stderr": "test_cycles_and_dangling_report_initiator (__main__.Acceptance) ... ok\ntest_direct_and_forward_chain (__main__.Acceptance) ... ok\ntest_input_preservation_and_empty_aliases (__main__.Acceptance) ... ok\ntest_preserved_behavior (__main__.Acceptance) ... ok\ntest_structural_precedence (__main__.Acceptance) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.000s\n\nOK\n",
+      "wall_seconds": 0.060931
+    },
+    "producer_tests": {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/charness-goal805-low-baseline-1/phase2-workspace",
+      "exit_code": 0,
+      "timeout": false,
+      "stdout": "",
+      "stderr": "test_alias_chains_can_use_forward_references (test_catalog.CatalogTests) ... ok\ntest_alias_resolves_to_canonical_value_and_key (test_catalog.CatalogTests) ... ok\ntest_aliases_none_or_empty_are_supported (test_catalog.CatalogTests) ... ok\ntest_canonical_collision_and_duplicate_alias_are_rejected (test_catalog.CatalogTests) ... ok\ntest_cycles_and_self_cycles_report_initiating_alias (test_catalog.CatalogTests) ... ok\ntest_inputs_are_not_mutated (test_catalog.CatalogTests) ... ok\ntest_missing_target_reports_initiating_alias (test_catalog.CatalogTests) ... ok\ntest_resolves_existing_canonical_keys (test_catalog.CatalogTests) ... ok\ntest_structural_errors_are_checked_before_resolution (test_catalog.CatalogTests) ... ok\ntest_unknown_canonical_key_is_a_key_error (test_catalog.CatalogTests) ... ok\ntest_unknown_key_raises_key_error (test_catalog.CatalogTests) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.001s\n\nOK\n",
+      "wall_seconds": 0.060845
+    }
+  },
+  "high-candidate": {
+    "phases": {
+      "phase1": {
+        "exit_code": 0,
+        "timeout": false,
+        "wall_seconds": 132.975,
+        "baseline_tests_unchanged": true,
+        "task_channel_unchanged": true,
+        "escaping_symlinks": [],
+        "source_and_test_inventory_unchanged": true,
+        "snapshot_escaping_symlinks": []
+      },
+      "phase2": {
+        "exit_code": 0,
+        "timeout": false,
+        "wall_seconds": 224.97,
+        "baseline_tests_unchanged": true,
+        "task_channel_unchanged": true,
+        "escaping_symlinks": [],
+        "snapshot_escaping_symlinks": []
+      }
+    },
+    "oracle": {
+      "command": [
+        "python3",
+        "/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py",
+        "/tmp/charness-goal805-high-candidate-1/phase2-workspace"
+      ],
+      "cwd": "/tmp/charness-goal805-high-candidate-1/phase2-workspace",
+      "exit_code": 0,
+      "timeout": false,
+      "stdout": "{\"successful\": true, \"tests\": 5, \"failures\": 0, \"errors\": 0}\n",
+      "stderr": "test_cycles_and_dangling_report_initiator (__main__.Acceptance) ... ok\ntest_direct_and_forward_chain (__main__.Acceptance) ... ok\ntest_input_preservation_and_empty_aliases (__main__.Acceptance) ... ok\ntest_preserved_behavior (__main__.Acceptance) ... ok\ntest_structural_precedence (__main__.Acceptance) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.000s\n\nOK\n",
+      "wall_seconds": 0.061834
+    },
+    "producer_tests": {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/charness-goal805-high-candidate-1/phase2-workspace",
+      "exit_code": 0,
+      "timeout": false,
+      "stdout": "",
+      "stderr": "test_resolves_existing_canonical_keys (test_catalog.CatalogTests) ... ok\ntest_unknown_key_raises_key_error (test_catalog.CatalogTests) ... ok\ntest_chains_in_both_orders_and_shared_suffixes (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_constructor_compatibility (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_direct_aliases_and_unused_canonical_keys (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_failed_chains_report_first_initiating_alias (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_input_preservation_and_snapshot_behavior (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_long_forward_chain (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_structural_errors (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_structural_errors_precede_broken_chains (test_catalog_aliases.CatalogAliasTests) ... ok\n\n----------------------------------------------------------------------\nRan 10 tests in 0.006s\n\nOK\n",
+      "wall_seconds": 0.060866
+    }
+  },
+  "high-baseline": {
+    "phases": {
+      "phase1": {
+        "exit_code": 0,
+        "timeout": false,
+        "wall_seconds": 86.2,
+        "baseline_tests_unchanged": true,
+        "task_channel_unchanged": true,
+        "escaping_symlinks": [],
+        "source_and_test_inventory_unchanged": true,
+        "snapshot_escaping_symlinks": []
+      },
+      "phase2": {
+        "exit_code": 0,
+        "timeout": false,
+        "wall_seconds": 182.033,
+        "baseline_tests_unchanged": true,
+        "task_channel_unchanged": true,
+        "escaping_symlinks": [],
+        "snapshot_escaping_symlinks": []
+      }
+    },
+    "oracle": {
+      "command": [
+        "python3",
+        "/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py",
+        "/tmp/charness-goal805-high-baseline-1/phase2-workspace"
+      ],
+      "cwd": "/tmp/charness-goal805-high-baseline-1/phase2-workspace",
+      "exit_code": 0,
+      "timeout": false,
+      "stdout": "{\"successful\": true, \"tests\": 5, \"failures\": 0, \"errors\": 0}\n",
+      "stderr": "test_cycles_and_dangling_report_initiator (__main__.Acceptance) ... ok\ntest_direct_and_forward_chain (__main__.Acceptance) ... ok\ntest_input_preservation_and_empty_aliases (__main__.Acceptance) ... ok\ntest_preserved_behavior (__main__.Acceptance) ... ok\ntest_structural_precedence (__main__.Acceptance) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.000s\n\nOK\n",
+      "wall_seconds": 0.06564
+    },
+    "producer_tests": {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/charness-goal805-high-baseline-1/phase2-workspace",
+      "exit_code": 0,
+      "timeout": false,
+      "stdout": "",
+      "stderr": "test_resolves_existing_canonical_keys (test_catalog.CatalogTests) ... ok\ntest_unknown_key_raises_key_error (test_catalog.CatalogTests) ... ok\ntest_empty_mapping (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_failed_chains_identify_initiator (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_failed_construction_preserves_inputs (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_falsey_values (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_first_failed_chain_in_declaration_order (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_forward_backward_and_shared_chains (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_inputs_unchanged_and_bindings_snapshotted (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_long_chain (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_optional_aliases_and_unknown_names (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_structural_errors (test_catalog_aliases.CatalogAliasTests) ... ok\ntest_structural_stage_precedes_chain_errors (test_catalog_aliases.CatalogAliasTests) ... ok\n\n----------------------------------------------------------------------\nRan 13 tests in 0.007s\n\nOK\n",
+      "wall_seconds": 0.045049
+    }
+  },
+  "low-candidate": {
+    "phases": {
+      "phase1": {
+        "exit_code": 0,
+        "timeout": false,
+        "wall_seconds": 67.645,
+        "baseline_tests_unchanged": true,
+        "task_channel_unchanged": true,
+        "escaping_symlinks": [],
+        "source_and_test_inventory_unchanged": true,
+        "snapshot_escaping_symlinks": []
+      },
+      "phase2": {
+        "exit_code": 0,
+        "timeout": false,
+        "wall_seconds": 214.467,
+        "baseline_tests_unchanged": false,
+        "task_channel_unchanged": true,
+        "escaping_symlinks": [],
+        "snapshot_escaping_symlinks": []
+      }
+    },
+    "oracle": {
+      "command": [
+        "python3",
+        "/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py",
+        "/tmp/charness-goal805-low-candidate-1/phase2-workspace"
+      ],
+      "cwd": "/tmp/charness-goal805-low-candidate-1/phase2-workspace",
+      "exit_code": 0,
+      "timeout": false,
+      "stdout": "{\"successful\": true, \"tests\": 5, \"failures\": 0, \"errors\": 0}\n",
+      "stderr": "test_cycles_and_dangling_report_initiator (__main__.Acceptance) ... ok\ntest_direct_and_forward_chain (__main__.Acceptance) ... ok\ntest_input_preservation_and_empty_aliases (__main__.Acceptance) ... ok\ntest_preserved_behavior (__main__.Acceptance) ... ok\ntest_structural_precedence (__main__.Acceptance) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.000s\n\nOK\n",
+      "wall_seconds": 0.074098
+    },
+    "producer_tests": {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "cwd": "/tmp/charness-goal805-low-candidate-1/phase2-workspace",
+      "exit_code": 0,
+      "timeout": false,
+      "stdout": "",
+      "stderr": "test_alias_chains_support_forward_references (test_catalog.CatalogTests) ... ok\ntest_alias_resolves_to_canonical_value_and_key (test_catalog.CatalogTests) ... ok\ntest_aliases_none_preserves_one_argument_constructor (test_catalog.CatalogTests) ... ok\ntest_canonical_key_returns_canonical_input (test_catalog.CatalogTests) ... ok\ntest_canonical_name_collision_mentions_alias (test_catalog.CatalogTests) ... ok\ntest_constructor_and_resolution_do_not_mutate_inputs (test_catalog.CatalogTests) ... ok\ntest_cycle_mentions_initiating_alias (test_catalog.CatalogTests) ... ok\ntest_duplicate_alias_is_found_before_resolution (test_catalog.CatalogTests) ... ok\ntest_mapping_is_snapshotted_at_construction (test_catalog.CatalogTests) ... ok\ntest_missing_terminal_target_mentions_initiating_alias (test_catalog.CatalogTests) ... ok\ntest_resolves_existing_canonical_keys (test_catalog.CatalogTests) ... ok\ntest_self_cycle_is_invalid (test_catalog.CatalogTests) ... ok\ntest_unknown_canonical_key_raises_key_error_with_requested_name (test_catalog.CatalogTests) ... ok\ntest_unknown_key_raises_key_error (test_catalog.CatalogTests) ... ok\ntest_unused_canonical_keys_are_valid (test_catalog.CatalogTests) ... ok\n\n----------------------------------------------------------------------\nRan 15 tests in 0.001s\n\nOK\n",
+      "wall_seconds": 0.055717
+    }
+  }
+}

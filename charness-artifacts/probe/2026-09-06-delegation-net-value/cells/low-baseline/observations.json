@@ -1,0 +1,371 @@
+{
+  "requested_model": "gpt-5.6-luna",
+  "effort": "medium",
+  "treatment": false,
+  "command": [
+    "bwrap",
+    "--die-with-parent",
+    "--unshare-pid",
+    "--ro-bind",
+    "/",
+    "/",
+    "--proc",
+    "/proc",
+    "--dev",
+    "/dev",
+    "--tmpfs",
+    "/tmp",
+    "--tmpfs",
+    "/home/hwidong/codes",
+    "--tmpfs",
+    "/home/hwidong/.cache",
+    "--tmpfs",
+    "/home/hwidong/.codex",
+    "--bind",
+    "/tmp/charness-goal805-low-baseline-1/work",
+    "/tmp/work",
+    "--ro-bind",
+    "/home/hwidong/.codex/auth.json",
+    "/home/hwidong/.codex/auth.json",
+    "--ro-bind",
+    "/home/hwidong/.codex/models_cache.json",
+    "/home/hwidong/.codex/models_cache.json",
+    "--chdir",
+    "/tmp/work",
+    "/home/hwidong/.n/bin/codex",
+    "exec",
+    "--ignore-user-config",
+    "--ignore-rules",
+    "--disable",
+    "plugins",
+    "--disable",
+    "remote_plugin",
+    "--disable",
+    "hooks",
+    "--enable",
+    "skip_host_skill_discovery",
+    "--sandbox",
+    "workspace-write",
+    "--ephemeral",
+    "--skip-git-repo-check",
+    "--json",
+    "-C",
+    "/tmp/work",
+    "-m",
+    "gpt-5.6-luna",
+    "-c",
+    "model_reasoning_effort=\"medium\""
+  ],
+  "input_manifest": {
+    "charness-artifacts/probe/2026-09-06-delegation-net-value/protocol.md": "c7c6694c302a4e6ed7bd3a46d652b96146f71fb457ed622dbcd55008c4e4f498",
+    "charness-artifacts/probe/2026-09-06-delegation-net-value/initial-task.md": "bb55f9b236deb5c1df3f776c14f52224f2fbc62ae654c108c33704e5f7185594",
+    "charness-artifacts/probe/2026-09-06-delegation-net-value/revised-task.md": "66303fae66f77ce596715f99fca0117b567d30bd25e75ed102a657bdbd20412e",
+    "charness-artifacts/probe/2026-09-06-delegation-net-value/start.md": "753555c4c42ae4f37397aa7adc7e3e2c199bfdb9a60659ce3c0a14f21c20a60d",
+    "charness-artifacts/probe/2026-09-06-delegation-net-value/resume.md": "f84b6845874475760c320335cd071721e0acf8024c3633287a2bd249dafd9c6a",
+    "charness-artifacts/probe/2026-09-06-delegation-net-value/treatment.md": "44dd9cf78f551228c3643bbb7292c21c5131873bb5242fb1bbb92fdc746ee933",
+    "charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py": "bfd02f02efb947163418ef5983020154ed2fcae2be48fa9511e623f5b089bbd2",
+    "charness-artifacts/probe/2026-09-06-delegation-net-value/control_catalog.py": "c6ab11905bc0df09ac46e8e2e3965c056611d9862061c2131c78a824b34196b8",
+    "charness-artifacts/probe/2026-09-06-delegation-net-value/controls.py": "59c59789607428d7312c7722ff104f4fb670fb97d25a4e509218f584748b9cc1",
+    "charness-artifacts/probe/2026-09-06-delegation-net-value/launch.py": "c1ecbbd60fe6fb8962b9d5af29ed5cf7058957928ba23123f4cd6aff4bc924a3",
+    "charness-artifacts/probe/2026-09-06-delegation-net-value/launcher_controls.py": "46b7a06d0bce6732bbb6def34bcf7ee885b90b5e06a4def1ee1ee824cbfd3e7d",
+    "evals/fixtures/consumer-journeys/spec-impl-alias/seed/README.md": "f2e6bf8da5613e8325b905f14b1f797d61b1afb084c0cc5cd052ebdcca733df6",
+    "evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/__init__.py": "cd2e94b7a91c6dbf6d04eaccc8ff59dd8ac19c54b0d733612c01791e8f672994",
+    "evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/catalog.py": "75fd818cc8ca6d8e465f4077018e9939955dcfdffde141714f3ac68440ec06f0",
+    "evals/fixtures/consumer-journeys/spec-impl-alias/seed/tests/test_catalog.py": "b49e9b68ef4260b14962b144a75e38f1821c4f80f7060f4bec0a55610d032cb4",
+    "charness-artifacts/probe/2026-09-06-delegation-net-value/control-observations.json": "abfe4832179f2d1481f1097c7359b56c67114cb41962bcc74df29512110ec773",
+    "charness-artifacts/probe/2026-09-06-delegation-net-value/launcher-control-observations.json": "79a07024f40e88cdabdf79bdc56e363a47658f1c6685b49ed4376f2812dda306"
+  },
+  "package_manifest": null,
+  "isolation": {
+    "oracle_invisible": true,
+    "host_arm_root_invisible": true
+  },
+  "phase1": {
+    "exit_code": 0,
+    "timeout": false,
+    "wall_seconds": 53.586,
+    "manifest": {
+      ".git/HEAD": {
+        "kind": "file",
+        "sha256": "28d25bf82af4c0e2b72f50959b2beb859e3e60b9630a5e8c603dad4ddb2b6e80",
+        "mode": 436
+      },
+      ".git/config": {
+        "kind": "file",
+        "sha256": "cfe7ba1238c9a78be7535d7c63bcaf5a4d5011d46b07c9b45d3bbf7d6c312dfe",
+        "mode": 436
+      },
+      ".git/description": {
+        "kind": "file",
+        "sha256": "85ab6c163d43a17ea9cf7788308bca1466f1b0a8d1cc92e26e9bf63da4062aee",
+        "mode": 436
+      },
+      ".git/hooks/applypatch-msg.sample": {
+        "kind": "file",
+        "sha256": "0223497a0b8b033aa58a3a521b8629869386cf7ab0e2f101963d328aa62193f7",
+        "mode": 509
+      },
+      ".git/hooks/commit-msg.sample": {
+        "kind": "file",
+        "sha256": "efc1401b0e99d1ff51494d154d98b46c1e99059bcd8bf9f73cecde19fd3eb23b",
+        "mode": 509
+      },
+      ".git/hooks/fsmonitor-watchman.sample": {
+        "kind": "file",
+        "sha256": "9159720099ad5595b8e66645cbfd47763c1e920f46e0b50ae75e642bbec57ef0",
+        "mode": 509
+      },
+      ".git/hooks/post-update.sample": {
+        "kind": "file",
+        "sha256": "81765af2daef323061dcbc5e61fc16481cb74b3bac9ad8a174b186523586f6c5",
+        "mode": 509
+      },
+      ".git/hooks/pre-applypatch.sample": {
+        "kind": "file",
+        "sha256": "e15c5b469ea3e0a695bea6f2c82bcf8e62821074939ddd85b77e0007ff165475",
+        "mode": 509
+      },
+      ".git/hooks/pre-commit.sample": {
+        "kind": "file",
+        "sha256": "57185b7b9f05239d7ab52db045f5b89eb31348d7b2177eab214f5eb872e1971b",
+        "mode": 509
+      },
+      ".git/hooks/pre-merge-commit.sample": {
+        "kind": "file",
+        "sha256": "d3825a70337940ebbd0a5c072984e13245920cdf8898bd225c8d27a6dfc9cb53",
+        "mode": 509
+      },
+      ".git/hooks/pre-push.sample": {
+        "kind": "file",
+        "sha256": "ecce9c7e04d3f5dd9d8ada81753dd1d549a9634b26770042b58dda00217d086a",
+        "mode": 509
+      },
+      ".git/hooks/pre-rebase.sample": {
+        "kind": "file",
+        "sha256": "4febce867790052338076f4e66cc47efb14879d18097d1d61c8261859eaaa7b3",
+        "mode": 509
+      },
+      ".git/hooks/pre-receive.sample": {
+        "kind": "file",
+        "sha256": "a4c3d2b9c7bb3fd8d1441c31bd4ee71a595d66b44fcf49ddb310252320169989",
+        "mode": 509
+      },
+      ".git/hooks/prepare-commit-msg.sample": {
+        "kind": "file",
+        "sha256": "e9ddcaa4189fddd25ed97fc8c789eca7b6ca16390b2392ae3276f0c8e1aa4619",
+        "mode": 509
+      },
+      ".git/hooks/push-to-checkout.sample": {
+        "kind": "file",
+        "sha256": "a53d0741798b287c6dd7afa64aee473f305e65d3f49463bb9d7408ec3b12bf5f",
+        "mode": 509
+      },
+      ".git/hooks/sendemail-validate.sample": {
+        "kind": "file",
+        "sha256": "44ebfc923dc5466bc009602f0ecf067b9c65459abfe8868ddc49b78e6ced7a92",
+        "mode": 509
+      },
+      ".git/hooks/update.sample": {
+        "kind": "file",
+        "sha256": "8d5f2fa83e103cf08b57eaa67521df9194f45cbdbcb37da52ad586097a14d106",
+        "mode": 509
+      },
+      ".git/info/exclude": {
+        "kind": "file",
+        "sha256": "6671fe83b7a07c8932ee89164d1f2793b2318058eb8b98dc5c06ee0a5a3b0ec1",
+        "mode": 436
+      },
+      ".task/current.md": {
+        "kind": "file",
+        "sha256": "bb55f9b236deb5c1df3f776c14f52224f2fbc62ae654c108c33704e5f7185594",
+        "mode": 436
+      },
+      "README.md": {
+        "kind": "file",
+        "sha256": "201e076d2623464098c103df98a383edd81ba2860eb13e663af217f85e6d5625",
+        "mode": 436
+      },
+      "src/__init__.py": {
+        "kind": "file",
+        "sha256": "cd2e94b7a91c6dbf6d04eaccc8ff59dd8ac19c54b0d733612c01791e8f672994",
+        "mode": 436
+      },
+      "src/__pycache__/__init__.cpython-310.pyc": {
+        "kind": "file",
+        "sha256": "5042f0a92efda8e98753b2e0016dfff0a0f4264f1de5e3a18d431a5091192652",
+        "mode": 436
+      },
+      "src/__pycache__/catalog.cpython-310.pyc": {
+        "kind": "file",
+        "sha256": "ec0ba9325d161be7306770e1bec6bfe6a1b7cce0ef4fa3f4710de5781c81a9bd",
+        "mode": 436
+      },
+      "src/catalog.py": {
+        "kind": "file",
+        "sha256": "75fd818cc8ca6d8e465f4077018e9939955dcfdffde141714f3ac68440ec06f0",
+        "mode": 436
+      },
+      "tests/__pycache__/test_catalog.cpython-310.pyc": {
+        "kind": "file",
+        "sha256": "a75d11ba95b4e822dae8b7b39a82103daefd8d396a7d799f4e881d6787dee58d",
+        "mode": 436
+      },
+      "tests/test_catalog.py": {
+        "kind": "file",
+        "sha256": "b49e9b68ef4260b14962b144a75e38f1821c4f80f7060f4bec0a55610d032cb4",
+        "mode": 436
+      }
+    },
+    "baseline_tests_unchanged": true,
+    "task_channel_unchanged": true,
+    "escaping_symlinks": [],
+    "source_and_test_inventory_unchanged": true,
+    "snapshot_escaping_symlinks": []
+  },
+  "phase2": {
+    "exit_code": 0,
+    "timeout": false,
+    "wall_seconds": 112.148,
+    "manifest": {
+      ".git/HEAD": {
+        "kind": "file",
+        "sha256": "28d25bf82af4c0e2b72f50959b2beb859e3e60b9630a5e8c603dad4ddb2b6e80",
+        "mode": 436
+      },
+      ".git/config": {
+        "kind": "file",
+        "sha256": "cfe7ba1238c9a78be7535d7c63bcaf5a4d5011d46b07c9b45d3bbf7d6c312dfe",
+        "mode": 436
+      },
+      ".git/description": {
+        "kind": "file",
+        "sha256": "85ab6c163d43a17ea9cf7788308bca1466f1b0a8d1cc92e26e9bf63da4062aee",
+        "mode": 436
+      },
+      ".git/hooks/applypatch-msg.sample": {
+        "kind": "file",
+        "sha256": "0223497a0b8b033aa58a3a521b8629869386cf7ab0e2f101963d328aa62193f7",
+        "mode": 509
+      },
+      ".git/hooks/commit-msg.sample": {
+        "kind": "file",
+        "sha256": "efc1401b0e99d1ff51494d154d98b46c1e99059bcd8bf9f73cecde19fd3eb23b",
+        "mode": 509
+      },
+      ".git/hooks/fsmonitor-watchman.sample": {
+        "kind": "file",
+        "sha256": "9159720099ad5595b8e66645cbfd47763c1e920f46e0b50ae75e642bbec57ef0",
+        "mode": 509
+      },
+      ".git/hooks/post-update.sample": {
+        "kind": "file",
+        "sha256": "81765af2daef323061dcbc5e61fc16481cb74b3bac9ad8a174b186523586f6c5",
+        "mode": 509
+      },
+      ".git/hooks/pre-applypatch.sample": {
+        "kind": "file",
+        "sha256": "e15c5b469ea3e0a695bea6f2c82bcf8e62821074939ddd85b77e0007ff165475",
+        "mode": 509
+      },
+      ".git/hooks/pre-commit.sample": {
+        "kind": "file",
+        "sha256": "57185b7b9f05239d7ab52db045f5b89eb31348d7b2177eab214f5eb872e1971b",
+        "mode": 509
+      },
+      ".git/hooks/pre-merge-commit.sample": {
+        "kind": "file",
+        "sha256": "d3825a70337940ebbd0a5c072984e13245920cdf8898bd225c8d27a6dfc9cb53",
+        "mode": 509
+      },
+      ".git/hooks/pre-push.sample": {
+        "kind": "file",
+        "sha256": "ecce9c7e04d3f5dd9d8ada81753dd1d549a9634b26770042b58dda00217d086a",
+        "mode": 509
+      },
+      ".git/hooks/pre-rebase.sample": {
+        "kind": "file",
+        "sha256": "4febce867790052338076f4e66cc47efb14879d18097d1d61c8261859eaaa7b3",
+        "mode": 509
+      },
+      ".git/hooks/pre-receive.sample": {
+        "kind": "file",
+        "sha256": "a4c3d2b9c7bb3fd8d1441c31bd4ee71a595d66b44fcf49ddb310252320169989",
+        "mode": 509
+      },
+      ".git/hooks/prepare-commit-msg.sample": {
+        "kind": "file",
+        "sha256": "e9ddcaa4189fddd25ed97fc8c789eca7b6ca16390b2392ae3276f0c8e1aa4619",
+        "mode": 509
+      },
+      ".git/hooks/push-to-checkout.sample": {
+        "kind": "file",
+        "sha256": "a53d0741798b287c6dd7afa64aee473f305e65d3f49463bb9d7408ec3b12bf5f",
+        "mode": 509
+      },
+      ".git/hooks/sendemail-validate.sample": {
+        "kind": "file",
+        "sha256": "44ebfc923dc5466bc009602f0ecf067b9c65459abfe8868ddc49b78e6ced7a92",
+        "mode": 509
+      },
+      ".git/hooks/update.sample": {
+        "kind": "file",
+        "sha256": "8d5f2fa83e103cf08b57eaa67521df9194f45cbdbcb37da52ad586097a14d106",
+        "mode": 509
+      },
+      ".git/info/exclude": {
+        "kind": "file",
+        "sha256": "6671fe83b7a07c8932ee89164d1f2793b2318058eb8b98dc5c06ee0a5a3b0ec1",
+        "mode": 436
+      },
+      ".task/checkpoint.md": {
+        "kind": "file",
+        "sha256": "6be68c4693b92f5bb40c3a1bbdabd7eb71b917090901cffe3a3e46a8ad95935f",
+        "mode": 436
+      },
+      ".task/current.md": {
+        "kind": "file",
+        "sha256": "66303fae66f77ce596715f99fca0117b567d30bd25e75ed102a657bdbd20412e",
+        "mode": 436
+      },
+      "README.md": {
+        "kind": "file",
+        "sha256": "4309caab840ae4d9fa3f2aee8dc575d9054c01699e20bf7ce88196ec78b34ead",
+        "mode": 436
+      },
+      "src/__init__.py": {
+        "kind": "file",
+        "sha256": "cd2e94b7a91c6dbf6d04eaccc8ff59dd8ac19c54b0d733612c01791e8f672994",
+        "mode": 436
+      },
+      "src/__pycache__/__init__.cpython-310.pyc": {
+        "kind": "file",
+        "sha256": "5042f0a92efda8e98753b2e0016dfff0a0f4264f1de5e3a18d431a5091192652",
+        "mode": 436
+      },
+      "src/__pycache__/catalog.cpython-310.pyc": {
+        "kind": "file",
+        "sha256": "00ef059cbd42cf9bdcfe0cb79d0e39c3a3c410441db135195abdc3a888c0ee86",
+        "mode": 436
+      },
+      "src/catalog.py": {
+        "kind": "file",
+        "sha256": "96032062140d1c98eb01119da17ad704967e3dceb606f9bb6a89e61980f08ec1",
+        "mode": 436
+      },
+      "tests/__pycache__/test_catalog.cpython-310.pyc": {
+        "kind": "file",
+        "sha256": "acb3e8f1246ab66bccdff24fd9641cc8a3b37cb0260dfe76785fab5ae8e64e37",
+        "mode": 436
+      },
+      "tests/test_catalog.py": {
+        "kind": "file",
+        "sha256": "461440c64be082dace4ebdd9282b32ab2a95ad584d178318892765705ef4a6a8",
+        "mode": 436
+      }
+    },
+    "baseline_tests_unchanged": false,
+    "task_channel_unchanged": true,
+    "escaping_symlinks": [],
+    "snapshot_escaping_symlinks": []
+  }
+}
