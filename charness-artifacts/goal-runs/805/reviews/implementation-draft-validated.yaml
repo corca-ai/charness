@@ -1,0 +1,359 @@
+ok: true
+status: draft_verified
+confirmation:
+  observer: issue_verify_closeout@gh
+  channel: carrier-body-checks
+  scope: carrier-checks-only
+  line: 'carrier-checked: issue_verify_closeout@gh via carrier-body-checks (carrier-checks-only)'
+review_advisory: []
+repo: corca-ai/charness
+numbers:
+- 806
+- 808
+- 809
+- 810
+- 811
+classification: null
+classifications:
+  '806': feature
+  '808': feature
+  '809': feature
+  '810': bug
+  '811': feature
+carrier: direct-commit
+commit_ref: null
+body_file: null
+manual_fallback_reason: null
+expect_state: null
+missing_close_keywords: []
+missing_fields: []
+missing_field_reasons: []
+parsed_ledger_fields: []
+state_mismatches: []
+manual_comment_missing: []
+resolution_critique_check:
+  ok: true
+  kind: issue-resolution
+  required:
+  - resolution_critique
+  checks:
+  - target: '#806 #808 #809 #810 #811'
+    numbers:
+    - 806
+    - 808
+    - 809
+    - 810
+    - 811
+    value: charness-artifacts/critique/2026-09-06-goal805-implementation-closeout.md
+    check:
+      ok: true
+      kind: issue-resolution
+      required:
+      - resolution_critique
+      satisfied:
+      - name: resolution_critique
+        via: evidence
+        path: /home/hwidong/codes/charness/charness-artifacts/critique/2026-09-06-goal805-implementation-closeout.md
+        binding: not-checked
+        residual_chars: 6848
+      skipped: []
+      missing: []
+      invalid_skips: []
+      missing_evidence_files: []
+      unbound_evidence: []
+      stub_evidence: []
+      binding_tokens:
+      - '806'
+      - '808'
+      - '809'
+      - '810'
+      - '811'
+      binding_checked: true
+      residual_checked: true
+    fresh_eye_observer:
+      value: 'worker-delivered — a separate read-only context delivered all five target
+
+        observations, with approval eligibility and matching result/packet/input/parent
+
+        identities. Corrected duration 131.9 seconds, in addition to the initial
+
+        134.7-second unusable-scope execution. Existing code review is reused;
+
+        the corrected result feeds the current carrier directly.'
+      disposition: delegated
+      path: /home/hwidong/codes/charness/charness-artifacts/critique/2026-09-06-goal805-implementation-closeout.md
+      predates_typed_contract: false
+      carrier_verified: true
+      carrier: worker-report
+  binding_failures: []
+  missing_issue_bindings: []
+  observer_refusals: []
+  review_advisory: []
+source_preservation:
+  external_sourced: false
+  origin: null
+  preservation_declared: null
+  forms_present: []
+  missing: false
+  ok: true
+behavioral_verdict:
+  ok: true
+  groups:
+  - applies: true
+    ok: true
+    missing: []
+    lines:
+    - target: '#806'
+      value: 'verified bounded observation via the original independent hidden evaluator
+        and separate prepared-claims arithmetic review, not tracker state. High candidate
+        and baseline pass acceptance; candidate takes 33.4% longer. Low-candidate
+        pure attribution is invalid because it consumed an unfrozen installed helper;
+        both low arms fail the frozen whole-file preservation condition without weakening
+        original test methods. No efficiency gain is established. Evidence: charness-artifacts/probe/2026-09-06-delegation-net-value/results.md.'
+    - target: '#808'
+      value: 'verified bounded continuation/context routes through fresh forward consumers
+        and the valid high-tier pilot, with explicit limitations: spec needed a counted
+        intervention and the changed-debug evidence-led report source is not semantically
+        bound. Installed treatment bytes match the frozen candidate; these are not
+        universal first-pass or net-value claims. Evidence: charness-artifacts/goal-runs/805/reviews/context-code-disposition.md
+        and charness-artifacts/probe/2026-09-06-v8.5.0-independent-observer.json.'
+    - target: '#809'
+      value: 'verified frozen protocol/control boundary through retained input hashes,
+        positive/negative oracle controls and observed fresh launches. The later low-candidate
+        host-helper leak is retained as an observer isolation limitation, so a completely
+        valid pure two-tier comparison is not claimed. No oracle/input was revised
+        to replace that result. Evidence: charness-artifacts/probe/2026-09-06-delegation-net-value/protocol.md
+        and results.md in the same directory.'
+    - target: '#810'
+      value: 'verified composed installed behavior via the separate observer''s existing
+        mixed-bundle standing test, plus retained causal and negative-control observations.
+        The present carrier directly consumes one delivered exact five-target review
+        with all per-issue floors; actual carrier publication and provider state are
+        verified after this commit. Evidence: charness-artifacts/probe/2026-09-06-v8.5.0-independent-observer.json
+        and charness-artifacts/goal-runs/805/reviews/closeout-code-observations.md.'
+    - target: '#811'
+      value: 'verified actual release preparation/final-resume scheduling via the
+        distinct stage receipts and runtime observations: preparation deferred pytest-release
+        and remained unestablished; final current resume ran it once and passed. All
+        other applicable stage gates remained. A cross-commit reuse proof and total
+        lifecycle net saving are not claimed. Evidence: charness-artifacts/probe/2026-09-06-release-scheduling/observations.md.'
+  - applies: true
+    ok: true
+    missing: []
+    lines:
+    - target: '#806'
+      value: 'verified bounded observation via the original independent hidden evaluator
+        and separate prepared-claims arithmetic review, not tracker state. High candidate
+        and baseline pass acceptance; candidate takes 33.4% longer. Low-candidate
+        pure attribution is invalid because it consumed an unfrozen installed helper;
+        both low arms fail the frozen whole-file preservation condition without weakening
+        original test methods. No efficiency gain is established. Evidence: charness-artifacts/probe/2026-09-06-delegation-net-value/results.md.'
+    - target: '#808'
+      value: 'verified bounded continuation/context routes through fresh forward consumers
+        and the valid high-tier pilot, with explicit limitations: spec needed a counted
+        intervention and the changed-debug evidence-led report source is not semantically
+        bound. Installed treatment bytes match the frozen candidate; these are not
+        universal first-pass or net-value claims. Evidence: charness-artifacts/goal-runs/805/reviews/context-code-disposition.md
+        and charness-artifacts/probe/2026-09-06-v8.5.0-independent-observer.json.'
+    - target: '#809'
+      value: 'verified frozen protocol/control boundary through retained input hashes,
+        positive/negative oracle controls and observed fresh launches. The later low-candidate
+        host-helper leak is retained as an observer isolation limitation, so a completely
+        valid pure two-tier comparison is not claimed. No oracle/input was revised
+        to replace that result. Evidence: charness-artifacts/probe/2026-09-06-delegation-net-value/protocol.md
+        and results.md in the same directory.'
+    - target: '#810'
+      value: 'verified composed installed behavior via the separate observer''s existing
+        mixed-bundle standing test, plus retained causal and negative-control observations.
+        The present carrier directly consumes one delivered exact five-target review
+        with all per-issue floors; actual carrier publication and provider state are
+        verified after this commit. Evidence: charness-artifacts/probe/2026-09-06-v8.5.0-independent-observer.json
+        and charness-artifacts/goal-runs/805/reviews/closeout-code-observations.md.'
+    - target: '#811'
+      value: 'verified actual release preparation/final-resume scheduling via the
+        distinct stage receipts and runtime observations: preparation deferred pytest-release
+        and remained unestablished; final current resume ran it once and passed. All
+        other applicable stage gates remained. A cross-commit reuse proof and total
+        lifecycle net saving are not claimed. Evidence: charness-artifacts/probe/2026-09-06-release-scheduling/observations.md.'
+hotl_dispositions:
+  ok: true
+  groups:
+  - applies: false
+    ok: true
+    undispositioned: []
+    lines: []
+  - applies: false
+    ok: true
+    undispositioned: []
+    lines: []
+ai_provenance:
+  ok: true
+  groups:
+  - applies: true
+    ok: true
+    missing: false
+    marker: Agent-authored implementation, observations and carrier under the operator's
+      explicit Goal 805 publication/install/closeout authority. Separate read-only
+      observers and typed delivery evidence are named in the cited records; no human
+      review or backend model identity is fabricated.
+    classification: feature
+  - applies: true
+    ok: true
+    missing: false
+    marker: Agent-authored implementation, observations and carrier under the operator's
+      explicit Goal 805 publication/install/closeout authority. Separate read-only
+      observers and typed delivery evidence are named in the cited records; no human
+      review or backend model identity is fabricated.
+    classification: bug
+verified_state: []
+consolidation_readback: []
+classification_reports:
+  feature:
+    numbers:
+    - 806
+    - 808
+    - 809
+    - 811
+    missing_fields: []
+    behavioral_verdict:
+      applies: true
+      ok: true
+      missing: []
+      lines:
+      - target: '#806'
+        value: 'verified bounded observation via the original independent hidden evaluator
+          and separate prepared-claims arithmetic review, not tracker state. High
+          candidate and baseline pass acceptance; candidate takes 33.4% longer. Low-candidate
+          pure attribution is invalid because it consumed an unfrozen installed helper;
+          both low arms fail the frozen whole-file preservation condition without
+          weakening original test methods. No efficiency gain is established. Evidence:
+          charness-artifacts/probe/2026-09-06-delegation-net-value/results.md.'
+      - target: '#808'
+        value: 'verified bounded continuation/context routes through fresh forward
+          consumers and the valid high-tier pilot, with explicit limitations: spec
+          needed a counted intervention and the changed-debug evidence-led report
+          source is not semantically bound. Installed treatment bytes match the frozen
+          candidate; these are not universal first-pass or net-value claims. Evidence:
+          charness-artifacts/goal-runs/805/reviews/context-code-disposition.md and
+          charness-artifacts/probe/2026-09-06-v8.5.0-independent-observer.json.'
+      - target: '#809'
+        value: 'verified frozen protocol/control boundary through retained input hashes,
+          positive/negative oracle controls and observed fresh launches. The later
+          low-candidate host-helper leak is retained as an observer isolation limitation,
+          so a completely valid pure two-tier comparison is not claimed. No oracle/input
+          was revised to replace that result. Evidence: charness-artifacts/probe/2026-09-06-delegation-net-value/protocol.md
+          and results.md in the same directory.'
+      - target: '#810'
+        value: 'verified composed installed behavior via the separate observer''s
+          existing mixed-bundle standing test, plus retained causal and negative-control
+          observations. The present carrier directly consumes one delivered exact
+          five-target review with all per-issue floors; actual carrier publication
+          and provider state are verified after this commit. Evidence: charness-artifacts/probe/2026-09-06-v8.5.0-independent-observer.json
+          and charness-artifacts/goal-runs/805/reviews/closeout-code-observations.md.'
+      - target: '#811'
+        value: 'verified actual release preparation/final-resume scheduling via the
+          distinct stage receipts and runtime observations: preparation deferred pytest-release
+          and remained unestablished; final current resume ran it once and passed.
+          All other applicable stage gates remained. A cross-commit reuse proof and
+          total lifecycle net saving are not claimed. Evidence: charness-artifacts/probe/2026-09-06-release-scheduling/observations.md.'
+    hotl_dispositions:
+      applies: false
+      ok: true
+      undispositioned: []
+      lines: []
+    ai_provenance:
+      applies: true
+      ok: true
+      missing: false
+      marker: Agent-authored implementation, observations and carrier under the operator's
+        explicit Goal 805 publication/install/closeout authority. Separate read-only
+        observers and typed delivery evidence are named in the cited records; no human
+        review or backend model identity is fabricated.
+      classification: feature
+    consolidation_readback: []
+  bug:
+    numbers:
+    - 810
+    missing_fields: []
+    behavioral_verdict:
+      applies: true
+      ok: true
+      missing: []
+      lines:
+      - target: '#806'
+        value: 'verified bounded observation via the original independent hidden evaluator
+          and separate prepared-claims arithmetic review, not tracker state. High
+          candidate and baseline pass acceptance; candidate takes 33.4% longer. Low-candidate
+          pure attribution is invalid because it consumed an unfrozen installed helper;
+          both low arms fail the frozen whole-file preservation condition without
+          weakening original test methods. No efficiency gain is established. Evidence:
+          charness-artifacts/probe/2026-09-06-delegation-net-value/results.md.'
+      - target: '#808'
+        value: 'verified bounded continuation/context routes through fresh forward
+          consumers and the valid high-tier pilot, with explicit limitations: spec
+          needed a counted intervention and the changed-debug evidence-led report
+          source is not semantically bound. Installed treatment bytes match the frozen
+          candidate; these are not universal first-pass or net-value claims. Evidence:
+          charness-artifacts/goal-runs/805/reviews/context-code-disposition.md and
+          charness-artifacts/probe/2026-09-06-v8.5.0-independent-observer.json.'
+      - target: '#809'
+        value: 'verified frozen protocol/control boundary through retained input hashes,
+          positive/negative oracle controls and observed fresh launches. The later
+          low-candidate host-helper leak is retained as an observer isolation limitation,
+          so a completely valid pure two-tier comparison is not claimed. No oracle/input
+          was revised to replace that result. Evidence: charness-artifacts/probe/2026-09-06-delegation-net-value/protocol.md
+          and results.md in the same directory.'
+      - target: '#810'
+        value: 'verified composed installed behavior via the separate observer''s
+          existing mixed-bundle standing test, plus retained causal and negative-control
+          observations. The present carrier directly consumes one delivered exact
+          five-target review with all per-issue floors; actual carrier publication
+          and provider state are verified after this commit. Evidence: charness-artifacts/probe/2026-09-06-v8.5.0-independent-observer.json
+          and charness-artifacts/goal-runs/805/reviews/closeout-code-observations.md.'
+      - target: '#811'
+        value: 'verified actual release preparation/final-resume scheduling via the
+          distinct stage receipts and runtime observations: preparation deferred pytest-release
+          and remained unestablished; final current resume ran it once and passed.
+          All other applicable stage gates remained. A cross-commit reuse proof and
+          total lifecycle net saving are not claimed. Evidence: charness-artifacts/probe/2026-09-06-release-scheduling/observations.md.'
+    hotl_dispositions:
+      applies: false
+      ok: true
+      undispositioned: []
+      lines: []
+    ai_provenance:
+      applies: true
+      ok: true
+      missing: false
+      marker: Agent-authored implementation, observations and carrier under the operator's
+        explicit Goal 805 publication/install/closeout authority. Separate read-only
+        observers and typed delivery evidence are named in the cited records; no human
+        review or backend model identity is fabricated.
+      classification: bug
+    consolidation_readback: []
+proof_mismatch_scope:
+  present: false
+  adapter_found: false
+  adapter_valid: true
+  map_available: false
+  degraded: true
+closeout_authorization:
+  applies: false
+  authorized: true
+  refusal: null
+  crosswalk_status: crosswalk_missing
+  crosswalk_detail: charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json
+    does not exist
+  invoked_targets: []
+  carrier_targets: []
+  aggregate_targets: []
+  carrier_source: direct-commit
+  target: null
+commit_message_file: /tmp/goal805-implementation-carrier.md
+draft: true
+publication_status: ready_to_commit_push
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

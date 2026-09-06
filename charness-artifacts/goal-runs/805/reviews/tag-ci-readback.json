@@ -1,0 +1,18 @@
+{
+  "command": "gh run list --repo corca-ai/charness --commit fa8fe8834cb748dc5652442080d443027c407a87 --json databaseId,name,headSha,status,conclusion,url,event,createdAt,updatedAt",
+  "returncode": 0,
+  "runs": [
+    {
+      "conclusion": "success",
+      "createdAt": "2026-09-06T07:19:28Z",
+      "databaseId": 34018833489,
+      "event": "push",
+      "headSha": "fa8fe8834cb748dc5652442080d443027c407a87",
+      "name": "Quality Core",
+      "status": "completed",
+      "updatedAt": "2026-09-06T07:20:21Z",
+      "url": "https://github.com/corca-ai/charness/actions/runs/34018833489"
+    }
+  ],
+  "non_claims": ["Hosted Quality Core success is not a substitute for the separately recorded local release lane, public release, installed behavior or issue closure."]
+}

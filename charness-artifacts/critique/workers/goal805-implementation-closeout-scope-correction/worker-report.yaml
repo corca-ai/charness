@@ -1,0 +1,132 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'issue-resolution: Final behavioral closeout for exactly corca-ai/charness#806
+  corca-ai/charness#808 corca-ai/charness#809 corca-ai/charness#810 corca-ai/charness#811.
+  Bug #810; other four features. User explicitly authorized this one corrected-scope
+  execution after the previous semantically appropriate review was refused because
+  its scope did not start with issue-resolution. Use the unchanged current packet.
+  Produce one passing or nonpassing substantive target_observations entry for EACH
+  exact target with verdict, summary and evidence. Review bounded completion and honest
+  disposition of these five living contracts using supplied original evidence; no
+  new code review, experiment rerun, extra framework or source mutation. #806 high
+  pair demonstrates no benefit and low pure-candidate attribution is invalid. #809
+  frozen protocol has an observer-helper isolation limitation, not a valid pure two-tier
+  comparison. #808 spec needed intervention and original evidence-led report provenance
+  remains incomplete; high continuation passes. #810 installed composed controls establish
+  capability; direct live carrier consumption is the next separate obligation, not
+  yet happened. #811 revised scheduling rejects unsafe cross-commit reuse, defers
+  preparation pytest honestly and executes the full suite once at final current state,
+  with other gates retained and no total net saving claimed. Preserve treatment-input
+  binding and version-only differences without whole-install identity or fresh-session
+  loading claims. Scope excludes publication child #807 and parent #805; no target
+  observations or approvals for them. Decide whether approved bounded dispositions
+  support closure without shrinking criteria. Actual draft/commit-msg/pre-push consumption
+  and later CLOSED provider readbacks happen next, and must not be fabricated. This
+  delivered result will directly feed one complete five-target mixed-classification
+  carrier, without another review solely for formatting.'
+attempt_id: goal805-implementation-closeout-scope-correction
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 692cbe1d42dec319d96b0b6237c20e7bc0ac6bd5bb04b75b5b44e67a740501f9
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-implementation-closeout-scope-correction/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-implementation-closeout-scope-correction/delivery.json
+producer_run_id: run-goal805-implementation-closeout-scope-correction
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-implementation-closeout-scope-correction/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-implementation-closeout-scope-correction/receipt.json
+  producer_run_id: run-goal805-implementation-closeout-scope-correction
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: d7ad9e5355f5eefcf0e531d7357e187df72cd6a37d9d55551ee48ddd6db480b8
+receipt_output_sha256: d7ad9e5355f5eefcf0e531d7357e187df72cd6a37d9d55551ee48ddd6db480b8
+packet_identity: 2062d5799b4a88fc88a74c6df6e7d0b2ae1fe50ed7fced1b1544c6ac1ecaccc1
+reviewed_input_identity: e3b49db90e70767e6cd674511f8b6bdef99893af3755901c28f6e071e3087286
+parent_receipt_identity: parent-3bea58ba0ee82a2111adf601b5bacabca9c583b2617f7074
+provenance:
+  scope: 'issue-resolution: Final behavioral closeout for exactly corca-ai/charness#806
+    corca-ai/charness#808 corca-ai/charness#809 corca-ai/charness#810 corca-ai/charness#811.
+    Bug #810; other four features. User explicitly authorized this one corrected-scope
+    execution after the previous semantically appropriate review was refused because
+    its scope did not start with issue-resolution. Use the unchanged current packet.
+    Produce one passing or nonpassing substantive target_observations entry for EACH
+    exact target with verdict, summary and evidence. Review bounded completion and
+    honest disposition of these five living contracts using supplied original evidence;
+    no new code review, experiment rerun, extra framework or source mutation. #806
+    high pair demonstrates no benefit and low pure-candidate attribution is invalid.
+    #809 frozen protocol has an observer-helper isolation limitation, not a valid
+    pure two-tier comparison. #808 spec needed intervention and original evidence-led
+    report provenance remains incomplete; high continuation passes. #810 installed
+    composed controls establish capability; direct live carrier consumption is the
+    next separate obligation, not yet happened. #811 revised scheduling rejects unsafe
+    cross-commit reuse, defers preparation pytest honestly and executes the full suite
+    once at final current state, with other gates retained and no total net saving
+    claimed. Preserve treatment-input binding and version-only differences without
+    whole-install identity or fresh-session loading claims. Scope excludes publication
+    child #807 and parent #805; no target observations or approvals for them. Decide
+    whether approved bounded dispositions support closure without shrinking criteria.
+    Actual draft/commit-msg/pre-push consumption and later CLOSED provider readbacks
+    happen next, and must not be fabricated. This delivered result will directly feed
+    one complete five-target mixed-classification carrier, without another review
+    solely for formatting.'
+  packet_identity: 2062d5799b4a88fc88a74c6df6e7d0b2ae1fe50ed7fced1b1544c6ac1ecaccc1
+  reviewed_input_identity: e3b49db90e70767e6cd674511f8b6bdef99893af3755901c28f6e071e3087286
+  parent_receipt_identity: parent-3bea58ba0ee82a2111adf601b5bacabca9c583b2617f7074
+  attempt_id: goal805-implementation-closeout-scope-correction
+  attempt_scope: 'issue-resolution: Final behavioral closeout for exactly corca-ai/charness#806
+    corca-ai/charness#808 corca-ai/charness#809 corca-ai/charness#810 corca-ai/charness#811.
+    Bug #810; other four features. User explicitly authorized this one corrected-scope
+    execution after the previous semantically appropriate review was refused because
+    its scope did not start with issue-resolution. Use the unchanged current packet.
+    Produce one passing or nonpassing substantive target_observations entry for EACH
+    exact target with verdict, summary and evidence. Review bounded completion and
+    honest disposition of these five living contracts using supplied original evidence;
+    no new code review, experiment rerun, extra framework or source mutation. #806
+    high pair demonstrates no benefit and low pure-candidate attribution is invalid.
+    #809 frozen protocol has an observer-helper isolation limitation, not a valid
+    pure two-tier comparison. #808 spec needed intervention and original evidence-led
+    report provenance remains incomplete; high continuation passes. #810 installed
+    composed controls establish capability; direct live carrier consumption is the
+    next separate obligation, not yet happened. #811 revised scheduling rejects unsafe
+    cross-commit reuse, defers preparation pytest honestly and executes the full suite
+    once at final current state, with other gates retained and no total net saving
+    claimed. Preserve treatment-input binding and version-only differences without
+    whole-install identity or fresh-session loading claims. Scope excludes publication
+    child #807 and parent #805; no target observations or approvals for them. Decide
+    whether approved bounded dispositions support closure without shrinking criteria.
+    Actual draft/commit-msg/pre-push consumption and later CLOSED provider readbacks
+    happen next, and must not be fabricated. This delivered result will directly feed
+    one complete five-target mixed-classification carrier, without another review
+    solely for formatting.'
+  attempt_packet_identity: 2062d5799b4a88fc88a74c6df6e7d0b2ae1fe50ed7fced1b1544c6ac1ecaccc1
+  attempt_parent_receipt_identity: parent-3bea58ba0ee82a2111adf601b5bacabca9c583b2617f7074
+  result_packet_identity: 2062d5799b4a88fc88a74c6df6e7d0b2ae1fe50ed7fced1b1544c6ac1ecaccc1
+  result_reviewed_input_identity: e3b49db90e70767e6cd674511f8b6bdef99893af3755901c28f6e071e3087286
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 692cbe1d42dec319d96b0b6237c20e7bc0ac6bd5bb04b75b5b44e67a740501f9
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

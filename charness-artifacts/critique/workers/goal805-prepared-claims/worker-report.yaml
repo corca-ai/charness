@@ -1,0 +1,112 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Required distinct prepared-claims review, not another code review. Prepared
+  commit fa8fe8834cb748dc5652442080d443027c407a87 is stopped before publication at
+  v8.5.0. Audit what the prepared latest.md and notes assert against the supplied
+  current version sources, actual helper preparation payload/stderr, code owning the
+  preparation status, and frozen pilot observations. Re-derive figures possible from
+  supplied bytes; explicitly name figures or actions you cannot independently establish.
+  Check stated reasons and measured-versus-reasoned assertions. A preparation exit
+  zero must remain partial: pytest-release is pending final resume, no public release,
+  install or issue close is claimed. Earlier safety/value/code critiques are already
+  complete; do not reopen unchanged implementation or request another pilot. Original
+  unfavorable and invalid-cell findings must remain visible. Distinguish literal displayed
+  configured quality command from parenthetical actual preparation command and partial
+  verdict. Notes generated counts are a bounded derived-source claim checked by release
+  preflight; your lack of all enumerated source bytes is a non-claim, not a demand
+  for whole-repo review. Success authorizes committing this required claims record
+  and proceeding through final full quality/public/install boundaries, not declaring
+  those done. Return bounded JSON pass/block and exact material findings; no edits
+  or external actions.'
+attempt_id: goal805-prepared-claims
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: adca1ebb78701a28c6e5b58d41ca9f1ed4360d6e0aa8f5c83eaf868dbbf73858
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-prepared-claims/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-prepared-claims/delivery.json
+producer_run_id: run-goal805-prepared-claims
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-prepared-claims/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-prepared-claims/receipt.json
+  producer_run_id: run-goal805-prepared-claims
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: e03e6bbf6cc43f7faca8c313807e27509318db7d4546afe9a35c084797e632da
+receipt_output_sha256: e03e6bbf6cc43f7faca8c313807e27509318db7d4546afe9a35c084797e632da
+packet_identity: d6557081d14169e8b3f5a40b2770c9edaa29477b17b3152c5e872a2df429023e
+reviewed_input_identity: fff5d788b57fbe5de79bf30f6c46162915e542a62041f2c412e7e5222c730a3a
+parent_receipt_identity: parent-b21a1e88d3085065b549127bba16718448da3614deb830f0
+provenance:
+  scope: 'Required distinct prepared-claims review, not another code review. Prepared
+    commit fa8fe8834cb748dc5652442080d443027c407a87 is stopped before publication
+    at v8.5.0. Audit what the prepared latest.md and notes assert against the supplied
+    current version sources, actual helper preparation payload/stderr, code owning
+    the preparation status, and frozen pilot observations. Re-derive figures possible
+    from supplied bytes; explicitly name figures or actions you cannot independently
+    establish. Check stated reasons and measured-versus-reasoned assertions. A preparation
+    exit zero must remain partial: pytest-release is pending final resume, no public
+    release, install or issue close is claimed. Earlier safety/value/code critiques
+    are already complete; do not reopen unchanged implementation or request another
+    pilot. Original unfavorable and invalid-cell findings must remain visible. Distinguish
+    literal displayed configured quality command from parenthetical actual preparation
+    command and partial verdict. Notes generated counts are a bounded derived-source
+    claim checked by release preflight; your lack of all enumerated source bytes is
+    a non-claim, not a demand for whole-repo review. Success authorizes committing
+    this required claims record and proceeding through final full quality/public/install
+    boundaries, not declaring those done. Return bounded JSON pass/block and exact
+    material findings; no edits or external actions.'
+  packet_identity: d6557081d14169e8b3f5a40b2770c9edaa29477b17b3152c5e872a2df429023e
+  reviewed_input_identity: fff5d788b57fbe5de79bf30f6c46162915e542a62041f2c412e7e5222c730a3a
+  parent_receipt_identity: parent-b21a1e88d3085065b549127bba16718448da3614deb830f0
+  attempt_id: goal805-prepared-claims
+  attempt_scope: 'Required distinct prepared-claims review, not another code review.
+    Prepared commit fa8fe8834cb748dc5652442080d443027c407a87 is stopped before publication
+    at v8.5.0. Audit what the prepared latest.md and notes assert against the supplied
+    current version sources, actual helper preparation payload/stderr, code owning
+    the preparation status, and frozen pilot observations. Re-derive figures possible
+    from supplied bytes; explicitly name figures or actions you cannot independently
+    establish. Check stated reasons and measured-versus-reasoned assertions. A preparation
+    exit zero must remain partial: pytest-release is pending final resume, no public
+    release, install or issue close is claimed. Earlier safety/value/code critiques
+    are already complete; do not reopen unchanged implementation or request another
+    pilot. Original unfavorable and invalid-cell findings must remain visible. Distinguish
+    literal displayed configured quality command from parenthetical actual preparation
+    command and partial verdict. Notes generated counts are a bounded derived-source
+    claim checked by release preflight; your lack of all enumerated source bytes is
+    a non-claim, not a demand for whole-repo review. Success authorizes committing
+    this required claims record and proceeding through final full quality/public/install
+    boundaries, not declaring those done. Return bounded JSON pass/block and exact
+    material findings; no edits or external actions.'
+  attempt_packet_identity: d6557081d14169e8b3f5a40b2770c9edaa29477b17b3152c5e872a2df429023e
+  attempt_parent_receipt_identity: parent-b21a1e88d3085065b549127bba16718448da3614deb830f0
+  result_packet_identity: d6557081d14169e8b3f5a40b2770c9edaa29477b17b3152c5e872a2df429023e
+  result_reviewed_input_identity: fff5d788b57fbe5de79bf30f6c46162915e542a62041f2c412e7e5222c730a3a
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: adca1ebb78701a28c6e5b58d41ca9f1ed4360d6e0aa8f5c83eaf868dbbf73858
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

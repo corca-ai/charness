@@ -1,0 +1,133 @@
+{
+  "read_phase": "post-claims final verification, before closeout",
+  "issues": [
+    {
+      "repo": "corca-ai/charness",
+      "number": 806,
+      "comments_read": true,
+      "comment_count": 0,
+      "issue": {
+        "author": {
+          "id": "MDQ6VXNlcjE1ODk0MzA=",
+          "is_bot": false,
+          "login": "spilist",
+          "name": "Hwidong Bae"
+        },
+        "body": "<!-- charness-work-item-key: consumer-comparison -->\n# Long-term delegation usefulness must be observed separately at each model tier\n\n## Capability and fixed decisions\n\nFeature; dependencies: comparison-contract, closeout-carrier, release-reuse, context-reuse at local proof readiness. Execute the frozen neutral four-arm protocol only with evaluator authority. Candidate is a named, packaged integrated revision; no-plugin receives equivalent ordinary tools and semantic context, without Charness treatment machinery.\n\n## Execution and acceptance\n\n- Re-verify frozen input/settings identities and contamination checks before each arm. No arm inherits another arm's outputs, caches or comments. Use scheduled checkpoint/context replacement/delta exactly as frozen.\n- Observe final behavior outside producer context. Report each acceptance predicate, unchanged behavior and delta handling, forbidden mutations, first correct resume action and any rescue event. Scheduled experimental events do not count as user rescue.\n- Retain phase and total elapsed time, available tokens, separate evaluator/provider overhead, rework events and sourced cost if observable. Necessary fresh resume reads, changed-input verification and independent observation are not redundant work.\n- Preserve every original arm, including failure. A setup failure is invalid/unexecuted, not zero-cost success; a task failure is not an infrastructure retry. Apply the frozen retry policy and report exclusions.\n- Report both model-tier comparisons, even if plugin loses or only one benefits. Single-scenario results are directional, not general reliability or statistical superiority.\n\n## Bounded repair and stopping rule\n\nA finding may justify a repair in the already-authorized changed seam. Preserve initial results and candidate hash; repaired-candidate reruns are separately labelled. Do not tune the oracle/task to make the candidate win. A changed oracle requires a new comparison, not replacement rows. Stop after the frozen pilot plus at most one separately identified repair validation round; broader replication or a new product direction requires operator direction.\n\n## Ownership and non-goals\n\nNeutral experiment orchestration owns isolation/stimulus/logging, producer owns its task, independent observer owns actual acceptance, parent owns interpretation and revision-to-release equivalence. No external repository creation, new maintained runner, or result dashboard. Publication child binds observations to shipped bytes or labels them pre-release-only.\n",
+        "comments": [],
+        "createdAt": "2026-09-06T02:46:43Z",
+        "labels": [],
+        "number": 806,
+        "state": "OPEN",
+        "title": "Long-term delegation usefulness is unmeasured across model tiers",
+        "updatedAt": "2026-09-06T02:46:43Z",
+        "url": "https://github.com/corca-ai/charness/issues/806"
+      }
+    },
+    {
+      "repo": "corca-ai/charness",
+      "number": 808,
+      "comments_read": true,
+      "comment_count": 0,
+      "issue": {
+        "author": {
+          "id": "MDQ6VXNlcjE1ODk0MzA=",
+          "is_bot": false,
+          "login": "spilist",
+          "name": "Hwidong Bae"
+        },
+        "body": "<!-- charness-work-item-key: context-reuse -->\n# Repeated bootstrap and fixed-form reasoning can obscure a long task's next action\n\n## Problem and capability\n\nThe same unchanged contract may be rediscovered at every skill transition or resume. Debug prescribes three hypotheses even when evidence narrows the cause; spec/retro begin with broad bootstrap. Reduce redundant work while preserving the investigation that catches stale assumptions, missing context or recurrence.\n\n## Fixed decisions and scope\n\n- Feature; dependency: comparison-contract. Reuse principles belong in existing public skills/references, not a separate lite mode or progress system.\n- Scope: `skills/public/spec/`, `skills/public/debug/`, `skills/public/retro/` and direct shared bootstrap consumers; `impl` supplies the existing reuse example. Remove prose-pinning checks in `tools/check_skill_contracts.py` only when they enforce wording rather than a required parsed contract.\n- Preserve live provider/delta reads on resume, causal falsifiability, minimal reproductions, recurrence routing, acceptance and independent proof-boundary judgment. A previous conclusion is not current evidence when its inputs changed.\n\n## First action and probes\n\nUse frozen scenario inputs to distinguish unchanged contract, changed contract, missing context, obvious local cause, uncertain cause and recurring seam. Identify each unconditional operation and its actual owner. Decide from these observations whether a command can disappear or becomes conditional; do not simply move boilerplate into another reference.\n\n## Success criteria and checks\n\n- The unchanged-context scenario reaches its next correct action with a concrete redundant read/planner/scaffold operation removed. Changed/missing inputs still trigger the appropriate lookup and contract repair.\n- Debug preserves falsifiable cause and recurrence handling without requiring a fabricated hypothesis quota; visible uncertainty still receives alternative-cause testing.\n- Chat-only retro need not pay durable scaffold cost unless persistence is requested or needed for the claim; durable lessons and follow-up obligations stay with their existing owner.\n- Local readiness for consumer-comparison requires integrated changes, behavior-oriented scenario proof, focused contract checks and independent review. The downstream candidate pilot assesses preserve/improve for final acceptance and closure; it does not block the pilot from starting. Exact prose substring success is not evidence of semantic behavior.\n- Record removed overhead and replacement instruction/selection/fallback cost. Preserve schema/frontmatter/parser checks; negative controls still detect a genuinely missing required boundary.\n\n## Boundary and non-goals\n\nNo bypass of user approval, independent boundary observers or durable provider truth. No broad skill rewrite or source-history migration. Public instruction changes receive first-reader review; parent integrates, exports and verifies the shipped consumer path.\n",
+        "comments": [],
+        "createdAt": "2026-09-06T02:46:44Z",
+        "labels": [],
+        "number": 808,
+        "state": "OPEN",
+        "title": "Repeated bootstrap and fixed-form reasoning obscure a long task next action",
+        "updatedAt": "2026-09-06T02:46:44Z",
+        "url": "https://github.com/corca-ai/charness/issues/808"
+      }
+    },
+    {
+      "repo": "corca-ai/charness",
+      "number": 809,
+      "comments_read": true,
+      "comment_count": 0,
+      "issue": {
+        "author": {
+          "id": "MDQ6VXNlcjE1ODk0MzA=",
+          "is_bot": false,
+          "login": "spilist",
+          "name": "Hwidong Bae"
+        },
+        "body": "<!-- charness-work-item-key: comparison-contract -->\n# A long-delegation net-value claim lacks a fair no-plugin comparison\n\n## Problem and capability\n\nPrior skill-journey comparisons do not establish whether Charness helps versus no plugin, or whether model tiers differ. Existing fixture instructions and task execution inject Charness, so copying them to a baseline would contaminate the comparison. Produce a frozen, runnable pilot protocol without executing an arm before its authority and inputs are settled.\n\n## Fixed decisions\n\n- Feature; no dependencies. Canonical planning provenance: `charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md`.\n- One four-arm pilot: high/low tiers crossed with candidate/no-plugin, two fresh contexts per arm. Reuse alias fixture semantics under `evals/fixtures/consumer-journeys/spec-impl-alias/`; do not reuse its plugin-specific shared instructions.\n- Shared semantic task, initial files, scheduled cooperative checkpoint, durable contract delta, acceptance and permissions. Only treatment supplies Charness. Baseline may use ordinary tests, notes, git and the same underlying issue capability.\n- Neutral host runner isolates roots and collects observations only. It must not recover intent, repair code, supply a contract, or donate Charness task-run behavior. No new maintained product runner or evaluation platform.\n\n## Probe questions and first action\n\nBefore any arm, write the protocol and hidden observer using the existing `charness-artifacts/probe/` class. Resolve exact models/common supported effort, clean host/plugin visibility, provider channel, time/token ceiling, context reset and checkpoint stimulus. A real provider is preferred only within explicit repository authority; if using an isolated adapter fixture, declare that this cannot prove live provider recovery. This choice is fixed in the protocol, not changed across arms.\n\n## Success criteria and checks\n\n- Freeze seed, semantic prompts, treatment wrappers, delta, oracle, settings, model IDs, intervention and retry rubric, arm order, budget and price source if dollars are reported. Hash exact bytes before any run. No agent can read oracle or another arm's outputs.\n- Preflight demonstrates actual fresh-context launch and absence of Charness discovery in no-plugin; a contaminated arm is invalid, not a poor baseline result.\n- Observer reaches final behavior, preserved prior behavior, delta behavior and disallowed mutations. Resume assessment checks selection of durable truth and the delta before implementation, without user restatement.\n- Validation includes a deliberately wrong output rejected by the hidden observer and a correct control accepted. These checks prove the experiment boundary, not product benefit.\n\n## Deferred and non-goals\n\nGeneral crash recovery, broad reliability and significance claims wait for replication driven by a concrete pilot gap. Freeze candidate revision when implementation is ready; preserve the initial pilot if candidate fixes lead to separately labelled reruns. Parent owns provider binding and publication; this child does not create external repositories or grant evaluator authority.\n",
+        "comments": [],
+        "createdAt": "2026-09-06T02:46:44Z",
+        "labels": [],
+        "number": 809,
+        "state": "OPEN",
+        "title": "Long-delegation net value lacks a fair no-plugin comparison",
+        "updatedAt": "2026-09-06T02:46:44Z",
+        "url": "https://github.com/corca-ai/charness/issues/809"
+      }
+    },
+    {
+      "repo": "corca-ai/charness",
+      "number": 810,
+      "comments_read": true,
+      "comment_count": 0,
+      "issue": {
+        "author": {
+          "id": "MDQ6VXNlcjE1ODk0MzA=",
+          "is_bot": false,
+          "login": "spilist",
+          "name": "Hwidong Bae"
+        },
+        "body": "<!-- charness-work-item-key: closeout-carrier -->\n# A multi-issue closeout is forced into repeated reviews and classification partitions\n\n## Problem and capability\n\nIn #798, closing #800 and #803 required separately repackaged final reviews. The shared checker requires one scalar packet label to prefix-match every issue. The commit hook then dispatches one classification for all bare close targets, forcing bug/feature separation. Support direct consumption of one genuinely scoped review and one mixed carrier without dropping per-issue evidence.\n\nClassification: bug\nCausing skill: issue, critique\n\n## Fixed decisions and ownership\n\n- No dependencies. Shared code owns generic packet/result/delivery identity; issue owns target membership, per-target classification, behavioral verdict and its closeout policy.\n- Existing singleton carriers remain valid. A structured exact target set is the candidate direction, not permission to accept free-text substring membership or weaken old refusals.\n- A semantic review may cross caller formatting only if its bound inputs and actual observations cover every requested claim and the consuming owner accepts that scope. A release-state review alone does not prove issue behavior.\n\n## First action and probes\n\nUse debug to reproduce scalar-target and mixed-classification failures against the final issue/hook consumer, then causal review before repair design. Inspect `skills/shared/scripts/reviewer_worker_carrier_support.py`, `skills/public/issue/scripts/issue_critique_observer.py`, and `scripts/gates/check_issue_closeout_commit_msg.py` plus their producer schemas and tests. Freeze legacy migration, ambiguous/missing classification handling and target equality rules in the living contract before code.\n\n## Success criteria and checks\n\n- One source-bound review covering two different issues is consumed without a second semantic review solely for format. A mixed bug/feature carrier exercises both existing evidence floors through draft validation and hook dispatch.\n- Negative controls: omitted/extra/duplicate/foreign/swapped target; stale source; wrong packet/result/parent; an uncovered issue added to an otherwise passing bundle; a bug mislabeled or missing its required proof. Fail before publication.\n- Independent reviewer observes per-issue behavior through a channel distinct from carrier/closed state. It may reuse actual current observations, never invent them from an aggregate pass.\n- Before/after record names removed review/recopy/partition work and all added identity checks and fallback costs. Keep existing paths if proposed consolidation loses capability or is more complex for no gain.\n\n## Boundary and non-goals\n\nThis is a proof-surface change; retain distinct review, focused regression/mutation proof and publication/readback. No global review cache, fabricated human approval or unrelated closeout taxonomy rewrite. Parent alone integrates/export-syncs and owns final published closeout. Dependencies mean local proof readiness, not premature tracker closure.\n",
+        "comments": [],
+        "createdAt": "2026-09-06T02:46:44Z",
+        "labels": [
+          {
+            "id": "LA_kwDOR9yx7M8AAAACepY1HA",
+            "name": "bug",
+            "description": "Something isn't working",
+            "color": "d73a4a"
+          },
+          {
+            "id": "LA_kwDOR9yx7M8AAAACzVAaiw",
+            "name": "rework",
+            "description": "Rework caused by a charness skill; body carries a Causing skill: line that retro reads",
+            "color": "D93F0B"
+          }
+        ],
+        "number": 810,
+        "state": "OPEN",
+        "title": "Multi-issue closeout forces repeated reviews and classification partitions",
+        "updatedAt": "2026-09-06T02:47:43Z",
+        "url": "https://github.com/corca-ai/charness/issues/810"
+      }
+    },
+    {
+      "repo": "corca-ai/charness",
+      "number": 811,
+      "comments_read": true,
+      "comment_count": 0,
+      "issue": {
+        "author": {
+          "id": "MDQ6VXNlcjE1ODk0MzA=",
+          "is_bot": false,
+          "login": "spilist",
+          "name": "Hwidong Bae"
+        },
+        "body": "<!-- charness-work-item-key: release-reuse -->\n# Release resume repeats semantic verification after a sealed prepare\n\n## Problem and capability\n\nGoal #798's prepare and resume repeated the release quality command, with the latter taking 383.362 seconds. Claims/evidence changed between stages, so this is a candidate dominated execution rather than proof that every second check is unnecessary. Reuse unchanged subject evidence across eligible claims-only changes while retaining current publication safeguards.\n\n## Fixed decisions and ownership\n\n- Feature; no dependencies. Release owns eligibility and handoff; existing quality/pre-push receipt owners retain their verification semantics. Do not introduce a universal cache or broaden skip flags.\n- Name equivalence before implementation: subject source and dependency closure, verifier bytes/configuration, command scope, runtime/tool versions, materialized export roots, receipt provenance and allowed metadata delta. Commit identity alone is insufficient.\n- Missing or invalid equivalence never yields reuse. It follows an explicit full re-verification or refuses with the actionable reason; no hidden partial green.\n\n## First action and probes\n\nInspect prepare/resume/common sealing and pre-push consumers under `skills/public/release/scripts/` and `.githooks/pre-push`. Classify inputs into semantic subject, proof/verifier, and review/audit-only bytes, including inventory regenerated by gates. Freeze the actual closure and delta allow-rule with independent review before removing a call. Treat dynamic/unknown inputs conservatively; record the fallback rather than inventing equality.\n\n## Success criteria and checks\n\n- Eligible prepare-to-resume invokes the semantic subject suite once; receipt construction, eligibility check and required current boundary checks remain observed separately. Capture real before/after invocations and added overhead.\n- Each changed identity axis, corrupted/missing receipt, changed materialized root, adversarial file disguised as claims-only data, and stale/foreign prepared lineage prevents reuse at the final pre-push/publication consumer.\n- Version drift, authorization, claims eligibility, fresh checkout/package, public readback and installed behavior remain current and independently observed. Reuse is not publication approval.\n- Tests prove both eligible and fallback/refusal branches, including changes between prepare and resume. Fresh-eye review examines the invariant and a distinct input-axis counterexample; verdict-changing repairs follow the bounded review cap.\n\n## Non-goals and deferred choices\n\nNo removal merely to meet a time target; no general filesystem cache or relaxed unknown-input policy. If the closure cannot be made trustworthy and cheaper within this seam, record A2 unmet and seek a scoped disposition, not a false completion. Parent owns release authorization, integration and final publication.\n",
+        "comments": [],
+        "createdAt": "2026-09-06T02:46:44Z",
+        "labels": [],
+        "number": 811,
+        "state": "OPEN",
+        "title": "Release resume repeats semantic verification after a sealed prepare",
+        "updatedAt": "2026-09-06T02:46:44Z",
+        "url": "https://github.com/corca-ai/charness/issues/811"
+      }
+    }
+  ]
+}

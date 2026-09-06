@@ -1,0 +1,108 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Exact mixed-bundle behavioral closeout and honest per-issue disposition",
+  "packet_sha256": "2062d5799b4a88fc88a74c6df6e7d0b2ae1fe50ed7fced1b1544c6ac1ecaccc1",
+  "reviewed_input_identity_sha256": "e3b49db90e70767e6cd674511f8b6bdef99893af3755901c28f6e071e3087286",
+  "verdict": "pass",
+  "target_observations": [
+    {
+      "target": "corca-ai/charness#806",
+      "verdict": "pass",
+      "summary": "Approve closure as a completed bounded pilot with adverse and invalid outcomes preserved. The valid high-tier comparison demonstrates no benefit: equivalent acceptance costs more with the candidate. Low-tier pure-candidate attribution remains invalid, and both low-tier preservation failures remain failures under the frozen rubric. This disposition does not establish usefulness at both tiers.",
+      "evidence": [
+        "charness-artifacts/probe/2026-09-06-delegation-net-value/results.md: all four original cells and eight processes are retained; no semantic rescue, initial retry or repair-validation round occurred.",
+        "results.md: high candidate and baseline pass behavior, continuation and protected-byte checks; candidate takes 357.945s versus 268.233s, with more reported input/output tokens and no gained acceptance dimension.",
+        "results.md: low candidate consumed an unfrozen installed helper; both low arms appended to the protected original test file. Rubric ambiguity is disclosed without rewriting the frozen failures or claiming weakened assertions.",
+        "The supplied consumer-comparison provider body and living contract require preservation and reporting of unsuccessful/invalid outcomes and a bounded stopping rule; they do not require a favorable result."
+      ]
+    },
+    {
+      "target": "corca-ai/charness#808",
+      "verdict": "pass",
+      "summary": "Approve the bounded context-reuse capability and its explicitly limited disposition. Actual consumers demonstrate removed bootstrap work, conditional persistence and changed-context fallback; the high candidate preserves the pilot's continuation predicates. Forward spec required intervention, and evidence-led report provenance remains incomplete. Neither limitation is converted into first-pass success or general efficiency.",
+      "evidence": [
+        "charness-artifacts/goal-runs/805/reviews/context-code-disposition.md: same-context debug continuation omitted adapter resolution and scaffolding while retaining a planner read; uncertainty received controlled alternative-cause testing.",
+        "context-code-disposition.md: chat-only retro made no writes; a separate persistence request exercised planner, scaffold, persistence and validated durable output.",
+        "context-code-disposition.md: spec initially omitted current-state checks and ran them only after parent clarification. Changed-adapter debug routed to the new home and preserved the prior artifact, but its simulator hash did not bind the original reported claim; fallback cost was 14 calls and roughly 2.5 minutes.",
+        "charness-artifacts/probe/2026-09-06-delegation-net-value/results.md: high candidate read current task and durable truth before source mutation, reconciled the delta before completion, and passed all three continuation predicates plus behavioral and preservation checks.",
+        "context-code-disposition.md and integration-observations.md retain repaired independent code review, focused contract checks and subsequent integrated verification; the living context-reuse contract preserves falsifiability and existing artifact owners."
+      ]
+    },
+    {
+      "target": "corca-ai/charness#809",
+      "verdict": "pass",
+      "summary": "Approve closure for the frozen protocol and its observed limitations, not for a fair completed pure 2x2 comparison. The protocol specifies common semantics, isolation, controls, ordered continuation assessment, budgets and invalidation rules. The installed-helper leak is a material observer limitation retained in the outcome; low-tier pure-treatment comparison remains unestablished.",
+      "evidence": [
+        "charness-artifacts/probe/2026-09-06-delegation-net-value/protocol.md freezes arm order, requested models/effort, two fresh contexts, scheduled delta, local durable task channel, oracle/control requirements, wall-clock budgets and retry rules.",
+        "results.md reports actual fresh-process execution, oracle/other-arm invisibility and common skill preflights, while identifying the visible installed CLI and unfrozen managed dependency consumed by low candidate.",
+        "charness-artifacts/probe/2026-09-06-v8.5.0-independent-observer.json: all 17 retained pilot input checks match, and the public tag-pinned original results are byte-identical.",
+        "results.md preserves invalid treatment attribution and limits the other three cells to cooperative observed boundaries. It identifies stronger masking and explicit added-test placement as requirements for any separately authorized future replication."
+      ]
+    },
+    {
+      "target": "corca-ai/charness#810",
+      "verdict": "pass",
+      "summary": "Approve the repaired bug capability for direct consumption of this exact five-target review through one mixed carrier. Causal reproduction, retained refusal controls and separate installed-source composed execution support exact membership and per-classification floors. Actual consumption of this delivered review by the live carrier is the next operational obligation and has not occurred in the supplied evidence.",
+      "evidence": [
+        "charness-artifacts/debug/2026-09-06-multi-issue-closeout-cardinality.md reproduces same-packet singleton success versus plural refusal and mixed-classification false acceptance; the causal record preserves both defects.",
+        "charness-artifacts/goal-runs/805/reviews/closeout-code-observations.md records reproduced authority, citation-scope, foreign-target and singleton-shorthand bypasses, bounded repairs, a passing independent follow-up and target-bound duplicate-target mutation proof.",
+        "The living closeout-carrier contract distinguishes invocation, complete citation and classification-group scope; it retains packet/result/source/parent/delivery joins, exact target equality, singleton migration and each existing evidence floor.",
+        "charness-artifacts/probe/2026-09-06-v8.5.0-independent-observer.json: the installed-source composed mixed bug/feature test passed through public CLI entrypoints in-process, draft validation, commit-msg, pre-push and paused-brief resumption. Its scope explicitly excludes live tracker closure.",
+        "integration-observations.md records subsequent changed-line coverage of all 16 changed production owners with no blocking lines and completed broad integration verification."
+      ]
+    },
+    {
+      "target": "corca-ai/charness#811",
+      "verdict": "pass",
+      "summary": "Approve the explicitly revised scheduling outcome. Unsafe cross-commit verdict equivalence was rejected; preparation honestly leaves pytest-release unestablished, and one complete suite runs against the final current state. All other applicable stage gates remain. The removed invocation is demonstrated, but arbitrary evidence reuse and total net lifecycle savings are not.",
+      "evidence": [
+        "charness-artifacts/probe/2026-09-06-release-scheduling/observations.md records actual Git and excluded release/review reads that defeat the proposed independence claim; the living release-reuse contract explicitly supersedes reuse-axis tests with final-current full verification.",
+        "charness-artifacts/goal-runs/805/reviews/release-preparation-receipt.json: 87 gates passed; status is unestablished, with pytest-release explicitly deferred and unproven.",
+        "charness-artifacts/goal-runs/805/reviews/release-final-receipt.json: 88 gates passed, including pytest-release, with no adverse or unproven subjects; optional non-run checks remain separately listed.",
+        "release-scheduling/observations.md records one actual final pytest-release invocation at 141.290s and changed-line coverage at both stages. Preparation/final quality took 208.569s/358.653s by helper timing; investigation and observer totals remain unknown.",
+        "The same record retains composed prepare/claims/resume proof, partial/missing-pytest handoff refusals, ordinary full fallback and final-failure-before-publication controls. The separate observer confirms public release and installed-source behavior within its stated scope."
+      ]
+    }
+  ],
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "Adverse pilot results and an invalid low-candidate cell could be mistaken for successful usefulness or a completed fair comparison.",
+      "bin": "Valid but Defer",
+      "disposition": "Approve the bounded experimental disposition with these outcomes retained. Low-tier attribution and broader benefit remain unresolved; no rerun or favorable relabeling is required for this closeout."
+    },
+    {
+      "concern": "Spec intervention and incomplete evidence-led report provenance could disappear behind aggregate acceptance.",
+      "bin": "Valid but Defer",
+      "disposition": "Retain both limitations in the closeout carrier. First-pass spec preservation and complete report provenance are unsupported; the demonstrated reuse and high-pilot continuation support only the bounded feature disposition."
+    },
+    {
+      "concern": "Approval of #810 could be presented as proof that this exact live carrier has already been consumed.",
+      "bin": "Act Before Ship",
+      "disposition": "Consume this delivered review with one complete five-target citation and the declared bug/feature classifications through current draft and hook consumers. Preserve their actual results before claiming operational consumption."
+    },
+    {
+      "concern": "Release scheduling could be described as safe cross-commit reuse or a measured net saving.",
+      "bin": "Over-Worry",
+      "disposition": "The revised contract avoids the unsupported equivalence claim and proves final-current verification. Approve that outcome while withholding reuse and net-saving claims; retained stage gates are not redundant merely because they repeat."
+    },
+    {
+      "concern": "Installed extras and version changes could invalidate all earlier treatment evidence or be hidden by a whole-install identity claim.",
+      "bin": "Over-Worry",
+      "disposition": "The observer establishes unchanged treatment inputs: all 1,113 frozen entries exist with matching modes, 1,111 contents match, and two manifest differences are proven version-only. Codex support and bytecode extras remain explicitly outside whole-install identity."
+    }
+  ],
+  "next_move": "Proceed with one mixed closeout carrier for exactly corca-ai/charness#806 #808 #809 #810 #811, classifying #810 as bug and the other four as features. Preserve the approved adverse/limited dispositions and consume this review through the existing draft, commit-msg and pre-push checks without another semantic review solely for formatting. Record actual carrier consumption and subsequent provider CLOSED readbacks separately; #807 and #805 remain outside this approval.",
+  "non_claims": [
+    "This approval evaluates all supplied inline semantic inputs; it does not add source review, experiment reruns or new behavioral observations.",
+    "No general delegation benefit, valid low-tier pure-candidate comparison, statistical superiority, backend model attestation or live provider recovery is established.",
+    "No first-pass success for the intervened spec probe or complete evidence-led original-report provenance is established.",
+    "Treatment-input binding is established by the supplied observer evidence; whole-package and whole-install byte identity are not. Retained Codex support files and bytecode extras remain disclosed.",
+    "Initial observer help probes may have generated bytecode; their exact side-effect provenance was not measured. The observer was a separate agent on the same machine and did not prove new-session host loading.",
+    "No safe arbitrary cross-commit verdict reuse, exact counterfactual saving or total net lifecycle saving is established.",
+    "Actual consumption of this delivered carrier remains next. The supplied target readbacks show OPEN; no later CLOSED state is fabricated.",
+    "Publication child #807 and parent #805 receive no target observation or closure approval here."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

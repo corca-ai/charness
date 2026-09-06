@@ -1,0 +1,91 @@
+package_id: charness
+current_version: 8.4.4
+target_version: 8.5.0
+previous_version: 8.4.4
+remote: origin
+branch: main
+tag_name: v8.5.0
+title: v8.5.0
+mode: bump-and-publish
+quality_command: ./scripts/run-quality.sh --release --read-only
+fresh_checkout_probes:
+- ./charness --help >/dev/null
+- ./charness goal run --help >/dev/null
+- python3 scripts/doctor.py --repo-root . --skip-release-probe >/dev/null
+commit_message: Release charness 8.5.0
+notes_mode: notes-file
+critique_artifact: charness-artifacts/critique/2026-09-06-goal805-release-8-5-0.md
+bump_rationale: 'Minor: add exact multi-target review and per-issue classification
+  support, and release preparation/final-resume scheduling without incompatible invocation
+  changes. The delegation pilot establishes no efficiency gain.'
+execute: true
+release_adapter_preflight:
+  status: not_required
+  reason: release adapter did not change in the release delta
+  commands: []
+  execution:
+    status: not_run
+    reason: focused preflight status is `not_required`; no commands were required
+    executed_commands: []
+close_issue_numbers: []
+close_issue_repo: corca-ai/charness
+critique_gate:
+  binding_checked: true
+  binding_tokens:
+  - 8-5-0
+  - 8.5.0
+expected_release_url: https://github.com/corca-ai/charness/releases/tag/v8.5.0
+issue_closeout_preflight:
+  status: not_requested
+  issues: []
+issue_closeout_behavioral_verdict:
+  applies: false
+  ok: true
+  missing: []
+issue_closeout_probe_record:
+  applies: false
+  ok: true
+  missing: []
+version_drift_check:
+  status: passed
+  stage: post-bump, pre-commit
+  checked_version: 8.5.0
+  versioned_surfaces:
+  - claude_marketplace_version
+  - claude_plugin
+  - codex_plugin
+  - packaging_manifest
+  presence_surfaces:
+  - codex_marketplace_source_path
+  drift: []
+  absence_corroboration: not-applicable
+release_runtime:
+- label: requested_review_gate
+  elapsed_seconds: 0.006
+- label: cli_skill_surface_gate
+  elapsed_seconds: 2.312
+- label: quality_command
+  elapsed_seconds: 208.569
+- label: fresh_checkout_probes_initial
+  elapsed_seconds: 4.826
+- label: fresh_checkout_probes_after_amend
+  elapsed_seconds: 5.064
+requested_review_gate:
+  status: ok
+  artifact_path: charness-artifacts/release/latest.md
+  artifact_exists: true
+  unavailable_hits: []
+  waiver_hits: []
+  requested_review_commands: []
+  requested_review_policy: advisory-only
+  configuration_status: advisory_only
+  command_results: []
+  blockers: []
+  warnings: []
+quality_status: 'exited 0 in 208.6s at `post-bump, pre-commit`, measured by this helper
+  (`./scripts/run-quality.sh --release --read-only --release-prepare`); quality unestablished:
+  pytest-release pending final resume'
+fresh_checkout_probe_status: passed
+release_stage: prepared-awaiting-claims-review
+prepared_release_commit: fa8fe8834cb748dc5652442080d443027c407a87
+next_action: commit a bound claims-review artifact, then resume publication

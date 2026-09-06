@@ -1,0 +1,18 @@
+{
+  "prior_packet": "charness-artifacts/critique/goal805-implementation-closeout-packet.json",
+  "hash_owner": "scripts.review.reviewed_input_worktree.content_sha256 (file-kind and executable-mode domain included)",
+  "checked_count": 16,
+  "unchanged_count": 15,
+  "changed": [
+    {
+      "path": "charness-artifacts/probe/2026-09-06-release-scheduling/observations.md",
+      "content_sha256": "2d2ee6f21436226b415d27afaab05d75eaccc36eb8785dface641d565e8c1693",
+      "current_sha256": "3a3f5619a137b124cfc573246ba68804d1985276eec8eef364da6ae8dc2d5cbd"
+    }
+  ],
+  "selected_rows_match": true,
+  "source_sha256_matches": true,
+  "observation_diff": "diff --git a/charness-artifacts/probe/2026-09-06-release-scheduling/observations.md b/charness-artifacts/probe/2026-09-06-release-scheduling/observations.md\nindex 77ac4b9cf..c169f15bc 100644\n--- a/charness-artifacts/probe/2026-09-06-release-scheduling/observations.md\n+++ b/charness-artifacts/probe/2026-09-06-release-scheduling/observations.md\n@@ -152,8 +152,8 @@ The initial mutable-notes refusal happened before a quality invocation.\n Preparation measured 87 gates, with `pytest-release` explicitly deferred and\n quality `unestablished`; final resume measured 88 gates including exactly one\n `pytest-release`, with quality `pass`. The changed-line gate remains at both\n-stages. The existing runtime recorder independently retains these exact rows\n-in `.charness/quality/history/runtime-signals-2026-09.jsonl`:\n+stages. The original recorder rows and source-byte identity are preserved in\n+[runtime-rows.json](runtime-rows.json); the following table renders those rows:\n \n | UTC | Gate | Milliseconds | Status |\n | --- | --- | --- | --- |\n",
+  "scope": "All sixteen prior semantic input file hashes compared with the owning hash function; only the two-line citation change differs. Seven runtime rows preserve original fields. No prior empirical outcome, source code, fixture or acceptance changed.",
+  "parent_error": "The earlier comparison incorrectly compared plain SHA256 to domain-separated file/mode identity and reported all sixteen changed; its worker was stopped before verdict. This corrected comparison replaces that false mismatch, not any original experiment result."
+}

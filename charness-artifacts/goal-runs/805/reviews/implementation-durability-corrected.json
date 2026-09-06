@@ -1,0 +1,102 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Changed durable proof connection, with unchanged per-target behavioral evidence reused",
+  "packet_sha256": "f10e367247f3dc21f38d4cf46ccffcafd6e5c99467b1486a55a0641aefd449f7",
+  "reviewed_input_identity_sha256": "6d3c0aca5df65fb268cb77d82deff51858237644c8e20d40c407243c451522ef",
+  "verdict": "pass",
+  "target_observations": [
+    {
+      "target": "corca-ai/charness#806",
+      "verdict": "pass",
+      "summary": "Feature: the durable citation repair preserves the prior bounded pilot disposition, including high-tier no-benefit and invalid low pure-candidate attribution.",
+      "evidence": [
+        "Reused prior independent behavioral evidence as delivered in implementation-closeout-scope-correction.json: both high cells passed behavior, continuation and protected-byte checks, while the candidate added 89.712 seconds, 147,104 input tokens and 2,962 output tokens without improved acceptance.",
+        "The same prior result retains the low candidate's unfrozen installed-helper contamination, both low protected-file failures and the frozen rubric's test-placement ambiguity. None becomes a successful or valid comparison.",
+        "durability-input-comparison-corrected.json reports sixteen prior semantic inputs compared with scripts.review.reviewed_input_worktree.content_sha256, fifteen unchanged and only the two release-scheduling citation lines changed. The #806 behavioral claims therefore retain their supplied prior disposition without another empirical judgment."
+      ]
+    },
+    {
+      "target": "corca-ai/charness#808",
+      "verdict": "pass",
+      "summary": "Feature: the unchanged bounded context-reuse disposition remains supported, with spec intervention and incomplete original-report provenance explicitly retained.",
+      "evidence": [
+        "Reused prior independent behavioral evidence as delivered in implementation-closeout-scope-correction.json: unchanged debug continuation omitted redundant adapter resolution and scaffolding; chat-only retro performed no writes before separately requested persistence; downstream high-candidate continuation passed all three ordered predicates and final acceptance.",
+        "The prior result records that spec continuation required parent intervention for omitted current-state checks. Changed-context debug used the new output home and evidence-led mode, but simulator hashing did not bind the original request report; validator success did not establish that provenance.",
+        "The supplied owning-hash comparison confines the prior-input change to the release-scheduling citation. The durable row attachment changes neither these observations nor their limitations."
+      ]
+    },
+    {
+      "target": "corca-ai/charness#809",
+      "verdict": "pass",
+      "summary": "Feature: the frozen protocol disposition survives the evidence repair, including the observer-helper isolation limitation and invalid pure two-tier attribution.",
+      "evidence": [
+        "Reused prior independent behavioral evidence as delivered in implementation-closeout-scope-correction.json: the independent observer reported all 17 retained pilot input hashes matching; original results, sequential execution, common discovery preflights and absence of semantic rescue remained recorded.",
+        "The prior result identifies installed Charness binary and managed-source visibility as a launcher/observer isolation defect consumed by the low candidate. This invalidates treatment attribution without rewriting the frozen protocol or rehabilitating the cell.",
+        "The supplied comparison reports no protocol or experiment-input change. Treatment-input binding and the two version-only metadata differences remain bounded evidence, without establishing whole-install identity or fresh-session loading."
+      ]
+    },
+    {
+      "target": "corca-ai/charness#810",
+      "verdict": "pass",
+      "summary": "Bug: the citation repair preserves the prior bundled-membership and mixed-classification capability disposition. Acceptance of the current live carrier remains a subsequent obligation.",
+      "evidence": [
+        "Reused prior independent behavioral evidence as delivered in implementation-closeout-scope-correction.json: original singleton-versus-plural refusal and mixed bug/feature false green were causally attributed to scalar membership and classification ownership; repaired controls retained exact membership and per-target classifications.",
+        "The prior independent installed observer recorded composed fixture behavior through public entrypoints, draft validation, commit-msg, independent pre-push and paused-brief resumption. These establish capability, not consumption of this current result.",
+        "worker-report.yaml records the prior result as succeeded, findings-received, approval-eligible and provenance-valid, with matching findings and receipt-output identity d7ad9e5355f5eefcf0e531d7357e187df72cd6a37d9d55551ee48ddd6db480b8.",
+        "The supplied comparison identifies no changed #810 behavioral input. The previous live attempt passed draft and commit-msg but required pre-push rejected its runtime-only citation before remote mutation; this review does not override that refusal or claim current gate acceptance."
+      ]
+    },
+    {
+      "target": "corca-ai/charness#811",
+      "verdict": "pass",
+      "summary": "Feature: the changed connection preserves the scheduling disposition by linking the timing table to seven durable original row objects and their source-byte identity. It adds durable evidence access without expanding the empirical claim.",
+      "evidence": [
+        "Reused prior independent behavioral evidence as delivered in implementation-closeout-scope-correction.json: preparation recorded 87 passed gates with pytest-release deferred and quality unestablished; final resume recorded 88 passed gates including one pytest-release, with quality pass and other applicable gates retained.",
+        "The only prior-file delta replaces the runtime-only citation in release-scheduling/observations.md with the relative link runtime-rows.json. That target is present among the supplied semantic inputs at the same directory.",
+        "runtime-rows.json preserves seven objects with timestamp, label, elapsed_ms, status and runtime_profile. Their timestamps, gate labels, durations and statuses match the seven rendered table entries, including final pytest-release at 141290 ms, preparation quality unestablished at 208269 ms and final quality pass at 358316 ms.",
+        "The durable file records source .charness/quality/history/runtime-signals-2026-09.jsonl and source_sha256 005adefbbc8bff876422438be76bd7431ec225ae8a312645a1e6fe5de9a9dbbc. The supplied corrected comparison explicitly reports selected_rows_match and source_sha256_matches as true.",
+        "The unchanged observations distinguish recorder timing from helper timing of 208.569 seconds preparation and 358.653 seconds final quality. They retain final-current execution, reject arbitrary cross-commit verdict reuse and disclaim total lifecycle saving. The seven-row selection is not a complete archive and does not independently prove absence of additional executions."
+      ]
+    }
+  ],
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "A runtime-only citation could leave the timing table without durable supporting evidence.",
+      "bin": "Act Before Ship",
+      "disposition": "Resolved within this bounded input: the table now links to the supplied durable file containing all seven original row objects and the source hash; the corrected comparison reports row and source-identity preservation. Current consumer acceptance remains required."
+    },
+    {
+      "concern": "The earlier hash mismatch could invalidate reuse of all prior behavioral dispositions.",
+      "bin": "Over-Worry",
+      "disposition": "The supplied corrected comparison uses the owning file-kind/executable-mode hash function and reports exactly one changed prior file, limited to two citation lines. The stopped worker's plain-hash mismatch produced no verdict or approval and supplies no contrary empirical result."
+    },
+    {
+      "concern": "Selected durable rows could be promoted into a new complete execution audit or net-saving proof.",
+      "bin": "Act Before Ship",
+      "disposition": "Keep the selected-row limitation explicit. Reuse the prior delivered scheduling judgment for unchanged claims; the attachment improves durability and does not establish archive completeness, exact counterfactual savings or total net benefit."
+    },
+    {
+      "concern": "A follow-up pass could erase negative results, invalid attribution or context-reuse limitations.",
+      "bin": "Act Before Ship",
+      "disposition": "All five observations retain their prior bounds: high no-benefit, invalid low attribution, observer-helper isolation, spec intervention, incomplete original-report provenance and final-current scheduling."
+    },
+    {
+      "concern": "Prior draft and commit-msg success could substitute for acceptance of the repaired current carrier.",
+      "bin": "Act Before Ship",
+      "disposition": "It cannot. Required pre-push previously failed before remote mutation. Current draft, commit-msg and independent pre-push consumption, followed by later CLOSED provider readbacks, remain next."
+    }
+  ],
+  "next_move": "Use this delivered result in the current complete issue-resolution carrier for exactly #806, #808, #809, #810 and #811, classifying #810 as bug and the other four as features. Preserve the durable evidence link and every retained limitation. Obtain current draft, commit-msg and required independent pre-push acceptance before the authorized remote closeout, then retain each CLOSED provider readback.",
+  "non_claims": [
+    "This pass decides only that the changed durable evidence connection preserves the five supplied prior dispositions. It is not a fresh code review, experiment, independent behavioral reproduction or broader approval.",
+    "The review used the supplied inline semantic bytes and owning-hash comparison; it did not inspect or edit the workspace or independently rehash the original runtime archive.",
+    "No current draft, commit-msg or pre-push acceptance, remote mutation or CLOSED provider state is claimed.",
+    "No observation or approval is issued for #807 or #805.",
+    "No valid pure low-tier or pure two-tier comparison, general efficiency gain, complete first-pass spec preservation, complete original-report provenance, arbitrary cross-commit verdict reuse, total net saving, whole-install identity or fresh-session loading is established.",
+    "Requested reviewer model, effort and service tier are not treated as host-confirmed application or backend attestation.",
+    "Goal evidence lineage: {\"binding\":{\"path\":\"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.binding.json\",\"sha256\":\"384f8d92cb5be679f32159e17b0797bf178ca2e43efee7dc05b8a9e7d20793fe\"},\"disposition\":\"goal-bound\",\"draft\":{\"path\":\"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md\",\"sha256\":\"710ff43f4176d0b67673ef0542f87d625709dbfaa7ba07b37a508329e0f5bedb\"},\"goal_run\":{\"number\":805,\"repo\":\"corca-ai/charness\",\"url\":\"https://github.com/corca-ai/charness/issues/805\"},\"kind\":\"charness.goal-lineage\",\"reason\":null,\"schema_version\":1,\"work_item\":{\"key\":\"closeout-carrier\",\"number\":810,\"repo\":\"corca-ai/charness\",\"url\":\"https://github.com/corca-ai/charness/issues/810\"}}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

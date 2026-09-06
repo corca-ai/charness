@@ -1,0 +1,8 @@
+RUN [quality_command] ./scripts/run-quality.sh --release --read-only --release-prepare
+HEARTBEAT [quality_command] elapsed=30.0s ./scripts/run-quality.sh --release --read-only --release-prepare
+HEARTBEAT [quality_command] elapsed=60.0s ./scripts/run-quality.sh --release --read-only --release-prepare
+HEARTBEAT [quality_command] elapsed=90.0s ./scripts/run-quality.sh --release --read-only --release-prepare
+HEARTBEAT [quality_command] elapsed=120.0s ./scripts/run-quality.sh --release --read-only --release-prepare
+HEARTBEAT [quality_command] elapsed=150.1s ./scripts/run-quality.sh --release --read-only --release-prepare
+HEARTBEAT [quality_command] elapsed=180.1s ./scripts/run-quality.sh --release --read-only --release-prepare
+PASS [quality_command] 208.6s ./scripts/run-quality.sh --release --read-only --release-prepare

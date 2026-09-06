@@ -138,3 +138,48 @@ After repair, 48 relevant tests passed in 8.26s (wrapper 9.1s), including the
 previous two failures and the topology flow; Python lint passed. An actual-shell
 newline roundtrip was then added to the existing command visibility tests. One
 bounded repair follow-up will read the repaired owners; no third code round.
+
+## Actual 8.5.0 publication
+
+The required preparation and claims-bound final resume both executed and the
+release was published on 2026-09-06. Preparation commit was
+`fa8fe8834cb748dc5652442080d443027c407a87`; claims child was
+`d8d05d57e312fa5206007256f0fc182ebc9c39a2`. Actual helper payloads and
+receipts are retained in `charness-artifacts/goal-runs/805/reviews/` as
+`release-preparation.*`, `release-final.*` and their `*-receipt.json` records.
+The initial mutable-notes refusal happened before a quality invocation.
+
+Preparation measured 87 gates, with `pytest-release` explicitly deferred and
+quality `unestablished`; final resume measured 88 gates including exactly one
+`pytest-release`, with quality `pass`. The changed-line gate remains at both
+stages. The original recorder rows and source-byte identity are preserved in
+[runtime-rows.json](runtime-rows.json); the following table renders those rows:
+
+| UTC | Gate | Milliseconds | Status |
+| --- | --- | --- | --- |
+| 01:34:32 | pytest-release, previous 8.4.4 preparation | 175020 | pass |
+| 01:49:49 | pytest-release, previous 8.4.4 resume | 145740 | pass |
+| 07:06:49 | release-changed-line-coverage, 8.5.0 preparation | 145050 | pass |
+| 07:06:49 | run-quality-read-only-release, preparation | 208269 | unestablished |
+| 07:15:38 | pytest-release, 8.5.0 final resume | 141290 | pass |
+| 07:19:14 | release-changed-line-coverage, final resume | 151820 | pass |
+| 07:19:14 | run-quality-read-only-release, final resume | 358316 | pass |
+
+This establishes the removed initial subject-suite invocation, while the
+final-current verdict and existing incomplete-receipt refusal controls remain.
+It is scheduling, not reuse of a pre-claims test verdict. The helper measured
+208.569s preparation and 358.653s final quality, separately from claims review
+(96.9s), final fresh checkout (4.913s), publication/readback and install refresh.
+Recorder and helper times differ because their measurement boundaries differ.
+No second full lane appears in the runtime archive at the initial release push
+(helper push/create/verify duration 5.529s). This is consistent with the existing
+receipt handoff selected by the release owner; the hook and its individual
+receipt-consumption cost are not separately instrumented here.
+
+The 141.290s current suite and 145.740s prior resume are observed scale, not an
+exact counterfactual saving: subjects, tree and machine load differ. Total
+investigation/implementation/observer cost was not fully instrumented and no
+net lifecycle saving is established. Gate-baseline runtime remains material:
+changed-line producer runs alone cost 145.050s and 151.820s. The living contract
+requires these distinct stage checks; a future change must establish their
+input/verdict equivalence before removing either, not infer waste from count.

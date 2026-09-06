@@ -1,0 +1,16 @@
+{
+  "claim": "Selected original runtime rows underlying the publication timing table; this is not the complete runtime archive or proof of total lifecycle saving.",
+  "source": ".charness/quality/history/runtime-signals-2026-09.jsonl",
+  "source_sha256": "005adefbbc8bff876422438be76bd7431ec225ae8a312645a1e6fe5de9a9dbbc",
+  "captured": "2026-09-06",
+  "selection": "Exact seven timestamped rows cited in observations.md; JSON row objects preserve all original fields and values.",
+  "rows": [
+    {"timestamp": "2026-09-06T01:34:32Z", "label": "pytest-release", "elapsed_ms": 175020, "status": "pass", "runtime_profile": "local-linux-x86_64-36cpu"},
+    {"timestamp": "2026-09-06T01:49:49Z", "label": "pytest-release", "elapsed_ms": 145740, "status": "pass", "runtime_profile": "local-linux-x86_64-36cpu"},
+    {"timestamp": "2026-09-06T07:06:49Z", "label": "release-changed-line-coverage", "elapsed_ms": 145050, "status": "pass", "runtime_profile": "local-linux-x86_64-36cpu"},
+    {"timestamp": "2026-09-06T07:06:49Z", "label": "run-quality-read-only-release", "elapsed_ms": 208269, "status": "unestablished", "runtime_profile": "local-linux-x86_64-36cpu"},
+    {"timestamp": "2026-09-06T07:15:38Z", "label": "pytest-release", "elapsed_ms": 141290, "status": "pass", "runtime_profile": "local-linux-x86_64-36cpu"},
+    {"timestamp": "2026-09-06T07:19:14Z", "label": "release-changed-line-coverage", "elapsed_ms": 151820, "status": "pass", "runtime_profile": "local-linux-x86_64-36cpu"},
+    {"timestamp": "2026-09-06T07:19:14Z", "label": "run-quality-read-only-release", "elapsed_ms": 358316, "status": "pass", "runtime_profile": "local-linux-x86_64-36cpu"}
+  ]
+}

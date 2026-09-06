@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-09-06",
-  "source_artifact_count": 435,
-  "candidate_count": 2230,
+  "source_artifact_count": 437,
+  "candidate_count": 2243,
   "top_candidates": [
     {
       "candidate_id": "class:2aa33565760a",
@@ -1722,6 +1722,29 @@
       ]
     },
     {
+      "candidate_id": "current_focus:043708f66944",
+      "kind": "current_focus",
+      "lesson": "Goal #805 asked whether Charness makes long-task delegation better, not whether more workflow machinery can be shipped.",
+      "normalized_key": "goal 805 asked whether charness makes long task delegation better not whether more workflow",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+      "latest_source_date": "2026-09-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+          "date": "2026-09-06",
+          "section": "Context",
+          "kind": "current_focus",
+          "lesson": "Goal #805 asked whether Charness makes long-task delegation better, not whether more workflow machinery can be shipped."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:75d83b1fb6c5",
       "kind": "next_improvement",
       "lesson": "applied owner-universe reuse, non-consuming preview identity, and applicable-evidence guidance; no new evaluator platform.",
@@ -1741,6 +1764,75 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "applied owner-universe reuse, non-consuming preview identity, and applicable-evidence guidance; no new evaluator platform."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:997471bddb02",
+      "kind": "next_improvement",
+      "lesson": "capability candidate, not implementation: before another pilot, mask installed Charness helpers and clarify whether added tests must be in new files. This repairs the experimental observation boundary, not the original result. Structural-follow-up destination: none — the frozen pilot is complete and a new experiment requires a new explicit scope decision.",
+      "normalized_key": "capability candidate not implementation before another pilot mask installed charness helpers and clarify whether",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+      "latest_source_date": "2026-09-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+          "date": "2026-09-06",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "capability candidate, not implementation: before another pilot, mask installed Charness helpers and clarify whether added tests must be in new files. This repairs the experimental observation boundary, not the original result. Structural-follow-up destination: none — the frozen pilot is complete and a new experiment requires a new explicit scope decision."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e387ec1c7649",
+      "kind": "next_improvement",
+      "lesson": "capability candidate, not implementation: first investigate the largest remaining measured release producer cost. Structural pattern: instrumented coverage producers may repeat equivalent work across lifecycle stages. Triggering instance(s): the 145.050s and 151.820s producers above. Destination: repo-local. Structural-follow-up destination: none — equality is unproved; this is a bounded next-task proposal, not authority to remove a gate, add a cache or file a new tracker in this Goal.",
+      "normalized_key": "capability candidate not implementation first investigate the largest remaining measured release producer cost structural",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+      "latest_source_date": "2026-09-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+          "date": "2026-09-06",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "capability candidate, not implementation: first investigate the largest remaining measured release producer cost. Structural pattern: instrumented coverage producers may repeat equivalent work across lifecycle stages. Triggering instance(s): the 145.050s and 151.820s producers above. Destination: repo-local. Structural-follow-up destination: none — equality is unproved; this is a bounded next-task proposal, not authority to remove a gate, add a cache or file a new tracker in this Goal."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ed3cd17d94ca",
+      "kind": "next_improvement",
+      "lesson": "capability candidate, not implementation: reject an issue-closeout scope mismatch before executing the reviewer, within the existing entrypoint. Structural pattern: producer-accepted input is refused only by its downstream consumer after expensive work. Triggering instance(s): the wrong scope prefix above. Destination: portable. Structural-follow-up destination: none — this requires a separately scoped producer/consumer contract change; the current release is not reopened to repair parent launch mistakes.",
+      "normalized_key": "capability candidate not implementation reject an issue closeout scope mismatch before executing the reviewer",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+      "latest_source_date": "2026-09-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+          "date": "2026-09-06",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "capability candidate, not implementation: reject an issue-closeout scope mismatch before executing the reviewer, within the existing entrypoint. Structural pattern: producer-accepted input is refused only by its downstream consumer after expensive work. Triggering instance(s): the wrong scope prefix above. Destination: portable. Structural-follow-up destination: none — this requires a separately scoped producer/consumer contract change; the current release is not reopened to repair parent launch mistakes."
         }
       ]
     },
@@ -1768,6 +1860,29 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:643729e0258a",
+      "kind": "next_improvement",
+      "lesson": "retain original results, the counted spec-consumer intervention, runtime observations and this detection-gap/sibling record. Do not promote repeated Markdown selection failure to a successful structural conversion. Structural-follow-up destination: none — the existing narrow option already works; an added guard has not been justified.",
+      "normalized_key": "retain original results the counted spec consumer intervention runtime observations and this detection gap",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+      "latest_source_date": "2026-09-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+          "date": "2026-09-06",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "retain original results, the counted spec-consumer intervention, runtime observations and this detection-gap/sibling record. Do not promote repeated Markdown selection failure to a successful structural conversion. Structural-follow-up destination: none — the existing narrow option already works; an added guard has not been justified."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:76b8189f236c",
       "kind": "next_improvement",
       "lesson": "run the existing cheap owners on each changed source or evidence family before the broad integration gate; retain failed receipts honestly.",
@@ -1787,6 +1902,190 @@
           "section": "Next Improvements",
           "kind": "next_improvement",
           "lesson": "run the existing cheap owners on each changed source or evidence family before the broad integration gate; retain failed receipts honestly."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e42b826c7296",
+      "kind": "next_improvement",
+      "lesson": "use the existing scoped owner before broad execution; do not restart completed review when only formatting changed. Structural-follow-up destination: applied: exact multi-target carrier consumption and final-only subject-suite scheduling, with the existing final-consumer refusal tests.",
+      "normalized_key": "use the existing scoped owner before broad execution do not restart completed review when",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+      "latest_source_date": "2026-09-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+          "date": "2026-09-06",
+          "section": "Next Improvements",
+          "kind": "next_improvement",
+          "lesson": "use the existing scoped owner before broad execution; do not restart completed review when only formatting changed. Structural-follow-up destination: applied: exact multi-target carrier consumption and final-only subject-suite scheduling, with the existing final-consumer refusal tests."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:3cf6fdf2d827",
+      "kind": "repeat_trap",
+      "lesson": "Closeout execution rework: the parent launched a 134.7s five-target review without the consumer-required `issue-resolution` prefix. Actual draft refusal caught it. After an operator pause and explicit permission, corrected delivery cost another 131.9s and passed draft plus commit-msg. Required pre-push then rejected a runtime-only source citation; selected original rows were preserved durably, without rerunning the measured subject. This is late cheap validation and evidence packaging overhead, not a claimed live A1 first-pass success.",
+      "normalized_key": "closeout execution rework the parent launched a 134 7s five target review without the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+      "latest_source_date": "2026-09-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+          "date": "2026-09-06",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "Closeout execution rework: the parent launched a 134.7s five-target review without the consumer-required `issue-resolution` prefix. Actual draft refusal caught it. After an operator pause and explicit permission, corrected delivery cost another 131.9s and passed draft plus commit-msg. Required pre-push then rejected a runtime-only source citation; selected original rows were preserved durably, without rerunning the measured subject. This is late cheap validation and evidence packaging overhead, not a claimed live A1 first-pass success."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:3b4236ac7783",
+      "kind": "repeat_trap",
+      "lesson": "Distributed skill behavior: the pilot candidates read additional skill instructions and produced additional records. Some HOTL/Prove/quality/achieve selections were inapplicable to the local task. The traces establish that overhead, not whether skill text or the executing agent alone caused each selection. General plugin attribution remains contested.",
+      "normalized_key": "distributed skill behavior the pilot candidates read additional skill instructions and produced additional records",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+      "latest_source_date": "2026-09-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+          "date": "2026-09-06",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "Distributed skill behavior: the pilot candidates read additional skill instructions and produced additional records. Some HOTL/Prove/quality/achieve selections were inapplicable to the local task. The traces establish that overhead, not whether skill text or the executing agent alone caused each selection. General plugin attribution remains contested."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:fb5fd71654cf",
+      "kind": "repeat_trap",
+      "lesson": "Executing-agent judgment: cheap length and command-expression failures were discovered after broad execution. Two direct Markdown invocations expanded through the configured global glob; both were stopped, not recorded as pass. The existing `--no-globs` option was the correct narrow next command. This is repeated selection error, not evidence that a new linter is needed.",
+      "normalized_key": "executing agent judgment cheap length and command expression failures were discovered after broad execution",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+      "latest_source_date": "2026-09-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+          "date": "2026-09-06",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "Executing-agent judgment: cheap length and command-expression failures were discovered after broad execution. Two direct Markdown invocations expanded through the configured global glob; both were stopped, not recorded as pass. The existing `--no-globs` option was the correct narrow next command. This is repeated selection error, not evidence that a new linter is needed."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:f5bb5bebbfae",
+      "kind": "repeat_trap",
+      "lesson": "Gate-baseline runtime: actual changed-line producers cost 145.050s in prepare and 151.820s in final resume. These are substantial repo-owned producer costs, not automatically necessary merely because they passed. Their distinct stage inputs and required boundary remain; no reuse proof exists for them.",
+      "normalized_key": "gate baseline runtime actual changed line producers cost 145 050s in prepare and 151",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+      "latest_source_date": "2026-09-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+          "date": "2026-09-06",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "Gate-baseline runtime: actual changed-line producers cost 145.050s in prepare and 151.820s in final resume. These are substantial repo-owned producer costs, not automatically necessary merely because they passed. Their distinct stage inputs and required boundary remain; no reuse proof exists for them."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b1b4a74f8543",
+      "kind": "repeat_trap",
+      "lesson": "Observation overhead: the rejected broad syscall probe produced 5.7 GB and was stopped after about eight minutes. The low-candidate isolation leaked an unfrozen installed helper. This is experimental launcher/observer work, not a producer failure. The invalid original cell is retained without a tuned rerun.",
+      "normalized_key": "observation overhead the rejected broad syscall probe produced 5 7 gb and was stopped",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+      "latest_source_date": "2026-09-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+          "date": "2026-09-06",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "Observation overhead: the rejected broad syscall probe produced 5.7 GB and was stopped after about eight minutes. The low-candidate isolation leaked an unfrozen installed helper. This is experimental launcher/observer work, not a producer failure. The invalid original cell is retained without a tuned rerun."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2893fbdcb412",
+      "kind": "repeat_trap",
+      "lesson": "Repository development rules: standalone standing tests followed by a full lane containing pytest overlap in protected behavior. The rule required both; complete input/verdict equivalence was not established. Their count alone does not justify deleting a boundary. The late cheap failures were still avoidable.",
+      "normalized_key": "repository development rules standalone standing tests followed by a full lane containing pytest overlap",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+      "latest_source_date": "2026-09-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+          "date": "2026-09-06",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "Repository development rules: standalone standing tests followed by a full lane containing pytest overlap in protected behavior. The rule required both; complete input/verdict equivalence was not established. Their count alone does not justify deleting a boundary. The late cheap failures were still avoidable."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:bf260a120a88",
+      "kind": "repeat_trap",
+      "lesson": "The first durability comparator incorrectly compared plain content SHA256 to domain-separated file/mode identities and reported all sixteen inputs changed. Parent stopped that worker after 28.9s before verdict. Calling the existing hash owner and asserting the expected change set established fifteen unchanged inputs and only the two-line citation change. The corrected narrow review uses that result. This error belongs to parent judgment; no new hashing abstraction or rewritten experiment was needed.",
+      "normalized_key": "the first durability comparator incorrectly compared plain content sha256 to domain separated file mode",
+      "recurrence_class": null,
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+      "latest_source_date": "2026-09-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+          "date": "2026-09-06",
+          "section": "Waste",
+          "kind": "repeat_trap",
+          "lesson": "The first durability comparator incorrectly compared plain content SHA256 to domain-separated file/mode identities and reported all sixteen inputs changed. Parent stopped that worker after 28.9s before verdict. Calling the existing hash owner and asserting the expected change set established fifteen unchanged inputs and only the two-line citation change. The corrected narrow review uses that result. This error belongs to parent judgment; no new hashing abstraction or rewritten experiment was needed."
         }
       ]
     },

@@ -1,0 +1,754 @@
+{
+  "observed_at": "2026-09-06T07:23:01.762146+00:00",
+  "observer": {
+    "identity": "/root/goal805_release_observer",
+    "separate_agent": true,
+    "same_machine": true
+  },
+  "commands": [
+    {
+      "argv": [
+        "charness",
+        "version"
+      ],
+      "status": 0,
+      "stdout": "version: 8.5.0\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "charness",
+        "doctor",
+        "--detail"
+      ],
+      "status": 0,
+      "stderr": "",
+      "stdout_sha256": "d75423b68cc9e30dc5ccfabf79ae2040dfd839adae374ff6816cbfcd94eee071"
+    },
+    {
+      "argv": [
+        "python3",
+        "/home/hwidong/.codex/plugins/cache/local/charness/8.5.0/skills/critique/scripts/run_review.py",
+        "--help"
+      ],
+      "status": 0,
+      "stderr": "",
+      "stdout_selected_lines": [
+        "                     [--prepared-target PREPARED_TARGET]",
+        "  --prepared-target PREPARED_TARGET",
+        "                        Opaque target covered by a generated packet; repeat",
+        "                        this run (repeatable)"
+      ]
+    },
+    {
+      "argv": [
+        "python3",
+        "/home/hwidong/.codex/plugins/cache/local/charness/8.5.0/skills/issue/scripts/issue_verify_closeout.py",
+        "--help"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B /home/hwidong/.codex/plugins/cache/local/charness/8.5.0/skills/issue/scripts/issue_tool.py verify-closeout --help",
+      "status": 0,
+      "stdout_selected_lines": [
+        "usage: issue_tool.py verify-closeout [-h] --repo REPO --number NUMBER",
+        "                                     [--classification {bug,feature,deferred-work,question,decision-needed,consolidated}]",
+        "  --number NUMBER       Issue number to verify; repeat for multiple issues",
+        "  --classification {bug,feature,deferred-work,question,decision-needed,consolidated}",
+        "                        `Classification #N:` per issue)"
+      ]
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B /home/hwidong/.codex/plugins/cache/local/charness/8.5.0/skills/issue/scripts/issue_tool.py validate-closeout-draft --help",
+      "status": 0,
+      "stdout_selected_lines": [
+        "usage: issue_tool.py validate-closeout-draft [-h] --repo REPO --number NUMBER",
+        "                                             [--classification {bug,feature,deferred-work,question,decision-needed,consolidated}]",
+        "  --number NUMBER       Issue number; repeat for bundles",
+        "  --classification {bug,feature,deferred-work,question,decision-needed,consolidated}",
+        "                        `Classification #N:` per issue)"
+      ]
+    }
+  ],
+  "installed": {
+    "repo_root": "/home/hwidong/.agents/src/charness",
+    "checkout_git_head": "d8d05d57e",
+    "checkout_version": "8.5.0",
+    "plugin_root": "/home/hwidong/.codex/plugins/charness",
+    "codex_cache_entries": [
+      {
+        "marketplace": "local",
+        "plugin": "charness",
+        "version": "8.5.0",
+        "version_dir": "/home/hwidong/.codex/plugins/cache/local/charness/8.5.0",
+        "manifest_path": "/home/hwidong/.codex/plugins/cache/local/charness/8.5.0/.codex-plugin/plugin.json",
+        "manifest_version": "8.5.0",
+        "manifest_status": "valid"
+      }
+    ],
+    "claude_installed_entry": {
+      "scope": "user",
+      "installPath": "/home/hwidong/.claude/plugins/cache/corca-charness/charness/8.5.0",
+      "version": "8.5.0",
+      "installedAt": "2026-08-28T04:31:05.880Z",
+      "lastUpdated": "2026-09-06T07:19:39.637Z",
+      "gitCommitSha": "d8d05d57e312fa5206007256f0fc182ebc9c39a2"
+    },
+    "codex_source_cache_drift": false,
+    "codex_enabled_plugin_ids": [
+      "charness@local"
+    ],
+    "claude_enabled_status": {
+      "ok": true,
+      "plugin_ref": "charness@corca-charness",
+      "present": true,
+      "enabled": true
+    },
+    "latest_host_operation": {
+      "key": "last_update",
+      "recorded_at": "2026-09-06T07:19:42.913932Z",
+      "operation_status": "success",
+      "operation_scope": "self",
+      "delivery_status": "refreshed",
+      "delivery_verified": true,
+      "delivery_reason": "plugin-install-succeeded",
+      "delivery_error": null
+    },
+    "plugin_preamble": {
+      "package_id": "charness",
+      "version": "8.5.0",
+      "runtime_self_update": false,
+      "runtime_self_update_attention": "RUNTIME_SELF_UPDATE: disabled",
+      "update_hints": {
+        "claude": "Run `charness update`, then restart Claude Code.",
+        "codex": "Run `charness init` or `charness update`; both try Codex's official plugin/install path when the Codex CLI is available. Restart Codex only if the host state still needs to reload the installed plugin.",
+        "grok": "Run `charness update`, then restart Grok Build. Grok loads `~/.grok/plugins/charness` when `[plugins].enabled` lists `charness`. No marketplace step."
+      },
+      "root_install_surface": {
+        "ok": true,
+        "warning": null
+      },
+      "warnings": []
+    }
+  },
+  "release": {
+    "endpoint": "https://api.github.com/repos/corca-ai/charness/releases/tags/v8.5.0",
+    "status": 200,
+    "id": 383498265,
+    "html_url": "https://github.com/corca-ai/charness/releases/tag/v8.5.0",
+    "tag_name": "v8.5.0",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2026-09-06T07:19:27Z",
+    "target_commitish": "main",
+    "body_sha256": "d306e01a889a66eb222a198307b249089cbc894c0e2b6ec76dd0ddd171339fe1"
+  },
+  "comparison_record": {
+    "notes_link": "https://github.com/corca-ai/charness/blob/v8.5.0/charness-artifacts/probe/2026-09-06-delegation-net-value/results.md",
+    "endpoint": "https://raw.githubusercontent.com/corca-ai/charness/v8.5.0/charness-artifacts/probe/2026-09-06-delegation-net-value/results.md",
+    "status": 200,
+    "public_sha256": "32b906aed2694564c1c205a583b64075cb2621a997a35987b2b05a194ec3233a",
+    "local_sha256": "32b906aed2694564c1c205a583b64075cb2621a997a35987b2b05a194ec3233a",
+    "bytes_equal": true
+  },
+  "frozen_manifest": {
+    "revision": "d7f7d5ec3a3e588b90bff64f7d9eb0981787177d",
+    "file_sha256": "c8ed716c0b5a8627793b2db1d14a726659d681d21235d2c1c78f58631d4ee00f",
+    "manifest_sha256": "b68d4230f52e15df667fe10872786f27ba722afd00578f4d13fae67a31dd17fb",
+    "entry_count": 1113
+  },
+  "package_comparisons": {
+    "local_materialized": {
+      "root": "/home/hwidong/codes/charness/plugins/charness",
+      "actual_entries": 1113,
+      "missing": [],
+      "extras": [],
+      "content_differences": [
+        {
+          "path": ".claude-plugin/plugin.json",
+          "expected": {
+            "kind": "file",
+            "sha256": "6662c22626d14eb46a06aebb1ee1ead5b8a77b09308782802136b9579631c1bc",
+            "mode": 436
+          },
+          "actual": {
+            "kind": "file",
+            "sha256": "96b18b8a08456af2a9e213acb3aa61235fa72ac0fe1ca35cec78c9ee2365390b",
+            "mode": 436
+          }
+        },
+        {
+          "path": ".codex-plugin/plugin.json",
+          "expected": {
+            "kind": "file",
+            "sha256": "7c82580305471b9f58daf7088fbddbdaee65f53744e39ed6366dd27261f80b7f",
+            "mode": 436
+          },
+          "actual": {
+            "kind": "file",
+            "sha256": "c7358d391df8d56dd775f5c79437697b07b4ede5c2bb17d376f7bb3d7b23c619",
+            "mode": 436
+          }
+        }
+      ],
+      "mode_differences": [],
+      "mode_difference_paths": []
+    },
+    "managed_materialized": {
+      "root": "/home/hwidong/.agents/src/charness/plugins/charness",
+      "actual_entries": 1113,
+      "missing": [],
+      "extras": [],
+      "content_differences": [
+        {
+          "path": ".claude-plugin/plugin.json",
+          "expected": {
+            "kind": "file",
+            "sha256": "6662c22626d14eb46a06aebb1ee1ead5b8a77b09308782802136b9579631c1bc",
+            "mode": 436
+          },
+          "actual": {
+            "kind": "file",
+            "sha256": "96b18b8a08456af2a9e213acb3aa61235fa72ac0fe1ca35cec78c9ee2365390b",
+            "mode": 436
+          }
+        },
+        {
+          "path": ".codex-plugin/plugin.json",
+          "expected": {
+            "kind": "file",
+            "sha256": "7c82580305471b9f58daf7088fbddbdaee65f53744e39ed6366dd27261f80b7f",
+            "mode": 436
+          },
+          "actual": {
+            "kind": "file",
+            "sha256": "c7358d391df8d56dd775f5c79437697b07b4ede5c2bb17d376f7bb3d7b23c619",
+            "mode": 436
+          }
+        }
+      ],
+      "mode_differences": [],
+      "mode_difference_paths": []
+    },
+    "codex_source": {
+      "root": "/home/hwidong/.codex/plugins/charness",
+      "actual_entries": 1116,
+      "missing": [],
+      "extras": [
+        "support/agent-browser/.charness-last-used",
+        "support/agent-browser/SKILL.md",
+        "support/specdown/SKILL.md"
+      ],
+      "content_differences": [
+        {
+          "path": ".claude-plugin/plugin.json",
+          "expected": {
+            "kind": "file",
+            "sha256": "6662c22626d14eb46a06aebb1ee1ead5b8a77b09308782802136b9579631c1bc",
+            "mode": 436
+          },
+          "actual": {
+            "kind": "file",
+            "sha256": "96b18b8a08456af2a9e213acb3aa61235fa72ac0fe1ca35cec78c9ee2365390b",
+            "mode": 436
+          }
+        },
+        {
+          "path": ".codex-plugin/plugin.json",
+          "expected": {
+            "kind": "file",
+            "sha256": "7c82580305471b9f58daf7088fbddbdaee65f53744e39ed6366dd27261f80b7f",
+            "mode": 436
+          },
+          "actual": {
+            "kind": "file",
+            "sha256": "c7358d391df8d56dd775f5c79437697b07b4ede5c2bb17d376f7bb3d7b23c619",
+            "mode": 436
+          }
+        }
+      ],
+      "mode_differences": [],
+      "mode_difference_paths": []
+    },
+    "codex_cache": {
+      "root": "/home/hwidong/.codex/plugins/cache/local/charness/8.5.0",
+      "actual_entries": 1144,
+      "missing": [],
+      "extras": [
+        "scripts/__pycache__/__init__.cpython-310.pyc",
+        "scripts/__pycache__/runtime_bootstrap.cpython-310.pyc",
+        "scripts/core/__pycache__/__init__.cpython-310.pyc",
+        "scripts/core/__pycache__/subprocess_guard.cpython-310.pyc",
+        "scripts/review/__pycache__/critique_reviewer_evidence.cpython-310.pyc",
+        "shared/scripts/__pycache__/reviewer_delivery_fields.cpython-310.pyc",
+        "shared/scripts/__pycache__/reviewer_worker_carrier.cpython-310.pyc",
+        "shared/scripts/__pycache__/reviewer_worker_carrier_support.cpython-310.pyc",
+        "skills/critique/scripts/__pycache__/run_review_invocation.cpython-310.pyc",
+        "skills/critique/scripts/__pycache__/run_review_packet.cpython-310.pyc",
+        "skills/critique/scripts/__pycache__/run_review_promotion.cpython-310.pyc",
+        "skills/critique/scripts/__pycache__/run_review_support.cpython-310.pyc",
+        "skills/critique/scripts/__pycache__/semantic_review_input.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_backend.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_close.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_close_comment_floor.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_closeout_classification_ledger.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_closeout_ledger_counts.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_closeout_rung1_floors.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_consolidated_closeout.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_critique_observer.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_critique_observer_support.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_identity.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_markdown_lib.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_resolution_critique.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_resolution_observer.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_verify_closeout_body.cpython-310.pyc",
+        "skills/issue/scripts/__pycache__/issue_worker_targets.cpython-310.pyc",
+        "support/agent-browser/.charness-last-used",
+        "support/agent-browser/SKILL.md",
+        "support/specdown/SKILL.md"
+      ],
+      "content_differences": [
+        {
+          "path": ".claude-plugin/plugin.json",
+          "expected": {
+            "kind": "file",
+            "sha256": "6662c22626d14eb46a06aebb1ee1ead5b8a77b09308782802136b9579631c1bc",
+            "mode": 436
+          },
+          "actual": {
+            "kind": "file",
+            "sha256": "96b18b8a08456af2a9e213acb3aa61235fa72ac0fe1ca35cec78c9ee2365390b",
+            "mode": 436
+          }
+        },
+        {
+          "path": ".codex-plugin/plugin.json",
+          "expected": {
+            "kind": "file",
+            "sha256": "7c82580305471b9f58daf7088fbddbdaee65f53744e39ed6366dd27261f80b7f",
+            "mode": 436
+          },
+          "actual": {
+            "kind": "file",
+            "sha256": "c7358d391df8d56dd775f5c79437697b07b4ede5c2bb17d376f7bb3d7b23c619",
+            "mode": 436
+          }
+        }
+      ],
+      "mode_differences": [],
+      "mode_difference_paths": []
+    },
+    "claude_cache": {
+      "root": "/home/hwidong/.claude/plugins/cache/corca-charness/charness/8.5.0",
+      "actual_entries": 1113,
+      "missing": [],
+      "extras": [],
+      "content_differences": [
+        {
+          "path": ".claude-plugin/plugin.json",
+          "expected": {
+            "kind": "file",
+            "sha256": "6662c22626d14eb46a06aebb1ee1ead5b8a77b09308782802136b9579631c1bc",
+            "mode": 436
+          },
+          "actual": {
+            "kind": "file",
+            "sha256": "96b18b8a08456af2a9e213acb3aa61235fa72ac0fe1ca35cec78c9ee2365390b",
+            "mode": 436
+          }
+        },
+        {
+          "path": ".codex-plugin/plugin.json",
+          "expected": {
+            "kind": "file",
+            "sha256": "7c82580305471b9f58daf7088fbddbdaee65f53744e39ed6366dd27261f80b7f",
+            "mode": 436
+          },
+          "actual": {
+            "kind": "file",
+            "sha256": "c7358d391df8d56dd775f5c79437697b07b4ede5c2bb17d376f7bb3d7b23c619",
+            "mode": 436
+          }
+        }
+      ],
+      "mode_differences": [],
+      "mode_difference_paths": []
+    }
+  },
+  "shipped_delta": {
+    "argv": [
+      "git",
+      "diff",
+      "--name-status",
+      "d7f7d5ec3a3e588b90bff64f7d9eb0981787177d",
+      "fa8fe8834cb748dc5652442080d443027c407a87"
+    ],
+    "status": 0,
+    "stdout": "M\t.claude-plugin/marketplace.json\nA\tcharness-artifacts/critique/2026-09-06-goal805-release-8-5-0.md\nA\tcharness-artifacts/critique/goal805-release-boundary-safety-packet.json\nA\tcharness-artifacts/critique/goal805-release-boundary-safety-packet.md\nA\tcharness-artifacts/critique/goal805-release-boundary-value-packet.json\nA\tcharness-artifacts/critique/goal805-release-boundary-value-packet.md\nA\tcharness-artifacts/critique/goal805-release-link-followup-packet.json\nA\tcharness-artifacts/critique/goal805-release-link-followup-packet.md\nA\tcharness-artifacts/critique/workers/goal805-release-boundary-safety/worker-report.yaml\nA\tcharness-artifacts/critique/workers/goal805-release-boundary-value/worker-report.yaml\nA\tcharness-artifacts/critique/workers/goal805-release-link-followup/worker-report.yaml\nA\tcharness-artifacts/goal-runs/805/bodies/parent-progress-3.md\nA\tcharness-artifacts/goal-runs/805/bodies/parent-progress-4.md\nA\tcharness-artifacts/goal-runs/805/observations/805-install-progress-3.started.json\nA\tcharness-artifacts/goal-runs/805/observations/805-install-progress-3.terminal.json\nA\tcharness-artifacts/goal-runs/805/observations/805-install-progress-4.started.json\nA\tcharness-artifacts/goal-runs/805/observations/805-install-progress-4.terminal.json\nA\tcharness-artifacts/goal-runs/805/operations/install-progress-3.json\nA\tcharness-artifacts/goal-runs/805/operations/install-progress-4.json\nM\tcharness-artifacts/goal-runs/805/reviews/integration-observations.md\nA\tcharness-artifacts/goal-runs/805/reviews/release-boundary-paths.txt\nA\tcharness-artifacts/goal-runs/805/reviews/release-boundary-safety.json\nA\tcharness-artifacts/goal-runs/805/reviews/release-boundary-value.json\nA\tcharness-artifacts/goal-runs/805/reviews/release-link-followup.json\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/candidate-inputs.json\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/high-baseline/inputs.json\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/high-baseline/observations.json\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/high-baseline/phase1.jsonl\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/high-baseline/phase2.jsonl\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/high-baseline/workspaces.tar.gz\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/high-candidate/inputs.json\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/high-candidate/observations.json\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/high-candidate/phase1.jsonl\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/high-candidate/phase2.jsonl\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/high-candidate/workspaces.tar.gz\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/low-baseline/inputs.json\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/low-baseline/observations.json\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/low-baseline/phase1.jsonl\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/low-baseline/phase2.jsonl\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/low-baseline/workspaces.tar.gz\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/low-candidate/inputs.json\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/low-candidate/observations.json\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/low-candidate/phase1.jsonl\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/low-candidate/phase2.jsonl\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/cells/low-candidate/workspaces.tar.gz\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/evaluation-observations.json\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/preflight/candidate-observations.json\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/preflight/candidate-transport.jsonl\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/preflight/high-observations.json\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/preflight/low-observations.json\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/results.md\nA\tcharness-artifacts/probe/2026-09-06-delegation-net-value/trace-observations.json\nA\tcharness-artifacts/release/2026-09-06-v8.5.0-notes.md\nM\tcharness-artifacts/release/latest.md\nM\tpackaging/charness.json\n",
+    "stderr": ""
+  },
+  "managed_delta": {
+    "argv": [
+      "git",
+      "diff",
+      "--name-status",
+      "fa8fe8834cb748dc5652442080d443027c407a87",
+      "d8d05d57e312fa5206007256f0fc182ebc9c39a2"
+    ],
+    "status": 0,
+    "stdout": "A\tcharness-artifacts/release-review/2026-09-06-v8.5.0-prepared-claims-review.json\nA\tcharness-artifacts/release-review/2026-09-06-v8.5.0-prepared-claims-review.md\n",
+    "stderr": ""
+  },
+  "pilot_input_checks": [
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/protocol.md",
+      "expected": "c7c6694c302a4e6ed7bd3a46d652b96146f71fb457ed622dbcd55008c4e4f498",
+      "actual": "c7c6694c302a4e6ed7bd3a46d652b96146f71fb457ed622dbcd55008c4e4f498",
+      "equal": true
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/initial-task.md",
+      "expected": "bb55f9b236deb5c1df3f776c14f52224f2fbc62ae654c108c33704e5f7185594",
+      "actual": "bb55f9b236deb5c1df3f776c14f52224f2fbc62ae654c108c33704e5f7185594",
+      "equal": true
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/revised-task.md",
+      "expected": "66303fae66f77ce596715f99fca0117b567d30bd25e75ed102a657bdbd20412e",
+      "actual": "66303fae66f77ce596715f99fca0117b567d30bd25e75ed102a657bdbd20412e",
+      "equal": true
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/start.md",
+      "expected": "753555c4c42ae4f37397aa7adc7e3e2c199bfdb9a60659ce3c0a14f21c20a60d",
+      "actual": "753555c4c42ae4f37397aa7adc7e3e2c199bfdb9a60659ce3c0a14f21c20a60d",
+      "equal": true
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/resume.md",
+      "expected": "f84b6845874475760c320335cd071721e0acf8024c3633287a2bd249dafd9c6a",
+      "actual": "f84b6845874475760c320335cd071721e0acf8024c3633287a2bd249dafd9c6a",
+      "equal": true
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/treatment.md",
+      "expected": "44dd9cf78f551228c3643bbb7292c21c5131873bb5242fb1bbb92fdc746ee933",
+      "actual": "44dd9cf78f551228c3643bbb7292c21c5131873bb5242fb1bbb92fdc746ee933",
+      "equal": true
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py",
+      "expected": "bfd02f02efb947163418ef5983020154ed2fcae2be48fa9511e623f5b089bbd2",
+      "actual": "bfd02f02efb947163418ef5983020154ed2fcae2be48fa9511e623f5b089bbd2",
+      "equal": true
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/control_catalog.py",
+      "expected": "c6ab11905bc0df09ac46e8e2e3965c056611d9862061c2131c78a824b34196b8",
+      "actual": "c6ab11905bc0df09ac46e8e2e3965c056611d9862061c2131c78a824b34196b8",
+      "equal": true
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/controls.py",
+      "expected": "59c59789607428d7312c7722ff104f4fb670fb97d25a4e509218f584748b9cc1",
+      "actual": "59c59789607428d7312c7722ff104f4fb670fb97d25a4e509218f584748b9cc1",
+      "equal": true
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/launch.py",
+      "expected": "c1ecbbd60fe6fb8962b9d5af29ed5cf7058957928ba23123f4cd6aff4bc924a3",
+      "actual": "c1ecbbd60fe6fb8962b9d5af29ed5cf7058957928ba23123f4cd6aff4bc924a3",
+      "equal": true
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/launcher_controls.py",
+      "expected": "46b7a06d0bce6732bbb6def34bcf7ee885b90b5e06a4def1ee1ee824cbfd3e7d",
+      "actual": "46b7a06d0bce6732bbb6def34bcf7ee885b90b5e06a4def1ee1ee824cbfd3e7d",
+      "equal": true
+    },
+    {
+      "path": "evals/fixtures/consumer-journeys/spec-impl-alias/seed/README.md",
+      "expected": "f2e6bf8da5613e8325b905f14b1f797d61b1afb084c0cc5cd052ebdcca733df6",
+      "actual": "f2e6bf8da5613e8325b905f14b1f797d61b1afb084c0cc5cd052ebdcca733df6",
+      "equal": true
+    },
+    {
+      "path": "evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/__init__.py",
+      "expected": "cd2e94b7a91c6dbf6d04eaccc8ff59dd8ac19c54b0d733612c01791e8f672994",
+      "actual": "cd2e94b7a91c6dbf6d04eaccc8ff59dd8ac19c54b0d733612c01791e8f672994",
+      "equal": true
+    },
+    {
+      "path": "evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/catalog.py",
+      "expected": "75fd818cc8ca6d8e465f4077018e9939955dcfdffde141714f3ac68440ec06f0",
+      "actual": "75fd818cc8ca6d8e465f4077018e9939955dcfdffde141714f3ac68440ec06f0",
+      "equal": true
+    },
+    {
+      "path": "evals/fixtures/consumer-journeys/spec-impl-alias/seed/tests/test_catalog.py",
+      "expected": "b49e9b68ef4260b14962b144a75e38f1821c4f80f7060f4bec0a55610d032cb4",
+      "actual": "b49e9b68ef4260b14962b144a75e38f1821c4f80f7060f4bec0a55610d032cb4",
+      "equal": true
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/control-observations.json",
+      "expected": "abfe4832179f2d1481f1097c7359b56c67114cb41962bcc74df29512110ec773",
+      "actual": "abfe4832179f2d1481f1097c7359b56c67114cb41962bcc74df29512110ec773",
+      "equal": true
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/launcher-control-observations.json",
+      "expected": "79a07024f40e88cdabdf79bdc56e363a47658f1c6685b49ed4376f2812dda306",
+      "actual": "79a07024f40e88cdabdf79bdc56e363a47658f1c6685b49ed4376f2812dda306",
+      "equal": true
+    }
+  ],
+  "tag_readback": {
+    "endpoint": "https://api.github.com/repos/corca-ai/charness/git/ref/tags/v8.5.0",
+    "status": 200,
+    "response": {
+      "ref": "refs/tags/v8.5.0",
+      "node_id": "REF_kwDOR9yx7LByZWZzL3RhZ3MvdjguNS4w",
+      "url": "https://api.github.com/repos/corca-ai/charness/git/refs/tags/v8.5.0",
+      "object": {
+        "sha": "fa8fe8834cb748dc5652442080d443027c407a87",
+        "type": "commit",
+        "url": "https://api.github.com/repos/corca-ai/charness/git/commits/fa8fe8834cb748dc5652442080d443027c407a87"
+      }
+    }
+  },
+  "content_comparison_command": "python3 - <<'PY'\nimport json,hashlib,subprocess,urllib.request,pathlib,stat,os,datetime,re,collections\nroot=pathlib.Path('/home/hwidong/codes/charness'); base=root/'charness-artifacts/probe/2026-09-06-delegation-net-value'; sha=lambda b:hashlib.sha256(b).hexdigest()\ndef run(args):\n p=subprocess.run(args,cwd=root,text=True,capture_output=True);return {'argv':args,'status':p.returncode,'stdout':p.stdout,'stderr':p.stderr}\nrecord={'observed_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'observer':{'identity':'/root/goal805_release_observer','separate_agent':True,'same_machine':True},'commands':[]}\nfor args in [['charness','version'],['charness','doctor','--detail']]:record['commands'].append(run(args))\nimport yaml\ndoc=yaml.safe_load(record['commands'][1]['stdout']); record['installed']= {k:doc.get(k) for k in ['repo_root','checkout_git_head','checkout_version','plugin_root','codex_cache_entries','claude_installed_entry','codex_source_cache_drift','codex_enabled_plugin_ids','claude_enabled_status','latest_host_operation','plugin_preamble']}\nu='https://api.github.com/repos/corca-ai/charness/releases/tags/v8.5.0'\nwith urllib.request.urlopen(urllib.request.Request(u,headers={'User-Agent':'charness-independent-observer','Accept':'application/vnd.github+json'})) as r:\n d=json.load(r);record['release']={'endpoint':u,'status':r.status,**{k:d[k] for k in ['id','html_url','tag_name','draft','prerelease','published_at','target_commitish']},'body_sha256':sha(d['body'].encode())}\nlink=re.search(r'https://github.com/[^)]+/results.md',d['body']).group(); raw=link.replace('github.com/','raw.githubusercontent.com/').replace('/blob/','/')\nwith urllib.request.urlopen(raw) as r:\n b=r.read(); record['comparison_record']={'notes_link':link,'endpoint':raw,'status':r.status,'public_sha256':sha(b),'local_sha256':sha((base/'results.md').read_bytes()),'bytes_equal':b==(base/'results.md').read_bytes()}\nfrozen=json.loads((base/'candidate-inputs.json').read_text()); manifest=frozen['manifest']; record['frozen_manifest']={'revision':frozen['revision'],'file_sha256':sha((base/'candidate-inputs.json').read_bytes()),'manifest_sha256':frozen['manifest_sha256'],'entry_count':len(manifest)}\nroots={'local_materialized':root/'plugins/charness','managed_materialized':pathlib.Path(doc['repo_root'])/'plugins/charness','codex_source':pathlib.Path(doc['plugin_root']),'codex_cache':pathlib.Path(doc['codex_cache_entries'][0]['version_dir']),'claude_cache':pathlib.Path(doc['claude_installed_entry']['installPath'])};record['package_comparisons']={}\nfor label,p in roots.items():\n actual={}\n for f in p.rglob('*'):\n  if f.is_symlink():actual[str(f.relative_to(p))]={'kind':'symlink','target':os.readlink(f),'mode':stat.S_IMODE(f.lstat().st_mode)}\n  elif f.is_file():actual[str(f.relative_to(p))]={'kind':'file','sha256':sha(f.read_bytes()),'mode':stat.S_IMODE(f.stat().st_mode)}\n missing=sorted(set(manifest)-set(actual)); extra=sorted(set(actual)-set(manifest)); diff=[]; modes=collections.Counter()\n for n,e in manifest.items():\n  if n not in actual:continue\n  a=actual[n]\n  if a['mode']!=e['mode']:modes[(e['mode'],a['mode'])]+=1\n  if {k:v for k,v in a.items() if k!='mode'}!={k:v for k,v in e.items() if k!='mode'}:\n   row={'path':n,'expected':e,'actual':a}\n   if n in ['.claude-plugin/plugin.json','.codex-plugin/plugin.json']:row['actual_json']=json.loads((p/n).read_text())\n   diff.append(row)\n record['package_comparisons'][label]={'root':str(p),'actual_entries':len(actual),'missing':missing,'extras':extra,'content_differences':diff,'mode_differences':[{'expected':k[0],'actual':k[1],'count':v}for k,v in modes.items()],'mode_difference_paths':[n for n in manifest if n in actual and manifest[n]['mode']!=actual[n]['mode']]}\nrecord['shipped_delta']=run(['git','diff','--name-status',frozen['revision'],'fa8fe8834cb748dc5652442080d443027c407a87']);record['managed_delta']=run(['git','diff','--name-status','fa8fe8834cb748dc5652442080d443027c407a87',subprocess.check_output(['git','-C',doc['repo_root'],'rev-parse','HEAD'],text=True).strip()])\nfor rel in ['skills/critique/scripts/run_review.py','skills/issue/scripts/issue_verify_closeout.py','skills/issue/scripts/draft_issue_close_comment.py']:\n path=roots['codex_cache']/rel\n if path.exists():record['commands'].append(run(['python3',str(path),'--help']))\nrecord['pilot_input_checks']=[{'path':n,'expected':h,'actual':sha((root/n).read_bytes()),'equal':sha((root/n).read_bytes())==h}for n,h in json.loads((base/'cells/high-candidate/inputs.json').read_text()).items()]\nprint(json.dumps(record))\nPY",
+  "extra_file_entries": {
+    "command": "python3 -B - <<'PY'\nimport pathlib,json,hashlib,stat,os,subprocess\nroot=pathlib.Path('/home/hwidong/codes/charness'); m=json.loads((root/'charness-artifacts/probe/2026-09-06-delegation-net-value/candidate-inputs.json').read_text())['manifest']; out={}\nfor rootname in ['/home/hwidong/.codex/plugins/charness','/home/hwidong/.codex/plugins/cache/local/charness/8.5.0']:\n p=pathlib.Path(rootname); entries={}\n for f in p.rglob('*'):\n  n=str(f.relative_to(p))\n  if n in m:continue\n  if f.is_symlink():entries[n]={'kind':'symlink','target':os.readlink(f),'mode':stat.S_IMODE(f.lstat().st_mode)}\n  elif f.is_file():entries[n]={'kind':'file','sha256':hashlib.sha256(f.read_bytes()).hexdigest(),'mode':stat.S_IMODE(f.stat().st_mode)}\n out[rootname]=entries\np=subprocess.run(['git','-C','/home/hwidong/.agents/src/charness','diff','--name-status','fa8fe8834cb748dc5652442080d443027c407a87','--','skills','scripts','README.md','packaging'],capture_output=True,text=True);out['managed_worktree_vs_tag']={'status':p.returncode,'stdout':p.stdout,'stderr':p.stderr}\nprint(json.dumps(out))\nPY",
+    "status": 0,
+    "evidence": {
+      "/home/hwidong/.codex/plugins/charness": {
+        "support/specdown/SKILL.md": {
+          "kind": "file",
+          "sha256": "4663921d2d988abf24d2926ddeed0738a064b10f8e04d788445c32f03b363bdc",
+          "mode": 436
+        },
+        "support/agent-browser/SKILL.md": {
+          "kind": "file",
+          "sha256": "3a7520e64de2dfaa516b6721c001e84e06e3c06a187b82af029ae721540ebfac",
+          "mode": 436
+        },
+        "support/agent-browser/.charness-last-used": {
+          "kind": "file",
+          "sha256": "ed8fa2a50c676b45db1391e638196f94fa13135537f78bcdd57bf2bbc8691e80",
+          "mode": 436
+        }
+      },
+      "/home/hwidong/.codex/plugins/cache/local/charness/8.5.0": {
+        "skills/issue/scripts/__pycache__/issue_critique_observer_support.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "a1f1968563892b298f512e0e80b69f39d07dd6e6d8e5d87fe64b7283a4a88648",
+          "mode": 436
+        },
+        "skills/issue/scripts/__pycache__/issue_markdown_lib.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "cd5794d780518fb6d1b50be8f0c611d9b42843dcbf3ddfbbb22ddccf1c36f069",
+          "mode": 436
+        },
+        "skills/issue/scripts/__pycache__/issue_resolution_observer.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "cdd0b6ff5f08436a8e403304e33661141fc4ed057a452b68e739997b6688e481",
+          "mode": 436
+        },
+        "skills/issue/scripts/__pycache__/issue_worker_targets.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "ec93bc29e21151dbd001d696121759867ea35a219dbb6575557410dbeb16dead",
+          "mode": 436
+        },
+        "skills/issue/scripts/__pycache__/issue_closeout_ledger_counts.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "837c951f02a7e81af995ce9b3f300d728cf5b842da8adba735bec1daa668eb3f",
+          "mode": 436
+        },
+        "skills/issue/scripts/__pycache__/issue_closeout_rung1_floors.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "90ea195e47370b27eccb700854347f729f443c01b17909e8e24a54ccfdf1de5d",
+          "mode": 436
+        },
+        "skills/issue/scripts/__pycache__/issue_close_comment_floor.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "4d3e4fe0fefa86410b8d32bd8a4b9ca889fd87bf62f34f5be683b2cbf32e374e",
+          "mode": 436
+        },
+        "skills/issue/scripts/__pycache__/issue_closeout_classification_ledger.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "3aacd5a47f6128948ef827476c8a01b716d38883e2bc34e1db6133d5f61abe70",
+          "mode": 436
+        },
+        "skills/issue/scripts/__pycache__/issue_identity.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "d4c8b31bbe808a1d5ee41c901669a3fb0c409d4c81ad18bec0a321247f06c193",
+          "mode": 436
+        },
+        "skills/issue/scripts/__pycache__/issue_consolidated_closeout.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "3d27b359084605478a6cf9826107e7fe5327ca033326923b43d1f226a93af75d",
+          "mode": 436
+        },
+        "skills/issue/scripts/__pycache__/issue_resolution_critique.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "9d7109c1d290d6874997d4c2dab5ba8d914110ebe22144cadee832d3bcd36315",
+          "mode": 436
+        },
+        "skills/issue/scripts/__pycache__/issue_verify_closeout_body.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "abddd793e3352d48a6db214974b3583c10556202f0c3a812d50fd236c6d76234",
+          "mode": 436
+        },
+        "skills/issue/scripts/__pycache__/issue_close.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "a959bd26522eee670422ded871ecedaa32ba64603546d29f30d5563c69c655a3",
+          "mode": 436
+        },
+        "skills/issue/scripts/__pycache__/issue_critique_observer.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "b9854e73454330923e5b8512af7b48e2e019f13f02098411d3781145c7915ac4",
+          "mode": 436
+        },
+        "skills/issue/scripts/__pycache__/issue_backend.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "d3d3f7d14d5e541e858e68ca03663915ff1f454e7b0ec0a7b97ed3516ce75fbc",
+          "mode": 436
+        },
+        "skills/critique/scripts/__pycache__/run_review_promotion.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "d1622abb0996b325aae7c791ba84a1e5430a12caf245193aed7ce681ff38ffaa",
+          "mode": 436
+        },
+        "skills/critique/scripts/__pycache__/run_review_invocation.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "f0c3b5970f1d60c885a994970bffc626c06b48c2af69d5d9159460c6d7951468",
+          "mode": 436
+        },
+        "skills/critique/scripts/__pycache__/run_review_support.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "8566efe8b8cac0cc1b0de6b3c02707ca0a693470a509765e185d439bdef789b5",
+          "mode": 436
+        },
+        "skills/critique/scripts/__pycache__/semantic_review_input.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "434c17f758727ed8ad19d932320594f480d4566137d1ac68b4f4350743b1184b",
+          "mode": 436
+        },
+        "skills/critique/scripts/__pycache__/run_review_packet.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "65c10a8000902c10e3fa05d52e9e5df10ebb34c9391f7cec8da068f869a7df3b",
+          "mode": 436
+        },
+        "shared/scripts/__pycache__/reviewer_delivery_fields.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "68c29d883ef1f77ca68cb67efd0f451961a2a92f8b1ccda02769fb42a5595303",
+          "mode": 436
+        },
+        "shared/scripts/__pycache__/reviewer_worker_carrier_support.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "c542cf2565fbdb737c51fd01378f57707560af3d5dda225380ed302bf17983f7",
+          "mode": 436
+        },
+        "shared/scripts/__pycache__/reviewer_worker_carrier.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "9fbffe0fa8aed9397de157e8161900ff76756c0b0c6346049a3d107b774d941e",
+          "mode": 436
+        },
+        "scripts/review/__pycache__/critique_reviewer_evidence.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "114db5b154426594bb4fade47ad3c1af6136779296beff66322b87a7c87187f9",
+          "mode": 436
+        },
+        "scripts/core/__pycache__/subprocess_guard.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "b38f8ebe243078fdfd6d85f7ae87a6470cf91486a0ab6fff73525a5de965a89d",
+          "mode": 436
+        },
+        "scripts/core/__pycache__/__init__.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "022f764d5bed465821095884ad09f6033c6278189a702f6a0459ed26c43280e9",
+          "mode": 436
+        },
+        "scripts/__pycache__/runtime_bootstrap.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "0c208f25e94512e432e87ef8a25dba073ca3daaad00604c3e5c18448cad010f5",
+          "mode": 436
+        },
+        "scripts/__pycache__/__init__.cpython-310.pyc": {
+          "kind": "file",
+          "sha256": "8fa41edff09e00174e2fb74e2ffd754015e1c442ed212ae54658f99c0f16df74",
+          "mode": 436
+        },
+        "support/specdown/SKILL.md": {
+          "kind": "file",
+          "sha256": "4663921d2d988abf24d2926ddeed0738a064b10f8e04d788445c32f03b363bdc",
+          "mode": 436
+        },
+        "support/agent-browser/SKILL.md": {
+          "kind": "file",
+          "sha256": "3a7520e64de2dfaa516b6721c001e84e06e3c06a187b82af029ae721540ebfac",
+          "mode": 436
+        },
+        "support/agent-browser/.charness-last-used": {
+          "kind": "file",
+          "sha256": "ed8fa2a50c676b45db1391e638196f94fa13135537f78bcdd57bf2bbc8691e80",
+          "mode": 436
+        }
+      },
+      "managed_worktree_vs_tag": {
+        "status": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    }
+  },
+  "metadata_version_only_proof": {
+    "command": "For each materialized .claude-plugin/plugin.json and .codex-plugin/plugin.json: sha256(file_bytes.replace(b'8.5.0', b'8.4.4')) == frozen_manifest[path]['sha256']",
+    "status": 0,
+    "results": {
+      ".claude-plugin/plugin.json": true,
+      ".codex-plugin/plugin.json": true
+    }
+  },
+  "composed_test": {
+    "command": "CHARNESS_RUNTIME_ROOT=/tmp/goal805-observer-runtime.YzSA9f PYTHONDONTWRITEBYTECODE=1 python3 -B scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only --pytest-target tests/quality_gates/test_issue_bundled_closeout.py::test_one_delivered_mixed_bundle_reaches_every_closeout_consumer",
+    "cwd": "/home/hwidong/.agents/src/charness",
+    "status": 0,
+    "result": "1 passed in 6.41s; PASS [standing-pytest] 8.5s",
+    "runtime": "/tmp/goal805-observer-runtime.YzSA9f",
+    "scope": "Existing delivered mixed bug/feature bundle through public verify-closeout and validate-closeout-draft entrypoints (in-process), draft validator, commit-msg and pre-push consumers, and paused brief resumption.",
+    "non_claim": "No live tracker close or new host session was executed."
+  },
+  "verdicts": {
+    "public_release": "verified: credential-free actual release REST and tag REST succeeded",
+    "comparison_link": "verified: tag-pinned original results are byte-identical",
+    "installed_cli": "verified: version and doctor succeeded; CLI and both host markers show 8.5.0",
+    "installed_composition": "verified within frozen inputs: all 1,113 entries exist with matching modes; 1,111 identical content entries and exactly two version-only JSON changes on all five surfaces",
+    "semantic_non_version_differences": "No changed content within frozen package inputs. Installed Codex has extra materialized agent-browser/specdown support skill bodies and .charness-last-used marker; Codex cache also contains bytecode. These extras preclude whole-install identity.",
+    "source_binding": "Candidate d7f7d5ec to shipped fa8fe883 delta contains only packaging/charness.json, .claude-plugin/marketplace.json, and artifacts. Managed d8d05d57 differs from shipped tag only by two claims-review artifacts; actual managed worktree scripts/skills/README/packaging diff against tag is empty.",
+    "pilot_binding": "All treatment skill/helper bytes covered by the candidate manifest remain identical on shipped/materialized and installed surfaces. All 17 high-candidate input hashes also match local retained inputs. This binds earlier observations to unchanged treatment inputs, not to whole-package identity or a rerun.",
+    "composed_behavior": "verified: existing installed-source mixed bundle test passed"
+  },
+  "observer_side_effects": {
+    "description": "Initial installed Python help probes omitted -B and may have generated __pycache__ files in Codex cache. Their exact provenance was not measured beforehand. Later probes used -B, and cache extras are retained explicitly; no cleanup attempted.",
+    "source_or_git_or_provider_changes": "No deliberate source, refs, install/update operation, provider mutation or configuration edit.",
+    "disposable_runtime": "Standing pytest wrote only its explicit disposable runtime and fixture state as directed."
+  },
+  "non_claims": [
+    "No whole-package or whole-install byte identity across 8.4.4 and 8.5.0",
+    "No general efficiency gain",
+    "No valid low-tier comparison",
+    "No rerun of the prerelease pilot",
+    "No new-session host loading proof",
+    "Observer is a separate agent on the same machine, not machine-distinct",
+    "Not formal critique approval",
+    "No issue or Goal completion claim",
+    "repograph readiness in doctor remains unknown"
+  ],
+  "completed_at": "2026-09-06T07:24:56.711Z",
+  "projection_note": "Parent persisted this substantive observer record without unrelated installed-plugin listings, repeated manifest JSON bodies or full help prose. Selected help lines are explicitly labelled; commands, statuses, hashes, package differences/extras, observer side effects and non-claims are retained. Original source record remains /tmp/goal805-independent-release-observer.json during this session."
+}

@@ -1,0 +1,91 @@
+{
+  "prior_packet": "charness-artifacts/critique/goal805-implementation-closeout-packet.json",
+  "checked_count": 16,
+  "unchanged_count": 0,
+  "changed": [
+    {
+      "path": "charness-artifacts/debug/2026-09-06-multi-issue-closeout-cardinality.md",
+      "content_sha256": "ec4a0e8e707b2a0a3936611692e0cb338e769e3bf3f7da4a35cd3383df338a4d",
+      "current_sha256": "002f020887a2db14750893c39a04f373676c35039d55354416415263e1e182fb"
+    },
+    {
+      "path": "charness-artifacts/goal-runs/805/reviews/closeout-code-observations.md",
+      "content_sha256": "4899ac88d2d53c8aeb31ba270b81c2a4a66cdb9bbecc95646e732071bee60f66",
+      "current_sha256": "81e2cf85caeedbf4769cfebb758ce17ff66bcf575c56a3ba3f1909337ba80c88"
+    },
+    {
+      "path": "charness-artifacts/goal-runs/805/reviews/context-code-disposition.md",
+      "content_sha256": "c38b8d1150145c8c0f96a090599af46ed55c742fac16befd4378819196187156",
+      "current_sha256": "9595b6444624d1217ca702025949ecef0bb1f6a06bda036446411b736aede70b"
+    },
+    {
+      "path": "charness-artifacts/goal-runs/805/reviews/implementation-issue-readbacks.json",
+      "content_sha256": "a22d4efba8b9b81af49454a496f5446a26f4ad4ec1a9f6729fd48ed49a430608",
+      "current_sha256": "0be47dd0c21b17363e96fd373548ac7c969183ffbe650a9ceb324652a05e93f4"
+    },
+    {
+      "path": "charness-artifacts/goal-runs/805/reviews/integration-observations.md",
+      "content_sha256": "4eb27efe31a6f907aa4b52ddc311464abc17b2406ab603acf584dbf9bdc8268a",
+      "current_sha256": "2cd4364845b54793d8fd9b2bee54aa5e7b4115e66c858c08d390682933d8e181"
+    },
+    {
+      "path": "charness-artifacts/goal-runs/805/reviews/release-final-receipt.json",
+      "content_sha256": "49507338304e253d3c1d600d49808d207a5540725abeee5bf6c36ae2d384d1c3",
+      "current_sha256": "38582913899338aad228138f7fd9104656858eb507909efb7f874b10e67356b1"
+    },
+    {
+      "path": "charness-artifacts/goal-runs/805/reviews/release-preparation-receipt.json",
+      "content_sha256": "6e7778f4265538b21c13e868320607873f4f45c6d92b16850edcf9d24aa5ba08",
+      "current_sha256": "0e30aaa9b27df9a9ea2b4106b75a50660eb226fdf3412f9d0033f54f62816032"
+    },
+    {
+      "path": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/closeout-carrier.md",
+      "content_sha256": "eb233cb646aa606ff78fcf11aa8b8d995748fab6b34d13df1e2886bb90fe4b9f",
+      "current_sha256": "cf518cca882cf2785a6e31eca9bb55c180f139bedc357423b8cfdc01df3477d0"
+    },
+    {
+      "path": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/comparison-contract.md",
+      "content_sha256": "9b8ca97c62b876b3e41d7ddcd009ebb3a7a48ae0f6f28e269e82d965c88a652f",
+      "current_sha256": "a85672f4b2aab744596b680b7b7b485d6fa8c0d237c0d62072bb4578154dcd7a"
+    },
+    {
+      "path": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/consumer-comparison.md",
+      "content_sha256": "c34e256da7af7f90c6f7d9b67b3fb74b2c4b4d93479e57ef2a3a7c78b1a56af8",
+      "current_sha256": "2eb2136c3249965782caa30ba7503144f2f21077b11d202069f1f9006a431de5"
+    },
+    {
+      "path": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/context-reuse.md",
+      "content_sha256": "e40922f9098ea53dc779e9a14605bd06dca2b3c5be340986e427076bbe2f6c9d",
+      "current_sha256": "52ab28bba1637b0a51ac6923dd600f4810afa6f70606bb7ab6c6558671245e7d"
+    },
+    {
+      "path": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/release-reuse.md",
+      "content_sha256": "38a8158da4fbc16923d7d726afe8349aaa94c8ba0ac1e91afb3dcc257747be38",
+      "current_sha256": "49e8781fd7a51a498ee2dc7211dd0c9a54df3f42a4ffa5a756a8e2dbfdb4eba9"
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/protocol.md",
+      "content_sha256": "add91d20a0c41f91e2890dd718be1f5247792f37c51b5006d9ad6d2eef76c8fa",
+      "current_sha256": "c7c6694c302a4e6ed7bd3a46d652b96146f71fb457ed622dbcd55008c4e4f498"
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/results.md",
+      "content_sha256": "e50ba5510806d05c150b0a64ad2f46f41792042754f48d1ce4a2d0b515fb84de",
+      "current_sha256": "32b906aed2694564c1c205a583b64075cb2621a997a35987b2b05a194ec3233a"
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-release-scheduling/observations.md",
+      "content_sha256": "2d2ee6f21436226b415d27afaab05d75eaccc36eb8785dface641d565e8c1693",
+      "current_sha256": "5e70bfd0c292ac8bf232b384f4da449980cb0ff64b605700243f6dff95562d3a"
+    },
+    {
+      "path": "charness-artifacts/probe/2026-09-06-v8.5.0-independent-observer.json",
+      "content_sha256": "f046ab28e84cfa7d333626ee330d37ea3efa10c2ef93db0fdaa5db262bd7ffc7",
+      "current_sha256": "4d43bb39da7a7d91a53a9d15f2476905629909049dd395017846f341e87f387d"
+    }
+  ],
+  "selected_rows_match": true,
+  "source_sha256_matches": true,
+  "observation_diff": "diff --git a/charness-artifacts/probe/2026-09-06-release-scheduling/observations.md b/charness-artifacts/probe/2026-09-06-release-scheduling/observations.md\nindex 77ac4b9cf..c169f15bc 100644\n--- a/charness-artifacts/probe/2026-09-06-release-scheduling/observations.md\n+++ b/charness-artifacts/probe/2026-09-06-release-scheduling/observations.md\n@@ -152,8 +152,8 @@ The initial mutable-notes refusal happened before a quality invocation.\n Preparation measured 87 gates, with `pytest-release` explicitly deferred and\n quality `unestablished`; final resume measured 88 gates including exactly one\n `pytest-release`, with quality `pass`. The changed-line gate remains at both\n-stages. The existing runtime recorder independently retains these exact rows\n-in `.charness/quality/history/runtime-signals-2026-09.jsonl`:\n+stages. The original recorder rows and source-byte identity are preserved in\n+[runtime-rows.json](runtime-rows.json); the following table renders those rows:\n \n | UTC | Gate | Milliseconds | Status |\n | --- | --- | --- | --- |\n",
+  "scope": "All sixteen prior semantic input file hashes compared; only the two-line citation change differs. Seven runtime rows preserve original fields. No prior empirical outcome, source code, fixture or acceptance changed."
+}

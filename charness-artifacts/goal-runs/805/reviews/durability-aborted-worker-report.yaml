@@ -1,0 +1,114 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'issue-resolution: Bounded durability follow-up for exactly corca-ai/charness#806
+  #808 #809 #810 #811, bug #810 and four features. Actual required pre-push durability
+  gate rejected a runtime-only evidence citation. The changed proof now preserves
+  the seven original runtime row objects and source hash in a durable file; the observation
+  citation points there. Compare supplied byte comparison (all sixteen prior inputs
+  checked, only two citation lines changed), selected runtime rows and current narrative.
+  Reuse the fully delivered previous per-target behavioral review and its honest limitations
+  for unchanged inputs. Do not repeat code review or the pilot, or re-evaluate the
+  unchanged empirical claims. Decide only whether the repaired durable evidence connection
+  preserves the five prior closeout dispositions. Emit a target_observations entry
+  for each exact target, explicitly stating reused independent prior evidence for
+  four unaffected targets and the durability delta for #811; preserve high no-benefit,
+  invalid low attribution, spec intervention and provenance limitations, final-current
+  scheduling not cross-commit reuse, no net-saving or whole-install claim. No #807
+  or #805 approval. Actual draft and commit-msg accepted the previous delivery but
+  push failed before remote mutation; the final current carrier must consume this
+  delivered follow-up through those consumers and pre-push. This is a focused changed-proof
+  review, not a new semantic review of unchanged code or experiment.'
+attempt_id: goal805-implementation-durability-followup
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 637d3984c34eba0e8188965a6af28475df70c4fc6eb383ec8d59b730a231b8e3
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: result-missing
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-implementation-durability-followup/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-implementation-durability-followup/delivery.json
+producer_run_id: run-goal805-implementation-durability-followup
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-implementation-durability-followup/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-implementation-durability-followup/receipt.json
+  producer_run_id: run-goal805-implementation-durability-followup
+delivery_state: collection-failed
+approval_eligible: false
+provenance_ok: true
+receipt_ok: false
+ledger_ok: false
+result_schema_ok: false
+collection_ready: false
+partial_output: null
+partial_output_ok: false
+review_verdict: null
+receipt_provenance_ok: false
+findings_identity: null
+receipt_output_sha256: null
+packet_identity: bd18567f2751bd037c342a4d8f1b5b26d0129036a217bfb86287d591e339230d
+reviewed_input_identity: b04ddd982325c2fff660b71f9b4fdbfcdadc81080088f7440d9f263c52e4dd12
+parent_receipt_identity: parent-c8c35b0cb5dafeba0b9b3912a906d08bf3d933a44d2a4e2b
+provenance:
+  scope: 'issue-resolution: Bounded durability follow-up for exactly corca-ai/charness#806
+    #808 #809 #810 #811, bug #810 and four features. Actual required pre-push durability
+    gate rejected a runtime-only evidence citation. The changed proof now preserves
+    the seven original runtime row objects and source hash in a durable file; the
+    observation citation points there. Compare supplied byte comparison (all sixteen
+    prior inputs checked, only two citation lines changed), selected runtime rows
+    and current narrative. Reuse the fully delivered previous per-target behavioral
+    review and its honest limitations for unchanged inputs. Do not repeat code review
+    or the pilot, or re-evaluate the unchanged empirical claims. Decide only whether
+    the repaired durable evidence connection preserves the five prior closeout dispositions.
+    Emit a target_observations entry for each exact target, explicitly stating reused
+    independent prior evidence for four unaffected targets and the durability delta
+    for #811; preserve high no-benefit, invalid low attribution, spec intervention
+    and provenance limitations, final-current scheduling not cross-commit reuse, no
+    net-saving or whole-install claim. No #807 or #805 approval. Actual draft and
+    commit-msg accepted the previous delivery but push failed before remote mutation;
+    the final current carrier must consume this delivered follow-up through those
+    consumers and pre-push. This is a focused changed-proof review, not a new semantic
+    review of unchanged code or experiment.'
+  packet_identity: bd18567f2751bd037c342a4d8f1b5b26d0129036a217bfb86287d591e339230d
+  reviewed_input_identity: b04ddd982325c2fff660b71f9b4fdbfcdadc81080088f7440d9f263c52e4dd12
+  parent_receipt_identity: parent-c8c35b0cb5dafeba0b9b3912a906d08bf3d933a44d2a4e2b
+  attempt_id: goal805-implementation-durability-followup
+  attempt_scope: 'issue-resolution: Bounded durability follow-up for exactly corca-ai/charness#806
+    #808 #809 #810 #811, bug #810 and four features. Actual required pre-push durability
+    gate rejected a runtime-only evidence citation. The changed proof now preserves
+    the seven original runtime row objects and source hash in a durable file; the
+    observation citation points there. Compare supplied byte comparison (all sixteen
+    prior inputs checked, only two citation lines changed), selected runtime rows
+    and current narrative. Reuse the fully delivered previous per-target behavioral
+    review and its honest limitations for unchanged inputs. Do not repeat code review
+    or the pilot, or re-evaluate the unchanged empirical claims. Decide only whether
+    the repaired durable evidence connection preserves the five prior closeout dispositions.
+    Emit a target_observations entry for each exact target, explicitly stating reused
+    independent prior evidence for four unaffected targets and the durability delta
+    for #811; preserve high no-benefit, invalid low attribution, spec intervention
+    and provenance limitations, final-current scheduling not cross-commit reuse, no
+    net-saving or whole-install claim. No #807 or #805 approval. Actual draft and
+    commit-msg accepted the previous delivery but push failed before remote mutation;
+    the final current carrier must consume this delivered follow-up through those
+    consumers and pre-push. This is a focused changed-proof review, not a new semantic
+    review of unchanged code or experiment.'
+  attempt_packet_identity: bd18567f2751bd037c342a4d8f1b5b26d0129036a217bfb86287d591e339230d
+  attempt_parent_receipt_identity: parent-c8c35b0cb5dafeba0b9b3912a906d08bf3d933a44d2a4e2b
+  result_packet_identity: bd18567f2751bd037c342a4d8f1b5b26d0129036a217bfb86287d591e339230d
+  result_reviewed_input_identity: b04ddd982325c2fff660b71f9b4fdbfcdadc81080088f7440d9f263c52e4dd12
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 637d3984c34eba0e8188965a6af28475df70c4fc6eb383ec8d59b730a231b8e3
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: worker receipt status is 'result-missing'
+partial_output_reason: worker did not preserve partial output bytes
