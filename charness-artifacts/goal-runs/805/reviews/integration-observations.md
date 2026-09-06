@@ -70,3 +70,11 @@ redundant. Existing release scheduling removes one demonstrated duplicate
 subject execution while retaining final-state proof. Broader policy changes
 are not part of the pre-comparison repair; assess remaining high-cost repeats
 in the existing final retro after observing the pilot.
+
+The next standing run exposed one stale test requiring the deleted debug output
+inventory (9,218 passed, one failed, 92.57s). Removed only that duplicate heading
+and inventory assertion. Its workflow-routing assertions remain; the existing
+`test_debug_scaffold_reports_validator_and_template` executes the emitted
+validator and checks the actual invariant fields. This is an additional narrow
+test-owner repair, not restoration of the deleted prose or a weakened artifact
+contract. The full lane did not start after that failed prerequisite.

@@ -179,12 +179,12 @@ def test_debug_workflow_invokes_classified_sibling_scan() -> None:
 
 def test_debug_workflow_invokes_invariant_first_review() -> None:
     text = DEBUG_SKILL.read_text(encoding="utf-8")
-    output_shape = markdown_section(text, "## Output Shape")
+    # test_debug_scaffold owns the emitted invariant schema and its validator;
+    # this test owns the workflow's route to that proof, not a copied schema.
     assert "invariant-first-review.md" in text
     assert "producer-to-final-consumer invariant" in text
     assert "producer-only proof" in text
     assert "end-to-end workflow proof" in text
-    assert "`Invariant Proof`" in output_shape
 
 
 def test_causal_review_consumes_invariant_first_substrate() -> None:
