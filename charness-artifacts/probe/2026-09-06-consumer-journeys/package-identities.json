@@ -1,0 +1,30 @@
+{
+  "baseline": {
+    "source_sha": "7cea68253f3e208f4263f9efdb4a354ed5709bc0",
+    "version": "8.4.3",
+    "manifest_sha256": "6c3b8e8ddd3e3dbcd7cf8b8894fcb516c2c937ef190bc2d2cb38cb4593f434f0",
+    "exporter_sha256": "a9252de550d95435088209155edd84f86251762cf18d9b5a8f66bb319db960f1",
+    "skills": {
+      "spec": "d0240604f31bd01f2a1e8cb2e7b13cd1327e8efc49feecd896b81995d0a701cf",
+      "impl": "d439d725019c846d3508a9af97da878e3a347e41d7f02241db0e22c2a0bed4e7",
+      "create-cli": "11c5963c377544a4978409b1fca9179d3c07835bffad1315bb18c596dfe8be60"
+    }
+  },
+  "candidate": {
+    "source_sha": "878ff81e557b2d5eb4fcfa9b9eea273f2d7a0f91",
+    "version": "8.4.3",
+    "manifest_sha256": "6c3b8e8ddd3e3dbcd7cf8b8894fcb516c2c937ef190bc2d2cb38cb4593f434f0",
+    "exporter_sha256": "a9252de550d95435088209155edd84f86251762cf18d9b5a8f66bb319db960f1",
+    "skills": {
+      "spec": "d0240604f31bd01f2a1e8cb2e7b13cd1327e8efc49feecd896b81995d0a701cf",
+      "impl": "ff0afef28bd79df1d278d1982ad0fd04a7ed06842d28c32232efdbf53680b183",
+      "create-cli": "11c5963c377544a4978409b1fca9179d3c07835bffad1315bb18c596dfe8be60"
+    }
+  },
+  "non_claims": [
+    "Skill digests are not full exported-closure digests.",
+    "Candidate retains pre-bump manifest version; source SHA distinguishes the arms.",
+    "Source worktree doctor warned about missing NPM dependencies; canonical stdlib export passed, no whole-worktree readiness claimed.",
+    "An initial unbound candidate export was discarded from use; both candidate arms use the named committed source export candidate-export-bound."
+  ]
+}

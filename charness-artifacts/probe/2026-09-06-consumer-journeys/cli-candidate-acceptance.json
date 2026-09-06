@@ -1,0 +1,10 @@
+{
+  "command": "CHARNESS_CONSUMER_ROOT=<cli-candidate> PYTHONDONTWRITEBYTECODE=1 python3 charness-artifacts/probe/2026-09-06-consumer-journeys/check_cli.py",
+  "tested_commit": "9eafbc46ae865d383902ca293f18c4ac5251357f",
+  "chunk_id": "f3ba14",
+  "wall_time_seconds": 1.542900734,
+  "exit_code": 0,
+  "original_token_count": 167,
+  "output": "test_doctor_has_observable_state_and_is_readonly (__main__.CliAcceptance) ... ok\ntest_dry_run_never_writes (__main__.CliAcceptance) ... ok\ntest_help_and_version_readonly (__main__.CliAcceptance) ... ok\ntest_legacy_scripts_still_work (__main__.CliAcceptance) ... ok\ntest_malformed_inputs_refused_before_write (__main__.CliAcceptance) ... ok\ntest_refresh_replaces_an_existing_cache (__main__.CliAcceptance) ... ok\ntest_refresh_writes_only_the_existing_cache (__main__.CliAcceptance) ... ok\ntest_structured_output_in_each_option_position (__main__.CliAcceptance) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 1.612s\n\nOK\n",
+  "interventions": 0
+}
