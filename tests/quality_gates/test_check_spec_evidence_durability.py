@@ -101,6 +101,7 @@ def test_skips_when_repo_has_no_git_directory(tmp_path: Path) -> None:
     result = run_script("scripts/gates/check_spec_evidence_durability.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "no git work tree" in result.stdout
+    assert gate.selected_doc_violations(repo, [spec_dir / "demo.md"]) == []
 
 
 def test_main_batches_all_citation_paths_into_one_git_ignore_query(
