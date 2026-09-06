@@ -1,0 +1,15 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 798,
+  "operation": "update-body",
+  "attempt_id": "798-bootstrap-metadata",
+  "observation_dir": "charness-artifacts/goal-runs/798/observations",
+  "target": {
+    "number": 798
+  },
+  "body_file": "charness-artifacts/goal-runs/798/bodies/parent-bootstrap.md",
+  "binding_path": "charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.binding.json",
+  "draft_sha256": "2d7db581aa37bcd88442a37282fe1f74ff0b544220637b3bf830d27a321e1bea",
+  "binding_sha256": "88ec9430391af0d4843d57bcb12337fbe89f7e2f9c3861dd98b73fd55cf02ac1"
+}

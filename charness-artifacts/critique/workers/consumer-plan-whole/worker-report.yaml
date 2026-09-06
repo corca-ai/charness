@@ -1,0 +1,79 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: Second and final pre-binding adversarial review of repaired Goal plus executable
+  child contracts. First review required freeze-before-baseline rubric and explicit
+  local-ready/publish/close dependency order; repaired now. Check acceptance/direct-evidence/release
+  mapping. User delegated ambiguity and final push/release. Exact fixtures are frozen
+  and reviewed before baseline, not required implemented before binding. The previous
+  invocation named a directory as reviewed-path; no reviewer started. This invocation
+  enumerates the exact files.
+attempt_id: consumer-plan-whole
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 0a99c67885c6c40fc6e160f2732ce61ff46ed15780a9b789841b3fe1c4e551fe
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-consumer-plan-whole/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-consumer-plan-whole/delivery.json
+producer_run_id: run-consumer-plan-whole
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-consumer-plan-whole/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-consumer-plan-whole/receipt.json
+  producer_run_id: run-consumer-plan-whole
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 7ac972d0d48dd2b16783cfe561d303f8613d5a56c291e0174c0040fd10df17fa
+receipt_output_sha256: 7ac972d0d48dd2b16783cfe561d303f8613d5a56c291e0174c0040fd10df17fa
+packet_identity: 303d79e79f3685f0f0d77b1c46ec7a498d9d11a4799ef321c488420cbb96bc0c
+reviewed_input_identity: 18cca6970ba9cb014f17fda24f94250307b49e566f625e30de104265e1c60f48
+parent_receipt_identity: parent-87585f0029fbf1c53364be2748caea06cd5abefb44f0c2c3
+provenance:
+  scope: Second and final pre-binding adversarial review of repaired Goal plus executable
+    child contracts. First review required freeze-before-baseline rubric and explicit
+    local-ready/publish/close dependency order; repaired now. Check acceptance/direct-evidence/release
+    mapping. User delegated ambiguity and final push/release. Exact fixtures are frozen
+    and reviewed before baseline, not required implemented before binding. The previous
+    invocation named a directory as reviewed-path; no reviewer started. This invocation
+    enumerates the exact files.
+  packet_identity: 303d79e79f3685f0f0d77b1c46ec7a498d9d11a4799ef321c488420cbb96bc0c
+  reviewed_input_identity: 18cca6970ba9cb014f17fda24f94250307b49e566f625e30de104265e1c60f48
+  parent_receipt_identity: parent-87585f0029fbf1c53364be2748caea06cd5abefb44f0c2c3
+  attempt_id: consumer-plan-whole
+  attempt_scope: Second and final pre-binding adversarial review of repaired Goal
+    plus executable child contracts. First review required freeze-before-baseline
+    rubric and explicit local-ready/publish/close dependency order; repaired now.
+    Check acceptance/direct-evidence/release mapping. User delegated ambiguity and
+    final push/release. Exact fixtures are frozen and reviewed before baseline, not
+    required implemented before binding. The previous invocation named a directory
+    as reviewed-path; no reviewer started. This invocation enumerates the exact files.
+  attempt_packet_identity: 303d79e79f3685f0f0d77b1c46ec7a498d9d11a4799ef321c488420cbb96bc0c
+  attempt_parent_receipt_identity: parent-87585f0029fbf1c53364be2748caea06cd5abefb44f0c2c3
+  result_packet_identity: 303d79e79f3685f0f0d77b1c46ec7a498d9d11a4799ef321c488420cbb96bc0c
+  result_reviewed_input_identity: 18cca6970ba9cb014f17fda24f94250307b49e566f625e30de104265e1c60f48
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 0a99c67885c6c40fc6e160f2732ce61ff46ed15780a9b789841b3fe1c4e551fe
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

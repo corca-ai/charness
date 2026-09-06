@@ -1,0 +1,12 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 798,
+  "operation": "add-child",
+  "attempt_id": "798-add-publish-closeout",
+  "observation_dir": "charness-artifacts/goal-runs/798/observations",
+  "target": {
+    "work_item_key": "publish-closeout",
+    "sub_issue_number": 804
+  }
+}

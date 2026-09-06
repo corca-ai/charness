@@ -1,0 +1,13 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 798,
+  "operation": "create-or-reuse-child",
+  "attempt_id": "798-create-cli-journey",
+  "observation_dir": "charness-artifacts/goal-runs/798/observations",
+  "target": {
+    "work_item_key": "cli-journey",
+    "title": "The reviewed create-cli prompt does not prove the existing-script migration journey"
+  },
+  "body_file": "charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/cli-journey.md"
+}

@@ -1,0 +1,78 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Atul Gawande operational proof: executable acceptance, consumer observations, publish and Goal closure ordering",
+  "packet_sha256": "cabe11593a1e299379873beb17b978f30c0ee16f26d72ee05af878ed825f21fb",
+  "reviewed_input_identity_sha256": "3f9bd79493a9c4c855c370f7ce09154346b06d0947ee3965477a576c99a519ea",
+  "verdict": "block",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "high",
+      "summary": "Comparative acceptance lacks a required freeze point before baseline execution.",
+      "evidence": [
+        "User Acceptance requires consistent verification scope, coherent commands, preserved acceptance, and reduced repeated work without defining their observable pass/fail predicates.",
+        "Low-Cost Checks fixes fixture bytes and revision identity; High-Confidence Checks controls workload and cold/warm conditions.",
+        "Executable child contracts receive review, but the plan does not require acceptance predicates and comparison conditions to be frozen before either journey runs."
+      ],
+      "action": "Before binding, require reviewed child contracts to freeze the acceptance rubric, fixture inputs, relevant agent/runtime settings, intervention policy, and duplicate-operation counting rule before baseline execution. Record deviations and limit improvement claims accordingly; full fixture implementation can follow binding."
+    },
+    {
+      "id": "F2",
+      "severity": "high",
+      "summary": "Publish-at-end intent needs an explicit dependency-readiness rule to avoid waiting for children that require publication to close.",
+      "evidence": [
+        "Slice 6 publish-closeout depends on slices 1 through 5.",
+        "The plan says children are closed only after the final published carrier is remotely verified.",
+        "The parent records an execution frontier, but the plan does not define what evidence satisfies publish prerequisites while those children remain open."
+      ],
+      "action": "Define the sequence before binding: children reach reviewed local acceptance with only publication proof outstanding; that evidence permits slice 6 to start despite open child states; publish and verify the carrier; capture required consumer proof; close implementation children, then publish-closeout, then the parent. Failed publication or behavior proof must leave affected children and the parent open."
+    },
+    {
+      "id": "F3",
+      "severity": "medium",
+      "summary": "Independent observation is promised but lacks a per-child connection to the final released revision.",
+      "evidence": [
+        "High-Confidence Checks requires independent observation of consumer outputs separately from producer summaries.",
+        "External or Live Proof distinguishes release existence, tag reachability, and successful consumer behavior.",
+        "The plan does not explicitly map each child's acceptance to its distinct behavioral evidence channel and the final carrier identity."
+      ],
+      "action": "In executable child contracts, name each acceptance predicate's observer, direct evidence channel, and tested revision. At closeout, bind that evidence to the published carrier through demonstrated artifact equivalence or a focused rerun after install refresh. Tracker state and release readback alone cannot satisfy behavioral acceptance."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "F1: Comparable inputs alone do not prevent acceptance or execution conditions from shifting between baseline and candidate.",
+      "bin": "Act Before Ship",
+      "disposition": "Require the freeze-before-baseline obligation in the planning record before binding; defer concrete fixture construction to the children."
+    },
+    {
+      "concern": "F2: Open children could prevent the publication needed to close them.",
+      "bin": "Act Before Ship",
+      "disposition": "The declared execution frontier is directionally correct. Add its evidence-based readiness predicate and explicit closure order before binding."
+    },
+    {
+      "concern": "F3: Independent observations could remain detached from individual child closure and the released artifact.",
+      "bin": "Bundle Anyway",
+      "disposition": "Add the evidence mapping while authoring the already-planned executable child contracts; no new runner or dashboard is needed."
+    },
+    {
+      "concern": "Require another operator interview, exact-byte approval, a numerical speed target, or implementation proof before binding.",
+      "bin": "Over-Worry",
+      "disposition": "Delegation is explicit, preservation claims are allowed, and this is a planning review. None of these additional requirements is justified."
+    },
+    {
+      "concern": "Two bounded journeys cannot establish general improvements across all consumer workloads.",
+      "bin": "Valid but Defer",
+      "disposition": "Limit conclusions to the exercised fixtures and conditions. Broader sampling belongs to later work if broader claims become necessary."
+    }
+  ],
+  "next_move": "Repair F1 and F2 in the mutable planning record, include F3 in the child-contract requirements, and return the repaired proof semantics for bounded review before binding. Operator reconfirmation is unnecessary under the recorded delegation.",
+  "non_claims": [
+    "Reviewed only the supplied semantic payload; no implementation, benchmark, publication, provider state, or behavioral success was verified.",
+    "No workspace files were edited. Partial progress is not approval.",
+    "{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}
+

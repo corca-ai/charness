@@ -1,0 +1,13 @@
+{
+  "kind": "charness.expected-sub-issue-set/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 798,
+  "children": [
+    799,
+    800,
+    801,
+    802,
+    803,
+    804
+  ]
+}

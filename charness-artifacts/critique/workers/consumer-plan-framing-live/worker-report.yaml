@@ -1,0 +1,73 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: Planning critique of the four approved North Star improvements. Judge framing,
+  scope, source ownership, and testable acceptance. Operator explicitly delegated
+  final choices and authorized final push/release; do not ask again. No code changes
+  yet. This execution follows a dry-run-only preflight that reserved the previous
+  attempt directory; no reviewer started in that attempt.
+attempt_id: consumer-plan-framing-live
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 5566276b242e3e2be1d38d3fb633e4b9c3df1303b788ed252a43e6e6c63530a9
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-consumer-plan-framing-live/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-consumer-plan-framing-live/delivery.json
+producer_run_id: run-consumer-plan-framing-live
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-consumer-plan-framing-live/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-consumer-plan-framing-live/receipt.json
+  producer_run_id: run-consumer-plan-framing-live
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 316bb9df03ab3cdda1b502a633c817dbfb21d70c944dc091689b2b96915c86c1
+receipt_output_sha256: 316bb9df03ab3cdda1b502a633c817dbfb21d70c944dc091689b2b96915c86c1
+packet_identity: b54eb5ef949ba673dabaea7b477ab09f06a92f390d119c919696dc8abe96fe18
+reviewed_input_identity: 3f9bd79493a9c4c855c370f7ce09154346b06d0947ee3965477a576c99a519ea
+parent_receipt_identity: parent-ae0f026b0e8d382a321cb1ee9fa9988118919a82468e1cdc
+provenance:
+  scope: Planning critique of the four approved North Star improvements. Judge framing,
+    scope, source ownership, and testable acceptance. Operator explicitly delegated
+    final choices and authorized final push/release; do not ask again. No code changes
+    yet. This execution follows a dry-run-only preflight that reserved the previous
+    attempt directory; no reviewer started in that attempt.
+  packet_identity: b54eb5ef949ba673dabaea7b477ab09f06a92f390d119c919696dc8abe96fe18
+  reviewed_input_identity: 3f9bd79493a9c4c855c370f7ce09154346b06d0947ee3965477a576c99a519ea
+  parent_receipt_identity: parent-ae0f026b0e8d382a321cb1ee9fa9988118919a82468e1cdc
+  attempt_id: consumer-plan-framing-live
+  attempt_scope: Planning critique of the four approved North Star improvements. Judge
+    framing, scope, source ownership, and testable acceptance. Operator explicitly
+    delegated final choices and authorized final push/release; do not ask again. No
+    code changes yet. This execution follows a dry-run-only preflight that reserved
+    the previous attempt directory; no reviewer started in that attempt.
+  attempt_packet_identity: b54eb5ef949ba673dabaea7b477ab09f06a92f390d119c919696dc8abe96fe18
+  attempt_parent_receipt_identity: parent-ae0f026b0e8d382a321cb1ee9fa9988118919a82468e1cdc
+  result_packet_identity: b54eb5ef949ba673dabaea7b477ab09f06a92f390d119c919696dc8abe96fe18
+  result_reviewed_input_identity: 3f9bd79493a9c4c855c370f7ce09154346b06d0947ee3965477a576c99a519ea
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 5566276b242e3e2be1d38d3fb633e4b9c3df1303b788ed252a43e6e6c63530a9
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes
