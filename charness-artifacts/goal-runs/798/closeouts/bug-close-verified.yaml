@@ -1,0 +1,176 @@
+ok: true
+status: verified
+confirmation:
+  observer: issue_verify_closeout@gh
+  channel: backend-state-readback
+  scope: state-and-carrier-checks-only
+  line: 'confirmed: issue_verify_closeout@gh via backend-state-readback (state-and-carrier-checks-only)'
+review_advisory: []
+repo: corca-ai/charness
+numbers:
+- 800
+- 803
+classification: bug
+carrier: direct-commit
+commit_ref: f68128a29e4e9fd49d7b80fbd87d5ca525b09475
+body_file: null
+manual_fallback_reason: null
+expect_state: CLOSED
+missing_close_keywords: []
+missing_fields: []
+missing_field_reasons: []
+parsed_ledger_fields: []
+state_mismatches: []
+manual_comment_missing: []
+resolution_critique_check:
+  ok: true
+  kind: issue-resolution
+  required:
+  - resolution_critique
+  checks:
+  - target: '#800'
+    numbers:
+    - 800
+    value: charness-artifacts/critique/2026-09-06-issue-800-resolution.md
+    check:
+      ok: true
+      kind: issue-resolution
+      required:
+      - resolution_critique
+      satisfied:
+      - name: resolution_critique
+        via: evidence
+        path: /home/hwidong/codes/charness/charness-artifacts/critique/2026-09-06-issue-800-resolution.md
+        binding: not-checked
+        residual_chars: 5897
+      skipped: []
+      missing: []
+      invalid_skips: []
+      missing_evidence_files: []
+      unbound_evidence: []
+      stub_evidence: []
+      binding_tokens:
+      - '800'
+      binding_checked: true
+      residual_checked: true
+    fresh_eye_observer:
+      value: 'worker-delivered — pass with no findings. The parent consumed the full
+        result and
+
+        all four counterweight bins. The reviewer did not rerun tests or inspect live
+
+        service state.'
+      disposition: delegated
+      path: /home/hwidong/codes/charness/charness-artifacts/critique/2026-09-06-issue-800-resolution.md
+      predates_typed_contract: false
+      carrier_verified: true
+      carrier: worker-report
+  - target: '#803'
+    numbers:
+    - 803
+    value: charness-artifacts/critique/2026-09-06-issue-803-resolution.md
+    check:
+      ok: true
+      kind: issue-resolution
+      required:
+      - resolution_critique
+      satisfied:
+      - name: resolution_critique
+        via: evidence
+        path: /home/hwidong/codes/charness/charness-artifacts/critique/2026-09-06-issue-803-resolution.md
+        binding: not-checked
+        residual_chars: 6017
+      skipped: []
+      missing: []
+      invalid_skips: []
+      missing_evidence_files: []
+      unbound_evidence: []
+      stub_evidence: []
+      binding_tokens:
+      - '803'
+      binding_checked: true
+      residual_checked: true
+    fresh_eye_observer:
+      value: 'worker-delivered — pass with no findings. The parent consumed the full
+        result and
+
+        all four counterweight bins. The reviewer did not rerun tests or inspect live
+
+        service state.'
+      disposition: delegated
+      path: /home/hwidong/codes/charness/charness-artifacts/critique/2026-09-06-issue-803-resolution.md
+      predates_typed_contract: false
+      carrier_verified: true
+      carrier: worker-report
+  binding_failures: []
+  missing_issue_bindings: []
+  observer_refusals: []
+  review_advisory: []
+source_preservation:
+  external_sourced: false
+  origin: null
+  preservation_declared: null
+  forms_present: []
+  missing: false
+  ok: true
+behavioral_verdict:
+  applies: true
+  ok: true
+  missing: []
+  lines:
+  - target: '#800'
+    value: local-only-by-contract; paired final-render records and focused regressions
+      preserve distinct advisory meanings under a separate reviewer; public release
+      visibility is not claimed by this local verdict.
+  - target: '#803'
+    value: local-only-by-contract; supplied/generated preview continuation and owner-universe
+      tests reach the changed local consumers; fake backend and mocked child-failure
+      results are not live-service proof.
+hotl_dispositions:
+  applies: false
+  ok: true
+  undispositioned: []
+  lines: []
+ai_provenance:
+  applies: true
+  ok: true
+  missing: false
+  marker: 'Agent-authored by Codex under the operator''s explicit delegated implementation,
+    publication and closeout authority; no additional human exact-byte review is claimed.
+
+    Agent-authored by Codex under the operator''s explicit delegated implementation,
+    publication and closeout authority; no additional human exact-byte review is claimed.'
+  classification: bug
+verified_state:
+- number: 800
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/800
+- number: 803
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/803
+consolidation_readback: []
+proof_mismatch_scope:
+  present: false
+  adapter_found: false
+  adapter_valid: true
+  map_available: false
+  degraded: true
+closeout_authorization:
+  applies: false
+  authorized: true
+  refusal: null
+  crosswalk_status: crosswalk_missing
+  crosswalk_detail: charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json
+    does not exist
+  invoked_targets: []
+  carrier_targets: []
+  aggregate_targets: []
+  carrier_source: verify-readback:direct-commit
+  target: null
+  gating: 'reported-only: a post-publication readback cannot prevent a close that
+    already happened'
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

@@ -1,0 +1,212 @@
+{
+  "schema_version": "charness.independent_public_observer.v1",
+  "observed_at": "2026-09-06T01:58:44Z",
+  "observer": {
+    "identity": "/root/preview_design",
+    "agent_context": "independent child-agent observer",
+    "publisher_context_reused": false
+  },
+  "verdict": {
+    "status": "confirmed-with-direct-api-rate-limit",
+    "summary": "The public GitHub release payload is present and matches v8.4.4, the remote tag resolves to the expected release commit, installed version/doctor report 8.4.4 without drift, and the installed spec/impl/create-cli closures byte-match the canonical managed source closures.",
+    "public_release_exists": true,
+    "tag_name_matches": true,
+    "release_name_matches": true,
+    "draft_is_false": true,
+    "prerelease_is_false": true,
+    "body_matches_tagged_release_notes": true,
+    "remote_tag_commit_matches": true,
+    "installed_version_matches": true,
+    "installed_source_cache_drift": false,
+    "selected_package_closures_match": true
+  },
+  "target": {
+    "repository": "corca-ai/charness",
+    "version": "8.4.4",
+    "tag": "v8.4.4",
+    "release_commit": "00400d1cf4e3c3e7af529f9de44611e9a5756235",
+    "final_artifact_commit": "306b7d152107597562a87f6af01a01aca76bd05a"
+  },
+  "public_release_rest": {
+    "requested_url": "https://api.github.com/repos/corca-ai/charness/releases/tags/v8.4.4",
+    "authentication": "none; GH_TOKEN, GITHUB_TOKEN, and GITHUB_ENTERPRISE_TOKEN were removed from the curl environment",
+    "direct_attempt": {
+      "command": "env -u GH_TOKEN -u GITHUB_TOKEN -u GITHUB_ENTERPRISE_TOKEN curl --silent --show-error --dump-header - --header 'Accept: application/vnd.github+json' --header 'X-GitHub-Api-Version: 2022-11-28' --header 'User-Agent: charness-independent-public-observer' https://api.github.com/repos/corca-ai/charness/releases/tags/v8.4.4",
+      "http_status": 403,
+      "response_date": "Sun, 06 Sep 2026 01:55:55 GMT",
+      "x_ratelimit_limit": 60,
+      "x_ratelimit_remaining": 0,
+      "x_ratelimit_used": 60,
+      "x_ratelimit_resource": "core",
+      "x_ratelimit_reset": 1788662029,
+      "x_ratelimit_reset_utc": "2026-09-06T02:33:49Z",
+      "x_github_request_id": "A6C4:1DE362:6C0951:9F8AC7:6A9CC82B",
+      "raw_response": {
+        "message": "API rate limit exceeded for 124.198.30.26. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)",
+        "documentation_url": "https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"
+      }
+    },
+    "unauthenticated_relay_attempt": {
+      "command": "env -u GH_TOKEN -u GITHUB_TOKEN -u GITHUB_ENTERPRISE_TOKEN curl --silent --show-error --dump-header - --header 'User-Agent: charness-independent-public-observer' https://r.jina.ai/https://api.github.com/repos/corca-ai/charness/releases/tags/v8.4.4",
+      "relay_url": "https://r.jina.ai/https://api.github.com/repos/corca-ai/charness/releases/tags/v8.4.4",
+      "origin_url_reported_by_relay": "https://api.github.com/repos/corca-ai/charness/releases/tags/v8.4.4",
+      "relay_http_status": 200,
+      "relay_response_date": "Sun, 06 Sep 2026 01:58:14 GMT",
+      "origin_published_time_reported_by_relay": "Sun, 06 Sep 2026 01:53:57 GMT",
+      "credential_mode": "no credentials supplied to the relay request",
+      "api_selected_fields": {
+        "id": 383430968,
+        "html_url": "https://github.com/corca-ai/charness/releases/tag/v8.4.4",
+        "tag_name": "v8.4.4",
+        "target_commitish": "main",
+        "name": "v8.4.4",
+        "draft": false,
+        "immutable": false,
+        "prerelease": false,
+        "created_at": "2026-09-06T01:38:32Z",
+        "updated_at": "2026-09-06T01:53:57Z",
+        "published_at": "2026-09-06T01:53:57Z",
+        "assets_count": 0,
+        "body_length": 3643,
+        "body_first_line": "# Charness v8.4.4",
+        "body_sha256": "679e47400cba8c0da9a7a46f08e153124102440a30b73e94470c19bdc89b76a4"
+      },
+      "body_comparison": {
+        "tagged_notes_path": "charness-artifacts/release/2026-09-06-v8.4.4-notes.md",
+        "tagged_notes_commit": "00400d1cf4e3c3e7af529f9de44611e9a5756235",
+        "tagged_notes_sha256": "679e47400cba8c0da9a7a46f08e153124102440a30b73e94470c19bdc89b76a4",
+        "exact_sha256_match": true
+      }
+    }
+  },
+  "remote_git": {
+    "command": "git ls-remote --tags origin 'refs/tags/v8.4.4' 'refs/tags/v8.4.4^{}'",
+    "raw_stdout": [
+      "00400d1cf4e3c3e7af529f9de44611e9a5756235\trefs/tags/v8.4.4"
+    ],
+    "peeled_ref_present": false,
+    "interpretation": "The remote tag ref directly names the expected commit; no separate peeled annotated-tag ref was returned.",
+    "remote_main_command": "git ls-remote origin refs/heads/main",
+    "remote_main_raw_stdout": "306b7d152107597562a87f6af01a01aca76bd05a\trefs/heads/main"
+  },
+  "installed_readback": {
+    "version": {
+      "command": "charness version",
+      "returncode": 0,
+      "raw_stdout": "version: 8.4.4",
+      "expected": "8.4.4",
+      "matched": true
+    },
+    "doctor": {
+      "command": "charness doctor",
+      "returncode": 0,
+      "raw_selected_fields": {
+        "event": "doctor",
+        "response_level": "summary",
+        "detail_available": true,
+        "package_id": "charness",
+        "repo_root": "/home/hwidong/.agents/src/charness",
+        "managed_checkout": true,
+        "target_repo_root": "/home/hwidong/codes/charness",
+        "checkout_version": "8.4.4",
+        "checkout_git_head": "1e918c655",
+        "codex_source_version": "8.4.4",
+        "codex_cache_manifest_version": "8.4.4",
+        "codex_cache_manifest_status": "valid",
+        "codex_source_cache_drift": false,
+        "codex_enabled_plugin_id": "charness@local",
+        "next_action_kind": "restart",
+        "next_action_host": "codex",
+        "next_action_status": "installed",
+        "next_action_message": "Codex host install markers are present. Start a new Codex session to load charness."
+      }
+    },
+    "executable": {
+      "command_v_path": "/home/hwidong/.local/bin/charness",
+      "readlink_f_path": "/home/hwidong/.local/bin/charness"
+    }
+  },
+  "package_closure": {
+    "canonical_source_root": "/home/hwidong/.agents/src/charness",
+    "canonical_source_head": "1e918c655798fdd7b8ee65fb58b4fc10c4f895ef",
+    "canonical_source_head_subject": "docs: bind independent claims review for 8.4.4",
+    "installed_root": "/home/hwidong/.codex/plugins/cache/local/charness/8.4.4",
+    "manifest": {
+      "source_path": "/home/hwidong/.agents/src/charness/plugins/charness/.codex-plugin/plugin.json",
+      "installed_path": "/home/hwidong/.codex/plugins/cache/local/charness/8.4.4/.codex-plugin/plugin.json",
+      "source_sha256": "7c82580305471b9f58daf7088fbddbdaee65f53744e39ed6366dd27261f80b7f",
+      "installed_sha256": "7c82580305471b9f58daf7088fbddbdaee65f53744e39ed6366dd27261f80b7f",
+      "matched": true
+    },
+    "comparison_method": "For each selected skill, find all regular files recursively, excluding __pycache__ and *.pyc; sort relative paths; compare sha256sum output between canonical source skills/public/<skill> and installed skills/<skill>.",
+    "skills": {
+      "spec": {
+        "source_file_count": 9,
+        "installed_file_count": 9,
+        "diff_returncode": 0,
+        "files_sha256": {
+          "SKILL.md": "d0240604f31bd01f2a1e8cb2e7b13cd1327e8efc49feecd896b81995d0a701cf",
+          "references/acceptance-checks.md": "487aa3142df1bb22fc957747936ebe5c2f637d033c1784323447f3e2a21fc8c0",
+          "references/design-lenses.md": "d83f086334f9192387fdff62c579e0f52eaf7af41d3ca21b38aa38c88210a95c",
+          "references/evidence-durability.md": "8e2d6f99ddefed4f8653e91e903ff7183baf3a5e4d68161969d2f706cb90c1e9",
+          "references/executable-spec-cost.md": "684d16e1032117aa15a0817009881016b6ff631208b3e1499e410e3842a0224e",
+          "references/fixed-probe-defer.md": "2de6b92f62efdca58fe61d896e7a1cd0cb4ff59fa3bc1e1884df5dff36319f68",
+          "references/public-executable-contracts.md": "3d95fa14d470f900f8002fe19bc84532b7be7d30f6a1b484160cf4960422c411",
+          "references/success-criteria.md": "4294de6ea5fc0141f9deee70c139c4ad6501f14e4228ee7e9863645142c6c5a7",
+          "references/taxonomy-axis-checkpoint.md": "ed64d3d86aaf86d4c8a9d2f820f237d00537077f6f80053dc840dfd9087bb411"
+        }
+      },
+      "impl": {
+        "source_file_count": 10,
+        "installed_file_count": 10,
+        "diff_returncode": 0,
+        "files_sha256": {
+          "SKILL.md": "ff0afef28bd79df1d278d1982ad0fd04a7ed06842d28c32232efdbf53680b183",
+          "adapter.example.yaml": "3fe6212c91c1a5259afe0bcf9a2cf5ab271728da5005805786c7615f01b27cb8",
+          "references/adapter-contract.md": "17f8a8036f55cec86e17436337180c6ceff8395151f43a4b8da9a1f732278106",
+          "references/contract-consumption.md": "48a5b7040b75f7178e01173b8dcbe9d6f381c90e5653544800dbd074786cb0c2",
+          "references/design-lenses.md": "e0228e1680a715b73990f0ba7bfa8172e451f26baf5a89fd3c275b1187c24935",
+          "references/external-api-contract.md": "aa5ecfc00fb50fd3023d019e3f37e50dd6949b1490c37f8e46996d8fa240123f",
+          "references/sequence-discipline.md": "3f750e2ad4ace67dca002489d70c42afafe8396afc57d121e57fc56c33ad1f22",
+          "scripts/init_adapter.py": "a7ade072aade54072e9f4f52a8085b4b58839aff49c861a7f5dcd8c60dc3a450",
+          "scripts/resolve_adapter.py": "032a631a26b8278c5af9dce124db4191dc7c845ce8a886b9ea7fcdf6516ca928",
+          "scripts/survey_verification.py": "109e58b3947da57e96732c1fef4d43a6c49d6a55f618317ea5497d075194c6b2"
+        }
+      },
+      "create-cli": {
+        "source_file_count": 11,
+        "installed_file_count": 11,
+        "diff_returncode": 0,
+        "files_sha256": {
+          "SKILL.md": "11c5963c377544a4978409b1fca9179d3c07835bffad1315bb18c596dfe8be60",
+          "references/case-studies.md": "840dae330a977e724c54ec711a6c999ad1c987fe5a404193ad03519ad454570c",
+          "references/code-shape.md": "c05015b05421fbeca16b0229185c243104d4961f68582f01ea19e7e4dd7b32b4",
+          "references/command-conventions.md": "326351763ad3b0ecf42f0c28e5b360bc437cd5c6736f23e10a6147d8a6ec0078",
+          "references/command-surface.md": "4e02d2f2f7267931ae3f28b2cef9746a9093b64738e46aee99abed3e4dbd56b9",
+          "references/external-capability-clis.md": "0de81fbd1c20622e233a0dfab23feb2143435aeeb32d84e1beb2bc4103f18824",
+          "references/install-update.md": "654e946317273618e070f6b668ad9401320cdd9a8359439e9da392d5d062efe4",
+          "references/intent-first-grammar.md": "554fde8b60135d7941a1ac5fa9b05a300b12b046d2d133e6adc1056ad37898bb",
+          "references/machine-readable-state.md": "19bf8fdeab5aa6d046b34c1b8f4375bebcf0f9b2c54a7fdf8c457963a3aafee3",
+          "references/quality-gates.md": "591d35afcfb021575e0a6777a74cc432c4617227bcf438006bba8ee1b0a64f96",
+          "references/version-provenance.md": "b71a1fe67e01b23a0f40f91f11b24365da12839f7634ec8df499f08fbc1b7683"
+        }
+      }
+    },
+    "release_identity_checks": {
+      "release_commit_is_ancestor_of_managed_source_head": true,
+      "selected_skill_paths_changed_between_release_commit_and_managed_source_head": [],
+      "actual_remote_main": "306b7d152107597562a87f6af01a01aca76bd05a",
+      "managed_source_head_equals_actual_remote_main": false
+    }
+  },
+  "limitations_and_non_claims": [
+    "The direct GitHub REST request was credential-free but received HTTP 403 because this host's shared unauthenticated core quota was exhausted. Release fields were therefore read through a credential-free r.jina.ai relay whose reported origin URL is the exact GitHub REST endpoint. The relay response is transformed text, not byte-for-byte direct response evidence.",
+    "Remote tag and remote main identities were independently read with git ls-remote; this did not fetch or mutate local refs.",
+    "The canonical managed source checkout is at 1e918c655798fdd7b8ee65fb58b4fc10c4f895ef, while actual remote main is the later final-artifact commit 306b7d152107597562a87f6af01a01aca76bd05a. The selected spec/impl/create-cli paths did not change after the release commit, so their closure comparison remains release-relevant.",
+    "The managed source checkout already contains untracked .charness/usage-episodes/ state; it was observed, not cleaned or modified by this task.",
+    "No update, install, refresh, fetch, checkout, commit, tag, push, issue close, or repository file edit was performed.",
+    "No active Codex, Claude Code, or Grok session was restarted. Doctor explicitly says a new Codex session is required to load the refreshed cache, and Claude Code/Grok also require restart or enablement steps.",
+    "The spec, impl, and create-cli installed trees were compared as package files only. Those skills were not executed from a fresh host session, so this does not establish post-restart behavioral routing.",
+    "No broad test suite or consumer journey was rerun. This artifact records public-release, installed-readback, and selected package-closure observations only."
+  ]
+}

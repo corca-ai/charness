@@ -1,0 +1,106 @@
+ok: true
+status: verified
+confirmation:
+  observer: issue_verify_closeout@gh
+  channel: backend-state-readback
+  scope: state-and-carrier-checks-only
+  line: 'confirmed: issue_verify_closeout@gh via backend-state-readback (state-and-carrier-checks-only)'
+review_advisory: []
+repo: corca-ai/charness
+numbers:
+- 799
+- 801
+- 802
+classification: feature
+carrier: direct-commit
+commit_ref: a8e0116426904067f0531085229da9044249baba
+body_file: null
+manual_fallback_reason: null
+expect_state: CLOSED
+missing_close_keywords: []
+missing_fields: []
+missing_field_reasons: []
+parsed_ledger_fields: []
+state_mismatches: []
+manual_comment_missing: []
+resolution_critique_check:
+  ok: true
+  skipped_classification: feature
+source_preservation:
+  external_sourced: false
+  origin: null
+  preservation_declared: null
+  forms_present: []
+  missing: false
+  ok: true
+behavioral_verdict:
+  applies: true
+  ok: true
+  missing: []
+  lines:
+  - target: '#799'
+    value: local-only-by-contract; `charness-artifacts/critique/2026-09-06-goal798-release-8-4-4.md`
+      independently confirms applicability ownership and fresh-boundary exceptions,
+      not automatic skill routing.
+  - target: '#801'
+    value: local-only-by-contract; the frozen alias oracle passes both external-package
+      arms, semantic review confirms contract preservation, and a separate trace audit
+      reports the exact handoff.
+  - target: '#802'
+    value: local-only-by-contract; the frozen CLI oracle passes both external-package
+      arms, and separate output review confirms legacy invocation and requested behavior
+      while retaining the README erratum.
+hotl_dispositions:
+  applies: false
+  ok: true
+  undispositioned: []
+  lines: []
+ai_provenance:
+  applies: true
+  ok: true
+  missing: false
+  marker: 'Agent-authored by Codex under the operator''s explicit delegated implementation,
+    publication and closeout authority; no additional human exact-byte review is claimed.
+
+    Agent-authored by Codex under the operator''s explicit delegated implementation,
+    publication and closeout authority; no additional human exact-byte review is claimed.
+
+    Agent-authored by Codex under the operator''s explicit delegated implementation,
+    publication and closeout authority; no additional human exact-byte review is claimed.'
+  classification: feature
+verified_state:
+- number: 799
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/799
+- number: 801
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/801
+- number: 802
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/802
+consolidation_readback: []
+proof_mismatch_scope:
+  present: false
+  adapter_found: false
+  adapter_valid: true
+  map_available: false
+  degraded: true
+closeout_authorization:
+  applies: false
+  authorized: true
+  refusal: null
+  crosswalk_status: crosswalk_missing
+  crosswalk_detail: charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json
+    does not exist
+  invoked_targets: []
+  carrier_targets: []
+  aggregate_targets: []
+  carrier_source: verify-readback:direct-commit
+  target: null
+  gating: 'reported-only: a post-publication readback cannot prevent a close that
+    already happened'
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
