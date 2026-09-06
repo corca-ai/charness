@@ -1,0 +1,87 @@
+{
+  "kind": "charness.goal-run-final-proof-index/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 798,
+  "draft_sha256": "2d7db581aa37bcd88442a37282fe1f74ff0b544220637b3bf830d27a321e1bea",
+  "binding_sha256": "88ec9430391af0d4843d57bcb12337fbe89f7e2f9c3861dd98b73fd55cf02ac1",
+  "expected_children": {
+    "path": "charness-artifacts/goal-runs/798/expected-children.json",
+    "sha256": "e35960ece198c9dac44107bac55b634e014ed352122109e21dd27753af07181b"
+  },
+  "parent_obligation": {
+    "path": "charness-artifacts/goal-runs/798/parent-terminal-obligation.md",
+    "sha256": "380d7810ea1b0cc09bfd06cc7f2f52f42bae5509eb1b5554c87240bb95ef46ff"
+  },
+  "evidence": [
+    {
+      "role": "whole-system-reconciliation",
+      "path": "charness-artifacts/goal-runs/798/parent-terminal-obligation.md",
+      "sha256": "380d7810ea1b0cc09bfd06cc7f2f52f42bae5509eb1b5554c87240bb95ef46ff"
+    },
+    {
+      "role": "exact-child-comments",
+      "path": "charness-artifacts/goal-runs/798/child-closeout-readbacks.json",
+      "sha256": "faeaf778b59c0515e33f385e44e1279fbb708352ad2635fd1d57c631372565db"
+    },
+    {
+      "role": "released-export-equivalence",
+      "path": "charness-artifacts/goal-runs/798/released-export-equivalence.json",
+      "sha256": "47ad5e1bc10ac04068cd70ab37f059e8bab69c1da5b57959360df1d1bf5b4ab8"
+    },
+    {
+      "role": "required-release-verification",
+      "path": "charness-artifacts/goal-runs/798/release-publish-output.yaml",
+      "sha256": "d09e1d76a7c9bbff54f54b3e8bdd08c661b0e5ee67ec54a69c0cf6d7fca742bf"
+    },
+    {
+      "role": "prepare-quality-receipt",
+      "path": "charness-artifacts/goal-runs/798/release-quality-prepare.json",
+      "sha256": "47bc792297e446d0c00194ff655e104e15b23fefea6d8c7ee61a3628cd1fc3a4"
+    },
+    {
+      "role": "final-changed-line",
+      "path": "charness-artifacts/goal-runs/798/release-changed-line-readback.json",
+      "sha256": "e4b74db24db300afce897bbb4d734866d661cdad313cc0103aa345ccbc10d805"
+    },
+    {
+      "role": "hosted-tag-ci",
+      "path": "charness-artifacts/goal-runs/798/tag-ci-readback.json",
+      "sha256": "1246865412c5f07c89dcba12fffec415595fa814ffe09f5bf876f6796b791960"
+    },
+    {
+      "role": "independent-public-installed-observer",
+      "path": "charness-artifacts/goal-runs/798/independent-public-observer.json",
+      "sha256": "60817a9b3f562b2a14446649ddd22b86fabba71e37f4d63f55af4ad2d9fb71fb"
+    },
+    {
+      "role": "bug-state-carrier-readback",
+      "path": "charness-artifacts/goal-runs/798/closeouts/bug-close-verified.yaml",
+      "sha256": "7eaab8adb324e2b9c6aeab2000e470470838a401a6f396032033228913199227"
+    },
+    {
+      "role": "feature-state-carrier-readback",
+      "path": "charness-artifacts/goal-runs/798/closeouts/feature-close-verified.yaml",
+      "sha256": "4910e63f82247678453f91af31d08d93e566699319a7c3f1a73051951ad5eb2c"
+    },
+    {
+      "role": "publication-state-carrier-readback",
+      "path": "charness-artifacts/goal-runs/798/publication-close-verified.yaml",
+      "sha256": "64e44f8388d56a525b437e7cdb8991c05d78d4f7b0350609ea6c579e0f2912a4"
+    },
+    {
+      "role": "consumer-comparison",
+      "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/consumer-comparison.md",
+      "sha256": "17f80f4d65a0c6469cf6b3059942f1220384eebadb387ec4989d74fd1d6dcdf5"
+    },
+    {
+      "role": "release-critique",
+      "path": "charness-artifacts/critique/2026-09-06-goal798-release-8-4-4.md",
+      "sha256": "7485da8c971d57f0ae82105f6e2c93d114a06900fbdd99cde59efe8a8606765a"
+    },
+    {
+      "role": "prepared-claims",
+      "path": "charness-artifacts/release-review/2026-09-06-v8.4.4-prepared-claims-review.json",
+      "sha256": "eebe14f830aee4e4cb157ce08649433945afd27fc70c66363a3ec846b0756e65"
+    }
+  ]
+}

@@ -1,0 +1,333 @@
+ok: true
+repo: corca-ai/charness
+number: 798
+comment_argv:
+- gh
+- issue
+- comment
+- --repo
+- corca-ai/charness
+- '798'
+- --body-file
+- /home/hwidong/codes/charness/charness-artifacts/goal-runs/798/closeouts/issue-798-final.md
+close_argv:
+- gh
+- issue
+- close
+- --repo
+- corca-ai/charness
+- '798'
+- --reason
+- completed
+view_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '798'
+- --json
+- number,state,url
+preflight_state:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "# Reduce consumer rework through coherent judgment, faithful evidence, and\
+    \ proven skill journeys\n\n## Problem and impact\n\nCurrent verification guidance\
+    \ differs across owner documents; release output\nturns advisory evidence limitations\
+    \ into confirmed inaccuracies; generic skill\ncases do not establish the complete\
+    \ spec-to-impl and existing-script CLI consumer\njourneys. These seams can make\
+    \ agents repeat decisions and overstate proof.\n\n## Approved outcome\n\nAlign\
+    \ verification ownership, preserve release advisory meaning, exercise and\nimprove\
+    \ both consumer journeys on fixed comparative inputs, and remove observed\nduplicate\
+    \ work without losing capability. Integrate, independently review, push\nand release\
+    \ the completed result. Repair encountered friction within these seams.\n\n##\
+    \ Authority and planning\n\nThe operator requested this Goal on 2026-09-06 and\
+    \ explicitly delegated remaining\nchoices, friction repair, final push and release.\
+    \ Planning and both review rounds\nare complete; the repaired whole received a\
+    \ separate file-backed worker pass.\nNo milestone was requested, so this Goal\
+    \ is unassigned.\n\n- Frozen planning record: charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.md\n\
+    - Framing review: charness-artifacts/critique/workers/consumer-plan-framing-live/worker-report.yaml\n\
+    - Final pre-binding review: charness-artifacts/critique/workers/consumer-plan-whole/worker-report.yaml\n\
+    - First operational findings: charness-artifacts/probe/2026-09-06-consumer-plan-proof-findings.json\n\
+    \n## Work Items and execution order\n\n1. contract-ownership — consistent ordinary,\
+    \ proof-surface and release verification.\n2. evidence-meaning — faithful final\
+    \ report rendering with legacy compatibility.\n3. spec-impl-journey — direct consumer\
+    \ handoff and implementation proof.\n4. cli-journey — existing-script compatibility\
+    \ and coherent CLI behavior.\n5. friction-reduction — demonstrated repeated-work\
+    \ removal with preserved acceptance.\n6. publish-closeout — integrated proof,\
+    \ release, direct readback and guarded close.\n\nDependencies are local acceptance\
+    \ readiness, not premature provider closure.\nA prerequisite is ready when implementation,\
+    \ focused proof and applicable\nindependent review identify the integrated revision\
+    \ and only publication remains.\nThe final publication child may then start while\
+    \ the other children stay OPEN.\nAfter public carrier verification and behavioral\
+    \ evidence binding, close the\nimplementation children, publication child, then\
+    \ this parent.\n\n## Current frontier\n\nAll six Work Items are now verified CLOSED\
+    \ after publication, in the frozen order:\nimplementation #799–#803 first, then\
+    \ publication #804. Their exact issue-owned\ncomment URLs and independent behavioral\
+    \ dispositions are in the final Goal proof.\n\nPublished [v8.4.4](https://github.com/corca-ai/charness/releases/tag/v8.4.4)\
+    \ at\n00400d1cf4e3c3e7af529f9de44611e9a5756235. Required release gates and exact-tag\n\
+    hosted CI passed; independent prepared claims, public release object, remote tag,\n\
+    installed version/doctor and selected package-file closure were observed. Direct\n\
+    unauthenticated REST was rate-limited; the independent relay limitation remains\n\
+    explicit. Active host sessions were not restarted.\n\nBoth consumer arms preserve\
+    \ frozen acceptance with no operator rescue. Alias\nduplicate work increases 3→5;\
+    \ CLI decreases 11→9; aggregate stays 14. Actual\ntimeouts match within pairs\
+    \ but differ from the frozen protocol (3600 vs 1800);\nstrict conformance and\
+    \ general speedup are not claimed. The separately reproduced\npreview-to-live\
+    \ recovery operation was removed with negative refusals preserved.\n\nNext action:\
+    \ execute the dedicated parent Goal close with the bound final proof\nindex and\
+    \ six live comment identities. This body does not claim the parent is\nalready\
+    \ closed; the provider's terminal observation will establish that state.\n\n##\
+    \ Completion evidence\n\nExact child graph, per-child acceptance/observer/revision\
+    \ evidence, integrated\nverification, final release identity and separate provider\
+    \ readback. A green\ngate, public tag page, or CLOSED state alone does not establish\
+    \ behavior.\n\n<!-- charness-goal-run:v1\n{\n  \"binding_schema\": \"charness.goal-binding/v1\"\
+    ,\n  \"binding_path\": \"charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.binding.json\"\
+    ,\n  \"binding_sha256\": \"88ec9430391af0d4843d57bcb12337fbe89f7e2f9c3861dd98b73fd55cf02ac1\"\
+    ,\n  \"draft_path\": \"charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.md\"\
+    ,\n  \"draft_sha256\": \"2d7db581aa37bcd88442a37282fe1f74ff0b544220637b3bf830d27a321e1bea\"\
+    ,\n  \"initial_graph_sha256\": \"6e64a91ebe8949e168ca07853481d413b348f75d1ad19cc7ced974b164079514\"\
+    ,\n  \"bootstrap_verification\": \"verified-target-roundtrip\",\n  \"parent_identity\"\
+    : {\n    \"repo\": \"corca-ai/charness\",\n    \"number\": 798,\n    \"url\":\
+    \ \"https://github.com/corca-ai/charness/issues/798\"\n  },\n  \"progress\": {\n\
+    \    \"schema\": \"charness.goal-progress/v1\",\n    \"revision\": 4,\n    \"\
+    total\": 6,\n    \"completed\": 6,\n    \"open\": 0,\n    \"next\": null\n  }\n\
+    }\n-->\n"
+  comments: []
+  createdAt: '2026-09-06T00:05:51Z'
+  labels: []
+  number: 798
+  state: OPEN
+  title: 'North Star: reduce consumer rework through coherent judgment and proven
+    skill journeys'
+  updatedAt: '2026-09-06T02:03:29Z'
+  url: https://github.com/corca-ai/charness/issues/798
+verified_state:
+  number: 798
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/798
+reason: completed
+closeout_authorization:
+  applies: false
+  authorized: true
+  refusal: null
+  crosswalk_status: crosswalk_missing
+  crosswalk_detail: charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json
+    does not exist
+  invoked_targets: []
+  carrier_targets: []
+  aggregate_targets: []
+  carrier_source: close-with-comment
+  target: null
+review_advisory: []
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+comment_succeeded: true
+close_succeeded: true
+operation: close-goal-run
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/798/observations/goal-798-final-close-1.started.json
+  started_sha256: f19c2b645264608f41af6532a23b1be970b9d588237853a4021ed02842a3cf8c
+  terminal_path: charness-artifacts/goal-runs/798/observations/goal-798-final-close-1.terminal.json
+  terminal_sha256: 2591b76b99f128ee47571a15dda9b0d25c4f0d59466d3d7b90099796c49638ea
+terminal_metadata:
+  update:
+    ok: true
+    status: verified-write
+    outcome: verified-write
+    mutation_invoked: true
+    operation: update-body
+    action: updated
+    repo: corca-ai/charness
+    number: 798
+    url: https://github.com/corca-ai/charness/issues/798
+    body_verified: true
+    before:
+      ok: true
+      repo: corca-ai/charness
+      number: 798
+      url: https://github.com/corca-ai/charness/issues/798
+      readback_verified: true
+      body_verified: false
+      body_verification: byte-identical
+      stored_body_bytes: 4995
+      body_sha256: da584bde1974b627cf7b2d20239aeb737997b66e34d20ec5de3bd9b4ef0b3fd6
+    single_updater_assumption: true
+  readback:
+    repo: corca-ai/charness
+    number: 798
+    state: CLOSED
+    body: '# Reduce consumer rework through coherent judgment, faithful evidence,
+      and proven skill journeys
+
+
+      ## Problem and impact
+
+
+      Current verification guidance differs across owner documents; release output
+
+      turns advisory evidence limitations into confirmed inaccuracies; generic skill
+
+      cases do not establish the complete spec-to-impl and existing-script CLI consumer
+
+      journeys. These seams can make agents repeat decisions and overstate proof.
+
+
+      ## Approved outcome
+
+
+      Align verification ownership, preserve release advisory meaning, exercise and
+
+      improve both consumer journeys on fixed comparative inputs, and remove observed
+
+      duplicate work without losing capability. Integrate, independently review, push
+
+      and release the completed result. Repair encountered friction within these seams.
+
+
+      ## Authority and planning
+
+
+      The operator requested this Goal on 2026-09-06 and explicitly delegated remaining
+
+      choices, friction repair, final push and release. Planning and both review rounds
+
+      are complete; the repaired whole received a separate file-backed worker pass.
+
+      No milestone was requested, so this Goal is unassigned.
+
+
+      - Frozen planning record: charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.md
+
+      - Framing review: charness-artifacts/critique/workers/consumer-plan-framing-live/worker-report.yaml
+
+      - Final pre-binding review: charness-artifacts/critique/workers/consumer-plan-whole/worker-report.yaml
+
+      - First operational findings: charness-artifacts/probe/2026-09-06-consumer-plan-proof-findings.json
+
+
+      ## Work Items and execution order
+
+
+      1. contract-ownership — consistent ordinary, proof-surface and release verification.
+
+      2. evidence-meaning — faithful final report rendering with legacy compatibility.
+
+      3. spec-impl-journey — direct consumer handoff and implementation proof.
+
+      4. cli-journey — existing-script compatibility and coherent CLI behavior.
+
+      5. friction-reduction — demonstrated repeated-work removal with preserved acceptance.
+
+      6. publish-closeout — integrated proof, release, direct readback and guarded
+      close.
+
+
+      Dependencies are local acceptance readiness, not premature provider closure.
+
+      A prerequisite is ready when implementation, focused proof and applicable
+
+      independent review identify the integrated revision and only publication remains.
+
+      The final publication child may then start while the other children stay OPEN.
+
+      After public carrier verification and behavioral evidence binding, close the
+
+      implementation children, publication child, then this parent.
+
+
+      ## Current frontier
+
+
+      All six Work Items are now verified CLOSED after publication, in the frozen
+      order:
+
+      implementation #799–#803 first, then publication #804. Their exact issue-owned
+
+      comment URLs and independent behavioral dispositions are in the final Goal proof.
+
+
+      Published [v8.4.4](https://github.com/corca-ai/charness/releases/tag/v8.4.4)
+      at
+
+      00400d1cf4e3c3e7af529f9de44611e9a5756235. Required release gates and exact-tag
+
+      hosted CI passed; independent prepared claims, public release object, remote
+      tag,
+
+      installed version/doctor and selected package-file closure were observed. Direct
+
+      unauthenticated REST was rate-limited; the independent relay limitation remains
+
+      explicit. Active host sessions were not restarted.
+
+
+      Both consumer arms preserve frozen acceptance with no operator rescue. Alias
+
+      duplicate work increases 3→5; CLI decreases 11→9; aggregate stays 14. Actual
+
+      timeouts match within pairs but differ from the frozen protocol (3600 vs 1800);
+
+      strict conformance and general speedup are not claimed. The separately reproduced
+
+      preview-to-live recovery operation was removed with negative refusals preserved.
+
+
+      Next action: execute the dedicated parent Goal close with the bound final proof
+
+      index and six live comment identities. This body does not claim the parent is
+
+      already closed; the provider''s terminal observation will establish that state.
+
+
+      ## Completion evidence
+
+
+      Exact child graph, per-child acceptance/observer/revision evidence, integrated
+
+      verification, final release identity and separate provider readback. A green
+
+      gate, public tag page, or CLOSED state alone does not establish behavior.
+
+
+      <!-- charness-goal-run:v1
+
+      {"binding_path":"charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.binding.json","binding_schema":"charness.goal-binding/v1","binding_sha256":"88ec9430391af0d4843d57bcb12337fbe89f7e2f9c3861dd98b73fd55cf02ac1","bootstrap_verification":"verified-target-roundtrip","draft_path":"charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.md","draft_sha256":"2d7db581aa37bcd88442a37282fe1f74ff0b544220637b3bf830d27a321e1bea","initial_graph_sha256":"6e64a91ebe8949e168ca07853481d413b348f75d1ad19cc7ced974b164079514","parent_identity":{"number":798,"repo":"corca-ai/charness","url":"https://github.com/corca-ai/charness/issues/798"},"progress":{"completed":6,"next":null,"open":0,"revision":4,"schema":"charness.goal-progress/v1","total":6},"terminal_observation_path":"charness-artifacts/goal-runs/798/observations/goal-798-final-close-1.terminal.json","terminal_observation_sha256":"2591b76b99f128ee47571a15dda9b0d25c4f0d59466d3d7b90099796c49638ea"}
+
+      -->
+
+      '
+    terminal_observation_path: charness-artifacts/goal-runs/798/observations/goal-798-final-close-1.terminal.json
+    terminal_observation_sha256: 2591b76b99f128ee47571a15dda9b0d25c4f0d59466d3d7b90099796c49638ea
+  metadata:
+    binding_schema: charness.goal-binding/v1
+    binding_path: charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.binding.json
+    binding_sha256: 88ec9430391af0d4843d57bcb12337fbe89f7e2f9c3861dd98b73fd55cf02ac1
+    draft_path: charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.md
+    draft_sha256: 2d7db581aa37bcd88442a37282fe1f74ff0b544220637b3bf830d27a321e1bea
+    initial_graph_sha256: 6e64a91ebe8949e168ca07853481d413b348f75d1ad19cc7ced974b164079514
+    bootstrap_verification: verified-target-roundtrip
+    parent_identity:
+      repo: corca-ai/charness
+      number: 798
+      url: https://github.com/corca-ai/charness/issues/798
+    progress:
+      schema: charness.goal-progress/v1
+      revision: 4
+      total: 6
+      completed: 6
+      open: 0
+      next: null
+    terminal_observation_path: charness-artifacts/goal-runs/798/observations/goal-798-final-close-1.terminal.json
+    terminal_observation_sha256: 2591b76b99f128ee47571a15dda9b0d25c4f0d59466d3d7b90099796c49638ea
+kind: charness.goal-run-close/v1
+attempt_id: goal-798-final-close-1

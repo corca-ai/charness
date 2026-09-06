@@ -1,0 +1,88 @@
+ok: true
+status: verified
+confirmation:
+  observer: issue_verify_closeout@gh
+  channel: backend-state-readback
+  scope: state-and-carrier-checks-only
+  line: 'confirmed: issue_verify_closeout@gh via backend-state-readback (state-and-carrier-checks-only)'
+review_advisory: []
+repo: corca-ai/charness
+numbers:
+- 804
+classification: feature
+carrier: direct-commit
+commit_ref: 2823111b37b5e69f3d155b30dcab25ea093628f6
+body_file: null
+manual_fallback_reason: null
+expect_state: CLOSED
+missing_close_keywords: []
+missing_fields: []
+missing_field_reasons: []
+parsed_ledger_fields: []
+state_mismatches: []
+manual_comment_missing: []
+resolution_critique_check:
+  ok: true
+  skipped_classification: feature
+source_preservation:
+  external_sourced: false
+  origin: null
+  preservation_declared: null
+  forms_present: []
+  missing: false
+  ok: true
+behavioral_verdict:
+  applies: true
+  ok: true
+  missing: []
+  lines:
+  - target: '#804'
+    value: verified; release-helper GitHub release readback and unauthenticated page
+      fetch, a separate agent's credential-free relayed REST observation of release
+      object 383430968, git remote tag readback, installed version/doctor 8.4.4 and
+      selected installed skill closure comparison establish publication and installed
+      file state. The direct unauthenticated REST request was rate-limited 403; relay
+      limits remain explicit. This is separate from CLOSED/carrier checks and does
+      not prove post-restart skill execution.
+hotl_dispositions:
+  applies: false
+  ok: true
+  undispositioned: []
+  lines: []
+ai_provenance:
+  applies: true
+  ok: true
+  missing: false
+  marker: Agent-authored by Codex under the operator's explicit delegated implementation,
+    publication and closeout authority; no additional human exact-byte review is claimed.
+  classification: feature
+verified_state:
+- number: 804
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/804
+consolidation_readback: []
+proof_mismatch_scope:
+  present: false
+  adapter_found: false
+  adapter_valid: true
+  map_available: false
+  degraded: true
+closeout_authorization:
+  applies: false
+  authorized: true
+  refusal: null
+  crosswalk_status: crosswalk_missing
+  crosswalk_detail: charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json
+    does not exist
+  invoked_targets: []
+  carrier_targets: []
+  aggregate_targets: []
+  carrier_source: verify-readback:direct-commit
+  target: null
+  gating: 'reported-only: a post-publication readback cannot prevent a close that
+    already happened'
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

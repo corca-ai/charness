@@ -1,0 +1,146 @@
+[
+  {
+    "comments": [
+      {
+        "id": "IC_kwDOR9yx7M8AAAABSy1P4Q",
+        "author": {
+          "login": "spilist"
+        },
+        "authorAssociation": "MEMBER",
+        "body": "## Resolution ledger\n\nJTBD: Let an agent choose one consistent, proportionate verification scope for an ordinary edit, Charness authoring integration, a proof-surface change, or a release without reconciling contradictory owner documents.\n\nBoundary: `docs/operating-contract.md` owns applicability; development owns Charness-authoring commands; quality guidance starts from focused proof and existing-owner reuse. Authoring integration and irreversible release safeguards remain intact.\n\nResolution Brief: inline (no pause); replace duplicated applicability prescriptions with the existing owner's distinctions and links.\n\nImplementation: The contract now separates ordinary reversible consumer work, Charness authoring integration, proof-surface work, and release, while quality/proposal guidance reduces, reuses, or narrows existing protection before proposing another gate.\n\nPrevention: Focused docs/skill checks keep the routed owner surfaces synchronized without adding a parallel verifier.\n\nBehavior #799: local-only-by-contract; `charness-artifacts/critique/2026-09-06-goal798-release-8-4-4.md` independently confirms applicability ownership and fresh-boundary exceptions, not automatic skill routing.\n\nAI-provenance: Agent-authored by Codex under the operator's explicit delegated implementation, publication and closeout authority; no additional human exact-byte review is claimed.\n\n\nPublished source: v8.4.4 at commit 00400d1cf4e3c3e7af529f9de44611e9a5756235; [release](https://github.com/corca-ai/charness/releases/tag/v8.4.4). Tag CI succeeded. Goal 798 released-export-equivalence.json binds actual consumed skill files to published bytes with an explicit six-file delta, not whole-package equality.\n",
+        "createdAt": "2026-09-06T02:01:28Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/corca-ai/charness/issues/799#issuecomment-5556228065",
+        "viewerDidAuthor": true
+      }
+    ],
+    "number": 799,
+    "state": "CLOSED",
+    "url": "https://github.com/corca-ai/charness/issues/799",
+    "exact_final_comment_matches": 1,
+    "matched_comment_url": "https://github.com/corca-ai/charness/issues/799#issuecomment-5556228065"
+  },
+  {
+    "comments": [
+      {
+        "id": "IC_kwDOR9yx7M8AAAABSy1P4A",
+        "author": {
+          "login": "spilist"
+        },
+        "authorAssociation": "MEMBER",
+        "body": "## Resolution ledger\n\nJTBD: Preserve every release-review finding at the final reader boundary without converting an evidence limitation into a confirmed inaccuracy or hiding an actual confirmed error.\n\nRoot Cause: The final renderer treated nonempty opaque advisory findings as proof of inaccuracy, strengthening transport data into a truth judgment absent from the schema.\n\nDebug Artifact: `charness-artifacts/debug/2026-09-06-release-advisory-meaning.md`\n\nSiblings: decision: fix now for final scope/header composition and legacy strings/dictionaries; decision: diagnostic-only for shape validation and resume transport; proof: paired final-render comparison and 56 focused tests, with static scan only for diagnostic siblings.\n\nPrevention: Neutral aggregate wording plus varied evidence-limit, confirmed-error, mixed, empty, legacy, order, and flattening cases preserves meaning and visibility.\n\nBoundary #800: owned-correctly\n\nCritique #800: charness-artifacts/critique/2026-09-06-issue-800-resolution.md\n\nBehavior #800: local-only-by-contract; paired final-render records and focused regressions preserve distinct advisory meanings under a separate reviewer; public release visibility is not claimed by this local verdict.\n\nAI-provenance: Agent-authored by Codex under the operator's explicit delegated implementation, publication and closeout authority; no additional human exact-byte review is claimed.\n\n\nPublished source: v8.4.4 at commit 00400d1cf4e3c3e7af529f9de44611e9a5756235; [release](https://github.com/corca-ai/charness/releases/tag/v8.4.4). Tag CI succeeded. Goal 798 released-export-equivalence.json binds actual consumed skill files to published bytes with an explicit six-file delta, not whole-package equality.\n",
+        "createdAt": "2026-09-06T02:01:28Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/corca-ai/charness/issues/800#issuecomment-5556228064",
+        "viewerDidAuthor": true
+      }
+    ],
+    "number": 800,
+    "state": "CLOSED",
+    "url": "https://github.com/corca-ai/charness/issues/800",
+    "exact_final_comment_matches": 1,
+    "matched_comment_url": "https://github.com/corca-ai/charness/issues/800#issuecomment-5556228064"
+  },
+  {
+    "comments": [
+      {
+        "id": "IC_kwDOR9yx7M8AAAABSy1P7A",
+        "author": {
+          "login": "spilist"
+        },
+        "authorAssociation": "MEMBER",
+        "body": "## Resolution ledger\n\nJTBD: Establish that a real installed-layout `spec` output can pass to a fresh `impl` context without user-context repetition, acceptance relaxation, or loss of a discoverable constraint.\n\nBoundary: Frozen alias fixture, baseline/candidate installed packages, produced specs and implementations, exact ancestry, executable acceptance, and independent disposition are in scope; generalized speed/effectiveness and other-host claims are not.\n\nResolution Brief: inline (no pause); compare identical frozen inputs and use each produced spec commit as the exact implementation base.\n\nImplementation: Durable probe artifacts retain package identities, receipts, outputs, tests, acceptance JSON, exact handoff ancestry, and candidate SC-1 through SC-10 mapping to ten tests with malformed-input acceptance preserved.\n\nPrevention: Future handoff claims must cite the same-input fixture, exact revision ancestry, actual output, and independent acceptance rather than expected dogfood prose alone.\n\nBehavior #801: local-only-by-contract; the frozen alias oracle passes both external-package arms, semantic review confirms contract preservation, and a separate trace audit reports the exact handoff.\n\nAI-provenance: Agent-authored by Codex under the operator's explicit delegated implementation, publication and closeout authority; no additional human exact-byte review is claimed.\n\n\nPublished source: v8.4.4 at commit 00400d1cf4e3c3e7af529f9de44611e9a5756235; [release](https://github.com/corca-ai/charness/releases/tag/v8.4.4). Tag CI succeeded. Goal 798 released-export-equivalence.json binds actual consumed skill files to published bytes with an explicit six-file delta, not whole-package equality.\n",
+        "createdAt": "2026-09-06T02:01:28Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/corca-ai/charness/issues/801#issuecomment-5556228076",
+        "viewerDidAuthor": true
+      }
+    ],
+    "number": 801,
+    "state": "CLOSED",
+    "url": "https://github.com/corca-ai/charness/issues/801",
+    "exact_final_comment_matches": 1,
+    "matched_comment_url": "https://github.com/corca-ai/charness/issues/801#issuecomment-5556228076"
+  },
+  {
+    "comments": [
+      {
+        "id": "IC_kwDOR9yx7M8AAAABSy1P6w",
+        "author": {
+          "login": "spilist"
+        },
+        "authorAssociation": "MEMBER",
+        "body": "## Resolution ledger\n\nJTBD: Demonstrate `create-cli` on an existing useful script while retaining legacy invocation and adding coherent CLI behavior.\n\nBoundary: Frozen CLI fixture, installed baseline/candidate packages, legacy/new commands, dry-run non-mutation, doctor, structured output, produced artifacts, and independent acceptance are in scope; generalized repeated-work reduction and blanket duplicate-option rejection are not.\n\nResolution Brief: inline (no pause); exercise identical input and preserve captured output, recording reviewer-found overstatement as errata.\n\nImplementation: Both CLI arms and their eight-check oracle are durable; `consumer-output-errata.md` narrows the README interpretation to demonstrated duplicate `--json` and `--dry-run` rejection without rewriting producer output.\n\nPrevention: Future journey evidence retains frozen input, package identity, actual artifacts, executable acceptance, independent interpretation, and visible errata.\n\nBehavior #802: local-only-by-contract; the frozen CLI oracle passes both external-package arms, and separate output review confirms legacy invocation and requested behavior while retaining the README erratum.\n\nAI-provenance: Agent-authored by Codex under the operator's explicit delegated implementation, publication and closeout authority; no additional human exact-byte review is claimed.\n\n\nPublished source: v8.4.4 at commit 00400d1cf4e3c3e7af529f9de44611e9a5756235; [release](https://github.com/corca-ai/charness/releases/tag/v8.4.4). Tag CI succeeded. Goal 798 released-export-equivalence.json binds actual consumed skill files to published bytes with an explicit six-file delta, not whole-package equality.\n",
+        "createdAt": "2026-09-06T02:01:28Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/corca-ai/charness/issues/802#issuecomment-5556228075",
+        "viewerDidAuthor": true
+      }
+    ],
+    "number": 802,
+    "state": "CLOSED",
+    "url": "https://github.com/corca-ai/charness/issues/802",
+    "exact_final_comment_matches": 1,
+    "matched_comment_url": "https://github.com/corca-ai/charness/issues/802#issuecomment-5556228075"
+  },
+  {
+    "comments": [
+      {
+        "id": "IC_kwDOR9yx7M8AAAABSy1P7Q",
+        "author": {
+          "login": "spilist"
+        },
+        "authorAssociation": "MEMBER",
+        "body": "## Resolution ledger\n\nJTBD: Continue critique preview into one live review and skip staged cheap-owner work outside the owner's universe, while preserving genuine collision and source-failure refusals.\n\nRoot Cause: Preview artifacts reused live attempt identity, while the staged hook re-derived length applicability from `.py` suffix instead of consuming the owner's selector.\n\nDebug Artifact: `charness-artifacts/debug/2026-09-06-critique-preview-live-collision.md`; `charness-artifacts/debug/2026-09-06-staged-owner-universe.md`\n\nSiblings: decision: fix now for generated/supplied preview continuation, directory refusal transport, artifact-only/mixed/custom staged sets, and source-failure propagation; decision: diagnostic-only for durable promotion and direct empty length selection; proof: 33 review/path/seed tests, 12 cheap-owner tests, 40 staged-plan tests, actual artifact-only hook exit 0, and static scan only for diagnostic boundaries.\n\nPrevention: Separate inspectable preview namespace plus composed dry-to-live tests; owner-selected staged inputs plus mixed/custom-universe and failure-propagation regressions.\n\nBoundary #803: owned-correctly\n\nCritique #803: charness-artifacts/critique/2026-09-06-issue-803-resolution.md\n\nBehavior #803: local-only-by-contract; supplied/generated preview continuation and owner-universe tests reach the changed local consumers; fake backend and mocked child-failure results are not live-service proof.\n\nAI-provenance: Agent-authored by Codex under the operator's explicit delegated implementation, publication and closeout authority; no additional human exact-byte review is claimed.\n\n\nPublished source: v8.4.4 at commit 00400d1cf4e3c3e7af529f9de44611e9a5756235; [release](https://github.com/corca-ai/charness/releases/tag/v8.4.4). Tag CI succeeded. Goal 798 released-export-equivalence.json binds actual consumed skill files to published bytes with an explicit six-file delta, not whole-package equality.\n",
+        "createdAt": "2026-09-06T02:01:28Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/corca-ai/charness/issues/803#issuecomment-5556228077",
+        "viewerDidAuthor": true
+      }
+    ],
+    "number": 803,
+    "state": "CLOSED",
+    "url": "https://github.com/corca-ai/charness/issues/803",
+    "exact_final_comment_matches": 1,
+    "matched_comment_url": "https://github.com/corca-ai/charness/issues/803#issuecomment-5556228077"
+  },
+  {
+    "comments": [
+      {
+        "id": "IC_kwDOR9yx7M8AAAABSy1osA",
+        "author": {
+          "login": "spilist"
+        },
+        "authorAssociation": "MEMBER",
+        "body": "## Resolution ledger\n\nJTBD: Publish the exact integrated Goal 798 composition, verify its public and installed surfaces, bind consumer evidence to released bytes, and complete issue-owned closeout in the frozen order.\n\nBoundary: Integrated source/export, v8.4.4 publication, required release checks, prepared claims, public/install readbacks, hosted tag CI and implementation-child closeout are in scope. New-session host routing, generalized speedup, unrelated issue #764 and blanket package equality are not claimed.\n\nResolution Brief: inline (no pause); use the existing release helper's prepared-review boundary, observe public/install state independently, bind the tested closure to the tag, close implementation children, then this publication item, then parent #798 through its dedicated Goal close proof.\n\nImplementation: Published [v8.4.4](https://github.com/corca-ai/charness/releases/tag/v8.4.4) at 00400d1cf4e3c3e7af529f9de44611e9a5756235. Release preparation passed 88 checks with 0 failures; required pre-push release verification exited 0 in 383.4 seconds; fresh-checkout probes passed. Independent prepared-claims review passed while preserving four evidence limitations. [Tag CI](https://github.com/corca-ai/charness/actions/runs/34005071567) concluded success on the exact tag commit.\n\nPrevention: Existing release and Goal owners retain separate prepared-claims, public/install observations, issue-specific behavior, exact graph and terminal provider readback. No new evaluator or gate was added for this closeout.\n\nBehavior #804: verified; release-helper GitHub release readback and unauthenticated page fetch, a separate agent's credential-free relayed REST observation of release object 383430968, git remote tag readback, installed version/doctor 8.4.4 and selected installed skill closure comparison establish publication and installed file state. The direct unauthenticated REST request was rate-limited 403; relay limits remain explicit. This is separate from CLOSED/carrier checks and does not prove post-restart skill execution.\n\nReleased-carrier equivalence: `charness-artifacts/goal-runs/798/released-export-equivalence.json` recomputes canonical exported file closure after publication. 1106 files are unchanged; six explicit differences are two version-only manifests and four source files not read or executed by the candidate journeys. Actual consumed spec/impl/create-cli and shared dependency files therefore match released bytes; whole-package equality is not claimed.\n\nInstalled readback: supported `charness update` succeeded; `charness version` and `charness doctor` confirmed 8.4.4. Independent installed/source comparisons cover complete selected spec/impl/create-cli skill directories. Active host sessions were not restarted; start a new Codex session to load updated cache.\n\nClosure order: #799,#800,#801,#802,#803 were verified CLOSED from pushed direct-commit carriers before this item. Their behavior remains individually scoped and recorded. Parent #798 is intentionally still open and is the next dedicated Goal close operation after this item is verified closed.\n\nEvidence: `charness-artifacts/goal-runs/798/release-publish-output.yaml`, `release-quality-prepare.json`, `release-changed-line-readback.json`, `tag-ci-readback.json`, `independent-public-observer.json`, `released-export-equivalence.json`, and `closeouts/bug-close-verified.yaml` plus `closeouts/feature-close-verified.yaml` under the same Goal 798 directory.\n\nAI-provenance: Agent-authored by Codex under the operator's explicit delegated implementation, publication and closeout authority; no additional human exact-byte review is claimed.\n",
+        "createdAt": "2026-09-06T02:02:51Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/corca-ai/charness/issues/804#issuecomment-5556234416",
+        "viewerDidAuthor": true
+      }
+    ],
+    "number": 804,
+    "state": "CLOSED",
+    "url": "https://github.com/corca-ai/charness/issues/804",
+    "exact_final_comment_matches": 1,
+    "matched_comment_url": "https://github.com/corca-ai/charness/issues/804#issuecomment-5556234416"
+  }
+]
