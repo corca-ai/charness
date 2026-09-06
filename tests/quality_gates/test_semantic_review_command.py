@@ -243,6 +243,7 @@ def _run(
     dry_run: bool = False,
     goal_lineage: str | None = None,
     reviewed_path: str | None = "reviewed.txt",
+    packet_reviewed_path: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_REVIEW_VERDICT": verdict}
     if sleep is not None:
@@ -265,6 +266,8 @@ def _run(
         command.extend(["--reviewed-path", reviewed_path])
     elif packet_file is not None:
         command.extend(["--packet-file", packet_file])
+        if packet_reviewed_path is not None:
+            command.extend(["--reviewed-path", packet_reviewed_path])
     if goal_lineage is not None:
         command.extend(["--goal-lineage-file", goal_lineage])
     if dry_run:
@@ -674,6 +677,29 @@ def test_preview_does_not_reserve_live_attempt(tmp_path: Path, supplied_packet: 
     repeat_preview = _payload(_run(tmp_path, bin_dir, "same-id", dry_run=True, packet_file=packet_file))
     assert repeat_preview["reason_code"] == "stale-artifact-refused"
     assert (bin_dir / "review-called").read_text() == "1"
+
+
+@pytest.mark.parametrize("explicit_path", ["reviewed.txt", "other.txt"])
+def test_supplied_packet_requires_exact_explicit_paths(tmp_path: Path, explicit_path: str) -> None:
+    _repo(tmp_path)
+    (tmp_path / "other.txt").write_text("other\n", encoding="utf-8")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+    result = _run(
+        tmp_path, bin_dir, "explicit-path", dry_run=True,
+        packet_file=_install_cached_working_tree_packet(tmp_path),
+        packet_reviewed_path=explicit_path,
+    )
+    payload = _payload(result)
+    if explicit_path == "reviewed.txt":
+        assert result.returncode == 0
+        assert payload["status"] == "dry-run-ready"
+    else:
+        assert result.returncode != 0
+        assert payload["reason_code"] == "input-mismatch"
+        assert payload["reviewer_started"] is False
+    assert not (bin_dir / "review-called").exists()
 
 
 def test_directory_input_has_actionable_preflight_refusal(tmp_path: Path) -> None:

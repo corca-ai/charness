@@ -72,6 +72,18 @@ def test_a_debug_path_selects_the_seam_index() -> None:
     assert "validate-debug-seam-index (staged)" in _labels([path])
 
 
+def test_invalid_length_owner_configuration_refuses_cleanly(tmp_path: Path, capsys) -> None:
+    owner = tmp_path / "scripts/gates/check_code_lengths.py"
+    owner.parent.mkdir(parents=True)
+    owner.write_text("", encoding="utf-8")
+    adapter = tmp_path / ".agents/quality-adapter.yaml"
+    adapter.parent.mkdir()
+    adapter.write_text("version: [\n", encoding="utf-8")
+    code = owners.main(["--repo-root", str(tmp_path), "--paths", owner.relative_to(tmp_path).as_posix()])
+    assert code == 2
+    assert "cheap owners unavailable" in capsys.readouterr().err
+
+
 def test_a_schema_path_selects_enum_axis() -> None:
     path = "integrations/tools/manifest.schema.json"
     assert "check-schema-enum-axis (staged)" in _labels([path])

@@ -1,0 +1,73 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Goal798 final test-only coverage repair: prove invalid length-owner configuration
+  fails cleanly and supplied review packets require exactly matching explicit paths.
+  Three uncovered changed lines led to these tests; direct exact-line mutants were
+  killed and source restored. Production source unchanged since prior pass. Judge
+  tests assertions and helper isolation, not general release readiness.'
+attempt_id: goal798-final-negative-proof
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 6119e711024f9f8d36ecd249f328d24da6868b6ffb96fab6b7042092d1a92aa7
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-negative-proof/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-negative-proof/delivery.json
+producer_run_id: run-goal798-final-negative-proof
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-negative-proof/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-negative-proof/receipt.json
+  producer_run_id: run-goal798-final-negative-proof
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 2b82644a52cff173aa0021fbf6becdd238d29aedd86e238995ce5a9b9b82f61a
+receipt_output_sha256: 2b82644a52cff173aa0021fbf6becdd238d29aedd86e238995ce5a9b9b82f61a
+packet_identity: 68b9b1e9506fe1921f06cce3346e80b34f5d3e004095c06ad8e98516e27a0e06
+reviewed_input_identity: f13fe168fbd2faa5e5c6e9c23fb9e99e185306d44504530b3c94e08a7fbcc0e6
+parent_receipt_identity: parent-d3c98d04c22cff93b65e456e107932457205c6c223b9bc60
+provenance:
+  scope: 'Goal798 final test-only coverage repair: prove invalid length-owner configuration
+    fails cleanly and supplied review packets require exactly matching explicit paths.
+    Three uncovered changed lines led to these tests; direct exact-line mutants were
+    killed and source restored. Production source unchanged since prior pass. Judge
+    tests assertions and helper isolation, not general release readiness.'
+  packet_identity: 68b9b1e9506fe1921f06cce3346e80b34f5d3e004095c06ad8e98516e27a0e06
+  reviewed_input_identity: f13fe168fbd2faa5e5c6e9c23fb9e99e185306d44504530b3c94e08a7fbcc0e6
+  parent_receipt_identity: parent-d3c98d04c22cff93b65e456e107932457205c6c223b9bc60
+  attempt_id: goal798-final-negative-proof
+  attempt_scope: 'Goal798 final test-only coverage repair: prove invalid length-owner
+    configuration fails cleanly and supplied review packets require exactly matching
+    explicit paths. Three uncovered changed lines led to these tests; direct exact-line
+    mutants were killed and source restored. Production source unchanged since prior
+    pass. Judge tests assertions and helper isolation, not general release readiness.'
+  attempt_packet_identity: 68b9b1e9506fe1921f06cce3346e80b34f5d3e004095c06ad8e98516e27a0e06
+  attempt_parent_receipt_identity: parent-d3c98d04c22cff93b65e456e107932457205c6c223b9bc60
+  result_packet_identity: 68b9b1e9506fe1921f06cce3346e80b34f5d3e004095c06ad8e98516e27a0e06
+  result_reviewed_input_identity: f13fe168fbd2faa5e5c6e9c23fb9e99e185306d44504530b3c94e08a7fbcc0e6
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 6119e711024f9f8d36ecd249f328d24da6868b6ffb96fab6b7042092d1a92aa7
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

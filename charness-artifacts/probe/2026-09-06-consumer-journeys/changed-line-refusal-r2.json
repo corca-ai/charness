@@ -1,0 +1,40 @@
+{
+  "kind": "goal798.changed-line-refusal/v1",
+  "resolved_consumer_head": "9842db5b2db2f39ce9e98b050ca5499b567410fb",
+  "base": "c80efd3891ca3dc47265df46650ac91610e7d18f",
+  "status": "blocked",
+  "blocking_targets": {
+    "scripts/hooks/check_staged_cheap_owners.py": [
+      53,
+      54
+    ],
+    "skills/public/critique/scripts/run_review_packet.py": [
+      249
+    ]
+  },
+  "classification": "subject-defect: missing negative branch tests; no production behavior change needed",
+  "execution_caveat": "Producer started just before checkpoint commit; source bytes were not edited during collection. Consumer resolves 9842db5. Final release owner reruns after committed test additions, so this run is a refusal record, never final clean proof.",
+  "raw_chunks": [
+    {
+      "chunk_id": "9bc9aa",
+      "wall_time_seconds": 5.001369281,
+      "session_id": 27370,
+      "original_token_count": 77,
+      "output": "HEARTBEAT [verify] elapsed=30.0s export COVERAGE_PROCESS_START=/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/coverage/811b9f8f8a808bfa-fi...\nHEARTBEAT [verify] elapsed=60.0s export COVERAGE_PROCESS_START=/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/coverage/811b9f8f8a808bfa-fi...\n"
+    },
+    {
+      "chunk_id": "9293f8",
+      "wall_time_seconds": 5.001076533,
+      "session_id": 27370,
+      "original_token_count": 39,
+      "output": "HEARTBEAT [verify] elapsed=90.0s export COVERAGE_PROCESS_START=/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/coverage/811b9f8f8a808bfa-fi...\n"
+    },
+    {
+      "chunk_id": "fc84f6",
+      "wall_time_seconds": 4.938108958,
+      "exit_code": 1,
+      "original_token_count": 1250,
+      "output": "HEARTBEAT [verify] elapsed=120.1s export COVERAGE_PROCESS_START=/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/coverage/811b9f8f8a808bfa-fi...\nHEARTBEAT [verify] elapsed=150.1s export COVERAGE_PROCESS_START=/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/coverage/811b9f8f8a808bfa-fi...\nPASS [verify] 157.3s export COVERAGE_PROCESS_START=/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/coverage/811b9f8f8a808bfa-fi...\nstanding-pytest: retention skipped 8427; 0 MiB removed; log /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/retention/sweep-1788657868.json\nRUN [standing-pytest] /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness/...\nHEARTBEAT [standing-pytest] elapsed=30.0s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness/...\nHEARTBEAT [standing-pytest] elapsed=60.0s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness/...\nHEARTBEAT [standing-pytest] elapsed=90.0s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness/...\nHEARTBEAT [standing-pytest] elapsed=120.0s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness/...\nHEARTBEAT [standing-pytest] elapsed=150.0s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness/...\nPASS [standing-pytest] 152.6s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness/...\n\n2 changed file(s) have uncovered changed lines; the mutation gate drops them before mutation (the #260 blocking signal). Use blocking_targets to bind manual mutant proof to the exact path:line before editing, then cover the listed lines before merge.\nADVISORY SCOPE (not a blocker): subprocess-coverage advisory examined 4 candidate test file(s) across 2 blocked file(s) (inventory: read) and named none. That is NOT proof these blocks are honest -- see subprocess_coverage_advisory_scope.silence_means for what it cannot see.\nstatus: blocked\nreason: a mapped changed pool file has uncovered changed lines\nbase_sha: c80efd3891ca3dc47265df46650ac91610e7d18f\nanalyzed_changed_pool_files:\n- charness\n- scripts/hooks/check_staged_cheap_owners.py\n- scripts/review/reviewed_input_identity.py\n- skills/public/critique/scripts/run_review.py\n- skills/public/critique/scripts/run_review_packet.py\n- skills/public/release/scripts/publish_release_artifact_sections.py\nunmapped_changed_pool_files: []\nconsumer_returncode: 1\nconsumer_stdout: \"ok: false\\nchanged_pool_files:\\n- charness\\n- scripts/hooks/check_staged_cheap_owners.py\\n\\\n  - scripts/review/reviewed_input_identity.py\\n- skills/public/critique/scripts/run_review.py\\n\\\n  - skills/public/critique/scripts/run_review_packet.py\\n- skills/public/release/scripts/publish_release_artifact_sections.py\\n\\\n  blocking:\\n- scripts/hooks/check_staged_cheap_owners.py\\n- skills/public/critique/scripts/run_review_packet.py\\n\\\n  blocking_detail:\\n  scripts/hooks/check_staged_cheap_owners.py:\\n    changed_and_missing:\\n\\\n  \\    - 53\\n    - 54\\n  skills/public/critique/scripts/run_review_packet.py:\\n  \\\n  \\  changed_and_missing:\\n    - 249\\nblocking_targets:\\n  scripts/hooks/check_staged_cheap_owners.py:\\n\\\n  \\  - line: 53\\n    source: 'except lengths.ValidationError as exc:'\\n  - line: 54\\n\\\n  \\    source: raise RuntimeError(str(exc)) from exc\\n  skills/public/critique/scripts/run_review_packet.py:\\n\\\n  \\  - line: 249\\n    source: raise support.RunReviewError(\\\"input-mismatch\\\", \\\"\\\n  explicit reviewed paths\\n      do not match packet identity\\\")\\nsubprocess_coverage_advisory:\\\n  \\ {}\\nsubprocess_coverage_advisory_scope:\\n  blocked_files_examined: 2\\n  candidate_tests_examined:\\\n  \\ 4\\n  candidate_sources:\\n  - boundary-bypass-inventory\\n  - test-reference-map\\n\\\n  \\  inventory: read\\n  inventory_recorded_scripts: 46\\n  reference_map: read\\n  files_named:\\\n  \\ []\\n  silence_means: 'no candidate test of that file was found to spawn it with\\\n  \\ a replacing\\n    environment or to copy it by name. That is NOT proof the file''s\\\n  \\ coverage is honest:\\n    a candidate list is not exhaustive, a spawn whose command\\\n  \\ is built from a variable\\n    does not bind, an `env=` passed as a bare name cannot\\\n  \\ be followed, and a helper\\n    in another module that copies a whole seeded repo\\\n  \\ is deliberately not resolved.'\\ntargeted_mutant_proof:\\n  required: true\\n  contract:\\\n  \\ Before hand-mutating, cite/display one blocking_targets path:line entry,\\n   \\\n  \\ mutate that exact line, record the failing test, then revert.\\nbase_sha: c80efd3891ca3dc47265df46650ac91610e7d18f\\n\\\n  head_sha: HEAD\\nresolved_head_sha: 9842db5b2db2f39ce9e98b050ca5499b567410fb\\nchanged_pool_file_counts:\\n\\\n  \\  analyzed: 6\\n  changed: 6\\n\"\n"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "kind": "goal798.negative-branch-proof/v1",
+  "blocking_receipt": "changed-line-refusal-r2.json",
+  "displayed_before_mutation": true,
+  "mutations": [
+    {
+      "path": "scripts/hooks/check_staged_cheap_owners.py",
+      "line": 54,
+      "original": "raise RuntimeError(str(exc)) from exc",
+      "mutant": "return []",
+      "test": "test_invalid_length_owner_configuration_refuses_cleanly",
+      "result": "killed: returned 0 instead of required 2"
+    },
+    {
+      "path": "skills/public/critique/scripts/run_review_packet.py",
+      "line": 249,
+      "original": "raise support.RunReviewError(\"input-mismatch\", \"explicit reviewed paths do not match packet identity\")",
+      "mutant": "pass",
+      "test": "test_supplied_packet_requires_exact_explicit_paths[other.txt]",
+      "result": "killed: accepted mismatched explicit paths with return 0"
+    }
+  ],
+  "mutant_receipt": {
+    "chunk_id": "f0568e",
+    "wall_time_seconds": 6.245625369,
+    "exit_code": 1,
+    "original_token_count": 887,
+    "output": "standing-pytest: retention skipped 8560; 0 MiB removed; log /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/retention/sweep-1788658154.json\nRUN [standing-pytest] /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness/...\nbringing up nodes...\nbringing up nodes...\n\nF.F                                                                      [100%]\n=================================== FAILURES ===================================\n___________ test_invalid_length_owner_configuration_refuses_cleanly ____________\n[gw0] linux -- Python 3.10.12 /usr/bin/python3\n\ntmp_path = PosixPath('/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/pytest-tmp/pytest-of-hwidong/charness-run-1788658153972914957/popen-gw0/test_invalid_length_owner_conf0')\ncapsys = <_pytest.capture.CaptureFixture object at 0x7f17121d13c0>\n\n    def test_invalid_length_owner_configuration_refuses_cleanly(tmp_path: Path, capsys) -> None:\n        owner = tmp_path / \"scripts/gates/check_code_lengths.py\"\n        owner.parent.mkdir(parents=True)\n        owner.write_text(\"\", encoding=\"utf-8\")\n        adapter = tmp_path / \".agents/quality-adapter.yaml\"\n        adapter.parent.mkdir()\n        adapter.write_text(\"version: [\\n\", encoding=\"utf-8\")\n        code = owners.main([\"--repo-root\", str(tmp_path), \"--paths\", owner.relative_to(tmp_path).as_posix()])\n>       assert code == 2\nE       assert 0 == 2\n\ntests/quality_gates/test_staged_cheap_owners.py:83: AssertionError\n________ test_supplied_packet_requires_exact_explicit_paths[other.txt] _________\n[gw2] linux -- Python 3.10.12 /usr/bin/python3\n\ntmp_path = PosixPath('/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/pytest-tmp/pytest-of-hwidong/charness-run-1788658153972914957/popen-gw2/test_supplied_packet_requires_0')\nexplicit_path = 'other.txt'\n\n    @pytest.mark.parametrize(\"explicit_path\", [\"reviewed.txt\", \"other.txt\"])\n    def test_supplied_packet_requires_exact_explicit_paths(tmp_path: Path, explicit_path: str) -> None:\n        _repo(tmp_path)\n        (tmp_path / \"other.txt\").write_text(\"other\\n\", encoding=\"utf-8\")\n        bin_dir = tmp_path / \"bin\"\n        bin_dir.mkdir()\n        _fake_codex(bin_dir / \"codex\")\n        result = _run(\n            tmp_path, bin_dir, \"explicit-path\", dry_run=True,\n            packet_file=_install_cached_working_tree_packet(tmp_path),\n            packet_reviewed_path=explicit_path,\n        )\n        payload = _payload(result)\n        if explicit_path == \"reviewed.txt\":\n            assert result.returncode == 0\n            assert payload[\"status\"] == \"dry-run-ready\"\n        else:\n>           assert result.returncode != 0\nE           assert 0 != 0\nE            +  where 0 = CompletedProcess(args=['/usr/bin/python3', '/home/hwidong/codes/charness/skills/public/critique/scripts/run_review.py'...al_run: null\\n  work_item: null\\n  reason: critique review was run without a Goal Run Work Item identity\\n\", stderr='').returncode\n\ntests/quality_gates/test_semantic_review_command.py:699: AssertionError\n=========================== short test summary info ============================\nFAILED tests/quality_gates/test_staged_cheap_owners.py::test_invalid_length_owner_configuration_refuses_cleanly\nFAILED tests/quality_gates/test_semantic_review_command.py::test_supplied_packet_requires_exact_explicit_paths[other.txt]\n2 failed, 1 passed in 2.59s\nFAIL [standing-pytest] 3.4s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness/...\n"
+  },
+  "restored": true,
+  "source_restore_proof": "git diff on both mutated source paths empty; original bytes restored with apply_patch",
+  "restored_test_receipt": {
+    "chunk_id": "82c751",
+    "wall_time_seconds": 0.000003855,
+    "exit_code": 0,
+    "original_token_count": 146,
+    "output": "standing-pytest: retention skipped 8560; 0 MiB removed; log /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/retention/sweep-1788658160.json\nRUN [standing-pytest] /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness/...\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 2.50s\nPASS [standing-pytest] 3.3s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness/...\n"
+  },
+  "scope": "Local deterministic negative branch proof, not a general mutation score or live backend proof."
+}
