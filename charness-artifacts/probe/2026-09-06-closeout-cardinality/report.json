@@ -1,0 +1,8 @@
+{
+  "source_issue": "https://github.com/corca-ai/charness/issues/810",
+  "findings": [
+    {"id": "target-cardinality", "claim": "A current singleton-bound worker review cannot be consumed for a distinct two-target set because the same scalar prepared_for must prefix-bind each target."},
+    {"id": "classification-cardinality", "claim": "Target-specific bug and feature declarations in a plural bare-close message are ignored by scalar dispatch, so feature-specific proof fields can be omitted while the hook passes."}
+  ],
+  "non_claims": ["A singleton fixture is not actual two-issue semantic review evidence", "Synthetic host-blocked critique is only a parser/verifier stimulus", "No provider mutation or publication"]
+}

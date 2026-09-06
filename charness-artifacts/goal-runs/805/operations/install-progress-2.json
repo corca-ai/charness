@@ -1,0 +1,10 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 805,
+  "operation": "update-body",
+  "attempt_id": "805-install-progress-2",
+  "observation_dir": "charness-artifacts/goal-runs/805/observations",
+  "target": {"number": 805},
+  "body_file": "charness-artifacts/goal-runs/805/bodies/parent-progress-2.md"
+}

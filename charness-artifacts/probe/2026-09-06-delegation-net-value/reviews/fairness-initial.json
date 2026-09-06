@@ -1,0 +1,72 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Spec critique — Jackson/Minto: semantic parity, cold-context continuation, treatment isolation, budgets/retry, and comparison claims",
+  "packet_sha256": "a10f956642687aec13a88c517c48b49b9a266264c0ecafea309cd268f91a786b",
+  "reviewed_input_identity_sha256": "6e8863beb76d8ce96e119f52561426e57c60dc02908dbac5bb3afa31aa827e3d",
+  "verdict": "block",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "medium",
+      "summary": "The launcher's accepted input manifest omits the control observations that the protocol requires freezing.",
+      "evidence": [
+        "protocol.md, Frozen inputs and arms: the pre-cell SHA256 manifest must include control observations.",
+        "launch.py constructs frozen_inputs from only local .md/.py files and the four seed files; control observation output is not included.",
+        "Cell mode requires frozen-inputs.json to equal that restricted dictionary, so adding an observation artifact to that manifest would currently reject the launch."
+      ],
+      "action": "Fixed before first cell: identify the positive/negative control observation artifact and include its digest in the accepted manifest and cell-time comparison. Preserve the reported correct acceptance and all six broken-control rejections as frozen evidence."
+    },
+    {
+      "id": "F2",
+      "severity": "medium",
+      "summary": "Acceptance does not explicitly catch source or test implementation added during the design-only first phase.",
+      "evidence": [
+        "initial-task.md prohibits changing source or tests during phase one.",
+        "launch.py checks only the original src seed files and tests/test_catalog.py; new source files and added test files can escape these checks.",
+        "The three enumerated human continuation observations assess the initial contract, reading current truth, and reconciling documentation; none explicitly dispositions all phase-one source/test additions.",
+        "A producer could add an implementation module or new tests in phase one, then finish successfully in phase two while all enumerated byte checks pass."
+      ],
+      "action": "Fixed before first cell: add an explicit phase-one snapshot-diff acceptance check covering source/test additions, modifications, and deletions, with human disposition for implementation placed elsewhere. A boundary violation must remain a substantive failure even if final behavior passes."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Semantic parity and a hidden Charness harness",
+      "bin": "fixed",
+      "disposition": "Adequately specified: common seed, task revisions, prompts, models' effort, and deadlines; treatment alone adds package instructions and access. The launcher supplies transport, snapshots, and a scheduled task update without planning or recovery content. Ordinary baseline checkpoints are a fair shared capability."
+    },
+    {
+      "concern": "Cold-context and changed-contract truth",
+      "bin": "fixed",
+      "disposition": "Fresh ephemeral processes, workspace-only recovery, task-file replacement, and independent trace/document review address the narrow continuation question. Acceptance covers both the chains reversal and canonical_key addition. Passing behavior alone explicitly cannot establish continuation."
+    },
+    {
+      "concern": "Discovery and isolation evidence before the first cell",
+      "bin": "probe",
+      "disposition": "The reported low-model preflight showing five system skills is useful baseline evidence. Candidate-shape preflight remains required before the first cell under Neutral launch and isolation. Follow that stricter prerequisite despite the separate wording allowing baseline before candidate freeze; record both shapes and audit traces. Package contents were not supplied for this review."
+    },
+    {
+      "concern": "Behavioral oracle acceptance coverage",
+      "bin": "fixed",
+      "disposition": "The supplied oracle covers canonical identity, unknown-name errors, direct and forward-chain resolution, canonical keys, structural precedence, initiating-alias diagnostics, cycles, dangling targets, empty aliases, and caller-input preservation. Reported positive and six negative controls support bounded adequacy, not exhaustive correctness. Baseline test execution and continuation judgments remain separate required observations."
+    },
+    {
+      "concern": "Budgets, retries, and honest comparison",
+      "bin": "fixed",
+      "disposition": "Common wall-clock ceilings, unknown rather than zero missing usage, separate overhead accounting, and no semantic retry are appropriate. The infrastructure retry is bounded to before model activity. Within-model comparison, retained failures, visible tradeoffs, and explicit rejection of a costlier all-pass candidate win adequately constrain claims."
+    },
+    {
+      "concern": "Broad long-term delegation, malicious isolation, backend identity, and statistical superiority",
+      "bin": "defer",
+      "disposition": "These are explicit Verification Scope Decision omissions or nonclaims. Expanding this pilot to prove them would be over-worry. Two cooperative contexts can support only the stated changed-contract continuation observation."
+    }
+  ],
+  "next_move": "Resolve F1 and F2 in the protocol/launcher acceptance surface, bind the revised inputs, and complete both treatment-shape preflights before any cell. Preserve the pending independent review requirement. No cell outcome or product-benefit approval follows from this review.",
+  "non_claims": [
+    "Reviewed all ten supplied inline semantic files; did not substitute workspace content, edit files, execute controls, or run a cell. Runtime control and preflight results are supplied observations.",
+    "No claim of product benefit, Goal805 completion, issue closeout, exhaustive oracle coverage, or independently attested model identity.",
+    "Goal evidence lineage:\n{\n  \"binding\": {\n    \"path\": \"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.binding.json\",\n    \"sha256\": \"384f8d92cb5be679f32159e17b0797bf178ca2e43efee7dc05b8a9e7d20793fe\"\n  },\n  \"disposition\": \"goal-bound\",\n  \"draft\": {\n    \"path\": \"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md\",\n    \"sha256\": \"710ff43f4176d0b67673ef0542f87d625709dbfaa7ba07b37a508329e0f5bedb\"\n  },\n  \"goal_run\": {\n    \"number\": 805,\n    \"repo\": \"corca-ai/charness\",\n    \"url\": \"https://github.com/corca-ai/charness/issues/805\"\n  },\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": null,\n  \"schema_version\": 1,\n  \"work_item\": {\n    \"key\": \"comparison-contract\",\n    \"number\": 809,\n    \"repo\": \"corca-ai/charness\",\n    \"url\": \"https://github.com/corca-ai/charness/issues/809\"\n  }\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

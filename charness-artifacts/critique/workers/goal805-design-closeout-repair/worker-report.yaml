@@ -1,0 +1,62 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Goal #805 bounded design repair closeout-carrier; not resolution approval'
+attempt_id: goal805-design-closeout-repair
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 41da3d06587d11f4dd98e20995db29f115c46379829fc1dfad1c636ab4bb4a27
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-design-closeout-repair/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-design-closeout-repair/delivery.json
+producer_run_id: run-goal805-design-closeout-repair
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-design-closeout-repair/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-design-closeout-repair/receipt.json
+  producer_run_id: run-goal805-design-closeout-repair
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 842dec56381029af8f22155d6178cde0cdf984782fc0382e79b72c17b26fa010
+receipt_output_sha256: 842dec56381029af8f22155d6178cde0cdf984782fc0382e79b72c17b26fa010
+packet_identity: b0ab81f3133ae420073496d7e55d69dd06df74cfc45cddb2d7257b76cc2fc1b4
+reviewed_input_identity: 29f15f7f0c0ed802913656fd2e313cb69cb726fd2d2350db76d5932052a2bd73
+parent_receipt_identity: parent-e81961b63998b5cb1204af9a8db69ac69b9ffe72f84ce6d5
+provenance:
+  scope: 'Goal #805 bounded design repair closeout-carrier; not resolution approval'
+  packet_identity: b0ab81f3133ae420073496d7e55d69dd06df74cfc45cddb2d7257b76cc2fc1b4
+  reviewed_input_identity: 29f15f7f0c0ed802913656fd2e313cb69cb726fd2d2350db76d5932052a2bd73
+  parent_receipt_identity: parent-e81961b63998b5cb1204af9a8db69ac69b9ffe72f84ce6d5
+  attempt_id: goal805-design-closeout-repair
+  attempt_scope: 'Goal #805 bounded design repair closeout-carrier; not resolution
+    approval'
+  attempt_packet_identity: b0ab81f3133ae420073496d7e55d69dd06df74cfc45cddb2d7257b76cc2fc1b4
+  attempt_parent_receipt_identity: parent-e81961b63998b5cb1204af9a8db69ac69b9ffe72f84ce6d5
+  result_packet_identity: b0ab81f3133ae420073496d7e55d69dd06df74cfc45cddb2d7257b76cc2fc1b4
+  result_reviewed_input_identity: 29f15f7f0c0ed802913656fd2e313cb69cb726fd2d2350db76d5932052a2bd73
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 41da3d06587d11f4dd98e20995db29f115c46379829fc1dfad1c636ab4bb4a27
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

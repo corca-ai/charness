@@ -1,0 +1,67 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Pre-implementation #811 equivalence proof, simplification, and operability",
+  "packet_sha256": "87b28ed41fd5235493b9bfb9bf0a2a7d286d40e9c1fc97e55131c3254dc07b80",
+  "reviewed_input_identity_sha256": "7e52b858247f46ecd830e50c2bbe28ee7af19e931761eaf1d516a2919c5327ff",
+  "verdict": "block",
+  "findings": [
+    {
+      "id": "R811-01",
+      "severity": "medium",
+      "summary": "Separate topology checks do not establish equivalence for pytest observations of internal Git state or excluded artifacts.",
+      "evidence": [
+        "The contract excludes the release record and review artifact root from subject identity, binds external Git refs/merge-base, and explicitly keeps HEAD and dirtiness outside the semantic digest.",
+        "publish_release_execute.py runs quality before git add, commit, and amend. Consequently Q and P can have identical included worktree bytes while their index, HEAD, and status observations differ.",
+        "Axis-varying counterexample: a selected test reads git show HEAD:<file>, git diff --cached, or the excluded release record. Its input changes across an otherwise eligible Q-to-P transition. Checking P's parent and clean status does not prove the earlier test exercised the same input. This is a contract counterexample, not an observed failing test in the supplied files."
+      ],
+      "action": "Explicitly include internal Git observations and reads of excluded paths in the closure probe. Permit their normalization only after showing that pytest-release does not depend on the changed observations, or after defining and testing an equivalent observation. Otherwise fall back. Add a negative control for a selected test consuming HEAD/index or excluded record bytes; retain a positive dirty-Q-to-clean-P control so blindly hashing all Git state cannot satisfy acceptance by making reuse permanently ineligible."
+    },
+    {
+      "id": "R811-02",
+      "severity": "medium",
+      "summary": "Define pushed-object coverage precisely for the versioned reuse handoff; ancestry alone is insufficient.",
+      "evidence": [
+        "The contract requires checking push-stdin objects against covered R but does not enumerate the permitted objects or tag resolution rule.",
+        "prepush_quality_receipt.py currently accepts every local object for which git merge-base --is-ancestor <object> HEAD succeeds.",
+        "Counterexample: A is an ancestor before Q's tested changes. A push containing covered R plus another ref pointing at A passes that ancestry predicate, although neither the candidate suite nor the composite establishes A's subject. Conversely, the legitimate release tag points at prepared P, as enforced by publish_release_resume.py, so requiring only raw R would reject an intended publication."
+      ],
+      "action": "Specify the versioned handoff's permitted pushed subjects: covered R and explicitly bound equivalent P where required by the release flow, with an explicit lightweight/annotated-tag resolution policy. Reject other ancestors unless separately verified. Add acceptance cases for R plus the legitimate P tag and R plus an unrelated older ancestor. This need not change legacy v1 behavior."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Reuse only pytest-release while other gates remain current.",
+      "bin": "Fixed",
+      "disposition": "Coherent and appropriately narrow. The contract honestly distinguishes the measured 145.740-second pytest opportunity from the estimated remaining runtime. A general cache or reuse for every gate is unnecessary."
+    },
+    {
+      "concern": "Exact identity closure and actual savings are not yet demonstrated.",
+      "bin": "Probe",
+      "disposition": "Keep these as explicit prerequisites before omitting the call. Acceptance already covers runtime, environment, external refs, materialized bytes, and subject drift; add R811-01's observational inputs. Measure hashing, sealing, current-gate mutations, and final-consumer overhead on the real eligible path."
+    },
+    {
+      "concern": "Source preservation, composite scope, and legacy handoff downgrade.",
+      "bin": "Fixed",
+      "disposition": "The single persistent slot, external temporary source copy, exact combined scope, and versioned reuse handoff are sufficient design choices. Add a targeted tripwire: feeding a reused composite through the v1 seal path must not produce an accepted v1 handoff. The supplied _semantic_receipt currently accepts a passing release receipt with any nonempty measured_scope; it does not distinguish reused evidence. This implements the existing versioning requirement rather than adding another receipt store."
+    },
+    {
+      "concern": "Claims-path exclusions could become a second eligibility authority.",
+      "bin": "Fixed",
+      "disposition": "The sole claims-validator authority, exact changed-path requirement, record binding, direct-child restriction, and rejection of non-record Q-to-P edits are coherent. Acceptance should exercise the validator's actual returned paths, including additions and prohibited replacements, without introducing another allowlist."
+    },
+    {
+      "concern": "Native changed-line reuse and publication proof.",
+      "bin": "Defer",
+      "disposition": "Deferring native changed-line reuse is justified. Authorization, version checks, fresh checkout/package probes, publication, readback, and installed observations remain independently current. No additional reuse mechanism is necessary."
+    }
+  ],
+  "next_move": "Amend the contract with R811-01's observational-closure rule and R811-02's pushed-object policy. Then complete the already-required bounded closure probe and positive/negative acceptance evidence before removing pytest execution. This verdict does not prevent that read-only investigation.",
+  "non_claims": [
+    "Reviewed all six supplied inline semantic inputs; no workspace or provider mutation and no runtime verification.",
+    "This is a #811 pre-implementation critique, not Goal #805 resolution approval, publication approval, or a review of #810.",
+    "Requested reviewer tier metadata is not evidence that the tier was applied.",
+    "Goal evidence lineage:\n{\n  \"binding\": {\n    \"path\": \"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.binding.json\",\n    \"sha256\": \"384f8d92cb5be679f32159e17b0797bf178ca2e43efee7dc05b8a9e7d20793fe\"\n  },\n  \"disposition\": \"goal-bound\",\n  \"draft\": {\n    \"path\": \"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md\",\n    \"sha256\": \"710ff43f4176d0b67673ef0542f87d625709dbfaa7ba07b37a508329e0f5bedb\"\n  },\n  \"goal_run\": {\n    \"number\": 805,\n    \"repo\": \"corca-ai/charness\",\n    \"url\": \"https://github.com/corca-ai/charness/issues/805\"\n  },\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": null,\n  \"schema_version\": 1,\n  \"work_item\": {\n    \"key\": \"release-reuse\",\n    \"number\": 811,\n    \"repo\": \"corca-ai/charness\",\n    \"url\": \"https://github.com/corca-ai/charness/issues/811\"\n  }\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

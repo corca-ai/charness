@@ -1,0 +1,13 @@
+charness-artifacts/probe/2026-09-06-delegation-net-value/protocol.md
+charness-artifacts/probe/2026-09-06-delegation-net-value/initial-task.md
+charness-artifacts/probe/2026-09-06-delegation-net-value/revised-task.md
+charness-artifacts/probe/2026-09-06-delegation-net-value/start.md
+charness-artifacts/probe/2026-09-06-delegation-net-value/resume.md
+charness-artifacts/probe/2026-09-06-delegation-net-value/treatment.md
+charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py
+charness-artifacts/probe/2026-09-06-delegation-net-value/control_catalog.py
+charness-artifacts/probe/2026-09-06-delegation-net-value/controls.py
+charness-artifacts/probe/2026-09-06-delegation-net-value/launch.py
+charness-artifacts/probe/2026-09-06-delegation-net-value/launcher_controls.py
+charness-artifacts/probe/2026-09-06-delegation-net-value/control-observations.json
+charness-artifacts/probe/2026-09-06-delegation-net-value/launcher-control-observations.json

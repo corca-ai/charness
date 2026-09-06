@@ -1,0 +1,52 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Pre-implementation spec critique: #810 contract/behavior and boundary ownership",
+  "packet_sha256": "d8f7af8d142a087af2edfd7be2f2091e33571c43714bede7cade2a5e033802e4",
+  "reviewed_input_identity_sha256": "091ffec47b0c797c7912d2f3962bd15965160c283273f2f7944aefe48e158480",
+  "verdict": "block",
+  "findings": [
+    {
+      "id": "810-D1",
+      "severity": "medium",
+      "summary": "Define full-bundle review membership separately from classification-group membership; otherwise a valid mixed carrier can fail the required exact-set check.",
+      "evidence": [
+        "closeout-carrier.md, Review membership and observations: expected identities, packet targets, and observation targets must be equal; one bundled packet uses one `Critique #N #M:` field, without subset citations.",
+        "closeout-carrier.md, Per-target classification: grouped verification invokes existing classification floors for each group's issue numbers, but does not specify which target scope the critique membership check receives.",
+        "skills/public/issue/scripts/issue_verify_closeout.py, verify_closeout: the same `numbers` argument is passed to check_resolution_critique, ledger checks, behavioral verdict, and HOTL checks.",
+        "Concrete counterexample: one delivered packet and result both cover {corca-ai/charness#800, corca-ai/charness#803}; the carrier classifies #800 as bug and #803 as feature. Dispatching the existing verifier with singleton classification groups makes the critique check receive {#800} or {#803}. Exact equality against the two-target packet then refuses valid evidence. Partitioning the citation would contradict the proposed bundle rule.",
+        "Acceptance lists two-target delivered success and mixed-classification reports, but does not explicitly require the mixed stimulus to consume that same single delivered packet and citation."
+      ],
+      "action": "Freeze separate full review/citation scope and classification-group scope. Specify where the complete packet/result/expected-target equality is validated and how its validated evidence reaches each applicable group without weakening equality. Require one mixed bug/feature fixture with one delivered two-target packet and one citation to produce both reports through draft, hook, staged, pre-push, plural CLI, and pause-to-close dispatch; removing either applicable floor must fail."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Triple exact identity and additive legacy migration",
+      "bin": "Fixed",
+      "disposition": "Coherent: duplicate/cardinality checks, repository-case normalization, one-sided structured refusal, legacy singleton acceptance, and legacy plural refusal are explicit. The concern is scope composition, not weakening these predicates."
+    },
+    {
+      "concern": "Observation semantics and semantic evidence swapping",
+      "bin": "Fixed",
+      "disposition": "Coherent non-claims: model-authored per-target observations require passing evidence, while evidence truth and classification truth remain independent behavioral judgments. Additional identity machinery cannot establish those truths."
+    },
+    {
+      "concern": "Total classification and acceptance coverage",
+      "bin": "Probe",
+      "disposition": "Totality, malformed authority refusal, fenced examples, and caller-specific fallback preservation are specified. Resolve 810-D1 before implementation; make the combined bundle/group fixture explicit. Plural CLI and pause-to-close routing are named requirements but lack explicit acceptance stimuli."
+    },
+    {
+      "concern": "Later proof and operational boundaries",
+      "bin": "Defer",
+      "disposition": "Deferring integrated changed-line proof, fresh behavioral review, publication, and installed observation is coherent for this design review. None is established by this result."
+    }
+  ],
+  "next_move": "Amend #810's contract to resolve full-bundle versus classification-group scope, then obtain bounded design disposition before implementation.",
+  "non_claims": [
+    "Reviewed all four supplied semantic payloads as bound inline input; no workspace or provider mutation.",
+    "No renewed causal diagnosis, #811 reuse review, implementation verification, release approval, or issue-resolution approval.",
+    "Goal evidence lineage: {\"binding\":{\"path\":\"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.binding.json\",\"sha256\":\"384f8d92cb5be679f32159e17b0797bf178ca2e43efee7dc05b8a9e7d20793fe\"},\"disposition\":\"goal-bound\",\"draft\":{\"path\":\"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md\",\"sha256\":\"710ff43f4176d0b67673ef0542f87d625709dbfaa7ba07b37a508329e0f5bedb\"},\"goal_run\":{\"number\":805,\"repo\":\"corca-ai/charness\",\"url\":\"https://github.com/corca-ai/charness/issues/805\"},\"kind\":\"charness.goal-lineage\",\"reason\":null,\"schema_version\":1,\"work_item\":{\"key\":\"closeout-carrier\",\"number\":810,\"repo\":\"corca-ai/charness\",\"url\":\"https://github.com/corca-ai/charness/issues/810\"}}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

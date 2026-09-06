@@ -1,0 +1,167 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "classification-cardinality",
+  "source": "charness-artifacts/probe/2026-09-06-closeout-cardinality/report.json",
+  "expected": "Each close target must receive its declared classification floor",
+  "stimulus": "Close bug 1 and feature 2 using target declarations but omit feature-only fields",
+  "disposition": "reproduced",
+  "observed": "Hook passes with one bug report for both targets and no feature-floor report",
+  "command": "python3 charness-artifacts/probe/2026-09-06-closeout-cardinality/replay.py",
+  "fixture": "sha256:27044e0fa3cc7556a2b1a5de86d99e484ade812df26a981e38885d768e23d278",
+  "final_consumer": "scripts/gates/check_issue_closeout_commit_msg.py:evaluate/report_payload",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0,
+  "payload": {
+    "ok": true,
+    "status": "verified",
+    "artifacts": [],
+    "pause_briefs": [],
+    "bare_close_numbers": [
+      1,
+      2
+    ],
+    "unsatisfiable_close_numbers": [],
+    "reports": [
+      {
+        "ok": true,
+        "status": "carrier_verified",
+        "confirmation": {
+          "observer": "issue_verify_closeout@gh",
+          "channel": "carrier-body-checks",
+          "scope": "carrier-checks-only",
+          "line": "carrier-checked: issue_verify_closeout@gh via carrier-body-checks (carrier-checks-only)"
+        },
+        "review_advisory": [
+          "REVIEW: the resolution critique for #1, #2 was SKIPPED, not executed \u2014 recorded host signal: 'host-blocked-subagent: synthetic-test-harness: no external reviewer is needed for this local parser stimulus'. No fresh-eye review of this resolution exists; confirm the host genuinely could not spawn one before treating this issue as resolved (advisory only, never blocks)."
+        ],
+        "repo": "corca-ai/charness",
+        "numbers": [
+          1,
+          2
+        ],
+        "classification": "bug",
+        "carrier": "commit-msg",
+        "commit_ref": null,
+        "body_file": "/home/hwidong/.cache/tmp/goal805-closeout-parent-zqrzm7g3/hook/message.txt.charness-closeout-body",
+        "manual_fallback_reason": null,
+        "expect_state": null,
+        "missing_close_keywords": [],
+        "missing_fields": [],
+        "missing_field_reasons": [],
+        "parsed_ledger_fields": [],
+        "state_mismatches": [],
+        "manual_comment_missing": [],
+        "resolution_critique_check": {
+          "ok": true,
+          "kind": "issue-resolution",
+          "required": [
+            "resolution_critique"
+          ],
+          "checks": [
+            {
+              "target": "#1 #2",
+              "numbers": [
+                1,
+                2
+              ],
+              "value": "blocked synthetic-test-harness: no external reviewer is needed for this local parser stimulus",
+              "check": {
+                "ok": true,
+                "kind": "issue-resolution",
+                "required": [
+                  "resolution_critique"
+                ],
+                "satisfied": [],
+                "skipped": [
+                  {
+                    "name": "resolution_critique",
+                    "reason": "host-blocked-subagent: synthetic-test-harness: no external reviewer is needed for this local parser stimulus"
+                  }
+                ],
+                "missing": [],
+                "invalid_skips": [],
+                "missing_evidence_files": [],
+                "unbound_evidence": [],
+                "stub_evidence": [],
+                "binding_tokens": [],
+                "binding_checked": false,
+                "residual_checked": false
+              },
+              "fresh_eye_observer": null
+            }
+          ],
+          "binding_failures": [],
+          "missing_issue_bindings": [],
+          "observer_refusals": [],
+          "review_advisory": [
+            "REVIEW: the resolution critique for #1, #2 was SKIPPED, not executed \u2014 recorded host signal: 'host-blocked-subagent: synthetic-test-harness: no external reviewer is needed for this local parser stimulus'. No fresh-eye review of this resolution exists; confirm the host genuinely could not spawn one before treating this issue as resolved (advisory only, never blocks)."
+          ]
+        },
+        "source_preservation": {
+          "external_sourced": false,
+          "origin": null,
+          "preservation_declared": null,
+          "forms_present": [],
+          "missing": false,
+          "ok": true
+        },
+        "behavioral_verdict": {
+          "applies": true,
+          "ok": true,
+          "missing": [],
+          "lines": [
+            {
+              "target": "#1",
+              "value": "local-only-by-contract"
+            },
+            {
+              "target": "#2",
+              "value": "local-only-by-contract"
+            }
+          ]
+        },
+        "hotl_dispositions": {
+          "applies": false,
+          "ok": true,
+          "undispositioned": [],
+          "lines": []
+        },
+        "ai_provenance": {
+          "applies": true,
+          "ok": true,
+          "missing": false,
+          "marker": "agent-authored fixture for read-only investigation.",
+          "classification": "bug"
+        },
+        "verified_state": [],
+        "consolidation_readback": [],
+        "proof_mismatch_scope": {
+          "present": false,
+          "adapter_found": false,
+          "adapter_valid": true,
+          "map_available": false,
+          "degraded": true
+        },
+        "closeout_authorization": {
+          "applies": false,
+          "authorized": true,
+          "refusal": null,
+          "crosswalk_status": "crosswalk_missing",
+          "crosswalk_detail": "charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json does not exist",
+          "invoked_targets": [],
+          "carrier_targets": [],
+          "aggregate_targets": [],
+          "carrier_source": "verify-readback:pr-body",
+          "target": null,
+          "gating": "reported-only: a post-publication readback cannot prevent a close that already happened"
+        },
+        "source_artifact": null,
+        "trigger": "bare-close-keyword"
+      }
+    ],
+    "review_advisory": [
+      "REVIEW: the resolution critique for #1, #2 was SKIPPED, not executed \u2014 recorded host signal: 'host-blocked-subagent: synthetic-test-harness: no external reviewer is needed for this local parser stimulus'. No fresh-eye review of this resolution exists; confirm the host genuinely could not spawn one before treating this issue as resolved (advisory only, never blocks)."
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+charness-artifacts/debug/2026-09-06-multi-issue-closeout-cardinality.md
+charness-artifacts/probe/2026-09-06-closeout-cardinality/report.json
+charness-artifacts/probe/2026-09-06-closeout-cardinality/replay.py
+charness-artifacts/probe/2026-09-06-closeout-cardinality/target-cardinality.receipt.json
+charness-artifacts/probe/2026-09-06-closeout-cardinality/classification-cardinality.receipt.json
+charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/closeout-carrier.md

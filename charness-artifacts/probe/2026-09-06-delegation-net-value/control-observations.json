@@ -1,0 +1,79 @@
+{
+  "sources": {
+    "oracle.py": "bfd02f02efb947163418ef5983020154ed2fcae2be48fa9511e623f5b089bbd2",
+    "controls.py": "59c59789607428d7312c7722ff104f4fb670fb97d25a4e509218f584748b9cc1",
+    "control_catalog.py": "c6ab11905bc0df09ac46e8e2e3965c056611d9862061c2131c78a824b34196b8"
+  },
+  "observations": [
+    {
+      "name": "correct",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "stdout": "{\"successful\": true, \"tests\": 5, \"failures\": 0, \"errors\": 0}\n",
+      "stderr": "test_cycles_and_dangling_report_initiator (__main__.Acceptance) ... ok\ntest_direct_and_forward_chain (__main__.Acceptance) ... ok\ntest_input_preservation_and_empty_aliases (__main__.Acceptance) ... ok\ntest_preserved_behavior (__main__.Acceptance) ... ok\ntest_structural_precedence (__main__.Acceptance) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.000s\n\nOK\n"
+    },
+    {
+      "name": "no_forward_chains",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "{\"successful\": false, \"tests\": 5, \"failures\": 0, \"errors\": 1}\n",
+      "stderr": "test_cycles_and_dangling_report_initiator (__main__.Acceptance) ... ok\ntest_direct_and_forward_chain (__main__.Acceptance) ... ERROR\ntest_input_preservation_and_empty_aliases (__main__.Acceptance) ... ok\ntest_preserved_behavior (__main__.Acceptance) ... ok\ntest_structural_precedence (__main__.Acceptance) ... ok\n\n======================================================================\nERROR: test_direct_and_forward_chain (__main__.Acceptance)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 26, in test_direct_and_forward_chain\n    subject = self.catalog(\n  File \"/home/hwidong/.cache/tmp/goal805-oracle-controls-o6h0twrw/src/catalog.py\", line 16, in __init__\n    if target not in self.mapping: raise ValueError(name)\nValueError: front\n\n----------------------------------------------------------------------\nRan 5 tests in 0.000s\n\nFAILED (errors=1)\n"
+    },
+    {
+      "name": "wrong_canonical_key",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "{\"successful\": false, \"tests\": 5, \"failures\": 1, \"errors\": 1}\n",
+      "stderr": "test_cycles_and_dangling_report_initiator (__main__.Acceptance) ... ok\ntest_direct_and_forward_chain (__main__.Acceptance) ... ERROR\ntest_input_preservation_and_empty_aliases (__main__.Acceptance) ... ok\ntest_preserved_behavior (__main__.Acceptance) ... FAIL\ntest_structural_precedence (__main__.Acceptance) ... ok\n\n======================================================================\nERROR: test_direct_and_forward_chain (__main__.Acceptance)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 31, in test_direct_and_forward_chain\n    self.assertIs(subject.resolve(name), value)\n  File \"/home/hwidong/.cache/tmp/goal805-oracle-controls-o6h0twrw/src/catalog.py\", line 27, in resolve\n    return self.mapping[self.canonical_key(name)]\nKeyError: 'front'\n\n======================================================================\nFAIL: test_preserved_behavior (__main__.Acceptance)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 21, in test_preserved_behavior\n    with self.assertRaises(KeyError):\nAssertionError: KeyError not raised\n\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nFAILED (failures=1, errors=1)\n"
+    },
+    {
+      "name": "wrong_error_subject",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "{\"successful\": false, \"tests\": 5, \"failures\": 2, \"errors\": 0}\n",
+      "stderr": "test_cycles_and_dangling_report_initiator (__main__.Acceptance) ... FAIL\ntest_direct_and_forward_chain (__main__.Acceptance) ... ok\ntest_input_preservation_and_empty_aliases (__main__.Acceptance) ... ok\ntest_preserved_behavior (__main__.Acceptance) ... ok\ntest_structural_precedence (__main__.Acceptance) ... FAIL\n\n======================================================================\nFAIL: test_cycles_and_dangling_report_initiator (__main__.Acceptance)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 58, in test_cycles_and_dangling_report_initiator\n    self.assert_invalid(\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 41, in assert_invalid\n    self.assertIn(name, str(caught.exception))\nAssertionError: 'entry_name' not found in 'cycle_a'\n\n======================================================================\nFAIL: test_structural_precedence (__main__.Acceptance)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 44, in test_structural_precedence\n    self.assert_invalid(\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 41, in assert_invalid\n    self.assertIn(name, str(caught.exception))\nAssertionError: 'duplicate_later' not found in 'canonical'\n\n----------------------------------------------------------------------\nRan 5 tests in 0.000s\n\nFAILED (failures=2)\n"
+    },
+    {
+      "name": "missing_structural_precedence",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "{\"successful\": false, \"tests\": 5, \"failures\": 1, \"errors\": 1}\n",
+      "stderr": "test_cycles_and_dangling_report_initiator (__main__.Acceptance) ... ok\ntest_direct_and_forward_chain (__main__.Acceptance) ... ERROR\ntest_input_preservation_and_empty_aliases (__main__.Acceptance) ... ok\ntest_preserved_behavior (__main__.Acceptance) ... ok\ntest_structural_precedence (__main__.Acceptance) ... FAIL\n\n======================================================================\nERROR: test_direct_and_forward_chain (__main__.Acceptance)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 26, in test_direct_and_forward_chain\n    subject = self.catalog(\n  File \"/home/hwidong/.cache/tmp/goal805-oracle-controls-o6h0twrw/src/catalog.py\", line 13, in __init__\n    if target not in self.mapping: raise ValueError(name)\nValueError: front\n\n======================================================================\nFAIL: test_structural_precedence (__main__.Acceptance)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 44, in test_structural_precedence\n    self.assert_invalid(\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 41, in assert_invalid\n    self.assertIn(name, str(caught.exception))\nAssertionError: 'duplicate_later' not found in 'dangling_first'\n\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nFAILED (failures=1, errors=1)\n"
+    },
+    {
+      "name": "mutate_caller",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "{\"successful\": false, \"tests\": 5, \"failures\": 1, \"errors\": 0}\n",
+      "stderr": "test_cycles_and_dangling_report_initiator (__main__.Acceptance) ... ok\ntest_direct_and_forward_chain (__main__.Acceptance) ... ok\ntest_input_preservation_and_empty_aliases (__main__.Acceptance) ... FAIL\ntest_preserved_behavior (__main__.Acceptance) ... ok\ntest_structural_precedence (__main__.Acceptance) ... ok\n\n======================================================================\nFAIL: test_input_preservation_and_empty_aliases (__main__.Acceptance)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 77, in test_input_preservation_and_empty_aliases\n    self.assertEqual(aliases, original_aliases)\nAssertionError: Lists differ: [] != [('alias', 'canonical')]\n\nSecond list contains 1 additional elements.\nFirst extra element 0:\n('alias', 'canonical')\n\n- []\n+ [('alias', 'canonical')]\n\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "swallow_unknown",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "{\"successful\": false, \"tests\": 5, \"failures\": 2, \"errors\": 0}\n",
+      "stderr": "test_cycles_and_dangling_report_initiator (__main__.Acceptance) ... ok\ntest_direct_and_forward_chain (__main__.Acceptance) ... FAIL\ntest_input_preservation_and_empty_aliases (__main__.Acceptance) ... ok\ntest_preserved_behavior (__main__.Acceptance) ... FAIL\ntest_structural_precedence (__main__.Acceptance) ... ok\n\n======================================================================\nFAIL: test_direct_and_forward_chain (__main__.Acceptance)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 35, in test_direct_and_forward_chain\n    with self.assertRaises(KeyError):\nAssertionError: KeyError not raised\n\n======================================================================\nFAIL: test_preserved_behavior (__main__.Acceptance)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 21, in test_preserved_behavior\n    with self.assertRaises(KeyError):\nAssertionError: KeyError not raised\n\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nFAILED (failures=2)\n"
+    },
+    {
+      "name": "unknown_with_aliases",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "{\"successful\": false, \"tests\": 5, \"failures\": 1, \"errors\": 0}\n",
+      "stderr": "test_cycles_and_dangling_report_initiator (__main__.Acceptance) ... ok\ntest_direct_and_forward_chain (__main__.Acceptance) ... FAIL\ntest_input_preservation_and_empty_aliases (__main__.Acceptance) ... ok\ntest_preserved_behavior (__main__.Acceptance) ... ok\ntest_structural_precedence (__main__.Acceptance) ... ok\n\n======================================================================\nFAIL: test_direct_and_forward_chain (__main__.Acceptance)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 35, in test_direct_and_forward_chain\n    with self.assertRaises(KeyError):\nAssertionError: KeyError not raised\n\n----------------------------------------------------------------------\nRan 5 tests in 0.000s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "mutate_values_on_error",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "{\"successful\": false, \"tests\": 5, \"failures\": 1, \"errors\": 0}\n",
+      "stderr": "test_cycles_and_dangling_report_initiator (__main__.Acceptance) ... ok\ntest_direct_and_forward_chain (__main__.Acceptance) ... ok\ntest_input_preservation_and_empty_aliases (__main__.Acceptance) ... FAIL\ntest_preserved_behavior (__main__.Acceptance) ... ok\ntest_structural_precedence (__main__.Acceptance) ... ok\n\n======================================================================\nFAIL: test_input_preservation_and_empty_aliases (__main__.Acceptance)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/hwidong/codes/charness/charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py\", line 82, in test_input_preservation_and_empty_aliases\n    self.assertEqual(mapping, original_mapping)\nAssertionError: {'canonical': []} != {'canonical': ['value']}\n- {'canonical': []}\n+ {'canonical': ['value']}\n?                +++++++\n\n\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "correct_modular",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "stdout": "{\"successful\": true, \"tests\": 5, \"failures\": 0, \"errors\": 0}\n",
+      "stderr": "test_cycles_and_dangling_report_initiator (__main__.Acceptance) ... ok\ntest_direct_and_forward_chain (__main__.Acceptance) ... ok\ntest_input_preservation_and_empty_aliases (__main__.Acceptance) ... ok\ntest_preserved_behavior (__main__.Acceptance) ... ok\ntest_structural_precedence (__main__.Acceptance) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.000s\n\nOK\n"
+    }
+  ]
+}

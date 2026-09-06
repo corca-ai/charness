@@ -1,0 +1,34 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Single bounded pre-implementation follow-up on accepted 810-D1: invocation/citation scope, classification groups, and composed delivered-bundle acceptance",
+  "packet_sha256": "b0ab81f3133ae420073496d7e55d69dd06df74cfc45cddb2d7257b76cc2fc1b4",
+  "reviewed_input_identity_sha256": "29f15f7f0c0ed802913656fd2e313cb69cb726fd2d2350db76d5932052a2bd73",
+  "verdict": "pass",
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "810-D1: complete citation equality versus classification-group membership",
+      "bin": "Fixed",
+      "disposition": "The repaired contract distinguishes invocation, citation, and classification scopes. Each complete citation must be a nonempty subset of the invocation and must exactly equal packet and observation targets, without intersection with a classification group. Duplicate/cardinality checks remain mandatory. Each group's coverage and applicable floors use its own issue numbers."
+    },
+    {
+      "concern": "Validated evidence transfer could bypass verification",
+      "bin": "Fixed",
+      "disposition": "The grouped owner retains invocation context, validates each cited delivered bundle once, and passes only that call-local validated result to covered groups. Existing binding joins remain mandatory, verified packet bytes are returned without rereading, and caller injection of unvalidated cached approval is explicitly forbidden."
+    },
+    {
+      "concern": "Separate happy paths could conceal the original composition failure",
+      "bin": "Fixed",
+      "disposition": "Acceptance now explicitly requires one mixed bug/feature fixture using one delivered two-target packet and one citation through draft, hook, staged, pre-push, plural CLI, and pause-to-close dispatch. Both group reports must succeed; removing either applicable floor must fail. Critique-exempt classifications retain their exemption."
+    }
+  ],
+  "next_move": "Implement the repaired 810-D1 contract and its composed acceptance fixture; no remaining D1 design flaw was identified.",
+  "non_claims": [
+    "Reviewed all four supplied inline semantic payloads. The supplied code establishes the existing scope coupling; this verdict assesses whether the repair contract is implementable.",
+    "No workspace edits, tests, provider operations, nested delegation, or additional review round.",
+    "This is bounded design disposition only, not implementation verification, behavioral proof, release approval, or Goal #805 / issue #810 resolution approval.",
+    "Goal evidence lineage: {\"binding\":{\"path\":\"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.binding.json\",\"sha256\":\"384f8d92cb5be679f32159e17b0797bf178ca2e43efee7dc05b8a9e7d20793fe\"},\"disposition\":\"goal-bound\",\"draft\":{\"path\":\"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md\",\"sha256\":\"710ff43f4176d0b67673ef0542f87d625709dbfaa7ba07b37a508329e0f5bedb\"},\"goal_run\":{\"number\":805,\"repo\":\"corca-ai/charness\",\"url\":\"https://github.com/corca-ai/charness/issues/805\"},\"kind\":\"charness.goal-lineage\",\"reason\":null,\"schema_version\":1,\"work_item\":{\"key\":\"closeout-carrier\",\"number\":810,\"repo\":\"corca-ai/charness\",\"url\":\"https://github.com/corca-ai/charness/issues/810\"}}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "target-cardinality",
+  "source": "charness-artifacts/probe/2026-09-06-closeout-cardinality/report.json",
+  "expected": "Distinct targets need representable source-bound membership",
+  "stimulus": "Consume the same valid worker fixture for singleton 42 then targets 42 and 43",
+  "disposition": "reproduced",
+  "observed": "Singleton delegated; plural carrier-unverified because prepared_for cannot bind target 43",
+  "command": "python3 charness-artifacts/probe/2026-09-06-closeout-cardinality/replay.py",
+  "fixture": "sha256:27044e0fa3cc7556a2b1a5de86d99e484ade812df26a981e38885d768e23d278",
+  "final_consumer": "skills/public/issue/scripts/issue_resolution_observer.py:_observer_disposition",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0,
+  "payload": {
+    "singleton": {
+      "value": "worker-delivered",
+      "disposition": "delegated",
+      "path": "/home/hwidong/.cache/tmp/goal805-closeout-parent-zqrzm7g3/carrier/res-42.md",
+      "predates_typed_contract": false,
+      "carrier_verified": true,
+      "carrier": "worker-report"
+    },
+    "plural": {
+      "value": "worker-delivered",
+      "disposition": "carrier-unverified",
+      "path": "/home/hwidong/.cache/tmp/goal805-closeout-parent-zqrzm7g3/carrier/res-42.md",
+      "predates_typed_contract": false,
+      "carrier_verified": false,
+      "carrier_reason": "reviewed packet prepared_for does not bind exactly to corca-ai/charness#43"
+    }
+  }
+}

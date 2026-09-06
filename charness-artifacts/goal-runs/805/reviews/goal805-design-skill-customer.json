@@ -1,0 +1,86 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Customer-of-this-skill and success-criteria review; pre-implementation context-reuse",
+  "packet_sha256": "b2f138bcdc98ba598975b80d9e029d09ab1e191c6ec47837989943e902221eff",
+  "reviewed_input_identity_sha256": "cd70e420c6c7b461be209b05d4619cdb7ecee4621565b445ea77f978ed5894c8",
+  "verdict": "defer",
+  "findings": [
+    {
+      "id": "customer-01",
+      "severity": "medium",
+      "summary": "The bound inputs support reviewing the design principles, but do not establish coverage of the actual consumer prompts and adapter fallbacks requested for this review.",
+      "evidence": [
+        "The capability brief reports reading consumer contracts through docs/public-skill-dogfood.json and a suggestion helper, but supplies only capability summaries; those consumer cases and helper results are absent from the semantic inputs.",
+        "The brief requests missing, stale, thin, and valid adapter scenarios without supplying concrete adapter fixtures or defining what makes a thin adapter sufficient for each selected action.",
+        "The bound current skills delegate fallback, artifact ownership, and validation behavior to reachable references and helpers whose semantic bytes are not included."
+      ],
+      "action": "Bind the actual consumer cases and the relevant fallback-contract excerpts, then map each first prompt to its expected first action, invalidation tripwire, and observable acceptance. The scenario conditions below can guide that mapping. This does not require implementation proof before implementation."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Warm spec with current context and a valid adapter",
+      "bin": "acceptance-condition",
+      "disposition": "First action: resolve the remaining acceptance question using the known owner after the required current delta/risk check. Tripwire: a changed contract, acceptance surface, provider state, or forced interrupt. Minimal acceptance: reach the correct question without broad rediscovery; identify one removed operation and account for replacement checks."
+    },
+    {
+      "concern": "Spec with missing, thin, or stale context/adapter information",
+      "bin": "acceptance-condition",
+      "disposition": "First action: locate the missing owner or refresh the specific stale input. Tripwire: remembered context cannot establish the current authority or acceptance boundary. Minimal acceptance: reconcile the affected contract before proposing its edit; a thin adapter must not supply invented paths or authority. Adapter presence alone must not determine freshness."
+    },
+    {
+      "concern": "Unchanged local files but changed provider truth",
+      "bin": "acceptance-condition",
+      "disposition": "First action: consume the required live provider/delta read. Tripwire: provider state contradicts the remembered next action despite an unchanged local contract. Minimal acceptance: revise or stop that action and retain the independent boundary judgment. The design explicitly preserves these reads; no cache or new freshness subsystem is justified."
+    },
+    {
+      "concern": "Debug continuation with one directly testable cause",
+      "bin": "acceptance-condition",
+      "disposition": "First action: state a falsifiable prediction and run the smallest reproduction or disconfirming observation. Tripwire: contrary evidence, changed inputs, or an incompatible artifact contract. Minimal acceptance: one evidenced candidate is allowed without invented alternatives; the durable record and emitted validator remain required. A smaller cause list must not become permission to repair before diagnosis."
+    },
+    {
+      "concern": "Debug with two competing causes",
+      "bin": "acceptance-condition",
+      "disposition": "First action: choose an observation that distinguishes the causes. Tripwire: the proposed test produces the same result under both explanations. Minimal acceptance: record alternative-cause testing and its outcome before commitment, or retain uncertainty explicitly; a passing repair alone does not establish the cause."
+    },
+    {
+      "concern": "Debug with missing/stale/thin adapters, a new subject, or a recurring seam",
+      "bin": "acceptance-condition",
+      "disposition": "First action: use the existing planner/fallback owner whenever subject, output contract, or next-action authority is unresolved. Tripwire: an unrelated latest pointer, changed evidence-led intent, changed validator, closed prior incident, or recurrence requiring spec. Minimal acceptance: preserve unrelated records, resolve the correct artifact and emitted validator, and retain structured recurrence handoff. Include a same-subject case whose intent changes to reported-finding mode."
+    },
+    {
+      "concern": "Explicit short chat-only retro across all four adapter states",
+      "bin": "acceptance-condition",
+      "disposition": "First action: reflect from current evidence and give a concrete counterfactual. Tripwire: an unsupported metric, trend, or completion claim. Minimal acceptance: no adapter repair, planner, scaffold, persistence, or ledger write; state truthful non-persistence. Missing or invalid adapters must not obstruct a reflection that does not rely on them."
+    },
+    {
+      "concern": "Persist the repeat trap this workflow should have caught",
+      "bin": "acceptance-condition",
+      "disposition": "First action: resolve the durable owner; initialize or repair the adapter through the existing contract when necessary. Tripwire: missing output ownership, unsupported metrics, or transferable siblings without disposition. Minimal acceptance: use the owned persistence path, validate the artifact, retain required sibling/follow-up obligations, and report the actual durable path."
+    },
+    {
+      "concern": "Chat-only request reveals a recurring or follow-up-bearing lesson",
+      "bin": "acceptance-condition",
+      "disposition": "First action: give the bounded reflection and identify the outstanding durable work. Tripwire: claiming the lesson persisted, the follow-up created, or the obligation completed. Minimal acceptance: respect the no-write request and name the specific unperformed obligations and their owner. This is an essential intersection case, beyond separate chat-only and durable examples."
+    },
+    {
+      "concern": "Current skills still contain unconditional bootstrap and multiple-cause requirements",
+      "bin": "not-a-design-blocker",
+      "disposition": "These are the declared transformation targets, not evidence that the unimplemented design failed. After editing, inspect reachable references and exported skills for contradictory instructions; require observed consumer behavior rather than prose matching."
+    },
+    {
+      "concern": "Absent timing gains or downstream pilot results",
+      "bin": "later-proof",
+      "disposition": "The brief correctly reserves these claims for observation. Their absence does not block design work. The four-arm protocol must not substitute for the distinct debug and retro acceptance cases."
+    }
+  ],
+  "next_move": "Complete the bound consumer-case and fallback evidence, disposition these acceptance conditions, and resume the customer review before changing public behavior. Parent integration owns design acceptance; implementation readiness and Goal closure require later evidence.",
+  "non_claims": [
+    "Reviewed only the supplied semantic bytes. No workspace edits, execution, nested delegation, implementation verification, or resolution approval.",
+    "The proposed principles preserve falsifiability, provider truth, and durable obligations on paper. Their actual consumer behavior remains unproven.",
+    "Reviewer tier: requested fields are recorded in the packet; no worker receipt or delivery ledger establishes their application.",
+    "Goal evidence lineage (supplied provenance; not independently verified):\n{\n  \"binding\": {\n    \"path\": \"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.binding.json\",\n    \"sha256\": \"384f8d92cb5be679f32159e17b0797bf178ca2e43efee7dc05b8a9e7d20793fe\"\n  },\n  \"disposition\": \"goal-bound\",\n  \"draft\": {\n    \"path\": \"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md\",\n    \"sha256\": \"710ff43f4176d0b67673ef0542f87d625709dbfaa7ba07b37a508329e0f5bedb\"\n  },\n  \"goal_run\": {\n    \"number\": 805,\n    \"repo\": \"corca-ai/charness\",\n    \"url\": \"https://github.com/corca-ai/charness/issues/805\"\n  },\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": null,\n  \"schema_version\": 1,\n  \"work_item\": {\n    \"key\": \"context-reuse\",\n    \"number\": 808,\n    \"repo\": \"corca-ai/charness\",\n    \"url\": \"https://github.com/corca-ai/charness/issues/808\"\n  }\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

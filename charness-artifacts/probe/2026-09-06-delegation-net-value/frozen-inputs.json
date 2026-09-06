@@ -1,0 +1,19 @@
+{
+  "charness-artifacts/probe/2026-09-06-delegation-net-value/protocol.md": "c7c6694c302a4e6ed7bd3a46d652b96146f71fb457ed622dbcd55008c4e4f498",
+  "charness-artifacts/probe/2026-09-06-delegation-net-value/initial-task.md": "bb55f9b236deb5c1df3f776c14f52224f2fbc62ae654c108c33704e5f7185594",
+  "charness-artifacts/probe/2026-09-06-delegation-net-value/revised-task.md": "66303fae66f77ce596715f99fca0117b567d30bd25e75ed102a657bdbd20412e",
+  "charness-artifacts/probe/2026-09-06-delegation-net-value/start.md": "753555c4c42ae4f37397aa7adc7e3e2c199bfdb9a60659ce3c0a14f21c20a60d",
+  "charness-artifacts/probe/2026-09-06-delegation-net-value/resume.md": "f84b6845874475760c320335cd071721e0acf8024c3633287a2bd249dafd9c6a",
+  "charness-artifacts/probe/2026-09-06-delegation-net-value/treatment.md": "44dd9cf78f551228c3643bbb7292c21c5131873bb5242fb1bbb92fdc746ee933",
+  "charness-artifacts/probe/2026-09-06-delegation-net-value/oracle.py": "bfd02f02efb947163418ef5983020154ed2fcae2be48fa9511e623f5b089bbd2",
+  "charness-artifacts/probe/2026-09-06-delegation-net-value/control_catalog.py": "c6ab11905bc0df09ac46e8e2e3965c056611d9862061c2131c78a824b34196b8",
+  "charness-artifacts/probe/2026-09-06-delegation-net-value/controls.py": "59c59789607428d7312c7722ff104f4fb670fb97d25a4e509218f584748b9cc1",
+  "charness-artifacts/probe/2026-09-06-delegation-net-value/launch.py": "c1ecbbd60fe6fb8962b9d5af29ed5cf7058957928ba23123f4cd6aff4bc924a3",
+  "charness-artifacts/probe/2026-09-06-delegation-net-value/launcher_controls.py": "46b7a06d0bce6732bbb6def34bcf7ee885b90b5e06a4def1ee1ee824cbfd3e7d",
+  "evals/fixtures/consumer-journeys/spec-impl-alias/seed/README.md": "f2e6bf8da5613e8325b905f14b1f797d61b1afb084c0cc5cd052ebdcca733df6",
+  "evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/__init__.py": "cd2e94b7a91c6dbf6d04eaccc8ff59dd8ac19c54b0d733612c01791e8f672994",
+  "evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/catalog.py": "75fd818cc8ca6d8e465f4077018e9939955dcfdffde141714f3ac68440ec06f0",
+  "evals/fixtures/consumer-journeys/spec-impl-alias/seed/tests/test_catalog.py": "b49e9b68ef4260b14962b144a75e38f1821c4f80f7060f4bec0a55610d032cb4",
+  "charness-artifacts/probe/2026-09-06-delegation-net-value/control-observations.json": "abfe4832179f2d1481f1097c7359b56c67114cb41962bcc74df29512110ec773",
+  "charness-artifacts/probe/2026-09-06-delegation-net-value/launcher-control-observations.json": "79a07024f40e88cdabdf79bdc56e363a47658f1c6685b49ed4376f2812dda306"
+}

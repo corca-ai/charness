@@ -1,0 +1,49 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Goal #805 context-reuse bounded design follow-up: customer-01 and accepted F1–F4 repairs",
+  "packet_sha256": "c9e7481408fe0cb83891bef157e297c73b900f38809cd5eafcdc711b713d7b87",
+  "reviewed_input_identity_sha256": "4755a5da4c60cf352a3d886d056f3cdefababbd18d019e2b527406ac0ccbf2b1",
+  "verdict": "pass",
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "customer-01: missing consumer and fallback inputs",
+      "bin": "Resolved for design",
+      "disposition": "The supplied registry, adapter contracts, direct consumers, and concrete fixture definitions establish implementable first actions, invalidation tripwires, and observable acceptance. Spec correctly uses contract-context states without an invented adapter. Provider contradiction, debug evidence-mode transition, cross-subject interruption, and no-write recurrence intersections are explicit."
+    },
+    {
+      "concern": "F1: automatic writes defeating chat-only selection",
+      "bin": "Resolved for design",
+      "disposition": "Explicit no-write precedence covers adapter, artifact, summary, lesson scoring/seeding, and RCA writes. Triggering selects reflection; an existing output directory does not require persistence. Unperformed durable obligations remain open, and probe state semantics are preserved."
+    },
+    {
+      "concern": "F2: mandatory lenses and planner instructions defeating direct counterfactuals",
+      "bin": "Resolved for design",
+      "disposition": "The contract requires one action-changing counterfactual, makes names and additional lenses conditional on distinct value, and explicitly requires reconciliation of references and emitted planner instructions. Current governing-standard context may be reused while parsed artifact sections remain."
+    },
+    {
+      "concern": "F3: subject matching mistaken for current investigation authority",
+      "bin": "Resolved for design",
+      "disposition": "Reuse requires the same open investigation with known target, subject, evidence mode, output contract, and validator, plus reconciliation of pointer, resolution, and repo-wide risk deltas. Invalidated cases return to the subject/evidence-preserving planner path."
+    },
+    {
+      "concern": "F4: surviving numeric or plural cause quotas",
+      "bin": "Resolved for design",
+      "disposition": "Both quota forms are explicit repair targets. A single cause retains its falsifier; competing evidence requires alternative testing. Durable diagnosis and recurrence obligations remain."
+    },
+    {
+      "concern": "Additional design ceremony or premature behavior approval",
+      "bin": "Over-Worry / Later proof",
+      "disposition": "No further design round or eligibility artifact is warranted by these findings. Existing contradictory instructions are declared implementation targets. Observed consumer execution, exported-path verification, and measured benefit remain later proof obligations."
+    }
+  ],
+  "next_move": "Parent may integrate this bounded design acceptance, implement the accepted repairs across the named consumers, and run the planned focused checks and first-reader scenarios. No unresolved design risk remains within customer-01 and F1–F4.",
+  "non_claims": [
+    "Reviewed all 14 supplied semantic payloads and the packet as inline input; no workspace edits, supplemental inspection, execution, or delegation occurred.",
+    "This pass establishes an implementable design contract and adequate planned success/tripwire coverage. It does not approve implementation readiness, exported behavior, measured savings, WorkItem #808 completion, or Goal #805 resolution.",
+    "Reviewer tier evidence: requested_fields_sent is recorded in the packet; application remains unverified without a host-confirmed receipt and delivery ledger.",
+    "Goal evidence lineage (supplied; not independently verified): {\"binding\":{\"path\":\"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.binding.json\",\"sha256\":\"384f8d92cb5be679f32159e17b0797bf178ca2e43efee7dc05b8a9e7d20793fe\"},\"disposition\":\"goal-bound\",\"draft\":{\"path\":\"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md\",\"sha256\":\"710ff43f4176d0b67673ef0542f87d625709dbfaa7ba07b37a508329e0f5bedb\"},\"goal_run\":{\"number\":805,\"repo\":\"corca-ai/charness\",\"url\":\"https://github.com/corca-ai/charness/issues/805\"},\"kind\":\"charness.goal-lineage\",\"reason\":null,\"schema_version\":1,\"work_item\":{\"key\":\"context-reuse\",\"number\":808,\"repo\":\"corca-ai/charness\",\"url\":\"https://github.com/corca-ai/charness/issues/808\"}}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

@@ -1,0 +1,106 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Code/spec critique — Gawande/Weinberg; Goal805 observer and launcher proof boundaries before first cell",
+  "packet_sha256": "a10f956642687aec13a88c517c48b49b9a266264c0ecafea309cd268f91a786b",
+  "reviewed_input_identity_sha256": "6e8863beb76d8ce96e119f52561426e57c60dc02908dbac5bb3afa31aa827e3d",
+  "verdict": "block",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "high",
+      "summary": "Verifier-defect: two incorrect implementations pass the complete behavioral oracle.",
+      "evidence": [
+        "oracle.py tests unknown names only on a catalog without aliases. A control returning self.keys.get(name) when aliases exist passed all five tests, while canonical_key('unknown') returned None instead of raising KeyError.",
+        "test_input_preservation_and_empty_aliases uses original_mapping = dict(mapping), sharing nested values. A control clearing caller-owned list values when construction raises ValueError passed all five tests, while changing {'canonical': ['value']} to {'canonical': []}.",
+        "In-memory execution of the supplied Acceptance suite accepted the correct reference and rejected all six supplied mutations. Those controls therefore do not exclude these additional false acceptances."
+      ],
+      "action": "Add unknown-name checks with aliases present and independent snapshots of mutable caller values on successful and rejected construction. Preserve both counterexamples as negative controls before freezing."
+    },
+    {
+      "id": "F2",
+      "severity": "high",
+      "summary": "Verifier-defect: the oracle rejects valid implementations using package-relative imports.",
+      "evidence": [
+        "The task owns src.catalog.Catalog and allows additional source files; it does not require a single-file implementation.",
+        "oracle.py loads src/catalog.py as observed_catalog, without its src package context or a producer-root import setup.",
+        "An in-memory control using the same loader-assigned module identity rejected 'from .helper import Catalog' with 'attempted relative import with no known parent package'. A correct implementation factored into src/helper.py would therefore be rejected."
+      ],
+      "action": "Evaluate src.catalog with normal producer-package import semantics in the fresh observer subprocess. Add a correct modular implementation control and ensure imports resolve from the observed snapshot."
+    },
+    {
+      "id": "F3",
+      "severity": "high",
+      "summary": "Verifier-defect: phase-one mutation predicates miss newly added source and tests.",
+      "evidence": [
+        "initial-task.md forbids changing source or tests during phase one.",
+        "launch.py checks source_unchanged only for seed paths beginning with src/ and checks only tests/test_catalog.py for test preservation.",
+        "A producer can implement src/helper.py and tests/test_aliases.py during phase one while every recorded mutation boolean remains true. Phase two can then import that implementation and satisfy the stated continuation observations."
+      ],
+      "action": "Compare the complete phase-one source/test inventory and contents against the initial inventory, including additions, deletions and file-type changes. Make any violation an explicit substantive phase-one failure."
+    },
+    {
+      "id": "F4",
+      "severity": "medium",
+      "summary": "Verifier-defect: the launcher-generated freeze omits required control observations.",
+      "evidence": [
+        "protocol.md requires the pre-cell SHA256 manifest to include control observations.",
+        "launch.py builds frozen_inputs only from immediate .md/.py files and four seed files. It neither captures controls.py stdout nor explicitly binds a control-results artifact.",
+        "Changing or removing a JSON control-observation artifact would leave the cell's frozen-input equality check unchanged."
+      ],
+      "action": "Name and explicitly hash the retained control-observation artifact in the accepted manifest. Bind the successful control run to the frozen oracle and control sources."
+    },
+    {
+      "id": "F5",
+      "severity": "medium",
+      "summary": "Verifier-defect: missing protected files abort evidence capture instead of recording subject failure.",
+      "evidence": [
+        "launch.py calls digest() directly on protected task, test and source paths; missing files raise FileNotFoundError.",
+        "observations.json is written only after both phases finish.",
+        "If phase one deletes tests/test_catalog.py, the launcher aborts during mutation checking, loses its structured phase result and never performs the scheduled phase-two continuation. This is an ordinary subject mutation defect, not necessarily infrastructure failure."
+      ],
+      "action": "Record missing or replaced protected files as failed mutation checks, persist each phase's result before advancing, and preserve scheduled continuation where the workspace remains runnable."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "F1–F5 affect the pilot's declared acceptance, freeze or failure classification.",
+      "bin": "Act Before Ship",
+      "disposition": "Repair before the first cell. These are verifier defects; the deliberately broken subjects are controls, not observed pilot failures."
+    },
+    {
+      "concern": "Observer evaluation can hang on an ordinary cycle-resolution defect.",
+      "bin": "Bundle Anyway",
+      "disposition": "Specify a bounded final-oracle subprocess invocation and a non-accepting timeout disposition. controls.py supplies a 20-second deadline for controls, but the final evaluation deadline is unspecified."
+    },
+    {
+      "concern": "Launcher mount visibility versus a complete filesystem allowlist.",
+      "bin": "Over-Worry",
+      "disposition": "The declared layout masks /tmp and the relevant home directories, then exposes the current work and optional package. Its probes check oracle and current host-root absence. Requiring malicious escape resistance or a universal allowlist would exceed this cooperative pilot; actual preflight and trace auditing remain required."
+    },
+    {
+      "concern": "Producer timeout handling and background-process escape.",
+      "bin": "Over-Worry",
+      "disposition": "The launcher records timeout, signals the process group with TERM/KILL, uses a PID namespace and schedules phase two afterward. No concrete process escape was established; do not demand adversarial process hardening for this scope."
+    },
+    {
+      "concern": "Snapshot immutability with preserved symlinks.",
+      "bin": "Bundle Anyway",
+      "disposition": "copytree preserves symlinks while manifest hashes referents. Explicitly disposition symlinks escaping the snapshot, including absolute /tmp/work links, so later evaluation cannot silently observe different bytes."
+    },
+    {
+      "concern": "Candidate export identity and live discovery evidence.",
+      "bin": "Valid but Defer",
+      "disposition": "Retain the protocol's candidate-cell gate: compare the package with its separately frozen revision/export digest and obtain treatment-shape preflight. Recording a package manifest alone does not establish agreement with an accepted freeze."
+    }
+  ],
+  "next_move": "Repair the verifier defects, add the counterexample controls, retain their observations, and regenerate the frozen manifest and bounded review before launching any comparison cell.",
+  "non_claims": [
+    "Reviewed the supplied semantic payload; workspace versions were not substituted.",
+    "Controls ran entirely in memory using supplied oracle/reference bytes matching their carrier SHA256 values; the controls.py subprocess transport was not rerun.",
+    "No comparison cell, workspace edit or external mutation was performed.",
+    "Actual bubblewrap visibility, process termination, model discovery and immutable snapshot behavior were not exercised.",
+    "No product-benefit, statistical-superiority, production-release or issue-closeout judgment is made."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

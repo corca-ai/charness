@@ -25,3 +25,101 @@ Inspect prepare/resume/common sealing and pre-push consumers under `skills/publi
 ## Non-goals and deferred choices
 
 No removal merely to meet a time target; no general filesystem cache or relaxed unknown-input policy. If the closure cannot be made trustworthy and cheaper within this seam, record A2 unmet and seek a scoped disposition, not a false completion. Parent owns release authorization, integration and final publication.
+
+## Implementation contract (2026-09-06)
+
+Reuse only `pytest-release`, the existing expensive standing subject suite.
+Every other gate runs current, including changed-line coverage, secrets, docs,
+artifact referents, and all new or unknown gates. Thus “subject suite once”
+means this named suite, not an assertion that all release checks run once.
+The previous correlated run measured 383.027s total and 145.740s for pytest;
+about 237s remaining is an estimate, not an observed new runtime.
+
+### Receipt and identity ownership
+
+Keep `.charness/quality/last-release-receipt.json` as the sole persistent store.
+Its existing quality owner adds one optional closed pytest-reuse object:
+version, candidate/sealed state, exact passed scope entry and expanded pytest
+invocation/targets/marker, subject/verifier/runtime/environment/external-Git/
+materialized identities, and prepared commit/tree/record binding when sealed.
+Disclose non-secret identity names and tool versions; hash environment values,
+never publish credentials. No all-gate dependency schema or cross-run lookup.
+
+Capture the candidate immediately before executing the selected suite. Subject
+identity covers all tracked and nonignored untracked content, modes, and
+symlink targets. Exclude only the adapter-derived release record and the
+release-review artifact root, whose intervening changes are separately judged
+below. Bind verifier/runner/configuration and expanded test selection, Python
+and package/runtime closure, semantic environment, external Git refs/merge-base,
+and actual exported/materialized root bytes. Unknown identity means fallback.
+Check subject stability after the suite. Persist a candidate only when the
+exact pytest scope passed and the full requested receipt is established.
+
+Do not confuse the pre-suite dirty worktree Q with its old index tree. After
+release record generation, fresh-checkout probes, narrative audit, commit and
+amend yield clean prepared P, the quality owner seals that same receipt. P must
+have the expected parent from Q; recomputed semantic identities must match.
+Permit only the derived record's Q-to-P excluded change, not arbitrary changes
+under the excluded review root. Bind P, its tree, and final record bytes. HEAD
+and dirtiness are separately checked at seal, not included in a semantic digest
+that would make every intended Q-to-P transition fail.
+
+### Resume and final consumer
+
+The existing claims validator is the sole authority for direct-child P-to-R
+eligibility: exact supplied claims JSON and newly added passing review Markdown.
+Reuse cannot add a second or broader allowed-delta definition. Require clean R,
+sealed P/record equality, exact validated changed paths, and current matching
+subject/verifier/runtime/environment/external-Git/materialized identities.
+Malformed, missing, unsealed, overwritten, stale, foreign, or changed identity
+executes pytest current with a reason. This is not a release blocker when full
+verification remains available.
+
+Pass the optional sealed source through one narrow quality runner input; do not
+broaden `--labels` or add an unrestricted skip flag. The normal full/release
+selection remains authoritative. Mark pytest as reused with source-receipt hash
+and prepared/evidence commits, and list every other gate as currently measured.
+The combined established scope must equal the requested scope exactly, without
+omissions, duplicates, or fabricated freshly measured pytest. Preserve the
+sealed source in the existing external resume temporary directory before the
+new current receipt overwrites the persistent slot.
+
+The one-push pre-push receipt owner binds both source and current composite
+receipt, independently revalidates the same identity/topology at consumption,
+and checks push-stdin objects against covered R. Existing exact-current v1
+handoffs remain supported; reused evidence needs a versioned handoff. No reuse
+of authorization, version/claims eligibility, fresh checkout/package probes,
+publication, public readback, or installed observation.
+
+### Acceptance and tripwires
+
+Test one pytest invocation across eligible prepare/resume, all other labels
+twice, and no extra broad lane at the final hook. Add an unknown gate and prove
+it executes current. Negative controls cover missing/corrupt/unestablished
+receipts, incomplete pytest/composite scope, dirty seal, wrong Q/P lineage or
+record, non-record Q-to-P edits, non-direct/extra P-to-R changes, source/test/
+config/content/mode/symlink/untracked drift, runtime/environment/external-ref/
+materialized changes, forged reuse markers, and uncovered push SHAs. Claims-only
+secret, broken link, or bad referent must still fail their current gates.
+
+Native changed-line receipt reuse is deliberately deferred: it requires another
+provenance integration and is not necessary to remove the duplicate standing
+suite. Full quality remains the fallback. Design review precedes any omitted
+call; fresh-eye integrated review and measured real invocation evidence remain
+required before claiming this capability works.
+
+Review R811-01 is accepted: the closure probe must inventory actual selected
+tests' internal Git observations (HEAD/index/status) and reads of excluded
+artifacts, including live helpers they call. Normalize those Q/P differences
+only with evidence that the selected suite does not depend on them or observes
+an equivalent view; otherwise rerun. A test consuming real HEAD/index/record
+bytes must invalidate eligibility. Pair it with a positive dirty-Q-to-clean-P
+case so permanently ineligible reuse cannot masquerade as safety. This probe
+is required before any execution is omitted, not a new generic dependency gate.
+
+Review R811-02 is accepted: v2 push handoff accepts only covered R and explicitly
+bound equivalent P, with lightweight or annotated tags peeled to commits.
+Reject any other ancestor, unknown object, or deletion in this release handoff.
+Test R plus P's legitimate tag and R plus an older unrelated subject. Legacy v1
+scope stays unchanged, but v1 sealing must refuse a composite containing reused
+evidence so the versioned checks cannot be downgraded.

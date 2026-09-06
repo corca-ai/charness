@@ -1,0 +1,87 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Pre-implementation public-skill critique: humane interface, cost, and contradictory consumers",
+  "packet_sha256": "430861d22b5082933b595eb6454cea38cf708db0c3c6bc5c857af38ea1e7dc61",
+  "reviewed_input_identity_sha256": "6bd5c83df670bb2aa640c04e844c742393f7d833bc8147bc76b6e3dcbce65994",
+  "verdict": "block",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "high",
+      "summary": "Chat-only selection needs precedence over every automatic write, not just scaffolding.",
+      "evidence": [
+        "Bound brief: explicit chat-only requests are respected; unperformed durable obligations must be stated.",
+        "Bound retro/SKILL.md, Workflow 5: an existing output_dir or adapter-defined directory requires persistence; persistence also refreshes summaries and can seed ledger transitions.",
+        "Bound retro/SKILL.md independently requires lesson score events and RCA ledger appends. Bootstrap requires adapter creation or repair in several states.",
+        "Bound trigger-and-persistence.md permits non-persistence but also instructs adapter repair when the probe is not established."
+      ],
+      "action": "Add one core precedence rule before Bootstrap: an explicit chat-only/no-write request suppresses artifact, adapter, summary, lesson-ledger, and RCA-ledger writes. Automatic retro triggering selects reflection, not persistence. Scope downstream write instructions and reference-level repair instructions to the selected durable path. Existing output_dir alone must not select persistence. Preserve sibling judgment, follow-up ownership, and durable closeout requirements; name any unperformed obligation and leave the corresponding completion claim open. Preserve the probe's state-before-triggered distinction."
+    },
+    {
+      "id": "F2",
+      "severity": "high",
+      "summary": "A direct counterfactual remains incompatible with mandatory planner-selected lenses and reference-level quotas.",
+      "evidence": [
+        "Bound brief: a short chat-only reflection uses a direct counterfactual without planner or irrelevant lens-catalog reads.",
+        "Bound retro/SKILL.md, Bootstrap and Expert Counterfactual Rule: every retro must consume a planner-selected required_read and apply its briefed lens.",
+        "Supplemental direct consumer inspection: retro/references/expert-lens.md ends by requiring two inline counterfactuals when subagents are unused, despite allowing one or two earlier.",
+        "Supplemental direct consumer inspection: plan_retro_run.py emits catalog reads and lens instructions in next_action and phase_barriers; section-guide.md prefers named experts and mandates a fresh governing-standard read."
+      ],
+      "action": "Make the core rule: every retro supplies at least one concrete counterfactual that changes an action; names and a second lens are optional when they add a distinct insight. Apply planner/catalog requirements only after selecting the owned path; ensure its emitted instructions agree with that policy. Change expert-lens.md's unconditional two-inline rule and section-guide.md's named-expert preference accordingly. Permit already-read current governing-standard context to satisfy alignment, with a targeted read when missing or changed; retain alignment and parsed durable-artifact requirements."
+    },
+    {
+      "id": "F3",
+      "severity": "high",
+      "summary": "Warm debug reuse needs an explicit boundary between reusable instructions and changing incident/risk facts.",
+      "evidence": [
+        "Bound brief permits reuse when a subject-matched planner/artifact contract has known inputs and next action.",
+        "Bound debug/SKILL.md still requires adapter, planner, and scaffold before diagnosis; it separately requires --evidence-led planner/scaffold execution for reported findings.",
+        "Bound debug/SKILL.md distinguishes subject matching, write effect, pointer role, resolution, and emitted validator commands.",
+        "Supplemental direct consumer inspection: plan_debug_run.py deliberately applies risk interrupts across subjects, and its scaffold command preserves subject and evidence-mode arguments."
+      ],
+      "action": "Replace the unconditional bootstrap with a reuse-first instruction covering Bootstrap and Reported-Finding Mode together. Reuse only the same open investigation's known emitted target, subject, evidence mode, output contract, and validator, with relevant pointer/resolution and repo-wide risk changes reconciled. Same subject alone must not imply current risk evidence. New, resolved, mismatched, unknown, or contract-changed cases take the existing planner path; follow its emitted subject/evidence-preserving command instead of the bare scaffold example. Retain cross-subject interrupts and distinct incident records. Use existing context plus necessary delta reads; do not add a cache, eligibility artifact, or compulsory full planner run merely to establish eligibility."
+    },
+    {
+      "id": "F4",
+      "severity": "medium",
+      "summary": "Removing the three-cause quota only from the workflow leaves the single-cause scenario forbidden by the guardrails.",
+      "evidence": [
+        "Bound debug/SKILL.md, Workflow 5 requires at least three plausible causes before verifying any.",
+        "Bound debug/SKILL.md, Guardrails requires multiple candidate causes and instructs the consumer to stop and repair the process if that requirement slips.",
+        "Bound five-steps.md prohibits skipping cause enumeration, but does not impose a numerical quota."
+      ],
+      "action": "Replace both numerical and plural-only requirements with plausible causes proportionate to the evidence. Permit one directly testable cause while requiring its falsifier; when uncertainty or competing evidence remains, test a disconfirming alternative before commitment. Preserve Candidate Causes, Hypothesis, reproduction, causal review, recurrence routing, and five-steps.md's durable follow-through. No change to five-steps.md is needed merely to remove the quota."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "F1–F4: contradictory imperative rules can defeat the intended selection.",
+      "bin": "Act Before Ship",
+      "disposition": "Strong textual evidence. Incorporate the exact precedence, reuse, and counterfactual edits into the design before accepting it. These are bounded contract repairs, not reasons for a broad rewrite."
+    },
+    {
+      "concern": "Conditional selection could replace removed commands with equal ceremony.",
+      "bin": "Bundle Anyway",
+      "disposition": "Keep selection as a short core instruction using the request and current context, without user-facing modes or a new assessment record. For warm spec, explicitly make broad discovery examples conditional while retaining current risk/provider reads. Record actual removed calls and replacement reads in the already-planned evidence; do not count an unchanged command moved into a reference as savings."
+    },
+    {
+      "concern": "Reuse requires a new cache, formal freshness certificate, prose-pinned checks, or general evaluation infrastructure.",
+      "bin": "Over-Worry",
+      "disposition": "Unsupported by this bounded change. Existing emitted contracts, targeted delta reads, focused consumer scenarios, and preserved parser/schema/validator negative boundaries suffice for local review."
+    },
+    {
+      "concern": "The design establishes net time savings or long-task reliability improvement.",
+      "bin": "Valid but Defer",
+      "disposition": "The proposed branches can remove operations, but net benefit remains unobserved. Leave that judgment with the planned consumer evidence and downstream candidate pilot; do not block implementation on building a broader benchmark."
+    }
+  ],
+  "next_move": "Parent should incorporate F1–F4 into the #808 design, then implement and reconcile the named direct consumers. This block concerns design acceptance under this lens; implementation proof and Goal #805 resolution remain separate.",
+  "non_claims": [
+    "Reviewed all seven supplied semantic payloads as authoritative input. Supplemental workspace reads informed direct-consumer constraints only; they are not asserted to be identity-bound packet bytes.",
+    "No files or provider state were changed; no nested delegation, implementation tests, first-reader execution, or benchmark was performed.",
+    "No approval of Goal #805 resolution, #808 completion, exported behavior, measured savings, or reviewer-tier application is claimed. Supplied lineage was not independently verified.",
+    "Goal evidence lineage: {\"binding\":{\"path\":\"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.binding.json\",\"sha256\":\"384f8d92cb5be679f32159e17b0797bf178ca2e43efee7dc05b8a9e7d20793fe\"},\"disposition\":\"goal-bound\",\"draft\":{\"path\":\"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md\",\"sha256\":\"710ff43f4176d0b67673ef0542f87d625709dbfaa7ba07b37a508329e0f5bedb\"},\"goal_run\":{\"number\":805,\"repo\":\"corca-ai/charness\",\"url\":\"https://github.com/corca-ai/charness/issues/805\"},\"kind\":\"charness.goal-lineage\",\"reason\":null,\"schema_version\":1,\"work_item\":{\"key\":\"context-reuse\",\"number\":808,\"repo\":\"corca-ai/charness\",\"url\":\"https://github.com/corca-ai/charness/issues/808\"}}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}
