@@ -166,3 +166,27 @@ Targeted Markdown passed for five edited documents. An accidental Markdown CLI
 invocation expanded to the repository-wide configured glob and was terminated;
 that run is not a pass. Integrated changed-line and broad verification follow
 the local code commit; publication and actual behavioral closeout remain open.
+
+## Integrated changed-line tripwire
+
+At `cff88adf6`, the coverage producer and standing suite passed in 127.0s and
+121.9s, but the gate correctly blocked: nine changed lines across the hook,
+classification owner and citation owner were unmeasured. Three additional
+owners (CLI parser, carrier input and extracted worker targets) lacked direct
+standing-test references and were explicitly unanalyzed. Neither population is
+covered by those passing test processes.
+
+Nine focused authority controls then passed in 2.17s. Before mutation, the
+parent displayed the gate's exact blocking target
+`skills/public/issue/scripts/issue_resolution_critique.py:67` (`return []` for
+duplicate targets). Temporarily replacing that line with `return target_numbers`
+made the duplicate-target control fail with `[42, 42] != []` (one failed, one
+passed, 2.16s). The parent restored the exact line, verified an empty production
+diff, and restored the generated export. This is target-bound mutant proof,
+not a claim about every mutation or the still-pending coverage rerun.
+
+An independent test-only supplement directly loads the three previously
+unmapped owners. It exercises the real CLI composition, carrier validation,
+and exact worker-target membership including legacy compatibility. Parent read
+the complete test file and independently ran it with the nine authority
+controls: 93 passed in 2.95s; Ruff passed. Production bytes remain unchanged.
