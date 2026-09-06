@@ -1,0 +1,51 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "experimental validity and consumer acceptance",
+  "packet_sha256": "edc61bbc4d56b18058dfa741a4144ec818d43630fad069906bc441cd9fc7ee2a",
+  "reviewed_input_identity_sha256": "09e838386924c5a62a33fc5c1f3eef493d9b8c4941674bd715542d3937b69970",
+  "verdict": "block",
+  "findings": [
+    {
+      "id": "F3",
+      "severity": "medium",
+      "summary": "CLI acceptance assumes the completed consumer contains no cache, without establishing that precondition.",
+      "evidence": [
+        "check_cli.py setUp copies the entire completed consumer tree, excluding only .git and __pycache__; existing .state/cache.json is retained.",
+        "Doctor, dry-run, and replacement tests call self.cache.parent.mkdir() without establishing an absent directory. The creation test requires exactly .state and .state/cache.json to be newly added.",
+        "The producer may legitimately exercise refresh during implementation, leaving its authorized cache behind. Neither producer prompts nor protocol require removing that state before acceptance."
+      ],
+      "action": "Initialize cache state explicitly in each temporary acceptance fixture before taking snapshots. Ensure absent-cache and existing-cache cases remain independent of state left by producer verification, then freeze the corrected oracle before either arm executes."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Prior F1: unsupported output-shape predicates",
+      "bin": "resolved",
+      "disposition": "The spec prompt explicitly requires the first invalid alias name in the exception; the create-cli prompt explicitly requires JSON objects on stdout. Both now support the corresponding assertions."
+    },
+    {
+      "concern": "Prior F2: existing-cache replacement coverage",
+      "bin": "resolved",
+      "disposition": "Existing refresh semantics are producer-visible, and test_refresh_replaces_an_existing_cache checks stale-cache replacement plus preservation of unrelated tree entries. Fixture initialization remains the separate F3 issue."
+    },
+    {
+      "concern": "Remaining oracle predicates impose hidden requirements",
+      "bin": "not-supported",
+      "disposition": "Alias rejection, CLI option placement/refusals, read-only behavior, legacy compatibility, and semantic handoff review are grounded in the supplied prompts and protocol; no additional unsupported predicate identified."
+    },
+    {
+      "concern": "Require exhaustive coverage or broader experimental proof before baseline",
+      "bin": "accepted-limitation",
+      "disposition": "Representative checks plus required semantic review are proportionate. Outside-tree effects, exhaustive input coverage, and statistical comparisons need not be added for this bounded observation."
+    }
+  ],
+  "next_move": "Repair F3 and re-freeze the protocol inputs before baseline execution; F1/F2 do not need further expansion.",
+  "non_claims": [
+    "Reviewed the supplied semantic payload only; no workspace edits or arm execution.",
+    "This verdict concerns pre-baseline protocol validity, not implementation behavior or performance.",
+    "One sample per arm cannot establish causal, statistical, cross-model, Claude-host, or production conclusions.",
+    "Packet metadata does not establish applied reviewer model or execution settings."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

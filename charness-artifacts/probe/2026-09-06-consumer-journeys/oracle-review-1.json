@@ -1,0 +1,65 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "experimental validity and consumer acceptance",
+  "packet_sha256": "450d847d6a2af2dbf63d63bdb7db2bb8e239e1a8e794484ca302199b31b9ea2f",
+  "reviewed_input_identity_sha256": "f8d4581b204c8f2432a7452af39d335b5f932dfb10f2cc5cbfac8e065400f68e",
+  "verdict": "block",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "high",
+      "summary": "The oracle imposes output representations that the producer-facing contract leaves open.",
+      "evidence": [
+        "check_cli.py requires json.loads(stdout) to be a dict, whereas prompts/create-cli.md and protocol.md require structured JSON without specifying an object. A structured JSON array would be rejected.",
+        "check_alias.py requires 'first_bad' in str(exception), whereas prompts/spec.md assigns definition of the public failure shape to the spec phase. Reporting the offending pair through a documented exception attribute could satisfy that contract but fail this assertion."
+      ],
+      "action": "Before baseline, explicitly freeze these representations in producer-visible prompts or revise the oracle to accept the permitted representations. Re-freeze and review the aligned inputs."
+    },
+    {
+      "id": "F2",
+      "severity": "medium",
+      "summary": "Successful refresh never tests replacement of an existing cache.",
+      "evidence": [
+        "check_cli.py:test_refresh_writes_only_the_existing_cache starts with no .state/cache.json and asserts creation of both .state and the cache.",
+        "The existing-cache case appears only in test_dry_run_never_writes; test_legacy_scripts_still_work also starts without a cache.",
+        "prompts/create-cli.md requires preservation of refresh semantics, and seed/scripts/refresh_cache.py writes the newly parsed value on each successful invocation. A repoctl that silently preserves an existing stale cache could pass the frozen checks."
+      ],
+      "action": "Add a successful refresh case with a pre-existing, different cache value; assert replacement with the source value and preservation of unrelated files. Freeze it before either arm runs."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "One sample cannot establish general improvement or causal performance effects.",
+      "bin": "accepted limitation",
+      "disposition": "The protocol explicitly disclaims those conclusions and separates acceptance, interventions, repeated work, time and tokens. More samples are not required for this approval."
+    },
+    {
+      "concern": "Seed usability could be mistaken for requested-capability acceptance.",
+      "bin": "adequately addressed",
+      "disposition": "Static inspection distinguishes them: the alias seed lacks the aliases parameter and the CLI seed lacks repoctl, while canonical and legacy checks exercise existing behavior. The prescribed seed oracle run must still record those outcomes."
+    },
+    {
+      "concern": "Exported-only routing and same-input comparability.",
+      "bin": "adequately specified for pre-baseline",
+      "disposition": "Identical seeds and prompts, fixed model and effort, external canonical exports, consumed-path trace inspection and source/export receipts provide a viable protocol. Actual routing remains execution evidence."
+    },
+    {
+      "concern": "Interventions, repeated work or oracle changes could manufacture success after results are known.",
+      "bin": "adequately addressed",
+      "disposition": "The protocol counts the sole permitted B continuation, forbids A rescue, preserves failed attempts, defines repeat exclusions, and requires invalidation plus restarting both arms after fixture or oracle repairs."
+    },
+    {
+      "concern": "The two oracle findings demand excessive coverage for a bounded observation.",
+      "bin": "blocker retained",
+      "disposition": "They concern false rejection of permitted outputs and omission of ordinary refresh behavior, rather than exhaustive edge cases or broader performance claims."
+    }
+  ],
+  "next_move": "Align the output-shape assertions with producer-visible authority, add existing-cache refresh acceptance, and submit the newly frozen inputs for review before baseline.",
+  "non_claims": [
+    "Reviewed only the supplied semantic payload; no workspace edits or execution.",
+    "No implementation, installed-export execution, performance, release, Claude-host or production approval.",
+    "No arm results or reviewer-tier application were verified."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

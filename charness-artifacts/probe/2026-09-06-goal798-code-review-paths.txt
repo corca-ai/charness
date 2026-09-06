@@ -1,0 +1,14 @@
+docs/development.md
+docs/operating-contract.md
+docs/parallel-execution.md
+docs/validator-timing-layers.md
+skills/public/quality/SKILL.md
+skills/public/quality/references/proposal-flow.md
+scripts/review/reviewed_input_identity.py
+skills/public/critique/scripts/run_review.py
+skills/public/critique/references/prepare-packet.md
+tests/quality_gates/test_semantic_review_command.py
+skills/public/release/scripts/publish_release_artifact_sections.py
+tests/quality_gates/test_claims_review_scope.py
+tests/quality_gates/test_claims_review_publication_boundary.py
+charness-artifacts/debug/2026-09-06-critique-preview-live-collision.md

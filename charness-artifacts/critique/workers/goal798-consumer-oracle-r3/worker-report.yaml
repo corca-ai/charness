@@ -1,0 +1,76 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: Goal 798 BEFORE baseline protocol revision 3. Prior F1/F2 resolved per r2 review;
+  F3 repaired by excluding producer runtime .state from each temporary acceptance
+  copy, then explicit per-case state initialization. Review this repair and the final
+  frozen prompt/oracle alignment. No arm executed. Pass only if viable bounded comparison;
+  do not add exhaustive coverage requirements beyond declared prompts. Current protocol
+  names nonclaims and intervention policy.
+attempt_id: goal798-consumer-oracle-r3
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: ebf406917181448882c54d13f6f40dc7cef467cf374b0891decde541fb54d546
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-consumer-oracle-r3/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-consumer-oracle-r3/delivery.json
+producer_run_id: run-goal798-consumer-oracle-r3
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-consumer-oracle-r3/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-consumer-oracle-r3/receipt.json
+  producer_run_id: run-goal798-consumer-oracle-r3
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 7b446404e2b18e2a590e3e25563551bfeefd7c25d72348df2b65bf2456952fad
+receipt_output_sha256: 7b446404e2b18e2a590e3e25563551bfeefd7c25d72348df2b65bf2456952fad
+packet_identity: e9535152433e9a0274c170544c5552cc7bfb5ee42ace4e7c6e3e979a1304b1c2
+reviewed_input_identity: fbc91580936d0d01c5f4974b0076952d83dc748698e4f331a426dab63469a287
+parent_receipt_identity: parent-e71a24dd8e4cf141347589b9333c02524e734b1156856e59
+provenance:
+  scope: Goal 798 BEFORE baseline protocol revision 3. Prior F1/F2 resolved per r2
+    review; F3 repaired by excluding producer runtime .state from each temporary acceptance
+    copy, then explicit per-case state initialization. Review this repair and the
+    final frozen prompt/oracle alignment. No arm executed. Pass only if viable bounded
+    comparison; do not add exhaustive coverage requirements beyond declared prompts.
+    Current protocol names nonclaims and intervention policy.
+  packet_identity: e9535152433e9a0274c170544c5552cc7bfb5ee42ace4e7c6e3e979a1304b1c2
+  reviewed_input_identity: fbc91580936d0d01c5f4974b0076952d83dc748698e4f331a426dab63469a287
+  parent_receipt_identity: parent-e71a24dd8e4cf141347589b9333c02524e734b1156856e59
+  attempt_id: goal798-consumer-oracle-r3
+  attempt_scope: Goal 798 BEFORE baseline protocol revision 3. Prior F1/F2 resolved
+    per r2 review; F3 repaired by excluding producer runtime .state from each temporary
+    acceptance copy, then explicit per-case state initialization. Review this repair
+    and the final frozen prompt/oracle alignment. No arm executed. Pass only if viable
+    bounded comparison; do not add exhaustive coverage requirements beyond declared
+    prompts. Current protocol names nonclaims and intervention policy.
+  attempt_packet_identity: e9535152433e9a0274c170544c5552cc7bfb5ee42ace4e7c6e3e979a1304b1c2
+  attempt_parent_receipt_identity: parent-e71a24dd8e4cf141347589b9333c02524e734b1156856e59
+  result_packet_identity: e9535152433e9a0274c170544c5552cc7bfb5ee42ace4e7c6e3e979a1304b1c2
+  result_reviewed_input_identity: fbc91580936d0d01c5f4974b0076952d83dc748698e4f331a426dab63469a287
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: ebf406917181448882c54d13f6f40dc7cef467cf374b0891decde541fb54d546
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

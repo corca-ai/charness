@@ -32,7 +32,7 @@ Freeze and build these behaviors:
   path or hidden state is allowed.
 - `repoctl refresh --dry-run SOURCE` validates and reports what would happen
   without creating or changing any file.
-- `--json` is an explicit machine-readable mode with stable structured output
+- `--json` is an explicit machine-readable mode with a stable JSON object on stdout
   for the commands that report a result; default output remains concise human
   output. Accept it before the subcommand, after the subcommand, or after SOURCE;
   reject duplicate occurrences even when they straddle those positions.

@@ -18,7 +18,9 @@ class CliAcceptance(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory(prefix="goal798-cli-check-")
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name) / "consumer"
-        shutil.copytree(ROOT, self.root, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+        # Runtime cache left by producer verification is not a test precondition.
+        # Each case below explicitly establishes absent or populated cache state.
+        shutil.copytree(ROOT, self.root, ignore=shutil.ignore_patterns(".git", "__pycache__", ".state"))
         self.source = self.root / "input.json"
         self.source.write_text('{"items": [1, 2], "ready": true}\n')
         self.cache = self.root / ".state/cache.json"
@@ -90,6 +92,18 @@ class CliAcceptance(unittest.TestCase):
         after = self.snapshot()
         self.assertEqual(set(after) - set(before), {".state", ".state/cache.json"})
         self.assertTrue(all(after[path] == content for path, content in before.items()))
+
+    def test_refresh_replaces_an_existing_cache(self):
+        self.cache.parent.mkdir()
+        self.cache.write_text('{"stale": true}\n')
+        before = self.snapshot()
+        result = self.command("refresh", "input.json")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(json.loads(self.cache.read_text()), json.loads(self.source.read_text()))
+        after = self.snapshot()
+        self.assertEqual(set(after), set(before))
+        self.assertTrue(all(after[path] == content for path, content in before.items()
+                            if path not in {".state", ".state/cache.json"}))
 
     def test_malformed_inputs_refused_before_write(self):
         (self.root / "--looks-like-a-source.json").write_text('{"danger": true}\n')

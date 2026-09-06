@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 183,
-  "indexed_artifact_count": 168,
+  "source_artifact_count": 184,
+  "indexed_artifact_count": 169,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 8,
-    "none": 72,
+    "none": 73,
     "operator-visible-recovery": 23,
     "repeated-symptom": 18
   },
   "generalization_pressure_counts": {
     "factor-now": 25,
     "monitor": 125,
-    "none": 18
+    "none": 19
   },
   "entries": [
     {
@@ -2372,8 +2372,8 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
+      "artifact_path": "charness-artifacts/debug/2026-09-06-critique-preview-live-collision.md",
+      "is_current_pointer": false,
       "interrupt_id": "none",
       "risk_classes": [
         "none"
@@ -2383,6 +2383,20 @@
       "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/friction-reduction.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "claims payload→published record wording",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/evidence-meaning.md",
       "forced": false
     }
   ],

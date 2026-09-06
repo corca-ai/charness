@@ -1,0 +1,180 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-06T00:32:43Z",
+  "prepared_for": "working tree",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/probe/2026-09-06-consumer-journeys/check_cli.py\n- charness-artifacts/probe/2026-09-06-consumer-journeys/freeze.json\n- charness-artifacts/probe/2026-09-06-consumer-journeys/protocol.md\n- evals/fixtures/consumer-journeys/create-cli-refresh/prompts/create-cli.md\n- evals/fixtures/consumer-journeys/spec-impl-alias/prompts/spec.md\n- charness-artifacts/critique/goal798-code-contracts-packet.json\n- charness-artifacts/critique/goal798-code-contracts-packet.md\n- charness-artifacts/critique/goal798-consumer-oracle-packet.json\n- charness-artifacts/critique/goal798-consumer-oracle-packet.md\n- charness-artifacts/critique/workers/goal798-code-contracts/worker-report.yaml\n- charness-artifacts/probe/2026-09-06-consumer-journeys/oracle-review-1.json\n- charness-artifacts/probe/2026-09-06-consumer-journeys/seed-disconfirmation.json\n- charness-artifacts/probe/2026-09-06-goal798-code-review-paths.txt\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/probe/2026-09-06-consumer-journeys/protocol.md, evals/fixtures/consumer-journeys/create-cli-refresh/prompts/create-cli.md, evals/fixtures/consumer-journeys/spec-impl-alias/prompts/spec.md, charness-artifacts/critique/goal798-code-contracts-packet.md, charness-artifacts/critique/goal798-consumer-oracle-packet.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/goal798-code-contracts-packet.json, charness-artifacts/critique/goal798-code-contracts-packet.md, charness-artifacts/critique/goal798-consumer-oracle-packet.json, charness-artifacts/critique/goal798-consumer-oracle-packet.md, charness-artifacts/critique/workers/goal798-code-contracts/worker-report.yaml\n  verify: python3 scripts/review/validate_critique_artifacts.py --repo-root . --all\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-09-06-consumer-journeys/freeze.json, charness-artifacts/probe/2026-09-06-consumer-journeys/oracle-review-1.json, charness-artifacts/probe/2026-09-06-consumer-journeys/seed-disconfirmation.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "42fd204e1e1d3593ea05dbb0c98107f9dd8ca902",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/check_alias.py",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/check_cli.py",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/freeze.json",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/protocol.md",
+      "evals/fixtures/consumer-journeys/create-cli-refresh/README.md",
+      "evals/fixtures/consumer-journeys/create-cli-refresh/prompts/create-cli.md",
+      "evals/fixtures/consumer-journeys/create-cli-refresh/prompts/impl.md",
+      "evals/fixtures/consumer-journeys/create-cli-refresh/seed/AGENTS.md",
+      "evals/fixtures/consumer-journeys/create-cli-refresh/seed/README.md",
+      "evals/fixtures/consumer-journeys/create-cli-refresh/seed/scripts/check_cache.py",
+      "evals/fixtures/consumer-journeys/create-cli-refresh/seed/scripts/refresh_cache.py",
+      "evals/fixtures/consumer-journeys/create-cli-refresh/seed/tests/test_current_scripts.py",
+      "evals/fixtures/consumer-journeys/spec-impl-alias/README.md",
+      "evals/fixtures/consumer-journeys/spec-impl-alias/prompts/impl.md",
+      "evals/fixtures/consumer-journeys/spec-impl-alias/prompts/spec.md",
+      "evals/fixtures/consumer-journeys/spec-impl-alias/seed/AGENTS.md",
+      "evals/fixtures/consumer-journeys/spec-impl-alias/seed/README.md",
+      "evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/__init__.py",
+      "evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/catalog.py",
+      "evals/fixtures/consumer-journeys/spec-impl-alias/seed/tests/test_catalog.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/check_alias.py",
+        "content_sha256": "28c6dfd0deb83c437554e30094a342975f7ab413481ef40f3c82c1dd98b43d71"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/check_cli.py",
+        "content_sha256": "ccba29df6d183f50cc24f031c496e6326f2911d552585924afb7b37224c7e45f"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/freeze.json",
+        "content_sha256": "22f5634ec83063ae750243831bb399d08304d98af2a4b5ff69d83489d7f96000"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/protocol.md",
+        "content_sha256": "7e2f0bba013ac3051d539f08a2e8e0c9de76a06f8c41c5041415b625fab1dac8"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/create-cli-refresh/README.md",
+        "content_sha256": "402eeac3c0a08d8b9b7b129722a90d3107fbbb58657f5d4da8ac4d0b41853d82"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/create-cli-refresh/prompts/create-cli.md",
+        "content_sha256": "b4d55fff0b77990701f2bf9b47626177f6465b66db29280f4bc76a5a67dd2f86"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/create-cli-refresh/prompts/impl.md",
+        "content_sha256": "191a0be54207d5c4ba57871f1ceb56527558062a72118352ef9b83cec264fd07"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/create-cli-refresh/seed/AGENTS.md",
+        "content_sha256": "96d3945f32db28c6b21f7f86f6006f28a95473aaa5d0c97b42d1851bfe68eff3"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/create-cli-refresh/seed/README.md",
+        "content_sha256": "50713dfd6094819085d8b8fe4605bef66d06452513a7184d8c62df7dea841911"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/create-cli-refresh/seed/scripts/check_cache.py",
+        "content_sha256": "67a0aa215c512b4b8c65cc2c614d07a3ce903429df492fdfbc041921fa7c5faa"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/create-cli-refresh/seed/scripts/refresh_cache.py",
+        "content_sha256": "5886e86f8aca8837396a6520341fd78aa3d0dced5254e296afa48cd65276e302"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/create-cli-refresh/seed/tests/test_current_scripts.py",
+        "content_sha256": "e715489f1b92c626b3da8c69f57f0602b8068aeb00e3866bcf2251faa4370721"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/spec-impl-alias/README.md",
+        "content_sha256": "a13aeb224b0fa76dc93bd278edebea86cb505df4ed0b296718257a69ae104db1"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/spec-impl-alias/prompts/impl.md",
+        "content_sha256": "0afe0f82a53ce6293c0cd4a109883781a8e1c7aa0b5cbcd0b8b30fccf7f01049"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/spec-impl-alias/prompts/spec.md",
+        "content_sha256": "163d758d63d141000611e2d00a9c9eb28253acf0007a225913364b585364ef32"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/spec-impl-alias/seed/AGENTS.md",
+        "content_sha256": "60eb4b1755980deaa7f80ee4fcb85bce88e2133b28d6984e2fe8ad271ed60546"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/spec-impl-alias/seed/README.md",
+        "content_sha256": "7b95c03295ea5b61201dc80d864ee17765b649ade9f17761a686a25d4e6c5070"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/__init__.py",
+        "content_sha256": "c1624518684f6fa6ecaa908ddefee11ec2fd74fc6bf806c45d2dee78ec1bc0b3"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/catalog.py",
+        "content_sha256": "ae5099e02d8364c24a2e090f9f644cd26fcac7a01019a9d36f3d37b689b88f6a"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/spec-impl-alias/seed/tests/test_catalog.py",
+        "content_sha256": "c5145e4a1deabb4b68f8bf4adab17efde96da1b419042ffdc0420e1b902f3d90"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "d3abf38b17a0d3eb254135ae170164c49becbf4f8f24e97539022dd2273fec36",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "09e838386924c5a62a33fc5c1f3eef493d9b8c4941674bd715542d3937b69970"
+  }
+}

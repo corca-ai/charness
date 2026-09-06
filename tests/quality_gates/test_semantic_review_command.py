@@ -149,6 +149,8 @@ import sys
 import time
 from pathlib import Path
 
+marker = Path(__file__).with_name("review-called")
+marker.write_text(str(int(marker.read_text()) + 1) if marker.exists() else "1")
 sleep_for = float(os.environ.get("FAKE_REVIEW_SLEEP", "0"))
 if sleep_for:
     witness_path = os.environ.get("FAKE_REVIEW_WITNESS")
@@ -660,6 +662,7 @@ def test_preview_does_not_reserve_live_attempt(tmp_path: Path, supplied_packet: 
         (tmp_path / "reviewed.txt").write_text("changed after preview\n", encoding="utf-8")
     live = _payload(_run(tmp_path, bin_dir, "same-id", packet_file=packet_file))
     assert live["approval_eligible"] is True, live
+    assert (bin_dir / "review-called").read_text() == "1"
     if not supplied_packet:
         live_packet = json.loads((tmp_path / live["paths"]["packet"]).read_text())
         old_packet = json.loads(preview_files[str(preview_packet)])
@@ -670,6 +673,7 @@ def test_preview_does_not_reserve_live_attempt(tmp_path: Path, supplied_packet: 
     assert duplicate["reviewer_started"] is False
     repeat_preview = _payload(_run(tmp_path, bin_dir, "same-id", dry_run=True, packet_file=packet_file))
     assert repeat_preview["reason_code"] == "stale-artifact-refused"
+    assert (bin_dir / "review-called").read_text() == "1"
 
 
 def test_directory_input_has_actionable_preflight_refusal(tmp_path: Path) -> None:

@@ -1,6 +1,7 @@
 # Goal 798 consumer journey protocol
 
-Frozen before any baseline execution. This is a bounded, on-demand dogfood
+Revision 3, frozen before any baseline execution after pre-baseline review F1/F2/F3.
+This is a bounded, on-demand dogfood
 observation using existing task and review carriers, not a new evaluator or
 standing semantic gate. The seed-baseline unit test proves only seed usability.
 
@@ -62,14 +63,18 @@ documents and this protocol, naming its review packet and dispositions.
 
 A acceptance: canonical lookups preserved; successful aliases; canonical-name,
 duplicate (same/different target), dangling/alias-chain rejection; unknown lookup
-KeyError; first-invalid-pair reporting. Inspect the spec's criterion/check mapping,
+KeyError; first-invalid-pair alias name in the exception message (explicit in the
+producer prompt). Inspect the spec's criterion/check mapping,
 fixed/deferred choices, readiness and first slice. Check impl ancestry and any
 contract edits: no redesign or hidden relaxation. No exact prose rubric.
 
 B acceptance: executable entrypoint; read-only help, version, meaningful missing
 versus ready doctor; dry-run with absent/present cache; JSON mode at declared
-positions; only existing cache path written; parser errors refused before writes;
-legacy refresh/check compatibility. Read-only comparison includes contents,
+positions (JSON object explicitly required by the prompt); only existing cache
+path written, including replacement of a stale cache; parser errors refused before writes;
+legacy refresh/check compatibility. Acceptance copies exclude runtime `.state`
+left by producer verification and explicitly initialize absent or populated cache
+state per case; no producer cleanup requirement is inferred. Read-only comparison includes contents,
 modes and mtimes in the copied consumer tree. It does not inspect outside-tree
 writes or arbitrary host side effects. No undocumented JSON key or exit-code
 convention is imposed on doctor. Review README against observed commands.

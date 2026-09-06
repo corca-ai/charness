@@ -29,7 +29,7 @@ Separating only preview artifact names will permit dry→live while preserving r
 
 ## Verification
 
-Confirmed initial repair: four focused tests passed, including dry-run no-worker, both packet modes, and final-consumer directory diagnostics. Added current-input regeneration assertion and running the complete affected suites before closeout. No hosted reviewer-success claim from a fake backend.
+Confirmed: complete review/path/seed suites passed (33 tests), including current-input regeneration. Independent `goal798-code-contracts` review passed; its low-priority marker finding was repaired by making the fake backend increment a marker, with positive live and negative duplicate assertions. The passing report is `charness-artifacts/critique/workers/goal798-code-contracts/worker-report.yaml`. No hosted reviewer-success claim from a fake backend.
 
 ## Root Cause
 
@@ -71,11 +71,11 @@ Pattern Ladder: observed failure at `run_review.main` (executable fixture; disco
 
 ## Interrupt Decision
 
-- Resolution: open
+- Resolution: resolved
 - Critique Required: yes
 - Next Step: impl
 - Handoff Artifact: charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/friction-reduction.md
 
 ## Prevention
 
-Separate preview artifact namespace while retaining immutable destinations. Preserve the semantic attempt ID and all live proof/promotion identities. Run independent integrated critique before release; record final suite/review evidence here at closure. Prior tracked-claim/ephemeral-carrier memory informed the deliberate choice to retain preview bytes and leave durable promotion unchanged; its resolved spec interrupt is not this incident's handoff.
+Separate preview artifact namespace while retaining immutable destinations. Preserve the semantic attempt ID and all live proof/promotion identities. Integrated independent critique is captured above; release verification remains the parent Goal's open obligation. Prior tracked-claim/ephemeral-carrier memory informed retaining preview bytes and leaving durable promotion unchanged; its resolved spec interrupt is not this incident's handoff.

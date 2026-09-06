@@ -24,7 +24,8 @@ keeping canonical lookup compatible:
 - Reject duplicate alias definitions deterministically, including duplicates
   that repeat the same target. Do not use last-write-wins behavior.
 - These invalid alias definitions raise `ValueError`; unknown lookup remains
-  `KeyError`. Report the first invalid pair in input order.
+  `KeyError`. Report the first invalid pair in input order and include its alias
+  name in the exception message.
 - Define the public failure shape and deterministic offending-entry behavior
   precisely enough that two implementers will make the same choice.
 

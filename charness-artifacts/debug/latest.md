@@ -1,1 +1,1 @@
-2026-09-06-critique-preview-live-collision.md
+2026-09-06-release-advisory-meaning.md
