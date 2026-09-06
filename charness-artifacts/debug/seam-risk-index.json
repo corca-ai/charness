@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 187,
-  "indexed_artifact_count": 172,
+  "source_artifact_count": 188,
+  "indexed_artifact_count": 173,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 8,
-    "none": 76,
+    "none": 77,
     "operator-visible-recovery": 23,
     "repeated-symptom": 18
   },
   "generalization_pressure_counts": {
     "factor-now": 25,
     "monitor": 125,
-    "none": 22
+    "none": 23
   },
   "entries": [
     {
@@ -2414,6 +2414,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-09-06-review-closeout-preflight.md",
+      "is_current_pointer": false,
+      "interrupt_id": "review-closeout-preflight",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "local review launch and issue proof consumption",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/critique/2026-09-06-review-closeout-code.md",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-09-06-staged-owner-universe.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -2430,15 +2444,15 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "review-closeout-preflight",
+      "interrupt_id": "release-8-6-0-claims-durability",
       "risk_classes": [
         "none"
       ],
-      "seam": "local review launch and issue proof consumption",
+      "seam": "local Markdown evidence carrier",
       "generalization_pressure": "none",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "charness-artifacts/critique/2026-09-06-review-closeout-code.md",
+      "handoff_artifact": "charness-artifacts/release-review/2026-09-06-v8.6.0-prepared-claims-review.md",
       "forced": false
     }
   ],

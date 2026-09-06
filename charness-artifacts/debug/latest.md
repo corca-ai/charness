@@ -1,1 +1,1 @@
-2026-09-06-review-closeout-preflight.md
+2026-09-06-release-8-6-0-claims-durability.md

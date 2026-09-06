@@ -1,0 +1,197 @@
+{
+  "schema_version": "1",
+  "kind": "charness.release.independent-public-installed-observer",
+  "observed_at": "2026-09-06T11:17:51Z",
+  "observer": {
+    "identity": "/root/release860_claims",
+    "channel": "separate post-publication observer agent on the publisher host",
+    "machine_distinct": false,
+    "credential_mode": "unauthenticated public HTTP attempted; installed local readback used no provider write"
+  },
+  "release_identity": {
+    "version": "8.6.0",
+    "tag": "v8.6.0",
+    "tag_commit": "4fdd64ae92628c5926d153ce8857bf7fc0165a71",
+    "observed_clone_head": "6a4cf3572d98c576c194ee80e5545b4399a15309",
+    "observed_clone_clean": true,
+    "local_notes_path": "charness-artifacts/release/2026-09-06-v8.6.0-notes.md",
+    "local_notes_sha256": "50c3fd883de8d466dbffc789cbd91fdbad7ffd00925e78dca112abc9e965f9d7"
+  },
+  "public_readback": {
+    "status": "partially-verified",
+    "unauthenticated_rest": {
+      "status": "blocked-rate-limit",
+      "release_endpoint": "https://api.github.com/repos/corca-ai/charness/releases/tags/v8.6.0",
+      "tag_ref_endpoint": "https://api.github.com/repos/corca-ai/charness/git/ref/tags/v8.6.0",
+      "attempted_at": "2026-09-06T11:17:07Z",
+      "http_status": 403,
+      "response": {
+        "message": "API rate limit exceeded for this host's egress IP (redacted).",
+        "rate_limit": 60,
+        "rate_limit_remaining": 0,
+        "rate_limit_resource": "core",
+        "github_request_ids": [
+          "C67E:C3CDA:9942AE:DDA138:6A9D4BB3",
+          "C680:1DBB62:A0D1FB:E537AB:6A9D4BB3"
+        ]
+      },
+      "unproven": [
+        "GitHub release object exists",
+        "release draft is false",
+        "release prerelease is false",
+        "release body matches local note bytes, including any newline transport difference",
+        "REST tag-ref object resolves to the release commit"
+      ],
+      "disposition": "Do not infer REST results from the publisher helper or local tag; retry unauthenticated REST after the rate limit resets."
+    },
+    "external_git_readback": {
+      "status": "verified",
+      "command": "git ls-remote --tags https://github.com/corca-ai/charness.git refs/tags/v8.6.0",
+      "observed_ref": "refs/tags/v8.6.0",
+      "observed_object": "4fdd64ae92628c5926d153ce8857bf7fc0165a71",
+      "meaning": "A public unauthenticated Git transport resolves the tag to the prepared release commit. This is not a GitHub REST release-object or body verification."
+    }
+  },
+  "installed_readback": {
+    "status": "verified",
+    "environment": {
+      "python_dont_write_bytecode": true,
+      "provider_writes": false,
+      "reviewer_started": false
+    },
+    "command": {
+      "path": "/home/hwidong/.local/bin/charness",
+      "version_output": "version: 8.6.0"
+    },
+    "doctor": {
+      "exit_code": 0,
+      "package_id": "charness",
+      "repo_root": "/home/hwidong/.agents/src/charness",
+      "managed_checkout": true,
+      "target_repo_root": "/home/hwidong/.cache/tmp/charness-release-8.6.0.0cN89S",
+      "checkout_version": "8.6.0",
+      "checkout_git_head": "5d49c5b5c",
+      "codex_source_version": "8.6.0",
+      "codex_cache_manifest_version": "8.6.0",
+      "codex_cache_manifest_status": "valid",
+      "codex_source_cache_drift": false,
+      "codex_enabled_plugin_id": "charness@local",
+      "codex_host_guidance": {
+        "status": "installed",
+        "manual_action_required": false,
+        "message": "Start a new Codex session to load charness."
+      },
+      "next_action": {
+        "kind": "restart",
+        "host": "codex",
+        "status": "installed"
+      }
+    },
+    "codex_cache_resolution": {
+      "config_observation": "[plugins.\"charness@local\"] enabled = true",
+      "observed_cache_root": "/home/hwidong/.codex/plugins/cache/local/charness/8.6.0",
+      "cache_manifest": "/home/hwidong/.codex/plugins/cache/local/charness/8.6.0/.codex-plugin/plugin.json",
+      "cache_manifest_sha256": "605c24ba09fc14050ca12e0c9e41545358c127f7e95549d1d319eea398064cc1",
+      "current_version_basis": "doctor reported a valid 8.6.0 Codex cache manifest and no source/cache drift; this observer read the corresponding 8.6.0 cache rather than an older cache path."
+    },
+    "exported_file_byte_comparison": [
+      {
+        "path": "skills/issue/scripts/issue_review_resolution.py",
+        "installed_cache_sha256": "ad5fcc682a782ab2ae6e20bb035388a2d746ac35a85f1d08cbf67918375aff73",
+        "clone_export_sha256": "ad5fcc682a782ab2ae6e20bb035388a2d746ac35a85f1d08cbf67918375aff73",
+        "match": true
+      },
+      {
+        "path": "scripts/adapters/quality_universe_selection.py",
+        "installed_cache_sha256": "be3bec61473fb9c5d38eaf1c1f7f60768b08bcfbd72380046cf029b6a831ecf2",
+        "clone_export_sha256": "be3bec61473fb9c5d38eaf1c1f7f60768b08bcfbd72380046cf029b6a831ecf2",
+        "match": true
+      },
+      {
+        "path": "scripts/gates/check_spec_evidence_durability.py",
+        "installed_cache_sha256": "94c3a7589d5650bb689a479213a9b03be23677faccc4f82ca5be4bdcee2feb7e",
+        "clone_export_sha256": "94c3a7589d5650bb689a479213a9b03be23677faccc4f82ca5be4bdcee2feb7e",
+        "match": true
+      }
+    ],
+    "installed_issue_command_help": {
+      "command": "python3 /home/hwidong/.codex/plugins/cache/local/charness/8.6.0/skills/issue/scripts/issue_tool.py review-resolution --help",
+      "exit_code": 0,
+      "observed_options": [
+        "--repo",
+        "--number (repeatable)",
+        "--reviewed-path (repeatable)",
+        "--lens",
+        "--repo-root",
+        "--attempt-id",
+        "--goal-lineage-file",
+        "--dry-run"
+      ],
+      "meaning": "The installed command surface is reachable. Help did not start a reviewer, contact a provider, or perform a paid review."
+    }
+  },
+  "final_quality_receipt_captured": {
+    "source": "read from the final clone at observation time; substantive fields are copied here rather than relying on its runtime path",
+    "source_sha256": "21ac046801b7a84e7783e742ff089af6323e58701cbe890df12aa5486e738766",
+    "surface": "quality",
+    "status": "pass",
+    "effective_exit_code": 0,
+    "passed": 88,
+    "failed": 0,
+    "elapsed": "326.0s",
+    "unproven_subjects": [],
+    "not_run": [
+      {
+        "label": "agent-browser-runtime-baseline",
+        "reason": "opt-in unmet"
+      },
+      {
+        "label": "dead-code-advisory",
+        "reason": "opt-in unmet"
+      },
+      {
+        "label": "check-supply-chain-online",
+        "reason": "opt-in unmet"
+      },
+      {
+        "label": "agent-browser-runtime-hygiene",
+        "reason": "opt-in unmet"
+      }
+    ]
+  },
+  "non_claims": [
+    "This observer is not machine-distinct from the publisher.",
+    "No fresh Codex session was started; doctor explicitly says a restart is needed to load charness in a new session.",
+    "No live efficiency, token, latency, security-clearance, CI-completion, package-index, extra issue-closeout, or Goal 805 claim is established.",
+    "The REST rate limit leaves GitHub release-object visibility, draft/prerelease state, release-body equality, and REST tag-ref readback unproven despite the public Git tag readback.",
+    "The three-file byte comparison is not a whole-package inventory."
+  ],
+  "parent_record_handling": {
+    "author": "/root",
+    "redactions": [
+      "Removed the exact egress IP from the API error message before committing public evidence."
+    ],
+    "observer_findings_received": true,
+    "shared_tree_fingerprint": {
+      "window": "release-8-6-0-public-observer",
+      "verdict": "clean",
+      "drift": []
+    }
+  },
+  "parent_distinct_web_readback": {
+    "observer": "publisher parent using a separate web-fetch service",
+    "url": "https://github.com/corca-ai/charness/releases/tag/v8.6.0",
+    "observed_date": "2026-09-06",
+    "status": "public-release-page-and-notes-observed",
+    "release_heading": "v8.6.0",
+    "release_event_display": "06 Sep 11:15",
+    "tag_commit_display": "4fdd64a",
+    "notes_sections_observed": [
+      "Changes",
+      "Compatibility and limits",
+      "Update",
+      "Derived claim surfaces"
+    ],
+    "non_claim": "This is public HTML evidence, not REST release-object validation or release-body byte equality."
+  }
+}

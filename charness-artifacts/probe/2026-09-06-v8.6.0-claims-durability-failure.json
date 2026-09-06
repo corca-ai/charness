@@ -1,0 +1,25 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "DUR-1",
+  "source": "charness-artifacts/probe/2026-09-06-v8.6.0-claims-durability-failure.json",
+  "expected": "A claims report must preserve cited preparation evidence in a fresh checkout",
+  "stimulus": "Run final release pytest against claims child a769300dc without modifying its report",
+  "disposition": "reproduced",
+  "observed": "test_real_repo_passes refused the ignored preparation receipt citation; 1 failed and 9398 passed",
+  "command": "python3 skills/public/release/scripts/publish_release.py --repo-root . --resume --publish-current --claims-review-artifact charness-artifacts/release-review/2026-09-06-v8.6.0-prepared-claims-review.json --critique-artifact charness-artifacts/critique/2026-09-06-release-8-6-0.md --notes-file charness-artifacts/release/2026-09-06-v8.6.0-notes.md --bump-rationale 'minor for the additive maintained review-resolution command; supported Git callers and final closeout contracts remain unchanged, with the explicitly removed non-Git fallback disclosed.' --execute",
+  "fixture": "a769300dc36a4bfa46fdf05a5677a3e5de1a2841",
+  "final_consumer": "tests/quality_gates/test_check_spec_evidence_durability.py::test_real_repo_passes -> scripts/gates/check_spec_evidence_durability.py",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 1,
+  "gate_stderr": "charness-artifacts/release-review/2026-09-06-v8.6.0-prepared-claims-review.md:14: cited path `.charness/quality/last-release-receipt.json` resolves to a gitignored target",
+  "classification": "subject-defect",
+  "prepared_commit": "4fdd64ae92628c5926d153ce8857bf7fc0165a71",
+  "failed_narrative_sha256": "bc758d2f6e1fad0ef425fbf2d82ef972b3a7a5c174c8f40d0b91067f04d489d2",
+  "preparation_source_sha256": "ea7dee3367fb52491ef0f89d6d17c408b192af3d2203175ceb1490c3f0a36f39",
+  "observed_at": "2026-09-06T11:01:40Z",
+  "non_claims": [
+    "No release publication occurred during this failed resume.",
+    "The source receipt remains preparation-only, not final release proof."
+  ]
+}
