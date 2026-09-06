@@ -231,6 +231,25 @@ def read_packet(
     return packet, payload, packet_sha, identity_sha, verification
 
 
+def select_packet(
+    support: Any, root: Path, args: Any, artifact_key: str,
+    reviewed_paths: list[str], adapter: dict[str, Any], package: dict[str, Path],
+) -> tuple[Path, dict[str, Any], str, str, dict[str, Any]]:
+    """Select supplied/generated input, then apply one freshness and path check."""
+    path_value = args.packet_file
+    if path_value is None:
+        packet = prepare_packet(
+            support, root, args, artifact_key, reviewed_paths, adapter, package["prepare"]
+        )
+        path_value = support.relative(root, packet)
+    result = read_packet(support, root, path_value, package["verify_packet"])
+    identity = result[1].get("reviewed_input_identity")
+    packet_paths = identity.get("reviewed_paths", []) if isinstance(identity, dict) else []
+    if reviewed_paths and sorted(reviewed_paths) != sorted(packet_paths):
+        raise support.RunReviewError("input-mismatch", "explicit reviewed paths do not match packet identity")
+    return result
+
+
 def default_capability(root: Path) -> dict[str, Any]:
     return {
         "schema_version": "charness.capability_envelope.v1",

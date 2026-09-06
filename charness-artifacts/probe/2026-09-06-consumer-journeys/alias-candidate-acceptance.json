@@ -1,0 +1,13 @@
+{
+  "command": "CHARNESS_CONSUMER_ROOT=<alias-candidate> PYTHONDONTWRITEBYTECODE=1 python3 charness-artifacts/probe/2026-09-06-consumer-journeys/check_alias.py",
+  "tested_commit": "2f1f885deb89bb916d7dfd3e76faaa0e3300a6de",
+  "spec_commit": "032b7d84474fe0524f97ea036d586b3b17116f66",
+  "check_sha256": "a20b7dd62716c7e77c31bd7bed91aea159fc0686b45c44f1c6fa834002ec8d6b",
+  "chunk_id": "9dbee2",
+  "wall_time_seconds": 0.000009749,
+  "exit_code": 0,
+  "original_token_count": 94,
+  "output": "test_aliases_and_canonical_names_coexist (__main__.AliasAcceptance) ... ok\ntest_canonical_compatibility (__main__.AliasAcceptance) ... ok\ntest_first_invalid_pair_is_reported (__main__.AliasAcceptance) ... ok\ntest_invalid_definitions_rejected (__main__.AliasAcceptance) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n",
+  "interventions": 0,
+  "capture": "Independent audit rerun after producer completion. A preceding local invocation misspelled CHarness_CONSUMER_ROOT and exited before loading the fixture; it is not an arm intervention."
+}

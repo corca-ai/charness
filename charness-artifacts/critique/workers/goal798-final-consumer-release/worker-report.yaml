@@ -1,0 +1,85 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Goal798 patch8.4.4 release readiness: #799 contract ownership, #800 advisory
+  meaning, #801 alias spec-to-impl, #802 create-cli, #803 observed friction. Judge
+  actual frozen consumer capability, semantic handoff, baseline/candidate equality
+  with disclosed timeout deviation, mixed duplicate metrics, and honest bounded claims.
+  #804 publication/install/CI proof is pending and owned by release helper, not claimed
+  here. Code mechanics have separate delivered reviews; this review decides whether
+  the supplied behavior and narrative justify patch publication subject to final gates.
+  Render per-issue behavior confirmation or local-only-by-contract disposition and
+  counterweight.'
+attempt_id: goal798-final-consumer-release
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: eb9f67a688f5e8e2026ae6a4a7c99c983ef5e891d5d731c194f34ee1575c9705
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-consumer-release/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-consumer-release/delivery.json
+producer_run_id: run-goal798-final-consumer-release
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-consumer-release/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-consumer-release/receipt.json
+  producer_run_id: run-goal798-final-consumer-release
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 2298b3e1a1bab3a5c155f90592b3f428532e1f4c89fecb76429013222a663823
+receipt_output_sha256: 2298b3e1a1bab3a5c155f90592b3f428532e1f4c89fecb76429013222a663823
+packet_identity: 8fe925ea438785dc2ff91219e5c51cf2a3dbb6f33714d1329e2ffd7569122cfc
+reviewed_input_identity: 47140a7074272918d9ae4bfd052a6501a1fa9c5b964a3dfd1b9f60f8f7d97ea0
+parent_receipt_identity: parent-e2e362e5a651f67f3449d57949bf77dc647aea4de0743fe5
+provenance:
+  scope: 'Goal798 patch8.4.4 release readiness: #799 contract ownership, #800 advisory
+    meaning, #801 alias spec-to-impl, #802 create-cli, #803 observed friction. Judge
+    actual frozen consumer capability, semantic handoff, baseline/candidate equality
+    with disclosed timeout deviation, mixed duplicate metrics, and honest bounded
+    claims. #804 publication/install/CI proof is pending and owned by release helper,
+    not claimed here. Code mechanics have separate delivered reviews; this review
+    decides whether the supplied behavior and narrative justify patch publication
+    subject to final gates. Render per-issue behavior confirmation or local-only-by-contract
+    disposition and counterweight.'
+  packet_identity: 8fe925ea438785dc2ff91219e5c51cf2a3dbb6f33714d1329e2ffd7569122cfc
+  reviewed_input_identity: 47140a7074272918d9ae4bfd052a6501a1fa9c5b964a3dfd1b9f60f8f7d97ea0
+  parent_receipt_identity: parent-e2e362e5a651f67f3449d57949bf77dc647aea4de0743fe5
+  attempt_id: goal798-final-consumer-release
+  attempt_scope: 'Goal798 patch8.4.4 release readiness: #799 contract ownership, #800
+    advisory meaning, #801 alias spec-to-impl, #802 create-cli, #803 observed friction.
+    Judge actual frozen consumer capability, semantic handoff, baseline/candidate
+    equality with disclosed timeout deviation, mixed duplicate metrics, and honest
+    bounded claims. #804 publication/install/CI proof is pending and owned by release
+    helper, not claimed here. Code mechanics have separate delivered reviews; this
+    review decides whether the supplied behavior and narrative justify patch publication
+    subject to final gates. Render per-issue behavior confirmation or local-only-by-contract
+    disposition and counterweight.'
+  attempt_packet_identity: 8fe925ea438785dc2ff91219e5c51cf2a3dbb6f33714d1329e2ffd7569122cfc
+  attempt_parent_receipt_identity: parent-e2e362e5a651f67f3449d57949bf77dc647aea4de0743fe5
+  result_packet_identity: 8fe925ea438785dc2ff91219e5c51cf2a3dbb6f33714d1329e2ffd7569122cfc
+  result_reviewed_input_identity: 47140a7074272918d9ae4bfd052a6501a1fa9c5b964a3dfd1b9f60f8f7d97ea0
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: eb9f67a688f5e8e2026ae6a4a7c99c983ef5e891d5d731c194f34ee1575c9705
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

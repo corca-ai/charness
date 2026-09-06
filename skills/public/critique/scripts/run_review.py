@@ -174,21 +174,9 @@ def main(argv: list[str] | None = None) -> int:
             )
         backend, timeout = SUPPORT.select_backend(adapter, args.backend, dry_run=args.dry_run)
         reviewed_paths = PACKET.manifest_paths(SUPPORT, root, args.reviewed_paths_file, args.reviewed_path)
-        if args.packet_file is not None:
-            packet, packet_payload, packet_sha, input_sha, verification = PACKET.read_packet(
-                SUPPORT, root, args.packet_file, package["verify_packet"]
-            )
-        else:
-            packet = PACKET.prepare_packet(
-                SUPPORT, root, args, artifact_key, reviewed_paths, adapter, package["prepare"]
-            )
-            packet, packet_payload, packet_sha, input_sha, verification = PACKET.read_packet(
-                SUPPORT, root, SUPPORT.relative(root, packet), package["verify_packet"]
-            )
-        identity = packet_payload.get("reviewed_input_identity")
-        packet_paths = identity.get("reviewed_paths", []) if isinstance(identity, dict) else []
-        if reviewed_paths and sorted(reviewed_paths) != sorted(packet_paths):
-            raise SUPPORT.RunReviewError("input-mismatch", "explicit reviewed paths do not match packet identity")
+        packet, packet_payload, packet_sha, input_sha, verification = PACKET.select_packet(
+            SUPPORT, root, args, artifact_key, reviewed_paths, adapter, package
+        )
 
         run_dir = SUPPORT.new_run_dir(root, artifact_key)
         paths = PACKET.run_paths(run_dir, packet)

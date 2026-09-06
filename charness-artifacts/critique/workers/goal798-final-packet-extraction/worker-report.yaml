@@ -1,0 +1,67 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Goal 798 final packet-selection refactor: preserve supplied/generated packet
+  verification, exact path-set binding and preview/live behavior after moving branch
+  logic to existing packet owner; only these remaining code changes.'
+attempt_id: goal798-final-packet-extraction
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: fdd7bf6a87325bfc5ce712b20d2c3ccc6ae309dce92e204c4694758635da17db
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-packet-extraction/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-packet-extraction/delivery.json
+producer_run_id: run-goal798-final-packet-extraction
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-packet-extraction/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-packet-extraction/receipt.json
+  producer_run_id: run-goal798-final-packet-extraction
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: ebe3b81c63515404e05938ff99bf550055f96218708f59ed7ff66d08f86b8223
+receipt_output_sha256: ebe3b81c63515404e05938ff99bf550055f96218708f59ed7ff66d08f86b8223
+packet_identity: ee219d3ec7b117949b4b18f0b5ffc1f69fd2485d936f572b441850c6ef418c99
+reviewed_input_identity: 4a4044fdea03411ff1fd6ff558921ae2656d16b89cf607fc93e7eb9410a15af6
+parent_receipt_identity: parent-0599293728a92ac2ff2358ed4cdbe29771dec2fd730e7032
+provenance:
+  scope: 'Goal 798 final packet-selection refactor: preserve supplied/generated packet
+    verification, exact path-set binding and preview/live behavior after moving branch
+    logic to existing packet owner; only these remaining code changes.'
+  packet_identity: ee219d3ec7b117949b4b18f0b5ffc1f69fd2485d936f572b441850c6ef418c99
+  reviewed_input_identity: 4a4044fdea03411ff1fd6ff558921ae2656d16b89cf607fc93e7eb9410a15af6
+  parent_receipt_identity: parent-0599293728a92ac2ff2358ed4cdbe29771dec2fd730e7032
+  attempt_id: goal798-final-packet-extraction
+  attempt_scope: 'Goal 798 final packet-selection refactor: preserve supplied/generated
+    packet verification, exact path-set binding and preview/live behavior after moving
+    branch logic to existing packet owner; only these remaining code changes.'
+  attempt_packet_identity: ee219d3ec7b117949b4b18f0b5ffc1f69fd2485d936f572b441850c6ef418c99
+  attempt_parent_receipt_identity: parent-0599293728a92ac2ff2358ed4cdbe29771dec2fd730e7032
+  result_packet_identity: ee219d3ec7b117949b4b18f0b5ffc1f69fd2485d936f572b441850c6ef418c99
+  result_reviewed_input_identity: 4a4044fdea03411ff1fd6ff558921ae2656d16b89cf607fc93e7eb9410a15af6
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: fdd7bf6a87325bfc5ce712b20d2c3ccc6ae309dce92e204c4694758635da17db
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

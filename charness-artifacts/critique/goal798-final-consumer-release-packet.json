@@ -1,0 +1,232 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-06T01:19:52Z",
+  "prepared_for": "working tree",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/retro/lesson-selection-index.json\n- skills/public/critique/scripts/run_review.py\n- skills/public/critique/scripts/run_review_packet.py\n- skills/public/quality/SKILL.md\n- charness-artifacts/critique/goal798-final-packet-extraction-packet.json\n- charness-artifacts/critique/goal798-final-packet-extraction-packet.md\n- charness-artifacts/critique/workers/goal798-final-packet-extraction/worker-report.yaml\n- charness-artifacts/probe/2026-09-06-consumer-journeys/alias-candidate-acceptance.json\n- charness-artifacts/probe/2026-09-06-consumer-journeys/consumer-comparison.md\n- charness-artifacts/probe/2026-09-06-consumer-journeys/final-review-paths.txt\n- charness-artifacts/probe/2026-09-06-consumer-journeys/integration-full-refusal.json\n- charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_candidate_catalog.py\n- charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_candidate_tests.py\n- charness-artifacts/retro/2026-09-06-session-retro.md\n- charness-artifacts/retro/goal798-session-packet.json\n- charness-artifacts/retro/goal798-session-packet.md\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_packet.py, skills/public/quality/SKILL.md\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: skills/public/quality/SKILL.md, charness-artifacts/critique/goal798-final-packet-extraction-packet.md, charness-artifacts/probe/2026-09-06-consumer-journeys/consumer-comparison.md, charness-artifacts/retro/2026-09-06-session-retro.md, charness-artifacts/retro/goal798-session-packet.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_packet.py, skills/public/quality/SKILL.md\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_packet.py, skills/public/quality/SKILL.md\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_packet.py, skills/public/quality/SKILL.md\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/goal798-final-packet-extraction-packet.json, charness-artifacts/critique/goal798-final-packet-extraction-packet.md, charness-artifacts/critique/workers/goal798-final-packet-extraction/worker-report.yaml\n  verify: python3 scripts/review/validate_critique_artifacts.py --repo-root . --all\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-09-06-consumer-journeys/alias-candidate-acceptance.json, charness-artifacts/probe/2026-09-06-consumer-journeys/integration-full-refusal.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/2026-09-06-session-retro.md, charness-artifacts/retro/goal798-session-packet.json, charness-artifacts/retro/goal798-session-packet.md\n  derived matches: charness-artifacts/retro/lesson-selection-index.json\n  sync: python3 scripts/lessons/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/lessons/build_retro_lesson_selection_index.py --repo-root . --check\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_packet.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/lessons/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "44cd33060026fe4fe603632df1ef24677913fcda",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/create-skill/2026-09-06-impl-evidence-reuse.md",
+      "charness-artifacts/debug/2026-09-06-critique-preview-live-collision.md",
+      "charness-artifacts/debug/2026-09-06-release-advisory-meaning.md",
+      "charness-artifacts/debug/2026-09-06-staged-owner-universe.md",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/alias-baseline-acceptance.json",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/alias-candidate-acceptance.json",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/check_alias.py",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/check_cli.py",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/cli-baseline-acceptance.json",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/cli-candidate-acceptance.json",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/consumer-comparison.md",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias-baseline-spec.md",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias-candidate-spec.md",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_baseline_catalog.py",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_baseline_tests.py",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_candidate_catalog.py",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_candidate_tests.py",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli-baseline-readme.md",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli-candidate-readme.md",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_baseline_repoctl.py",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_baseline_tests.py",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_candidate_repoctl.py",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_candidate_tests.py",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/package-identities.json",
+      "charness-artifacts/probe/2026-09-06-consumer-journeys/protocol.md",
+      "docs/operating-contract.md",
+      "skills/public/impl/SKILL.md"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/create-skill/2026-09-06-impl-evidence-reuse.md",
+        "content_sha256": "4abf00bf5acb7d20ab9c26997709d20c49c05b9db41ebd0274889587a267c35e"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-09-06-critique-preview-live-collision.md",
+        "content_sha256": "53c4b3d221739d5e095649b972590e420a07f358e3198904840c7db35e8bc65a"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-09-06-release-advisory-meaning.md",
+        "content_sha256": "051c0a07292d109440a535704405a357afb74b4b64ce583fc6674da597a8a715"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-09-06-staged-owner-universe.md",
+        "content_sha256": "6e6cb06bc79260dffd2f01e85b1d5089d0ed63c9f8a3353e4687a384c4774fa8"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/alias-baseline-acceptance.json",
+        "content_sha256": "dedf197fdaaafa4f4884380bd1cc7f49c3dd014dd9568089558226dd398d88ef"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/alias-candidate-acceptance.json",
+        "content_sha256": "9f2e435e5e741b744dfdc357efb3d93bf1984ff2897b5af1ec933ecddbebd457"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/check_alias.py",
+        "content_sha256": "28c6dfd0deb83c437554e30094a342975f7ab413481ef40f3c82c1dd98b43d71"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/check_cli.py",
+        "content_sha256": "b28f93c2eabe3555d154add1e2780a81e56dd4b51f0703dac35af1e8dfdec073"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/cli-baseline-acceptance.json",
+        "content_sha256": "94c443770fa48817201864b91d2ee1326b00955576006d77d3ac5dd5cf1819d3"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/cli-candidate-acceptance.json",
+        "content_sha256": "aa20f850cb5a30d92cc8170d93b8a4b0f0ca0e5512644545300929f650cf0484"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/consumer-comparison.md",
+        "content_sha256": "00c49b284b08b54d256b77fa3e09c9ed3bc6035ed03051083f77d858e30527e0"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias-baseline-spec.md",
+        "content_sha256": "f9e10827dbb245d3ab7e4c9ec37b64d5e86637ccd0adc11442e487a16ec08512"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias-candidate-spec.md",
+        "content_sha256": "99c65a58787aeadc4ce149be2e742e4f401e19e5f933ac625a2f366e2873dcea"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_baseline_catalog.py",
+        "content_sha256": "d9f1687affbb89875bf7318b0b334d031847cf6d951366be5bd201807dee0497"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_baseline_tests.py",
+        "content_sha256": "a68698666e53f4a3e61fe86bc6ed3fb8e7f323be826ca94c24dcee6ca93e8686"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_candidate_catalog.py",
+        "content_sha256": "dbb91391a9bd18dea07bc34d7a5d5813746b2fbd62e8af34d4deef5e1d2437fd"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_candidate_tests.py",
+        "content_sha256": "fc529440e16406a513909011ce391c951bcf4bf3b2dfa901ef3c698deca8cd64"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli-baseline-readme.md",
+        "content_sha256": "82c2a3cfdf0c3d231f25ab7a57761b0541782228110fb6704964512c2350ced4"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli-candidate-readme.md",
+        "content_sha256": "77b759ec66cc747731d5fb6f5f979a76c937f441be259359445a4e75ce887564"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_baseline_repoctl.py",
+        "content_sha256": "efdd0db558128b17f9734a678b85d94747ad8a11d818bf9454244ceee3d309b9"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_baseline_tests.py",
+        "content_sha256": "3562a16c856df1d71eb00606d4afa426550440118350b01e9d5a873a50c921f8"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_candidate_repoctl.py",
+        "content_sha256": "137416b768f61722b5354820b455a2e6cee2579266a99f61baca2e96922f57e5"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_candidate_tests.py",
+        "content_sha256": "6cec3700a0296feb1a9adf0f145af08079c5d4a0732803509e5ff0486234ebb6"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/package-identities.json",
+        "content_sha256": "a49fcae5ed06ff42a1e506b1010783a5690dd27e2689e21f895a7339ab74d122"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/protocol.md",
+        "content_sha256": "7c6d8f9e8a01ebb0c5e46b8f4bf142243e0e6e9a541019f3a89cebe487395f25"
+      },
+      {
+        "path": "docs/operating-contract.md",
+        "content_sha256": "d3d864535dd611e9dadb852c182639448a1022920cd2d7fda180c1e88d6124f6"
+      },
+      {
+        "path": "skills/public/impl/SKILL.md",
+        "content_sha256": "03e55f3bdbe3f7161b409cff2fc97a0697a2ff1a9517ed64391dc11a1692c300"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/alias-candidate-acceptance.json",
+        "content_sha256": "9f2e435e5e741b744dfdc357efb3d93bf1984ff2897b5af1ec933ecddbebd457"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/consumer-comparison.md",
+        "content_sha256": "00c49b284b08b54d256b77fa3e09c9ed3bc6035ed03051083f77d858e30527e0"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_candidate_catalog.py",
+        "content_sha256": "dbb91391a9bd18dea07bc34d7a5d5813746b2fbd62e8af34d4deef5e1d2437fd"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_candidate_tests.py",
+        "content_sha256": "fc529440e16406a513909011ce391c951bcf4bf3b2dfa901ef3c698deca8cd64"
+      }
+    ],
+    "auto_excluded_paths": [],
+    "identity_sha256": "47140a7074272918d9ae4bfd052a6501a1fa9c5b964a3dfd1b9f60f8f7d97ea0"
+  }
+}

@@ -23,9 +23,9 @@ runtime cost, and failure value. Then recommend one of:
 - move an expensive confidence check to CI or an explicit release phase; or
 - leave an explicit non-claim when the capability is unavailable or out of scope.
 
-For proposal ordering, follow the
-[`proposal-flow.md`](./references/proposal-flow.md) reduction/reuse-first path
-before proposing a new rule. A healthy recommendation names what disappears and
+Do this reduction pass before proposing a new rule; the
+[`proposal-flow.md`](./references/proposal-flow.md) reference owns its ordering.
+A healthy recommendation names what disappears and
 why, what remains sufficient, and what risk the non-claim leaves. A green result
 from a duplicate gate is not evidence that the duplicate belongs in the
 repository.
