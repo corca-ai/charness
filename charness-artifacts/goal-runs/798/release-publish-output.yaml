@@ -1,0 +1,805 @@
+package_id: charness
+current_version: 8.4.4
+target_version: 8.4.4
+previous_version: 8.4.3
+remote: origin
+branch: main
+tag_name: v8.4.4
+title: v8.4.4
+mode: publish-current
+quality_command: ./scripts/run-quality.sh --release --read-only
+fresh_checkout_probes:
+- ./charness --help >/dev/null
+- ./charness goal run --help >/dev/null
+- python3 scripts/doctor.py --repo-root . --skip-release-probe >/dev/null
+commit_message: Release charness 8.4.4
+notes_mode: notes-file
+critique_artifact: charness-artifacts/critique/2026-09-06-goal798-release-8-4-4.md
+bump_rationale: 'Patch: repair existing verification guidance, advisory rendering,
+  review preview continuation, and staged-owner selection without adding or breaking
+  a public command, skill, or schema.'
+execute: true
+release_adapter_preflight:
+  status: not_required
+  reason: release adapter did not change in the release delta
+  commands: []
+close_issue_numbers: []
+close_issue_repo: corca-ai/charness
+critique_gate:
+  binding_checked: true
+  binding_tokens:
+  - 8-4-4
+  - 8.4.4
+resume_state:
+  head_is_release_commit: false
+  phase: prepared-claims-review
+  record_path: charness-artifacts/release/latest.md
+  marker_at_head: true
+  prepared:
+    commit: 00400d1cf4e3c3e7af529f9de44611e9a5756235
+    path: charness-artifacts/release/latest.md
+    sha256: d76b9f17ecb6b1143fd86643fda2790e858f89e48b1b0f95c7723b287e1ded9a
+  claims_evidence_commit: 1e918c655798fdd7b8ee65fb58b4fc10c4f895ef
+  prepared_parent_sha: c6026632e4f2177decedddf1828fa2f695369d7d
+  remote_is_prepared_base: true
+  head_sha: 1e918c655798fdd7b8ee65fb58b4fc10c4f895ef
+  head_message: 'docs: bind independent claims review for 8.4.4
+
+
+    Review the exact prepared release00400d1cf4e3 in a separate agent context. Preserve
+    four advisory evidence limitations, no demonstrated false assertion, and pending
+    publication/install states. Derive the complete release-delta partition with the
+    release owner.'
+  head_close_refs: []
+  tag_sha: ''
+  head_parent_is_tag: false
+  parent_sha: 00400d1cf4e3c3e7af529f9de44611e9a5756235
+  grandparent_sha: ''
+  parent_message: Release charness 8.4.4
+  head_grandparent_is_tag: false
+  remote_branch_sha: be60aba4b62bfbb9a8bc385227b9db9fa0581c23
+  tag_local: false
+  tag_remote: false
+  remote_tag_sha: ''
+  tag_points_at_head: false
+  tag_is_ancestor_head: false
+  release_exists: false
+  claims_review:
+    path: charness-artifacts/release-review/2026-09-06-v8.4.4-prepared-claims-review.json
+    sha256: eebe14f830aee4e4cb157ce08649433945afd27fc70c66363a3ec846b0756e65
+    prepared:
+      commit: 00400d1cf4e3c3e7af529f9de44611e9a5756235
+      path: charness-artifacts/release/latest.md
+      sha256: d76b9f17ecb6b1143fd86643fda2790e858f89e48b1b0f95c7723b287e1ded9a
+    reviewer_context: /root/preview_design claims-only reviewer
+    verdict: pass
+    observer_distinctness:
+      kind: separate-agent-context
+      signal: Parent delegated exact prepared commit00400d1cf4e3 to /root/preview_design
+        in a separate agent context; the reviewer independently delivered the new
+        claims narrative and four advisory evidence limits.
+      review_artifact: charness-artifacts/release-review/2026-09-06-v8.4.4-claims-review.md
+    review_scope:
+      blocking_paths:
+      - .claude-plugin/marketplace.json
+      - charness
+      - charness-artifacts/announcement/2026-09-06-consumer-improvement-draft.md
+      - charness-artifacts/create-skill/2026-09-06-impl-evidence-reuse.md
+      - charness-artifacts/critique/consumer-plan-framing-packet.json
+      - charness-artifacts/critique/consumer-plan-framing-packet.md
+      - charness-artifacts/critique/consumer-plan-proof-packet.json
+      - charness-artifacts/critique/consumer-plan-proof-packet.md
+      - charness-artifacts/critique/consumer-plan-whole-packet.json
+      - charness-artifacts/critique/consumer-plan-whole-packet.md
+      - charness-artifacts/critique/goal798-code-contracts-packet.json
+      - charness-artifacts/critique/goal798-code-contracts-packet.md
+      - charness-artifacts/critique/goal798-consumer-oracle-packet.json
+      - charness-artifacts/critique/goal798-consumer-oracle-packet.md
+      - charness-artifacts/critique/goal798-consumer-oracle-r2-packet.json
+      - charness-artifacts/critique/goal798-consumer-oracle-r2-packet.md
+      - charness-artifacts/critique/goal798-consumer-oracle-r3-packet.json
+      - charness-artifacts/critique/goal798-consumer-oracle-r3-packet.md
+      - charness-artifacts/critique/goal798-final-consumer-release-packet.json
+      - charness-artifacts/critique/goal798-final-consumer-release-packet.md
+      - charness-artifacts/critique/goal798-final-negative-proof-packet.json
+      - charness-artifacts/critique/goal798-final-negative-proof-packet.md
+      - charness-artifacts/critique/goal798-final-owner-review-packet.json
+      - charness-artifacts/critique/goal798-final-owner-review-packet.md
+      - charness-artifacts/critique/goal798-final-packet-extraction-packet.json
+      - charness-artifacts/critique/goal798-final-packet-extraction-packet.md
+      - charness-artifacts/critique/workers/consumer-plan-framing-live/worker-report.yaml
+      - charness-artifacts/critique/workers/consumer-plan-whole/worker-report.yaml
+      - charness-artifacts/critique/workers/goal798-code-contracts/worker-report.yaml
+      - charness-artifacts/critique/workers/goal798-consumer-oracle-r3/worker-report.yaml
+      - charness-artifacts/critique/workers/goal798-final-consumer-release/worker-report.yaml
+      - charness-artifacts/critique/workers/goal798-final-negative-proof/worker-report.yaml
+      - charness-artifacts/critique/workers/goal798-final-owner-review/worker-report.yaml
+      - charness-artifacts/critique/workers/goal798-final-packet-extraction/worker-report.yaml
+      - charness-artifacts/debug/2026-09-06-critique-preview-live-collision.md
+      - charness-artifacts/debug/2026-09-06-release-advisory-meaning.md
+      - charness-artifacts/debug/2026-09-06-staged-owner-universe.md
+      - charness-artifacts/debug/latest.md
+      - charness-artifacts/debug/seam-risk-index.json
+      - charness-artifacts/goal-runs/798/bodies/parent-bootstrap.md
+      - charness-artifacts/goal-runs/798/bodies/parent-progress-1.md
+      - charness-artifacts/goal-runs/798/bodies/parent-progress-2.md
+      - charness-artifacts/goal-runs/798/bodies/parent-progress-3.md
+      - charness-artifacts/goal-runs/798/consumer-lineage.json
+      - charness-artifacts/goal-runs/798/expected-children.json
+      - charness-artifacts/goal-runs/798/observations/798-add-cli-journey.started.json
+      - charness-artifacts/goal-runs/798/observations/798-add-cli-journey.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-add-contract-ownership.started.json
+      - charness-artifacts/goal-runs/798/observations/798-add-contract-ownership.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-add-evidence-meaning.started.json
+      - charness-artifacts/goal-runs/798/observations/798-add-evidence-meaning.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-add-friction-reduction.started.json
+      - charness-artifacts/goal-runs/798/observations/798-add-friction-reduction.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-add-publish-closeout.started.json
+      - charness-artifacts/goal-runs/798/observations/798-add-publish-closeout.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-add-spec-impl-journey.started.json
+      - charness-artifacts/goal-runs/798/observations/798-add-spec-impl-journey.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-bootstrap-metadata.started.json
+      - charness-artifacts/goal-runs/798/observations/798-bootstrap-metadata.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-consumer-frontier.started.json
+      - charness-artifacts/goal-runs/798/observations/798-consumer-frontier.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-create-cli-journey.started.json
+      - charness-artifacts/goal-runs/798/observations/798-create-cli-journey.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-create-contract-ownership.started.json
+      - charness-artifacts/goal-runs/798/observations/798-create-contract-ownership.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-create-evidence-meaning.started.json
+      - charness-artifacts/goal-runs/798/observations/798-create-evidence-meaning.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-create-friction-reduction.started.json
+      - charness-artifacts/goal-runs/798/observations/798-create-friction-reduction.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-create-publish-closeout.started.json
+      - charness-artifacts/goal-runs/798/observations/798-create-publish-closeout.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-create-spec-impl-journey.started.json
+      - charness-artifacts/goal-runs/798/observations/798-create-spec-impl-journey.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-install-progress.started.json
+      - charness-artifacts/goal-runs/798/observations/798-install-progress.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-publication-frontier.started.json
+      - charness-artifacts/goal-runs/798/observations/798-publication-frontier.terminal.json
+      - charness-artifacts/goal-runs/798/observations/798-verify-initial-graph.started.json
+      - charness-artifacts/goal-runs/798/observations/798-verify-initial-graph.terminal.json
+      - charness-artifacts/goal-runs/798/operations/add-cli-journey.json
+      - charness-artifacts/goal-runs/798/operations/add-contract-ownership.json
+      - charness-artifacts/goal-runs/798/operations/add-evidence-meaning.json
+      - charness-artifacts/goal-runs/798/operations/add-friction-reduction.json
+      - charness-artifacts/goal-runs/798/operations/add-publish-closeout.json
+      - charness-artifacts/goal-runs/798/operations/add-spec-impl-journey.json
+      - charness-artifacts/goal-runs/798/operations/bootstrap-metadata.json
+      - charness-artifacts/goal-runs/798/operations/consumer-frontier.json
+      - charness-artifacts/goal-runs/798/operations/create-cli-journey.json
+      - charness-artifacts/goal-runs/798/operations/create-contract-ownership.json
+      - charness-artifacts/goal-runs/798/operations/create-evidence-meaning.json
+      - charness-artifacts/goal-runs/798/operations/create-friction-reduction.json
+      - charness-artifacts/goal-runs/798/operations/create-publish-closeout.json
+      - charness-artifacts/goal-runs/798/operations/create-spec-impl-journey.json
+      - charness-artifacts/goal-runs/798/operations/install-progress.json
+      - charness-artifacts/goal-runs/798/operations/publication-frontier.json
+      - charness-artifacts/goal-runs/798/operations/verify-initial-graph.json
+      - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/cli-journey.md
+      - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/contract-ownership.md
+      - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/evidence-meaning.md
+      - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/friction-reduction.md
+      - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/publish-closeout.md
+      - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/spec-impl-journey.md
+      - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.binding.json
+      - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.interview.json
+      - charness-artifacts/metrics/rca-ledger.jsonl
+      - charness-artifacts/probe/2026-09-05-v8.4.3-release-observer.json
+      - charness-artifacts/probe/2026-09-06-advisory-render-comparison.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/alias-baseline-acceptance.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/alias-baseline-spec-task-receipt.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/alias-candidate-acceptance.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/baseline-cli-trace-audit.md
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/changed-line-refusal-r2.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/check_alias.py
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/check_cli.py
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/cli-baseline-acceptance.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/cli-baseline-task-receipt.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/cli-candidate-acceptance.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/consumer-comparison.md
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/consumer-output-errata.md
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/final-negative-branch-proof.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/final-review-paths.txt
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/freeze.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/integration-filename-refusal.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/integration-full-pass.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/integration-full-refusal.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/oracle-review-1.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/oracle-review-2.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias-baseline-spec.md
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias-candidate-spec.md
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_baseline_catalog.py
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_baseline_tests.py
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_candidate_catalog.py
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_candidate_tests.py
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli-baseline-readme.md
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli-candidate-readme.md
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_baseline_repoctl.py
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_baseline_tests.py
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_candidate_repoctl.py
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_candidate_tests.py
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/package-identities.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/protocol.md
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/reviewed-paths.txt
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/seed-disconfirmation-r3.json
+      - charness-artifacts/probe/2026-09-06-consumer-journeys/seed-disconfirmation.json
+      - charness-artifacts/probe/2026-09-06-consumer-plan-proof-findings.json
+      - charness-artifacts/probe/2026-09-06-goal798-code-review-paths.txt
+      - charness-artifacts/probe/2026-09-06-integration-seam-findings.json
+      - charness-artifacts/probe/2026-09-06-preview-recovery-comparison.json
+      - charness-artifacts/release-review/2026-09-05-v8.4.3-prepared-claims-review.json
+      - charness-artifacts/release/2026-09-06-v8.4.4-notes.md
+      - charness-artifacts/release/latest.md
+      - charness-artifacts/retro/goal798-session-packet.json
+      - charness-artifacts/retro/goal798-session-packet.md
+      - charness-artifacts/retro/lesson-selection-index.json
+      - docs/cli-reference.md
+      - docs/development.md
+      - docs/operating-contract.md
+      - docs/parallel-execution.md
+      - docs/validator-timing-layers.md
+      - evals/fixtures/consumer-journeys/create-cli-refresh/README.md
+      - evals/fixtures/consumer-journeys/create-cli-refresh/prompts/create-cli.md
+      - evals/fixtures/consumer-journeys/create-cli-refresh/prompts/impl.md
+      - evals/fixtures/consumer-journeys/create-cli-refresh/seed/AGENTS.md
+      - evals/fixtures/consumer-journeys/create-cli-refresh/seed/README.md
+      - evals/fixtures/consumer-journeys/create-cli-refresh/seed/scripts/check_cache.py
+      - evals/fixtures/consumer-journeys/create-cli-refresh/seed/scripts/refresh_cache.py
+      - evals/fixtures/consumer-journeys/create-cli-refresh/seed/tests/test_current_scripts.py
+      - evals/fixtures/consumer-journeys/spec-impl-alias/README.md
+      - evals/fixtures/consumer-journeys/spec-impl-alias/prompts/impl.md
+      - evals/fixtures/consumer-journeys/spec-impl-alias/prompts/spec.md
+      - evals/fixtures/consumer-journeys/spec-impl-alias/seed/AGENTS.md
+      - evals/fixtures/consumer-journeys/spec-impl-alias/seed/README.md
+      - evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/__init__.py
+      - evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/catalog.py
+      - evals/fixtures/consumer-journeys/spec-impl-alias/seed/tests/test_catalog.py
+      - packaging/charness.json
+      - scripts/hooks/check_staged_cheap_owners.py
+      - scripts/review/reviewed_input_identity.py
+      - skills/public/critique/references/prepare-packet.md
+      - skills/public/critique/scripts/run_review.py
+      - skills/public/critique/scripts/run_review_packet.py
+      - skills/public/impl/SKILL.md
+      - skills/public/quality/SKILL.md
+      - skills/public/quality/references/proposal-flow.md
+      - skills/public/release/scripts/publish_release_artifact_sections.py
+      - tests/quality_gates/test_claims_review_publication_boundary.py
+      - tests/quality_gates/test_claims_review_scope.py
+      - tests/quality_gates/test_semantic_review_command.py
+      - tests/quality_gates/test_staged_cheap_owners.py
+      - tests/quality_gates/test_standalone_imports.py
+      - tests/test_consumer_journey_fixtures.py
+      advisory_paths:
+      - charness-artifacts/critique/2026-09-06-goal798-release-8-4-4.md
+      - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-parent.md
+      - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.md
+      - charness-artifacts/release-review/2026-09-05-v8.4.3-claims-review.md
+      - charness-artifacts/retro/2026-09-06-session-retro.md
+    scope_basis:
+      base_ref: refs/tags/v8.4.3
+      changed_paths_sha256: 53816b96d25735cbbc1fe44078bf9b4d4cf3395c20396b97d40222071bdefaa4
+      changed_path_count: 196
+    advisory_findings:
+    - The release quality result is corroborated by local receipt `e83944f5c683da3eb28792df482a07a46dbd27c1ddd1d6f756467dc63ddb4c65`,
+      but that receipt is uncommitted and its index-tree binding is the pre-bump parent
+      source tree rather than the prepared release commit.
+    - Fresh-checkout passed is corroborated by parent-held initial and post-amend
+      helper output, but the prepared commit contains no raw per-probe receipt.
+    - Consumer acceptance outputs are committed, while strict duplicate counts and
+      some token/runtime provenance depend on normalized judgment records plus ephemeral
+      or parent-held producer traces rather than a complete committed set of raw task
+      receipts.
+    - The notes' phrase `Installed-package` refers to canonical exported plugin packages
+      used outside the consumer repos, not a post-publish installed-host roundtrip;
+      install refresh remains pending.
+  artifact_relpath: charness-artifacts/release/latest.md
+  backend:
+    id: gh
+    binary: gh
+    commands: null
+  branch: main
+  expected_release_url: https://github.com/corca-ai/charness/releases/tag/v8.4.4
+  fresh_checkout_payload:
+    status: passed
+    reason: declared fresh checkout probes executed
+    fresh_checkout_probes:
+    - ./charness --help >/dev/null
+    - ./charness goal run --help >/dev/null
+    - python3 scripts/doctor.py --repo-root . --skip-release-probe >/dev/null
+    probe_results:
+    - command: ./charness --help >/dev/null
+      returncode: 0
+      stdout_preview: ''
+      stderr_preview: ''
+    - command: ./charness goal run --help >/dev/null
+      returncode: 0
+      stdout_preview: ''
+      stderr_preview: ''
+    - command: python3 scripts/doctor.py --repo-root . --skip-release-probe >/dev/null
+      returncode: 0
+      stdout_preview: ''
+      stderr_preview: ''
+    blockers: []
+  tag_name: v8.4.4
+claims_review:
+  path: charness-artifacts/release-review/2026-09-06-v8.4.4-prepared-claims-review.json
+  verdict: pass
+  observer_distinctness:
+    kind: separate-agent-context
+    signal: Parent delegated exact prepared commit00400d1cf4e3 to /root/preview_design
+      in a separate agent context; the reviewer independently delivered the new claims
+      narrative and four advisory evidence limits.
+    review_artifact: charness-artifacts/release-review/2026-09-06-v8.4.4-claims-review.md
+  review_scope:
+    blocking_paths:
+    - .claude-plugin/marketplace.json
+    - charness
+    - charness-artifacts/announcement/2026-09-06-consumer-improvement-draft.md
+    - charness-artifacts/create-skill/2026-09-06-impl-evidence-reuse.md
+    - charness-artifacts/critique/consumer-plan-framing-packet.json
+    - charness-artifacts/critique/consumer-plan-framing-packet.md
+    - charness-artifacts/critique/consumer-plan-proof-packet.json
+    - charness-artifacts/critique/consumer-plan-proof-packet.md
+    - charness-artifacts/critique/consumer-plan-whole-packet.json
+    - charness-artifacts/critique/consumer-plan-whole-packet.md
+    - charness-artifacts/critique/goal798-code-contracts-packet.json
+    - charness-artifacts/critique/goal798-code-contracts-packet.md
+    - charness-artifacts/critique/goal798-consumer-oracle-packet.json
+    - charness-artifacts/critique/goal798-consumer-oracle-packet.md
+    - charness-artifacts/critique/goal798-consumer-oracle-r2-packet.json
+    - charness-artifacts/critique/goal798-consumer-oracle-r2-packet.md
+    - charness-artifacts/critique/goal798-consumer-oracle-r3-packet.json
+    - charness-artifacts/critique/goal798-consumer-oracle-r3-packet.md
+    - charness-artifacts/critique/goal798-final-consumer-release-packet.json
+    - charness-artifacts/critique/goal798-final-consumer-release-packet.md
+    - charness-artifacts/critique/goal798-final-negative-proof-packet.json
+    - charness-artifacts/critique/goal798-final-negative-proof-packet.md
+    - charness-artifacts/critique/goal798-final-owner-review-packet.json
+    - charness-artifacts/critique/goal798-final-owner-review-packet.md
+    - charness-artifacts/critique/goal798-final-packet-extraction-packet.json
+    - charness-artifacts/critique/goal798-final-packet-extraction-packet.md
+    - charness-artifacts/critique/workers/consumer-plan-framing-live/worker-report.yaml
+    - charness-artifacts/critique/workers/consumer-plan-whole/worker-report.yaml
+    - charness-artifacts/critique/workers/goal798-code-contracts/worker-report.yaml
+    - charness-artifacts/critique/workers/goal798-consumer-oracle-r3/worker-report.yaml
+    - charness-artifacts/critique/workers/goal798-final-consumer-release/worker-report.yaml
+    - charness-artifacts/critique/workers/goal798-final-negative-proof/worker-report.yaml
+    - charness-artifacts/critique/workers/goal798-final-owner-review/worker-report.yaml
+    - charness-artifacts/critique/workers/goal798-final-packet-extraction/worker-report.yaml
+    - charness-artifacts/debug/2026-09-06-critique-preview-live-collision.md
+    - charness-artifacts/debug/2026-09-06-release-advisory-meaning.md
+    - charness-artifacts/debug/2026-09-06-staged-owner-universe.md
+    - charness-artifacts/debug/latest.md
+    - charness-artifacts/debug/seam-risk-index.json
+    - charness-artifacts/goal-runs/798/bodies/parent-bootstrap.md
+    - charness-artifacts/goal-runs/798/bodies/parent-progress-1.md
+    - charness-artifacts/goal-runs/798/bodies/parent-progress-2.md
+    - charness-artifacts/goal-runs/798/bodies/parent-progress-3.md
+    - charness-artifacts/goal-runs/798/consumer-lineage.json
+    - charness-artifacts/goal-runs/798/expected-children.json
+    - charness-artifacts/goal-runs/798/observations/798-add-cli-journey.started.json
+    - charness-artifacts/goal-runs/798/observations/798-add-cli-journey.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-add-contract-ownership.started.json
+    - charness-artifacts/goal-runs/798/observations/798-add-contract-ownership.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-add-evidence-meaning.started.json
+    - charness-artifacts/goal-runs/798/observations/798-add-evidence-meaning.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-add-friction-reduction.started.json
+    - charness-artifacts/goal-runs/798/observations/798-add-friction-reduction.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-add-publish-closeout.started.json
+    - charness-artifacts/goal-runs/798/observations/798-add-publish-closeout.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-add-spec-impl-journey.started.json
+    - charness-artifacts/goal-runs/798/observations/798-add-spec-impl-journey.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-bootstrap-metadata.started.json
+    - charness-artifacts/goal-runs/798/observations/798-bootstrap-metadata.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-consumer-frontier.started.json
+    - charness-artifacts/goal-runs/798/observations/798-consumer-frontier.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-create-cli-journey.started.json
+    - charness-artifacts/goal-runs/798/observations/798-create-cli-journey.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-create-contract-ownership.started.json
+    - charness-artifacts/goal-runs/798/observations/798-create-contract-ownership.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-create-evidence-meaning.started.json
+    - charness-artifacts/goal-runs/798/observations/798-create-evidence-meaning.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-create-friction-reduction.started.json
+    - charness-artifacts/goal-runs/798/observations/798-create-friction-reduction.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-create-publish-closeout.started.json
+    - charness-artifacts/goal-runs/798/observations/798-create-publish-closeout.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-create-spec-impl-journey.started.json
+    - charness-artifacts/goal-runs/798/observations/798-create-spec-impl-journey.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-install-progress.started.json
+    - charness-artifacts/goal-runs/798/observations/798-install-progress.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-publication-frontier.started.json
+    - charness-artifacts/goal-runs/798/observations/798-publication-frontier.terminal.json
+    - charness-artifacts/goal-runs/798/observations/798-verify-initial-graph.started.json
+    - charness-artifacts/goal-runs/798/observations/798-verify-initial-graph.terminal.json
+    - charness-artifacts/goal-runs/798/operations/add-cli-journey.json
+    - charness-artifacts/goal-runs/798/operations/add-contract-ownership.json
+    - charness-artifacts/goal-runs/798/operations/add-evidence-meaning.json
+    - charness-artifacts/goal-runs/798/operations/add-friction-reduction.json
+    - charness-artifacts/goal-runs/798/operations/add-publish-closeout.json
+    - charness-artifacts/goal-runs/798/operations/add-spec-impl-journey.json
+    - charness-artifacts/goal-runs/798/operations/bootstrap-metadata.json
+    - charness-artifacts/goal-runs/798/operations/consumer-frontier.json
+    - charness-artifacts/goal-runs/798/operations/create-cli-journey.json
+    - charness-artifacts/goal-runs/798/operations/create-contract-ownership.json
+    - charness-artifacts/goal-runs/798/operations/create-evidence-meaning.json
+    - charness-artifacts/goal-runs/798/operations/create-friction-reduction.json
+    - charness-artifacts/goal-runs/798/operations/create-publish-closeout.json
+    - charness-artifacts/goal-runs/798/operations/create-spec-impl-journey.json
+    - charness-artifacts/goal-runs/798/operations/install-progress.json
+    - charness-artifacts/goal-runs/798/operations/publication-frontier.json
+    - charness-artifacts/goal-runs/798/operations/verify-initial-graph.json
+    - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/cli-journey.md
+    - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/contract-ownership.md
+    - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/evidence-meaning.md
+    - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/friction-reduction.md
+    - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/publish-closeout.md
+    - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/spec-impl-journey.md
+    - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.binding.json
+    - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.interview.json
+    - charness-artifacts/metrics/rca-ledger.jsonl
+    - charness-artifacts/probe/2026-09-05-v8.4.3-release-observer.json
+    - charness-artifacts/probe/2026-09-06-advisory-render-comparison.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/alias-baseline-acceptance.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/alias-baseline-spec-task-receipt.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/alias-candidate-acceptance.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/baseline-cli-trace-audit.md
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/changed-line-refusal-r2.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/check_alias.py
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/check_cli.py
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/cli-baseline-acceptance.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/cli-baseline-task-receipt.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/cli-candidate-acceptance.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/consumer-comparison.md
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/consumer-output-errata.md
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/final-negative-branch-proof.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/final-review-paths.txt
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/freeze.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/integration-filename-refusal.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/integration-full-pass.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/integration-full-refusal.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/oracle-review-1.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/oracle-review-2.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias-baseline-spec.md
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias-candidate-spec.md
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_baseline_catalog.py
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_baseline_tests.py
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_candidate_catalog.py
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias_candidate_tests.py
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli-baseline-readme.md
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli-candidate-readme.md
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_baseline_repoctl.py
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_baseline_tests.py
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_candidate_repoctl.py
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/cli_candidate_tests.py
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/package-identities.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/protocol.md
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/reviewed-paths.txt
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/seed-disconfirmation-r3.json
+    - charness-artifacts/probe/2026-09-06-consumer-journeys/seed-disconfirmation.json
+    - charness-artifacts/probe/2026-09-06-consumer-plan-proof-findings.json
+    - charness-artifacts/probe/2026-09-06-goal798-code-review-paths.txt
+    - charness-artifacts/probe/2026-09-06-integration-seam-findings.json
+    - charness-artifacts/probe/2026-09-06-preview-recovery-comparison.json
+    - charness-artifacts/release-review/2026-09-05-v8.4.3-prepared-claims-review.json
+    - charness-artifacts/release/2026-09-06-v8.4.4-notes.md
+    - charness-artifacts/release/latest.md
+    - charness-artifacts/retro/goal798-session-packet.json
+    - charness-artifacts/retro/goal798-session-packet.md
+    - charness-artifacts/retro/lesson-selection-index.json
+    - docs/cli-reference.md
+    - docs/development.md
+    - docs/operating-contract.md
+    - docs/parallel-execution.md
+    - docs/validator-timing-layers.md
+    - evals/fixtures/consumer-journeys/create-cli-refresh/README.md
+    - evals/fixtures/consumer-journeys/create-cli-refresh/prompts/create-cli.md
+    - evals/fixtures/consumer-journeys/create-cli-refresh/prompts/impl.md
+    - evals/fixtures/consumer-journeys/create-cli-refresh/seed/AGENTS.md
+    - evals/fixtures/consumer-journeys/create-cli-refresh/seed/README.md
+    - evals/fixtures/consumer-journeys/create-cli-refresh/seed/scripts/check_cache.py
+    - evals/fixtures/consumer-journeys/create-cli-refresh/seed/scripts/refresh_cache.py
+    - evals/fixtures/consumer-journeys/create-cli-refresh/seed/tests/test_current_scripts.py
+    - evals/fixtures/consumer-journeys/spec-impl-alias/README.md
+    - evals/fixtures/consumer-journeys/spec-impl-alias/prompts/impl.md
+    - evals/fixtures/consumer-journeys/spec-impl-alias/prompts/spec.md
+    - evals/fixtures/consumer-journeys/spec-impl-alias/seed/AGENTS.md
+    - evals/fixtures/consumer-journeys/spec-impl-alias/seed/README.md
+    - evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/__init__.py
+    - evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/catalog.py
+    - evals/fixtures/consumer-journeys/spec-impl-alias/seed/tests/test_catalog.py
+    - packaging/charness.json
+    - scripts/hooks/check_staged_cheap_owners.py
+    - scripts/review/reviewed_input_identity.py
+    - skills/public/critique/references/prepare-packet.md
+    - skills/public/critique/scripts/run_review.py
+    - skills/public/critique/scripts/run_review_packet.py
+    - skills/public/impl/SKILL.md
+    - skills/public/quality/SKILL.md
+    - skills/public/quality/references/proposal-flow.md
+    - skills/public/release/scripts/publish_release_artifact_sections.py
+    - tests/quality_gates/test_claims_review_publication_boundary.py
+    - tests/quality_gates/test_claims_review_scope.py
+    - tests/quality_gates/test_semantic_review_command.py
+    - tests/quality_gates/test_staged_cheap_owners.py
+    - tests/quality_gates/test_standalone_imports.py
+    - tests/test_consumer_journey_fixtures.py
+    advisory_paths:
+    - charness-artifacts/critique/2026-09-06-goal798-release-8-4-4.md
+    - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-parent.md
+    - charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.md
+    - charness-artifacts/release-review/2026-09-05-v8.4.3-claims-review.md
+    - charness-artifacts/retro/2026-09-06-session-retro.md
+  advisory_findings:
+  - The release quality result is corroborated by local receipt `e83944f5c683da3eb28792df482a07a46dbd27c1ddd1d6f756467dc63ddb4c65`,
+    but that receipt is uncommitted and its index-tree binding is the pre-bump parent
+    source tree rather than the prepared release commit.
+  - Fresh-checkout passed is corroborated by parent-held initial and post-amend helper
+    output, but the prepared commit contains no raw per-probe receipt.
+  - Consumer acceptance outputs are committed, while strict duplicate counts and some
+    token/runtime provenance depend on normalized judgment records plus ephemeral
+    or parent-held producer traces rather than a complete committed set of raw task
+    receipts.
+  - The notes' phrase `Installed-package` refers to canonical exported plugin packages
+    used outside the consumer repos, not a post-publish installed-host roundtrip;
+    install refresh remains pending.
+issue_closeout_preflight:
+  status: not_requested
+  issues: []
+issue_closeout_behavioral_verdict:
+  applies: false
+  ok: true
+  missing: []
+issue_closeout_probe_record:
+  applies: false
+  ok: true
+  missing: []
+version_drift_check:
+  status: passed
+  stage: post-claims-review, pre-push
+  checked_version: 8.4.4
+  versioned_surfaces:
+  - claude_marketplace_version
+  - claude_plugin
+  - codex_plugin
+  - packaging_manifest
+  presence_surfaces:
+  - codex_marketplace_source_path
+  drift: []
+  absence_corroboration: not-applicable
+release_runtime:
+- label: requested_review_gate
+  elapsed_seconds: 0.007
+- label: cli_skill_surface_gate
+  elapsed_seconds: 2.287
+- label: quality_command
+  elapsed_seconds: 383.362
+- label: fresh_checkout_probes_resume
+  elapsed_seconds: 4.407
+- label: push_create_verify_release
+  elapsed_seconds: 4.696
+- label: distinct_channel_verification
+  elapsed_seconds: 0.593
+- label: published_notes_audit
+  elapsed_seconds: 0.409
+- label: post_publish_install_refresh
+  elapsed_seconds: 9.375
+- label: post_publish_installed_readback
+  elapsed_seconds: 1.203
+- label: release_observer
+  elapsed_seconds: 0.002
+- label: issue_closeout
+  elapsed_seconds: 0.0
+requested_review_gate:
+  status: ok
+  artifact_path: charness-artifacts/release/latest.md
+  artifact_exists: true
+  unavailable_hits: []
+  waiver_hits: []
+  requested_review_commands: []
+  requested_review_policy: advisory-only
+  configuration_status: advisory_only
+  command_results: []
+  blockers: []
+  warnings: []
+quality_status: exited 0 in 383.4s at `post-claims-review, pre-push`, measured by
+  this helper (`./scripts/run-quality.sh --release --read-only`)
+fresh_checkout_probe_status: passed
+expected_release_url: https://github.com/corca-ai/charness/releases/tag/v8.4.4
+commit_sha: 00400d1cf4e3c3e7af529f9de44611e9a5756235
+artifact_path: charness-artifacts/release/latest.md
+public_release_verification: verified
+release_url: https://github.com/corca-ai/charness/releases/tag/v8.4.4
+distinct_channel_verification:
+  channel: https-fetch
+  observer: unauthenticated-http (credential-free; same host/process as publisher)
+  url: https://github.com/corca-ai/charness/releases/tag/v8.4.4
+  http_status: 200
+  evidence_len: 209040
+  fetched_url: https://github.com/corca-ai/charness/releases/tag/v8.4.4
+  status: confirmed
+  expected_content: v8.4.4
+  establishes: public-page-reachable-and-names-the-tag
+  does_not_establish: that a GitHub RELEASE exists for this tag — the same page returns
+    200 for a pushed tag with no release, and the tag is pushed before the release
+    is created
+published_notes_audit:
+  scope: published-release-body
+  tag: v8.4.4
+  status: clean
+  advisories: []
+  body_len: 3644
+install_refresh:
+  status: refreshed
+  command: charness update
+  returncode: 0
+  elapsed_seconds: 9.375
+  stdout_tail: "de to load or\n    refresh charness.\ngrok_host_guidance:\n  status:\
+    \ installed\n  manual_action_required: false\n  message: Grok plugin tree is present\
+    \ at `~/.grok/plugins/charness`. List `charness`\n    in `[plugins].enabled` (do\
+    \ not add a marketplace), then restart Grok Build.\nhost_next_steps:\n  codex:\
+    \ Codex host install markers are present. Start a new Codex session to load\n\
+    \    charness.\n  claude: Claude host install markers are present. Restart Claude\
+    \ Code to load or\n    refresh charness.\n  grok: Grok plugin tree is present\
+    \ at `~/.grok/plugins/charness`. List `charness`\n    in `[plugins].enabled` (do\
+    \ not add a marketplace), then restart Grok Build.\nrepo_onboarding:\n  status:\
+    \ skipped\n  manual_action_required: false\n  message: null\n  reason: skipped\
+    \ during update unless --target-repo-root is provided\nnext_action:\n  kind: restart\n\
+    \  host: codex\n  status: installed\n  manual_action_required: false\n  message:\
+    \ Codex host install markers are present. Start a new Codex session to load\n\
+    \    charness.\n  source: codex_host_guidance\nsession_staleness:\n  message:\
+    \ Updated plugin caches were rotated. Active Codex/Claude sessions may have\n\
+    \    stale absolute skill paths injected into their system prompt. Restart those\
+    \ sessions,\n    or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/scripts/adapters/capability_catalog.py\n\
+    \    resolve-skill-path --repo-root <repo> --skill-id <id> --reported-path <stale>\n\
+    \    [--marketplace <m> --plugin <p>]`.\n  affected_count: 1"
+  stderr_tail: 'STEP: refreshing source checkout
+
+    STEP: source checkout code differs from the running CLI; re-executing the checkout''s
+    CLI so the run matches its scripts
+
+    STEP: refreshing source checkout
+
+    STEP: refreshing install surface
+
+    STEP: refreshing Codex host cache
+
+    DONE: update complete'
+installed_readback:
+  status: observed
+  install_refresh:
+    status: refreshed
+    command: charness update
+    returncode: 0
+    elapsed_seconds: 9.375
+    stdout_tail: "de to load or\n    refresh charness.\ngrok_host_guidance:\n  status:\
+      \ installed\n  manual_action_required: false\n  message: Grok plugin tree is\
+      \ present at `~/.grok/plugins/charness`. List `charness`\n    in `[plugins].enabled`\
+      \ (do not add a marketplace), then restart Grok Build.\nhost_next_steps:\n \
+      \ codex: Codex host install markers are present. Start a new Codex session to\
+      \ load\n    charness.\n  claude: Claude host install markers are present. Restart\
+      \ Claude Code to load or\n    refresh charness.\n  grok: Grok plugin tree is\
+      \ present at `~/.grok/plugins/charness`. List `charness`\n    in `[plugins].enabled`\
+      \ (do not add a marketplace), then restart Grok Build.\nrepo_onboarding:\n \
+      \ status: skipped\n  manual_action_required: false\n  message: null\n  reason:\
+      \ skipped during update unless --target-repo-root is provided\nnext_action:\n\
+      \  kind: restart\n  host: codex\n  status: installed\n  manual_action_required:\
+      \ false\n  message: Codex host install markers are present. Start a new Codex\
+      \ session to load\n    charness.\n  source: codex_host_guidance\nsession_staleness:\n\
+      \  message: Updated plugin caches were rotated. Active Codex/Claude sessions\
+      \ may have\n    stale absolute skill paths injected into their system prompt.\
+      \ Restart those sessions,\n    or re-resolve a stale charness skill path with\
+      \ `python3 /home/hwidong/.agents/src/charness/scripts/adapters/capability_catalog.py\n\
+      \    resolve-skill-path --repo-root <repo> --skill-id <id> --reported-path <stale>\n\
+      \    [--marketplace <m> --plugin <p>]`.\n  affected_count: 1"
+    stderr_tail: 'STEP: refreshing source checkout
+
+      STEP: source checkout code differs from the running CLI; re-executing the checkout''s
+      CLI so the run matches its scripts
+
+      STEP: refreshing source checkout
+
+      STEP: refreshing install surface
+
+      STEP: refreshing Codex host cache
+
+      DONE: update complete'
+  version:
+    status: confirmed
+    command: charness version
+    returncode: 0
+    value: 'version: 8.4.4'
+    expected_version: 8.4.4
+    version_match: matched
+    reported_version: 8.4.4
+  doctor:
+    status: confirmed
+    command: charness doctor
+    returncode: 0
+    value: 'source: codex_host_guidance'
+release_observer:
+  status: observed
+  path: charness-artifacts/probe/2026-09-06-v8.4.4-release-observer.json
+  record:
+    schema_version: charness.release_observer.v1
+    observed_at: '2026-09-06T01:54:09.690413+00:00'
+    target:
+      version: 8.4.4
+      tag: v8.4.4
+      commit: 00400d1cf4e3c3e7af529f9de44611e9a5756235
+      release_url: https://github.com/corca-ai/charness/releases/tag/v8.4.4
+    distinct_channel_verification:
+      channel: https-fetch
+      observer: unauthenticated-http (credential-free; same host/process as publisher)
+      url: https://github.com/corca-ai/charness/releases/tag/v8.4.4
+      http_status: 200
+      evidence_len: 209040
+      fetched_url: https://github.com/corca-ai/charness/releases/tag/v8.4.4
+      status: confirmed
+      expected_content: v8.4.4
+      establishes: public-page-reachable-and-names-the-tag
+      does_not_establish: that a GitHub RELEASE exists for this tag — the same page
+        returns 200 for a pushed tag with no release, and the tag is pushed before
+        the release is created
+    installed_readback:
+      status: observed
+      install_refresh:
+        status: refreshed
+        command: charness update
+        returncode: 0
+        elapsed_seconds: 9.375
+        stdout_tail: "de to load or\n    refresh charness.\ngrok_host_guidance:\n\
+          \  status: installed\n  manual_action_required: false\n  message: Grok plugin\
+          \ tree is present at `~/.grok/plugins/charness`. List `charness`\n    in\
+          \ `[plugins].enabled` (do not add a marketplace), then restart Grok Build.\n\
+          host_next_steps:\n  codex: Codex host install markers are present. Start\
+          \ a new Codex session to load\n    charness.\n  claude: Claude host install\
+          \ markers are present. Restart Claude Code to load or\n    refresh charness.\n\
+          \  grok: Grok plugin tree is present at `~/.grok/plugins/charness`. List\
+          \ `charness`\n    in `[plugins].enabled` (do not add a marketplace), then\
+          \ restart Grok Build.\nrepo_onboarding:\n  status: skipped\n  manual_action_required:\
+          \ false\n  message: null\n  reason: skipped during update unless --target-repo-root\
+          \ is provided\nnext_action:\n  kind: restart\n  host: codex\n  status: installed\n\
+          \  manual_action_required: false\n  message: Codex host install markers\
+          \ are present. Start a new Codex session to load\n    charness.\n  source:\
+          \ codex_host_guidance\nsession_staleness:\n  message: Updated plugin caches\
+          \ were rotated. Active Codex/Claude sessions may have\n    stale absolute\
+          \ skill paths injected into their system prompt. Restart those sessions,\n\
+          \    or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/scripts/adapters/capability_catalog.py\n\
+          \    resolve-skill-path --repo-root <repo> --skill-id <id> --reported-path\
+          \ <stale>\n    [--marketplace <m> --plugin <p>]`.\n  affected_count: 1"
+        stderr_tail: 'STEP: refreshing source checkout
+
+          STEP: source checkout code differs from the running CLI; re-executing the
+          checkout''s CLI so the run matches its scripts
+
+          STEP: refreshing source checkout
+
+          STEP: refreshing install surface
+
+          STEP: refreshing Codex host cache
+
+          DONE: update complete'
+      version:
+        status: confirmed
+        command: charness version
+        returncode: 0
+        value: 'version: 8.4.4'
+        expected_version: 8.4.4
+        version_match: matched
+        reported_version: 8.4.4
+      doctor:
+        status: confirmed
+        command: charness doctor
+        returncode: 0
+        value: 'source: codex_host_guidance'
+    non_claims:
+    - This record preserves observations; it is not a second release-success verdict.
+    - A digest, command exit code, or recorded status is not terminal proof of operator-facing
+      behavior.
+issue_closeout:
+  status: not_requested
+  issues: []
+post_publish_artifact_commit_sha: 306b7d152107597562a87f6af01a01aca76bd05a

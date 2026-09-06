@@ -1,0 +1,68 @@
+{
+  "kind": "goal798.export-equivalence/v1",
+  "candidate_source": "878ff81e557b2d5eb4fcfa9b9eea273f2d7a0f91",
+  "status": "equivalent-with-explicit-delta",
+  "only_candidate": [],
+  "only_release": [],
+  "different": {
+    ".claude-plugin/plugin.json": {
+      "candidate_sha256": "a717c22b8abdda0252b680973eb9532df5460bfe7786e7622102dc201fd4577b",
+      "release_sha256": "6662c22626d14eb46a06aebb1ee1ead5b8a77b09308782802136b9579631c1bc"
+    },
+    ".codex-plugin/plugin.json": {
+      "candidate_sha256": "03eff60fa3638a8f583776fc5d3d060c06c7b10260e656a8b035cf9e033f1c4c",
+      "release_sha256": "7c82580305471b9f58daf7088fbddbdaee65f53744e39ed6366dd27261f80b7f"
+    },
+    "scripts/hooks/check_staged_cheap_owners.py": {
+      "candidate_sha256": "ffe9883db7be1ff6b857f0c4aeb0295d14580f3e5a148e0549bb41ff6728c5ed",
+      "release_sha256": "b99815344ac535e52e7bb33eaf85b29eb6145ae81e723707b3fe39b275916b3d"
+    },
+    "skills/critique/scripts/run_review.py": {
+      "candidate_sha256": "a98d14db208e31d63686dfca838871f983f5f422e44be90e368db11d5e746508",
+      "release_sha256": "0131d9ff6ee3198773a74271da13e8cde93002b9ee56244502f9cf2fd32713ad"
+    },
+    "skills/critique/scripts/run_review_packet.py": {
+      "candidate_sha256": "4d19207b1ed9de6e245cbf33eaef5de63a0d829f33ac7c5f2d2f538463e34160",
+      "release_sha256": "ae873d91a88bd6e4a4e6a86f70c2bf91db523ce0a1a666ef22cb0e79e750b667"
+    },
+    "skills/quality/SKILL.md": {
+      "candidate_sha256": "6cc01733aaebe30776f1a20e32e8ed1ee52f0e9a910fd338d014b82ac0389e5f",
+      "release_sha256": "a346e91c97574fec4596a84cf88823e88c6c47788e64ea847c36a17d99e945e9"
+    }
+  },
+  "manifests": {
+    ".claude-plugin/plugin.json": {
+      "versions": [
+        "8.4.3",
+        "8.4.4"
+      ],
+      "equal_except_version": true
+    },
+    ".codex-plugin/plugin.json": {
+      "versions": [
+        "8.4.3",
+        "8.4.4"
+      ],
+      "equal_except_version": true
+    }
+  },
+  "unchanged_file_count": 1106,
+  "unchanged_closure_sha256": "7a36ff61c3c06ccaed69bc177411c0f56c5c2123a1d6165be679e92337b46422",
+  "actual_consumption_basis": "Independent trace audit in consumer-comparison.md plus journey_design follow-up: quality content was not read; hook appeared only in impl inventory stdout, not read/executed; critique scripts were not consumed. All remaining1106 files are byte-identical, including actual spec/impl/create-cli and shared reference closure. Manifests differ only in version.",
+  "non_claims": [
+    "File-content closure excludes empty directories.",
+    "No whole-package byte equality, new-host-session behavior, generalized speedup, or aggregate repeated-work reduction.",
+    "Published export recomputation used HEAD306b7d; all four post-tag tracked changes are evidence-only and outside the packaging manifest. Untracked new closeout/review artifacts likewise are not packaging inputs."
+  ],
+  "release_tag": "v8.4.4",
+  "release_commit": "00400d1cf4e3c3e7af529f9de44611e9a5756235",
+  "export_head": "306b7d152107597562a87f6af01a01aca76bd05a",
+  "export_command": "python3 scripts/plugin_export/export_plugin.py --repo-root . --host codex --output-root /tmp/charness-goal798.qWglDo/released-export",
+  "post_publish_recomputed": true,
+  "post_tag_changes": [
+    "charness-artifacts/probe/2026-09-06-v8.4.4-release-observer.json",
+    "charness-artifacts/release-review/2026-09-06-v8.4.4-claims-review.md",
+    "charness-artifacts/release-review/2026-09-06-v8.4.4-prepared-claims-review.json",
+    "charness-artifacts/release/latest.md"
+  ]
+}

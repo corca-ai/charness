@@ -1,0 +1,62 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: issue-resolution corca-ai/charness#803 recurrence and close-ledger boundary
+attempt_id: goal798-issue-803-close
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 0a30b553b80a1b9f04f67e4e830ad8f2a512659b71d3e60f94f866f2e4c31de0
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-issue-803-close/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-issue-803-close/delivery.json
+producer_run_id: run-goal798-issue-803-close
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-issue-803-close/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-issue-803-close/receipt.json
+  producer_run_id: run-goal798-issue-803-close
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: d313fed3e0ba86631cfedebc1fff82a55009f2d03e0d1cd0445927a4c10595ee
+receipt_output_sha256: d313fed3e0ba86631cfedebc1fff82a55009f2d03e0d1cd0445927a4c10595ee
+packet_identity: e264dd3a8a0a16b2240791649d5ed0e7cb2532a4178fe043ad82ce76f72c501f
+reviewed_input_identity: 7318c86f58aabd31c18fa7965ede6d57f80a5dc232e41bd0e136e284798ed013
+parent_receipt_identity: parent-b324fa4d39e56d4517c22079936edd2bec40c8cd41bec502
+provenance:
+  scope: issue-resolution corca-ai/charness#803 recurrence and close-ledger boundary
+  packet_identity: e264dd3a8a0a16b2240791649d5ed0e7cb2532a4178fe043ad82ce76f72c501f
+  reviewed_input_identity: 7318c86f58aabd31c18fa7965ede6d57f80a5dc232e41bd0e136e284798ed013
+  parent_receipt_identity: parent-b324fa4d39e56d4517c22079936edd2bec40c8cd41bec502
+  attempt_id: goal798-issue-803-close
+  attempt_scope: issue-resolution corca-ai/charness#803 recurrence and close-ledger
+    boundary
+  attempt_packet_identity: e264dd3a8a0a16b2240791649d5ed0e7cb2532a4178fe043ad82ce76f72c501f
+  attempt_parent_receipt_identity: parent-b324fa4d39e56d4517c22079936edd2bec40c8cd41bec502
+  result_packet_identity: e264dd3a8a0a16b2240791649d5ed0e7cb2532a4178fe043ad82ce76f72c501f
+  result_reviewed_input_identity: 7318c86f58aabd31c18fa7965ede6d57f80a5dc232e41bd0e136e284798ed013
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 0a30b553b80a1b9f04f67e4e830ad8f2a512659b71d3e60f94f866f2e4c31de0
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes
