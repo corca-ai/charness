@@ -1,0 +1,13 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 805,
+  "operation": "create-or-reuse-child",
+  "attempt_id": "805-create-publish-closeout",
+  "observation_dir": "charness-artifacts/goal-runs/805/observations",
+  "target": {
+    "work_item_key": "publish-closeout",
+    "title": "Verify and publish the long-delegation improvement composition"
+  },
+  "body_file": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/publish-closeout.md"
+}

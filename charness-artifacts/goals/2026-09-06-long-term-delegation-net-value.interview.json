@@ -6,7 +6,9 @@
       {"id": "end-to-end", "summary": "Include push, release, install and model-tier consumer experiments", "tradeoff": "Tests shipped usefulness with bounded external writes and evaluator spend"},
       {"id": "local-only", "summary": "Implementation and local checks only", "tradeoff": "Lower external scope but publication and product comparison remain unproven"}
     ],
-    "recommendation": {"option": "end-to-end", "reason": "The operator wants another complete long-delegation improvement cycle"}
+    "recommendation": {"option": "end-to-end", "reason": "The operator wants another complete long-delegation improvement cycle"},
+    "answer": {"option": "end-to-end", "reason": "On 2026-09-06 the operator replied 응 그렇게 해줘 to the final six-item briefing and the explicit request to delegate finalization and execution including push, release, installation refresh and model comparison."},
+    "rejected_alternatives": [{"option": "local-only", "reason": "The operator selected the complete cycle; local-only would leave shipped composition and consumer comparison unproven."}]
   }],
-  "remaining_consequential_decisions": ["execution-boundary"]
+  "remaining_consequential_decisions": []
 }

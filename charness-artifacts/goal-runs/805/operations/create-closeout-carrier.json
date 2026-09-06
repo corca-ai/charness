@@ -1,0 +1,13 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 805,
+  "operation": "create-or-reuse-child",
+  "attempt_id": "805-create-closeout-carrier",
+  "observation_dir": "charness-artifacts/goal-runs/805/observations",
+  "target": {
+    "work_item_key": "closeout-carrier",
+    "title": "Multi-issue closeout forces repeated reviews and classification partitions"
+  },
+  "body_file": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/closeout-carrier.md"
+}

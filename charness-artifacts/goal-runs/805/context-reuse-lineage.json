@@ -1,0 +1,25 @@
+{
+  "kind": "charness.goal-lineage",
+  "schema_version": 1,
+  "disposition": "goal-bound",
+  "draft": {
+    "path": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md",
+    "sha256": "710ff43f4176d0b67673ef0542f87d625709dbfaa7ba07b37a508329e0f5bedb"
+  },
+  "binding": {
+    "path": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.binding.json",
+    "sha256": "384f8d92cb5be679f32159e17b0797bf178ca2e43efee7dc05b8a9e7d20793fe"
+  },
+  "goal_run": {
+    "repo": "corca-ai/charness",
+    "number": 805,
+    "url": "https://github.com/corca-ai/charness/issues/805"
+  },
+  "work_item": {
+    "key": "context-reuse",
+    "repo": "corca-ai/charness",
+    "number": 808,
+    "url": "https://github.com/corca-ai/charness/issues/808"
+  },
+  "reason": null
+}

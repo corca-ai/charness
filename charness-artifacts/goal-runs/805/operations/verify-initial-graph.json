@@ -1,0 +1,9 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 805,
+  "operation": "list-children",
+  "attempt_id": "805-verify-initial-graph",
+  "observation_dir": "charness-artifacts/goal-runs/805/observations",
+  "expected_child_file": "charness-artifacts/goal-runs/805/expected-children.json"
+}

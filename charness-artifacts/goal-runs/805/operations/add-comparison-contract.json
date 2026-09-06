@@ -1,0 +1,12 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 805,
+  "operation": "add-child",
+  "attempt_id": "805-add-comparison-contract",
+  "observation_dir": "charness-artifacts/goal-runs/805/observations",
+  "target": {
+    "work_item_key": "comparison-contract",
+    "sub_issue_number": 809
+  }
+}

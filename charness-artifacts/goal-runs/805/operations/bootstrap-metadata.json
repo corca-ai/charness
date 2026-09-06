@@ -1,0 +1,15 @@
+{
+  "kind": "charness.goal-run-operation/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 805,
+  "operation": "update-body",
+  "attempt_id": "805-bootstrap-metadata",
+  "observation_dir": "charness-artifacts/goal-runs/805/observations",
+  "target": {
+    "number": 805
+  },
+  "body_file": "charness-artifacts/goal-runs/805/bodies/parent-bootstrap.md",
+  "binding_path": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.binding.json",
+  "draft_sha256": "710ff43f4176d0b67673ef0542f87d625709dbfaa7ba07b37a508329e0f5bedb",
+  "binding_sha256": "384f8d92cb5be679f32159e17b0797bf178ca2e43efee7dc05b8a9e7d20793fe"
+}
