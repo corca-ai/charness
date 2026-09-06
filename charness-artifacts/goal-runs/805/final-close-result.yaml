@@ -1,0 +1,261 @@
+ok: true
+repo: corca-ai/charness
+number: 805
+comment_argv:
+- gh
+- issue
+- comment
+- --repo
+- corca-ai/charness
+- '805'
+- --body-file
+- /home/hwidong/codes/charness/charness-artifacts/goal-runs/805/closeouts/issue-805-final.md
+close_argv:
+- gh
+- issue
+- close
+- --repo
+- corca-ai/charness
+- '805'
+- --reason
+- completed
+view_argv:
+- gh
+- issue
+- view
+- --repo
+- corca-ai/charness
+- '805'
+- --json
+- number,state,url
+preflight_state:
+  author:
+    id: MDQ6VXNlcjE1ODk0MzA=
+    is_bot: false
+    login: spilist
+    name: Hwidong Bae
+  body: "# Goal 805: Reduce long-term delegation overhead and measure consumer net\
+    \ value\n\n## Problem and outcome\n\nGoal #798 exposed repeated closeout packaging,\
+    \ classification partitions and release verification; prior experiments did not\
+    \ compare plugin use against no plugin at both model tiers. Preserve intent, recovery\
+    \ and independent boundary proof while removing demonstrated redundant operations.\
+    \ Measure actual benefit and losses honestly.\n\n## Approved contract and execution\
+    \ order\n\nThe operator approved the six-item briefing and delegated finalization/execution\
+    \ including push, release, installation refresh and model comparison on 2026-09-06.\
+    \ Frozen planning: `charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md`.\n\
+    \n1. comparison-contract: frozen neutral four-arm cooperative-resume protocol.\n\
+    2. closeout-carrier: current multi-issue evidence and mixed classification.\n\
+    3. release-reuse: remove duplicate preparation-time subject execution; final-state\
+    \ verification remains current, without cross-commit cache claims.\n4. context-reuse:\
+    \ known-context reuse with missing/changed/uncertain routes preserved.\n5. consumer-comparison:\
+    \ high/low candidate versus no plugin, retained initial results.\n6. publish-closeout:\
+    \ integrate, publish once, observe installed behavior, close graph and retrospect.\n\
+    \n## Readiness and completion\n\nLocal readiness requires integrated changes,\
+    \ focused scenario/test proof and applicable independent review. Context-reuse\
+    \ may then start its downstream pilot; pilot and final publication remain required\
+    \ for final acceptance. Children remain open until their actual acceptance and\
+    \ published carrier are observed. Parent owns the sole execution cursor. No AGENTS.md/CLAUDE.md\
+    \ changes, #764 expansion, external repository creation or organization-wide writes.\
+    \ No milestone exists.\n\n## Current frontier\n\nOne integrated [v8.5.0 release](https://github.com/corca-ai/charness/releases/tag/v8.5.0)\
+    \ is published and installed. Separate public/installed observations bind the\
+    \ retained treatment inputs and composed mixed-bundle behavior. The five implementation\
+    \ children closed through 0eff83280, then publication child #807 through 7d0b10f06;\
+    \ all six exact provider-linked children are verified CLOSED with issue-owned\
+    \ behavior comments. No manual child-close fallback.\n\nThe original high pair\
+    \ passes equal acceptance but the candidate costs 33.4 percent more time; low\
+    \ pure-candidate attribution remains invalid. Spec intervention, incomplete report\
+    \ provenance, whole-install/fresh-session limits and closeout rework remain explicit.\
+    \ No general efficiency or total lifecycle saving is claimed. The A1-A6 audit\
+    \ is charness-artifacts/goal-runs/805/parent-terminal-obligation.md and the retrospective\
+    \ is charness-artifacts/retro/2026-09-06-session-retro-2.md. Next is the dedicated\
+    \ guarded parent close with the exact graph and hash-bound final proof index;\
+    \ terminal observation will distinguish completion from this readiness statement.\n\
+    \n<!-- charness-goal-run:v1\n{\n  \"binding_schema\": \"charness.goal-binding/v1\"\
+    ,\n  \"binding_path\": \"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.binding.json\"\
+    ,\n  \"binding_sha256\": \"384f8d92cb5be679f32159e17b0797bf178ca2e43efee7dc05b8a9e7d20793fe\"\
+    ,\n  \"draft_path\": \"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md\"\
+    ,\n  \"draft_sha256\": \"710ff43f4176d0b67673ef0542f87d625709dbfaa7ba07b37a508329e0f5bedb\"\
+    ,\n  \"initial_graph_sha256\": \"75d775c1a835e0abdf547650733be221bf6e7eaeb00c7e250a0dc39c5cad543e\"\
+    ,\n  \"bootstrap_verification\": \"verified-target-roundtrip\",\n  \"parent_identity\"\
+    : {\n    \"repo\": \"corca-ai/charness\",\n    \"number\": 805,\n    \"url\":\
+    \ \"https://github.com/corca-ai/charness/issues/805\"\n  },\n  \"progress\": {\n\
+    \    \"schema\": \"charness.goal-progress/v1\",\n    \"revision\": 5,\n    \"\
+    total\": 6,\n    \"completed\": 6,\n    \"open\": 0,\n    \"next\": null\n  }\n\
+    }\n-->\n"
+  comments: []
+  createdAt: '2026-09-06T02:43:43Z'
+  labels:
+  - id: LA_kwDOR9yx7M8AAAACkYd9IA
+    name: enhancement
+    description: ''
+    color: ededed
+  number: 805
+  state: OPEN
+  title: 'Goal: reduce long-term delegation overhead and measure consumer net value'
+  updatedAt: '2026-09-06T07:57:15Z'
+  url: https://github.com/corca-ai/charness/issues/805
+verified_state:
+  number: 805
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/805
+reason: completed
+closeout_authorization:
+  applies: false
+  authorized: true
+  refusal: null
+  crosswalk_status: crosswalk_missing
+  crosswalk_detail: charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json
+    does not exist
+  invoked_targets: []
+  carrier_targets: []
+  aggregate_targets: []
+  carrier_source: close-with-comment
+  target: null
+review_advisory: []
+status: verified-write
+outcome: verified-write
+mutation_invoked: true
+comment_succeeded: true
+close_succeeded: true
+operation: close-goal-run
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null
+observation:
+  started_path: charness-artifacts/goal-runs/805/observations/goal-805-final-close-1.started.json
+  started_sha256: 2885084de29f6e99c7cac3ce523bb727d1a4255628ebe17d8f05084d1f35c6c4
+  terminal_path: charness-artifacts/goal-runs/805/observations/goal-805-final-close-1.terminal.json
+  terminal_sha256: 8ef84b104c0d778632b4a523a72e811df9b40ab3e9e9d15b3326da0a1863c0f1
+terminal_metadata:
+  update:
+    ok: true
+    status: verified-write
+    outcome: verified-write
+    mutation_invoked: true
+    operation: update-body
+    action: updated
+    repo: corca-ai/charness
+    number: 805
+    url: https://github.com/corca-ai/charness/issues/805
+    body_verified: true
+    before:
+      ok: true
+      repo: corca-ai/charness
+      number: 805
+      url: https://github.com/corca-ai/charness/issues/805
+      readback_verified: true
+      body_verified: false
+      body_verification: byte-identical
+      stored_body_bytes: 3859
+      body_sha256: 9d2de30991336ada46c697d350acb8f7c97b96e2bab37efed692a69e228091b4
+    single_updater_assumption: true
+  readback:
+    repo: corca-ai/charness
+    number: 805
+    state: CLOSED
+    body: '# Goal 805: Reduce long-term delegation overhead and measure consumer net
+      value
+
+
+      ## Problem and outcome
+
+
+      Goal #798 exposed repeated closeout packaging, classification partitions and
+      release verification; prior experiments did not compare plugin use against no
+      plugin at both model tiers. Preserve intent, recovery and independent boundary
+      proof while removing demonstrated redundant operations. Measure actual benefit
+      and losses honestly.
+
+
+      ## Approved contract and execution order
+
+
+      The operator approved the six-item briefing and delegated finalization/execution
+      including push, release, installation refresh and model comparison on 2026-09-06.
+      Frozen planning: `charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md`.
+
+
+      1. comparison-contract: frozen neutral four-arm cooperative-resume protocol.
+
+      2. closeout-carrier: current multi-issue evidence and mixed classification.
+
+      3. release-reuse: remove duplicate preparation-time subject execution; final-state
+      verification remains current, without cross-commit cache claims.
+
+      4. context-reuse: known-context reuse with missing/changed/uncertain routes
+      preserved.
+
+      5. consumer-comparison: high/low candidate versus no plugin, retained initial
+      results.
+
+      6. publish-closeout: integrate, publish once, observe installed behavior, close
+      graph and retrospect.
+
+
+      ## Readiness and completion
+
+
+      Local readiness requires integrated changes, focused scenario/test proof and
+      applicable independent review. Context-reuse may then start its downstream pilot;
+      pilot and final publication remain required for final acceptance. Children remain
+      open until their actual acceptance and published carrier are observed. Parent
+      owns the sole execution cursor. No AGENTS.md/CLAUDE.md changes, #764 expansion,
+      external repository creation or organization-wide writes. No milestone exists.
+
+
+      ## Current frontier
+
+
+      One integrated [v8.5.0 release](https://github.com/corca-ai/charness/releases/tag/v8.5.0)
+      is published and installed. Separate public/installed observations bind the
+      retained treatment inputs and composed mixed-bundle behavior. The five implementation
+      children closed through 0eff83280, then publication child #807 through 7d0b10f06;
+      all six exact provider-linked children are verified CLOSED with issue-owned
+      behavior comments. No manual child-close fallback.
+
+
+      The original high pair passes equal acceptance but the candidate costs 33.4
+      percent more time; low pure-candidate attribution remains invalid. Spec intervention,
+      incomplete report provenance, whole-install/fresh-session limits and closeout
+      rework remain explicit. No general efficiency or total lifecycle saving is claimed.
+      The A1-A6 audit is charness-artifacts/goal-runs/805/parent-terminal-obligation.md
+      and the retrospective is charness-artifacts/retro/2026-09-06-session-retro-2.md.
+      Next is the dedicated guarded parent close with the exact graph and hash-bound
+      final proof index; terminal observation will distinguish completion from this
+      readiness statement.
+
+
+      <!-- charness-goal-run:v1
+
+      {"binding_path":"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.binding.json","binding_schema":"charness.goal-binding/v1","binding_sha256":"384f8d92cb5be679f32159e17b0797bf178ca2e43efee7dc05b8a9e7d20793fe","bootstrap_verification":"verified-target-roundtrip","draft_path":"charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md","draft_sha256":"710ff43f4176d0b67673ef0542f87d625709dbfaa7ba07b37a508329e0f5bedb","initial_graph_sha256":"75d775c1a835e0abdf547650733be221bf6e7eaeb00c7e250a0dc39c5cad543e","parent_identity":{"number":805,"repo":"corca-ai/charness","url":"https://github.com/corca-ai/charness/issues/805"},"progress":{"completed":6,"next":null,"open":0,"revision":5,"schema":"charness.goal-progress/v1","total":6},"terminal_observation_path":"charness-artifacts/goal-runs/805/observations/goal-805-final-close-1.terminal.json","terminal_observation_sha256":"8ef84b104c0d778632b4a523a72e811df9b40ab3e9e9d15b3326da0a1863c0f1"}
+
+      -->
+
+      '
+    terminal_observation_path: charness-artifacts/goal-runs/805/observations/goal-805-final-close-1.terminal.json
+    terminal_observation_sha256: 8ef84b104c0d778632b4a523a72e811df9b40ab3e9e9d15b3326da0a1863c0f1
+  metadata:
+    binding_schema: charness.goal-binding/v1
+    binding_path: charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.binding.json
+    binding_sha256: 384f8d92cb5be679f32159e17b0797bf178ca2e43efee7dc05b8a9e7d20793fe
+    draft_path: charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md
+    draft_sha256: 710ff43f4176d0b67673ef0542f87d625709dbfaa7ba07b37a508329e0f5bedb
+    initial_graph_sha256: 75d775c1a835e0abdf547650733be221bf6e7eaeb00c7e250a0dc39c5cad543e
+    bootstrap_verification: verified-target-roundtrip
+    parent_identity:
+      repo: corca-ai/charness
+      number: 805
+      url: https://github.com/corca-ai/charness/issues/805
+    progress:
+      schema: charness.goal-progress/v1
+      revision: 5
+      total: 6
+      completed: 6
+      open: 0
+      next: null
+    terminal_observation_path: charness-artifacts/goal-runs/805/observations/goal-805-final-close-1.terminal.json
+    terminal_observation_sha256: 8ef84b104c0d778632b4a523a72e811df9b40ab3e9e9d15b3326da0a1863c0f1
+kind: charness.goal-run-close/v1
+attempt_id: goal-805-final-close-1
