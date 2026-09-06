@@ -1,0 +1,34 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Second bounded round, Minto/Jackson claim honesty",
+  "packet_sha256": "0ffe122e8e79c55093e9b54c268d66d4f447da2f6e15456ac050b5470e59cf79",
+  "reviewed_input_identity_sha256": "328ffc274ac2320973e39da6c84efe0f45a7901006217abd2e749b5010e83ca5",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "NARRATIVE-1: readiness wording promised general evidence validity.",
+      "bin": "resolved",
+      "disposition": "The revised notes say the command checks “citations in selected artifact documents against the existing durability rules and exemptions” and explicitly state “This checks readiness, not approval; final closeout checks remain in place.” This matches the frozen decision and selected_doc_violations: selected Markdown within configured artifact families, preserving late-record grandfathering, reproduction-source markers and generated-export exemptions. The text no longer promises general evidence validity."
+    },
+    {
+      "concern": "Compatibility or efficiency claims exceed the bounded evidence.",
+      "bin": "over-worry",
+      "disposition": "The notes retain “These checks target Git repositories. Non-Git fallbacks are removed; alternate Git and provider access paths remain unchanged.” They also retain “Regression fixtures demonstrate fewer avoidable review launches. Live end-to-end time and token savings remain unproven.” No new concrete claim defect was identified."
+    },
+    {
+      "concern": "Narrative approval could be mistaken for completed publication or installation.",
+      "bin": "valid-but-defer",
+      "disposition": "The release plan explicitly leaves publication and post-bump verification ahead, with installation confirmation pending. The update instructions do not claim installation has occurred. This pass resolves only the narrative blocker."
+    }
+  ],
+  "next_move": "Record NARRATIVE-1 as resolved and preserve the prior operational review. Publication and post-bump/install verification remain future work; resolve the pending installation confirmation before executing the configured publish workflow.",
+  "non_claims": [
+    "Reviewed only the supplied semantic bytes; did not edit the workspace, rerun verification, reopen the completed code audit, or reassess the prior operational review.",
+    "This verdict does not authorize publication or installation, establish general evidence validity, or prove live time/token savings.",
+    "{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

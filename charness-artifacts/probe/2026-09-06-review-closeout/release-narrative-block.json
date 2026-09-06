@@ -1,0 +1,46 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Minto and Jackson: publication readability and claim boundaries",
+  "packet_sha256": "499da24dbca9eaf225e3a42e5d4736ff07fec784ebf9f00af799d19c9863ac74",
+  "reviewed_input_identity_sha256": "c7a54c01372f9c42d3111a37fb618ab24f2c62aef6c3b07885cc15b89bd16a2f",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "NARRATIVE-1",
+      "severity": "medium",
+      "summary": "The release notes promise broader evidence validation than the selected-document readiness check provides.",
+      "evidence": [
+        "charness-artifacts/release/2026-09-06-v8.6.0-notes.md, Changes: “Invalid selected evidence is rejected before a reviewer starts, without scanning unrelated documents.”",
+        "decision.md, working implementation contract §5: “Preflight is readiness, not approval or immunity to later file changes.”",
+        "scripts/gates/check_spec_evidence_durability.py: selected_doc_violations checks selected Markdown within configured artifact families using citation-durability rules, including grandfathering, reproduction-source and generated-export exemptions. It does not establish general evidence validity."
+      ],
+      "action": "Replace the quoted sentence with: “Before starting a reviewer, the issue-resolution command checks selected artifact documents for citation-durability violations, using existing scope and exemptions without scanning unrelated documents. This checks readiness, not approval.”"
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Local fixture improvement could imply live savings.",
+      "bin": "over-worry",
+      "disposition": "The frozen comparison records two baseline worker calls versus one candidate call, names its source test and revision, and explicitly excludes live benefits. The notes also state that live end-to-end time and token savings remain unproven."
+    },
+    {
+      "concern": "Minor bump and compatibility scope.",
+      "bin": "over-worry",
+      "disposition": "The plan grounds 8.6.0 in an additive maintained issue command. Git-only checks and removal of non-Git fallbacks are disclosed; alternate access routes remain unchanged. No speculative compatibility expansion is required."
+    },
+    {
+      "concern": "Earlier non-goals or incomplete publication work.",
+      "bin": "valid-but-defer",
+      "disposition": "The plan records subsequent release authorization without reopening Goals or issue transitions. Post-bump, tag, public-release and installation verification remain future work; installation authorization is explicitly pending."
+    }
+  ],
+  "next_move": "Narrow the readiness promise and resubmit the changed narrative for bounded review. This verdict does not authorize publication or installation.",
+  "non_claims": [
+    "Reviewed only the supplied semantic payload; did not repeat the completed implementation review or independently execute verification.",
+    "No completed release, verified installation, live latency improvement or token savings is established.",
+    "{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

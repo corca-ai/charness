@@ -1,0 +1,39 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Gawande and Raskin: release operations and supported Git-repository compatibility",
+  "packet_sha256": "499da24dbca9eaf225e3a42e5d4736ff07fec784ebf9f00af799d19c9863ac74",
+  "reviewed_input_identity_sha256": "c7a54c01372f9c42d3111a37fb618ab24f2c62aef6c3b07885cc15b89bd16a2f",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "Minor release compatibility after removing non-Git readiness fallbacks",
+      "bin": "over-worry",
+      "disposition": "No concrete blocker. The decision and release plan explicitly establish Git repositories as the supported premise. Release notes disclose the deletion; the code-review disposition records preserved alternate providers, shared discovery compatibility, and 77 passing focused tests after deletion."
+    },
+    {
+      "concern": "Operator access to the additive issue command",
+      "bin": "over-worry",
+      "disposition": "The bundled-closeout reference supplies review-resolution usage consistent with the supplied implementation's repository, issue, reviewed-path and lens inputs. Package-aware loading supports source and installed layouts; the plan retains the existing export owner. No conflicting installation contract is present."
+    },
+    {
+      "concern": "Update instructions imply a release-pinned installation",
+      "bin": "over-worry",
+      "disposition": "The release adapter explicitly describes configured-branch fast-forward behavior, including commits after the latest release. Release notes consistently prescribe charness update followed by version and doctor readbacks."
+    },
+    {
+      "concern": "Pending installation authorization and future publication checks",
+      "bin": "valid-but-defer",
+      "disposition": "The release plan explicitly stops workflow execution until installation confirmation. It distinguishes pre-bump evidence from required post-bump probes and reserves prepared-publication observation for a later reviewer. These are retained execution boundaries, not code defects."
+    }
+  ],
+  "next_move": "No concrete blocker in the supplied operator contract. Obtain explicit installation confirmation before executing the publish workflow; retain the required post-bump checks and separate prepared-publication review.",
+  "non_claims": [
+    "This pass assesses only the supplied identity-bound semantic payload and is conditional on explicit installation confirmation.",
+    "It does not authorize future publication or approve claims records, unexecuted post-bump checks, installation success, or live efficiency gains.",
+    "Goal evidence lineage: {\"binding\":null,\"disposition\":\"not-goal-bound\",\"draft\":null,\"goal_run\":null,\"kind\":\"charness.goal-lineage\",\"reason\":\"critique review was run without a Goal Run Work Item identity\",\"schema_version\":1,\"work_item\":null}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

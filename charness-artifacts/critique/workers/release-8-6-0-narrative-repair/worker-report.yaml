@@ -1,0 +1,61 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'release-critique: Charness 8.6.0 narrative repair follow-up'
+attempt_id: release-8-6-0-narrative-repair
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 71d8d1881a5298f858441cad404b26225ec7cc86bb4cb2748d91308fe66f2688
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-6-0-narrative-repair/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-6-0-narrative-repair/delivery.json
+producer_run_id: run-release-8-6-0-narrative-repair
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-6-0-narrative-repair/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-6-0-narrative-repair/receipt.json
+  producer_run_id: run-release-8-6-0-narrative-repair
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 72b18ab2a41513d774003a0774f4d4a21d9b4325b2b924b28137f37891c5ee2a
+receipt_output_sha256: 72b18ab2a41513d774003a0774f4d4a21d9b4325b2b924b28137f37891c5ee2a
+packet_identity: 0ffe122e8e79c55093e9b54c268d66d4f447da2f6e15456ac050b5470e59cf79
+reviewed_input_identity: 328ffc274ac2320973e39da6c84efe0f45a7901006217abd2e749b5010e83ca5
+parent_receipt_identity: parent-edd9d91819b3843abefe79b5c42fc1cc83d67eaeaacb170f
+provenance:
+  scope: 'release-critique: Charness 8.6.0 narrative repair follow-up'
+  packet_identity: 0ffe122e8e79c55093e9b54c268d66d4f447da2f6e15456ac050b5470e59cf79
+  reviewed_input_identity: 328ffc274ac2320973e39da6c84efe0f45a7901006217abd2e749b5010e83ca5
+  parent_receipt_identity: parent-edd9d91819b3843abefe79b5c42fc1cc83d67eaeaacb170f
+  attempt_id: release-8-6-0-narrative-repair
+  attempt_scope: 'release-critique: Charness 8.6.0 narrative repair follow-up'
+  attempt_packet_identity: 0ffe122e8e79c55093e9b54c268d66d4f447da2f6e15456ac050b5470e59cf79
+  attempt_parent_receipt_identity: parent-edd9d91819b3843abefe79b5c42fc1cc83d67eaeaacb170f
+  result_packet_identity: 0ffe122e8e79c55093e9b54c268d66d4f447da2f6e15456ac050b5470e59cf79
+  result_reviewed_input_identity: 328ffc274ac2320973e39da6c84efe0f45a7901006217abd2e749b5010e83ca5
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 71d8d1881a5298f858441cad404b26225ec7cc86bb4cb2748d91308fe66f2688
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes
