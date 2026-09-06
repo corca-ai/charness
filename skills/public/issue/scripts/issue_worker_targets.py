@@ -10,6 +10,12 @@ class WorkerTargetError(ValueError):
     """A verified carrier does not cover the requested issue target set."""
 
 
+# Shared by the issue-owned launch path and the final issue consumer.  The
+# prefix is deliberately still required by the consumer: target membership and
+# passing observations do not prove that a review was a resolution review.
+ISSUE_RESOLUTION_SCOPE_PREFIX = "issue-resolution"
+
+
 def _normalize_worker_target(value: object) -> str:
     """Normalize one owner/repo#N target at the issue-owned boundary."""
     if not isinstance(value, str):

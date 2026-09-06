@@ -7,6 +7,16 @@ from pathlib import Path
 from typing import Any
 
 
+def _positive_issue_number(value: str) -> int:
+    try:
+        number = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("issue number must be a positive integer") from exc
+    if number <= 0:
+        raise argparse.ArgumentTypeError("issue number must be a positive integer")
+    return number
+
+
 def build_parser(*, modules: dict[str, Any], handlers: dict[str, Any]) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -172,6 +182,46 @@ def build_parser(*, modules: dict[str, Any], handlers: dict[str, Any]) -> argpar
         help="Repo root used to resolve the issue adapter",
     )
     verify.set_defaults(func=handlers["verify_closeout"])
+
+    review_resolution = subparsers.add_parser(
+        "review-resolution",
+        help="Review a completed repair for issue resolution and recurrence before closeout",
+    )
+    review_resolution.add_argument(
+        "--repo", required=True, help="Target repository in owner/repo form"
+    )
+    review_resolution.add_argument(
+        "--number",
+        action="append",
+        type=_positive_issue_number,
+        required=True,
+        help="Issue number covered by the resolution review; repeat for a bundle",
+    )
+    review_resolution.add_argument(
+        "--reviewed-path",
+        action="append",
+        required=True,
+        help="Repo-relative file to bind as review input; repeat for each file",
+    )
+    review_resolution.add_argument(
+        "--lens", required=True, help="Additional reviewer focus for this resolution review"
+    )
+    review_resolution.add_argument(
+        "--repo-root",
+        type=Path,
+        default=cwd_default,
+        help="Repo root whose evidence and issue-resolution adapter are used",
+    )
+    review_resolution.add_argument(
+        "--attempt-id", help="Path-safe reviewer attempt identity"
+    )
+    review_resolution.add_argument(
+        "--goal-lineage-file", help="Repo-relative full Goal Run evidence-lineage JSON"
+    )
+    review_resolution.add_argument(
+        "--dry-run", action="store_true", help="Validate and prepare without starting a reviewer"
+    )
+    review_resolution.set_defaults(func=handlers["review_resolution"])
 
     modules["validate_draft"].register_validate_closeout_draft_subparser(
         subparsers,

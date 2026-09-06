@@ -29,6 +29,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 _quality_adapter = import_repo_module(__file__, "scripts.adapters.quality_adapter_lib")
 load_quality_adapter = _quality_adapter.load_quality_adapter
 _quality_universes = import_repo_module(__file__, "scripts.adapters.quality_universes_lib")
+_universe_selection = import_repo_module(__file__, "scripts.adapters.quality_universe_selection")
 DEFAULT_ARTIFACT_ROOTS = _quality_universes.DEFAULT_ARTIFACT_ROOTS
 matching_files = _quality_universes.matching_files
 refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty
@@ -125,6 +126,57 @@ def _resolved_artifact_docs(repo_root: Path, families: tuple[str, ...]):
             empty_families.append(family)
         docs_by_family[family] = files
     return docs_by_family, empty_families
+
+
+def selected_doc_violations(repo_root: Path, selected_paths: list[Path]) -> list[str]:
+    """Check only explicitly selected artifact documents.
+
+    The full gate owns the artifact-family and late-record scope rules.  A
+    review launch has a narrower declaration than a changed-surface scan, so it
+    must not turn unrelated dirty documents into a prerequisite for the review.
+    Resolve the same configured universes to identify selected documents, then
+    reuse the gate's citation parser, one batched ignore query, and late-family
+    enforcement decision for those documents only.
+    """
+    root = repo_root.resolve()
+    if not (root / ".git").exists():
+        return []
+
+    selected = {path if path.is_absolute() else root / path for path in selected_paths}
+    selected = {path for path in selected if path.suffix.lower() == ".md"}
+    if not selected:
+        return []
+
+    adapter = load_quality_adapter(root)
+    universes = {
+        family: resolve_universe(
+            adapter, f"artifact_roots.{family}", default=_adapter_owned_default(root, family)
+        )
+        for family in (*PRIMARY_ARTIFACT_FAMILIES, *LATE_ARTIFACT_FAMILIES)
+    }
+    selected_by_family = _universe_selection.matching_selected_files(root, universes, selected)
+
+    candidates_by_doc = {
+        doc: citation_candidates(root, doc) for docs in selected_by_family.values() for doc in docs
+    }
+    all_candidate_paths = sorted(
+        {path for candidates in candidates_by_doc.values() for path in candidates}
+    )
+    ignored_paths = git_check_ignore(root, all_candidate_paths) or set()
+    messages: list[str] = []
+    for family, docs in selected_by_family.items():
+        for doc in docs:
+            doc_messages = violations_for_doc(
+                root,
+                doc,
+                candidates_by_path=candidates_by_doc[doc],
+                ignored_paths=ignored_paths,
+            )
+            if family not in LATE_ARTIFACT_FAMILIES or (
+                doc_messages and is_enforced_late_doc(doc, doc.read_text(encoding="utf-8"))
+            ):
+                messages.extend(doc_messages)
+    return messages
 
 
 #: `docs/**` is deliberately NOT here. Doctrine that NAMES a runtime path

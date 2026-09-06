@@ -126,6 +126,75 @@ def test_main_batches_all_citation_paths_into_one_git_ignore_query(
     assert {path.name for path in calls[0]} == {"one.md.json", "two.md.json"}
 
 
+def test_selected_doc_check_batches_only_selected_artifact_citations(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _bootstrap_repo(tmp_path)
+    spec_dir = repo / "charness-artifacts" / "spec"
+    selected = spec_dir / "selected.md"
+    unrelated = spec_dir / "unrelated.md"
+    selected.write_text("Proof: `artifacts/selected.json`.\n", encoding="utf-8")
+    unrelated.write_text("Proof: `artifacts/unrelated.json`.\n", encoding="utf-8")
+    (repo / "artifacts" / "selected.json").write_text("{}\n", encoding="utf-8")
+    (repo / "artifacts" / "unrelated.json").write_text("{}\n", encoding="utf-8")
+    calls: list[list[Path]] = []
+
+    def selected_only(_root: Path, paths: list[Path]) -> set[Path]:
+        calls.append(paths)
+        return {path for path in paths if path.name == "selected.json"}
+
+    monkeypatch.setattr(gate, "git_check_ignore", selected_only)
+    monkeypatch.setattr(
+        gate,
+        "_resolved_artifact_docs",
+        lambda *_args: pytest.fail("selected review must not discover a full artifact universe"),
+    )
+
+    messages = gate.selected_doc_violations(repo, [selected])
+
+    assert len(calls) == 1
+    assert {path.name for path in calls[0]} == {"selected.json"}
+    assert len(messages) == 1
+    assert "selected.md:1" in messages[0]
+    assert "unrelated.md" not in "\n".join(messages)
+
+
+def test_selected_custom_roots_keep_exceptions_without_empty_universe_refusal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _bootstrap_repo(tmp_path)
+    (repo / ".gitignore").write_text("artifacts/\nplugins/\n", encoding="utf-8")
+    (repo / ".agents").mkdir()
+    (repo / ".agents/quality-adapter.yaml").write_text(
+        "version: 1\nrepo: fixture\nlanguage: en\noutput_dir: charness-artifacts/quality\n"
+        "universes:\n  artifact_roots:\n    spec: project-evidence/spec\n"
+        "    release: intentionally-empty\n",
+        encoding="utf-8",
+    )
+    (repo / "packaging").mkdir()
+    (repo / "packaging/export.json").write_text(
+        json.dumps({"output": "./plugins/charness"}),
+        encoding="utf-8",
+    )
+    root = repo / "project-evidence/spec"
+    root.mkdir(parents=True)
+    generated = root / "generated.md"
+    generated.write_text("Proof: `plugins/charness/proof.md`.\n", encoding="utf-8")
+    marked = root / "marked.md"
+    marked.write_text(
+        "Reproduce: `artifacts/proof.json` <!-- reproduction-source -->\n", encoding="utf-8"
+    )
+    outside = repo / "outside.md"
+    outside.write_text("Proof: `artifacts/proof.json`.\n", encoding="utf-8")
+    bad = root / "bad.md"
+    bad.write_text("Proof: `artifacts/proof.json`.\n", encoding="utf-8")
+    monkeypatch.setattr(gate, "_resolved_artifact_docs", lambda *_args: pytest.fail("full scan"))
+    assert gate.selected_doc_violations(repo, [generated, marked, outside]) == []
+    violations = gate.selected_doc_violations(repo, [bad])
+    assert len(violations) == 1
+    assert "project-evidence/spec/bad.md:1" in violations[0]
+
+
 # --------------------------------------------------------------------------- #
 # Late-added evidence families (goals / critique / retro / probe / issues /
 # release-review). These carry citations exactly like the families above and were
@@ -224,6 +293,8 @@ def test_late_family_enforcement_and_grandfathering_share_one_ignore_query(
     assert "whose FILENAME date precedes" in result.stdout
     assert "whose exact bytes a sibling Goal Binding hashes" in result.stdout
     assert "whatever its body says -- is enforced" in result.stdout
+    selected = list((repo / "charness-artifacts").rglob("*.md"))
+    assert set(gate.selected_doc_violations(repo, selected)) == set(result.stderr.splitlines())
 
 
 def test_binding_freezes_refuses_every_shape_short_of_an_exact_match(tmp_path: Path) -> None:

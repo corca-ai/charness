@@ -1,12 +1,15 @@
 """Explicit review inputs never require discovering unrelated artifact files."""
 
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
 from scripts.adapters import quality_universe_selection as selection
+from tests.module_eviction import evict_module, evict_new_modules
 from tests.quality_gates.repo_shapes import install_committed_repo
+from tests.script_loader import load_script_module
 
 
 def _files(root: Path, *names: str) -> list[Path]:
@@ -21,7 +24,9 @@ def _universe(pattern: str):
     return selection._universes.Universe((pattern,), True, "adapter")
 
 
-@pytest.mark.parametrize("pattern", ["src", "src/**/*.md", "src/*", "src/*/*.md", "src/**/deep"])
+@pytest.mark.parametrize(
+    "pattern", ["src", "src/**/*.md", "src/*", "src/*/*.md", "src/**/deep", "src/*.md/"]
+)
 def test_selected_glob_and_directory_parity(tmp_path: Path, monkeypatch, pattern: str) -> None:
     candidates = _files(
         tmp_path, "src/top.md", "src/nested/item.md", "src/nested/deep/proof.txt", "outside.md"
@@ -68,6 +73,22 @@ def test_one_query_across_families_and_no_empty_universe_claim(tmp_path: Path, m
         )
         == "full-gate: refusing empty declared universe (patterns: does-not-exist)."
     )
+
+
+@pytest.mark.parametrize("pattern", ["src", "src/link", "src/**/*.md", "src/*/*.md"])
+def test_directory_symlink_matches_discovery_semantics(
+    tmp_path: Path, monkeypatch, pattern: str
+) -> None:
+    (real,) = _files(tmp_path, "target/proof.md")
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/link").symlink_to(real.parent, target_is_directory=True)
+    alias = tmp_path / "src/link/proof.md"
+    universe = _universe(pattern)
+    expected = selection._universes.matching_files(tmp_path, universe, git_listing=False)
+    monkeypatch.setattr(selection._universes, "_git_listing", lambda _root, **_kwargs: None)
+    assert selection.matching_selected_files(tmp_path, {"spec": universe}, [alias]) == {
+        "spec": expected
+    }
 
 
 @pytest.mark.boundary_contract(
@@ -151,3 +172,29 @@ def test_git_unavailability_keeps_selected_fallback(tmp_path: Path, monkeypatch)
     assert selection.matching_selected_files(
         tmp_path, {"spec": _universe("*.md")}, [candidate]
     ) == {"spec": [candidate]}
+
+
+@pytest.mark.parametrize("pattern", ["", "/absolute/*.md", "src/a**b"])
+def test_invalid_universe_pattern_refuses(tmp_path: Path, monkeypatch, pattern: str) -> None:
+    (candidate,) = _files(tmp_path, "proof.md")
+    monkeypatch.setattr(selection._universes, "_git_listing", lambda _root, **_kwargs: None)
+    with pytest.raises(ValueError):
+        selection.matching_selected_files(tmp_path, {"spec": _universe(pattern)}, [candidate])
+
+
+def test_standalone_loader_binds_checkout_owner(tmp_path: Path, monkeypatch) -> None:
+    source = Path(selection.__file__).resolve()
+    root = source.parents[2]
+    before = set(sys.modules)
+    with monkeypatch.context() as isolated:
+        isolated.chdir(tmp_path)
+        isolated.setattr(sys, "path", [path for path in sys.path if path != str(root)])
+        evict_module(isolated, "scripts.runtime_bootstrap")
+        evict_module(isolated, "scripts")
+        try:
+            loaded = load_script_module("selection_standalone_test", source)
+            assert Path(loaded._universes.__file__).resolve() == (
+                root / "scripts/adapters/quality_universes_lib.py"
+            )
+        finally:
+            evict_new_modules(before)

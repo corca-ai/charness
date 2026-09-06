@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -21,6 +22,13 @@ from tests.quality_gates.test_issue_worker_carrier import (
     _worker_delivered_artifact,
 )
 from tests.quality_gates.test_prepush_close_keyword_guard import _finding as prepush_finding
+from tests.quality_gates.test_semantic_review_command import (
+    _fake_codex,
+    _repo,
+)
+from tests.quality_gates.test_semantic_review_command import (
+    _run as run_generic_review,
+)
 
 REPO = "corca-ai/charness"
 NUMBERS = [42, 43]
@@ -87,7 +95,8 @@ def _bundle_artifact(
         result["target_observations"] = None
     else:
         result["target_observations"] = [
-            dict(observation) for observation in result_observations  # type: ignore[union-attr]
+            dict(observation)
+            for observation in result_observations  # type: ignore[union-attr]
         ]
     result_path.write_text(json.dumps(result, separators=(",", ":")), encoding="utf-8")
     receipt_path = repo_root / "receipt.json"
@@ -123,12 +132,186 @@ def _write_body(repo_root: Path, body: str) -> Path:
     return path
 
 
-@pytest.mark.boundary_contract(reason="Both public closeout subcommands execute in-process with identical carrier inputs.")
+def _write_actual_review_artifact(repo_root: Path, payload: dict) -> Path:
+    """Cite the unchanged report emitted by the real runner, not a seeded report."""
+    report_path = repo_root / payload["paths"]["report"]
+    report = yaml.safe_load(report_path.read_text(encoding="utf-8"))
+    fields = {
+        "Worker report": payload["paths"]["report"],
+        "Worker report identity": hashlib.sha256(report_path.read_bytes()).hexdigest(),
+        "Worker report approval": "approval_eligible: true",
+        "Worker report delivery": "findings-received",
+        "Worker report packet identity": report["packet_identity"],
+        "Worker report input identity": report["reviewed_input_identity"],
+        "Worker report parent receipt identity": report["parent_receipt_identity"],
+        "Worker report findings identity": report["findings_identity"],
+    }
+    artifact = repo_root / "res-42.md"
+    artifact.write_text(
+        "Critique of the #42 and #43 resolutions. Simulated regression fixture only.\n\n"
+        "## Reviewer Tier Evidence\n\n"
+        + "\n".join(f"- {key}: {value}" for key, value in fields.items())
+        + "\n\n## Fresh-Eye Satisfaction\n\nworker-delivered\n\n"
+        "## Reviewed Input Identity\n\n"
+        f"- Packet path: {payload['paths']['packet']}\n"
+        f"- Packet SHA256: {report['packet_identity']}\n"
+        f"- Identity SHA256: {report['reviewed_input_identity']}\n",
+        encoding="utf-8",
+    )
+    return artifact
+
+
+@pytest.mark.parametrize("wrong_scope", ["semantic command", "causal-review"])
+@pytest.mark.boundary_contract(
+    reason="Run the issue-owned resolution journey through one deterministic fake worker and both closeout consumers."
+)
+def test_issue_review_resolution_composes_one_worker_carrier_for_both_consumers(
+    tmp_path: Path,
+    wrong_scope: str,
+) -> None:
+    _repo(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"}
+    env["FAKE_REVIEW_OBSERVATIONS"] = json.dumps(OBSERVATIONS)
+    body = _write_body(tmp_path, _bundle_body())
+    wrong_observations = (
+        [{**item, "summary": "Root cause confirmed; no repair exists"} for item in OBSERVATIONS]
+        if wrong_scope == "causal-review"
+        else OBSERVATIONS
+    )
+    for attempt, scope, expected in (
+        ("baseline-wrong", wrong_scope, 2),
+        ("baseline-corrected", "issue-resolution: resolution and recurrence", 0),
+    ):
+        baseline = run_generic_review(
+            tmp_path,
+            bin_dir,
+            attempt,
+            scope=scope,
+            prepared_targets=TARGETS,
+            observations=wrong_observations if expected else OBSERVATIONS,
+        )
+        assert baseline.returncode == 0, baseline.stderr
+        _write_actual_review_artifact(tmp_path, yaml.safe_load(baseline.stdout))
+        for consumer in _public_closeout_results(tmp_path, body):
+            assert consumer.returncode == expected, consumer.stdout
+            if expected:
+                assert "issue-resolution" in consumer.stdout
+    baseline_calls = int((bin_dir / "review-called").read_text(encoding="utf-8"))
+    assert baseline_calls == 2
+
+    result = run_script(
+        "skills/public/issue/scripts/issue_tool.py",
+        "review-resolution",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        REPO,
+        "--number",
+        "42",
+        "--number",
+        "43",
+        "--reviewed-path",
+        "reviewed.txt",
+        "--lens",
+        "recurrence",
+        "--attempt-id",
+        "bundled-resolution",
+        cwd=tmp_path,
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["reviewer_started"] is True
+    assert payload["approval_eligible"] is True
+    assert int((bin_dir / "review-called").read_text(encoding="utf-8")) - baseline_calls == 1
+    _write_actual_review_artifact(tmp_path, payload)
+
+    for consumer in _public_closeout_results(tmp_path, body):
+        assert consumer.returncode == 0, consumer.stderr
+        assert yaml.safe_load(consumer.stdout)["ok"] is True
+
+
+@pytest.mark.boundary_contract(
+    reason="Selected-document evidence durability must block before the fake reviewer boundary and ignore unrelated dirty artifacts."
+)
+def test_issue_review_resolution_checks_only_selected_doc_before_freezing(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    (tmp_path / ".gitignore").write_text(".charness/\nartifacts/\n", encoding="utf-8")
+    spec_dir = tmp_path / "charness-artifacts/spec"
+    spec_dir.mkdir(parents=True, exist_ok=True)
+    selected = spec_dir / "selected.md"
+    unrelated = spec_dir / "unrelated.md"
+    selected.write_text("Proof: `artifacts/ignored.json`.\n", encoding="utf-8")
+    unrelated.write_text("Proof: `artifacts/unrelated.json`.\n", encoding="utf-8")
+    (tmp_path / "artifacts").mkdir()
+    (tmp_path / "artifacts/ignored.json").write_text("{}\n", encoding="utf-8")
+    (tmp_path / "artifacts/unrelated.json").write_text("{}\n", encoding="utf-8")
+
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"}
+    command = (
+        "skills/public/issue/scripts/issue_tool.py",
+        "review-resolution",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        REPO,
+        "--number",
+        "42",
+        "--reviewed-path",
+        "charness-artifacts/spec/selected.md",
+        "--lens",
+        "recurrence",
+        "--attempt-id",
+        "durability-blocked",
+    )
+    refused = run_script(*command, cwd=tmp_path, env=env)
+    refused_payload = yaml.safe_load(refused.stdout)
+    assert refused.returncode == 2
+    assert refused_payload["reviewer_started"] is False
+    assert refused_payload["reason_code"] == "evidence-durability"
+    assert "selected.md:1" in refused_payload["error"]
+    assert not (bin_dir / "review-called").exists()
+    assert not list((tmp_path / "charness-artifacts/critique").glob("*-packet.json"))
+
+    durable = spec_dir / "durable-proof.md"
+    durable.write_text("# Checked-in proof\n", encoding="utf-8")
+    selected.write_text("Proof: `charness-artifacts/spec/durable-proof.md`.\n", encoding="utf-8")
+    accepted = run_script(
+        *command[:-1],
+        "durability-accepted",
+        cwd=tmp_path,
+        env=env,
+    )
+    assert accepted.returncode == 0, accepted.stderr
+    assert yaml.safe_load(accepted.stdout)["reviewer_started"] is True
+    assert (bin_dir / "review-called").read_text(encoding="utf-8") == "1"
+
+
+@pytest.mark.boundary_contract(
+    reason="Both public closeout subcommands execute in-process with identical carrier inputs."
+)
 def _public_closeout_results(repo_root: Path, body_file: Path):
     args = (
-        "--repo-root", str(repo_root), "--repo", REPO,
-        "--number", "42", "--number", "43", "--body-file", str(body_file),
-        "--carrier", "pr-body",
+        "--repo-root",
+        str(repo_root),
+        "--repo",
+        REPO,
+        "--number",
+        "42",
+        "--number",
+        "43",
+        "--body-file",
+        str(body_file),
+        "--carrier",
+        "pr-body",
     )
     return (
         run_script("skills/public/issue/scripts/issue_tool.py", "verify-closeout", *args),
@@ -151,7 +334,10 @@ def _verify(verifier, repo_root: Path, body_file: Path, **kwargs):
 def _assert_two_group_success(result: dict) -> None:
     assert result["ok"] is True
     assert result["classification"] is None
-    assert {int(number): value for number, value in result["classifications"].items()} == {42: "bug", 43: "feature"}
+    assert {int(number): value for number, value in result["classifications"].items()} == {
+        42: "bug",
+        43: "feature",
+    }
     assert set(result["classification_reports"]) == {"bug", "feature"}
     assert result["classification_reports"]["bug"]["numbers"] == [42]
     assert result["classification_reports"]["feature"]["numbers"] == [43]
@@ -168,9 +354,10 @@ def _assert_two_group_success(result: dict) -> None:
 
 def test_mixed_bundle_does_not_gain_singleton_behavior_shorthand(tmp_path: Path) -> None:
     _bundle_artifact(tmp_path)
-    body = "\n".join(
-        line for line in _bundle_body().splitlines() if not line.startswith("Behavior #")
-    ) + "\nBehavior: only the bug regression was observed.\n"
+    body = (
+        "\n".join(line for line in _bundle_body().splitlines() if not line.startswith("Behavior #"))
+        + "\nBehavior: only the bug regression was observed.\n"
+    )
     result = _verify(load_verify_module(), tmp_path, _write_body(tmp_path, body))
     assert result["ok"] is False
     for group, number in (("bug", 42), ("feature", 43)):
@@ -187,7 +374,10 @@ def test_mixed_hotl_keeps_full_invocation_shorthand_rules(tmp_path: Path) -> Non
     body = _bundle_body() + "\nHOTL: untyped singleton-only entry\n"
     result = _verify(verifier, tmp_path, _write_body(tmp_path, body))
     assert result["ok"] is True
-    assert all(not group["hotl_dispositions"]["applies"] for group in result["classification_reports"].values())
+    assert all(
+        not group["hotl_dispositions"]["applies"]
+        for group in result["classification_reports"].values()
+    )
     body = body.replace("HOTL:", "HOTL #42:")
     result = _verify(verifier, tmp_path, _write_body(tmp_path, body))
     assert result["ok"] is False
@@ -196,7 +386,9 @@ def test_mixed_hotl_keeps_full_invocation_shorthand_rules(tmp_path: Path) -> Non
 
 
 @pytest.mark.parametrize("target", ["foreign/repo#42 foreign/repo#43", "garbage#42 #43"])
-@pytest.mark.boundary_contract(reason="Exercise the public closeout CLI refusal contract through the in-process script runner.")
+@pytest.mark.boundary_contract(
+    reason="Exercise the public closeout CLI refusal contract through the in-process script runner."
+)
 def test_bundle_refuses_foreign_or_malformed_citation(tmp_path: Path, target: str) -> None:
     _bundle_artifact(tmp_path)
     body = _bundle_body().replace("Critique #42 #43:", f"Critique {target}:")
@@ -210,7 +402,9 @@ def test_bundle_refuses_foreign_or_malformed_citation(tmp_path: Path, target: st
     assert prepush_finding(tmp_path, body, {})["ok"] is False
 
 
-@pytest.mark.boundary_contract(reason="Observe one delivered bundle through both public CLI commands and hook consumers; CLI execution is in-process.")
+@pytest.mark.boundary_contract(
+    reason="Observe one delivered bundle through both public CLI commands and hook consumers; CLI execution is in-process."
+)
 def test_one_delivered_mixed_bundle_reaches_every_closeout_consumer(tmp_path: Path) -> None:
     artifact = _bundle_artifact(tmp_path)
     body = _bundle_body()
@@ -280,7 +474,8 @@ def test_one_delivered_mixed_bundle_reaches_every_closeout_consumer(tmp_path: Pa
 
 @pytest.mark.parametrize("packet_targets", [MISSING, TARGETS])
 def test_nullable_observations_mean_absent_only_for_a_legacy_packet(
-    tmp_path: Path, packet_targets: object,
+    tmp_path: Path,
+    packet_targets: object,
 ) -> None:
     _bundle_artifact(tmp_path, packet_targets=packet_targets, result_observations=None)
     body_file = _write_body(tmp_path, _bundle_body())
@@ -290,9 +485,20 @@ def test_nullable_observations_mean_absent_only_for_a_legacy_packet(
     if packet_targets is MISSING:
         from tests.quality_gates.test_issue_worker_carrier import _load_resolution_critique
 
-        check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(tmp_path / "res-42.md")}]}
+        check = {
+            "satisfied": [
+                {
+                    "name": "resolution_critique",
+                    "via": "evidence",
+                    "path": str(tmp_path / "res-42.md"),
+                }
+            ]
+        }
         observed = _load_resolution_critique()._observer_disposition(
-            tmp_path, check, expected_issue_numbers=[42], expected_repository=REPO,
+            tmp_path,
+            check,
+            expected_issue_numbers=[42],
+            expected_repository=REPO,
         )
         assert observed["carrier_verified"] is True
 
@@ -338,7 +544,10 @@ def test_structured_worker_membership_refuses_each_exact_set_mutation(
     elif mutation == "result-duplicate":
         result_observations = [OBSERVATIONS[0], dict(OBSERVATIONS[0])]
     elif mutation == "result-foreign":
-        result_observations = [OBSERVATIONS[0], {**OBSERVATIONS[1], "target": "other-org/other-repo#43"}]
+        result_observations = [
+            OBSERVATIONS[0],
+            {**OBSERVATIONS[1], "target": "other-org/other-repo#43"},
+        ]
     else:  # pragma: no cover - the parameter list is the test's input contract
         raise AssertionError(mutation)
 
@@ -390,7 +599,9 @@ def test_targeted_classification_authority_must_be_complete_and_unambiguous(
         _verify(load_verify_module(), tmp_path, _write_body(tmp_path, body))
 
 
-def test_supplied_partial_classification_map_refuses_before_floor_evaluation(tmp_path: Path) -> None:
+def test_supplied_partial_classification_map_refuses_before_floor_evaluation(
+    tmp_path: Path,
+) -> None:
     with pytest.raises(RuntimeError, match="complete issue"):
         _verify(
             load_verify_module(),
@@ -412,13 +623,22 @@ def test_targeted_classifications_cannot_accept_an_explicit_scalar_conflict(
         )
 
 
-@pytest.mark.parametrize("classification,field,number", [("feature", "boundary", 43), ("bug", "root cause", 42)])
-@pytest.mark.boundary_contract(reason="The public CLI must refuse each missing group floor; exercise its exit contract in-process alongside hooks.")
+@pytest.mark.parametrize(
+    "classification,field,number", [("feature", "boundary", 43), ("bug", "root cause", 42)]
+)
+@pytest.mark.boundary_contract(
+    reason="The public CLI must refuse each missing group floor; exercise its exit contract in-process alongside hooks."
+)
 def test_each_group_keeps_its_own_ledger_floor(
-    tmp_path: Path, classification: str, field: str, number: int,
+    tmp_path: Path,
+    classification: str,
+    field: str,
+    number: int,
 ) -> None:
     _bundle_artifact(tmp_path)
-    body = "\n".join(line for line in _bundle_body().splitlines() if not line.lower().startswith(field + ":"))
+    body = "\n".join(
+        line for line in _bundle_body().splitlines() if not line.lower().startswith(field + ":")
+    )
     body_file = _write_body(tmp_path, body)
     result = _verify(load_verify_module(), tmp_path, body_file)
 
@@ -444,7 +664,9 @@ def test_each_group_keeps_its_own_ledger_floor(
 @pytest.mark.parametrize("consumer", ["commit-msg", "pre-push"])
 @pytest.mark.parametrize("extra", ["Classification #42: feature", "Classification: feature"])
 def test_artifact_classification_conflicts_cannot_be_erased_by_hook_projection(
-    tmp_path: Path, consumer: str, extra: str,
+    tmp_path: Path,
+    consumer: str,
+    extra: str,
 ) -> None:
     _bundle_artifact(tmp_path)
     body = _bundle_body() + "\n\n" + extra + "\n"

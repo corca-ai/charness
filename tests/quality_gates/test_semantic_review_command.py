@@ -178,7 +178,9 @@ payload = {
     "packet_sha256": packet,
     "reviewed_input_identity_sha256": reviewed,
     "verdict": os.environ.get("FAKE_REVIEW_VERDICT", "pass"),
-    "target_observations": None,
+    "target_observations": json.loads(os.environ["FAKE_REVIEW_OBSERVATIONS"])
+    if os.environ.get("FAKE_REVIEW_OBSERVATIONS")
+    else None,
     "findings": [],
     "counterweight_triage": [],
     "next_move": "consume the typed result",
@@ -247,17 +249,23 @@ def _run(
     reviewed_path: str | None = "reviewed.txt",
     packet_reviewed_path: str | None = None,
     prepared_targets: Sequence[str] | None = None,
+    scope: str = "semantic command",
+    observations: object | None = None,
 ) -> subprocess.CompletedProcess[str]:
     env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_REVIEW_VERDICT": verdict}
     if sleep is not None:
         env["FAKE_REVIEW_SLEEP"] = str(sleep)
+    if observations is not None:
+        env["FAKE_REVIEW_OBSERVATIONS"] = json.dumps(observations)
+    else:
+        env.pop("FAKE_REVIEW_OBSERVATIONS", None)
     command = [
         sys.executable,
         str(WRAPPER),
         "--repo-root",
         str(repo),
         "--scope",
-        "semantic command",
+        scope,
         "--lens",
         "operability",
         "--attempt-id",

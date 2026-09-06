@@ -1,0 +1,67 @@
+{
+  "kind": "local-draft-recovery",
+  "claim": "Byte-exact reconstruction of an uncommitted failed lane draft; not integration or approval",
+  "task_id": "review-closeout",
+  "candidate_status": "invalid",
+  "carrier_kind": "worktree-only",
+  "changed_line_gate": "skipped",
+  "disallowed_paths": [
+    "tests/quality_gates/test_issue_bundled_closeout.py",
+    "tests/quality_gates/test_issue_tool_runners.py"
+  ],
+  "execution_elapsed_ms": 1533324,
+  "reported_codex_tokens": 438604,
+  "retention_removed_mib": 417,
+  "source": "Final unified diff in retained codex.stderr.log; original postimage Git blob identities matched all reconstructed files before parent corrections",
+  "postimages": [
+    {
+      "path": "scripts/gates/check_spec_evidence_durability.py",
+      "sha": "917e6665cc56b53a7e874d334d6b1d1b5ae9cf70"
+    },
+    {
+      "path": "skills/public/issue/references/closeout-discipline.md",
+      "sha": "1ad485a02b4e1fd2c31947d6728549857abfc364"
+    },
+    {
+      "path": "skills/public/issue/scripts/issue_critique_observer.py",
+      "sha": "55f19b8b47fd4f0fe3948b108740ecb0dc50ad6a"
+    },
+    {
+      "path": "skills/public/issue/scripts/issue_review_resolution.py",
+      "sha": "485ba33bfb9827d0467d984d571b9656f889a2ef"
+    },
+    {
+      "path": "skills/public/issue/scripts/issue_tool.py",
+      "sha": "fa37c8f91a29cc2e8631a5c9162b20404fd7a97f"
+    },
+    {
+      "path": "skills/public/issue/scripts/issue_tool_parser.py",
+      "sha": "4745e4f3216f7924484046ec0a8b7eb3179983a5"
+    },
+    {
+      "path": "skills/public/issue/scripts/issue_worker_targets.py",
+      "sha": "789d8d96876e424a9eab26d40663b9b30e5640c6"
+    },
+    {
+      "path": "tests/quality_gates/test_check_spec_evidence_durability.py",
+      "sha": "764d2d1ebce228db6629e6e63c13e0e0c873ae3b"
+    },
+    {
+      "path": "tests/quality_gates/test_issue_bundled_closeout.py",
+      "sha": "4cad1328a36130945ed36d6f7ff5372e2f5e4b29"
+    },
+    {
+      "path": "tests/quality_gates/test_issue_tool_runners.py",
+      "sha": "5372319a6f2a6ca04e388ecd5d553400addc6c41"
+    },
+    {
+      "path": "tests/quality_gates/test_semantic_review_command.py",
+      "sha": "d557ab4e65091ca6cf52286e6c5dd83b1703269d"
+    }
+  ],
+  "nonclaims": [
+    "The retained task is not an approval-eligible candidate.",
+    "The parent adopts only the local in-scope implementation intent and must independently correct, commit, and verify the recovered source.",
+    "No overall delegation-efficiency improvement is inferred from this run."
+  ]
+}

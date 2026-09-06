@@ -6,6 +6,8 @@ from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from tests.quality_gates.support import ROOT
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
@@ -403,6 +405,124 @@ def test_verify_closeout_command_delegates_to_backend_runner(tmp_path: Path) -> 
 
     assert rc == 0
     assert calls == ["called"]
+
+
+def test_review_resolution_parser_exposes_only_its_narrow_named_flags(tmp_path: Path) -> None:
+    module = runpy.run_path(str(ROOT / SCRIPT))
+    parser = module["build_parser"]()
+    args = parser.parse_args(
+        [
+            "review-resolution",
+            "--repo",
+            "corca-ai/charness",
+            "--number",
+            "42",
+            "--number",
+            "43",
+            "--reviewed-path",
+            "reviewed.md",
+            "--lens",
+            "recurrence",
+            "--repo-root",
+            str(tmp_path),
+            "--dry-run",
+        ]
+    )
+
+    assert args.command == "review-resolution"
+    assert args.number == [42, 43]
+    assert args.reviewed_path == ["reviewed.md"]
+    with pytest.raises(SystemExit):
+        parser.parse_args(
+            [
+                "review-resolution",
+                "--repo",
+                "corca-ai/charness",
+                "--number",
+                "42",
+                "--reviewed-path",
+                "reviewed.md",
+                "--lens",
+                "recurrence",
+                "--scope",
+                "wrong",
+            ]
+        )
+
+
+def test_review_resolution_rejects_duplicate_numbers_without_loading_runner(tmp_path: Path) -> None:
+    module = runpy.run_path(str(ROOT / SCRIPT))
+    emitted: list[dict[str, object]] = []
+    command = module["command_review_resolution"]
+    command.__globals__["emit"] = emitted.append
+    resolution = command.__globals__["REVIEW_RESOLUTION"]
+    resolution._load_package_script = lambda *_args: pytest.fail(
+        "runner/gate must not load"
+    )
+
+    rc = command(
+        Namespace(
+            repo="corca-ai/charness",
+            number=[42, 42],
+            reviewed_path=["reviewed.md"],
+            lens="recurrence",
+            repo_root=tmp_path,
+            attempt_id=None,
+            goal_lineage_file=None,
+            dry_run=False,
+        )
+    )
+
+    assert rc == 2
+    assert emitted[0]["reviewer_started"] is False
+    assert emitted[0]["reason_code"] == "input-invalid"
+
+
+def test_review_resolution_composes_targets_and_delegates_to_semantic_runner(
+    tmp_path: Path,
+) -> None:
+    module = runpy.run_path(str(ROOT / SCRIPT))
+    calls: list[list[str]] = []
+
+    def load_package_script(skill: str, _name: str):
+        if skill == "scripts":
+            return SimpleNamespace(selected_doc_violations=lambda _root, _paths: [])
+        return SimpleNamespace(main=lambda argv: calls.append(argv) or 7)
+
+    command = module["command_review_resolution"]
+    command.__globals__["REVIEW_RESOLUTION"]._load_package_script = load_package_script
+    rc = command(
+        Namespace(
+            repo="corca-ai/charness",
+            number=[42, 43],
+            reviewed_path=["reviewed.md", "tests/regression.py"],
+            lens="recurrence",
+            repo_root=tmp_path,
+            attempt_id="resolution-1",
+            goal_lineage_file=".charness/lineage.json",
+            dry_run=True,
+        )
+    )
+
+    assert rc == 7
+    assert len(calls) == 1
+    argv = calls[0]
+    assert argv[argv.index("--scope") + 1].startswith("issue-resolution:")
+    assert "review resolution/recurrence" in argv[argv.index("--scope") + 1]
+    assert "block or defer" in argv[argv.index("--lens") + 1]
+    assert "produce a passing" not in argv[argv.index("--lens") + 1]
+    target_values = [
+        argv[index + 1]
+        for index, value in enumerate(argv)
+        if value == "--prepared-target"
+    ]
+    assert target_values == [
+        "corca-ai/charness#42",
+        "corca-ai/charness#43",
+    ]
+    assert "--packet-file" not in argv
+    assert "--backend" not in argv
+    assert argv[-1] == "--dry-run"
 
 
 def test_issue_plan_new_command_builds_new_plan(tmp_path: Path) -> None:

@@ -154,9 +154,14 @@ rewrite them.
 
 ## Bundled Closeout
 
-One review can cover a bundle without a formatting-only repeat. Prepare it with
-repeatable `--prepared-target owner/repo#N` via the
-[semantic review command](../../critique/references/prepare-packet.md#one-command-operator-path).
+One resolution review can cover a bundle without a formatting-only repeat. For
+an actual issue-resolution review, use the issue-owned
+`issue_tool.py review-resolution --repo owner/repo --number N --reviewed-path <file> --lens <focus>`
+command, repeating `--number` and `--reviewed-path` as needed; it derives the
+qualified targets and resolution purpose before delegating to the generic
+semantic runner. Keep the generic
+[semantic review command](../../critique/references/prepare-packet.md#one-command-operator-path)
+available for reviews whose purpose is not issue resolution.
 The issue-owned [membership checker](../scripts/issue_worker_targets.py)
 requires the packet and passing, evidence-bearing observations to match the
 complete citation scope. Keep one citation for the complete bundle, such as

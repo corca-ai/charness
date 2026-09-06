@@ -27,6 +27,7 @@ PLAN = _load_local("issue_plan")
 TRACKER_CLI = _load_local("issue_tracker_cli")
 MILESTONE = _load_local("issue_milestone")
 PARSER = _load_local("issue_tool_parser")
+REVIEW_RESOLUTION = _load_local("issue_review_resolution")
 TRACKER = TRACKER_CLI.TRACKER
 
 _run_tracker_backend_command = TRACKER_CLI._run_tracker_backend_command
@@ -249,6 +250,10 @@ def command_verify_closeout(args: argparse.Namespace) -> int:
     )
 
 
+def command_review_resolution(args: argparse.Namespace) -> int:
+    return REVIEW_RESOLUTION.command_review_resolution(args, emit=emit)
+
+
 def command_check_source_preservation(args: argparse.Namespace) -> int:
     body_file = args.body_file.resolve()
     if not body_file.is_file():
@@ -316,6 +321,7 @@ def build_parser() -> argparse.ArgumentParser:
             "preflight": command_preflight,
             "resolve_target": command_resolve_target,
             "resolve_invocation": command_resolve_invocation,
+            "review_resolution": command_review_resolution,
             "select": command_select,
             "read": command_read,
             "close_with_comment": command_close_with_comment,

@@ -333,7 +333,7 @@ def _worker_carrier_disposition(
             require_delivery_chain=True,
             required_issue_numbers=required_issue_numbers,
             required_repository=required_repository,
-            required_scope_prefix="issue-resolution",
+            required_scope_prefix=_TARGETS.ISSUE_RESOLUTION_SCOPE_PREFIX,
             packet_validator=validate_legacy_packet,
         )
         if required_issue_numbers is not None or required_repository is not None:
