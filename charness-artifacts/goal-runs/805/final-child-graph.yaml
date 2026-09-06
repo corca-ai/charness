@@ -1,0 +1,70 @@
+ok: true
+status: verified-read
+outcome: verified-read
+mutation_invoked: false
+repo: corca-ai/charness
+parent_number: 805
+count: 6
+completed: 6
+open: 0
+percent_completed: 100
+children:
+- number: 806
+  title: Long-term delegation usefulness is unmeasured across model tiers
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/806
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/805
+- number: 811
+  title: Release resume repeats semantic verification after a sealed prepare
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/811
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/805
+- number: 809
+  title: Long-delegation net value lacks a fair no-plugin comparison
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/809
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/805
+- number: 810
+  title: Multi-issue closeout forces repeated reviews and classification partitions
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/810
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/805
+- number: 807
+  title: Verify and publish the long-delegation improvement composition
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/807
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/805
+- number: 808
+  title: Repeated bootstrap and fixed-form reasoning obscure a long task next action
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/808
+  parent_issue_url: https://api.github.com/repos/corca-ai/charness/issues/805
+expected_children:
+- 806
+- 807
+- 808
+- 809
+- 810
+- 811
+expected_children_source:
+  path: /home/hwidong/codes/charness/charness-artifacts/goal-runs/805/expected-children.json
+  sha256: 9a0908bee12455937c888e927a5304c7018f284a28dc64533472f2b48927414d
+  kind: charness.expected-sub-issue-set/v1
+  repo: corca-ai/charness
+  parent_number: 805
+  children:
+  - 806
+  - 807
+  - 808
+  - 809
+  - 810
+  - 811
+  source: null
+missing_children: []
+unexpected_children: []
+all_children_closed: true
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

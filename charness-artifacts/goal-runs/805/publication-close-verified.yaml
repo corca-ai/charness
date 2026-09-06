@@ -1,0 +1,126 @@
+ok: true
+status: verified
+confirmation:
+  observer: issue_verify_closeout@gh
+  channel: backend-state-readback
+  scope: state-and-carrier-checks-only
+  line: 'confirmed: issue_verify_closeout@gh via backend-state-readback (state-and-carrier-checks-only)'
+review_advisory: []
+repo: corca-ai/charness
+numbers:
+- 807
+classification: feature
+classifications:
+  '807': feature
+carrier: direct-commit
+commit_ref: 7d0b10f066270d038ea881fba954458ca8c5cca5
+body_file: null
+manual_fallback_reason: null
+expect_state: CLOSED
+missing_close_keywords: []
+missing_fields: []
+missing_field_reasons: []
+parsed_ledger_fields: []
+state_mismatches: []
+manual_comment_missing: []
+resolution_critique_check:
+  ok: true
+  skipped_classification: feature
+source_preservation:
+  external_sourced: false
+  origin: null
+  preservation_declared: null
+  forms_present: []
+  missing: false
+  ok: true
+behavioral_verdict:
+  applies: true
+  ok: true
+  missing: []
+  lines:
+  - target: '#807'
+    value: verified within the approved publication boundary through distinct release
+      backend and credential-free public REST/tag readbacks, a separate agent's installed-source
+      mixed-bundle composition test, and source/manifest equivalence observation.
+      All 1,113 frozen entries exist with matching modes on compared surfaces; 1,111
+      contents match and two metadata differences are proven version-only. All 17
+      retained pilot inputs match. Retained Codex support/bytecode extras prevent
+      whole-install identity; active hosts were not restarted. These channels are
+      separate from this issue's later CLOSED state.
+hotl_dispositions:
+  applies: false
+  ok: true
+  undispositioned: []
+  lines: []
+ai_provenance:
+  applies: true
+  ok: true
+  missing: false
+  marker: Agent-authored by Codex under the operator's explicit Goal 805 publication/install/closeout
+    authority, with separately identified reviewers and observers; no additional human
+    exact-byte review is claimed.
+  classification: feature
+verified_state:
+- number: 807
+  state: CLOSED
+  url: https://github.com/corca-ai/charness/issues/807
+consolidation_readback: []
+classification_reports:
+  feature:
+    numbers:
+    - 807
+    missing_fields: []
+    behavioral_verdict:
+      applies: true
+      ok: true
+      missing: []
+      lines:
+      - target: '#807'
+        value: verified within the approved publication boundary through distinct
+          release backend and credential-free public REST/tag readbacks, a separate
+          agent's installed-source mixed-bundle composition test, and source/manifest
+          equivalence observation. All 1,113 frozen entries exist with matching modes
+          on compared surfaces; 1,111 contents match and two metadata differences
+          are proven version-only. All 17 retained pilot inputs match. Retained Codex
+          support/bytecode extras prevent whole-install identity; active hosts were
+          not restarted. These channels are separate from this issue's later CLOSED
+          state.
+    hotl_dispositions:
+      applies: false
+      ok: true
+      undispositioned: []
+      lines: []
+    ai_provenance:
+      applies: true
+      ok: true
+      missing: false
+      marker: Agent-authored by Codex under the operator's explicit Goal 805 publication/install/closeout
+        authority, with separately identified reviewers and observers; no additional
+        human exact-byte review is claimed.
+      classification: feature
+    consolidation_readback: []
+proof_mismatch_scope:
+  present: false
+  adapter_found: false
+  adapter_valid: true
+  map_available: false
+  degraded: true
+closeout_authorization:
+  applies: false
+  authorized: true
+  refusal: null
+  crosswalk_status: crosswalk_missing
+  crosswalk_detail: charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json
+    does not exist
+  invoked_targets: []
+  carrier_targets: []
+  aggregate_targets: []
+  carrier_source: verify-readback:direct-commit
+  target: null
+  gating: 'reported-only: a post-publication readback cannot prevent a close that
+    already happened'
+selected_backend:
+  id: gh
+  binary: gh
+  commands: null
+  repo_scoped: null

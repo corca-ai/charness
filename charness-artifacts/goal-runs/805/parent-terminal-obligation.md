@@ -84,8 +84,9 @@ proposals outside this slice, not new implementation or claimed conversions.
 1. #806, #808, #809, #810 and #811: CLOSED via the published mixed carrier,
    then verified; no manual fallback. Each final issue-owned comment preserves
    the distinct behavior and its limitations.
-2. #807: publication closeout is the next carrier; not yet recorded CLOSED in
-   this version of the obligation.
+2. #807: CLOSED via publication carrier
+   7d0b10f066270d038ea881fba954458ca8c5cca5, then independently verified by the
+   issue owner; no manual fallback. The exact six-child provider graph is closed.
 3. #805: only the dedicated goal-run-close may close it, after the exact six-child
    graph and issue-owned comment identities pass. This document does not claim
    that future terminal readback has already happened.

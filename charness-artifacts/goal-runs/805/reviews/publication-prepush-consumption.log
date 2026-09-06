@@ -1,0 +1,279 @@
+charness pre-push: scanning the push range for GitHub close keywords
+ok: true
+status: verified
+commits_scanned: 1
+dropped_stdin_lines: 0
+coverage_notes: []
+close_keyword_commits:
+- commit: 7d0b10f066270d038ea881fba954458ca8c5cca5
+  subject: Verify Goal 805 publication and installed composition
+  numbers:
+  - 807
+  ok: true
+  refused_by: null
+  closeout_authorization:
+    applies: false
+    authorized: true
+    refusal: null
+    crosswalk_status: crosswalk_missing
+    crosswalk_detail: charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json
+      does not exist
+    invoked_targets: []
+    carrier_targets: []
+    aggregate_targets: []
+    carrier_source: commit-msg
+    target: null
+  reports:
+  - ok: true
+    status: carrier_verified
+    confirmation:
+      observer: issue_verify_closeout@gh
+      channel: carrier-body-checks
+      scope: carrier-checks-only
+      line: 'carrier-checked: issue_verify_closeout@gh via carrier-body-checks (carrier-checks-only)'
+    review_advisory: []
+    repo: corca-ai/charness
+    numbers:
+    - 807
+    classification: feature
+    classifications:
+      '807': feature
+    carrier: pr-body
+    commit_ref: null
+    body_file: /home/hwidong/.cache/tmp/tmpbjdx27n7/carrier-body.md
+    manual_fallback_reason: null
+    expect_state: null
+    missing_close_keywords: []
+    missing_fields: []
+    missing_field_reasons: []
+    parsed_ledger_fields: []
+    state_mismatches: []
+    manual_comment_missing: []
+    resolution_critique_check:
+      ok: true
+      skipped_classification: feature
+    source_preservation:
+      external_sourced: false
+      origin: null
+      preservation_declared: null
+      forms_present: []
+      missing: false
+      ok: true
+    behavioral_verdict:
+      applies: true
+      ok: true
+      missing: []
+      lines:
+      - target: '#807'
+        value: verified within the approved publication boundary through distinct
+          release backend and credential-free public REST/tag readbacks, a separate
+          agent's installed-source mixed-bundle composition test, and source/manifest
+          equivalence observation. All 1,113 frozen entries exist with matching modes
+          on compared surfaces; 1,111 contents match and two metadata differences
+          are proven version-only. All 17 retained pilot inputs match. Retained Codex
+          support/bytecode extras prevent whole-install identity; active hosts were
+          not restarted. These channels are separate from this issue's later CLOSED
+          state.
+    hotl_dispositions:
+      applies: false
+      ok: true
+      undispositioned: []
+      lines: []
+    ai_provenance:
+      applies: true
+      ok: true
+      missing: false
+      marker: Agent-authored by Codex under the operator's explicit Goal 805 publication/install/closeout
+        authority, with separately identified reviewers and observers; no additional
+        human exact-byte review is claimed.
+      classification: feature
+    verified_state: []
+    consolidation_readback: []
+    classification_reports:
+      feature:
+        numbers:
+        - 807
+        missing_fields: []
+        behavioral_verdict:
+          applies: true
+          ok: true
+          missing: []
+          lines:
+          - target: '#807'
+            value: verified within the approved publication boundary through distinct
+              release backend and credential-free public REST/tag readbacks, a separate
+              agent's installed-source mixed-bundle composition test, and source/manifest
+              equivalence observation. All 1,113 frozen entries exist with matching
+              modes on compared surfaces; 1,111 contents match and two metadata differences
+              are proven version-only. All 17 retained pilot inputs match. Retained
+              Codex support/bytecode extras prevent whole-install identity; active
+              hosts were not restarted. These channels are separate from this issue's
+              later CLOSED state.
+        hotl_dispositions:
+          applies: false
+          ok: true
+          undispositioned: []
+          lines: []
+        ai_provenance:
+          applies: true
+          ok: true
+          missing: false
+          marker: Agent-authored by Codex under the operator's explicit Goal 805 publication/install/closeout
+            authority, with separately identified reviewers and observers; no additional
+            human exact-byte review is claimed.
+          classification: feature
+        consolidation_readback: []
+    proof_mismatch_scope:
+      present: false
+      adapter_found: false
+      adapter_valid: true
+      map_available: false
+      degraded: true
+    closeout_authorization:
+      applies: false
+      authorized: true
+      refusal: null
+      crosswalk_status: crosswalk_missing
+      crosswalk_detail: charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json
+        does not exist
+      invoked_targets: []
+      carrier_targets: []
+      aggregate_targets: []
+      carrier_source: verify-readback:pr-body
+      target: null
+      gating: 'reported-only: a post-publication readback cannot prevent a close that
+        already happened'
+    source_artifact: null
+    source_artifacts:
+      '807': []
+    bare_close_numbers:
+    - 807
+charness pre-push: docs/artifact-only push detected (every changed path is on the docs/artifact allowlist)
+charness pre-push: running docs-only quality subset (set CHARNESS_FORCE_FULL_GATE=1 to force full)
+run-quality: START mode=read-only release=0 requested_scope=validate-debug-artifact,validate-quality-artifact,validate-critique-artifacts,validate-ideation-artifact,validate-retro-artifact,validate-current-pointer-freshness,check-docs,check-spec-evidence-durability,check-references-link-inventory outputs=isolated status=streamed
+run-quality: CHECK_START label=validate-debug-artifact
+run-quality: CHECK_START label=validate-quality-artifact
+run-quality: CHECK_START label=validate-critique-artifacts
+run-quality: CHECK_START label=validate-ideation-artifact
+run-quality: CHECK_START label=validate-retro-artifact
+run-quality: CHECK_START label=validate-current-pointer-freshness
+run-quality: CHECK_START label=check-docs
+run-quality: CHECK_START label=check-spec-evidence-durability
+run-quality: CHECK_START label=check-references-link-inventory
+run-quality: BATCH_START checks=9 first=validate-debug-artifact last=check-references-link-inventory
+PASS validate-quality-artifact 150ms
+PASS validate-ideation-artifact 150ms
+PASS validate-retro-artifact  170ms
+PASS validate-current-pointer-freshness 180ms
+PASS validate-critique-artifacts 210ms
+PASS check-references-link-inventory 220ms
+PASS validate-debug-artifact  260ms
+PASS check-spec-evidence-durability 4.1s
+--- check-spec-evidence-durability output ---
+Validated spec evidence durability across 3131 doc(s).
+ADVISORY (evidence durability): 63 citation(s) to gitignored targets remain in artifacts whose FILENAME date precedes 2026-08-22 or whose exact bytes a sibling Goal Binding hashes; they are frozen records and are counted, not rewritten. Every artifact in those families whose filename dates it on or after that -- and every artifact whose FILENAME carries no readable date at all, whatever its body says -- is enforced.
+PASS check-docs               4.7s
+--- check-docs output ---
+== check-last-verified ==
+== check-plugin-doc-links ==
+Validated relative links in 228 plugin-mirror doc(s). skipped: none
+== check-markdown ==
+WARN: inline code span check found issue(s) (advisory; rendered output is correct, not blocking):
+skills/public/critique/SKILL.md:46: inline code span wraps across line; collapse so the literal text stays on one line: ...tract. Record typed `Fresh-Eye...
+skills/public/critique/references/adversarial-evidence-review.md:89: inline code span wraps across line; collapse so the literal text stays on one line: ...none` for both. Its `Pattern...
+skills/public/critique/references/code-critique.md:73: inline code span wraps across line; collapse so the literal text stays on one line: ...ross-link it to the `Repeat...
+skills/public/critique/references/counterweight-triage.md:11: inline code span wraps across line; collapse so the literal text stays on one line: ...directly and record `Fresh-Eye Satisfaction:...
+skills/public/critique/references/prepare-packet.md:53: inline code span wraps across line; collapse so the literal text stays on one line: ... output. Repeatable `--hold-out...
+skills/public/debug/references/sibling-search.md:127: inline code span wraps across line; collapse so the literal text stays on one line: ...victim appended and `-k...
+skills/public/issue/references/issue-backend.md:454: inline code span wraps across line; collapse so the literal text stays on one line: ...  Run `issue_tool.py verify-create --repo <org/repo> --number <n> ...
+skills/public/quality/SKILL.md:119: inline code span wraps across line; collapse so the literal text stays on one line: ...a quality artifact, `resolve_quality_artifact.py --repo-root ....
+skills/public/quality/references/mutation-testing.md:371: inline code span wraps across line; collapse so the literal text stays on one line: ...026-07-30). A plain `coverage run -m...
+skills/shared/references/fresh-eye-subagent-review.md:281: inline code span wraps across line; collapse so the literal text stays on one line: ...   `python3 "$SKILL_DIR/../../shared/scripts/reviewer_boundary_...
+10 inline code span issue(s) found.
+markdownlint-cli2 v0.21.0 (markdownlint v0.40.0)
+Linting: 312 file(s)
+Summary: 0 error(s)
+== check-doc-links ==
+Validated markdown links across 260 document(s).
+== check-command-docs ==
+status: pass
+contract_path: .agents/command-docs.yaml
+commands:
+- capability
+- capability-doctor
+- capability-env
+- capability-explain
+- capability-init
+- capability-resolve
+- catalog
+- catalog-list
+- catalog-refresh
+- catalog-resolve-skill-path
+- doctor
+- goal
+- goal-run
+- init
+- reset
+- root
+- task
+- task-run
+- task-status
+- tool
+- tool-doctor
+- tool-install
+- tool-repair
+- tool-sync-support
+- tool-update
+- uninstall
+- update
+- version
+- worktree
+- worktree-add
+- worktree-audit
+- worktree-cleanup
+- worktree-create
+- worktree-doctor
+- worktree-exec
+- worktree-prepare
+findings: []
+== check-docs-length ==
+Validated docs length: 34 page(s) scanned, budget 1000 words, 7 recorded page(s) over budget, none new.
+== docs-graph ==
+status: pass
+summary:
+  documents: 34.0
+  orphans: 0.0
+  islands: 0.0
+  link_only_lines: 72.0
+  largest_component_ratio: 1.0
+  orphan_rate: 0.0
+  content_coverage: 1.0
+scan_root: docs
+not_observed: []
+named_unavailable: []
+bars:
+  orphans: 0
+  islands: 0
+  link_only_lines: 167
+failures: {}
+named: {}
+did_not_judge:
+- whether any link RESOLVES (that is check_doc_links.py, a different question)
+- whether any page is ACCURATE or current (reachability is not accuracy)
+- whether a link-only line is a bare link or wrapped prose -- the bar counts both,
+  so a genuine bare link can hide under the wrapping residual (see `link_only_lines_slack`
+  for how much room that residual currently has)
+- any page outside docs/, which this run never read
+link_only_lines_slack: 95
+== check-links-internal ==
+🔍 427 Total (in 0s) ✅ 417 OK 🚫 0 Errors 👻 10 Excluded
+
+== check-links-external ==
+Found 50 external http(s) link(s); set CHARNESS_LINK_CHECK_ONLINE=1 to validate them online.
+PASS check-docs (markdown, graph, command contracts, references, and links)
+ADVISORY: docs/parallel-execution.md: 1049 < recorded 1052; lower the record
+RUN [docs-graph-awiki] awiki lint -root docs -recursive
+OBSERVED [docs-graph-awiki] 0.0s awiki lint -root docs -recursive (exit 1 is lint findings; the verdict is the gate's, from the named metrics)
+Quality summary: 9 passed, 0 failed, total 5.6s
+To https://github.com/corca-ai/charness
+   0eff83280..7d0b10f06  main -> main

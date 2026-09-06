@@ -1,0 +1,117 @@
+{
+  "kind": "charness.goal-run-final-proof-index/v1",
+  "repo": "corca-ai/charness",
+  "parent_number": 805,
+  "draft_sha256": "710ff43f4176d0b67673ef0542f87d625709dbfaa7ba07b37a508329e0f5bedb",
+  "binding_sha256": "384f8d92cb5be679f32159e17b0797bf178ca2e43efee7dc05b8a9e7d20793fe",
+  "expected_children": {
+    "path": "charness-artifacts/goal-runs/805/expected-children.json",
+    "sha256": "9a0908bee12455937c888e927a5304c7018f284a28dc64533472f2b48927414d"
+  },
+  "parent_obligation": {
+    "path": "charness-artifacts/goal-runs/805/parent-terminal-obligation.md",
+    "sha256": "7da2d3973c041fa5270419234a3315c7430c3d86aeaedf9652295bfc356f265b"
+  },
+  "evidence": [
+    {
+      "role": "whole-system-reconciliation",
+      "path": "charness-artifacts/goal-runs/805/parent-terminal-obligation.md",
+      "sha256": "7da2d3973c041fa5270419234a3315c7430c3d86aeaedf9652295bfc356f265b"
+    },
+    {
+      "role": "exact-child-comments",
+      "path": "charness-artifacts/goal-runs/805/child-closeout-readbacks.json",
+      "sha256": "e279c4b6d74af37be285a1e818622d29e5bbaa72c7fac2a3f714763faca48b67"
+    },
+    {
+      "role": "exact-child-graph",
+      "path": "charness-artifacts/goal-runs/805/final-child-graph.yaml",
+      "sha256": "7a11bc3cfaf204b6849ee7188fee67c0b934fa98e95f82194ba7ffc8e757910f"
+    },
+    {
+      "role": "parent-close-frontier",
+      "path": "charness-artifacts/goal-runs/805/observations/805-final-close-frontier.terminal.json",
+      "sha256": "5b7716fb7c7c3d936f584c5e59650dd7b53e0667d3e8d862a2b44a2c484accb0"
+    },
+    {
+      "role": "required-integration",
+      "path": "charness-artifacts/goal-runs/805/reviews/integration-observations.md",
+      "sha256": "2cd4364845b54793d8fd9b2bee54aa5e7b4115e66c858c08d390682933d8e181"
+    },
+    {
+      "role": "release-execution",
+      "path": "charness-artifacts/goal-runs/805/reviews/release-final.yaml",
+      "sha256": "5f9bd2e4eff1c75dd747c534128c946da098b2f3726b11d3d4ca08e7c5981fd6"
+    },
+    {
+      "role": "release-prepare-partial",
+      "path": "charness-artifacts/goal-runs/805/reviews/release-preparation-receipt.json",
+      "sha256": "0e30aaa9b27df9a9ea2b4106b75a50660eb226fdf3412f9d0033f54f62816032"
+    },
+    {
+      "role": "release-final-current-verification",
+      "path": "charness-artifacts/goal-runs/805/reviews/release-final-receipt.json",
+      "sha256": "38582913899338aad228138f7fd9104656858eb507909efb7f874b10e67356b1"
+    },
+    {
+      "role": "release-scheduling",
+      "path": "charness-artifacts/probe/2026-09-06-release-scheduling/observations.md",
+      "sha256": "5e70bfd0c292ac8bf232b384f4da449980cb0ff64b605700243f6dff95562d3a"
+    },
+    {
+      "role": "selected-original-runtime-rows",
+      "path": "charness-artifacts/probe/2026-09-06-release-scheduling/runtime-rows.json",
+      "sha256": "588d560f8b9bcee3801e9dc7d4b531aef406aab3115fb1a497ba4da35b94d157"
+    },
+    {
+      "role": "hosted-tag-ci",
+      "path": "charness-artifacts/goal-runs/805/reviews/tag-ci-readback.json",
+      "sha256": "e05970451108b922b4779812c3e123536f1716d2d8b5fb61e3fe2c8dd8be48d1"
+    },
+    {
+      "role": "independent-public-installed-observer",
+      "path": "charness-artifacts/probe/2026-09-06-v8.5.0-independent-observer.json",
+      "sha256": "4d43bb39da7a7d91a53a9d15f2476905629909049dd395017846f341e87f387d"
+    },
+    {
+      "role": "implementation-state-carrier-readback",
+      "path": "charness-artifacts/goal-runs/805/reviews/implementation-close-verified.yaml",
+      "sha256": "00900e33cb9a0f0e6ddf234fd9566f86f3f5bca67d08f4aec01c5662259b4a30"
+    },
+    {
+      "role": "publication-state-carrier-readback",
+      "path": "charness-artifacts/goal-runs/805/publication-close-verified.yaml",
+      "sha256": "94e82ff8ff07c60f5777871d49ab24801d45a931bbeea771856f14543ac32a55"
+    },
+    {
+      "role": "original-consumer-comparison",
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/results.md",
+      "sha256": "32b906aed2694564c1c205a583b64075cb2621a997a35987b2b05a194ec3233a"
+    },
+    {
+      "role": "frozen-comparison-contract",
+      "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/protocol.md",
+      "sha256": "c7c6694c302a4e6ed7bd3a46d652b96146f71fb457ed622dbcd55008c4e4f498"
+    },
+    {
+      "role": "release-critique",
+      "path": "charness-artifacts/critique/2026-09-06-goal805-release-8-5-0.md",
+      "sha256": "dd025daf8a1620e80821ced773ca35c803ca2c2ecc8e35859ea0768baaf499d3"
+    },
+    {
+      "role": "prepared-claims",
+      "path": "charness-artifacts/release-review/2026-09-06-v8.5.0-prepared-claims-review.json",
+      "sha256": "98951d155f2fdd2433051fcbed80d23733578750041684614fe53f3348abf357"
+    },
+    {
+      "role": "implementation-closeout-critique",
+      "path": "charness-artifacts/critique/2026-09-06-goal805-implementation-closeout.md",
+      "sha256": "c7d5c9fc698ab0c4a63e3e893d93bb6ceb5e59d3470907225cddf8ff0a6af9a0"
+    },
+    {
+      "role": "retrospective",
+      "path": "charness-artifacts/retro/2026-09-06-session-retro-2.md",
+      "sha256": "a4e2be4c19f4e6bb325dd33f033b449e382f64cc750d9765a51c3f175d79ff05"
+    }
+  ]
+}
