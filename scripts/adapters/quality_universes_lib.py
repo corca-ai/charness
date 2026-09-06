@@ -273,10 +273,20 @@ def _raw_glob(repo_root: Path, patterns: tuple[str, ...]) -> list[Path]:
     return sorted(matches)
 
 
-def _git_listing(repo_root: Path) -> set[Path] | None:
+def _git_listing(repo_root: Path, *, selected_paths: list[Path] | None = None) -> set[Path] | None:
+    command = ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"]
+    if selected_paths is not None:
+        if not selected_paths:
+            return set()
+        command.extend(
+            [
+                "--",
+                *(f":(literal){path.relative_to(repo_root).as_posix()}" for path in selected_paths),
+            ]
+        )
     try:
         result = run_process(
-            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+            command,
             cwd=repo_root,
             timeout_seconds=None,
         )
