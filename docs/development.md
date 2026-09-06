@@ -75,7 +75,7 @@ Each rule names the mechanism that holds it.
 | A code push runs the full read-only and release lanes | the pre-push hook ([pushing](#pushing)) |
 | `scripts/`/`skills/`/`docs/` commits need a matching release-lane receipt or `Slice-reopen:` | commit-msg [`check_release_lane_receipt.py`](../scripts/hooks/check_release_lane_receipt.py) |
 | A stale `plugins/` mirror is regenerated or refused, never read as a failure | the standing runner and the quality engine ([generated surfaces](./operating-contract.md#generated-surfaces)) |
-| A skipped gate is not a passed gate | the quality summary ([operating contract](./operating-contract.md#verification)) |
+| A skipped gate is not a passed gate | the quality summary ([operating contract](./operating-contract.md#verification), [release scheduling](../skills/public/release/references/adapter-contract.md#quality-scheduling)) |
 | A passing test is not a covered line | [`release_changed_line_coverage.py`](../scripts/mutation/release_changed_line_coverage.py), in the lane receipt and the pre-push hook |
 | Production code spawns only through [`subprocess_guard.py`](../scripts/core/subprocess_guard.py) | [`check_subprocess_form.py`](../scripts/gates/check_subprocess_form.py) |
 | A repo script's location is answered only by [`repo_layout.py`](../scripts/core/repo_layout.py) | [`check_script_lookup_form.py`](../scripts/gates/check_script_lookup_form.py) |

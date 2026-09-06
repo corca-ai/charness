@@ -1,0 +1,75 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Proof-integrity / Weinberg",
+  "packet_sha256": "ee8f30d31e56eaf9cfc6afb97c10e1f03acc14c32000d0c87bd19d099f9b97ee",
+  "reviewed_input_identity_sha256": "0578880a0b7a90a9e2e0315817cd0bc73479a2448338bc8ce77a6e040b573436",
+  "verdict": "block",
+  "findings": [
+    {
+      "id": "R811-PI-01",
+      "severity": "medium",
+      "summary": "Relative receipt paths can copy unrelated stale evidence into the last-release slot.",
+      "evidence": [
+        "Producer/owner: scripts/run_quality_engine_receipt.py passes receipt_json unchanged to the proof writer, which runs with cwd=context.repo_root.",
+        "The subsequent Path(written).resolve() and shutil.copyfile(written, copy_to) resolve the same relative string against the engine process's caller directory. The supplied engine does not change that directory.",
+        "Calling the runner from outside its repository with --receipt-json=receipt.json therefore writes the partial in one directory and copies from another. A missing source fails preparation; an existing stale pass can instead replace the last-release slot while preparation exits successfully.",
+        "Consumer: scripts/hooks/check_release_lane_receipt.py accepts a pass-shaped receipt whose index_tree matches. It cannot distinguish that copied stale receipt from the intended producer output.",
+        "The supplied persistence tests use absolute receipt destinations and do not exercise distinct caller and repository directories."
+      ],
+      "action": "Resolve the receipt destination against repo_root once and use that same absolute path for emission, comparison, and copying. Test an outside-repository invocation with an unrelated stale pass at the caller-relative path."
+    },
+    {
+      "id": "R811-PI-02",
+      "severity": "medium",
+      "summary": "Appending modifiers to the original shell text breaks native commands with a trailing newline.",
+      "evidence": [
+        "Producer/owner: publish_release_common.py classifies native_release using shlex.split(quality_command), but constructs execution text with effective_command += ' --release-prepare'.",
+        "For quality_command equal to './scripts/run-quality.sh --release\\n', shlex yields the accepted native argv. The executed shell text runs the complete release suite, then attempts a separate --release-prepare command and fails.",
+        "A trailing newline is a normal representation of a command supplied through a YAML literal block. This introduces an unnecessary complete suite followed by a failed prepare.",
+        "Consumer: cli.run_phase receives the original shell text with the appended modifier. The supplied command-shape tests cover pipelines and && chains but omit newline representations."
+      ],
+      "action": "For accepted native commands, construct effective execution from the validated argv using shlex.join before appending arguments. Preserve custom shell commands unchanged and add a trailing-newline regression test."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Receipt-path failure requires a non-default invocation.",
+      "bin": "fix-now",
+      "disposition": "Repository-local execution and absolute destinations avoid R811-PI-01, but the public runner accepts relative destinations without restricting the caller directory."
+    },
+    {
+      "concern": "Newline handling cannot publish partial quality.",
+      "bin": "fix-now",
+      "disposition": "R811-PI-02 fails closed, but remains a concrete prepare lifecycle regression and can execute the expensive suite unnecessarily."
+    },
+    {
+      "concern": "Exact selected pytest deferral and unknown gates.",
+      "bin": "supported",
+      "disposition": "The engine selects the ordinary release universe first, requires exactly one selected pytest-release row, removes only that row, and records it as unproven. Supplied tests cover variant exclusion and future-gate execution."
+    },
+    {
+      "concern": "Partial evidence reaching publication or weakening local commits.",
+      "bin": "supported-with-bounded-exception",
+      "disposition": "Seal and handoff validation reject preparation commands and missing pytest scope; local commit validation rejects honest unestablished receipts. Execute and resume explicitly choose opposite preparation flags. R811-PI-01 remains the receipt-provenance exception."
+    },
+    {
+      "concern": "Final failure before publication.",
+      "bin": "supported",
+      "disposition": "Resume invokes quality before tag, push, and release creation. The supplied topology fixture checks final failure prevents those operations, while identifying its suite as instrumented."
+    },
+    {
+      "concern": "Abandoned Q/P equivalence and actual performance claims.",
+      "bin": "out-of-scope",
+      "disposition": "No cache invariants are requested. Reported focused tests and timing observations do not establish actual release savings or installed behavior."
+    }
+  ],
+  "next_move": "Repair the two command/path handling defects and run focused regression checks before integration; retain the current full-suite publication boundary.",
+  "non_claims": [
+    "Reviewed the supplied inline semantic payload; no workspace edits, test execution, or nested review performed.",
+    "The reported 93 passing tests and 45 rechecks were not independently reproduced.",
+    "This review does not approve publication, Goal 805 or WorkItem 811 resolution, actual release behavior, installed behavior, or time savings.",
+    "Reviewer tier application is unverified by the supplied packet."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

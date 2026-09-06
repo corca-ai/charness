@@ -7,6 +7,7 @@ import shutil
 import sys
 from pathlib import Path
 
+from run_quality_engine_model import RunnerError
 from run_quality_engine_output import Ledger, format_elapsed
 from run_quality_engine_runtime import RuntimeContext, record_runtime_single, timestamp
 
@@ -43,15 +44,18 @@ def _last_release_receipt_path(repo_root: Path) -> Path:
 
 
 def _bind_receipt_outputs(
-    args: list[str], *, repo_root: Path, status: str, release: bool, full_queue: bool, receipt_json: str
+    args: list[str], *, repo_root: Path, status: str, release: bool, full_queue: bool,
+    receipt_json: str, release_prepare: bool = False,
 ) -> tuple[list[str], Path | None, str]:
     """Return argv, optional copy-destination, and the json path actually written."""
     index_tree = _index_tree(repo_root)
     if index_tree:
         args = [*args, "--index-tree", index_tree]
     last_receipt = _last_release_receipt_path(repo_root)
-    write_last = status == "pass" and release and full_queue
+    write_last = (status == "pass" or release_prepare) and release and full_queue
     if receipt_json:
+        destination = Path(receipt_json)
+        receipt_json = str((repo_root / destination).resolve())
         args = [*args, "--json-path", receipt_json]
         return args, last_receipt if write_last else None, receipt_json
     if write_last:
@@ -73,6 +77,7 @@ def finish(
     labels: str,
     overall_rc: int,
     not_run: tuple[tuple[str, str], ...] = (),
+    release_prepare: bool = False,
 ) -> None:
     import time
 
@@ -119,14 +124,18 @@ def finish(
         release=release,
         full_queue=full_queue,
         receipt_json=receipt_json,
+        release_prepare=release_prepare,
     )
     result = run_process(args, cwd=context.repo_root, env=context.environment, timeout_seconds=None)
-    if copy_to is not None and written and result.returncode == 0:
+    if release_prepare and result.returncode != 0:
+        raise RunnerError("release preparation could not persist its unestablished quality receipt")
+    if (copy_to is not None and written and result.returncode == 0
+            and Path(written).resolve() != copy_to.resolve()):
         copy_to.parent.mkdir(parents=True, exist_ok=True)
         try:
             shutil.copyfile(written, copy_to)
-        except OSError:
-            pass
+        except OSError as exc:
+            raise RunnerError(f"could not replace last release quality receipt: {exc}") from exc
     if result.stdout:
         print(result.stdout, end="")
     if result.stderr:

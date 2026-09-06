@@ -26,100 +26,93 @@ Inspect prepare/resume/common sealing and pre-push consumers under `skills/publi
 
 No removal merely to meet a time target; no general filesystem cache or relaxed unknown-input policy. If the closure cannot be made trustworthy and cheaper within this seam, record A2 unmet and seek a scoped disposition, not a false completion. Parent owns release authorization, integration and final publication.
 
-## Implementation contract (2026-09-06)
+## Revised implementation contract (2026-09-06)
 
-Reuse only `pytest-release`, the existing expensive standing subject suite.
-Every other gate runs current, including changed-line coverage, secrets, docs,
-artifact referents, and all new or unknown gates. Thus “subject suite once”
-means this named suite, not an assertion that all release checks run once.
-The previous correlated run measured 383.027s total and 145.740s for pytest;
-about 237s remaining is an estimate, not an observed new runtime.
+The Q-to-P-to-R equivalence proposal is rejected before implementation.
+`charness-artifacts/probe/2026-09-06-release-scheduling/observations.md`
+records actual live Git and excluded release/review reads. Their verdict
+independence is not established; a static gate label cannot certify arbitrary
+future tests. Initial design review R811-01 caused this correction. The frozen
+Goal remains planning provenance; this living contract records the learned
+implementation choice.
 
-### Receipt and identity ownership
+A2 is pursued by scheduling the expensive standing subject suite **once at the
+final state**, not by claiming a cached Q verdict proves R. Prepare runs every
+other current release gate; resume runs the ordinary full release lane including
+pytest-release. This removes the duplicate initial pytest execution while
+retaining the current final verdict. All other gates, including changed-line
+coverage and unknown/new gates, still execute at both applicable stages.
+Estimated avoided time is the prior measured 145.740s; actual net savings must
+include new overhead and investigation cost.
 
-Keep `.charness/quality/last-release-receipt.json` as the sole persistent store.
-Its existing quality owner adds one optional closed pytest-reuse object:
-version, candidate/sealed state, exact passed scope entry and expanded pytest
-invocation/targets/marker, subject/verifier/runtime/environment/external-Git/
-materialized identities, and prepared commit/tree/record binding when sealed.
-Disclose non-secret identity names and tool versions; hash environment values,
-never publish credentials. No all-gate dependency schema or cross-run lookup.
+### Operator and runner contract
 
-Capture the candidate immediately before executing the selected suite. Subject
-identity covers all tracked and nonignored untracked content, modes, and
-symlink targets. Exclude only the adapter-derived release record and the
-release-review artifact root, whose intervening changes are separately judged
-below. Bind verifier/runner/configuration and expanded test selection, Python
-and package/runtime closure, semantic environment, external Git refs/merge-base,
-and actual exported/materialized root bytes. Unknown identity means fallback.
-Check subject stability after the suite. Persist a candidate only when the
-exact pytest scope passed and the full requested receipt is established.
+Use one explicit `--release-prepare` modifier on the existing
+`scripts/run-quality.sh --release` command. This is the maintainer's existing
+prepare/resume journey, not a new lifecycle or install surface. It requires
+`--release`, refuses labels and `--non-claim`, and is order-independent.
+Document it in existing help and owner docs; reject duplicate/unknown forms.
+Help remains read-only. No new dependency, executable, mode registry, cache,
+provider permission, or receipt schema.
 
-Do not confuse the pre-suite dirty worktree Q with its old index tree. After
-release record generation, fresh-checkout probes, narrative audit, commit and
-amend yield clean prepared P, the quality owner seals that same receipt. P must
-have the expected parent from Q; recomputed semantic identities must match.
-Permit only the derived record's Q-to-P excluded change, not arbitrary changes
-under the excluded review root. Bind P, its tree, and final record bytes. HEAD
-and dirtiness are separately checked at seal, not included in a semantic digest
-that would make every intended Q-to-P transition fail.
+Select the normal release universe first, then defer only the exact selected
+`pytest-release` row. Unknown/new gates remain current. Report
+`not_run: pytest-release / deferred-until-final-release` and
+`unproven_subjects: [pytest-release]`; successful preparation may exit 0, but
+the semantic quality status is `unestablished`, never `pass`. A failed current
+gate remains a failure. Write the truthful partial into the existing last-release
+receipt slot, replacing any stale pass. Receipt emission/copy failure must fail
+preparation. Do not fabricate a measured pytest row.
 
-### Resume and final consumer
+Release orchestration explicitly chooses preparation only from execute, never
+from resume or another final path. Append the modifier only to the exact
+repo-owned release runner as one simple supported argv invocation (not a shell
+pipeline or command chain); custom adapter commands preserve today's complete
+execution. Stamp the actual effective command, stage, timing and pending pytest
+status in the prepared record. A full fallback must be described as full, not
+pending. Preserve any existing local commit receipt requirement; do not weaken
+it or add an automatic Slice-reopen exception for this feature.
 
-The existing claims validator is the sole authority for direct-child P-to-R
-eligibility: exact supplied claims JSON and newly added passing review Markdown.
-Reuse cannot add a second or broader allowed-delta definition. Require clean R,
-sealed P/record equality, exact validated changed paths, and current matching
-subject/verifier/runtime/environment/external-Git/materialized identities.
-Malformed, missing, unsealed, overwritten, stale, foreign, or changed identity
-executes pytest current with a reason. This is not a release blocker when full
-verification remains available.
+### Current final proof and claims
 
-Pass the optional sealed source through one narrow quality runner input; do not
-broaden `--labels` or add an unrestricted skip flag. The normal full/release
-selection remains authoritative. Mark pytest as reused with source-receipt hash
-and prepared/evidence commits, and list every other gate as currently measured.
-The combined established scope must equal the requested scope exactly, without
-omissions, duplicates, or fabricated freshly measured pytest. Preserve the
-sealed source in the existing external resume temporary directory before the
-new current receipt overwrites the persistent slot.
+Resume runs the existing full release quality command against current clean R.
+Only this established, complete current receipt may seal the existing one-push
+handoff. The seal and final consumer refuse preparation commands and partial
+receipts, including stale/forged pass-shaped records missing pytest scope.
+If a receipt is unavailable or invalid, the existing hook's ordinary full
+verification fallback remains. No prepared evidence is reused, so the proposed
+v2 reuse handoff, cross-commit identity object, and ancestor-policy change are
+not implemented.
 
-The one-push pre-push receipt owner binds both source and current composite
-receipt, independently revalidates the same identity/topology at consumption,
-and checks push-stdin objects against covered R. Existing exact-current v1
-handoffs remain supported; reused evidence needs a versioned handoff. No reuse
-of authorization, version/claims eligibility, fresh checkout/package probes,
-publication, public readback, or installed observation.
+Prepared claims review sees an honest pending statement; it does not pre-confirm
+the later pytest result. Resume's eventual pass is a mechanically derived
+post-review evidence update, only after actual full verification. Keep initial,
+post-amend, and resume fresh-checkout probes; current version/claims eligibility,
+authorization, final public readback and installed observation are unchanged.
+No publication side effect may occur before the current full lane succeeds.
 
-### Acceptance and tripwires
+### Acceptance, fixed decisions and non-claims
 
-Test one pytest invocation across eligible prepare/resume, all other labels
-twice, and no extra broad lane at the final hook. Add an unknown gate and prove
-it executes current. Negative controls cover missing/corrupt/unestablished
-receipts, incomplete pytest/composite scope, dirty seal, wrong Q/P lineage or
-record, non-record Q-to-P edits, non-direct/extra P-to-R changes, source/test/
-config/content/mode/symlink/untracked drift, runtime/environment/external-ref/
-materialized changes, forged reuse markers, and uncovered push SHAs. Claims-only
-secret, broken link, or bad referent must still fail their current gates.
+Tests establish one expensive pytest invocation across prepare/resume, all
+other applicable labels at both stages, and no extra broad lane at a valid final
+receipt. Assert exact one-row deferral, unknown-gate execution, full fallback for
+custom commands, and truthful prepared/final record text. Check CLI help,
+modifier ordering, missing release, duplicate modifier, unknown/value-bearing
+forms, conflicting labels/non-claim, partial receipt status, stale pass
+replacement, final-seal/final-hook refusal, and final-failure-before-publication.
+Retain current local commit floors and read-only HEAD/worktree behavior.
 
-Native changed-line receipt reuse is deliberately deferred: it requires another
-provenance integration and is not necessary to remove the duplicate standing
-suite. Full quality remains the fallback. Design review precedes any omitted
-call; fresh-eye integrated review and measured real invocation evidence remain
-required before claiming this capability works.
+The integration test must carry prepare output through claims review and resume,
+not stop at mocked selection. Measure actual stage invocations and overhead.
+A permanently pending final state or a partial receipt accepted for publication
+is a tripwire. Fresh-eye code/behavior review, final release execution and
+installed proof remain required; no timing benefit is claimed from design alone.
 
-Review R811-01 is accepted: the closure probe must inventory actual selected
-tests' internal Git observations (HEAD/index/status) and reads of excluded
-artifacts, including live helpers they call. Normalize those Q/P differences
-only with evidence that the selected suite does not depend on them or observes
-an equivalent view; otherwise rerun. A test consuming real HEAD/index/record
-bytes must invalidate eligibility. Pair it with a positive dirty-Q-to-clean-P
-case so permanently ineligible reuse cannot masquerade as safety. This probe
-is required before any execution is omitted, not a new generic dependency gate.
-
-Review R811-02 is accepted: v2 push handoff accepts only covered R and explicitly
-bound equivalent P, with lightweight or annotated tags peeled to commits.
-Reject any other ancestor, unknown object, or deletion in this release handoff.
-Test R plus P's legitimate tag and R plus an older unrelated subject. Legacy v1
-scope stays unchanged, but v1 sealing must refuse a composite containing reused
-evidence so the versioned checks cannot be downgraded.
+Deliberately not doing: safe reuse of arbitrary Git-observing test results,
+new observer-closure metadata, per-test caches, changed-line reuse, weakening
+claims or publication checks, or a broad pre-push ancestry redesign. The old
+equivalence-axis controls are superseded by exact-current full verification:
+they are not falsely reported as executed reuse tests. The single bounded design
+follow-up passed with no findings (`goal805-design-release-repair`); that accepts
+the design only, not implementation or publication. Its commit-floor probe remains
+part of integrated acceptance.

@@ -163,6 +163,46 @@ def test_the_docs_only_subset_names_its_regime_so_its_samples_stay_out_of_the_fu
     assert "--release" not in payload["argv"]
 
 
+@pytest.mark.parametrize("mutation", ["prepare-command", "missing-pytest", "partial"])
+def test_preparation_cannot_seal_or_skip_final_hook(prepush_repo, tmp_path, mutation):
+    from scripts import prepush_quality_receipt as owner
+
+    base = _head(prepush_repo)
+    (prepush_repo / "scripts/thing.py").write_text("x = 1\n")
+    _git(prepush_repo, "add", "scripts/thing.py")
+    _git(prepush_repo, "commit", "-m", "code change")
+    head = _head(prepush_repo)
+    semantic = tmp_path / "semantic.json"
+    proof = {
+        "surface": "quality", "status": "pass", "effective_exit_code": 0,
+        "unproven_subjects": [], "measured_scope": ["pytest-release", "validate-skills"],
+        "details": {"release": True, "full_queue": True},
+    }
+    semantic.write_text(json.dumps(proof))
+    command = "./scripts/run-quality.sh --release"
+    sealed = owner.seal_receipt(prepush_repo, command, semantic, "plugins/charness")
+    if mutation == "prepare-command":
+        command += " --release-prepare"
+        sealed["quality_command"] = command
+    elif mutation == "missing-pytest":
+        proof["measured_scope"] = ["validate-skills"]
+        sealed["semantic_measured_scope"] = ["validate-skills"]
+    else:
+        proof["status"] = "unestablished"
+        proof["unproven_subjects"] = ["pytest-release"]
+        sealed["status"] = "unestablished"
+    semantic.write_text(json.dumps(proof))
+    with pytest.raises(owner.ReceiptError):
+        owner.seal_receipt(prepush_repo, command, semantic, "plugins/charness")
+    receipt = tmp_path / "forged-handoff.json"
+    receipt.write_text(json.dumps(sealed))
+    log = tmp_path / "fallback.json"
+    result = _run_hook(prepush_repo, base, head, log, receipt=receipt)
+    assert result.returncode == 0, result.stderr
+    assert log.exists(), "invalid preparation handoff must run ordinary current quality"
+    assert "reusing release quality receipt" not in result.stdout
+
+
 def test_release_receipt_reuses_quality_but_still_runs_the_irreversible_guard(
     prepush_repo: Path, tmp_path: Path
 ) -> None:

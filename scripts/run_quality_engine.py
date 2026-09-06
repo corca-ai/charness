@@ -57,6 +57,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--full", action="store_true")
     parser.add_argument("--read-only", action="store_true")
     parser.add_argument("--release", action="store_true")
+    parser.add_argument("--release-prepare", action="count", default=0)
     parser.add_argument("--review", action="store_true")
     parser.add_argument("--non-claim", default="")
     parser.add_argument("--receipt-json", default=None)
@@ -82,6 +83,10 @@ def _options(
     )
     if args.release and labels:
         raise RunnerError("--release is one indivisible lane; --labels cannot narrow it")
+    if args.release_prepare > 1:
+        raise RunnerError("duplicate --release-prepare")
+    if args.release_prepare and (not args.release or args.non_claim):
+        raise RunnerError("--release-prepare requires --release and refuses --non-claim")
     if args.non_claim and args.non_claim != "release-changed-line-coverage":
         raise RunnerError(f"unsupported --non-claim label {args.non_claim}")
     if args.non_claim and not args.release:
@@ -311,6 +316,19 @@ def run(args: argparse.Namespace) -> int:
         )
         selected = select_gates(gate_list, **scope)
         not_run = not_run_gates(gate_list, selected, **scope)
+        if args.release_prepare:
+            deferred = tuple(
+                gate for gates in selected.values() for gate in gates
+                if gate.label == "pytest-release"
+            )
+            if len(deferred) != 1:
+                raise RunnerError("--release-prepare requires exactly one selected pytest-release gate")
+            selected = {
+                phase: tuple(gate for gate in gates if gate.label != "pytest-release")
+                for phase, gates in selected.items()
+            }
+            not_run += (("pytest-release", "deferred-until-final-release"),)
+            ledger.unestablished.append("pytest-release")
         named_labels = frozenset(explicit_labels(labels))
         explicit_match_count = sum(
             gate.label in named_labels
@@ -337,6 +355,7 @@ def run(args: argparse.Namespace) -> int:
                 labels=labels,
                 overall_rc=2,
                 not_run=not_run,
+                release_prepare=bool(args.release_prepare),
             )
             if selected_count(selected) == 0:
                 return 2
@@ -390,6 +409,7 @@ def run(args: argparse.Namespace) -> int:
             labels=labels,
             overall_rc=overall_rc,
             not_run=not_run,
+            release_prepare=bool(args.release_prepare),
         )
         return overall_rc
     finally:

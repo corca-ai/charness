@@ -66,6 +66,8 @@ def _quality_command_argv(repo_root: Path, command: str) -> list[str]:
         raise ReceiptError("quality command is not this repo's run-quality.sh")
     if "--release" not in argv:
         raise ReceiptError("quality command does not cover the release/full queue")
+    if any(arg.split("=", 1)[0] == "--release-prepare" for arg in argv):
+        raise ReceiptError("preparation quality cannot authorize publication")
     return argv
 
 
@@ -110,6 +112,8 @@ def _semantic_receipt(path: Path) -> tuple[dict[str, Any], str]:
     measured = value.get("measured_scope")
     if not isinstance(measured, list) or not measured:
         raise ReceiptError("semantic quality receipt has no measured scope")
+    if "pytest-release" not in measured:
+        raise ReceiptError("semantic quality receipt does not establish pytest-release")
     return value, hashlib.sha256(raw).hexdigest()
 
 
@@ -199,6 +203,7 @@ def validate_receipt(repo_root: Path, receipt_path: Path, push_input: str) -> di
         or len(receipt["semantic_receipt_sha256"]) != 64
         or not isinstance(receipt["semantic_measured_scope"], list)
         or not receipt["semantic_measured_scope"]
+        or "pytest-release" not in receipt["semantic_measured_scope"]
     ):
         raise ReceiptError("sealed semantic quality identity is malformed")
     if _git(repo_root, "status", "--porcelain", "--untracked-files=all"):

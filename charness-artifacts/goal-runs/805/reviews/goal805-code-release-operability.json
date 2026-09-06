@@ -1,0 +1,52 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Intent and simplification / Jackson-Raskin-Gawande",
+  "packet_sha256": "435f50d4c04b84011e235b27555679dac7749304965f297adba9257a07ea9aa7",
+  "reviewed_input_identity_sha256": "0578880a0b7a90a9e2e0315817cd0bc73479a2448338bc8ce77a6e040b573436",
+  "verdict": "block",
+  "findings": [
+    {
+      "id": "R811-OPERABILITY-01",
+      "severity": "medium",
+      "summary": "A trailing shell newline defeats native-command detection, running the full suite and then failing preparation.",
+      "evidence": [
+        "publish_release_common.py::run_pre_push_quality_gates uses shlex.split to recognize native_release, but appends modifiers to the original shell string.",
+        "For quality_command='./scripts/run-quality.sh --release\\n', shlex.split returns the accepted native argv. Appending ' --release-prepare' produces a separate shell command after the newline: the full release lane executes first, then --release-prepare fails as a command.",
+        "The same input breaks final receipt collection when --receipt-json is appended. A trailing newline can occur in a YAML literal-block command.",
+        "test_only_native_prepare_defers_and_records_effective_command covers pipelines and && chains, but does not exercise newline preservation."
+      ],
+      "action": "Ensure recognition preserves shell command boundaries before appending arguments. Preserve unsupported shell forms unchanged through full fallback, and add a boundary test for a trailing-newline command and a newline-separated chain."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Once-at-final scheduling replaces uncertain cross-commit equivalence.",
+      "bin": "accepted",
+      "disposition": "The living contract and observed Git/artifact reads support this simpler choice. Selection removes exactly one pytest-release row without adding a cache, receipt schema, or parallel owner."
+    },
+    {
+      "concern": "Preparation cannot satisfy scoped local commits.",
+      "bin": "intentional-constraint",
+      "disposition": "The supplied checker and partial-receipt test retain explicit refusal. No automatic Slice-reopen exception is introduced."
+    },
+    {
+      "concern": "Pending prepared claims become final evidence.",
+      "bin": "bounded-support",
+      "disposition": "The supplied topology test carries pending text through claims review and checks its replacement after final command success, with failure stopping publication. Its quality command is instrumented."
+    },
+    {
+      "concern": "Actual savings and final release readiness.",
+      "bin": "deferred",
+      "disposition": "The observation record explicitly leaves actual suite timing, integrated proof, publication, and installed behavior unproven; those limitations are not additional code findings."
+    }
+  ],
+  "next_move": "Repair shell-boundary recognition and verify the newline cases before integration; retain the outstanding final execution and installation proof requirements.",
+  "non_claims": [
+    "Static review of the supplied semantic payload; no tests executed or workspace edits made.",
+    "The instrumented topology test is not an actual release-suite run.",
+    "No publication, installation, Goal completion, or WorkItem resolution approval.",
+    "Requested reviewer model and tier application are not independently established."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

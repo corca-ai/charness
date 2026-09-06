@@ -119,6 +119,87 @@ def test_release_prefers_release_variant_and_runs_release_only(tmp_path: Path) -
     assert "release-changed-line-coverage" in labels
 
 
+@pytest.mark.parametrize("flags", [("--release", "--release-prepare"), ("--release-prepare", "--release")])
+def test_prepare_defers_exact_suite_and_replaces_stale_pass(tmp_path: Path, flags) -> None:
+    repo, env = _seed(tmp_path)
+    last = repo / ".charness/quality/last-release-receipt.json"
+    last.parent.mkdir(parents=True, exist_ok=True)
+    last.write_text('{"status": "pass"}\n', encoding="utf-8")
+    gates = repo / "quality-gates.yaml"
+    gates.write_text(gates.read_text().replace("label: standard", "label: future-gate")
+                     .replace("- unproven\n", "- passing-unproven\n")
+                     .replace("- partial\n", "- passing-partial\n"))
+    prepared = _run(repo, env, *flags)
+    assert prepared.returncode == 0, prepared.stderr
+    assert "pytest-release" not in _labels(prepared.stdout)
+    assert "pytest" not in _labels(prepared.stdout)
+    assert "future-gate" in _labels(prepared.stdout)
+    assert "release-changed-line-coverage" in _labels(prepared.stdout)
+    partial = json.loads(last.read_text())
+    assert partial["status"] == "unestablished"
+    assert partial["unproven_subjects"] == ["pytest-release"]
+    assert "pytest-release" not in partial["measured_scope"]
+    assert "deferred-until-final-release" in json.dumps(partial)
+    assert partial == json.loads((repo / "receipt.json").read_text())
+    final = _run(repo, env, "--release")
+    assert final.returncode == 0, final.stderr
+    assert _labels(final.stdout).count("pytest-release") == 1
+    assert set(_labels(prepared.stdout)) == set(_labels(final.stdout)) - {"pytest-release"}
+    assert json.loads(last.read_text())["status"] == "pass"
+
+
+@pytest.mark.parametrize("flags", [
+    ("--release-prepare",),
+    ("--release", "--release-prepare", "--release-prepare"),
+    ("--release", "--release-prepare", "--labels", "core"),
+    ("--release", "--release-prepare", "--non-claim=release-changed-line-coverage"),
+    ("--release", "--release-prepare=yes"),
+])
+def test_prepare_invalid_options_do_not_run_gates(tmp_path: Path, flags) -> None:
+    repo, env = _seed(tmp_path)
+    result = _run(repo, env, *flags)
+    assert result.returncode == 2
+    assert not _labels(result.stdout)
+    assert not (repo / "receipt.json").exists()
+
+
+def test_prepare_current_gate_failure_stays_failure(tmp_path: Path) -> None:
+    repo, env = _seed(tmp_path)
+    result = _run(repo, env, "--release", "--release-prepare", QUALITY_FAIL_LABEL="core")
+    assert result.returncode == 1
+    receipt = json.loads((repo / ".charness/quality/last-release-receipt.json").read_text())
+    assert receipt["status"] == "fail"
+    assert receipt["unproven_subjects"] == ["pytest-release"]
+
+
+def test_prepare_relative_receipt_is_anchored_to_repo(tmp_path: Path, monkeypatch) -> None:
+    repo, env = _seed(tmp_path)
+    caller = tmp_path / "caller"
+    caller.mkdir()
+    stale = caller / "receipt.json"
+    stale.write_text('{"status": "pass"}\n')
+    monkeypatch.chdir(caller)
+    env["CHARNESS_QUALITY_RECEIPT_JSON"] = "receipt.json"
+    result = _run(repo, env, "--release", "--release-prepare")
+    assert result.returncode == 0, result.stderr
+    partial = json.loads((repo / "receipt.json").read_text())
+    assert partial["status"] == "unestablished"
+    assert json.loads((repo / ".charness/quality/last-release-receipt.json").read_text()) == partial
+    assert json.loads(stale.read_text()) == {"status": "pass"}
+
+
+def test_prepare_refuses_when_partial_receipt_cannot_be_persisted(tmp_path: Path) -> None:
+    repo, env = _seed(tmp_path)
+    last = repo / ".charness/quality/last-release-receipt.json"
+    last.parent.mkdir(parents=True, exist_ok=True)
+    last.write_text('{"status": "pass"}\n')
+    # A directory cannot be the proof writer's JSON destination.
+    env["CHARNESS_QUALITY_RECEIPT_JSON"] = str(repo)
+    result = _run(repo, env, "--release", "--release-prepare")
+    assert result.returncode == 2
+    assert "could not persist" in result.stderr
+
+
 def test_release_non_claim_suppresses_changed_line_gate(tmp_path: Path) -> None:
     repo, env = _seed(tmp_path)
     result = _run(repo, env, "--release", "--non-claim=release-changed-line-coverage")

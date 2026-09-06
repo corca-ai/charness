@@ -78,6 +78,15 @@ def test_receipt_for_a_different_tree_is_refused() -> None:
     assert receipt_matches_index(PASSING, "def456") is False
 
 
+def test_preparation_keeps_the_scoped_commit_floor() -> None:
+    partial = {**PASSING, "status": "unestablished", "unproven_subjects": ["pytest-release"]}
+    code, _ = evaluate(
+        repo_root=Path("."), commit_message="prepare release\n",
+        paths=["docs/release.md"], tree="abc123", receipt=partial,
+    )
+    assert code == 2
+
+
 def test_stale_json_receipt_is_not_a_match(tmp_path: Path) -> None:
     path = tmp_path / "last-release-receipt.json"
     path.write_text(json.dumps({"surface": "quality", "status": "fail"}), encoding="utf-8")

@@ -118,7 +118,8 @@ def _prepare_release_attempt(
         release_stage="charness-release-state:prepared-awaiting-claims-review",
     )
     _common["run_pre_push_quality_gates"](
-        repo_root, adapter_data, payload, cli=cli, stage="post-bump, pre-commit"
+        repo_root, adapter_data, payload, cli=cli, stage="post-bump, pre-commit",
+        prepare_release=True,
     )
     return {
         "payload": payload,

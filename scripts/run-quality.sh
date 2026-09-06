@@ -18,6 +18,7 @@ source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
 
 engine_args=()
 release=0
+release_prepare=0
 non_claim=""
 for arg in "$@"; do
   case "$arg" in
@@ -26,6 +27,14 @@ for arg in "$@"; do
       ;;
     --release)
       release=1
+      engine_args+=("$arg")
+      ;;
+    --release-prepare)
+      if [[ "$release_prepare" == "1" ]]; then
+        echo "run-quality: duplicate --release-prepare" >&2
+        exit 2
+      fi
+      release_prepare=1
       engine_args+=("$arg")
       ;;
     --receipt-json=*)
@@ -50,6 +59,7 @@ for arg in "$@"; do
       echo "  --full       run the broad quality battery and refresh git-tracked artifacts"
       echo "  default      run only the core implementation lane"
       echo "  --release    include release-only tests"
+      echo "  --release-prepare  requires --release; defer pytest-release until final resume, leaving quality unestablished"
       echo "  --non-claim=release-changed-line-coverage  explicitly omit only the release-final changed-line lane; requires --release"
       echo "  --receipt-json=PATH  write the per-run semantic receipt (also via CHARNESS_QUALITY_RECEIPT_JSON)"
       echo "  CHARNESS_QUALITY_VERBOSE=1  print every gate's log instead of only failures (engine environment)"
@@ -62,6 +72,10 @@ for arg in "$@"; do
   esac
 done
 
+if [[ "$release_prepare" == "1" && ( "$release" != "1" || -n "$non_claim" ) ]]; then
+  echo "run-quality: --release-prepare requires --release and refuses --non-claim" >&2
+  exit 2
+fi
 if [[ -n "$non_claim" && "$release" != "1" ]]; then
   echo "run-quality: --non-claim=release-changed-line-coverage requires --release" >&2
   exit 2

@@ -173,6 +173,7 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
         payload,
         cli=cli,
         stage="post-claims-review, pre-push",
+        prepare_release=False,
         prepush_receipt_path=receipt_path,
     )
     fresh = common.timed(payload, "fresh_checkout_probes_resume", lambda: cli.run_fresh_checkout_probes(repo_root))

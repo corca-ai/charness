@@ -113,6 +113,68 @@ def test_release_fixture_seed_is_cached_isolated_and_bootstrap_is_not_repeated(
 
 
 @pytest.mark.release_only
+@pytest.mark.parametrize("final_fails", [False, True])
+def test_prepare_claims_resume_schedules_one_final_suite(tmp_path: Path, final_fails: bool) -> None:
+    """Real release topology with an instrumented quality command; engine gates are tested separately."""
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    adapter = repo / ".agents/release-adapter.yaml"
+    adapter.write_text(adapter.read_text().replace(
+        "quality_command: ./scripts/run-quality.sh", "quality_command: ./scripts/run-quality.sh --release"
+    ))
+    _write_exec(repo / "scripts/run-quality.sh", "\n".join([
+        "#!/usr/bin/env python3", "import json, os, sys", "from pathlib import Path",
+        "path = Path(os.environ['QUALITY_SEQUENCE_LOG'])",
+        "rows = json.loads(path.read_text()) if path.exists() else []",
+        "prepared = '--release-prepare' in sys.argv",
+        "rows.append({'argv': sys.argv[1:], 'pytest': not prepared})",
+        "path.write_text(json.dumps(rows))",
+        "raise SystemExit(1 if not prepared and os.environ.get('FINAL_QUALITY_FAIL') == '1' else 0)",
+        "",
+    ]))
+    git(repo, "add", ".agents/release-adapter.yaml", "scripts/run-quality.sh")
+    git(repo, "commit", "-m", "Configure instrumented release quality")
+    env = _release_env(tmp_path, bin_dir)
+    log = tmp_path / "quality-sequence.json"
+    env["QUALITY_SEQUENCE_LOG"] = str(log)
+    env["FINAL_QUALITY_FAIL"] = "1" if final_fails else "0"
+    critique = ("--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
+    prepared = _run_publish(repo, env, "--part", "patch", "--execute", *critique)
+    assert prepared.returncode == 0, prepared.stderr
+    payload = yaml.safe_load(prepared.stdout)
+    record = (repo / "charness-artifacts/release/latest.md").read_text()
+    assert "quality unestablished: pytest-release pending final resume" in record
+    assert json.loads(log.read_text()) == [{"argv": ["--release", "--release-prepare"], "pytest": False}]
+    review = commit_claims_review(
+        repo, prepared_commit=payload["prepared_release_commit"], prepared_record=record,
+        target_version=payload["target_version"], tag_name=payload["tag_name"], stem="scheduled-claims",
+    )
+    git_log = tmp_path / "git-log.json"
+    gh_log = tmp_path / "gh-log.json"
+    before_git = len(json.loads(git_log.read_text()))
+    before_gh = len(json.loads(gh_log.read_text()))
+    resumed = _run_publish(
+        repo, env, "--resume", "--publish-current", "--execute",
+        "--claims-review-artifact", review, *critique,
+    )
+    rows = json.loads(log.read_text())
+    assert rows == [
+        {"argv": ["--release", "--release-prepare"], "pytest": False},
+        {"argv": ["--release"], "pytest": True},
+    ]
+    if final_fails:
+        assert resumed.returncode != 0
+        mutations = [row for row in json.loads(git_log.read_text())[before_git:]
+                     if row[0] == "push" or (row[0] == "tag" and row[1] != "--list")]
+        assert not mutations
+        assert not any(row[:2] == ["release", "create"] for row in json.loads(gh_log.read_text())[before_gh:])
+    else:
+        assert resumed.returncode == 0, resumed.stderr
+        published = (repo / "charness-artifacts/release/latest.md").read_text()
+        assert "pending final resume" not in published
+        assert "post-claims-review, pre-push" in published
+
+
+@pytest.mark.release_only
 def test_execute_prepares_claims_review_record_without_publication(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     git_log_path = tmp_path / "git-log.json"

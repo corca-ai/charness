@@ -67,6 +67,17 @@ different interpreter, an interpreter option, a quoted, tilde, globbed or
 brace-expanded path. Silence means it did not judge, not that the command is fine. Set
 both fields to commands YOUR repo can run.
 
+## Quality scheduling
+
+Execute appends `--release-prepare` only to a simple native
+`./scripts/run-quality.sh --release` invocation (optionally `--full`, `--read-only`,
+or `--review`). Prepare runs all selected gates except `pytest-release`, replacing
+the last-release receipt with an **unestablished** result; storage failure fails
+preparation. Resume runs the ordinary full release lane before publication.
+Preparation cannot seal a final push receipt or satisfy the local commit floor.
+Custom commands, pipelines and chains retain full execution at both stages.
+Do not put `--release-prepare` in the adapter: execute owns that choice.
+
 ## Defaults
 
 - `language`: `en`

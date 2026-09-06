@@ -49,6 +49,7 @@ def run_pre_push_quality_gates(
     *,
     cli: Any,
     stage: str,
+    prepare_release: bool,
     prepush_receipt_path: Path | None = None,
 ) -> None:
     payload["requested_review_gate"] = timed(
@@ -73,12 +74,24 @@ def run_pre_push_quality_gates(
     if quality_argv:
         candidate = Path(quality_argv[0])
         quality_runner = candidate if candidate.is_absolute() else repo_root / candidate
-    receipt_capable = (
-        prepush_receipt_path is not None
-        and "--release" in quality_argv
+    native_release = (
+        "--release" in quality_argv
         and bool(quality_argv)
+        and all(arg in {"--release", "--full", "--read-only", "--review"} for arg in quality_argv[1:])
         and quality_runner is not None
         and quality_runner.resolve() == (repo_root / "scripts" / "run-quality.sh").resolve()
+    )
+    if any(arg.split("=", 1)[0] == "--release-prepare" for arg in quality_argv):
+        raise SystemExit("quality_command must not contain --release-prepare; execute owns preparation")
+    if native_release:
+        effective_command = shlex.join(quality_argv)
+    deferred = prepare_release and native_release
+    if deferred:
+        effective_command += " --release-prepare"
+    receipt_capable = (
+        not prepare_release
+        and prepush_receipt_path is not None
+        and native_release
         and isinstance(materialized_root, str)
         and bool(materialized_root)
         and (repo_root / "scripts" / "prepush_quality_receipt.py").is_file()
@@ -86,7 +99,7 @@ def run_pre_push_quality_gates(
     if receipt_capable:
         semantic_receipt = prepush_receipt_path.with_name("semantic-quality.json")
         effective_command = (
-            f"{quality_command} --receipt-json={shlex.quote(str(semantic_receipt))}"
+            f"{effective_command} --receipt-json={shlex.quote(str(semantic_receipt))}"
         )
     timed(
         payload,
@@ -147,8 +160,10 @@ def run_pre_push_quality_gates(
     measured = f" in {elapsed:.1f}s" if isinstance(elapsed, (int, float)) else ""
     payload["quality_status"] = (
         f"exited 0{measured} at `{stage}`, measured by this helper "
-        f"(`{adapter_data['quality_command']}`)"
+        f"(`{effective_command}`)"
     )
+    if deferred:
+        payload["quality_status"] += "; quality unestablished: pytest-release pending final resume"
 
 
 def run_distinct_channel_floor(

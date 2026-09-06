@@ -86,6 +86,28 @@ def _release_fixture(
     return repo, env, event_log
 
 
+@pytest.mark.parametrize("args, code", [
+    (("--release-prepare", "--help"), 0),
+    (("--help", "--release-prepare"), 0),
+    (("--release-prepare",), 2),
+    (("--release", "--release-prepare", "--release-prepare"), 2),
+    (("--release", "--release-prepare=yes"), 2),
+    (("--release", "--release-prepare", "--non-claim=release-changed-line-coverage"), 2),
+    (("--release", "--release-prepares"), 2),
+])
+def test_prepare_shell_options_are_read_only(tmp_path, seeded_quality_runner_repo, args, code):
+    from tests.quality_gates.seeding_support import git
+
+    repo, env, event_log = _release_fixture(tmp_path, seeded_quality_runner_repo)
+    before = (git(repo, "rev-parse", "HEAD"), git(repo, "status", "--porcelain"))
+    result = run_shell_script(repo / "scripts/run-quality.sh", *args, cwd=repo, env=env)
+    assert result.returncode == code, result.stderr
+    assert not event_log.exists()
+    assert (git(repo, "rev-parse", "HEAD"), git(repo, "status", "--porcelain")) == before
+    if code == 0:
+        assert "quality unestablished" in result.stdout
+
+
 def test_release_runs_pytest_before_later_checks(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> None:

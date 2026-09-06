@@ -53,6 +53,7 @@ def test_pre_push_quality_gate_runs_as_a_monitored_phase(tmp_path: Path) -> None
         # lane, and a default would let a new lane inherit a wrong stage
         # silently. A caller must say what is true.
         stage="post-bump, pre-commit",
+        prepare_release=True,
     )
 
     assert ("run_phase:quality_command", "./scripts/run-quality.sh") in calls
@@ -61,6 +62,26 @@ def test_pre_push_quality_gate_runs_as_a_monitored_phase(tmp_path: Path) -> None
         f"observed calls: {calls}"
     )
     assert payload["requested_review_gate"] == {"status": "ok"}
+
+
+def test_native_trailing_newline_executes_one_command_per_stage(tmp_path: Path) -> None:
+    runner = tmp_path / "scripts/run-quality.sh"
+    runner.parent.mkdir()
+    runner.write_text('#!/bin/sh\nprintf "%s\\n" "$*" >> quality-argv.log\n')
+    runner.chmod(0o755)
+    cli = SimpleNamespace(
+        run_requested_review_gate=lambda root: {"status": "ok"},
+        run_cli_skill_surface_gate=lambda *args: None,
+        run_phase=_HELPERS.run_phase,
+    )
+    for prepare in (True, False):
+        _COMMON.run_pre_push_quality_gates(
+            tmp_path, {"quality_command": "./scripts/run-quality.sh --release\n"}, {},
+            cli=cli, stage="test", prepare_release=prepare,
+        )
+    assert (tmp_path / "quality-argv.log").read_text().splitlines() == [
+        "--release --release-prepare", "--release",
+    ]
 
 
 def test_run_phase_streams_lifecycle_and_still_returns_the_isolated_body(tmp_path: Path, capsys) -> None:

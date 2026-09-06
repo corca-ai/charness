@@ -1,0 +1,170 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-06T04:19:27Z",
+  "prepared_for": "Goal 805 release scheduling code; design pass is not code approval",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/release-reuse.md\n- docs/development.md\n- scripts/prepush_quality_receipt.py\n- scripts/run-quality.sh\n- scripts/run_quality_engine.py\n- scripts/run_quality_engine_receipt.py\n- skills/public/release/references/adapter-contract.md\n- skills/public/release/scripts/publish_release_common.py\n- skills/public/release/scripts/publish_release_execute.py\n- skills/public/release/scripts/publish_release_resume_publish.py\n- tests/quality_gates/test_prepush_runtime_regime.py\n- tests/quality_gates/test_quality_runner_release_order.py\n- tests/quality_gates/test_release_publish.py\n- tests/quality_gates/test_release_quality_gate_visibility.py\n- tests/quality_gates/test_release_quality_status_binding.py\n- tests/quality_gates/test_run_quality_engine.py\n- tests/test_release_lane_receipt.py\n- charness-artifacts/critique/goal805-code-release-integrity-packet.json\n- charness-artifacts/critique/goal805-code-release-integrity-packet.md\n- charness-artifacts/critique/goal805-design-release-repair-packet.json\n- charness-artifacts/critique/goal805-design-release-repair-packet.md\n- charness-artifacts/critique/workers/goal805-design-release-repair/worker-report.yaml\n- charness-artifacts/probe/2026-09-06-release-scheduling/observations.md\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/prepush_quality_receipt.py, scripts/run-quality.sh, scripts/run_quality_engine.py, scripts/run_quality_engine_receipt.py, skills/public/release/references/adapter-contract.md, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_execute.py, skills/public/release/scripts/publish_release_resume_publish.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/release-reuse.md, docs/development.md, skills/public/release/references/adapter-contract.md, charness-artifacts/critique/goal805-code-release-integrity-packet.md, charness-artifacts/critique/goal805-design-release-repair-packet.md, charness-artifacts/probe/2026-09-06-release-scheduling/observations.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/release/references/adapter-contract.md, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_execute.py, skills/public/release/scripts/publish_release_resume_publish.py\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- consumer-validator-catalog: Explicit packaged consumer-validator inventory, adoption decisions, and the installed/source-layout checker that enforces the contract.\n  source matches: scripts/run-quality.sh\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/gates/check_consumer_validator_catalog.py --repo-root . --adoption-path .agents/consumer-validator-adoption.yaml --require-adoption, python3 -m pytest -q tests/test_consumer_validator_catalog.py tests/test_capability_catalog.py\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/release/references/adapter-contract.md, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_execute.py, skills/public/release/scripts/publish_release_resume_publish.py\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/release/references/adapter-contract.md, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_execute.py, skills/public/release/scripts/publish_release_resume_publish.py\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/goal805-code-release-integrity-packet.json, charness-artifacts/critique/goal805-code-release-integrity-packet.md, charness-artifacts/critique/goal805-design-release-repair-packet.json, charness-artifacts/critique/goal805-design-release-repair-packet.md, charness-artifacts/critique/workers/goal805-design-release-repair/worker-report.yaml\n  verify: python3 scripts/review/validate_critique_artifacts.py --repo-root . --all\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/prepush_quality_receipt.py, scripts/run_quality_engine.py, scripts/run_quality_engine_receipt.py, tests/quality_gates/test_prepush_runtime_regime.py, tests/quality_gates/test_quality_runner_release_order.py, tests/quality_gates/test_release_publish.py, tests/quality_gates/test_release_quality_gate_visibility.py, tests/quality_gates/test_release_quality_status_binding.py, tests/quality_gates/test_run_quality_engine.py, tests/test_release_lane_receipt.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/prepush_quality_receipt.py, scripts/run_quality_engine.py, scripts/run_quality_engine_receipt.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_execute.py, skills/public/release/scripts/publish_release_resume_publish.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "0f25bcefa0ef4fa7bec2dcbd0ea81cde2444dcae",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/release-reuse.md",
+      "charness-artifacts/probe/2026-09-06-release-scheduling/observations.md",
+      "scripts/hooks/check_release_lane_receipt.py",
+      "scripts/prepush_quality_receipt.py",
+      "scripts/run-quality.sh",
+      "scripts/run_quality_engine.py",
+      "scripts/run_quality_engine_receipt.py",
+      "skills/public/release/references/adapter-contract.md",
+      "skills/public/release/scripts/publish_release_common.py",
+      "skills/public/release/scripts/publish_release_execute.py",
+      "skills/public/release/scripts/publish_release_resume_publish.py",
+      "tests/quality_gates/test_prepush_runtime_regime.py",
+      "tests/quality_gates/test_quality_runner_release_order.py",
+      "tests/quality_gates/test_release_publish.py",
+      "tests/quality_gates/test_release_quality_status_binding.py",
+      "tests/quality_gates/test_run_quality_engine.py",
+      "tests/test_release_lane_receipt.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/release-reuse.md",
+        "content_sha256": "38a8158da4fbc16923d7d726afe8349aaa94c8ba0ac1e91afb3dcc257747be38"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-release-scheduling/observations.md",
+        "content_sha256": "c2e35282814703263dfddc804cdeeed731ad9582245fd1e325d9cd76dc0c21aa"
+      },
+      {
+        "path": "scripts/hooks/check_release_lane_receipt.py",
+        "content_sha256": "6ef5fd5022b6f82aef3a2296e5027f080a9a76c89564b7a821c5dfc2e3514a56"
+      },
+      {
+        "path": "scripts/prepush_quality_receipt.py",
+        "content_sha256": "fbd90a7a5beb0b7c736ec35161d10c57fed5bb3f859827bde4853dbc915dbffb"
+      },
+      {
+        "path": "scripts/run-quality.sh",
+        "content_sha256": "15a2c5bf5b355d8ab3bf55c03d221b1cb93d71941356bc39a77aa32bac86f309"
+      },
+      {
+        "path": "scripts/run_quality_engine.py",
+        "content_sha256": "88279cb3e96b9bf754b5230085c1ba63d8cdb5f33c32080ca165ca6997354fd4"
+      },
+      {
+        "path": "scripts/run_quality_engine_receipt.py",
+        "content_sha256": "d8d096d06b9051a04eede36beab72ae6b3e8ded8f564805fe89a547ba2896201"
+      },
+      {
+        "path": "skills/public/release/references/adapter-contract.md",
+        "content_sha256": "e1b4f2a446e305bdba17c16f6f84d2d1f1f3f61d18269ddbf254ba76b941bc6e"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_common.py",
+        "content_sha256": "58c5d8e3a5923028c8871f8b7d319acbe2cd7479cd101590019620b3e5816302"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_execute.py",
+        "content_sha256": "3b81c3ecd98308fadd4c2d8b8ca4c81817ce715aceebb085a41e34b221239453"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_resume_publish.py",
+        "content_sha256": "06b7a617877ce89d2a3aaabaec68ce5193fa26781521c8c0ea92ae86d0d283e2"
+      },
+      {
+        "path": "tests/quality_gates/test_prepush_runtime_regime.py",
+        "content_sha256": "f321f439e4b780ac15ba50d32c4aed32da95ea7fe0cc5d62b3f0fe98988c49a7"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_runner_release_order.py",
+        "content_sha256": "31a5d9cb3f243a560cd05798228d13b49de9f842ed2f801d5e6a615b06299a98"
+      },
+      {
+        "path": "tests/quality_gates/test_release_publish.py",
+        "content_sha256": "3dcd66b0c2c4dff837930bf8d5a6c10a042d76024ec98fe245c5fe0d6581c974"
+      },
+      {
+        "path": "tests/quality_gates/test_release_quality_status_binding.py",
+        "content_sha256": "1bedc0c208b60fe02fac5c204af0c21ed35b1bdff4ea252b5cb24eadb38d0151"
+      },
+      {
+        "path": "tests/quality_gates/test_run_quality_engine.py",
+        "content_sha256": "5f8067e38bedd093fcd34c99fb3a7f5354e286cc25b8f0e68ecac09d5d1ac2e8"
+      },
+      {
+        "path": "tests/test_release_lane_receipt.py",
+        "content_sha256": "a61bd7d3385197a926277512e65f6f360b7869f83475c647b32addc4bac42270"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "c69cbb4bbedcaed81785c0a9ae548b3d81f52086891fdd93171e9f0109d663e4",
+    "declared_untracked": [
+      {
+        "path": "charness-artifacts/probe/2026-09-06-release-scheduling/observations.md",
+        "content_sha256": "c2e35282814703263dfddc804cdeeed731ad9582245fd1e325d9cd76dc0c21aa"
+      }
+    ],
+    "auto_excluded_paths": [],
+    "identity_sha256": "0578880a0b7a90a9e2e0315817cd0bc73479a2448338bc8ce77a6e040b573436"
+  }
+}

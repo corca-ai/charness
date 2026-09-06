@@ -77,6 +77,55 @@ def _rendered(artifact, monkeypatch, payload_extra: dict, **kwargs) -> dict:
     return seen
 
 
+@pytest.mark.parametrize("command, deferred", [
+    ("./scripts/run-quality.sh --release", True),
+    ("./custom-quality.sh --release", False),
+    ("./scripts/run-quality.sh --full", False),
+    ("./scripts/run-quality.sh --release | tee log", False),
+    ("./scripts/run-quality.sh --release && other", False),
+    ("./scripts/run-quality.sh --release\n", True),
+    ("./scripts/run-quality.sh --release\nother", False),
+])
+def test_only_native_prepare_defers_and_records_effective_command(tmp_path, command, deferred):
+    common = _load("publish_release_common")
+    seen = []
+    cli = SimpleNamespace(
+        run_requested_review_gate=lambda root: {"status": "ok"},
+        run_cli_skill_surface_gate=lambda *args: None,
+        run_phase=lambda value, **kwargs: seen.append(value),
+    )
+    payload = {}
+    common.run_pre_push_quality_gates(
+        tmp_path, {"quality_command": command}, payload, cli=cli,
+        stage="prepare", prepare_release=True,
+    )
+    canonical = shlex.join(shlex.split(command)) if deferred else command
+    expected = canonical + (" --release-prepare" if deferred else "")
+    assert seen == [expected]
+    assert expected in payload["quality_status"]
+    assert ("quality unestablished" in payload["quality_status"]) is deferred
+    common.run_pre_push_quality_gates(
+        tmp_path, {"quality_command": command}, payload, cli=cli,
+        stage="final", prepare_release=False,
+    )
+    assert seen[-1] == canonical
+    assert "pending" not in payload["quality_status"]
+
+
+@pytest.mark.parametrize("prepare", [True, False])
+def test_adapter_cannot_supply_prepare_modifier(tmp_path, prepare):
+    common = _load("publish_release_common")
+    cli = SimpleNamespace(
+        run_requested_review_gate=lambda root: {"status": "ok"},
+        run_cli_skill_surface_gate=lambda *args: None,
+    )
+    with pytest.raises(SystemExit, match="execute owns preparation"):
+        common.run_pre_push_quality_gates(
+            tmp_path, {"quality_command": "./scripts/run-quality.sh --release --release-prepare"},
+            {}, cli=cli, stage="test", prepare_release=prepare,
+        )
+
+
 def test_the_stamped_result_reaches_a_writer_that_never_names_it(artifact, monkeypatch) -> None:
     """THE regression. Three of the five writers pass no `quality_status`, and one
     of them produces the record pushed to `main`."""
@@ -267,6 +316,7 @@ def test_release_quality_seals_a_semantic_one_push_receipt(tmp_path: Path) -> No
         payload,
         cli=Cli(),
         stage="post-claims-review, pre-push",
+        prepare_release=False,
         prepush_receipt_path=sealed,
     )
 
