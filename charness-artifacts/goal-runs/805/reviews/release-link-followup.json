@@ -1,0 +1,35 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Independent immutable-publication evidence",
+  "packet_sha256": "72eda8c1ac1f6061d6890d2fdadb7020ca08a64eb199ed007ccf1c897a9f02a5",
+  "reviewed_input_identity_sha256": "c82ba7d32dd2979d06bfd6f6b90bc05ef699bec2ff67acbae2fc0c0482692b6e",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "The comparison attribution could continue tracking mutable main or obscure the original outcomes.",
+      "bin": "Over-Worry",
+      "disposition": "The supplied final notes link to blob/v8.5.0 at the same comparison-record path. They retain no demonstrated efficiency gain, higher valid-candidate cost, preservation failures and the unfrozen helper dependency. The supplied original results explicitly invalidate low-tier pure-candidate attribution and retain the original output without repair. This is honest release-tag-pinned attribution for pending release preparation."
+    },
+    {
+      "concern": "The reference change could invalidate the prior safety and value dispositions.",
+      "bin": "Over-Worry",
+      "disposition": "Both supplied original reviews passed with explicit limitations. The bounded link correction introduces no conflicting safety, efficiency or completion claim, so those conclusions remain applicable on the stated otherwise unchanged inputs. This does not independently re-establish their implementation evidence."
+    },
+    {
+      "concern": "A tag-shaped URL alone could be mistaken for verified publication evidence.",
+      "bin": "Act Before Ship",
+      "disposition": "The invariant is preservation of the original comparison and caveats at the published release reference; the owning surface is the release-notes link read by operators. The recorded refusal concerned blob/main. A similarly shaped tag link serving missing or altered results would still fail that invariant. The supplied bytes establish the corrected reference and retained local content; actual tagged-content readback remains a later publication obligation."
+    }
+  ],
+  "next_move": "Retry release preparation. Retain prepared-claims review, final full quality and fresh-checkout verification, public tagged-content readback, installation/version/doctor checks and issue-specific closeout as required later boundaries.",
+  "non_claims": [
+    "Reviewed only the four supplied semantic payloads; no workspace inspection, edits, test execution or live reference resolution occurred.",
+    "This pass permits retrying preparation only; it establishes no prepare commit, successful publication, installation or Goal completion.",
+    "No efficiency gain, valid low-tier pure-candidate comparison or equality between the prerelease candidate and the forthcoming tagged package is established.",
+    "Actual tag existence, retained published bytes and immutability enforcement remain unverified."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

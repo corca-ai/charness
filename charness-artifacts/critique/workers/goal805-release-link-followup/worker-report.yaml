@@ -1,0 +1,92 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: Single bounded release-boundary follow-up after an actual publication preflight
+  refusal, not another whole release/code review. The original two reviewers passed,
+  but publish refused before any mutation because the release notes comparison link
+  used mutable main. Only change now is blob/main to blob/v8.5.0 for the same comparison
+  record; version remains 8.4.4, no public release or prepare commit exists. Inspect
+  final notes and retained original results/dispositions. Decide whether immutable
+  source attribution is now honest and whether prior safety/value conclusions remain
+  applicable on all otherwise unchanged inputs. Success permits retry of release preparation,
+  never claims publication or installation complete. Do not demand pilot reruns, positive
+  value, new framework, new review rounds, or re-review unchanged implementation.
+  This is the one materially changed publication-link risk follow-up.
+attempt_id: goal805-release-link-followup
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: c7340beb7fa7742551d10877ea514923896f52c16a89f0fde0fc4e16c67c13e6
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-release-link-followup/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-release-link-followup/delivery.json
+producer_run_id: run-goal805-release-link-followup
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-release-link-followup/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-release-link-followup/receipt.json
+  producer_run_id: run-goal805-release-link-followup
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 9078219b944171d8de2d8527284f368d059f49608d6729a355e8fa75a508b567
+receipt_output_sha256: 9078219b944171d8de2d8527284f368d059f49608d6729a355e8fa75a508b567
+packet_identity: 72eda8c1ac1f6061d6890d2fdadb7020ca08a64eb199ed007ccf1c897a9f02a5
+reviewed_input_identity: c82ba7d32dd2979d06bfd6f6b90bc05ef699bec2ff67acbae2fc0c0482692b6e
+parent_receipt_identity: parent-bd70fceab243b3e9d2da76b3b2b79e1dc30f39322836176c
+provenance:
+  scope: Single bounded release-boundary follow-up after an actual publication preflight
+    refusal, not another whole release/code review. The original two reviewers passed,
+    but publish refused before any mutation because the release notes comparison link
+    used mutable main. Only change now is blob/main to blob/v8.5.0 for the same comparison
+    record; version remains 8.4.4, no public release or prepare commit exists. Inspect
+    final notes and retained original results/dispositions. Decide whether immutable
+    source attribution is now honest and whether prior safety/value conclusions remain
+    applicable on all otherwise unchanged inputs. Success permits retry of release
+    preparation, never claims publication or installation complete. Do not demand
+    pilot reruns, positive value, new framework, new review rounds, or re-review unchanged
+    implementation. This is the one materially changed publication-link risk follow-up.
+  packet_identity: 72eda8c1ac1f6061d6890d2fdadb7020ca08a64eb199ed007ccf1c897a9f02a5
+  reviewed_input_identity: c82ba7d32dd2979d06bfd6f6b90bc05ef699bec2ff67acbae2fc0c0482692b6e
+  parent_receipt_identity: parent-bd70fceab243b3e9d2da76b3b2b79e1dc30f39322836176c
+  attempt_id: goal805-release-link-followup
+  attempt_scope: Single bounded release-boundary follow-up after an actual publication
+    preflight refusal, not another whole release/code review. The original two reviewers
+    passed, but publish refused before any mutation because the release notes comparison
+    link used mutable main. Only change now is blob/main to blob/v8.5.0 for the same
+    comparison record; version remains 8.4.4, no public release or prepare commit
+    exists. Inspect final notes and retained original results/dispositions. Decide
+    whether immutable source attribution is now honest and whether prior safety/value
+    conclusions remain applicable on all otherwise unchanged inputs. Success permits
+    retry of release preparation, never claims publication or installation complete.
+    Do not demand pilot reruns, positive value, new framework, new review rounds,
+    or re-review unchanged implementation. This is the one materially changed publication-link
+    risk follow-up.
+  attempt_packet_identity: 72eda8c1ac1f6061d6890d2fdadb7020ca08a64eb199ed007ccf1c897a9f02a5
+  attempt_parent_receipt_identity: parent-bd70fceab243b3e9d2da76b3b2b79e1dc30f39322836176c
+  result_packet_identity: 72eda8c1ac1f6061d6890d2fdadb7020ca08a64eb199ed007ccf1c897a9f02a5
+  result_reviewed_input_identity: c82ba7d32dd2979d06bfd6f6b90bc05ef699bec2ff67acbae2fc0c0482692b6e
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: c7340beb7fa7742551d10877ea514923896f52c16a89f0fde0fc4e16c67c13e6
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes
