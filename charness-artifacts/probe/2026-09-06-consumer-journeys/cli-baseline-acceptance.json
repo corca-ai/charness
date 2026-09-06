@@ -1,0 +1,10 @@
+{
+  "kind": "goal798-cli-baseline-acceptance",
+  "tested_commit": "5cf9b39fb50ef0a77c245a569c4bcf92bbb95f4f",
+  "command": "PYTHONDONTWRITEBYTECODE=1 CHARNESS_CONSUMER_ROOT=/tmp/charness-goal798.qWglDo/cli-baseline python3 charness-artifacts/probe/2026-09-06-consumer-journeys/check_cli.py",
+  "oracle_revision": 3,
+  "exit_code": 0,
+  "output": "test_doctor_has_observable_state_and_is_readonly (__main__.CliAcceptance) ... ok\ntest_dry_run_never_writes (__main__.CliAcceptance) ... ok\ntest_help_and_version_readonly (__main__.CliAcceptance) ... ok\ntest_legacy_scripts_still_work (__main__.CliAcceptance) ... ok\ntest_malformed_inputs_refused_before_write (__main__.CliAcceptance) ... ok\ntest_refresh_replaces_an_existing_cache (__main__.CliAcceptance) ... ok\ntest_refresh_writes_only_the_existing_cache (__main__.CliAcceptance) ... ok\ntest_structured_output_in_each_option_position (__main__.CliAcceptance) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 1.332s\n\nOK\n",
+  "interventions": 0,
+  "infrastructure_note": "An earlier acceptance invocation named the worker checkout after the task carrier intentionally removed it (keep_worktree=false, committed candidate retained). Parent fast-forwarded the durable target commit into the baseline repo and reran acceptance there; no producer/implementation edit or retry."
+}

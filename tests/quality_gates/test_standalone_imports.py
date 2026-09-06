@@ -386,6 +386,9 @@ def test_every_tracked_module_is_either_discovered_or_deliberately_excluded(
         "docs/",
         "native/",
         "charness-artifacts/",
+        # Consumer repositories execute in their own roots, not as Charness
+        # modules; test_consumer_journey_fixtures exercises their seed boundary.
+        "evals/fixtures/",
     )
     unreachable = sorted(
         name for name in tracked - discovered if not name.startswith(excluded_prefixes)

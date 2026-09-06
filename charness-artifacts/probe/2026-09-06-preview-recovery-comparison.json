@@ -1,0 +1,184 @@
+{
+  "kind": "goal798-preview-recovery-comparison",
+  "command": "PYTHONDONTWRITEBYTECODE=1 python3 -c 'import json, tempfile\nfrom pathlib import Path\nimport yaml\nfrom tests.quality_gates import test_semantic_review_command as fixture\nwrappers = {\"baseline\": Path(\"/tmp/charness-goal798.qWglDo/baseline-export/plugins/charness/skills/critique/scripts/run_review.py\"), \"candidate\": Path(\"/home/hwidong/codes/charness/skills/public/critique/scripts/run_review.py\")}\nresults = []\nfor arm, wrapper in wrappers.items():\n    fixture.WRAPPER = wrapper\n    for supplied in (False, True):\n        with tempfile.TemporaryDirectory(prefix=\"goal798-preview-pair-\") as tmp:\n            root = Path(tmp)\n            fixture._repo(root)\n            bin_dir = root / \"bin\"\n            bin_dir.mkdir()\n            fixture._fake_codex(bin_dir / \"codex\")\n            packet = fixture._install_cached_working_tree_packet(root) if supplied else None\n            record = {\"arm\": arm, \"supplied_packet\": supplied, \"steps\": []}\n            def run(attempt, dry=False):\n                raw = fixture._run(root, bin_dir, attempt, dry_run=dry, packet_file=packet)\n                payload = yaml.safe_load(raw.stdout)\n                record[\"steps\"].append({\"attempt\": attempt, \"dry_run\": dry, \"exit_code\": raw.returncode, \"status\": payload.get(\"status\"), \"reason_code\": payload.get(\"reason_code\"), \"approval_eligible\": payload.get(\"approval_eligible\"), \"reviewer_started\": payload.get(\"reviewer_started\"), \"identities\": payload.get(\"identities\", {}), \"stderr\": raw.stderr})\n                return payload\n            preview = run(\"paired\", True)\n            assert preview[\"status\"] == \"dry-run-ready\"\n            live = run(\"paired\")\n            if not live[\"approval_eligible\"]:\n                assert live[\"reason_code\"] == \"stale-artifact-refused\"\n                live = run(\"paired-recovery\")\n                record[\"recovery_invocations\"] = 1\n            else:\n                record[\"recovery_invocations\"] = 0\n            assert live[\"approval_eligible\"]\n            record[\"backend_invocations\"] = int((bin_dir / \"review-called\").read_text())\n            results.append(record)\nprint(json.dumps(results))\n'",
+  "baseline_source": "7cea68253f3e208f4263f9efdb4a354ed5709bc0",
+  "candidate_source": "1479ab08a",
+  "capture_note": "First execution also exited 0, but its raw output exceeded the retrieval budget. This capture-only rerun preserves compact final-consumer fields; it is not an extra consumer semantic arm or a performance sample.",
+  "exit_code": 0,
+  "observations": [
+    {
+      "arm": "baseline",
+      "supplied_packet": false,
+      "steps": [
+        {
+          "attempt": "paired",
+          "dry_run": true,
+          "exit_code": 0,
+          "status": "dry-run-ready",
+          "reason_code": null,
+          "approval_eligible": false,
+          "reviewer_started": false,
+          "identities": {},
+          "stderr": ""
+        },
+        {
+          "attempt": "paired",
+          "dry_run": false,
+          "exit_code": 2,
+          "status": "runner-invalid",
+          "reason_code": "stale-artifact-refused",
+          "approval_eligible": false,
+          "reviewer_started": false,
+          "identities": {},
+          "stderr": ""
+        },
+        {
+          "attempt": "paired-recovery",
+          "dry_run": false,
+          "exit_code": 0,
+          "status": "runner-completed",
+          "reason_code": null,
+          "approval_eligible": true,
+          "reviewer_started": true,
+          "identities": {
+            "attempt_id": "paired-recovery",
+            "scope": "semantic command",
+            "packet_identity": "1453566518c27afd7ab8497013eb447c7d5cdf986f433f81d85bd2495bfb941a",
+            "reviewed_input_identity": "8b2cb6f74715d2fb1f704c27e8f6967eda94b0d1e54b1b3ab50a212b538d859b",
+            "parent_receipt_identity": "parent-974665a2411f496b8882adf2b2ac81d360fd841212f4d0ba",
+            "findings_identity": "d64942bac3b38c80320dd9d154ed91c6f70f1d33a0f576d5d0a8a2c858382eef"
+          },
+          "stderr": "RUN [critique-review-runner] /usr/bin/python3 /tmp/charness-goal798.qWglDo/baseline-export/plugins/charness/shared/scripts/run_reviewer_worker.py ...\nPASS [critique-review-runner] 0.3s /usr/bin/python3 /tmp/charness-goal798.qWglDo/baseline-export/plugins/charness/shared/scripts/run_reviewer_worker.py ...\n"
+        }
+      ],
+      "recovery_invocations": 1,
+      "backend_invocations": 1
+    },
+    {
+      "arm": "baseline",
+      "supplied_packet": true,
+      "steps": [
+        {
+          "attempt": "paired",
+          "dry_run": true,
+          "exit_code": 0,
+          "status": "dry-run-ready",
+          "reason_code": null,
+          "approval_eligible": false,
+          "reviewer_started": false,
+          "identities": {},
+          "stderr": ""
+        },
+        {
+          "attempt": "paired",
+          "dry_run": false,
+          "exit_code": 2,
+          "status": "runner-invalid",
+          "reason_code": "stale-artifact-refused",
+          "approval_eligible": false,
+          "reviewer_started": false,
+          "identities": {},
+          "stderr": ""
+        },
+        {
+          "attempt": "paired-recovery",
+          "dry_run": false,
+          "exit_code": 0,
+          "status": "runner-completed",
+          "reason_code": null,
+          "approval_eligible": true,
+          "reviewer_started": true,
+          "identities": {
+            "attempt_id": "paired-recovery",
+            "scope": "semantic command",
+            "packet_identity": "ec1cd9f98fcc95bef4b00012e28afc6c9d37a79ae702b320f9f9bcd064835a78",
+            "reviewed_input_identity": "8b2cb6f74715d2fb1f704c27e8f6967eda94b0d1e54b1b3ab50a212b538d859b",
+            "parent_receipt_identity": "parent-798969ff1ac0de1555836913112db7d97b82c2ced118d8a0",
+            "findings_identity": "b1e2a9b3265ba020fe483579b46b9dade48731090482188375b5f87d35687bfa"
+          },
+          "stderr": "RUN [critique-review-runner] /usr/bin/python3 /tmp/charness-goal798.qWglDo/baseline-export/plugins/charness/shared/scripts/run_reviewer_worker.py ...\nPASS [critique-review-runner] 0.4s /usr/bin/python3 /tmp/charness-goal798.qWglDo/baseline-export/plugins/charness/shared/scripts/run_reviewer_worker.py ...\n"
+        }
+      ],
+      "recovery_invocations": 1,
+      "backend_invocations": 1
+    },
+    {
+      "arm": "candidate",
+      "supplied_packet": false,
+      "steps": [
+        {
+          "attempt": "paired",
+          "dry_run": true,
+          "exit_code": 0,
+          "status": "dry-run-ready",
+          "reason_code": null,
+          "approval_eligible": false,
+          "reviewer_started": false,
+          "identities": {},
+          "stderr": ""
+        },
+        {
+          "attempt": "paired",
+          "dry_run": false,
+          "exit_code": 0,
+          "status": "runner-completed",
+          "reason_code": null,
+          "approval_eligible": true,
+          "reviewer_started": true,
+          "identities": {
+            "attempt_id": "paired",
+            "scope": "semantic command",
+            "packet_identity": "8989d95f50be00df94b51bef0065a25b4bb328af068bdb30ed263cce73a6a579",
+            "reviewed_input_identity": "8b2cb6f74715d2fb1f704c27e8f6967eda94b0d1e54b1b3ab50a212b538d859b",
+            "parent_receipt_identity": "parent-343367f31747d90429e7f9ff8642f14680cadabbe75e71d4",
+            "findings_identity": "59d366beb535fc97e27f2bc6577c60918b17f03ad06675c1f14c8bd1eaf4b9fd"
+          },
+          "stderr": "RUN [critique-review-runner] /usr/bin/python3 /home/hwidong/codes/charness/skills/shared/scripts/run_reviewer_worker.py --repo-root /home/hwidong/...\nPASS [critique-review-runner] 0.3s /usr/bin/python3 /home/hwidong/codes/charness/skills/shared/scripts/run_reviewer_worker.py --repo-root /home/hwidong/...\n"
+        }
+      ],
+      "recovery_invocations": 0,
+      "backend_invocations": 1
+    },
+    {
+      "arm": "candidate",
+      "supplied_packet": true,
+      "steps": [
+        {
+          "attempt": "paired",
+          "dry_run": true,
+          "exit_code": 0,
+          "status": "dry-run-ready",
+          "reason_code": null,
+          "approval_eligible": false,
+          "reviewer_started": false,
+          "identities": {},
+          "stderr": ""
+        },
+        {
+          "attempt": "paired",
+          "dry_run": false,
+          "exit_code": 0,
+          "status": "runner-completed",
+          "reason_code": null,
+          "approval_eligible": true,
+          "reviewer_started": true,
+          "identities": {
+            "attempt_id": "paired",
+            "scope": "semantic command",
+            "packet_identity": "ec1cd9f98fcc95bef4b00012e28afc6c9d37a79ae702b320f9f9bcd064835a78",
+            "reviewed_input_identity": "8b2cb6f74715d2fb1f704c27e8f6967eda94b0d1e54b1b3ab50a212b538d859b",
+            "parent_receipt_identity": "parent-c00888967005c5ac8f02f8501490ae6ec7712f7a8d726f49",
+            "findings_identity": "b1e2a9b3265ba020fe483579b46b9dade48731090482188375b5f87d35687bfa"
+          },
+          "stderr": "RUN [critique-review-runner] /usr/bin/python3 /home/hwidong/codes/charness/skills/shared/scripts/run_reviewer_worker.py --repo-root /home/hwidong/...\nPASS [critique-review-runner] 0.3s /usr/bin/python3 /home/hwidong/codes/charness/skills/shared/scripts/run_reviewer_worker.py --repo-root /home/hwidong/...\n"
+        }
+      ],
+      "recovery_invocations": 0,
+      "backend_invocations": 1
+    }
+  ],
+  "non_claims": [
+    "Fake backend proves invocation and lifecycle composition, not actual hosted reviewer judgment.",
+    "Candidate wrapper code equivalent to 42fd204e1; final release binding remains pending."
+  ]
+}

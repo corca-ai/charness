@@ -287,8 +287,11 @@ options:
                         (explicit form).
   --scope SCOPE         Repository-relative candidate path or quoted glob;
                         repeatable, and a `{a,b}` group expands to one scope
-                        per alternative. Globs must match before launch and
-                        retain the pattern for new matching paths.
+                        per alternative. Existing directories include
+                        descendants; a path absent from the base is an exact
+                        file, so enumerate planned files in a new directory.
+                        Globs must match before launch and retain the pattern
+                        for new matching paths.
   --prompt PROMPT       Implementation instructions passed to `codex exec`.
   --prompt-file PROMPT_FILE
                         Read implementation instructions from this file.

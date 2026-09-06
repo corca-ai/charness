@@ -1,0 +1,107 @@
+{
+  "capture": "Selected direct receipt fields; omitted routine environment inventories and ignored-path populations, not a byte-identical full receipt.",
+  "receipt": {
+    "schema_version": 1,
+    "event": "task-run",
+    "status": "completed",
+    "phase": "terminal",
+    "approval_eligibility": "eligible",
+    "task_id": "goal798-alias-spec-baseline",
+    "repo_root": "/tmp/charness-goal798.qWglDo/alias-baseline",
+    "worktree_path": "/home/hwidong/.cache/tmp/charness/runtime/6790edddb6c40717/task-run/goal798-alias-spec-baseline/worktree",
+    "branch": "task/goal798-alias-spec-baseline",
+    "base_sha": "403f08659f555789c4f3e12690f5e53018ea8f08",
+    "codex": {
+      "executable": "/home/hwidong/.n/bin/codex",
+      "model": "gpt-5.6-luna",
+      "effort": "xhigh",
+      "timeout_seconds": 3600,
+      "timeout_scope": "codex-exec",
+      "command": [
+        "/home/hwidong/.n/bin/codex",
+        "exec",
+        "--sandbox",
+        "workspace-write",
+        "--add-dir",
+        "/tmp/charness-goal798.qWglDo/alias-baseline/.git",
+        "--add-dir",
+        "/tmp/charness-goal798.qWglDo/alias-baseline/.git/worktrees/worktree",
+        "--add-dir",
+        "/home/hwidong/.cache/tmp/charness/runtime/6790edddb6c40717/task-run/goal798-alias-spec-baseline/runtime",
+        "-m",
+        "gpt-5.6-luna",
+        "-c",
+        "model_reasoning_effort=xhigh",
+        "-"
+      ]
+    },
+    "scopes": [
+      "docs/alias-resolution.md"
+    ],
+    "scope_specs": [
+      {
+        "path": "docs/alias-resolution.md",
+        "kind": "exact"
+      }
+    ],
+    "timestamps": {
+      "launched_at": "2026-09-06T00:36:49Z",
+      "create_started_at": "2026-09-06T00:36:49Z",
+      "updated_at": "2026-09-06T00:47:46Z",
+      "exec_started_at": "2026-09-06T00:36:49Z",
+      "finished_at": "2026-09-06T00:47:46Z"
+    },
+    "timings_ms": {
+      "create": 38,
+      "exec": 657014
+    },
+    "keep_worktree": false,
+    "target_sha": "47907e7f4404fb869bbd6265af3007158ff5ec2f",
+    "execution": {
+      "exit_code": 0,
+      "timed_out": false,
+      "interrupted": false,
+      "status": "completed"
+    },
+    "candidate": {
+      "status": "validated",
+      "useful": true,
+      "changed_paths": [
+        "docs/alias-resolution.md"
+      ],
+      "disallowed_paths": [],
+      "carrier_kind": "commit-only",
+      "committed_paths": [
+        "docs/alias-resolution.md"
+      ],
+      "dirty_paths": [],
+      "head_sha": "47907e7f4404fb869bbd6265af3007158ff5ec2f",
+      "base_is_ancestor_of_head": true,
+      "observed_head_sha": "47907e7f4404fb869bbd6265af3007158ff5ec2f",
+      "observed_branch": "task/goal798-alias-spec-baseline",
+      "head_is_complete": true,
+      "content_digest": "608fdbce7ca50a8f2e5d9bd795d9766682d7825c1b41b25c9929b4d299b1fcb0",
+      "persist": {
+        "status": "committed",
+        "sha": "47907e7f4404fb869bbd6265af3007158ff5ec2f",
+        "message": "task-run: persist validated candidate onto the lane branch",
+        "correctness_verified": false
+      }
+    },
+    "changed_line_gate": {
+      "status": "not-applicable",
+      "blocking": false,
+      "reason": "the lane tree has no scripts/mutation/release_changed_line_coverage.py; no changed-line verdict exists for it",
+      "summary": "changed-line gate not applicable: no scripts/mutation/release_changed_line_coverage.py in the lane tree"
+    },
+    "result_delivery": {
+      "status": "delivered",
+      "bytes": 378,
+      "truncated": false,
+      "text": "Created [docs/alias-resolution.md](/home/hwidong/.cache/tmp/charness/runtime/6790edddb6c40717/task-run/goal798-alias-spec-baseline/worktree/docs/alias-resolution.md).\n\n- No implementation or test files changed.\n- Baseline tests pass: 2 tests.\n- Consumed spec skill: `/tmp/charness-goal798.qWglDo/baseline-export/plugins/charness/skills/spec/SKILL.md`\n- Package version: `8.4.3`\n",
+      "log": "/home/hwidong/.cache/tmp/charness/runtime/6790edddb6c40717/task-run/goal798-alias-spec-baseline/codex.stdout.log",
+      "structured_status": "not-applicable"
+    },
+    "next_step": "Review the candidate on branch task/goal798-alias-spec-baseline at 47907e7f4404fb869bbd6265af3007158ff5ec2f; the typed result is approval-eligible; the lane worktree was released because that commit carries the whole candidate."
+  }
+}

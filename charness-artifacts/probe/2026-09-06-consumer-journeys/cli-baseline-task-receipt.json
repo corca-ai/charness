@@ -1,0 +1,131 @@
+{
+  "capture": "Selected direct receipt fields; omitted routine environment inventories and ignored-path populations, not a byte-identical full receipt.",
+  "receipt": {
+    "schema_version": 1,
+    "event": "task-run",
+    "status": "completed",
+    "phase": "terminal",
+    "approval_eligibility": "eligible",
+    "task_id": "goal798-cli-baseline",
+    "repo_root": "/tmp/charness-goal798.qWglDo/cli-baseline",
+    "worktree_path": "/home/hwidong/.cache/tmp/charness/runtime/3f551f6cbcc26b40/task-run/goal798-cli-baseline/worktree",
+    "branch": "task/goal798-cli-baseline",
+    "base_sha": "dbb6831fdfc17a94988fb81fd23d4c6aad319e78",
+    "codex": {
+      "executable": "/home/hwidong/.n/bin/codex",
+      "model": "gpt-5.6-luna",
+      "effort": "xhigh",
+      "timeout_seconds": 3600,
+      "timeout_scope": "codex-exec",
+      "command": [
+        "/home/hwidong/.n/bin/codex",
+        "exec",
+        "--sandbox",
+        "workspace-write",
+        "--add-dir",
+        "/tmp/charness-goal798.qWglDo/cli-baseline/.git",
+        "--add-dir",
+        "/tmp/charness-goal798.qWglDo/cli-baseline/.git/worktrees/worktree",
+        "--add-dir",
+        "/home/hwidong/.cache/tmp/charness/runtime/3f551f6cbcc26b40/task-run/goal798-cli-baseline/runtime",
+        "-m",
+        "gpt-5.6-luna",
+        "-c",
+        "model_reasoning_effort=xhigh",
+        "-"
+      ]
+    },
+    "scopes": [
+      ".state/cache.json",
+      "README.md",
+      "repoctl",
+      "scripts",
+      "tests"
+    ],
+    "scope_specs": [
+      {
+        "path": ".state/cache.json",
+        "kind": "exact"
+      },
+      {
+        "path": "README.md",
+        "kind": "exact"
+      },
+      {
+        "path": "repoctl",
+        "kind": "exact"
+      },
+      {
+        "path": "scripts",
+        "kind": "directory"
+      },
+      {
+        "path": "tests",
+        "kind": "directory"
+      }
+    ],
+    "timestamps": {
+      "launched_at": "2026-09-06T00:36:50Z",
+      "create_started_at": "2026-09-06T00:36:50Z",
+      "updated_at": "2026-09-06T00:47:01Z",
+      "exec_started_at": "2026-09-06T00:36:50Z",
+      "finished_at": "2026-09-06T00:47:01Z"
+    },
+    "timings_ms": {
+      "create": 43,
+      "exec": 610259
+    },
+    "keep_worktree": false,
+    "target_sha": "5cf9b39fb50ef0a77c245a569c4bcf92bbb95f4f",
+    "execution": {
+      "exit_code": 0,
+      "timed_out": false,
+      "interrupted": false,
+      "status": "completed"
+    },
+    "candidate": {
+      "status": "validated",
+      "useful": true,
+      "changed_paths": [
+        "README.md",
+        "repoctl",
+        "tests/test_repoctl.py"
+      ],
+      "disallowed_paths": [],
+      "carrier_kind": "commit-only",
+      "committed_paths": [
+        "README.md",
+        "repoctl",
+        "tests/test_repoctl.py"
+      ],
+      "dirty_paths": [],
+      "head_sha": "5cf9b39fb50ef0a77c245a569c4bcf92bbb95f4f",
+      "base_is_ancestor_of_head": true,
+      "observed_head_sha": "5cf9b39fb50ef0a77c245a569c4bcf92bbb95f4f",
+      "observed_branch": "task/goal798-cli-baseline",
+      "head_is_complete": true,
+      "content_digest": "400e970f8b8e115433d1d9d9e1ae1f6bcf04a2e5ef20ff53c1ff3dda8a60ed09",
+      "persist": {
+        "status": "committed",
+        "sha": "5cf9b39fb50ef0a77c245a569c4bcf92bbb95f4f",
+        "message": "task-run: persist validated candidate onto the lane branch",
+        "correctness_verified": false
+      }
+    },
+    "changed_line_gate": {
+      "status": "not-applicable",
+      "blocking": false,
+      "reason": "the lane tree has no scripts/mutation/release_changed_line_coverage.py; no changed-line verdict exists for it",
+      "summary": "changed-line gate not applicable: no scripts/mutation/release_changed_line_coverage.py in the lane tree"
+    },
+    "result_delivery": {
+      "status": "delivered",
+      "bytes": 750,
+      "truncated": false,
+      "text": "Implemented the cache CLI migration.\n\n- Added executable [`repoctl`](/home/hwidong/.cache/tmp/charness/runtime/3f551f6cbcc26b40/task-run/goal798-cli-baseline/worktree/repoctl)\n- Updated [`README.md`](/home/hwidong/.cache/tmp/charness/runtime/3f551f6cbcc26b40/task-run/goal798-cli-baseline/worktree/README.md)\n- Added comprehensive CLI tests; legacy scripts remain unchanged\n- Tests: `python3 -m unittest discover -s tests -v` — 9 passed\n- No repository lint gate was configured\n\nConsumed exported skills:\n\n- `/tmp/charness-goal798.qWglDo/baseline-export/plugins/charness/skills/create-cli/SKILL.md`\n- `/tmp/charness-goal798.qWglDo/baseline-export/plugins/charness/skills/impl/SKILL.md`\n- Package version: `8.4.3` from the exported plugin manifest.\n",
+      "log": "/home/hwidong/.cache/tmp/charness/runtime/3f551f6cbcc26b40/task-run/goal798-cli-baseline/codex.stdout.log",
+      "structured_status": "not-applicable"
+    },
+    "next_step": "Review the candidate on branch task/goal798-cli-baseline at 5cf9b39fb50ef0a77c245a569c4bcf92bbb95f4f; the typed result is approval-eligible; the lane worktree was released because that commit carries the whole candidate."
+  }
+}
