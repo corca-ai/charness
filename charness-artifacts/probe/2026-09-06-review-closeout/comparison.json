@@ -1,0 +1,57 @@
+{
+  "kind": "fake-backend-descriptive-comparison",
+  "scenario_seconds": 2.773587,
+  "baseline_worker_calls": 2,
+  "candidate_worker_calls": 1,
+  "observations": [
+    {
+      "command": "baseline-wrong",
+      "seconds": 0.707235,
+      "returncode": 0
+    },
+    {
+      "command": "verify-closeout",
+      "seconds": 0.043821,
+      "returncode": 2
+    },
+    {
+      "command": "validate-closeout-draft",
+      "seconds": 0.039913,
+      "returncode": 2
+    },
+    {
+      "command": "baseline-corrected",
+      "seconds": 0.714817,
+      "returncode": 0
+    },
+    {
+      "command": "verify-closeout",
+      "seconds": 0.099049,
+      "returncode": 0
+    },
+    {
+      "command": "validate-closeout-draft",
+      "seconds": 0.059237,
+      "returncode": 0
+    },
+    {
+      "command": "review-resolution",
+      "seconds": 0.721197,
+      "returncode": 0
+    },
+    {
+      "command": "verify-closeout",
+      "seconds": 0.064492,
+      "returncode": 0
+    },
+    {
+      "command": "validate-closeout-draft",
+      "seconds": 0.068348,
+      "returncode": 0
+    }
+  ],
+  "nonclaim": "Single local fixture timing only; no live latency, token, human intervention, semantic approval, or net delegation efficiency claim.",
+  "source_test": "tests/quality_gates/test_issue_bundled_closeout.py::test_issue_review_resolution_composes_one_worker_carrier_for_both_consumers[semantic command]",
+  "source_revision": "1563e116b3840ea1f3be4724f772f502b8381d78",
+  "instrumentation": "Parent invoked the existing composed test in a temporary fixture, wrapping its generic-review and issue CLI calls with perf_counter; assertions and actual consumer results were unchanged. No elapsed threshold."
+}

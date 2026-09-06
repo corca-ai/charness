@@ -1,0 +1,64 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'code-critique: local issue-resolution launch and selected-evidence readiness;
+  no issue approval, Goal, release, push or install'
+attempt_id: review-closeout-code-authority
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 775e818c7a2ace9ef836e58dcdd19ebf8557bba1643aec8c7982ef621c492836
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-review-closeout-code-authority/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-review-closeout-code-authority/delivery.json
+producer_run_id: run-review-closeout-code-authority
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-review-closeout-code-authority/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-review-closeout-code-authority/receipt.json
+  producer_run_id: run-review-closeout-code-authority
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 560f793baf414771df5f6bf738121fae524bc9adfa37d604999e8300ec85af00
+receipt_output_sha256: 560f793baf414771df5f6bf738121fae524bc9adfa37d604999e8300ec85af00
+packet_identity: 657e38e0431fd5e9246ffbe7a75544c1ff9ac359ee22c81500006904a42e6b1e
+reviewed_input_identity: 2b390a9bfd4f48089c64c647d2774c96d1ec3db9a3ec8edc28965aa837320fd5
+parent_receipt_identity: parent-73a34d0c9c911b3364d50ae0774d456da4e9e3bd14d74c2b
+provenance:
+  scope: 'code-critique: local issue-resolution launch and selected-evidence readiness;
+    no issue approval, Goal, release, push or install'
+  packet_identity: 657e38e0431fd5e9246ffbe7a75544c1ff9ac359ee22c81500006904a42e6b1e
+  reviewed_input_identity: 2b390a9bfd4f48089c64c647d2774c96d1ec3db9a3ec8edc28965aa837320fd5
+  parent_receipt_identity: parent-73a34d0c9c911b3364d50ae0774d456da4e9e3bd14d74c2b
+  attempt_id: review-closeout-code-authority
+  attempt_scope: 'code-critique: local issue-resolution launch and selected-evidence
+    readiness; no issue approval, Goal, release, push or install'
+  attempt_packet_identity: 657e38e0431fd5e9246ffbe7a75544c1ff9ac359ee22c81500006904a42e6b1e
+  attempt_parent_receipt_identity: parent-73a34d0c9c911b3364d50ae0774d456da4e9e3bd14d74c2b
+  result_packet_identity: 657e38e0431fd5e9246ffbe7a75544c1ff9ac359ee22c81500006904a42e6b1e
+  result_reviewed_input_identity: 2b390a9bfd4f48089c64c647d2774c96d1ec3db9a3ec8edc28965aa837320fd5
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 775e818c7a2ace9ef836e58dcdd19ebf8557bba1643aec8c7982ef621c492836
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

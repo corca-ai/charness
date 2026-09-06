@@ -1,0 +1,41 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Jackson/Weinberg authority and behavior: issue-resolution launch and selected-evidence readiness",
+  "packet_sha256": "657e38e0431fd5e9246ffbe7a75544c1ff9ac359ee22c81500006904a42e6b1e",
+  "reviewed_input_identity_sha256": "2b390a9bfd4f48089c64c647d2774c96d1ec3db9a3ec8edc28965aa837320fd5",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "Blocking: resolution authority must represent assessment of a supported repair and recurrence protection for exactly the cited issues.",
+      "bin": "blocking",
+      "disposition": "No concrete blocker found in the supplied full surfaces. issue_review_resolution.py derives the issue-resolution purpose and puts repair, recurrence, behavioral evidence, and block/defer instructions into the actual runner arguments. issue_critique_observer.py retains required_scope_prefix and delivery-chain validation; issue_worker_targets.py retains exact packet/result membership and passing, evidence-bearing observation floors. Recorded instance: the baseline consumes one worker but fails the purpose check. Axis-varying counterexample: preserve exact targets and passing observations while changing their meaning to 'Root cause confirmed; no repair exists' under causal-review. The supplied composed test retains refusal through both public consumers. Prefix deletion remains correctly rejected."
+    },
+    {
+      "concern": "Selected-evidence readiness must preserve the durability owner's decisions without introducing corpus discovery or unrelated-file refusals.",
+      "bin": "nonblocking",
+      "disposition": "The implementation follows the decision: the issue launch supplies selected paths to selected_doc_violations; quality_universe_selection owns matching and performs a literal, path-scoped Git listing. Citation parsing, batched ignore checking, generated-export exceptions, and late-date/Goal-binding exemptions remain shared with the durability owner. Axis variation is covered by selected versus unrelated dirty artifacts, configured roots, ignored versus tracked files, symlink traversal, reproduction markers, and grandfathered records. Narrow empty selections do not assert that a full declared universe is empty."
+    },
+    {
+      "concern": "Mechanical readiness and passing observation fields cannot establish semantic truth.",
+      "bin": "accepted-risk",
+      "disposition": "The command honestly asks for resolution/recurrence judgment; it does not mechanically establish that judgment. A diagnostic-only statement incorrectly marked pass inside an otherwise valid issue-resolution carrier still requires reviewer judgment. Exact membership and purpose checks are necessary floors, not a content-understanding oracle. The retained shared-validator call carries freshness and delivery responsibilities; supplied stale-packet and interruption tests support those boundaries, while complete scope-join and damaged-delivery coverage is reported rather than independently reproduced here."
+    },
+    {
+      "concern": "Remaining verification and broader operational claims.",
+      "bin": "out-of-scope",
+      "disposition": "The source/installed dry-run tests exercise package loading and packet preparation without workers or approval eligibility. The CLI validates positive distinct issue numbers, repository shape, required focus, and bounded paths before runner loading. The first-reader invocation in closeout-discipline.md matches the parser and preserves derived purpose and targets. Changed-line proof, parent standing/full read-only lanes, packaging completion, and any live deployment or benefit measurement remain outside this verdict."
+    }
+  ],
+  "next_move": "Carry this bounded review into the parent's pending changed-line and integrated read-only verification. Preserve the generic runner and final purpose guard; do not use this result as issue-closeout approval.",
+  "non_claims": [
+    "Reviewed all 17 supplied semantic payloads; did not inspect substitute workspace bytes, execute tests, edit files, launch workers, or take external actions.",
+    "The reported 98 focused tests and 28 selected-universe tests were not independently rerun.",
+    "The deterministic journey supports baseline two worker calls versus one and both public closeout consumers; it does not establish live savings, model judgment quality, or resolved issue behavior.",
+    "No issue approval, Goal action, release, push, installation, broad audit, or completion of pending verification is claimed.",
+    "Goal evidence lineage: {\"binding\":null,\"disposition\":\"not-goal-bound\",\"draft\":null,\"goal_run\":null,\"kind\":\"charness.goal-lineage\",\"reason\":\"critique review was run without a Goal Run Work Item identity\",\"schema_version\":1,\"work_item\":null}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

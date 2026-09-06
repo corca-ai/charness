@@ -1,0 +1,42 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Raskin/Gawande cost and scope: issue-resolution launch and selected-evidence readiness",
+  "packet_sha256": "657e38e0431fd5e9246ffbe7a75544c1ff9ac359ee22c81500006904a42e6b1e",
+  "reviewed_input_identity_sha256": "2b390a9bfd4f48089c64c647d2774c96d1ec3db9a3ec8edc28965aa837320fd5",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "Blocking defects",
+      "bin": "must-fix",
+      "disposition": "None established in the supplied full owner surfaces. Invariant: resolution review must ask about supported repair and recurrence while retaining final-consumer purpose and exact membership checks. Owners: issue_review_resolution.py and issue_worker_targets.py. Instance: the baseline wrong-purpose carrier consumes a worker before refusal. Axis-varying counterexample: identical joined targets and passing observations describing diagnosis without a repair remain refused under causal-review scope."
+    },
+    {
+      "concern": "Selected matching introduces a second implementation of glob semantics",
+      "bin": "accepted-tradeoff",
+      "disposition": "The frozen no-corpus-scan decision justifies the bounded matcher beside the universe owner. quality_universe_selection.py preserves ancestor-directory matching, recursive symlink barriers and literal path-scoped Git visibility. The supplied parity tests vary directory versus glob patterns, trailing separators, symlinks, tracked ignored files and wildcard characters in literal filenames. No additional framework or discovery pass is warranted."
+    },
+    {
+      "concern": "Readiness could impose unrelated repairs or duplicate durability policy",
+      "bin": "dismissed",
+      "disposition": "check_spec_evidence_durability.py:selected_doc_violations reuses configured family resolution, citation parsing, late-date/Goal-binding enforcement and generated-export exceptions, with one batched ignore query. Invariant: changing an unrelated universe or dirty document must not alter the selected document's disposition. Tests exercise an unrelated declared-empty release root, unrelated dirty evidence, reproduction markers, generated exports and exact versus stale Goal bindings. The issue wrapper delegates this policy instead of reproducing it."
+    },
+    {
+      "concern": "Comparison strength and completion claims",
+      "bin": "deferred",
+      "disposition": "The supplied composed journey supports two baseline worker calls versus one issue-owned call and acceptance through both public closeout consumers. Its fake backend supplies verdicts independently of semantic evidence; it cannot establish reviewer judgment or live efficiency. The closeout reference demonstrates the narrow invocation, and parser/composition tests preserve its purpose and target derivation. Changed-line proof and parent standing/full read-only lanes remain pending; this bounded pass does not close them."
+    }
+  ],
+  "next_move": "Proceed to the pending parent verification lanes; retain the comparison as local fixture evidence and address any concrete failures before integration closeout.",
+  "non_claims": [
+    "Reviewed the supplied semantic bytes; did not edit the workspace or independently rerun the reported 98 focused and 28 selected-universe tests.",
+    "No issue approval, Goal action, release, push, installation or external action is authorized by this result.",
+    "No live latency, token-cost, user-wait, actual human-correction or overall delegation-efficiency benefit is established. The failed implementation lane is not benefit evidence.",
+    "Readiness does not establish semantic approval or protect against later reviewed-byte changes.",
+    "No structured prepared_targets were declared for this review packet; fixture issue targets are not review-target observations.",
+    "{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

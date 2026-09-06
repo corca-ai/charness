@@ -9,8 +9,9 @@ authorized a bounded reduction of this review-to-closeout rework, not a new Goal
 
 ## Correct Behavior
 
-Given an intended issue-closeout review, when its purpose, targets or evidence
-already violate deterministic consumer conditions, fail before reviewer launch.
+Given the supported issue-owned review launch, derive resolution purpose and
+qualified targets, and refuse malformed inputs or ineligible selected citations
+before reviewer launch. Generic reviews remain available for other purposes.
 After correction, the unchanged final consumer must still enforce delivery,
 identity, membership and per-target proof. Measure worker calls and interventions;
 do not infer general delegation savings.
@@ -19,8 +20,8 @@ do not infer general delegation savings.
 
 The retained Goal 805 implementation critique records the scope refusal and its
 correction. Current `run_review.py` accepts free-form `--scope`; current
-`issue_critique_observer.py:336` requires prefix `issue-resolution`. Their intended
-relationship and existing preflight alternatives are under investigation.
+`issue_critique_observer.py` requires prefix `issue-resolution`. The prior issue
+documentation routed directly to the generic runner, with no issue-owned launch.
 Prior cardinality and ephemeral-carrier records caution against weakening exact
 membership or mistaking author-disk existence for durable evidence.
 
@@ -56,28 +57,39 @@ separate exact packet/result membership, per-target pass and evidence checks.
 
 ## Root Cause
 
-Five Whys: a delivered review cannot close → consumer requires a free-text
-prefix → generic producer accepts other text → issue docs route directly to
-that producer → old descriptive-scope check remains beside newer structured
-target/observation checks without a composed launch-to-consumption test.
-Candidate repair: retire the redundant prefix only for validated structured
-carriers; keep legacy prefix and every delivery, identity and target check.
-Whether this loses meaningful purpose detection is the causal review question.
+Five Whys: review must be repeated → final purpose/citation conditions are met
+only after delivery → the generic launch does not compose issue readiness →
+issue docs expose the generic producer directly → transport and consumer tests
+never exercise that intended journey with a wrong-purpose or ignored citation.
+
+The initial prefix-deletion hypothesis was rejected after causal critique and a
+reproduced counterexample: exact targets plus passing diagnostic observations
+without a repair become wrongly usable when the purpose check is removed.
+The [causal disposition](../critique/2026-09-06-review-closeout-cause.md) preserves
+that refusal. Repair belongs in a small issue-owned launch, not looser approval.
 
 ## Invariant Proof
 
-- Invariant: known issue-closeout ineligibility is surfaced before paid review;
-  final issue consumers still validate the actual delivered result.
-- Producer Proof: baseline replay launched one simulated worker, exit 0.
-- Final-Consumer Proof: both public commands exit 2 with the same sole refusal.
+- Invariant: the issue launch supplies known purpose and targets, and rejects
+  malformed inputs or ineligible selected citations before paid review; final
+  issue consumers still validate the actual delivered result.
+- Producer Proof: the composed fake-backend regression observes two baseline
+  calls including correction versus one call through the new issue command.
+- Final-Consumer Proof: both public commands refuse wrong purpose and accept
+  the corrected baseline and candidate; bad selected citations start zero workers.
 - Interface-Shape Sibling Scan: scope, exact targets, evidence durability.
-- Non-Claims: no new code, benefit, host update or provider write established.
+- Non-Claims: no live/model efficiency, semantic approval, host update or provider
+  write. Changed-line proof is clean for all eight changed execution files at
+  `1563e116b`; broad integration verification is recorded separately.
 
 ## Detection Gap
 
 `test_semantic_review_command.py` proves delivery; bundled consumer tests seed
 matching prefixes, so their composition never varies this independent axis.
-Add one real fake-backend-to-final-consumer scenario. No new command is proposed.
+The composed regression now varies purpose independently of exact targets, and
+checks evidence before packet freezing. Selected-file tests prohibit discovery
+and compare the existing directory/glob and exemption decisions. The new command
+is scoped under the existing issue CLI; it does not add another runner or gate.
 
 ## Sibling Search
 
@@ -89,9 +101,9 @@ Add one real fake-backend-to-final-consumer scenario. No new command is proposed
   diagnostic-only for this slice | proof: executable fixture; preserve joins.
 - specialization down: structured target validation | decision: same bug, fix
   now | proof: executable fixture plus source; retain all target refusals.
-- mental-model: ignored citations in reviewed Markdown | decision: same class,
-  diagnostic-only for this slice | proof: prior Goal 805 push refusal; separately
-  examine moving the existing citation check before input freezing.
+- mental-model: ignored citations in reviewed Markdown | decision: same bug,
+  fix now | proof: real fake-backend launch refuses before packet/worker creation,
+  and proceeds after durable evidence repair while unrelated dirty docs remain.
 
 ## Seam Risk
 
@@ -104,12 +116,27 @@ Add one real fake-backend-to-final-consumer scenario. No new command is proposed
 
 ## Interrupt Decision
 
-- Resolution: open
+- Resolution: resolved
 - Critique Required: yes
 - Next Step: impl
-- Handoff Artifact: none
+- Handoff Artifact: charness-artifacts/critique/2026-09-06-review-closeout-code.md
 
 ## Prevention
 
-Pending causal disposition. Do not alter historical receipts, infer semantic
-equivalence from formatting, remove identity checks, or launch a new release.
+`test_issue_bundled_closeout.py` covers the real launch-to-consumption journey;
+`test_quality_universe_selection.py` and selected durability parity tests prevent
+whole-corpus discovery and exemption drift. The independent
+[code critique](../critique/2026-09-06-review-closeout-code.md) found no blockers.
+Keep historical receipts immutable and exact-byte approval binding intact.
+
+The [descriptive comparison](../probe/2026-09-06-review-closeout/comparison.json)
+retains actual local fixture outputs and elapsed observations, without a timing
+threshold or live-savings inference. Operator clarification removed non-Git
+compatibility; alternate provider paths are unchanged. The latest independent
+bounded call-graph check and 77 focused tests cover that deletion.
+
+An implementation lane separately failed scope validation and automatic retention
+removed its uncommitted checkout. The parent recovered all 11 files byte-for-byte
+from the captured final diff before correction; [recovery evidence](../probe/2026-09-06-review-closeout/recovery.json)
+records that ineligible run and its cost. Retention behavior is an explicit
+follow-up, not a repaired capability or evidence of overall delegation savings.

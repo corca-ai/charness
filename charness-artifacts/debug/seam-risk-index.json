@@ -2438,7 +2438,7 @@
       "generalization_pressure": "none",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "none",
+      "handoff_artifact": "charness-artifacts/critique/2026-09-06-review-closeout-code.md",
       "forced": false
     }
   ],

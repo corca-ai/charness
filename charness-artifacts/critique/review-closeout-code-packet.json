@@ -1,0 +1,168 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-06T09:26:47Z",
+  "prepared_for": "Review-to-closeout local implementation; purpose and selected-evidence readiness",
+  "changed_ref": "19a47e92aa027195e8d8c00218834b75d3906cf1..6423c4fe4f2c77cb75017f32d684bbb3e2f6ebe0",
+  "substrate_mode": "committed-ref",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `19a47e92aa027195e8d8c00218834b75d3906cf1..6423c4fe4f2c77cb75017f32d684bbb3e2f6ebe0`:\n- charness-artifacts/probe/2026-09-06-review-closeout/decision.md\n- charness-artifacts/probe/2026-09-06-review-closeout/recovery.json\n- scripts/adapters/quality_universe_selection.py\n- scripts/adapters/quality_universes_lib.py\n- scripts/gates/check_spec_evidence_durability.py\n- skills/public/issue/references/closeout-discipline.md\n- skills/public/issue/scripts/issue_critique_observer.py\n- skills/public/issue/scripts/issue_review_resolution.py\n- skills/public/issue/scripts/issue_tool.py\n- skills/public/issue/scripts/issue_tool_parser.py\n- skills/public/issue/scripts/issue_worker_targets.py\n- tests/quality_gates/test_check_spec_evidence_durability.py\n- tests/quality_gates/test_issue_bundled_closeout.py\n- tests/quality_gates/test_issue_review_resolution.py\n- tests/quality_gates/test_issue_tool_runners.py\n- tests/quality_gates/test_quality_universe_selection.py\n- tests/quality_gates/test_semantic_review_command.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/adapters/quality_universe_selection.py, scripts/adapters/quality_universes_lib.py, scripts/gates/check_spec_evidence_durability.py, skills/public/issue/references/closeout-discipline.md, skills/public/issue/scripts/issue_critique_observer.py, skills/public/issue/scripts/issue_review_resolution.py, skills/public/issue/scripts/issue_tool.py, skills/public/issue/scripts/issue_tool_parser.py, skills/public/issue/scripts/issue_worker_targets.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/probe/2026-09-06-review-closeout/decision.md, skills/public/issue/references/closeout-discipline.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/issue/references/closeout-discipline.md, skills/public/issue/scripts/issue_critique_observer.py, skills/public/issue/scripts/issue_review_resolution.py, skills/public/issue/scripts/issue_tool.py, skills/public/issue/scripts/issue_tool_parser.py, skills/public/issue/scripts/issue_worker_targets.py\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/issue/references/closeout-discipline.md, skills/public/issue/scripts/issue_critique_observer.py, skills/public/issue/scripts/issue_review_resolution.py, skills/public/issue/scripts/issue_tool.py, skills/public/issue/scripts/issue_tool_parser.py, skills/public/issue/scripts/issue_worker_targets.py\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/issue/references/closeout-discipline.md, skills/public/issue/scripts/issue_critique_observer.py, skills/public/issue/scripts/issue_review_resolution.py, skills/public/issue/scripts/issue_tool.py, skills/public/issue/scripts/issue_tool_parser.py, skills/public/issue/scripts/issue_worker_targets.py\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- adapters: Repo-local adapter contracts and adapter helper libraries.\n  source matches: scripts/adapters/quality_universes_lib.py\n  verify: python3 scripts/gates/validate_adapters.py --repo-root .\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-09-06-review-closeout/recovery.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/adapters/quality_universe_selection.py, scripts/adapters/quality_universes_lib.py, scripts/gates/check_spec_evidence_durability.py, tests/quality_gates/test_check_spec_evidence_durability.py, tests/quality_gates/test_issue_bundled_closeout.py, tests/quality_gates/test_issue_review_resolution.py, tests/quality_gates/test_issue_tool_runners.py, tests/quality_gates/test_quality_universe_selection.py, tests/quality_gates/test_semantic_review_command.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/adapters/quality_universe_selection.py, scripts/adapters/quality_universes_lib.py, scripts/gates/check_spec_evidence_durability.py, skills/public/issue/scripts/issue_critique_observer.py, skills/public/issue/scripts/issue_review_resolution.py, skills/public/issue/scripts/issue_tool.py, skills/public/issue/scripts/issue_tool_parser.py, skills/public/issue/scripts/issue_worker_targets.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "committed-ref",
+    "substrate_mode": "committed-ref",
+    "changed_ref": "19a47e92aa027195e8d8c00218834b75d3906cf1..6423c4fe4f2c77cb75017f32d684bbb3e2f6ebe0",
+    "resolved_changed_ref": [
+      "19a47e92aa027195e8d8c00218834b75d3906cf1",
+      "6423c4fe4f2c77cb75017f32d684bbb3e2f6ebe0"
+    ],
+    "base_head": "6423c4fe4f2c77cb75017f32d684bbb3e2f6ebe0",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      "charness-artifacts/probe/2026-09-06-review-closeout/decision.md",
+      "charness-artifacts/probe/2026-09-06-review-closeout/recovery.json",
+      "scripts/adapters/quality_universe_selection.py",
+      "scripts/adapters/quality_universes_lib.py",
+      "scripts/gates/check_spec_evidence_durability.py",
+      "skills/public/issue/references/closeout-discipline.md",
+      "skills/public/issue/scripts/issue_critique_observer.py",
+      "skills/public/issue/scripts/issue_review_resolution.py",
+      "skills/public/issue/scripts/issue_tool.py",
+      "skills/public/issue/scripts/issue_tool_parser.py",
+      "skills/public/issue/scripts/issue_worker_targets.py",
+      "tests/quality_gates/test_check_spec_evidence_durability.py",
+      "tests/quality_gates/test_issue_bundled_closeout.py",
+      "tests/quality_gates/test_issue_review_resolution.py",
+      "tests/quality_gates/test_issue_tool_runners.py",
+      "tests/quality_gates/test_quality_universe_selection.py",
+      "tests/quality_gates/test_semantic_review_command.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/probe/2026-09-06-review-closeout/decision.md",
+        "content_sha256": "1f4eda4660366c170d69ed0d36653a96f9b51ad4589a1231dd926ab4d137d9a7"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-review-closeout/recovery.json",
+        "content_sha256": "750ef0e253812e5610ec8b013c108658a5fc0a22501f02fe3dcb05d6b3ad6098"
+      },
+      {
+        "path": "scripts/adapters/quality_universe_selection.py",
+        "content_sha256": "f32bf3af2f28355496aee8613bbb698da946c04ca60ad40b430aa713af8e6b73"
+      },
+      {
+        "path": "scripts/adapters/quality_universes_lib.py",
+        "content_sha256": "78501f7fd84c64ac8689973b481e367d530a4c0a4252b61024b0c322750896ba"
+      },
+      {
+        "path": "scripts/gates/check_spec_evidence_durability.py",
+        "content_sha256": "38107755bf75f8104bcfd4c5c81cf982a9cf6e20f5c6488ad23efe00f29becd6"
+      },
+      {
+        "path": "skills/public/issue/references/closeout-discipline.md",
+        "content_sha256": "fb0b697db0ffe2b9c4cce72ccf8f07a9463858e08c7ec2106b8d06f8fb516ac3"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_critique_observer.py",
+        "content_sha256": "37c2b9d9cc89a594181d7fd879126980a223d3a49b36b66fad2cc468cb4f4a39"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_review_resolution.py",
+        "content_sha256": "ad5fcc682a782ab2ae6e20bb035388a2d746ac35a85f1d08cbf67918375aff73"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_tool.py",
+        "content_sha256": "dec94c3f32648686f964527d49c11d0e71967f5e15ccd4543724ecb351766f94"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_tool_parser.py",
+        "content_sha256": "16ba41052b2a1ecc8508ca1559c9086a8082cd9c1686e141dad053df767e601e"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_worker_targets.py",
+        "content_sha256": "9af8e17cb7115c273426c24ab57bce7afcfb8e70e2201b872f8f6bb2d054fe6c"
+      },
+      {
+        "path": "tests/quality_gates/test_check_spec_evidence_durability.py",
+        "content_sha256": "c96048ed7038e9f7ac661e0c916e304c20599a095eac440edb40e3686f662084"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_bundled_closeout.py",
+        "content_sha256": "41918bbaf11771be5e56399fd7242df0689f38c2ab340169d767b999935a9dad"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_review_resolution.py",
+        "content_sha256": "a2ea997d190a65b0c0465541b06e88050fa5c597bb8dcecc748ae845af7e2222"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_tool_runners.py",
+        "content_sha256": "a6609022b8858921d24b5049a844d83b23f854572b9558e5f6abc97ab2d075d1"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_universe_selection.py",
+        "content_sha256": "f3d268c30aea3028eb91f8eaee4089cf70ca142c510ddc44e1536d71e755108e"
+      },
+      {
+        "path": "tests/quality_gates/test_semantic_review_command.py",
+        "content_sha256": "2f88ee48392aababaa6a968e97cbf48fc3cb342c735b3c1f55d9828f714e3501"
+      }
+    ],
+    "reviewed_patch_sha256": "09c96e09a7020351f7c2e23e936ff3c8c6d5dbc344989af103eec286eada6838",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "2b390a9bfd4f48089c64c647d2774c96d1ec3db9a3ec8edc28965aa837320fd5"
+  }
+}
