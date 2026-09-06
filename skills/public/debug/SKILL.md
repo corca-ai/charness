@@ -22,7 +22,7 @@ untested repair story.
 ## Bootstrap
 
 For the same open investigation, reuse a known emitted target, subject,
-evidence mode, output contract, and validator while they remain applicable.
+`--evidence-led` selection, output contract, and validator while applicable.
 Check relevant pointer, resolution, adapter/validator, and repo-wide risk deltas
 before editing; warm context is not a cached verdict. If any identity or
 contract is missing, changed, resolved, or belongs to another subject, use the
@@ -74,9 +74,7 @@ shape the current hypothesis.
 
 For review findings or suspected false-green approvals, read `../critique/references/adversarial-evidence-review.md`, preserve IDs, and type
 each report `reproduced`, `disconfirmed`, `unproven`, or `not-applicable` before
-changing code; no consumer observation means `unproven`. The same warm-context
-conditions apply: entering evidence-led mode changes the contract. Preserve the
-known `--subject` on the planner/scaffold and use
+changing code; no consumer observation means `unproven`. Select
 `--evidence-led` so the template and emitted validator are bound to the typed
 sections; reproduced records need a receipt, `debug` handoff, and next move.
 
@@ -160,33 +158,10 @@ For every reproduced or recurring finding, use `references/pattern-ladder.md`: r
    - if the fix belongs to normal implementation work, hand off cleanly to
      `impl` with the debug artifact still intact
 
-## Output Shape
+## Closeout Vocabulary
 
-The durable debug artifact should usually include:
-
-- `Problem`
-- `Capability Failure`
-- `Correct Behavior`
-- `Observed Facts`
-- `Reported Findings` / `Adversarial Verification` (when active)
-- `Reproduction`
-- `Candidate Causes`
-- `Hypothesis`
-- `Pattern Ladder` (for reproduced or recurring findings)
-- `Verification`
-- `Root Cause`
-- `Invariant Proof`
-- `Detection Gap`
-- `Sibling Search`
 - `Seam Risk`
 - `Interrupt Decision`
-- `Prevention`
-- `Related Prior Incidents` (optional)
-
-The canonical heading pattern is `# ... Debug ...`, and the canonical section
-order is the validator order above for `latest.md`. Historical dated records
-may keep older extra sections, but they still need the core debug memory
-sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
 
 ## Guardrails
 

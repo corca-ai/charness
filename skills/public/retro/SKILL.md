@@ -144,23 +144,9 @@ Adapter policy:
 
 ## Output Shape
 
-The result should usually include:
-
-- `Context`
-- `Window`
-- `Evidence Summary`
-- `Waste`
-- `Critical Decisions`
-- `North Star Alignment`
-- `Trends vs Last Retro` when prior evidence exists
-- `Expert Counterfactuals`
-- `Next Improvements`
-- `Sibling Search` when a transferable waste pattern is named (opt-in;
-  `n/a — trivial fix; no plausible siblings` short-circuit otherwise)
-- `Portable Candidate` when the sibling scan finds a cross-repo capability
-- `Persisted`
-- `Packet Consumed` when a retro prepare packet was produced, or
-  `n/a (no adapter sections)` when no sections are declared
+The workflow above owns the content; the scaffold owns durable section order.
+Record `Packet Consumed` when a retro prepare packet was produced, or
+`n/a (no adapter sections)` when no sections are declared.
 
 ## Auto-Retro Trigger
 
@@ -171,17 +157,6 @@ or write path; otherwise consume the planner packet and read `state` before
 `triggered`. Its basis and the full trigger/skip taxonomy live in
 `references/trigger-and-persistence.md`. Keep the retro bounded and include
 `Persisted`.
-
-## Expert Counterfactual Rule
-
-Every retro includes at least one concrete counterfactual that changes the next
-action. The planner may classify the work and brief a fitting lens; use
-`references/expert-lens.md` on demand when its catalog would sharpen that
-counterfactual (for harness/skill/workflow/eval/contract work, the Engelbart
-`system-improving-itself` lens is a useful option). Use named experts only when
-the name sharpens a *different* changed action (never decoration); a second
-lens is optional. When sub-agents are available and the session warrants depth,
-use up to two distinct lenses; otherwise write the counterfactual inline.
 
 ## Guardrails
 

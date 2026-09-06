@@ -33,3 +33,21 @@ id = "generic-api-key"
     '''(^|/)charness-artifacts/goal-runs/''',
     '''(^|/)charness-artifacts/goals/[^/]+\.binding\.json$''',
   ]
+
+  [[rules.allowlists]]
+  description = "The observer's named file entry is a SHA256 content digest"
+  condition = "AND"
+  regexTarget = "line"
+  regexes = [
+    '''^\s*"references/external-api-contract\.md": "[a-f0-9]{64}",$''',
+  ]
+  paths = [
+    '''(^|/)charness-artifacts/goal-runs/798/independent-public-observer\.json$''',
+  ]
+
+  [[rules.allowlists]]
+  description = "The frozen oracle's literal behavior label is not a credential"
+  condition = "AND"
+  regexTarget = "secret"
+  regexes = ['''^collision/duplicate$''']
+  paths = ['''(^|/)charness-artifacts/probe/2026-09-06-delegation-net-value/protocol\.md$''']

@@ -123,6 +123,19 @@ def _write_body(repo_root: Path, body: str) -> Path:
     return path
 
 
+@pytest.mark.boundary_contract(reason="Both public closeout subcommands execute in-process with identical carrier inputs.")
+def _public_closeout_results(repo_root: Path, body_file: Path):
+    args = (
+        "--repo-root", str(repo_root), "--repo", REPO,
+        "--number", "42", "--number", "43", "--body-file", str(body_file),
+        "--carrier", "pr-body",
+    )
+    return (
+        run_script("skills/public/issue/scripts/issue_tool.py", "verify-closeout", *args),
+        run_script("skills/public/issue/scripts/issue_tool.py", "validate-closeout-draft", *args),
+    )
+
+
 def _verify(verifier, repo_root: Path, body_file: Path, **kwargs):
     return verifier.verify_closeout(
         repo_root=repo_root,
@@ -189,13 +202,7 @@ def test_bundle_refuses_foreign_or_malformed_citation(tmp_path: Path, target: st
     body = _bundle_body().replace("Critique #42 #43:", f"Critique {target}:")
     body_file = _write_body(tmp_path, body)
     assert _verify(load_verify_module(), tmp_path, body_file)["ok"] is False
-    for command in ("verify-closeout", "validate-closeout-draft"):
-        result = run_script(
-            "skills/public/issue/scripts/issue_tool.py", command,
-            "--repo-root", str(tmp_path), "--repo", REPO,
-            "--number", "42", "--number", "43", "--body-file", str(body_file),
-            "--carrier", "pr-body",
-        )
+    for result in _public_closeout_results(tmp_path, body_file):
         assert result.returncode != 0
     message = tmp_path / "message.txt"
     message.write_text(body, encoding="utf-8")
@@ -230,13 +237,7 @@ def test_one_delivered_mixed_bundle_reaches_every_closeout_consumer(tmp_path: Pa
     _assert_two_group_success(draft)
     assert draft["status"] == "draft_verified"
 
-    for command in ("verify-closeout", "validate-closeout-draft"):
-        cli = run_script(
-            "skills/public/issue/scripts/issue_tool.py", command,
-            "--repo-root", str(tmp_path), "--repo", REPO,
-            "--number", "42", "--number", "43", "--body-file", str(body_file),
-            "--carrier", "pr-body",
-        )
+    for cli in _public_closeout_results(tmp_path, body_file):
         assert cli.returncode == 0, cli.stderr
         _assert_two_group_success(yaml.safe_load(cli.stdout))
 
@@ -427,13 +428,7 @@ def test_each_group_keeps_its_own_ledger_floor(
     missing = field.replace(" ", "_")
     assert result["classification_reports"][classification]["missing_fields"] == [missing]
     assert f"#{number}:{missing}" in result["missing_fields"]
-    for command in ("verify-closeout", "validate-closeout-draft"):
-        cli = run_script(
-            "skills/public/issue/scripts/issue_tool.py", command,
-            "--repo-root", str(tmp_path), "--repo", REPO,
-            "--number", "42", "--number", "43", "--body-file", str(body_file),
-            "--carrier", "pr-body",
-        )
+    for cli in _public_closeout_results(tmp_path, body_file):
         assert cli.returncode != 0, cli.stdout
         assert yaml.safe_load(cli.stdout)["ok"] is False
     artifact = tmp_path / "charness-artifacts/issue/bundle-closeout.md"
