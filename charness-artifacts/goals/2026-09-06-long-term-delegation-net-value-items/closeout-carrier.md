@@ -51,6 +51,13 @@ objects with nonempty `target`, `verdict` (`pass`, `block`, `defer`), nonempty
 in the model-authored schema. Existing packet/input/parent/capability/delivery
 joins remain mandatory; no new hash or global cache is needed.
 
+Live Codex strict-generation preflight rejected an optional property absent from
+`required`. The model-facing projection therefore requires all semantic fields;
+`target_observations: null` represents absence for an unstructured legacy packet.
+Historical delivered results may still omit the field. Neither null nor omission
+satisfies a structured packet, and a present empty array remains structured but
+insufficient. The runner does not author or remove semantic observations.
+
 The issue owner requires equality of three exact sets: expected qualified
 `owner/repo#N` identities, packet targets, and result observation targets.
 Check duplicates and cardinality before equality; normalize repository case,
@@ -125,3 +132,20 @@ two-target packet and one citation through draft, hook, staged, pre-push,
 plural CLI, and pause-to-close dispatch. Both group reports must succeed;
 removing either applicable floor must fail. This composed case, not two
 separate happy paths, tests the distinction above.
+
+The design repair passed before implementation (see the Goal Run design
+disposition). Parent code observations now record the composed fixture and a
+reproduced hook projection bypass. Hook callers must pass the complete artifact
+to the same classification owner; projecting declarations into a dictionary
+first destroys the duplicate/conflicting-authority evidence. Code review,
+changed-line proof and final behavioral closeout remain separate obligations.
+
+Code-review counterexamples sharpen invocation ownership: active artifact
+targets and bare close keywords form one invocation, regardless of artifact
+partition. Artifact classifications remain source-attributed and must agree
+with independently validated carrier declarations; a supplied map never
+suppresses duplicate, mixed, foreign or conflicting message authority. The
+commit message remains the ledger body. Behavior/HOTL singleton shorthand uses
+the full invocation cardinality, not each classification group's size. Citation
+labels accept bare `#N` tokens separated by whitespace or commas; arbitrary
+prose and qualified repository labels refuse before numeric projection.

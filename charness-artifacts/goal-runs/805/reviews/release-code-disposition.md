@@ -39,3 +39,9 @@ passed, then failed with observed exit 0 versus required 2 when that exact
 raise was temporarily replaced with `pass`. Restored the owner immediately;
 `git diff` confirmed no production mutation remained. This is the requested
 target-bound mutant proof, not a broad mutation score.
+
+After committing the repaired fixtures and mutant control at `e752cf5e`, the
+changed-line gate against `0f25bcef` passed: six production files mapped, none
+orphaned, producer 24.6s. The preceding focused selection passed 42 tests in
+8.12s. Integrated broad/release proof and actual publication-resume scheduling
+remain later boundaries; local changed-line proof is established.

@@ -143,8 +143,7 @@ def build_parser(*, modules: dict[str, Any], handlers: dict[str, Any]) -> argpar
     verify.add_argument(
         "--classification",
         choices=modules["verify"].CLASSIFICATIONS,
-        required=True,
-        help="Fix-unit classification recorded for the closeout",
+        help="Fix-unit classification; selects the required closeout ledger fields (optional when bundled carriers declare `Classification #N:` per issue)",
     )
     verify.add_argument(
         "--carrier",

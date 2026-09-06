@@ -51,7 +51,9 @@ from __future__ import annotations
 
 import importlib.util
 import re
+import runpy
 from pathlib import Path
+from typing import Any
 
 #: These values assert a delegation that COMPLETED — a distinct observer read the
 #: resolution. `worker-delivered` additionally requires the durable report
@@ -103,6 +105,11 @@ if _SUPPORT_SPEC is None or _SUPPORT_SPEC.loader is None:
     raise ImportError("issue critique observer support is unavailable")
 _SUPPORT = importlib.util.module_from_spec(_SUPPORT_SPEC)
 _SUPPORT_SPEC.loader.exec_module(_SUPPORT)
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))[
+    "sibling_loader"
+](__file__)
+_TARGETS = _load_local("issue_worker_targets")
+_validate_worker_target_membership = _TARGETS.validate_worker_target_membership
 
 #: The same marker TEXT as `validate_critique_artifacts.DELEGATION_CONTRACT_MARKERS`,
 #: restated rather than imported: this is a portable public skill, and reaching
@@ -283,29 +290,7 @@ def _strip_fenced_lines(text: str) -> list[str]:
 
 
 def _section_fields(text: str, heading: str) -> dict[str, str]:
-    """Read simple ``Field: value`` bullets from one named artifact section."""
-    lines = _strip_fenced_lines(text)
-    wanted = re.sub(r"[^a-z0-9]+", " ", heading.lower()).strip()
-    fields: dict[str, str] = {}
-    inside = False
-    for line in lines:
-        stripped = line.strip()
-        if stripped.startswith("#"):
-            current = re.sub(r"[^a-z0-9]+", " ", stripped.lstrip("#").lower()).strip()
-            if current == wanted:
-                inside = True
-                continue
-            if inside:
-                break
-        if not inside:
-            continue
-        head, separator, tail = stripped.partition(":")
-        if not separator:
-            continue
-        key = re.sub(r"[^a-z0-9]+", " ", head.strip(" -*_`>\"").lower()).strip()
-        if key:
-            fields[key] = tail.strip().strip("`")
-    return fields
+    return _SUPPORT.section_fields(_strip_fenced_lines(text), heading)
 
 
 def _worker_carrier_disposition(
@@ -325,7 +310,22 @@ def _worker_carrier_disposition(
     fields = _section_fields(text, "Reviewer Tier Evidence")
     binding = _section_fields(text, "Reviewed Input Identity")
     try:
-        _worker_carrier.validate_worker_report_carrier(
+        def validate_legacy_packet(packet: dict[str, Any]) -> None:
+            # Preserve the packet-first refusal for legacy carriers without
+            # making the shared layer understand issue identity. Structured
+            # carriers need the typed result too and are checked below.
+            if (
+                (required_issue_numbers is not None or required_repository is not None)
+                and "prepared_targets" not in packet
+            ):
+                _validate_worker_target_membership(
+                    packet=packet,
+                    result={},
+                    expected_issue_numbers=required_issue_numbers,
+                    expected_repository=required_repository,
+                )
+
+        evidence = _worker_carrier.validate_worker_report_evidence(
             artifact_label="issue-resolution-critique",
             fields=fields,
             repo_root=repo_root,
@@ -334,14 +334,24 @@ def _worker_carrier_disposition(
             required_issue_numbers=required_issue_numbers,
             required_repository=required_repository,
             required_scope_prefix="issue-resolution",
+            packet_validator=validate_legacy_packet,
         )
-    except _worker_carrier.WorkerCarrierError as exc:
+        if required_issue_numbers is not None or required_repository is not None:
+            _validate_worker_target_membership(
+                packet=evidence["packet"],
+                result=evidence["result"],
+                expected_issue_numbers=required_issue_numbers,
+                expected_repository=required_repository,
+            )
+    except (_worker_carrier.WorkerCarrierError, _TARGETS.WorkerTargetError) as exc:
         return {
             "disposition": "carrier-unverified",
             "carrier_verified": False,
             "carrier_reason": str(exc),
         }
     return {"disposition": "delegated", "carrier_verified": True, "carrier": "worker-report"}
+
+
 
 
 def _declared_value(lines: list[str]) -> str | None:

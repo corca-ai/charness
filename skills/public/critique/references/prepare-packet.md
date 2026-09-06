@@ -58,6 +58,15 @@ before a reviewer starts. The low-level `run_reviewer_worker.py` interface
 remains available for compatibility and diagnostics, not as the normal manual
 operator path.
 
+For a review that genuinely covers several caller-owned targets, repeat
+`--prepared-target <target>` on `run_review.py` or `prepare_packet.py` and bind
+the source paths that establish every target's claims. These declarations are
+opaque to the shared runner; the consuming skill judges membership and the
+reviewer's per-target observations. Adding labels does not expand what was
+reviewed. Existing packets cannot be combined with packet-generation flags.
+The issue consumer's [bundled closeout path](../../issue/references/closeout-discipline.md#bundled-closeout)
+accepts a current review directly when its exact scope and evidence fit.
+
 ## Preparing A Packet
 
 The packet is emitted as JSON plus a markdown render under the adapter

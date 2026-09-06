@@ -152,6 +152,29 @@ status token that sounds stronger than the observation. Existing artifacts that
 recorded bare status tokens are grandfathered as-written; do not reinterpret or
 rewrite them.
 
+## Bundled Closeout
+
+One review can cover a bundle without a formatting-only repeat. Prepare it with
+repeatable `--prepared-target owner/repo#N` via the
+[semantic review command](../../critique/references/prepare-packet.md#one-command-operator-path).
+The issue-owned [membership checker](../scripts/issue_worker_targets.py)
+requires the packet and passing, evidence-bearing observations to match the
+complete citation scope. Keep one citation for the complete bundle, such as
+`Critique #42 #43: <artifact>`. Historical singleton carriers remain valid;
+their display label cannot be stretched to cover another issue.
+
+For mixed classifications, omit the scalar `--classification` and declare each
+target in the carrier, for example `Classification #42: bug` and
+`Classification #43: feature`. Use repeatable `--number` with
+`issue_tool.py validate-closeout-draft` and `verify-closeout`. The
+[classification owner](../scripts/issue_closeout_classification_ledger.py)
+rejects incomplete or conflicting authority before selecting each target's
+existing evidence floors. Staged artifacts contribute classification and
+provenance; the commit message still carries the ledger. Separate artifacts do
+not split the invocation or make plural Behavior/HOTL shorthand singular.
+The release helper's own classification interface is unchanged; its contract
+is [release-owned](../../release/references/publication-boundary.md#issue-close-boundary).
+
 ## Per-Issue Behavioral Verdict At Close (the irreversible-boundary mandate)
 
 Closing a GitHub issue — and merging a PR that closes it — is an **irreversible

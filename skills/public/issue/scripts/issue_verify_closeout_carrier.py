@@ -9,8 +9,45 @@ closeout verdict.
 
 from __future__ import annotations
 
+import runpy
 from pathlib import Path
 from typing import Any
+
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))[
+    "sibling_loader"
+](__file__)
+CLASSIFICATIONS = _load_local("issue_closeout_classification_ledger").KNOWN_CLASSIFICATIONS
+
+CARRIERS = ("direct-commit", "pr-body", "manual-fallback")
+MANUAL_FALLBACK_REASONS = (
+    "auto-close-unsupported",
+    "auto-close-failed-after-remote-verification",
+    "operator-directed-manual-close",
+)
+
+def validate_verify_inputs(
+    *,
+    numbers: list[int],
+    classification: str | None,
+    carrier: str,
+    manual_fallback_reason: str | None,
+    expect_state: str | None,
+) -> None:
+    if not numbers:
+        raise RuntimeError("verify-closeout requires at least one --number")
+    if classification is not None and classification not in CLASSIFICATIONS:
+        raise RuntimeError(f"unknown classification: {classification}")
+    if carrier not in CARRIERS:
+        raise RuntimeError(f"unknown carrier: {carrier}")
+    if carrier == "manual-fallback" and manual_fallback_reason not in MANUAL_FALLBACK_REASONS:
+        raise RuntimeError(
+            "manual-fallback carrier requires --manual-fallback-reason "
+            f"one of {', '.join(MANUAL_FALLBACK_REASONS)}"
+        )
+    if carrier != "manual-fallback" and manual_fallback_reason is not None:
+        raise RuntimeError("--manual-fallback-reason is only valid with --carrier manual-fallback")
+    if expect_state is not None and expect_state.upper() != "CLOSED":
+        raise RuntimeError("final closeout verification requires --expect-state CLOSED")
 
 
 def read_carrier_body(

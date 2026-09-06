@@ -10,7 +10,7 @@ from __future__ import annotations
 import importlib.util
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import yaml
 
@@ -138,18 +138,67 @@ def validate_worker_report_carrier(
     required_repository: str | None = None,
     required_scope_prefix: str | None = None,
 ) -> dict[str, Any]:
-    """Validate and return the joined worker-report mapping."""
+    """Validate and return the joined worker-report mapping.
+
+    Compatibility wrapper for consumers that only need the report.  Consumers
+    that own packet/result semantics should use
+    :func:`validate_worker_report_evidence` so the already-validated JSON bytes
+    are returned without a second packet/result read.
+    """
+    evidence = validate_worker_report_evidence(
+        artifact_label=artifact_label,
+        fields=fields,
+        repo_root=repo_root,
+        artifact_binding_fields=artifact_binding_fields,
+        require_delivery_chain=require_delivery_chain,
+        required_issue_numbers=required_issue_numbers,
+        required_repository=required_repository,
+        required_scope_prefix=required_scope_prefix,
+    )
+    return evidence["report"]
+
+
+def validate_worker_report_evidence(
+    *,
+    artifact_label: str,
+    fields: dict[str, str],
+    repo_root: Path,
+    artifact_binding_fields: dict[str, str] | None,
+    require_delivery_chain: bool = False,
+    required_issue_numbers: list[int] | None = None,
+    required_repository: str | None = None,
+    required_scope_prefix: str | None = None,
+    packet_validator: Callable[[dict[str, Any]], None] | None = None,
+) -> dict[str, Any]:
+    """Return the validated report, packet, and result as one evidence join.
+
+    The issue skill is the owner of target membership.  The shared layer only
+    proves packet/input/result/delivery identity and leaves the opaque packet
+    fields untouched.
+    """
     _validate_artifact_fields(fields)
     report = _read_report(_report_path(repo_root, fields["worker report"]), fields["worker report identity"])
     if required_scope_prefix and not str(report.get("scope", "")).startswith(required_scope_prefix):
         raise WorkerCarrierError(f"worker report scope must start with {required_scope_prefix!r} for this consumer")
     _validate_identity_joins(report=report, fields=fields, artifact_binding_fields=artifact_binding_fields)
+    packet = None
+    receipt = None
+    result = None
+    output_hash = None
     if require_delivery_chain:
-        _validate_packet_binding(
+        packet = _validate_packet_binding(
             repo_root=repo_root,
             artifact_binding_fields=artifact_binding_fields or {},
             required_issue_numbers=required_issue_numbers,
             required_repository=required_repository,
         )
-        _validate_delivery_chain(repo_root=repo_root, report=report)
-    return report
+        if packet_validator is not None:
+            packet_validator(packet)
+        receipt, result, output_hash = _validate_delivery_chain(repo_root=repo_root, report=report)
+    return {
+        "report": report,
+        "packet": packet,
+        "result": result,
+        "receipt": receipt,
+        "output_sha256": output_hash,
+    }

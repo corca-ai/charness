@@ -37,6 +37,12 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--packet-file", help="Existing repo-relative critique packet JSON")
     parser.add_argument("--prepared-for", default="working tree", help="Semantic label for generated packet input")
+    parser.add_argument(
+        "--prepared-target",
+        action="append",
+        default=None,
+        help="Opaque target covered by a generated packet; repeat for bundles",
+    )
     parser.add_argument("--reviewed-path", action="append", default=None, help="Repo-relative path to include")
     parser.add_argument("--reviewed-paths-file", help="Repo-relative newline-delimited reviewed-path manifest")
     parser.add_argument("--commit", help="Generate packet for one commit")
@@ -130,8 +136,12 @@ def main(argv: list[str] | None = None) -> int:
     # Caller attempt IDs cannot start with '.', so these artifact names cannot
     # collide with a live attempt selected by another caller.
     artifact_key = f".preview-{attempt}" if args.dry_run else attempt
-    if args.packet_file is not None and any(
-        value is not None for value in (args.reviewed_paths_file, args.commit, args.changed_range)
+    if args.packet_file is not None and (
+        args.reviewed_paths_file is not None
+        or args.commit is not None
+        or args.changed_range is not None
+        or args.prepared_target
+        or args.prepared_for != "working tree"
     ):
         _parser().error("--packet-file cannot be combined with packet-generation inputs")
     if args.commit is not None and args.changed_range is not None:

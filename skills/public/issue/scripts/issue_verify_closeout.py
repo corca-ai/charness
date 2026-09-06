@@ -94,6 +94,7 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
 ](__file__)
 ISSUE_CLOSE = _load_local("issue_close", "issue_verify_issue_close")
 _BODY = _load_local("issue_verify_closeout_body")
+_CLASSIFICATION = _load_local("issue_closeout_classification_ledger")
 # The rung-1 floors moved to their own module when the body reader hit its length
 # gate; the seam is real (what a body MUST CARRY vs how a field is read out of it).
 _FLOORS = _load_local("issue_closeout_rung1_floors")
@@ -108,25 +109,9 @@ GIT_TIMEOUT_SECONDS = 10
 _CARRIER = _load_local("issue_verify_closeout_carrier")
 _AUTHORIZATION = _load_local("issue_verify_closeout_authorization")
 
-CARRIERS = ("direct-commit", "pr-body", "manual-fallback")
-# `consolidated` is here because a classification absent from THIS tuple is not a
-# sixth classification -- it is a RuntimeError. Bounded review found it added to
-# `audit_brief.KNOWN_CLASSIFICATIONS` and the ledger table while every live carrier
-# still refused it, so the only path that worked was the commit hook inferring
-# `bug` and demanding the very repair claims the disposition exists to forbid.
-CLASSIFICATIONS = (
-    "bug",
-    "feature",
-    "deferred-work",
-    "question",
-    "decision-needed",
-    "consolidated",
-)
-MANUAL_FALLBACK_REASONS = (
-    "auto-close-unsupported",
-    "auto-close-failed-after-remote-verification",
-    "operator-directed-manual-close",
-)
+CARRIERS = _CARRIER.CARRIERS
+CLASSIFICATIONS = _CLASSIFICATION.KNOWN_CLASSIFICATIONS
+MANUAL_FALLBACK_REASONS = _CARRIER.MANUAL_FALLBACK_REASONS
 
 _body_fields = _BODY._body_fields
 _first_field = _BODY._first_field
@@ -148,6 +133,19 @@ evaluate_ai_provenance = _FLOORS.evaluate_ai_provenance
 FLOOR_EXEMPT_CLASSIFICATIONS = _FLOORS.FLOOR_EXEMPT_CLASSIFICATIONS
 review_advisory_for_classification = _FLOORS.review_advisory_for_classification
 strip_code_fences = _BODY._strip_code_fences
+resolve_classifications = _CLASSIFICATION.resolve_classifications
+
+
+def _resolve_closeout_classifications(body, numbers, classification, supplied=None):
+    return _CLASSIFICATION.resolve_closeout_classifications(
+        body, numbers, classification, supplied, strip_fences=strip_code_fences,
+    )
+
+
+def resolve_closeout_invocation(body, artifacts, bare_numbers):
+    return _CLASSIFICATION.resolve_closeout_invocation(
+        body, artifacts, bare_numbers, strip_fences=strip_code_fences,
+    )
 
 
 def _read_carrier_body(
@@ -166,29 +164,7 @@ def _read_carrier_body(
 _manual_comment_found = _CARRIER.manual_comment_found
 
 
-def _validate_verify_inputs(
-    *,
-    numbers: list[int],
-    classification: str,
-    carrier: str,
-    manual_fallback_reason: str | None,
-    expect_state: str | None,
-) -> None:
-    if not numbers:
-        raise RuntimeError("verify-closeout requires at least one --number")
-    if classification not in CLASSIFICATIONS:
-        raise RuntimeError(f"unknown classification: {classification}")
-    if carrier not in CARRIERS:
-        raise RuntimeError(f"unknown carrier: {carrier}")
-    if carrier == "manual-fallback" and manual_fallback_reason not in MANUAL_FALLBACK_REASONS:
-        raise RuntimeError(
-            "manual-fallback carrier requires --manual-fallback-reason "
-            f"one of {', '.join(MANUAL_FALLBACK_REASONS)}"
-        )
-    if carrier != "manual-fallback" and manual_fallback_reason is not None:
-        raise RuntimeError("--manual-fallback-reason is only valid with --carrier manual-fallback")
-    if expect_state is not None and expect_state.upper() != "CLOSED":
-        raise RuntimeError("final closeout verification requires --expect-state CLOSED")
+_validate_verify_inputs = _CARRIER.validate_verify_inputs
 
 
 def _authorization_record(
@@ -209,7 +185,7 @@ def _ledger_field_reasons(body: str, missing_fields: list[str]) -> list[str]:
     siblings = _BODY._first_field(_body_fields(body), ("siblings", "sibling search"))
     reasons = []
     for finding_id in missing_fields:
-        reason = _ledger_counts.rule_reason(siblings, finding_id)
+        reason = _ledger_counts.rule_reason(siblings, finding_id.rsplit(":", 1)[-1])
         if reason:
             reasons.append(f"{finding_id}: {reason}")
     return reasons
@@ -220,9 +196,10 @@ def verify_closeout(
     repo_root: Path,
     repo: str,
     numbers: list[int],
-    classification: str,
     carrier: str,
     backend: dict[str, Any],
+    classification: str | None = None,
+    classifications: dict[int, str] | None = None,
     commit_ref: str | None = None,
     body_file: Path | None = None,
     manual_fallback_reason: str | None = None,
@@ -238,49 +215,90 @@ def verify_closeout(
     body = _read_carrier_body(
         repo_root, carrier=carrier, commit_ref=commit_ref, body_file=body_file
     )
+    resolved_classifications = _resolve_closeout_classifications(
+        body, numbers, classification, classifications
+    )
+    groups: dict[str, list[int]] = {}
+    for number in numbers:
+        groups.setdefault(resolved_classifications[number], []).append(number)
+    # Citation scope is the complete invocation; only the bug group is required
+    # to have a resolution critique. This prevents a bundled bug+feature carrier
+    # from satisfying the bug obligation with a citation that names only the
+    # feature issue.
+    bug_numbers = [number for number in numbers if resolved_classifications[number] == "bug"]
     resolution_critique_check = _CRITIQUE.check_resolution_critique(
         repo_root=repo_root,
         body=body,
-        classification=classification,
+        classification="bug" if bug_numbers else next(iter(resolved_classifications.values())),
         numbers=numbers,
         repository=repo,
+        required_numbers=bug_numbers,
     )
     missing_close_keywords = (
         [] if carrier == "manual-fallback" else _missing_close_keywords(body, numbers, repo)
     )
-    # The carrier is threaded because `consolidated` must refuse the AUTO-CLOSE
-    # carriers: GitHub renders a keyword close as `completed`, with no reason argv
-    # to intercept, which asserts the repair a consolidated close refuses.
-    missing_fields = _missing_ledger_fields(
-        body, classification, carrier=carrier, invoked_numbers=tuple(numbers)
-    )
     source_preservation = evaluate_source_preservation(body)
-    behavioral_verdict = evaluate_behavioral_verdict(body, classification, numbers)
-    hotl_dispositions = evaluate_hotl_dispositions(body, classification, numbers)
-    ai_provenance = evaluate_ai_provenance(body, classification)
-    # The four TRACKER facts a consolidated close depends on, run unconditionally for
-    # that classification: a previous revision listed them in the disposition's
-    # `not_checked_here` and implemented them nowhere, which reads like handled work.
-    consolidation_readback = _consolidation_readback.readbacks_for_closeout(
-        numbers=numbers,
-        destinations=_consolidated.destinations("\n".join(strip_code_fences(body))),
-        fetch=lambda dest: _view_issue_state(
-            repo_root,
-            repo=repo,
-            number=dest,
-            backend=backend,
-            json_fields="number,state,url,body",
-        ),
-        applies=classification == _consolidated.CLASSIFICATION,
-        expected_repo=repo,
-        answer_repo=_ANSWER_REPO,
-    )
-    for readback in consolidation_readback:
-        # `problems_to_surface` dedupes the destination-scoped facts; the full per-source
-        # report stays in `consolidation_readback` for anyone reading the payload.
-        missing_fields.extend(
-            f"consolidation:{problem}" for problem in readback["problems_to_surface"]
+    missing_fields: list[str] = []
+    classification_reports: dict[str, dict[str, Any]] = {}
+    consolidation_readback: list[dict[str, Any]] = []
+    behavioral_groups: list[dict[str, Any]] = []
+    hotl_groups: list[dict[str, Any]] = []
+    provenance_groups: list[dict[str, Any]] = []
+    for group, group_numbers in groups.items():
+        group_missing = _missing_ledger_fields(
+            body, group, carrier=carrier, invoked_numbers=tuple(group_numbers)
         )
+        # Prefix findings in a mixed bundle so the operator can identify the
+        # failing issue; preserve the historical ids for homogeneous calls.
+        missing_fields.extend(
+            group_missing
+            if len(groups) == 1
+            else [f"#{number}:{field}" for number in group_numbers for field in group_missing]
+        )
+        behavioral = evaluate_behavioral_verdict(body, group, group_numbers, invocation_numbers=numbers)
+        hotl = evaluate_hotl_dispositions(body, group, group_numbers, invocation_numbers=numbers)
+        provenance = evaluate_ai_provenance(body, group)
+        behavioral_groups.append(behavioral)
+        hotl_groups.append(hotl)
+        provenance_groups.append(provenance)
+        group_readback = _consolidation_readback.readbacks_for_closeout(
+            numbers=group_numbers,
+            destinations=_consolidated.destinations("\n".join(strip_code_fences(body))),
+            fetch=lambda dest: _view_issue_state(
+                repo_root, repo=repo, number=dest, backend=backend,
+                json_fields="number,state,url,body",
+            ),
+            applies=group == _consolidated.CLASSIFICATION,
+            expected_repo=repo,
+            answer_repo=_ANSWER_REPO,
+        )
+        consolidation_readback.extend(group_readback)
+        for readback in group_readback:
+            missing_fields.extend(
+                f"consolidation:{problem}" for problem in readback["problems_to_surface"]
+            )
+        classification_reports[group] = {
+            "numbers": group_numbers,
+            "missing_fields": group_missing,
+            "behavioral_verdict": behavioral,
+            "hotl_dispositions": hotl,
+            "ai_provenance": provenance,
+            "consolidation_readback": group_readback,
+        }
+    homogeneous = len(groups) == 1
+    effective_classification = next(iter(groups)) if homogeneous else None
+    behavioral_verdict = behavioral_groups[0] if homogeneous else {
+        "ok": all(item.get("ok", False) for item in behavioral_groups),
+        "groups": behavioral_groups,
+    }
+    hotl_disposition = hotl_groups[0] if homogeneous else {
+        "ok": all(item.get("ok", False) for item in hotl_groups),
+        "groups": hotl_groups,
+    }
+    ai_provenance = provenance_groups[0] if homogeneous else {
+        "ok": all(item.get("ok", False) for item in provenance_groups),
+        "groups": provenance_groups,
+    }
 
     verified_state: list[dict[str, Any]] = []
     state_mismatches: list[dict[str, Any]] = []
@@ -335,7 +353,7 @@ def verify_closeout(
         and not manual_comment_missing
         and not source_preservation["missing"]
         and behavioral_verdict["ok"]
-        and hotl_dispositions["ok"]
+        and hotl_disposition["ok"]
         and ai_provenance["ok"]
     )
     status = (
@@ -380,7 +398,8 @@ def verify_closeout(
         "review_advisory": review_advisory,
         "repo": repo,
         "numbers": numbers,
-        "classification": classification,
+        "classification": effective_classification,
+        "classifications": resolved_classifications,
         "carrier": carrier,
         "commit_ref": commit_ref,
         "body_file": str(body_file) if body_file is not None else None,
@@ -405,13 +424,14 @@ def verify_closeout(
         "resolution_critique_check": resolution_critique_check,
         "source_preservation": source_preservation,
         "behavioral_verdict": behavioral_verdict,
-        "hotl_dispositions": hotl_dispositions,
+        "hotl_dispositions": hotl_disposition,
         "ai_provenance": ai_provenance,
         "verified_state": verified_state,
         # Empty for every other classification. Present and per (source, destination)
         # for `consolidated`, so an operator can see WHICH of the four tracker facts
         # was checked and what it found, rather than a bare pass.
         "consolidation_readback": consolidation_readback,
+        "classification_reports": classification_reports,
     }
     _fold_proof_mismatch(result, repo_root, body)
     result["closeout_authorization"] = _authorization_record(repo_root, repo, numbers, carrier)

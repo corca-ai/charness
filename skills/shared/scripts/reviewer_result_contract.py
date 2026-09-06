@@ -53,14 +53,15 @@ def model_authored_schema(schema: dict[str, Any]) -> dict[str, Any]:
     shape is relaxed.
     """
     projected = dict(schema)
-    projected["required"] = [
-        field for field in schema.get("required", []) if field not in RUNNER_JOINED_FIELDS
-    ]
     projected["properties"] = {
         name: value
         for name, value in schema.get("properties", {}).items()
         if name not in RUNNER_JOINED_FIELDS
     }
+    # Strict generation requires every property. Optional semantic fields use
+    # nullable types in the canonical schema; omission stays valid for historical
+    # delivered results, while the model emits null for an inapplicable field.
+    projected["required"] = list(projected["properties"])
     return projected
 
 

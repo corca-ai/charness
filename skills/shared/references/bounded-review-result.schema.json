@@ -38,6 +38,25 @@
       "type": "string",
       "enum": ["pass", "block", "defer"]
     },
+    "target_observations": {
+      "type": ["array", "null"],
+      "description": "Per-target behavioral observations for packet prepared_targets. Use null when the packet has no structured targets; never invent observations.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target", "verdict", "summary", "evidence"],
+        "properties": {
+          "target": {"type": "string", "minLength": 1},
+          "verdict": {"type": "string", "enum": ["pass", "block", "defer"]},
+          "summary": {"type": "string", "minLength": 1},
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
     "findings": {
       "type": "array",
       "items": {

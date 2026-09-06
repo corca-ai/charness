@@ -267,8 +267,8 @@ def _judge(
     """One commit, through the carrier's own decision sequence.
 
     Follows ``check_issue_closeout_commit_msg.evaluate`` -- artifacts, pause carve-out,
-    covered numbers, bare numbers, authorization, then one ``verify_closeout`` per
-    carrier -- with the commit's TREE standing in for the index. ONE deliberate
+    covered numbers, bare numbers, authorization, then one ``verify_closeout`` for
+    the full invocation -- with the commit's TREE standing in for the index. ONE deliberate
     difference now, stated rather than mirrored: a close KEYWORD is required (see
     below), so the artifact-only trigger the carrier has does not exist here.
     ``close_targets`` used to be the second difference and is not any more -- the
@@ -299,6 +299,7 @@ def _judge(
             issue_verify_closeout.strip_code_fences,
             list_paths=list_paths or (lambda root, _sha=sha: commit_paths(root, _sha)),
             read_file=read_file or (lambda root, path, _sha=sha: commit_file(root, _sha, path)),
+            classification_resolver=issue_verify_closeout.resolve_classifications,
         )
         if set(artifact["numbers"]) & closable
     ]
@@ -334,7 +335,7 @@ def _judge(
         }
 
     reports = _reports(
-        repo_root, repo, body, artifacts, bare_numbers, checker, issue_verify_closeout
+        repo_root, repo, body, artifacts, bare_numbers, issue_verify_closeout
     )
     return {
         "commit": sha,
@@ -353,52 +354,32 @@ def _reports(
     body: str,
     artifacts: list[dict[str, Any]],
     bare_numbers: list[int],
-    checker: Any,
     issue_verify_closeout: Any,
 ) -> list[dict[str, Any]]:
-    """One ``verify_closeout`` per carrier, artifact-derived ones first.
+    """One ``verify_closeout`` for the entire stored-message invocation.
 
     The commit MESSAGE is the ledger body in both cases -- an artifact contributes its
     numbers and its declared classification, exactly as on the commit-msg path.
     """
-    carriers = [
-        (artifact["numbers"], artifact["classification"], artifact["path"])
-        for artifact in artifacts
-    ]
-    if bare_numbers:
-        carriers.append(
-            (
-                bare_numbers,
-                checker._bare_classification(body, issue_verify_closeout.strip_code_fences),
-                None,
-            )
-        )
-
-    reports: list[dict[str, Any]] = []
+    if not artifacts and not bare_numbers:
+        return []
+    invocation = issue_verify_closeout.resolve_closeout_invocation(body, artifacts, bare_numbers)
     with tempfile.TemporaryDirectory() as tmp:
         body_file = Path(tmp) / "carrier-body.md"
         body_file.write_text(body, encoding="utf-8")
-        for numbers, classification, source in carriers:
-            report = issue_verify_closeout.verify_closeout(
-                repo_root=repo_root,
-                repo=repo,
-                numbers=numbers,
-                classification=classification,
-                carrier="pr-body",
-                backend={"id": "gh"},
-                body_file=body_file,
-            )
-            reports.append(
-                {
-                    "numbers": numbers,
-                    "classification": classification,
-                    "source_artifact": source,
-                    "ok": bool(report.get("ok")),
-                    "missing_fields": report.get("missing_fields") or [],
-                    "missing_close_keywords": report.get("missing_close_keywords") or [],
-                }
-            )
-    return reports
+        report = issue_verify_closeout.verify_closeout(
+            repo_root=repo_root,
+            repo=repo,
+            numbers=invocation["numbers"],
+            classifications=invocation["classifications"],
+            carrier="pr-body",
+            backend={"id": "gh"},
+            body_file=body_file,
+        )
+    # Keep the verifier's critique/observer diagnostics, not just missing fields:
+    # a citation refusal can leave both field and close-keyword lists empty.
+    report.update(invocation)
+    return [report]
 
 
 _REFUSAL_SUMMARY = (

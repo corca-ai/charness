@@ -1,0 +1,128 @@
+# Debug Review
+Date: 2026-09-06
+
+## Problem
+
+The reported claim is that repeating `request(60, 40)` twice without changing
+either input succeeds on the second attempt. This evidence-led slice tests that
+claim against the local simulator only; it makes no claim about real networks.
+
+## Correct Behavior
+
+For this simulator, `request(latency_ms, timeout_ms)` should evaluate the supplied
+arguments on every call: return `ok` when latency is at most timeout, otherwise
+raise `TimeoutError("request timed out")`. A stateful retry improvement is not
+part of the supplied fixture contract.
+
+## Observed Facts
+
+- `request_sim.py:1-2` records latency 60 and timeout 40 for the current values.
+- `request_sim.py:5-7` has no mutable state or attempt counter; each call raises
+  when `latency_ms > timeout_ms`.
+- The two-call stimulus produced `TimeoutError: request timed out` on both
+  attempts with unchanged inputs.
+- The fixture is local and deterministic. No network, provider, or production
+  runtime was exercised.
+
+## Reproduction
+
+Executed `request(60, 40)` twice in one process without changing either
+argument:
+
+```text
+attempt 1: TimeoutError: request timed out
+attempt 2: TimeoutError: request timed out
+```
+
+Receipt: `notes/current/retry-boundary-receipt.json`.
+
+## Candidate Causes
+
+- A stateful retry/backoff path could make a second identical attempt succeed;
+  this is the reported claim but is not present in the fixture implementation.
+- The local simulator is stateless and deterministically re-applies
+  `60 > 40`, which predicts the same timeout on every attempt.
+
+## Hypothesis
+
+- If the local boundary had retry state, the second identical call would return
+  `ok` | disconfirmer: execute `request(60, 40)` twice in the same process and
+  record each final-consumer result.
+
+## Verification
+
+- Result: disconfirmed for the local simulator — both identical calls raised
+  `TimeoutError: request timed out`; the receipt binds the executable stimulus,
+  fixture, final consumer, and return code. This does not prove how any real
+  network behaves.
+
+## Root Cause
+
+The local simulator has no retry state: `request` depends only on its two input
+arguments, and `60 > 40` remains true on the second call. The reported
+stateful-retry claim is therefore not reproduced locally. Real network retry or
+server behavior remains unproven and outside this fixture.
+
+## Invariant Proof
+
+- Invariant: n/a - not a workflow-boundary propagation bug
+- Producer Proof: n/a
+- Final-Consumer Proof: n/a
+- Interface-Shape Sibling Scan: n/a
+- Non-Claims: no provider, host, adapter, or production roundtrip was tested
+
+## Detection Gap
+
+- Local fixture surface | no automated retry-state test existed; the evidence-led
+  two-call stimulus surfaced the claim's mismatch | smallest change to fire it:
+  retain this two-call assertion in a future test (not implemented here).
+
+## Sibling Search
+
+- Mental model: treating a retry claim as established without observing both
+  attempts at the final consumer.
+- Same layer: `request_sim.py:5-7` is the only executable request boundary |
+  decision: same class, diagnostic-only for this slice | proof: executable
+  fixture.
+- Abstraction up: no second retry-state implementation was found in the targeted
+  local scan | decision: same class, diagnostic-only for this slice | proof:
+  static scan only.
+- cross-file: `README.md:3-9` documents timeout behavior but contains no retry
+  implementation | decision: intentional plain-text or non-rendering boundary |
+  proof: static scan only.
+
+## Seam Risk
+
+- Interrupt ID: none
+- Risk Class: none
+- Seam: none
+- Disproving Observation: none
+- What Local Reasoning Cannot Prove: behavior of real networks, servers, or
+  client retry middleware not present in this fixture
+- Generalization Pressure: none
+
+## Interrupt Decision
+
+- Resolution: open
+- Critique Required: no
+- Next Step: impl
+- Handoff Artifact: none
+
+## Prevention
+
+No fix or repair workflow was run. Preserve the two-attempt receipt and keep the
+local disconfirmation separate from any conclusion about real network retries.
+
+## Evidence Disposition
+
+- Report Identity: user-request:retry-boundary#sha256:c12a1030e19beb73db443811707d687e8173563e6d634ab70d79ddb5f3962da8
+- Reported Findings: 1
+- Dispositioned Findings: RB-F1
+- Missing Findings: none
+- Evidence Digest: sha256:412110bb5e1eb5c92c797f460b4759740ae9e156a2d7471801ad000c6f8fa9b3
+- Report Source: request_sim.py
+- Report Source SHA256: c12a1030e19beb73db443811707d687e8173563e6d634ab70d79ddb5f3962da8
+
+## Adversarial Verification
+
+- Finding: RB-F1 | source: user request: retry-boundary | expected: Given the same inputs request(60, 40) repeated twice, the second attempt returns ok | stimulus: Execute request(60, 40) twice without changing either argument | disposition: disconfirmed | observed: attempt 1: TimeoutError: request timed out; attempt 2: TimeoutError: request timed out | proof: executable fixture | handoff: none | next move: none | receipt: notes/current/retry-boundary-receipt.json | receipt sha256: 21e683cbaface0ca6a3f260f46ce3933d248530d015414e619bbc122296d3cfd

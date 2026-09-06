@@ -13,6 +13,7 @@ import subprocess
 import sys
 from functools import cache
 from pathlib import Path
+from typing import Sequence
 
 import pytest
 import yaml
@@ -140,7 +141,6 @@ def _fake_codex(path: Path) -> None:
     _write_executable(
         path,
         """#!/usr/bin/env python3
-import hashlib
 import json
 import os
 import re
@@ -178,13 +178,15 @@ payload = {
     "packet_sha256": packet,
     "reviewed_input_identity_sha256": reviewed,
     "verdict": os.environ.get("FAKE_REVIEW_VERDICT", "pass"),
+    "target_observations": None,
     "findings": [],
     "counterweight_triage": [],
     "next_move": "consume the typed result",
     "non_claims": ["the fixture does not prove external systems"],
-    "capability_non_claims": [],
-    "capability_non_claims_sha256": hashlib.sha256(b"[]").hexdigest(),
 }
+schema = json.loads(Path(sys.argv[sys.argv.index("--output-schema") + 1]).read_text())
+assert set(schema["properties"]) == set(schema["required"])
+assert set(payload) == set(schema["required"])
 out.write_text(json.dumps(payload), encoding="utf-8")
 """,
     )
@@ -244,6 +246,7 @@ def _run(
     goal_lineage: str | None = None,
     reviewed_path: str | None = "reviewed.txt",
     packet_reviewed_path: str | None = None,
+    prepared_targets: Sequence[str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_REVIEW_VERDICT": verdict}
     if sleep is not None:
@@ -268,6 +271,8 @@ def _run(
         command.extend(["--packet-file", packet_file])
         if packet_reviewed_path is not None:
             command.extend(["--reviewed-path", packet_reviewed_path])
+    for target in prepared_targets or ():
+        command.extend(["--prepared-target", target])
     if goal_lineage is not None:
         command.extend(["--goal-lineage-file", goal_lineage])
     if dry_run:
@@ -699,6 +704,47 @@ def test_supplied_packet_requires_exact_explicit_paths(tmp_path: Path, explicit_
         assert result.returncode != 0
         assert payload["reason_code"] == "input-mismatch"
         assert payload["reviewer_started"] is False
+    assert not (bin_dir / "review-called").exists()
+
+
+def test_generated_packet_preserves_repeated_prepared_targets(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+    targets = ["corca-ai/charness#42", "corca-ai/charness#42", "corca-ai/charness#43"]
+
+    result = _run(
+        tmp_path,
+        bin_dir,
+        "prepared-targets",
+        dry_run=True,
+        prepared_targets=targets,
+    )
+    payload = _payload(result)
+
+    assert result.returncode == 0, result.stderr
+    packet = json.loads((tmp_path / payload["paths"]["packet"]).read_text(encoding="utf-8"))
+    assert packet["prepared_targets"] == targets
+
+
+def test_supplied_packet_still_refuses_prepared_target_generation(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    result = _run(
+        tmp_path,
+        bin_dir,
+        "prepared-target-conflict",
+        dry_run=True,
+        packet_file=_install_cached_working_tree_packet(tmp_path),
+        prepared_targets=["corca-ai/charness#42"],
+    )
+
+    assert result.returncode == 2
+    assert "--packet-file cannot be combined with packet-generation inputs" in result.stderr
     assert not (bin_dir / "review-called").exists()
 
 

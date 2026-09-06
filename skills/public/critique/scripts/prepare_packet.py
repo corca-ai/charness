@@ -93,6 +93,12 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root to build the critique packet from")
     parser.add_argument("--prepared-for", default="working tree",
                         help="Short label describing what this packet covers (e.g. commit range)")
+    parser.add_argument(
+        "--prepared-target",
+        action="append",
+        default=None,
+        help="Opaque target covered by this packet; repeat for bundled targets",
+    )
     parser.add_argument("--changed-ref", default=None,
                         help="Git commit or range that script packet sections should inspect")
     parser.add_argument(
@@ -205,6 +211,7 @@ def main() -> int:
             reviewed_paths=args.reviewed_path,
             excluded_reviewed_paths=excluded_paths,
             excluded_reviewed_prefixes=excluded_prefixes,
+            prepared_targets=args.prepared_target,
         )
     except ReviewedInputError as exc:
         refusal = {

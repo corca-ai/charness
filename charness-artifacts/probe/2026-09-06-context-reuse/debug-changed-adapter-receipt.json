@@ -1,0 +1,15 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "RB-F1",
+  "source": "user request: retry-boundary",
+  "expected": "Given the same inputs request(60, 40) repeated twice, the second attempt returns ok",
+  "stimulus": "Execute request(60, 40) twice without changing either argument",
+  "disposition": "disconfirmed",
+  "observed": "attempt 1: TimeoutError: request timed out; attempt 2: TimeoutError: request timed out",
+  "command": "python3 - <<'PY'\nfrom request_sim import request\n\nfor attempt in (1, 2):\n    try:\n        print(f\"attempt {attempt}: {request(60, 40)}\")\n    except TimeoutError as exc:\n        print(f\"attempt {attempt}: {type(exc).__name__}: {exc}\")\nPY",
+  "fixture": "request_sim.py:request",
+  "final_consumer": "request_sim.request",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0
+}

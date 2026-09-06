@@ -1,0 +1,76 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Jackson/Weinberg: closeout membership, classification authority, migration and provenance integrity",
+  "packet_sha256": "fa34224328206e2b8cced0e37cb55b5823d73af3bb31ab203fca58cadaa7154c",
+  "reviewed_input_identity_sha256": "e937cfb093a8818346502aa8aea125b994b6fbd8ccfa2ab6dea1020c48d7f8f4",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "810-I1",
+      "severity": "high",
+      "summary": "Artifact classification maps bypass validation of conflicting declarations in the commit body.",
+      "evidence": [
+        "skills/public/issue/scripts/issue_verify_closeout.py:161-170 returns supplied classifications before parsing body declarations.",
+        "Using the composed fixture with its artifact unchanged, appending either 'Classification #42: feature' or 'Classification: feature' only to the message produced the expected standalone refusal, but commit-msg and pre-push both returned ok:true.",
+        "A separate probe supplied feature classifications for both targets while the message declared conflicting bug/feature authority and omitted bug proof. Both hooks passed, including pause-to-close, with the critique skipped.",
+        "tests/quality_gates/test_issue_bundled_closeout.py:403-408 mutates artifact and message together, leaving this independent-input failure uncovered."
+      ],
+      "action": "Have the issue owner validate and reconcile declarations from both artifact and carrier before selecting floors. Add message-only ambiguity and cross-source disagreement regressions through both hooks."
+    },
+    {
+      "id": "810-I2",
+      "severity": "medium",
+      "summary": "Hooks narrow invocation scope per artifact, rejecting a valid bundled citation when targets occupy separate artifacts.",
+      "evidence": [
+        "scripts/gates/check_issue_closeout_commit_msg.py:380-386 and scripts/prepush_close_keyword_guard.py:366-394 invoke verification separately for each artifact's numbers.",
+        "Keeping the composed two-target packet, result and message unchanged, replacing the single artifact with separate bug #42 and feature #43 artifacts preserved verifier, CLI and draft success but made both hooks fail.",
+        "The #42 invocation rejects the complete '#42 #43' citation at issue_resolution_critique.py:64 because #43 falls outside the artificially narrowed invocation."
+      ],
+      "action": "Preserve the complete close invocation through hook dispatch. Resolve artifact classifications together and validate each full citation once before applying classification-group floors. Add separate-artifact and artifact-plus-bare-target cases."
+    },
+    {
+      "id": "810-I3",
+      "severity": "medium",
+      "summary": "Citation parsing discards repository qualifiers before exact membership validation.",
+      "evidence": [
+        "skills/public/issue/scripts/issue_resolution_critique.py:54 extracts numeric '#N' substrings; the changed equality checks at lines 60-67 inspect only those numbers.",
+        "Changing only the composed citation to 'Critique foreign/repo#42 foreign/repo#43: res-42.md' left the local packet and observations unchanged. Verifier, CLI, draft, commit-msg and pre-push all returned ok:true.",
+        "The inherited permissive extraction therefore remains a hole in the new exact citation-membership contract."
+      ],
+      "action": "Validate the complete citation-target grammar before projection. Either require bare '#N' tokens or preserve qualified identities and reject foreign repositories; add a final-consumer foreign-citation regression."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Classification ambiguity, artifact partitioning and foreign citation projection",
+      "bin": "Act Before Ship",
+      "disposition": "All three findings reproduced through consumer code and require bounded repairs before accepting the claimed contract."
+    },
+    {
+      "concern": "Pre-push refusal diagnostics",
+      "bin": "Bundle Anyway",
+      "disposition": "When touching dispatch, retain the verifier's citation/observer failure reason in pre-push reports. The reproduced citation refusal currently reports empty missing_fields and missing_close_keywords."
+    },
+    {
+      "concern": "Weakening joins or adding a semantic classification oracle",
+      "bin": "Over-Worry",
+      "disposition": "Keep existing controls. Composed success, both removed floors, membership mutations, nonpassing observations, legacy-null migration, strict projection, and source/packet/result/parent/delivery refusals behaved as expected in the bounded replay. Mechanical equality cannot establish truthful evidence prose."
+    },
+    {
+      "concern": "Publication, installed behavior and Goal #805 net-value evidence",
+      "bin": "Valid but Defer",
+      "disposition": "These remain separate obligations under the supplied closeout observations; this review does not discharge them."
+    }
+  ],
+  "next_move": "Repair 810-I1 through 810-I3 and extend the existing composed fixture with independently varied message/artifact declarations, artifact partitions and foreign citation labels. Preserve the passing migration and provenance controls.",
+  "non_claims": [
+    "No live issue-close approval, provider mutation, publication, release or installed-behavior verification.",
+    "All 22 semantic carriers matched the supplied bound bytes. Findings concern those bytes and their changes against 23a9eaa6.",
+    "Executable probes used an in-memory filesystem overlay and the existing composed fixture helpers; the source seed was replaced with a freshly captured real repository source identity. Workspace files were not edited.",
+    "CLI execution was in-process; hook artifact and stored-message inputs were injected. No real Git index, push range or complete standing pytest run was exercised.",
+    "Synthetic fixture observations establish consumer behavior, not actual resolution of issues #42, #43 or #810."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

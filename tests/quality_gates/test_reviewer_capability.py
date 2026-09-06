@@ -474,6 +474,23 @@ def test_model_facing_schema_drops_exactly_the_runner_joined_fields() -> None:
     # Everything a reviewer actually authors survives the projection.
     assert "findings" in projected["properties"]
     assert "verdict" in projected["required"]
+    assert "target_observations" in projected["required"]
+    assert "target_observations" not in canonical["required"]
+    assert "null" in projected["properties"]["target_observations"]["type"]
+    # A permissive local JSON Schema validator does not enforce the API's
+    # strict-generation property/required equality. Check its actual projection.
+    def assert_strict_objects(node: object) -> None:
+        if isinstance(node, dict):
+            if node.get("type") == "object":
+                assert set(node["properties"]) == set(node["required"])
+                assert node["additionalProperties"] is False
+            for value in node.values():
+                assert_strict_objects(value)
+        elif isinstance(node, list):
+            for value in node:
+                assert_strict_objects(value)
+
+    assert_strict_objects(projected)
     # The canonical schema is not mutated by projecting it.
     assert set(canonical["required"]) >= set(RUNNER_JOINED_FIELDS)
 

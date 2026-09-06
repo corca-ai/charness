@@ -19,7 +19,226 @@ default, which is the light branch they are exempt into.
 """
 from __future__ import annotations
 
-from typing import Callable
+import re
+from typing import Any, Callable
+
+KNOWN_CLASSIFICATIONS = (
+    "bug",
+    "feature",
+    "deferred-work",
+    "question",
+    "decision-needed",
+    "consolidated",
+)
+_TARGETED_CLASSIFICATION_RE = re.compile(
+    r"^\s*(?:[-*]\s*)?(?:\*\*)?Classification(?:\*\*)?\s+(?P<target>[^:]+?)(?:\*\*)?\s*:\s*(?P<value>.*?)\s*$",
+    re.IGNORECASE,
+)
+_GLOBAL_CLASSIFICATION_RE = re.compile(
+    r"^\s*(?:[-*]\s*)?(?:\*\*)?Classification(?:\*\*)?\s*:\s*(?P<value>.*?)\s*$",
+    re.IGNORECASE,
+)
+_TARGET_RE = re.compile(r"^#(?P<number>[0-9]+)$")
+
+
+class ClassificationResolutionError(RuntimeError, ValueError):
+    """The carrier does not declare one unambiguous classification authority."""
+
+
+def _classification_declarations(lines: list[str]) -> tuple[dict[int, str], list[str]]:
+    """Read declarations without erasing duplicate or malformed authority."""
+    targeted: dict[int, str] = {}
+    global_values: list[str] = []
+    for line in lines:
+        match = _TARGETED_CLASSIFICATION_RE.match(line)
+        if match is not None:
+            target = _TARGET_RE.fullmatch(match.group("target").strip())
+            if target is None:
+                raise ClassificationResolutionError(
+                    "targeted classification declarations must use `Classification #N: <value>`"
+                )
+            number = int(target.group("number"))
+            if number in targeted:
+                raise ClassificationResolutionError(
+                    f"duplicate targeted classification declaration for #{number}"
+                )
+            targeted[number] = match.group("value").strip().lower()
+            continue
+        match = _GLOBAL_CLASSIFICATION_RE.match(line)
+        if match is not None:
+            global_values.append(match.group("value").strip().lower())
+    return targeted, global_values
+
+
+def resolve_classifications(
+    text: str,
+    numbers: list[int],
+    *,
+    scalar_classification: str | None,
+    fallback_classification: str | None,
+    strip_fences: Callable[[str], list[str]],
+) -> dict[int, str]:
+    """Resolve a total issue-owned classification map before any provider read.
+
+    A targeted declaration is a one-number ``Classification #N: value`` line.
+    Once one exists, only a complete exact map is authoritative; a caller's
+    scalar classification is also rejected because it would create mixed
+    authority.  With no targeted declaration, the historical scalar/global /
+    inferred fallback remains in force.
+    """
+    return _resolve_declarations(
+        _classification_declarations(strip_fences(text)), numbers,
+        scalar_classification, fallback_classification,
+    )
+
+
+def _resolve_declarations(
+    declarations: tuple[dict[int, str], list[str]],
+    numbers: list[int],
+    scalar_classification: str | None,
+    fallback_classification: str | None,
+) -> dict[int, str]:
+    """Resolve already-parsed declarations without losing duplicate validation."""
+    expected = list(numbers)
+    if len(set(expected)) != len(expected):
+        raise ClassificationResolutionError("closeout invocation contains duplicate issue numbers")
+    targeted, global_values = declarations
+    if targeted:
+        if global_values:
+            raise ClassificationResolutionError(
+                "targeted classifications cannot be mixed with global Classification authority"
+            )
+        if scalar_classification is not None:
+            raise ClassificationResolutionError(
+                "targeted classifications cannot be mixed with scalar classification authority"
+            )
+        unknown = sorted({value for value in targeted.values() if value not in KNOWN_CLASSIFICATIONS})
+        if unknown:
+            raise ClassificationResolutionError(f"unknown targeted classification(s): {unknown}")
+        expected_set = set(expected)
+        declared_set = set(targeted)
+        extra = sorted(declared_set - expected_set)
+        missing = sorted(expected_set - declared_set)
+        if extra:
+            raise ClassificationResolutionError(
+                f"targeted classifications contain extra/foreign issue numbers: {extra}"
+            )
+        if missing:
+            raise ClassificationResolutionError(
+                f"targeted classifications are missing issue numbers: {missing}"
+            )
+        return {number: targeted[number] for number in expected}
+
+    value = scalar_classification
+    if value is None:
+        if len(set(global_values)) > 1:
+            raise ClassificationResolutionError(
+                "multiple conflicting global Classification declarations"
+            )
+        value = global_values[0] if global_values else fallback_classification
+    if value not in KNOWN_CLASSIFICATIONS:
+        raise ClassificationResolutionError(f"unknown classification: {value}")
+    return {number: value for number in expected}
+
+
+def resolve_closeout_classifications(
+    body: str,
+    numbers: list[int],
+    classification: str | None,
+    supplied: dict[int, str] | None = None,
+    *,
+    strip_fences: Callable[[str], list[str]],
+) -> dict[int, str]:
+    """Reconcile supplied artifact authority with declarations in the carrier.
+
+    A supplied map replaces inference, never parsing: malformed, duplicate, or
+    conflicting carrier declarations remain refusals even when artifacts exist.
+    """
+    declarations = _classification_declarations(strip_fences(body))
+    if supplied is None:
+        return _resolve_declarations(declarations, numbers, classification, classification or "bug")
+    declared = _resolve_declarations(declarations, numbers, None, "bug") if any(declarations) else None
+    return _reconcile_supplied(numbers, classification, supplied, declared)
+
+
+def _reconcile_supplied(
+    numbers: list[int],
+    classification: str | None,
+    supplied: dict[int, str],
+    declared: dict[int, str] | None = None,
+) -> dict[int, str]:
+    """Validate complete artifact authority, then reject carrier disagreement."""
+    if (
+        len(set(numbers)) != len(numbers)
+        or set(supplied) != set(numbers)
+        or any(value not in KNOWN_CLASSIFICATIONS for value in supplied.values())
+    ):
+        raise ClassificationResolutionError(
+            "supplied classifications must be a complete issue->classification map"
+        )
+    if classification is not None:
+        raise ClassificationResolutionError(
+            "supplied classifications cannot be mixed with scalar classification authority"
+        )
+    if declared is not None:
+        conflicts = sorted(number for number in numbers if declared[number] != supplied[number])
+        if conflicts:
+            raise ClassificationResolutionError(
+                f"carrier classifications conflict with supplied artifact classifications: {conflicts}"
+            )
+    return {number: supplied[number] for number in numbers}
+
+
+def resolve_closeout_invocation(
+    body: str,
+    artifacts: list[dict[str, Any]],
+    bare_numbers: list[int],
+    *,
+    strip_fences: Callable[[str], list[str]],
+) -> dict[str, Any]:
+    """Join active artifact scopes into one carrier invocation, retaining sources.
+
+    Artifact maps are already parsed against their own targets. Their union is
+    the citation scope, including artifact-only targets whose missing message
+    close keywords must still be refused. Paused briefs never enter this join.
+    """
+    supplied: dict[int, str] = {}
+    sources: dict[int, list[str]] = {}
+    for artifact in artifacts:
+        artifact_values = artifact.get("classifications")
+        values = _reconcile_supplied(
+            artifact["numbers"], None,
+            artifact_values if artifact_values is not None else {
+                number: artifact["classification"] for number in artifact["numbers"]
+            },
+        )
+        for number, value in values.items():
+            if number in supplied and supplied[number] != value:
+                raise ClassificationResolutionError(
+                    f"conflicting artifact classifications for #{number}: "
+                    f"{sources[number]} and {artifact['path']}"
+                )
+            supplied[number] = value
+            sources.setdefault(number, []).append(artifact["path"])
+    numbers = sorted(set(supplied) | set(bare_numbers))
+    declarations = _classification_declarations(strip_fences(body))
+    if any(declarations):
+        declared = _resolve_declarations(declarations, numbers, None, "bug")
+    else:
+        declared = {number: supplied.get(number, "bug") for number in numbers}
+    classifications = _reconcile_supplied(
+        numbers, None,
+        {number: supplied.get(number, declared[number]) for number in numbers},
+        declared,
+    )
+    return {
+        "numbers": numbers,
+        "classifications": classifications,
+        "source_artifact": artifacts[0]["path"] if len(artifacts) == 1 else None,
+        "source_artifacts": {number: sources.get(number, []) for number in numbers},
+        "bare_close_numbers": bare_numbers,
+    }
+
 
 _JTBD = ("jtbd", ("jtbd",))
 

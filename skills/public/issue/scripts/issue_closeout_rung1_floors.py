@@ -186,7 +186,9 @@ def _behavior_lines(text: str) -> list[dict]:
     return lines
 
 
-def evaluate_behavioral_verdict(text: str, classification: str, numbers: list[int]) -> dict:
+def evaluate_behavioral_verdict(
+    text: str, classification: str, numbers: list[int], *, invocation_numbers: list[int] | None = None,
+) -> dict:
     """Rung-1 block-the-silent presence floor for the per-issue behavioral verdict.
 
     A ``bug`` / ``feature`` / ``deferred-work`` carrier must carry, per closed
@@ -211,7 +213,7 @@ def evaluate_behavioral_verdict(text: str, classification: str, numbers: list[in
         if not _has_substantive_value(line["value"]):
             continue
         targets = [number for number in line["target_numbers"] if number in numbers]
-        if not targets and line["target"] is None and len(numbers) == 1:
+        if not targets and line["target"] is None and len(invocation_numbers or numbers) == 1:
             targets = [numbers[0]]
         bound.update(targets)
     missing = [number for number in numbers if number not in bound]
@@ -278,7 +280,9 @@ def _hotl_lines(text: str) -> list[dict]:
     ]
 
 
-def evaluate_hotl_dispositions(text: str, classification: str, numbers: list[int]) -> dict:
+def evaluate_hotl_dispositions(
+    text: str, classification: str, numbers: list[int], *, invocation_numbers: list[int] | None = None,
+) -> dict:
     """Rung-1 refuse-on-undispositioned-HOTL-entry presence floor (WS-2 / Direction-3).
 
     **Presence-gated.** A carrier that presents NO ``HOTL`` entry is inert (no live
@@ -315,7 +319,7 @@ def evaluate_hotl_dispositions(text: str, classification: str, numbers: list[int
         if targets:
             if not any(number in numbers for number in targets):
                 continue
-        elif len(numbers) != 1:
+        elif len(invocation_numbers or numbers) != 1:
             continue
         bound_lines.append(line)
     if not bound_lines:

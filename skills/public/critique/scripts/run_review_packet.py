@@ -118,6 +118,8 @@ def prepare_packet(
     ]
     for path in reviewed_paths:
         command.extend(["--reviewed-path", path])
+    for target in (args.prepared_target or []):
+        command.extend(["--prepared-target", target])
     if args.commit is not None:
         command.extend(["--commit", args.commit])
     if args.changed_range is not None:

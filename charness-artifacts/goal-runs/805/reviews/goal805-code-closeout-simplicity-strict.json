@@ -1,0 +1,63 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Gawande/Raskin",
+  "packet_sha256": "fa34224328206e2b8cced0e37cb55b5823d73af3bb31ab203fca58cadaa7154c",
+  "reviewed_input_identity_sha256": "e937cfb093a8818346502aa8aea125b994b6fbd8ccfa2ab6dea1020c48d7f8f4",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "810-S1",
+      "severity": "high",
+      "summary": "Classification grouping incorrectly grants singleton Behavior shorthand to multiple issues.",
+      "evidence": [
+        "skills/public/issue/scripts/issue_verify_closeout.py:309 passes group_numbers to evaluate_behavioral_verdict. That existing floor accepts unqualified Behavior only when len(numbers) == 1.",
+        "Read-only replay of the bound verifier with bug #42, feature #43, complete ledger fields, and one unqualified Behavior line describing issue 42 returned ok:true and no missing behavior for either group. The unchanged plural floor evaluated over [42,43] rejected the same line, reporting both targets missing.",
+        "test_issue_bundled_closeout.py always supplies explicitly targeted Behavior lines; removing classification-specific ledger fields does not test this loss of behavioral target binding."
+      ],
+      "action": "Preserve full invocation cardinality when interpreting Behavior and HOTL shorthand, while selecting required floors by classification group. Add a mixed-bundle refusal for unqualified Behavior and retain genuine singleton acceptance."
+    },
+    {
+      "id": "810-S2",
+      "severity": "medium",
+      "summary": "Hook artifact partitioning still destroys full invocation scope and refuses an otherwise valid bundled carrier.",
+      "evidence": [
+        "scripts/gates/check_issue_closeout_commit_msg.py:380 invokes verification separately for each artifact; its bare-target branch passes only remaining numbers. scripts/prepush_close_keyword_guard.py:388 retains the same partitioned dispatch.",
+        "Read-only commit-hook replay held the message constant: Closes #42, #43, complete targeted classifications, targeted behavior, and Critique #42 #43. Bare and combined-artifact inputs passed. Two singleton artifacts failed with missing_issue_bindings:[42]; one artifact plus bare #43 raised 'targeted classifications contain extra/foreign issue numbers: [42]'.",
+        "The citation is rejected before its evidence is consumed because _line_numbers sees an artifact subset as the invocation. The composed test covers only one combined staged artifact, leaving this formatting dependency untested."
+      ],
+      "action": "Resolve active artifact and bare-target classifications into one owner-validated invocation, preserving artifact provenance and rejecting conflicts. Verify citations against that full invocation once. Extend the composed fixture to separate artifacts and artifact-plus-bare targets through both hooks."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "810-S1 and 810-S2 lose invocation context at different dispatch boundaries.",
+      "bin": "Act Before Ship",
+      "disposition": "Repair these bounded owner seams and add the corresponding counterexamples before accepting the code review."
+    },
+    {
+      "concern": "The fake semantic-review backend does not exercise its generation contract.",
+      "bin": "Bundle Anyway",
+      "disposition": "Its output omits target_observations and includes runner-owned fields. Make the fake validate the supplied generation schema and emit model-authored null for legacy packets; retain separate canonical omission compatibility coverage."
+    },
+    {
+      "concern": "Nullable observations necessarily break strict generation or weaken structured membership.",
+      "bin": "Over-Worry",
+      "disposition": "Disconfirmed locally: all four projected object schemas have exact properties/required equality; generation null and canonical null/omission validate. The issue owner accepts legacy singleton null and refuses structured null. No broader schema framework is warranted."
+    },
+    {
+      "concern": "Publication, installed behavior, live closeout, and net-value evidence remain outstanding.",
+      "bin": "Valid but Defer",
+      "disposition": "These are explicitly separate Goal #805 obligations and do not belong in this bounded code repair."
+    }
+  ],
+  "next_move": "Repair invocation-context propagation, extend the composed tests, and review the changed verdict branches. Keep publication and live-close approval separate.",
+  "non_claims": [
+    "No workspace edits, provider closes, release approval, or installed-behavior verification.",
+    "Reviewed all 22 bound semantic carriers and compared production changes against 23a9eaa6; workspace bytes matched the carriers when checked.",
+    "Replays used in-memory carrier I/O, a synthetic host-blocked critique, and isolated unrelated authorization/proof-mismatch dependencies. They establish dispatch behavior, not delivered reviewer approval.",
+    "The standing suites and live backend schema generation were not independently rerun."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

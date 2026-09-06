@@ -214,3 +214,28 @@ def repo_requires_delegated_observer(repo_root: Path, *, scope: str = "issue") -
     if all(marker in _normalize_contract_text(text) for marker in DELEGATION_CONTRACT_MARKERS):
         return True
     return _record_grants_scope(record_decision, record_scopes, scope)
+
+
+def section_fields(lines: list[str], heading: str) -> dict[str, str]:
+    """Read simple ``Field: value`` bullets from one named artifact section."""
+    wanted = re.sub(r"[^a-z0-9]+", " ", heading.lower()).strip()
+    fields: dict[str, str] = {}
+    inside = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            current = re.sub(r"[^a-z0-9]+", " ", stripped.lstrip("#").lower()).strip()
+            if current == wanted:
+                inside = True
+                continue
+            if inside:
+                break
+        if not inside:
+            continue
+        head, separator, tail = stripped.partition(":")
+        if not separator:
+            continue
+        key = re.sub(r"[^a-z0-9]+", " ", head.strip(" -*_`>\"").lower()).strip()
+        if key:
+            fields[key] = tail.strip().strip("`")
+    return fields

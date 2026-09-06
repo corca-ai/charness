@@ -128,6 +128,7 @@ def _issue_closeout_artifacts(
     *,
     list_paths: Any = None,
     read_file: Any = None,
+    classification_resolver: Any = None,
 ) -> list[dict[str, Any]]:
     """Closeout artifacts and the classification each declares.
 
@@ -153,6 +154,8 @@ def _issue_closeout_artifacts(
         numbers = sorted({number for _repo, number in qualified})
         if not numbers:
             continue
+        if classification_resolver is None:
+            classification_resolver = _load_issue_verify_closeout().resolve_classifications
         artifacts.append(
             {
                 "path": path,
@@ -161,6 +164,11 @@ def _issue_closeout_artifacts(
                 # use, so authorization can tell this repo's #514 from another repo's.
                 "qualified_numbers": qualified,
                 "classification": _infer_classification(body),
+                "classifications": classification_resolver(
+                    body, numbers, scalar_classification=None,
+                    fallback_classification=_infer_classification(body),
+                    strip_fences=strip_code_fences,
+                ),
                 "pause_brief": _PAUSE_BRIEF_RE.search(body) is not None,
                 "body": body,
             }
@@ -283,13 +291,21 @@ def _exemption_advisories(reports: list[dict[str, Any]], advisory_fn: Any) -> li
     """
     lines: list[str] = []
     for report in reports:
-        lines.extend(
-            advisory_fn(
-                report.get("classification", ""),
-                numbers=report.get("numbers", []),
-                source=report.get("source_artifact"),
+        classifications = report.get("classifications")
+        if isinstance(classifications, dict):
+            grouped: dict[str, list[int]] = {}
+            for raw_number, value in classifications.items():
+                grouped.setdefault(str(value), []).append(int(raw_number))
+            for value, numbers in grouped.items():
+                lines.extend(advisory_fn(value, numbers=numbers, source=report.get("source_artifact")))
+        else:
+            lines.extend(
+                advisory_fn(
+                    report.get("classification", ""),
+                    numbers=report.get("numbers", []),
+                    source=report.get("source_artifact"),
+                )
             )
-        )
         # A resolution critique satisfied by a host-blocked skip rather than an
         # executed review carries the same top-level verdict as a real one; the
         # critique check's own advisory is the only thing that distinguishes
@@ -314,6 +330,7 @@ def evaluate(
         issue_verify_closeout.strip_code_fences,
         list_paths=list_paths,
         read_file=read_file,
+        classification_resolver=issue_verify_closeout.resolve_classifications,
     )
     commit_msg_file = commit_msg_file.resolve()
     raw_body = commit_msg_file.read_text(encoding="utf-8")
@@ -360,35 +377,24 @@ def evaluate(
     sanitized_file.write_text(sanitized_body, encoding="utf-8")
     reports: list[dict[str, Any]] = list(pause_reports)
     try:
-        for artifact in artifacts:
+        if artifacts or bare_numbers:
+            invocation = issue_verify_closeout.resolve_closeout_invocation(
+                sanitized_body, artifacts, bare_numbers
+            )
             report = issue_verify_closeout.verify_closeout(
                 repo_root=repo_root,
                 repo=repo,
-                numbers=artifact["numbers"],
-                classification=artifact["classification"],
+                numbers=invocation["numbers"],
+                classifications=invocation["classifications"],
                 carrier="pr-body",
                 backend={"id": "gh"},
                 body_file=sanitized_file,
             )
+            report.update(invocation)
             report["carrier"] = "commit-msg"
-            report["source_artifact"] = artifact["path"]
+            if not artifacts:
+                report["trigger"] = "bare-close-keyword"
             reports.append(report)
-        if bare_numbers:
-            bare_report = issue_verify_closeout.verify_closeout(
-                repo_root=repo_root,
-                repo=repo,
-                numbers=bare_numbers,
-                classification=_bare_classification(
-                    sanitized_body, issue_verify_closeout.strip_code_fences
-                ),
-                carrier="pr-body",
-                backend={"id": "gh"},
-                body_file=sanitized_file,
-            )
-            bare_report["carrier"] = "commit-msg"
-            bare_report["source_artifact"] = None
-            bare_report["trigger"] = "bare-close-keyword"
-            reports.append(bare_report)
     finally:
         try:
             sanitized_file.unlink()

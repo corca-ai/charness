@@ -58,7 +58,15 @@ def _critique_lines(body: str) -> list[dict[str, Any]]:
 
 
 def _line_numbers(line: dict[str, Any], numbers: list[int]) -> list[int]:
-    target_numbers = [number for number in line["target_numbers"] if number in numbers]
+    # The citation grammar is bare issue references, not numeric substrings in
+    # arbitrary prose or foreign qualified repository identities.
+    if line["target"] is not None and re.fullmatch(r"#[0-9]+(?:[\s,]+#[0-9]+)*", line["target"]) is None:
+        return []
+    target_numbers = line["target_numbers"]
+    if len(target_numbers) != len(set(target_numbers)):
+        return []
+    if target_numbers and not set(target_numbers).issubset(numbers):
+        return []
     if target_numbers:
         return target_numbers
     if line["target"] is None and len(numbers) == 1:
@@ -158,6 +166,7 @@ def check_resolution_critique(
     classification: str,
     numbers: list[int],
     repository: str | None = None,
+    required_numbers: list[int] | None = None,
 ) -> dict[str, Any]:
     """Validate issue-resolution critique evidence for each selected issue.
 
@@ -169,6 +178,7 @@ def check_resolution_critique(
     if classification not in CRITIQUE_REQUIRED_CLASSIFICATIONS:
         return {"ok": True, "skipped_classification": classification}
 
+    required = list(numbers if required_numbers is None else required_numbers)
     lines = _critique_lines(body)
     if not lines:
         return _missing_check(helper, repo_root)
@@ -178,7 +188,7 @@ def check_resolution_critique(
     bound_numbers: set[int] = set()
     for line in lines:
         target_numbers = _line_numbers(line, numbers)
-        if not target_numbers:
+        if not target_numbers or not set(target_numbers).intersection(required):
             continue
         check = _check_value(helper, repo_root, line["value"], target_numbers)
         checks.append(
@@ -204,7 +214,7 @@ def check_resolution_critique(
                 continue
             bound_numbers.add(number)
 
-    missing_issue_bindings = [number for number in numbers if number not in bound_numbers]
+    missing_issue_bindings = [number for number in required if number not in bound_numbers]
     review_advisory = _skip_advisories(checks) + _observer_advisories(checks)
     observer_refusals = _observer_refusals(repo_root, checks)
     if len(numbers) == 1 and checks:

@@ -158,7 +158,13 @@ def _validate_packet_binding(
     artifact_binding_fields: dict[str, str],
     required_issue_numbers: list[int] | None = None,
     required_repository: str | None = None,
-) -> None:
+) -> dict[str, Any]:
+    """Verify the generic packet/input identity and return its parsed bytes.
+
+    The optional issue arguments remain accepted for compatibility with older
+    callers, but issue membership is intentionally not interpreted here.  A
+    consumer that owns target semantics must validate the returned packet.
+    """
     packet_path = artifact_binding_fields.get("packet path", "").strip().strip("`")
     if not packet_path:
         raise WorkerCarrierError("worker-delivered requires the Reviewed Input Identity packet path")
@@ -179,19 +185,7 @@ def _validate_packet_binding(
         raise WorkerCarrierError(f"reviewed packet binding could not be verified: {exc}") from exc
     if not ok:
         raise WorkerCarrierError(f"reviewed packet binding is not current: {reason}")
-    if required_issue_numbers:
-        repository = (required_repository or "").strip().lower()
-        for number in required_issue_numbers:
-            expected = f"{repository}#{number}" if repository else f"issue#{number}"
-            prepared_for = str(packet.get("prepared_for", "")).lower()
-            if not prepared_for.startswith(expected) or (
-                len(prepared_for) > len(expected) and prepared_for[len(expected)].isalnum()
-            ):
-                raise WorkerCarrierError(f"reviewed packet prepared_for does not bind exactly to {expected}")
-        packet_repository = str(packet.get("repo", "")).strip().lower()
-        accepted = {repository, repository.rsplit("/", 1)[-1]}
-        if not packet_repository or packet_repository not in accepted:
-            raise WorkerCarrierError(f"reviewed packet repo does not bind exactly to {repository}")
+    return packet
 
 
 def _validate_receipt_and_result(

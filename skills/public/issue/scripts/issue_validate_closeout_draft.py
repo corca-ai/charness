@@ -42,7 +42,7 @@ def validate_closeout_draft(
     repo_root: Path,
     repo: str,
     numbers: list[int],
-    classification: str,
+    classification: str | None,
     body_file: Path | None,
     backend: dict[str, Any],
     carrier: str,
@@ -140,8 +140,7 @@ def register_validate_closeout_draft_subparser(
         # The verifier owns this vocabulary; a second hand-written copy here is how
         # a new classification ships refused by argparse before any code runs.
         choices=verifier.CLASSIFICATIONS,
-        required=True,
-        help="Fix-unit classification; selects the required closeout ledger fields",
+        help="Fix-unit classification; selects the required closeout ledger fields (optional when bundled drafts declare `Classification #N:` per issue)",
     )
     parser.add_argument("--body-file", type=Path, help="Draft closeout body to validate")
     parser.add_argument(

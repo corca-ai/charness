@@ -257,6 +257,7 @@ def build_packet(
     reviewed_paths: list[str] | None = None,
     excluded_reviewed_paths: list[str] | None = None,
     excluded_reviewed_prefixes: list[str] | None = None,
+    prepared_targets: list[str] | None = None,
 ) -> dict[str, Any]:
     data = adapter.get("data", {}) or {}
     sections_decl = data.get("packet_sections", []) or []
@@ -295,6 +296,11 @@ def build_packet(
         "ok": all_ok,
         **scope_metadata,
     }
+    # Target membership is deliberately an opaque producer-owned payload.  The
+    # generic packet builder carries order and duplicates unchanged; the issue
+    # consumer owns whether those values are qualified issue identities.
+    if prepared_targets is not None:
+        packet["prepared_targets"] = list(prepared_targets)
     if include_reviewer_tier:
         packet["reviewer_tier_evidence"] = reviewer_tier_evidence(data)
     if include_reviewed_input_identity:
@@ -359,6 +365,11 @@ def render_markdown(packet: dict[str, Any], verification_command: str | None = N
     lines.append(f"- **Kind**: `{packet['kind']}` (v{packet['version']})")
     lines.append(f"- **Generated**: {packet['generated_at']}")
     lines.append(f"- **Prepared for**: {packet['prepared_for']}")
+    if "prepared_targets" in packet:
+        targets = packet["prepared_targets"]
+        targets = targets if isinstance(targets, list) else []
+        lines.append(f"- **Prepared targets**: {len(targets)}")
+        lines.extend(f"  - `{target}`" for target in targets)
     # Historical v1 packets did not carry this envelope field; their existing
     # Markdown remains the deterministic rendering of that older JSON shape.
     if "substrate_mode" in packet:
