@@ -34,7 +34,8 @@ Freeze and build these behaviors:
   without creating or changing any file.
 - `--json` is an explicit machine-readable mode with stable structured output
   for the commands that report a result; default output remains concise human
-  output.
+  output. Accept it before the subcommand, after the subcommand, or after SOURCE;
+  reject duplicate occurrences even when they straddle those positions.
 - Unknown options, duplicate options, missing SOURCE or missing option values,
   and an option-looking SOURCE must be rejected before any write. Exercise
   representative inputs such as `--unknown`, repeated `--json`, no SOURCE,

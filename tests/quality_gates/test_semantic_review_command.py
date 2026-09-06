@@ -312,7 +312,7 @@ def test_dry_run_derives_one_typed_carrier_without_starting_backend(tmp_path: Pa
     assert payload["reviewer_started"] is False
     assert payload["delivery_state"] == "none"
     assert payload["verdict_state"] == "not-applicable"
-    assert payload["paths"]["schema"].startswith(".charness/reviewer-round-dry-run/")
+    assert payload["paths"]["schema"].startswith(".charness/reviewer-round-.preview-dry-run/")
     assert (tmp_path / payload["paths"]["schema"]).read_bytes() == (
         ROOT / "skills/shared/references/bounded-review-result.schema.json"
     ).read_bytes()
@@ -364,7 +364,7 @@ def test_empty_declared_producer_refuses_before_reviewer_start_with_its_own_caus
     assert "Repair the declared packet producer" in payload["remedy"]
     assert not (tmp_path / ".charness").exists()
     packet = json.loads(
-        (tmp_path / "charness-artifacts/critique/empty-producer-packet.json").read_text(
+        (tmp_path / "charness-artifacts/critique/.preview-empty-producer-packet.json").read_text(
             encoding="utf-8"
         )
     )
@@ -638,6 +638,54 @@ def test_worker_timeout_keeps_started_and_non_approval_state(tmp_path: Path) -> 
     assert payload["output"]["artifacts"]
     ledger = json.loads((tmp_path / payload["paths"]["ledger"]).read_text(encoding="utf-8"))
     assert ledger["attempts"][-1]["state"] == "timed-out"
+
+
+@pytest.mark.parametrize("supplied_packet", [False, True])
+def test_preview_does_not_reserve_live_attempt(tmp_path: Path, supplied_packet: bool) -> None:
+    _repo(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+    packet_file = _install_cached_working_tree_packet(tmp_path) if supplied_packet else None
+    preview = _payload(_run(tmp_path, bin_dir, "same-id", dry_run=True, packet_file=packet_file))
+    assert preview["status"] == "dry-run-ready"
+    preview_files = {
+        str(path): path.read_bytes()
+        for path in (tmp_path / preview["paths"]["plan"]).parent.rglob("*")
+        if path.is_file()
+    }
+    preview_packet = tmp_path / preview["paths"]["packet"]
+    preview_files[str(preview_packet)] = preview_packet.read_bytes()
+    if not supplied_packet:
+        (tmp_path / "reviewed.txt").write_text("changed after preview\n", encoding="utf-8")
+    live = _payload(_run(tmp_path, bin_dir, "same-id", packet_file=packet_file))
+    assert live["approval_eligible"] is True, live
+    if not supplied_packet:
+        live_packet = json.loads((tmp_path / live["paths"]["packet"]).read_text())
+        old_packet = json.loads(preview_files[str(preview_packet)])
+        assert live_packet["reviewed_input_identity"] != old_packet["reviewed_input_identity"]
+    assert all(Path(path).read_bytes() == content for path, content in preview_files.items())
+    duplicate = _payload(_run(tmp_path, bin_dir, "same-id", packet_file=packet_file))
+    assert duplicate["reason_code"] == "stale-artifact-refused"
+    assert duplicate["reviewer_started"] is False
+    repeat_preview = _payload(_run(tmp_path, bin_dir, "same-id", dry_run=True, packet_file=packet_file))
+    assert repeat_preview["reason_code"] == "stale-artifact-refused"
+
+
+def test_directory_input_has_actionable_preflight_refusal(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+    result = _run(tmp_path, bin_dir, "directory", dry_run=True, reviewed_path="bin")
+    payload = _payload(result)
+    assert result.returncode != 0
+    assert payload["reason_code"] == "reviewed-path-directory"
+    assert payload["reviewer_started"] is False
+    assert payload["details"]["path"] == "bin"
+    assert "individual files" in payload["details"]["remedy"]
+    assert not list(tmp_path.glob("charness-artifacts/critique/*-packet.json"))
+    assert not (bin_dir / "review-called").exists()
 
 
 def test_stale_packet_is_preflight_blocked_without_reviewer_start(tmp_path: Path) -> None:

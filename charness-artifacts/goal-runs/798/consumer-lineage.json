@@ -1,0 +1,25 @@
+{
+  "kind": "charness.goal-lineage",
+  "schema_version": 1,
+  "disposition": "goal-bound",
+  "draft": {
+    "path": "charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.md",
+    "sha256": "2d7db581aa37bcd88442a37282fe1f74ff0b544220637b3bf830d27a321e1bea"
+  },
+  "binding": {
+    "path": "charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement.binding.json",
+    "sha256": "88ec9430391af0d4843d57bcb12337fbe89f7e2f9c3861dd98b73fd55cf02ac1"
+  },
+  "goal_run": {
+    "repo": "corca-ai/charness",
+    "number": 798,
+    "url": "https://github.com/corca-ai/charness/issues/798"
+  },
+  "work_item": {
+    "key": "spec-impl-journey",
+    "repo": "corca-ai/charness",
+    "number": 801,
+    "url": "https://github.com/corca-ai/charness/issues/801"
+  },
+  "reason": null
+}

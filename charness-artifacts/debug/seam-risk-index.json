@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 182,
-  "indexed_artifact_count": 167,
+  "source_artifact_count": 183,
+  "indexed_artifact_count": 168,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 8,
-    "none": 71,
+    "none": 72,
     "operator-visible-recovery": 23,
     "repeated-symptom": 18
   },
   "generalization_pressure_counts": {
     "factor-now": 25,
     "monitor": 125,
-    "none": 17
+    "none": 18
   },
   "entries": [
     {
@@ -2344,6 +2344,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-09-05-tracked-claim-ephemeral-carrier.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "author disk vs clean clone",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-09-05-tracked-claim-ephemeral-carrier.md",
+      "forced": true
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-09-05-worktree-only-candidate-deleted.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -2364,12 +2378,12 @@
       "risk_classes": [
         "none"
       ],
-      "seam": "author disk vs clean clone",
-      "generalization_pressure": "factor-now",
+      "seam": "local preview→live and typed diagnostic transport",
+      "generalization_pressure": "none",
       "critique_required": true,
-      "next_step": "spec",
-      "handoff_artifact": "charness-artifacts/spec/2026-09-05-tracked-claim-ephemeral-carrier.md",
-      "forced": true
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/goals/2026-09-06-autonomous-consumer-improvement-items/friction-reduction.md",
+      "forced": false
     }
   ],
   "skipped_artifacts": [

@@ -1,0 +1,29 @@
+{
+  "kind": "charness.goal798-consumer-input-freeze/v1",
+  "baseline_source": "7cea68253f3e208f4263f9efdb4a354ed5709bc0",
+  "files": {
+    "charness-artifacts/probe/2026-09-06-consumer-journeys/check_alias.py": "a20b7dd62716c7e77c31bd7bed91aea159fc0686b45c44f1c6fa834002ec8d6b",
+    "charness-artifacts/probe/2026-09-06-consumer-journeys/check_cli.py": "ff2c3bc80bbdaa657bd0bd6a9b8be5327ff01290047945b3fecc87ded93400ff",
+    "charness-artifacts/probe/2026-09-06-consumer-journeys/protocol.md": "dcea575af1fc2f86668eda10da7ac745a9cc6bfeda9f2fc5d2fda1bf212fd084",
+    "evals/fixtures/consumer-journeys/create-cli-refresh/README.md": "3d049d1566c38625c988d3b88b2ef704be23b05eb448933051b3ae839919359d",
+    "evals/fixtures/consumer-journeys/create-cli-refresh/prompts/create-cli.md": "9268381422c1055352bd73ad40a304359cdf63c53c33ffa052ad558421d55637",
+    "evals/fixtures/consumer-journeys/create-cli-refresh/prompts/impl.md": "0efb3ba84c4a6374d7520f75de822c0888cb637c37640921e2077a733d563cb5",
+    "evals/fixtures/consumer-journeys/create-cli-refresh/seed/AGENTS.md": "a5447ca5f6fece63355e06af52f5054f769c6de3c0d0e11424757049579c6ee4",
+    "evals/fixtures/consumer-journeys/create-cli-refresh/seed/README.md": "5f513a7fbef6de845a5b90388db504dd88aa7a0d507980b4f189585c5080eed1",
+    "evals/fixtures/consumer-journeys/create-cli-refresh/seed/scripts/check_cache.py": "45596ae3dd9a9e7d5cd46cd3d5507a95ca555d2022a88f1f1784b6252ebc9ccc",
+    "evals/fixtures/consumer-journeys/create-cli-refresh/seed/scripts/refresh_cache.py": "756e6a5ab0ab7eb1ad0889f8c40b3ca1f3a9784e7b13331f6b9189e3eb7adfa4",
+    "evals/fixtures/consumer-journeys/create-cli-refresh/seed/tests/test_current_scripts.py": "053edc03a106b016a54546dafde492f5c4458b4cbf8a1c7d822b522fa249fe0b",
+    "evals/fixtures/consumer-journeys/spec-impl-alias/README.md": "20c529fec45654ffac71cd6be7a47a20c93a39cafca34d5119ffcd8aa856e17c",
+    "evals/fixtures/consumer-journeys/spec-impl-alias/prompts/impl.md": "5b5652cb5f0229bfa4020f77c7ab315cfbfb97d7065aa96f7d2a23b6174aa281",
+    "evals/fixtures/consumer-journeys/spec-impl-alias/prompts/spec.md": "6fa8cccb6693561a66e877de0c1208f1b1a4af4ac7ae503dc1a96def6d21da44",
+    "evals/fixtures/consumer-journeys/spec-impl-alias/seed/AGENTS.md": "d08d38cd96c88c85b0e134609f6cb6bab38be5ddcf39fd6843ff9fb917331d6c",
+    "evals/fixtures/consumer-journeys/spec-impl-alias/seed/README.md": "f2e6bf8da5613e8325b905f14b1f797d61b1afb084c0cc5cd052ebdcca733df6",
+    "evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/__init__.py": "cd2e94b7a91c6dbf6d04eaccc8ff59dd8ac19c54b0d733612c01791e8f672994",
+    "evals/fixtures/consumer-journeys/spec-impl-alias/seed/src/catalog.py": "75fd818cc8ca6d8e465f4077018e9939955dcfdffde141714f3ac68440ec06f0",
+    "evals/fixtures/consumer-journeys/spec-impl-alias/seed/tests/test_catalog.py": "b49e9b68ef4260b14962b144a75e38f1821c4f80f7060f4bec0a55610d032cb4"
+  },
+  "claims": [
+    "Frozen before baseline; review pending",
+    "No semantic or performance results yet"
+  ]
+}

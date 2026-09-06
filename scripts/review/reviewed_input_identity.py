@@ -260,9 +260,12 @@ def _review_paths(
             # "declare the individual files" names files that do not exist.
             continue
         if candidate.is_dir() and not candidate.is_symlink():
-            raise ValueError(
+            remedy = "Declare the individual files that were reviewed; a directory binds no content."
+            _fail(
+                "reviewed-path-directory",
                 f"reviewed path `{path}` is a directory; declare the individual files "
-                "that were reviewed, since a directory binds no content"
+                "that were reviewed, since a directory binds no content",
+                details={"path": path, "remedy": remedy},
             )
     return paths, auto_excluded
 

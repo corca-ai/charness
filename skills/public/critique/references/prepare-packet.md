@@ -44,6 +44,10 @@ python3 "$SKILL_DIR/scripts/run_review.py" \
 ```
 
 Remove `--dry-run` only when the derived carrier is ready to start the review.
+Preview artifacts use a separate namespace, so an explicit `--attempt-id` may
+be kept for the subsequent live command. Both remain inspectable; repeating a
+preview or live attempt refuses overwrite. Live packet generation reads the
+current inputs rather than reusing preview bytes implicitly.
 The wrapper owns packet verification, packet/input identities, canonical schema
 materialization, the default read-only capability envelope, artifact paths,
 boundary mode, Goal Run lineage, and lifecycle output. Repeatable `--hold-out

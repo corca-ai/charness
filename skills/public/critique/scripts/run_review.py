@@ -126,6 +126,10 @@ def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     root = args.repo_root.expanduser().resolve()
     attempt = SUPPORT.attempt_id(args.attempt_id)
+    # A preview is inspectable but must not reserve the actual execution identity.
+    # Caller attempt IDs cannot start with '.', so these artifact names cannot
+    # collide with a live attempt selected by another caller.
+    artifact_key = f".preview-{attempt}" if args.dry_run else attempt
     if args.packet_file is not None and any(
         value is not None for value in (args.reviewed_paths_file, args.commit, args.changed_range)
     ):
@@ -176,7 +180,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         else:
             packet = PACKET.prepare_packet(
-                SUPPORT, root, args, attempt, reviewed_paths, adapter, package["prepare"]
+                SUPPORT, root, args, artifact_key, reviewed_paths, adapter, package["prepare"]
             )
             packet, packet_payload, packet_sha, input_sha, verification = PACKET.read_packet(
                 SUPPORT, root, SUPPORT.relative(root, packet), package["verify_packet"]
@@ -186,7 +190,7 @@ def main(argv: list[str] | None = None) -> int:
         if reviewed_paths and sorted(reviewed_paths) != sorted(packet_paths):
             raise SUPPORT.RunReviewError("input-mismatch", "explicit reviewed paths do not match packet identity")
 
-        run_dir = SUPPORT.new_run_dir(root, attempt)
+        run_dir = SUPPORT.new_run_dir(root, artifact_key)
         paths = PACKET.run_paths(run_dir, packet)
         context["paths"] = {
             key: SUPPORT.relative(root, value) for key, value in paths.items() if key != "run_dir"

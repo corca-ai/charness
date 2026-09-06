@@ -1,1 +1,1 @@
-2026-09-05-tracked-claim-ephemeral-carrier.md
+2026-09-06-critique-preview-live-collision.md
