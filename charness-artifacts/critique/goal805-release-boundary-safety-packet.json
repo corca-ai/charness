@@ -1,0 +1,175 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-06T06:47:35Z",
+  "prepared_for": "release:8.5.0",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/.preview-goal805-release-boundary-safety-packet.json\n- charness-artifacts/critique/.preview-goal805-release-boundary-safety-packet.md\n- charness-artifacts/critique/.preview-goal805-release-boundary-value-packet.json\n- charness-artifacts/critique/.preview-goal805-release-boundary-value-packet.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/.preview-goal805-release-boundary-safety-packet.md, charness-artifacts/critique/.preview-goal805-release-boundary-value-packet.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/.preview-goal805-release-boundary-safety-packet.json, charness-artifacts/critique/.preview-goal805-release-boundary-safety-packet.md, charness-artifacts/critique/.preview-goal805-release-boundary-value-packet.json, charness-artifacts/critique/.preview-goal805-release-boundary-value-packet.md\n  verify: python3 scripts/review/validate_critique_artifacts.py --repo-root . --all\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "c59cdda0b21a2f047689afb1d12d801b0358f0f7",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      ".agents/release-adapter.yaml",
+      ".gitleaks.toml",
+      "charness-artifacts/goal-runs/805/reviews/closeout-code-observations.md",
+      "charness-artifacts/goal-runs/805/reviews/context-code-disposition.md",
+      "charness-artifacts/goal-runs/805/reviews/integration-observations.md",
+      "charness-artifacts/goal-runs/805/reviews/release-code-disposition.md",
+      "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/release-reuse.md",
+      "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md",
+      "charness-artifacts/probe/2026-09-06-delegation-net-value/evaluation-observations.json",
+      "charness-artifacts/probe/2026-09-06-delegation-net-value/results.md",
+      "charness-artifacts/probe/2026-09-06-delegation-net-value/trace-observations.json",
+      "charness-artifacts/release/2026-09-06-v8.5.0-notes.md",
+      "scripts/prepush_quality_receipt.py",
+      "scripts/run-quality.sh",
+      "scripts/run_quality_engine.py",
+      "scripts/run_quality_engine_receipt.py",
+      "skills/public/release/scripts/publish_release_common.py",
+      "skills/public/release/scripts/publish_release_execute.py",
+      "skills/public/release/scripts/publish_release_resume_publish.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/release-adapter.yaml",
+        "content_sha256": "647e29fb3437481324f3c3e3e33566a3cf20dbcbd4d998e05ae8f79df5074d50"
+      },
+      {
+        "path": ".gitleaks.toml",
+        "content_sha256": "dd0056e6581c758490e8c6a4d662b14194f69cb5de9526c461a0e1a1de16b9de"
+      },
+      {
+        "path": "charness-artifacts/goal-runs/805/reviews/closeout-code-observations.md",
+        "content_sha256": "4899ac88d2d53c8aeb31ba270b81c2a4a66cdb9bbecc95646e732071bee60f66"
+      },
+      {
+        "path": "charness-artifacts/goal-runs/805/reviews/context-code-disposition.md",
+        "content_sha256": "c38b8d1150145c8c0f96a090599af46ed55c742fac16befd4378819196187156"
+      },
+      {
+        "path": "charness-artifacts/goal-runs/805/reviews/integration-observations.md",
+        "content_sha256": "4eb27efe31a6f907aa4b52ddc311464abc17b2406ab603acf584dbf9bdc8268a"
+      },
+      {
+        "path": "charness-artifacts/goal-runs/805/reviews/release-code-disposition.md",
+        "content_sha256": "218b635bd8f6aca634bfc962d58908099d81f5c3223357033f3621cfa1243aba"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/release-reuse.md",
+        "content_sha256": "38a8158da4fbc16923d7d726afe8349aaa94c8ba0ac1e91afb3dcc257747be38"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value.md",
+        "content_sha256": "562e6ef49a691f0cc7ac4f675143b9e4bbfdeabbc65d375fcb77b365953c9b95"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/evaluation-observations.json",
+        "content_sha256": "3327d3fe549d9553fa2522976e53e01b13287ec235412927e18dab44d1f24b22"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/results.md",
+        "content_sha256": "e50ba5510806d05c150b0a64ad2f46f41792042754f48d1ce4a2d0b515fb84de"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-06-delegation-net-value/trace-observations.json",
+        "content_sha256": "6aa083402aa24eaa008e5b31a8d047673b4a92ae5e338d8e3ce772b26907f4be"
+      },
+      {
+        "path": "charness-artifacts/release/2026-09-06-v8.5.0-notes.md",
+        "content_sha256": "791693f71734ffb9b6d714419efb28fe30928e263047c8376bfb8ee5ec664cd4"
+      },
+      {
+        "path": "scripts/prepush_quality_receipt.py",
+        "content_sha256": "fbd90a7a5beb0b7c736ec35161d10c57fed5bb3f859827bde4853dbc915dbffb"
+      },
+      {
+        "path": "scripts/run-quality.sh",
+        "content_sha256": "15a2c5bf5b355d8ab3bf55c03d221b1cb93d71941356bc39a77aa32bac86f309"
+      },
+      {
+        "path": "scripts/run_quality_engine.py",
+        "content_sha256": "88279cb3e96b9bf754b5230085c1ba63d8cdb5f33c32080ca165ca6997354fd4"
+      },
+      {
+        "path": "scripts/run_quality_engine_receipt.py",
+        "content_sha256": "a4127ef2bb214e49edba837c58c35eed8c16b30e060916629804040f03d24fdb"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_common.py",
+        "content_sha256": "0de2e3e8651911d92d59b3d08925f8a2c62816a6e904d774fb764be74ac890cb"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_execute.py",
+        "content_sha256": "3b81c3ecd98308fadd4c2d8b8ca4c81817ce715aceebb085a41e34b221239453"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_resume_publish.py",
+        "content_sha256": "06b7a617877ce89d2a3aaabaec68ce5193fa26781521c8c0ea92ae86d0d283e2"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "42462d07553e532bc7870ba1dec197faeabb49c77d885bc5fc4ad99313a772ad"
+  }
+}

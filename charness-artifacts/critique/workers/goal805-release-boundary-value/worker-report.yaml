@@ -1,0 +1,88 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Pending 8.5.0 release communication and value boundary only. Read current
+  release notes, frozen Goal and actual pilot results/raw-observation pointers. Success:
+  understandable operator benefit without claiming efficiency, whole-package/tag equality,
+  live provider recovery, all-four-cell validity or already-published/installed success.
+  The high pair passed but candidate cost more; lower cells have test-file hash failures
+  and low candidate unfrozen helper contamination. Original results retained, no repair
+  round. Judge whether scope/limitations and proposed minor bump are honest; preserve
+  required forthcoming release and installed observation. Do not invent numeric success
+  criteria, reopen frozen protocol, require a positive result, add modes or run broad
+  code review.'
+attempt_id: goal805-release-boundary-value
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: b581974f1e0c97f8d1b9c45df6cc96c8fbca1d0805ec17a4667bfa5de7bb53b3
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-release-boundary-value/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-release-boundary-value/delivery.json
+producer_run_id: run-goal805-release-boundary-value
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-release-boundary-value/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-release-boundary-value/receipt.json
+  producer_run_id: run-goal805-release-boundary-value
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 94fc30e6920b67988e2b2bbcd29527870cf8ed5af736de80e9b3eb2efc4af090
+receipt_output_sha256: 94fc30e6920b67988e2b2bbcd29527870cf8ed5af736de80e9b3eb2efc4af090
+packet_identity: bc3ebf5ad6429615697a15a460a0f3cb909cf60fc37626780b46126550faeb77
+reviewed_input_identity: ff83106c42e28848325cd3600daede7560e473fc083b05f15704aab12af71be3
+parent_receipt_identity: parent-c932d972f6c6f2d77f0e38143eafe5e85b26f3f902e28264
+provenance:
+  scope: 'Pending 8.5.0 release communication and value boundary only. Read current
+    release notes, frozen Goal and actual pilot results/raw-observation pointers.
+    Success: understandable operator benefit without claiming efficiency, whole-package/tag
+    equality, live provider recovery, all-four-cell validity or already-published/installed
+    success. The high pair passed but candidate cost more; lower cells have test-file
+    hash failures and low candidate unfrozen helper contamination. Original results
+    retained, no repair round. Judge whether scope/limitations and proposed minor
+    bump are honest; preserve required forthcoming release and installed observation.
+    Do not invent numeric success criteria, reopen frozen protocol, require a positive
+    result, add modes or run broad code review.'
+  packet_identity: bc3ebf5ad6429615697a15a460a0f3cb909cf60fc37626780b46126550faeb77
+  reviewed_input_identity: ff83106c42e28848325cd3600daede7560e473fc083b05f15704aab12af71be3
+  parent_receipt_identity: parent-c932d972f6c6f2d77f0e38143eafe5e85b26f3f902e28264
+  attempt_id: goal805-release-boundary-value
+  attempt_scope: 'Pending 8.5.0 release communication and value boundary only. Read
+    current release notes, frozen Goal and actual pilot results/raw-observation pointers.
+    Success: understandable operator benefit without claiming efficiency, whole-package/tag
+    equality, live provider recovery, all-four-cell validity or already-published/installed
+    success. The high pair passed but candidate cost more; lower cells have test-file
+    hash failures and low candidate unfrozen helper contamination. Original results
+    retained, no repair round. Judge whether scope/limitations and proposed minor
+    bump are honest; preserve required forthcoming release and installed observation.
+    Do not invent numeric success criteria, reopen frozen protocol, require a positive
+    result, add modes or run broad code review.'
+  attempt_packet_identity: bc3ebf5ad6429615697a15a460a0f3cb909cf60fc37626780b46126550faeb77
+  attempt_parent_receipt_identity: parent-c932d972f6c6f2d77f0e38143eafe5e85b26f3f902e28264
+  result_packet_identity: bc3ebf5ad6429615697a15a460a0f3cb909cf60fc37626780b46126550faeb77
+  result_reviewed_input_identity: ff83106c42e28848325cd3600daede7560e473fc083b05f15704aab12af71be3
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: b581974f1e0c97f8d1b9c45df6cc96c8fbca1d0805ec17a4667bfa5de7bb53b3
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

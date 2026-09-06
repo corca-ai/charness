@@ -1,0 +1,45 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Gawande and Weinberg: release sequencing, trust boundaries, truthful preparation evidence, secret exceptions and upgrade safety",
+  "packet_sha256": "e03a310d53a38d343a6808429d082284746d4aad2249cb470ad608d491db083b",
+  "reviewed_input_identity_sha256": "42462d07553e532bc7870ba1dec197faeabb49c77d885bc5fc4ad99313a772ad",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "Preparation could appear complete or bypass final subject verification.",
+      "bin": "Over-Worry",
+      "disposition": "No current blocker established. run_quality_engine.py defers exactly one selected pytest-release row and marks it unestablished. run_quality_engine_receipt.py persists that partial status and fails preparation on receipt emission failure. publish_release_common.py selects preparation only for the recognized native command; resume explicitly requests the full lane. The bound release disposition retains receipt-failure and renamed-gate negative controls, including target-bound mutant evidence."
+    },
+    {
+      "concern": "A partial or stale receipt could authorize the final push.",
+      "bin": "Over-Worry",
+      "disposition": "The supplied receipt owner rejects preparation commands, incomplete semantic passes and missing pytest-release scope. Its final validator checks repository identity, clean HEAD/tree, materialized export and pushed-object coverage. Resume runs quality before publication and uses a fresh temporary receipt location. These guards support the bounded review; actual hook fallback and release invocation counts remain execution obligations."
+    },
+    {
+      "concern": "Release publication, installation and issue closure remain unproved.",
+      "bin": "Act Before Ship",
+      "disposition": "Obligatory next phases, not defects requiring another code review. Execute prepare, review its honestly pending claims, then resume with current full quality and fresh-checkout proof before publication. Preserve public readback, installation refresh, expected-version/doctor comparison, issue-specific behavioral evidence and child-before-parent graph closure. The earlier integration pass does not satisfy these boundaries."
+    },
+    {
+      "concern": "Secret suppression or upgrade instructions could weaken release safety.",
+      "bin": "Over-Worry",
+      "disposition": "The new generic-api-key exceptions combine exact paths with a specific digest-line shape or the exact collision/duplicate matched value. Integration observations retain the complete-protocol positive control and a same-file synthetic-key refusal. Release notes retain update/version/doctor instructions; the adapter explicitly describes configured-branch updates, without promising tag-pinned installation."
+    },
+    {
+      "concern": "Pilot and context limitations could be converted into unsupported completion or efficiency claims.",
+      "bin": "Valid but Defer",
+      "disposition": "The notes correctly disclose no demonstrated efficiency gain, higher valid-candidate cost and invalid lower-tier attribution. Context observations also preserve interventions and missing semantic provenance. Keep these limitations visible through issue-specific closeout; neither pilot repair nor a favorable efficiency result is required for this safety review."
+    }
+  ],
+  "next_move": "Proceed to release-owned preparation and claims review, then final resume/publication verification. Record actual scheduling and receipt-consumer behavior, public/install observations and issue-specific graph proof before claiming release or Goal completion.",
+  "non_claims": [
+    "Pass applies only to this bounded review of the supplied semantic bytes; it is not publication approval or a completed release verdict.",
+    "No workspace edits, test execution, live publication, installation or provider graph inspection were performed.",
+    "Test outcomes are reported evidence in the bound dispositions; unbound test sources and the pre-push hook body were not independently inspected.",
+    "No cross-commit cache safety, general efficiency benefit, successful lower-tier comparison or completed Goal #805 / work item #807 is established."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

@@ -1,0 +1,88 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Pending 8.5.0 release safety only: integrated closeout/context/release scheduling
+  changes and current evidence. Success is preserving final-state publication/installation
+  and issue-specific proof while removing preparation-time duplicate subject execution.
+  Code review already complete; do not reopen it for commit count. Inspect bound release
+  notes, contracts, focused dispositions and exact scheduling/receipt consumers. Minimum
+  proof: current guard ownership plus retained positive/negative tests; release prepare/resume,
+  public/install and final graph proof are required next phases, not already passed.
+  No new cache, broad policy redesign, pilot repair or acceptance weakening. Classify
+  concrete current blockers versus obligatory later publication steps and deferred
+  limitations.'
+attempt_id: goal805-release-boundary-safety
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 83c76218974ba1cb9f51e057d7a0b21f3571a286c92f8af9c9bdfcce938245c1
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-release-boundary-safety/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-release-boundary-safety/delivery.json
+producer_run_id: run-goal805-release-boundary-safety
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-release-boundary-safety/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-release-boundary-safety/receipt.json
+  producer_run_id: run-goal805-release-boundary-safety
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: a988af5eefff46bb3822b933cb04dad20d79cbecbd0c7f98a1cfa0d8678cd804
+receipt_output_sha256: a988af5eefff46bb3822b933cb04dad20d79cbecbd0c7f98a1cfa0d8678cd804
+packet_identity: e03a310d53a38d343a6808429d082284746d4aad2249cb470ad608d491db083b
+reviewed_input_identity: 42462d07553e532bc7870ba1dec197faeabb49c77d885bc5fc4ad99313a772ad
+parent_receipt_identity: parent-33c68caad3872e5c952b7d63cd9602b82f8bfea7ff534f0c
+provenance:
+  scope: 'Pending 8.5.0 release safety only: integrated closeout/context/release scheduling
+    changes and current evidence. Success is preserving final-state publication/installation
+    and issue-specific proof while removing preparation-time duplicate subject execution.
+    Code review already complete; do not reopen it for commit count. Inspect bound
+    release notes, contracts, focused dispositions and exact scheduling/receipt consumers.
+    Minimum proof: current guard ownership plus retained positive/negative tests;
+    release prepare/resume, public/install and final graph proof are required next
+    phases, not already passed. No new cache, broad policy redesign, pilot repair
+    or acceptance weakening. Classify concrete current blockers versus obligatory
+    later publication steps and deferred limitations.'
+  packet_identity: e03a310d53a38d343a6808429d082284746d4aad2249cb470ad608d491db083b
+  reviewed_input_identity: 42462d07553e532bc7870ba1dec197faeabb49c77d885bc5fc4ad99313a772ad
+  parent_receipt_identity: parent-33c68caad3872e5c952b7d63cd9602b82f8bfea7ff534f0c
+  attempt_id: goal805-release-boundary-safety
+  attempt_scope: 'Pending 8.5.0 release safety only: integrated closeout/context/release
+    scheduling changes and current evidence. Success is preserving final-state publication/installation
+    and issue-specific proof while removing preparation-time duplicate subject execution.
+    Code review already complete; do not reopen it for commit count. Inspect bound
+    release notes, contracts, focused dispositions and exact scheduling/receipt consumers.
+    Minimum proof: current guard ownership plus retained positive/negative tests;
+    release prepare/resume, public/install and final graph proof are required next
+    phases, not already passed. No new cache, broad policy redesign, pilot repair
+    or acceptance weakening. Classify concrete current blockers versus obligatory
+    later publication steps and deferred limitations.'
+  attempt_packet_identity: e03a310d53a38d343a6808429d082284746d4aad2249cb470ad608d491db083b
+  attempt_parent_receipt_identity: parent-33c68caad3872e5c952b7d63cd9602b82f8bfea7ff534f0c
+  result_packet_identity: e03a310d53a38d343a6808429d082284746d4aad2249cb470ad608d491db083b
+  result_reviewed_input_identity: 42462d07553e532bc7870ba1dec197faeabb49c77d885bc5fc4ad99313a772ad
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 83c76218974ba1cb9f51e057d7a0b21f3571a286c92f8af9c9bdfcce938245c1
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes
