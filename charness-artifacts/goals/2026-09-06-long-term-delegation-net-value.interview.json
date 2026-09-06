@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "questions": [{
+    "decision": "execution-boundary",
+    "options": [
+      {"id": "end-to-end", "summary": "Include push, release, install and model-tier consumer experiments", "tradeoff": "Tests shipped usefulness with bounded external writes and evaluator spend"},
+      {"id": "local-only", "summary": "Implementation and local checks only", "tradeoff": "Lower external scope but publication and product comparison remain unproven"}
+    ],
+    "recommendation": {"option": "end-to-end", "reason": "The operator wants another complete long-delegation improvement cycle"}
+  }],
+  "remaining_consequential_decisions": ["execution-boundary"]
+}

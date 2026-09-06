@@ -1,0 +1,64 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: Planning-only bounded follow-up of readiness cycle F1 from delegation-whole-integrity-2;
+  exactly one dependency rule repaired; no new whole-plan audit or execution approval
+attempt_id: delegation-readiness-followup-3
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: d5a918e363334b8a0c5bfb07e0cab7773ff81c64e5e8cd2c7b799395833c09b1
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-delegation-readiness-followup-3/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-delegation-readiness-followup-3/delivery.json
+producer_run_id: run-delegation-readiness-followup-3
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-delegation-readiness-followup-3/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-delegation-readiness-followup-3/receipt.json
+  producer_run_id: run-delegation-readiness-followup-3
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 005399d89f53990c1d2a753e5a94be27420d677f36ee7d3b2b9a1028ffd3b34e
+receipt_output_sha256: 005399d89f53990c1d2a753e5a94be27420d677f36ee7d3b2b9a1028ffd3b34e
+packet_identity: cbec5bba953d7b23a71731ccb93b10ed16960b520f3694e6badf3748f2633633
+reviewed_input_identity: 438f06ede1f9462f72d3308ea83b95b98d200d8067ebc3e33233a7f94e8468d3
+parent_receipt_identity: parent-903ae80f266348227313f96cfd7d7b76a82ce6db80483c26
+provenance:
+  scope: Planning-only bounded follow-up of readiness cycle F1 from delegation-whole-integrity-2;
+    exactly one dependency rule repaired; no new whole-plan audit or execution approval
+  packet_identity: cbec5bba953d7b23a71731ccb93b10ed16960b520f3694e6badf3748f2633633
+  reviewed_input_identity: 438f06ede1f9462f72d3308ea83b95b98d200d8067ebc3e33233a7f94e8468d3
+  parent_receipt_identity: parent-903ae80f266348227313f96cfd7d7b76a82ce6db80483c26
+  attempt_id: delegation-readiness-followup-3
+  attempt_scope: Planning-only bounded follow-up of readiness cycle F1 from delegation-whole-integrity-2;
+    exactly one dependency rule repaired; no new whole-plan audit or execution approval
+  attempt_packet_identity: cbec5bba953d7b23a71731ccb93b10ed16960b520f3694e6badf3748f2633633
+  attempt_parent_receipt_identity: parent-903ae80f266348227313f96cfd7d7b76a82ce6db80483c26
+  result_packet_identity: cbec5bba953d7b23a71731ccb93b10ed16960b520f3694e6badf3748f2633633
+  result_reviewed_input_identity: 438f06ede1f9462f72d3308ea83b95b98d200d8067ebc3e33233a7f94e8468d3
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: d5a918e363334b8a0c5bfb07e0cab7773ff81c64e5e8cd2c7b799395833c09b1
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

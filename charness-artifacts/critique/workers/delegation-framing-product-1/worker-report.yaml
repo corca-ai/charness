@@ -1,0 +1,64 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Goal framing only: long-term-delegation-net-value; planning-only, no Goal
+  lineage yet; no implementation approval'
+attempt_id: delegation-framing-product-1
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 4e179117c1f5ac45c9212c7e19908289c0336b3e432258bbeee39da19d34dec2
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-delegation-framing-product-1/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-delegation-framing-product-1/delivery.json
+producer_run_id: run-delegation-framing-product-1
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-delegation-framing-product-1/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-delegation-framing-product-1/receipt.json
+  producer_run_id: run-delegation-framing-product-1
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: a5f68a51b10051c60b527395dccf0d3e6bd5e64e05c8842f5aa15c225745836b
+receipt_output_sha256: a5f68a51b10051c60b527395dccf0d3e6bd5e64e05c8842f5aa15c225745836b
+packet_identity: 2a9f81dcf3ed2c225717728eb3bda8094f9931980a0ade42b0c33a57812978b1
+reviewed_input_identity: b0a641205054bc07e39ac2c9b69d80ad2281c895b1138af6b2959ccc040b5f06
+parent_receipt_identity: parent-cd408572a537563d5d21b07781368b8ac6635bc3b9b4551f
+provenance:
+  scope: 'Goal framing only: long-term-delegation-net-value; planning-only, no Goal
+    lineage yet; no implementation approval'
+  packet_identity: 2a9f81dcf3ed2c225717728eb3bda8094f9931980a0ade42b0c33a57812978b1
+  reviewed_input_identity: b0a641205054bc07e39ac2c9b69d80ad2281c895b1138af6b2959ccc040b5f06
+  parent_receipt_identity: parent-cd408572a537563d5d21b07781368b8ac6635bc3b9b4551f
+  attempt_id: delegation-framing-product-1
+  attempt_scope: 'Goal framing only: long-term-delegation-net-value; planning-only,
+    no Goal lineage yet; no implementation approval'
+  attempt_packet_identity: 2a9f81dcf3ed2c225717728eb3bda8094f9931980a0ade42b0c33a57812978b1
+  attempt_parent_receipt_identity: parent-cd408572a537563d5d21b07781368b8ac6635bc3b9b4551f
+  result_packet_identity: 2a9f81dcf3ed2c225717728eb3bda8094f9931980a0ade42b0c33a57812978b1
+  result_reviewed_input_identity: b0a641205054bc07e39ac2c9b69d80ad2281c895b1138af6b2959ccc040b5f06
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 4e179117c1f5ac45c9212c7e19908289c0336b3e432258bbeee39da19d34dec2
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

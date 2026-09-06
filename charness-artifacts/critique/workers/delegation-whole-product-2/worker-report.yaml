@@ -1,0 +1,64 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: Planning-only whole Goal and six executable children; no execution approval;
+  unresolved phase authority must stay explicit
+attempt_id: delegation-whole-product-2
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: a9931bab98b12f1bd139c10d571999e3a0c1bab4f9d6a01d55a0f6aa368267ef
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-delegation-whole-product-2/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-delegation-whole-product-2/delivery.json
+producer_run_id: run-delegation-whole-product-2
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-delegation-whole-product-2/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-delegation-whole-product-2/receipt.json
+  producer_run_id: run-delegation-whole-product-2
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 80c6c3974f2f916d80bd819f7aa1ec3e5276615fb3f9ec2f80c35991198dd45b
+receipt_output_sha256: 80c6c3974f2f916d80bd819f7aa1ec3e5276615fb3f9ec2f80c35991198dd45b
+packet_identity: 2a253afebd7a6e004b037c7d83a02ba97b09cdf132ef9b1e09246c1bc6feb38d
+reviewed_input_identity: dd2a5f42c7d70891c509e06d52c0d3898f4edd052b208d8932c4ed475fb482d8
+parent_receipt_identity: parent-1fdfa7f3d814034f56b7996660fe98e4b0be729aed9c316d
+provenance:
+  scope: Planning-only whole Goal and six executable children; no execution approval;
+    unresolved phase authority must stay explicit
+  packet_identity: 2a253afebd7a6e004b037c7d83a02ba97b09cdf132ef9b1e09246c1bc6feb38d
+  reviewed_input_identity: dd2a5f42c7d70891c509e06d52c0d3898f4edd052b208d8932c4ed475fb482d8
+  parent_receipt_identity: parent-1fdfa7f3d814034f56b7996660fe98e4b0be729aed9c316d
+  attempt_id: delegation-whole-product-2
+  attempt_scope: Planning-only whole Goal and six executable children; no execution
+    approval; unresolved phase authority must stay explicit
+  attempt_packet_identity: 2a253afebd7a6e004b037c7d83a02ba97b09cdf132ef9b1e09246c1bc6feb38d
+  attempt_parent_receipt_identity: parent-1fdfa7f3d814034f56b7996660fe98e4b0be729aed9c316d
+  result_packet_identity: 2a253afebd7a6e004b037c7d83a02ba97b09cdf132ef9b1e09246c1bc6feb38d
+  result_reviewed_input_identity: dd2a5f42c7d70891c509e06d52c0d3898f4edd052b208d8932c4ed475fb482d8
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: a9931bab98b12f1bd139c10d571999e3a0c1bab4f9d6a01d55a0f6aa368267ef
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes
