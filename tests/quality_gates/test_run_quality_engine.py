@@ -172,6 +172,17 @@ def test_prepare_current_gate_failure_stays_failure(tmp_path: Path) -> None:
     assert receipt["unproven_subjects"] == ["pytest-release"]
 
 
+def test_prepare_refuses_without_exact_selected_release_suite(tmp_path: Path) -> None:
+    repo, env = _seed(tmp_path)
+    gates = repo / "quality-gates.yaml"
+    gates.write_text(gates.read_text().replace("label: pytest-release", "label: renamed-release"))
+    result = _run(repo, env, "--release", "--release-prepare")
+    assert result.returncode == 2
+    assert "requires exactly one selected pytest-release gate" in result.stderr
+    assert not _labels(result.stdout)
+    assert not (repo / "receipt.json").exists()
+
+
 def test_prepare_relative_receipt_is_anchored_to_repo(tmp_path: Path, monkeypatch) -> None:
     repo, env = _seed(tmp_path)
     caller = tmp_path / "caller"

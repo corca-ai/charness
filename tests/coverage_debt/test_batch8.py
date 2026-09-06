@@ -161,7 +161,7 @@ _SEMANTIC_RECEIPT = {
     "effective_exit_code": 0,
     "unproven_subjects": [],
     "details": {"release": True, "full_queue": True},
-    "measured_scope": ["release-full-superset"],
+    "measured_scope": ["pytest-release"],
 }
 
 

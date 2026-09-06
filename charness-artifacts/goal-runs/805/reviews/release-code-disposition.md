@@ -23,3 +23,19 @@ tests in 2.51s. The preceding repaired engine/orchestration selection passed
 Canonical export was synchronized. These are scoped observations, not a broad
 release pass. Integrated changed-line/broad proof, actual release invocation
 counts, consumer comparison and installed behavior remain required.
+
+The first changed-line producer found two legacy expectations outside the
+initial focused selection: its receipt fixture lacked the now-required
+`pytest-release` measurement, and a receipt-copy test expected disk errors to
+be swallowed. Updated those fixtures to the reviewed stricter contract; copy
+failure is asserted for both final and preparation runs. The focused replay
+passed 12 tests in 2.70s. The failed producer yielded no coverage verdict;
+changed-line proof remains pending, not waived.
+
+The next producer passed but exposed one unmeasured changed line:
+`scripts/run_quality_engine.py:325`, refusal when no exact selected
+`pytest-release` gate exists. Added the renamed-gate consumer stimulus: it
+passed, then failed with observed exit 0 versus required 2 when that exact
+raise was temporarily replaced with `pass`. Restored the owner immediately;
+`git diff` confirmed no production mutation remained. This is the requested
+target-bound mutant proof, not a broad mutation score.

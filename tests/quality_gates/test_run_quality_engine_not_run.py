@@ -290,7 +290,10 @@ def test_bind_receipt_stamps_the_last_release_path(tmp_path: Path) -> None:
     assert written == ""
 
 
-def test_finish_swallows_a_failed_receipt_copy(tmp_path: Path, monkeypatch) -> None:
+@pytest.mark.parametrize("release_prepare", [False, True])
+def test_finish_refuses_a_failed_receipt_copy(
+    tmp_path: Path, monkeypatch, release_prepare: bool
+) -> None:
     monkeypatch.setattr(RECEIPT, "record_runtime_single", lambda *args, **kwargs: None)
     monkeypatch.setattr(RECEIPT, "timestamp", lambda: "t")
     monkeypatch.setattr(RECEIPT, "format_elapsed", lambda elapsed_ms: "1ms")
@@ -317,15 +320,17 @@ def test_finish_swallows_a_failed_receipt_copy(tmp_path: Path, monkeypatch) -> N
         temp_dir=tmp_path / "tmp",
         regime="",
     )
-    RECEIPT.finish(
-        context,
-        RECEIPT.Ledger(passed=1, failed=0),
-        started_at=0.0,
-        mode="full",
-        release=True,
-        full_queue=True,
-        non_claim="",
-        receipt_json=str(written),
-        labels="core",
-        overall_rc=0,
-    )
+    with pytest.raises(RECEIPT.RunnerError, match="could not replace last release quality receipt"):
+        RECEIPT.finish(
+            context,
+            RECEIPT.Ledger(passed=1, failed=0),
+            started_at=0.0,
+            mode="full",
+            release=True,
+            full_queue=True,
+            non_claim="",
+            receipt_json=str(written),
+            labels="core",
+            overall_rc=0,
+            release_prepare=release_prepare,
+        )
