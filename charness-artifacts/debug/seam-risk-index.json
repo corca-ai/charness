@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 186,
-  "indexed_artifact_count": 171,
+  "source_artifact_count": 187,
+  "indexed_artifact_count": 172,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 8,
-    "none": 75,
+    "none": 76,
     "operator-visible-recovery": 23,
     "repeated-symptom": 18
   },
   "generalization_pressure_counts": {
     "factor-now": 25,
     "monitor": 125,
-    "none": 21
+    "none": 22
   },
   "entries": [
     {
@@ -2386,6 +2386,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-09-06-multi-issue-closeout-cardinality.md",
+      "is_current_pointer": false,
+      "interrupt_id": "goal805-closeout-cardinality",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "local proof producer and final closeout consumer",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/closeout-carrier.md",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-09-06-release-advisory-meaning.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -2416,15 +2430,15 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "goal805-closeout-cardinality",
+      "interrupt_id": "review-closeout-preflight",
       "risk_classes": [
         "none"
       ],
-      "seam": "local proof producer and final closeout consumer",
+      "seam": "local review launch and issue proof consumption",
       "generalization_pressure": "none",
       "critique_required": true,
-      "next_step": "spec",
-      "handoff_artifact": "charness-artifacts/goals/2026-09-06-long-term-delegation-net-value-items/closeout-carrier.md",
+      "next_step": "impl",
+      "handoff_artifact": "none",
       "forced": false
     }
   ],

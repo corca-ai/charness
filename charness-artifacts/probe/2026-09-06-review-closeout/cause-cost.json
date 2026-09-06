@@ -1,0 +1,79 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Jackson problem framing and Raskin operator cost",
+  "packet_sha256": "37a77a60e97febe7a63191e927f4963b55c1213eecb6be74d166861d8c5f7fd7",
+  "reviewed_input_identity_sha256": "e178f563dffcb92266592a87532c4a01ec8b4ec9a58bd36360c7cc385932c8aa",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "medium",
+      "summary": "The causal diagnosis supports conditional removal of the descriptive prefix before adding a preflight. The missing composition alone does not justify another operator step.",
+      "evidence": [
+        "closeout-carrier.md requires one genuinely scoped review to cross formatting differences while preserving exact membership, behavioral observations and consumer ownership.",
+        "closeout-discipline.md#Bundled Closeout routes operators to the generic semantic runner with prepared targets; it does not supply an issue-owned launcher.",
+        "issue_critique_observer.py::_worker_carrier_disposition unconditionally supplies required_scope_prefix='issue-resolution', including for structured carriers.",
+        "reviewer_worker_carrier.py::validate_worker_report_evidence checks that prefix before identity joins and structured target validation."
+      ],
+      "action": "Reframe Correct Behavior around consuming genuinely covered issue claims without formatting-only review repetition. Prefer evaluating prefix removal only for fully validated structured carriers with explicit expected repository and issue numbers. Preserve legacy prefix enforcement, identity and delivery checks, and report/receipt/ledger scope consistency. Do not exempt carriers merely because prepared_targets exists."
+    },
+    {
+      "id": "F2",
+      "severity": "medium",
+      "summary": "Structured membership replaces a target-label proxy, but does not itself establish semantic closeout coverage.",
+      "evidence": [
+        "issue_worker_targets.py requires exact target sets, passing verdicts, nonempty summaries and evidence strings; it cannot establish what those strings prove.",
+        "closeout-carrier.md explicitly states that a release-state review alone does not prove issue behavior and assigns semantic judgments to the independent behavioral reviewer.",
+        "closeout-discipline.md requires per-issue behavioral evidence distinct from CLOSED state and the carrier body."
+      ],
+      "action": "Retain the existing behavioral-review obligation when removing the prefix. Treat a release-only observation as insufficient through reviewer judgment even when its target keys match. Neither the existing caller-written prefix nor a new preflight supplies that judgment; no additional live model pilot is warranted."
+    },
+    {
+      "id": "F3",
+      "severity": "medium",
+      "summary": "The packet establishes one wasted simulated launch, but does not yet establish a measured reduction in review reexecution.",
+      "evidence": [
+        "baseline.json records worker_calls=1, producer_exit_code=0 and transport_approval_eligible=true for scope='semantic command' and targets corca-ai/charness#42 and #43.",
+        "issue_tool.py verify-closeout returned exit_code=2, status='failed', carrier_verified=false.",
+        "issue_tool.py validate-closeout-draft returned exit_code=2, status='draft_failed', carrier_verified=false.",
+        "Both consumers reported: worker report scope must start with 'issue-resolution' for this consumer.",
+        "The baseline explicitly records that no worker retry was executed and contains projected observations rather than full command payloads."
+      ],
+      "action": "Require an exact same-scenario deterministic comparison before claiming benefit: measure the existing correction-and-reexecution path's total worker calls and interventions, then the candidate path's calls and both final consumer outputs. Reuse the unchanged delivered fixture to test candidate consumption where possible; record zero additional calls only if observed. Retain focused negative controls for legacy wrong scope, invalid structured membership, missing/non-pass observations, absent evidence, and identity/delivery failures."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Preserve meaningful closeout detection while removing the structured-carrier prefix refusal.",
+      "bin": "Act Before Ship",
+      "disposition": "Strong evidence. Make the conditional boundary and same-scenario consumer comparison acceptance requirements. Causal approval does not establish repair correctness."
+    },
+    {
+      "concern": "The debug artifact's preflight-oriented invariant overconstrains the solution.",
+      "bin": "Bundle Anyway",
+      "disposition": "Align Correct Behavior and Invariant Proof with eliminating avoidable review repetition while preserving meaningful refusals; clarify the existing bundled-closeout reference without introducing another command."
+    },
+    {
+      "concern": "A new preflight, typed purpose system, or live model pilot is necessary to repair this scope mismatch.",
+      "bin": "Over-Worry",
+      "disposition": "Unsupported by this bounded evidence. First test conditional removal of the redundant descriptive requirement at the issue owner."
+    },
+    {
+      "concern": "Non-durable citations can independently cause later closeout rework.",
+      "bin": "Valid but Defer",
+      "disposition": "Keep the existing durability floor. This packet does not reproduce citation timing or establish that moving its check before freezing is correct; leave that investigation separate."
+    }
+  ],
+  "next_move": "Accept the bounded causal diagnosis and prepare the smallest conditional-removal candidate with one composed fake-backend-to-both-consumers comparison. Record exact calls, interventions, final outputs and retained negative refusals before accepting a savings or repair claim. No new preflight is justified yet.",
+  "non_claims": [
+    "This pass approves causal direction only, not an implemented repair, issue resolution, release, or partial-progress closeout.",
+    "Semantic judgment used the supplied inline bytes. The baseline observations were supplied evidence, not independently reexecuted in this review.",
+    "No total delegation speed improvement, measured retry saving, or preserved post-repair detection is established.",
+    "The packet has no prepared_targets; the baseline fixture's issue targets are not targets of this review.",
+    "Goal evidence lineage: {\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}",
+    "Standalone review; Goal805 is not reopened. No workspace edits, tracker actions, or release actions were performed."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

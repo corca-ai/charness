@@ -1,0 +1,19 @@
+{
+  "kind": "review-closeout-scope-baseline",
+  "source_revision": "fb00b100e9f2e5ba7b6c3999ba3b38b166241261",
+  "evidence_kind": "executed deterministic backend fixture, not a semantic reviewer approval",
+  "fixture_root": "/home/hwidong/.cache/tmp/charness-review-closeout-baseline.juppthz7",
+  "producer": "skills/public/critique/scripts/run_review.py",
+  "scope": "semantic command",
+  "targets": ["corca-ai/charness#42", "corca-ai/charness#43"],
+  "worker_calls": 1,
+  "producer_exit_code": 0,
+  "transport_approval_eligible": true,
+  "consumer_projection": [
+    {"command": "issue_tool.py verify-closeout", "exit_code": 2, "status": "failed", "carrier_verified": false},
+    {"command": "issue_tool.py validate-closeout-draft", "exit_code": 2, "status": "draft_failed", "carrier_verified": false}
+  ],
+  "shared_refusal": "worker report scope must start with 'issue-resolution' for this consumer",
+  "other_floors": {"missing_fields": [], "missing_close_keywords": [], "binding_failures": [], "missing_issue_bindings": [], "behavioral_verdict_ok": true},
+  "non_claims": ["No GitHub close or write", "No model judgment", "No new worker retry executed yet", "No total-wait measurement for this diagnostic", "Projection of observed command outputs, not their full raw payloads"]
+}

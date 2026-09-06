@@ -1,0 +1,55 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Weinberg diagnostic and semantic authority",
+  "packet_sha256": "37a77a60e97febe7a63191e927f4963b55c1213eecb6be74d166861d8c5f7fd7",
+  "reviewed_input_identity_sha256": "e178f563dffcb92266592a87532c4a01ec8b4ec9a58bd36360c7cc385932c8aa",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "CAUSAL-1",
+      "severity": "high",
+      "summary": "The demonstrated scope refusal is supported, but exact target membership and delivery do not make review purpose redundant.",
+      "evidence": [
+        "Counterexample: an honestly scoped causal-review packet names the exact issues. Its delivered observations pass the diagnostic question, summarize confirmation of the root cause, and cite failing reproductions. No repair exists. All packet/result targets and delivery identities match. The current prefix check refuses this carrier; the proposed structured exemption removes that refusal although the review approved diagnosis, not resolution.",
+        "issue_worker_targets.py validates exact membership, passing verdicts, and nonempty summaries/evidence. It does not distinguish a passing diagnostic judgment from a passing resolution judgment.",
+        "closeout-carrier.md explicitly states that the delivered causal review approves diagnosis, not design or resolution, and that a release-state review alone does not prove issue behavior.",
+        "reviewer_worker_carrier.py checks required_scope_prefix separately from identity and delivery validation. Preserving scope equality across delivery joins preserves what was reviewed; it does not establish eligibility for a different consuming purpose.",
+        "baseline.json supports the observed producer/consumer mismatch through a deterministic backend fixture. Its explicit absence of model judgment means it cannot establish semantic redundancy of the purpose check."
+      ],
+      "action": "Revise the repair hypothesis to preserve a resolution-purpose distinction. Cross-format reuse can remain valid when the issue owner establishes that actual observations cover resolution claims; structured presence and mechanical validation alone are insufficient. Test the causal-only counterexample alongside the positive arbitrary-label case before approving a repair."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "A diagnostic approval can be consumed as resolution approval after the exemption.",
+      "bin": "fix-now",
+      "disposition": "Blocks the proposed redundancy claim; this is a static counterexample against the supplied predicates, not an executed exploit."
+    },
+    {
+      "concern": "The legacy prefix is caller-controlled and cannot prove semantic truth.",
+      "bin": "accepted-limitation",
+      "disposition": "Agreed. It nevertheless rejects an honestly labeled wrong-purpose review. That limited protection is distinct from target identity."
+    },
+    {
+      "concern": "Citation durability and general delegation savings.",
+      "bin": "defer",
+      "disposition": "Separate questions; neither is established by this scope replay."
+    },
+    {
+      "concern": "Every non-prefix review must undergo another semantic review.",
+      "bin": "reject",
+      "disposition": "Unnecessary when existing observations actually cover the resolution claims and the issue owner accepts that coverage."
+    }
+  ],
+  "next_move": "Retain the demonstrated mismatch diagnosis, revise the bounded repair hypothesis around semantic eligibility, and add a wrong-phase negative control. No implementation, release, or tracker action is approved.",
+  "non_claims": [
+    "Reviewed all seven supplied semantic payloads; no workspace execution or edits.",
+    "No nonexistent implementation was reviewed or approved.",
+    "No independent replay, live closeout, installed-host verification, or savings measurement was performed.",
+    "This packet declares no prepared_targets; no per-target observations are invented.",
+    "Goal evidence lineage: {\"binding\":null,\"disposition\":\"not-goal-bound\",\"draft\":null,\"goal_run\":null,\"kind\":\"charness.goal-lineage\",\"reason\":\"critique review was run without a Goal Run Work Item identity\",\"schema_version\":1,\"work_item\":null}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

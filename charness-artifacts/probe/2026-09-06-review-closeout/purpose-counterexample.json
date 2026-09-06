@@ -1,0 +1,12 @@
+{
+  "kind": "scope-removal-counterexample",
+  "simulated_only": true,
+  "fixture_root": "/home/hwidong/.cache/tmp/charness-review-purpose-counterexample.jd5pk4rb",
+  "scope": "causal-review",
+  "targets": ["corca-ai/charness#42", "corca-ai/charness#43"],
+  "each_observation": {"verdict": "pass", "summary": "Root cause confirmed; no repair exists", "evidence": ["failing-reproduction"]},
+  "current": {"disposition": "carrier-unverified", "carrier_verified": false, "carrier_reason": "worker report scope must start with 'issue-resolution' for this consumer"},
+  "prefix_removal_hypothesis": {"disposition": "delegated", "carrier_verified": true, "carrier": "worker-report"},
+  "production_files_changed": false,
+  "non_claims": ["Disposable fixture only", "No model execution or organization write", "No historical receipts altered"]
+}
