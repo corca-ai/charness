@@ -45,6 +45,18 @@ def cheap_owner_gates(
     gates: list[GateCommand] = []
     staged_py = [path for path in present if path.endswith(".py")]
     if staged_py and (repo_root / "scripts/gates/check_code_lengths.py").is_file():
+        lengths = import_repo_module(__file__, "scripts.gates.check_code_lengths")
+        try:
+            selected = lengths.select_targets(
+                repo_root, paths=[Path(path) for path in staged_py], require_git=False
+            )
+        except lengths.ValidationError as exc:
+            raise RuntimeError(str(exc)) from exc
+        staged_py = [
+            path.relative_to(repo_root).as_posix()
+            for path in selected
+        ]
+    if staged_py and (repo_root / "scripts/gates/check_code_lengths.py").is_file():
         gates.append(
             GateCommand(
                 "check-python-lengths (staged)",

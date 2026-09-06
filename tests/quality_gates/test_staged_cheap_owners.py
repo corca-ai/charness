@@ -31,6 +31,42 @@ def test_a_python_path_selects_tokei_caps() -> None:
     assert "check-docs-length (staged)" not in _labels([path])
 
 
+def test_outside_universe_python_does_not_dispatch_length_owner(tmp_path: Path) -> None:
+    artifact = tmp_path / "charness-artifacts/probe/example.py"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("value = 1\n", encoding="utf-8")
+    owner = tmp_path / "scripts/gates/check_code_lengths.py"
+    owner.parent.mkdir(parents=True)
+    owner.write_text("", encoding="utf-8")
+    code, text = owners.run_cheap_owners(tmp_path, [artifact.relative_to(tmp_path).as_posix()])
+    assert (code, text) == (0, "")
+
+
+def test_mixed_python_set_passes_only_owner_selected_paths(tmp_path: Path) -> None:
+    paths = ["scripts/gates/check_code_lengths.py", "charness-artifacts/probe/example.py"]
+    for relative in paths:
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("value = 1\n", encoding="utf-8")
+    gates = owners.cheap_owner_gates(tmp_path, paths)
+    assert len(gates) == 1
+    assert gates[0].argv[-2:] == ("--paths", paths[0])
+
+
+def test_custom_python_universe_is_owned_by_length_selector(tmp_path: Path) -> None:
+    paths = ["scripts/gates/check_code_lengths.py", "custom/example.py"]
+    for relative in paths:
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("value = 1\n", encoding="utf-8")
+    adapter = tmp_path / ".agents/quality-adapter.yaml"
+    adapter.parent.mkdir()
+    adapter.write_text("version: 1\nrepo: sample\nuniverses:\n  python_sources:\n    - custom/*.py\n", encoding="utf-8")
+    gates = owners.cheap_owner_gates(tmp_path, paths)
+    assert len(gates) == 1
+    assert gates[0].argv[-2:] == ("--paths", paths[1])
+
+
 def test_a_debug_path_selects_the_seam_index() -> None:
     path = "charness-artifacts/debug/latest.md"
     assert "validate-debug-seam-index (staged)" in _labels([path])
@@ -46,15 +82,19 @@ def test_an_unrelated_path_selects_no_cheap_owner() -> None:
     assert _labels(["README.md"]) == []
 
 
-def test_a_failing_child_refuses_the_commit(monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize("path, label", [
+    ("docs/artifact-policy.md", "check-docs-length (staged)"),
+    ("scripts/hooks/check_staged_cheap_owners.py", "check-python-lengths (staged)"),
+])
+def test_a_failing_child_refuses_the_commit(monkeypatch: pytest.MonkeyPatch, path: str, label: str) -> None:
     monkeypatch.setattr(
         owners,
         "run_process",
         lambda *_a, **_k: SimpleNamespace(returncode=1, stderr="over budget\n", stdout=""),
     )
-    code, text = owners.run_cheap_owners(ROOT, ["docs/artifact-policy.md"])
+    code, text = owners.run_cheap_owners(ROOT, [path])
     assert code == 2
-    assert "check-docs-length (staged)" in text
+    assert label in text
     assert "over budget" in text
 
 

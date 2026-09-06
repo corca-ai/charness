@@ -1,0 +1,76 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Goal 798 final narrow owner changes: impl reuses applicable evidence without
+  skipping required fresh checks; staged hook consumes length owner selection, preserves
+  custom adapters and real source failures, does not weaken explicit empty-universe
+  refusal. Judge concrete compatibility and stale-evidence risks. Existing frozen
+  A/B acceptance is unchanged; candidate producer observations pending. Critique also
+  verifies prior marker fix and fixture exclusion semantics.'
+attempt_id: goal798-final-owner-review
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: b3d57f8ae03d8c68691e1d022a69a8e55e2d7c8f215966c7aebd784c8f221e92
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-owner-review/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-owner-review/delivery.json
+producer_run_id: run-goal798-final-owner-review
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-owner-review/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal798-final-owner-review/receipt.json
+  producer_run_id: run-goal798-final-owner-review
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 766ca5b7fd17474786bfedd38c61a704b1c99a5d606c1d2b210e90dccbc55d5f
+receipt_output_sha256: 766ca5b7fd17474786bfedd38c61a704b1c99a5d606c1d2b210e90dccbc55d5f
+packet_identity: bd6d5b30438fbe20dfc3b55a0f1fbe76e353a50f6b87ea42ed380ddfab228e5b
+reviewed_input_identity: 58a7a32e44e3157b98239a085ea3c6c9019af5f67ab2ef98ca0ed05e96bbc0a1
+parent_receipt_identity: parent-80f28ea24b8d701010e11b48d8815857d7fe8aec638cb0d4
+provenance:
+  scope: 'Goal 798 final narrow owner changes: impl reuses applicable evidence without
+    skipping required fresh checks; staged hook consumes length owner selection, preserves
+    custom adapters and real source failures, does not weaken explicit empty-universe
+    refusal. Judge concrete compatibility and stale-evidence risks. Existing frozen
+    A/B acceptance is unchanged; candidate producer observations pending. Critique
+    also verifies prior marker fix and fixture exclusion semantics.'
+  packet_identity: bd6d5b30438fbe20dfc3b55a0f1fbe76e353a50f6b87ea42ed380ddfab228e5b
+  reviewed_input_identity: 58a7a32e44e3157b98239a085ea3c6c9019af5f67ab2ef98ca0ed05e96bbc0a1
+  parent_receipt_identity: parent-80f28ea24b8d701010e11b48d8815857d7fe8aec638cb0d4
+  attempt_id: goal798-final-owner-review
+  attempt_scope: 'Goal 798 final narrow owner changes: impl reuses applicable evidence
+    without skipping required fresh checks; staged hook consumes length owner selection,
+    preserves custom adapters and real source failures, does not weaken explicit empty-universe
+    refusal. Judge concrete compatibility and stale-evidence risks. Existing frozen
+    A/B acceptance is unchanged; candidate producer observations pending. Critique
+    also verifies prior marker fix and fixture exclusion semantics.'
+  attempt_packet_identity: bd6d5b30438fbe20dfc3b55a0f1fbe76e353a50f6b87ea42ed380ddfab228e5b
+  attempt_parent_receipt_identity: parent-80f28ea24b8d701010e11b48d8815857d7fe8aec638cb0d4
+  result_packet_identity: bd6d5b30438fbe20dfc3b55a0f1fbe76e353a50f6b87ea42ed380ddfab228e5b
+  result_reviewed_input_identity: 58a7a32e44e3157b98239a085ea3c6c9019af5f67ab2ef98ca0ed05e96bbc0a1
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: b3d57f8ae03d8c68691e1d022a69a8e55e2d7c8f215966c7aebd784c8f221e92
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes
