@@ -139,9 +139,6 @@ def selected_doc_violations(repo_root: Path, selected_paths: list[Path]) -> list
     enforcement decision for those documents only.
     """
     root = repo_root.resolve()
-    if not (root / ".git").exists():
-        return []
-
     selected = {path if path.is_absolute() else root / path for path in selected_paths}
     selected = {path for path in selected if path.suffix.lower() == ".md"}
     if not selected:
@@ -162,7 +159,7 @@ def selected_doc_violations(repo_root: Path, selected_paths: list[Path]) -> list
     all_candidate_paths = sorted(
         {path for candidates in candidates_by_doc.values() for path in candidates}
     )
-    ignored_paths = git_check_ignore(root, all_candidate_paths) or set()
+    ignored_paths = git_check_ignore(root, all_candidate_paths)
     messages: list[str] = []
     for family, docs in selected_by_family.items():
         for doc in docs:
@@ -237,16 +234,10 @@ def resolve_relative_to_repo(root: Path, doc: Path, candidate: str) -> Path | No
     return resolved
 
 
-def git_check_ignore(root: Path, paths: list[Path]) -> set[Path] | None:
-    """Return the subset of `paths` that match a `.gitignore` rule.
-
-    Returns `None` when the root is not inside a git work tree so the caller
-    can skip evidence-durability checks gracefully (e.g., tarball install).
-    """
+def git_check_ignore(root: Path, paths: list[Path]) -> set[Path]:
+    """Return the subset of `paths` that match a `.gitignore` rule."""
     if not paths:
         return set()
-    if not (root / ".git").exists():
-        return None
     rel_inputs: list[str] = []
     for path in paths:
         try:
@@ -267,8 +258,6 @@ def git_check_ignore(root: Path, paths: list[Path]) -> set[Path] | None:
         )
     if result.returncode not in (0, 1):
         rendered = result.stderr.strip()
-        if "not a git repository" in rendered.lower():
-            return None
         raise ValidationError(f"git check-ignore failed: {rendered or 'unknown error'}")
     ignored: set[Path] = set()
     for raw in result.stdout.split("\0"):
@@ -342,7 +331,7 @@ def violations_for_doc(
     ignored = (
         git_check_ignore(root, list(candidates_by_path)) if ignored_paths is None else ignored_paths
     )
-    if ignored is None or not ignored:
+    if not ignored:
         return []
     ignored = {
         path
@@ -446,11 +435,6 @@ def main() -> int:
     parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
     root = args.repo_root.resolve()
-    if not (root / ".git").exists():
-        print(
-            f"Skipping evidence-durability check: no git work tree at {root}.",
-        )
-        return 0
     try:
         docs_by_family, empty_families = _resolved_artifact_docs(root, PRIMARY_ARTIFACT_FAMILIES)
         late_by_family, late_empty_families = _resolved_artifact_docs(root, LATE_ARTIFACT_FAMILIES)
@@ -464,7 +448,7 @@ def main() -> int:
     all_candidate_paths = sorted(
         {path for candidates in candidates_by_doc.values() for path in candidates}
     )
-    ignored_paths = git_check_ignore(root, all_candidate_paths) or set()
+    ignored_paths = git_check_ignore(root, all_candidate_paths)
     all_messages: list[str] = []
     for doc in docs:
         all_messages.extend(

@@ -18,6 +18,14 @@ The [authority reviewer](./cause-authority.json) blocked prefix removal. The [co
 
 ## Acceptance and comparison
 
+Operator clarification (2026-09-06): Git repositories are the supported premise;
+non-Git compatibility is unnecessary. The selected-path owner therefore requires
+its Git listing, and durability checks no longer skip on absent `.git` or
+reinterpret a Git error as an empty ignore result. Non-Git-only compatibility
+branches/tests are removed. Alternate Git/provider access paths, including
+non-`gh` backends, remain unchanged. This slice does not audit or remove the
+shared discovery reader's compatibility across unrelated consumers.
+
 - Same deterministic backend, targets and semantic evidence: baseline generic wrong-purpose invocation is refused after its first worker; the corrected baseline needs a second worker. The issue-owned invocation must produce a directly accepted carrier with one worker. Preserve actual old and new final-consumer output and total call counts.
 - Run both public closeout commands, and retain commit/pre-push consumer coverage from the existing composed bundle test. No actual provider mutation is necessary.
 - Wrong-phase diagnostic result remains refused. Missing/nonpassing target observations, wrong/duplicate targets, scope-join mutation, stale reviewed input and damaged delivery remain refused.

@@ -85,7 +85,7 @@ def test_directory_symlink_matches_discovery_semantics(
     alias = tmp_path / "src/link/proof.md"
     universe = _universe(pattern)
     expected = selection._universes.matching_files(tmp_path, universe, git_listing=False)
-    monkeypatch.setattr(selection._universes, "_git_listing", lambda _root, **_kwargs: None)
+    monkeypatch.setattr(selection._universes, "_git_listing", lambda _root, **_kwargs: {alias})
     assert selection.matching_selected_files(tmp_path, {"spec": universe}, [alias]) == {
         "spec": expected
     }
@@ -137,17 +137,15 @@ def test_file_eligibility_and_lexical_symlink_identity(tmp_path: Path, monkeypat
     alias = root / "proof/alias.md"
     alias.symlink_to("target.md")
     (outside,) = _files(tmp_path, "outside.md")
-    monkeypatch.setattr(selection._universes, "_git_listing", lambda _root, **_kwargs: None)
+    monkeypatch.setattr(
+        selection._universes, "_git_listing", lambda _root, **_kwargs: {alias, target}
+    )
     result = selection.matching_selected_files(
         root,
         {"spec": _universe("proof")},
         [alias, Path("proof/./target.md"), root / "missing.md", root / "proof", outside],
     )
     assert result == {"spec": [alias, target]}
-    with pytest.raises(RuntimeError, match="selected-file listing failed"):
-        selection.matching_selected_files(
-            root, {"spec": _universe("proof")}, [alias], require_git=True
-        )
 
 
 def test_empty_selection_does_not_start_git(tmp_path: Path, monkeypatch) -> None:
@@ -160,7 +158,7 @@ def test_empty_selection_does_not_start_git(tmp_path: Path, monkeypatch) -> None
     }
 
 
-def test_git_unavailability_keeps_selected_fallback(tmp_path: Path, monkeypatch) -> None:
+def test_git_listing_failure_refuses(tmp_path: Path, monkeypatch) -> None:
     (candidate,) = _files(tmp_path, "proof.md")
     monkeypatch.setattr(
         selection._universes,
@@ -169,15 +167,14 @@ def test_git_unavailability_keeps_selected_fallback(tmp_path: Path, monkeypatch)
             returncode=128, stdout="", stderr="not a repository"
         ),
     )
-    assert selection.matching_selected_files(
-        tmp_path, {"spec": _universe("*.md")}, [candidate]
-    ) == {"spec": [candidate]}
+    with pytest.raises(RuntimeError, match="selected-file listing failed"):
+        selection.matching_selected_files(tmp_path, {"spec": _universe("*.md")}, [candidate])
 
 
 @pytest.mark.parametrize("pattern", ["", "/absolute/*.md", "src/a**b"])
 def test_invalid_universe_pattern_refuses(tmp_path: Path, monkeypatch, pattern: str) -> None:
     (candidate,) = _files(tmp_path, "proof.md")
-    monkeypatch.setattr(selection._universes, "_git_listing", lambda _root, **_kwargs: None)
+    monkeypatch.setattr(selection._universes, "_git_listing", lambda _root, **_kwargs: {candidate})
     with pytest.raises(ValueError):
         selection.matching_selected_files(tmp_path, {"spec": _universe(pattern)}, [candidate])
 

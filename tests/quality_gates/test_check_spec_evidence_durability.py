@@ -90,20 +90,6 @@ def test_real_repo_passes(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
 
 
-def test_skips_when_repo_has_no_git_directory(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    spec_dir = repo / "charness-artifacts" / "spec"
-    spec_dir.mkdir(parents=True)
-    (spec_dir / "demo.md").write_text(
-        "# Demo Spec\n\nProof: `artifacts/eval-summary.json`.\n",
-        encoding="utf-8",
-    )
-    result = run_script("scripts/gates/check_spec_evidence_durability.py", "--repo-root", str(repo))
-    assert result.returncode == 0, result.stderr
-    assert "no git work tree" in result.stdout
-    assert gate.selected_doc_violations(repo, [spec_dir / "demo.md"]) == []
-
-
 def test_main_batches_all_citation_paths_into_one_git_ignore_query(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

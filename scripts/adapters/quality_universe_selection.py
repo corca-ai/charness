@@ -87,8 +87,6 @@ def matching_selected_files(
     repo_root: Path,
     universes: Mapping[str, _universes.Universe],
     selected_paths: Iterable[Path],
-    *,
-    require_git: bool = False,
 ) -> dict[str, list[Path]]:
     """Use only supplied existing files and one literal, path-scoped Git query.
 
@@ -105,10 +103,8 @@ def matching_selected_files(
             candidates.add(path)
     allowed = _universes._git_listing(root, selected_paths=sorted(candidates))
     if allowed is None:
-        if require_git:
-            raise RuntimeError("repo selected-file listing failed")
-    else:
-        candidates.intersection_update(allowed)
+        raise RuntimeError("repo selected-file listing failed")
+    candidates.intersection_update(allowed)
     return {
         family: sorted(path for path in candidates if _in_universe(path, root, universe.patterns))
         for family, universe in universes.items()
