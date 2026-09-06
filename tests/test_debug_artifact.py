@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from tests.quality_gates.support import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -128,14 +130,27 @@ def test_validate_debug_artifact_rejects_extra_top_level_section(tmp_path: Path)
     assert "canonical sections" in result.stderr
 
 
-def test_validate_debug_artifact_requires_three_candidate_causes(tmp_path: Path) -> None:
+@pytest.mark.parametrize("causes", ["- one\n", "- one\n- two\n"])
+@pytest.mark.boundary_contract(reason="Observe the debug validator CLI verdict for the current artifact's candidate floor")
+def test_validate_debug_artifact_accepts_plausible_causes_with_falsifier(
+    tmp_path: Path, causes: str,
+) -> None:
     repo = seed_repo(
         tmp_path,
-        valid_current_artifact().replace("- three\n", ""),
+        valid_current_artifact().replace("- one\n- two\n- three\n", causes),
+    )
+    result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_debug_artifact_requires_a_candidate_cause(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        valid_current_artifact().replace("- one\n- two\n- three\n", ""),
     )
     result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "at least three plausible causes" in result.stderr
+    assert "at least one plausible cause" in result.stderr
 
 
 def test_validate_debug_artifact_requires_interrupt_sections_for_latest(tmp_path: Path) -> None:
@@ -568,12 +583,15 @@ HYPOTHESIS_LINE = (
 )
 
 
+@pytest.mark.parametrize("causes", ["- one\n", "- one\n- two\n- three\n"])
 def test_validate_debug_artifact_rejects_latest_hypothesis_without_disconfirmer(
-    tmp_path: Path,
+    tmp_path: Path, causes: str,
 ) -> None:
     # A `## Hypothesis` with no `disconfirmer:` marker must FAIL on latest.md — the
     # static-only-RCA gap Plan A closes by internalizing the rule into structure.
-    artifact = valid_current_artifact().replace(HYPOTHESIS_LINE, "- the gate skips volatile roots")
+    artifact = valid_current_artifact().replace(
+        "- one\n- two\n- three\n", causes
+    ).replace(HYPOTHESIS_LINE, "- the gate skips volatile roots")
     repo = seed_repo(tmp_path, artifact)
     result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
@@ -634,10 +652,12 @@ def test_validate_debug_artifact_trivial_short_circuit_satisfies_disconfirmer(
 
 
 def _multi_violation_current_artifact() -> str:
-    # Breaks two independent checks at once: only two candidate causes and an
+    # Breaks two independent checks at once: no candidate causes and an
     # unknown `Risk Class` value. Used to exercise the one-pass default vs
     # --fail-fast.
-    return valid_current_artifact(risk_class="bogus-class").replace("- three\n", "")
+    return valid_current_artifact(risk_class="bogus-class").replace(
+        "- one\n- two\n- three\n", "No candidate has been recorded yet.\n"
+    )
 
 
 def test_validate_debug_artifact_default_mode_lists_every_violation(tmp_path: Path) -> None:
@@ -647,7 +667,7 @@ def test_validate_debug_artifact_default_mode_lists_every_violation(tmp_path: Pa
     result = run_script("scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "rule violation(s)" in result.stderr
-    assert "at least three plausible causes" in result.stderr
+    assert "at least one plausible cause" in result.stderr
     assert "`Risk Class` contains unknown values" in result.stderr
 
 
@@ -657,7 +677,7 @@ def test_validate_debug_artifact_fail_fast_stops_at_first_violation(tmp_path: Pa
         "scripts/gates/validate_debug_artifact.py", "--repo-root", str(repo), "--fail-fast"
     )
     assert result.returncode == 1
-    assert "at least three plausible causes" in result.stderr
+    assert "at least one plausible cause" in result.stderr
     assert "rule violation(s)" not in result.stderr
     assert "Risk Class" not in result.stderr
 

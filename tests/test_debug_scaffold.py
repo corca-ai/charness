@@ -5,6 +5,7 @@ import shlex
 import subprocess
 from pathlib import Path
 
+import pytest
 import yaml
 
 import scripts.plugin_export.export_plugin as export_plugin_module
@@ -100,6 +101,31 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     )
     assert validation.returncode == 0, validation.stderr
 
+
+@pytest.mark.boundary_contract(reason="Consume the emitted continuation command through planner and scaffold CLI parsing")
+def test_refused_subject_continuation_preserves_evidence_mode_through_cli(tmp_path: Path) -> None:
+    repo = tmp_path / "consumer"
+    _, target = _seed_resolved_debug_pointer(repo)
+    target.write_text(target.read_text().replace("Resolution: resolved", "Resolution: open"))
+    skill = ROOT / "skills/public/debug"
+    first = run_script(
+        str(skill / "scripts/plan_debug_run.py"), "--repo-root", str(repo),
+        "--subject", "another-report", "--evidence-led",
+    )
+    assert first.returncode == 0, first.stderr
+    command = yaml.safe_load(first.stdout)["next_action"]["continue_refused_subject_command"]
+    argv = shlex.split(command.replace("$SKILL_DIR", str(skill)))
+    argv[argv.index("--repo-root") + 1] = str(repo)
+    resumed = run_script(*argv[1:])
+    assert resumed.returncode == 0, resumed.stderr
+    scaffold = yaml.safe_load(resumed.stdout)["scaffold"]
+    assert scaffold["evidence_mode"] is True
+    assert "--evidence-led" in scaffold["validator_command"]
+    emitted = run_script(
+        str(skill / "scripts/scaffold_debug_artifact.py"), *argv[2:]
+    )
+    assert emitted.returncode == 0, emitted.stderr
+    assert "## Evidence Disposition" in yaml.safe_load(emitted.stdout)["template"]
 
 def test_debug_scaffold_resolves_symlinked_current_pointer_target(tmp_path: Path) -> None:
     repo = tmp_path / "repo"

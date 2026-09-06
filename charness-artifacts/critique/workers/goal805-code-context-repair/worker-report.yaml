@@ -1,0 +1,85 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: Single bounded follow-up for the four delivered context code findings, not
+  a new design round. Validate Integrity F1 refusal-command evidence mode by its CLI
+  consumer regression, Integrity F2 actual discriminating-result requirement, Simplicity
+  F1 optional second/catalog lens in every emitted branch, Simplicity F2 metrics sequencing
+  by claim/artifact dependency. Read retained findings and observations. Parent reproduced
+  F1 before repair; 111 repaired focused tests passed. Forward chat-only consumer
+  was observed, debug/spec consumers are separate pending proof; do not require a
+  performance claim or certify the entire scenario matrix. Review code only, no provider/release
+  approval, no writes.
+attempt_id: goal805-code-context-repair
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 946ef5594d32feefead5bccb6868f3046332a9bf70168bbdaa515f9596a9c658
+schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-code-context-repair/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-code-context-repair/delivery.json
+producer_run_id: run-goal805-code-context-repair
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-code-context-repair/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-goal805-code-context-repair/receipt.json
+  producer_run_id: run-goal805-code-context-repair
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 197ed75f5b735ae2b095b56a333882886acf947ebcd917955bbebeb3a8c25f64
+receipt_output_sha256: 197ed75f5b735ae2b095b56a333882886acf947ebcd917955bbebeb3a8c25f64
+packet_identity: 03840bc84a1ec58d699b12e704ea3c4f619b61a5e6b2ac47a5aea16aa4bd6796
+reviewed_input_identity: 3f2a4f28365f89ed2d7e46f2427f92c5bd87e0725b2fe4295d03de65ecfd0383
+parent_receipt_identity: parent-9af5ee0d291727c49ef28eeedfc92ba3c0acc57689a67dd7
+provenance:
+  scope: Single bounded follow-up for the four delivered context code findings, not
+    a new design round. Validate Integrity F1 refusal-command evidence mode by its
+    CLI consumer regression, Integrity F2 actual discriminating-result requirement,
+    Simplicity F1 optional second/catalog lens in every emitted branch, Simplicity
+    F2 metrics sequencing by claim/artifact dependency. Read retained findings and
+    observations. Parent reproduced F1 before repair; 111 repaired focused tests passed.
+    Forward chat-only consumer was observed, debug/spec consumers are separate pending
+    proof; do not require a performance claim or certify the entire scenario matrix.
+    Review code only, no provider/release approval, no writes.
+  packet_identity: 03840bc84a1ec58d699b12e704ea3c4f619b61a5e6b2ac47a5aea16aa4bd6796
+  reviewed_input_identity: 3f2a4f28365f89ed2d7e46f2427f92c5bd87e0725b2fe4295d03de65ecfd0383
+  parent_receipt_identity: parent-9af5ee0d291727c49ef28eeedfc92ba3c0acc57689a67dd7
+  attempt_id: goal805-code-context-repair
+  attempt_scope: Single bounded follow-up for the four delivered context code findings,
+    not a new design round. Validate Integrity F1 refusal-command evidence mode by
+    its CLI consumer regression, Integrity F2 actual discriminating-result requirement,
+    Simplicity F1 optional second/catalog lens in every emitted branch, Simplicity
+    F2 metrics sequencing by claim/artifact dependency. Read retained findings and
+    observations. Parent reproduced F1 before repair; 111 repaired focused tests passed.
+    Forward chat-only consumer was observed, debug/spec consumers are separate pending
+    proof; do not require a performance claim or certify the entire scenario matrix.
+    Review code only, no provider/release approval, no writes.
+  attempt_packet_identity: 03840bc84a1ec58d699b12e704ea3c4f619b61a5e6b2ac47a5aea16aa4bd6796
+  attempt_parent_receipt_identity: parent-9af5ee0d291727c49ef28eeedfc92ba3c0acc57689a67dd7
+  result_packet_identity: 03840bc84a1ec58d699b12e704ea3c4f619b61a5e6b2ac47a5aea16aa4bd6796
+  result_reviewed_input_identity: 3f2a4f28365f89ed2d7e46f2427f92c5bd87e0725b2fe4295d03de65ecfd0383
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 946ef5594d32feefead5bccb6868f3046332a9bf70168bbdaa515f9596a9c658
+  schema_sha256: a699eb17aca0d1f832bfb467ce3cff85b22d420183ea68bc4b52fc3cde6b71a3
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

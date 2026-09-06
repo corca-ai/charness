@@ -1,0 +1,57 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Raskin reader intention and Rams less but better",
+  "packet_sha256": "d995b1c1846351cdb296aac9e9a8e071eb2de05c240df61c1ce5c808bf1bef5a",
+  "reviewed_input_identity_sha256": "ddcbd89254483b115689f49bafdc320721e2f6bdb57d7f14466c1cacca0258ec",
+  "verdict": "block",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "medium",
+      "summary": "The durable retro planner still prescribes two lenses and catalog selection after the core explicitly makes both optional.",
+      "evidence": [
+        "skills/public/retro/SKILL.md, Expert Counterfactual Rule: one concrete counterfactual is sufficient; a second lens must add distinct insight.",
+        "skills/public/retro/scripts/plan_retro_run.py, _lens_brief: the docs branch prescribes a clarity lens 'plus one decision-quality lens' and directs selection 'from the catalog'; the ordinary/unknown branch emits 'one domain lens + one decision-quality / operating-discipline lens'.",
+        "tests/test_retro_plan.py checks that the catalog is absent from required_reads, but does not catch the competing instructions inside lens_brief."
+      ],
+      "action": "Make every emitted brief start with one concrete action-changing counterfactual. Offer a second or named lens conditionally, using the same rule as the core."
+    },
+    {
+      "id": "F2",
+      "severity": "medium",
+      "summary": "Retro metrics receive contradictory sequencing: evidence gathering requires them before claims, while the planner schedules every adapter metric after persistence.",
+      "evidence": [
+        "skills/public/retro/SKILL.md, Workflow step 2: gather adapter-defined metrics when they sharpen a real claim, before step 3 writes the retro.",
+        "skills/public/retro/scripts/retro_plan_gates.py, build_gate_packets: every adapter-metric packet has run_when='after the retro artifact is written and persisted, before closeout'.",
+        "tests/test_retro_plan.py, test_retro_plan_surfaces_adapter_metrics_after_persistence explicitly preserves that ordering.",
+        "skills/public/retro/references/adapter-contract.md defines metrics_commands generically; it does not establish that all such commands evaluate an already-persisted artifact."
+      ],
+      "action": "Schedule claim-supporting metrics before authoring those claims. Preserve post-persistence evaluation only where the existing command's owning contract requires it; align the planner guidance and test with that distinction."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Missing, invalid, or preexisting durable configuration might force writes during chat-only retro.",
+      "bin": "not-blocking",
+      "disposition": "The core explicitly bypasses adapter/planner/scaffold work for chat-only reflection and makes no-write override every persistence surface, including recurring obligations. No additional configuration-selection mechanism is warranted."
+    },
+    {
+      "concern": "Warm spec/debug continuation might require a new eligibility certificate or omit necessary evidence.",
+      "bin": "not-blocking",
+      "disposition": "The supplied core retains targeted delta checks, current risk/provider reads, debug identity checks, and cold fallback. A new mode, cache, or certificate would add unnecessary machinery."
+    },
+    {
+      "concern": "Lowering the debug candidate floor could eliminate falsifiability.",
+      "bin": "not-blocking",
+      "disposition": "The existing current-artifact disconfirmer check remains, and the supplied negative test covers one cause without a disconfirmer. Semantic alternative-cause testing remains a reviewer obligation."
+    }
+  ],
+  "next_move": "Reconcile the two emitted retro instructions, then run the already-planned bounded consumer scenarios before claiming local readiness.",
+  "non_claims": [
+    "Reviewed the supplied inline semantic content; no workspace edits or execution.",
+    "No independent confirmation of reported test results, installed behavior, read/write traces, or unsupported flags outside the supplied implementations.",
+    "No release/provider approval, measured savings, or Goal #805 / WorkItem #808 completion."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

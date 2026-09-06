@@ -26,3 +26,19 @@ Use frozen scenario inputs to distinguish unchanged contract, changed contract, 
 ## Boundary and non-goals
 
 No bypass of user approval, independent boundary observers or durable provider truth. No broad skill rewrite or source-history migration. Public instruction changes receive first-reader review; parent integrates, exports and verifies the shipped consumer path.
+
+## Implementation decisions
+
+Warm selection stays in each skill's core. The existing debug planner remains
+the discovery/fallback owner, not a new warm-eligibility engine. Its runtime
+summary cannot certify historical adapter/validator equivalence by comparing
+two fields produced from the same current scaffold. The parent excluded that
+candidate addition and its changed legacy continuation expectations.
+
+The debug validator changes only its numeric candidate floor from three to
+one. Its existing hypothesis disconfirmer and current/historical artifact roles
+remain unchanged. Whether competing causes were actually distinguished remains
+the existing diagnosis/reviewer and first-reader scenario obligation, not a new
+magic text marker. Tests exercise one/two causes, no candidate, and one cause
+without a falsifier. Retro's catalog moves to optional reads; its parsed artifact,
+trigger state, and persistence owners remain. No new mode or state record exists.

@@ -1,0 +1,62 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Weinberg proof integrity and Klein disconfirmation",
+  "packet_sha256": "0b374a0a4d693cb868b6ebd3b3f95bd0975881e7b73cc8b636e477a77b2a15eb",
+  "reviewed_input_identity_sha256": "ddcbd89254483b115689f49bafdc320721e2f6bdb57d7f14466c1cacca0258ec",
+  "verdict": "block",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "medium",
+      "summary": "The refusal continuation command silently drops evidence-led mode.",
+      "evidence": [
+        "skills/public/debug/scripts/debug_artifact_state.py:135-139 emits only --subject, even when scaffold.evidence_mode is true.",
+        "An in-memory probe of the bound command builders emitted '--subject existing-report' without --evidence-led. The ordinary scaffold-command control preserved --evidence-led.",
+        "The bound planner CLI parsed the emitted continuation with evidence_mode=false. Passing that value to the bound render_template omitted Evidence Disposition; adding --evidence-led restored it.",
+        "plan_debug_run.py and scaffold_debug_artifact.py propagate that false value into validator command construction, dropping mandatory evidence-led validation on this continuation route."
+      ],
+      "action": "Preserve the applicable evidence-led mode in the emitted refusal continuation command. Add a regression that consumes the printed command and checks the resulting scaffold and validator flags."
+    },
+    {
+      "id": "F2",
+      "severity": "medium",
+      "summary": "The revised diagnosis workflow permits commitment without executing the competing-cause discriminator.",
+      "evidence": [
+        "skills/public/debug/SKILL.md:114-125 requires recording an observation that would distinguish competing causes, followed by testing one hypothesis; it does not require obtaining the distinguishing result.",
+        "A timeout investigation can list increased server latency and a lowered client timeout, record a latency/configuration comparison without running it, then raise the timeout and observe success. That test supports both explanations, yet the workflow proceeds to recording a root cause.",
+        "references/five-steps.md repeats the recording obligation. tests/test_debug_artifact.py accepts two candidate bullets with one disconfirmer; those structural checks cannot establish that competing explanations were distinguished."
+      ],
+      "action": "Require executing the discriminating check and recording its result before choosing among live alternatives; otherwise retain an unresolved diagnosis. Exercise this through a first-reader scenario, without adding a certificate or marker validator."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Evidence-mode loss in the printed continuation command",
+      "bin": "Act Before Ship",
+      "disposition": "Concrete command-consumer defect reproduced with bound functions."
+    },
+    {
+      "concern": "Untested competing explanations",
+      "bin": "Act Before Ship",
+      "disposition": "Repair the diagnosis instruction at its existing owner; structural validation remains appropriately limited."
+    },
+    {
+      "concern": "Missing warm-eligibility engine or historical artifact certificates",
+      "bin": "Over-Worry",
+      "disposition": "The accepted design keeps selection in core and preserves historical validator roles. No additional mechanism is warranted."
+    },
+    {
+      "concern": "Complete first-reader and live-provider scenario proof",
+      "bin": "Valid but Defer",
+      "disposition": "The observations explicitly leave this pending. This review does not convert focused tests into consumer-behavior approval."
+    }
+  ],
+  "next_move": "Repair F1 and F2, then verify the printed continuation command and a competing-cause consumer scenario before claiming local readiness.",
+  "non_claims": [
+    "No workspace edits were made.",
+    "Probes executed selected bound functions with controlled dependencies; no full integration suite or independent agent scenario was run.",
+    "Live provider state, exported installation behavior, publication readiness, and issue resolution were not verified."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

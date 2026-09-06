@@ -95,23 +95,27 @@ def test_retro_plan_shape_and_scaffold_when_missing(tmp_path: Path) -> None:
     } == {"north-star-alignment", "recurrence-lineage", "persisted-form"}
 
     paths = required_paths(payload)
-    assert "references/expert-lens.md" in paths
+    assert "references/expert-lens.md" not in paths
+    assert "references/expert-lens.md" in {
+        read["path"] for read in payload["on_demand_reads"]  # type: ignore[index]
+    }
     assert "scripts/scaffold_retro_artifact.py" in paths
 
     packet_ids = {packet["id"] for packet in payload["gate_packets"]}  # type: ignore[index]
     assert {"adapter-readiness", "retro-artifact-scaffold", "retro-artifact-shape", "auto-session-trigger"} <= packet_ids
 
 
-def test_expert_lens_is_always_a_required_read(tmp_path: Path) -> None:
-    """The mandatory counterfactual + non-inlined catalog make expert-lens.md an
-    unconditional floor regardless of work class — the planner-anchored fix for the
-    failed live capture."""
+def test_expert_lens_is_optional_guidance_not_a_required_read(tmp_path: Path) -> None:
+    """A concrete counterfactual is mandatory; the catalog is on-demand guidance."""
     repo = tmp_path / "repo"
     write_adapter(repo)
 
     for changed in (["src/app.py"], ["docs/readme.md"], ["skills/public/x/SKILL.md"], []):
         payload = run_plan(repo, changed_paths=changed)
-        assert "references/expert-lens.md" in required_paths(payload)
+        assert "references/expert-lens.md" not in required_paths(payload)
+        assert "references/expert-lens.md" in {
+            read["path"] for read in payload["on_demand_reads"]  # type: ignore[index]
+        }
 
 
 def test_system_improving_work_briefs_the_engelbart_lens(tmp_path: Path) -> None:
@@ -122,8 +126,8 @@ def test_system_improving_work_briefs_the_engelbart_lens(tmp_path: Path) -> None
 
     assert payload["work_class"] == "system-improving"
     assert "Engelbart" in payload["lens_brief"]["fitting_lens"]  # type: ignore[index]
-    lens_read = next(read for read in payload["required_reads"] if read["path"] == "references/expert-lens.md")  # type: ignore[index]
-    assert "Engelbart" in lens_read["why"] or "system-improving" in lens_read["why"]
+    lens_read = next(read for read in payload["on_demand_reads"] if read["path"] == "references/expert-lens.md")  # type: ignore[index]
+    assert "catalog" in lens_read["why"]
 
 
 def test_ordinary_and_docs_work_classes(tmp_path: Path) -> None:
@@ -132,7 +136,6 @@ def test_ordinary_and_docs_work_classes(tmp_path: Path) -> None:
 
     ordinary = run_plan(repo, changed_paths=["src/app.py", "lib/util.py"])
     assert ordinary["work_class"] == "ordinary"
-    assert "Default Pattern" in ordinary["lens_brief"]["fitting_lens"]  # type: ignore[index]
 
     docs = run_plan(repo, changed_paths=["docs/readme.md"])
     assert docs["work_class"] == "docs"
@@ -259,7 +262,7 @@ def test_retro_plan_preserves_empty_adapter_evidence(tmp_path: Path) -> None:
     assert [read for read in payload["required_reads"] if read.get("kind") == "evidence"] == []  # type: ignore[index]
 
 
-def test_retro_plan_surfaces_adapter_metrics_after_persistence(tmp_path: Path) -> None:
+def test_retro_plan_orders_metrics_by_their_claim_and_artifact_dependency(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     write_adapter(repo)
     adapter_path = repo / ".agents" / "retro-adapter.yaml"
@@ -274,7 +277,9 @@ def test_retro_plan_surfaces_adapter_metrics_after_persistence(tmp_path: Path) -
     metric = next(packet for packet in payload["gate_packets"] if packet["id"] == "adapter-metric-1")  # type: ignore[index]
 
     assert metric["command"] == "python3 scripts/check_custom_metric.py --repo-root ."
-    assert metric["run_when"] == "after the retro artifact is written and persisted, before closeout"
+    assert metric["run_when"].startswith("before writing claims that consume this metric")
+    assert "owning contract requires a persisted artifact" in metric["run_when"]
+    assert "reconcile the result before closeout" in metric["run_when"]
 
 
 def test_retro_plan_scaffold_uses_repo_declared_artifact_sections(tmp_path: Path) -> None:
@@ -536,7 +541,6 @@ def _planned_read_paths(repo, resolved) -> list[str]:
         repo_root=repo,
         adapter=resolved,
         artifact={"exists": False},
-        lens_brief={"why": "test lens brief"},
     )
     return [str(item["path"]) for item in reads]
 

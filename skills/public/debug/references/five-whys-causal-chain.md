@@ -1,6 +1,6 @@
 # Five Whys / Causal Chain
 
-`debug` step 4 (enumerate diverse causes) and step 5 (test a falsifiable
+`debug` step 4 (enumerate plausible causes proportionate to evidence) and step 5 (test a falsifiable
 hypothesis) walk from a reported symptom to a structural cause that a guard,
 test, contract, or observability surface could prevent. This reference owns
 that RCA substrate: the causal-chain heuristics, the structural-cause

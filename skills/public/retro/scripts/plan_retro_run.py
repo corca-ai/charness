@@ -2,12 +2,11 @@
 """Plan a retro run before gathering evidence and writing the artifact.
 
 Owns the classify/brief decisions that used to live only in SKILL.md prose plus
-the generic scaffold stub: classify the work
-under review, and emit the fitting counterfactual lens brief as a deterministic
-`required_read` so the run reaches `references/expert-lens.md` at the point of
-need instead of relying on prose discipline. The scaffold stays the pure
-template emitter; this planner is the briefing surface, matching the debug /
-handoff / quality / issue / gather / release planner family.
+the generic scaffold stub: classify the work under review and emit a fitting
+counterfactual brief. The expert-lens catalog is an on-demand reference rather
+than an unconditional required read. The scaffold stays the pure template
+emitter; this planner is the briefing surface, matching the debug / handoff /
+quality / issue / gather / release planner family.
 """
 
 from __future__ import annotations
@@ -37,6 +36,10 @@ SYSTEM_IMPROVING_PREFIXES = (
 MAX_RECENT_COMMITS = 5
 
 ON_DEMAND_REFERENCE_READS = (
+    (
+        "references/expert-lens.md",
+        "when the catalog would sharpen the required concrete counterfactual; a direct lens is also valid",
+    ),
     (
         "references/section-guide.md",
         "for claim-strength tags, the gate-baseline-runtime rule, and per-decision fields",
@@ -182,20 +185,20 @@ def _lens_brief(work_class: str) -> dict[str, str]:
         )
         why = (
             "the slice changes harness/skill/workflow/eval/contract surfaces, so the "
-            "on-the-nose counterfactual is the Engelbart system-improving lens — which "
-            "lives ONLY in expert-lens.md (not inlined in SKILL.md). Open it and apply it."
+            "on-the-nose optional catalog choice is the Engelbart system-improving "
+            "lens; a direct action-changing counterfactual is also valid."
         )
     elif work_class == "docs":
-        fitting = "a narrative/clarity lens (reader-first framing) plus one decision-quality lens."
-        why = "the slice is documentation; match it to a fitting clarity + decision lens from the catalog."
+        fitting = "One reader-first counterfactual: what wording or ordering would change the reader's next action?"
+        why = "the slice is documentation; add a second or named lens only for distinct insight."
     else:
         fitting = (
-            "Default Pattern: one domain lens + one decision-quality / operating-discipline lens "
-            "(catalog: Ousterhout/Majors, Fournier/Grove, Klein/Kahneman)."
+            "One concrete domain counterfactual: what different action would change the outcome? "
+            "Add a decision-quality lens only when it changes another action."
         )
         why = (
-            "match the work domain to a fitting lens from the expert-lens.md catalog; prefer the "
-            "direct lens when a name adds nothing."
+            "match the work domain to a fitting lens when the catalog adds insight; prefer the "
+            "direct action-changing counterfactual when a name adds nothing."
         )
     return {"work_class": work_class, "fitting_lens": fitting, "why": why}
 
@@ -205,13 +208,11 @@ def _required_reads(
     repo_root: Path,
     adapter: dict[str, Any],
     artifact: dict[str, Any],
-    lens_brief: dict[str, str],
 ) -> list[dict[str, str]]:
     return _READS.required_reads(
         repo_root=repo_root,
         adapter=adapter,
         artifact=artifact,
-        lens_brief=lens_brief,
         read=_read,
     )
 
@@ -254,13 +255,13 @@ def _next_action(artifact: dict[str, Any]) -> dict[str, Any]:
     if artifact["exists"]:
         return {
             "kind": "continue-existing-retro",
-            "instruction": "read today's retro artifact, then continue from the planned lens brief",
+            "instruction": "read today's retro artifact, then continue from the planned counterfactual brief",
             "artifact_path": artifact["path"],
         }
     return {
         "kind": "scaffold-retro-artifact",
         "command": "python3 $SKILL_DIR/scripts/scaffold_retro_artifact.py --repo-root .",
-        "instruction": "open the required_reads (incl. expert-lens.md for the briefed lens), scaffold the artifact, then write the retro",
+        "instruction": "open the required_reads, choose a concrete counterfactual, scaffold the artifact, then write the retro",
         "write_artifact_path": artifact["path"],
     }
 
@@ -302,7 +303,7 @@ def build_plan(
         schema_version="retro.run_plan.v1",
         required_reads=ENVELOPE.measure_reads(
             _required_reads(
-                repo_root=repo_root, adapter=adapter, artifact=artifact, lens_brief=lens_brief
+                repo_root=repo_root, adapter=adapter, artifact=artifact
             ),
             {"repo": repo_root, "skill": SKILL_ROOT},
         ),
@@ -327,7 +328,7 @@ def build_plan(
         on_demand_reads=_on_demand_reads(),
         date_activated_rules=_date_activated_rules(repo_root),
         phase_barriers=[
-            "Open required_reads (esp. expert-lens.md for the briefed lens) before writing the retro.",
+            "Open required_reads before writing the retro; open expert-lens.md only when its catalog would sharpen the concrete counterfactual.",
             "Read date_activated_rules before concluding a generic floor is broken: a floor "
             "your last retro did not need may have activated since.",
             "Treat gate_packets as cheap deterministic evidence: trust them for shape, not for judgment.",

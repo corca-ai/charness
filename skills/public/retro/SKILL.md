@@ -10,12 +10,22 @@ retrospective.
 
 If the user correctly points out a missed issue, broken assumption, or missing
 gate that the current workflow should likely have caught, run a short
-`session` retro before continuing. Keep it bounded to the miss that was just
+reflection before continuing. Keep it bounded to the miss that was just
 revealed; do not turn every correction into a long postmortem.
 
 ## Bootstrap
 
-Resolve the adapter and run the planner before gathering evidence or writing the
+Choose chat or persistence from the request and evidence obligation. A short
+reflection with no durable obligation uses the current thread, changed files,
+and already-available evidence directly; it does not resolve an adapter, invoke the
+durable planner or scaffold, persist an artifact, refresh a summary, score or
+seed a lesson, append an RCA event, or read an irrelevant lens catalog. The
+presence of `output_dir`, an adapter, or an automatic trigger does not itself
+select persistence. An explicit chat-only/no-write request overrides all writes;
+state any outstanding durable obligation without claiming it is complete.
+
+For a durable, metrics-dependent, recurring, or follow-up-bearing retro,
+resolve the adapter and run the planner before gathering evidence or writing the
 artifact. Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`,
 then run:
 
@@ -25,31 +35,28 @@ python3 "$SKILL_DIR/scripts/plan_retro_run.py" --repo-root .
 python3 "$SKILL_DIR/scripts/scaffold_retro_artifact.py" --repo-root .
 ```
 
-The planner names the work-class counterfactual lens brief, required
-reads (incl. `references/expert-lens.md` for the briefed lens), gate packets, and
-the next action. Open the `required_reads` before writing; expert-lens.md is an
-unconditional read because the counterfactual is mandatory and its lens catalog is
-not inlined here. For a first run with no adapter, run `init_adapter.py` then
+The planner names the work-class counterfactual lens brief, required reads, gate
+packets, and the next action. Open the `required_reads` before writing. The
+expert-lens catalog is optional guidance: use it when a named or catalog lens
+would sharpen the concrete counterfactual; a direct lens is valid without it.
+For a first durable run with no adapter, run `init_adapter.py` then
 `prepare_packet.py --prepared-for "<label>"` before relying on adapter paths.
 
 Adapter policy:
 
-- If the adapter is missing and the request is session-like, continue with
-  inferred defaults.
-- If the adapter is missing and the request is metrics-heavy or explicitly asks for
-  durable artifacts, create `<repo-root>/.agents/retro-adapter.yaml` first, then continue.
+- On the durable path, create a missing
+  `<repo-root>/.agents/retro-adapter.yaml` before relying on its paths.
 - If the adapter is invalid, repair it using `references/adapter-contract.md`
   before relying on adapter-defined paths or metrics.
-- Never block a `session` retro solely because the adapter is missing.
 
 ## Workflow
 
 1. Scale the retro to the work unit under review.
-2. Gather evidence in this order.
+2. Gather only evidence needed for the selected outcome, in this order.
    - current thread, current task, changed files, recent commits
    - existing handoff or prior retro artifacts when they matter
    - the most recent durable retro under `output_dir` when a trend line matters
-   - adapter-defined `evidence_paths`
+   - on the owned path, adapter-defined `evidence_paths`, packets and metrics
    - for host-log-derived efficiency signals, prefer `$SKILL_DIR/scripts/probe_host_logs.py`
      (`--repo-root .`) before claiming turns, tokens, or tool-call counts, and
      the optional `$SKILL_DIR/scripts/audit_codex_session.py` when Codex session
@@ -69,9 +76,9 @@ Adapter policy:
      gate: issues labelled `rework` carry a `Causing skill:` line
      (`../issue/references/issue-shaping.md` owns that filing shape). When the
      adapter declares the `rework-issues-by-causing-skill` packet section, the
-     packet already holds the per-skill attribution for the period; read it
-     and name the causing skills in `Evidence Summary` and `Trends vs Last
-     Retro`. A section body that starts with `Rework issues UNAVAILABLE` means
+     packet already holds the per-skill attribution for the period; read it and
+     name the causing skills in the evidence and trend sections. A section body
+     that starts with `Rework issues UNAVAILABLE` means
      the read did not happen; say so instead of reporting zero rework
 3. Write the core retro.
    - `Context`: what unit of work is being reviewed and what matters next
@@ -81,8 +88,9 @@ Adapter policy:
    - `Critical Decisions`: which decisions changed outcome or constrained later work
    - `Trends vs Last Retro`: compare against the last durable retro when one exists
    - `North Star Alignment`: required; see `references/section-guide.md`
-   - `Expert Counterfactuals`: what 1-2 counterfactual lenses, named experts
-     when useful, would likely have done differently
+   - `Expert Counterfactuals`: at least one concrete counterfactual that changes
+     the next action; a name or second lens is optional and must add distinct
+     insight
    - `Next Improvements`: concrete changes for the next session
    - `Persisted`: whether the retro was written to a durable artifact, and if
      not, why not
@@ -114,8 +122,16 @@ Adapter policy:
      promote one, route it through `../../shared/references/lesson-graduation.md`:
      a standing `docs/` page takes ownership and the lesson leaves the working set.
      Graduation is settled with the person and is not performed inside the retro
-5. Persist when there is a durable home.
-   - if `output_dir` exists or the adapter defines one, persist the retro artifact with `$SKILL_DIR/scripts/persist_retro_artifact.py` instead of ad hoc file writes; for Goal Run evidence use the owning Goal Run identity contract; the helper stamps the `## Persisted` line with the real durable path it writes, so do not hand-edit that line afterward
+5. Persist when the selected path has a durable obligation.
+   - explicit no-write/chat-only wins over the trigger, adapter, output directory,
+     summary path, lesson ledger, and RCA ledger: do not call a writer and state
+     `Persisted: no: <reason>`
+   - an output directory alone does not select persistence; on the durable path,
+     use the adapter and persist the retro artifact with
+     `$SKILL_DIR/scripts/persist_retro_artifact.py` instead of ad hoc file writes;
+     for Goal Run evidence use the owning Goal Run identity contract; the helper
+     stamps the `## Persisted` line with the real durable path it writes, so do not
+     hand-edit that line afterward
    - if the adapter defines `summary_path`, `$SKILL_DIR/scripts/persist_retro_artifact.py` should refresh the compact lesson digest automatically from the written durable artifact; where the repo keeps a lesson ledger it also seeds a transition for every newly tagged `(recurrence-class: <id>)` and records the outcome as a `Seeding:` line under `Persisted:` — those transitions land uncommitted for review, and a budget refusal is reported there rather than failing the persist
    - on the first retro after a legacy hand-curated `recent-lessons.md` (file exists, `output_dir` has no prior `*.md` artifacts), the persistence helper preserves the existing summary instead of replacing it with an empty-stub digest. Pass `--force-empty-summary` only after confirming the legacy content is safe to drop.
    - otherwise still give the user a concise retro in chat
@@ -148,22 +164,24 @@ The result should usually include:
 
 ## Auto-Retro Trigger
 
-Trigger a short `session` retro automatically when a user correction exposes a
-real miss. Consume the planner packet and read `state` before
-`triggered`; its basis and the full trigger/skip taxonomy live in
+Trigger a short reflection automatically when a user correction exposes a real
+miss. Automatic triggering selects reflection, not persistence. For a chat-only
+reflection, do not consume the durable planner
+or write path; otherwise consume the planner packet and read `state` before
+`triggered`. Its basis and the full trigger/skip taxonomy live in
 `references/trigger-and-persistence.md`. Keep the retro bounded and include
 `Persisted`.
 
 ## Expert Counterfactual Rule
 
-Every retro includes at least one counterfactual lens. The planner classifies the
-work under review and briefs the fitting lens as a `required_read` of
-`references/expert-lens.md` (for harness/skill/workflow/eval/contract work, the
-Engelbart `system-improving-itself` lens); open it and apply the briefed lens —
-the catalog and sub-agent flow are not inlined here. Use named experts only when
-the name sharpens a *different* changed action (never decoration); when sub-agents
-are available and the session warrants depth, up to two distinct-lens expert
-sub-agents, otherwise write the counterfactuals inline.
+Every retro includes at least one concrete counterfactual that changes the next
+action. The planner may classify the work and brief a fitting lens; use
+`references/expert-lens.md` on demand when its catalog would sharpen that
+counterfactual (for harness/skill/workflow/eval/contract work, the Engelbart
+`system-improving-itself` lens is a useful option). Use named experts only when
+the name sharpens a *different* changed action (never decoration); a second
+lens is optional. When sub-agents are available and the session warrants depth,
+use up to two distinct lenses; otherwise write the counterfactual inline.
 
 ## Guardrails
 
@@ -175,7 +193,7 @@ sub-agents, otherwise write the counterfactuals inline.
 - If no prior retro exists, say so instead of implying a trend line.
 - Capability suggestions exist to reduce future waste, not to show tool awareness.
 - Do not let the retro turn into a generic postmortem when the user asked for a
-  short session review.
+  short reflection.
 - Do not claim persistence implicitly; name the durable path or the reason it
   remained chat-only.
 - Do not invent hidden machine formats or write hidden telemetry; the retro only

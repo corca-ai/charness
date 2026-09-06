@@ -72,7 +72,9 @@ Ask:
 - where would they downgrade a confident story because the available evidence
   is only anecdotal or authority-based?
 
-Prefer named experts with distinct lenses.
+Prefer a concrete action-changing counterfactual. A named expert or second lens
+is optional and earns its place only when it adds distinct insight; a direct
+lens is sufficient.
 
 ## Next Improvements
 
@@ -130,8 +132,9 @@ explicit evidence sources declared by the adapter.
 
 Required in every retro, and enforced by the retro validator.
 
-Read the repo's governing design standard and record what it says about **this**
-work — do not recall it from memory. Three things belong here:
+Use the already-read governing design standard when that context is still
+current; read the affected owner when it is missing or changed. Record what it
+says about **this** work, not a generic remembered slogan. Three things belong here:
 
 - **Which facets held**, with the concrete evidence that they did.
 - **Which were mis-applied.** This is the valuable half and the one most often

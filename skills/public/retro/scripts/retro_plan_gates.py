@@ -58,7 +58,7 @@ def build_gate_packets(
         ),
         packet(
             "auto-session-trigger",
-            "deterministic slice-surface trigger probe bound to this plan's explicit paths or latest committed range; agent judges whether to fire a bounded session retro",
+            "deterministic slice-surface trigger probe bound to this plan's explicit paths or latest committed range; agent judges whether to fire a bounded reflection",
             **trigger_packet,
         ),
     ]
@@ -68,7 +68,11 @@ def build_gate_packets(
                 f"adapter-metric-{index}",
                 "adapter-declared read-only metric; trust its structured counts and failures, not causal interpretation",
                 command=str(command),
-                run_when="after the retro artifact is written and persisted, before closeout",
+                run_when=(
+                    "before writing claims that consume this metric; if the command's owning "
+                    "contract requires a persisted artifact, run it after persistence and "
+                    "reconcile the result before closeout"
+                ),
             )
         )
     return packets

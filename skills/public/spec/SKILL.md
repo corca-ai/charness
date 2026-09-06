@@ -9,14 +9,21 @@ Use this when the next job is to make the build contract explicit enough that im
 
 ## Bootstrap
 
-Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`. Read the
-current concept artifacts before inventing new structure.
-Before drafting a contract or asking follow-up questions, inspect the current implementation and acceptance reality so the spec starts from repo truth, not from an abstract restatement.
+Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`.
+Before drafting or asking follow-up questions, establish the current concept,
+implementation, and acceptance reality so the spec starts from repo truth.
+
+When the current contract and acceptance inputs are already known and still
+govern the same slice, reuse that context and read only relevant implementation
+or acceptance deltas. Treat that as a warm continuation, not as a cached
+verdict: broad discovery is conditional. Required provider readbacks and the
+risk interrupt planner remain live reads on every run.
 
 ```bash
 # Required Tools: rg
 # Missing-binary protocol: ../../shared/references/binary-preflight.md
-# 1. current concept and adjacent context
+# 1. current concept and adjacent context (run the broad inventory when the
+#    contract context is missing, stale, or the slice has changed materially)
 git status --short
 rg --files . | sed -n '1,200p'
 for f in README.md AGENTS.md "$SKILL_DIR/../ideation/references/spec-boundary.md"; do sed -n '1,220p' "$f" 2>/dev/null; done

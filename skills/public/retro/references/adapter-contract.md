@@ -95,7 +95,7 @@ auto_session_trigger_path_globs: []
   `scripts/prepare_packet.py` before writing lessons and record the consumed
   packet path.
 - `auto_session_trigger_surfaces` are optional changed-surface ids that should
-  trigger a short `session` retro after closeout. Each id must resolve to a
+  trigger a short reflection after closeout. Each id must resolve to a
   declared `surface_id` in `<repo-root>/.agents/surfaces.json`; an unresolved id is a
   broken adapter contract, not a normal non-match. The charness-maintained
   authoring-repo-internal contract lives at

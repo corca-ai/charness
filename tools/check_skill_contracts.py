@@ -155,7 +155,7 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "If the user correctly points out a missed issue",
         "`Persisted`: whether the retro was written to a durable artifact",
         "never stop without stating `Persisted: yes: <path>` or `Persisted: no: <reason>`",
-        "Trigger a short `session` retro automatically when a user correction exposes a",
+        "Trigger a short reflection automatically when a user correction exposes a real",
     ),
 }
 

@@ -77,7 +77,7 @@ def render_template(*, title: str, date_text: str, evidence_mode: bool = False) 
     lines = [f"# {title}", f"Date: {date_text}", ""]
     for heading in SECTIONS:
         if heading == "## Candidate Causes":
-            lines.extend([heading, "", "- TODO", "- TODO", "- TODO", ""])
+            lines.extend([heading, "", "- TODO evidence-backed candidate cause", ""])
             continue
         if heading == "## Invariant Proof":
             lines.extend(

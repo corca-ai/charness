@@ -157,8 +157,8 @@ def validate_candidate_causes(lines: list[str]) -> None:
     start = find_index(lines, "## Candidate Causes") + 1
     end = find_index(lines, "## Hypothesis")
     bullets = [line.strip() for line in lines[start:end] if line.strip().startswith("- ")]
-    if len(bullets) < 3:
-        raise ValidationError("`## Candidate Causes` must list at least three plausible causes")
+    if not bullets:
+        raise ValidationError("`## Candidate Causes` must name at least one plausible cause")
 
 
 def validate_current_invariant_proof(lines: list[str]) -> None:

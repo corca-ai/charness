@@ -1,0 +1,111 @@
+# Session Retro
+Date: 2026-09-06
+
+## Context
+
+This retro records the recurring boundary-case miss in the local `render_name`
+formatter change. The trustworthy evidence is the task README and the local
+planner/adapter results; no production or user-data state was involved. The
+README is strong evidence for the observed test sequence and moderate evidence
+for the recurrence count because it reports the pattern rather than a full
+history.
+
+## Window
+
+The reviewed window is the formatter change from its first nominal test through
+the later operator check and focused-test correction, plus this durable
+follow-up on 2026-09-06.
+
+## Evidence Summary
+
+- `README.md` records that `"Alice"` passed, `" Alice "` exposed the omission,
+  and the focused test now passes.
+- `README.md` states that the same missing-edge-case pattern has appeared twice.
+- The governing standard in `README.md` says to establish boundary behavior
+  before generalizing from one passing test, keep reversible local work small,
+  and use concrete evidence.
+- The repaired adapter resolves to `notes/retro` with `notes/summary.md` as its
+  summary path. Its metrics and packet sections are explicitly empty, so this
+  is narrative-only and makes no efficiency claim.
+- No prior durable retro exists; `notes/summary.md` is the pre-existing summary
+  from the earlier chat-only reflection.
+
+## Waste
+
+- We generalized from one nominal input before defining the formatter's input
+  boundaries, so an operator check had to expose the omitted whitespace case
+  (recurrence-class: boundary-case-before-happy-path).
+- The correction was cheap and local, but the missing test delayed confidence
+  until after the change was treated as complete.
+
+## Critical Decisions
+
+- The initial test chose `"Alice"` as sufficient evidence and skipped an input
+  partition or boundary matrix; this constrained confidence in the behavior.
+- After the operator check, we added `" Alice "` as a focused case. That fixes
+  the observed omission but does not, by itself, define tabs, newlines, empty
+  input, or all-whitespace behavior.
+
+## North Star Alignment
+
+- Held: the change stayed reversible and local, and the later focused test gives
+  concrete evidence for the reported whitespace behavior.
+- Mis-applied: the standard's requirement to establish boundary behavior before
+  generalizing from one passing test was inverted by starting with only the
+  canonical example.
+- Failure signature: a missing edge case was found by a later operator check;
+  the README reports that this pattern has recurred twice.
+
+## Expert Counterfactuals
+
+- Engelbart's system-improving lens changes the next action at the method/tool
+  boundary: make the input-partition matrix part of the formatter test method,
+  not an operator's late discovery. Before implementation or acceptance,
+  enumerate canonical, surrounding-space, tab/newline, empty, and
+  all-whitespace inputs; decide the contract for each, then require focused
+  tests for the changed boundaries.
+
+## Sibling Search
+
+- same layer: `render_name` focused test | decision: same waste, fix now | proof:
+  `README.md` records the added `" Alice "` case and its passing result
+- abstraction up: repository formatter/normalizer test guidance | decision:
+  valid follow-up outside the slice | proof: no such guidance is present in the
+  available repo files | follow-up: deferred notes/retro/2026-09-06-session-retro.md#next-improvements
+- specialization down: additional string-boundary partitions | decision:
+  diagnostic-only | proof: the README names only canonical and surrounding-space
+  examples, so no broader contract is evidenced here
+- mental-model siblings: operator checks that sample only canonical inputs |
+  decision: valid follow-up outside the slice | proof: the late operator check
+  supplied the missing boundary evidence | follow-up: deferred notes/retro/2026-09-06-session-retro.md#next-improvements
+
+## Portable Candidate
+
+- Abstract pattern: specify boundary behavior as input partitions before
+  generalizing from a canonical example.
+- Triggering evidence: `render_name` passed `"Alice"` while `" Alice "` failed,
+  and the README reports the pattern twice.
+- Intended consumer/repo shape: repos containing formatters, normalizers, or
+  parsers with focused tests.
+- Destination: create-skill
+- First-prompt acceptance claim: before accepting a boundary-changing helper,
+  show the input partitions and at least one passing test for each changed
+  boundary.
+
+## Next Improvements
+
+- workflow: require a boundary matrix before implementation and a focused test
+  for each changed partition (recurrence-class: boundary-case-before-happy-path)
+- capability: add a reusable formatter/normalizer test template or review check
+  that prompts for canonical and non-canonical inputs
+- memory: keep this retro and its refreshed summary as the durable lesson; when
+  implementation files are available, extend the focused test to the unresolved
+  tab/newline/empty-input contract
+
+## Packet Consumed
+
+n/a (no adapter sections)
+
+## Persisted
+
+Persisted: yes: notes/retro/2026-09-06-session-retro.md

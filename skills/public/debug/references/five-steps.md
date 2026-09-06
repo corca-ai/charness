@@ -5,7 +5,8 @@
 1. define the problem
 2. define correct behavior
 3. build the smallest honest reproduction
-4. enumerate diverse causes
+4. enumerate plausible causes proportionate to the evidence; test competing
+   causes with a discriminating check and record its result before choosing one
 5. verify a falsifiable hypothesis
 
 These steps are non-linear. New observation may send the work backward. What is

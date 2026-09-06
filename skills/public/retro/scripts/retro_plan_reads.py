@@ -39,15 +39,10 @@ def required_reads(
     repo_root: Path,
     adapter: dict[str, Any],
     artifact: dict[str, Any],
-    lens_brief: dict[str, str],
     read: Callable[..., dict[str, Any]],
 ) -> list[dict[str, Any]]:
     """Build the read inventory needed before a retro artifact is written."""
     reads: list[dict[str, Any]] = []
-    # The counterfactual is mandatory in every retro and the lens catalog + domain
-    # triggers are not inlined in SKILL.md, so expert-lens.md is an unconditional
-    # floor. The why carries the work-class-specific lens brief.
-    reads.append(read("references/expert-lens.md", "reference", lens_brief["why"], base="skill"))
 
     if artifact["exists"]:
         reads.append(

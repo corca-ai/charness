@@ -4,7 +4,7 @@
 
 ## Auto-Retro Trigger
 
-Run a short `session` retro before resuming the main task when all of these are
+Run a short reflection before resuming the main task when all of these are
 true:
 
 1. the user correctly points out a missed issue, wrong assumption, or missing
@@ -41,7 +41,7 @@ never configured; see the state table below for how that differs from `[]`.
 A caller that polls `triggered` alone reads "could not tell" as "no", which is
 the skipped-retro path this section exists to close.
 
-At slice closeout, consume the planner's `auto-session-trigger` packet. The
+On the owned path at slice closeout, consume the planner's `auto-session-trigger` packet. The
 packet must bind the probe to explicit `--paths <changed-path>...` while paths
 are available, or to `--base-ref <slice-base> --head-ref <slice-head>` after
 the slice is committed. A bare post-commit invocation has no change basis and
@@ -54,6 +54,12 @@ Do not trigger on:
 - ordinary product disagreement
 - scope changes that are not retrospective misses
 
+An automatic trigger selects reflection, not persistence. If the requested
+reflection is explicitly chat-only/no-write, it must not invoke the durable
+planner or any writer, even when an adapter, output directory, summary, lesson
+ledger, or RCA ledger exists. A durable route still uses the existing owned
+planner, validator, and persistence path.
+
 ## Persistence Rule
 
 Every retro must tell the operator whether it persisted.
@@ -64,7 +70,8 @@ Allowed forms:
 - `Persisted: no: chat-only quick retro`
 - `Persisted: no: user asked to skip durable artifact update`
 
-If a durable home exists, prefer writing or updating it before moving on.
+An existing durable home alone does not require a write; persistence follows the
+selected obligation and never overrides an explicit no-write request.
 
 For an achieve closeout, pass `--goal-path` to the persistence helper. The
 path must resolve to the owning canonical goal artifact, and the retro must

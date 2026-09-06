@@ -21,10 +21,21 @@ untested repair story.
 
 ## Bootstrap
 
-Resolve the adapter and run the planner before broad search, artifact edits, or
-repair.
+For the same open investigation, reuse a known emitted target, subject,
+evidence mode, output contract, and validator while they remain applicable.
+Check relevant pointer, resolution, adapter/validator, and repo-wide risk deltas
+before editing; warm context is not a cached verdict. If any identity or
+contract is missing, changed, resolved, or belongs to another subject, use the
+planner path below. Keep cross-subject risk interrupts and current evidence
+reads in either path.
 
-Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then run:
+When discovery is needed, resolve the adapter and run the planner before broad
+search, artifact edits, or repair.
+
+On that planner path, resolve `$SKILL_DIR` per
+`../../shared/references/bootstrap-resolution.md`, then use these entry commands.
+Pass the known `--subject` and applicable `--evidence-led` to the planner and
+scaffold calls:
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
@@ -63,9 +74,11 @@ shape the current hypothesis.
 
 For review findings or suspected false-green approvals, read `../critique/references/adversarial-evidence-review.md`, preserve IDs, and type
 each report `reproduced`, `disconfirmed`, `unproven`, or `not-applicable` before
-changing code; no consumer observation means `unproven`. Run the planner/scaffold
-with `--evidence-led` so the template and emitted validator are bound to the
-typed sections; reproduced records need a receipt, `debug` handoff, and next move.
+changing code; no consumer observation means `unproven`. The same warm-context
+conditions apply: entering evidence-led mode changes the contract. Preserve the
+known `--subject` on the planner/scaffold and use
+`--evidence-led` so the template and emitted validator are bound to the typed
+sections; reproduced records need a receipt, `debug` handoff, and next move.
 
 ## Pattern Ladder
 
@@ -95,10 +108,15 @@ For every reproduced or recurring finding, use `references/pattern-ladder.md`: r
    - isolate the smallest input, path, or environment that still fails
    - if local reproduction fails, gather stronger observation instead of
      pretending the problem disappeared
-5. Enumerate diverse causes.
-   - list at least three plausible causes before verifying any one of them
+5. Enumerate causes proportionate to the evidence.
+   - record at least one evidence-backed cause before verifying it; one cause is
+     enough when the evidence does not leave a live competing explanation
+   - when competing causes remain, run a check that distinguishes them and
+     record its result before choosing one; if the check cannot distinguish
+     them, keep the diagnosis unresolved
    - include environment, dependency, state, control-flow, and — when the
-     symptom is a verdict — the verifier (`references/detection-gap.md`)
+     symptom is a verdict — the verifier (`references/detection-gap.md`) when
+     those explanations are genuinely plausible
    - walk from symptom to structural cause per
      `references/five-whys-causal-chain.md`
    - complete the Pattern Ladder before naming a root cause; nearby keywords are
@@ -173,9 +191,10 @@ sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
 ## Guardrails
 
 - Apply disciplined-RCA hygiene: no fix before a falsifiable hypothesis, the exact
-  error preserved, multiple candidate causes, a minimal reproduction,
-  web-search-first, and the artifact kept past the fix. If one of these slips, stop
-  and repair the process before changing more code.
+  error preserved, an evidence-backed candidate cause (and a discriminating
+  observation when alternatives remain), a minimal reproduction, web-search-first,
+  and the artifact kept past the fix. If one of these slips, stop and repair the
+  process before changing more code.
 - Counterweight is not adversarial verification; every report needs a typed
   disposition, and one symptom needs a sibling, seam observation, or `unproven`.
 - Do not leave external-seam or host-disproves-local risk as free-form prose;

@@ -1,0 +1,124 @@
+# Debug Review
+Date: 2026-09-06
+
+## Problem
+
+At the recorded current values, the request times out. Raising its timeout to
+200 succeeds, which is compatible with a slower server or a lowered client
+timeout. This slice runs the next controlled check; the investigation remains
+open.
+
+## Correct Behavior
+
+Given `request(latency_ms, timeout_ms)`, the capability should return `ok` when
+`latency_ms <= timeout_ms` and raise `TimeoutError("request timed out")` only
+when `latency_ms > timeout_ms`.
+
+## Observed Facts
+
+- `request_sim.py:1` records `BASELINE = {latency_ms: 60, timeout_ms: 100}`.
+- `request_sim.py:2` records `CURRENT = {latency_ms: 60, timeout_ms: 40}`;
+  latency is unchanged while timeout is lower.
+- `request_sim.py:6-7` implements only the comparison `latency_ms > timeout_ms`
+  and raises the exact message `request timed out`.
+- Equality boundary check: `request(60, 60)` returned `ok`.
+- The fixture is local and deterministic; no network, provider, or production
+  runtime is part of this evidence.
+
+## Reproduction
+
+Ran a controlled matrix using the fixture, holding the recorded latency at 60
+while comparing the recorded timeout values and 200:
+
+```text
+baseline values: latency_ms=60, timeout_ms=100 -> ok
+current values: latency_ms=60, timeout_ms=40 -> TimeoutError: request timed out
+current latency with baseline timeout: latency_ms=60, timeout_ms=100 -> ok
+baseline latency with current timeout: latency_ms=60, timeout_ms=40 -> TimeoutError: request timed out
+recorded latency with raised timeout: latency_ms=60, timeout_ms=200 -> ok
+equality boundary: latency_ms=60, timeout_ms=60 -> ok
+```
+
+## Candidate Causes
+
+- Lowered client timeout: changing only timeout from 100 to 40 makes the
+  recorded 60-ms request fail; restoring 100 makes it succeed.
+- Slower server: a latency increase could cause the same boundary failure, but
+  the supplied current latency is 60, equal to baseline, so this check provides
+  no evidence of a current server slowdown.
+
+## Hypothesis
+
+- The recorded failure is caused by the timeout threshold being below the
+  recorded latency, independent of any server slowdown | disconfirmer: hold
+  latency at 60 and restore the baseline timeout of 100, then compare with the
+  current timeout of 40.
+
+## Verification
+
+- Result: confirmed for the supplied simulator values — restoring timeout 100
+  changes the result from `TimeoutError` to `ok` while latency remains 60, and
+  timeout 40 fails with both baseline and current latency. This discriminates a
+  lowered client timeout as a sufficient explanation of the observed fixture
+  failure. It does not establish why the timeout became 40 or prove anything
+  about an external server; the investigation stays open.
+
+## Root Cause
+
+Not concluded. Established in this slice: `latency_ms=60 > timeout_ms=40` is a
+sufficient timeout-boundary mismatch, while the recorded latency did not
+change. Unestablished: the provenance of the lowered timeout and whether any
+real server latency changed outside this fixture.
+
+## Invariant Proof
+
+- Invariant: n/a - not a workflow-boundary propagation bug
+- Producer Proof: n/a
+- Final-Consumer Proof: n/a
+- Interface-Shape Sibling Scan: n/a
+- Non-Claims: no provider, host, adapter, or production roundtrip was tested
+
+## Detection Gap
+
+- Local fixture surface | no automated matrix assertion or test gate exists;
+  the README and manual invocation exposed the boundary | smallest future gate:
+  assert the recorded baseline/current combinations before any repair (not
+  implemented in this slice).
+
+## Sibling Search
+
+- Mental model: treating a successful raised-timeout retry as evidence of server
+  slowness without holding latency constant.
+- Same layer: `request_sim.py:1-7` is the only executable boundary | decision:
+  same class, diagnostic-only for this slice | proof: executable fixture.
+- Abstraction up: no second timeout/latency implementation was found by the
+  targeted scan | decision: valid follow-up outside the slice | proof: static
+  scan only | follow-up: deferred to the next investigation slice.
+- cross-file: `README.md:3-9` is the narrative consumer of the fixture, not a
+  second implementation; it is an intentional plain-text/non-rendering
+  boundary | decision: intentional plain-text or non-rendering boundary | proof:
+  static scan only.
+
+## Seam Risk
+
+- Interrupt ID: none
+- Risk Class: none
+- Seam: none
+- Disproving Observation: none
+- What Local Reasoning Cannot Prove: whether an external server or configuration
+  source changed outside the supplied simulator
+- Generalization Pressure: none
+
+## Interrupt Decision
+
+- Resolution: open
+- Critique Required: no
+- Next Step: impl
+- Handoff Artifact: none
+
+## Prevention
+
+No fix or repair workflow was run. Preserve the controlled-combination result
+above. A later slice should trace the source of `CURRENT["timeout_ms"]` and only
+then decide whether a simulator change is warranted; this artifact does not
+close that investigation.

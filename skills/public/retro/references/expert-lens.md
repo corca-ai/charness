@@ -14,13 +14,14 @@ Produce a counterfactual that upgrades the next session:
 
 ## Default Pattern
 
-Use one or two counterfactual lenses:
+Use one or two counterfactual lenses when they add distinct insight:
 
 - one lens for the domain itself
 - one lens for decision quality, operating discipline, or system design
 
 If a real-person name helps retrieve the right reasoning frame, use it.
-Otherwise write the lens directly.
+Otherwise write one concrete action-changing lens directly; the catalog is
+optional guidance, not an unconditional read.
 
 Examples:
 
@@ -52,4 +53,5 @@ If the retro is deep enough to justify it and sub-agents are available:
 2. give each a distinct question
 3. merge their outputs into one `Expert Counterfactuals` section
 
-If sub-agents are not used, write the two counterfactuals inline.
+If sub-agents are not used, write the concrete counterfactual inline; add a
+second only when it changes the next action in a distinct way.

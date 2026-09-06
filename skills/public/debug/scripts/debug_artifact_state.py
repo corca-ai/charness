@@ -133,9 +133,10 @@ def _refusal_keys(scaffold: dict[str, Any]) -> dict[str, Any]:
     }
 
 def _continue_refused_command(scaffold: dict[str, Any]) -> str:
+    evidence = " --evidence-led" if scaffold.get("evidence_mode") else ""
     return (
         "python3 $SKILL_DIR/scripts/plan_debug_run.py --repo-root . "
-        f"--subject {scaffold['refused_write_artifact_subject_key']}"
+        f"--subject {scaffold['refused_write_artifact_subject_key']}{evidence}"
     )
 
 def _continues_existing_artifact(artifact: dict[str, Any], scaffold: dict[str, Any]) -> bool:
