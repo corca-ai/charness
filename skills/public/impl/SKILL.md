@@ -60,6 +60,8 @@ stronger proof, or conflicting evidence.
 
 ## Verify
 
+Reuse already-read guidance and passing checks while their inputs and applicability remain unchanged. Re-read or rerun when a changed input or unresolved question can alter the next decision; a docs-only edit does not invalidate checks whose inputs exclude docs. Preserve any fresh observation or independent check required by the surface's owner.
+
 Run the narrowest evidence that answers the changed behavior:
 
 - focused tests for the changed module or user flow;

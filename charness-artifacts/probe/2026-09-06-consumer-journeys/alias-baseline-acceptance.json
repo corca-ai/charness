@@ -1,0 +1,11 @@
+{
+  "command": "CHARNESS_CONSUMER_ROOT=<alias-baseline> PYTHONDONTWRITEBYTECODE=1 python3 charness-artifacts/probe/2026-09-06-consumer-journeys/check_alias.py",
+  "tested_commit": "36008e55fff4c03bef0794539954d92be91bc3d4",
+  "spec_commit": "47907e7f4404fb869bbd6265af3007158ff5ec2f",
+  "chunk_id": "cf2272",
+  "wall_time_seconds": 0.000008135,
+  "exit_code": 0,
+  "original_token_count": 94,
+  "output": "test_aliases_and_canonical_names_coexist (__main__.AliasAcceptance) ... ok\ntest_canonical_compatibility (__main__.AliasAcceptance) ... ok\ntest_first_invalid_pair_is_reported (__main__.AliasAcceptance) ... ok\ntest_invalid_definitions_rejected (__main__.AliasAcceptance) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n",
+  "interventions": 0
+}
