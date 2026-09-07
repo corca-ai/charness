@@ -1,0 +1,75 @@
+{
+  "own-suite": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "test_canonical_lookup_remains_available_with_aliases (test_catalog.CatalogTests) ... ok\ntest_empty_alias_list_preserves_canonical_behavior (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_colliding_with_canonical_key (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_with_unknown_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_different_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_same_target (test_catalog.CatalogTests) ... ok\ntest_reports_first_invalid_alias_pair_in_input_order (test_catalog.CatalogTests) ... ok\ntest_resolves_alias_to_canonical_value (test_catalog.CatalogTests) ... ok\ntest_resolves_existing_canonical_keys (test_catalog.CatalogTests) ... ok\ntest_unknown_key_raises_key_error (test_catalog.CatalogTests) ... ok\ntest_unknown_key_with_aliases_raises_key_error (test_catalog.CatalogTests) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.001s\n\nOK\n"
+  },
+  "oracle": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "test_aliases_and_canonical_names_coexist (__main__.AliasAcceptance) ... ok\ntest_canonical_compatibility (__main__.AliasAcceptance) ... ok\ntest_first_invalid_pair_is_reported (__main__.AliasAcceptance) ... ok\ntest_invalid_definitions_rejected (__main__.AliasAcceptance) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n"
+  },
+  "original_methods_preserved": [
+    "CatalogTests.setUp",
+    "CatalogTests.test_resolves_existing_canonical_keys",
+    "CatalogTests.test_unknown_key_raises_key_error"
+  ],
+  "spec_unchanged": true,
+  "base_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+  "target_sha": "f914edbcdc1dca0defc093bd431cfb2b842e6b94",
+  "duration_ms": 100080,
+  "changed_paths": [
+    "src/catalog.py",
+    "tests/test_catalog.py"
+  ],
+  "frozen_inputs": {
+    "experiment/literal-path-prompt.md": "7caeb5dad28fe31d095a4a212266c71ce036853f82467956bfe045272607bf9a",
+    "experiment/consumer-prompt.md": "5b5652cb5f0229bfa4020f77c7ab315cfbfb97d7065aa96f7d2a23b6174aa281",
+    "experiment/consumer/AGENTS.md": "d08d38cd96c88c85b0e134609f6cb6bab38be5ddcf39fd6843ff9fb917331d6c",
+    "experiment/consumer/docs/alias-resolution.md": "522d595b2629fb853d46485245e10cb6d988ffed66596ccce0d9cd4995858bb7",
+    "experiment/consumer/src/catalog.py": "75fd818cc8ca6d8e465f4077018e9939955dcfdffde141714f3ac68440ec06f0",
+    "experiment/consumer/tests/test_catalog.py": "b49e9b68ef4260b14962b144a75e38f1821c4f80f7060f4bec0a55610d032cb4",
+    "experiment/exports/optional-index/skills/impl/SKILL.md": "01c384b4b3c6d1a2fa6f6085de79f711372f8ff6f2103eb52ab8e35e548bd388",
+    "experiment/exports/optional-index/skills/spec/SKILL.md": "7c86251debaa5778ce43b006e6f10df9df3cd56688d55f3e6d1de5cd68f2ce1d",
+    "charness-artifacts/probe/2026-09-06-consumer-journeys/check_alias.py": "a20b7dd62716c7e77c31bd7bed91aea159fc0686b45c44f1c6fa834002ec8d6b"
+  },
+  "source_commit": "30d4c89d57dafc2433b28ad8e29dff8b7c0d2be9",
+  "trace_sha256": "d29cfa8260c830b2572114320d119525d575317039d3371a89689c3c86512970",
+  "receipt_sha256": "7ee25073c9201d67e80258e4e1e7d035a200395fa4a9385b6f306e74016f6e80",
+  "consumer_source": {
+    "src/catalog.py": "\"\"\"A minimal canonical-key catalog used by the consumer fixture.\"\"\"\n\nfrom __future__ import annotations\n\n\nclass Catalog:\n    \"\"\"Resolve values by their canonical keys.\"\"\"\n\n    def __init__(self, mapping, aliases=None):\n        self._mapping = dict(mapping)\n        self._aliases = {}\n\n        seen_aliases = set()\n        for alias, canonical_key in aliases or []:\n            if alias in self._mapping:\n                raise ValueError(f\"alias {alias!r} collides with canonical key\")\n            if alias in seen_aliases:\n                raise ValueError(f\"duplicate alias {alias!r}\")\n            if canonical_key not in self._mapping:\n                raise ValueError(\n                    f\"alias {alias!r} targets unknown canonical key \"\n                    f\"{canonical_key!r}\"\n                )\n            seen_aliases.add(alias)\n            self._aliases[alias] = canonical_key\n\n    def resolve(self, key):\n        if key in self._mapping:\n            return self._mapping[key]\n        return self._mapping[self._aliases[key]]\n",
+    "tests/test_catalog.py": "import unittest\n\nfrom src.catalog import Catalog\n\n\nclass CatalogTests(unittest.TestCase):\n    def setUp(self):\n        self.catalog = Catalog({\"books\": [\"novel\"], \"music\": [\"jazz\"]})\n\n    def test_resolves_existing_canonical_keys(self):\n        self.assertEqual(self.catalog.resolve(\"books\"), [\"novel\"])\n        self.assertEqual(self.catalog.resolve(\"music\"), [\"jazz\"])\n\n    def test_unknown_key_raises_key_error(self):\n        with self.assertRaises(KeyError):\n            self.catalog.resolve(\"missing\")\n\n    def test_empty_alias_list_preserves_canonical_behavior(self):\n        catalog = Catalog({\"books\": [\"novel\"], \"music\": [\"jazz\"]}, aliases=[])\n\n        self.assertEqual(catalog.resolve(\"books\"), [\"novel\"])\n        with self.assertRaises(KeyError):\n            catalog.resolve(\"reading\")\n\n    def test_resolves_alias_to_canonical_value(self):\n        catalog = Catalog(\n            {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n            aliases=[(\"reading\", \"books\"), (\"listening\", \"music\")],\n        )\n\n        self.assertEqual(catalog.resolve(\"reading\"), [\"novel\"])\n        self.assertEqual(catalog.resolve(\"listening\"), [\"jazz\"])\n\n    def test_canonical_lookup_remains_available_with_aliases(self):\n        catalog = Catalog(\n            {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n            aliases=[(\"reading\", \"books\")],\n        )\n\n        self.assertEqual(catalog.resolve(\"books\"), [\"novel\"])\n        self.assertEqual(catalog.resolve(\"music\"), [\"jazz\"])\n\n    def test_rejects_alias_colliding_with_canonical_key(self):\n        for canonical_key in (\"books\", \"music\"):\n            with self.subTest(canonical_key=canonical_key):\n                with self.assertRaisesRegex(\n                    ValueError,\n                    rf\"^alias '{canonical_key}' collides with canonical key$\",\n                ):\n                    Catalog(\n                        {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n                        aliases=[(canonical_key, canonical_key)],\n                    )\n\n    def test_rejects_alias_with_unknown_target(self):\n        with self.assertRaisesRegex(\n            ValueError,\n            r\"^alias 'novels' targets unknown canonical key 'missing'$\",\n        ):\n            Catalog({\"books\": [\"novel\"]}, aliases=[(\"novels\", \"missing\")])\n\n        with self.assertRaisesRegex(\n            ValueError,\n            r\"^alias 'reading' targets unknown canonical key 'short'$\",\n        ):\n            Catalog(\n                {\"books\": [\"novel\"]},\n                aliases=[(\"reading\", \"short\"), (\"short\", \"books\")],\n            )\n\n    def test_rejects_duplicate_alias_with_same_target(self):\n        with self.assertRaisesRegex(ValueError, r\"^duplicate alias 'reading'$\"):\n            Catalog(\n                {\"books\": [\"novel\"]},\n                aliases=[(\"reading\", \"books\"), (\"reading\", \"books\")],\n            )\n\n    def test_rejects_duplicate_alias_with_different_target(self):\n        with self.assertRaisesRegex(ValueError, r\"^duplicate alias 'reading'$\"):\n            Catalog(\n                {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n                aliases=[(\"reading\", \"books\"), (\"reading\", \"music\")],\n            )\n\n    def test_reports_first_invalid_alias_pair_in_input_order(self):\n        cases = (\n            (\n                [(\"first\", \"missing\"), (\"books\", \"books\")],\n                \"alias 'first' targets unknown canonical key 'missing'\",\n            ),\n            (\n                [(\"books\", \"missing\"), (\"later\", \"missing\")],\n                \"alias 'books' collides with canonical key\",\n            ),\n            (\n                [(\"first\", \"books\"), (\"first\", \"missing\")],\n                \"duplicate alias 'first'\",\n            ),\n        )\n        for aliases, message in cases:\n            with self.subTest(aliases=aliases):\n                with self.assertRaisesRegex(ValueError, rf\"^{message}$\"):\n                    Catalog(\n                        {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n                        aliases=aliases,\n                    )\n\n    def test_unknown_key_with_aliases_raises_key_error(self):\n        catalog = Catalog(\n            {\"books\": [\"novel\"]},\n            aliases=[(\"reading\", \"books\")],\n        )\n\n        with self.assertRaises(KeyError):\n            catalog.resolve(\"missing\")\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"
+  },
+  "source_change_paths": [
+    "src/catalog.py",
+    "tests/test_catalog.py"
+  ],
+  "changed_line_gate": {
+    "status": "not-applicable",
+    "blocking": false,
+    "reason": "the lane tree has no scripts/mutation/release_changed_line_coverage.py; no changed-line verdict exists for it",
+    "summary": "changed-line gate not applicable: no scripts/mutation/release_changed_line_coverage.py in the lane tree"
+  },
+  "observer": {
+    "kind": "separate host context read-only audit",
+    "result": "no failed commands or read errors; both guessed paths absent",
+    "shared_content_ranges": [
+      [
+        492,
+        550
+      ],
+      [
+        551,
+        616
+      ]
+    ],
+    "spec_design_lenses": "correct target in successful guarded command at 986-987; output segment truncated, content consumption is not independently established"
+  },
+  "nonclaims": [
+    "No public-skill or exporter repair",
+    "No installed-host observation",
+    "No timing or general routing improvement",
+    "Broad reference reading still observed",
+    "Consumer has no changed-line gate; own tests and unchanged external oracle supply acceptance"
+  ]
+}
