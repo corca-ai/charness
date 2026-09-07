@@ -1,0 +1,162 @@
+{
+  "source_commit": "30d4c89d5",
+  "verified_tree_commit": "4038542f9b99b5bf4b9147c3f5e44e6633d0cc10",
+  "full_receipt": {
+    "surface": "quality",
+    "status": "pass",
+    "measured_scope": [
+      "pytest",
+      "validate-quality-reference-catalog",
+      "quality-tool-fixtures",
+      "validate-surfaces",
+      "validate-public-skill-validation",
+      "validate-public-skill-dogfood",
+      "validate-presets",
+      "validate-integrations",
+      "validate-packaging",
+      "validate-debug-artifact",
+      "validate-debug-seam-index",
+      "validate-quality-artifact",
+      "validate-inventory-consumption",
+      "check-inventory-declaration-coverage",
+      "validate-quality-closeout-contract",
+      "validate-critique-artifacts",
+      "validate-ideation-artifact",
+      "validate-retro-artifact",
+      "validate-current-pointer-freshness",
+      "validate-maintainer-setup",
+      "check-skill-contracts",
+      "check-skill-bootstrap-vars",
+      "check-timing-layer-completeness",
+      "check-runtime-budget-universe",
+      "check-command-dominance",
+      "check-plugin-dir-references",
+      "check-supply-chain",
+      "validate-profiles",
+      "check-export-safe-imports",
+      "validate-skills",
+      "check-test-completeness",
+      "check-github-actions",
+      "check-python-filenames",
+      "inventory-skill-script-references",
+      "check-references-link-inventory",
+      "check-plugin-asset-command-carriers",
+      "check-consumer-validator-catalog",
+      "check-public-doc-coupling",
+      "check-regenerable-facts",
+      "validate-adapters",
+      "ruff",
+      "validate-lesson-ledger",
+      "check-python-lengths",
+      "check-closeout-classification-parity",
+      "validate-retro-lesson-index",
+      "doc-duplicates",
+      "py-compile",
+      "check-rust",
+      "run-evals",
+      "check-shell",
+      "check-python-runtime-inheritance",
+      "validate-skill-ergonomics",
+      "check-cli-skill-surface",
+      "validate-inference-interpretation",
+      "specdown",
+      "check-subprocess-form",
+      "check-bootstrap-shim-consistency",
+      "check-wall-clock-form",
+      "check-module-eviction-form",
+      "check-provenance-contract",
+      "check-documented-subcommands",
+      "check-spec-evidence-durability",
+      "check-script-lookup-form",
+      "validate-attention-state-visibility",
+      "check-docs",
+      "check-export-self-sufficiency",
+      "check-timeout-bound-form",
+      "check-plugin-import-smoke",
+      "check-documented-command-flags",
+      "check-secrets",
+      "check-artifact-referents",
+      "check-unreferenced-scripts",
+      "validate-inventory-consumption-declaration",
+      "dup-ratchet",
+      "inventory-ci-local-gate-parity",
+      "inventory-sloc",
+      "measure-startup-probes",
+      "check-current-pointer-writes",
+      "inventory-cli-ergonomics",
+      "inventory-gitignore-scan-hygiene",
+      "inventory-nose-clones",
+      "check-seed-fixture-budget",
+      "check-runtime-budget"
+    ],
+    "adverse_subjects": [],
+    "unproven_subjects": [],
+    "cause": null,
+    "effective_exit_code": 0,
+    "details": {
+      "passed": 83,
+      "failed": 0,
+      "elapsed": "163.2s",
+      "execution_mode": "read-only",
+      "release": false,
+      "full_queue": true,
+      "non_claim": "",
+      "not_run": [
+        {
+          "label": "agent-browser-runtime-baseline",
+          "reason": "opt-in unmet"
+        },
+        {
+          "label": "dead-code-advisory",
+          "reason": "opt-in unmet"
+        },
+        {
+          "label": "check-supply-chain-online",
+          "reason": "opt-in unmet"
+        },
+        {
+          "label": "check-coverage",
+          "reason": "read-only"
+        },
+        {
+          "label": "agent-browser-runtime-hygiene",
+          "reason": "opt-in unmet"
+        }
+      ],
+      "index_tree": "f242cbed0e37044e8314c6c8b618381703595229"
+    }
+  },
+  "full_log_sha256": "c02996178268ddc8ae37e0a8d0d01062978c67fc61a2930a3887f2aeffb2aebf",
+  "full_log_excerpt": [
+    "run-quality: START mode=read-only release=0 requested_scope=full outputs=isolated status=streamed",
+    "run-quality: CHECK_START label=pytest",
+    "PASS pytest                   98.8s",
+    "ADVISORY: runtime budget exceeded: check-plugin-import-smoke recent median 14145ms (latest 14330ms, budget 9000ms)",
+    "ADVISORY: runtime budget exceeded: run-quality-read-only-release recent median 306701ms (latest 358316ms, budget 110000ms)",
+    "Quality summary: 83 passed, 0 failed, 5 not run (agent-browser-runtime-baseline: opt-in unmet; dead-code-advisory: opt-in unmet; check-supply-chain-online: opt-in unmet; check-coverage: read-only; agent-browser-runtime-hygiene: opt-in unmet), total 163.2s"
+  ],
+  "standing_phase_start_count": 1,
+  "focused_runner_controls": {
+    "passed": 69,
+    "log_sha256": "605f18278ccf0743ce9a4fce618532516f7ab0dc95124a9e614b5f9bd6d4f911"
+  },
+  "changed_line_receipt": {
+    "status": "noop",
+    "reason": "no eligible mutation-pool files changed",
+    "base_sha": "7118164915f3fe614403cac9749aba03533238df"
+  },
+  "aborted_attempt": {
+    "log_sha256": "2768b4a46ddf1912396c66a3aa867f89c69db3c1aa9dae008999b3864349699d",
+    "reason": "parent started broad validation before checking an evidence commit failure; stopped engine and nested standing runner; no verdict claimed",
+    "source_changed": false
+  },
+  "verification_scope": "fresh configured full/read-only lane with its normal marker exclusions and conditional omissions; no standalone broad suite before final invocation",
+  "source_inputs": {
+    "docs/development.md": "6b53cf66ca003ad9840347a3aaf887ee10190ac10aa7319e5837a32d0496cd25",
+    "docs/operating-contract.md": "844ab27961a9910d8792a8c042ca9b6830fda1a5ea8655700d0abf104e6acc1c",
+    "evals/fixtures/consumer-journeys/spec-impl-alias/prompts/impl.md": "7caeb5dad28fe31d095a4a212266c71ce036853f82467956bfe045272607bf9a",
+    ".agents/quality-gates.yaml": "cb28dbf8880f44d7a19b52a4a7e8caea4073622e49a741714e0b030fdde3279f",
+    "scripts/gates_support/run_standing_pytest.py": "c67634799a924572d8161076b517c4632e44a4c873c739fcaeaa7725eac41303",
+    "scripts/run_quality_engine_runtime.py": "4c71fba11dee71bd539f7095fb352122db26a2525cc3c793b2c6a5b59169d093"
+  }
+}

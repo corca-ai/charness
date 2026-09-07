@@ -1,0 +1,140 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-07T21:59:46Z",
+  "prepared_for": "reference-suite repaired source and completed evidence",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/probe/2026-09-08-reference-suite-final-verification.json\n- charness-artifacts/probe/2026-09-08-reference-suite-results.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/probe/2026-09-08-reference-suite-results.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-09-08-reference-suite-final-verification.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "4038542f9b99b5bf4b9147c3f5e44e6633d0cc10",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      ".agents/quality-gates.yaml",
+      "charness-artifacts/probe/2026-09-08-literal-reference-consumer.json",
+      "charness-artifacts/probe/2026-09-08-literal-reference-trace.md",
+      "charness-artifacts/probe/2026-09-08-reference-and-suite-diagnosis.json",
+      "charness-artifacts/probe/2026-09-08-reference-suite-final-verification.json",
+      "charness-artifacts/spec/2026-09-08-reference-and-suite.md",
+      "docs/development.md",
+      "docs/operating-contract.md",
+      "evals/fixtures/consumer-journeys/spec-impl-alias/prompts/impl.md",
+      "tests/quality_gates/test_run_quality_engine.py",
+      "tests/quality_gates/test_standing_pytest_run_mirror.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/quality-gates.yaml",
+        "content_sha256": "7c349146d5eaca8795e67855e2f6a05f4f2478490f319baec2622b26fc51747e"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-08-literal-reference-consumer.json",
+        "content_sha256": "3badace6bfed3f97fa8e86581b59a31e9b39903da8f27ca46fc238431ffad66b"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-08-literal-reference-trace.md",
+        "content_sha256": "bfd6b9c03118e62fbc7a2364c735aec86e69f0412e87b45e047f12b98d4321e8"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-08-reference-and-suite-diagnosis.json",
+        "content_sha256": "7bcea6fdb57d0994eab9de40e08ba6e8b19f1d32743519d04e25b3429b3b66a6"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-09-08-reference-suite-final-verification.json",
+        "content_sha256": "9f7b020f54bd1315f4ab3401cca1c601c95f7338a34749985e0b670047ab7a85"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-09-08-reference-and-suite.md",
+        "content_sha256": "478807fec151e33691cb2ca02bb7da64bfca3ad6141c981812dc2c1e7d3899ed"
+      },
+      {
+        "path": "docs/development.md",
+        "content_sha256": "e122c753b4cec8784b0147b33de88270d9f03a747ee5a9bd449c404c61e92de3"
+      },
+      {
+        "path": "docs/operating-contract.md",
+        "content_sha256": "b7331a55f8c26a9a1a08ccaeb3376cc59637b12242777957db22563b9860aac8"
+      },
+      {
+        "path": "evals/fixtures/consumer-journeys/spec-impl-alias/prompts/impl.md",
+        "content_sha256": "3641e630447c55b8e4a61e122f2d855970df3428788d66c54684477ff03c2b3d"
+      },
+      {
+        "path": "tests/quality_gates/test_run_quality_engine.py",
+        "content_sha256": "608a35ea1ee99250ac8632d546734776e09af7aa01eba8789fda1ffcc0ba0523"
+      },
+      {
+        "path": "tests/quality_gates/test_standing_pytest_run_mirror.py",
+        "content_sha256": "d93fd39ce938c7db046f70f61bcd826434ca77c31462de75f3ffa219533bfcba"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [
+      {
+        "path": "charness-artifacts/probe/2026-09-08-reference-suite-final-verification.json",
+        "content_sha256": "9f7b020f54bd1315f4ab3401cca1c601c95f7338a34749985e0b670047ab7a85"
+      }
+    ],
+    "auto_excluded_paths": [],
+    "identity_sha256": "ab765b387630f20999936b3196c0f36141c3297873099b1536fa586b6983fac9"
+  }
+}
