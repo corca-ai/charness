@@ -22,8 +22,8 @@ def load_plan_module() -> ModuleType:
     return module
 
 
-def run_plan(repo: Path) -> dict[str, object]:
-    return json.loads(json.dumps(load_plan_module().build_plan(repo.resolve())))
+def run_plan(repo: Path, *, subject: str | None = None) -> dict[str, object]:
+    return json.loads(json.dumps(load_plan_module().build_plan(repo.resolve(), subject=subject)))
 
 
 def write_adapter(repo: Path) -> None:
@@ -389,6 +389,275 @@ SEAM_RISK_BODY = (
     "",
     "- Next Step: spec",
 )
+
+
+_MISSING = object()
+
+
+def write_forced_risk_artifact(
+    repo: Path,
+    *,
+    resolution: object = "resolved",
+    risk_class: str = "repeated-symptom",
+    pressure: str = "none",
+    interrupt_id: str = "I1",
+    seam: str = "fixture-to-planner",
+    handoff: str = "charness-artifacts/spec/handoff.md",
+) -> None:
+    write_adapter(repo)
+    debug_dir = repo / "charness-artifacts" / "debug"
+    debug_dir.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "# Current Debug",
+        "",
+        "## Seam Risk",
+        "",
+        f"- Interrupt ID: {interrupt_id}",
+        f"- Risk Class: {risk_class}",
+        f"- Seam: {seam}",
+        "- Disproving Observation: the planner routes incorrectly",
+        "- What Local Reasoning Cannot Prove: the final planner route",
+        f"- Generalization Pressure: {pressure}",
+        "",
+        "## Interrupt Decision",
+        "",
+    ]
+    if resolution is not _MISSING:
+        lines.append(f"- Resolution: {resolution}")
+    lines.extend(
+        [
+            "- Critique Required: yes",
+            "- Next Step: spec",
+            f"- Handoff Artifact: {handoff}",
+            "",
+        ]
+    )
+    (debug_dir / "latest.md").write_text("\n".join(lines), encoding="utf-8")
+
+
+def write_spec_handoff(
+    repo: Path,
+    *,
+    interrupt_source: str = "I1",
+    seam: str = "fixture-to-planner",
+    next_step: str = "impl",
+    impl_status: str = "allowed",
+    valid: bool = True,
+) -> None:
+    path = repo / "charness-artifacts" / "spec" / "handoff.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not valid:
+        path.write_text("# malformed handoff\n", encoding="utf-8")
+        return
+    path.write_text(
+        "\n".join(
+            [
+                "# Handoff",
+                "",
+                "## Critique",
+                "",
+                f"- Interrupt Source: {interrupt_source}",
+                f"- Seam Summary: {seam}",
+                f"- Chosen Next Step: {next_step}",
+                f"- Impl Status: {impl_status}",
+                "- Impl Status Reason: bounded lifecycle proof",
+                "- What Disproving Observation Is Resolved: the stale route",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
+def assert_active_blocker(payload: dict[str, object]) -> None:
+    artifact = payload["artifact"]
+    assert artifact["requires_interrupt"] is True
+    assert artifact["effective_routing"]["risk_interrupt_active"] is True
+    assert payload["mode"] == "risk-interrupt"
+    assert payload["next_action"]["kind"] == "interrupt-to-spec"
+    required_paths = [read["path"] for read in payload["required_reads"]]
+    assert required_paths[0] == "charness-artifacts/debug/latest.md"
+    assert "references/document-seams.md" in required_paths
+    assert "references/invariant-first-review.md" in required_paths
+
+
+def test_resolved_forced_risk_with_allowed_handoff_becomes_prior_memory(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    write_forced_risk_artifact(repo)
+    write_spec_handoff(repo)
+    debug_dir = repo / "charness-artifacts" / "debug"
+    target = debug_dir / "2026-09-07-other-subject.md"
+    target.write_bytes((debug_dir / "latest.md").read_bytes())
+    (debug_dir / "latest.md").unlink()
+    (debug_dir / "latest.md").symlink_to(target.name)
+
+    payload = run_plan(repo, subject="fresh-subject")
+
+    artifact = payload["artifact"]
+    assert artifact["resolution"] == "resolved"
+    assert artifact["risk_classes"] == ["repeated-symptom"]
+    assert artifact["risk_parse_error"] is None
+    assert artifact["generalization_pressure"] == "none"
+    assert artifact["requires_interrupt"] is True
+    assert artifact["effective_routing"]["risk_interrupt_active"] is False
+    assert artifact["effective_routing"]["reason"] == "resolved-with-valid-allowed-handoff"
+    assert payload["mode"] == "fresh-investigation-with-prior-memory"
+    assert payload["next_action"]["kind"] == "scaffold-debug-artifact"
+    assert payload["next_action"]["write_artifact_path"] != "charness-artifacts/debug/latest.md"
+    assert payload["next_action"]["refused_write_artifact_path"] == (
+        "charness-artifacts/debug/2026-09-07-other-subject.md"
+    )
+    assert "--subject other-subject" in payload["next_action"]["continue_refused_subject_command"]
+    required_paths = [read["path"] for read in payload["required_reads"]]
+    assert required_paths[0] == "scripts/scaffold_debug_artifact.py"
+    assert "charness-artifacts/debug/latest.md" in required_paths
+    assert "references/document-seams.md" not in required_paths
+
+
+def test_resolved_factor_now_with_allowed_handoff_becomes_prior_memory(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    write_forced_risk_artifact(repo, risk_class="none", pressure="factor-now")
+    write_spec_handoff(repo)
+
+    payload = run_plan(repo, subject="fresh-subject")
+
+    assert payload["artifact"]["risk_classes"] == ["none"]
+    assert payload["artifact"]["generalization_pressure"] == "factor-now"
+    assert payload["artifact"]["requires_interrupt"] is True
+    assert payload["artifact"]["effective_routing"]["risk_interrupt_active"] is False
+    assert payload["mode"] == "fresh-investigation-with-prior-memory"
+    assert payload["next_action"]["kind"] == "scaffold-debug-artifact"
+
+
+@pytest.mark.parametrize("resolution", [_MISSING, "open", "unknown"])
+def test_unclosed_or_unknown_resolution_keeps_forced_risk_active(
+    tmp_path: Path, resolution: object
+) -> None:
+    repo = tmp_path / "repo"
+    write_forced_risk_artifact(repo, resolution=resolution)
+    write_spec_handoff(repo)
+
+    payload = run_plan(repo, subject="fresh-subject")
+
+    assert_active_blocker(payload)
+    assert payload["artifact"]["resolution"] == "open"
+    assert payload["artifact"]["risk_parse_error"] is None
+
+
+@pytest.mark.parametrize(
+    ("variant", "kwargs"),
+    [
+        ("missing", None),
+        ("invalid", {"valid": False}),
+        ("mismatched source", {"interrupt_source": "other"}),
+        ("mismatched seam", {"seam": "other-seam"}),
+        ("blocked", {"impl_status": "blocked"}),
+        ("wrong next step", {"next_step": "critique"}),
+    ],
+)
+def test_resolved_forced_risk_stays_active_without_allowed_matching_handoff(
+    tmp_path: Path, variant: str, kwargs: dict[str, object] | None
+) -> None:
+    repo = tmp_path / "repo"
+    write_forced_risk_artifact(repo)
+    if variant != "missing":
+        write_spec_handoff(repo, **(kwargs or {}))
+
+    payload = run_plan(repo, subject="fresh-subject")
+
+    assert_active_blocker(payload)
+    assert payload["artifact"]["resolution"] == "resolved"
+    assert payload["artifact"]["risk_classes"] == ["repeated-symptom"]
+    assert payload["artifact"]["risk_parse_error"] is None
+    assert payload["artifact"]["effective_routing"]["reason"].startswith(
+        "resolved-forced-risk-handoff"
+    ) or payload["artifact"]["effective_routing"]["reason"].startswith(
+        "resolved-forced-risk-debug"
+    )
+
+
+@pytest.mark.parametrize("risk_class", ["bogus", "external-seam, bogus"])
+def test_resolved_unparseable_risk_declaration_is_not_demoted(
+    tmp_path: Path, risk_class: str
+) -> None:
+    repo = tmp_path / "repo"
+    write_forced_risk_artifact(repo, risk_class=risk_class)
+
+    payload = run_plan(repo, subject="fresh-subject")
+
+    if risk_class == "bogus":
+        assert payload["artifact"]["requires_interrupt"] is False
+        assert payload["artifact"]["risk_scope_established"] is False
+        assert payload["artifact"]["effective_routing"]["risk_interrupt_active"] is False
+        assert payload["mode"] == "repair-risk-declaration"
+        assert payload["next_action"]["kind"] == "repair-risk-declaration"
+        assert payload["required_reads"][0]["path"] == "charness-artifacts/debug/latest.md"
+    else:
+        assert_active_blocker(payload)
+        assert payload["artifact"]["risk_classes"] == ["external-seam"]
+    assert "bogus" in (payload["artifact"]["risk_parse_error"] or "")
+
+
+def test_resolved_fence_hidden_risk_declaration_is_not_demoted(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    write_adapter(repo)
+    debug_dir = repo / "charness-artifacts" / "debug"
+    debug_dir.mkdir(parents=True)
+    (debug_dir / "latest.md").write_text(
+        "\n".join(
+            [
+                "# Current Debug",
+                "",
+                "## Interrupt Decision",
+                "",
+                "- Resolution: resolved",
+                "",
+                "```text",
+                "## Seam Risk",
+                "",
+                "- Risk Class: external-seam",
+                "- Generalization Pressure: none",
+                "```",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    payload = run_plan(repo, subject="fresh-subject")
+
+    assert payload["artifact"]["resolution"] == "resolved"
+    assert payload["artifact"]["risk_scope_established"] is False
+    assert payload["mode"] == "repair-risk-declaration"
+    assert payload["next_action"]["kind"] == "repair-risk-declaration"
+    assert payload["required_reads"][0]["path"] == "charness-artifacts/debug/latest.md"
+
+
+def test_resolved_no_risk_legacy_route_remains_fresh_prior_memory(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    write_seam_risk_artifact(
+        repo,
+        [
+            "# Current Debug",
+            "",
+            "## Seam Risk",
+            "",
+            "- Risk Class: none",
+            "- Generalization Pressure: none",
+            "",
+            "## Interrupt Decision",
+            "",
+            "- Resolution: resolved",
+        ],
+    )
+
+    payload = run_plan(repo, subject="fresh-subject")
+
+    assert payload["artifact"]["requires_interrupt"] is False
+    assert payload["artifact"]["effective_routing"]["risk_interrupt_active"] is False
+    assert payload["mode"] == "fresh-investigation-with-prior-memory"
+    assert payload["next_action"]["kind"] == "scaffold-debug-artifact"
+    assert payload["required_reads"][0]["path"] == "scripts/scaffold_debug_artifact.py"
 
 
 def test_debug_plan_ignores_fenced_template_quote_above_real_seam_risk(tmp_path: Path) -> None:

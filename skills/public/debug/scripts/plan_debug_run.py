@@ -70,13 +70,14 @@ def _required_reads(
     artifact: dict[str, Any],
     prior_incidents: list[dict[str, Any]],
     continues_existing: bool,
+    effective_routing: dict[str, Any],
 ) -> list[dict[str, str]]:
     reads: list[dict[str, str]] = []
     # `continues_existing`, not a THIRD private spelling of the same two fields. A bounded
     # round found this branch still deciding on its own after `mode` and `next_action` were
     # unified: the plan reported a fresh investigation while `required_reads[0]` — the surface
     # a run opens FIRST — still named the refused record as "current debugging state".
-    if continues_existing:
+    if effective_routing["requires_current_artifact_read"] or continues_existing:
         reads.append(
             _read(
                 str(artifact["path"]),
@@ -131,7 +132,7 @@ def _required_reads(
             )
         )
 
-    if artifact["requires_interrupt"]:
+    if effective_routing["risk_interrupt_active"]:
         reads.append(
             _read(
                 "references/document-seams.md",
@@ -253,8 +254,14 @@ def _scaffold_command(scaffold: dict[str, Any]) -> str:
     return f"python3 $SKILL_DIR/scripts/scaffold_debug_artifact.py --repo-root .{suffix}{evidence}"
 
 
-def _next_action(repo_root: Path, artifact: dict[str, Any], scaffold: dict[str, Any]) -> dict[str, Any]:
-    if artifact["requires_interrupt"]:
+def _next_action(
+    repo_root: Path,
+    artifact: dict[str, Any],
+    scaffold: dict[str, Any],
+    *,
+    continues_existing: bool,
+) -> dict[str, Any]:
+    if artifact["effective_routing"]["risk_interrupt_active"]:
         return _artifact_next_action(
             "interrupt-to-spec",
             "read the current artifact and seam references, then hand off a named spec artifact before ordinary repair",
@@ -274,7 +281,7 @@ def _next_action(repo_root: Path, artifact: dict[str, Any], scaffold: dict[str, 
         )
         action["risk_parse_error"] = artifact["risk_parse_error"]
         return action
-    if _continues_existing_artifact(artifact, scaffold):
+    if continues_existing:
         return _artifact_next_action(
             "continue-existing-artifact",
             "read the current artifact, preserve observed facts, then continue with the cheapest falsifier before repair",
@@ -315,6 +322,7 @@ def build_plan(repo_root: Path, *, subject: str | None = None, evidence_mode: bo
     )
     scaffold_summary = {key: value for key, value in scaffold.items() if key != "template"}
     artifact = _artifact_summary(repo_root, scaffold)
+    continues_existing = _continues_existing_artifact(artifact, scaffold)
     output_dir = str(adapter["data"]["output_dir"])
     # `current_path` excludes one record from prior_incidents: the one this run is continuing.
     # When the scaffold refused the pointer's record, this run continues nothing, so excluding
@@ -323,18 +331,18 @@ def build_plan(repo_root: Path, *, subject: str | None = None, evidence_mode: bo
     prior_incidents = _prior_incidents(
         repo_root,
         output_dir,
-        str(artifact["write_path"]) if _continues_existing_artifact(artifact, scaffold) else str(scaffold["write_artifact_path"]),
+        str(artifact["write_path"]) if continues_existing else str(scaffold["write_artifact_path"]),
     )
     # `continue-existing-artifact` routes the author INTO the pointer's record, so it is the
     # consumer half of the same defect the scaffold just fixed: a producer that refuses to
     # hand back another subject's record is undone by a planner that names it in the next
     # line. The two risk arms below are deliberately NOT subject-scoped: an undeclared or
     # unparseable risk interrupt blocks the repo whoever opened it.
-    if artifact["requires_interrupt"]:
+    if artifact["effective_routing"]["risk_interrupt_active"]:
         mode = "risk-interrupt"
     elif artifact["exists"] and not artifact.get("risk_scope_established", True):
         mode = "repair-risk-declaration"
-    elif _continues_existing_artifact(artifact, scaffold):
+    elif continues_existing:
         mode = "continue-existing-artifact"
     elif prior_incidents or artifact["exists"]:
         mode = "fresh-investigation-with-prior-memory"
@@ -347,11 +355,17 @@ def build_plan(repo_root: Path, *, subject: str | None = None, evidence_mode: bo
                 adapter=adapter,
                 artifact=artifact,
                 prior_incidents=prior_incidents,
-                continues_existing=_continues_existing_artifact(artifact, scaffold),
+                continues_existing=continues_existing,
+                effective_routing=artifact["effective_routing"],
             ),
             {"repo": repo_root, "skill": SKILL_ROOT},
         ),
-        next_action=_next_action(repo_root, artifact, scaffold),
+        next_action=_next_action(
+            repo_root,
+            artifact,
+            scaffold,
+            continues_existing=continues_existing,
+        ),
         gate_packets=_gate_packets(repo_root, adapter, scaffold),
         ok=bool(adapter.get("valid")),
         repo_root=str(repo_root),
