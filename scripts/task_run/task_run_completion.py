@@ -102,42 +102,30 @@ def complete_task(
     )
     payload["candidate"] = candidate
 
-    blockers: list[str] = []
-    if execution_status != "completed":
-        blockers.append(f"execution: {execution_status}")
-    if scope["verdict"] != pass_value:
-        blockers.append(scope["reason"])
-    if parent_progress["blocking"]:
-        blockers.append("parent changed within the resolved candidate scope")
-
-    # The changed-line gate runs where the claim is made. A lane whose candidate
-    # the pre-push hook would refuse is useful but not done: the receipt says
-    # `validated-partial-result`, names the unproven line, and the parent reads
-    # at the receipt what it used to learn at the fourth refused push.
-    gate = _changed_line_verdict(
-        changed_line_gate,
+    blockers = _completion_blockers(
         execution_status=execution_status,
-        candidate=candidate,
-        worktree=resolved_target,
-        base_sha=base_sha,
-        log_dir=stdout_log.parent,
+        scope=scope,
+        parent_progress=parent_progress,
+        pass_value=pass_value,
     )
-    payload["changed_line_gate"] = gate
-    if gate.get("blocking"):
-        blockers.append(str(gate.get("summary") or "changed-line gate refused the candidate"))
-        if result_state == "completed":
-            result_state = "validated-partial-result"
-
-    payload["status"] = result_state
-    payload["approval_eligibility"] = "eligible" if result_state == "completed" else "ineligible"
-    _persist_useful_dirty_candidate(
+    gate, blockers, result_state = _prove_ready_candidate(
         payload,
         candidate,
+        blockers=blockers,
+        result_state=result_state,
+        execution_status=execution_status,
         resolved_target=resolved_target,
         base_sha=base_sha,
-        execution_status=execution_status,
+        stdout_log=stdout_log,
+        changed_line_gate=changed_line_gate,
         git=git,
         git_output=git_output,
+    )
+    payload["changed_line_gate"] = gate
+
+    payload["status"] = result_state
+    payload["approval_eligibility"] = (
+        "eligible" if result_state == "completed" and not blockers else "ineligible"
     )
 
     warnings = [
@@ -174,6 +162,83 @@ def complete_task(
     return payload
 
 
+def _completion_blockers(
+    *,
+    execution_status: str,
+    scope: Mapping[str, Any],
+    parent_progress: Mapping[str, Any],
+    pass_value: str,
+) -> list[str]:
+    blockers = [f"execution: {execution_status}"] if execution_status != "completed" else []
+    if scope["verdict"] != pass_value:
+        blockers.append(str(scope["reason"]))
+    if parent_progress["blocking"]:
+        blockers.append("parent changed within the resolved candidate scope")
+    return blockers
+
+
+def _prove_ready_candidate(
+    payload: dict[str, Any],
+    candidate: dict[str, Any],
+    *,
+    blockers: list[str],
+    result_state: str,
+    execution_status: str,
+    resolved_target: Path,
+    base_sha: str,
+    stdout_log: Path,
+    changed_line_gate: Callable[..., dict[str, Any]] | None,
+    git: Callable[..., Any],
+    git_output: Callable[..., str],
+) -> tuple[dict[str, Any], list[str], str]:
+    """Preserve, prove, and re-observe a candidate before returning its state."""
+    carrier_reason = _persist_useful_dirty_candidate(
+        payload,
+        candidate,
+        resolved_target=resolved_target,
+        base_sha=base_sha,
+        execution_status=execution_status,
+        git=git,
+        git_output=git_output,
+    )
+    if carrier_reason:
+        blockers.append(carrier_reason)
+
+    proof_ready = not blockers and _carrier_is_complete(candidate) and bool(candidate.get("useful"))
+    if not proof_ready and changed_line_gate is not None and not blockers and candidate.get("useful"):
+        blockers.append(_carrier_not_ready_reason(candidate))
+
+    gate = _changed_line_verdict(
+        changed_line_gate,
+        execution_status=execution_status,
+        candidate=candidate,
+        worktree=resolved_target,
+        base_sha=base_sha,
+        log_dir=stdout_log.parent,
+        skip_reason=("; ".join(blockers) if blockers else None),
+    )
+    if gate.get("blocking"):
+        blockers.append(str(gate.get("summary") or "changed-line gate refused the candidate"))
+        if result_state == "completed":
+            result_state = "validated-partial-result"
+
+    if proof_ready and changed_line_gate is not None:
+        post_gate_reason = _refresh_after_gate(
+            payload,
+            candidate,
+            resolved_target=resolved_target,
+            base_sha=base_sha,
+        )
+        if post_gate_reason:
+            blockers.append(post_gate_reason)
+            if result_state == "completed":
+                result_state = "validated-partial-result"
+
+    if blockers and result_state == "completed" and candidate.get("useful"):
+        result_state = "validated-partial-result"
+    return gate, blockers, result_state
+
+
 def _persist_useful_dirty_candidate(
     payload: dict[str, Any],
     candidate: dict[str, Any],
@@ -183,34 +248,125 @@ def _persist_useful_dirty_candidate(
     execution_status: str,
     git: Callable[..., Any],
     git_output: Callable[..., str],
-) -> None:
+) -> str | None:
+    """Make a useful completed candidate durable and observe its carrier again."""
     if (
         execution_status != "completed"
-        or not candidate.get("useful")
-        or candidate.get("head_is_complete")
+        or not _candidate_has_work(candidate)
     ):
-        return
+        return None
+    if _carrier_is_complete(candidate):
+        candidate["admitted_carrier"] = _carrier_identity(candidate)
+        return None
+    if not _carrier_is_observable(candidate):
+        return _carrier_not_ready_reason(candidate)
     snapshot = persist_incomplete_candidate(
         resolved_target, git=git, git_output=git_output
     )
     candidate["persist"] = snapshot
     if snapshot.get("status") != "committed":
-        return
+        detail = snapshot.get("error") or "the lane snapshot was not committed"
+        return f"candidate persistence failed: {detail}"
     payload["target_sha"] = str(snapshot["sha"])
     try:
-        candidate.update(
-            _candidate_carrier(
-                resolved_target,
-                base_sha,
-                head=str(snapshot["sha"]),
-                branch=payload.get("target_branch"),
-            )
+        observed = _candidate_carrier(
+            resolved_target,
+            base_sha,
+            head=str(snapshot["sha"]),
+            branch=payload.get("target_branch"),
         )
-    except (OSError, TaskRunError, TypeError, ValueError):
-        candidate["head_sha"] = snapshot["sha"]
-        candidate["carrier_kind"] = "commit-only"
-        candidate["head_is_complete"] = True
-        candidate["dirty_paths"] = []
+    except (OSError, RuntimeError, TaskRunError, TypeError, AttributeError, ValueError) as exc:
+        _mark_carrier_unreadable(candidate, phase="after persistence", error=exc)
+        return f"candidate carrier could not be observed after persistence: {exc}"
+    candidate.update(observed)
+    if not _carrier_is_complete(candidate):
+        return _carrier_not_ready_reason(candidate, phase="after persistence")
+    candidate["admitted_carrier"] = _carrier_identity(candidate)
+    return None
+
+
+def _candidate_has_work(candidate: Mapping[str, Any]) -> bool:
+    """Whether a completed candidate has bytes worth preserving, even if invalid."""
+    return bool(candidate.get("useful") or candidate.get("changed_paths"))
+
+
+def _carrier_is_observable(carrier: Mapping[str, Any]) -> bool:
+    return all(key in carrier for key in (
+        "carrier_kind", "head_is_complete", "observed_head_sha", "content_digest"
+    ))
+
+
+def _carrier_is_complete(carrier: Mapping[str, Any]) -> bool:
+    return bool(
+        _carrier_is_observable(carrier)
+        and carrier.get("carrier_kind") == "commit-only"
+        and carrier.get("head_is_complete") is True
+        and carrier.get("dirty_paths") == []
+        and carrier.get("observed_head_sha")
+        and carrier.get("content_digest")
+    )
+
+
+def _carrier_identity(carrier: Mapping[str, Any]) -> dict[str, Any]:
+    """Compact identity used to prove the gate judged the admitted candidate."""
+    return {
+        "head_sha": carrier.get("observed_head_sha"),
+        "carrier_kind": carrier.get("carrier_kind"),
+        "dirty_paths": list(carrier.get("dirty_paths") or ()),
+        "content_digest": carrier.get("content_digest"),
+    }
+
+
+def _carrier_not_ready_reason(
+    carrier: Mapping[str, Any], *, phase: str = "before proof"
+) -> str:
+    if not _carrier_is_observable(carrier):
+        return f"candidate carrier is not observable {phase}; changed-line proof was skipped"
+    return (
+        f"candidate carrier is incomplete {phase} ({carrier.get('carrier_kind')!r}); "
+        "changed-line proof was skipped"
+    )
+
+
+def _mark_carrier_unreadable(candidate: dict[str, Any], *, phase: str, error: Exception) -> None:
+    """Make retention fail closed after a carrier read cannot establish state."""
+    candidate["carrier_observation"] = {"status": "unreadable", "phase": phase, "error": str(error)}
+    candidate.update(carrier_kind="unknown", head_is_complete=False, state_known=False)
+
+
+def _refresh_after_gate(
+    payload: dict[str, Any],
+    candidate: dict[str, Any],
+    *,
+    resolved_target: Path,
+    base_sha: str,
+) -> str | None:
+    admitted = candidate.get("admitted_carrier")
+    if not isinstance(admitted, Mapping):
+        _mark_carrier_unreadable(
+            candidate,
+            phase="after changed-line gate",
+            error=TaskRunError("missing admitted carrier identity"),
+        )
+        return "candidate carrier identity was missing after changed-line proof"
+    try:
+        observed = _candidate_carrier(resolved_target, base_sha)
+    except (OSError, RuntimeError, TaskRunError, TypeError, AttributeError, ValueError) as exc:
+        _mark_carrier_unreadable(candidate, phase="after changed-line gate", error=exc)
+        return f"candidate carrier could not be observed after changed-line proof: {exc}"
+
+    candidate["post_gate_carrier"] = _carrier_identity(observed)
+    candidate.update(observed)
+    if observed.get("observed_head_sha"):
+        payload["target_sha"] = observed["observed_head_sha"]
+    if observed.get("observed_branch"):
+        payload["target_branch"] = observed["observed_branch"]
+    if _carrier_identity(observed) != dict(admitted):
+        return (
+            "candidate carrier changed after changed-line proof; approval was denied "
+            "and gate-created work was not committed"
+        )
+    return None
 
 
 def _next_step(
@@ -274,7 +430,7 @@ def _apply_lane_retention(
         return
     if result_state in {"completed", "validated-partial-result", "failed"}:
         payload["keep_worktree"] = bool(
-            candidate.get("useful") and not candidate.get("head_is_complete")
+            _candidate_has_work(candidate) and not candidate.get("head_is_complete")
         )
         persist(payload, runtime_path)
 
@@ -366,6 +522,7 @@ def _changed_line_verdict(
     worktree: Path,
     base_sha: str,
     log_dir: Path,
+    skip_reason: str | None = None,
 ) -> dict[str, Any]:
     """Run the gate for a validated candidate; otherwise say why it did not run."""
     if changed_line_gate is None:
@@ -375,14 +532,22 @@ def _changed_line_verdict(
             "reason": "no changed-line gate was supplied to completion",
             "summary": "changed-line gate not run: none supplied",
         }
-    if execution_status != "completed" or not candidate.get("useful"):
+    if skip_reason:
         return {
             "status": "skipped",
             "blocking": False,
-            "reason": (
-                f"execution ended {execution_status} with candidate status "
-                f"{candidate.get('status')!r}; there is no validated candidate to judge"
-            ),
-            "summary": "changed-line gate skipped: no validated candidate",
+            "reason": skip_reason,
+            "summary": f"changed-line gate skipped: {skip_reason}",
+        }
+    if execution_status != "completed" or not candidate.get("useful"):
+        reason = (
+            f"execution ended {execution_status} with candidate status "
+            f"{candidate.get('status')!r}; there is no validated candidate to judge"
+        )
+        return {
+            "status": "skipped",
+            "blocking": False,
+            "reason": reason,
+            "summary": f"changed-line gate skipped: {reason}",
         }
     return changed_line_gate(worktree, base_sha=base_sha, log_dir=log_dir)

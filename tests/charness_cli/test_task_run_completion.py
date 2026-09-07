@@ -1,10 +1,4 @@
-"""The terminal `next_step` branches owned by `scripts/task_run/task_run_completion.py`.
-
-`complete_task` takes every collaborator as a parameter, so the three-way
-`next_step` split can be driven directly instead of through a real Codex lane.
-The middle branch -- a candidate that is useful but NOT approval-eligible -- was
-the one an operator would read after a partial lane, and it had never run.
-"""
+"""Candidate preservation, proof readiness, and retention at task completion."""
 
 from __future__ import annotations
 
@@ -21,90 +15,268 @@ from tests.quality_gates.repo_shapes import install_committed_repo
 def _complete(
     tmp_path: Path,
     *,
-    result_state: str,
+    candidate_kind: str = "clean",
+    result_state: str | None = None,
     scope_verdict: str = "pass",
-    candidate: dict[str, Any] | None = None,
     changed_line_gate: Any = None,
     execution_state: str = "completed",
+    parent_blocking: bool = False,
+    git: Any = None,
+    persist_events: list[str] | None = None,
 ) -> dict[str, Any]:
-    target = tmp_path / "worktree"
-    target.mkdir(exist_ok=True)
+    target = install_committed_repo(tmp_path / "worktree", {"module.py": "VALUE = 1\n"})
+    base_sha = task_run_git._git_output(target, "rev-parse", "HEAD").strip()
+    if candidate_kind == "clean":
+        (target / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+        task_run_git._commit_lane_snapshot(target, message="test candidate")
+    elif candidate_kind == "dirty":
+        (target / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+    elif candidate_kind != "absent":
+        raise AssertionError(f"unknown candidate fixture: {candidate_kind}")
+    branch = task_run_git._git_output(target, "symbolic-ref", "--quiet", "--short", "HEAD").strip()
+    carrier = task_run_git._candidate_carrier(target, base_sha, branch=branch)
+    useful = candidate_kind != "absent"
+    candidate = {
+        "status": "validated" if useful else "absent",
+        "useful": useful,
+        **carrier,
+    }
+    if result_state is None:
+        result_state = "validated-partial-result" if parent_blocking else "completed"
     evidence = {"populations": {}}
     scope = {"verdict": scope_verdict, "reason": "scope drifted"}
-    parent_progress = {"blocking": False, "classification": "no-parent-progress"}
-    resolved_candidate = candidate if candidate is not None else {"status": result_state}
+    parent_progress = {
+        "blocking": parent_blocking,
+        "classification": "writer-conflict" if parent_blocking else "no-parent-progress",
+    }
+
+    def default_git(cwd: Path, *args: str) -> Any:
+        if args[:2] == ("worktree", "remove"):
+            return SimpleNamespace(returncode=1, stdout="", stderr="not removing the unit fixture")
+        if persist_events is not None and "commit" in args:
+            persist_events.append("persist-commit")
+        return task_run_git._git(cwd, *args)
 
     return task_run_completion.complete_task(
-        {"task_id": "lane-1"},
+        {"task_id": "lane-1", "target_branch": branch, "base_sha": base_sha},
         runtime_path=tmp_path / "runtime",
         resolved_target=target,
-        resolved_repo=tmp_path / "repo",
+        resolved_repo=target,
         before_exec={},
-        base_sha="0" * 40,
+        base_sha=base_sha,
         scope_specs=[],
         require_change=False,
         parent_before={},
-        parent_before_head="0" * 40,
+        parent_before_head=base_sha,
         stdout_log=tmp_path / "stdout.log",
         execution={},
         started_at=0.0,
         persist=lambda _payload, _path: None,
         result_delivery=lambda _log: {"status": "delivered"},
-        completion_evidence=lambda **_kwargs: (evidence, scope, parent_progress),
+        completion_evidence=lambda **_kwargs: (
+            {**evidence, "scope": scope},
+            {
+                "verdict": scope_verdict,
+                "reason": "scope drifted",
+                "changed_paths": carrier["changed_paths"],
+                "candidate_carrier": carrier,
+            },
+            parent_progress,
+        ),
         execution_state=lambda _execution, _delivery: execution_state,
-        candidate_result_state=lambda **_kwargs: (resolved_candidate, result_state),
+        candidate_result_state=lambda **_kwargs: (candidate, result_state),
         candidate_commit=None,
-        git=lambda *_args, **_kwargs: SimpleNamespace(returncode=1),
-        git_output=lambda *_args, **_kwargs: "abc123\n",
+        git=git or default_git,
+        git_output=task_run_git._git_output,
         pass_value="pass",
         changed_line_gate=changed_line_gate,
     )
 
 
-def test_a_validated_partial_result_is_named_useful_but_not_approval_eligible(
+def test_dirty_useful_work_is_persisted_before_the_gate_sees_a_clean_candidate(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    payload = _complete(tmp_path, result_state="validated-partial-result")
+    events: list[Any] = []
 
-    assert payload["next_step"].endswith("it is useful but not approval-eligible.")
-    assert payload["approval_eligibility"] == "ineligible"
+    def gate(worktree: Path, *, base_sha: str, log_dir: Path) -> dict[str, Any]:
+        events.append(
+            (
+                "gate",
+                task_run_git._git_output(worktree, "rev-parse", "HEAD").strip(),
+                task_run_git._git_output(worktree, "status", "--porcelain").strip(),
+                base_sha,
+                log_dir,
+            )
+        )
+        return {"status": "clean", "blocking": False, "summary": "gate clean"}
+
+    payload = _complete(
+        tmp_path,
+        candidate_kind="dirty",
+        changed_line_gate=gate,
+        persist_events=events,
+    )
+
+    assert events[0] == "persist-commit"
+    assert events[1][0] == "gate"
+    assert events[1][1] == payload["target_sha"]
+    assert events[1][2] == ""
+    assert payload["candidate"]["persist"]["status"] == "committed"
+    assert payload["candidate"]["admitted_carrier"]["head_sha"] == payload["target_sha"]
+    assert payload["candidate"]["dirty_paths"] == []
+    assert payload["status"] == "completed"
+    assert payload["approval_eligibility"] == "eligible"
     capsys.readouterr()
 
 
-def test_a_completed_candidate_is_named_approval_eligible(
+@pytest.mark.parametrize(
+    ("blocker", "expected_text"),
+    [
+        ("scope", "scope drifted"),
+        ("parent", "parent changed within the resolved candidate scope"),
+        ("execution", "execution: failed"),
+    ],
+)
+def test_blockers_skip_proof_but_preserve_completed_useful_work(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    blocker: str,
+    expected_text: str,
+) -> None:
+    calls: list[str] = []
+
+    def gate(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        calls.append("gate")
+        return {"status": "clean", "blocking": False}
+
+    kwargs: dict[str, Any] = {"candidate_kind": "dirty", "changed_line_gate": gate}
+    if blocker == "scope":
+        kwargs.update(scope_verdict="fail", result_state="failed")
+    elif blocker == "parent":
+        kwargs.update(parent_blocking=True)
+    else:
+        kwargs.update(execution_state="failed", result_state="failed")
+    payload = _complete(tmp_path, **kwargs)
+
+    assert calls == []
+    assert expected_text in payload["changed_line_gate"]["reason"]
+    assert payload["approval_eligibility"] == "ineligible"
+    if blocker != "execution":
+        assert payload["candidate"]["persist"]["status"] == "committed"
+        assert payload["candidate"]["dirty_paths"] == []
+    else:
+        assert "persist" not in payload["candidate"]
+        assert payload["candidate"]["dirty_paths"] == ["module.py"]
+        assert payload["keep_worktree"] is True
+    capsys.readouterr()
+
+
+def test_a_clean_committed_candidate_is_proved_and_refreshed(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    payload = _complete(tmp_path, result_state="completed")
+    calls: list[Path] = []
 
+    def gate(worktree: Path, *, base_sha: str, log_dir: Path) -> dict[str, Any]:
+        calls.append(worktree)
+        return {"status": "clean", "blocking": False, "summary": "gate clean"}
+
+    payload = _complete(tmp_path, changed_line_gate=gate)
+
+    assert calls == [tmp_path / "worktree"]
+    assert payload["candidate"]["post_gate_carrier"] == payload["candidate"]["admitted_carrier"]
+    assert payload["changed_line_gate"]["status"] == "clean"
     assert payload["next_step"].endswith("the typed result is approval-eligible.")
     assert payload["approval_eligibility"] == "eligible"
     capsys.readouterr()
 
 
-def test_a_blocked_scope_names_the_blocker_instead_of_a_review_invitation(
+def test_a_persistence_failure_skips_proof_and_keeps_dirty_worktree(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    payload = _complete(tmp_path, result_state="completed", scope_verdict="fail")
+    calls: list[str] = []
 
-    assert payload["next_step"] == (
-        f"Inspect the retained candidate in {tmp_path / 'worktree'}, typed result, "
-        "and captured logs; scope drifted."
-    )
+    def failing_git(cwd: Path, *args: str) -> Any:
+        if "commit" in args:
+            return SimpleNamespace(returncode=1, stdout="", stderr="persist lock")
+        if args[:2] == ("worktree", "remove"):
+            calls.append("remove")
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        return task_run_git._git(cwd, *args)
+
+    def gate(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        calls.append("gate")
+        return {"status": "clean", "blocking": False}
+
+    payload = _complete(tmp_path, candidate_kind="dirty", changed_line_gate=gate, git=failing_git)
+
+    assert calls == []
+    assert payload["candidate"]["persist"]["status"] == "failed"
+    assert payload["candidate"]["carrier_kind"] == "worktree-only"
+    assert payload["candidate"]["dirty_paths"] == ["module.py"]
+    assert payload["keep_worktree"] is True
+    assert payload["approval_eligibility"] == "ineligible"
+    assert "candidate persistence failed" in payload["changed_line_gate"]["reason"]
+    assert "persist lock" in payload["changed_line_gate"]["reason"]
     capsys.readouterr()
 
 
-def test_without_a_gate_the_receipt_says_the_gate_was_not_run(
+def test_carrier_refresh_failure_after_persistence_fails_closed(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    payload = _complete(tmp_path, result_state="completed")
+    def boom(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        raise task_run_completion.TaskRunError("carrier refresh failed")
+
+    original = task_run_completion._candidate_carrier
+    task_run_completion._candidate_carrier = boom
+    try:
+        calls: list[str] = []
+
+        def gate(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+            calls.append("gate")
+            return {"status": "clean", "blocking": False}
+
+        payload = _complete(tmp_path, candidate_kind="dirty", changed_line_gate=gate)
+    finally:
+        task_run_completion._candidate_carrier = original
+
+    assert calls == []
+    assert payload["candidate"]["persist"]["status"] == "committed"
+    assert payload["candidate"]["carrier_observation"]["status"] == "unreadable"
+    assert payload["candidate"]["carrier_kind"] == "unknown"
+    assert payload["candidate"]["head_is_complete"] is False
+    assert payload["keep_worktree"] is True
+    assert payload["approval_eligibility"] == "ineligible"
+    assert "carrier could not be observed after persistence" in payload["changed_line_gate"]["reason"]
+    capsys.readouterr()
+
+
+def test_no_change_skips_an_injected_gate_and_remains_compatible(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def exploding_gate(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        raise AssertionError("no-change candidates do not need proof")
+
+    payload = _complete(tmp_path, candidate_kind="absent", changed_line_gate=exploding_gate)
+
+    assert payload["changed_line_gate"]["status"] == "skipped"
+    assert "no validated candidate" in payload["changed_line_gate"]["reason"]
+    assert payload["status"] == "completed"
+    assert payload["approval_eligibility"] == "eligible"
+    capsys.readouterr()
+
+
+def test_without_an_injected_gate_the_clean_candidate_remains_eligible(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    payload = _complete(tmp_path)
 
     assert payload["changed_line_gate"]["status"] == "not-run"
-    assert payload["changed_line_gate"]["blocking"] is False
     assert payload["status"] == "completed"
+    assert payload["approval_eligibility"] == "eligible"
     capsys.readouterr()
 
 
-def test_a_changed_line_refusal_demotes_a_completed_lane_and_names_the_line(
+def test_a_gate_refusal_demotes_a_completed_lane_and_names_the_line(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     calls: list[dict[str, Any]] = []
@@ -120,22 +292,22 @@ def test_a_changed_line_refusal_demotes_a_completed_lane_and_names_the_line(
 
     payload = _complete(
         tmp_path,
-        result_state="completed",
-        candidate={"status": "validated", "useful": True},
+        candidate_kind="clean",
         changed_line_gate=refusing_gate,
     )
 
     assert calls == [
-        {"worktree": tmp_path / "worktree", "base_sha": "0" * 40, "log_dir": tmp_path}
+        {"worktree": tmp_path / "worktree", "base_sha": payload["base_sha"], "log_dir": tmp_path}
     ]
     assert payload["status"] == "validated-partial-result"
     assert payload["approval_eligibility"] == "ineligible"
     assert payload["changed_line_gate"]["blocking_detail"] == {
         "scripts/x.py": {"changed_and_missing": [7]}
     }
-    assert payload["next_step"] == (
-        f"Inspect the retained candidate in {tmp_path / 'worktree'}, typed result, "
+    assert "Inspect the retained candidate on branch" in payload["next_step"]
+    assert (
         "and captured logs; changed-line gate blocked (exit 1): scripts/x.py lines 7."
+        in payload["next_step"]
     )
     capsys.readouterr()
 
@@ -148,14 +320,82 @@ def test_the_gate_is_skipped_when_there_is_no_validated_candidate(
 
     payload = _complete(
         tmp_path,
-        result_state="completed",
-        candidate={"status": "absent", "useful": False},
+        candidate_kind="absent",
         changed_line_gate=exploding_gate,
     )
 
     assert payload["changed_line_gate"]["status"] == "skipped"
     assert "no validated candidate" in payload["changed_line_gate"]["reason"]
     assert payload["status"] == "completed"
+    capsys.readouterr()
+
+
+def test_gate_created_dirty_work_is_not_committed_and_survives_retention(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def gate(worktree: Path, *, base_sha: str, log_dir: Path) -> dict[str, Any]:
+        (worktree / "gate-output.py").write_text("GATE = 1\n", encoding="utf-8")
+        return {"status": "clean", "blocking": False, "summary": "gate clean"}
+
+    payload = _complete(tmp_path, changed_line_gate=gate)
+
+    assert payload["status"] == "validated-partial-result"
+    assert payload["approval_eligibility"] == "ineligible"
+    assert payload["candidate"]["post_gate_carrier"]["dirty_paths"] == ["gate-output.py"]
+    assert payload["candidate"]["carrier_kind"] == "commit-plus-dirty"
+    assert payload["candidate"]["head_is_complete"] is False
+    assert payload["keep_worktree"] is True
+    assert "gate-created work was not committed" in payload["next_step"]
+    capsys.readouterr()
+
+
+def test_gate_changed_head_is_ineligible_but_fresh_clean_content_can_be_released(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def gate(worktree: Path, *, base_sha: str, log_dir: Path) -> dict[str, Any]:
+        (worktree / "module.py").write_text("VALUE = 3\n", encoding="utf-8")
+        task_run_git._commit_lane_snapshot(worktree, message="gate mutation")
+        return {"status": "clean", "blocking": False, "summary": "gate clean"}
+
+    def allow_release(cwd: Path, *args: str) -> Any:
+        if args[:2] == ("worktree", "remove"):
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        return task_run_git._git(cwd, *args)
+
+    payload = _complete(tmp_path, changed_line_gate=gate, git=allow_release)
+
+    assert payload["status"] == "validated-partial-result"
+    assert payload["approval_eligibility"] == "ineligible"
+    assert payload["candidate"]["carrier_kind"] == "commit-only"
+    assert payload["candidate"]["head_is_complete"] is True
+    assert payload["candidate"]["post_gate_carrier"]["head_sha"] != (
+        payload["candidate"]["admitted_carrier"]["head_sha"]
+    )
+    assert payload["retention"]["worktree"] == "removed"
+    assert payload["keep_worktree"] is False
+    capsys.readouterr()
+
+
+def test_post_gate_carrier_read_failure_denies_approval_and_retains_worktree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def boom(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        raise task_run_completion.TaskRunError("post-gate carrier unreadable")
+
+    monkeypatch.setattr(task_run_completion, "_candidate_carrier", boom)
+
+    def gate(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        return {"status": "clean", "blocking": False, "summary": "gate clean"}
+
+    payload = _complete(tmp_path, changed_line_gate=gate)
+
+    assert payload["status"] == "validated-partial-result"
+    assert payload["approval_eligibility"] == "ineligible"
+    assert payload["candidate"]["carrier_observation"]["status"] == "unreadable"
+    assert payload["candidate"]["carrier_kind"] == "unknown"
+    assert payload["candidate"]["head_is_complete"] is False
+    assert payload["keep_worktree"] is True
+    assert "carrier could not be observed after changed-line proof" in payload["next_step"]
     capsys.readouterr()
 
 
@@ -241,64 +481,6 @@ def test_commit_lane_snapshot_raises_when_git_commit_fails(tmp_path: Path) -> No
             git=git,
             git_output=task_run_git._git_output,
         )
-
-
-def test_a_committed_persist_marks_head_complete_when_carrier_refresh_fails(
-    tmp_path: Path, monkeypatch
-) -> None:
-    worktree = install_committed_repo(tmp_path / "lane", {"module.py": "VALUE = 1\n"})
-    (worktree / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
-
-    def boom(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
-        raise task_run_completion.TaskRunError("carrier refresh failed")
-
-    def _git_without_worktree_remove(cwd: Path, *args: str) -> Any:
-        if args[:2] == ("worktree", "remove"):
-            return SimpleNamespace(returncode=128, stderr="not a linked worktree")
-        return task_run_git._git(cwd, *args)
-
-    monkeypatch.setattr(task_run_completion, "_candidate_carrier", boom)
-    payload = task_run_completion.complete_task(
-        {"task_id": "lane-1", "target_branch": "lane/task-run"},
-        runtime_path=tmp_path / "runtime",
-        resolved_target=worktree,
-        resolved_repo=tmp_path / "repo",
-        before_exec={},
-        base_sha="0" * 40,
-        scope_specs=[],
-        require_change=False,
-        parent_before={},
-        parent_before_head="0" * 40,
-        stdout_log=tmp_path / "stdout.log",
-        execution={},
-        started_at=0.0,
-        persist=lambda _payload, _path: None,
-        result_delivery=lambda _log: {"status": "delivered"},
-        completion_evidence=lambda **_kwargs: (
-            {"populations": {}},
-            {"verdict": "pass", "reason": ""},
-            {"blocking": False, "classification": "no-parent-progress"},
-        ),
-        execution_state=lambda _execution, _delivery: "completed",
-        candidate_result_state=lambda **_kwargs: (
-            {
-                "status": "validated",
-                "useful": True,
-                "head_is_complete": False,
-                "carrier_kind": "worktree-only",
-            },
-            "completed",
-        ),
-        candidate_commit=None,
-        git=_git_without_worktree_remove,
-        git_output=task_run_git._git_output,
-        pass_value="pass",
-    )
-
-    assert payload["candidate"]["persist"]["status"] == "committed"
-    assert payload["candidate"]["head_is_complete"] is True
-    assert payload["candidate"]["carrier_kind"] == "commit-only"
-    assert "no lane commit exists" not in payload["next_step"]
 
 
 def test_a_failed_runtime_removal_and_an_absent_runtime_are_both_named(tmp_path: Path, monkeypatch) -> None:

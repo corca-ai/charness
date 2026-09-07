@@ -32,9 +32,12 @@ exceptional host setup.
 
 The parent reads the receipt before integrating. A lane is done only when
 `changed_line_gate` is `clean` or `noop`. A useful candidate whose worker left a
-dirty tree is committed onto the lane branch before retention, so `target_sha`
-carries the files; if that persist fails, `keep_worktree` stays true and the
-runtime sweep will not delete the worktree. Parent path-delta classes (`normal`,
+dirty tree is committed onto the lane branch before proof and retention, so `target_sha`
+carries the files; completion re-observes the carrier after an invoked gate and
+denies approval for dirt, read failure, or identity change. Retention may release
+a freshly observed complete commit-carried tree even when proof denies approval;
+if persistence or observation fails, `keep_worktree` stays true and the runtime
+sweep will not delete the worktree. Parent path-delta classes (`normal`,
 `concurrent-parent-progress`, `writer-conflict`) are on the receipt.
 
 ## Status
