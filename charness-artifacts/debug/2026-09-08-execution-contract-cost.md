@@ -29,7 +29,7 @@ Persist and observe before proof, skip proof for existing blockers, then observe
 
 ## Verification
 
-TASK-1 reproduced with controlled gate outcomes. Repair and final proof are pending.
+Repair `d1fd4b177` passes the unchanged seven-case real-Git acceptance (old source: 0/7; final: 7/7), 34 focused tests, committed changed-line coverage and a targeted killed mutant. The first candidate failed 5/7 because it added a pre-preservation metadata requirement; removing that overconstraint restored the intended contract. Final independent Terra review passed. `2026-09-08-execution-contract-cost-proof.json` freezes the reviewed evidence; `2026-09-08-execution-contract-cost-closeout.json` owns later parent/full results.
 
 ## Root Cause
 
@@ -39,9 +39,9 @@ Why wasted proof? The gate precedes commit preservation. Why? Preservation was i
 
 - Invariant: eligibility requires the same observed candidate admitted to proof; removal requires freshly observed complete committed content. Preservation is independent of correctness, and unknown state establishes neither.
 - Producer Proof: real Git dirty/committed snapshots in TASK-1.
-- Final-Consumer Proof: returned complete_task receipt and captured gate events in TASK-1; retention behavior needs repair tests.
+- Final-Consumer Proof: unchanged real-Git acceptance observes returned receipts, gate input, actual worktree removal and branch-content readback, including dirty/unknown retention.
 - Interface-Shape Sibling Scan: preservation, proof scheduling and retention consume candidate completeness separately.
-- Non-Claims: no provider, installed-host, release or broad-suite proof yet.
+- Non-Claims: no installed-host, release or model-cost savings claim; full-suite status is recorded in the closeout.
 
 ## Detection Gap
 
@@ -68,7 +68,7 @@ Why wasted proof? The gate precedes commit preservation. Why? Preservation was i
 
 ## Interrupt Decision
 
-- Resolution: open
+- Resolution: resolved
 - Critique Required: yes
 - Next Step: spec
 - Handoff Artifact: charness-artifacts/spec/2026-09-08-execution-contract-cost.md

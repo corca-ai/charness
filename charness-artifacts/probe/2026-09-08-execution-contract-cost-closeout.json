@@ -1,0 +1,298 @@
+{
+  "schema_version": "charness.execution-contract-closeout.v1",
+  "proof_snapshot": "charness-artifacts/probe/2026-09-08-execution-contract-cost-proof.json",
+  "snapshot_note": "Review/full pending fields in the frozen proof describe packet preparation time; this closeout owns later results.",
+  "review": {
+    "lifecycle": {
+      "schema_version": "charness.reviewer_lifecycle.v1",
+      "status": "runner-completed",
+      "execution_state": "terminal",
+      "lifecycle_state": "terminal",
+      "reviewer_started": true,
+      "delivery_state": "findings-received",
+      "verdict_state": "pass",
+      "review_verdict": "pass",
+      "classification": "unclassified",
+      "approval_eligible": true,
+      "output": {
+        "state": "terminal",
+        "approval_eligible": true,
+        "schema_version": "charness.reviewer_worker_report.v1",
+        "findings_identity": "32908627619e5e6cbbf4036b8ee51e8991ede683b76488d03e428daacb314fd5"
+      },
+      "output_state": "terminal",
+      "failure_identity": "c0326ac9f8d6cda80acc483a567521e7c91c7492aa9bb76785302f4899770d90",
+      "next_move": "consume the identity-bound delivered reviewer result",
+      "runner_returncode": 0,
+      "runner_status": "runner-completed",
+      "boundary_mode": "read-only-worker",
+      "boundary_ok": true,
+      "boundary_reason": null,
+      "paths": {
+        "packet": "charness-artifacts/critique/execution-cost-final-20260908-packet.json",
+        "schema": ".charness/reviewer-round-execution-cost-final-20260908/bounded-review-result.schema.json",
+        "capability": ".charness/reviewer-round-execution-cost-final-20260908/capability.json",
+        "prompt": ".charness/reviewer-round-execution-cost-final-20260908/review-prompt.md",
+        "plan": ".charness/reviewer-round-execution-cost-final-20260908/run-plan.json",
+        "ledger": ".charness/reviewer-round-execution-cost-final-20260908/delivery.json",
+        "output": ".charness/reviewer-round-execution-cost-final-20260908/result.json",
+        "receipt": ".charness/reviewer-round-execution-cost-final-20260908/receipt.json",
+        "report": "charness-artifacts/critique/workers/execution-cost-final-20260908/worker-report.yaml",
+        "runner_stdout": ".charness/reviewer-round-execution-cost-final-20260908/runner.stdout",
+        "runner_stderr": ".charness/reviewer-round-execution-cost-final-20260908/runner.stderr",
+        "backend_stdout": ".charness/reviewer-round-execution-cost-final-20260908/backend.stdout",
+        "backend_stderr": ".charness/reviewer-round-execution-cost-final-20260908/backend.stderr",
+        "summary": ".charness/reviewer-round-execution-cost-final-20260908/lifecycle.yaml",
+        "runtime_report": ".charness/reviewer-round-execution-cost-final-20260908/worker-report.yaml",
+        "durable_report": "charness-artifacts/critique/workers/execution-cost-final-20260908/worker-report.yaml"
+      },
+      "identities": {
+        "attempt_id": "execution-cost-final-20260908",
+        "scope": "Final completion behavior and direct consumer evidence; implementation approval only, full suite pending. Read supplied changed source and tests plus focused proof. Compare c2bda9a41..d1fd4b177 only as needed. No repository-wide/history audit.",
+        "packet_identity": "c565b48bfd4be3611ab3f2861a9d71334db16a6a02c66702476fab1f2dbc8096",
+        "reviewed_input_identity": "6b9089733349b09eab284010c1080408ce5e1e6b26fdf09e91604554180b1002",
+        "parent_receipt_identity": "parent-46e80555e28fc302141469e243737ca6c68f43a2be021ebb",
+        "findings_identity": "32908627619e5e6cbbf4036b8ee51e8991ede683b76488d03e428daacb314fd5"
+      },
+      "ok": true,
+      "carrier_ok": true,
+      "packet_verification": {
+        "ok": true,
+        "status": "current",
+        "reason": "current",
+        "reason_code": "current",
+        "expected_kind": "charness.critique_prepare_packet",
+        "packet_path": "charness-artifacts/critique/execution-cost-final-20260908-packet.json",
+        "packet_sha256": "c565b48bfd4be3611ab3f2861a9d71334db16a6a02c66702476fab1f2dbc8096",
+        "identity_sha256": "6b9089733349b09eab284010c1080408ce5e1e6b26fdf09e91604554180b1002"
+      },
+      "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "backend": "codex_exec",
+      "timeout_seconds": 900,
+      "scope": "Final completion behavior and direct consumer evidence; implementation approval only, full suite pending. Read supplied changed source and tests plus focused proof. Compare c2bda9a41..d1fd4b177 only as needed. No repository-wide/history audit.",
+      "lens": "Verify preservation is independent from approval, proof sees durable permitted bytes, post-proof head/content/dirt changes or read failure deny approval, unknown or dirty work survives retention, complete changed commits may be released. Challenge unreachable or redundant state and metadata validation; no extra schema/gate or blanket framework. 7 frozen acceptance cases now pass, 34 tests pass, committed coverage clean, targeted mutant killed. Treat timeout receipt as ineligible; parent repaired and proved preserved candidate. Inspect real candidate state/carrier owner only if needed. Report concrete blockers plus counterweight, not hypothetical new policies.",
+      "parent_receipt_identity": "parent-46e80555e28fc302141469e243737ca6c68f43a2be021ebb",
+      "runner_output": {
+        "status": "runner-completed",
+        "returncode": 0
+      },
+      "runner_stream": {
+        "consistent": true,
+        "reason": null,
+        "runner_stdout_sha256": "e073eee2e05babfb5a56bec5616b5bada1daf5b7b04f007ef16615b9e32e55c8",
+        "canonical_report_sha256": "e073eee2e05babfb5a56bec5616b5bada1daf5b7b04f007ef16615b9e32e55c8"
+      },
+      "boundary_readback": {
+        "mode": "read-only-worker",
+        "required": false
+      },
+      "goal_lineage": {
+        "kind": "charness.goal-lineage",
+        "schema_version": 1,
+        "disposition": "not-goal-bound",
+        "draft": null,
+        "binding": null,
+        "goal_run": null,
+        "work_item": null,
+        "reason": "critique review was run without a Goal Run Work Item identity"
+      }
+    },
+    "result": {
+      "kind": "charness.bounded_review.v1",
+      "lens": "Final completion behavior and direct consumer evidence",
+      "packet_sha256": "c565b48bfd4be3611ab3f2861a9d71334db16a6a02c66702476fab1f2dbc8096",
+      "reviewed_input_identity_sha256": "6b9089733349b09eab284010c1080408ce5e1e6b26fdf09e91604554180b1002",
+      "verdict": "pass",
+      "target_observations": null,
+      "findings": [],
+      "counterweight_triage": [
+        {
+          "concern": "Persistence before proof could accidentally authorize blocked work.",
+          "bin": "not-a-blocker",
+          "disposition": "Persistence runs independently, while scope, parent, execution, persistence, carrier, gate, and post-gate blockers remain approval-denying and are passed as gate skip reasons."
+        },
+        {
+          "concern": "Post-gate mutation or carrier-read failure could be hidden by the snapshot acknowledgement.",
+          "bin": "not-a-blocker",
+          "disposition": "The fresh carrier observation compares head and content identity, marks read failure unknown, denies approval, and retention keeps dirty or unknown worktrees. A fresh complete changed commit remains releasable without becoming approval-eligible."
+        }
+      ],
+      "next_move": "Implementation approval is supported; run the separately pending full read-only lane before any broader completion claim.",
+      "non_claims": [
+        "Full-suite completion",
+        "release",
+        "push",
+        "installed-host behavior",
+        "model pricing savings",
+        "approval of the timed-out worker receipt"
+      ],
+      "capability_non_claims": [],
+      "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "receipt": {
+      "attempt_id": "execution-cost-final-20260908",
+      "backend": "codex_exec",
+      "boundary_fingerprint": null,
+      "boundary_mode": "read-only-worker",
+      "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "capability_file": "/home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-final-20260908/capability.json",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "capability_non_claims": [],
+      "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+      "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "capability_status": "ready",
+      "effective_capabilities": {
+        "configuration_identity": "charness-run-review-v1",
+        "external_effects": {
+          "observation": "host",
+          "state": "denied"
+        },
+        "external_reads": {
+          "entries": [],
+          "observation": "host",
+          "state": "unproved"
+        },
+        "filesystem": {
+          "observation": "host",
+          "write": "denied"
+        },
+        "host_selection_source": "charness-derived-read-only-default",
+        "sandbox": {
+          "label": "read-only",
+          "source": "charness-derived"
+        }
+      },
+      "execution_mode": "file-backed-worker",
+      "exit_code": 0,
+      "finished_at": "2026-09-07T23:44:10Z",
+      "output_file": "/home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-final-20260908/result.json",
+      "output_fresh": true,
+      "output_sha256": "32908627619e5e6cbbf4036b8ee51e8991ede683b76488d03e428daacb314fd5",
+      "output_size": 1617,
+      "packet_identity": "c565b48bfd4be3611ab3f2861a9d71334db16a6a02c66702476fab1f2dbc8096",
+      "parent_receipt_identity": "parent-46e80555e28fc302141469e243737ca6c68f43a2be021ebb",
+      "preflight": [],
+      "prompt_file": "/home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-final-20260908/review-prompt.md",
+      "prompt_sha256": "cfae72f6f03053af2b50f498ae61192af3dda2a8c35fbe806bc7860f9a7ce628",
+      "requested_capabilities": {
+        "external_effects": {
+          "entries": [],
+          "policy": "deny-all"
+        },
+        "external_reads": [],
+        "filesystem": {
+          "read_roots": [
+            "/home/hwidong/codes/charness"
+          ],
+          "write_policy": "deny-all",
+          "write_roots": []
+        }
+      },
+      "reviewed_input_identity": "6b9089733349b09eab284010c1080408ce5e1e6b26fdf09e91604554180b1002",
+      "run_id": "run-execution-cost-final-20260908",
+      "schema_file": "/home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-final-20260908/bounded-review-result.schema.json",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "schema_version": "charness.reviewer_worker.v1",
+      "scope": "Final completion behavior and direct consumer evidence; implementation approval only, full suite pending. Read supplied changed source and tests plus focused proof. Compare c2bda9a41..d1fd4b177 only as needed. No repository-wide/history audit.",
+      "started_at": "2026-09-07T23:43:45Z",
+      "status": "succeeded",
+      "stderr_file": "/home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-final-20260908/backend.stderr",
+      "stdout_file": "/home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-final-20260908/backend.stdout",
+      "terminal": true,
+      "timeout_seconds": 900.0,
+      "workspace": "/home/hwidong/codes/charness"
+    },
+    "delivery": {
+      "schema_version": "charness.reviewer_delivery.v1",
+      "approval_rule": "only findings-received with matching provenance is approval-eligible",
+      "attempts": [
+        {
+          "attempt_id": "execution-cost-final-20260908",
+          "scope": "Final completion behavior and direct consumer evidence; implementation approval only, full suite pending. Read supplied changed source and tests plus focused proof. Compare c2bda9a41..d1fd4b177 only as needed. No repository-wide/history audit.",
+          "packet_identity": "c565b48bfd4be3611ab3f2861a9d71334db16a6a02c66702476fab1f2dbc8096",
+          "parent_receipt_identity": "parent-46e80555e28fc302141469e243737ca6c68f43a2be021ebb",
+          "boundary_mode": "read-only-worker",
+          "state": "findings-received",
+          "observed_signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-07T23:44:10Z",
+          "history": [
+            {
+              "event_id": "3849d56d22724932b3ae969637388ab2",
+              "state": "spawn-accepted",
+              "signal": "spawn accepted; parent delivery not yet proven",
+              "terminal": false,
+              "recorded_at": "2026-09-07T23:43:45Z",
+              "attempt_id": "execution-cost-final-20260908",
+              "scope": "Final completion behavior and direct consumer evidence; implementation approval only, full suite pending. Read supplied changed source and tests plus focused proof. Compare c2bda9a41..d1fd4b177 only as needed. No repository-wide/history audit.",
+              "packet_identity": "c565b48bfd4be3611ab3f2861a9d71334db16a6a02c66702476fab1f2dbc8096",
+              "parent_receipt_identity": "parent-46e80555e28fc302141469e243737ca6c68f43a2be021ebb",
+              "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+            },
+            {
+              "event_id": "c4182d3720f04da8bce62beb4deed6d8",
+              "state": "running",
+              "signal": "reviewer worker process launched",
+              "terminal": false,
+              "recorded_at": "2026-09-07T23:43:45Z",
+              "attempt_id": "execution-cost-final-20260908",
+              "scope": "Final completion behavior and direct consumer evidence; implementation approval only, full suite pending. Read supplied changed source and tests plus focused proof. Compare c2bda9a41..d1fd4b177 only as needed. No repository-wide/history audit.",
+              "packet_identity": "c565b48bfd4be3611ab3f2861a9d71334db16a6a02c66702476fab1f2dbc8096",
+              "parent_receipt_identity": "parent-46e80555e28fc302141469e243737ca6c68f43a2be021ebb",
+              "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+            },
+            {
+              "event_id": "6b5a235ef0054829be7ae45413cea175",
+              "state": "findings-received",
+              "signal": "findings received in parent context",
+              "terminal": true,
+              "recorded_at": "2026-09-07T23:44:10Z",
+              "attempt_id": "execution-cost-final-20260908",
+              "scope": "Final completion behavior and direct consumer evidence; implementation approval only, full suite pending. Read supplied changed source and tests plus focused proof. Compare c2bda9a41..d1fd4b177 only as needed. No repository-wide/history audit.",
+              "packet_identity": "c565b48bfd4be3611ab3f2861a9d71334db16a6a02c66702476fab1f2dbc8096",
+              "parent_receipt_identity": "parent-46e80555e28fc302141469e243737ca6c68f43a2be021ebb",
+              "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+              "findings_identity": "32908627619e5e6cbbf4036b8ee51e8991ede683b76488d03e428daacb314fd5"
+            }
+          ],
+          "observations": [],
+          "retry_count": 0,
+          "reviewed_input_identity": "6b9089733349b09eab284010c1080408ce5e1e6b26fdf09e91604554180b1002",
+          "execution_mode": "file-backed-worker",
+          "backend": "codex_exec",
+          "prompt_sha256": "cfae72f6f03053af2b50f498ae61192af3dda2a8c35fbe806bc7860f9a7ce628",
+          "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "output_file": "/home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-final-20260908/result.json",
+          "receipt_file": "/home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-final-20260908/receipt.json",
+          "producer_run_id": "run-execution-cost-final-20260908",
+          "findings_identity": "32908627619e5e6cbbf4036b8ee51e8991ede683b76488d03e428daacb314fd5"
+        }
+      ]
+    },
+    "actual_backend": {
+      "model": "gpt-5.6-terra",
+      "effort": "medium",
+      "tokens": 23046,
+      "evidence": "backend.stderr header and final tokens used line",
+      "sha256": "6066230680c51c918c9c7a636d6f1d37cc77e4be397a7d6b67b2906239f0c41b"
+    }
+  },
+  "parent_coverage": {
+    "status": "clean",
+    "reason": "every mapped changed pool file's changed lines are covered",
+    "base_sha": "c2bda9a419a52c24ce94ca0a8345086d325df348",
+    "analyzed_changed_pool_files": [
+      "scripts/task_run/task_run_completion.py"
+    ],
+    "unmapped_changed_pool_files": [],
+    "consumer_returncode": 0,
+    "consumer_stdout": "ok: true\nchanged_pool_files:\n- scripts/task_run/task_run_completion.py\nblocking: []\nblocking_detail: {}\nblocking_targets: {}\nsubprocess_coverage_advisory: {}\nsubprocess_coverage_advisory_scope:\n  blocked_files_examined: 0\n  candidate_tests_examined: 0\n  candidate_sources:\n  - boundary-bypass-inventory\n  - test-reference-map\n  inventory: read\n  inventory_recorded_scripts: 47\n  reference_map: empty-or-unavailable\n  files_named: []\n  silence_means: 'no candidate test of that file was found to spawn it with a replacing\n    environment or to copy it by name. That is NOT proof the file''s coverage is honest:\n    a candidate list is not exhaustive, a spawn whose command is built from a variable\n    does not bind, an `env=` passed as a bare name cannot be followed, and a helper\n    in another module that copies a whole seeded repo is deliberately not resolved.'\ntargeted_mutant_proof:\n  required: false\n  contract: Before hand-mutating, cite/display one blocking_targets path:line entry,\n    mutate that exact line, record the failing test, then revert.\nbase_sha: c2bda9a419a52c24ce94ca0a8345086d325df348\nhead_sha: HEAD\nresolved_head_sha: d1fd4b1772532db5d32409cf11fc915618d21a4b\nchanged_pool_file_counts:\n  analyzed: 1\n  changed: 1\n"
+  },
+  "full_read_only": {
+    "status": "pending"
+  },
+  "release_push_install": "not performed"
+}

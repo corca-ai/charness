@@ -1,0 +1,290 @@
+{
+  "schema_version": "charness.execution-contract-proof.v1",
+  "source_head": "d1fd4b1772532db5d32409cf11fc915618d21a4b",
+  "source_sha256": "598a736c820d78aaaf69b6136ab1ac820fb89e4e7528742f322a1ca00e9799a1",
+  "contract": "preserve useful bytes, establish durable proof input, reobserve for approval and retention",
+  "acceptance": {
+    "frozen_harness_sha256": "a1704e7ed1ff2c642c3658d75e8d68e8df6521e0ee5f0bfb3e6da5b6590a8ea1",
+    "independence": "Sol author froze scenarios before seeing Luna implementation; parent ran unchanged harness",
+    "baseline": {
+      "bounded_processes": "tiny git fixtures plus in-process gate callbacks; no model or coverage process",
+      "cases": [
+        {
+          "duration_ms": 113,
+          "error": "AssertionError: gate did not observe a clean descendant HEAD",
+          "name": "permitted_dirty_persisted_before_gate",
+          "status": "fail"
+        },
+        {
+          "duration_ms": 122,
+          "error": "AssertionError: scope-blocked paid for the gate",
+          "name": "scope_refusal_skips_gate_but_complete_commit_cleans",
+          "status": "fail"
+        },
+        {
+          "duration_ms": 117,
+          "error": "AssertionError: parent-blocked paid for the gate",
+          "name": "parent_conflict_skips_gate_but_complete_commit_cleans",
+          "status": "fail"
+        },
+        {
+          "duration_ms": 70,
+          "error": "AssertionError: persistence failure paid for the gate",
+          "name": "persist_failure_skips_gate_and_survives",
+          "status": "fail"
+        },
+        {
+          "duration_ms": 102,
+          "error": "AssertionError: unknown carrier paid for the gate",
+          "name": "carrier_observation_failure_skips_gate_and_survives",
+          "status": "fail"
+        },
+        {
+          "duration_ms": 119,
+          "error": "AssertionError: post-dirty gate did not begin from ready carrier",
+          "name": "post_gate_dirt_invalidates_approval_and_survives",
+          "status": "fail"
+        },
+        {
+          "duration_ms": 134,
+          "error": "AssertionError: post-commit gate did not begin from ready carrier",
+          "name": "post_gate_changed_commit_invalidates_but_complete_commit_cleans",
+          "status": "fail"
+        }
+      ],
+      "duration_ms": 818,
+      "failed": 7,
+      "passed": 0,
+      "retention_evidence": "actual linked-worktree cleanup and branch-content readback; only the expensive gate is an in-process callback",
+      "schema_version": "charness.task-run-completion-acceptance.v1",
+      "source_head": "c2bda9a419a52c24ce94ca0a8345086d325df348",
+      "source_root": "/home/hwidong/codes/charness"
+    },
+    "first_candidate": {
+      "bounded_processes": "tiny git fixtures plus in-process gate callbacks; no model or coverage process",
+      "cases": [
+        {
+          "duration_ms": 63,
+          "error": "AssertionError: permitted carrier must run the gate once",
+          "name": "permitted_dirty_persisted_before_gate",
+          "status": "fail"
+        },
+        {
+          "duration_ms": 70,
+          "error": "AssertionError: scope-blocked candidate was not preserved",
+          "name": "scope_refusal_skips_gate_but_complete_commit_cleans",
+          "status": "fail"
+        },
+        {
+          "duration_ms": 67,
+          "error": "AssertionError: parent-blocked candidate was not preserved",
+          "name": "parent_conflict_skips_gate_but_complete_commit_cleans",
+          "status": "fail"
+        },
+        {
+          "actual_cleanup_proof": "linked worktree and dirty bytes survived",
+          "duration_ms": 67,
+          "gate_calls": 0,
+          "name": "persist_failure_skips_gate_and_survives",
+          "status": "pass"
+        },
+        {
+          "actual_cleanup_proof": "linked worktree survived unknown carrier",
+          "duration_ms": 61,
+          "gate_calls": 0,
+          "name": "carrier_observation_failure_skips_gate_and_survives",
+          "status": "pass"
+        },
+        {
+          "duration_ms": 62,
+          "error": "IndexError: list index out of range",
+          "name": "post_gate_dirt_invalidates_approval_and_survives",
+          "status": "fail"
+        },
+        {
+          "duration_ms": 60,
+          "error": "IndexError: list index out of range",
+          "name": "post_gate_changed_commit_invalidates_but_complete_commit_cleans",
+          "status": "fail"
+        }
+      ],
+      "duration_ms": 515,
+      "failed": 5,
+      "passed": 2,
+      "retention_evidence": "actual linked-worktree cleanup and branch-content readback; only the expensive gate is an in-process callback",
+      "schema_version": "charness.task-run-completion-acceptance.v1",
+      "source_head": "0065fea40bcbf7f49a341d0fd204e0c6fc8048b3",
+      "source_root": "/home/hwidong/.cache/tmp/charness-execution-cost-kn7niyt4/acceptance-checkout"
+    },
+    "failure_disposition": {
+      "subject_commit": "0065fea40bcbf7f49a341d0fd204e0c6fc8048b3",
+      "acceptance_receipt": "/home/hwidong/.cache/tmp/charness-execution-cost-kn7niyt4/final-acceptance.json",
+      "disposition": "subject overconstraint; frozen fixture is a valid lean complete_task collaborator",
+      "single_cause": {
+        "path": "scripts/task_run/task_run_completion.py",
+        "lines_at_0065fea40": "261-262",
+        "predicate": "if not _carrier_is_observable(candidate): return _carrier_not_ready_reason(candidate)",
+        "missing_fixture_fields": [
+          "observed_head_sha",
+          "content_digest"
+        ],
+        "effect": "The candidate has useful dirty bytes, but completion refuses to snapshot them because callback-supplied metadata is incomplete. All permitted, scope-blocked, parent-blocked, and post-gate cases therefore skip persistence and proof before their intended branch."
+      },
+      "why_subject_not_fixture": [
+        "Preservation is allowed by useful/changed bytes and is not a correctness claim; it does not need pre-existing carrier identity.",
+        "The existing snapshot operation followed by the real _candidate_carrier observation establishes the exact metadata needed for proof.",
+        "Requiring observed_head_sha/content_digest before that snapshot duplicates an admission check at the wrong lifecycle point and breaks complete_task's injected-collaborator compatibility.",
+        "A diagnostic control that supplied the full production _candidate_carrier mapping passed all 7 cases on dbd0a7809, confirming the five failures share this one predicate rather than five independent defects."
+      ],
+      "misleading_passes": {
+        "cases": [
+          "persist_failure_skips_gate_and_survives",
+          "carrier_observation_failure_skips_gate_and_survives"
+        ],
+        "reason": "At 0065fea40 both pass before invoking their injected failure. The metadata precondition skips persistence, so neither the refusing git add nor the failing post-persist _candidate_carrier is actually reached."
+      },
+      "minimal_repair": [
+        "Delete the pre-persistence _carrier_is_observable(candidate) refusal.",
+        "For every completed candidate with _candidate_has_work and no already-complete carrier, snapshot first, then call the sole observation owner _candidate_carrier.",
+        "Keep proof gated on the fresh carrier being complete commit-only; keep observation failure unknown/ineligible/retained; keep the post-gate same-head/content refresh.",
+        "Do not add fields to the frozen harness or add a second carrier schema."
+      ],
+      "safe_cleanup": [
+        "The secondary proof_ready blocker is unreachable after carrier_reason has already populated blockers and can be removed.",
+        "Updating target_branch from the post-gate _candidate_carrier call is dead when that call receives no branch and can be removed independently."
+      ],
+      "recommended_direct_regression": "Use a useful incomplete callback candidate without observed_head_sha/content_digest; assert snapshot happens, the gate sees a clean descendant HEAD, and a write after snapshot is caught by the fresh post-gate carrier observation.",
+      "claim_limit": "This diagnosis covers the five frozen-acceptance failures and the two false-positive passes at 0065fea40. It does not assess unrelated source complexity, coverage, or the worker timeout."
+    },
+    "final": {
+      "bounded_processes": "tiny git fixtures plus in-process gate callbacks; no model or coverage process",
+      "cases": [
+        {
+          "duration_ms": 157,
+          "gate": [
+            {
+              "clean_descendant": true,
+              "head": "cf340d7c6c8b3b9962fbaa007c3ad1040e3aebbe",
+              "porcelain": []
+            }
+          ],
+          "name": "permitted_dirty_persisted_before_gate",
+          "status": "pass",
+          "worktree_removed": true
+        },
+        {
+          "actual_cleanup_proof": "worktree removed; branch content read back",
+          "duration_ms": 110,
+          "gate_calls": 0,
+          "name": "scope_refusal_skips_gate_but_complete_commit_cleans",
+          "status": "pass"
+        },
+        {
+          "actual_cleanup_proof": "worktree removed; branch content read back",
+          "duration_ms": 110,
+          "gate_calls": 0,
+          "name": "parent_conflict_skips_gate_but_complete_commit_cleans",
+          "status": "pass"
+        },
+        {
+          "actual_cleanup_proof": "linked worktree and dirty bytes survived",
+          "duration_ms": 60,
+          "gate_calls": 0,
+          "name": "persist_failure_skips_gate_and_survives",
+          "status": "pass"
+        },
+        {
+          "actual_cleanup_proof": "linked worktree survived unknown carrier",
+          "duration_ms": 83,
+          "gate_calls": 0,
+          "name": "carrier_observation_failure_skips_gate_and_survives",
+          "status": "pass"
+        },
+        {
+          "actual_cleanup_proof": "dirty linked worktree survived and remains dirty",
+          "duration_ms": 153,
+          "gate": [
+            {
+              "clean_descendant": true,
+              "head": "cf340d7c6c8b3b9962fbaa007c3ad1040e3aebbe",
+              "porcelain": []
+            }
+          ],
+          "name": "post_gate_dirt_invalidates_approval_and_survives",
+          "status": "pass"
+        },
+        {
+          "actual_cleanup_proof": "ineligible worktree removed; changed branch content read back",
+          "duration_ms": 161,
+          "gate": [
+            {
+              "clean_descendant": true,
+              "head": "cf340d7c6c8b3b9962fbaa007c3ad1040e3aebbe",
+              "porcelain": []
+            }
+          ],
+          "name": "post_gate_changed_commit_invalidates_but_complete_commit_cleans",
+          "status": "pass"
+        }
+      ],
+      "duration_ms": 887,
+      "failed": 0,
+      "passed": 7,
+      "retention_evidence": "actual linked-worktree cleanup and branch-content readback; only the expensive gate is an in-process callback",
+      "schema_version": "charness.task-run-completion-acceptance.v1",
+      "source_head": "d1fd4b1772532db5d32409cf11fc915618d21a4b",
+      "source_root": "/home/hwidong/.cache/tmp/charness-execution-cost-kn7niyt4/acceptance-checkout"
+    }
+  },
+  "focused_tests": {
+    "passed": 34,
+    "seconds": 3.26,
+    "command": "python3 scripts/gates_support/run_standing_pytest.py --repo-root . --pytest-target tests/charness_cli/test_task_run_completion.py --pytest-target tests/charness_cli/test_task_run_changed_line.py"
+  },
+  "changed_line": {
+    "status": "clean",
+    "reason": "every mapped changed pool file's changed lines are covered",
+    "base_sha": "c2bda9a419a52c24ce94ca0a8345086d325df348",
+    "analyzed_changed_pool_files": [
+      "scripts/task_run/task_run_completion.py"
+    ],
+    "unmapped_changed_pool_files": [],
+    "consumer_returncode": 0,
+    "consumer_stdout": "ok: true\nchanged_pool_files:\n- scripts/task_run/task_run_completion.py\nblocking: []\nblocking_detail: {}\nblocking_targets: {}\nsubprocess_coverage_advisory: {}\nsubprocess_coverage_advisory_scope:\n  blocked_files_examined: 0\n  candidate_tests_examined: 0\n  candidate_sources:\n  - boundary-bypass-inventory\n  - test-reference-map\n  inventory: read\n  inventory_recorded_scripts: 47\n  reference_map: empty-or-unavailable\n  files_named: []\n  silence_means: 'no candidate test of that file was found to spawn it with a replacing\n    environment or to copy it by name. That is NOT proof the file''s coverage is honest:\n    a candidate list is not exhaustive, a spawn whose command is built from a variable\n    does not bind, an `env=` passed as a bare name cannot be followed, and a helper\n    in another module that copies a whole seeded repo is deliberately not resolved.'\ntargeted_mutant_proof:\n  required: false\n  contract: Before hand-mutating, cite/display one blocking_targets path:line entry,\n    mutate that exact line, record the failing test, then revert.\nbase_sha: c2bda9a419a52c24ce94ca0a8345086d325df348\nhead_sha: HEAD\nresolved_head_sha: d1fd4b1772532db5d32409cf11fc915618d21a4b\nchanged_pool_file_counts:\n  analyzed: 1\n  changed: 1\n"
+  },
+  "mutation": {
+    "baseline": "one passing test",
+    "killed": 1,
+    "survived": 0,
+    "target": "scripts/task_run/task_run_completion.py: return _carrier_not_ready_reason(candidate, phase=\"after persistence\")",
+    "mutation": "return None",
+    "test": "test_snapshot_acknowledgement_does_not_hide_new_dirty_work",
+    "restored": true,
+    "raw_sha256": "11ab0adfd6daf38f6f5c86de80ce9b14628b2dd6d969eeeac0e6daf6161844c2"
+  },
+  "implementation_delivery": {
+    "model": "gpt-5.6-luna",
+    "effort": "xhigh",
+    "status": "timed-out",
+    "seconds": 900,
+    "candidate": "0065fea40bcbf7f49a341d0fd204e0c6fc8048b3",
+    "approval_eligibility": "ineligible",
+    "integration_basis": "Parent repaired preserved WIP in isolated checkout, committed changes, then passed unchanged acceptance and committed coverage before fast-forward. Original receipt remains timed-out."
+  },
+  "cost_limits": {
+    "new_gate": false,
+    "new_schema_requirement": false,
+    "new_model_default": false,
+    "new_backend_model_configuration": false,
+    "parent_tokens": "unavailable",
+    "efficiency_claim": "blocked candidates invoke no expensive gate; total task cost is not claimed lower"
+  },
+  "review": "pending",
+  "full_read_only": "pending",
+  "non_claims": [
+    "release",
+    "push",
+    "installed host",
+    "model pricing savings"
+  ]
+}

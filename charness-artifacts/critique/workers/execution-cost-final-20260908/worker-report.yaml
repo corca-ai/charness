@@ -1,0 +1,69 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: Final completion behavior and direct consumer evidence; implementation approval
+  only, full suite pending. Read supplied changed source and tests plus focused proof.
+  Compare c2bda9a41..d1fd4b177 only as needed. No repository-wide/history audit.
+attempt_id: execution-cost-final-20260908
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: cfae72f6f03053af2b50f498ae61192af3dda2a8c35fbe806bc7860f9a7ce628
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-final-20260908/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-final-20260908/delivery.json
+producer_run_id: run-execution-cost-final-20260908
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-final-20260908/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-final-20260908/receipt.json
+  producer_run_id: run-execution-cost-final-20260908
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 32908627619e5e6cbbf4036b8ee51e8991ede683b76488d03e428daacb314fd5
+receipt_output_sha256: 32908627619e5e6cbbf4036b8ee51e8991ede683b76488d03e428daacb314fd5
+packet_identity: c565b48bfd4be3611ab3f2861a9d71334db16a6a02c66702476fab1f2dbc8096
+reviewed_input_identity: 6b9089733349b09eab284010c1080408ce5e1e6b26fdf09e91604554180b1002
+parent_receipt_identity: parent-46e80555e28fc302141469e243737ca6c68f43a2be021ebb
+provenance:
+  scope: Final completion behavior and direct consumer evidence; implementation approval
+    only, full suite pending. Read supplied changed source and tests plus focused
+    proof. Compare c2bda9a41..d1fd4b177 only as needed. No repository-wide/history
+    audit.
+  packet_identity: c565b48bfd4be3611ab3f2861a9d71334db16a6a02c66702476fab1f2dbc8096
+  reviewed_input_identity: 6b9089733349b09eab284010c1080408ce5e1e6b26fdf09e91604554180b1002
+  parent_receipt_identity: parent-46e80555e28fc302141469e243737ca6c68f43a2be021ebb
+  attempt_id: execution-cost-final-20260908
+  attempt_scope: Final completion behavior and direct consumer evidence; implementation
+    approval only, full suite pending. Read supplied changed source and tests plus
+    focused proof. Compare c2bda9a41..d1fd4b177 only as needed. No repository-wide/history
+    audit.
+  attempt_packet_identity: c565b48bfd4be3611ab3f2861a9d71334db16a6a02c66702476fab1f2dbc8096
+  attempt_parent_receipt_identity: parent-46e80555e28fc302141469e243737ca6c68f43a2be021ebb
+  result_packet_identity: c565b48bfd4be3611ab3f2861a9d71334db16a6a02c66702476fab1f2dbc8096
+  result_reviewed_input_identity: 6b9089733349b09eab284010c1080408ce5e1e6b26fdf09e91604554180b1002
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: cfae72f6f03053af2b50f498ae61192af3dda2a8c35fbe806bc7860f9a7ce628
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes
