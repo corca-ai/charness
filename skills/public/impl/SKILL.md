@@ -109,7 +109,7 @@ without its explicit authorization.
 Select reference detail by the current task question; read only the entries
 useful to that decision.
 
-- `references/adapter-contract.md` (when interpreting or configuring repo-specific impl verification or truth-surface preferences)
+- `references/adapter-contract.md` (when `<repo-root>/.agents/impl-adapter.yaml` is present, or the task configures repo-specific impl verification or truth-surface preferences)
 - `references/contract-consumption.md` (when the handoff contract or what to carry forward is unclear)
 - `references/design-lenses.md` (when choosing a slice or simplifying an interface is unresolved)
 - `references/sequence-discipline.md` (when ordering dependent slices is unresolved)
