@@ -11,7 +11,7 @@ evidence that the next decision does not require rework.
 
 ## Start
 
-1. Read `AGENTS.md`, then `<repo-root>/docs/index.md` <!-- not vendored: consumer-repo path --> and only the pages that own the
+1. Read `AGENTS.md`, then `<repo-root>/docs/index.md` when present <!-- not vendored: consumer-repo path --> and only the pages that own the
    current surface. If an active `/goal #N` exists, read the parent body and
    the selected child only; do not rescan the whole issue graph on routine
    pickup.
@@ -106,13 +106,10 @@ without its explicit authorization.
 
 ## References
 
-Select reference detail by the current task question; read only the entries
-useful to that decision.
-
-- `references/adapter-contract.md` (when `<repo-root>/.agents/impl-adapter.yaml` is present, or the task configures repo-specific impl verification or truth-surface preferences)
-- `references/contract-consumption.md` (when the handoff contract or what to carry forward is unclear)
-- `references/design-lenses.md` (when choosing a slice or simplifying an interface is unresolved)
-- `references/sequence-discipline.md` (when ordering dependent slices is unresolved)
+- `references/adapter-contract.md`
+- `references/contract-consumption.md`
+- `references/design-lenses.md`
+- `references/sequence-discipline.md`
 - `references/external-api-contract.md` (only for an external API seam)
 - `../../shared/references/prescribed-path-self-test.md` (only for a prescribed path)
 - `../../shared/references/source-bound-records.md` (only for a multi-source or durable record)
