@@ -514,6 +514,60 @@ def test_resolved_forced_risk_with_allowed_handoff_becomes_prior_memory(tmp_path
     assert "references/document-seams.md" not in required_paths
 
 
+def test_resolved_prior_memory_with_invalid_first_risk_declaration_stays_blocking(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    write_forced_risk_artifact(repo)
+    write_spec_handoff(repo)
+    debug_path = repo / "charness-artifacts" / "debug" / "latest.md"
+    debug_path.write_text(
+        "- Risk Class: external-seam, bogus\n" + debug_path.read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+
+    payload = run_plan(repo, subject="fresh-subject")
+
+    assert payload["mode"] == "risk-interrupt"
+    assert payload["next_action"]["kind"] == "interrupt-to-spec"
+    assert payload["required_reads"][0]["path"] == "charness-artifacts/debug/latest.md"
+    assert payload["artifact"]["effective_routing"]["reason"] == (
+        "risk-declaration-unreadable"
+    )
+    assert "bogus" in payload["artifact"]["risk_parse_error"]
+
+
+def test_resolved_prose_risk_without_interrupt_sections_stays_read_first(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    write_seam_risk_artifact(
+        repo,
+        [
+            "# Current Debug",
+            "",
+            "- Resolution: resolved",
+            "",
+            "## Seam Risk",
+            "",
+            "- Risk Class: repeated-symptom",
+            "- Generalization Pressure: none",
+        ],
+    )
+
+    payload = run_plan(repo, subject="fresh-subject")
+
+    assert payload["artifact"]["requires_interrupt"] is True
+    assert payload["artifact"]["effective_routing"]["risk_interrupt_active"] is True
+    assert payload["artifact"]["effective_routing"]["requires_current_artifact_read"] is True
+    assert payload["artifact"]["effective_routing"]["reason"] == (
+        "resolved-forced-risk-debug-interrupt-incomplete"
+    )
+    assert payload["mode"] == "risk-interrupt"
+    assert payload["next_action"]["kind"] == "interrupt-to-spec"
+    assert payload["required_reads"][0]["path"] == "charness-artifacts/debug/latest.md"
+
+
 def test_resolved_factor_now_with_allowed_handoff_becomes_prior_memory(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     write_forced_risk_artifact(repo, risk_class="none", pressure="factor-now")

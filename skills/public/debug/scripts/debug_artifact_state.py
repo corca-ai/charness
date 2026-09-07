@@ -103,9 +103,10 @@ def _effective_routing(
         "requires_current_artifact_read": raw_forced or not scope_established,
         "reason": "raw-forced-risk" if raw_forced else "no-forced-risk",
     }
+    if artifact.get("risk_parse_error") or not scope_established:
+        routing["reason"] = "risk-declaration-unreadable"
+        return routing
     if not raw_forced or artifact.get("resolution") != "resolved":
-        if not scope_established:
-            routing["reason"] = "risk-declaration-unreadable"
         return routing
 
     try:
