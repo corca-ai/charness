@@ -292,7 +292,86 @@
     "consumer_stdout": "ok: true\nchanged_pool_files:\n- scripts/task_run/task_run_completion.py\nblocking: []\nblocking_detail: {}\nblocking_targets: {}\nsubprocess_coverage_advisory: {}\nsubprocess_coverage_advisory_scope:\n  blocked_files_examined: 0\n  candidate_tests_examined: 0\n  candidate_sources:\n  - boundary-bypass-inventory\n  - test-reference-map\n  inventory: read\n  inventory_recorded_scripts: 47\n  reference_map: empty-or-unavailable\n  files_named: []\n  silence_means: 'no candidate test of that file was found to spawn it with a replacing\n    environment or to copy it by name. That is NOT proof the file''s coverage is honest:\n    a candidate list is not exhaustive, a spawn whose command is built from a variable\n    does not bind, an `env=` passed as a bare name cannot be followed, and a helper\n    in another module that copies a whole seeded repo is deliberately not resolved.'\ntargeted_mutant_proof:\n  required: false\n  contract: Before hand-mutating, cite/display one blocking_targets path:line entry,\n    mutate that exact line, record the failing test, then revert.\nbase_sha: c2bda9a419a52c24ce94ca0a8345086d325df348\nhead_sha: HEAD\nresolved_head_sha: d1fd4b1772532db5d32409cf11fc915618d21a4b\nchanged_pool_file_counts:\n  analyzed: 1\n  changed: 1\n"
   },
   "full_read_only": {
-    "status": "pending"
+    "status": "pass",
+    "command": "./scripts/run-quality.sh --full --read-only",
+    "tested_head": "daaa1feea2944e5707f71c5ea7b90d006e04310d",
+    "passed": 83,
+    "failed": 0,
+    "not_run": {
+      "agent-browser-runtime-baseline": "opt-in unmet",
+      "dead-code-advisory": "opt-in unmet",
+      "check-supply-chain-online": "opt-in unmet",
+      "check-coverage": "read-only",
+      "agent-browser-runtime-hygiene": "opt-in unmet"
+    },
+    "seconds": 173.1,
+    "summary": "Quality summary: 83 passed, 0 failed, 5 not run (agent-browser-runtime-baseline: opt-in unmet; dead-code-advisory: opt-in unmet; check-supply-chain-online: opt-in unmet; check-coverage: read-only; agent-browser-runtime-hygiene: opt-in unmet), total 173.1s",
+    "log_sha256": "7b872df891d6426e346a6bedae34283d8b7a993901dceabe859ad0e14d8c0215",
+    "standing_pytest": {
+      "basetemp": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/pytest-tmp/pytest-of-hwidong/charness-run-1788824733686721497",
+      "command": "python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/pytest-tmp/pytest-of-hwidong/charness-run-1788824733686721497 -o cache_dir=/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/pytest-cache -n 16 --maxschedchunk 1 tests/quality_gates tests/control_plane tests/test_achieve_lesson_citation.py tests/test_adapter_lib.py tests/test_adapter_shim_inprocess_coverage.py tests/test_adapter_yaml_parse_branches.py tests/test_adversarial_evidence.py tests/test_agent_browser_runtime_guard.py tests/test_announcement_adapter_lib.py tests/test_announcement_collect_commits.py tests/test_announcement_delivery_verification.py tests/test_announcement_preflight_lib.py tests/test_artifact_citations.py tests/test_artifact_line_budget_adapter.py tests/test_artifact_validator.py tests/test_authoring_preflight_reference.py tests/test_boundary_bypass_inventory.py tests/test_boundary_probe.py tests/test_capability_catalog.py tests/test_changed_path_enumerator_agreement.py tests/test_check_issue_closeout_commit_msg_inprocess.py tests/test_checkout_view.py tests/test_classify_t_signal.py tests/test_closeout_classification_parity.py tests/test_committed_packet_refusal.py tests/test_consumer_journey_fixtures.py tests/test_consumer_validator_catalog.py tests/test_critique_artifact_validation.py tests/test_critique_prepare_packet.py tests/test_critique_scaffold.py tests/test_critique_section_changed_surfaces.py tests/test_critique_verification_scope.py tests/test_critique_verify_packet.py tests/test_debug_artifact.py tests/test_debug_artifact_scope.py tests/test_debug_persistence.py tests/test_debug_plan.py tests/test_debug_scaffold.py tests/test_degradation_branch_coverage.py tests/test_doc_authoring_preflight.py tests/test_doc_duplicates_inprocess_coverage.py tests/test_docs_graph_gate.py tests/test_docs_length_gate.py tests/test_doctor_lock_payload.py tests/test_dsl.py tests/test_evidence_boundary_crosswalk.py tests/test_fifo_witness.py tests/test_find_inline_prompt_bulk.py tests/test_fixture_git_maintenance.py tests/test_gate_report_emit.py tests/test_gather_google_workspace.py tests/test_gather_plan.py tests/test_git_checkout.py tests/test_git_status_snapshot.py tests/test_goal_path_portability.py tests/test_grok_host_install.py tests/test_host_hook_registry.py tests/test_ideation_artifact.py tests/test_ideation_scaffold.py tests/test_impl_bootstrap.py tests/test_impl_survey_verification.py tests/test_instruction_surface_codex_runtime.py tests/test_inventory_marker_rule_measurement.py tests/test_inventory_measurement_lib.py tests/test_issue_close_exemption_advisory.py tests/test_issue_closeout_ledger_counts.py tests/test_issue_identity_is_repo_and_number.py tests/test_issue_source_capture.py tests/test_issue_source_capture_backend_delegation.py tests/test_issue_source_freeze.py tests/test_issue_source_owner_inspection.py tests/test_lesson_ledger.py tests/test_lesson_ledger_concurrency.py tests/test_lesson_ledger_refusals.py tests/test_lesson_lifecycle.py tests/test_lesson_lifecycle_refusals.py tests/test_lesson_outcome_vocabulary.py tests/test_lesson_selection_preview.py tests/test_list_external_links.py tests/test_markdown_preview_support.py tests/test_markdown_sections.py tests/test_nose_inprocess_coverage.py tests/test_packaging_install_surface_orphan_dirs.py tests/test_plugin_preamble.py tests/test_probe_record.py tests/test_probe_stimulus_replay.py tests/test_provenance_contract.py tests/test_public_skill_dogfood.py tests/test_public_skill_validation.py tests/test_quality_artifact.py tests/test_quality_artifact_report_all.py tests/test_quality_delegated_review.py tests/test_quality_scaffold.py tests/test_quality_surface_contract.py tests/test_rca_ledger.py tests/test_recent_lessons_recurrence.py tests/test_reddit_source.py tests/test_release_changed_line_regressions.py tests/test_release_changed_line_regressions_release.py tests/test_release_lane_receipt.py tests/test_residual_floor_message.py tests/test_retro_artifact.py tests/test_retro_help.py tests/test_retro_plan.py tests/test_retro_prepare_packet.py tests/test_retro_scaffold.py tests/test_retro_section_rework_issues.py tests/test_reviewed_input_identity_binding.py tests/test_reviewed_input_identity_failures.py tests/test_reviewed_input_nonblob.py tests/test_reviewed_input_nonblob_binding.py tests/test_reviewed_input_range.py tests/test_reviewed_input_verifier_sibling_ownership.py tests/test_risk_interrupt.py tests/test_run_plan_envelope.py tests/test_run_review_declared_path_resolution.py tests/test_runtime_root_retention.py tests/test_scaffold_inprocess_coverage.py tests/test_scaffold_repo_local_validator.py tests/test_scaffold_subject_identity.py tests/test_schema_enum_axis.py tests/test_script_closure.py tests/test_script_timeout.py tests/test_seed_cache.py tests/test_seed_lesson_transitions.py tests/test_shared_authoring_script_shims.py tests/test_skill_anchor_guard_hook.py tests/test_skill_output_schemas.py tests/test_skill_script_references.py tests/test_skill_text_quality_lib.py tests/test_subprocess_guard.py tests/test_supply_chain_online.py tests/test_twitter_exact_source.py tests/test_unhappy_path_branches.py tests/test_validate_adapters_integration_schema.py tests/test_validate_critique_artifacts_dates.py tests/test_verification_retry.py tests/test_web_fetch_cleanup.py tests/test_web_fetch_content_persistence.py tests/test_web_fetch_help.py tests/test_web_fetch_route_and_classify.py tests/test_web_fetch_shared_helpers.py tests/test_web_fetch_support.py tests/test_web_fetch_trace_quality.py tests/test_worktree_doctor_state.py tests/test_write_artifact_path_single_owner.py tests/test_youtube_source.py tests/charness_cli tests/coverage_debt",
+      "elapsed_seconds": 104.6,
+      "returncode": 0,
+      "state": "finished",
+      "timed_out": false
+    }
   },
-  "release_push_install": "not performed"
+  "release_push_install": "not performed",
+  "execution_cost": {
+    "started_at": "2026-09-07T23:15:55.301187+00:00",
+    "finished_at": "2026-09-07T23:49:03.298773+00:00",
+    "elapsed_seconds": 1988.0,
+    "implementation_worker_seconds": 900,
+    "implementation_worker_tokens": "unavailable after timeout",
+    "final_review_tokens": 23046,
+    "parent_tokens": "unavailable",
+    "conclusion": "No aggregate time, token or pricing saving claimed. Avoided gate calls are established per blocked-candidate scenario; independence caught an overconstraint before integration."
+  },
+  "cleanup": {
+    "status": "pass",
+    "repo_root": "/home/hwidong/codes/charness",
+    "requested_repo_root": "/home/hwidong/codes/charness",
+    "target_path": "/home/hwidong/.cache/tmp/charness-execution-cost-kn7niyt4/acceptance-checkout",
+    "branch": "probe/candidate-readiness",
+    "branch_base": "HEAD",
+    "dirty": false,
+    "dirty_detail": "",
+    "dry_run": false,
+    "actions": [
+      {
+        "id": "remove-worktree",
+        "command": [
+          "git",
+          "worktree",
+          "remove",
+          "/home/hwidong/.cache/tmp/charness-execution-cost-kn7niyt4/acceptance-checkout"
+        ],
+        "status": "done",
+        "exit_code": 0
+      },
+      {
+        "id": "delete-branch",
+        "command": [
+          "git",
+          "branch",
+          "-D",
+          "probe/candidate-readiness"
+        ],
+        "status": "done",
+        "exit_code": 0,
+        "stdout": "Deleted branch probe/candidate-readiness (was d1fd4b177)."
+      },
+      {
+        "id": "prune-metadata",
+        "command": [
+          "git",
+          "worktree",
+          "prune"
+        ],
+        "status": "done",
+        "exit_code": 0
+      }
+    ],
+    "next_step": null
+  }
 }
