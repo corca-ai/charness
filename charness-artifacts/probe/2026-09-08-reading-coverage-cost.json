@@ -1,0 +1,1123 @@
+{
+  "artifact_class": "dated-observation; not purely derived",
+  "goal_disposition": "not-goal-bound",
+  "protocol": {
+    "oracle": "charness-artifacts/probe/2026-09-06-consumer-journeys/check_alias.py",
+    "sequence": [
+      "A1",
+      "B1",
+      "B2",
+      "A2"
+    ],
+    "baseline_prompt_sha256": "7caeb5dad28fe31d095a4a212266c71ce036853f82467956bfe045272607bf9a",
+    "read_metric": "executed reference-read commands and visible content lower bounds; never count inventories as reads",
+    "cost_metric": "task elapsed_ms and reported tokens used; parent end-to-end wall and stage intervals, no unavailable parent-token inference",
+    "acceptance": "unchanged oracle plus own tests; spec bytes and original test method AST unchanged; no scope expansion or parent rescue",
+    "timing_control": "sequential consumers, no concurrent coverage/broad-suite execution",
+    "decision_rule": "No tuning, rescue or replacement runs. Both B cells must pass all same capability/path/scope checks; each B must show fewer unnecessary content reads and lower reported tokens than its matched A (A1/B1, B2/A2). Otherwise reject or call inconclusive and keep source unchanged. Timing is descriptive only.",
+    "nonclaims": [
+      "not a public-skill improvement if effect belongs to fixture instruction",
+      "no total monetary/model-cost claim without parent token telemetry",
+      "two pairs do not establish general performance"
+    ],
+    "frozen_at_utc": "2026-09-07T22:08:53Z",
+    "candidate_prompt_sha256": "26019b6f69447dba935aeca69bc301a9ec303979b7ec7e0f6927927d97236607",
+    "consumer_files": {
+      "AGENTS.md": "d08d38cd96c88c85b0e134609f6cb6bab38be5ddcf39fd6843ff9fb917331d6c",
+      "README.md": "f2e6bf8da5613e8325b905f14b1f797d61b1afb084c0cc5cd052ebdcca733df6",
+      "docs/alias-resolution.md": "522d595b2629fb853d46485245e10cb6d988ffed66596ccce0d9cd4995858bb7",
+      "src/__init__.py": "cd2e94b7a91c6dbf6d04eaccc8ff59dd8ac19c54b0d733612c01791e8f672994",
+      "src/catalog.py": "75fd818cc8ca6d8e465f4077018e9939955dcfdffde141714f3ac68440ec06f0",
+      "tests/test_catalog.py": "b49e9b68ef4260b14962b144a75e38f1821c4f80f7060f4bec0a55610d032cb4"
+    },
+    "oracle_sha256": "a20b7dd62716c7e77c31bd7bed91aea159fc0686b45c44f1c6fa834002ec8d6b",
+    "source_commit": "a9c6ae451cfa4ccb13f7f05135b6aab650e1a5af",
+    "model": "gpt-5.6-luna",
+    "effort": "xhigh",
+    "timeout_seconds": 1200,
+    "primary_read_metric": "Content reads of spec SKILL/spec references or conditional impl/Prove bodies without a contract change; inventories and existence checks excluded. Mandatory reads and path resolution remain required.",
+    "independent_design_review": {
+      "agent": "reading_trial_design",
+      "start": "2026-09-07T22:06:00Z",
+      "end": "2026-09-07T22:07:48Z",
+      "tokens": "unavailable",
+      "parent_refinements": [
+        "omit treatment-only reporting instruction to avoid changing output requirements",
+        "omit hardcoded conditional-reference exclusion list; preserve skill judgment"
+      ]
+    },
+    "raw_protocol_sha256": "8ccbb4ce3d75519276eaaab91e35e91ec1c785b554e500ce6350a5fa644be806",
+    "export_file_count": 1115,
+    "export_hash_manifest_sha256": "b9f0f59c8bde4ec3343b7178bed8ccc3494162a85b950f243d86c37462d15ec4",
+    "baseline_prompt": "# Impl phase: consume the alias-resolution spec\n\nWork in the same consumer repository after the spec phase. Read `AGENTS.md`\nand use the installed `impl` skill identified by\n`CHARNESS_FIXTURE_PLUGIN_ROOT`. Resolve its references from the exported\npackage, not host-installed Charness, and report the exact consumed skill path\nand package version. Resolve each literal relative reference against the\ndirectory of the document containing it, preserve `../` components (so\n`../../shared/...` from `skills/impl/SKILL.md` resolves under\n`$CHARNESS_FIXTURE_PLUGIN_ROOT/shared/...`), and do not rebuild paths from\nbasenames.\n\nConsume the exact `docs/alias-resolution.md` produced by the preceding spec\ncontext. Treat it as the implementation contract: do not silently redesign\nthe API, loosen a rejection, or replace the list-of-pairs input with a dict.\n\nImplement the requested slice in `src/catalog.py` and\n`tests/test_catalog.py`. Preserve the original `Catalog(mapping)` canonical\nlookup and existing tests, then add the spec's alias success and deterministic\nrejection checks. Use only the standard library. Run:\n\n```text\npython3 -m unittest discover -s tests -v\n```\n\nUpdate the spec only if implementation exposes a real, previously unknown\nconstraint. If that happens, record the observed constraint in the spec before\ncontinuing and report why the contract changed; otherwise leave the spec\nuntouched. Do not add an evaluator, copy a plugin/skills tree, or broaden the\nfixture.\n",
+    "candidate_prompt": "# Impl phase: consume the alias-resolution spec\n\nWork in the same consumer repository after the spec phase. Read `AGENTS.md`\nand use the installed `impl` skill identified by\n`CHARNESS_FIXTURE_PLUGIN_ROOT`. Resolve its references from the exported\npackage, not host-installed Charness, and report the exact consumed skill path\nand package version. Resolve each literal relative reference against the\ndirectory of the document containing it, preserve `../` components (so\n`../../shared/...` from `skills/impl/SKILL.md` resolves under\n`$CHARNESS_FIXTURE_PLUGIN_ROOT/shared/...`), and do not rebuild paths from\nbasenames.\n\nDuring this implementation phase, distinguish resolving a reference from reading its contents. Resolve all references named by the installed impl skill using the literal paths above. Read bodies as needed to follow that skill's required steps and stated applicability conditions; listing a reference does not make a conditional step applicable. This slice implements the existing `docs/alias-resolution.md` contract, so the spec skill is needed only if an observed new constraint requires revising that contract.\n\nConsume the exact `docs/alias-resolution.md` produced by the preceding spec\ncontext. Treat it as the implementation contract: do not silently redesign\nthe API, loosen a rejection, or replace the list-of-pairs input with a dict.\n\nImplement the requested slice in `src/catalog.py` and\n`tests/test_catalog.py`. Preserve the original `Catalog(mapping)` canonical\nlookup and existing tests, then add the spec's alias success and deterministic\nrejection checks. Use only the standard library. Run:\n\n```text\npython3 -m unittest discover -s tests -v\n```\n\nUpdate the spec only if implementation exposes a real, previously unknown\nconstraint. If that happens, record the observed constraint in the spec before\ncontinuing and report why the contract changed; otherwise leave the spec\nuntouched. Do not add an evaluator, copy a plugin/skills tree, or broaden the\nfixture.\n"
+  },
+  "cells": [
+    {
+      "cell": "A1",
+      "start_utc": "2026-09-07T22:09:37Z",
+      "loadavg_start": [
+        1.9169921875,
+        3.46142578125,
+        4.7294921875
+      ],
+      "prompt_sha256": "7caeb5dad28fe31d095a4a212266c71ce036853f82467956bfe045272607bf9a",
+      "command": [
+        "charness",
+        "task",
+        "run",
+        "--repo-root",
+        "<consumer>",
+        "--lane",
+        "reading-scope-a1",
+        "--scope",
+        "src/catalog.py",
+        "--scope",
+        "tests/test_catalog.py",
+        "--scope",
+        "docs/alias-resolution.md",
+        "--prompt-file",
+        "<experiment>/baseline-prompt.md",
+        "--effort",
+        "xhigh",
+        "--timeout-seconds",
+        "1200",
+        "--skip-prepare"
+      ],
+      "carrier_returncode": 0,
+      "carrier_wall_seconds": 147.351,
+      "worker_completed_utc": "2026-09-07T22:12:05Z",
+      "loadavg_end": [
+        2.18701171875,
+        2.89453125,
+        4.31787109375
+      ],
+      "status": "completed",
+      "base_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+      "target_sha": "a66e26b3be6510d37239cb8708f1b4ed719c5de1",
+      "worker_duration_ms": 147044,
+      "requested_codex": {
+        "executable": "codex",
+        "model": "gpt-5.6-luna",
+        "effort": "xhigh",
+        "timeout_seconds": 1200,
+        "timeout_scope": "codex-exec",
+        "command": [
+          "codex",
+          "exec",
+          "--sandbox",
+          "workspace-write",
+          "--add-dir",
+          "<consumer>/.git",
+          "--add-dir",
+          "<consumer>/.git/worktrees/worktree",
+          "--add-dir",
+          "<runtime>/8adbaaee62877824/task-run/reading-scope-a1/runtime",
+          "-m",
+          "gpt-5.6-luna",
+          "-c",
+          "model_reasoning_effort=xhigh",
+          "-"
+        ]
+      },
+      "scope": {
+        "verdict": "pass",
+        "reason": "all candidate changes are within the declared scope",
+        "specs": [
+          {
+            "path": "docs/alias-resolution.md",
+            "kind": "exact"
+          },
+          {
+            "path": "src/catalog.py",
+            "kind": "exact"
+          },
+          {
+            "path": "tests/test_catalog.py",
+            "kind": "exact"
+          }
+        ],
+        "changed_paths": [
+          "src/catalog.py",
+          "tests/test_catalog.py"
+        ],
+        "disallowed_paths": [],
+        "require_change": true,
+        "candidate_carrier": {
+          "carrier_kind": "worktree-only",
+          "committed_paths": [],
+          "dirty_paths": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "head_sha": null,
+          "base_is_ancestor_of_head": true,
+          "observed_head_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+          "observed_branch": "task/reading-scope-a1",
+          "head_is_complete": false,
+          "content_digest": "ef0a8425efcf23b1f42b7a9ea061baa65ac7b93d0ee624d07ffbc881ec06f606"
+        }
+      },
+      "populations": {
+        "tracked": {
+          "before_count": 0,
+          "after_count": 2,
+          "added": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "removed": [],
+          "paths": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "verdict": "pass",
+          "reason": "tracked changes are the task candidate and remain inspectable"
+        },
+        "untracked": {
+          "before_count": 0,
+          "after_count": 0,
+          "added": [],
+          "removed": [],
+          "paths": [],
+          "verdict": "pass",
+          "reason": "no new untracked files appeared during codex exec"
+        },
+        "ignored": {
+          "before_count": 0,
+          "after_count": 0,
+          "added": [],
+          "removed": [],
+          "paths": [],
+          "verdict": "pass",
+          "reason": "no new ignored files appeared during codex exec"
+        }
+      },
+      "trace_sha256": "72d616562765372243508701d62fefcc7d2907cf34df5e08fd01f1d10e7ba751",
+      "reported_tokens": 64106,
+      "acceptance": {
+        "own_suite": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "test_canonical_lookup_remains_available_with_aliases (test_catalog.CatalogTests) ... ok\ntest_empty_alias_list_preserves_canonical_behavior (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_colliding_with_canonical_key (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_with_unknown_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_different_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_same_target (test_catalog.CatalogTests) ... ok\ntest_reports_first_invalid_alias_pair_in_input_order (test_catalog.CatalogTests) ... ok\ntest_resolves_alias_to_canonical_value (test_catalog.CatalogTests) ... ok\ntest_resolves_existing_canonical_keys (test_catalog.CatalogTests) ... ok\ntest_unknown_key_raises_key_error (test_catalog.CatalogTests) ... ok\ntest_unknown_key_with_aliases_raises_key_error (test_catalog.CatalogTests) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.001s\n\nOK\n"
+        },
+        "oracle": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "test_aliases_and_canonical_names_coexist (__main__.AliasAcceptance) ... ok\ntest_canonical_compatibility (__main__.AliasAcceptance) ... ok\ntest_first_invalid_pair_is_reported (__main__.AliasAcceptance) ... ok\ntest_invalid_definitions_rejected (__main__.AliasAcceptance) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n"
+        },
+        "original_methods_preserved": true,
+        "spec_unchanged": true,
+        "scope_exact": true
+      },
+      "capability_pass": true,
+      "observation_completed_utc": "2026-09-07T22:12:05Z"
+    },
+    {
+      "cell": "B1",
+      "start_utc": "2026-09-07T22:12:05Z",
+      "loadavg_start": [
+        2.18701171875,
+        2.89453125,
+        4.31787109375
+      ],
+      "prompt_sha256": "26019b6f69447dba935aeca69bc301a9ec303979b7ec7e0f6927927d97236607",
+      "command": [
+        "charness",
+        "task",
+        "run",
+        "--repo-root",
+        "<consumer>",
+        "--lane",
+        "reading-scope-b1",
+        "--scope",
+        "src/catalog.py",
+        "--scope",
+        "tests/test_catalog.py",
+        "--scope",
+        "docs/alias-resolution.md",
+        "--prompt-file",
+        "<experiment>/candidate-prompt.md",
+        "--effort",
+        "xhigh",
+        "--timeout-seconds",
+        "1200",
+        "--skip-prepare"
+      ],
+      "carrier_returncode": 0,
+      "carrier_wall_seconds": 102.749,
+      "worker_completed_utc": "2026-09-07T22:13:48Z",
+      "loadavg_end": [
+        2.8818359375,
+        2.9404296875,
+        4.18408203125
+      ],
+      "status": "completed",
+      "base_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+      "target_sha": "66b456c9541cda36dd38bd95fc064d22a6fa2efc",
+      "worker_duration_ms": 102425,
+      "requested_codex": {
+        "executable": "codex",
+        "model": "gpt-5.6-luna",
+        "effort": "xhigh",
+        "timeout_seconds": 1200,
+        "timeout_scope": "codex-exec",
+        "command": [
+          "codex",
+          "exec",
+          "--sandbox",
+          "workspace-write",
+          "--add-dir",
+          "<consumer>/.git",
+          "--add-dir",
+          "<consumer>/.git/worktrees/worktree",
+          "--add-dir",
+          "<runtime>/8adbaaee62877824/task-run/reading-scope-b1/runtime",
+          "-m",
+          "gpt-5.6-luna",
+          "-c",
+          "model_reasoning_effort=xhigh",
+          "-"
+        ]
+      },
+      "scope": {
+        "verdict": "pass",
+        "reason": "all candidate changes are within the declared scope",
+        "specs": [
+          {
+            "path": "docs/alias-resolution.md",
+            "kind": "exact"
+          },
+          {
+            "path": "src/catalog.py",
+            "kind": "exact"
+          },
+          {
+            "path": "tests/test_catalog.py",
+            "kind": "exact"
+          }
+        ],
+        "changed_paths": [
+          "src/catalog.py",
+          "tests/test_catalog.py"
+        ],
+        "disallowed_paths": [],
+        "require_change": true,
+        "candidate_carrier": {
+          "carrier_kind": "worktree-only",
+          "committed_paths": [],
+          "dirty_paths": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "head_sha": null,
+          "base_is_ancestor_of_head": true,
+          "observed_head_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+          "observed_branch": "task/reading-scope-b1",
+          "head_is_complete": false,
+          "content_digest": "358e94968049e6e526d34fde4242a1e6abc5622e2362a2499babe4219d28bf54"
+        }
+      },
+      "populations": {
+        "tracked": {
+          "before_count": 0,
+          "after_count": 2,
+          "added": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "removed": [],
+          "paths": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "verdict": "pass",
+          "reason": "tracked changes are the task candidate and remain inspectable"
+        },
+        "untracked": {
+          "before_count": 0,
+          "after_count": 0,
+          "added": [],
+          "removed": [],
+          "paths": [],
+          "verdict": "pass",
+          "reason": "no new untracked files appeared during codex exec"
+        },
+        "ignored": {
+          "before_count": 0,
+          "after_count": 0,
+          "added": [],
+          "removed": [],
+          "paths": [],
+          "verdict": "pass",
+          "reason": "no new ignored files appeared during codex exec"
+        }
+      },
+      "trace_sha256": "fc7404d20e7cc76b1f1d718b0e6f7df471761ae46604bef5c85445394a9dad3a",
+      "reported_tokens": 50715,
+      "acceptance": {
+        "own_suite": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "test_canonical_lookup_remains_available_with_aliases (test_catalog.CatalogTests) ... ok\ntest_empty_alias_list_preserves_canonical_behavior (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_colliding_with_canonical_key (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_with_unknown_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_different_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_same_target (test_catalog.CatalogTests) ... ok\ntest_reports_first_invalid_alias_pair_in_input_order (test_catalog.CatalogTests) ... ok\ntest_resolves_alias_to_canonical_value (test_catalog.CatalogTests) ... ok\ntest_resolves_existing_canonical_keys (test_catalog.CatalogTests) ... ok\ntest_unknown_key_raises_key_error (test_catalog.CatalogTests) ... ok\ntest_unknown_key_with_aliases_raises_key_error (test_catalog.CatalogTests) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.000s\n\nOK\n"
+        },
+        "oracle": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "test_aliases_and_canonical_names_coexist (__main__.AliasAcceptance) ... ok\ntest_canonical_compatibility (__main__.AliasAcceptance) ... ok\ntest_first_invalid_pair_is_reported (__main__.AliasAcceptance) ... ok\ntest_invalid_definitions_rejected (__main__.AliasAcceptance) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n"
+        },
+        "original_methods_preserved": true,
+        "spec_unchanged": true,
+        "scope_exact": true
+      },
+      "capability_pass": true,
+      "observation_completed_utc": "2026-09-07T22:13:48Z"
+    },
+    {
+      "cell": "B2",
+      "start_utc": "2026-09-07T22:13:48Z",
+      "loadavg_start": [
+        2.8818359375,
+        2.9404296875,
+        4.18408203125
+      ],
+      "prompt_sha256": "26019b6f69447dba935aeca69bc301a9ec303979b7ec7e0f6927927d97236607",
+      "command": [
+        "charness",
+        "task",
+        "run",
+        "--repo-root",
+        "<consumer>",
+        "--lane",
+        "reading-scope-b2",
+        "--scope",
+        "src/catalog.py",
+        "--scope",
+        "tests/test_catalog.py",
+        "--scope",
+        "docs/alias-resolution.md",
+        "--prompt-file",
+        "<experiment>/candidate-prompt.md",
+        "--effort",
+        "xhigh",
+        "--timeout-seconds",
+        "1200",
+        "--skip-prepare"
+      ],
+      "carrier_returncode": 0,
+      "carrier_wall_seconds": 123.521,
+      "worker_completed_utc": "2026-09-07T22:15:51Z",
+      "loadavg_end": [
+        3.51416015625,
+        3.3681640625,
+        4.19775390625
+      ],
+      "status": "completed",
+      "base_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+      "target_sha": "8f6a63c2079e944287bed312270ce815a40d742d",
+      "worker_duration_ms": 123209,
+      "requested_codex": {
+        "executable": "codex",
+        "model": "gpt-5.6-luna",
+        "effort": "xhigh",
+        "timeout_seconds": 1200,
+        "timeout_scope": "codex-exec",
+        "command": [
+          "codex",
+          "exec",
+          "--sandbox",
+          "workspace-write",
+          "--add-dir",
+          "<consumer>/.git",
+          "--add-dir",
+          "<consumer>/.git/worktrees/worktree",
+          "--add-dir",
+          "<runtime>/8adbaaee62877824/task-run/reading-scope-b2/runtime",
+          "-m",
+          "gpt-5.6-luna",
+          "-c",
+          "model_reasoning_effort=xhigh",
+          "-"
+        ]
+      },
+      "scope": {
+        "verdict": "pass",
+        "reason": "all candidate changes are within the declared scope",
+        "specs": [
+          {
+            "path": "docs/alias-resolution.md",
+            "kind": "exact"
+          },
+          {
+            "path": "src/catalog.py",
+            "kind": "exact"
+          },
+          {
+            "path": "tests/test_catalog.py",
+            "kind": "exact"
+          }
+        ],
+        "changed_paths": [
+          "src/catalog.py",
+          "tests/test_catalog.py"
+        ],
+        "disallowed_paths": [],
+        "require_change": true,
+        "candidate_carrier": {
+          "carrier_kind": "worktree-only",
+          "committed_paths": [],
+          "dirty_paths": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "head_sha": null,
+          "base_is_ancestor_of_head": true,
+          "observed_head_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+          "observed_branch": "task/reading-scope-b2",
+          "head_is_complete": false,
+          "content_digest": "c2520f64200610599b9a03fc74a0e3ab3703c088d946c07b7ef3d9b8be3be9be"
+        }
+      },
+      "populations": {
+        "tracked": {
+          "before_count": 0,
+          "after_count": 2,
+          "added": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "removed": [],
+          "paths": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "verdict": "pass",
+          "reason": "tracked changes are the task candidate and remain inspectable"
+        },
+        "untracked": {
+          "before_count": 0,
+          "after_count": 0,
+          "added": [],
+          "removed": [],
+          "paths": [],
+          "verdict": "pass",
+          "reason": "no new untracked files appeared during codex exec"
+        },
+        "ignored": {
+          "before_count": 0,
+          "after_count": 0,
+          "added": [],
+          "removed": [],
+          "paths": [],
+          "verdict": "pass",
+          "reason": "no new ignored files appeared during codex exec"
+        }
+      },
+      "trace_sha256": "f01a42f8bd58b4f132eac81b10982bc565c93a9c96fce89380f3f83a8d331238",
+      "reported_tokens": 39258,
+      "acceptance": {
+        "own_suite": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "test_canonical_lookup_remains_available_with_aliases (test_catalog.CatalogTests) ... ok\ntest_empty_alias_list_preserves_canonical_behavior (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_colliding_with_canonical_key (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_with_unknown_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_different_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_same_target (test_catalog.CatalogTests) ... ok\ntest_reports_first_invalid_alias_pair_in_input_order (test_catalog.CatalogTests) ... ok\ntest_resolves_alias_to_canonical_value (test_catalog.CatalogTests) ... ok\ntest_resolves_existing_canonical_keys (test_catalog.CatalogTests) ... ok\ntest_unknown_key_raises_key_error (test_catalog.CatalogTests) ... ok\ntest_unknown_key_with_aliases_raises_key_error (test_catalog.CatalogTests) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.000s\n\nOK\n"
+        },
+        "oracle": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "test_aliases_and_canonical_names_coexist (__main__.AliasAcceptance) ... ok\ntest_canonical_compatibility (__main__.AliasAcceptance) ... ok\ntest_first_invalid_pair_is_reported (__main__.AliasAcceptance) ... ok\ntest_invalid_definitions_rejected (__main__.AliasAcceptance) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n"
+        },
+        "original_methods_preserved": true,
+        "spec_unchanged": true,
+        "scope_exact": true
+      },
+      "capability_pass": true,
+      "observation_completed_utc": "2026-09-07T22:15:52Z"
+    },
+    {
+      "cell": "A2",
+      "start_utc": "2026-09-07T22:15:52Z",
+      "loadavg_start": [
+        3.51416015625,
+        3.3681640625,
+        4.19775390625
+      ],
+      "prompt_sha256": "7caeb5dad28fe31d095a4a212266c71ce036853f82467956bfe045272607bf9a",
+      "command": [
+        "charness",
+        "task",
+        "run",
+        "--repo-root",
+        "<consumer>",
+        "--lane",
+        "reading-scope-a2",
+        "--scope",
+        "src/catalog.py",
+        "--scope",
+        "tests/test_catalog.py",
+        "--scope",
+        "docs/alias-resolution.md",
+        "--prompt-file",
+        "<experiment>/baseline-prompt.md",
+        "--effort",
+        "xhigh",
+        "--timeout-seconds",
+        "1200",
+        "--skip-prepare"
+      ],
+      "carrier_returncode": 0,
+      "carrier_wall_seconds": 126.341,
+      "worker_completed_utc": "2026-09-07T22:17:58Z",
+      "loadavg_end": [
+        3.443359375,
+        3.30126953125,
+        4.0615234375
+      ],
+      "status": "completed",
+      "base_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+      "target_sha": "dd7583fe10c505c62bee5be3a75037b8c43d8706",
+      "worker_duration_ms": 126013,
+      "requested_codex": {
+        "executable": "codex",
+        "model": "gpt-5.6-luna",
+        "effort": "xhigh",
+        "timeout_seconds": 1200,
+        "timeout_scope": "codex-exec",
+        "command": [
+          "codex",
+          "exec",
+          "--sandbox",
+          "workspace-write",
+          "--add-dir",
+          "<consumer>/.git",
+          "--add-dir",
+          "<consumer>/.git/worktrees/worktree",
+          "--add-dir",
+          "<runtime>/8adbaaee62877824/task-run/reading-scope-a2/runtime",
+          "-m",
+          "gpt-5.6-luna",
+          "-c",
+          "model_reasoning_effort=xhigh",
+          "-"
+        ]
+      },
+      "scope": {
+        "verdict": "pass",
+        "reason": "all candidate changes are within the declared scope",
+        "specs": [
+          {
+            "path": "docs/alias-resolution.md",
+            "kind": "exact"
+          },
+          {
+            "path": "src/catalog.py",
+            "kind": "exact"
+          },
+          {
+            "path": "tests/test_catalog.py",
+            "kind": "exact"
+          }
+        ],
+        "changed_paths": [
+          "src/catalog.py",
+          "tests/test_catalog.py"
+        ],
+        "disallowed_paths": [],
+        "require_change": true,
+        "candidate_carrier": {
+          "carrier_kind": "worktree-only",
+          "committed_paths": [],
+          "dirty_paths": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "head_sha": null,
+          "base_is_ancestor_of_head": true,
+          "observed_head_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+          "observed_branch": "task/reading-scope-a2",
+          "head_is_complete": false,
+          "content_digest": "46d31b75488f2f5de45ad774761bc8b8abe4c4e8f187d457cc7512c05d670ec6"
+        }
+      },
+      "populations": {
+        "tracked": {
+          "before_count": 0,
+          "after_count": 2,
+          "added": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "removed": [],
+          "paths": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "verdict": "pass",
+          "reason": "tracked changes are the task candidate and remain inspectable"
+        },
+        "untracked": {
+          "before_count": 0,
+          "after_count": 0,
+          "added": [],
+          "removed": [],
+          "paths": [],
+          "verdict": "pass",
+          "reason": "no new untracked files appeared during codex exec"
+        },
+        "ignored": {
+          "before_count": 0,
+          "after_count": 0,
+          "added": [],
+          "removed": [],
+          "paths": [],
+          "verdict": "pass",
+          "reason": "no new ignored files appeared during codex exec"
+        }
+      },
+      "trace_sha256": "fb45d64333fe558f2353e9f53f6f8f32a1343a0d2aec3f19e47631189d601ac5",
+      "reported_tokens": 68288,
+      "acceptance": {
+        "own_suite": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "test_canonical_lookup_remains_available_with_aliases (test_catalog.CatalogTests) ... ok\ntest_empty_alias_list_preserves_canonical_behavior (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_colliding_with_canonical_key (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_with_unknown_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_different_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_same_target (test_catalog.CatalogTests) ... ok\ntest_reports_first_invalid_alias_pair_in_input_order (test_catalog.CatalogTests) ... ok\ntest_resolves_alias_to_canonical_value (test_catalog.CatalogTests) ... ok\ntest_resolves_existing_canonical_keys (test_catalog.CatalogTests) ... ok\ntest_unknown_key_raises_key_error (test_catalog.CatalogTests) ... ok\ntest_unknown_key_with_aliases_raises_key_error (test_catalog.CatalogTests) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.001s\n\nOK\n"
+        },
+        "oracle": {
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "test_aliases_and_canonical_names_coexist (__main__.AliasAcceptance) ... ok\ntest_canonical_compatibility (__main__.AliasAcceptance) ... ok\ntest_first_invalid_pair_is_reported (__main__.AliasAcceptance) ... ok\ntest_invalid_definitions_rejected (__main__.AliasAcceptance) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n"
+        },
+        "original_methods_preserved": true,
+        "spec_unchanged": true,
+        "scope_exact": true
+      },
+      "capability_pass": true,
+      "observation_completed_utc": "2026-09-07T22:17:58Z"
+    }
+  ],
+  "coverage": {
+    "coverage-timing": {
+      "identity": {
+        "head": "d8d05d57e312fa5206007256f0fc182ebc9c39a2",
+        "tree": "fe25aeec27dc0779b6743d77ab638725c2c6ef06",
+        "base": "af7c1b784cf9893aff10f6138c49c1bca2288059",
+        "status": "",
+        "loadavg": [
+          3.2880859375,
+          3.279296875,
+          4.03857421875
+        ],
+        "started_utc": "2026-09-07T22:18:17Z",
+        "cpu_count": 36,
+        "returncode": 2,
+        "total_wall_seconds": 11.43260976858437,
+        "ended_utc": "2026-09-07T22:18:28Z",
+        "final_status": ""
+      },
+      "timings": [
+        {
+          "stage": "selection",
+          "wall_seconds": 10.303214875981212,
+          "child_cpu_seconds": 0.16186499999999995
+        },
+        {
+          "stage": "prepare",
+          "wall_seconds": 0.002159079536795616,
+          "child_cpu_seconds": -2.7755575615628914e-17
+        },
+        {
+          "stage": "instrumented_pytest",
+          "wall_seconds": 1.1060963552445173,
+          "child_cpu_seconds": 1.0769739999999999
+        }
+      ],
+      "stdout": "ok\nstatus: no-verdict\nreason: focused producer failed\nbase_sha: af7c1b784cf9893aff10f6138c49c1bca2288059\n",
+      "stderr": "TIMING {\"stage\": \"selection\", \"wall_seconds\": 10.303214875981212, \"child_cpu_seconds\": 0.16186499999999995}\nTIMING {\"stage\": \"prepare\", \"wall_seconds\": 0.002159079536795616, \"child_cpu_seconds\": -2.7755575615628914e-17}\nRUN [verify] export COVERAGE_PROCESS_START=<runtime>/83bfc2a67372f1f9/coverage/83bfc2a67372f1f9-co...\nFAIL [verify] 1.1s export COVERAGE_PROCESS_START=<runtime>/83bfc2a67372f1f9/coverage/83bfc2a67372f1f9-co...\nstanding-pytest: plugin manifest preamble failed\nstanding-pytest: <experiment>/coverage-checkout/packaging/charness.json: `materialized_plugin_export.root` references missing directory `<experiment>/coverage-checkout/plugins/charness`\nstanding-pytest: regenerate with `python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root <experiment>/coverage-checkout`\nTIMING {\"stage\": \"instrumented_pytest\", \"wall_seconds\": 1.1060963552445173, \"child_cpu_seconds\": 1.0769739999999999}\nWARNING (release changed-line coverage): the focused coverage producer failed (exit 1); no changed-line verdict was rendered. This is NOT a pass.\n"
+    },
+    "coverage-ready-timing": {
+      "identity": {
+        "head": "d8d05d57e312fa5206007256f0fc182ebc9c39a2",
+        "tree": "fe25aeec27dc0779b6743d77ab638725c2c6ef06",
+        "base": "af7c1b784cf9893aff10f6138c49c1bca2288059",
+        "status": "",
+        "loadavg": [
+          4.673828125,
+          3.64404296875,
+          4.13671875
+        ],
+        "started_utc": "2026-09-07T22:18:47Z",
+        "cpu_count": 36,
+        "returncode": 0,
+        "total_wall_seconds": 152.5364468805492,
+        "ended_utc": "2026-09-07T22:21:20Z",
+        "final_status": "",
+        "coverage_bytes": 161850
+      },
+      "timings": [
+        {
+          "stage": "selection",
+          "wall_seconds": 9.394445531070232,
+          "child_cpu_seconds": 0.16693699999999997
+        },
+        {
+          "stage": "prepare",
+          "wall_seconds": 0.002253871411085129,
+          "child_cpu_seconds": 0.0
+        },
+        {
+          "stage": "instrumented_pytest",
+          "wall_seconds": 137.57013353519142,
+          "child_cpu_seconds": 1945.027448
+        },
+        {
+          "stage": "coverage_combine",
+          "wall_seconds": 1.8047401420772076
+        },
+        {
+          "stage": "coverage_json",
+          "wall_seconds": 1.1624679174274206
+        },
+        {
+          "stage": "combine_and_export_total",
+          "wall_seconds": 2.968324488028884,
+          "child_cpu_seconds": 2.9651439999999525
+        },
+        {
+          "stage": "fingerprint",
+          "wall_seconds": 0.23353161290287971,
+          "child_cpu_seconds": 0.1063549999999509
+        },
+        {
+          "stage": "consumer",
+          "wall_seconds": 2.3127002753317356,
+          "child_cpu_seconds": 0.43377199999994787
+        }
+      ],
+      "stdout": "ok\nstatus: clean\nreason: every mapped changed pool file's changed lines are covered\nbase_sha: af7c1b784cf9893aff10f6138c49c1bca2288059\nanalyzed_changed_pool_files:\n- scripts/gates/check_issue_closeout_commit_msg.py\n- scripts/gates/validate_debug_artifact.py\n- scripts/prepush_close_keyword_guard.py\n- scripts/prepush_quality_receipt.py\n- scripts/review/critique_packet_lib.py\n- scripts/run_quality_engine.py\n- scripts/run_quality_engine_receipt.py\n- skills/public/critique/scripts/prepare_packet.py\n- skills/public/critique/scripts/run_review.py\n- skills/public/critique/scripts/run_review_packet.py\n- skills/public/debug/scripts/debug_artifact_state.py\n- skills/public/debug/scripts/scaffold_debug_artifact.py\n- skills/public/issue/scripts/issue_closeout_classification_ledger.py\n- skills/public/issue/scripts/issue_closeout_rung1_floors.py\n- skills/public/issue/scripts/issue_critique_observer.py\n- skills/public/issue/scripts/issue_critique_observer_support.py\n- skills/public/issue/scripts/issue_resolution_critique.py\n- skills/public/issue/scripts/issue_tool_parser.py\n- skills/public/issue/scripts/issue_validate_closeout_draft.py\n- skills/public/issue/scripts/issue_verify_closeout.py\n- skills/public/issue/scripts/issue_verify_closeout_carrier.py\n- skills/public/issue/scripts/issue_worker_targets.py\n- skills/public/release/scripts/publish_release_common.py\n- skills/public/release/scripts/publish_release_execute.py\n- skills/public/release/scripts/publish_release_resume_publish.py\n- skills/public/retro/scripts/plan_retro_run.py\n- skills/public/retro/scripts/retro_plan_gates.py\n- skills/public/retro/scripts/retro_plan_reads.py\n- tools/check_skill_contracts.py\nunmapped_changed_pool_files: []\nconsumer_returncode: 0\nconsumer_stdout: \"ok: true\\nchanged_pool_files:\\n- scripts/gates/check_issue_closeout_commit_msg.py\\n\\\n  - scripts/gates/validate_debug_artifact.py\\n- scripts/prepush_close_keyword_guard.py\\n\\\n  - scripts/prepush_quality_receipt.py\\n- scripts/review/critique_packet_lib.py\\n\\\n  - scripts/run_quality_engine.py\\n- scripts/run_quality_engine_receipt.py\\n- skills/public/critique/scripts/prepare_packet.py\\n\\\n  - skills/public/critique/scripts/run_review.py\\n- skills/public/critique/scripts/run_review_packet.py\\n\\\n  - skills/public/debug/scripts/debug_artifact_state.py\\n- skills/public/debug/scripts/scaffold_debug_artifact.py\\n\\\n  - skills/public/issue/scripts/issue_closeout_classification_ledger.py\\n- skills/public/issue/scripts/issue_closeout_rung1_floors.py\\n\\\n  - skills/public/issue/scripts/issue_critique_observer.py\\n- skills/public/issue/scripts/issue_critique_observer_support.py\\n\\\n  - skills/public/issue/scripts/issue_resolution_critique.py\\n- skills/public/issue/scripts/issue_tool_parser.py\\n\\\n  - skills/public/issue/scripts/issue_validate_closeout_draft.py\\n- skills/public/issue/scripts/issue_verify_closeout.py\\n\\\n  - skills/public/issue/scripts/issue_verify_closeout_carrier.py\\n- skills/public/issue/scripts/issue_worker_targets.py\\n\\\n  - skills/public/release/scripts/publish_release_common.py\\n- skills/public/release/scripts/publish_release_execute.py\\n\\\n  - skills/public/release/scripts/publish_release_resume_publish.py\\n- skills/public/retro/scripts/plan_retro_run.py\\n\\\n  - skills/public/retro/scripts/retro_plan_gates.py\\n- skills/public/retro/scripts/retro_plan_reads.py\\n\\\n  - tools/check_skill_contracts.py\\nblocking: []\\nblocking_detail: {}\\nblocking_targets:\\\n  \\ {}\\nsubprocess_coverage_advisory: {}\\nsubprocess_coverage_advisory_scope:\\n  blocked_files_examined:\\\n  \\ 0\\n  candidate_tests_examined: 0\\n  candidate_sources:\\n  - boundary-bypass-inventory\\n\\\n  \\  - test-reference-map\\n  inventory: read\\n  inventory_recorded_scripts: 47\\n \\\n  \\ reference_map: empty-or-unavailable\\n  files_named: []\\n  silence_means: 'no candidate\\\n  \\ test of that file was found to spawn it with a replacing\\n    environment or to\\\n  \\ copy it by name. That is NOT proof the file''s coverage is honest:\\n    a candidate\\\n  \\ list is not exhaustive, a spawn whose command is built from a variable\\n    does\\\n  \\ not bind, an `env=` passed as a bare name cannot be followed, and a helper\\n \\\n  \\   in another module that copies a whole seeded repo is deliberately not resolved.'\\n\\\n  targeted_mutant_proof:\\n  required: false\\n  contract: Before hand-mutating, cite/display\\\n  \\ one blocking_targets path:line entry,\\n    mutate that exact line, record the\\\n  \\ failing test, then revert.\\nbase_sha: af7c1b784cf9893aff10f6138c49c1bca2288059\\n\\\n  head_sha: HEAD\\nresolved_head_sha: d8d05d57e312fa5206007256f0fc182ebc9c39a2\\nchanged_pool_file_counts:\\n\\\n  \\  analyzed: 29\\n  changed: 29\\n\"\n",
+      "stderr": "TIMING {\"stage\": \"selection\", \"wall_seconds\": 9.394445531070232, \"child_cpu_seconds\": 0.16693699999999997}\nTIMING {\"stage\": \"prepare\", \"wall_seconds\": 0.002253871411085129, \"child_cpu_seconds\": 0.0}\nRUN [verify] export COVERAGE_PROCESS_START=<runtime>/83bfc2a67372f1f9/coverage/83bfc2a67372f1f9-co...\nHEARTBEAT [verify] elapsed=30.0s export COVERAGE_PROCESS_START=<runtime>/83bfc2a67372f1f9/coverage/83bfc2a67372f1f9-co...\nHEARTBEAT [verify] elapsed=60.0s export COVERAGE_PROCESS_START=<runtime>/83bfc2a67372f1f9/coverage/83bfc2a67372f1f9-co...\nHEARTBEAT [verify] elapsed=90.0s export COVERAGE_PROCESS_START=<runtime>/83bfc2a67372f1f9/coverage/83bfc2a67372f1f9-co...\nHEARTBEAT [verify] elapsed=120.0s export COVERAGE_PROCESS_START=<runtime>/83bfc2a67372f1f9/coverage/83bfc2a67372f1f9-co...\nPASS [verify] 137.6s export COVERAGE_PROCESS_START=<runtime>/83bfc2a67372f1f9/coverage/83bfc2a67372f1f9-co...\nstanding-pytest: retention skipped 9095; 0 MiB removed; log <runtime>/83bfc2a67372f1f9/retention/sweep-1788819538.json\nRUN [standing-pytest] /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp <runtime-parent>/...\nHEARTBEAT [standing-pytest] elapsed=30.0s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp <runtime-parent>/...\nHEARTBEAT [standing-pytest] elapsed=60.0s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp <runtime-parent>/...\nHEARTBEAT [standing-pytest] elapsed=90.0s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp <runtime-parent>/...\nHEARTBEAT [standing-pytest] elapsed=120.0s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp <runtime-parent>/...\nPASS [standing-pytest] 132.4s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp <runtime-parent>/...\nTIMING {\"stage\": \"instrumented_pytest\", \"wall_seconds\": 137.57013353519142, \"child_cpu_seconds\": 1945.027448}\nTIMING {\"stage\": \"combine_and_export_total\", \"wall_seconds\": 2.968324488028884, \"child_cpu_seconds\": 2.9651439999999525}\nTIMING {\"stage\": \"fingerprint\", \"wall_seconds\": 0.23353161290287971, \"child_cpu_seconds\": 0.1063549999999509}\nTIMING {\"stage\": \"consumer\", \"wall_seconds\": 2.3127002753317356, \"child_cpu_seconds\": 0.43377199999994787}\n"
+    },
+    "common_selected_command": "python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only --pytest-target tests/control_plane/test_integrations_validation.py --pytest-target tests/control_plane/test_lock_schema_resilience.py --pytest-target tests/control_plane/test_sync_support.py --pytest-target tests/control_plane/test_upstream_support_drift.py --pytest-target tests/coverage_debt/test_batch2.py --pytest-target tests/coverage_debt/test_batch3.py --pytest-target tests/coverage_debt/test_batch5.py --pytest-target tests/coverage_debt/test_batch6.py --pytest-target tests/coverage_debt/test_batch8.py --pytest-target tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py --pytest-target tests/quality_gates/test_a_manifest_field_is_not_what_the_control_plane_derives.py --pytest-target tests/quality_gates/test_a_refused_verdict_states_its_refusal.py --pytest-target tests/quality_gates/test_absent_input_is_not_a_matching_input.py --pytest-target tests/quality_gates/test_adapter_lib_yaml.py --pytest-target tests/quality_gates/test_adapter_version_reconciliation.py --pytest-target tests/quality_gates/test_adapter_version_refusal_is_loud.py --pytest-target tests/quality_gates/test_announcement_version_refusal.py --pytest-target tests/quality_gates/test_argparse_surface_lib.py --pytest-target tests/quality_gates/test_artifact_naming.py --pytest-target tests/quality_gates/test_artifact_path_refuses_an_unhonored_adapter.py --pytest-target tests/quality_gates/test_artifact_referents.py --pytest-target tests/quality_gates/test_artifact_validator_units.py --pytest-target tests/quality_gates/test_attention_state_visibility.py --pytest-target tests/quality_gates/test_bootstrap_visibility.py --pytest-target tests/quality_gates/test_changed_line_coverage_gate.py --pytest-target tests/quality_gates/test_changed_line_mutation_coverage.py --pytest-target tests/quality_gates/test_changed_line_mutation_coverage_worktree.py --pytest-target tests/quality_gates/test_changed_line_proof_cost.py --pytest-target tests/quality_gates/test_changed_line_reviewer_consumer_gaps.py --pytest-target tests/quality_gates/test_changed_line_scope_counts.py --pytest-target tests/quality_gates/test_check_artifact_surface_preflight.py --pytest-target tests/quality_gates/test_check_bootstrap_shim_consistency.py --pytest-target tests/quality_gates/test_check_coverage_inventory.py --pytest-target tests/quality_gates/test_check_doc_links.py --pytest-target tests/quality_gates/test_check_git_identity.py --pytest-target tests/quality_gates/test_check_markdown_inline_code.py --pytest-target tests/quality_gates/test_check_mutation_run_proof.py --pytest-target tests/quality_gates/test_check_plugin_doc_links.py --pytest-target tests/quality_gates/test_check_public_doc_coupling.py --pytest-target tests/quality_gates/test_check_skill_cut_safety.py --pytest-target tests/quality_gates/test_check_spec_evidence_durability.py --pytest-target tests/quality_gates/test_check_staged_reversion.py --pytest-target tests/quality_gates/test_check_symbol_residue.py --pytest-target tests/quality_gates/test_ci_recoverable_gates.py --pytest-target tests/quality_gates/test_claims_review_publication_boundary.py --pytest-target tests/quality_gates/test_claims_review_scope.py --pytest-target tests/quality_gates/test_cli_skill_surface.py --pytest-target tests/quality_gates/test_cli_skill_surface_probe_boundary.py --pytest-target tests/quality_gates/test_closeout_authorization_ingress.py --pytest-target tests/quality_gates/test_closeout_discipline_propagation.py --pytest-target tests/quality_gates/test_closeout_headroom_and_mirror_gate.py --pytest-target tests/quality_gates/test_code_length_gates.py --pytest-target tests/quality_gates/test_code_length_interpretation.py --pytest-target tests/quality_gates/test_codex_session_jsonl_audit.py --pytest-target tests/quality_gates/test_command_docs_gate.py --pytest-target tests/quality_gates/test_command_dominance.py --pytest-target tests/quality_gates/test_command_plan_preflight.py --pytest-target tests/quality_gates/test_coverage_builder_policy_parity.py --pytest-target tests/quality_gates/test_coverage_floor_inventory_reference.py --pytest-target tests/quality_gates/test_create_skill_adapter.py --pytest-target tests/quality_gates/test_critique_boundary_ownership_presence.py --pytest-target tests/quality_gates/test_critique_enforcement_scope.py --pytest-target tests/quality_gates/test_critique_first_reader_lens.py --pytest-target tests/quality_gates/test_critique_fresh_eye_presence.py --pytest-target tests/quality_gates/test_critique_skill.py --pytest-target tests/quality_gates/test_current_pointer_freshness.py --pytest-target tests/quality_gates/test_current_pointer_writers.py --pytest-target tests/quality_gates/test_current_pointer_writes.py --pytest-target tests/quality_gates/test_current_release_version_refusal.py --pytest-target tests/quality_gates/test_debug_rca_reference_cite_chain.py --pytest-target tests/quality_gates/test_debug_seam_risk_index.py --pytest-target tests/quality_gates/test_distinct_mutation_coverage.py --pytest-target tests/quality_gates/test_docs_and_misc.py --pytest-target tests/quality_gates/test_documented_command_flags.py --pytest-target tests/quality_gates/test_documented_subcommands.py --pytest-target tests/quality_gates/test_dup_ratchet.py --pytest-target tests/quality_gates/test_dup_ratchet_baseline.py --pytest-target tests/quality_gates/test_dup_ratchet_git_snapshot.py --pytest-target tests/quality_gates/test_dup_ratchet_lineage.py --pytest-target tests/quality_gates/test_dup_ratchet_reductions.py --pytest-target tests/quality_gates/test_dup_ratchet_scope_coverage.py --pytest-target tests/quality_gates/test_dup_ratchet_scoped_rebaseline.py --pytest-target tests/quality_gates/test_dup_ratchet_triage.py --pytest-target tests/quality_gates/test_dup_ratchet_unestablished_inputs.py --pytest-target tests/quality_gates/test_dup_review_seed.py --pytest-target tests/quality_gates/test_empty_scope_honesty_inventory.py --pytest-target tests/quality_gates/test_empty_scope_refusals.py --pytest-target tests/quality_gates/test_export_self_sufficiency.py --pytest-target tests/quality_gates/test_gate_summary_names_failures.py --pytest-target tests/quality_gates/test_gather_provider.py --pytest-target tests/quality_gates/test_gather_symlink_safety.py --pytest-target tests/quality_gates/test_git_inventory_discovery.py --pytest-target tests/quality_gates/test_hardcoded_discovery.py --pytest-target tests/quality_gates/test_hitl_bootstrap_version_refusal.py --pytest-target tests/quality_gates/test_hitl_chunk_contract.py --pytest-target tests/quality_gates/test_hotl_adapter.py --pytest-target tests/quality_gates/test_inference_interpretation_meta_validator.py --pytest-target tests/quality_gates/test_inventory_ci_local_gate_parity.py --pytest-target tests/quality_gates/test_inventory_consumption.py --pytest-target tests/quality_gates/test_issue_bundled_closeout.py --pytest-target tests/quality_gates/test_issue_close_comment_floor.py --pytest-target tests/quality_gates/test_issue_close_preflight_readback.py --pytest-target tests/quality_gates/test_issue_closeout_authority.py --pytest-target tests/quality_gates/test_issue_closeout_commit_msg_hook.py --pytest-target tests/quality_gates/test_issue_closeout_discipline.py --pytest-target tests/quality_gates/test_issue_closeout_draft_validation.py --pytest-target tests/quality_gates/test_issue_closeout_invocation.py --pytest-target tests/quality_gates/test_issue_closeout_owner_contracts.py --pytest-target tests/quality_gates/test_issue_closeout_rung1_floors.py --pytest-target tests/quality_gates/test_issue_closeout_verifier.py --pytest-target tests/quality_gates/test_issue_closeout_verifier_critique.py --pytest-target tests/quality_gates/test_issue_consolidated_closeout.py --pytest-target tests/quality_gates/test_issue_consolidation_readback.py --pytest-target tests/quality_gates/test_issue_create.py --pytest-target tests/quality_gates/test_issue_critique_observer.py --pytest-target tests/quality_gates/test_issue_preflight.py --pytest-target tests/quality_gates/test_issue_proposal_fields.py --pytest-target tests/quality_gates/test_issue_provider_selection.py --pytest-target tests/quality_gates/test_issue_read.py --pytest-target tests/quality_gates/test_issue_skill.py --pytest-target tests/quality_gates/test_issue_source_preservation.py --pytest-target tests/quality_gates/test_issue_tool_runners.py --pytest-target tests/quality_gates/test_issue_worker_carrier.py --pytest-target tests/quality_gates/test_js_mutation_tooling.py --pytest-target tests/quality_gates/test_lesson_seeding_at_persist.py --pytest-target tests/quality_gates/test_maintainer_hooks.py --pytest-target tests/quality_gates/test_markdown_doc_scan.py --pytest-target tests/quality_gates/test_markdown_lint_resolution.py --pytest-target tests/quality_gates/test_measure_evidence_residual.py --pytest-target tests/quality_gates/test_module_eviction_form_gate.py --pytest-target tests/quality_gates/test_mutation_issue_report_body.py --pytest-target tests/quality_gates/test_mutation_test_reporters.py --pytest-target tests/quality_gates/test_mutation_workflow_install.py --pytest-target tests/quality_gates/test_narrative_adapter.py --pytest-target tests/quality_gates/test_narrative_impl_version_refusal.py --pytest-target tests/quality_gates/test_narrative_scenario_blocks.py --pytest-target tests/quality_gates/test_native_gate_lib.py --pytest-target tests/quality_gates/test_nose_fingerprint.py --pytest-target tests/quality_gates/test_packaging_support_capabilities.py --pytest-target tests/quality_gates/test_packaging_validation.py --pytest-target tests/quality_gates/test_parents_index_layout_invariant.py --pytest-target tests/quality_gates/test_parity_harness.py --pytest-target tests/quality_gates/test_plugin_asset_command_carriers.py --pytest-target tests/quality_gates/test_plugin_dir_references.py --pytest-target tests/quality_gates/test_portable_json_artifacts.py --pytest-target tests/quality_gates/test_prepush_close_keyword_guard.py --pytest-target tests/quality_gates/test_prepush_runtime_regime.py --pytest-target tests/quality_gates/test_prescribed_skill_executed.py --pytest-target tests/quality_gates/test_profile_and_preset_validation.py --pytest-target tests/quality_gates/test_prompt_bulk_version_refusal.py --pytest-target tests/quality_gates/test_proof_mismatch.py --pytest-target tests/quality_gates/test_provider_boundary.py --pytest-target tests/quality_gates/test_public_skill_dogfood.py --pytest-target tests/quality_gates/test_public_skill_yaml_output_contract.py --pytest-target tests/quality_gates/test_python_and_security_gates.py --pytest-target tests/quality_gates/test_python_filename_convention.py --pytest-target tests/quality_gates/test_quality_adapter_gate_design.py --pytest-target tests/quality_gates/test_quality_artifact_date_coherence.py --pytest-target tests/quality_gates/test_quality_bootstrap.py --pytest-target tests/quality_gates/test_quality_bootstrap_absence.py --pytest-target tests/quality_gates/test_quality_bootstrap_absence_paths.py --pytest-target tests/quality_gates/test_quality_bootstrap_lifecycle.py --pytest-target tests/quality_gates/test_quality_brittle_source_guards.py --pytest-target tests/quality_gates/test_quality_cli_side_effect_probes.py --pytest-target tests/quality_gates/test_quality_dead_code_advisory.py --pytest-target tests/quality_gates/test_quality_declaration_path_resolution.py --pytest-target tests/quality_gates/test_quality_doc_duplicates.py --pytest-target tests/quality_gates/test_quality_dual_implementation.py --pytest-target tests/quality_gates/test_quality_ergonomics_interpretation.py --pytest-target tests/quality_gates/test_quality_gitignore_scan_hygiene.py --pytest-target tests/quality_gates/test_quality_lint_ignores.py --pytest-target tests/quality_gates/test_quality_markdown_preview_bootstrap.py --pytest-target tests/quality_gates/test_quality_mutation_score_validity.py --pytest-target tests/quality_gates/test_quality_mutation_testing.py --pytest-target tests/quality_gates/test_quality_nose_advisory.py --pytest-target tests/quality_gates/test_quality_public_spec_quality.py --pytest-target tests/quality_gates/test_quality_readers_version_refusal.py --pytest-target tests/quality_gates/test_quality_run_gate_packets.py --pytest-target tests/quality_gates/test_quality_run_planner.py --pytest-target tests/quality_gates/test_quality_run_planner_adapter_scope.py --pytest-target tests/quality_gates/test_quality_run_planner_declared.py --pytest-target tests/quality_gates/test_quality_run_read_measurement.py --pytest-target tests/quality_gates/test_quality_runner.py --pytest-target tests/quality_gates/test_quality_runner_coverage_selection.py --pytest-target tests/quality_gates/test_quality_runner_exit_status.py --pytest-target tests/quality_gates/test_quality_runner_label_universe.py --pytest-target tests/quality_gates/test_quality_runner_nose_scope.py --pytest-target tests/quality_gates/test_quality_runner_progress.py --pytest-target tests/quality_gates/test_quality_runner_release_order.py --pytest-target tests/quality_gates/test_quality_runner_runtime_aggregate.py --pytest-target tests/quality_gates/test_quality_runner_unproven.py --pytest-target tests/quality_gates/test_quality_skill_ergonomics.py --pytest-target tests/quality_gates/test_quality_skill_ergonomics_summary.py --pytest-target tests/quality_gates/test_quality_sloc_inventory.py --pytest-target tests/quality_gates/test_quality_standing_gate_verbosity.py --pytest-target tests/quality_gates/test_quality_tool_fixtures.py --pytest-target tests/quality_gates/test_quality_tool_recommendations.py --pytest-target tests/quality_gates/test_quality_universes.py --pytest-target tests/quality_gates/test_regenerable_facts.py --pytest-target tests/quality_gates/test_release_backend.py --pytest-target tests/quality_gates/test_release_backend_agrees_with_the_owner.py --pytest-target tests/quality_gates/test_release_changed_line_coverage.py --pytest-target tests/quality_gates/test_release_claims_in_process.py --pytest-target tests/quality_gates/test_release_claims_review.py --pytest-target tests/quality_gates/test_release_closeout_tail_wiring.py --pytest-target tests/quality_gates/test_release_distinct_channel.py --pytest-target tests/quality_gates/test_release_fresh_checkout_probes.py --pytest-target tests/quality_gates/test_release_issue_closeout_behavioral_floor.py --pytest-target tests/quality_gates/test_release_issue_closeout_preflight.py --pytest-target tests/quality_gates/test_release_narrative_audit.py --pytest-target tests/quality_gates/test_release_narrative_containment.py --pytest-target tests/quality_gates/test_release_narrative_gate.py --pytest-target tests/quality_gates/test_release_notes_claims.py --pytest-target tests/quality_gates/test_release_planner_script_origin.py --pytest-target tests/quality_gates/test_release_planner_version_refusal.py --pytest-target tests/quality_gates/test_release_publish.py --pytest-target tests/quality_gates/test_release_publish_fake_git.py --pytest-target tests/quality_gates/test_release_publish_post_create.py --pytest-target tests/quality_gates/test_release_publish_provenance.py --pytest-target tests/quality_gates/test_release_publish_requested_review.py --pytest-target tests/quality_gates/test_release_publish_resilience.py --pytest-target tests/quality_gates/test_release_publish_rollback.py --pytest-target tests/quality_gates/test_release_publish_tag_history.py --pytest-target tests/quality_gates/test_release_quality_gate_visibility.py --pytest-target tests/quality_gates/test_release_quality_status_binding.py --pytest-target tests/quality_gates/test_release_resume_edge_coverage.py --pytest-target tests/quality_gates/test_release_resume_state_validation.py --pytest-target tests/quality_gates/test_release_resume_surface_revalidation.py --pytest-target tests/quality_gates/test_release_run_planner.py --pytest-target tests/quality_gates/test_release_run_planner_prepared_stop.py --pytest-target tests/quality_gates/test_removed_name_consumers.py --pytest-target tests/quality_gates/test_repo_copy_invariants.py --pytest-target tests/quality_gates/test_requested_review_gate_version_refusal.py --pytest-target tests/quality_gates/test_retro_artifact_validation.py --pytest-target tests/quality_gates/test_retro_auto_trigger.py --pytest-target tests/quality_gates/test_retro_codex_session_audit.py --pytest-target tests/quality_gates/test_retro_host_log_probe.py --pytest-target tests/quality_gates/test_retro_installed_plan_path.py --pytest-target tests/quality_gates/test_retro_memory.py --pytest-target tests/quality_gates/test_retro_persistence.py --pytest-target tests/quality_gates/test_reviewer_boundary_fingerprint.py --pytest-target tests/quality_gates/test_reviewer_delivery_integration.py --pytest-target tests/quality_gates/test_reviewer_result.py --pytest-target tests/quality_gates/test_reviewer_tier_policy.py --pytest-target tests/quality_gates/test_reviewer_worker_report.py --pytest-target tests/quality_gates/test_run_quality_engine.py --pytest-target tests/quality_gates/test_run_quality_engine_not_run.py --pytest-target tests/quality_gates/test_runtime_budget_consumer_universe.py --pytest-target tests/quality_gates/test_runtime_budget_gate.py --pytest-target tests/quality_gates/test_runtime_budget_gate_profiles.py --pytest-target tests/quality_gates/test_runtime_budget_unenforceable.py --pytest-target tests/quality_gates/test_runtime_budget_universe.py --pytest-target tests/quality_gates/test_runtime_summary_render.py --pytest-target tests/quality_gates/test_runtime_timing_log_ingest.py --pytest-target tests/quality_gates/test_rust_changed_line_coverage.py --pytest-target tests/quality_gates/test_s6_changed_line_gaps.py --pytest-target tests/quality_gates/test_s6b2_changed_line_gaps.py --pytest-target tests/quality_gates/test_scaffold_claims_review.py --pytest-target tests/quality_gates/test_scaffold_version_refusal.py --pytest-target tests/quality_gates/test_script_inprocess_behaviors.py --pytest-target tests/quality_gates/test_script_lookup_form_gate.py --pytest-target tests/quality_gates/test_seed_fixture_budget_gate.py --pytest-target tests/quality_gates/test_semantic_review_command.py --pytest-target tests/quality_gates/test_setup_adapter_scaffold_policy.py --pytest-target tests/quality_gates/test_setup_hook_failure_guidance.py --pytest-target tests/quality_gates/test_setup_inspect_adapters.py --pytest-target tests/quality_gates/test_setup_inspect_approval_identity.py --pytest-target tests/quality_gates/test_setup_inspect_policy.py --pytest-target tests/quality_gates/test_setup_operating_surface_plan.py --pytest-target tests/quality_gates/test_setup_retro_memory.py --pytest-target tests/quality_gates/test_setup_seed_dependencies.py --pytest-target tests/quality_gates/test_setup_source_guard_scan.py --pytest-target tests/quality_gates/test_shared_script_gate_scope.py --pytest-target tests/quality_gates/test_shell_gate_root_resolution.py --pytest-target tests/quality_gates/test_skill_contracts_validation.py --pytest-target tests/quality_gates/test_skill_docs_contracts.py --pytest-target tests/quality_gates/test_skill_ergonomics_gate.py --pytest-target tests/quality_gates/test_skill_gate_report_render.py --pytest-target tests/quality_gates/test_skill_lesson_durability.py --pytest-target tests/quality_gates/test_skill_ownership_overlap.py --pytest-target tests/quality_gates/test_skill_reference_index.py --pytest-target tests/quality_gates/test_skill_validation.py --pytest-target tests/quality_gates/test_spec_critique.py --pytest-target tests/quality_gates/test_specdown_ephemeral_config.py --pytest-target tests/quality_gates/test_staged_commit_gate_plan.py --pytest-target tests/quality_gates/test_standing_doc_provenance.py --pytest-target tests/quality_gates/test_standing_pytest_run_mirror.py --pytest-target tests/quality_gates/test_standing_test_discovery.py --pytest-target tests/quality_gates/test_standing_test_economics.py --pytest-target tests/quality_gates/test_startup_probe_measure.py --pytest-target tests/quality_gates/test_structural_waste_inventory.py --pytest-target tests/quality_gates/test_subprocess_form_gate.py --pytest-target tests/quality_gates/test_subprocess_only_coverage_advisory.py --pytest-target tests/quality_gates/test_subprocess_settlement_inventory.py --pytest-target tests/quality_gates/test_surface_obligations.py --pytest-target tests/quality_gates/test_test_production_ratio.py --pytest-target tests/quality_gates/test_timeout_bound_form_gate.py --pytest-target tests/quality_gates/test_timing_layer_completeness.py --pytest-target tests/quality_gates/test_u2_doc_artifact_universes.py --pytest-target tests/quality_gates/test_unreferenced_scripts.py --pytest-target tests/quality_gates/test_upsert_goal_input_channel.py --pytest-target tests/quality_gates/test_wall_clock_form_gate.py --pytest-target tests/quality_gates/test_web_fetch_route_version_refusal.py --pytest-target tests/quality_gates/test_workflow_safety_docs.py --pytest-target tests/test_announcement_adapter_lib.py --pytest-target tests/test_announcement_collect_commits.py --pytest-target tests/test_artifact_line_budget_adapter.py --pytest-target tests/test_artifact_validator.py --pytest-target tests/test_check_issue_closeout_commit_msg_inprocess.py --pytest-target tests/test_committed_packet_refusal.py --pytest-target tests/test_critique_artifact_validation.py --pytest-target tests/test_critique_prepare_packet.py --pytest-target tests/test_critique_scaffold.py --pytest-target tests/test_critique_section_changed_surfaces.py --pytest-target tests/test_critique_verify_packet.py --pytest-target tests/test_debug_artifact.py --pytest-target tests/test_debug_artifact_scope.py --pytest-target tests/test_debug_persistence.py --pytest-target tests/test_debug_plan.py --pytest-target tests/test_debug_scaffold.py --pytest-target tests/test_degradation_branch_coverage.py --pytest-target tests/test_docs_length_gate.py --pytest-target tests/test_ideation_artifact.py --pytest-target tests/test_ideation_scaffold.py --pytest-target tests/test_impl_bootstrap.py --pytest-target tests/test_impl_survey_verification.py --pytest-target tests/test_issue_close_exemption_advisory.py --pytest-target tests/test_list_external_links.py --pytest-target tests/test_probe_record.py --pytest-target tests/test_probe_stimulus_replay.py --pytest-target tests/test_provenance_contract.py --pytest-target tests/test_quality_artifact.py --pytest-target tests/test_quality_artifact_report_all.py --pytest-target tests/test_quality_delegated_review.py --pytest-target tests/test_quality_scaffold.py --pytest-target tests/test_reddit_source.py --pytest-target tests/test_release_changed_line_regressions.py --pytest-target tests/test_release_changed_line_regressions_release.py --pytest-target tests/test_retro_artifact.py --pytest-target tests/test_retro_plan.py --pytest-target tests/test_retro_prepare_packet.py --pytest-target tests/test_retro_scaffold.py --pytest-target tests/test_reviewed_input_identity_binding.py --pytest-target tests/test_reviewed_input_nonblob_binding.py --pytest-target tests/test_scaffold_repo_local_validator.py --pytest-target tests/test_scaffold_subject_identity.py --pytest-target tests/test_script_closure.py --pytest-target tests/test_seed_lesson_transitions.py --pytest-target tests/test_supply_chain_online.py --pytest-target tests/test_twitter_exact_source.py --pytest-target tests/test_validate_adapters_integration_schema.py --pytest-target tests/test_web_fetch_help.py --pytest-target tests/test_write_artifact_path_single_owner.py --pytest-target tests/test_youtube_source.py",
+    "selector_replays": [
+      {
+        "base_sha": "af7c1b784cf9893aff10f6138c49c1bca2288059",
+        "changed_pool_files": [
+          "scripts/gates/check_issue_closeout_commit_msg.py",
+          "scripts/gates/validate_debug_artifact.py",
+          "scripts/prepush_close_keyword_guard.py",
+          "scripts/prepush_quality_receipt.py",
+          "scripts/review/critique_packet_lib.py",
+          "scripts/run_quality_engine.py",
+          "scripts/run_quality_engine_receipt.py",
+          "skills/public/critique/scripts/prepare_packet.py",
+          "skills/public/critique/scripts/run_review.py",
+          "skills/public/critique/scripts/run_review_packet.py",
+          "skills/public/debug/scripts/debug_artifact_state.py",
+          "skills/public/debug/scripts/scaffold_debug_artifact.py",
+          "skills/public/issue/scripts/issue_closeout_classification_ledger.py",
+          "skills/public/issue/scripts/issue_closeout_rung1_floors.py",
+          "skills/public/issue/scripts/issue_critique_observer.py",
+          "skills/public/issue/scripts/issue_critique_observer_support.py",
+          "skills/public/issue/scripts/issue_resolution_critique.py",
+          "skills/public/issue/scripts/issue_tool_parser.py",
+          "skills/public/issue/scripts/issue_validate_closeout_draft.py",
+          "skills/public/issue/scripts/issue_verify_closeout.py",
+          "skills/public/issue/scripts/issue_verify_closeout_carrier.py",
+          "skills/public/issue/scripts/issue_worker_targets.py",
+          "skills/public/release/scripts/publish_release_common.py",
+          "skills/public/release/scripts/publish_release_execute.py",
+          "skills/public/release/scripts/publish_release_resume_publish.py",
+          "skills/public/retro/scripts/plan_retro_run.py",
+          "skills/public/retro/scripts/retro_plan_gates.py",
+          "skills/public/retro/scripts/retro_plan_reads.py",
+          "tools/check_skill_contracts.py"
+        ],
+        "counts": {
+          "changed_pool": 29,
+          "mapped_pool": 29,
+          "selected_tests": 354
+        },
+        "digests": {
+          "archive_sha256": "137f016dc939de8735f2f8efd633e4d60e1f929a637542d160f31de7129c1e27",
+          "changed_pool_names_sha256": "0235d458bd555579efeb9b1834d8e259edf5bc6f3318194c34ff11a4c4fee89b",
+          "command_sha256": "816713d1e78ec6de2398de75607c15bb52b9eed7babe8da21d69272a8dd14999",
+          "selected_tests_sha256": "8f46979d58f9ad08fd7c529dedf327882de235a9e2a429b273ae5273adf60791"
+        },
+        "stage": "8b6ce9635e84c4891b60a71fe0b3c6292cc0cc34",
+        "status": "recommended",
+        "unmapped_changed_pool_files": []
+      },
+      {
+        "base_sha": "af7c1b784cf9893aff10f6138c49c1bca2288059",
+        "changed_pool_files": [
+          "scripts/gates/check_issue_closeout_commit_msg.py",
+          "scripts/gates/validate_debug_artifact.py",
+          "scripts/prepush_close_keyword_guard.py",
+          "scripts/prepush_quality_receipt.py",
+          "scripts/review/critique_packet_lib.py",
+          "scripts/run_quality_engine.py",
+          "scripts/run_quality_engine_receipt.py",
+          "skills/public/critique/scripts/prepare_packet.py",
+          "skills/public/critique/scripts/run_review.py",
+          "skills/public/critique/scripts/run_review_packet.py",
+          "skills/public/debug/scripts/debug_artifact_state.py",
+          "skills/public/debug/scripts/scaffold_debug_artifact.py",
+          "skills/public/issue/scripts/issue_closeout_classification_ledger.py",
+          "skills/public/issue/scripts/issue_closeout_rung1_floors.py",
+          "skills/public/issue/scripts/issue_critique_observer.py",
+          "skills/public/issue/scripts/issue_critique_observer_support.py",
+          "skills/public/issue/scripts/issue_resolution_critique.py",
+          "skills/public/issue/scripts/issue_tool_parser.py",
+          "skills/public/issue/scripts/issue_validate_closeout_draft.py",
+          "skills/public/issue/scripts/issue_verify_closeout.py",
+          "skills/public/issue/scripts/issue_verify_closeout_carrier.py",
+          "skills/public/issue/scripts/issue_worker_targets.py",
+          "skills/public/release/scripts/publish_release_common.py",
+          "skills/public/release/scripts/publish_release_execute.py",
+          "skills/public/release/scripts/publish_release_resume_publish.py",
+          "skills/public/retro/scripts/plan_retro_run.py",
+          "skills/public/retro/scripts/retro_plan_gates.py",
+          "skills/public/retro/scripts/retro_plan_reads.py",
+          "tools/check_skill_contracts.py"
+        ],
+        "counts": {
+          "changed_pool": 29,
+          "mapped_pool": 29,
+          "selected_tests": 354
+        },
+        "digests": {
+          "archive_sha256": "f77072d2e3cda8662bcc2214a79c406c63cb5cf77965080e2309142653d00010",
+          "changed_pool_names_sha256": "0235d458bd555579efeb9b1834d8e259edf5bc6f3318194c34ff11a4c4fee89b",
+          "command_sha256": "816713d1e78ec6de2398de75607c15bb52b9eed7babe8da21d69272a8dd14999",
+          "selected_tests_sha256": "8f46979d58f9ad08fd7c529dedf327882de235a9e2a429b273ae5273adf60791"
+        },
+        "stage": "d8d05d57e312fa5206007256f0fc182ebc9c39a2",
+        "status": "recommended",
+        "unmapped_changed_pool_files": []
+      }
+    ],
+    "selection_unit": "test files, not collected test cases",
+    "timer_wrapper": "import sys,json,time,resource,subprocess,hashlib,functools,os\nfrom pathlib import Path\nroot=Path(sys.argv[1]).resolve(); dest=Path(sys.argv[2]).resolve(); dest.mkdir(parents=True,exist_ok=True)\nsys.path.insert(0,str(root)); os.chdir(root)\nfrom scripts.mutation import release_changed_line_coverage as gate\nfrom scripts.mutation import mutation_sampling_lib as sampling\nfrom scripts.mutation import mutation_changed_files_lib as changed\nrows=[]\ndef wrap(obj,name,label,save=False):\n old=getattr(obj,name)\n @functools.wraps(old)\n def timed(*args,**kwargs):\n  started=time.monotonic(); before=resource.getrusage(resource.RUSAGE_CHILDREN)\n  try:\n   result=old(*args,**kwargs)\n   if save:\n    (dest/(label+'.json')).write_text(json.dumps(result,indent=2)+'\\n')\n    if label=='selection':\n     expected=json.loads(Path('<selector-replay>/outputs/selector-replay-d8d05d57e312fa5206007256f0fc182ebc9c39a2.json').read_text())\n     assert result['command']==expected['command'], 'selected command changed'\n     assert sorted(result['mapped_tests_by_file'])==sorted(expected['mapped_tests_by_file']), 'mapped population changed'\n   return result\n  finally:\n   after=resource.getrusage(resource.RUSAGE_CHILDREN)\n   item={'stage':label,'wall_seconds':time.monotonic()-started,'child_cpu_seconds':after.ru_utime+after.ru_stime-before.ru_utime-before.ru_stime}\n   rows.append(item); (dest/'timings.json').write_text(json.dumps(rows,indent=2)+'\\n')\n   print('TIMING '+json.dumps(item),file=sys.stderr,flush=True)\n setattr(obj,name,timed)\nwrap(gate._suggest,'build_recommendation','selection',True)\nwrap(sampling,'prepare_plain_coverage','prepare')\nwrap(gate,'_run_command','instrumented_pytest',True)\nwrap(sampling,'combine_and_export_coverage','combine_and_export_total')\nwrap(changed,'write_coverage_fingerprint_marker','fingerprint')\nold_process=sampling.run_process\ndef process(argv,*args,**kwargs):\n label='coverage_'+('combine' if 'combine' in argv else 'json' if 'json' in argv else 'other')\n start=time.monotonic()\n try:return old_process(argv,*args,**kwargs)\n finally:\n  rows.append({'stage':label,'wall_seconds':time.monotonic()-start}); (dest/'timings.json').write_text(json.dumps(rows,indent=2)+'\\n')\nsampling.run_process=process\nold_import=gate.import_repo_module\ndef imported(*args,**kwargs):\n module=old_import(*args,**kwargs)\n if getattr(module,'__name__','').endswith('check_changed_line_mutation_coverage'):wrap(module,'main','consumer')\n return module\ngate.import_repo_module=imported\nbase='af7c1b784cf9893aff10f6138c49c1bca2288059'\ndef git(*args):return subprocess.check_output(['git',*args],text=True).strip()\nidentity={'head':git('rev-parse','HEAD'),'tree':git('rev-parse','HEAD^{tree}'),'base':base,'status':git('status','--porcelain'),'loadavg':list(os.getloadavg()),'started_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'cpu_count':os.cpu_count()}\nassert not identity['status'],identity\n(dest/'identity.json').write_text(json.dumps(identity,indent=2)+'\\n')\nstart=time.monotonic()\ncode=gate.main(['--repo-root',str(root),'--base-sha',base,'--coverage-json',str(dest/'coverage.json'),'--refuse-unestablished'])\nidentity.update(returncode=code,total_wall_seconds=time.monotonic()-start,ended_utc=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),final_status=git('status','--porcelain'))\nif (dest/'coverage.json').exists():identity['coverage_bytes']=(dest/'coverage.json').stat().st_size\n(dest/'identity.json').write_text(json.dumps(identity,indent=2)+'\\n'); sys.exit(code)\n",
+    "timer_wrapper_raw_sha256": "a15b6dd5871f00576722bac6695cb0f98155db6156a5f3416a4138950cb3d1ca",
+    "executed_pytest_summary": "5780 passed in 129.83s (0:02:09)",
+    "stdout_note": "Raw stdout starts with ok before YAML; no claim of a directly parseable receipt.",
+    "independent_review": {
+      "start_utc": "2026-09-07T22:22:19Z",
+      "end_utc": "2026-09-07T22:22:44Z",
+      "verdict": "confirmed call-through timing and bounded no-change conclusion",
+      "accounted_wall_percent": 99.964,
+      "instrumented_pytest_percent": 90.188,
+      "combine_export_percent": 1.946,
+      "tokens": "unavailable"
+    }
+  },
+  "cost": {
+    "objective": "phase-applicable reference reading comparison and release coverage cost investigation",
+    "base_sha": "a9c6ae451cfa4ccb13f7f05135b6aab650e1a5af",
+    "start_observed_utc": "2026-09-07T22:04:56Z",
+    "start_recorded_monotonic": 15093314.493278198,
+    "events": [
+      {
+        "stage": "investigation started",
+        "utc": "2026-09-07T22:05:47Z"
+      },
+      {
+        "stage": "ABBA frozen and driver launched; concurrent coverage work read-only",
+        "utc": "2026-09-07T22:09:37Z"
+      },
+      {
+        "stage": "ABBA complete, no retries",
+        "utc": "2026-09-07T22:17:58Z"
+      },
+      {
+        "stage": "historical final producer timing launched",
+        "utc": "2026-09-07T22:18:17Z"
+      },
+      {
+        "stage": "coverage first attempt no verdict: missing generated plugin export",
+        "utc": "2026-09-07T22:18:28Z"
+      },
+      {
+        "stage": "coverage ready attempt started after export",
+        "utc": "2026-09-07T22:18:47Z"
+      },
+      {
+        "stage": "coverage completed; clean verdict",
+        "utc": "2026-09-07T22:21:20Z"
+      },
+      {
+        "stage": "coverage independent factual review complete",
+        "utc": "2026-09-07T22:22:44Z"
+      }
+    ],
+    "parent_token_usage": "not exposed by available tools; do not infer from child usage",
+    "cost_scope": "wall-clock includes overlapping investigation, consumer work, parent review and evidence; report intervals without summing overlaps",
+    "review_intervals": [
+      {
+        "role": "reading design",
+        "start": "2026-09-07T22:06:00Z",
+        "end": "2026-09-07T22:07:48Z"
+      },
+      {
+        "role": "coverage investigation",
+        "start": "2026-09-07T22:05:28Z",
+        "end": "2026-09-07T22:10:14Z"
+      },
+      {
+        "role": "coverage compatibility followup",
+        "start": "2026-09-07T22:11:17Z",
+        "end": "2026-09-07T22:12:58Z"
+      },
+      {
+        "role": "consumer trace review",
+        "start": "2026-09-07T22:10:47Z",
+        "end": "2026-09-07T22:19:27Z"
+      },
+      {
+        "role": "coverage factual review",
+        "start": "2026-09-07T22:22:19Z",
+        "end": "2026-09-07T22:22:44Z"
+      }
+    ],
+    "host_reviewer_tokens": "unavailable",
+    "pre_first_consumer_wall_seconds": 281,
+    "incidental_rework": [
+      "Initial coverage checkout lacked generated plugin export; 11.433s no-verdict attempt, then regenerated via own historical helper",
+      "Probe artifact resolver has no probe adapter; used existing dated unmanaged probe convention",
+      "Raw coverage stdout had ok prefix; single-YAML parser attempt failed; retained raw transcript instead"
+    ],
+    "consumer_reported_token_sum": 222367,
+    "consumer_carrier_wall_sum_seconds": 499.962,
+    "elapsed_through_evidence_utc": "2026-09-07T22:23:22Z",
+    "elapsed_through_evidence_seconds": 1106.6840062141418
+  },
+  "trace_audit": {
+    "decision": "reject; preserve source prompt",
+    "reason": "B1 invented four nonexistent spec reference paths; recovery does not satisfy frozen no-invented-path criterion",
+    "reviewer": "independent host reader",
+    "start_utc": "2026-09-07T22:10:47Z",
+    "end_utc": "2026-09-07T22:19:27Z",
+    "tokens": "unavailable",
+    "classification": "spec skill and spec-driven bodies without contract change, plus conditional impl/Prove bodies without applicability trigger; excludes inventories, existence checks, wc, manifests, required impl skill and applicable unconditional refs",
+    "cells": {
+      "A1": {
+        "unnecessary_body_reads_lower_bound": 26,
+        "unique_bodies_lower_bound": 21,
+        "path": "pass"
+      },
+      "B1": {
+        "unnecessary_body_reads": 1,
+        "unique_bodies": 1,
+        "path": "fail: invented paths",
+        "rework": "9 realpath command-not-found events; four stale guessed spec paths; all eight actual impl references later resolved"
+      },
+      "B2": {
+        "unnecessary_body_reads": 1,
+        "unique_bodies": 1,
+        "path": "pass after command rework",
+        "rework": "zsh special path variable broke lookup: one failed command, four sed failures, three realpath failures; unquoted <repo-root> parse error; recovered"
+      },
+      "A2": {
+        "unnecessary_body_reads_lower_bound": 28,
+        "unique_bodies_lower_bound": 17,
+        "path": "incomplete evidence: external-api and prescribed-path literals absent; source-bound and Prove only via spec"
+      }
+    },
+    "nonclaim": "A2 baseline path evidence is incomplete, so this is not a fully compliant four-cell path comparison; B1 independently suffices to reject.",
+    "trace_excerpts": {
+      "A1": [
+        {
+          "start_line": 85,
+          "end_line": 85,
+          "text": "/usr/bin/zsh -lc 'plugin_root=\"$CHARNESS_FIXTURE_PLUGIN_ROOT\"; printf '\"'%s\\\\n' '--- spec skill ---'; sed -n '1,260p' \\\"\"'$plugin_root/skills/spec/SKILL.md\"; printf '\"'%s\\\\n' '--- impl skill ---'; sed -n '1,320p' \\\"\"'$plugin_root/skills/impl/SKILL.md\"; printf '\"'%s\\\\n' '--- manifest ---'; if test -f \\\"\"'$plugin_root/.codex-plugin/plugin.json\"; then sed -n '\"'1,200p' \\\"\"'$plugin_root/.codex-plugin/plugin.json\"; else sed -n '\"'1,200p' \\\"\"'$plugin_root/.claude-plugin/plugin.json\"; fi' in <runtime>/8adbaaee62877824/task-run/reading-scope-a1/worktree"
+        },
+        {
+          "start_line": 744,
+          "end_line": 767,
+          "text": "/usr/bin/zsh -lc 'plugin_root=\"$CHARNESS_FIXTURE_PLUGIN_ROOT\"; for f in '\"\\\\\n  \\\"\"'$plugin_root/skills/spec/references/fixed-probe-defer.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/spec/references/success-criteria.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/spec/references/acceptance-checks.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/spec/references/evidence-durability.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/spec/references/public-executable-contracts.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/spec/references/executable-spec-cost.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/spec/references/design-lenses.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/spec/references/taxonomy-axis-checkpoint.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/prove/SKILL.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/impl/references/adapter-contract.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/impl/references/contract-consumption.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/impl/references/design-lenses.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/impl/references/sequence-discipline.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/impl/references/external-api-contract.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/impl/../../shared/references/agent-assessment-invariant.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/impl/../../shared/references/success-criteria-review.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/impl/../../shared/references/source-bound-records.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/impl/../../shared/references/fresh-eye-subagent-review.md\" '\"\\\\\n  \\\"\"'$plugin_root/skills/impl/../../shared/references/prescribed-path-self-test.md\"; do\n  printf '\"'\\\\n--- %s ---\\\\n' \\\"\"'$f\"\n  sed -n '\"'1,280p' \\\"\"'$f\"\ndone' in <runtime>/8adbaaee62877824/task-run/reading-scope-a1/worktree\n succeeded in 22ms:"
+        },
+        {
+          "start_line": 1360,
+          "end_line": 1361,
+          "text": "/usr/bin/zsh -lc 'plugin_root=\"$CHARNESS_FIXTURE_PLUGIN_ROOT\"; printf '\"'%s\\\\n' '--- direct reference inventory ---'; rg -n --no-heading '\"'`[''^`]+`|'\"\\\\[[\"'^]]+'\"\\\\]\\\\([\"'^)]*'\"\\\\)' \\\"\"'$plugin_root/skills/spec/SKILL.md\" \"$plugin_root/skills/impl/SKILL.md\" \"$plugin_root/skills/prove/SKILL.md\"; printf '\"'%s\\\\n' '--- impl contract-consumption ---'; sed -n '1,360p' \\\"\"'$plugin_root/skills/impl/references/contract-consumption.md\"; printf '\"'%s\\\\n' '--- impl adapter-contract ---'; sed -n '1,360p' \\\"\"'$plugin_root/skills/impl/references/adapter-contract.md\"; printf '\"'%s\\\\n' '--- impl design-lenses ---'; sed -n '1,360p' \\\"\"'$plugin_root/skills/impl/references/design-lenses.md\"; printf '\"'%s\\\\n' '--- impl sequence-discipline ---'; sed -n '1,360p' \\\"\"'$plugin_root/skills/impl/references/sequence-discipline.md\"; printf '\"'%s\\\\n' '--- impl external-api-contract ---'; sed -n '1,360p' \\\"\"'$plugin_root/skills/impl/references/external-api-contract.md\"' in <runtime>/8adbaaee62877824/task-run/reading-scope-a1/worktree\n succeeded in 0ms:"
+        },
+        {
+          "start_line": 1694,
+          "end_line": 1695,
+          "text": "/usr/bin/zsh -lc 'plugin_root=\"$CHARNESS_FIXTURE_PLUGIN_ROOT\"; printf '\"'%s\\\\n' '--- spec bootstrap-resolution ---'; sed -n '1,360p' \\\"\"'$plugin_root/skills/spec/../../shared/references/bootstrap-resolution.md\"; printf '\"'%s\\\\n' '--- spec generative-sequence ---'; sed -n '1,360p' \\\"\"'$plugin_root/skills/spec/../../shared/references/generative-sequence.md\"; printf '\"'%s\\\\n' '--- spec agent-assessment-invariant ---'; sed -n '1,360p' \\\"\"'$plugin_root/skills/spec/../../shared/references/agent-assessment-invariant.md\"; printf '\"'%s\\\\n' '--- spec success-criteria-review ---'; sed -n '1,360p' \\\"\"'$plugin_root/skills/spec/../../shared/references/success-criteria-review.md\"; printf '\"'%s\\\\n' '--- spec source-bound-records ---'; sed -n '1,360p' \\\"\"'$plugin_root/skills/spec/../../shared/references/source-bound-records.md\"; printf '\"'%s\\\\n' '--- spec fresh-eye-subagent-review ---'; sed -n '1,360p' \\\"\"'$plugin_root/skills/spec/../../shared/references/fresh-eye-subagent-review.md\"; printf '\"'%s\\\\n' '--- shared boundary-ownership-brief ---'; sed -n '1,360p' \\\"\"'$plugin_root/skills/spec/references/../../../shared/references/boundary-ownership-brief.md\"; printf '\"'%s\\\\n' '--- prove verification-ladder ---'; sed -n '1,360p' \\\"\"'$plugin_root/skills/prove/references/verification-ladder.md\"; printf '\"'%s\\\\n' '--- prove review-gate ---'; sed -n '1,360p' \\\"\"'$plugin_root/skills/prove/references/review-gate.md\"' in <runtime>/8adbaaee62877824/task-run/reading-scope-a1/worktree\n succeeded in 0ms:"
+        }
+      ],
+      "B1": [
+        {
+          "start_line": 56,
+          "end_line": 75,
+          "text": "/usr/bin/zsh -lc \"printf '%s\\\\n' '--- exported spec skill ---'; sed -n '1,300p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/skills/spec/SKILL.md\"; printf '\"'%s\\\\n' '--- repo files ---'; rg --files -g '\"'!*.pyc'\"' | sort; printf '%s\\\\n' '--- status ---'; git status --short --ignored; printf '%s\\\\n' '--- reference resolution ---'; for rel in \\\\\n  references/adapter-contract.md \\\\\n  references/contract-consumption.md \\\\\n  references/design-lenses.md \\\\\n  references/sequence-discipline.md \\\\\n  references/external-api-contract.md \\\\\n  ../../shared/references/prescribed-path-self-test.md \\\\\n  ../../shared/references/source-bound-records.md \\\\\n  ../prove/SKILL.md; do \\\\\n  path=\\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/skills/impl/$rel\"; '\"\\\\\n  if test -e \\\"\"'$path\"; then printf '\"'%s -> %s\\\\n' \\\"\"'$rel\" \"$(realpath \"$path\")\"; else printf '\"'%s -> MISSING (%s)\\\\n' \\\"\"'$rel\" \"$path\"; fi; '\"\\\\\ndone; printf '%s\\\\n' '--- spec references resolution ---'; for rel in \\\\\n  references/contract-consumption.md \\\\\n  references/decision-record.md \\\\\n  references/ideation-handoff.md \\\\\n  references/sequence-discipline.md \\\\\n  ../impl/SKILL.md; do \\\\\n  path=\\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/skills/spec/$rel\"; '\"\\\\\n  if test -e \\\"\"'$path\"; then printf '\"'%s -> %s\\\\n' \\\"\"'$rel\" \"$(realpath \"$path\")\"; else printf '\"'%s -> MISSING (%s)\\\\n' \\\"\"'$rel\" \"$path\"; fi; '\"\\\\\ndone\" in <runtime>/8adbaaee62877824/task-run/reading-scope-b1/worktree"
+        },
+        {
+          "start_line": 272,
+          "end_line": 338,
+          "text": "zsh:11: command not found: realpath\n--- reference resolution ---\nreferences/adapter-contract.md -> \nzsh:11: command not found: realpath\nreferences/contract-consumption.md -> \nzsh:11: command not found: realpath\nreferences/design-lenses.md -> \nzsh:11: command not found: realpath\nreferences/sequence-discipline.md -> \nzsh:11: command not found: realpath\nreferences/external-api-contract.md -> \nzsh:11: command not found: realpath\n../../shared/references/prescribed-path-self-test.md -> \nzsh:11: command not found: realpath\n../../shared/references/source-bound-records.md -> \nzsh:11: command not found: realpath\n../prove/SKILL.md -> \n--- spec references resolution ---\nreferences/contract-consumption.md -> MISSING (<export>/skills/spec/references/contract-consumption.md)\nreferences/decision-record.md -> MISSING (<export>/skills/spec/references/decision-record.md)\nreferences/ideation-handoff.md -> MISSING (<export>/skills/spec/references/ideation-handoff.md)\nreferences/sequence-discipline.md -> MISSING (<export>/skills/spec/references/sequence-discipline.md)\nzsh:19: command not found: realpath\n../impl/SKILL.md -> \n\nexec\n/usr/bin/zsh -lc \"printf '%s\\\\n' '--- README.md ---'; sed -n '1,240p' README.md; printf '%s\\\\n' '--- contract ---'; sed -n '1,260p' docs/alias-resolution.md; printf '%s\\\\n' '--- src/catalog.py ---'; sed -n '1,260p' src/catalog.py; printf '%s\\\\n' '--- tests/test_catalog.py ---'; sed -n '1,320p' tests/test_catalog.py; printf '%s\\\\n' '--- current diff ---'; git diff -- src/catalog.py tests/test_catalog.py docs/alias-resolution.md; printf '%s\\\\n' '--- impl references resolved literally ---'; for rel in \\\\\n  references/adapter-contract.md \\\\\n  references/contract-consumption.md \\\\\n  references/design-lenses.md \\\\\n  references/sequence-discipline.md \\\\\n  references/external-api-contract.md \\\\\n  ../../shared/references/prescribed-path-self-test.md \\\\\n  ../../shared/references/source-bound-records.md \\\\\n  ../prove/SKILL.md; do \\\\\n  path=\\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/skills/impl/$rel\"; '\"\\\\\n  if test -e \\\"\"'$path\"; then dir=${path:h}; base=${path:t}; resolved=$(cd \"$dir\" && pwd -P)/\"$base\"; printf '\"'%s -> %s\\\\n' \\\"\"'$rel\" \"$resolved\"; else printf '\"'%s -> MISSING\\\\n' \\\"\"'$rel\"; fi; '\"\\\\\ndone; printf '%s\\\\n' '--- spec references resolved literally ---'; for rel in \\\\\n  ../../shared/references/bootstrap-resolution.md \\\\\n  ../../shared/references/binary-preflight.md \\\\\n  ../ideation/references/spec-boundary.md \\\\\n  references/public-executable-contracts.md \\\\\n  references/design-lenses.md \\\\\n  references/taxonomy-axis-checkpoint.md \\\\\n  ../../shared/references/generative-sequence.md \\\\\n  ../../shared/references/source-bound-records.md \\\\\n  references/evidence-durability.md \\\\\n  references/acceptance-checks.md \\\\\n  references/fixed-probe-defer.md \\\\\n  references/success-criteria.md \\\\\n  references/executable-spec-cost.md \\\\\n  ../prove/SKILL.md \\\\\n  ../../shared/references/agent-assessment-invariant.md \\\\\n  ../../shared/references/success-criteria-review.md \\\\\n  ../../shared/references/fresh-eye-subagent-review.md; do \\\\\n  path=\\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/skills/spec/$rel\"; '\"\\\\\n  if test -e \\\"\"'$path\"; then dir=${path:h}; base=${path:t}; resolved=$(cd \"$dir\" && pwd -P)/\"$base\"; printf '\"'%s -> %s\\\\n' \\\"\"'$rel\" \"$resolved\"; else printf '\"'%s -> MISSING\\\\n' \\\"\"'$rel\"; fi; '\"\\\\\ndone\" in <runtime>/8adbaaee62877824/task-run/reading-scope-b1/worktree\n succeeded in 1737ms:\nreferences/adapter-contract.md -> <export>/skills/impl/references/adapter-contract.md\nreferences/contract-consumption.md -> <export>/skills/impl/references/contract-consumption.md\nreferences/design-lenses.md -> <export>/skills/impl/references/design-lenses.md\nreferences/sequence-discipline.md -> <export>/skills/impl/references/sequence-discipline.md\nreferences/external-api-contract.md -> <export>/skills/impl/references/external-api-contract.md\n../../shared/references/prescribed-path-self-test.md -> <export>/shared/references/prescribed-path-self-test.md\n../../shared/references/source-bound-records.md -> <export>/shared/references/source-bound-records.md\n../prove/SKILL.md -> <export>/skills/prove/SKILL.md"
+        }
+      ],
+      "B2": [
+        {
+          "start_line": 433,
+          "end_line": 479,
+          "text": "/usr/bin/zsh -lc 'plugin_root=\"$CHARNESS_FIXTURE_PLUGIN_ROOT\"\nrefs=(\n  \"skills/impl/references/adapter-contract.md\"\n  \"skills/impl/references/contract-consumption.md\"\n  \"skills/impl/references/design-lenses.md\"\n  \"skills/impl/references/sequence-discipline.md\"\n  \"skills/impl/references/external-api-contract.md\"\n  \"skills/impl/../../shared/references/prescribed-path-self-test.md\"\n  \"skills/impl/../../shared/references/source-bound-records.md\"\n  \"skills/impl/../prove/SKILL.md\"\n  \"skills/spec/../../shared/references/bootstrap-resolution.md\"\n  \"skills/spec/../../shared/references/binary-preflight.md\"\n  \"skills/spec/../ideation/references/spec-boundary.md\"\n  \"skills/spec/references/public-executable-contracts.md\"\n  \"skills/spec/references/design-lenses.md\"\n  \"skills/spec/references/taxonomy-axis-checkpoint.md\"\n  \"skills/spec/../../shared/references/generative-sequence.md\"\n  \"skills/spec/../../shared/references/source-bound-records.md\"\n  \"skills/spec/references/evidence-durability.md\"\n  \"skills/spec/references/acceptance-checks.md\"\n  \"skills/spec/references/fixed-probe-defer.md\"\n  \"skills/spec/references/success-criteria.md\"\n  \"skills/spec/references/executable-spec-cost.md\"\n  \"skills/spec/../prove/SKILL.md\"\n  \"skills/spec/../../shared/references/agent-assessment-invariant.md\"\n  \"skills/spec/../../shared/references/success-criteria-review.md\"\n  \"skills/spec/../../shared/references/fresh-eye-subagent-review.md\"\n)\nfor rel in \"${refs[@]}\"; do\n  resolved=$(realpath -m \"$plugin_root/$rel\")\n  if test -e \"$resolved\"; then state=FOUND; else state=MISSING; fi\n  printf '\"'%-8s %s -> %s\\\\n' \\\"\"'$state\" \"$rel\" \"$resolved\"\ndone' in <runtime>/8adbaaee62877824/task-run/reading-scope-b2/worktree\n succeeded in 31ms:\nFOUND    skills/spec/references/design-lenses.md -> <export>/skills/spec/references/design-lenses.md\nFOUND    skills/spec/references/taxonomy-axis-checkpoint.md -> <export>/skills/spec/references/taxonomy-axis-checkpoint.md\nFOUND    skills/spec/../../shared/references/generative-sequence.md -> <export>/shared/references/generative-sequence.md\nFOUND    skills/spec/../../shared/references/source-bound-records.md -> <export>/shared/references/source-bound-records.md\nFOUND    skills/spec/references/evidence-durability.md -> <export>/skills/spec/references/evidence-durability.md\nFOUND    skills/spec/references/acceptance-checks.md -> <export>/skills/spec/references/acceptance-checks.md\nFOUND    skills/spec/references/fixed-probe-defer.md -> <export>/skills/spec/references/fixed-probe-defer.md\nFOUND    skills/spec/references/success-criteria.md -> <export>/skills/spec/references/success-criteria.md\nFOUND    skills/spec/references/executable-spec-cost.md -> <export>/skills/spec/references/executable-spec-cost.md\nFOUND    skills/spec/../prove/SKILL.md -> <export>/skills/prove/SKILL.md\nFOUND    skills/spec/../../shared/references/agent-assessment-invariant.md -> <export>/shared/references/agent-assessment-invariant.md\nFOUND    skills/spec/../../shared/references/success-criteria-review.md -> <export>/shared/references/success-criteria-review.md\nFOUND    skills/spec/../../shared/references/fresh-eye-subagent-review.md -> <export>/shared/references/fresh-eye-subagent-review.md"
+        },
+        {
+          "start_line": 800,
+          "end_line": 840,
+          "text": "/usr/bin/zsh -lc 'plugin_root=\"$CHARNESS_FIXTURE_PLUGIN_ROOT\"\nfor rel in '\"\\\\\n  skills/impl/references/contract-consumption.md \\\\\n  skills/impl/references/design-lenses.md \\\\\n  skills/impl/references/sequence-discipline.md \\\\\n  skills/impl/references/adapter-contract.md; do\n  path=\"'$(realpath -m \"$plugin_root/$rel\")\n  printf '\"'\\\\n--- %s ---\\\\n' \\\"\"'$path\"\n  sed -n '\"'1,280p' \\\"\"'$path\"\ndone' in <runtime>/8adbaaee62877824/task-run/reading-scope-b2/worktree\n exited 127 in 0ms:\n\n--- <export>/skills/impl/references/contract-consumption.md ---\nzsh:9: command not found: sed\nzsh:7: command not found: realpath\n\n---  ---\nzsh:9: command not found: sed\nzsh:7: command not found: realpath\n\n---  ---\nzsh:9: command not found: sed\nzsh:7: command not found: realpath\n\n---  ---\nzsh:9: command not found: sed\n\ncodex\nThe reference paths all resolve under the exported package and exist. One shell-only variable naming mistake temporarily replaced `PATH` while reading those files; I\u2019m correcting that and continuing with the relevant implementation guidance. It does not affect repository files or the contract.\nexec\n/usr/bin/zsh -lc 'plugin_root=\"$CHARNESS_FIXTURE_PLUGIN_ROOT\"\nfor rel in '\"\\\\\n  skills/impl/references/contract-consumption.md \\\\\n  skills/impl/references/design-lenses.md \\\\\n  skills/impl/references/sequence-discipline.md \\\\\n  skills/impl/references/adapter-contract.md; do\n  resolved_path=\"'$(realpath -m \"$plugin_root/$rel\")\n  printf '\"'\\\\n--- %s ---\\\\n' \\\"\"'$resolved_path\"\n  sed -n '\"'1,300p' \\\"\"'$resolved_path\"\ndone' in <runtime>/8adbaaee62877824/task-run/reading-scope-b2/worktree\n succeeded in 0ms:"
+        },
+        {
+          "start_line": 1018,
+          "end_line": 1051,
+          "text": "exec\n/usr/bin/zsh -lc \"printf '%s\\\\n' '--- adapter/config and docs index ---'\nif test -f .agents/impl-adapter.yaml; then sed -n '1,220p' .agents/impl-adapter.yaml; else printf '%s\\\\n' '.agents/impl-adapter.yaml: absent'; fi\nif test -f docs/index.md; then sed -n '1,220p' docs/index.md; else printf '%s\\\\n' 'docs/index.md: absent'; fi\nprintf '%s\\\\n' '--- nested reference resolution ---'\nnested_root=\\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT\"\nfor rel in '\"\\\\\n  skills/impl/references/design-lenses.md:../../create-cli/references/command-surface.md \\\\\n  skills/impl/references/adapter-contract.md:<repo-root>/.agents/impl-adapter.yaml; do\n  case \\\"\"'$rel\" in\n    *:<repo-root>/*) printf '\"'%s\\\\n' \\\"\"'$rel -> consumer repo path .agents/impl-adapter.yaml\";;\n    *) doc_rel=${rel%%:*}; ref_rel=${rel#*:}; resolved_path=$(realpath -m \"$nested_root/$doc_rel/../$ref_rel\"); if test -e \"$resolved_path\"; then state=FOUND; else state=MISSING; fi; printf '\"'%s %s -> %s\\\\n' \\\"\"'$state\" \"$ref_rel\" \"$resolved_path\";;\n  esac\ndone\nprintf '\"'%s\\\\n' '--- baseline tests ---'\npython3 -m unittest discover -s tests -v\" in <runtime>/8adbaaee62877824/task-run/reading-scope-b2/worktree\n exited 1 in 0ms:\nzsh:8: parse error near `<'\n\nexec\n/usr/bin/zsh -lc \"printf '%s\\\\n' '--- adapter/config and docs index ---'\nif test -f .agents/impl-adapter.yaml; then sed -n '1,220p' .agents/impl-adapter.yaml; else printf '%s\\\\n' '.agents/impl-adapter.yaml: absent'; fi\nif test -f docs/index.md; then sed -n '1,220p' docs/index.md; else printf '%s\\\\n' 'docs/index.md: absent'; fi\nprintf '%s\\\\n' '--- nested reference resolution ---'\nnested_root=\\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT\"\ndoc_rel='\"'skills/impl/references/design-lenses.md'\nref_rel='../../create-cli/references/command-surface.md'\nresolved_path=\"'$(realpath -m \"$nested_root/$doc_rel/../$ref_rel\")\nif test -e \"$resolved_path\"; then state=FOUND; else state=MISSING; fi\nprintf '\"'%s %s -> %s\\\\n' \\\"\"'$state\" \"$ref_rel\" \"$resolved_path\"\nprintf '\"'%s\\\\n' 'design-lenses also points to the consumer-repo adapter path: .agents/impl-adapter.yaml'\nprintf '%s\\\\n' '--- baseline tests ---'\npython3 -m unittest discover -s tests -v\" in <runtime>/8adbaaee62877824/task-run/reading-scope-b2/worktree\n succeeded in 163ms:"
+        }
+      ],
+      "A2": [
+        {
+          "start_line": 85,
+          "end_line": 85,
+          "text": "/usr/bin/zsh -lc \"printf '%s\\\\n' '--- installed manifest ---' && sed -n '1,160p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/.codex-plugin/plugin.json\" && printf '\"'%s\\\\n' '--- exported spec skill ---' && sed -n '1,260p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/skills/spec/SKILL.md\" && printf '\"'%s\\\\n' '--- exported impl skill ---' && sed -n '1,320p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/skills/impl/SKILL.md\"' in <runtime>/8adbaaee62877824/task-run/reading-scope-a2/worktree"
+        },
+        {
+          "start_line": 429,
+          "end_line": 429,
+          "text": "/usr/bin/zsh -lc \"printf '%s\\\\n' '--- referenced exported files ---' && for f in \\\\"
+        },
+        {
+          "start_line": 526,
+          "end_line": 526,
+          "text": "/usr/bin/zsh -lc \"sed -n '1,140p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/skills/spec/references/evidence-durability.md\"; sed -n '\"'1,100p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/skills/spec/references/public-executable-contracts.md\"; sed -n '\"'1,90p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/skills/spec/references/executable-spec-cost.md\"; sed -n '\"'1,80p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/skills/spec/references/design-lenses.md\"; sed -n '\"'1,90p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/skills/spec/references/taxonomy-axis-checkpoint.md\"' in <runtime>/8adbaaee62877824/task-run/reading-scope-a2/worktree"
+        },
+        {
+          "start_line": 821,
+          "end_line": 821,
+          "text": "/usr/bin/zsh -lc \"sed -n '1,100p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/skills/prove/SKILL.md\"; sed -n '\"'1,100p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/shared/references/agent-assessment-invariant.md\"; sed -n '\"'1,120p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/shared/references/success-criteria-review.md\"; sed -n '\"'1,140p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/shared/references/source-bound-records.md\"' in <runtime>/8adbaaee62877824/task-run/reading-scope-a2/worktree"
+        },
+        {
+          "start_line": 1014,
+          "end_line": 1014,
+          "text": "/usr/bin/zsh -lc \"sed -n '1,220p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/shared/references/fresh-eye-subagent-review.md\"' in <runtime>/8adbaaee62877824/task-run/reading-scope-a2/worktree"
+        },
+        {
+          "start_line": 1238,
+          "end_line": 1238,
+          "text": "/usr/bin/zsh -lc \"sed -n '221,460p' \\\"\"'$CHARNESS_FIXTURE_PLUGIN_ROOT/shared/references/fresh-eye-subagent-review.md\"' in <runtime>/8adbaaee62877824/task-run/reading-scope-a2/worktree"
+        }
+      ]
+    }
+  },
+  "disposition": {
+    "prompt": "rejected under frozen no-invented-path rule",
+    "release": "no optimization demonstrated; source retained",
+    "verification_scope": "consumer acceptance plus historical focused producer and independent observation reviews; no new broad repo verification because only dated evidence added",
+    "remaining_nonclaims": [
+      "No general public-skill improvement",
+      "No cross-stage coverage reuse proof",
+      "No prepare deferral accepted",
+      "No total token or monetary cost without parent/host reviewer telemetry",
+      "No end-to-end speedup demonstrated"
+    ]
+  }
+}
