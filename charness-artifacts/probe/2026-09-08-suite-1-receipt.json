@@ -1,0 +1,16 @@
+{
+  "finding": "SUITE-1",
+  "source": "charness-artifacts/probe/2026-09-08-reference-and-suite-diagnosis.json",
+  "expected": "one fresh standing selection plus aggregate checks",
+  "stimulus": "compare owning recipe and expanded commands; run existing negative controls",
+  "disposition": "reproduced",
+  "observed": "same selection is required twice; 69 focused tests pass",
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "command": "local exported-target assertions and standing --print-command comparison; focused standing runner negative controls",
+  "fixture": "optional-index frozen export and current authoring source",
+  "final_consumer": "authoring command plans and focused quality-engine tests",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0,
+  "details_source": "charness-artifacts/probe/2026-09-08-reference-and-suite-diagnosis.json"
+}

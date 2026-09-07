@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 188,
-  "indexed_artifact_count": 173,
+  "source_artifact_count": 189,
+  "indexed_artifact_count": 174,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 8,
     "none": 77,
     "operator-visible-recovery": 23,
-    "repeated-symptom": 18
+    "repeated-symptom": 19
   },
   "generalization_pressure_counts": {
     "factor-now": 25,
     "monitor": 125,
-    "none": 23
+    "none": 24
   },
   "entries": [
     {
@@ -2400,6 +2400,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-09-06-release-8-6-0-claims-durability.md",
+      "is_current_pointer": false,
+      "interrupt_id": "release-8-6-0-claims-durability",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "local Markdown evidence carrier",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/release-review/2026-09-06-v8.6.0-prepared-claims-review.md",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-09-06-release-advisory-meaning.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -2444,16 +2458,16 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "release-8-6-0-claims-durability",
+      "interrupt_id": "consumer-path-and-pytest",
       "risk_classes": [
-        "none"
+        "repeated-symptom"
       ],
-      "seam": "local Markdown evidence carrier",
+      "seam": "fixture instruction to executed consumer reads",
       "generalization_pressure": "none",
       "critique_required": true,
-      "next_step": "impl",
-      "handoff_artifact": "charness-artifacts/release-review/2026-09-06-v8.6.0-prepared-claims-review.md",
-      "forced": false
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-09-08-reference-and-suite.md",
+      "forced": true
     }
   ],
   "skipped_artifacts": [

@@ -1,0 +1,210 @@
+{
+  "result": {
+    "kind": "charness.bounded_review.v1",
+    "lens": "local repair minimality and consumer-contract critique",
+    "packet_sha256": "399e94964aad08bb8a62dff58d315646f35226b5180737d80f62ca3b99a56fce",
+    "reviewed_input_identity_sha256": "362e1031a891d7f4a4c0b48da6c4d93c8f20c3abfcca8396a7642daea6934358",
+    "verdict": "defer",
+    "target_observations": null,
+    "findings": [
+      {
+        "id": "consumer-01",
+        "severity": "medium",
+        "summary": "Define \u201cunfiltered\u201d relative to the standing lane; its normal pytest command intentionally excludes release_only and slow_corpus.",
+        "evidence": [
+          "The pending plan requires an unfiltered full read-only run and says a filtered/skipped run is not the integration verdict.",
+          "run_standing_pytest.py::build_pytest_command adds '-m not release_only and not slow_corpus' unless include_release_only is enabled.",
+          "run_quality_engine_runtime.py::_pytest_variables enables release-only inclusion for release, pytest-release selection, or explicit include_release_only; full mode alone does not enable it.",
+          "The plan explicitly preserves existing release-only and opt-in lane applicability."
+        ],
+        "action": "In the two proposed documentation edits, distinguish additional gate/test selection filters from standing-lane exclusions. Require fresh executed-and-passed standing pytest and all applicable later checks, with omissions reported; do not imply every declared gate or every test executes."
+      },
+      {
+        "id": "consumer-02",
+        "severity": "medium",
+        "summary": "The proposed repair is suitably narrow, but the supplied packet cannot establish that it fixes the recorded consumer mistake or completes integration proof.",
+        "evidence": [
+          "The plan proposes resolving literal references against their containing file directory, preserving '../' components and avoiding basename reconstruction.",
+          "The bound impl prompt preserves the original spec, canonical lookup, existing tests, list-of-pairs contract, and unittest command.",
+          "The packet contains neither the two actual wrong-path read attempts nor the exported referenced files, consumer oracle, revised prompt, or completed probe receipts.",
+          "The plan labels the change pending and requires actual reference-read traces, identities, negative controls, and a final fresh receipt."
+        ],
+        "action": "Proceed with the bounded prompt/docs candidate, then supply the planned trace and unchanged-input comparisons plus completed suite evidence before claiming repair or integration success."
+      }
+    ],
+    "counterweight_triage": [
+      {
+        "concern": "Misleading filtered/skipped wording could reject a valid standing run or overstate its coverage.",
+        "bin": "fix-now",
+        "disposition": "Clarify the proposed docs using the runner's explicit marker exclusions and the catalog's conditional, release-only, opt-in, and label-only gates. No executable selection change is needed."
+      },
+      {
+        "concern": "Removing the standalone runner could remove exporter readiness.",
+        "bin": "retain-existing-control",
+        "disposition": "The plan correctly requires explicit export before read-only verification when generated outputs need refreshing. Both supplied entrypoints call ensure_plugin_mirror with read-only refusal. Replace operating-contract.md's current instruction to export manually 'only' for direct pytest; otherwise the new recipe contradicts that paragraph."
+      },
+      {
+        "concern": "Reference repair effectiveness and full-lane failure propagation remain unproven.",
+        "bin": "defer-pending-evidence",
+        "disposition": "The gate catalog declares pytest first, isolated, and fail-fast, and the standing runner returns its child outcome. These support the design, but the engine execution implementation and completed negative-control results are absent. Actual corrected reads and final execution evidence remain required."
+      },
+      {
+        "concern": "The mistake warrants a resolver program, new gate, public-skill rewrite, AGENTS change, or pytest receipt cache.",
+        "bin": "reject-overengineering",
+        "disposition": "The seed already directs resolution from exported skill directories, and the proposed fixture prompt clarifies literal relative-path handling without changing the task. Existing mirror and runner controls already own readiness and execution. No supplied evidence justifies broader controls."
+      }
+    ],
+    "next_move": "Clarify standing-lane selection terminology, apply only the planned local prompt/docs edits, and complete the specified consumer and suite probes. Keep approval deferred until those results are reviewed.",
+    "non_claims": [
+      "Reviewed only the supplied semantic bytes; no workspace edits or execution performed.",
+      "No completed consumer repair, full-suite success, universal prompt reliability, speedup, or cross-environment equivalence established.",
+      "No public skill or AGENTS change proposed.",
+      "Goal lineage is not-goal-bound: critique review was run without a Goal Run Work Item identity; binding, draft, goal_run, and work_item are null.",
+      "Reviewer model and service-tier application are unverified by the packet."
+    ],
+    "capability_non_claims": [],
+    "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "delivery": {
+    "schema_version": "charness.reviewer_delivery.v1",
+    "approval_rule": "only findings-received with matching provenance is approval-eligible",
+    "attempts": [
+      {
+        "attempt_id": "reference-suite-consumer-20260908",
+        "scope": "local repair minimality and consumer-contract critique",
+        "packet_identity": "399e94964aad08bb8a62dff58d315646f35226b5180737d80f62ca3b99a56fce",
+        "parent_receipt_identity": "parent-80c383ceb98fc200b92fd276c467c832b0581b7f7197f226",
+        "boundary_mode": "read-only-worker",
+        "state": "findings-received",
+        "observed_signal": "findings received in parent context",
+        "terminal": true,
+        "recorded_at": "2026-09-07T21:48:07Z",
+        "history": [
+          {
+            "event_id": "cd81ce76ebbb4b349c0d06d3ef09aaeb",
+            "state": "spawn-accepted",
+            "signal": "spawn accepted; parent delivery not yet proven",
+            "terminal": false,
+            "recorded_at": "2026-09-07T21:47:35Z",
+            "attempt_id": "reference-suite-consumer-20260908",
+            "scope": "local repair minimality and consumer-contract critique",
+            "packet_identity": "399e94964aad08bb8a62dff58d315646f35226b5180737d80f62ca3b99a56fce",
+            "parent_receipt_identity": "parent-80c383ceb98fc200b92fd276c467c832b0581b7f7197f226",
+            "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+          },
+          {
+            "event_id": "100df6d4532f4bd4a2e42fdd66c5c4dc",
+            "state": "running",
+            "signal": "reviewer worker process launched",
+            "terminal": false,
+            "recorded_at": "2026-09-07T21:47:35Z",
+            "attempt_id": "reference-suite-consumer-20260908",
+            "scope": "local repair minimality and consumer-contract critique",
+            "packet_identity": "399e94964aad08bb8a62dff58d315646f35226b5180737d80f62ca3b99a56fce",
+            "parent_receipt_identity": "parent-80c383ceb98fc200b92fd276c467c832b0581b7f7197f226",
+            "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+          },
+          {
+            "event_id": "018368c3c3fd402d9b83c7b4d35be35e",
+            "state": "findings-received",
+            "signal": "findings received in parent context",
+            "terminal": true,
+            "recorded_at": "2026-09-07T21:48:07Z",
+            "attempt_id": "reference-suite-consumer-20260908",
+            "scope": "local repair minimality and consumer-contract critique",
+            "packet_identity": "399e94964aad08bb8a62dff58d315646f35226b5180737d80f62ca3b99a56fce",
+            "parent_receipt_identity": "parent-80c383ceb98fc200b92fd276c467c832b0581b7f7197f226",
+            "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+            "findings_identity": "e2b2fefdb15b9dcfa5c89ec2d153b294342f339454bfcfe56c31ef08cc8f3884"
+          }
+        ],
+        "observations": [],
+        "retry_count": 0,
+        "reviewed_input_identity": "362e1031a891d7f4a4c0b48da6c4d93c8f20c3abfcca8396a7642daea6934358",
+        "execution_mode": "file-backed-worker",
+        "backend": "codex_exec",
+        "prompt_sha256": "d0df1f2452735a5e0213a762385753df84556c8b3809397225ae2ae1603773c5",
+        "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+        "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+        "output_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-consumer-20260908/result.json",
+        "receipt_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-consumer-20260908/receipt.json",
+        "producer_run_id": "run-reference-suite-consumer-20260908",
+        "findings_identity": "e2b2fefdb15b9dcfa5c89ec2d153b294342f339454bfcfe56c31ef08cc8f3884"
+      }
+    ]
+  },
+  "receipt": {
+    "attempt_id": "reference-suite-consumer-20260908",
+    "backend": "codex_exec",
+    "boundary_fingerprint": null,
+    "boundary_mode": "read-only-worker",
+    "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+    "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+    "capability_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-consumer-20260908/capability.json",
+    "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+    "capability_non_claims": [],
+    "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+    "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "capability_status": "ready",
+    "effective_capabilities": {
+      "configuration_identity": "charness-run-review-v1",
+      "external_effects": {
+        "observation": "host",
+        "state": "denied"
+      },
+      "external_reads": {
+        "entries": [],
+        "observation": "host",
+        "state": "unproved"
+      },
+      "filesystem": {
+        "observation": "host",
+        "write": "denied"
+      },
+      "host_selection_source": "charness-derived-read-only-default",
+      "sandbox": {
+        "label": "read-only",
+        "source": "charness-derived"
+      }
+    },
+    "execution_mode": "file-backed-worker",
+    "exit_code": 0,
+    "finished_at": "2026-09-07T21:48:07Z",
+    "output_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-consumer-20260908/result.json",
+    "output_fresh": true,
+    "output_sha256": "e2b2fefdb15b9dcfa5c89ec2d153b294342f339454bfcfe56c31ef08cc8f3884",
+    "output_size": 5381,
+    "packet_identity": "399e94964aad08bb8a62dff58d315646f35226b5180737d80f62ca3b99a56fce",
+    "parent_receipt_identity": "parent-80c383ceb98fc200b92fd276c467c832b0581b7f7197f226",
+    "preflight": [],
+    "prompt_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-consumer-20260908/review-prompt.md",
+    "prompt_sha256": "d0df1f2452735a5e0213a762385753df84556c8b3809397225ae2ae1603773c5",
+    "requested_capabilities": {
+      "external_effects": {
+        "entries": [],
+        "policy": "deny-all"
+      },
+      "external_reads": [],
+      "filesystem": {
+        "read_roots": [
+          "/home/hwidong/codes/charness"
+        ],
+        "write_policy": "deny-all",
+        "write_roots": []
+      }
+    },
+    "reviewed_input_identity": "362e1031a891d7f4a4c0b48da6c4d93c8f20c3abfcca8396a7642daea6934358",
+    "run_id": "run-reference-suite-consumer-20260908",
+    "schema_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-consumer-20260908/bounded-review-result.schema.json",
+    "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+    "schema_version": "charness.reviewer_worker.v1",
+    "scope": "local repair minimality and consumer-contract critique",
+    "started_at": "2026-09-07T21:47:35Z",
+    "status": "succeeded",
+    "stderr_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-consumer-20260908/backend.stderr",
+    "stdout_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-consumer-20260908/backend.stdout",
+    "terminal": true,
+    "timeout_seconds": 900.0,
+    "workspace": "/home/hwidong/codes/charness"
+  }
+}

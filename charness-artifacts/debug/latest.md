@@ -1,1 +1,1 @@
-2026-09-06-release-8-6-0-claims-durability.md
+2026-09-08-consumer-path-and-pytest.md

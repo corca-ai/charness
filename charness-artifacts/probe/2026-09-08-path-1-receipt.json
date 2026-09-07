@@ -1,0 +1,16 @@
+{
+  "finding": "PATH-1",
+  "source": "charness-artifacts/probe/2026-09-08-reference-and-suite-diagnosis.json",
+  "expected": "named exported references exist",
+  "stimulus": "compare guessed and canonical paths against frozen package",
+  "disposition": "reproduced",
+  "observed": "canonical targets exist; guessed targets absent",
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "command": "local exported-target assertions and standing --print-command comparison; focused standing runner negative controls",
+  "fixture": "optional-index frozen export and current authoring source",
+  "final_consumer": "recorded optional-index shell read attempts",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0,
+  "details_source": "charness-artifacts/probe/2026-09-08-reference-and-suite-diagnosis.json"
+}

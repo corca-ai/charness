@@ -1,0 +1,220 @@
+{
+  "result": {
+    "kind": "charness.bounded_review.v1",
+    "lens": "local repair causal and proof-preservation critique",
+    "packet_sha256": "aa5b1e5d1ed4a7d57df83147f3b7aeae05686bce9c200157492df685571bfac2",
+    "reviewed_input_identity_sha256": "362e1031a891d7f4a4c0b48da6c4d93c8f20c3abfcca8396a7642daea6934358",
+    "verdict": "defer",
+    "target_observations": null,
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "evidence-gap",
+        "summary": "The proposed reference rule is coherent, but attribution of the two observed failures remains unproven.",
+        "evidence": [
+          "The pending plan claims two wrong reference paths; the bound input contains neither their literal spellings nor the consumer read trace.",
+          "seed/AGENTS.md already requires resolution from the exported skill directory. The prompt amendment reinforces an existing instruction; the input does not establish why that instruction failed.",
+          "Exported skill/reference bytes, original acceptance results, and before/after consumer results are absent."
+        ],
+        "action": "Preserve the original failed reads and bind the containing-file references, correct existing targets, source/export/seed identities, unchanged oracle, and repaired consumer trace. Describe success as a bounded observed repair, without attributing it to missing instructions alone."
+      },
+      {
+        "id": "F2",
+        "severity": "evidence-gap",
+        "summary": "Standing/full selection aligns conditionally; identical execution environments and actual collection are not established.",
+        "evidence": [
+          "run_quality_engine_runtime.py::_pytest_variables adds --include-release-only only for release, pytest-release, or explicit inclusion; full mode alone does not add it.",
+          "run_standing_pytest.py::build_pytest_command therefore excludes both release_only and slow_corpus in ordinary standing and non-release full runs.",
+          "Actual targets come from the quality adapter through _resolved_standing_targets; the constant printed by --print-targets is not authoritative for that resolution.",
+          "The quality gate forces CHARNESS_STANDING_PYTEST_PYTHON=python3, while direct invocation permits an ambient override. PYTEST_ADDOPTS remains inherited and can narrow collection."
+        ],
+        "action": "Compare expanded targets, effective interpreter, marker selection, ambient pytest options, and actual collection for the proposed commands. Explicitly retain slow_corpus exclusion alongside release_only, and verify that the final receipt represents an executed, unfiltered pytest phase."
+      },
+      {
+        "id": "F3",
+        "severity": "evidence-gap",
+        "summary": "Consolidation must preserve mirror preparation and demonstrated failure propagation; neither negative control has a bound result.",
+        "evidence": [
+          "The direct standing runner defaults to full mode and invokes mirror preparation with read_only=false; the proposed full read-only invocation uses refusal behavior instead.",
+          "The plan correctly adds explicit export, repairing the preparation step lost when the standalone writing invocation is removed.",
+          ".agents/quality-gates.yaml declares pytest first with fail_fast=true, and run_standing_pytest.py returns the child return code.",
+          "The engine phase executor, mirror implementation, negative-control results, and final unfiltered receipt are absent. Declaration plus runner return code does not independently demonstrate that later phases stop."
+        ],
+        "action": "Retain the explicit export recipe and provide bounded evidence that stale mirrors refuse execution and an injected pytest failure produces a nonzero overall result with no later phase execution. Review the final documentation changes and fresh integration receipt before approval."
+      }
+    ],
+    "counterweight_triage": [
+      {
+        "concern": "Unsupported causal attribution and missing selection/failure evidence",
+        "bin": "fix-now",
+        "disposition": "Complete the plan's existing proof obligations before treating either repair as established."
+      },
+      {
+        "concern": "Fresh consumer and final integration execution",
+        "bin": "defer",
+        "disposition": "Pending evidence; this review does not approve completion."
+      },
+      {
+        "concern": "Docs consolidation necessarily removes test coverage",
+        "bin": "reject",
+        "disposition": "No such defect is established: both paths use the standing runner, and ordinary full mode retains its marker exclusions."
+      },
+      {
+        "concern": "Global equivalence, timing, cache, release, public skill redesign, and blanket-reading changes",
+        "bin": "out-of-scope",
+        "disposition": "Do not expand this local repair to address these concerns."
+      }
+    ],
+    "next_move": "Execute the bounded proof plan, preserve the named evidence, and resubmit the resulting prompt/docs changes and fresh receipts for approval.",
+    "non_claims": [
+      "Reviewed the supplied semantic bytes; no workspace edits or runtime probes were performed.",
+      "No structured prepared targets were supplied.",
+      "Goal evidence lineage is not-goal-bound: critique review was run without a Goal Run Work Item identity; binding, draft, goal_run, and work_item are null.",
+      "No global equivalence, speedup, release readiness, public skill improvement, or host-confirmed reviewer tier is claimed."
+    ],
+    "capability_non_claims": [],
+    "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "delivery": {
+    "schema_version": "charness.reviewer_delivery.v1",
+    "approval_rule": "only findings-received with matching provenance is approval-eligible",
+    "attempts": [
+      {
+        "attempt_id": "reference-suite-causal-20260908",
+        "scope": "local repair causal and proof-preservation critique",
+        "packet_identity": "aa5b1e5d1ed4a7d57df83147f3b7aeae05686bce9c200157492df685571bfac2",
+        "parent_receipt_identity": "parent-76f5261a1f37b4f04c1a1497042bbb1ec9591a9d6bc425da",
+        "boundary_mode": "read-only-worker",
+        "state": "findings-received",
+        "observed_signal": "findings received in parent context",
+        "terminal": true,
+        "recorded_at": "2026-09-07T21:48:06Z",
+        "history": [
+          {
+            "event_id": "9078ab8a16b7443d9c50d0c4e18b6ae7",
+            "state": "spawn-accepted",
+            "signal": "spawn accepted; parent delivery not yet proven",
+            "terminal": false,
+            "recorded_at": "2026-09-07T21:47:30Z",
+            "attempt_id": "reference-suite-causal-20260908",
+            "scope": "local repair causal and proof-preservation critique",
+            "packet_identity": "aa5b1e5d1ed4a7d57df83147f3b7aeae05686bce9c200157492df685571bfac2",
+            "parent_receipt_identity": "parent-76f5261a1f37b4f04c1a1497042bbb1ec9591a9d6bc425da",
+            "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+          },
+          {
+            "event_id": "892bac0155ec4b35a032a7fe112bd244",
+            "state": "running",
+            "signal": "reviewer worker process launched",
+            "terminal": false,
+            "recorded_at": "2026-09-07T21:47:30Z",
+            "attempt_id": "reference-suite-causal-20260908",
+            "scope": "local repair causal and proof-preservation critique",
+            "packet_identity": "aa5b1e5d1ed4a7d57df83147f3b7aeae05686bce9c200157492df685571bfac2",
+            "parent_receipt_identity": "parent-76f5261a1f37b4f04c1a1497042bbb1ec9591a9d6bc425da",
+            "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+          },
+          {
+            "event_id": "0ace2af0db16447e8120889864d07ebe",
+            "state": "findings-received",
+            "signal": "findings received in parent context",
+            "terminal": true,
+            "recorded_at": "2026-09-07T21:48:06Z",
+            "attempt_id": "reference-suite-causal-20260908",
+            "scope": "local repair causal and proof-preservation critique",
+            "packet_identity": "aa5b1e5d1ed4a7d57df83147f3b7aeae05686bce9c200157492df685571bfac2",
+            "parent_receipt_identity": "parent-76f5261a1f37b4f04c1a1497042bbb1ec9591a9d6bc425da",
+            "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+            "findings_identity": "d9394823957890ab5351351ce94a1d9f9655d3f122a66b26e02c0771e91cd0fc"
+          }
+        ],
+        "observations": [],
+        "retry_count": 0,
+        "reviewed_input_identity": "362e1031a891d7f4a4c0b48da6c4d93c8f20c3abfcca8396a7642daea6934358",
+        "execution_mode": "file-backed-worker",
+        "backend": "codex_exec",
+        "prompt_sha256": "875eeee6bfca53804ab583cc13bc497f6127e68f2dce0d57939122a25c9fba69",
+        "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+        "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+        "output_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-causal-20260908/result.json",
+        "receipt_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-causal-20260908/receipt.json",
+        "producer_run_id": "run-reference-suite-causal-20260908",
+        "findings_identity": "d9394823957890ab5351351ce94a1d9f9655d3f122a66b26e02c0771e91cd0fc"
+      }
+    ]
+  },
+  "receipt": {
+    "attempt_id": "reference-suite-causal-20260908",
+    "backend": "codex_exec",
+    "boundary_fingerprint": null,
+    "boundary_mode": "read-only-worker",
+    "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+    "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+    "capability_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-causal-20260908/capability.json",
+    "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+    "capability_non_claims": [],
+    "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+    "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "capability_status": "ready",
+    "effective_capabilities": {
+      "configuration_identity": "charness-run-review-v1",
+      "external_effects": {
+        "observation": "host",
+        "state": "denied"
+      },
+      "external_reads": {
+        "entries": [],
+        "observation": "host",
+        "state": "unproved"
+      },
+      "filesystem": {
+        "observation": "host",
+        "write": "denied"
+      },
+      "host_selection_source": "charness-derived-read-only-default",
+      "sandbox": {
+        "label": "read-only",
+        "source": "charness-derived"
+      }
+    },
+    "execution_mode": "file-backed-worker",
+    "exit_code": 0,
+    "finished_at": "2026-09-07T21:48:06Z",
+    "output_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-causal-20260908/result.json",
+    "output_fresh": true,
+    "output_sha256": "d9394823957890ab5351351ce94a1d9f9655d3f122a66b26e02c0771e91cd0fc",
+    "output_size": 5527,
+    "packet_identity": "aa5b1e5d1ed4a7d57df83147f3b7aeae05686bce9c200157492df685571bfac2",
+    "parent_receipt_identity": "parent-76f5261a1f37b4f04c1a1497042bbb1ec9591a9d6bc425da",
+    "preflight": [],
+    "prompt_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-causal-20260908/review-prompt.md",
+    "prompt_sha256": "875eeee6bfca53804ab583cc13bc497f6127e68f2dce0d57939122a25c9fba69",
+    "requested_capabilities": {
+      "external_effects": {
+        "entries": [],
+        "policy": "deny-all"
+      },
+      "external_reads": [],
+      "filesystem": {
+        "read_roots": [
+          "/home/hwidong/codes/charness"
+        ],
+        "write_policy": "deny-all",
+        "write_roots": []
+      }
+    },
+    "reviewed_input_identity": "362e1031a891d7f4a4c0b48da6c4d93c8f20c3abfcca8396a7642daea6934358",
+    "run_id": "run-reference-suite-causal-20260908",
+    "schema_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-causal-20260908/bounded-review-result.schema.json",
+    "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+    "schema_version": "charness.reviewer_worker.v1",
+    "scope": "local repair causal and proof-preservation critique",
+    "started_at": "2026-09-07T21:47:30Z",
+    "status": "succeeded",
+    "stderr_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-causal-20260908/backend.stderr",
+    "stdout_file": "/home/hwidong/codes/charness/.charness/reviewer-round-reference-suite-causal-20260908/backend.stdout",
+    "terminal": true,
+    "timeout_seconds": 900.0,
+    "workspace": "/home/hwidong/codes/charness"
+  }
+}
