@@ -62,12 +62,12 @@ Changes are bounded to the declared source/test paths plus these dated records. 
 
 ## Critique
 
-- Interrupt Source: consumer-path-and-pytest
-- Seam Summary: fixture instruction to executed consumer reads
+- Interrupt Source: resolved-debug-risk
+- Seam Summary: debug lifecycle to effective planner routing
 - Chosen Next Step: impl
 - Impl Status: allowed
-- Impl Status Reason: parent permits the bounded implementation after two pre-implementation reviews; final implementation approval remains pending focused proof and parent integration review
-- What Disproving Observation Is Resolved: the executed PLAN-1 reproduction shows a resolved forced-risk record with a matching canonical `impl/allowed` handoff still routes to `risk-interrupt`; the implementation probe must resolve that intersection without weakening active-risk controls
+- Impl Status Reason: the fixed contract permits bounded implementation; the committed candidate passes focused tests and changed-line coverage, with final integration proof recorded separately
+- What Disproving Observation Is Resolved: PLAN-1 now routes the resolved valid handoff to fresh prior memory; malformed declarations and outstanding handoffs remain blocking
 
 ## Canonical Artifact
 
@@ -75,4 +75,4 @@ Changes are bounded to the declared source/test paths plus these dated records. 
 
 ## First Implementation Slice
 
-Add one state-owned effective routing decision, wire all three planner consumers to it, then add focused intersection controls before running the emitted artifact validators and standing tests.
+Implemented one state-owned routing decision consumed by all three planner outputs. Focused intersections and committed coverage pass; `charness-artifacts/probe/2026-09-08-resolved-debug-risk-proof.json` owns final integration evidence.

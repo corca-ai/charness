@@ -1,1 +1,1 @@
-2026-09-08-consumer-path-and-pytest.md
+2026-09-08-resolved-debug-risk.md

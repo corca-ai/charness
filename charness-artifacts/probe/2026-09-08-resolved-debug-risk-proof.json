@@ -1,0 +1,307 @@
+{
+  "schema_version": 1,
+  "subject": "resolved-debug-risk",
+  "implementation_base": "b4844f784affcef9455f73c12a07d006ecc5d92f",
+  "integrated_candidate": "2506e3251eaf46c6957709af4ba9f5d35db966cc",
+  "status": "focused-and-task-proof-passed; parent-proof-review-full-pending",
+  "verification": {
+    "focused_planner_tests": 42,
+    "earlier_related_tests": 122,
+    "task_changed_line_gate": "clean",
+    "parent_changed_line_gate": "pending",
+    "final_review": "pending",
+    "full_read_only": "pending"
+  },
+  "consumer_proof": {
+    "source_commit": "4cdc55c1a493d0b48bcb6984c4e212a93fae193e",
+    "source_sha256": {
+      "skills/public/debug/scripts/debug_artifact_state.py": "7daf3274e6e4a4eef31d320af2224b0e90c52ffa5d2e1c4121923bd973890a7c",
+      "skills/public/debug/scripts/plan_debug_run.py": "e18945c9edc95cecfbe967a361d5cd9bc00842d1f9a55c46d7276998f8c9f4aa"
+    },
+    "cases": [
+      {
+        "case": "original-resolved-handoff",
+        "exit_code": 0,
+        "mode": "fresh-investigation-with-prior-memory",
+        "next_action": "scaffold-debug-artifact",
+        "first_read": "scripts/scaffold_debug_artifact.py",
+        "resolution": "resolved",
+        "requires_interrupt_raw": true,
+        "risk_parse_error": null,
+        "effective_routing": {
+          "risk_interrupt_active": false,
+          "requires_current_artifact_read": false,
+          "reason": "resolved-with-valid-allowed-handoff",
+          "handoff_artifact": "charness-artifacts/spec/2026-09-08-reference-and-suite.md",
+          "interrupt_id": "consumer-path-and-pytest"
+        }
+      },
+      {
+        "case": "invalid-raw-declaration",
+        "exit_code": 0,
+        "mode": "risk-interrupt",
+        "next_action": "interrupt-to-spec",
+        "first_read": "charness-artifacts/debug/latest.md",
+        "resolution": "resolved",
+        "requires_interrupt_raw": true,
+        "risk_parse_error": "`Risk Class` contains unknown value(s): `bogus`",
+        "effective_routing": {
+          "risk_interrupt_active": true,
+          "requires_current_artifact_read": true,
+          "reason": "risk-declaration-unreadable"
+        }
+      }
+    ]
+  },
+  "review_disposition": {
+    "result": {
+      "kind": "charness.bounded_review.v1",
+      "lens": "Independent behavior and simplification review",
+      "packet_sha256": "1e5c36c6fb76162cde266d904226b1445455523a71f775a904d4567ad33d0e48",
+      "reviewed_input_identity_sha256": "2c4bb7ce70b46186ebc56778fdf12f6b186a0620b327f2bb7f3c38f856e2387d",
+      "verdict": "block",
+      "target_observations": null,
+      "findings": [
+        {
+          "id": "I-01",
+          "severity": "informational",
+          "summary": "Raw declaration parsing and canonical interrupt parsing can disagree, but the supplied candidate does not introduce a new unsafe closure from that disagreement.",
+          "evidence": [
+            "`debug_artifact_declarations.parse_field` takes the first unfenced matching field anywhere in prose; `risk_interrupt_lib.parse_debug_interrupt` instead scopes fields through named sections and does not apply fence filtering.",
+            "Reachable example: an earlier prose `- Risk Class: none` followed by a canonical `## Seam Risk` containing `- Risk Class: external-seam` makes raw routing non-forced and routes a resolved record fresh, although the canonical parser would call the later section forced.",
+            "For mixed `external-seam, bogus`, canonical parsing fails and effective routing remains active; for only `bogus` or fence-hidden fields, `risk_scope_established` is false and the plan repairs/reads the current artifact. Those required invalid and hidden cases are not demoted by this change.",
+            "The mismatch is a declaration-parser ownership issue and is not shown by the supplied candidate bytes to be newly introduced by the resolved-handoff routing change."
+          ],
+          "action": "Do not expand this lifecycle repair. If it becomes a recorded defect, make the smallest owner-local change in declaration parsing: scope raw fields to the same unfenced semantic section model before altering effective routing."
+        }
+      ],
+      "counterweight_triage": [
+        {
+          "concern": "A valid resolved, forced, matching `impl`/`allowed` handoff could still leave a consumer on an interrupt route.",
+          "bin": "dismissed",
+          "disposition": "`effective_routing` is consumed by mode, next action, and required-read selection; the valid route disables both interrupt state and the current-artifact-first read."
+        },
+        {
+          "concern": "Missing, invalid, mismatched, blocked, open, missing, or unknown handoffs/lifecycle states may be accidentally closed.",
+          "bin": "dismissed",
+          "disposition": "Each parser failure or non-allowed condition retains active routing; only explicit `resolved` reaches closure evaluation."
+        },
+        {
+          "concern": "The raw/canonical declaration-model mismatch is a newly introduced routing regression.",
+          "bin": "pre-existing-or-unattributed",
+          "disposition": "Concrete divergence exists, but the supplied semantic input does not establish it as introduced by this candidate; no new candidate-specific unsafe demotion was found in invalid, mixed, or fence-hidden controls."
+        }
+      ],
+      "next_move": "Add and run the already scheduled representative negative test, then complete the parent-owned proof and artifact closure before seeking approval.",
+      "non_claims": [
+        "This is not approval: the supplied known changed-line proof gap prevents overall completion and is intentionally not duplicated as a finding.",
+        "No installed-host, release, broad-suite, generated-mirror, or eventual implementation-complete claim.",
+        "No conclusion that the raw/canonical parser mismatch was introduced in b4844f784..38e13a756 from the inline semantic bytes alone."
+      ],
+      "capability_non_claims": [],
+      "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "provenance": {
+      "result_sha256": "b9eaf17d4442e91f62362ec36f82f844a8c22571c015fc1718f2283168de80b9",
+      "actual_backend_model": "gpt-5.6-terra",
+      "actual_effort": "medium",
+      "receipt_status": "succeeded"
+    },
+    "parent_triage": {
+      "I-01": "partially accepted: raw none/forced disagreement is pre-existing; actual before/after CLI additionally reproduced new demotion of invalid first raw forced declaration before clean canonical section; fixed with raw diagnostic floor and behavioral regression, without parser redesign"
+    },
+    "new_regression_before_after": [
+      {
+        "name": "before",
+        "command": [
+          "python3",
+          "/home/hwidong/codes/charness/skills/public/debug/scripts/plan_debug_run.py",
+          "--repo-root",
+          "/home/hwidong/.cache/tmp/charness-coverage-yaml-20260908-ms7ov_67/raw-canonical-mixed-fixture",
+          "--subject",
+          "fresh-subject"
+        ],
+        "exit_code": 0,
+        "mode": "risk-interrupt",
+        "next_action": "interrupt-to-spec",
+        "risk_classes": [
+          "external-seam"
+        ],
+        "risk_parse_error": "`Risk Class` contains unknown value(s): `bogus`",
+        "effective_routing": null
+      },
+      {
+        "name": "candidate",
+        "command": [
+          "python3",
+          "/home/hwidong/.cache/tmp/charness-coverage-yaml-20260908-ms7ov_67/review-checkout/skills/public/debug/scripts/plan_debug_run.py",
+          "--repo-root",
+          "/home/hwidong/.cache/tmp/charness-coverage-yaml-20260908-ms7ov_67/raw-canonical-mixed-fixture",
+          "--subject",
+          "fresh-subject"
+        ],
+        "exit_code": 0,
+        "mode": "fresh-investigation-with-prior-memory",
+        "next_action": "scaffold-debug-artifact",
+        "risk_classes": [
+          "external-seam"
+        ],
+        "risk_parse_error": "`Risk Class` contains unknown value(s): `bogus`",
+        "effective_routing": {
+          "risk_interrupt_active": false,
+          "requires_current_artifact_read": false,
+          "reason": "resolved-with-valid-allowed-handoff",
+          "handoff_artifact": "charness-artifacts/spec/handoff.md",
+          "interrupt_id": "I1"
+        }
+      }
+    ]
+  },
+  "costs": {
+    "start_utc": "2026-09-07T22:25:00Z",
+    "source_commit": "2b810b0a0",
+    "parent_tokens": "unavailable",
+    "events": [
+      {
+        "stage": "diagnosis started",
+        "utc": "2026-09-07T22:27:17Z"
+      },
+      {
+        "stage": "bounded implementation delegated to Luna xhigh after parent risk triage",
+        "utc": "2026-09-07T22:43:39Z"
+      }
+    ],
+    "completed_record_task": {
+      "model_requested": "gpt-5.6-luna",
+      "effort_requested": "medium",
+      "timings_ms": {
+        "create": 2131,
+        "exec": 77533
+      },
+      "target_sha": "dba90ddc5c3becad0e5588a11cc8cbb90e7128ed",
+      "gate_status": "noop",
+      "reported_tokens": 48931
+    },
+    "review_results": {
+      "contract": {
+        "verdict": "defer",
+        "approval_eligible": false,
+        "tokens": 45503,
+        "actual_model_header": "gpt-6-astra",
+        "model_routing_note": "adapter reviewer_tiers did not select the execution model; costly default discovered after delivery"
+      },
+      "operability": {
+        "verdict": "defer",
+        "approval_eligible": false,
+        "tokens": 45638,
+        "actual_model_header": "gpt-6-astra",
+        "model_routing_note": "adapter reviewer_tiers did not select the execution model; costly default discovered after delivery"
+      }
+    },
+    "parent_rework": [
+      "duplicated causal source reading before user requested tighter orchestration",
+      "record task passed artifact validator but commit seam-index owner rejected Next Step none; parent chose inactive impl token for resolved nonclaim and rebuilt index"
+    ],
+    "review_model_binding": {
+      "finding": "adapter reviewer tier is spawn metadata; codex_exec backend omits model and effort",
+      "investigator_model": "gpt-5.6-sol",
+      "investigator_effort": "medium",
+      "next_review_workaround": "one-run external PATH shim inserts explicit Terra/medium into real codex exec; actual backend header must be verified",
+      "product_fix": "deferred; requires typed settings threaded through canonical runner",
+      "global_config_changed": false
+    },
+    "planner_implementation": {
+      "model": "gpt-5.6-luna",
+      "effort": "xhigh",
+      "tokens_reported": 274187,
+      "timings_ms": {
+        "create": 1437,
+        "exec": 692656
+      },
+      "status": "validated-partial-result",
+      "candidate_sha": "38e13a7564372c7eb1ed90c70bf07929bdc6eb16",
+      "changed_line_gate_status": "unestablished",
+      "changed_line_gate_duration_ms": 29423,
+      "recovery": "fresh same-base task fast-forwards preserved candidate before automatic gate"
+    },
+    "planner_committed_proof_recovery": {
+      "model": "gpt-5.6-luna",
+      "effort": "medium",
+      "tokens_reported": 40628,
+      "timings_ms": {
+        "create": 1402,
+        "exec": 82815
+      },
+      "status": "validated-partial-result",
+      "changed_line_gate_duration_ms": 34842,
+      "blocking_detail": {
+        "skills/public/debug/scripts/debug_artifact_state.py": {
+          "changed_and_missing": [
+            122,
+            123
+          ]
+        }
+      }
+    },
+    "implementation_code_review": {
+      "actual_backend_header": [
+        "OpenAI Codex v0.153.4",
+        "--------",
+        "workdir: /home/hwidong/.cache/tmp/charness-coverage-yaml-20260908-ms7ov_67/review-checkout",
+        "model: gpt-5.6-terra",
+        "provider: openai",
+        "approval: never",
+        "sandbox: read-only",
+        "reasoning effort: medium",
+        "reasoning summaries: none"
+      ],
+      "result_sha256": "b9eaf17d4442e91f62362ec36f82f844a8c22571c015fc1718f2283168de80b9",
+      "verdict": "block",
+      "finding_ids": [
+        "I-01"
+      ],
+      "parent_disposition": "I-01 partially accepted: none/forced divergence pre-existing, but fresh actual CLI before/after proves invalid first raw forced declaration followed by clean canonical section is newly demoted by candidate; preserve raw error floor, no parser redesign",
+      "reproduction": "raw-canonical-mixed-reproduction.json"
+    },
+    "planner_invalid_floor_repair": {
+      "model": "gpt-5.6-luna",
+      "effort": "medium",
+      "tokens_reported": 52485,
+      "timings_ms": {
+        "create": 1457,
+        "exec": 95711
+      },
+      "candidate_sha": "4cdc55c1a493d0b48bcb6984c4e212a93fae193e",
+      "status": "validated-partial-result",
+      "changed_line_gate_duration_ms": 33736,
+      "blocking_detail": {
+        "skills/public/debug/scripts/debug_artifact_state.py": {
+          "changed_and_missing": [
+            114,
+            115,
+            121
+          ]
+        }
+      },
+      "gap_reason": "raw diagnostic floor now catches mixed-token test before canonical parser; distinct malformed canonical declaration test required"
+    },
+    "planner_final_test_and_proof": {
+      "model": "gpt-5.6-luna",
+      "effort": "medium",
+      "tokens_reported": 38405,
+      "timings_ms": {
+        "create": 1514,
+        "exec": 118232
+      },
+      "status": "completed",
+      "candidate_sha": "2506e3251eaf46c6957709af4ba9f5d35db966cc",
+      "changed_line_gate_status": "clean",
+      "changed_line_gate_duration_ms": 31119
+    }
+  },
+  "non_claims": [
+    "No release, push, install, provider or installed-host validation",
+    "No monetary cost estimate; parent token usage unavailable",
+    "Adapter model binding remains a separate product gap; final review uses a temporary per-invocation CLI shim"
+  ]
+}

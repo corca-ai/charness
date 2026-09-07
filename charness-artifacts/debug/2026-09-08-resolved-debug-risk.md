@@ -31,7 +31,8 @@ Given an explicitly resolved, clearly parsed forced-risk incident, when its cano
 
 ## Verification
 
-- Pre-fix hypothesis support: confirmed by PLAN-1 and the source path above. Post-fix, the canonical standing runner passed 122 focused tests across planner, artifact, scaffold, risk-interrupt, and subject-identity boundaries. The actual planner CLI now reports `fresh-investigation-with-prior-memory` and `scaffold-debug-artifact` for the resolved forced-risk fixture; active, malformed, mixed-invalid, and fence-hidden controls remain blocking and read the current artifact first. Parent integration, source/export synchronization, changed-line proof, and final independent approval remain pending.
+- PLAN-1 confirmed the hypothesis. Candidate `2506e3251` passes 42 focused planner tests and committed changed-line coverage across the original slice; earlier related controls passed 122 tests.
+- The actual original planner CLI now routes to fresh prior memory. A malformed first raw declaration followed by a valid canonical section remains blocked/read-first. The initial candidate demoted that case; preserving raw diagnostics fixed it. Final integration evidence: `charness-artifacts/probe/2026-09-08-resolved-debug-risk-proof.json`.
 
 ## Root Cause
 
@@ -46,7 +47,7 @@ Four-whys chain:
 
 - Invariant: when the artifact-state producer emits an effective historical-risk decision, `plan_debug_run` must make mode, next action, and required reads act on that same decision before routing can claim fresh work.
 - Producer Proof: PLAN-1 binds the pre-fix artifact, source input hashes, and canonical handoff result; pre-fix source lines above show the conflicting raw/effective inputs.
-- Final-Consumer Proof: PLAN-1 executed the planner CLI and observed its risk-interrupt output; post-fix focused CLI/build-plan results are pending until implementation.
+- Final-Consumer Proof: the original CLI case now routes to fresh prior memory; the malformed raw-declaration control stays blocked. The proof record binds both results to repaired source hashes.
 - Interface-Shape Sibling Scan: lifecycle, risk, and required-read consumers are the same state-to-plan boundary in `debug_artifact_state.py` and `plan_debug_run.py`; `risk_interrupt_lib.py` is the canonical parser boundary.
 - Non-Claims: no installed-host, generated-mirror, provider, broad-suite, release, or eventual implementation-complete claim.
 
@@ -65,9 +66,9 @@ Four-whys chain:
 
 ## Seam Risk
 
-- Interrupt ID: consumer-path-and-pytest
+- Interrupt ID: resolved-debug-risk
 - Risk Class: repeated-symptom
-- Seam: fixture instruction to executed consumer reads
+- Seam: debug lifecycle to effective planner routing
 - Disproving Observation: a valid matching handoff still left the fresh planner on `risk-interrupt`
 - What Local Reasoning Cannot Prove: final post-fix planner behavior across lifecycle and handoff intersections
 - Generalization Pressure: none
@@ -81,7 +82,7 @@ Four-whys chain:
 
 ## Prevention
 
-Implement the fixed contract in the existing artifact-state/planner seam. Reuse canonical handoff parsers only for resolved forced-risk historical closure; keep invalid or outstanding risk active, and make blocking current-artifact reads precede interrupt/repair instructions. Final implementation approval remains pending focused proof and parent integration review.
+The artifact-state owner composes effective routing once and preserves raw diagnostics before canonical closure. `tests/test_debug_plan.py` covers valid closure, malformed and outstanding handoffs, raw/canonical disagreement, and blocking reads. The proof record owns final independent review and broad verification.
 
 ## Evidence Disposition
 
