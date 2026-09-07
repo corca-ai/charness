@@ -106,10 +106,13 @@ without its explicit authorization.
 
 ## References
 
-- `references/adapter-contract.md`
-- `references/contract-consumption.md`
-- `references/design-lenses.md`
-- `references/sequence-discipline.md`
+Select reference detail by the current task question; read only the entries
+useful to that decision.
+
+- `references/adapter-contract.md` (when interpreting or configuring repo-specific impl verification or truth-surface preferences)
+- `references/contract-consumption.md` (when the handoff contract or what to carry forward is unclear)
+- `references/design-lenses.md` (when choosing a slice or simplifying an interface is unresolved)
+- `references/sequence-discipline.md` (when ordering dependent slices is unresolved)
 - `references/external-api-contract.md` (only for an external API seam)
 - `../../shared/references/prescribed-path-self-test.md` (only for a prescribed path)
 - `../../shared/references/source-bound-records.md` (only for a multi-source or durable record)
