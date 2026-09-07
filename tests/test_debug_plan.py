@@ -919,3 +919,16 @@ def test_the_shape_packet_validates_the_artifact_this_run_writes(tmp_path: Path)
     # one plan disagreeing about what is being judged is the state this repairs.
     scaffold_packet = next(p for p in payload["gate_packets"] if p["id"] == "debug-artifact-scaffold")
     assert scaffold_packet["validator_command"].endswith(f"--paths {write_path}")
+
+
+def test_resolved_invalid_canonical_interrupt_stays_active(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    write_forced_risk_artifact(repo)
+    write_spec_handoff(repo)
+    path = repo / "charness-artifacts/debug/latest.md"
+    path.write_text(path.read_text(encoding="utf-8").replace("- Critique Required: yes", "- Critique Required: no"), encoding="utf-8")
+    payload = run_plan(repo, subject="fresh-subject")
+    assert_active_blocker(payload)
+    assert payload["artifact"]["risk_parse_error"] is None
+    assert payload["artifact"]["effective_routing"]["reason"] == "resolved-forced-risk-debug-interrupt-invalid"
+    assert "Critique Required" in payload["artifact"]["effective_routing"]["handoff_error"]
