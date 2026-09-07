@@ -1,0 +1,187 @@
+{
+  "source_commit": "2b810b0a0e1a36cb2f927db0c20798f1fa7cb785",
+  "purpose": "pre-implementation causal and risk review; delivered deferrals are not implementation approval",
+  "reviews": [
+    {
+      "lens": "contract",
+      "packet_path": "charness-artifacts/critique/resolved-debug-risk-contract-20260908-packet.json",
+      "result": {
+        "kind": "charness.bounded_review.v1",
+        "lens": "Causal and contract correctness",
+        "packet_sha256": "dd1b17f17b97ab1f8fa887c34e542aa8aa7b57af4d5f43f6593d63fb952a0799",
+        "reviewed_input_identity_sha256": "00759476a90cb6425418d34fd125126765674a9686370d6ba5d2119b1e202498",
+        "verdict": "defer",
+        "target_observations": null,
+        "findings": [
+          {
+            "id": "LIFECYCLE-1",
+            "severity": "high",
+            "summary": "The diagnosis is supported: lifecycle controls continuation, but historical forced-risk metadata independently overrides fresh routing.",
+            "evidence": [
+              "debug_artifact_state._artifact_summary recognizes explicit resolved, then merges risk_summary, whose requires_interrupt depends only on risk classes and factor-now.",
+              "plan_debug_run.build_plan and _next_action prioritize requires_interrupt before continuation; _required_reads also consumes that unconditional flag.",
+              "The bound incident declares resolved and repeated-symptom, so these branches select risk-interrupt and interrupt-to-spec despite its matching spec handoff.",
+              "Existing resolved-pointer tests omit forced risks; existing forced-risk tests omit resolved lifecycle."
+            ],
+            "action": "Derive active interrupt posture once in the artifact-state composition and use it consistently for mode, next action, and required reads. Preserve historical risk classes and diagnostics. Keep open, absent, or unknown resolution subject-independent; do not substitute continuation or subject affinity for risk activity."
+          },
+          {
+            "id": "LIFECYCLE-2",
+            "severity": "high",
+            "summary": "A bare resolved exemption can bypass an outstanding forced handoff; handoff-recorded alone is also insufficient evidence of clearance.",
+            "evidence": [
+              "The skill defines resolved as fixed or handed off, while requiring structured spec carry-forward for forced risks.",
+              "parse_debug_interrupt does not inspect Resolution. parse_spec_interrupt_resolution checks source identity and verdict vocabulary; plan_risk_interrupt additionally checks seam equality.",
+              "plan_risk_interrupt returns handoff-recorded even when the parsed spec says impl_status blocked or chooses critique, factor-first, or hitl.",
+              "A resolved forced-risk record with a missing, mismatched, or blocked spec would escape if routing simply masked requires_interrupt whenever resolution equals resolved."
+            ],
+            "action": "For forced-risk demotion, consult the existing handoff parsers and source/seam checks, and explicitly interpret the handoff verdict. The supplied matching impl/allowed handoff supports demotion without claiming implementation completion. Keep missing, invalid, mismatched, or outstanding blocking handoffs active. Do not reuse the gate's changed-path applicability or refreshed-this-slice requirement as historical closure criteria."
+          }
+        ],
+        "counterweight_triage": [
+          {
+            "concern": "Require completed implementation before treating an investigation as historical.",
+            "bin": "over-worry",
+            "disposition": "Reject: the bound skill explicitly permits closure at handoff. A valid impl/allowed handoff need not prove the eventual repair succeeded."
+          },
+          {
+            "concern": "Strictly revalidate every legacy historical artifact before allowing a new investigation.",
+            "bin": "over-worry",
+            "disposition": "Preserve the no-risk-line legacy carve-out. Limit additional handoff checks to declared forced-risk closure; do not turn historical schema debt into a corpus-wide prerequisite."
+          },
+          {
+            "concern": "Resolved should suppress malformed or unreadable risk declarations automatically.",
+            "bin": "real-blocker",
+            "disposition": "Reject that exemption: unknown-only, forced-plus-unknown, and fence-hidden declarations must not gain clearance merely from a resolved field."
+          }
+        ],
+        "next_move": "Implement the bounded composition, then supply real planner output for the supplied incident and focused tests. Minimum controls: resolved forced risk with matching impl/allowed handoff; the same record open, missing-resolution, or unknown-resolution; missing/mismatched/blocked handoffs; factor-now; unknown-only and forced-plus-unknown risks; fence-hidden declarations; legacy no-risk records; same-subject and different-subject invocations. Assert mode, action, reads, preserved historical metadata, and write-target refusal behavior together.",
+        "non_claims": [
+          "Static review of the supplied semantic bytes only; no workspace edits or test execution.",
+          "The packet supplies no lifecycle-repair implementation or actual planner execution receipt; the verification floor remains unmet.",
+          "No approval of implementation effectiveness, broad-suite health, or downstream handling of handoff-recorded verdicts.",
+          "Goal lineage is not-goal-bound; no Goal Run binding is claimed.",
+          "Requested reviewer tier fields are not evidence of host-confirmed application."
+        ],
+        "capability_non_claims": [],
+        "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "result_raw": "{\n  \"kind\": \"charness.bounded_review.v1\",\n  \"lens\": \"Causal and contract correctness\",\n  \"packet_sha256\": \"dd1b17f17b97ab1f8fa887c34e542aa8aa7b57af4d5f43f6593d63fb952a0799\",\n  \"reviewed_input_identity_sha256\": \"00759476a90cb6425418d34fd125126765674a9686370d6ba5d2119b1e202498\",\n  \"verdict\": \"defer\",\n  \"target_observations\": null,\n  \"findings\": [\n    {\n      \"id\": \"LIFECYCLE-1\",\n      \"severity\": \"high\",\n      \"summary\": \"The diagnosis is supported: lifecycle controls continuation, but historical forced-risk metadata independently overrides fresh routing.\",\n      \"evidence\": [\n        \"debug_artifact_state._artifact_summary recognizes explicit resolved, then merges risk_summary, whose requires_interrupt depends only on risk classes and factor-now.\",\n        \"plan_debug_run.build_plan and _next_action prioritize requires_interrupt before continuation; _required_reads also consumes that unconditional flag.\",\n        \"The bound incident declares resolved and repeated-symptom, so these branches select risk-interrupt and interrupt-to-spec despite its matching spec handoff.\",\n        \"Existing resolved-pointer tests omit forced risks; existing forced-risk tests omit resolved lifecycle.\"\n      ],\n      \"action\": \"Derive active interrupt posture once in the artifact-state composition and use it consistently for mode, next action, and required reads. Preserve historical risk classes and diagnostics. Keep open, absent, or unknown resolution subject-independent; do not substitute continuation or subject affinity for risk activity.\"\n    },\n    {\n      \"id\": \"LIFECYCLE-2\",\n      \"severity\": \"high\",\n      \"summary\": \"A bare resolved exemption can bypass an outstanding forced handoff; handoff-recorded alone is also insufficient evidence of clearance.\",\n      \"evidence\": [\n        \"The skill defines resolved as fixed or handed off, while requiring structured spec carry-forward for forced risks.\",\n        \"parse_debug_interrupt does not inspect Resolution. parse_spec_interrupt_resolution checks source identity and verdict vocabulary; plan_risk_interrupt additionally checks seam equality.\",\n        \"plan_risk_interrupt returns handoff-recorded even when the parsed spec says impl_status blocked or chooses critique, factor-first, or hitl.\",\n        \"A resolved forced-risk record with a missing, mismatched, or blocked spec would escape if routing simply masked requires_interrupt whenever resolution equals resolved.\"\n      ],\n      \"action\": \"For forced-risk demotion, consult the existing handoff parsers and source/seam checks, and explicitly interpret the handoff verdict. The supplied matching impl/allowed handoff supports demotion without claiming implementation completion. Keep missing, invalid, mismatched, or outstanding blocking handoffs active. Do not reuse the gate's changed-path applicability or refreshed-this-slice requirement as historical closure criteria.\"\n    }\n  ],\n  \"counterweight_triage\": [\n    {\n      \"concern\": \"Require completed implementation before treating an investigation as historical.\",\n      \"bin\": \"over-worry\",\n      \"disposition\": \"Reject: the bound skill explicitly permits closure at handoff. A valid impl/allowed handoff need not prove the eventual repair succeeded.\"\n    },\n    {\n      \"concern\": \"Strictly revalidate every legacy historical artifact before allowing a new investigation.\",\n      \"bin\": \"over-worry\",\n      \"disposition\": \"Preserve the no-risk-line legacy carve-out. Limit additional handoff checks to declared forced-risk closure; do not turn historical schema debt into a corpus-wide prerequisite.\"\n    },\n    {\n      \"concern\": \"Resolved should suppress malformed or unreadable risk declarations automatically.\",\n      \"bin\": \"real-blocker\",\n      \"disposition\": \"Reject that exemption: unknown-only, forced-plus-unknown, and fence-hidden declarations must not gain clearance merely from a resolved field.\"\n    }\n  ],\n  \"next_move\": \"Implement the bounded composition, then supply real planner output for the supplied incident and focused tests. Minimum controls: resolved forced risk with matching impl/allowed handoff; the same record open, missing-resolution, or unknown-resolution; missing/mismatched/blocked handoffs; factor-now; unknown-only and forced-plus-unknown risks; fence-hidden declarations; legacy no-risk records; same-subject and different-subject invocations. Assert mode, action, reads, preserved historical metadata, and write-target refusal behavior together.\",\n  \"non_claims\": [\n    \"Static review of the supplied semantic bytes only; no workspace edits or test execution.\",\n    \"The packet supplies no lifecycle-repair implementation or actual planner execution receipt; the verification floor remains unmet.\",\n    \"No approval of implementation effectiveness, broad-suite health, or downstream handling of handoff-recorded verdicts.\",\n    \"Goal lineage is not-goal-bound; no Goal Run binding is claimed.\",\n    \"Requested reviewer tier fields are not evidence of host-confirmed application.\"\n  ],\n  \"capability_non_claims\": [],\n  \"capability_non_claims_sha256\": \"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945\"\n}\n",
+      "result_sha256": "05fede7356ceafd26ddfaed3a9ab55ef595925bc9d0bd612b1449c1a10886234",
+      "lifecycle": {
+        "status": "runner-completed",
+        "execution_state": "terminal",
+        "delivery_state": "findings-received",
+        "review_verdict": "defer",
+        "approval_eligible": false
+      },
+      "worker_report_path": ".charness/reviewer-round-resolved-debug-risk-contract-20260908/worker-report.yaml"
+    },
+    {
+      "lens": "operability",
+      "packet_path": "charness-artifacts/critique/resolved-debug-risk-operability-20260908-packet.json",
+      "result": {
+        "kind": "charness.bounded_review.v1",
+        "lens": "Simplification and consumer workflow",
+        "packet_sha256": "dd1b17f17b97ab1f8fa887c34e542aa8aa7b57af4d5f43f6593d63fb952a0799",
+        "reviewed_input_identity_sha256": "00759476a90cb6425418d34fd125126765674a9686370d6ba5d2119b1e202498",
+        "verdict": "defer",
+        "target_observations": null,
+        "findings": [
+          {
+            "id": "LIFECYCLE-1",
+            "severity": "high",
+            "summary": "Compose lifecycle and risk once in debug_artifact_state; closed historical risk currently overrides the fresh-investigation decision.",
+            "evidence": [
+              "The supplied debug artifact declares Resolution: resolved and Risk Class: repeated-symptom; its named spec records Impl Status: allowed.",
+              "debug_artifact_state._artifact_summary derives resolution, then copies lifecycle-independent risk_summary output.",
+              "plan_debug_run checks requires_interrupt before continuation in both mode and next_action; required_reads independently uses that same historical risk flag.",
+              "The debug skill explicitly defines a concluded or handed-off investigation as prior memory."
+            ],
+            "action": "Keep declaration parsing and canonical taxonomy unchanged. Have the existing state owner compose effective routing from explicit closure and declaration results, then have mode, next_action, and required_reads consume that decision. Explicitly resolved records should scaffold fresh work and remain prior memory without requiring another historical spec handoff. Missing, unknown, or unreadable resolution must retain the existing active-risk behavior."
+          },
+          {
+            "id": "READS-1",
+            "severity": "medium",
+            "summary": "Active cross-subject risk must also control required-read instructions.",
+            "evidence": [
+              "_required_reads selects scaffold-first instructions whenever continues_existing is false.",
+              "For another subject's open risk, mode and next_action still interrupt or demand declaration repair.",
+              "The resulting prior-memory instruction says to scaffold a new artifact while next_action requires handling the existing risk."
+            ],
+            "action": "Use the composed routing decision to require reading the blocking artifact first for active interrupt and declaration-repair branches. Preserve subject-refusal metadata and deliberate continuation commands; do not use subject match or continues_existing as the risk applicability predicate."
+          },
+          {
+            "id": "PROOF-1",
+            "severity": "medium",
+            "summary": "The supplied tests separate lifecycle and risk instead of proving their intersections.",
+            "evidence": [
+              "Resolved-pointer tests contain no forced risk declaration.",
+              "Forced-risk, malformed-token, and hidden-fence tests contain no explicit resolved lifecycle.",
+              "No candidate implementation or post-repair planner output is supplied."
+            ],
+            "action": "Before approval, run bounded lifecycle/risk intersection cases through build_plan and capture the actual planner command output for the reproduced closed incident with a new subject. Run existing focused planner, subject/scaffold, and risk-interrupt validator tests; do not run a broad suite for diagnosis."
+          }
+        ],
+        "counterweight_triage": [
+          {
+            "concern": "Closed incidents still interrupt, and active cross-subject reads contradict the required next action.",
+            "bin": "fix-now",
+            "disposition": "One state-owned composition should govern all three consumer surfaces. Preserve raw historical declaration information and existing active-risk refusals."
+          },
+          {
+            "concern": "General parser hardening or lifecycle grammar redesign.",
+            "bin": "follow-up",
+            "disposition": "Keep outside this repair unless a bounded counterexample shows the existing explicit-resolution interpretation cannot support the required invariant."
+          },
+          {
+            "concern": "Changing risk_interrupt_lib handoff freshness, taxonomy, or implementation verdicts.",
+            "bin": "out-of-scope",
+            "disposition": "The supplied gate has a distinct changed-slice contract. Its acceptance of a refreshed matching handoff does not require making the debug planner replay completed handoffs or importing gate freshness into bootstrap routing."
+          },
+          {
+            "concern": "New CLI flags, schema versions, duplicated lifecycle predicates, broad guard machinery, or full coverage runs.",
+            "bin": "over-worry",
+            "disposition": "Existing resolution, declaration diagnostics, state owner, and focused tests provide the necessary boundary. No additional public control surface is justified."
+          }
+        ],
+        "next_move": "Implement the bounded state composition, then verify resolved/open/missing/unknown lifecycle against forced risk, factor-now, no-risk, legacy absence, unknown-only risk, mixed forced/invalid tokens, and fenced declarations. Explicit closure should retain historical diagnostics without reviving the incident; open/unknown malformed risk must retain refusal, including across subjects. Assert mode, next_action, required_reads, fresh write target, and refusal metadata together. Capture real planner output and focused test results before requesting final approval.",
+        "non_claims": [
+          "This is a pre-implementation review of the supplied semantic bytes; no repair or test execution is claimed.",
+          "No structured prepared targets were supplied.",
+          "No release, installed-host, broad-suite, or universal parser correctness claim is made.",
+          "Reviewer model, reasoning effort, and service tier application are unverified-by-packet.",
+          "Goal lineage is not-goal-bound: critique review was run without a Goal Run Work Item identity; binding, draft, goal_run, and work_item are null."
+        ],
+        "capability_non_claims": [],
+        "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "result_raw": "{\n  \"kind\": \"charness.bounded_review.v1\",\n  \"lens\": \"Simplification and consumer workflow\",\n  \"packet_sha256\": \"dd1b17f17b97ab1f8fa887c34e542aa8aa7b57af4d5f43f6593d63fb952a0799\",\n  \"reviewed_input_identity_sha256\": \"00759476a90cb6425418d34fd125126765674a9686370d6ba5d2119b1e202498\",\n  \"verdict\": \"defer\",\n  \"target_observations\": null,\n  \"findings\": [\n    {\n      \"id\": \"LIFECYCLE-1\",\n      \"severity\": \"high\",\n      \"summary\": \"Compose lifecycle and risk once in debug_artifact_state; closed historical risk currently overrides the fresh-investigation decision.\",\n      \"evidence\": [\n        \"The supplied debug artifact declares Resolution: resolved and Risk Class: repeated-symptom; its named spec records Impl Status: allowed.\",\n        \"debug_artifact_state._artifact_summary derives resolution, then copies lifecycle-independent risk_summary output.\",\n        \"plan_debug_run checks requires_interrupt before continuation in both mode and next_action; required_reads independently uses that same historical risk flag.\",\n        \"The debug skill explicitly defines a concluded or handed-off investigation as prior memory.\"\n      ],\n      \"action\": \"Keep declaration parsing and canonical taxonomy unchanged. Have the existing state owner compose effective routing from explicit closure and declaration results, then have mode, next_action, and required_reads consume that decision. Explicitly resolved records should scaffold fresh work and remain prior memory without requiring another historical spec handoff. Missing, unknown, or unreadable resolution must retain the existing active-risk behavior.\"\n    },\n    {\n      \"id\": \"READS-1\",\n      \"severity\": \"medium\",\n      \"summary\": \"Active cross-subject risk must also control required-read instructions.\",\n      \"evidence\": [\n        \"_required_reads selects scaffold-first instructions whenever continues_existing is false.\",\n        \"For another subject's open risk, mode and next_action still interrupt or demand declaration repair.\",\n        \"The resulting prior-memory instruction says to scaffold a new artifact while next_action requires handling the existing risk.\"\n      ],\n      \"action\": \"Use the composed routing decision to require reading the blocking artifact first for active interrupt and declaration-repair branches. Preserve subject-refusal metadata and deliberate continuation commands; do not use subject match or continues_existing as the risk applicability predicate.\"\n    },\n    {\n      \"id\": \"PROOF-1\",\n      \"severity\": \"medium\",\n      \"summary\": \"The supplied tests separate lifecycle and risk instead of proving their intersections.\",\n      \"evidence\": [\n        \"Resolved-pointer tests contain no forced risk declaration.\",\n        \"Forced-risk, malformed-token, and hidden-fence tests contain no explicit resolved lifecycle.\",\n        \"No candidate implementation or post-repair planner output is supplied.\"\n      ],\n      \"action\": \"Before approval, run bounded lifecycle/risk intersection cases through build_plan and capture the actual planner command output for the reproduced closed incident with a new subject. Run existing focused planner, subject/scaffold, and risk-interrupt validator tests; do not run a broad suite for diagnosis.\"\n    }\n  ],\n  \"counterweight_triage\": [\n    {\n      \"concern\": \"Closed incidents still interrupt, and active cross-subject reads contradict the required next action.\",\n      \"bin\": \"fix-now\",\n      \"disposition\": \"One state-owned composition should govern all three consumer surfaces. Preserve raw historical declaration information and existing active-risk refusals.\"\n    },\n    {\n      \"concern\": \"General parser hardening or lifecycle grammar redesign.\",\n      \"bin\": \"follow-up\",\n      \"disposition\": \"Keep outside this repair unless a bounded counterexample shows the existing explicit-resolution interpretation cannot support the required invariant.\"\n    },\n    {\n      \"concern\": \"Changing risk_interrupt_lib handoff freshness, taxonomy, or implementation verdicts.\",\n      \"bin\": \"out-of-scope\",\n      \"disposition\": \"The supplied gate has a distinct changed-slice contract. Its acceptance of a refreshed matching handoff does not require making the debug planner replay completed handoffs or importing gate freshness into bootstrap routing.\"\n    },\n    {\n      \"concern\": \"New CLI flags, schema versions, duplicated lifecycle predicates, broad guard machinery, or full coverage runs.\",\n      \"bin\": \"over-worry\",\n      \"disposition\": \"Existing resolution, declaration diagnostics, state owner, and focused tests provide the necessary boundary. No additional public control surface is justified.\"\n    }\n  ],\n  \"next_move\": \"Implement the bounded state composition, then verify resolved/open/missing/unknown lifecycle against forced risk, factor-now, no-risk, legacy absence, unknown-only risk, mixed forced/invalid tokens, and fenced declarations. Explicit closure should retain historical diagnostics without reviving the incident; open/unknown malformed risk must retain refusal, including across subjects. Assert mode, next_action, required_reads, fresh write target, and refusal metadata together. Capture real planner output and focused test results before requesting final approval.\",\n  \"non_claims\": [\n    \"This is a pre-implementation review of the supplied semantic bytes; no repair or test execution is claimed.\",\n    \"No structured prepared targets were supplied.\",\n    \"No release, installed-host, broad-suite, or universal parser correctness claim is made.\",\n    \"Reviewer model, reasoning effort, and service tier application are unverified-by-packet.\",\n    \"Goal lineage is not-goal-bound: critique review was run without a Goal Run Work Item identity; binding, draft, goal_run, and work_item are null.\"\n  ],\n  \"capability_non_claims\": [],\n  \"capability_non_claims_sha256\": \"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945\"\n}\n",
+      "result_sha256": "ff491e05dfe50936334ec5d512497d1121ec45ab1897bb649d0808df0640a24d",
+      "lifecycle": {
+        "status": "runner-completed",
+        "execution_state": "terminal",
+        "delivery_state": "findings-received",
+        "review_verdict": "defer",
+        "approval_eligible": false
+      },
+      "worker_report_path": ".charness/reviewer-round-resolved-debug-risk-operability-20260908/worker-report.yaml"
+    }
+  ],
+  "parent_disposition": {
+    "act_before_ship": [
+      "Compose risk routing once in existing artifact state owner",
+      "Only demote an explicitly resolved forced risk after valid matching spec says chosen next step impl and impl status allowed; do not import current-slice freshness",
+      "Retain open/unknown lifecycle and unreadable or invalid active-risk refusal across subjects",
+      "Make required reads agree with mode and next_action for active cross-subject blockers"
+    ],
+    "bundle_anyway": [
+      "Focused lifecycle/risk intersection controls and actual planner CLI readback"
+    ],
+    "over_worry": [
+      "Require completed implementation before a valid allowed handoff becomes prior memory",
+      "Add new CLI flags, public schema versions, broad history validation or a second taxonomy"
+    ],
+    "valid_but_defer": []
+  }
+}

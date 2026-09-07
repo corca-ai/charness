@@ -1,0 +1,52 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "PLAN-1",
+  "source": "charness-artifacts/probe/2026-09-08-resolved-debug-risk-reproduction.json",
+  "expected": "resolved incident with a matching implementation-allowed handoff routes a new subject to fresh investigation",
+  "stimulus": "invoke the actual debug planner for a new subject with the retained resolved current incident",
+  "disposition": "reproduced",
+  "observed": "planner reports resolved but still selects risk-interrupt and interrupt-to-spec; canonical handoff validation with declared incident and spec paths permits implementation",
+  "command": "python3 skills/public/debug/scripts/plan_debug_run.py --repo-root . --subject coverage-yaml-output --evidence-led",
+  "fixture": "charness-artifacts/debug/2026-09-08-consumer-path-and-pytest.md",
+  "final_consumer": "skills/public/debug/scripts/plan_debug_run.py CLI output",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0,
+  "source_commit": "2b810b0a0e1a36cb2f927db0c20798f1fa7cb785",
+  "observation": {
+    "current_artifact": "charness-artifacts/debug/2026-09-08-consumer-path-and-pytest.md",
+    "current_artifact_sha256": "dc94a5be8795652ffba654784f13c7c56567229be83e48e46428e8ce5f6bdda5",
+    "spec": "charness-artifacts/spec/2026-09-08-reference-and-suite.md",
+    "spec_sha256": "10e2c4f2d9a3d9bbb6ceddaeb962fcb061716a356f51522b339ecfba5536299a",
+    "planner": {
+      "mode": "risk-interrupt",
+      "next_action": "interrupt-to-spec",
+      "resolution": "resolved",
+      "requires_interrupt": true
+    },
+    "canonical_risk_plan": {
+      "status": "handoff-recorded",
+      "required": true,
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "interrupt_id": "consumer-path-and-pytest",
+      "risk_classes": [
+        "repeated-symptom"
+      ],
+      "handoff_artifact": "charness-artifacts/spec/2026-09-08-reference-and-suite.md",
+      "chosen_next_step": "impl",
+      "impl_status": "allowed",
+      "impl_status_reason": "independent causal and consumer reviewers requested the bounded candidate and actual proof; no design blocker remains after marker/export wording corrections",
+      "resolved_observation": "exported files exist; wrong consumer paths and duplicated recipe are locally reproduced; actual repaired behavior is the explicit implementation probe, not an inferred result",
+      "reasons": [
+        "forced interrupt is preserved in the refreshed spec artifact"
+      ]
+    }
+  },
+  "source_inputs": {
+    "skills/public/debug/scripts/debug_artifact_state.py": "936e0ce4751bff77123a1b0080be2b2541fdb735fd0f1ab63a003a582c916eee",
+    "skills/public/debug/scripts/debug_artifact_declarations.py": "52a7f9a09953bd9d58b663c1a2f1b436aaf55c6d1aca880dadb4cfb931e9e08f",
+    "skills/public/debug/scripts/plan_debug_run.py": "feaef6e3e7097c6b73e1ab9a9cabf39788acecba195ade5239e79dde0176ea0c",
+    "scripts/gates_support/risk_interrupt_lib.py": "3a1fd82c311c1b924cd51ed696c7a3d51322b8df8399f439be955ad42bcc98fd"
+  },
+  "scope_note": "Canonical handoff check supplied the incident/spec paths explicitly. Its current-slice freshness policy is not proposed as a historical planner closure rule."
+}
