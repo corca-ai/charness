@@ -208,6 +208,7 @@ def _prove_ready_candidate(
     if not proof_ready and changed_line_gate is not None and not blockers and candidate.get("useful"):
         blockers.append(_carrier_not_ready_reason(candidate))
 
+    admitted = _carrier_identity(candidate)
     gate = _changed_line_verdict(
         changed_line_gate,
         execution_status=execution_status,
@@ -219,8 +220,6 @@ def _prove_ready_candidate(
     )
     if gate.get("blocking"):
         blockers.append(str(gate.get("summary") or "changed-line gate refused the candidate"))
-        if result_state == "completed":
-            result_state = "validated-partial-result"
 
     if proof_ready and changed_line_gate is not None:
         post_gate_reason = _refresh_after_gate(
@@ -228,11 +227,10 @@ def _prove_ready_candidate(
             candidate,
             resolved_target=resolved_target,
             base_sha=base_sha,
+            admitted=admitted,
         )
         if post_gate_reason:
             blockers.append(post_gate_reason)
-            if result_state == "completed":
-                result_state = "validated-partial-result"
 
     if blockers and result_state == "completed" and candidate.get("useful"):
         result_state = "validated-partial-result"
@@ -256,7 +254,6 @@ def _persist_useful_dirty_candidate(
     ):
         return None
     if _carrier_is_complete(candidate):
-        candidate["admitted_carrier"] = _carrier_identity(candidate)
         return None
     if not _carrier_is_observable(candidate):
         return _carrier_not_ready_reason(candidate)
@@ -281,7 +278,6 @@ def _persist_useful_dirty_candidate(
     candidate.update(observed)
     if not _carrier_is_complete(candidate):
         return _carrier_not_ready_reason(candidate, phase="after persistence")
-    candidate["admitted_carrier"] = _carrier_identity(candidate)
     return None
 
 
@@ -307,14 +303,8 @@ def _carrier_is_complete(carrier: Mapping[str, Any]) -> bool:
     )
 
 
-def _carrier_identity(carrier: Mapping[str, Any]) -> dict[str, Any]:
-    """Compact identity used to prove the gate judged the admitted candidate."""
-    return {
-        "head_sha": carrier.get("observed_head_sha"),
-        "carrier_kind": carrier.get("carrier_kind"),
-        "dirty_paths": list(carrier.get("dirty_paths") or ()),
-        "content_digest": carrier.get("content_digest"),
-    }
+def _carrier_identity(carrier: Mapping[str, Any]) -> tuple[Any, Any]:
+    return carrier.get("observed_head_sha"), carrier.get("content_digest")
 
 
 def _carrier_not_ready_reason(
@@ -340,28 +330,20 @@ def _refresh_after_gate(
     *,
     resolved_target: Path,
     base_sha: str,
+    admitted: tuple[Any, Any],
 ) -> str | None:
-    admitted = candidate.get("admitted_carrier")
-    if not isinstance(admitted, Mapping):
-        _mark_carrier_unreadable(
-            candidate,
-            phase="after changed-line gate",
-            error=TaskRunError("missing admitted carrier identity"),
-        )
-        return "candidate carrier identity was missing after changed-line proof"
     try:
         observed = _candidate_carrier(resolved_target, base_sha)
     except (OSError, RuntimeError, TaskRunError, TypeError, AttributeError, ValueError) as exc:
         _mark_carrier_unreadable(candidate, phase="after changed-line gate", error=exc)
         return f"candidate carrier could not be observed after changed-line proof: {exc}"
 
-    candidate["post_gate_carrier"] = _carrier_identity(observed)
     candidate.update(observed)
     if observed.get("observed_head_sha"):
         payload["target_sha"] = observed["observed_head_sha"]
     if observed.get("observed_branch"):
         payload["target_branch"] = observed["observed_branch"]
-    if _carrier_identity(observed) != dict(admitted):
+    if not _carrier_is_complete(observed) or _carrier_identity(observed) != admitted:
         return (
             "candidate carrier changed after changed-line proof; approval was denied "
             "and gate-created work was not committed"
@@ -469,15 +451,10 @@ def release_finished_lane(
     record_dir: Path,
     git: Callable[..., Any],
 ) -> dict[str, Any] | None:
-    """Drop a finished lane to `result.json` plus logs when its commit carries everything.
+    """Release a finished worktree only when its commit carries the whole candidate.
 
-    A finished lane kept a 1.4 GB worktree and a 1.1 GB runtime beside a 60 KB
-    receipt, 254 times over, and no rule reached them (#787). The candidate a
-    parent integrates is the lane branch's commit; once `head_is_complete` says
-    that commit IS the candidate, the worktree adds nothing the branch does not
-    hold. A useful incomplete candidate is committed onto the lane branch first
-    (#797); if that persist fails, the worktree stays and `keep_worktree` stays
-    true so the sweep cannot delete the only copy.
+    Receipt and logs survive cleanup. Incomplete or unknown content stays in the
+    worktree with keep_worktree set, so the runtime sweep preserves its only copy.
     """
     candidate = payload.get("candidate")
     if not isinstance(candidate, Mapping) or payload.get("status") not in {

@@ -122,7 +122,6 @@ def test_dirty_useful_work_is_persisted_before_the_gate_sees_a_clean_candidate(
     assert events[1][1] == payload["target_sha"]
     assert events[1][2] == ""
     assert payload["candidate"]["persist"]["status"] == "committed"
-    assert payload["candidate"]["admitted_carrier"]["head_sha"] == payload["target_sha"]
     assert payload["candidate"]["dirty_paths"] == []
     assert payload["status"] == "completed"
     assert payload["approval_eligibility"] == "eligible"
@@ -183,7 +182,6 @@ def test_a_clean_committed_candidate_is_proved_and_refreshed(
     payload = _complete(tmp_path, changed_line_gate=gate)
 
     assert calls == [tmp_path / "worktree"]
-    assert payload["candidate"]["post_gate_carrier"] == payload["candidate"]["admitted_carrier"]
     assert payload["changed_line_gate"]["status"] == "clean"
     assert payload["next_step"].endswith("the typed result is approval-eligible.")
     assert payload["approval_eligibility"] == "eligible"
@@ -341,7 +339,7 @@ def test_gate_created_dirty_work_is_not_committed_and_survives_retention(
 
     assert payload["status"] == "validated-partial-result"
     assert payload["approval_eligibility"] == "ineligible"
-    assert payload["candidate"]["post_gate_carrier"]["dirty_paths"] == ["gate-output.py"]
+    assert payload["candidate"]["dirty_paths"] == ["gate-output.py"]
     assert payload["candidate"]["carrier_kind"] == "commit-plus-dirty"
     assert payload["candidate"]["head_is_complete"] is False
     assert payload["keep_worktree"] is True
@@ -368,9 +366,6 @@ def test_gate_changed_head_is_ineligible_but_fresh_clean_content_can_be_released
     assert payload["approval_eligibility"] == "ineligible"
     assert payload["candidate"]["carrier_kind"] == "commit-only"
     assert payload["candidate"]["head_is_complete"] is True
-    assert payload["candidate"]["post_gate_carrier"]["head_sha"] != (
-        payload["candidate"]["admitted_carrier"]["head_sha"]
-    )
     assert payload["retention"]["worktree"] == "removed"
     assert payload["keep_worktree"] is False
     capsys.readouterr()
