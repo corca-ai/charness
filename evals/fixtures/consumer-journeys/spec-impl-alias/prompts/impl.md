@@ -4,7 +4,11 @@ Work in the same consumer repository after the spec phase. Read `AGENTS.md`
 and use the installed `impl` skill identified by
 `CHARNESS_FIXTURE_PLUGIN_ROOT`. Resolve its references from the exported
 package, not host-installed Charness, and report the exact consumed skill path
-and package version.
+and package version. Resolve each literal relative reference against the
+directory of the document containing it, preserve `../` components (so
+`../../shared/...` from `skills/impl/SKILL.md` resolves under
+`$CHARNESS_FIXTURE_PLUGIN_ROOT/shared/...`), and do not rebuild paths from
+basenames.
 
 Consume the exact `docs/alias-resolution.md` produced by the preceding spec
 context. Treat it as the implementation contract: do not silently redesign

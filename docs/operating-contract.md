@@ -42,7 +42,7 @@ start is not proof of a clean finish, so the runner reports both.
 | Change class | Applicable proof |
 | --- | --- |
 | Ordinary consumer reversible edit | Run deterministic focused tests or checks for the changed behavior. Use the default core lane when the changed surface has cross-module consumers. Full/read-only, release, changed-line mutation, artifact-ledger, and fresh-eye proof are not universal requirements. |
-| Charness authoring integration | After source integration, run the standing runner followed by the full read-only lane. Development supplies the commands. This is the authoring-repository integration safeguard, not the default for an ordinary consumer edit. |
+| Charness authoring integration | After source integration, refresh generated surfaces and run one fresh full read-only lane. It starts with standing pytest and fails fast; normal `release_only`/`slow_corpus` exclusions and conditional omissions persist. Development supplies the commands. This is the authoring-repository integration safeguard, not the default for an ordinary consumer edit. |
 | Proof-surface repair or verdict logic | Add the narrow evidence that can catch the failure, including an independent observer when authoring or changing a proof surface and changed-line/mutation proof when the verdict or claim depends on it. |
 | Release or other irreversible external boundary | Use the boundary owner's full/read-only and release checks, captured readback, and any required distinct observer. Push, publication, installation, and other external actions remain separately authorized; development owns their command recipes. |
 
@@ -72,9 +72,10 @@ The materialized `plugins/` mirror is derived from `skills/` and `scripts/`.
 regenerates it in a writing run and refuses a stale tree in read-only; a bare
 `plugins/` directory in a consuming repo is never sufficient.
 
-So batch source edits instead of exporting after each one, and run the exporter
-yourself only when you invoke `pytest` directly, which is the one path with no
-runner in front of it:
+So batch source edits instead of exporting after each one. Writing entrypoints
+refresh the mirror, while read-only entrypoints refuse a stale mirror. After
+source changes, run the exporter explicitly before the final full read-only
+lane:
 
 ```bash
 python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .

@@ -47,26 +47,18 @@ readback. Neither exists in a local handoff or session hook.
 
 ## Verification and export
 
-[Operating contract](./operating-contract.md#verification) owns verification
-applicability. This page owns the commands used when authoring and integrating
-Charness itself. [The standing pytest runner](../scripts/gates_support/run_standing_pytest.py)
+[Operating contract](./operating-contract.md#verification) owns applicability;
+this page owns Charness authoring commands. [The standing pytest runner](../scripts/gates_support/run_standing_pytest.py)
 is the pytest owner (xdist workers, chunk sizing, an external basetemp); a bare
 `python3 -m pytest` gets none of them and is refused for a broad selection.
 
 ```bash
 python3 scripts/gates_support/run_standing_pytest.py --repo-root . --pytest-target <path-or-nodeid>
-python3 scripts/gates_support/run_standing_pytest.py --repo-root .
-./scripts/run-quality.sh
+python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .
 ./scripts/run-quality.sh --full --read-only
 ```
 
-For Charness authoring, after an integration step the only green that counts is
-the standing runner followed by the full read-only lane; any other green is a
-proxy ([P4](./design-north-star.md)). This integration safeguard does not
-replace the ordinary-consumer rule in the operating contract. The slice order
-(commit, changed-line proof, then the broad lane) and the serial
-`mutate -> sync -> verify -> publish` in the parent are owned by
-[parallel execution](./parallel-execution.md#disjoint-writers).
+For Charness authoring, refresh exports, then run one fresh full read-only lane. It runs standing pytest first and stops on failure. Require its pytest pass without additional gate/test filters; normal marker exclusions and conditional omissions remain. This preserves the ordinary-consumer rule. The slice order (commit, changed-line proof, then broad verification) and serial `mutate -> sync -> verify -> publish` in the parent are owned by [parallel execution](./parallel-execution.md#disjoint-writers).
 
 Each rule names the mechanism that holds it.
 
