@@ -218,6 +218,26 @@ def test_a_persistence_failure_skips_proof_and_keeps_dirty_worktree(
     capsys.readouterr()
 
 
+def test_snapshot_acknowledgement_does_not_hide_new_dirty_work(tmp_path: Path) -> None:
+    def git(cwd: Path, *args: str) -> Any:
+        result = task_run_git._git(cwd, *args)
+        if "commit" in args and result.returncode == 0:
+            (cwd / "late.py").write_text("LATE = 1\n", encoding="utf-8")
+        return result
+
+    def gate(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        raise AssertionError("incomplete preserved work must not invoke proof")
+
+    payload = _complete(tmp_path, candidate_kind="dirty", changed_line_gate=gate, git=git)
+
+    assert payload["candidate"]["persist"]["status"] == "committed"
+    assert payload["approval_eligibility"] == "ineligible"
+    assert payload["changed_line_gate"]["status"] == "skipped"
+    assert "incomplete after persistence" in payload["changed_line_gate"]["reason"]
+    assert payload["keep_worktree"] is True
+    assert (tmp_path / "worktree" / "late.py").read_text() == "LATE = 1\n"
+
+
 def test_carrier_refresh_failure_after_persistence_fails_closed(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

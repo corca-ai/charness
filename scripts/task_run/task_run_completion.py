@@ -205,8 +205,6 @@ def _prove_ready_candidate(
         blockers.append(carrier_reason)
 
     proof_ready = not blockers and _carrier_is_complete(candidate) and bool(candidate.get("useful"))
-    if not proof_ready and changed_line_gate is not None and not blockers and candidate.get("useful"):
-        blockers.append(_carrier_not_ready_reason(candidate))
 
     admitted = _carrier_identity(candidate)
     gate = _changed_line_verdict(
@@ -255,8 +253,6 @@ def _persist_useful_dirty_candidate(
         return None
     if _carrier_is_complete(candidate):
         return None
-    if not _carrier_is_observable(candidate):
-        return _carrier_not_ready_reason(candidate)
     snapshot = persist_incomplete_candidate(
         resolved_target, git=git, git_output=git_output
     )
@@ -286,16 +282,9 @@ def _candidate_has_work(candidate: Mapping[str, Any]) -> bool:
     return bool(candidate.get("useful") or candidate.get("changed_paths"))
 
 
-def _carrier_is_observable(carrier: Mapping[str, Any]) -> bool:
-    return all(key in carrier for key in (
-        "carrier_kind", "head_is_complete", "observed_head_sha", "content_digest"
-    ))
-
-
 def _carrier_is_complete(carrier: Mapping[str, Any]) -> bool:
     return bool(
-        _carrier_is_observable(carrier)
-        and carrier.get("carrier_kind") == "commit-only"
+        carrier.get("carrier_kind") == "commit-only"
         and carrier.get("head_is_complete") is True
         and carrier.get("dirty_paths") == []
         and carrier.get("observed_head_sha")
@@ -310,8 +299,6 @@ def _carrier_identity(carrier: Mapping[str, Any]) -> tuple[Any, Any]:
 def _carrier_not_ready_reason(
     carrier: Mapping[str, Any], *, phase: str = "before proof"
 ) -> str:
-    if not _carrier_is_observable(carrier):
-        return f"candidate carrier is not observable {phase}; changed-line proof was skipped"
     return (
         f"candidate carrier is incomplete {phase} ({carrier.get('carrier_kind')!r}); "
         "changed-line proof was skipped"
@@ -341,8 +328,6 @@ def _refresh_after_gate(
     candidate.update(observed)
     if observed.get("observed_head_sha"):
         payload["target_sha"] = observed["observed_head_sha"]
-    if observed.get("observed_branch"):
-        payload["target_branch"] = observed["observed_branch"]
     if not _carrier_is_complete(observed) or _carrier_identity(observed) != admitted:
         return (
             "candidate carrier changed after changed-line proof; approval was denied "
