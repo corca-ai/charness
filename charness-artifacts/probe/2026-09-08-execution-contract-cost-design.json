@@ -1,0 +1,135 @@
+{
+  "contract": {
+    "result": {
+      "kind": "charness.bounded_review.v1",
+      "lens": "Contract/authority",
+      "packet_sha256": "02012c18dd2312201edbcbcd5a71cf9b0dc0524e6203fdca0364b1d00504c577",
+      "reviewed_input_identity_sha256": "477593442b5ba10a582c55450a5843ee0487fec569f67f1f49fbed9c21f9bddc",
+      "verdict": "block",
+      "target_observations": null,
+      "findings": [
+        {
+          "id": "CR-1",
+          "severity": "blocker",
+          "summary": "The proposed retention rule does not explicitly preserve final-carrier identity with the carrier admitted to proof.",
+          "evidence": [
+            "The spec requires a post-gate observation and says changed commit/content invalidates approval, but also permits retention for \u201cactually complete committed content under its existing rule.\u201d",
+            "A gate can commit or otherwise replace the carrier after proof. The refreshed carrier may be complete while no longer being the carrier whose base-to-HEAD content the gate judged.",
+            "The stated invariant requires both eligible receipt emission and worktree removal to use the same observed durable candidate admitted to proof."
+          ],
+          "action": "Make retention conditional on a successful post-gate observation proving identity equality with the pre-gate admitted carrier (at minimum head SHA, content digest, carrier kind, and no dirty paths). On mismatch or observation failure, retain the worktree regardless of completeness; record the mismatch as an approval and retention blocker."
+        }
+      ],
+      "counterweight_triage": [
+        {
+          "concern": "Persisting useful dirty work despite scope or parent blockers could erase the blocker.",
+          "bin": "not-a-blocker",
+          "disposition": "The spec explicitly separates preservation from approval and requires original blockers to remain in the final status; this is the correct authority split."
+        },
+        {
+          "concern": "Skipping proof for existing blockers loses useful verification work.",
+          "bin": "accepted-tradeoff",
+          "disposition": "The bounded contract deliberately prevents expensive proof from authorizing a candidate already denied by independent authority; preservation remains available."
+        },
+        {
+          "concern": "No injected gate or no-change paths become newly blocked.",
+          "bin": "not-a-blocker",
+          "disposition": "The spec explicitly preserves absent-gate and allow-no-change behavior; implementation tests should retain those paths."
+        },
+        {
+          "concern": "A carrier refresh failure after persistence fabricates completion.",
+          "bin": "resolved-by-design",
+          "disposition": "The spec correctly requires unknown state to deny approval and retain the worktree, replacing the current fallback."
+        }
+      ],
+      "next_move": "Amend the spec\u2019s retention predicate to bind removal to post-gate same-carrier proof, then proceed with the bounded implementation and direct lifecycle tests.",
+      "non_claims": [
+        "This review does not claim implementation correctness, provider behavior, performance, benchmark results, release readiness, or full-suite proof.",
+        "This review does not require final implementation evidence before authorizing the bounded design repair."
+      ],
+      "capability_non_claims": [],
+      "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "carrier": {
+      "approval_eligible": false,
+      "provenance_ok": true,
+      "receipt_ok": true,
+      "ledger_ok": true,
+      "review_verdict": "block",
+      "packet_identity": "02012c18dd2312201edbcbcd5a71cf9b0dc0524e6203fdca0364b1d00504c577",
+      "reviewed_input_identity": "477593442b5ba10a582c55450a5843ee0487fec569f67f1f49fbed9c21f9bddc"
+    },
+    "actual_model": "gpt-5.6-terra",
+    "actual_effort": "medium"
+  },
+  "cost": {
+    "result": {
+      "kind": "charness.bounded_review.v1",
+      "lens": "resource/simplicity",
+      "packet_sha256": "db132d5b7baf872175dcdef8ff089f357fd656759aecc46dcef5c085ca4fa1c3",
+      "reviewed_input_identity_sha256": "477593442b5ba10a582c55450a5843ee0487fec569f67f1f49fbed9c21f9bddc",
+      "verdict": "pass",
+      "target_observations": null,
+      "findings": [],
+      "counterweight_triage": [
+        {
+          "concern": "Post-persist and post-gate carrier observations add Git reads.",
+          "bin": "necessary cost",
+          "disposition": "They establish distinct durability and freshness boundaries; avoid only redundant snapshots within a boundary."
+        },
+        {
+          "concern": "A new lifecycle/readiness abstraction could duplicate candidate state.",
+          "bin": "avoid",
+          "disposition": "Keep composition in the existing completion owner and reuse `_candidate_carrier`; do not introduce a framework or parallel state model."
+        },
+        {
+          "concern": "The proposed negative controls are incident-specific.",
+          "bin": "triaged",
+          "disposition": "The specified tests assert semantic outcomes\u2014gate invocation, eligibility, carrier freshness, and retention\u2014not timestamps or incident artifacts."
+        },
+        {
+          "concern": "Skipping proof for blockers could weaken evidence.",
+          "bin": "not a blocker",
+          "disposition": "The gate's committed base-to-HEAD contract cannot prove an absent, incomplete, or already-blocked approval candidate; explicit skip reasons retain truthful evidence."
+        },
+        {
+          "concern": "Model or gate configuration may expand with this repair.",
+          "bin": "out of scope",
+          "disposition": "The spec preserves absent injected-gate behavior and explicitly excludes backend/model configuration work."
+        }
+      ],
+      "next_move": "Implement the bounded orchestration change in the existing completion owner, with semantic lifecycle tests for pre-gate durability, blocker skips, post-gate freshness, refresh failure, and retention.",
+      "non_claims": [
+        "This approves the proposed bounded design, not a final implementation or receipt.",
+        "No provider, model, installed-host, release, broad-suite, or performance-benchmark claim is approved."
+      ],
+      "capability_non_claims": [],
+      "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "carrier": {
+      "approval_eligible": true,
+      "provenance_ok": true,
+      "receipt_ok": true,
+      "ledger_ok": true,
+      "review_verdict": "pass",
+      "packet_identity": "db132d5b7baf872175dcdef8ff089f357fd656759aecc46dcef5c085ca4fa1c3",
+      "reviewed_input_identity": "477593442b5ba10a582c55450a5843ee0487fec569f67f1f49fbed9c21f9bddc"
+    },
+    "actual_model": "gpt-5.6-terra",
+    "actual_effort": "medium"
+  },
+  "parent_counterweight": {
+    "Act Before Ship": [
+      "CR-1 identifies ambiguous diagnosis invariant: corrected it to distinguish proof identity for approval from durable completeness for cleanup."
+    ],
+    "Bundle Anyway": [
+      "Retain fresh observation errors and skipped-proof reasons in the existing receipt."
+    ],
+    "Over-Worry": [
+      "CR-1 proposed retaining an actually complete committed candidate merely because proof identity changed. Existing release_finished_lane permits validated partial results; removing a redundant clean worktree does not approve the candidate or lose committed files. Do not couple retention to correctness."
+    ],
+    "Valid but Defer": [
+      "Reviewer backend tier configuration is separate optional capability; current host-spawn metadata contract is intentional."
+    ]
+  }
+}

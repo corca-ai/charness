@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 191,
-  "indexed_artifact_count": 176,
+  "source_artifact_count": 192,
+  "indexed_artifact_count": 177,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 8,
     "none": 78,
     "operator-visible-recovery": 23,
-    "repeated-symptom": 20
+    "repeated-symptom": 21
   },
   "generalization_pressure_counts": {
     "factor-now": 25,
     "monitor": 125,
-    "none": 26
+    "none": 27
   },
   "entries": [
     {
@@ -2484,8 +2484,8 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
+      "artifact_path": "charness-artifacts/debug/2026-09-08-resolved-debug-risk.md",
+      "is_current_pointer": false,
       "interrupt_id": "resolved-debug-risk",
       "risk_classes": [
         "repeated-symptom"
@@ -2495,6 +2495,20 @@
       "critique_required": true,
       "next_step": "spec",
       "handoff_artifact": "charness-artifacts/spec/2026-09-08-resolved-debug-risk.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "execution-contract-cost",
+      "risk_classes": [
+        "repeated-symptom"
+      ],
+      "seam": "candidate preservation to proof and retention",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-09-08-execution-contract-cost.md",
       "forced": true
     }
   ],

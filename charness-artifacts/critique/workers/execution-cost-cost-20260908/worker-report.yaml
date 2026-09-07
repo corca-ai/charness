@@ -1,0 +1,80 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: Pre-implementation diagnosis and bounded contract review. TASK-1 uses real
+  Git and controlled expensive boundaries to reproduce gate-before-persist, blocker-insensitive
+  scheduling, false eligibility on persist failure, fabricated completeness on refresh
+  failure, and naive reorder stale-carrier control. Review the proposed spec, not
+  absent final implementation. No provider or performance benchmark claim. Approve
+  design if coherent; do not require implementation proof to authorize the bounded
+  implementation. Parent will verify repaired final receipt independently.
+attempt_id: execution-cost-cost-20260908
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 6b7e54c5a3bce8d62c80b9fa8ba05e554f0ab3393e0dc38363c3cf531a97067e
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-cost-20260908/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-cost-20260908/delivery.json
+producer_run_id: run-execution-cost-cost-20260908
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-cost-20260908/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-execution-cost-cost-20260908/receipt.json
+  producer_run_id: run-execution-cost-cost-20260908
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: aefb624e6385d5bd4c1823e3b760ba5ce7a5467bcdd6a9dc4433be8060a44ad5
+receipt_output_sha256: aefb624e6385d5bd4c1823e3b760ba5ce7a5467bcdd6a9dc4433be8060a44ad5
+packet_identity: db132d5b7baf872175dcdef8ff089f357fd656759aecc46dcef5c085ca4fa1c3
+reviewed_input_identity: 477593442b5ba10a582c55450a5843ee0487fec569f67f1f49fbed9c21f9bddc
+parent_receipt_identity: parent-53038e8c63b7488a4847948ff6ec074bae82834a0fd3b698
+provenance:
+  scope: Pre-implementation diagnosis and bounded contract review. TASK-1 uses real
+    Git and controlled expensive boundaries to reproduce gate-before-persist, blocker-insensitive
+    scheduling, false eligibility on persist failure, fabricated completeness on refresh
+    failure, and naive reorder stale-carrier control. Review the proposed spec, not
+    absent final implementation. No provider or performance benchmark claim. Approve
+    design if coherent; do not require implementation proof to authorize the bounded
+    implementation. Parent will verify repaired final receipt independently.
+  packet_identity: db132d5b7baf872175dcdef8ff089f357fd656759aecc46dcef5c085ca4fa1c3
+  reviewed_input_identity: 477593442b5ba10a582c55450a5843ee0487fec569f67f1f49fbed9c21f9bddc
+  parent_receipt_identity: parent-53038e8c63b7488a4847948ff6ec074bae82834a0fd3b698
+  attempt_id: execution-cost-cost-20260908
+  attempt_scope: Pre-implementation diagnosis and bounded contract review. TASK-1
+    uses real Git and controlled expensive boundaries to reproduce gate-before-persist,
+    blocker-insensitive scheduling, false eligibility on persist failure, fabricated
+    completeness on refresh failure, and naive reorder stale-carrier control. Review
+    the proposed spec, not absent final implementation. No provider or performance
+    benchmark claim. Approve design if coherent; do not require implementation proof
+    to authorize the bounded implementation. Parent will verify repaired final receipt
+    independently.
+  attempt_packet_identity: db132d5b7baf872175dcdef8ff089f357fd656759aecc46dcef5c085ca4fa1c3
+  attempt_parent_receipt_identity: parent-53038e8c63b7488a4847948ff6ec074bae82834a0fd3b698
+  result_packet_identity: db132d5b7baf872175dcdef8ff089f357fd656759aecc46dcef5c085ca4fa1c3
+  result_reviewed_input_identity: 477593442b5ba10a582c55450a5843ee0487fec569f67f1f49fbed9c21f9bddc
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 6b7e54c5a3bce8d62c80b9fa8ba05e554f0ab3393e0dc38363c3cf531a97067e
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

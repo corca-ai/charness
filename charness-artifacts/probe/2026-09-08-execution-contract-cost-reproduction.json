@@ -1,0 +1,325 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "TASK-1",
+  "source": "charness-artifacts/probe/2026-09-08-execution-contract-cost-reproduction.json",
+  "expected": "completion proves a durable permitted candidate and never claims eligible or deletes a worktree from an unverified carrier",
+  "stimulus": "execute complete_task with real temporary Git repositories and controlled gate or persistence outcomes",
+  "disposition": "reproduced",
+  "observed": "gate sees dirty uncommitted bytes before persistence; refused work still runs gate; clean gate plus persistence failure leaves eligible; naive reorder retains stale complete carrier after gate writes",
+  "command": "python3 /home/hwidong/.cache/tmp/charness-execution-cost-kn7niyt4/task-diagnosis/reproduce_completion_order.py",
+  "fixture": "real temporary Git repositories; fake expensive gate and retention boundary",
+  "final_consumer": "complete_task returned receipt and observed gate order",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 0,
+  "source_commit": "8134bff6e1fd29e001e09eb9b01165d4724e7075",
+  "observation": {
+    "carrier_refresh_failure_after_persist": {
+      "events": [
+        {
+          "base": "a5591522be2c030b5334c35c558c00000cc81374",
+          "event": "gate",
+          "head": "a5591522be2c030b5334c35c558c00000cc81374",
+          "porcelain": [
+            " M module.py"
+          ]
+        },
+        {
+          "event": "persist-commit",
+          "head": "17dba28a80796ec0858aa102ff36500d2d162057"
+        }
+      ],
+      "final_head": "17dba28a80796ec0858aa102ff36500d2d162057",
+      "final_porcelain": [],
+      "receipt": {
+        "approval_eligibility": "eligible",
+        "candidate": {
+          "carrier_kind": "commit-only",
+          "dirty_paths": [],
+          "head_is_complete": true,
+          "head_sha": "17dba28a80796ec0858aa102ff36500d2d162057",
+          "persist": {
+            "correctness_verified": false,
+            "message": "task-run: persist validated candidate onto the lane branch",
+            "sha": "17dba28a80796ec0858aa102ff36500d2d162057",
+            "status": "committed"
+          },
+          "status": "validated",
+          "useful": true
+        },
+        "changed_line_gate": {
+          "blocking": false,
+          "status": "clean",
+          "summary": "fake gate clean"
+        },
+        "keep_worktree": true,
+        "status": "completed",
+        "target_sha": "17dba28a80796ec0858aa102ff36500d2d162057"
+      }
+    },
+    "current_dirty_order": {
+      "events": [
+        {
+          "base": "8d94bb6556471fb4c1a8f8825a0cd4b5ab96796a",
+          "event": "gate",
+          "head": "8d94bb6556471fb4c1a8f8825a0cd4b5ab96796a",
+          "porcelain": [
+            " M module.py"
+          ]
+        },
+        {
+          "event": "persist-commit",
+          "head": "71c3a270bc52984a09d6259e3fafc449eca90816"
+        }
+      ],
+      "final_head": "71c3a270bc52984a09d6259e3fafc449eca90816",
+      "final_porcelain": [],
+      "receipt": {
+        "approval_eligibility": "ineligible",
+        "candidate": {
+          "base_is_ancestor_of_head": true,
+          "carrier_kind": "commit-only",
+          "changed_paths": [
+            "module.py"
+          ],
+          "committed_paths": [
+            "module.py"
+          ],
+          "content_digest": "0af2b0b1fc674f2a0159df2ba8be9ebb7b3995f6256e8d8dbf4be678ef3ddff6",
+          "dirty_paths": [],
+          "head_is_complete": true,
+          "head_sha": "71c3a270bc52984a09d6259e3fafc449eca90816",
+          "observed_branch": "main",
+          "observed_head_sha": "71c3a270bc52984a09d6259e3fafc449eca90816",
+          "persist": {
+            "correctness_verified": false,
+            "message": "task-run: persist validated candidate onto the lane branch",
+            "sha": "71c3a270bc52984a09d6259e3fafc449eca90816",
+            "status": "committed"
+          },
+          "status": "validated",
+          "useful": true
+        },
+        "changed_line_gate": {
+          "blocking": true,
+          "status": "unestablished",
+          "summary": "fake gate unestablished"
+        },
+        "keep_worktree": true,
+        "status": "validated-partial-result",
+        "target_sha": "71c3a270bc52984a09d6259e3fafc449eca90816"
+      }
+    },
+    "naive_reorder_disconfirmer": {
+      "actual_after_gate": {
+        "base_is_ancestor_of_head": true,
+        "carrier_kind": "commit-plus-dirty",
+        "changed_paths": [
+          "gate-generated.txt",
+          "module.py"
+        ],
+        "committed_paths": [
+          "module.py"
+        ],
+        "content_digest": "0c90608d286466634a868b6c1ed1944c195ec88a29f3bd54b4bde8869ea72a7d",
+        "dirty_paths": [
+          "gate-generated.txt"
+        ],
+        "head_is_complete": false,
+        "head_sha": "17dba28a80796ec0858aa102ff36500d2d162057",
+        "observed_branch": null,
+        "observed_head_sha": "17dba28a80796ec0858aa102ff36500d2d162057"
+      },
+      "approval_under_fresh_same_carrier_contract": false,
+      "disconfirms": "moving persist before gate without a post-gate carrier check",
+      "porcelain": [
+        "?? gate-generated.txt"
+      ],
+      "receipt_candidate_if_not_refreshed": {
+        "base_is_ancestor_of_head": true,
+        "carrier_kind": "commit-only",
+        "changed_paths": [
+          "module.py"
+        ],
+        "committed_paths": [
+          "module.py"
+        ],
+        "content_digest": "18dd8c373e0bb07a8732cab81ac0d6e2ef10ce940b03664a7bd6564645c55eba",
+        "dirty_paths": [],
+        "head_is_complete": true,
+        "head_sha": "17dba28a80796ec0858aa102ff36500d2d162057",
+        "observed_branch": "task/naive",
+        "observed_head_sha": "17dba28a80796ec0858aa102ff36500d2d162057",
+        "persist": {
+          "correctness_verified": false,
+          "message": "task-run: persist validated candidate onto the lane branch",
+          "sha": "17dba28a80796ec0858aa102ff36500d2d162057",
+          "status": "committed"
+        },
+        "status": "validated",
+        "useful": true
+      },
+      "same_carrier": false
+    },
+    "parent_conflict_still_calls_gate": {
+      "events": [
+        {
+          "base": "8d94bb6556471fb4c1a8f8825a0cd4b5ab96796a",
+          "event": "gate",
+          "head": "8d94bb6556471fb4c1a8f8825a0cd4b5ab96796a",
+          "porcelain": [
+            " M module.py"
+          ]
+        },
+        {
+          "event": "persist-commit",
+          "head": "71c3a270bc52984a09d6259e3fafc449eca90816"
+        }
+      ],
+      "final_head": "71c3a270bc52984a09d6259e3fafc449eca90816",
+      "final_porcelain": [],
+      "receipt": {
+        "approval_eligibility": "ineligible",
+        "candidate": {
+          "base_is_ancestor_of_head": true,
+          "carrier_kind": "commit-only",
+          "changed_paths": [
+            "module.py"
+          ],
+          "committed_paths": [
+            "module.py"
+          ],
+          "content_digest": "0af2b0b1fc674f2a0159df2ba8be9ebb7b3995f6256e8d8dbf4be678ef3ddff6",
+          "dirty_paths": [],
+          "head_is_complete": true,
+          "head_sha": "71c3a270bc52984a09d6259e3fafc449eca90816",
+          "observed_branch": "main",
+          "observed_head_sha": "71c3a270bc52984a09d6259e3fafc449eca90816",
+          "persist": {
+            "correctness_verified": false,
+            "message": "task-run: persist validated candidate onto the lane branch",
+            "sha": "71c3a270bc52984a09d6259e3fafc449eca90816",
+            "status": "committed"
+          },
+          "status": "validated",
+          "useful": true
+        },
+        "changed_line_gate": {
+          "blocking": false,
+          "status": "clean",
+          "summary": "fake gate clean"
+        },
+        "keep_worktree": true,
+        "status": "validated-partial-result",
+        "target_sha": "71c3a270bc52984a09d6259e3fafc449eca90816"
+      }
+    },
+    "persist_failure_after_clean_gate": {
+      "events": [
+        {
+          "base": "8d94bb6556471fb4c1a8f8825a0cd4b5ab96796a",
+          "event": "gate",
+          "head": "8d94bb6556471fb4c1a8f8825a0cd4b5ab96796a",
+          "porcelain": [
+            " M module.py"
+          ]
+        },
+        {
+          "event": "persist-add-refused"
+        }
+      ],
+      "final_head": "8d94bb6556471fb4c1a8f8825a0cd4b5ab96796a",
+      "final_porcelain": [
+        " M module.py"
+      ],
+      "receipt": {
+        "approval_eligibility": "eligible",
+        "candidate": {
+          "carrier_kind": "worktree-only",
+          "dirty_paths": [
+            "module.py"
+          ],
+          "head_is_complete": false,
+          "persist": {
+            "correctness_verified": false,
+            "error": "git add failed: probe persist refusal",
+            "status": "failed"
+          },
+          "status": "validated",
+          "useful": true
+        },
+        "changed_line_gate": {
+          "blocking": false,
+          "status": "clean",
+          "summary": "fake gate clean"
+        },
+        "keep_worktree": true,
+        "status": "completed",
+        "target_sha": "8d94bb6556471fb4c1a8f8825a0cd4b5ab96796a"
+      }
+    },
+    "scope_refusal_still_calls_gate": {
+      "events": [
+        {
+          "base": "8d94bb6556471fb4c1a8f8825a0cd4b5ab96796a",
+          "event": "gate",
+          "head": "8d94bb6556471fb4c1a8f8825a0cd4b5ab96796a",
+          "porcelain": [
+            " M module.py"
+          ]
+        },
+        {
+          "event": "persist-commit",
+          "head": "71c3a270bc52984a09d6259e3fafc449eca90816"
+        }
+      ],
+      "final_head": "71c3a270bc52984a09d6259e3fafc449eca90816",
+      "final_porcelain": [],
+      "receipt": {
+        "approval_eligibility": "ineligible",
+        "candidate": {
+          "base_is_ancestor_of_head": true,
+          "carrier_kind": "commit-only",
+          "changed_paths": [
+            "module.py"
+          ],
+          "committed_paths": [
+            "module.py"
+          ],
+          "content_digest": "0af2b0b1fc674f2a0159df2ba8be9ebb7b3995f6256e8d8dbf4be678ef3ddff6",
+          "dirty_paths": [],
+          "head_is_complete": true,
+          "head_sha": "71c3a270bc52984a09d6259e3fafc449eca90816",
+          "observed_branch": "main",
+          "observed_head_sha": "71c3a270bc52984a09d6259e3fafc449eca90816",
+          "persist": {
+            "correctness_verified": false,
+            "message": "task-run: persist validated candidate onto the lane branch",
+            "sha": "71c3a270bc52984a09d6259e3fafc449eca90816",
+            "status": "committed"
+          },
+          "status": "validated",
+          "useful": true
+        },
+        "changed_line_gate": {
+          "blocking": false,
+          "status": "clean",
+          "summary": "fake gate clean"
+        },
+        "keep_worktree": true,
+        "status": "validated-partial-result",
+        "target_sha": "71c3a270bc52984a09d6259e3fafc449eca90816"
+      }
+    }
+  },
+  "source_inputs": {
+    "scripts/task_run/task_run_completion.py": "f5b77539570e95192c5fba9fa12e01e36787a24034b21c52a82f326a65dd0ceb",
+    "scripts/task_run/task_run_git.py": "5d7c1d450e1a0feb864c6968f3beb5364bc9c60acb3211817eb7822c9dc0331c",
+    "scripts/task_run/task_run_changed_line.py": "45db3ea28efcb6504a18278c2d92f18746b223edee7bd50a9dc1b09293c14341"
+  },
+  "non_claims": [
+    "No model or real coverage process invoked by this causal fixture",
+    "Naive reorder control observes the persistence helper and carrier separately, not a shipped reorder implementation"
+  ],
+  "harness_sha256": "8e6bbc86918cec7fa6f10d9bd2752c91ff98147bfd110dc5b0fb0c6f02a03796"
+}

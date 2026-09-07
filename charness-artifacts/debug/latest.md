@@ -1,1 +1,1 @@
-2026-09-08-resolved-debug-risk.md
+2026-09-08-execution-contract-cost.md
