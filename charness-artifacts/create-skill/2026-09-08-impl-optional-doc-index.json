@@ -1,0 +1,533 @@
+{
+  "kind": "impl-start-consumer-observations",
+  "date": "2026-09-08",
+  "source_base_sha": "c3b5557db8969fe3ee55d88989107e05ddf03756",
+  "retained_source_sha": "dc7a0a74a69512fe3504ebc67719a672d39683d6",
+  "retained_change": "Only docs/index.md when present; baseline References restored.",
+  "source_inputs": [
+    "evals/fixtures/consumer-journeys/spec-impl-alias/seed",
+    "evals/fixtures/consumer-journeys/spec-impl-alias/prompts/impl.md",
+    "charness-artifacts/probe/2026-09-06-consumer-journeys/outputs/alias-baseline-spec.md",
+    "charness-artifacts/probe/2026-09-06-consumer-journeys/check_alias.py"
+  ],
+  "seed_manifest": {
+    "AGENTS.md": "d08d38cd96c88c85b0e134609f6cb6bab38be5ddcf39fd6843ff9fb917331d6c",
+    "README.md": "f2e6bf8da5613e8325b905f14b1f797d61b1afb084c0cc5cd052ebdcca733df6",
+    "docs/alias-resolution.md": "522d595b2629fb853d46485245e10cb6d988ffed66596ccce0d9cd4995858bb7",
+    "src/__init__.py": "cd2e94b7a91c6dbf6d04eaccc8ff59dd8ac19c54b0d733612c01791e8f672994",
+    "src/catalog.py": "75fd818cc8ca6d8e465f4077018e9939955dcfdffde141714f3ac68440ec06f0",
+    "tests/test_catalog.py": "b49e9b68ef4260b14962b144a75e38f1821c4f80f7060f4bec0a55610d032cb4"
+  },
+  "prompt_sha256": "5b5652cb5f0229bfa4020f77c7ab315cfbfb97d7065aa96f7d2a23b6174aa281",
+  "oracle_sha256": "a20b7dd62716c7e77c31bd7bed91aea159fc0686b45c44f1c6fa834002ec8d6b",
+  "exports": {
+    "baseline": {
+      "skill_sha256": "ff0afef28bd79df1d278d1982ad0fd04a7ed06842d28c32232efdbf53680b183",
+      "file_count": 1115,
+      "manifest_sha256": "607d1af180081aa1ab75273ed4bcaa6bcf130724d26a4f5d5c4a41c42d314d87"
+    },
+    "candidate": {
+      "skill_sha256": "f40fcc0003950dd158f875e84c3db9850baa32ed88c52046f2e33312d8a77ddf",
+      "file_count": 1115,
+      "manifest_sha256": "029e2482866fc3137d409b6876c25befae49113760fe18d6d5da995a13351d4a",
+      "changed_from_baseline": [
+        "skills/impl/SKILL.md"
+      ]
+    },
+    "final-candidate": {
+      "skill_sha256": "1565c8588f03bb284c18c6604c05553dd1103fd928df5f8f12b52051fe6e6c06",
+      "file_count": 1115,
+      "manifest_sha256": "b121e99a4f06a10b117333c6703495e9b62cc7ef23bc503aea8427cf08e64447",
+      "changed_from_baseline": [
+        "skills/impl/SKILL.md"
+      ]
+    },
+    "index": {
+      "skill_sha256": "01c384b4b3c6d1a2fa6f6085de79f711372f8ff6f2103eb52ab8e35e548bd388",
+      "file_count": 1115,
+      "manifest_sha256": "9502f3419f0ec9ac8de6d2633607b9b763db62cbf2e4ae4db6367de6eeb3a100",
+      "changed_from_baseline": [
+        "skills/impl/SKILL.md"
+      ]
+    }
+  },
+  "runs": [
+    {
+      "label": "baseline",
+      "task_id": "impl-routing-baseline",
+      "status": "completed",
+      "base_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+      "target_sha": "2c07ae129e075452663365e9e6e736bf4f422a50",
+      "producer_duration_ms": 97161,
+      "reported_tokens_used": 46606,
+      "requested_model": "gpt-5.6-luna",
+      "requested_effort": "xhigh",
+      "timeout_seconds": 1200,
+      "scope": {
+        "verdict": "pass",
+        "reason": "all candidate changes are within the declared scope",
+        "specs": [
+          {
+            "path": "docs/alias-resolution.md",
+            "kind": "exact"
+          },
+          {
+            "path": "src/catalog.py",
+            "kind": "exact"
+          },
+          {
+            "path": "tests/test_catalog.py",
+            "kind": "exact"
+          }
+        ],
+        "changed_paths": [
+          "src/catalog.py",
+          "tests/test_catalog.py"
+        ],
+        "disallowed_paths": [],
+        "require_change": true,
+        "candidate_carrier": {
+          "carrier_kind": "worktree-only",
+          "committed_paths": [],
+          "dirty_paths": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "head_sha": null,
+          "base_is_ancestor_of_head": true,
+          "observed_head_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+          "observed_branch": "task/impl-routing-baseline",
+          "head_is_complete": false,
+          "content_digest": "99b78dc7a6306a9cdc970d9323dcebf543e416ee6ae2a7c4db61e1f29b757b98"
+        }
+      },
+      "acceptance": {
+        "target_sha": "2c07ae129e075452663365e9e6e736bf4f422a50",
+        "checks": [
+          {
+            "name": "independent-alias-acceptance",
+            "exit_code": 0,
+            "output": "test_aliases_and_canonical_names_coexist (__main__.AliasAcceptance) ... ok\ntest_canonical_compatibility (__main__.AliasAcceptance) ... ok\ntest_first_invalid_pair_is_reported (__main__.AliasAcceptance) ... ok\ntest_invalid_definitions_rejected (__main__.AliasAcceptance) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n"
+          },
+          {
+            "name": "producer-suite",
+            "exit_code": 0,
+            "output": "test_canonical_lookup_remains_available_with_aliases (test_catalog.CatalogTests) ... ok\ntest_empty_alias_list_preserves_canonical_behavior (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_colliding_with_canonical_key (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_with_unknown_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_different_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_same_target (test_catalog.CatalogTests) ... ok\ntest_reports_first_invalid_alias_pair_in_input_order (test_catalog.CatalogTests) ... ok\ntest_resolves_alias_to_canonical_value (test_catalog.CatalogTests) ... ok\ntest_resolves_existing_canonical_keys (test_catalog.CatalogTests) ... ok\ntest_unknown_key_raises_key_error (test_catalog.CatalogTests) ... ok\ntest_unknown_key_with_aliases_raises_key_error (test_catalog.CatalogTests) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.001s\n\nOK\n"
+          }
+        ],
+        "original_test_methods_preserved": true,
+        "spec_unchanged": true,
+        "changed_paths": [
+          "src/catalog.py",
+          "tests/test_catalog.py"
+        ]
+      },
+      "raw_trace_sha256": "cace5e65364157b6d8ed2bdd28e30b870f2bc7a022c2a67af55a6b298101bab8",
+      "raw_trace_lines": 1806,
+      "consumer_patch": "diff --git a/src/catalog.py b/src/catalog.py\nindex 4eeedbb..5382dfe 100644\n--- a/src/catalog.py\n+++ b/src/catalog.py\n@@ -6,8 +6,23 @@ from __future__ import annotations\n class Catalog:\n     \"\"\"Resolve values by their canonical keys.\"\"\"\n \n-    def __init__(self, mapping):\n+    def __init__(self, mapping, aliases=None):\n         self._mapping = dict(mapping)\n+        self._aliases = {}\n+\n+        for alias, canonical_key in aliases or []:\n+            if alias in self._mapping:\n+                raise ValueError(f\"alias {alias!r} collides with canonical key\")\n+            if alias in self._aliases:\n+                raise ValueError(f\"duplicate alias {alias!r}\")\n+            if canonical_key not in self._mapping:\n+                raise ValueError(\n+                    f\"alias {alias!r} targets unknown canonical key \"\n+                    f\"{canonical_key!r}\"\n+                )\n+            self._aliases[alias] = canonical_key\n \n     def resolve(self, key):\n-        return self._mapping[key]\n+        if key in self._mapping:\n+            return self._mapping[key]\n+        return self._mapping[self._aliases[key]]\ndiff --git a/tests/test_catalog.py b/tests/test_catalog.py\nindex 4620c12..e676d8a 100644\n--- a/tests/test_catalog.py\n+++ b/tests/test_catalog.py\n@@ -15,6 +15,105 @@ class CatalogTests(unittest.TestCase):\n         with self.assertRaises(KeyError):\n             self.catalog.resolve(\"missing\")\n \n+    def test_empty_alias_list_preserves_canonical_behavior(self):\n+        catalog = Catalog({\"books\": [\"novel\"], \"music\": [\"jazz\"]}, aliases=[])\n+\n+        self.assertEqual(catalog.resolve(\"books\"), [\"novel\"])\n+        self.assertEqual(catalog.resolve(\"music\"), [\"jazz\"])\n+        with self.assertRaises(KeyError):\n+            catalog.resolve(\"reading\")\n+\n+    def test_resolves_alias_to_canonical_value(self):\n+        catalog = Catalog(\n+            {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n+            aliases=[(\"reading\", \"books\"), (\"listening\", \"music\")],\n+        )\n+\n+        self.assertEqual(catalog.resolve(\"reading\"), [\"novel\"])\n+        self.assertEqual(catalog.resolve(\"listening\"), [\"jazz\"])\n+\n+    def test_canonical_lookup_remains_available_with_aliases(self):\n+        catalog = Catalog(\n+            {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n+            aliases=[(\"reading\", \"books\")],\n+        )\n+\n+        self.assertEqual(catalog.resolve(\"books\"), [\"novel\"])\n+        self.assertEqual(catalog.resolve(\"music\"), [\"jazz\"])\n+\n+    def test_rejects_alias_colliding_with_canonical_key(self):\n+        with self.assertRaisesRegex(\n+            ValueError, r\"^alias 'books' collides with canonical key$\"\n+        ):\n+            Catalog({\"books\": [\"novel\"]}, aliases=[(\"books\", \"books\")])\n+\n+        with self.assertRaisesRegex(\n+            ValueError, r\"^alias 'music' collides with canonical key$\"\n+        ):\n+            Catalog({\"music\": [\"jazz\"]}, aliases=[(\"music\", \"music\")])\n+\n+    def test_rejects_alias_with_unknown_target(self):\n+        with self.assertRaisesRegex(\n+            ValueError,\n+            r\"^alias 'novels' targets unknown canonical key 'missing'$\",\n+        ):\n+            Catalog({\"books\": [\"novel\"]}, aliases=[(\"novels\", \"missing\")])\n+\n+        with self.assertRaisesRegex(\n+            ValueError,\n+            r\"^alias 'reading' targets unknown canonical key 'short'$\",\n+        ):\n+            Catalog(\n+                {\"books\": [\"novel\"]},\n+                aliases=[(\"reading\", \"short\"), (\"short\", \"books\")],\n+            )\n+\n+    def test_rejects_duplicate_alias_with_same_target(self):\n+        with self.assertRaisesRegex(ValueError, r\"^duplicate alias 'reading'$\"):\n+            Catalog(\n+                {\"books\": [\"novel\"]},\n+                aliases=[(\"reading\", \"books\"), (\"reading\", \"books\")],\n+            )\n+\n+    def test_rejects_duplicate_alias_with_different_target(self):\n+        with self.assertRaisesRegex(ValueError, r\"^duplicate alias 'reading'$\"):\n+            Catalog(\n+                {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n+                aliases=[(\"reading\", \"books\"), (\"reading\", \"music\")],\n+            )\n+\n+    def test_reports_first_invalid_alias_pair_in_input_order(self):\n+        cases = (\n+            (\n+                [(\"first\", \"missing\"), (\"books\", \"books\")],\n+                \"alias 'first' targets unknown canonical key 'missing'\",\n+            ),\n+            (\n+                [(\"books\", \"missing\"), (\"later\", \"missing\")],\n+                \"alias 'books' collides with canonical key\",\n+            ),\n+            (\n+                [(\"first\", \"books\"), (\"first\", \"missing\")],\n+                \"duplicate alias 'first'\",\n+            ),\n+        )\n+\n+        for aliases, message in cases:\n+            with self.subTest(aliases=aliases):\n+                with self.assertRaisesRegex(ValueError, rf\"^{message}$\"):\n+                    Catalog(\n+                        {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n+                        aliases=aliases,\n+                    )\n+\n+    def test_unknown_key_with_aliases_raises_key_error(self):\n+        catalog = Catalog(\n+            {\"books\": [\"novel\"]}, aliases=[(\"reading\", \"books\")]\n+        )\n+\n+        with self.assertRaises(KeyError):\n+            catalog.resolve(\"missing\")\n+\n \n if __name__ == \"__main__\":\n     unittest.main()\n"
+    },
+    {
+      "label": "candidate",
+      "task_id": "impl-routing-candidate",
+      "status": "completed",
+      "base_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+      "target_sha": "7d1d4f6c860a99ec7cfde631ee759f07b05b062d",
+      "producer_duration_ms": 81245,
+      "reported_tokens_used": 38982,
+      "requested_model": "gpt-5.6-luna",
+      "requested_effort": "xhigh",
+      "timeout_seconds": 1200,
+      "scope": {
+        "verdict": "pass",
+        "reason": "all candidate changes are within the declared scope",
+        "specs": [
+          {
+            "path": "docs/alias-resolution.md",
+            "kind": "exact"
+          },
+          {
+            "path": "src/catalog.py",
+            "kind": "exact"
+          },
+          {
+            "path": "tests/test_catalog.py",
+            "kind": "exact"
+          }
+        ],
+        "changed_paths": [
+          "src/catalog.py",
+          "tests/test_catalog.py"
+        ],
+        "disallowed_paths": [],
+        "require_change": true,
+        "candidate_carrier": {
+          "carrier_kind": "worktree-only",
+          "committed_paths": [],
+          "dirty_paths": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "head_sha": null,
+          "base_is_ancestor_of_head": true,
+          "observed_head_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+          "observed_branch": "task/impl-routing-candidate",
+          "head_is_complete": false,
+          "content_digest": "e21af6cffa7e343df239002b961bdb53ee8efb0da4bb546156c12b8dbab797e8"
+        }
+      },
+      "acceptance": {
+        "target_sha": "7d1d4f6c860a99ec7cfde631ee759f07b05b062d",
+        "checks": [
+          {
+            "name": "independent-alias-acceptance",
+            "exit_code": 0,
+            "output": "test_aliases_and_canonical_names_coexist (__main__.AliasAcceptance) ... ok\ntest_canonical_compatibility (__main__.AliasAcceptance) ... ok\ntest_first_invalid_pair_is_reported (__main__.AliasAcceptance) ... ok\ntest_invalid_definitions_rejected (__main__.AliasAcceptance) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n"
+          },
+          {
+            "name": "producer-suite",
+            "exit_code": 0,
+            "output": "test_canonical_lookup_remains_available_with_aliases (test_catalog.CatalogTests) ... ok\ntest_empty_alias_list_preserves_canonical_behavior (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_colliding_with_canonical_key (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_with_unknown_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_different_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_same_target (test_catalog.CatalogTests) ... ok\ntest_reports_first_invalid_alias_pair_in_input_order (test_catalog.CatalogTests) ... ok\ntest_resolves_alias_to_canonical_value (test_catalog.CatalogTests) ... ok\ntest_resolves_existing_canonical_keys (test_catalog.CatalogTests) ... ok\ntest_unknown_key_raises_key_error (test_catalog.CatalogTests) ... ok\ntest_unknown_key_with_aliases_raises_key_error (test_catalog.CatalogTests) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.000s\n\nOK\n"
+          }
+        ],
+        "original_test_methods_preserved": false,
+        "spec_unchanged": true,
+        "changed_paths": [
+          "src/catalog.py",
+          "tests/test_catalog.py"
+        ]
+      },
+      "raw_trace_sha256": "a778b03e49d1b63b2a72b7da2a635b349ebc1300d1346aaf3da455852b926302",
+      "raw_trace_lines": 1628,
+      "consumer_patch": "diff --git a/src/catalog.py b/src/catalog.py\nindex 4eeedbb..4e4f57e 100644\n--- a/src/catalog.py\n+++ b/src/catalog.py\n@@ -6,8 +6,26 @@ from __future__ import annotations\n class Catalog:\n     \"\"\"Resolve values by their canonical keys.\"\"\"\n \n-    def __init__(self, mapping):\n+    def __init__(self, mapping, aliases=None):\n         self._mapping = dict(mapping)\n+        self._aliases = {}\n+\n+        seen_aliases = set()\n+        for alias, canonical_key in aliases or []:\n+            if alias in self._mapping:\n+                raise ValueError(f\"alias {alias!r} collides with canonical key\")\n+            if alias in seen_aliases:\n+                raise ValueError(f\"duplicate alias {alias!r}\")\n+            if canonical_key not in self._mapping:\n+                raise ValueError(\n+                    f\"alias {alias!r} targets unknown canonical key \"\n+                    f\"{canonical_key!r}\"\n+                )\n+\n+            seen_aliases.add(alias)\n+            self._aliases[alias] = canonical_key\n \n     def resolve(self, key):\n-        return self._mapping[key]\n+        if key in self._mapping:\n+            return self._mapping[key]\n+        return self._mapping[self._aliases[key]]\ndiff --git a/tests/test_catalog.py b/tests/test_catalog.py\nindex 4620c12..ca165dd 100644\n--- a/tests/test_catalog.py\n+++ b/tests/test_catalog.py\n@@ -5,7 +5,8 @@ from src.catalog import Catalog\n \n class CatalogTests(unittest.TestCase):\n     def setUp(self):\n-        self.catalog = Catalog({\"books\": [\"novel\"], \"music\": [\"jazz\"]})\n+        self.mapping = {\"books\": [\"novel\"], \"music\": [\"jazz\"]}\n+        self.catalog = Catalog(self.mapping)\n \n     def test_resolves_existing_canonical_keys(self):\n         self.assertEqual(self.catalog.resolve(\"books\"), [\"novel\"])\n@@ -15,6 +16,109 @@ class CatalogTests(unittest.TestCase):\n         with self.assertRaises(KeyError):\n             self.catalog.resolve(\"missing\")\n \n+    def test_empty_alias_list_preserves_canonical_behavior(self):\n+        catalog = Catalog(self.mapping, aliases=[])\n+\n+        self.assertEqual(catalog.resolve(\"books\"), [\"novel\"])\n+        self.assertEqual(catalog.resolve(\"music\"), [\"jazz\"])\n+        with self.assertRaises(KeyError):\n+            catalog.resolve(\"reading\")\n+\n+    def test_resolves_alias_to_canonical_value(self):\n+        catalog = Catalog(\n+            self.mapping,\n+            aliases=[(\"reading\", \"books\"), (\"listening\", \"music\")],\n+        )\n+\n+        self.assertEqual(catalog.resolve(\"reading\"), [\"novel\"])\n+        self.assertEqual(catalog.resolve(\"listening\"), [\"jazz\"])\n+\n+    def test_canonical_lookup_remains_available_with_aliases(self):\n+        catalog = Catalog(self.mapping, aliases=[(\"reading\", \"books\")])\n+\n+        self.assertEqual(catalog.resolve(\"books\"), [\"novel\"])\n+        self.assertEqual(catalog.resolve(\"music\"), [\"jazz\"])\n+\n+    def test_rejects_alias_colliding_with_canonical_key(self):\n+        for canonical_key in (\"books\", \"music\"):\n+            with self.subTest(canonical_key=canonical_key):\n+                with self.assertRaises(ValueError) as error:\n+                    Catalog(\n+                        self.mapping,\n+                        aliases=[(canonical_key, canonical_key)],\n+                    )\n+\n+                self.assertEqual(\n+                    str(error.exception),\n+                    f\"alias {canonical_key!r} collides with canonical key\",\n+                )\n+\n+    def test_rejects_alias_with_unknown_target(self):\n+        with self.assertRaises(ValueError) as error:\n+            Catalog(self.mapping, aliases=[(\"novels\", \"missing\")])\n+\n+        self.assertEqual(\n+            str(error.exception),\n+            \"alias 'novels' targets unknown canonical key 'missing'\",\n+        )\n+\n+        with self.assertRaises(ValueError) as error:\n+            Catalog(\n+                self.mapping,\n+                aliases=[(\"reading\", \"short\"), (\"short\", \"books\")],\n+            )\n+\n+        self.assertEqual(\n+            str(error.exception),\n+            \"alias 'reading' targets unknown canonical key 'short'\",\n+        )\n+\n+    def test_rejects_duplicate_alias_with_same_target(self):\n+        with self.assertRaises(ValueError) as error:\n+            Catalog(\n+                self.mapping,\n+                aliases=[(\"reading\", \"books\"), (\"reading\", \"books\")],\n+            )\n+\n+        self.assertEqual(str(error.exception), \"duplicate alias 'reading'\")\n+\n+    def test_rejects_duplicate_alias_with_different_target(self):\n+        with self.assertRaises(ValueError) as error:\n+            Catalog(\n+                self.mapping,\n+                aliases=[(\"reading\", \"books\"), (\"reading\", \"music\")],\n+            )\n+\n+        self.assertEqual(str(error.exception), \"duplicate alias 'reading'\")\n+\n+    def test_reports_first_invalid_alias_pair_in_input_order(self):\n+        cases = (\n+            (\n+                [(\"first\", \"missing\"), (\"books\", \"books\")],\n+                \"alias 'first' targets unknown canonical key 'missing'\",\n+            ),\n+            (\n+                [(\"books\", \"missing\"), (\"later\", \"missing\")],\n+                \"alias 'books' collides with canonical key\",\n+            ),\n+            (\n+                [(\"first\", \"books\"), (\"first\", \"missing\")],\n+                \"duplicate alias 'first'\",\n+            ),\n+        )\n+        for aliases, message in cases:\n+            with self.subTest(aliases=aliases):\n+                with self.assertRaises(ValueError) as error:\n+                    Catalog(self.mapping, aliases=aliases)\n+\n+                self.assertEqual(str(error.exception), message)\n+\n+    def test_unknown_key_with_aliases_raises_key_error(self):\n+        catalog = Catalog(self.mapping, aliases=[(\"reading\", \"books\")])\n+\n+        with self.assertRaises(KeyError):\n+            catalog.resolve(\"missing\")\n+\n \n if __name__ == \"__main__\":\n     unittest.main()\n"
+    },
+    {
+      "label": "final-candidate",
+      "task_id": "impl-routing-final-candidate",
+      "status": "completed",
+      "base_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+      "target_sha": "65195fe58f3df336b89c40e5aa545ef26c86928d",
+      "producer_duration_ms": 134118,
+      "reported_tokens_used": 57833,
+      "requested_model": "gpt-5.6-luna",
+      "requested_effort": "xhigh",
+      "timeout_seconds": 1200,
+      "scope": {
+        "verdict": "pass",
+        "reason": "all candidate changes are within the declared scope",
+        "specs": [
+          {
+            "path": "docs/alias-resolution.md",
+            "kind": "exact"
+          },
+          {
+            "path": "src/catalog.py",
+            "kind": "exact"
+          },
+          {
+            "path": "tests/test_catalog.py",
+            "kind": "exact"
+          }
+        ],
+        "changed_paths": [
+          "src/catalog.py",
+          "tests/test_catalog.py"
+        ],
+        "disallowed_paths": [],
+        "require_change": true,
+        "candidate_carrier": {
+          "carrier_kind": "worktree-only",
+          "committed_paths": [],
+          "dirty_paths": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "head_sha": null,
+          "base_is_ancestor_of_head": true,
+          "observed_head_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+          "observed_branch": "task/impl-routing-final-candidate",
+          "head_is_complete": false,
+          "content_digest": "6ddbf1d0aca3ca62166f4970235c05a95735f6d5ec3e5c4a3e8c956465cf0075"
+        }
+      },
+      "acceptance": {
+        "target_sha": "65195fe58f3df336b89c40e5aa545ef26c86928d",
+        "checks": [
+          {
+            "name": "independent-alias-acceptance",
+            "exit_code": 0,
+            "output": "test_aliases_and_canonical_names_coexist (__main__.AliasAcceptance) ... ok\ntest_canonical_compatibility (__main__.AliasAcceptance) ... ok\ntest_first_invalid_pair_is_reported (__main__.AliasAcceptance) ... ok\ntest_invalid_definitions_rejected (__main__.AliasAcceptance) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n"
+          },
+          {
+            "name": "producer-suite",
+            "exit_code": 0,
+            "output": "test_canonical_lookup_remains_available_with_aliases (test_catalog.CatalogTests) ... ok\ntest_empty_alias_list_preserves_canonical_behavior (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_colliding_with_canonical_key (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_with_unknown_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_different_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_same_target (test_catalog.CatalogTests) ... ok\ntest_reports_first_invalid_alias_pair_in_input_order (test_catalog.CatalogTests) ... ok\ntest_resolves_alias_to_canonical_value (test_catalog.CatalogTests) ... ok\ntest_resolves_existing_canonical_keys (test_catalog.CatalogTests) ... ok\ntest_unknown_key_raises_key_error (test_catalog.CatalogTests) ... ok\ntest_unknown_key_with_aliases_raises_key_error (test_catalog.CatalogTests) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.000s\n\nOK\n"
+          }
+        ],
+        "all_original_methods_unchanged": false,
+        "original_test_methods_unchanged": true,
+        "spec_unchanged": true,
+        "changed_paths": [
+          "src/catalog.py",
+          "tests/test_catalog.py"
+        ]
+      },
+      "raw_trace_sha256": "374b69bea1a250fe05531476f90e35d8e9b4ea0a31fca41809774cdfae26ced7",
+      "raw_trace_lines": 3725,
+      "consumer_patch": "diff --git a/src/catalog.py b/src/catalog.py\nindex 4eeedbb..9beaa31 100644\n--- a/src/catalog.py\n+++ b/src/catalog.py\n@@ -6,8 +6,26 @@ from __future__ import annotations\n class Catalog:\n     \"\"\"Resolve values by their canonical keys.\"\"\"\n \n-    def __init__(self, mapping):\n+    def __init__(self, mapping, aliases=None):\n         self._mapping = dict(mapping)\n+        alias_targets = {}\n+\n+        if aliases is not None:\n+            for alias, canonical_key in aliases:\n+                if alias in self._mapping:\n+                    raise ValueError(\n+                        f\"alias {alias!r} collides with canonical key\"\n+                    )\n+                if alias in alias_targets:\n+                    raise ValueError(f\"duplicate alias {alias!r}\")\n+                if canonical_key not in self._mapping:\n+                    raise ValueError(\n+                        f\"alias {alias!r} targets unknown canonical key \"\n+                        f\"{canonical_key!r}\"\n+                    )\n+                alias_targets[alias] = canonical_key\n+\n+        self._aliases = alias_targets\n \n     def resolve(self, key):\n-        return self._mapping[key]\n+        return self._mapping[self._aliases.get(key, key)]\ndiff --git a/tests/test_catalog.py b/tests/test_catalog.py\nindex 4620c12..a0f8ad1 100644\n--- a/tests/test_catalog.py\n+++ b/tests/test_catalog.py\n@@ -6,6 +6,7 @@ from src.catalog import Catalog\n class CatalogTests(unittest.TestCase):\n     def setUp(self):\n         self.catalog = Catalog({\"books\": [\"novel\"], \"music\": [\"jazz\"]})\n+        self.mapping = {\"books\": [\"novel\"], \"music\": [\"jazz\"]}\n \n     def test_resolves_existing_canonical_keys(self):\n         self.assertEqual(self.catalog.resolve(\"books\"), [\"novel\"])\n@@ -15,6 +16,101 @@ class CatalogTests(unittest.TestCase):\n         with self.assertRaises(KeyError):\n             self.catalog.resolve(\"missing\")\n \n+    def test_empty_alias_list_preserves_canonical_behavior(self):\n+        catalog = Catalog(self.mapping, aliases=[])\n+\n+        self.assertEqual(catalog.resolve(\"books\"), [\"novel\"])\n+        self.assertEqual(catalog.resolve(\"music\"), [\"jazz\"])\n+        with self.assertRaises(KeyError):\n+            catalog.resolve(\"reading\")\n+\n+    def test_resolves_alias_to_canonical_value(self):\n+        catalog = Catalog(\n+            self.mapping,\n+            aliases=[(\"reading\", \"books\"), (\"listening\", \"music\")],\n+        )\n+\n+        self.assertEqual(catalog.resolve(\"reading\"), [\"novel\"])\n+        self.assertEqual(catalog.resolve(\"listening\"), [\"jazz\"])\n+\n+    def test_canonical_lookup_remains_available_with_aliases(self):\n+        catalog = Catalog(self.mapping, aliases=[(\"reading\", \"books\")])\n+\n+        self.assertEqual(catalog.resolve(\"books\"), [\"novel\"])\n+        self.assertEqual(catalog.resolve(\"reading\"), [\"novel\"])\n+\n+    def test_rejects_alias_colliding_with_canonical_key(self):\n+        for key in (\"books\", \"music\"):\n+            with self.subTest(key=key):\n+                with self.assertRaises(ValueError) as raised:\n+                    Catalog(self.mapping, aliases=[(key, key)])\n+                self.assertEqual(\n+                    str(raised.exception),\n+                    f\"alias {key!r} collides with canonical key\",\n+                )\n+\n+    def test_rejects_alias_with_unknown_target(self):\n+        with self.assertRaises(ValueError) as raised:\n+            Catalog(self.mapping, aliases=[(\"novels\", \"missing\")])\n+        self.assertEqual(\n+            str(raised.exception),\n+            \"alias 'novels' targets unknown canonical key 'missing'\",\n+        )\n+\n+        with self.assertRaises(ValueError) as raised:\n+            Catalog(\n+                self.mapping,\n+                aliases=[(\"reading\", \"short\"), (\"short\", \"books\")],\n+            )\n+        self.assertEqual(\n+            str(raised.exception),\n+            \"alias 'reading' targets unknown canonical key 'short'\",\n+        )\n+\n+    def test_rejects_duplicate_alias_with_same_target(self):\n+        with self.assertRaises(ValueError) as raised:\n+            Catalog(\n+                self.mapping,\n+                aliases=[(\"reading\", \"books\"), (\"reading\", \"books\")],\n+            )\n+        self.assertEqual(str(raised.exception), \"duplicate alias 'reading'\")\n+\n+    def test_rejects_duplicate_alias_with_different_target(self):\n+        with self.assertRaises(ValueError) as raised:\n+            Catalog(\n+                self.mapping,\n+                aliases=[(\"reading\", \"books\"), (\"reading\", \"music\")],\n+            )\n+        self.assertEqual(str(raised.exception), \"duplicate alias 'reading'\")\n+\n+    def test_reports_first_invalid_alias_pair_in_input_order(self):\n+        cases = (\n+            (\n+                [(\"first\", \"missing\"), (\"books\", \"books\")],\n+                \"alias 'first' targets unknown canonical key 'missing'\",\n+            ),\n+            (\n+                [(\"books\", \"missing\"), (\"later\", \"missing\")],\n+                \"alias 'books' collides with canonical key\",\n+            ),\n+            (\n+                [(\"first\", \"books\"), (\"first\", \"missing\")],\n+                \"duplicate alias 'first'\",\n+            ),\n+        )\n+\n+        for aliases, message in cases:\n+            with self.subTest(aliases=aliases):\n+                with self.assertRaises(ValueError) as raised:\n+                    Catalog(self.mapping, aliases=aliases)\n+                self.assertEqual(str(raised.exception), message)\n+\n+    def test_unknown_key_with_aliases_raises_key_error(self):\n+        catalog = Catalog(self.mapping, aliases=[(\"reading\", \"books\")])\n+\n+        with self.assertRaises(KeyError):\n+            catalog.resolve(\"missing\")\n+\n \n if __name__ == \"__main__\":\n     unittest.main()\n"
+    },
+    {
+      "label": "index",
+      "task_id": "impl-optional-index",
+      "status": "completed",
+      "base_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+      "target_sha": "cfb611ab7009f746fd4597d1541b637fb80eee24",
+      "producer_duration_ms": 129734,
+      "reported_tokens_used": 62742,
+      "requested_model": "gpt-5.6-luna",
+      "requested_effort": "xhigh",
+      "timeout_seconds": 1200,
+      "scope": {
+        "verdict": "pass",
+        "reason": "all candidate changes are within the declared scope",
+        "specs": [
+          {
+            "path": "docs/alias-resolution.md",
+            "kind": "exact"
+          },
+          {
+            "path": "src/catalog.py",
+            "kind": "exact"
+          },
+          {
+            "path": "tests/test_catalog.py",
+            "kind": "exact"
+          }
+        ],
+        "changed_paths": [
+          "src/catalog.py",
+          "tests/test_catalog.py"
+        ],
+        "disallowed_paths": [],
+        "require_change": true,
+        "candidate_carrier": {
+          "carrier_kind": "worktree-only",
+          "committed_paths": [],
+          "dirty_paths": [
+            "src/catalog.py",
+            "tests/test_catalog.py"
+          ],
+          "head_sha": null,
+          "base_is_ancestor_of_head": true,
+          "observed_head_sha": "e8b1929d922471622ccf0bed742acaa1fe998bd8",
+          "observed_branch": "task/impl-optional-index",
+          "head_is_complete": false,
+          "content_digest": "79028a62de74db827db042b917e0e78d4c1389b8eea4ebc0b0259731a8c98059"
+        }
+      },
+      "acceptance": {
+        "target_sha": "cfb611ab7009f746fd4597d1541b637fb80eee24",
+        "checks": [
+          {
+            "name": "independent-alias-acceptance",
+            "exit_code": 0,
+            "output": "test_aliases_and_canonical_names_coexist (__main__.AliasAcceptance) ... ok\ntest_canonical_compatibility (__main__.AliasAcceptance) ... ok\ntest_first_invalid_pair_is_reported (__main__.AliasAcceptance) ... ok\ntest_invalid_definitions_rejected (__main__.AliasAcceptance) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n"
+          },
+          {
+            "name": "producer-suite",
+            "exit_code": 0,
+            "output": "test_canonical_lookup_remains_available_with_aliases (test_catalog.CatalogTests) ... ok\ntest_empty_alias_list_preserves_canonical_behavior (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_colliding_with_canonical_key (test_catalog.CatalogTests) ... ok\ntest_rejects_alias_with_unknown_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_different_target (test_catalog.CatalogTests) ... ok\ntest_rejects_duplicate_alias_with_same_target (test_catalog.CatalogTests) ... ok\ntest_reports_first_invalid_alias_pair_in_input_order (test_catalog.CatalogTests) ... ok\ntest_resolves_alias_to_canonical_value (test_catalog.CatalogTests) ... ok\ntest_resolves_existing_canonical_keys (test_catalog.CatalogTests) ... ok\ntest_unknown_key_raises_key_error (test_catalog.CatalogTests) ... ok\ntest_unknown_key_with_aliases_raises_key_error (test_catalog.CatalogTests) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.000s\n\nOK\n"
+          }
+        ],
+        "all_original_methods_unchanged": true,
+        "original_test_methods_unchanged": true,
+        "spec_unchanged": true,
+        "changed_paths": [
+          "src/catalog.py",
+          "tests/test_catalog.py"
+        ]
+      },
+      "raw_trace_sha256": "6108bb9200b15336ee9c1e5b4b8ed830e0586bc0a0a3e8ea94bc3647cc2ebdd3",
+      "raw_trace_lines": 2594,
+      "consumer_patch": "diff --git a/src/catalog.py b/src/catalog.py\nindex 4eeedbb..642ffc6 100644\n--- a/src/catalog.py\n+++ b/src/catalog.py\n@@ -6,8 +6,25 @@ from __future__ import annotations\n class Catalog:\n     \"\"\"Resolve values by their canonical keys.\"\"\"\n \n-    def __init__(self, mapping):\n+    def __init__(self, mapping, aliases=None):\n         self._mapping = dict(mapping)\n+        self._aliases = {}\n+        seen_aliases = set()\n+\n+        for alias, canonical_key in aliases or []:\n+            if alias in self._mapping:\n+                raise ValueError(f\"alias {alias!r} collides with canonical key\")\n+            if alias in seen_aliases:\n+                raise ValueError(f\"duplicate alias {alias!r}\")\n+            if canonical_key not in self._mapping:\n+                raise ValueError(\n+                    f\"alias {alias!r} targets unknown canonical key \"\n+                    f\"{canonical_key!r}\"\n+                )\n+            seen_aliases.add(alias)\n+            self._aliases[alias] = canonical_key\n \n     def resolve(self, key):\n+        if key in self._aliases:\n+            return self._mapping[self._aliases[key]]\n         return self._mapping[key]\ndiff --git a/tests/test_catalog.py b/tests/test_catalog.py\nindex 4620c12..5c4876e 100644\n--- a/tests/test_catalog.py\n+++ b/tests/test_catalog.py\n@@ -15,6 +15,118 @@ class CatalogTests(unittest.TestCase):\n         with self.assertRaises(KeyError):\n             self.catalog.resolve(\"missing\")\n \n+    def test_empty_alias_list_preserves_canonical_behavior(self):\n+        catalog = Catalog(\n+            {\"books\": [\"novel\"], \"music\": [\"jazz\"]}, aliases=[]\n+        )\n+\n+        self.assertEqual(catalog.resolve(\"books\"), [\"novel\"])\n+        self.assertEqual(catalog.resolve(\"music\"), [\"jazz\"])\n+        with self.assertRaises(KeyError):\n+            catalog.resolve(\"reading\")\n+\n+    def test_resolves_alias_to_canonical_value(self):\n+        catalog = Catalog(\n+            {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n+            aliases=[(\"reading\", \"books\"), (\"listening\", \"music\")],\n+        )\n+\n+        self.assertEqual(catalog.resolve(\"reading\"), [\"novel\"])\n+        self.assertEqual(catalog.resolve(\"listening\"), [\"jazz\"])\n+\n+    def test_canonical_lookup_remains_available_with_aliases(self):\n+        catalog = Catalog(\n+            {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n+            aliases=[(\"reading\", \"books\")],\n+        )\n+\n+        self.assertEqual(catalog.resolve(\"books\"), [\"novel\"])\n+        self.assertEqual(catalog.resolve(\"music\"), [\"jazz\"])\n+\n+    def test_rejects_alias_colliding_with_canonical_key(self):\n+        for alias in (\"books\", \"music\"):\n+            with self.subTest(alias=alias):\n+                with self.assertRaises(ValueError) as error:\n+                    Catalog(\n+                        {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n+                        aliases=[(alias, alias)],\n+                    )\n+                self.assertEqual(\n+                    str(error.exception),\n+                    f\"alias {alias!r} collides with canonical key\",\n+                )\n+\n+    def test_rejects_alias_with_unknown_target(self):\n+        cases = (\n+            (\n+                [(\"novels\", \"missing\")],\n+                \"alias 'novels' targets unknown canonical key 'missing'\",\n+            ),\n+            (\n+                [(\"reading\", \"short\"), (\"short\", \"books\")],\n+                \"alias 'reading' targets unknown canonical key 'short'\",\n+            ),\n+        )\n+        for aliases, message in cases:\n+            with self.subTest(aliases=aliases):\n+                with self.assertRaises(ValueError) as error:\n+                    Catalog(\n+                        {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n+                        aliases=aliases,\n+                    )\n+                self.assertEqual(str(error.exception), message)\n+\n+    def test_rejects_duplicate_alias_with_same_target(self):\n+        with self.assertRaises(ValueError) as error:\n+            Catalog(\n+                {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n+                aliases=[(\"reading\", \"books\"), (\"reading\", \"books\")],\n+            )\n+\n+        self.assertEqual(str(error.exception), \"duplicate alias 'reading'\")\n+\n+    def test_rejects_duplicate_alias_with_different_target(self):\n+        with self.assertRaises(ValueError) as error:\n+            Catalog(\n+                {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n+                aliases=[(\"reading\", \"books\"), (\"reading\", \"music\")],\n+            )\n+\n+        self.assertEqual(str(error.exception), \"duplicate alias 'reading'\")\n+\n+    def test_reports_first_invalid_alias_pair_in_input_order(self):\n+        cases = (\n+            (\n+                [(\"first\", \"missing\"), (\"books\", \"books\")],\n+                \"alias 'first' targets unknown canonical key 'missing'\",\n+            ),\n+            (\n+                [(\"books\", \"missing\"), (\"later\", \"missing\")],\n+                \"alias 'books' collides with canonical key\",\n+            ),\n+            (\n+                [(\"first\", \"books\"), (\"first\", \"missing\")],\n+                \"duplicate alias 'first'\",\n+            ),\n+        )\n+        for aliases, message in cases:\n+            with self.subTest(aliases=aliases):\n+                with self.assertRaises(ValueError) as error:\n+                    Catalog(\n+                        {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n+                        aliases=aliases,\n+                    )\n+                self.assertEqual(str(error.exception), message)\n+\n+    def test_unknown_key_with_aliases_raises_key_error(self):\n+        catalog = Catalog(\n+            {\"books\": [\"novel\"], \"music\": [\"jazz\"]},\n+            aliases=[(\"reading\", \"books\")],\n+        )\n+\n+        with self.assertRaises(KeyError):\n+            catalog.resolve(\"missing\")\n+\n \n if __name__ == \"__main__\":\n     unittest.main()\n"
+    }
+  ],
+  "index_present_plan": {
+    "status": "completed",
+    "requested_model": "gpt-5.6-luna",
+    "requested_effort": "medium",
+    "duration_ms": 61046,
+    "changed_paths": [],
+    "raw_trace_sha256": "ce3e0e394a249692be6c375e1777eba85ad36d1cc5a2221b2cad7f8b9b9e4ca1",
+    "index_contents": "# Consumer documentation\n\n[Alias resolution](alias-resolution.md) owns the current implementation contract, rejection messages, acceptance checks, and deferred decisions.\n",
+    "prompt": "Work in this consumer repository. Use the impl skill at\n`$CHARNESS_FIXTURE_PLUGIN_ROOT/skills/impl/SKILL.md` to prepare the next alias\nimplementation slice from the current repo contract. Tell me the concrete\nimplementation and verification plan; do not edit files or execute tests yet.\n\nRead the consumer AGENTS.md and resolve any needed references from that exported\npackage. Stay within the consumer repo and the named package; do not read\nhost-installed Charness or another source checkout. Report the exact files\nwhose contents you consumed and the package version.\n",
+    "result": "The next alias implementation slice is ready. I did not edit files or run tests.\n\nPackage: `charness` version `8.6.0`\n\nConsumed files:\n\n- [AGENTS.md](<index-present-task-root>/impl-index-present-plan/worktree/AGENTS.md)\n- [README.md](<index-present-task-root>/impl-index-present-plan/worktree/README.md)\n- [docs/index.md](<index-present-task-root>/impl-index-present-plan/worktree/docs/index.md)\n- [docs/alias-resolution.md](<index-present-task-root>/impl-index-present-plan/worktree/docs/alias-resolution.md)\n- `src/catalog.py`\n- `tests/test_catalog.py`\n- Exported package manifest: `$CHARNESS_FIXTURE_PLUGIN_ROOT/.codex-plugin/plugin.json`\n- Exported `skills/impl/SKILL.md` and its applicable references:\n  - `references/adapter-contract.md`\n  - `references/contract-consumption.md`\n  - `references/design-lenses.md`\n  - `references/sequence-discipline.md`\n  - `references/external-api-contract.md`\n- Exported `skills/spec/SKILL.md` and all files under `skills/spec/references/`\n- Exported `skills/prove/SKILL.md` and its two references, as named conditionally by the loaded skills\n\nThe package’s `shared/references/...` paths named by the skills are absent from this exported package; they are not needed for this local, reversible, dependency-free slice. No host-installed Charness or source checkout was accessed.\n\nImplementation plan:\n\n1. Modify `src/catalog.py`.\n   - Extend `Catalog.__init__` to accept optional `aliases`.\n   - Preserve the existing mapping behavior and canonical lookup.\n   - Scan alias pairs in input order.\n   - Apply validation precedence per pair:\n     1. canonical-key collision,\n     2. duplicate alias,\n     3. unknown canonical target.\n   - Raise the exact contract-specified `ValueError` messages.\n   - Store only validated alias-to-canonical mappings.\n   - Make `resolve` check canonical keys first, then aliases targeting canonical keys, preserving ordinary `KeyError` for unknown names.\n\n2. Extend `tests/test_catalog.py`.\n   - Retain the existing canonical and unknown-key tests.\n   - Add valid alias resolution and canonical lookup coverage.\n   - Add empty-alias-list coverage.\n   - Add collision, unknown-target, duplicate-same-target, and duplicate-different-target checks.\n   - Add ordered first-failure and per-pair precedence checks with exact messages.\n   - Confirm unknown lookup still raises `KeyError` on an alias-enabled catalog.\n\n3. Verification after implementation:\n\n```text\npython3 -m unittest discover -s tests -v\n```\n\nExpected evidence is a passing standard-library unit suite covering all SC-1 through SC-7 contract checks. No broader quality lane, integration test, external API probe, dependency, or documentation change is warranted for this slice.\n"
+  },
+  "dispositions": {
+    "reference_only_trials": "Discarded: no demonstrated runtime improvement; final reference trial had five strict repeated reference reads.",
+    "initial_candidate_preservation_flag": "Raw helper compared all methods, including setUp; independent review confirmed both original test_* methods/assertions and setup semantics preserved. Raw false flag retained.",
+    "initial_present_index_host_probe": "Invalid for pure-candidate attribution: read installed Charness before exported candidate. Retained as an observer limitation; separate task-carried present-index observation used for the bounded claim.",
+    "baseline_output_recovery": "Task carrier removed its completed worktree. An initial acceptance invocation used that missing path; subsequent checks used git archive of the same captured target commit. No producer rerun or source repair.",
+    "authoring_checks": "One standing run interrupted after review repair; later standing passed 9266 for discarded reference trial but its full run was interrupted after trial rejection. Neither is retained-source proof."
+  },
+  "non_claims": [
+    "No causal, statistical or general speed improvement.",
+    "No automatic skill-routing, warm-session, installed-host or production claim.",
+    "Optional-index run still had unrelated exported-reference path failures.",
+    "Requested model identifiers are not independent backend attestation.",
+    "Trace excerpts are illustrative; independent reviewers inspected complete raw logs.",
+    "Producer duration/token fields exclude parent setup, review, archival work and authoring gates; total lifecycle net benefit was not measured."
+  ],
+  "protocols": {
+    "reference_trial": "# Impl reference routing: bounded paired consumer observation\n\nFrozen before either arm executes. Parent source is c3b5557db. The baseline export was generated by that checkout's canonical exporter. Freeze JSON records seed, prompt, oracle and exported file digests. Candidate may change only skills/impl/SKILL.md within the exported package; compare complete export manifests before candidate execution.\n\nCapability: consume an existing spec and implement aliases with the existing standard-library suite, without broadening the consumer task. Treatment: make optional impl reference selection depend on the current unresolved question. Preserve the core verification, freshness and independent-boundary rules.\n\nBoth arms receive the unchanged fixture impl prompt, identical seeded source/tests/AGENTS, and the same previously produced alias-baseline spec. Separate task-run worktrees start from the same seed commit. The package path is supplied by CHARNESS_FIXTURE_PLUGIN_ROOT. Use Luna, xhigh, workspace-write, 1200 seconds, no prepare (stdlib consumer). Run baseline then candidate, one attempt each. Retain any failure; no semantic rescue or adjusted oracle. The fixture says resolve every reference; this may encourage broad reading and remains identical in both arms.\n\nAcceptance: run the pre-existing check_alias.py outside the producer context. Require its four black-box tests, the consumer's own suite, unchanged original test methods, unchanged spec unless an observed new constraint warrants an explicit update, and no files beyond source/tests/spec changed by the producer. Inspect actual tool traces for exported skill reads and unintended host-installed/source-checkout Charness use. This is observed cooperative isolation, not an adversarial sandbox claim. Oracle seed must fail the unimplemented alias cases before either arm.\n\nCompare reference paths actually read, strict duplicate reads/checks after usable unchanged-input evidence, unexpected skill entries, user interventions, elapsed producer time and tokens. First required spec/core reads, changed-input tests, failed-read recovery, diff/status hygiene and independent acceptance are not duplicates. Optional reference applicability is judged from the task and trace, not from a target count. Retain an applicable reference read even when it costs more. A successful baseline and candidate establish bounded preservation; fewer unnecessary operations establish only an observed improvement for this pair. No universal routing, warm-context, crash-recovery, installed-host, or statistical performance claim.\n\nA separate read-only observer checks scope, acceptance and trace classification. The parent integrates and runs the required authoring checks independently of the consumer outputs.\n",
+    "reference_review_addendum": "# Final candidate review addendum\n\nThe original baseline and candidate observations remain immutable. Independent review identified one disclosure regression: a conditional adapter reference must still expose the canonical adapter path so a cold consumer can discover existing verification preferences. The final candidate names `<repo-root>/.agents/impl-adapter.yaml` presence as the trigger. No core verification, fixture, prompt, oracle or acceptance predicate changes.\n\nReviewer F2 (read contract-consumption for every changed acceptance criterion) was rejected after counterweight: core Start already reads the current contract and Verify already invalidates evidence when inputs/applicability change. Adding routine generic-reference loading would not preserve an otherwise missing behavior.\n\nRun one additional final-candidate consumer observation from the same original seed, prompt and settings. This is verification of a review repair, not a replacement for the first candidate or a retry to tune a failed consumer result. Preserve all three observations. The final-source behavioral claim binds the final export digest. Comparisons against the earlier baseline are descriptive, not independent randomized pairs or general speedup evidence.\n\nThe parent started standing tests before this review finished and interrupted that run after F1 was accepted. Exit 130 is not a passing receipt. Final-source standing and full read-only checks are required again; this avoidable parent sequencing cost is separate from consumer execution cost.\n\nAn initial acceptance helper compared all class methods, including setUp, while the protocol freezes original test methods. First candidate leaves both original test_* methods byte/AST-equivalent but factors setUp's identical mapping into a reusable attribute. Preserve the raw helper result and review this distinction explicitly; do not infer a test assertion change from that broad method comparison.\n",
+    "retained_index_followup": "# Optional documentation index: follow-up consumer observation\n\nThis is a new bounded repair, not a replacement for the reference-routing experiment. Restore baseline References in full and change only impl Start item 1 to read the consumer's docs/index.md when present. All other baseline skill bytes remain unchanged. The observed failure is a compound read command that stopped on an absent index before reaching the user-named spec/source/tests. The consumer fixture itself does not require an index.\n\nCapability: an ordinary repository without docs/index.md can reach its existing implementation contract without a failed read of the optional index. If the index exists it remains required; any explicit repository instruction remains authoritative. No scaffold, additional discovery framework, verification reduction or generic speed claim.\n\nFreeze the exported skill and compare its full manifest to the original baseline; only skills/impl/SKILL.md may differ. Run the unchanged original alias implementation prompt, seed, previously produced spec and external alias oracle with the same Luna/xhigh/1200-second task carrier settings in a fresh worktree. Preserve all earlier attempts. Require four independent alias checks, the consumer suite, original test_* methods/assertions, unchanged spec, in-scope changes, actual exported skill consumption and no failed content-read command caused by absent docs/index.md. A nonzero shell existence predicate used to branch is not a failed content read. Report runtime/tokens descriptively, not as a superiority test.\n\nAlso perform a read-only first-action scenario in an otherwise identical fixture with a docs/index.md pointing at the existing alias spec. Give the consumer the implementation planning request without the intended result. Confirm it consumes the present index and the exact contract. No implementation/execution claim follows from this second scenario.\n\nIndependent pre-edit review accepted the one-clause change: absent index proceeds to unchanged Start item 2; present index and explicit AGENTS requirements remain required. Record actual consumer results before deciding whether to retain this follow-up.\n"
+  },
+  "authoring_verification": {
+    "tested_source_sha": "dc7a0a74a69512fe3504ebc67719a672d39683d6",
+    "focused_tests": "25 passed",
+    "standing_summary": "9266 passed in 92.90s (0:01:32)",
+    "standing_log_sha256": "d4a313922bacc84636e8e7ce09cc362216fe0525ecfdd4c8616586bc29aa0a49",
+    "full_summary": "Quality summary: 83 passed, 0 failed, 5 not run (agent-browser-runtime-baseline: opt-in unmet; dead-code-advisory: opt-in unmet; check-supply-chain-online: opt-in unmet; check-coverage: read-only; agent-browser-runtime-hygiene: opt-in unmet), total 161.7s",
+    "full_log_sha256": "d9c74f688ce8a6da011101aa808f7e908689596ad6f3c3b2469f95e99cdc21db",
+    "full_receipt": {
+      "surface": "quality",
+      "status": "pass",
+      "measured_scope": [
+        "pytest",
+        "validate-quality-reference-catalog",
+        "quality-tool-fixtures",
+        "validate-surfaces",
+        "validate-public-skill-validation",
+        "validate-public-skill-dogfood",
+        "validate-profiles",
+        "validate-presets",
+        "validate-integrations",
+        "validate-packaging",
+        "validate-debug-seam-index",
+        "validate-quality-artifact",
+        "validate-inventory-consumption",
+        "check-inventory-declaration-coverage",
+        "validate-quality-closeout-contract",
+        "validate-ideation-artifact",
+        "validate-retro-artifact",
+        "validate-current-pointer-freshness",
+        "validate-maintainer-setup",
+        "check-skill-contracts",
+        "check-skill-bootstrap-vars",
+        "check-timing-layer-completeness",
+        "check-command-dominance",
+        "validate-debug-artifact",
+        "validate-critique-artifacts",
+        "check-runtime-budget-universe",
+        "check-supply-chain",
+        "check-github-actions",
+        "validate-skills",
+        "check-plugin-dir-references",
+        "check-export-safe-imports",
+        "check-plugin-asset-command-carriers",
+        "check-python-filenames",
+        "check-references-link-inventory",
+        "inventory-skill-script-references",
+        "check-test-completeness",
+        "check-consumer-validator-catalog",
+        "check-public-doc-coupling",
+        "validate-adapters",
+        "check-regenerable-facts",
+        "ruff",
+        "validate-lesson-ledger",
+        "check-closeout-classification-parity",
+        "check-python-lengths",
+        "validate-retro-lesson-index",
+        "doc-duplicates",
+        "run-evals",
+        "py-compile",
+        "check-shell",
+        "check-rust",
+        "validate-skill-ergonomics",
+        "check-python-runtime-inheritance",
+        "validate-inference-interpretation",
+        "check-cli-skill-surface",
+        "specdown",
+        "check-subprocess-form",
+        "check-bootstrap-shim-consistency",
+        "check-wall-clock-form",
+        "check-module-eviction-form",
+        "check-provenance-contract",
+        "check-documented-subcommands",
+        "check-spec-evidence-durability",
+        "validate-attention-state-visibility",
+        "check-script-lookup-form",
+        "check-docs",
+        "check-export-self-sufficiency",
+        "check-timeout-bound-form",
+        "check-plugin-import-smoke",
+        "check-documented-command-flags",
+        "check-secrets",
+        "check-artifact-referents",
+        "check-unreferenced-scripts",
+        "validate-inventory-consumption-declaration",
+        "dup-ratchet",
+        "inventory-ci-local-gate-parity",
+        "inventory-sloc",
+        "measure-startup-probes",
+        "check-current-pointer-writes",
+        "inventory-cli-ergonomics",
+        "inventory-gitignore-scan-hygiene",
+        "inventory-nose-clones",
+        "check-seed-fixture-budget",
+        "check-runtime-budget"
+      ],
+      "adverse_subjects": [],
+      "unproven_subjects": [],
+      "cause": null,
+      "effective_exit_code": 0,
+      "details": {
+        "passed": 83,
+        "failed": 0,
+        "elapsed": "161.7s",
+        "execution_mode": "read-only",
+        "release": false,
+        "full_queue": true,
+        "non_claim": "",
+        "not_run": [
+          {
+            "label": "agent-browser-runtime-baseline",
+            "reason": "opt-in unmet"
+          },
+          {
+            "label": "dead-code-advisory",
+            "reason": "opt-in unmet"
+          },
+          {
+            "label": "check-supply-chain-online",
+            "reason": "opt-in unmet"
+          },
+          {
+            "label": "check-coverage",
+            "reason": "read-only"
+          },
+          {
+            "label": "agent-browser-runtime-hygiene",
+            "reason": "opt-in unmet"
+          }
+        ],
+        "index_tree": "89c9847124224fe6146c6117ee66cd92d4abe07e"
+      }
+    },
+    "runtime_advisories": [
+      "ADVISORY: runtime budget exceeded: check-plugin-import-smoke recent median 14075ms (latest 14120ms, budget 9000ms)",
+      "ADVISORY: runtime budget exceeded: run-quality-read-only-release recent median 306701ms (latest 358316ms, budget 110000ms)"
+    ],
+    "changed_line": "noop: no eligible mutation-pool files changed",
+    "scope_note": "Full proof binds the retained source commit. Later evidence-only archival changes receive focused document, referent and secret checks.",
+    "archival_checks": {
+      "markdown": "pass after presentation whitespace repair",
+      "document_links": "pass",
+      "artifact_referents": "pass",
+      "json": "valid",
+      "secrets": "pass; no leaks found",
+      "diff_check": "pass",
+      "source_unchanged_since_full_proof": true
+    }
+  }
+}
