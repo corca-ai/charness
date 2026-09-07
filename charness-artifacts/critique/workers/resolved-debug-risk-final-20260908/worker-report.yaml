@@ -1,0 +1,97 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Final bounded implementation approval for resolved-debug-risk, integrated
+  production candidate 2506e3251 on root f4a23e6eb plus current proof record. Previous
+  review I-01 counterweight was refined by executed before/after CLI: invalid first
+  raw declaration then clean canonical section was newly demoted. The raw error/scope
+  floor repairs that without parser redesign. All known coverage gaps now have behavioral
+  regressions: invalid canonical Critique Required:no and missing canonical sections.
+  Task and PARENT committed changed-line gates are CLEAN across b4844f784..HEAD; 42
+  focused planner tests pass, prior 122 related tests pass. Original actual CLI goes
+  fresh, invalid raw control stays blocked/read-first, refreshed actual pointer also
+  goes fresh. No coverage gap remains. This approval is for the bounded implementation
+  and evidence, NOT release/installed host or overall authoring completion. The parent
+  fresh full read-only lane follows your review; its pending status is explicit rather
+  than a passed claim.'
+attempt_id: resolved-debug-risk-final-20260908
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 2b919748d5956827c95d74d7593dfbf6d4620fef6c9507400f616b6635edba10
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-resolved-debug-risk-final-20260908/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-resolved-debug-risk-final-20260908/delivery.json
+producer_run_id: run-resolved-debug-risk-final-20260908
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-resolved-debug-risk-final-20260908/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-resolved-debug-risk-final-20260908/receipt.json
+  producer_run_id: run-resolved-debug-risk-final-20260908
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: e539a997bc9df5990d9083d035325f57fbd3844133ec276757ccc4e8d76f8390
+receipt_output_sha256: e539a997bc9df5990d9083d035325f57fbd3844133ec276757ccc4e8d76f8390
+packet_identity: 3ec1df52ce3c778d95b0ee81de4c3bd484c961127c02b4af189a15e28d4ce2c6
+reviewed_input_identity: e21875f0e36b4b37a2fe736f1e4aa1cdc5d4cae8d22013d05b8bd40fd6011aad
+parent_receipt_identity: parent-21d2f3e44afe4a785f0c415246a80e11c2bf82a18f9954aa
+provenance:
+  scope: 'Final bounded implementation approval for resolved-debug-risk, integrated
+    production candidate 2506e3251 on root f4a23e6eb plus current proof record. Previous
+    review I-01 counterweight was refined by executed before/after CLI: invalid first
+    raw declaration then clean canonical section was newly demoted. The raw error/scope
+    floor repairs that without parser redesign. All known coverage gaps now have behavioral
+    regressions: invalid canonical Critique Required:no and missing canonical sections.
+    Task and PARENT committed changed-line gates are CLEAN across b4844f784..HEAD;
+    42 focused planner tests pass, prior 122 related tests pass. Original actual CLI
+    goes fresh, invalid raw control stays blocked/read-first, refreshed actual pointer
+    also goes fresh. No coverage gap remains. This approval is for the bounded implementation
+    and evidence, NOT release/installed host or overall authoring completion. The
+    parent fresh full read-only lane follows your review; its pending status is explicit
+    rather than a passed claim.'
+  packet_identity: 3ec1df52ce3c778d95b0ee81de4c3bd484c961127c02b4af189a15e28d4ce2c6
+  reviewed_input_identity: e21875f0e36b4b37a2fe736f1e4aa1cdc5d4cae8d22013d05b8bd40fd6011aad
+  parent_receipt_identity: parent-21d2f3e44afe4a785f0c415246a80e11c2bf82a18f9954aa
+  attempt_id: resolved-debug-risk-final-20260908
+  attempt_scope: 'Final bounded implementation approval for resolved-debug-risk, integrated
+    production candidate 2506e3251 on root f4a23e6eb plus current proof record. Previous
+    review I-01 counterweight was refined by executed before/after CLI: invalid first
+    raw declaration then clean canonical section was newly demoted. The raw error/scope
+    floor repairs that without parser redesign. All known coverage gaps now have behavioral
+    regressions: invalid canonical Critique Required:no and missing canonical sections.
+    Task and PARENT committed changed-line gates are CLEAN across b4844f784..HEAD;
+    42 focused planner tests pass, prior 122 related tests pass. Original actual CLI
+    goes fresh, invalid raw control stays blocked/read-first, refreshed actual pointer
+    also goes fresh. No coverage gap remains. This approval is for the bounded implementation
+    and evidence, NOT release/installed host or overall authoring completion. The
+    parent fresh full read-only lane follows your review; its pending status is explicit
+    rather than a passed claim.'
+  attempt_packet_identity: 3ec1df52ce3c778d95b0ee81de4c3bd484c961127c02b4af189a15e28d4ce2c6
+  attempt_parent_receipt_identity: parent-21d2f3e44afe4a785f0c415246a80e11c2bf82a18f9954aa
+  result_packet_identity: 3ec1df52ce3c778d95b0ee81de4c3bd484c961127c02b4af189a15e28d4ce2c6
+  result_reviewed_input_identity: e21875f0e36b4b37a2fe736f1e4aa1cdc5d4cae8d22013d05b8bd40fd6011aad
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 2b919748d5956827c95d74d7593dfbf6d4620fef6c9507400f616b6635edba10
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

@@ -3,7 +3,7 @@
   "subject": "resolved-debug-risk",
   "implementation_base": "b4844f784affcef9455f73c12a07d006ecc5d92f",
   "integrated_candidate": "2506e3251eaf46c6957709af4ba9f5d35db966cc",
-  "status": "integrated-proof-and-independent-review-passed; full-read-only-pending",
+  "status": "complete",
   "verification": {
     "focused_planner_tests": 42,
     "earlier_related_tests": 122,
@@ -72,7 +72,25 @@
       "actual_model": "gpt-5.6-terra",
       "actual_effort": "medium"
     },
-    "full_read_only": "pending",
+    "full_read_only": {
+      "command": "./scripts/run-quality.sh --full --read-only",
+      "verified_commit": "a6e4ed6f5",
+      "exit_code": 0,
+      "summary": "Quality summary: 83 passed, 0 failed, 5 not run (agent-browser-runtime-baseline: opt-in unmet; dead-code-advisory: opt-in unmet; check-supply-chain-online: opt-in unmet; check-coverage: read-only; agent-browser-runtime-hygiene: opt-in unmet), total 217.4s",
+      "passed": 83,
+      "failed": 0,
+      "not_run": 5,
+      "elapsed_seconds": 217.4,
+      "standing_pytest": {
+        "state": "finished",
+        "returncode": 0,
+        "timed_out": false,
+        "elapsed_seconds": 142.93
+      },
+      "stdout_sha256": "c312137c6aa8d8dbe7919048c9435cd5f65040c2b33937d18412783556b5cdcc",
+      "stderr_sha256": "ee686431140b3c91e19cd2a115758702c8ab991e8a06024383fd7c157f75443c",
+      "subsequent_tracked_changes": "proof record and retained typed worker report only; production and test bytes unchanged"
+    },
     "parent_coverage_stdout_sha256": "514b6f6f294fc7e45dacf170fb2e1beae25d182001dbed9558a054499750e510",
     "current_pointer_readback": {
       "exit_code": 0,
@@ -389,11 +407,26 @@
       },
       "actual_model": "gpt-5.6-terra",
       "actual_effort": "medium"
-    }
+    },
+    "full_quality": {
+      "elapsed_seconds": 217.4,
+      "standing_pytest_elapsed_seconds": 142.93,
+      "run_count": 1,
+      "start_clock_observed_at_utc": "2026-09-07T23:09:16Z",
+      "completion_clock_observed_at_utc": "2026-09-07T23:13:51Z"
+    },
+    "parent_orchestration_note": "Initial source investigation overlapped a delegated probe; implementation/proof recovery required multiple Luna launches. Low-cost model choice was applied, but these costs prevent a claim of fully optimized orchestration. Parent tokens and monetary cost are unavailable."
   },
   "non_claims": [
     "No release, push, install, provider or installed-host validation",
     "No monetary cost estimate; parent token usage unavailable",
     "Adapter model binding remains a separate product gap; final review uses a temporary per-invocation CLI shim"
-  ]
+  ],
+  "cleanup": {
+    "review_checkout_removed": true,
+    "review_branch_removed_after_ancestor_check": true,
+    "typed_code_review_preserved": "external retained-code-review",
+    "helper_first_attempt": "partially removed checkout but failed on read-only semantic-input directory; Git registration was already removed",
+    "completion": "made that owned copied snapshot directory writable, removed only the leftover owned checkout, deleted branch after ancestor verification"
+  }
 }
