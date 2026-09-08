@@ -60,3 +60,11 @@ Both harnesses are authored independently before implementation; preserve their 
 ## Canonical Artifact
 
 `charness-artifacts/debug/2026-09-08-execution-result-consumer.md` owns diagnosis and typed reproduction receipts. This spec owns the two-lane build contract and deferred compatibility question.
+
+## Implementation Evidence
+
+Implemented in `440b143b0`. The immutable proof record is `charness-artifacts/probe/2026-09-08-execution-result-consumer-proof.json`; final review and full-lane closeout are owned by the linked debug record.
+
+Both frozen consumer harnesses pass, with integrated production bytes identical to their accepted candidate commits. All six retention checks pass, including the real standing-maintenance route. Near-limit review stdout falls from 1,051,999 to 3,402 bytes while full worker input remains intact; dry, live pass, live block and preflight-failure semantics pass. Integrated committed changed-line coverage is clean for both changed production files.
+
+The deleted exit-lease/dirty-helper tests are replaced by actual child-exit, labeled and unlabeled task preservation, missing-registration and cap-accounting tests. Lifecycle tests compare stdout with the saved file byte for byte. Both real implementation tasks independently delivered eligible, committed candidates through one automatic post-preservation coverage run; no worker-side coverage repetition was required.

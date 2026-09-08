@@ -1,0 +1,502 @@
+{
+  "source_base": "5384866790a13d522a0971e75899fed8f4dbea31",
+  "acceptance": {
+    "retention": {
+      "source_head": "0857252b14fbba56630687fc0f3919b46885d023",
+      "frozen_harness_sha256": "86377d9e0c5f2a4093aff49b9700ef092b0eec3bccf5e08df7b81d8d9d0c303a",
+      "baseline_path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/accept_retention_contract.v2.baseline.json",
+      "baseline_sha256": "e3ae3b79e4f7d9a8c76fe91e136d7db11183400cf99867e63bc9f304f94a2a30",
+      "final_receipt": {
+        "checks": [
+          {
+            "child_returncode": 0,
+            "expected": true,
+            "name": "terminal keep=true linked task worktree survives normal child exit",
+            "observed": true,
+            "pass": true,
+            "receipt_keep": true
+          },
+          {
+            "child_returncode": 0,
+            "expected": true,
+            "generic_expired": [],
+            "name": "terminal keep=true dead-PID task worktree survives generic prepare_create",
+            "observed": true,
+            "pass": true
+          },
+          {
+            "child_returncode": 0,
+            "expected": {
+              "dead_retained_exists": true,
+              "live_exists": true,
+              "refused": false,
+              "remaining_count": 1
+            },
+            "generic_evicted": [],
+            "generic_expired": [],
+            "name": "cap counts live task and excludes dead retained task without deleting either",
+            "observed": {
+              "dead_retained_exists": true,
+              "live_exists": true,
+              "refused": false,
+              "remaining_count": 1
+            },
+            "pass": true
+          },
+          {
+            "expected": false,
+            "generic_actions": [
+              {
+                "path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-yf6c8pq9/cache/charness/runtime/ed4f284a82ae2c21/task-run/missing-task-path/worktree",
+                "reason": "unlabeled throwaway is idle residue",
+                "removed": true,
+                "via": "git-worktree-remove"
+              }
+            ],
+            "name": "missing task-worktree directory leaves no stale Git registration",
+            "observed": false,
+            "pass": true,
+            "path_exists": false
+          },
+          {
+            "expected": false,
+            "generic_expired": [
+              {
+                "path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-yf6c8pq9/ordinary-ephemeral",
+                "reason": "ephemeral pid is dead",
+                "removed": true,
+                "via": "git-worktree-remove"
+              }
+            ],
+            "name": "ordinary non-task dead ephemeral remains generically reclaimable",
+            "observed": false,
+            "pass": true
+          },
+          {
+            "expected": {
+              "keep_false_exists": false,
+              "keep_false_salvage_archive": true,
+              "keep_false_salvage_record": true,
+              "keep_true_exists": true,
+              "standing_retention_log": true,
+              "standing_returncode": 0
+            },
+            "maintenance_invocation": "run_standing_pytest.run_standing_pytest -> runtime_root_retention.sweep_runtime_root before pytest child execution",
+            "name": "runtime sweep preserves keep=true and removes keep=false only after salvage",
+            "observed": {
+              "keep_false_exists": false,
+              "keep_false_salvage_archive": true,
+              "keep_false_salvage_record": true,
+              "keep_true_exists": true,
+              "standing_retention_log": true,
+              "standing_returncode": 0
+            },
+            "pass": true,
+            "standing_stderr": "standing-pytest: retention removed /home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-yf6c8pq9/cache/charness/runtime/ba06b79caf602d3a/task-run/runtime-removed/worktree (0 MiB): finished lane (timed-out); result.json and logs kept\nstanding-pytest: retention removed 1, skipped 5; 0 MiB removed; log /home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-yf6c8pq9/cache/charness/runtime/ba06b79caf602d3a/retention/sweep-1788826446.json\nRUN [standing-pytest] /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness-...\nPASS [standing-pytest] 1.9s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness-...\n"
+          }
+        ],
+        "nonclaim": "No every-task workflow runtime sweep trigger is claimed or required by this acceptance contract.",
+        "overall_pass": true,
+        "owner_invocations": {
+          "generic_lifetime": "worktree_lifetime.prepare_create, enforce_cap, reclaim_expired",
+          "maintenance": "run_standing_pytest.run_standing_pytest invokes runtime_root_retention.sweep_runtime_root before pytest",
+          "task_completion_evidence": "normal child exit plus existing focused timeout test; this harness does not duplicate run_task"
+        },
+        "schema_version": 1,
+        "source_head": "0857252b14fbba56630687fc0f3919b46885d023",
+        "source_root": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-proof",
+        "state_root": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-yf6c8pq9",
+        "subject": "task-run retention owner handoff acceptance"
+      },
+      "final_receipt_sha256": "0f8e37609a3a2689d4adc4c983ad8bb606e42b611966fc4e4befee735f1984e9"
+    },
+    "payload": {
+      "source_head": "ffafe87e1159be5c760dbede1b9028f8b869d95e",
+      "frozen_harness_sha256": "86019a66459098b832dcddea4fd6c4b0714daa38274a290da96117ea9fd72c60",
+      "baseline_path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/payload-diagnosis/baseline.json",
+      "baseline_sha256": "e38a88cf7e922068da78439b758ae1cc1d19bf6fd7fcc7f9d91e5a6a518b5deb",
+      "final_receipt": {
+        "kind": "charness.result-carrier-acceptance.v1",
+        "head": "189e04a1a0",
+        "status": "pass",
+        "design_gap": {
+          "id": "PAYLOAD-DESIGN-1",
+          "disposition": "covered-by-live-fake-block",
+          "scope": "one post-start findings-received non-approval lifecycle"
+        },
+        "failed_checks": [],
+        "scenarios": {
+          "near-limit-dry": {
+            "returncode": 0,
+            "stdout_bytes": 3402,
+            "body_bytes": 1048576,
+            "backend_started": false,
+            "checks": {
+              "expected_returncode": true,
+              "stdout_is_mapping": true,
+              "reviewer_started_semantics": true,
+              "approval_semantics": true,
+              "verdict_semantics": true,
+              "delivery_semantics": true,
+              "lifecycle_yaml_exists": true,
+              "stdout_equals_lifecycle_yaml": true,
+              "semantic_metadata_present": true,
+              "stdout_omits_prompt_content": true,
+              "stdout_entry_metadata_exact": true,
+              "run_plan_preserves_body": true,
+              "worker_prompt_preserves_body": true,
+              "task_delivery_untruncated": true,
+              "task_delivery_structured_valid": true,
+              "reviewer_lifecycle_survives": true,
+              "backend_start_semantics": true
+            },
+            "task_delivery": {
+              "bytes": 3402,
+              "truncated": false,
+              "structured_status": "valid"
+            }
+          },
+          "live-fake": {
+            "returncode": 0,
+            "stdout_bytes": 4379,
+            "body_bytes": 45056,
+            "backend_started": true,
+            "checks": {
+              "expected_returncode": true,
+              "stdout_is_mapping": true,
+              "reviewer_started_semantics": true,
+              "approval_semantics": true,
+              "verdict_semantics": true,
+              "delivery_semantics": true,
+              "lifecycle_yaml_exists": true,
+              "stdout_equals_lifecycle_yaml": true,
+              "semantic_metadata_present": true,
+              "stdout_omits_prompt_content": true,
+              "stdout_entry_metadata_exact": true,
+              "run_plan_preserves_body": true,
+              "worker_prompt_preserves_body": true,
+              "task_delivery_untruncated": true,
+              "task_delivery_structured_valid": true,
+              "reviewer_lifecycle_survives": true,
+              "backend_start_semantics": true
+            },
+            "task_delivery": {
+              "bytes": 4379,
+              "truncated": false,
+              "structured_status": "valid"
+            }
+          },
+          "live-fake-block": {
+            "returncode": 1,
+            "stdout_bytes": 4319,
+            "body_bytes": 5888,
+            "backend_started": true,
+            "checks": {
+              "expected_returncode": true,
+              "stdout_is_mapping": true,
+              "reviewer_started_semantics": true,
+              "approval_semantics": true,
+              "verdict_semantics": true,
+              "delivery_semantics": true,
+              "lifecycle_yaml_exists": true,
+              "stdout_equals_lifecycle_yaml": true,
+              "semantic_metadata_present": true,
+              "stdout_omits_prompt_content": true,
+              "stdout_entry_metadata_exact": true,
+              "run_plan_preserves_body": true,
+              "worker_prompt_preserves_body": true,
+              "task_delivery_untruncated": true,
+              "task_delivery_structured_valid": true,
+              "reviewer_lifecycle_survives": true,
+              "backend_start_semantics": true
+            },
+            "task_delivery": {
+              "bytes": 4319,
+              "truncated": false,
+              "structured_status": "valid"
+            }
+          },
+          "preflight-failure": {
+            "returncode": 2,
+            "stdout_bytes": 1385,
+            "backend_started": false,
+            "checks": {
+              "typed_failure_returncode": true,
+              "typed_failure_carrier": true,
+              "failure_omits_semantic_input": true,
+              "failure_does_not_start_backend": true
+            }
+          }
+        }
+      },
+      "final_receipt_sha256": "553989539cd896877990b2292f5a2ae427df1ec232af72f956d3787ecc1dadc8",
+      "source_binding_note": "Nested head is the frozen baseline label. source_head above binds the executed immutable candidate; production file bytes must match the integrated source."
+    }
+  },
+  "task_delivery": {
+    "retention": {
+      "receipt_path": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/task-retention-owner/result.json",
+      "receipt_sha256": "eb7496b08ae382ebeadf803c3664a403d2e4a0a8aee889a39bd4ae5b1e9ba0c2",
+      "status": "completed",
+      "approval_eligibility": "eligible",
+      "candidate": {
+        "status": "validated",
+        "useful": true,
+        "changed_paths": [
+          "scripts/worktree/worktree_lifetime.py",
+          "tests/charness_cli/test_worktree_lifetime.py"
+        ],
+        "disallowed_paths": [],
+        "carrier_kind": "commit-only",
+        "committed_paths": [
+          "scripts/worktree/worktree_lifetime.py",
+          "tests/charness_cli/test_worktree_lifetime.py"
+        ],
+        "dirty_paths": [],
+        "head_sha": "0857252b14fbba56630687fc0f3919b46885d023",
+        "base_is_ancestor_of_head": true,
+        "observed_head_sha": "0857252b14fbba56630687fc0f3919b46885d023",
+        "observed_branch": null,
+        "head_is_complete": true,
+        "content_digest": "9a239546c26a400da5d500c88cfd4f32e5ebc5eecd5c0c0deb1afc4378a047e3",
+        "persist": {
+          "status": "committed",
+          "sha": "0857252b14fbba56630687fc0f3919b46885d023",
+          "message": "task-run: persist validated candidate onto the lane branch",
+          "correctness_verified": false
+        }
+      },
+      "changed_line_gate": {
+        "command": [
+          "/usr/bin/python3",
+          "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/task-retention-owner/worktree/scripts/mutation/release_changed_line_coverage.py",
+          "--repo-root",
+          "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/task-retention-owner/worktree",
+          "--base-sha",
+          "5384866790a13d522a0971e75899fed8f4dbea31",
+          "--coverage-json",
+          "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/task-retention-owner/changed-line-coverage.json",
+          "--refuse-unestablished"
+        ],
+        "exit_code": 0,
+        "duration_ms": 28173,
+        "mirror_sync": {
+          "command": [
+            "/usr/bin/python3",
+            "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/task-retention-owner/worktree/scripts/plugin_export/sync_root_plugin_manifests.py",
+            "--repo-root",
+            "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/task-retention-owner/worktree"
+          ],
+          "exit_code": 0,
+          "duration_ms": 417,
+          "stderr_tail": ""
+        },
+        "logs": {
+          "stdout": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/task-retention-owner/changed-line-gate.stdout.log",
+          "stderr": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/task-retention-owner/changed-line-gate.stderr.log"
+        },
+        "coverage_json": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/task-retention-owner/changed-line-coverage.json",
+        "status": "clean",
+        "blocking": false,
+        "reason": "every mapped changed pool file's changed lines are covered",
+        "analyzed_changed_pool_files": [
+          "scripts/worktree/worktree_lifetime.py"
+        ],
+        "unmapped_changed_pool_files": [],
+        "blocking_detail": {},
+        "blocking_targets": {},
+        "summary": "changed-line gate clean: every mapped changed pool file's changed lines are covered"
+      },
+      "retention": {
+        "worktree": "removed",
+        "runtime": "removed",
+        "carrier": "task/task-retention-owner@0857252b14fbba56630687fc0f3919b46885d023",
+        "kept": [
+          "result.json",
+          "changed-line-gate.stderr.log",
+          "changed-line-gate.stdout.log",
+          "codex.stderr.log",
+          "codex.stdout.log"
+        ]
+      },
+      "timestamps": {
+        "launched_at": "2026-09-08T00:07:54Z",
+        "create_started_at": "2026-09-08T00:07:54Z",
+        "updated_at": "2026-09-08T00:14:00Z",
+        "exec_started_at": "2026-09-08T00:07:56Z",
+        "finished_at": "2026-09-08T00:14:00Z"
+      },
+      "model": "gpt-5.6-luna",
+      "effort": "xhigh",
+      "model_duration_ms": 334977,
+      "reported_tokens": 120104
+    },
+    "payload": {
+      "receipt_path": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/review-result-transport/result.json",
+      "receipt_sha256": "8ff2ea6e2e90bd6c7a32fd3cdeaeae8ce35035cec22bdfc8d707a34b052e0877",
+      "status": "completed",
+      "approval_eligibility": "eligible",
+      "candidate": {
+        "status": "validated",
+        "useful": true,
+        "changed_paths": [
+          "skills/public/critique/scripts/run_review.py",
+          "tests/quality_gates/test_review_result_transport.py"
+        ],
+        "disallowed_paths": [],
+        "carrier_kind": "commit-only",
+        "committed_paths": [
+          "skills/public/critique/scripts/run_review.py",
+          "tests/quality_gates/test_review_result_transport.py"
+        ],
+        "dirty_paths": [],
+        "head_sha": "ffafe87e1159be5c760dbede1b9028f8b869d95e",
+        "base_is_ancestor_of_head": true,
+        "observed_head_sha": "ffafe87e1159be5c760dbede1b9028f8b869d95e",
+        "observed_branch": null,
+        "head_is_complete": true,
+        "content_digest": "09983ef148f8625a101832cac682c0984b1cae377f41b3ef2d192ffab7349daf",
+        "persist": {
+          "status": "committed",
+          "sha": "ffafe87e1159be5c760dbede1b9028f8b869d95e",
+          "message": "task-run: persist validated candidate onto the lane branch",
+          "correctness_verified": false
+        }
+      },
+      "changed_line_gate": {
+        "command": [
+          "/usr/bin/python3",
+          "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/review-result-transport/worktree/scripts/mutation/release_changed_line_coverage.py",
+          "--repo-root",
+          "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/review-result-transport/worktree",
+          "--base-sha",
+          "5384866790a13d522a0971e75899fed8f4dbea31",
+          "--coverage-json",
+          "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/review-result-transport/changed-line-coverage.json",
+          "--refuse-unestablished"
+        ],
+        "exit_code": 0,
+        "duration_ms": 152533,
+        "mirror_sync": {
+          "command": [
+            "/usr/bin/python3",
+            "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/review-result-transport/worktree/scripts/plugin_export/sync_root_plugin_manifests.py",
+            "--repo-root",
+            "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/review-result-transport/worktree"
+          ],
+          "exit_code": 0,
+          "duration_ms": 422,
+          "stderr_tail": ""
+        },
+        "logs": {
+          "stdout": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/review-result-transport/changed-line-gate.stdout.log",
+          "stderr": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/review-result-transport/changed-line-gate.stderr.log"
+        },
+        "coverage_json": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/task-run/review-result-transport/changed-line-coverage.json",
+        "status": "clean",
+        "blocking": false,
+        "reason": "every mapped changed pool file's changed lines are covered",
+        "analyzed_changed_pool_files": [
+          "skills/public/critique/scripts/run_review.py"
+        ],
+        "unmapped_changed_pool_files": [],
+        "blocking_detail": {},
+        "blocking_targets": {},
+        "summary": "changed-line gate clean: every mapped changed pool file's changed lines are covered"
+      },
+      "retention": {
+        "worktree": "removed",
+        "runtime": "removed",
+        "carrier": "task/review-result-transport@ffafe87e1159be5c760dbede1b9028f8b869d95e",
+        "kept": [
+          "result.json",
+          "changed-line-gate.stderr.log",
+          "changed-line-gate.stdout.log",
+          "codex.stderr.log",
+          "codex.stdout.log"
+        ]
+      },
+      "timestamps": {
+        "launched_at": "2026-09-08T00:07:54Z",
+        "create_started_at": "2026-09-08T00:07:54Z",
+        "updated_at": "2026-09-08T00:13:23Z",
+        "exec_started_at": "2026-09-08T00:07:56Z",
+        "finished_at": "2026-09-08T00:13:23Z"
+      },
+      "model": "gpt-5.6-luna",
+      "effort": "medium",
+      "model_duration_ms": 173752,
+      "reported_tokens": 77374
+    }
+  },
+  "source_head": "440b143b0ebd0c4e892769591894b5406140118e",
+  "source_identity": {
+    "scripts/worktree/worktree_lifetime.py": {
+      "sha256": "4a5157a4dbd2c1424ccdbda5f5d341f3fd3482b3cd633e14b31f6563dbac1d9f",
+      "same_bytes_as_frozen_candidate": true
+    },
+    "skills/public/critique/scripts/run_review.py": {
+      "sha256": "75aa39043e672569e08b982707d5a937f0d7a5c1eeb173e2d0ebe870f97e13d5",
+      "same_bytes_as_frozen_candidate": true
+    }
+  },
+  "parent_test_strengthening": {
+    "path": "tests/quality_gates/test_review_result_transport.py",
+    "behavior": "Compare stdout and lifecycle.yaml bytes directly instead of parsed mapping equality",
+    "focused_tests": 3,
+    "result": "pass"
+  },
+  "non_claims": [
+    "No release, push, installed-host, provider-backed review of external data or whole-repository cost saving.",
+    "Valid near-ceiling review input is established for the one-entry acceptance case; metadata itself remains bounded by existing producer limits.",
+    "Task ignored-path result-store compaction and reviewer backend model configuration are deferred separately."
+  ],
+  "integrated_changed_line": {
+    "status": "clean",
+    "reason": "every mapped changed pool file's changed lines are covered",
+    "base_sha": "5384866790a13d522a0971e75899fed8f4dbea31",
+    "analyzed_changed_pool_files": [
+      "scripts/worktree/worktree_lifetime.py",
+      "skills/public/critique/scripts/run_review.py"
+    ],
+    "unmapped_changed_pool_files": [],
+    "consumer_returncode": 0,
+    "consumer_stdout": {
+      "ok": true,
+      "changed_pool_files": [
+        "scripts/worktree/worktree_lifetime.py",
+        "skills/public/critique/scripts/run_review.py"
+      ],
+      "blocking": [],
+      "blocking_detail": {},
+      "blocking_targets": {},
+      "subprocess_coverage_advisory": {},
+      "subprocess_coverage_advisory_scope": {
+        "blocked_files_examined": 0,
+        "candidate_tests_examined": 0,
+        "candidate_sources": [
+          "boundary-bypass-inventory",
+          "test-reference-map"
+        ],
+        "inventory": "read",
+        "inventory_recorded_scripts": 47,
+        "reference_map": "empty-or-unavailable",
+        "files_named": [],
+        "silence_means": "no candidate test of that file was found to spawn it with a replacing environment or to copy it by name. That is NOT proof the file's coverage is honest: a candidate list is not exhaustive, a spawn whose command is built from a variable does not bind, an `env=` passed as a bare name cannot be followed, and a helper in another module that copies a whole seeded repo is deliberately not resolved."
+      },
+      "targeted_mutant_proof": {
+        "required": false,
+        "contract": "Before hand-mutating, cite/display one blocking_targets path:line entry, mutate that exact line, record the failing test, then revert."
+      },
+      "base_sha": "5384866790a13d522a0971e75899fed8f4dbea31",
+      "head_sha": "HEAD",
+      "resolved_head_sha": "440b143b0ebd0c4e892769591894b5406140118e",
+      "changed_pool_file_counts": {
+        "analyzed": 2,
+        "changed": 2
+      }
+    }
+  },
+  "design_record": "charness-artifacts/probe/2026-09-08-execution-result-consumer-design.json",
+  "final_closeout_owner": "charness-artifacts/debug/2026-09-08-execution-result-consumer.md"
+}
