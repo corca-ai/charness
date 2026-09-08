@@ -1,13 +1,16 @@
-"""Ephemeral worktrees are labeled, capped, and unregistered; owned ones are not."""
+"""Ephemeral worktrees are labeled and capped; task paths await retention ownership."""
 
 from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
 from pathlib import Path
+
+import pytest
 
 from scripts.gates_support import runtime_root_retention as retention
 from scripts.worktree import worktree_audit_lib as audit_lib
@@ -248,11 +251,117 @@ def test_marker_path_returns_none_when_git_dir_cannot_resolve(monkeypatch) -> No
     assert lifetime._marker_path(Path("/tmp/x")) is None
 
 
-def test_worktree_dirty_check_on_a_real_repo(tmp_path: Path) -> None:
-    repo = copy_worktree_seed(tmp_path, "dirty-primary")
-    assert lifetime._worktree_is_dirty(repo) is False
-    (repo / "extra.txt").write_text("x\n", encoding="utf-8")
-    assert lifetime._worktree_is_dirty(repo) is True
+@pytest.mark.boundary_contract(
+    reason="a real child interpreter exit must leave its registered task worktree for retention"
+)
+def test_real_task_child_exit_preserves_registered_worktree(tmp_path: Path) -> None:
+    repo = copy_worktree_seed(tmp_path, "child-primary")
+    worktree = tmp_path / "charness" / "runtime" / "key" / "task-run" / "child" / "worktree"
+    worktree.parent.mkdir(parents=True)
+    source_root = Path(__file__).resolve().parents[2]
+    child = "\n".join(
+        (
+            "import sys",
+            f"sys.path.insert(0, {str(source_root)!r})",
+            "from pathlib import Path",
+            "from scripts.worktree import worktree_create_lib",
+            f"result = worktree_create_lib.run_create(Path({str(repo)!r}), target_path=Path({str(worktree)!r}), branch='child', base='main')",
+            "assert result['created'] is True, result",
+        )
+    )
+    completed = subprocess.run(
+        [sys.executable, "-c", child],
+        cwd=source_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert worktree.resolve() in _worktree_paths(repo)
+    record = lifetime.read_lifetime(worktree)
+    assert record is not None
+    assert isinstance(record["pid"], int)
+
+
+def test_reclaim_preserves_existing_task_path_but_prunes_missing_registration(tmp_path: Path) -> None:
+    repo = copy_worktree_seed(tmp_path, "task-primary")
+    retained = tmp_path / "charness" / "runtime" / "key" / "task-run" / "retained" / "worktree"
+    retained.parent.mkdir(parents=True)
+    created = create_lib.run_create(repo, target_path=retained, branch="retained", base="main")
+    assert created["created"] is True
+    (retained / "dirty.txt").write_text("keep\n", encoding="utf-8")
+    record = lifetime.read_lifetime(retained)
+    assert record is not None
+    record["pid"] = 999_999_999
+    marker = lifetime._marker_path(retained)
+    assert marker is not None
+    marker.write_text(json.dumps(record), encoding="utf-8")
+
+    assert lifetime.reclaim_expired(repo) == []
+    assert retained.resolve() in _worktree_paths(repo)
+    assert (retained / "dirty.txt").read_text(encoding="utf-8") == "keep\n"
+
+    missing = tmp_path / "charness" / "runtime" / "key" / "task-run" / "missing" / "worktree"
+    missing.parent.mkdir(parents=True)
+    created = create_lib.run_create(repo, target_path=missing, branch="missing", base="main")
+    assert created["created"] is True
+    missing_record = lifetime.read_lifetime(missing)
+    assert missing_record is not None
+    missing_record["pid"] = 999_999_999
+    missing_marker = lifetime._marker_path(missing)
+    assert missing_marker is not None
+    missing_marker.write_text(json.dumps(missing_record), encoding="utf-8")
+    shutil.rmtree(missing)
+
+    reclaimed = lifetime.reclaim_expired(repo)
+    assert any(Path(item["path"]) == missing.resolve() for item in reclaimed)
+    assert missing.resolve() not in _worktree_paths(repo)
+
+
+def test_reclaim_preserves_existing_unlabeled_task_path(tmp_path: Path) -> None:
+    repo = copy_worktree_seed(tmp_path, "unlabeled-task-primary")
+    worktree = tmp_path / "charness" / "runtime" / "key" / "task-run" / "unlabeled" / "worktree"
+    worktree.parent.mkdir(parents=True)
+    added = _git("worktree", "add", "--detach", str(worktree), cwd=repo)
+    assert added.returncode == 0, added.stderr
+    (worktree / "dirty.txt").write_text("keep\n", encoding="utf-8")
+    now = time.time()
+    _age(worktree, 2 * DAY, now=now)
+
+    assert lifetime.read_lifetime(worktree) is None
+    assert lifetime.reclaim_expired(repo, now=now) == []
+    assert worktree.resolve() in _worktree_paths(repo)
+    assert (worktree / "dirty.txt").read_text(encoding="utf-8") == "keep\n"
+
+
+def test_cap_excludes_dead_tasks_but_counts_live_task_pids(tmp_path: Path) -> None:
+    repo = copy_worktree_seed(tmp_path, "task-cap-primary")
+    dead = tmp_path / "charness" / "runtime" / "key" / "task-run" / "dead" / "worktree"
+    dead.parent.mkdir(parents=True)
+    created = create_lib.run_create(repo, target_path=dead, branch="dead", base="main")
+    assert created["created"] is True
+    (dead / "dirty.txt").write_text("keep\n", encoding="utf-8")
+    dead_record = lifetime.read_lifetime(dead)
+    assert dead_record is not None
+    dead_record["pid"] = 999_999_999
+    dead_marker = lifetime._marker_path(dead)
+    assert dead_marker is not None
+    dead_marker.write_text(json.dumps(dead_record), encoding="utf-8")
+
+    without_dead_task = lifetime.enforce_cap(repo, cap=1, reserve=1)
+    assert without_dead_task["refused"] is False
+    assert without_dead_task["remaining"] == 0
+    assert without_dead_task["evicted"] == []
+    assert dead.resolve() in _worktree_paths(repo)
+
+    live = tmp_path / "charness" / "runtime" / "key" / "task-run" / "live" / "worktree"
+    live.parent.mkdir(parents=True)
+    created = create_lib.run_create(repo, target_path=live, branch="live", base="main")
+    assert created["created"] is True
+    with_live_task = lifetime.enforce_cap(repo, cap=1, reserve=1)
+    assert with_live_task["refused"] is True
+    assert with_live_task["remaining"] == 1
+    assert live.resolve() in _worktree_paths(repo)
 
 
 def test_reclaim_skips_dead_pid_records_without_a_path(monkeypatch, tmp_path: Path) -> None:
@@ -381,13 +490,6 @@ def test_unregister_prune_fallback_when_remove_fails(tmp_path: Path, monkeypatch
     assert result["removed"] is True
 
 
-def test_dirty_exit_lease_is_retained(tmp_path: Path, monkeypatch) -> None:
-    monkeypatch.setattr(lifetime, "_worktree_is_dirty", lambda _path: True)
-    lifetime._EXIT_LEASES.append((tmp_path, tmp_path / "kept"))
-    lifetime._reclaim_exit_leases()
-    assert lifetime._EXIT_LEASES == []
-
-
 def test_enforce_cap_breaks_when_unregister_does_not_remove(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(
         lifetime,
@@ -429,12 +531,8 @@ def test_lifetime_covers_remaining_error_branches(tmp_path: Path, monkeypatch) -
     assert len(entries) == 2
     assert lifetime._record_path({}) is None
     assert lifetime._is_idle(tmp_path / "missing", now=time.time(), idle_days=1.0) is True
-    assert lifetime._worktree_is_dirty(tmp_path / "missing") is False
     owned = lifetime.prepare_create(tmp_path, kind=lifetime.KIND_OWNED)
     assert owned["refused"] is False
-    lifetime._register_exit_remove(tmp_path / "missing")
-    lifetime._EXIT_LEASES.append((tmp_path, tmp_path / "dirty"))
-    lifetime._reclaim_exit_leases()
 
 
 def test_unregister_falls_back_to_prune_and_skips_locked_entries(

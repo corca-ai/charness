@@ -32,6 +32,20 @@ PROMOTION = SUPPORT.load_module(
 )
 
 
+def _lifecycle_semantic_input(semantic_input: dict[str, Any]) -> dict[str, Any]:
+    """Project semantic input metadata for the lifecycle result."""
+    projected = dict(semantic_input)
+    entries = semantic_input.get("entries")
+    if isinstance(entries, list):
+        projected["entries"] = [
+            {key: value for key, value in entry.items() if key != "prompt_content"}
+            if isinstance(entry, dict)
+            else entry
+            for entry in entries
+        ]
+    return projected
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -194,6 +208,7 @@ def main(argv: list[str] | None = None) -> int:
             key: SUPPORT.relative(root, value) for key, value in paths.items() if key != "run_dir"
         }
         semantic_input = _materialize_semantic_input(root, packet_payload, paths["run_dir"])
+        lifecycle_semantic_input = _lifecycle_semantic_input(semantic_input)
         context["semantic_input"] = semantic_input
         paths["schema"].write_bytes(package["schema"].read_bytes())
         schema_sha = SUPPORT.sha256(paths["schema"])
@@ -253,7 +268,7 @@ def main(argv: list[str] | None = None) -> int:
                 "timeout_seconds": timeout,
                 "scope": args.scope,
                 "lens": args.lens,
-                "semantic_input": semantic_input,
+                "semantic_input": lifecycle_semantic_input,
                 "goal_lineage": goal_lineage,
             })
             SUPPORT.write_yaml(paths["summary"], carrier)
@@ -306,7 +321,7 @@ def main(argv: list[str] | None = None) -> int:
             "scope": args.scope,
             "lens": args.lens,
             "parent_receipt_identity": parent_receipt,
-            "semantic_input": semantic_input,
+            "semantic_input": lifecycle_semantic_input,
             "runner_output": {"status": status, "returncode": returncode},
             "runner_stream": stream_evidence,
             "boundary_readback": {"mode": boundary_mode, "required": False},

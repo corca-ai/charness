@@ -12,14 +12,15 @@ Identity, before any rule:
   ``charness/runtime`` tree). Everything else is owned. Feature paths such as
   ``../feature-worktree`` stay owned without a flag.
 - A live ``pid`` is recorded only for a task-run lane path
-  (``.../task-run/<id>/worktree``). That process owns the lease: a clean
-  interpreter exit unregisters it (dirty trees stay for the salvage sweep).
-  SIGTERM/SIGKILL leave a dead pid, which the next ``create`` or
-  ``audit --prune`` unregisters. Create CLI ephemerals store no pid; the cap
-  is their balloon brake.
+  (``.../task-run/<id>/worktree``). Task completion and runtime retention own
+  its receipt and salvage: generic lifetime preserves an existing task-run
+  path across process exit, dead-pid reclamation, and cap enforcement. A
+  missing task path may still have its Git registration pruned. Create CLI
+  ephemerals store no pid; the cap is their balloon brake.
 - The cap is 32 because that is the host live-children ceiling; the 33rd
-  ephemeral is residue, not concurrency. Live-pid lanes are never evicted to
-  make room. Cap eviction uses ``git worktree remove --force``.
+  ephemeral is residue, not concurrency. Live task PIDs count against it;
+  dead task records do not. Ordinary cap eviction uses ``git worktree remove
+  --force``.
 
 ``create`` reclaims expired ephemerals and enforces the cap before ``git
 worktree add``. ``audit --prune`` reclaims expired ephemerals, then prunes
@@ -29,7 +30,6 @@ missing directories. The runtime sweep unregisters a linked worktree with
 
 from __future__ import annotations
 
-import atexit
 import json
 import os
 import shutil
@@ -63,9 +63,6 @@ EPHEMERAL_CAP = 32
 # Same basis as runtime_root_retention.ACTIVE_WINDOW_DAYS: a live pytest or
 # agent session may still be using an unlabeled throwaway; older is residue.
 UNLABELED_IDLE_DAYS = 1.0
-
-_EXIT_LEASES: list[tuple[Path, Path]] = []
-_ATEXIT_INSTALLED = False
 
 
 def path_is_runtime_tree(path: Path) -> bool:
@@ -238,22 +235,19 @@ def unregister(path: Path, *, repo_root: Path | None = None) -> dict[str, Any]:
     return {"removed": not target.exists(), "via": "rmtree-prune", "path": str(target)}
 
 
-def _worktree_is_dirty(path: Path) -> bool:
-    if not path.exists():
-        return False
-    result = run_process(
-        ["git", "status", "--porcelain", "-z", "--untracked-files=all"],
-        cwd=path,
-        timeout_seconds=None,
-    )
-    return result.returncode == 0 and bool(result.stdout)
-
-
 def _record_path(record: dict[str, Any]) -> Path | None:
     raw = record.get("path")
     if not isinstance(raw, str) or not raw:
         return None
     return Path(raw)
+
+
+def _counts_toward_cap(record: dict[str, Any]) -> bool:
+    target = _record_path(record)
+    if target is not None and path_is_task_run_lane(target):
+        pid = record.get("pid")
+        return pid_is_live(pid if isinstance(pid, int) else None)
+    return True
 
 
 def _created_stamp(record: dict[str, Any]) -> str:
@@ -310,7 +304,11 @@ def _is_idle(path: Path, *, now: float, idle_days: float) -> bool:
 def reclaim_expired(
     repo_root: Path, *, now: float | None = None
 ) -> list[dict[str, Any]]:
-    """Unregister dead-pid ephemerals and idle unlabeled throwaways."""
+    """Unregister dead non-task ephemerals and idle unlabeled throwaways.
+
+    Existing task-run paths remain for task completion and runtime retention;
+    a missing task path may still be pruned from Git's registration.
+    """
     moment = time.time() if now is None else now
     actions: list[dict[str, Any]] = []
     seen: set[Path] = set()
@@ -323,6 +321,8 @@ def reclaim_expired(
         target = _record_path(record)
         if target is None:
             continue
+        if target.exists() and path_is_task_run_lane(target):
+            continue
         result = unregister(target, repo_root=repo_root)
         result["reason"] = "ephemeral pid is dead"
         actions.append(result)
@@ -331,6 +331,8 @@ def reclaim_expired(
     for entry in _registered_worktrees(repo_root):
         path = Path(entry["path"]).resolve()
         if path in seen or path == primary or entry.get("locked"):
+            continue
+        if path.exists() and path_is_task_run_lane(path):
             continue
         record = read_lifetime(path) if path.exists() else None
         if record is not None:
@@ -350,10 +352,11 @@ def reclaim_expired(
 def enforce_cap(
     repo_root: Path, *, cap: int | None = None, reserve: int = 1
 ) -> dict[str, Any]:
-    """Evict oldest no-live-pid ephemerals until ``reserve`` slots are free.
+    """Evict oldest eligible ephemerals until ``reserve`` slots are free.
 
-    Live-pid lanes are never evicted. If they alone fill the cap, creation
-    must refuse rather than kill running work.
+    Dead task records are excluded from the count. Live-pid lanes are never
+    evicted. If live lanes alone fill the cap, creation must refuse rather than
+    kill running work.
     """
     if cap is None:
         cap = EPHEMERAL_CAP
@@ -363,7 +366,7 @@ def enforce_cap(
         remaining = [
             record
             for record in list_lifetime_records(repo_root)
-            if record.get("kind") == KIND_EPHEMERAL
+            if record.get("kind") == KIND_EPHEMERAL and _counts_toward_cap(record)
         ]
         if len(remaining) + reserve <= cap:
             return {
@@ -422,30 +425,6 @@ def prepare_create(
 
 
 def bind_created(worktree: Path, *, kind: str) -> dict[str, Any]:
+    """Write the lifetime marker; task completion owns task-run removal."""
     pid = os.getpid() if kind == KIND_EPHEMERAL and path_is_task_run_lane(worktree) else None
-    record = write_lifetime(worktree, kind=kind, pid=pid)
-    if pid == os.getpid():
-        _register_exit_remove(worktree)
-    return record
-
-
-def _register_exit_remove(worktree: Path) -> None:
-    global _ATEXIT_INSTALLED
-    layout = layout_from_files(worktree)
-    if layout is None:
-        return
-    repo_root = layout.common_dir.parent if layout.common_dir.name == ".git" else layout.common_dir
-    lease = (repo_root.resolve(), worktree.resolve())
-    if lease not in _EXIT_LEASES:
-        _EXIT_LEASES.append(lease)
-    if not _ATEXIT_INSTALLED:
-        atexit.register(_reclaim_exit_leases)
-        _ATEXIT_INSTALLED = True
-
-
-def _reclaim_exit_leases() -> None:
-    while _EXIT_LEASES:
-        repo_root, worktree = _EXIT_LEASES.pop()
-        if _worktree_is_dirty(worktree):
-            continue
-        unregister(worktree, repo_root=repo_root)
+    return write_lifetime(worktree, kind=kind, pid=pid)
