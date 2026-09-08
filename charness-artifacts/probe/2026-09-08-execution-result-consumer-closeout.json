@@ -1,0 +1,267 @@
+{
+  "source_head": "440b143b0ebd0c4e892769591894b5406140118e",
+  "proof_record": "charness-artifacts/probe/2026-09-08-execution-result-consumer-proof.json",
+  "final_review": {
+    "fresh_eye_satisfaction": "worker-delivered",
+    "cadence": "One bounded implementation follow-up after two independent design lenses; those design dispositions and added acceptance are recorded separately. No new design round.",
+    "actual_model": "gpt-5.6-terra",
+    "actual_effort": "medium",
+    "reported_tokens": 29336,
+    "lifecycle": {
+      "schema_version": "charness.reviewer_lifecycle.v1",
+      "status": "runner-completed",
+      "execution_state": "terminal",
+      "lifecycle_state": "terminal",
+      "reviewer_started": true,
+      "delivery_state": "findings-received",
+      "verdict_state": "pass",
+      "review_verdict": "pass",
+      "classification": "unclassified",
+      "approval_eligible": true,
+      "output": {
+        "state": "terminal",
+        "approval_eligible": true,
+        "schema_version": "charness.reviewer_worker_report.v1",
+        "findings_identity": "837d62763f16208ece385dc26f948d543057fad2de13a029f45677db39a1094e"
+      },
+      "output_state": "terminal",
+      "failure_identity": "c0326ac9f8d6cda80acc483a567521e7c91c7492aa9bb76785302f4899770d90",
+      "next_move": "consume the identity-bound delivered reviewer result",
+      "runner_returncode": 0,
+      "runner_status": "runner-completed",
+      "boundary_mode": "read-only-worker",
+      "boundary_ok": true,
+      "boundary_reason": null,
+      "paths": {
+        "packet": "charness-artifacts/critique/result-consumer-implementation-20260908-packet.json",
+        "schema": ".charness/reviewer-round-result-consumer-implementation-20260908/bounded-review-result.schema.json",
+        "capability": ".charness/reviewer-round-result-consumer-implementation-20260908/capability.json",
+        "prompt": ".charness/reviewer-round-result-consumer-implementation-20260908/review-prompt.md",
+        "plan": ".charness/reviewer-round-result-consumer-implementation-20260908/run-plan.json",
+        "ledger": ".charness/reviewer-round-result-consumer-implementation-20260908/delivery.json",
+        "output": ".charness/reviewer-round-result-consumer-implementation-20260908/result.json",
+        "receipt": ".charness/reviewer-round-result-consumer-implementation-20260908/receipt.json",
+        "report": "charness-artifacts/critique/workers/result-consumer-implementation-20260908/worker-report.yaml",
+        "runner_stdout": ".charness/reviewer-round-result-consumer-implementation-20260908/runner.stdout",
+        "runner_stderr": ".charness/reviewer-round-result-consumer-implementation-20260908/runner.stderr",
+        "backend_stdout": ".charness/reviewer-round-result-consumer-implementation-20260908/backend.stdout",
+        "backend_stderr": ".charness/reviewer-round-result-consumer-implementation-20260908/backend.stderr",
+        "summary": ".charness/reviewer-round-result-consumer-implementation-20260908/lifecycle.yaml",
+        "runtime_report": ".charness/reviewer-round-result-consumer-implementation-20260908/worker-report.yaml",
+        "durable_report": "charness-artifacts/critique/workers/result-consumer-implementation-20260908/worker-report.yaml"
+      },
+      "identities": {
+        "attempt_id": "result-consumer-implementation-20260908",
+        "scope": "One bounded implementation follow-up to the two completed design lenses for execution-result-consumer. Assess the integrated repair at source commit 440b143b0 and the exact packet, not historical artifacts. Generic lifetime must leave existing task paths to completion/runtime retention, preserve missing-registration cleanup and ordinary ephemeral behavior, count live task PIDs and exclude dead retained tasks. Review lifecycle must omit only entry prompt_content while preserving complete worker prompt/run-plan input, metadata, typed failures and approval semantics. Independent frozen acceptance is recorded; integrated changed-line coverage is clean; full read-only lane follows this review. Check the verifier claims too: six real-Git retention cases, actual dry/fake-live pass/block and preflight transport, near-ceiling one-entry source input and unchanged actual task parser. No model inside acceptance tests. Read direct owner calls only as needed. Stop after bounded findings; no broad tests, code edits, new gates, whole-runtime scan, result-store migration, backend model configuration or release/install claims.",
+        "packet_identity": "fddc862b6845995f5e06fce1b39260aff3f2f4e8e8b6f98c524164a395d8a5e5",
+        "reviewed_input_identity": "6cb9ed874480b9ffd77df4a39f30a6ea778b55d9194298c908c95e29bc7ec895",
+        "parent_receipt_identity": "parent-2cdacddd8e28bb3bfb8f733ef7f982faded5ad9c5648733a",
+        "findings_identity": "837d62763f16208ece385dc26f948d543057fad2de13a029f45677db39a1094e"
+      },
+      "ok": true,
+      "carrier_ok": true,
+      "packet_verification": {
+        "ok": true,
+        "status": "current",
+        "reason": "current",
+        "reason_code": "current",
+        "expected_kind": "charness.critique_prepare_packet",
+        "packet_path": "charness-artifacts/critique/result-consumer-implementation-20260908-packet.json",
+        "packet_sha256": "fddc862b6845995f5e06fce1b39260aff3f2f4e8e8b6f98c524164a395d8a5e5",
+        "identity_sha256": "6cb9ed874480b9ffd77df4a39f30a6ea778b55d9194298c908c95e29bc7ec895"
+      },
+      "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "backend": "codex_exec",
+      "timeout_seconds": 900,
+      "scope": "One bounded implementation follow-up to the two completed design lenses for execution-result-consumer. Assess the integrated repair at source commit 440b143b0 and the exact packet, not historical artifacts. Generic lifetime must leave existing task paths to completion/runtime retention, preserve missing-registration cleanup and ordinary ephemeral behavior, count live task PIDs and exclude dead retained tasks. Review lifecycle must omit only entry prompt_content while preserving complete worker prompt/run-plan input, metadata, typed failures and approval semantics. Independent frozen acceptance is recorded; integrated changed-line coverage is clean; full read-only lane follows this review. Check the verifier claims too: six real-Git retention cases, actual dry/fake-live pass/block and preflight transport, near-ceiling one-entry source input and unchanged actual task parser. No model inside acceptance tests. Read direct owner calls only as needed. Stop after bounded findings; no broad tests, code edits, new gates, whole-runtime scan, result-store migration, backend model configuration or release/install claims.",
+      "lens": "Jackson and Weinberg: is ownership corrected at the cause without a copied policy? Gawande: do the final storage and transport consumers retain the promised capability? Seek one axis-varying counterexample per target; distinguish a demonstrated blocker from speculative expansion and unnecessary machinery.",
+      "parent_receipt_identity": "parent-2cdacddd8e28bb3bfb8f733ef7f982faded5ad9c5648733a",
+      "semantic_input": {
+        "entries": [
+          {
+            "path": "charness-artifacts/probe/2026-09-08-execution-result-consumer-proof.json",
+            "disposition": "present",
+            "carrier_path": ".charness/reviewer-round-result-consumer-implementation-20260908/semantic-input/0000-content.bin",
+            "content_sha256": "5f4cca7d6c1e1760f4dd98a1f86f6f407da1a83ac71e6c728399ec4a825527b4",
+            "carrier_sha256": "081e399b4618dfddcc79ffbc659574eb57ad8003325c2dc605823cdef323549b",
+            "source": "working-tree:charness-artifacts/probe/2026-09-08-execution-result-consumer-proof.json",
+            "size_bytes": 22719,
+            "prompt_encoding": "utf-8"
+          },
+          {
+            "path": "charness-artifacts/spec/2026-09-08-execution-result-consumer.md",
+            "disposition": "present",
+            "carrier_path": ".charness/reviewer-round-result-consumer-implementation-20260908/semantic-input/0001-content.bin",
+            "content_sha256": "73e45f9005a65c3d142ed2f85b029c248d5cb33d4b687d92d7323b536ba152c2",
+            "carrier_sha256": "93b179c9c0809b393dd2940f69251df8ce3093682056637470af0f1bfbccb06f",
+            "source": "working-tree:charness-artifacts/spec/2026-09-08-execution-result-consumer.md",
+            "size_bytes": 7627,
+            "prompt_encoding": "utf-8"
+          },
+          {
+            "path": "scripts/worktree/worktree_lifetime.py",
+            "disposition": "present",
+            "carrier_path": ".charness/reviewer-round-result-consumer-implementation-20260908/semantic-input/0002-content.bin",
+            "content_sha256": "b69f5900f191792ae378befd5a3a84d8b8d272eb27952b2dc68988dd1167bff0",
+            "carrier_sha256": "4a5157a4dbd2c1424ccdbda5f5d341f3fd3482b3cd633e14b31f6563dbac1d9f",
+            "source": "working-tree:scripts/worktree/worktree_lifetime.py",
+            "size_bytes": 14648,
+            "prompt_encoding": "utf-8"
+          },
+          {
+            "path": "skills/public/critique/scripts/run_review.py",
+            "disposition": "present",
+            "carrier_path": ".charness/reviewer-round-result-consumer-implementation-20260908/semantic-input/0003-content.bin",
+            "content_sha256": "b913c5eb31885085d2fc5b895b3e2f3c0ae7fd041875be166d7989a3028f6b20",
+            "carrier_sha256": "75aa39043e672569e08b982707d5a937f0d7a5c1eeb173e2d0ebe870f97e13d5",
+            "source": "working-tree:skills/public/critique/scripts/run_review.py",
+            "size_bytes": 15203,
+            "prompt_encoding": "utf-8"
+          },
+          {
+            "path": "tests/charness_cli/test_worktree_lifetime.py",
+            "disposition": "present",
+            "carrier_path": ".charness/reviewer-round-result-consumer-implementation-20260908/semantic-input/0004-content.bin",
+            "content_sha256": "85761bd92ce610652a5252eaf385bc83dfcbda2cd37db38954d6506b8e85766e",
+            "carrier_sha256": "64fcc2a0a353ff04379db4837571106113faf76d921483efb03c0e47e32196de",
+            "source": "working-tree:tests/charness_cli/test_worktree_lifetime.py",
+            "size_bytes": 23348,
+            "prompt_encoding": "utf-8"
+          },
+          {
+            "path": "tests/quality_gates/test_review_result_transport.py",
+            "disposition": "present",
+            "carrier_path": ".charness/reviewer-round-result-consumer-implementation-20260908/semantic-input/0005-content.bin",
+            "content_sha256": "589b899d41b8b0caa860dfce2489c8f5402040f73413c40216931fc2277dc5ed",
+            "carrier_sha256": "be0ecd66f05d28e87b89487aca188c55c4a2cf666fe1bad4972a79b4c1bbae12",
+            "source": "working-tree:tests/quality_gates/test_review_result_transport.py",
+            "size_bytes": 2203,
+            "prompt_encoding": "utf-8"
+          }
+        ],
+        "manifest": ".charness/reviewer-round-result-consumer-implementation-20260908/semantic-input/manifest.json",
+        "size_bytes": 85748
+      },
+      "runner_output": {
+        "status": "runner-completed",
+        "returncode": 0
+      },
+      "runner_stream": {
+        "consistent": true,
+        "reason": null,
+        "runner_stdout_sha256": "78168adb23ec31f9544387fb15211ac8f133aa06aff661ce7e3b6503ea0e18dc",
+        "canonical_report_sha256": "78168adb23ec31f9544387fb15211ac8f133aa06aff661ce7e3b6503ea0e18dc"
+      },
+      "boundary_readback": {
+        "mode": "read-only-worker",
+        "required": false
+      },
+      "goal_lineage": {
+        "kind": "charness.goal-lineage",
+        "schema_version": 1,
+        "disposition": "not-goal-bound",
+        "draft": null,
+        "binding": null,
+        "goal_run": null,
+        "work_item": null,
+        "reason": "critique review was run without a Goal Run Work Item identity"
+      }
+    },
+    "result": {
+      "kind": "charness.bounded_review.v1",
+      "lens": "Jackson and Weinberg; Gawande",
+      "packet_sha256": "fddc862b6845995f5e06fce1b39260aff3f2f4e8e8b6f98c524164a395d8a5e5",
+      "reviewed_input_identity_sha256": "6cb9ed874480b9ffd77df4a39f30a6ea778b55d9194298c908c95e29bc7ec895",
+      "verdict": "pass",
+      "target_observations": [
+        {
+          "target": "task-retention",
+          "verdict": "pass",
+          "summary": "Generic lifetime now defers existing task-run paths to task completion/runtime retention while retaining registration cleanup for missing paths.",
+          "evidence": [
+            "reclaim_expired skips existing task-run paths but unregisters missing task paths.",
+            "_counts_toward_cap counts only live task PIDs; dead task records do not consume capacity.",
+            "Frozen acceptance records six real-Git cases, including child exit, dead-task preservation, live-cap accounting, missing registration cleanup, ordinary ephemeral reclaim, and standing maintenance."
+          ]
+        },
+        {
+          "target": "review-result-transport",
+          "verdict": "pass",
+          "summary": "Lifecycle transport projects only per-entry prompt_content while preserving the full semantic input for prompt and run plan.",
+          "evidence": [
+            "_lifecycle_semantic_input copies all semantic-input fields and removes only prompt_content from dictionary entries.",
+            "Both dry and live carriers write and emit the same projected lifecycle payload; failure carriers remain typed and body-free.",
+            "Frozen acceptance records near-limit dry, fake-live pass, fake-live block, and preflight-failure transport checks, including unchanged task delivery/parser behavior."
+          ]
+        }
+      ],
+      "findings": [],
+      "counterweight_triage": [
+        {
+          "concern": "Generic lifetime might still delete retained dead task worktrees through reclaim or cap.",
+          "bin": "resolved",
+          "disposition": "Existing task paths are excluded from generic reclaim; live task PIDs count toward cap and dead task records do not."
+        },
+        {
+          "concern": "Lifecycle projection might truncate metadata or source input.",
+          "bin": "resolved",
+          "disposition": "The projection is entry-local and key-specific; run plan and worker prompt retain the original semantic input."
+        },
+        {
+          "concern": "Acceptance evidence may imply broader runtime scanning or model configuration work.",
+          "bin": "out-of-scope",
+          "disposition": "The packet expressly disclaims those expansions and the reviewed change does not introduce them."
+        }
+      ],
+      "next_move": "Proceed to the declared full read-only lane.",
+      "non_claims": [
+        "No broad runtime scan, result-store migration, backend model configuration, release/install claim, or new gate was reviewed.",
+        "This verdict relies on the packet-bound frozen acceptance and source bytes only."
+      ],
+      "capability_non_claims": [],
+      "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "packet_verification": {
+      "ok": true,
+      "status": "current",
+      "reason": "current",
+      "reason_code": "current",
+      "expected_kind": "charness.critique_prepare_packet",
+      "packet_path": "charness-artifacts/critique/result-consumer-implementation-20260908-packet.json",
+      "packet_sha256": "fddc862b6845995f5e06fce1b39260aff3f2f4e8e8b6f98c524164a395d8a5e5",
+      "identity_sha256": "6cb9ed874480b9ffd77df4a39f30a6ea778b55d9194298c908c95e29bc7ec895"
+    },
+    "result_sha256": "837d62763f16208ece385dc26f948d543057fad2de13a029f45677db39a1094e",
+    "parent_counterweight": {
+      "Act Before Ship": [],
+      "Bundle Anyway": [],
+      "Over-Worry": [],
+      "Valid but Defer": []
+    },
+    "counterweight_note": "No new findings. Existing deferrals and rejected design expansions remain in the spec/design record.",
+    "actual_lifecycle_bytes": 9842
+  },
+  "full_read_only": {
+    "status": "pending"
+  },
+  "cost_limits": {
+    "implementation_reported_tokens": 197478,
+    "design_review_reported_tokens": {
+      "retention": {
+        "reported_tokens": 30607,
+        "actual_model": "gpt-5.6-terra",
+        "actual_effort": "medium"
+      },
+      "payload": {
+        "reported_tokens": 20133,
+        "actual_model": "gpt-5.6-terra",
+        "actual_effort": "medium"
+      }
+    },
+    "parent_tokens": "unavailable",
+    "native_investigator_tokens": "unavailable",
+    "usd_cost": "not established",
+    "nonclaim": "Do not infer total session savings from model choice or output size."
+  }
+}

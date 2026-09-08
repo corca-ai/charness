@@ -1,0 +1,100 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'One bounded implementation follow-up to the two completed design lenses for
+  execution-result-consumer. Assess the integrated repair at source commit 440b143b0
+  and the exact packet, not historical artifacts. Generic lifetime must leave existing
+  task paths to completion/runtime retention, preserve missing-registration cleanup
+  and ordinary ephemeral behavior, count live task PIDs and exclude dead retained
+  tasks. Review lifecycle must omit only entry prompt_content while preserving complete
+  worker prompt/run-plan input, metadata, typed failures and approval semantics. Independent
+  frozen acceptance is recorded; integrated changed-line coverage is clean; full read-only
+  lane follows this review. Check the verifier claims too: six real-Git retention
+  cases, actual dry/fake-live pass/block and preflight transport, near-ceiling one-entry
+  source input and unchanged actual task parser. No model inside acceptance tests.
+  Read direct owner calls only as needed. Stop after bounded findings; no broad tests,
+  code edits, new gates, whole-runtime scan, result-store migration, backend model
+  configuration or release/install claims.'
+attempt_id: result-consumer-implementation-20260908
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 7b75384adfc04a9f5a5579ab6ef3538978a9667449dc860052ca87e99b1b44b9
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-result-consumer-implementation-20260908/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-result-consumer-implementation-20260908/delivery.json
+producer_run_id: run-result-consumer-implementation-20260908
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-result-consumer-implementation-20260908/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-result-consumer-implementation-20260908/receipt.json
+  producer_run_id: run-result-consumer-implementation-20260908
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 837d62763f16208ece385dc26f948d543057fad2de13a029f45677db39a1094e
+receipt_output_sha256: 837d62763f16208ece385dc26f948d543057fad2de13a029f45677db39a1094e
+packet_identity: fddc862b6845995f5e06fce1b39260aff3f2f4e8e8b6f98c524164a395d8a5e5
+reviewed_input_identity: 6cb9ed874480b9ffd77df4a39f30a6ea778b55d9194298c908c95e29bc7ec895
+parent_receipt_identity: parent-2cdacddd8e28bb3bfb8f733ef7f982faded5ad9c5648733a
+provenance:
+  scope: 'One bounded implementation follow-up to the two completed design lenses
+    for execution-result-consumer. Assess the integrated repair at source commit 440b143b0
+    and the exact packet, not historical artifacts. Generic lifetime must leave existing
+    task paths to completion/runtime retention, preserve missing-registration cleanup
+    and ordinary ephemeral behavior, count live task PIDs and exclude dead retained
+    tasks. Review lifecycle must omit only entry prompt_content while preserving complete
+    worker prompt/run-plan input, metadata, typed failures and approval semantics.
+    Independent frozen acceptance is recorded; integrated changed-line coverage is
+    clean; full read-only lane follows this review. Check the verifier claims too:
+    six real-Git retention cases, actual dry/fake-live pass/block and preflight transport,
+    near-ceiling one-entry source input and unchanged actual task parser. No model
+    inside acceptance tests. Read direct owner calls only as needed. Stop after bounded
+    findings; no broad tests, code edits, new gates, whole-runtime scan, result-store
+    migration, backend model configuration or release/install claims.'
+  packet_identity: fddc862b6845995f5e06fce1b39260aff3f2f4e8e8b6f98c524164a395d8a5e5
+  reviewed_input_identity: 6cb9ed874480b9ffd77df4a39f30a6ea778b55d9194298c908c95e29bc7ec895
+  parent_receipt_identity: parent-2cdacddd8e28bb3bfb8f733ef7f982faded5ad9c5648733a
+  attempt_id: result-consumer-implementation-20260908
+  attempt_scope: 'One bounded implementation follow-up to the two completed design
+    lenses for execution-result-consumer. Assess the integrated repair at source commit
+    440b143b0 and the exact packet, not historical artifacts. Generic lifetime must
+    leave existing task paths to completion/runtime retention, preserve missing-registration
+    cleanup and ordinary ephemeral behavior, count live task PIDs and exclude dead
+    retained tasks. Review lifecycle must omit only entry prompt_content while preserving
+    complete worker prompt/run-plan input, metadata, typed failures and approval semantics.
+    Independent frozen acceptance is recorded; integrated changed-line coverage is
+    clean; full read-only lane follows this review. Check the verifier claims too:
+    six real-Git retention cases, actual dry/fake-live pass/block and preflight transport,
+    near-ceiling one-entry source input and unchanged actual task parser. No model
+    inside acceptance tests. Read direct owner calls only as needed. Stop after bounded
+    findings; no broad tests, code edits, new gates, whole-runtime scan, result-store
+    migration, backend model configuration or release/install claims.'
+  attempt_packet_identity: fddc862b6845995f5e06fce1b39260aff3f2f4e8e8b6f98c524164a395d8a5e5
+  attempt_parent_receipt_identity: parent-2cdacddd8e28bb3bfb8f733ef7f982faded5ad9c5648733a
+  result_packet_identity: fddc862b6845995f5e06fce1b39260aff3f2f4e8e8b6f98c524164a395d8a5e5
+  result_reviewed_input_identity: 6cb9ed874480b9ffd77df4a39f30a6ea778b55d9194298c908c95e29bc7ec895
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 7b75384adfc04a9f5a5579ab6ef3538978a9667449dc860052ca87e99b1b44b9
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes
