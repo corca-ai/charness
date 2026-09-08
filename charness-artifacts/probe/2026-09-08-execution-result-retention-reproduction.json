@@ -1,0 +1,152 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "RETENTION-1",
+  "source": "charness-artifacts/probe/2026-09-08-execution-result-consumer-report.json",
+  "expected": "automatic cleanup preserves a task worktree named by keep_worktree true",
+  "stimulus": "run real child exit, next-create and cap reclamation against real task receipts and linked Git worktrees",
+  "disposition": "reproduced",
+  "observed": "exit and next-create delete retained task paths; live cap counting deletes a retained dead task; ordinary cleanup and runtime salvage controls pass",
+  "command": "python3 /home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/accept_retention_contract.py --source-root /home/hwidong/codes/charness --output /home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/accept_retention_contract.baseline.json",
+  "fixture": "accept_retention_contract.py",
+  "fixture_sha256": "96907ce1cb9a1454d08f9168aa2e8aff050a7232ad92253d09e039e0952fb286",
+  "final_consumer": "task receipt plus actual storage after process exit",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 1,
+  "source_head": "189e04a1a0f43419f1d59f26ce260decdeac3328",
+  "baseline": {
+    "checks": [
+      {
+        "child_returncode": 0,
+        "expected": true,
+        "name": "terminal keep=true linked task worktree survives normal child exit",
+        "observed": false,
+        "pass": false,
+        "receipt_keep": true
+      },
+      {
+        "child_returncode": 0,
+        "expected": true,
+        "generic_expired": [
+          {
+            "path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-7cysk9p4/cache/charness/runtime/7759acd9b928ed86/task-run/kept-across-next-create/worktree",
+            "reason": "ephemeral pid is dead",
+            "removed": true,
+            "via": "git-worktree-remove"
+          }
+        ],
+        "name": "terminal keep=true dead-PID task worktree survives generic prepare_create",
+        "observed": false,
+        "pass": false
+      },
+      {
+        "child_returncode": 0,
+        "expected": {
+          "dead_retained_exists": true,
+          "live_exists": true,
+          "refused": false,
+          "remaining_count": 1
+        },
+        "generic_evicted": [],
+        "generic_expired": [
+          {
+            "path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-7cysk9p4/cache/charness/runtime/102dc65ea886529b/task-run/dead-retained-task/worktree",
+            "reason": "ephemeral pid is dead",
+            "removed": true,
+            "via": "git-worktree-remove"
+          }
+        ],
+        "name": "cap counts live task and excludes dead retained task without deleting either",
+        "observed": {
+          "dead_retained_exists": false,
+          "live_exists": true,
+          "refused": false,
+          "remaining_count": 1
+        },
+        "pass": false
+      },
+      {
+        "expected": false,
+        "generic_expired": [
+          {
+            "path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-7cysk9p4/ordinary-ephemeral",
+            "reason": "ephemeral pid is dead",
+            "removed": true,
+            "via": "git-worktree-remove"
+          }
+        ],
+        "name": "ordinary non-task dead ephemeral remains generically reclaimable",
+        "observed": false,
+        "pass": true
+      },
+      {
+        "expected": {
+          "keep_false_exists": false,
+          "keep_false_salvage_archive": true,
+          "keep_false_salvage_record": true,
+          "keep_true_exists": true
+        },
+        "name": "runtime sweep preserves keep=true and removes keep=false only after salvage",
+        "observed": {
+          "keep_false_exists": false,
+          "keep_false_salvage_archive": true,
+          "keep_false_salvage_record": true,
+          "keep_true_exists": true
+        },
+        "pass": true,
+        "sweep_entries": [
+          {
+            "action": "skipped",
+            "path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-7cysk9p4/cache/charness/runtime/d56202b611bfc679/task-run/runtime-kept/worktree",
+            "reason": "keep_worktree retains the named worktree; salvage written beside the result",
+            "salvage": {
+              "archive_members": 1,
+              "files": [
+                "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-7cysk9p4/cache/charness/runtime/d56202b611bfc679/task-run/runtime-kept/uncommitted-untracked.tar",
+                "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-7cysk9p4/cache/charness/runtime/d56202b611bfc679/task-run/runtime-kept/uncommitted.json"
+              ],
+              "head": "644ad6cac3d9ffc29ce55f9fa509b0b846b88c73",
+              "status": "salvaged"
+            }
+          },
+          {
+            "action": "removed",
+            "bytes": 203,
+            "path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-7cysk9p4/cache/charness/runtime/d56202b611bfc679/task-run/runtime-removed/worktree",
+            "reason": "finished lane (timed-out); result.json and logs kept",
+            "salvage": {
+              "archive_members": 1,
+              "files": [
+                "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-7cysk9p4/cache/charness/runtime/d56202b611bfc679/task-run/runtime-removed/uncommitted-untracked.tar",
+                "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-7cysk9p4/cache/charness/runtime/d56202b611bfc679/task-run/runtime-removed/uncommitted.json"
+              ],
+              "head": "979789796aef53a4ce3d0c8fed1d55d77df84016",
+              "status": "salvaged"
+            }
+          },
+          {
+            "action": "skipped",
+            "path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-7cysk9p4/cache/charness/runtime/102dc65ea886529b",
+            "reason": "a run under this key is live or the key was touched within the active window"
+          },
+          {
+            "action": "skipped",
+            "path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-7cysk9p4/cache/charness/runtime/7759acd9b928ed86",
+            "reason": "a run under this key is live or the key was touched within the active window"
+          },
+          {
+            "action": "skipped",
+            "path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-7cysk9p4/cache/charness/runtime/e7bf9fe3578bef98",
+            "reason": "a run under this key is live or the key was touched within the active window"
+          }
+        ]
+      }
+    ],
+    "overall_pass": false,
+    "schema_version": 1,
+    "source_head": "189e04a1a0f43419f1d59f26ce260decdeac3328",
+    "source_root": "/home/hwidong/codes/charness",
+    "state_root": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-7cysk9p4",
+    "subject": "task-run retention owner handoff acceptance"
+  }
+}

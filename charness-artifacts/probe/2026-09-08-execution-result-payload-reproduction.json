@@ -1,0 +1,96 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "PAYLOAD-1",
+  "source": "charness-artifacts/probe/2026-09-08-execution-result-consumer-report.json",
+  "expected": "valid review input yields a complete structured lifecycle for the task consumer while worker input remains intact",
+  "stimulus": "run real review dry and fake-live paths, then feed actual stdout to real task result delivery",
+  "disposition": "reproduced",
+  "observed": "source bodies duplicate into lifecycle; near-limit valid input exceeds task capture and loses structured lifecycle; failure and full worker-input controls pass",
+  "command": "python3 /home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/payload-diagnosis/accept_result_contract.py --repo-root /home/hwidong/codes/charness --output /home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/payload-diagnosis/baseline.json",
+  "fixture": "accept_result_contract.py",
+  "fixture_sha256": "11186c01b200ee6eac0db856b846f77a7a1635bb31b844357de682ae25b344e7",
+  "final_consumer": "actual review stdout, lifecycle.yaml and task structured delivery",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 1,
+  "source_head": "189e04a1a0f43419f1d59f26ce260decdeac3328",
+  "baseline": {
+    "kind": "charness.result-carrier-acceptance.v1",
+    "head": "189e04a1a0",
+    "status": "fail",
+    "failed_checks": [
+      "near-limit-dry.stdout_omits_prompt_content",
+      "near-limit-dry.stdout_entry_metadata_exact",
+      "near-limit-dry.task_delivery_untruncated",
+      "near-limit-dry.task_delivery_structured_valid",
+      "near-limit-dry.reviewer_lifecycle_survives",
+      "live-fake.stdout_omits_prompt_content",
+      "live-fake.stdout_entry_metadata_exact"
+    ],
+    "scenarios": {
+      "near-limit-dry": {
+        "returncode": 0,
+        "stdout_bytes": 1051999,
+        "body_bytes": 1048576,
+        "backend_started": false,
+        "checks": {
+          "command_succeeded": true,
+          "stdout_is_mapping": true,
+          "lifecycle_yaml_exists": true,
+          "stdout_equals_lifecycle_yaml": true,
+          "semantic_metadata_present": true,
+          "stdout_omits_prompt_content": false,
+          "stdout_entry_metadata_exact": false,
+          "run_plan_preserves_body": true,
+          "worker_prompt_preserves_body": true,
+          "task_delivery_untruncated": false,
+          "task_delivery_structured_valid": false,
+          "reviewer_lifecycle_survives": false,
+          "backend_start_semantics": true
+        },
+        "task_delivery": {
+          "bytes": 1051999,
+          "truncated": true,
+          "structured_status": "not-applicable"
+        }
+      },
+      "live-fake": {
+        "returncode": 0,
+        "stdout_bytes": 63794,
+        "body_bytes": 45056,
+        "backend_started": true,
+        "checks": {
+          "command_succeeded": true,
+          "stdout_is_mapping": true,
+          "lifecycle_yaml_exists": true,
+          "stdout_equals_lifecycle_yaml": true,
+          "semantic_metadata_present": true,
+          "stdout_omits_prompt_content": false,
+          "stdout_entry_metadata_exact": false,
+          "run_plan_preserves_body": true,
+          "worker_prompt_preserves_body": true,
+          "task_delivery_untruncated": true,
+          "task_delivery_structured_valid": true,
+          "reviewer_lifecycle_survives": true,
+          "backend_start_semantics": true
+        },
+        "task_delivery": {
+          "bytes": 63794,
+          "truncated": false,
+          "structured_status": "valid"
+        }
+      },
+      "preflight-failure": {
+        "returncode": 2,
+        "stdout_bytes": 1385,
+        "backend_started": false,
+        "checks": {
+          "typed_failure_returncode": true,
+          "typed_failure_carrier": true,
+          "failure_omits_semantic_input": true,
+          "failure_does_not_start_backend": true
+        }
+      }
+    }
+  }
+}

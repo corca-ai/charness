@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 192,
-  "indexed_artifact_count": 177,
+  "source_artifact_count": 193,
+  "indexed_artifact_count": 178,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 8,
     "none": 78,
     "operator-visible-recovery": 23,
-    "repeated-symptom": 21
+    "repeated-symptom": 22
   },
   "generalization_pressure_counts": {
     "factor-now": 25,
     "monitor": 125,
-    "none": 27
+    "none": 28
   },
   "entries": [
     {
@@ -2484,6 +2484,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-09-08-execution-contract-cost.md",
+      "is_current_pointer": false,
+      "interrupt_id": "execution-contract-cost",
+      "risk_classes": [
+        "repeated-symptom"
+      ],
+      "seam": "candidate preservation to proof and retention",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-09-08-execution-contract-cost.md",
+      "forced": true
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-09-08-resolved-debug-risk.md",
       "is_current_pointer": false,
       "interrupt_id": "resolved-debug-risk",
@@ -2500,15 +2514,15 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "execution-contract-cost",
+      "interrupt_id": "execution-result-consumer",
       "risk_classes": [
         "repeated-symptom"
       ],
-      "seam": "candidate preservation to proof and retention",
+      "seam": "execution result to storage and transport consumers",
       "generalization_pressure": "none",
       "critique_required": true,
       "next_step": "spec",
-      "handoff_artifact": "charness-artifacts/spec/2026-09-08-execution-contract-cost.md",
+      "handoff_artifact": "charness-artifacts/spec/2026-09-08-execution-result-consumer.md",
       "forced": true
     }
   ],

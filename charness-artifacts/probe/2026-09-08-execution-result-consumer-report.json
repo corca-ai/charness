@@ -1,0 +1,15 @@
+{
+  "source_head": "189e04a1a",
+  "findings": [
+    {
+      "finding": "RETENTION-1",
+      "receipt": "charness-artifacts/probe/2026-09-08-execution-result-retention-reproduction.json",
+      "sha256": "6474a6604f58f4d9ac906ec783d9e861a0022b7d3eaa5e38e0f9ab5e3c32da7a"
+    },
+    {
+      "finding": "PAYLOAD-1",
+      "receipt": "charness-artifacts/probe/2026-09-08-execution-result-payload-reproduction.json",
+      "sha256": "62b31383e2c4d10c6b38b6f19c0d92a841aba61e9ba349335d19d0333d3659da"
+    }
+  ]
+}

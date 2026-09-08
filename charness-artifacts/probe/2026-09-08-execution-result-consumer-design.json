@@ -1,0 +1,573 @@
+{
+  "reviews": {
+    "retention": {
+      "lifecycle": {
+        "schema_version": "charness.reviewer_lifecycle.v1",
+        "status": "runner-completed",
+        "execution_state": "terminal",
+        "lifecycle_state": "terminal",
+        "reviewer_started": true,
+        "delivery_state": "findings-received",
+        "verdict_state": "block",
+        "review_verdict": "block",
+        "classification": "unclassified",
+        "approval_eligible": false,
+        "output": {
+          "state": "terminal",
+          "approval_eligible": false,
+          "schema_version": "charness.reviewer_worker_report.v1",
+          "findings_identity": "0ce391d2c5689cd176e8d7f167252dfd734ffd94aec35030ab1a9f1ef3641bb5"
+        },
+        "output_state": "terminal",
+        "failure_identity": "f20453d0fc3f630569f4514736a52437b7cc4fb63cd75badefa28c2dcf77e89c",
+        "next_move": "inspect the delivered findings; this is a reviewer block, not a runner failure",
+        "runner_returncode": 1,
+        "runner_status": "runner-completed",
+        "boundary_mode": "read-only-worker",
+        "boundary_ok": true,
+        "boundary_reason": null,
+        "paths": {
+          "packet": "charness-artifacts/critique/result-consumer-retention-design-20260908-packet.json",
+          "schema": ".charness/reviewer-round-result-consumer-retention-design-20260908/bounded-review-result.schema.json",
+          "capability": ".charness/reviewer-round-result-consumer-retention-design-20260908/capability.json",
+          "prompt": ".charness/reviewer-round-result-consumer-retention-design-20260908/review-prompt.md",
+          "plan": ".charness/reviewer-round-result-consumer-retention-design-20260908/run-plan.json",
+          "ledger": ".charness/reviewer-round-result-consumer-retention-design-20260908/delivery.json",
+          "output": ".charness/reviewer-round-result-consumer-retention-design-20260908/result.json",
+          "receipt": ".charness/reviewer-round-result-consumer-retention-design-20260908/receipt.json",
+          "report": ".charness/reviewer-round-result-consumer-retention-design-20260908/worker-report.yaml",
+          "runner_stdout": ".charness/reviewer-round-result-consumer-retention-design-20260908/runner.stdout",
+          "runner_stderr": ".charness/reviewer-round-result-consumer-retention-design-20260908/runner.stderr",
+          "backend_stdout": ".charness/reviewer-round-result-consumer-retention-design-20260908/backend.stdout",
+          "backend_stderr": ".charness/reviewer-round-result-consumer-retention-design-20260908/backend.stderr",
+          "summary": ".charness/reviewer-round-result-consumer-retention-design-20260908/lifecycle.yaml"
+        },
+        "identities": {
+          "attempt_id": "result-consumer-retention-design-20260908",
+          "scope": "Design only: task-lane cleanup ownership; no repository-wide audit. Source is baseline, proposed changes are in spec.",
+          "packet_identity": "8fe2b120c852d9ba214d47e4923866231b5cabaea7e2a269b3dd5af02fe4f36f",
+          "reviewed_input_identity": "f356df7d8b7a83b2c56ae31d2dfe53b067293cc2e010d9cf30186d9ee11e5484",
+          "parent_receipt_identity": "parent-607902c5442b1c06bc696d156c8d040ac0428028d4333688",
+          "findings_identity": "0ce391d2c5689cd176e8d7f167252dfd734ffd94aec35030ab1a9f1ef3641bb5"
+        },
+        "ok": true,
+        "carrier_ok": true,
+        "packet_verification": {
+          "ok": true,
+          "status": "current",
+          "reason": "current",
+          "reason_code": "current",
+          "expected_kind": "charness.critique_prepare_packet",
+          "packet_path": "charness-artifacts/critique/result-consumer-retention-design-20260908-packet.json",
+          "packet_sha256": "8fe2b120c852d9ba214d47e4923866231b5cabaea7e2a269b3dd5af02fe4f36f",
+          "identity_sha256": "f356df7d8b7a83b2c56ae31d2dfe53b067293cc2e010d9cf30186d9ee11e5484"
+        },
+        "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+        "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+        "backend": "codex_exec",
+        "timeout_seconds": 900,
+        "scope": "Design only: task-lane cleanup ownership; no repository-wide audit. Source is baseline, proposed changes are in spec.",
+        "lens": "Weinberg and Gawande: can removing task-only atexit/dead expiry/cap eviction leave one existing receipt/salvage owner without breaking live cap or ordinary cleanup? Check missing-directory pruning, no new per-create whole-runtime scan, explicit cleanup. Challenge consumer reach of independent real-child/Git baseline and scope. Do not demand copied keep flags or a second receipt parser in generic lifetime. Return concrete blockers plus four-bin counterweight.",
+        "parent_receipt_identity": "parent-607902c5442b1c06bc696d156c8d040ac0428028d4333688",
+        "runner_output": {
+          "status": "runner-completed",
+          "returncode": 1
+        },
+        "runner_stream": {
+          "consistent": true,
+          "reason": null,
+          "runner_stdout_sha256": "dc5a65629e173a02236323cb86431b9bdf9ef92357a4a777828dca040a56436a",
+          "canonical_report_sha256": "dc5a65629e173a02236323cb86431b9bdf9ef92357a4a777828dca040a56436a"
+        },
+        "boundary_readback": {
+          "mode": "read-only-worker",
+          "required": false
+        },
+        "goal_lineage": {
+          "kind": "charness.goal-lineage",
+          "schema_version": 1,
+          "disposition": "not-goal-bound",
+          "draft": null,
+          "binding": null,
+          "goal_run": null,
+          "work_item": null,
+          "reason": "critique review was run without a Goal Run Work Item identity"
+        }
+      },
+      "result": {
+        "kind": "charness.bounded_review.v1",
+        "lens": "Weinberg and Gawande",
+        "packet_sha256": "8fe2b120c852d9ba214d47e4923866231b5cabaea7e2a269b3dd5af02fe4f36f",
+        "reviewed_input_identity_sha256": "f356df7d8b7a83b2c56ae31d2dfe53b067293cc2e010d9cf30186d9ee11e5484",
+        "verdict": "block",
+        "target_observations": null,
+        "findings": [
+          {
+            "id": "F1",
+            "severity": "blocker",
+            "summary": "The proposed ownership handoff does not yet specify the narrow generic-lifetime rule that preserves task records while retaining the live cap and missing-directory pruning.",
+            "evidence": [
+              "`reclaim_expired()` currently unregisters every ephemeral record with a dead PID, including canonical task-run paths.",
+              "`enforce_cap()` calls that function, then counts every ephemeral record and evicts any no-live-PID record; deleting only atexit machinery therefore cannot meet the stated dead-retained exclusion or live-task counting rule.",
+              "The spec forbids receipt parsing and copied keep flags, but permits existing canonical task-path classification. It must explicitly define: live canonical task lanes count; dead canonical task lanes are excluded from generic expiry/eviction and capacity consumption; registrations whose directories are already absent remain pruneable without removing an existing path."
+            ],
+            "action": "Add that classification-and-accounting decision to the spec and acceptance harness, including actual `prepare_create`/cap and missing-directory-prune cases. This is a path-based boundary, not a second receipt parser."
+          },
+          {
+            "id": "F2",
+            "severity": "blocker",
+            "summary": "The evidence proves direct boundary behavior but not that the retained-task/salvage owner is reached by the ordinary production consumer path after task completion.",
+            "evidence": [
+              "The receipt establishes real-child, real-Git behavior for generic exit, next-create, cap, and a directly exercised runtime sweep.",
+              "`Sweep.sweep_lanes()` contains the correct keep-worktree/salvage policy, but the reviewed material does not establish the invocation chain or cadence from a completed task to that sweep.",
+              "The spec asserts that standing maintenance invokes the owner and that retained work awaits its consumer, but its proposed proof does not require observing an actual task-run completion followed by that owner cleaning a keep=false lane while preserving a keep=true lane."
+            ],
+            "action": "Bind one production-path acceptance case to the task launcher/standing-maintenance invocation: observe receipt creation, owner invocation, verified salvage/removal for keep=false, retention for keep=true, and continued explicit cleanup. Keep it scoped to task lanes; do not add a per-create runtime scan."
+          }
+        ],
+        "counterweight_triage": [
+          {
+            "concern": "Define a canonical task-lane filter in generic expiry/cap accounting, with a missing-directory-only prune branch.",
+            "bin": "Act Before Ship",
+            "disposition": "Required now: current generic code demonstrably deletes and counts the very records the design intends to transfer."
+          },
+          {
+            "concern": "Add focused regression coverage for actual task completion reaching runtime retention, including keep=false salvage and keep=true preservation.",
+            "bin": "Bundle Anyway",
+            "disposition": "Cheap while the two owners and independent real-Git harness are already being changed; it closes the otherwise unproven consumer reach."
+          },
+          {
+            "concern": "Add a new whole-runtime scan on every create to guarantee eventual cleanup.",
+            "bin": "Over-Worry",
+            "disposition": "Reject: it increases routine cost and duplicates the designated owner without evidence that standing maintenance cannot reach it."
+          },
+          {
+            "concern": "Replace lifetime markers or migrate stored task-result shape to make ownership aesthetically uniform.",
+            "bin": "Valid but Defer",
+            "disposition": "Real architectural cleanup opportunity, but neither needed for the handoff nor justified without the deferred persisted-result migration contract."
+          }
+        ],
+        "next_move": "Revise the task-lane contract to state the generic classification/accounting and missing-path-pruning rules, then extend the independent harness with production owner-reach evidence before implementation approval.",
+        "non_claims": [
+          "This review does not claim the runtime sweep is currently invoked by every task workflow.",
+          "This review does not require copied keep flags, a generic receipt parser, a second retention policy, or a per-create runtime-wide scan.",
+          "This review does not assess the separate lifecycle payload lane or repository-wide cleanup behavior."
+        ],
+        "capability_non_claims": [],
+        "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "actual_model": "gpt-5.6-terra",
+      "actual_effort": "medium"
+    },
+    "payload": {
+      "lifecycle": {
+        "schema_version": "charness.reviewer_lifecycle.v1",
+        "status": "runner-completed",
+        "execution_state": "terminal",
+        "lifecycle_state": "terminal",
+        "reviewer_started": true,
+        "delivery_state": "findings-received",
+        "verdict_state": "block",
+        "review_verdict": "block",
+        "classification": "unclassified",
+        "approval_eligible": false,
+        "output": {
+          "state": "terminal",
+          "approval_eligible": false,
+          "schema_version": "charness.reviewer_worker_report.v1",
+          "findings_identity": "f252b2cc1cd9ef0ceb2693fef910e5b52ab7a559cc7150892521229e4c576bb0"
+        },
+        "output_state": "terminal",
+        "failure_identity": "f20453d0fc3f630569f4514736a52437b7cc4fb63cd75badefa28c2dcf77e89c",
+        "next_move": "inspect the delivered findings; this is a reviewer block, not a runner failure",
+        "runner_returncode": 1,
+        "runner_status": "runner-completed",
+        "boundary_mode": "read-only-worker",
+        "boundary_ok": true,
+        "boundary_reason": null,
+        "paths": {
+          "packet": "charness-artifacts/critique/result-consumer-payload-design-20260908-packet.json",
+          "schema": ".charness/reviewer-round-result-consumer-payload-design-20260908/bounded-review-result.schema.json",
+          "capability": ".charness/reviewer-round-result-consumer-payload-design-20260908/capability.json",
+          "prompt": ".charness/reviewer-round-result-consumer-payload-design-20260908/review-prompt.md",
+          "plan": ".charness/reviewer-round-result-consumer-payload-design-20260908/run-plan.json",
+          "ledger": ".charness/reviewer-round-result-consumer-payload-design-20260908/delivery.json",
+          "output": ".charness/reviewer-round-result-consumer-payload-design-20260908/result.json",
+          "receipt": ".charness/reviewer-round-result-consumer-payload-design-20260908/receipt.json",
+          "report": ".charness/reviewer-round-result-consumer-payload-design-20260908/worker-report.yaml",
+          "runner_stdout": ".charness/reviewer-round-result-consumer-payload-design-20260908/runner.stdout",
+          "runner_stderr": ".charness/reviewer-round-result-consumer-payload-design-20260908/runner.stderr",
+          "backend_stdout": ".charness/reviewer-round-result-consumer-payload-design-20260908/backend.stdout",
+          "backend_stderr": ".charness/reviewer-round-result-consumer-payload-design-20260908/backend.stderr",
+          "summary": ".charness/reviewer-round-result-consumer-payload-design-20260908/lifecycle.yaml"
+        },
+        "identities": {
+          "attempt_id": "result-consumer-payload-design-20260908",
+          "scope": "Design only: review result transport compatibility and consumer cost; no broad repository sampling. Source is baseline; spec names proposed projection.",
+          "packet_identity": "6502ea3f25b63903b915c1e8f06aa5dbff2e4cf7a44b8eb839b4f5799beac47c",
+          "reviewed_input_identity": "f93e1eae6d8b965ed98722e190e6b225ade91f62adf3ba6c25015d6d9206cd2d",
+          "parent_receipt_identity": "parent-27f10478d92960a9013076755ee526c8f599cf2183c1119f",
+          "findings_identity": "f252b2cc1cd9ef0ceb2693fef910e5b52ab7a559cc7150892521229e4c576bb0"
+        },
+        "ok": true,
+        "carrier_ok": true,
+        "packet_verification": {
+          "ok": true,
+          "status": "current",
+          "reason": "current",
+          "reason_code": "current",
+          "expected_kind": "charness.critique_prepare_packet",
+          "packet_path": "charness-artifacts/critique/result-consumer-payload-design-20260908-packet.json",
+          "packet_sha256": "6502ea3f25b63903b915c1e8f06aa5dbff2e4cf7a44b8eb839b4f5799beac47c",
+          "identity_sha256": "f93e1eae6d8b965ed98722e190e6b225ade91f62adf3ba6c25015d6d9206cd2d"
+        },
+        "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+        "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+        "backend": "codex_exec",
+        "timeout_seconds": 900,
+        "scope": "Design only: review result transport compatibility and consumer cost; no broad repository sampling. Source is baseline; spec names proposed projection.",
+        "lens": "Jackson and Raskin: does one metadata-only lifecycle preserve all decision/identity/evidence capability while full prompt and plan stay intact? Verify near-limit actual task parser loss is addressed without raising limits, new modes, recursive truncation, or nested task-carrier reinterpretation. Check dry/live/failure scopes and success-to-acceptance coverage. Task persisted-store compaction deferred intentionally. Return concrete blockers plus four-bin counterweight.",
+        "parent_receipt_identity": "parent-27f10478d92960a9013076755ee526c8f599cf2183c1119f",
+        "runner_output": {
+          "status": "runner-completed",
+          "returncode": 1
+        },
+        "runner_stream": {
+          "consistent": true,
+          "reason": null,
+          "runner_stdout_sha256": "f9b80a15ea749362c7979d46c336194382afc2e8193f9946b30da05b96843a4e",
+          "canonical_report_sha256": "f9b80a15ea749362c7979d46c336194382afc2e8193f9946b30da05b96843a4e"
+        },
+        "boundary_readback": {
+          "mode": "read-only-worker",
+          "required": false
+        },
+        "goal_lineage": {
+          "kind": "charness.goal-lineage",
+          "schema_version": 1,
+          "disposition": "not-goal-bound",
+          "draft": null,
+          "binding": null,
+          "goal_run": null,
+          "work_item": null,
+          "reason": "critique review was run without a Goal Run Work Item identity"
+        }
+      },
+      "result": {
+        "kind": "charness.bounded_review.v1",
+        "lens": "Jackson and Raskin",
+        "packet_sha256": "6502ea3f25b63903b915c1e8f06aa5dbff2e4cf7a44b8eb839b4f5799beac47c",
+        "reviewed_input_identity_sha256": "f93e1eae6d8b965ed98722e190e6b225ade91f62adf3ba6c25015d6d9206cd2d",
+        "verdict": "block",
+        "target_observations": null,
+        "findings": [
+          {
+            "id": "PAYLOAD-DESIGN-1",
+            "severity": "blocker",
+            "summary": "Acceptance coverage does not explicitly prove the projected metadata-only lifecycle on a post-start live failure path.",
+            "evidence": [
+              "The live path constructs a lifecycle carrier after runner execution and attaches semantic_input; this is distinct from the preflight failure carrier.",
+              "The spec requires dry/live projection parity and says failure paths remain typed and body-free, but criterion 5 exercises only preflight failure, where no semantic input has been materialized into a normal lifecycle.",
+              "A runner timeout, interruption, invalid report, or non-approval result can therefore regress to body-bearing or unparsable transport without violating the stated acceptance checks."
+            ],
+            "action": "Add an actual post-start fake-live failure acceptance case that asserts typed lifecycle delivery, metadata-only semantic input, unchanged prompt/plan bodies, valid unchanged task parsing where stdout is delivered, and preserved no-approval semantics."
+          }
+        ],
+        "counterweight_triage": [
+          {
+            "concern": "One metadata-only projection could lose decision, identity, or evidence capability.",
+            "bin": "not-a-problem",
+            "disposition": "The fixed decision preserves every semantic-input key except per-entry prompt_content, including locations, hashes, sizes, encoding, dispositions, and manifest; approval predicates are explicitly unchanged."
+          },
+          {
+            "concern": "The repair could evade the near-limit parser failure by increasing transport capacity or adding a carrier mode.",
+            "bin": "not-a-problem",
+            "disposition": "The spec expressly forbids limit increases, modes/schema versions, recursive truncation, and task-delivery reinterpretation; the unchanged actual task capture/parser is an acceptance consumer."
+          },
+          {
+            "concern": "Dry and successful fake-live behavior could diverge.",
+            "bin": "covered",
+            "disposition": "The design mandates one derivation and same payload for write/emit, with independent dry and fake-live exact-metadata checks."
+          },
+          {
+            "concern": "Failure lifecycle transport remains unproven after a reviewer has started.",
+            "bin": "blocker",
+            "disposition": "Add the post-start failure acceptance case before implementation approval."
+          }
+        ],
+        "next_move": "Revise the success criteria and frozen review harness to cover a post-start live failure lifecycle, then rerun bounded design review.",
+        "non_claims": [
+          "This review does not approve implementation progress.",
+          "This review does not assess task persisted-store compaction; its explicit deferral is compatible with the stated consumer-preservation boundary.",
+          "This review does not claim provider, model-selection, release, or general cost savings."
+        ],
+        "capability_non_claims": [],
+        "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "actual_model": "gpt-5.6-terra",
+      "actual_effort": "medium"
+    }
+  },
+  "parent_disposition": {
+    "retention-F1": {
+      "Act Before Ship": "add missing-directory prune control; done",
+      "Over-Worry": "live/dead classification and cap accounting were already fixed decisions; clarify without a new policy"
+    },
+    "retention-F2": {
+      "Bundle Anyway": "actual standing pre-run maintenance now observed through real tiny pytest; no every-task sweep claim",
+      "Over-Worry": "new runtime scan per task creation rejected"
+    },
+    "PAYLOAD-DESIGN-1": {
+      "Act Before Ship": "one post-start fake-live block acceptance added; no status-matrix or new gate"
+    }
+  },
+  "independent_acceptance": {
+    "retention": {
+      "harness_sha256": "86377d9e0c5f2a4093aff49b9700ef092b0eec3bccf5e08df7b81d8d9d0c303a",
+      "baseline": {
+        "checks": [
+          {
+            "child_returncode": 0,
+            "expected": true,
+            "name": "terminal keep=true linked task worktree survives normal child exit",
+            "observed": false,
+            "pass": false,
+            "receipt_keep": true
+          },
+          {
+            "child_returncode": 0,
+            "expected": true,
+            "generic_expired": [
+              {
+                "path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-0db7eo74/cache/charness/runtime/c5b2d9214d6732bd/task-run/kept-across-next-create/worktree",
+                "reason": "ephemeral pid is dead",
+                "removed": true,
+                "via": "git-worktree-remove"
+              }
+            ],
+            "name": "terminal keep=true dead-PID task worktree survives generic prepare_create",
+            "observed": false,
+            "pass": false
+          },
+          {
+            "child_returncode": 0,
+            "expected": {
+              "dead_retained_exists": true,
+              "live_exists": true,
+              "refused": false,
+              "remaining_count": 1
+            },
+            "generic_evicted": [],
+            "generic_expired": [
+              {
+                "path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-0db7eo74/cache/charness/runtime/ce68fc05f4640501/task-run/dead-retained-task/worktree",
+                "reason": "ephemeral pid is dead",
+                "removed": true,
+                "via": "git-worktree-remove"
+              }
+            ],
+            "name": "cap counts live task and excludes dead retained task without deleting either",
+            "observed": {
+              "dead_retained_exists": false,
+              "live_exists": true,
+              "refused": false,
+              "remaining_count": 1
+            },
+            "pass": false
+          },
+          {
+            "expected": false,
+            "generic_actions": [
+              {
+                "path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-0db7eo74/cache/charness/runtime/9a94f567fc792249/task-run/missing-task-path/worktree",
+                "reason": "unlabeled throwaway is idle residue",
+                "removed": true,
+                "via": "git-worktree-remove"
+              }
+            ],
+            "name": "missing task-worktree directory leaves no stale Git registration",
+            "observed": false,
+            "pass": true,
+            "path_exists": false
+          },
+          {
+            "expected": false,
+            "generic_expired": [
+              {
+                "path": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-0db7eo74/ordinary-ephemeral",
+                "reason": "ephemeral pid is dead",
+                "removed": true,
+                "via": "git-worktree-remove"
+              }
+            ],
+            "name": "ordinary non-task dead ephemeral remains generically reclaimable",
+            "observed": false,
+            "pass": true
+          },
+          {
+            "expected": {
+              "keep_false_exists": false,
+              "keep_false_salvage_archive": true,
+              "keep_false_salvage_record": true,
+              "keep_true_exists": true,
+              "standing_retention_log": true,
+              "standing_returncode": 0
+            },
+            "maintenance_invocation": "run_standing_pytest.run_standing_pytest -> runtime_root_retention.sweep_runtime_root before pytest child execution",
+            "name": "runtime sweep preserves keep=true and removes keep=false only after salvage",
+            "observed": {
+              "keep_false_exists": false,
+              "keep_false_salvage_archive": true,
+              "keep_false_salvage_record": true,
+              "keep_true_exists": true,
+              "standing_retention_log": true,
+              "standing_returncode": 0
+            },
+            "pass": true,
+            "standing_stderr": "standing-pytest: retention removed /home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-0db7eo74/cache/charness/runtime/927db81031bf4307/task-run/runtime-removed/worktree (0 MiB): finished lane (timed-out); result.json and logs kept\nstanding-pytest: retention removed 1, skipped 5; 0 MiB removed; log /home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-0db7eo74/cache/charness/runtime/927db81031bf4307/retention/sweep-1788825947.json\nRUN [standing-pytest] /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness-...\nPASS [standing-pytest] 2.0s /usr/bin/python3 -m pytest -q -m 'not release_only and not slow_corpus' --basetemp /home/hwidong/.cache/tmp/charness-...\n"
+          }
+        ],
+        "nonclaim": "No every-task workflow runtime sweep trigger is claimed or required by this acceptance contract.",
+        "overall_pass": false,
+        "owner_invocations": {
+          "generic_lifetime": "worktree_lifetime.prepare_create, enforce_cap, reclaim_expired",
+          "maintenance": "run_standing_pytest.run_standing_pytest invokes runtime_root_retention.sweep_runtime_root before pytest",
+          "task_completion_evidence": "normal child exit plus existing focused timeout test; this harness does not duplicate run_task"
+        },
+        "schema_version": 1,
+        "source_head": "189e04a1a0f43419f1d59f26ce260decdeac3328",
+        "source_root": "/home/hwidong/codes/charness",
+        "state_root": "/home/hwidong/.cache/tmp/charness-sustained-work-f4pwmvwv/retention-diagnosis/acceptance-state-0db7eo74",
+        "subject": "task-run retention owner handoff acceptance"
+      }
+    },
+    "payload": {
+      "harness_sha256": "86019a66459098b832dcddea4fd6c4b0714daa38274a290da96117ea9fd72c60",
+      "baseline": {
+        "kind": "charness.result-carrier-acceptance.v1",
+        "head": "189e04a1a0",
+        "status": "fail",
+        "design_gap": {
+          "id": "PAYLOAD-DESIGN-1",
+          "disposition": "covered-by-live-fake-block",
+          "scope": "one post-start findings-received non-approval lifecycle"
+        },
+        "failed_checks": [
+          "near-limit-dry.stdout_omits_prompt_content",
+          "near-limit-dry.stdout_entry_metadata_exact",
+          "near-limit-dry.task_delivery_untruncated",
+          "near-limit-dry.task_delivery_structured_valid",
+          "near-limit-dry.reviewer_lifecycle_survives",
+          "live-fake.stdout_omits_prompt_content",
+          "live-fake.stdout_entry_metadata_exact",
+          "live-fake-block.stdout_omits_prompt_content",
+          "live-fake-block.stdout_entry_metadata_exact"
+        ],
+        "scenarios": {
+          "near-limit-dry": {
+            "returncode": 0,
+            "stdout_bytes": 1051999,
+            "body_bytes": 1048576,
+            "backend_started": false,
+            "checks": {
+              "expected_returncode": true,
+              "stdout_is_mapping": true,
+              "reviewer_started_semantics": true,
+              "approval_semantics": true,
+              "verdict_semantics": true,
+              "delivery_semantics": true,
+              "lifecycle_yaml_exists": true,
+              "stdout_equals_lifecycle_yaml": true,
+              "semantic_metadata_present": true,
+              "stdout_omits_prompt_content": false,
+              "stdout_entry_metadata_exact": false,
+              "run_plan_preserves_body": true,
+              "worker_prompt_preserves_body": true,
+              "task_delivery_untruncated": false,
+              "task_delivery_structured_valid": false,
+              "reviewer_lifecycle_survives": false,
+              "backend_start_semantics": true
+            },
+            "task_delivery": {
+              "bytes": 1051999,
+              "truncated": true,
+              "structured_status": "not-applicable"
+            }
+          },
+          "live-fake": {
+            "returncode": 0,
+            "stdout_bytes": 63794,
+            "body_bytes": 45056,
+            "backend_started": true,
+            "checks": {
+              "expected_returncode": true,
+              "stdout_is_mapping": true,
+              "reviewer_started_semantics": true,
+              "approval_semantics": true,
+              "verdict_semantics": true,
+              "delivery_semantics": true,
+              "lifecycle_yaml_exists": true,
+              "stdout_equals_lifecycle_yaml": true,
+              "semantic_metadata_present": true,
+              "stdout_omits_prompt_content": false,
+              "stdout_entry_metadata_exact": false,
+              "run_plan_preserves_body": true,
+              "worker_prompt_preserves_body": true,
+              "task_delivery_untruncated": true,
+              "task_delivery_structured_valid": true,
+              "reviewer_lifecycle_survives": true,
+              "backend_start_semantics": true
+            },
+            "task_delivery": {
+              "bytes": 63794,
+              "truncated": false,
+              "structured_status": "valid"
+            }
+          },
+          "live-fake-block": {
+            "returncode": 1,
+            "stdout_bytes": 12022,
+            "body_bytes": 5888,
+            "backend_started": true,
+            "checks": {
+              "expected_returncode": true,
+              "stdout_is_mapping": true,
+              "reviewer_started_semantics": true,
+              "approval_semantics": true,
+              "verdict_semantics": true,
+              "delivery_semantics": true,
+              "lifecycle_yaml_exists": true,
+              "stdout_equals_lifecycle_yaml": true,
+              "semantic_metadata_present": true,
+              "stdout_omits_prompt_content": false,
+              "stdout_entry_metadata_exact": false,
+              "run_plan_preserves_body": true,
+              "worker_prompt_preserves_body": true,
+              "task_delivery_untruncated": true,
+              "task_delivery_structured_valid": true,
+              "reviewer_lifecycle_survives": true,
+              "backend_start_semantics": true
+            },
+            "task_delivery": {
+              "bytes": 12022,
+              "truncated": false,
+              "structured_status": "valid"
+            }
+          },
+          "preflight-failure": {
+            "returncode": 2,
+            "stdout_bytes": 1385,
+            "backend_started": false,
+            "checks": {
+              "typed_failure_returncode": true,
+              "typed_failure_carrier": true,
+              "failure_omits_semantic_input": true,
+              "failure_does_not_start_backend": true
+            }
+          }
+        }
+      }
+    }
+  },
+  "implementation_contract": "allowed; frozen assertions remain independent; final code review required"
+}
