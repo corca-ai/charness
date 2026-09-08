@@ -1,0 +1,97 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Pre-release review for charness 8.6.0 to 8.6.1 patch publication. The release
+  will bump packaging/charness.json, regenerate all declared plugin and marketplace
+  surfaces through the adapter sync command, run the release quality lane and fresh-checkout
+  probes, create the generated release record, push main and tag v8.6.1, then perform
+  distinct public and install readbacks. Consumer-visible scope is the two verified
+  bug repairs: retained canonical task-run worktrees survive generic cleanup, and
+  review lifecycle results preserve structured metadata within task delivery while
+  worker input stays complete. Evaluate version level, generated-surface synchronization,
+  fresh-checkout/operator update behavior, release note truthfulness, and rollback/visibility
+  evidence. Existing source implementation and integrated full read-only verification
+  are complete; no issue closeout is requested. Out of scope: new product behavior,
+  result-store migration, provider/model changes, broad refactors, or release claims
+  before their evidence exists.'
+attempt_id: release-8-6-1-20260908
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 7dfbc6350facb20776c3b11db19d465496e6c373ac747decd9975205110e2c84
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-6-1-20260908/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-6-1-20260908/delivery.json
+producer_run_id: run-release-8-6-1-20260908
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-6-1-20260908/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-release-8-6-1-20260908/receipt.json
+  producer_run_id: run-release-8-6-1-20260908
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: c72dac42b3c4d7a4bf2fd0433b18fde1c1fedf142d22f34791771d3690e55e28
+receipt_output_sha256: c72dac42b3c4d7a4bf2fd0433b18fde1c1fedf142d22f34791771d3690e55e28
+packet_identity: 35357b9e4059f3b593cdbf43f1403b4e64ddefcf207207da272e663b0cf18f4e
+reviewed_input_identity: ce0f25438541af04b0ce56b8c8ff5ab421891177b40b31e9bb874e97632a0e57
+parent_receipt_identity: parent-35b593a65247a1134914afe1423ce246a5d1c88a3153e13e
+provenance:
+  scope: 'Pre-release review for charness 8.6.0 to 8.6.1 patch publication. The release
+    will bump packaging/charness.json, regenerate all declared plugin and marketplace
+    surfaces through the adapter sync command, run the release quality lane and fresh-checkout
+    probes, create the generated release record, push main and tag v8.6.1, then perform
+    distinct public and install readbacks. Consumer-visible scope is the two verified
+    bug repairs: retained canonical task-run worktrees survive generic cleanup, and
+    review lifecycle results preserve structured metadata within task delivery while
+    worker input stays complete. Evaluate version level, generated-surface synchronization,
+    fresh-checkout/operator update behavior, release note truthfulness, and rollback/visibility
+    evidence. Existing source implementation and integrated full read-only verification
+    are complete; no issue closeout is requested. Out of scope: new product behavior,
+    result-store migration, provider/model changes, broad refactors, or release claims
+    before their evidence exists.'
+  packet_identity: 35357b9e4059f3b593cdbf43f1403b4e64ddefcf207207da272e663b0cf18f4e
+  reviewed_input_identity: ce0f25438541af04b0ce56b8c8ff5ab421891177b40b31e9bb874e97632a0e57
+  parent_receipt_identity: parent-35b593a65247a1134914afe1423ce246a5d1c88a3153e13e
+  attempt_id: release-8-6-1-20260908
+  attempt_scope: 'Pre-release review for charness 8.6.0 to 8.6.1 patch publication.
+    The release will bump packaging/charness.json, regenerate all declared plugin
+    and marketplace surfaces through the adapter sync command, run the release quality
+    lane and fresh-checkout probes, create the generated release record, push main
+    and tag v8.6.1, then perform distinct public and install readbacks. Consumer-visible
+    scope is the two verified bug repairs: retained canonical task-run worktrees survive
+    generic cleanup, and review lifecycle results preserve structured metadata within
+    task delivery while worker input stays complete. Evaluate version level, generated-surface
+    synchronization, fresh-checkout/operator update behavior, release note truthfulness,
+    and rollback/visibility evidence. Existing source implementation and integrated
+    full read-only verification are complete; no issue closeout is requested. Out
+    of scope: new product behavior, result-store migration, provider/model changes,
+    broad refactors, or release claims before their evidence exists.'
+  attempt_packet_identity: 35357b9e4059f3b593cdbf43f1403b4e64ddefcf207207da272e663b0cf18f4e
+  attempt_parent_receipt_identity: parent-35b593a65247a1134914afe1423ce246a5d1c88a3153e13e
+  result_packet_identity: 35357b9e4059f3b593cdbf43f1403b4e64ddefcf207207da272e663b0cf18f4e
+  result_reviewed_input_identity: ce0f25438541af04b0ce56b8c8ff5ab421891177b40b31e9bb874e97632a0e57
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 7dfbc6350facb20776c3b11db19d465496e6c373ac747decd9975205110e2c84
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes
