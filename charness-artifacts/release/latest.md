@@ -44,9 +44,13 @@ Advanced `charness` toward release `8.6.1` (tag `v8.6.1`) through the repo-owned
 
 ## Published Notes Audit
 
-- Published release body audit: `unauthored` (advisory; never blocks a publish).
-- The published body carries no authored notes (81 body bytes) — this release shipped with a generated changelog line and nothing else. `gh release edit` is the remedy; the release itself is unaffected.
-- Disposition reason: published body carries no authored notes (generated changelog line only); `gh release edit` is the remedy
+- Published release body audit: `authored` (post-publish advisory resolved).
+- The published body carries the six repair families, compatibility limits,
+  verification, update instructions, and the full changelog link (1,224 body
+  bytes).
+- Evidence: `gh release edit v8.6.1 --repo corca-ai/charness --notes-file`
+  followed by `gh release view v8.6.1` readback; the public body matches the
+  authored notes.
 
 ## Release Adapter Preflight
 
