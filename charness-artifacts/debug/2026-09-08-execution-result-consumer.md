@@ -29,7 +29,9 @@ Delegate task-lane automatic cleanup to its existing receipt/salvage owner and p
 
 ## Verification
 
-Refined frozen retention acceptance passes all six cases on the repair (three failed on the baseline). The review harness passes dry, live pass, live block and preflight failure, including unchanged task parsing and full worker-input preservation. Integrated source `440b143b0` has clean committed changed-line coverage for both production files. Final independent Terra review passed both declared targets with no findings. `charness-artifacts/probe/2026-09-08-execution-result-consumer-proof.json` freezes implementation evidence; the matching closeout JSON owns final review and the pending full read-only result.
+Refined frozen retention acceptance passes all six cases on the repair (three failed on the baseline). The review harness passes dry, live pass, live block and preflight failure, including unchanged task parsing and full worker-input preservation. Integrated source `440b143b0` has clean committed changed-line coverage for both production files. Final independent Terra review passed both declared targets with no findings. `charness-artifacts/probe/2026-09-08-execution-result-consumer-proof.json` freezes implementation evidence; the matching closeout JSON owns final review and the full read-only result.
+
+Full read-only verification at `4137cfa26` passed: 83 checks, 0 failures, 5 conditional omissions; default standing pytest returned 0 in 96.88 seconds. The whole lane took 164.4 seconds. The real final-review lifecycle also survives the unchanged task parser as a 9,842-byte complete mapping. Both owned proof worktrees were removed after their accepted commits were preserved.
 
 ### Final Review
 
