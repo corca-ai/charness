@@ -497,6 +497,39 @@ def test_declaration_lifecycle_reports_inapplicable_catalog_gates_without_a_gap(
     assert packets == []
 
 
+def test_legacy_v2_consumer_does_not_treat_inapplicable_default_as_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A v2 consumer that knows only the legacy alias keeps its old read path."""
+    modules = {
+        "scripts.adapters.quality_adapter_lib": SimpleNamespace(
+            load_quality_adapter_permissive=lambda _repo: {
+                "found": True,
+                "valid": True,
+                "path": str(tmp_path / ".agents" / "quality-adapter.yaml"),
+                "errors": [],
+                "warnings": [],
+            }
+        ),
+        "scripts.adapter_lib": SimpleNamespace(load_yaml_file=lambda _path: {}),
+        "scripts.adapters.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: []),
+    }
+    monkeypatch.setattr(LIFECYCLE, "_repo_module", modules.__getitem__)
+    monkeypatch.setattr(
+        LIFECYCLE._CATALOG_APPLICABILITY,
+        "applicable_catalog_gates",
+        lambda _repo, _raw, _gates: ([], [{"id": "repo-native", "reason": "absent"}]),
+    )
+
+    report, _packets = LIFECYCLE.build_declaration_lifecycle(
+        tmp_path, skills=[], catalog_gates=[{"id": "repo-native"}]
+    )
+    legacy_action_required = bool(report["unavailable_catalog_gates"] or report["gaps"])
+
+    assert report["status"] == "configured"
+    assert legacy_action_required is False
+
+
 def test_declared_paths_do_not_resolve_ignored_repo_skills_or_support_symlink(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
