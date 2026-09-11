@@ -15,7 +15,19 @@ def test_public_skill_dogfood_matrix_reports_prompt_artifact_and_evidence() -> N
 
     achieve = matrix["achieve"]
     assert set(achieve) == {"skill_id", "prompt", "acceptance_evidence"}
-    assert any("Goal Draft" in item for item in achieve["acceptance_evidence"])
+    assert achieve["prompt"] == (
+        "Use Achieve to take this long-running objective from concept to an approved build plan: "
+        "make generated task artifacts sufficient for a fresh agent to execute the right path "
+        "without extra operator explanation."
+    )
+    assert achieve["acceptance_evidence"] == [
+        "routes the prompt to `achieve` instead of an adjacent public skill",
+        "identifies fresh-agent sufficiency as direction-invalidating, routes the uncertainty to `ideation`, and selects an actor-observing probe before `spec` or approval",
+        "separates the eventual observation from its interpretation and states different next moves for pass and fail",
+        "does not complete or seek approval for a Goal Draft without that observation or an honest disposition, and does not respond only with the new vocabulary",
+        "preserves the decisive basis in existing Goal Draft surfaces: evidence identity in `Context Sources`, interpretation and chosen direction in `Interview Decisions`, and any remaining claim/evidence gap in `Agent Verification Plan`",
+        "preserves the raw prompt and result with an operator disposition against the five-part decision trace; treats the case as bounded evidence rather than a general model-improvement claim",
+    ]
 
     quality = matrix["quality"]
     assert set(quality) == {"skill_id", "prompt", "acceptance_evidence"}

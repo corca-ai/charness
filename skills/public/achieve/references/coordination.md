@@ -11,8 +11,8 @@ review or issue engine.
 
 | Workflow | Achieve contribution |
 | --- | --- |
-| `ideation` | clarify demand, status quo, wedge, and product boundaries |
-| `spec` | turn the approved concept into the current implementation contract |
+| `ideation` | clarify demand, status quo, wedge, and product boundaries; own concept shape, assumption ranking, whether reality contact is needed, and the cheapest sufficiently real probe for direction-level uncertainty |
+| `spec` | turn the approved concept into the current implementation contract; classify mechanism uncertainty as a `Probe Question` |
 | `critique` | review material authority, durability, external-write, security, release, compatibility, deletion, migration, or proof-surface risk |
 | `impl` | change the selected Work Item's code, config, tests, or operator artifact |
 | `quality` | choose proportionate deterministic, provider, and boundary checks |

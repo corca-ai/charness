@@ -24,6 +24,28 @@ repository-relative paths are required when planning prose names an executable
 checkout path. Markdown shape and fence balance are checked without treating
 the draft as execution state.
 
+## Learning Before Commitment
+
+Before committing to a consequential direction or asking for approval, choose
+the next move: learn first when unresolved uncertainty could change the
+direction before the next cheap reversible step; otherwise continue with that
+step. Name direction-invalidating uncertainty as an assumption and route it to
+`ideation`. Achieve owns this handoff and sequences the result;
+`ideation` owns concept shape, assumption ranking, whether reality contact is
+needed, and the cheapest sufficiently real probe. Enter `spec` only after that
+concept uncertainty is observed, explicitly accepted, or deferred with a reason
+that keeps the current step honest. Spec-local mechanism uncertainty remains a
+`Probe Question` in `spec`.
+
+Do not create a separate probe when the next cheap reversible step will itself
+produce the needed observation: record the uncertainty and expected observation,
+take that step, and reconsider the route. Evidence is claim-relative: select a
+fresh agent, user, provider, or live execution only when that actor or boundary
+is part of the claim; local deterministic evidence remains enough for local
+structural claims. Carry the evidence identity into `Context Sources`, the
+interpretation and chosen direction into `Interview Decisions`, and any
+remaining claim/evidence gap into `Agent Verification Plan`.
+
 ## Interview
 
 Resolve `interview.max_questions` from the adapter, defaulting to 15. Each

@@ -26,6 +26,9 @@ sequence is a lens, not a mandate.
 - Perceive the current whole before naming actions.
 - Separate centers already present from centers still to create.
 - Choose the next center whose strengthening most improves the whole.
+- When a result matters, observe first, separate the observation from its
+  interpretation, diagnose whether the gap is one of ownership, derivation,
+  boundary, or proof, then choose the structural response.
 - Make one transformation at a time.
 - Prefer the smallest live proof that can teach the next step.
 - Add durable checkpoints before dependent work.
