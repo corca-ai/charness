@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 193,
-  "indexed_artifact_count": 178,
+  "source_artifact_count": 194,
+  "indexed_artifact_count": 179,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 8,
-    "none": 78,
+    "none": 79,
     "operator-visible-recovery": 23,
     "repeated-symptom": 22
   },
   "generalization_pressure_counts": {
     "factor-now": 25,
     "monitor": 125,
-    "none": 28
+    "none": 29
   },
   "entries": [
     {
@@ -2498,6 +2498,20 @@
       "forced": true
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-09-08-execution-result-consumer.md",
+      "is_current_pointer": false,
+      "interrupt_id": "execution-result-consumer",
+      "risk_classes": [
+        "repeated-symptom"
+      ],
+      "seam": "execution result to storage and transport consumers",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-09-08-execution-result-consumer.md",
+      "forced": true
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-09-08-resolved-debug-risk.md",
       "is_current_pointer": false,
       "interrupt_id": "resolved-debug-risk",
@@ -2514,16 +2528,16 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "execution-result-consumer",
+      "interrupt_id": "quality-catalog-repo-native-default",
       "risk_classes": [
-        "repeated-symptom"
+        "none"
       ],
-      "seam": "execution result to storage and transport consumers",
+      "seam": "catalog applicability to adapter declaration lifecycle",
       "generalization_pressure": "none",
       "critique_required": true,
-      "next_step": "spec",
-      "handoff_artifact": "charness-artifacts/spec/2026-09-08-execution-result-consumer.md",
-      "forced": true
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
     }
   ],
   "skipped_artifacts": [

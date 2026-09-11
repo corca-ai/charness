@@ -32,6 +32,10 @@ def _append_lifecycle(lines: list[str], lifecycle: dict[str, Any]) -> None:
             f"  - skill path {row.get('declaration')}: {row.get('target_state')} / "
             f"{row.get('packet_id')}"
         )
+    for row in lifecycle.get("inapplicable_catalog_gates", []):
+        lines.append(
+            f"  - INFO catalog gate {row.get('id')}: not applicable — {row.get('reason')}"
+        )
     for gap in lifecycle.get("gaps", []):
         lines.append(f"  - GAP {gap.get('kind')}: {gap.get('detail')}")
 

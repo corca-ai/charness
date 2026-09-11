@@ -99,6 +99,9 @@ Use explicit empty lists to record an intentional opt-out.
   maintainer-local enforcement; put diagnostic/review detail in
   `review_commands`. Command-docs drift checks belong in a repo-local contract
   such as `<repo-root>/.agents/command-docs.yaml`, then invoked from those groups.
+  A valid adapter's declared commands own the consumer route: catalog entries
+  for absent repo-native runners are inapplicable metadata, not setup gaps, and
+  do not require the consumer to adopt `<repo-root>/scripts/run-quality.sh`.
 - `mutation_testing` — stack-neutral mutation policy slots; see
   `mutation-testing.md`. Defaults and quotas live in
   `quality_policy_defaults.py`.

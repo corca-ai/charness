@@ -40,7 +40,7 @@ def applicable_catalog_gates(
         if isinstance(command, str) and command.strip()
     }
     applicable: list[dict[str, Any]] = []
-    unavailable: list[dict[str, str]] = []
+    inapplicable: list[dict[str, str]] = []
     for gate in catalog_gates:
         command = gate.get("command")
         run_when = str(gate.get("run_when") or "")
@@ -51,13 +51,16 @@ def applicable_catalog_gates(
             and command not in declared_commands
             and not (repo_root / path).is_file()
         ):
-            unavailable.append(
+            inapplicable.append(
                 {
                     "id": str(gate.get("id") or command),
                     "command": command,
-                    "reason": f"missing repo-native command {path.as_posix()}",
+                    "reason": (
+                        "adapter does not declare this catalog default and repo does not "
+                        f"expose {path.as_posix()}"
+                    ),
                 }
             )
             continue
         applicable.append(gate)
-    return applicable, unavailable
+    return applicable, inapplicable

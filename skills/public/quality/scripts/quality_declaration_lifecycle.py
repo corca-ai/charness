@@ -263,6 +263,9 @@ def build_declaration_lifecycle(
         "skills": [],
         "skill_scope_source": "discovered",
         "declared_skill_paths": [],
+        "inapplicable_catalog_gates": [],
+        # quality.run_plan.v2 compatibility alias. Inapplicable defaults are no
+        # longer unavailable requirements, so legacy consumers receive no rows.
         "unavailable_catalog_gates": [],
         "gaps": [],
     }
@@ -285,19 +288,16 @@ def build_declaration_lifecycle(
     report["gaps"].extend(preset_gaps)
 
     if adapter.get("found"):
-        applicable_catalog_gates, unavailable_catalog_gates = (
+        applicable_catalog_gates, inapplicable_catalog_gates = (
             _CATALOG_APPLICABILITY.applicable_catalog_gates(repo_root, raw, catalog_gates)
         )
     else:
-        applicable_catalog_gates, unavailable_catalog_gates = catalog_gates, []
-    report["unavailable_catalog_gates"] = unavailable_catalog_gates
-    for unavailable in unavailable_catalog_gates:
-        report["gaps"].append(
-            {
-                "kind": "catalog_gate_unavailable",
-                "detail": f"{unavailable['id']}: {unavailable['reason']}",
-            }
-        )
+        applicable_catalog_gates, inapplicable_catalog_gates = catalog_gates, []
+    # Catalog defaults describe capabilities Charness knows how to inspect; they
+    # are not requirements imposed on every adapter-owned repository.  Preserve
+    # the applicability decision for explanation without turning it into a
+    # consumer repair request.
+    report["inapplicable_catalog_gates"] = inapplicable_catalog_gates
 
     declared_skill_paths = _declared_skill_paths(repo_root, raw)
     skills, skill_scope_source = _effective_skill_paths(skills, declared_skill_paths, raw)

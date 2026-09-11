@@ -340,7 +340,7 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
     structural_packet = _structural_review_packet(repo_root, skills, target_skill)
     brief = _quality_brief(repo_root, catalog)
     phase_barriers = [
-        "Read declaration_lifecycle before gates; declared-only, unreachable, missing, and not-run are not covered verdicts.",
+        "Read declaration_lifecycle before gates; declared-only, unreachable, missing, and not-run are not covered verdicts. Inapplicable catalog defaults are omitted capabilities, not consumer gaps.",
         "Read required_reads before broad gates.",
         "The brief carries the load-bearing classification/automation/maintainer-enforcement discipline and the inventory-dispatch routing index (concern area -> inventories + detail_refs) inline; apply it and open a brief detail_ref only when its trigger fires.",
         "Run deterministic gates as evidence packets, then analyze the report against the primer refs before fixing.",

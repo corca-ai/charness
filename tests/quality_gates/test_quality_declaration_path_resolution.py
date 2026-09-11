@@ -456,12 +456,13 @@ def test_declaration_lifecycle_keeps_catalog_gates_when_no_adapter_exists(
     )
 
     assert report["status"] == "not-configured"
+    assert report["inapplicable_catalog_gates"] == []
     assert report["unavailable_catalog_gates"] == []
     assert report["gaps"] == []
     assert packets == []
 
 
-def test_declaration_lifecycle_reports_unavailable_catalog_gates(
+def test_declaration_lifecycle_reports_inapplicable_catalog_gates_without_a_gap(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     modules = {
@@ -477,22 +478,22 @@ def test_declaration_lifecycle_reports_unavailable_catalog_gates(
         "scripts.adapter_lib": SimpleNamespace(load_yaml_file=lambda _path: {}),
         "scripts.adapters.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: []),
     }
-    unavailable = {"id": "repo-native", "reason": "runner is absent"}
+    inapplicable = {"id": "repo-native", "reason": "runner is absent"}
     monkeypatch.setattr(LIFECYCLE, "_repo_module", modules.__getitem__)
     monkeypatch.setattr(
         LIFECYCLE._CATALOG_APPLICABILITY,
         "applicable_catalog_gates",
-        lambda _repo, _raw, _gates: ([], [unavailable]),
+        lambda _repo, _raw, _gates: ([], [inapplicable]),
     )
 
     report, packets = LIFECYCLE.build_declaration_lifecycle(
         tmp_path, skills=[], catalog_gates=[{"id": "repo-native"}]
     )
 
-    assert report["unavailable_catalog_gates"] == [unavailable]
-    assert report["gaps"] == [
-        {"kind": "catalog_gate_unavailable", "detail": "repo-native: runner is absent"}
-    ]
+    assert report["inapplicable_catalog_gates"] == [inapplicable]
+    assert report["unavailable_catalog_gates"] == []
+    assert report["status"] == "configured"
+    assert report["gaps"] == []
     assert packets == []
 
 

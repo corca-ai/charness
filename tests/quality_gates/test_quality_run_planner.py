@@ -18,10 +18,10 @@ from .seeding_support import load_module
 from .support import ROOT, run_script
 
 SCRIPT = "skills/public/quality/scripts/plan_quality_run.py"
-SCRIPT_PATH = ROOT / SCRIPT
+RENDERER_SCRIPT = "skills/public/quality/scripts/quality_run_plan_render.py"
 CATALOG = ROOT / "skills" / "public" / "quality" / "references" / "catalog.yaml"
 
-PLAN = load_module("quality_run_plan_under_test", SCRIPT_PATH)
+PLAN = load_module("quality_run_plan_under_test", ROOT / SCRIPT)
 
 
 def _assert_help_pairs(output: str, expected_pairs: dict[str, str]) -> None:
@@ -70,7 +70,7 @@ def test_quality_run_plan_main_emits_yaml_detail_in_process(
     ("loader_name", "adjacent_name"),
     [
         ("_load_declaration_lifecycle", "quality_declaration_lifecycle.py"),
-        ("_load_plan_renderer", "quality_run_plan_render.py"),
+        ("_load_plan_renderer", Path(RENDERER_SCRIPT).name),
     ],
 )
 def test_quality_run_plan_fails_loudly_when_adjacent_module_is_not_loadable(
@@ -286,19 +286,18 @@ def test_quality_run_plan_uses_adapter_packets_when_generic_runner_is_absent(
     assert "read-only-quality" not in packets
     assert packets["adapter-gate-1"]["command"] == "npm run check"
     assert packets["adapter-security-1"]["command"] == "npm audit --omit=dev"
-    # Every repo-native catalog gate this consumer lacks is reported as unavailable
-    # rather than advertised.
-    assert plan["declaration_lifecycle"]["unavailable_catalog_gates"] == [
+    # Repo-native catalog defaults are optional capabilities. The adapter's own
+    # gate replaces the default without creating a consumer repair request.
+    assert plan["declaration_lifecycle"]["inapplicable_catalog_gates"] == [
         {
             "id": "read-only-quality",
             "command": "./scripts/run-quality.sh --read-only",
-            "reason": "missing repo-native command scripts/run-quality.sh",
+            "reason": "adapter does not declare this catalog default and repo does not expose scripts/run-quality.sh",
         },
     ]
-    assert {
-        "kind": "catalog_gate_unavailable",
-        "detail": "read-only-quality: missing repo-native command scripts/run-quality.sh",
-    } in plan["declaration_lifecycle"]["gaps"]
+    assert plan["declaration_lifecycle"]["unavailable_catalog_gates"] == []
+    assert plan["declaration_lifecycle"]["status"] == "configured"
+    assert plan["declaration_lifecycle"]["gaps"] == []
 
 
 def test_quality_run_plan_names_unreachable_declared_surface(tmp_path: Path) -> None:
@@ -318,7 +317,6 @@ def test_quality_run_plan_names_unreachable_declared_surface(tmp_path: Path) -> 
     assert cli["routing_state"] == "unreachable"
     assert lifecycle["declared_skill_paths"][0]["target_state"] == "unreachable"
     assert {gap["kind"] for gap in lifecycle["gaps"]} == {
-        "catalog_gate_unavailable",
         "declared_surface_unreachable",
     }
 
@@ -543,6 +541,7 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
                         "packet_id": "skill-ergonomics",
                     }
                 ],
+                "inapplicable_catalog_gates": [{"id": "read-only-quality", "reason": "adapter owns another gate"}],
                 "gaps": [{"kind": "preset_requirement_missing", "detail": "typescript-quality"}],
             },
             "required_reads": [
@@ -618,6 +617,7 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
     assert "command review_commands: routed / not-run / npm run ui" in text
     assert "surface web_app: partial / adapter-review-1" in text
     assert "skill path skills/public/quality/SKILL.md: resolved / skill-ergonomics" in text
+    assert "INFO catalog gate read-only-quality: not applicable — adapter owns another gate" in text
     assert "GAP preset_requirement_missing: typescript-quality" in text
     assert "gate states: healthy, weak, missing, deferred" in text
     assert "weak also = costly or redundant" in text
