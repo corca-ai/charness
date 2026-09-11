@@ -26,25 +26,26 @@ the draft as execution state.
 
 ## Learning Before Commitment
 
-Before committing to a consequential direction or asking for approval, choose
-the next move: learn first when unresolved uncertainty could change the
+Before settling a consequential direction or asking for approval, choose the
+next move: route unresolved uncertainty to `ideation` when it could change the
 direction before the next cheap reversible step; otherwise continue with that
-step. Name direction-invalidating uncertainty as an assumption and route it to
-`ideation`. Achieve owns this handoff and sequences the result;
-`ideation` owns concept shape, assumption ranking, whether reality contact is
-needed, and the cheapest sufficiently real probe. Enter `spec` only after that
-concept uncertainty is observed, explicitly accepted, or deferred with a reason
-that keeps the current step honest. Spec-local mechanism uncertainty remains a
-`Probe Question` in `spec`.
+step. Achieve owns this handoff and sequences the result. Ideation owns concept
+shape, assumption ranking, and whether and how reality contact is needed. Enter
+`spec` only after concept uncertainty is observed, explicitly accepted, or
+deferred with a reason that keeps the current step honest. Spec-local mechanism
+uncertainty remains a `Probe Question` in `spec`.
 
 Do not create a separate probe when the next cheap reversible step will itself
 produce the needed observation: record the uncertainty and expected observation,
 take that step, and reconsider the route. Evidence is claim-relative: select a
 fresh agent, user, provider, or live execution only when that actor or boundary
 is part of the claim; local deterministic evidence remains enough for local
-structural claims. Carry the evidence identity into `Context Sources`, the
-interpretation and chosen direction into `Interview Decisions`, and any
-remaining claim/evidence gap into `Agent Verification Plan`.
+structural claims. When an observation is needed, carry its identity in `Context
+Sources`, its interpretation and the different next routes implied by contrasting
+results in `Interview Decisions`, and any remaining claim/evidence gap in `Agent
+Verification Plan`. Use the shared
+[generative sequence](../../shared/references/generative-sequence.md) for the
+observation-to-response order; do not reproduce it in the Goal Draft.
 
 ## Interview
 

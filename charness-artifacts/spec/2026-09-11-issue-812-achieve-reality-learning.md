@@ -71,7 +71,7 @@ Clarify the existing orchestration and learning sequence; update the reviewed Ac
 - `manual`: preserve the two baseline fresh-agent observations. Both current agents chose a reality-first probe, establishing that the change should clarify and stabilize an existing good judgment rather than invent a new capability.
 - `manual`: run this actor-effect prompt through a fresh agent: “Use Achieve to take this long-running objective from concept to an approved build plan: make generated task artifacts sufficient for a fresh agent to execute the right path without extra operator explanation.” It must identify fresh-agent sufficiency as direction-invalidating, route the uncertainty to ideation, select an actor-observing probe before spec/approval, separate the eventual observation from interpretation, and state different next moves for pass and fail. Fail if it completes or seeks approval for a Goal Draft without that observation/disposition, or responds only with the new vocabulary.
 - `manual`: run this paired local-structure prompt through a fresh agent: “Use Achieve to take this long-running objective from concept to an approved build plan: make generated task artifacts preserve their declared schema and byte-stable regeneration across source and plugin mirrors.” It should use repository inspection and deterministic regeneration evidence, and should not require a fresh-agent/user/provider probe unless inspection exposes a separate actor-facing claim. The paired routes must differ because the claim boundary differs, not because one prompt is labeled routine.
-- `manual`: preserve raw prompt and result for both cases with an operator disposition against the five-part decision trace. These two observations are bounded cases, not a general model-improvement claim.
+- `manual`: preserve the exact prompts and a structured observation of both results against the five-part decision trace. Raw model prose remains session evidence rather than a new canonical contract. These two observations are bounded cases, not a general model-improvement claim.
 - `manual`: confirm that the decisive basis survives in existing Goal Draft surfaces: evidence identity in `Context Sources`, the interpretation and chosen direction in `Interview Decisions`, and any remaining claim/evidence gap in `Agent Verification Plan`. A later spec-planning reader must recover why the concept was settled or dispositioned without hidden transcript reasoning.
 - `unit`: focused Achieve before-activation tests pin orchestration ownership, the learning-before-commitment transition, the concept-vs-mechanism discriminator, and the no-universal-probe escape.
 - `unit`: public-skill dogfood tests prove the registry carries and exposes the new Achieve acceptance evidence.
@@ -96,6 +96,46 @@ Round 1 used two file-backed read-only workers over packet `charness-artifacts/c
 Fresh-Eye Satisfaction: worker-delivered, blocking round consumed; follow-up review required before implementation.
 
 Follow-up review: `issue-812-spec-followup` delivered `pass` and was approval-eligible after reading the repaired whole. Packet `charness-artifacts/critique/2026-09-11-110758-packet.json`; reviewed-input identity `69a0bba4b6eb213413d4fd0f031ff64ae82157bed0801c5fa6610f7e36fc8328`; findings identity `3bc620c3261602f808f77f521afb5ac55c92bb54e7d025482be4e24359828f54`; durable worker report `charness-artifacts/critique/workers/issue-812-spec-followup/worker-report.yaml`. Implementation is allowed against this revised contract.
+
+The integrated-code review over packet `charness-artifacts/critique/2026-09-11-111723-packet.json` delivered two block verdicts. Act Before Ship findings were: the dogfood registry accidentally described evidence preservation as an Achieve behavior contract; pass/fail routes were not explicit in the Achieve handoff; tests recopied whole prose/contracts; and detailed ownership appeared in too many surfaces. The repair keeps the shared sequence as the reusable owner, keeps Achieve-specific routing and Goal Draft destinations in Achieve, shortens the coordination table, requires contrasting-result routes, and reduces static tests to structural/load-bearing anchors. The request for every Achieve run to preserve raw prompt/result is rejected as misplaced ownership; this spec records the bounded dogfood observation instead.
+
+## Candidate Dogfood Observation
+
+Candidate source: working tree after the integrated-code review repairs to commit `bd1272ac8`.
+
+### Actor-effect case
+
+Exact prompt: “Use Achieve to take this long-running objective from concept to an approved build plan: make generated task artifacts sufficient for a fresh agent to execute the right path without extra operator explanation.”
+
+- Direction-changing uncertainty: whether the artifact is insufficient for an unbriefed agent, or whether the missing owner is upstream briefing/pickup/documentation.
+- Selected owner: `ideation` decides whether/how to run reality contact; task-result, task-launch, or pickup ownership follows the observation rather than being assumed.
+- Evidence boundary: a fresh agent must select and safely execute the prescribed action from real contrasting task states; schema/unit evidence is explicitly a non-claim for comprehension.
+- Observation versus interpretation: emitted fields and deterministic tests were recorded as observations; their usability was kept as an unproven interpretation pending the actor probe.
+- Contrasting-result routes: success avoids schema expansion; missing actionable data enters a task-result spec; missing upstream intent moves ownership to launch/Work Item; state-dependent results narrow and repeat the smallest probe.
+- Disposition: meets the five-part trace and does not proceed to spec or approval before the observation or honest disposition.
+
+### Local-structure case
+
+Exact prompt: “Use Achieve to take this long-running objective from concept to an approved build plan: make generated task artifacts preserve their declared schema and byte-stable regeneration across source and plugin mirrors.”
+
+- Direction-changing uncertainty: whether byte stability applies to purely derived outputs or incorrectly includes volatile receipts containing timestamps, PIDs, paths, and logs.
+- Selected owner: repository source/export/schema owners; one operator scope decision remains before spec.
+- Evidence boundary: local classification, canonical fixtures, source/plugin regeneration, byte comparison for purely derived artifacts, and negative schema cases.
+- Observation versus interpretation: producer/schema/mirror facts must be inventoried before interpreting a parity gap as a product defect.
+- Contrasting-result routes: accept deterministic parity for derived outputs; preserve runtime evidence and use schema/validation rather than byte identity for volatile receipts.
+- Disposition: explicitly refuses fresh-agent and provider probes because neither actor is part of the claim. Local deterministic observation is sufficient before spec/approval.
+
+Paired verdict: the routes differ on the evidence-owner axis while keeping the prompt form and planning consequence similar. This is bounded evidence that the candidate supports claim-relative routing; it is not a general model-behavior improvement claim.
+
+Consumer boundary check: `Ceal` and `Daily Scrum` are absent from the changed public skill, shared reference, dogfood registry, and focused tests. The originating consumer episode remains only in issue/spec provenance; shipped behavior is expressed through generic actor, artifact, claim, and owner concepts.
+
+## Implementation Evidence
+
+- Isolated task candidate `db9c6058c` changed only the six declared source/test paths; task receipt was approval-eligible and changed-line status was `noop` because no mutation-pool files changed.
+- Parent integrated the candidate as `bd1272ac8`, ran the canonical plugin exporter, and byte-compared the three generated Achieve/shared mirrors.
+- Focused tests: `9 passed`.
+- `python3 -m tools.validate_public_skill_dogfood --repo-root .`: 19 cases and 19 required skills validated.
+- `python3 -m tools.validate_skills --repo-root .`: 21 skill packages validated.
 
 ## Canonical Artifact
 
