@@ -1,0 +1,136 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-11T12:05:30Z",
+  "prepared_for": "v8.6.2 pre-mutation release safety; version/export/notes are publish-helper and claims-review outputs",
+  "changed_ref": "8391a5506dea189f28a46134f04382309d13d67f..c48da5cc1375a0a16a1d302e6a5585a88b64c603",
+  "substrate_mode": "committed-ref",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `8391a5506dea189f28a46134f04382309d13d67f..c48da5cc1375a0a16a1d302e6a5585a88b64c603`:\n- charness-artifacts/debug/2026-09-11-quality-catalog-repo-native-default.md\n- charness-artifacts/debug/latest.md\n- charness-artifacts/debug/seam-risk-index.json\n- skills/public/quality/references/adapter-contract.md\n- skills/public/quality/scripts/plan_quality_run.py\n- skills/public/quality/scripts/quality_catalog_gate_applicability.py\n- skills/public/quality/scripts/quality_declaration_lifecycle.py\n- skills/public/quality/scripts/quality_run_plan_render.py\n- tests/quality_gates/test_quality_declaration_path_resolution.py\n- tests/quality_gates/test_quality_run_planner.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: skills/public/quality/references/adapter-contract.md, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_catalog_gate_applicability.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/public/quality/scripts/quality_run_plan_render.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/debug/2026-09-11-quality-catalog-repo-native-default.md, charness-artifacts/debug/latest.md, skills/public/quality/references/adapter-contract.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/quality/references/adapter-contract.md, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_catalog_gate_applicability.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/public/quality/scripts/quality_run_plan_render.py\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/quality/references/adapter-contract.md, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_catalog_gate_applicability.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/public/quality/scripts/quality_run_plan_render.py\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/quality/references/adapter-contract.md, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_catalog_gate_applicability.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/public/quality/scripts/quality_run_plan_render.py\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-09-11-quality-catalog-repo-native-default.md, charness-artifacts/debug/latest.md\n  derived matches: charness-artifacts/debug/seam-risk-index.json\n  sync: python3 scripts/retro_debug/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/retro_debug/build_debug_seam_risk_index.py --repo-root . --check\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/quality_gates/test_quality_declaration_path_resolution.py, tests/quality_gates/test_quality_run_planner.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_catalog_gate_applicability.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/public/quality/scripts/quality_run_plan_render.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/retro_debug/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "prepared_targets": [
+    "v8.6.2"
+  ],
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "committed-ref",
+    "substrate_mode": "committed-ref",
+    "changed_ref": "8391a5506dea189f28a46134f04382309d13d67f..c48da5cc1375a0a16a1d302e6a5585a88b64c603",
+    "resolved_changed_ref": [
+      "8391a5506dea189f28a46134f04382309d13d67f",
+      "c48da5cc1375a0a16a1d302e6a5585a88b64c603"
+    ],
+    "base_head": "c48da5cc1375a0a16a1d302e6a5585a88b64c603",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      "charness-artifacts/debug/2026-09-11-quality-catalog-repo-native-default.md",
+      "charness-artifacts/debug/latest.md",
+      "charness-artifacts/debug/seam-risk-index.json",
+      "skills/public/quality/references/adapter-contract.md",
+      "skills/public/quality/scripts/plan_quality_run.py",
+      "skills/public/quality/scripts/quality_catalog_gate_applicability.py",
+      "skills/public/quality/scripts/quality_declaration_lifecycle.py",
+      "skills/public/quality/scripts/quality_run_plan_render.py",
+      "tests/quality_gates/test_quality_declaration_path_resolution.py",
+      "tests/quality_gates/test_quality_run_planner.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/debug/2026-09-11-quality-catalog-repo-native-default.md",
+        "content_sha256": "52fe254d1ad6af7c4c3160ae0e40af1168480f3b095a4f0c2d51a008128728c0"
+      },
+      {
+        "path": "charness-artifacts/debug/latest.md",
+        "content_sha256": "ec9291ed08dcaabbed9ef40b5204fda531e7b0eb20348e75771a9c9b3af76e54"
+      },
+      {
+        "path": "charness-artifacts/debug/seam-risk-index.json",
+        "content_sha256": "6f9246340a3a9a40dd566006f9dd18d8db57f9732b3dda47dbfe7d1ad2bb507f"
+      },
+      {
+        "path": "skills/public/quality/references/adapter-contract.md",
+        "content_sha256": "e55bd59c77bdb814a19a6621be12b4fc931c2ce00ca53a795cf510d0abfab9de"
+      },
+      {
+        "path": "skills/public/quality/scripts/plan_quality_run.py",
+        "content_sha256": "cba6a2edb424c21a6506bbbc045280738ee8fa912253f4d6a8ef5431dccca8d0"
+      },
+      {
+        "path": "skills/public/quality/scripts/quality_catalog_gate_applicability.py",
+        "content_sha256": "f11f8206da3512874b631a93a8810610834701a54b25f5600321bd7ca10eb83a"
+      },
+      {
+        "path": "skills/public/quality/scripts/quality_declaration_lifecycle.py",
+        "content_sha256": "4e3244722d6af1872b9faab9f6c3c886e03de02056e4f9aa6c4fd463ea3b7580"
+      },
+      {
+        "path": "skills/public/quality/scripts/quality_run_plan_render.py",
+        "content_sha256": "6c05b5258684f235b7a3c8db3b7d234aa11f02c82b47d07dc18b0a4ea38b63a1"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_declaration_path_resolution.py",
+        "content_sha256": "493a5ff87415bca647b12ae71fb2fab9bfbaee3d0249e92e3ca184b271e65acb"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_run_planner.py",
+        "content_sha256": "c99619d706099acd739791d29fcab303c2e05710ae67d0a4f32e440c3cf7eff5"
+      }
+    ],
+    "reviewed_patch_sha256": "432e294243496e2f4e97c2c356652753ba943bd2aa7ab3f64bacb0977821e2b4",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "86bf857638ce6ec406dfaaf1f298f86b13e3c783db9653350ba0ce0d211fb5e2"
+  }
+}
