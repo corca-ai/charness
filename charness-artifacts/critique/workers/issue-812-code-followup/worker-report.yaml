@@ -1,0 +1,61 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: Issue 812 repaired integrated Achieve reality-learning commit
+attempt_id: issue-812-code-followup
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: bb0f1023dd97fa9159c8d68a62054395f72670da41a9300a253e8c5dfea3de5c
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/reviewer-round-issue-812-code-followup/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/reviewer-round-issue-812-code-followup/delivery.json
+producer_run_id: run-issue-812-code-followup
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/reviewer-round-issue-812-code-followup/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/reviewer-round-issue-812-code-followup/receipt.json
+  producer_run_id: run-issue-812-code-followup
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 48f9ced595451708a8e2f17c60d1607b5a45cbf3ae6c7a5e4c84286bafd4c99a
+receipt_output_sha256: 48f9ced595451708a8e2f17c60d1607b5a45cbf3ae6c7a5e4c84286bafd4c99a
+packet_identity: 55828cbc925c85f105f05a8de458f3b430c86b8b12957242aeea84e85670c0ee
+reviewed_input_identity: 41d4af826f1b83f5cc681f4f8a9d1697b596541228611c33305ace30b14b1085
+parent_receipt_identity: parent-924208eff36cf4cebe7cb913a4f9b453fe61343280ca1f22
+provenance:
+  scope: Issue 812 repaired integrated Achieve reality-learning commit
+  packet_identity: 55828cbc925c85f105f05a8de458f3b430c86b8b12957242aeea84e85670c0ee
+  reviewed_input_identity: 41d4af826f1b83f5cc681f4f8a9d1697b596541228611c33305ace30b14b1085
+  parent_receipt_identity: parent-924208eff36cf4cebe7cb913a4f9b453fe61343280ca1f22
+  attempt_id: issue-812-code-followup
+  attempt_scope: Issue 812 repaired integrated Achieve reality-learning commit
+  attempt_packet_identity: 55828cbc925c85f105f05a8de458f3b430c86b8b12957242aeea84e85670c0ee
+  attempt_parent_receipt_identity: parent-924208eff36cf4cebe7cb913a4f9b453fe61343280ca1f22
+  result_packet_identity: 55828cbc925c85f105f05a8de458f3b430c86b8b12957242aeea84e85670c0ee
+  result_reviewed_input_identity: 41d4af826f1b83f5cc681f4f8a9d1697b596541228611c33305ace30b14b1085
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: bb0f1023dd97fa9159c8d68a62054395f72670da41a9300a253e8c5dfea3de5c
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

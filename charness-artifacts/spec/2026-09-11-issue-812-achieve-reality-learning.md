@@ -136,6 +136,7 @@ Consumer boundary check: `Ceal` and `Daily Scrum` are absent from the changed pu
 - Focused tests: `9 passed`.
 - `python3 -m tools.validate_public_skill_dogfood --repo-root .`: 19 cases and 19 required skills validated.
 - `python3 -m tools.validate_skills --repo-root .`: 21 skill packages validated.
+- Final repaired-code review `issue-812-code-followup`: `pass`, approval-eligible; packet `charness-artifacts/critique/issue-812-code-followup-packet.json`; reviewed-input identity `41d4af826f1b83f5cc681f4f8a9d1697b596541228611c33305ace30b14b1085`; findings identity `48f9ced595451708a8e2f17c60d1607b5a45cbf3ae6c7a5e4c84286bafd4c99a`; durable report `charness-artifacts/critique/workers/issue-812-code-followup/worker-report.yaml`.
 
 ## Canonical Artifact
 
