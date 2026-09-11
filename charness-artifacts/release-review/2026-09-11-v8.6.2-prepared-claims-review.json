@@ -1,0 +1,66 @@
+{
+  "schema_version": "charness.release.claims-review.v4",
+  "prepared_commit": "0f679b138a6b29a456ce25f355a63698da0e8dc3",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "0d171c606f075b0f1034b7dc646c68edeccb08d2d211c9063301d47732804f80",
+  "target_version": "8.6.2",
+  "tag_name": "v8.6.2",
+  "verdict": "pass",
+  "preparer_context": "/root prepared v8.6.2 via repo-owned publish helper",
+  "reviewer_context": "/root/release_862_claims_review read-only distinct claims reviewer",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "Distinct host subagent /root/release_862_claims_review directly inspected prepared commit 0f679b138 and local evidence without modifying files or git state.",
+    "review_artifact": "charness-artifacts/release-review/2026-09-11-v8.6.2-claims.md"
+  },
+  "review_scope": {
+    "blocking_paths": [
+      ".claude-plugin/marketplace.json",
+      "charness-artifacts/critique/2026-09-11-110557-packet.json",
+      "charness-artifacts/critique/2026-09-11-110758-packet.json",
+      "charness-artifacts/critique/2026-09-11-111723-packet.json",
+      "charness-artifacts/critique/issue-812-code-followup-packet.json",
+      "charness-artifacts/critique/issue-812-code-followup-packet.md",
+      "charness-artifacts/critique/release-8-6-2-followup-packet.json",
+      "charness-artifacts/critique/release-8-6-2-followup-packet.md",
+      "charness-artifacts/critique/workers/issue-812-code-followup/worker-report.yaml",
+      "charness-artifacts/critique/workers/issue-812-spec-followup/worker-report.yaml",
+      "charness-artifacts/critique/workers/release-8-6-2-followup/worker-report.yaml",
+      "charness-artifacts/debug/2026-09-11-quality-catalog-repo-native-default.md",
+      "charness-artifacts/debug/latest.md",
+      "charness-artifacts/debug/seam-risk-index.json",
+      "charness-artifacts/issue/2026-09-11-issue-812-brief.md",
+      "charness-artifacts/probe/2026-09-08-v8.6.1-release-observer.json",
+      "charness-artifacts/release-review/2026-09-08-v8.6.1-prepared-claims-review.json",
+      "charness-artifacts/release/latest.md",
+      "charness-artifacts/spec/2026-09-11-issue-812-achieve-reality-learning.md",
+      "docs/public-skill-dogfood.json",
+      "packaging/charness.json",
+      "skills/public/achieve/SKILL.md",
+      "skills/public/achieve/references/coordination.md",
+      "skills/public/quality/references/adapter-contract.md",
+      "skills/public/quality/scripts/plan_quality_run.py",
+      "skills/public/quality/scripts/quality_catalog_gate_applicability.py",
+      "skills/public/quality/scripts/quality_declaration_lifecycle.py",
+      "skills/public/quality/scripts/quality_run_plan_render.py",
+      "skills/shared/references/generative-sequence.md",
+      "tests/quality_gates/test_achieve_before_activation.py",
+      "tests/quality_gates/test_public_skill_dogfood.py",
+      "tests/quality_gates/test_quality_declaration_path_resolution.py",
+      "tests/quality_gates/test_quality_run_planner.py"
+    ],
+    "advisory_paths": [
+      "charness-artifacts/critique/2026-09-11-110557-packet.md",
+      "charness-artifacts/critique/2026-09-11-110758-packet.md",
+      "charness-artifacts/critique/2026-09-11-111723-packet.md",
+      "charness-artifacts/critique/2026-09-11-release-8-6-2.md",
+      "charness-artifacts/release-review/2026-09-08-v8.6.1-claims.md"
+    ]
+  },
+  "scope_basis": {
+    "base_ref": "refs/tags/v8.6.1",
+    "changed_paths_sha256": "3e12abda775d9db7aae7f983697cc95bdf5e67c132e1a0de9258e7346f2292db",
+    "changed_path_count": 38
+  },
+  "advisory_findings": []
+}
