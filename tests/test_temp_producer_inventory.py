@@ -364,7 +364,7 @@ def test_standalone_shell_adapter_preserves_verdict_and_cleans_root(
     )
 
     assert result.returncode == expected_returncode, result.stderr
-    if mode != "cancellation":
+    if mode in {"success", "failure"}:
         owned_path = Path(result.stdout.strip())
         assert owned_path.is_relative_to(runtime / "scratch" / "shell-fixture")
         assert not owned_path.exists()
