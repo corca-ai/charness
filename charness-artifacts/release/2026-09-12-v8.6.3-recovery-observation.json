@@ -1,0 +1,43 @@
+{
+  "schema_version": "charness.release-recovery-observation.v1",
+  "release": "v8.6.3",
+  "classification": "cross-repo-release-workflow-incident",
+  "disposition": "published-via-fixed-head-recovery; structural-automation-remains-unproven",
+  "verified_head": "3513c9915255f9f0c010908afadc012b679931db",
+  "quality_receipt": "charness-artifacts/release/2026-09-12-v8.6.3-final-head-quality.json",
+  "quality_receipt_sha256": "9f0a143e956907c65029344ec94f83a17d21788a805c8da9b3dee8ea30f761d3",
+  "observed_failure": {
+    "receipt_rejection": "receipt HEAD/tree is stale",
+    "cause": "Release resume sealed quality at claims commit R, promoted evidence and committed C, then pushed C using R's receipt.",
+    "fallback": "pre-push repeated full quality in hook runtime environment",
+    "failed_tests": 23,
+    "passed_tests": 9749,
+    "dominant_error": "CHARNESS_RUNTIME_ROOT must be outside the repository (fixture repo /home/hwidong)",
+    "additional_error": "Two hold-out tests observed each other's retained scratch copies",
+    "retained_log": ".git/charness-release-failures/v8.6.3-1789208249678462478.yaml"
+  },
+  "countercheck": {
+    "change": "Removed inherited CHARNESS_RUNTIME_ROOT, CHARNESS_RUNTIME_ROOT_AUTO, CHARNESS_RUNTIME_REPO_KEY; no code changes",
+    "focused_tests_passed": 53,
+    "full_quality_gates_passed": 88,
+    "full_quality_gates_failed": 0
+  },
+  "critical_path_observations_seconds": {
+    "prepare_quality": 252.5,
+    "claims_review": 32.7,
+    "initial_final_quality": 399.9,
+    "failed_push_including_duplicate_pytest": 151.823,
+    "fixed_head_quality": 401.1
+  },
+  "recovery": {
+    "method": "Existing release helper preflight, bound claims validation, surface checks, fresh checkout probes, receipt seal, unchanged pre-push hook, create_release, verify_release_visible, run_release_closeout_tail. No gate disabled.",
+    "push_output": "validated pre-push quality receipt for 3513c9915255f9f0c010908afadc012b679931db; duplicate broad gate omitted"
+  },
+  "public_observer": "charness-artifacts/probe/2026-09-12-v8.6.3-release-observer.json",
+  "non_claims": [
+    "Receipt sealing/commit ordering and inherited runtime isolation are not structurally fixed by this recovery.",
+    "No issue closure. #764 still requires its next scheduled mutation proof.",
+    "No complete cross-repo release workflow dogfood acceptance.",
+    "Historical failed and partial reviews remain retained; this observation does not upgrade them to approvals."
+  ]
+}
