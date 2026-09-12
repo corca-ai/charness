@@ -282,7 +282,9 @@ def test_missing_unregistered_and_stale_entries_are_negative_controls(tmp_path: 
     detected = discover_producers(tmp_path)
     manifest = _write_manifest(tmp_path, detected, "test-compatibility-only")
 
-    assert validate_inventory(tmp_path, manifest_path=manifest)["ok"] is True
+    initial = validate_inventory(tmp_path, manifest_path=manifest)
+    assert initial["ok"] is False
+    assert initial["invalid_test_compatibility_directories"] == [detected[0].identity]
 
     manifest.write_text(f"schema: {SCHEMA}\nproducers: []\n", encoding="utf-8")
     missing = validate_inventory(tmp_path, manifest_path=manifest)

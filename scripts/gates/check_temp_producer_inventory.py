@@ -41,9 +41,37 @@ DISPOSITIONS = frozenset(
         "test-compatibility-only",
     }
 )
+# These are compatibility/evaluation implementations, not a manifest-selected
+# escape hatch. Adding another production directory requires changing this
+# executable allowlist under code review as well as registering the producer.
+TEST_COMPAT_DIRECTORY_IDENTITIES = frozenset(
+    {
+        "scripts/gates/check_coverage_lib.py::exercise_control_plane_scenarios::temp_dir",
+        "scripts/gates/check_coverage_lib.py::exercise_install_provenance_scenarios::temp_dir",
+        "scripts/gates/check_coverage_lib.py::exercise_lifecycle_scenarios::temp_dir",
+        "scripts/gates/check_coverage_lib.py::exercise_support_sync_scenarios::temp_dir",
+        "scripts/prepush_close_keyword_guard.py::owned_scratch::path",
+        "scripts/run_quality_engine_runtime.py::OwnedScratch.open::TemporaryDirectory",
+        "tools/check_coverage.py::collect_counts::tmpdir",
+        "tools/check_coverage_extra_lib.py::exercise_control_plane_helper_scenarios::temp_dir",
+        "tools/check_coverage_extra_lib.py::exercise_install_provenance_helper_scenarios::temp_dir",
+        "tools/check_coverage_extra_lib.py::exercise_install_tool_helper_scenarios::temp_dir",
+        "tools/check_coverage_extra_lib.py::exercise_support_sync_helper_scenarios::temp_dir",
+        "tools/eval_issue_scenarios.py::run_issue_sibling_search_concept_fixtures::tmpdir",
+        "tools/eval_setup.py::run_setup_inspect_states::tmpdir",
+        "tools/eval_setup.py::run_setup_inspect_states::tmpdir#2",
+        "tools/eval_setup.py::run_setup_inspect_states::tmpdir#3",
+        "tools/eval_setup.py::run_setup_operator_acceptance_synthesis::tmpdir",
+        "tools/run_evals.py::expect_adapter_bootstrap::tmpdir",
+        "tools/run_evals.py::scenario_quality_bootstrap_posture::tmpdir",
+        "tools/validate_packaging_committed.py::main::tmpdir",
+    }
+)
 
 
-def load_manifest(repo_root: Path, path: Path = DEFAULT_MANIFEST) -> tuple[list[dict[str, Any]], list[str]]:
+def load_manifest(
+    repo_root: Path, path: Path = DEFAULT_MANIFEST
+) -> tuple[list[dict[str, Any]], list[str]]:
     manifest_path = path if path.is_absolute() else repo_root / path
     try:
         payload = load_yaml_file(manifest_path)
@@ -70,7 +98,9 @@ def load_manifest(repo_root: Path, path: Path = DEFAULT_MANIFEST) -> tuple[list[
         seen.add(identity)
         disposition = row.get("disposition")
         if disposition not in DISPOSITIONS:
-            errors.append(f"manifest.producers[{index}] {identity!r} has invalid disposition {disposition!r}")
+            errors.append(
+                f"manifest.producers[{index}] {identity!r} has invalid disposition {disposition!r}"
+            )
         for field in ("path", "symbol", "rationale"):
             value = row.get(field)
             if not isinstance(value, str) or not value.strip():
@@ -86,16 +116,14 @@ def validate_inventory(
     require_git: bool = False,
     producers: Iterable[Producer] | None = None,
 ) -> dict[str, Any]:
-    detected = list(discover_producers(repo_root, require_git=require_git) if producers is None else producers)
+    detected = list(
+        discover_producers(repo_root, require_git=require_git) if producers is None else producers
+    )
     rows, errors = load_manifest(repo_root, manifest_path)
     detected_by_id: dict[str, list[Producer]] = {}
     for producer in detected:
         detected_by_id.setdefault(producer.identity, []).append(producer)
-    declared = {
-        row["identity"]: row
-        for row in rows
-        if isinstance(row.get("identity"), str)
-    }
+    declared = {row["identity"]: row for row in rows if isinstance(row.get("identity"), str)}
     missing = sorted(set(detected_by_id) - set(declared))
     stale = sorted(set(declared) - set(detected_by_id))
     raw_directories = sorted(
@@ -112,6 +140,18 @@ def validate_inventory(
         failures.append("manifest entries no longer detected (stale): " + ", ".join(stale))
     if raw_directories:
         failures.append("unowned directory creators remain: " + ", ".join(raw_directories))
+    invalid_test_compat = sorted(
+        identity
+        for identity, found in detected_by_id.items()
+        if any(producer.kind == "directory" for producer in found)
+        and declared.get(identity, {}).get("disposition") == "test-compatibility-only"
+        and identity not in TEST_COMPAT_DIRECTORY_IDENTITIES
+    )
+    if invalid_test_compat:
+        failures.append(
+            "directory producers cannot self-select test-compatibility-only: "
+            + ", ".join(invalid_test_compat)
+        )
     if parse_errors:
         failures.append("one or more producer files could not be parsed")
     for identity, found in detected_by_id.items():
@@ -120,20 +160,29 @@ def validate_inventory(
             continue
         producer = found[0]
         if row.get("path") != producer.path:
-            failures.append(f"manifest producer {identity!r} path does not match detected path {producer.path!r}")
+            failures.append(
+                f"manifest producer {identity!r} path does not match detected path {producer.path!r}"
+            )
         if row.get("symbol") != producer.symbol:
-            failures.append(f"manifest producer {identity!r} symbol does not match detected symbol {producer.symbol!r}")
+            failures.append(
+                f"manifest producer {identity!r} symbol does not match detected symbol {producer.symbol!r}"
+            )
         if producer.kind == "owned-directory" and row.get("disposition") != "owned-scratch":
-            failures.append(f"owned directory producer {identity!r} must use disposition 'owned-scratch'")
+            failures.append(
+                f"owned directory producer {identity!r} must use disposition 'owned-scratch'"
+            )
     return {
         "schema": SCHEMA,
-        "manifest": str((manifest_path if manifest_path.is_absolute() else repo_root / manifest_path).resolve()),
+        "manifest": str(
+            (manifest_path if manifest_path.is_absolute() else repo_root / manifest_path).resolve()
+        ),
         "detected": [producer.as_dict() for producer in detected],
         "declared_count": len(declared),
         "detected_count": len(detected_by_id),
         "missing": missing,
         "stale": stale,
         "unowned_directory_creators": raw_directories,
+        "invalid_test_compatibility_directories": invalid_test_compat,
         "errors": failures,
         "ok": not failures,
     }
