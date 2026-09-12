@@ -196,7 +196,7 @@ def validate_retained_inputs(  # noqa: C901, PLR0915
                 "retained semantic carrier bytes do not match the packet",
                 path=entry["path"],
                 expected=expected,
-                reason=reason,
+                verification_reason=reason,
             )
     checks["semantic_input"] = {"status": "verified", "entries": len(entries)}
     return {"status": "verified", "ok": True, "checks": checks}

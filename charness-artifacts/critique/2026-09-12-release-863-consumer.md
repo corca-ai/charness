@@ -91,6 +91,26 @@ accepted-unreviewed-under-round-cap: two bounded rounds exhausted, not operator
 approval. Thirty-five release edge/state/surface tests passed after correction.
 This record does not transform the operator block into a passing report.
 
+### Release-gate failure disposition
+
+Release prepare subsequently refused 553 uncovered changed lines. Five isolated
+test-only tasks retained their results: three completed; two timed out and
+preserved WIP commits `f41790c13dc4` and `3e7aba0daeefe`. Parent reused those
+candidates, corrected test expectations, and verified 198 combined tests. An
+instrumented consumer run then passed 6,283 tests and failed the module-eviction
+form test; its raw coverage was reused for diagnosis, never as a passing receipt.
+The new tests now use the existing module-eviction owner; its focused set passed
+59 tests. Four bounded integrity/terminal matrices subsequently passed 87 tests.
+
+One matrix reproduced an actual recovery refusal defect: invalid semantic bytes
+passed `reason` both positionally and by keyword, raising TypeError instead of a
+typed invalid result. The duplicate detail is now `verification_reason`. Also
+removed the unreachable `final_carrier is None` fallback: a missing report or
+failed validation already returns before promotion; every remaining path builds
+the carrier. These two repairs are accepted-unreviewed-under-round-cap, not a
+new independent approval. Counterweight: retain the refusal and identity checks,
+remove the dead alternative, and do not waive coverage. Parent owns final gates.
+
 ## Reviewed Input Identity
 
 - Packet consumed: charness-artifacts/critique/release-863-repair-lifecycle-20260912-packet.json

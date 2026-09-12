@@ -12,6 +12,7 @@ from types import ModuleType, SimpleNamespace
 import pytest
 import yaml
 
+from tests.module_eviction import evict_module
 from tests.script_main import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -79,7 +80,7 @@ def test_support_bootstraps_repo_imports_when_direct_package_import_is_unavailab
 
 
 def test_support_load_module_restores_sys_modules_after_a_failed_import(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     broken = tmp_path / "broken_helper.py"
     broken.write_text("raise RuntimeError('broken helper')\n", encoding="utf-8")
@@ -89,13 +90,10 @@ def test_support_load_module_restores_sys_modules_after_a_failed_import(
     assert "review_broken_helper" not in sys.modules
 
     previous = ModuleType("review_broken_helper")
-    sys.modules["review_broken_helper"] = previous
-    try:
-        with pytest.raises(RuntimeError, match="broken helper"):
-            SUPPORT.load_module(broken, "review_broken_helper")
-        assert sys.modules["review_broken_helper"] is previous
-    finally:
-        sys.modules.pop("review_broken_helper", None)
+    monkeypatch.setitem(sys.modules, "review_broken_helper", previous)
+    with pytest.raises(RuntimeError, match="broken helper"):
+        SUPPORT.load_module(broken, "review_broken_helper")
+    assert sys.modules["review_broken_helper"] is previous
 
 
 def test_run_review_support_rejects_unreadable_yaml_and_non_mapping_carriers() -> None:
@@ -759,14 +757,14 @@ def test_partial_review_extraction_requires_both_identities_and_reports_sources(
 def test_storage_and_promotion_support_loaders_refuse_unavailable_helpers(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.delitem(sys.modules, "charness_run_review_support", raising=False)
-    monkeypatch.delitem(sys.modules, "run_review_support", raising=False)
+    evict_module(monkeypatch, "charness_run_review_support")
+    evict_module(monkeypatch, "run_review_support")
     monkeypatch.setattr(STORAGE_DIRECT.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
     with pytest.raises(RuntimeError, match="cannot load run_review_support"):
         STORAGE_DIRECT._support()
 
-    monkeypatch.delitem(sys.modules, "charness_run_review_support", raising=False)
-    monkeypatch.delitem(sys.modules, "run_review_support", raising=False)
+    evict_module(monkeypatch, "charness_run_review_support")
+    evict_module(monkeypatch, "run_review_support")
     monkeypatch.setattr(PROMOTION_DIRECT.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
     with pytest.raises(RuntimeError, match="cannot load run_review_support"):
         PROMOTION_DIRECT._support()
@@ -775,11 +773,11 @@ def test_storage_and_promotion_support_loaders_refuse_unavailable_helpers(
 def test_storage_and_promotion_reload_support_after_cache_eviction(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.delitem(sys.modules, "charness_run_review_support", raising=False)
-    monkeypatch.delitem(sys.modules, "run_review_support", raising=False)
+    evict_module(monkeypatch, "charness_run_review_support")
+    evict_module(monkeypatch, "run_review_support")
     assert STORAGE_DIRECT._support().RunReviewError is not None
-    monkeypatch.delitem(sys.modules, "charness_run_review_support", raising=False)
-    monkeypatch.delitem(sys.modules, "run_review_support", raising=False)
+    evict_module(monkeypatch, "charness_run_review_support")
+    evict_module(monkeypatch, "run_review_support")
     assert PROMOTION_DIRECT._support().RunReviewError is not None
 
 
@@ -797,7 +795,7 @@ def test_run_review_loader_and_main_preflight_refusals_are_typed(
         "charness_run_review_support", FailingLoader()
     )
     monkeypatch.setattr(RUN_REVIEW.importlib.util, "spec_from_file_location", lambda *_a, **_k: spec)
-    monkeypatch.delitem(sys.modules, "charness_run_review_support", raising=False)
+    evict_module(monkeypatch, "charness_run_review_support")
     with pytest.raises(RuntimeError, match="support load failed"):
         RUN_REVIEW._load_support()
     assert "charness_run_review_support" not in sys.modules

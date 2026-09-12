@@ -167,10 +167,6 @@ def resume_retained_attempt(
                 }
             )
             return 1
-        if final_carrier is None:
-            final_carrier = retained_inputs.non_approval_carrier(
-                recovery_validation.get("reason", "retained final carrier is unavailable")
-            )
         context = {
             "packet_sha256": expected["packet_sha256"],
             "reviewed_input_identity_sha256": expected["reviewed_input_identity_sha256"],
