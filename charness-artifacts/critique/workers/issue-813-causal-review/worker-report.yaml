@@ -1,0 +1,64 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Bug #813 pre-design causal review under 600 words; cite file:line; do not
+  prescribe the fix.'
+attempt_id: issue-813-causal-review
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: c383438dfae87289888d27f85089cc4b4297a0c8fcd405e1235e038f9af48acd
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/issue-813-causal-review/receipt.json
+ledger_path: charness-artifacts/critique/workers/issue-813-causal-review/delivery.json
+producer_run_id: run-issue-813-causal-review
+producer_binding:
+  output_file: charness-artifacts/critique/workers/issue-813-causal-review/result.json
+  receipt_file: charness-artifacts/critique/workers/issue-813-causal-review/receipt.json
+  producer_run_id: run-issue-813-causal-review
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 38b48ead1ce75da579b9adc773a251f1038a6ede5df7660f06c4c39f59f808ea
+receipt_output_sha256: 38b48ead1ce75da579b9adc773a251f1038a6ede5df7660f06c4c39f59f808ea
+packet_identity: 94a9dbfd918e2bb4d7f180a2bc11585cd17d49787afa2751b9b741a3b7783ec2
+reviewed_input_identity: 65c7e5db9265d28776a9e0c01d0281b3452afb6bdd51291b47107dcf46e915b0
+parent_receipt_identity: parent-cf2de66b08c24174a700911992cc28e6c5e9cd312a98b249
+provenance:
+  scope: 'Bug #813 pre-design causal review under 600 words; cite file:line; do not
+    prescribe the fix.'
+  packet_identity: 94a9dbfd918e2bb4d7f180a2bc11585cd17d49787afa2751b9b741a3b7783ec2
+  reviewed_input_identity: 65c7e5db9265d28776a9e0c01d0281b3452afb6bdd51291b47107dcf46e915b0
+  parent_receipt_identity: parent-cf2de66b08c24174a700911992cc28e6c5e9cd312a98b249
+  attempt_id: issue-813-causal-review
+  attempt_scope: 'Bug #813 pre-design causal review under 600 words; cite file:line;
+    do not prescribe the fix.'
+  attempt_packet_identity: 94a9dbfd918e2bb4d7f180a2bc11585cd17d49787afa2751b9b741a3b7783ec2
+  attempt_parent_receipt_identity: parent-cf2de66b08c24174a700911992cc28e6c5e9cd312a98b249
+  result_packet_identity: 94a9dbfd918e2bb4d7f180a2bc11585cd17d49787afa2751b9b741a3b7783ec2
+  result_reviewed_input_identity: 65c7e5db9265d28776a9e0c01d0281b3452afb6bdd51291b47107dcf46e915b0
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: c383438dfae87289888d27f85089cc4b4297a0c8fcd405e1235e038f9af48acd
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

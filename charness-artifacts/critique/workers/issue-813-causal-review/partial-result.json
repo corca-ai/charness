@@ -1,0 +1,136 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "bounded",
+      "concern": "Root-cause over-reach",
+      "disposition": "Does not blame the primitive; passing focused tests disconfirm that candidate, while adoption remains the evidenced cause."
+    },
+    {
+      "bin": "bounded",
+      "concern": "Detection-gap over-reach",
+      "disposition": "Claims absence of a producer-classification gate, not absence of all lifecycle testing."
+    },
+    {
+      "bin": "bounded",
+      "concern": "Sibling-search over-reach",
+      "disposition": "Bundles only evidenced directory producers; atomic files, anonymous handles, existing debris, and unsampled hard-kill behavior remain outside the claim."
+    }
+  ],
+  "findings": [
+    {
+      "action": "Use this invariant as the design boundary.",
+      "evidence": [
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:10"
+      ],
+      "id": "JTBD",
+      "severity": "information",
+      "summary": "Every Charness temporary-output producer must have an attributable lifecycle so success, failure, timeout, cancellation, inspection, and GC cannot leave or delete unknown state."
+    },
+    {
+      "action": "Retain the stated classification.",
+      "evidence": [
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:35",
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:102",
+        "tests/test_runtime_scratch.py:111"
+      ],
+      "id": "classification-confirmation",
+      "severity": "information",
+      "summary": "Confirmed as a repeated-symptom ownership-seam defect, not a defect in the existing owned-scratch primitive."
+    },
+    {
+      "action": "Carry this causal chain into design without treating local cleanup as ownership proof.",
+      "evidence": [
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:35",
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:54",
+        "scripts/agent-runtime/run-local-eval-test.mjs:77"
+      ],
+      "id": "root-cause",
+      "severity": "high",
+      "summary": "Disconfirmer-first: focused lifecycle, refusal, promotion, and recovery evidence contradicts primitive failure. Five whys converge on local temp selection → caller-local cleanup → normal-exit tests appear sufficient → adoption remains voluntary → no mandatory classification boundary connects producers to inspection/GC."
+    },
+    {
+      "action": "Preserve it as the causal substrate.",
+      "evidence": [
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:16",
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:42",
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:49"
+      ],
+      "id": "debug-artifact",
+      "severity": "information",
+      "summary": "The artifact is adequate for pre-design use: it separates observed facts, disconfirmed cause, falsifiable hypothesis, invariant, seam risk, and non-claims. Implementation verification is correctly pending."
+    },
+    {
+      "action": "Treat registry visibility as the proof obligation.",
+      "evidence": [
+        "scripts/check-shell.sh:39",
+        "scripts/check-python-lint.sh:67",
+        "scripts/check-links-internal.sh:70",
+        "scripts/check-markdown.sh:91",
+        "scripts/check-secrets.sh:125",
+        "scripts/agent-runtime/run-local-eval-test.mjs:77",
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:62",
+        "scripts/runtime_scratch_registry.py:129"
+      ],
+      "id": "invariant-proof",
+      "severity": "high",
+      "summary": "Producer-to-final-consumer proof holds: shell and JS sites create system-temp directories with local cleanup, while the registry enumerates only <runtime-root>/scratch/<producer>/<run>. Therefore those producers cannot be attributed, inspected, recovered, or safely GC-classified by the final consumer after abrupt loss."
+    },
+    {
+      "action": "Keep the detection gap open until negative controls and terminal-path evidence exist.",
+      "evidence": [
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:77",
+        "tests/test_runtime_scratch.py:28",
+        "tests/test_runtime_scratch_failures.py:330"
+      ],
+      "id": "detection-gap",
+      "severity": "high",
+      "summary": "Current tests establish owned-root behavior but do not sample every producer class, and no production gate rejects missing or stale producer classification. Green normal-exit tests therefore cannot detect anonymous roots left by cancellation or host loss."
+    },
+    {
+      "action": "Bundle the evidenced directory-producing siblings; defer unsampled external-tool hard-kill behavior and unobserved constructor families.",
+      "evidence": [
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:86",
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:92",
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:98"
+      ],
+      "id": "sibling-search",
+      "severity": "high",
+      "summary": "Four-axis search is coherent: same layer—shell checks plus Claude evaluator; abstraction up—all production temp creators; specialization down—atomic sibling files and anonymous auto-delete handles are outside this directory-leak class; cross-file—the registry cannot infer external roots. Python directory constructors were searched behaviorally but no unresolved instance is evidenced here."
+    },
+    {
+      "action": "Keep bundle and defer boundaries explicit in the design record.",
+      "evidence": [
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:23",
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:73",
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:110"
+      ],
+      "id": "bundle-vs-defer",
+      "severity": "information",
+      "summary": "Recommendation: bundle the seven evidenced anonymous directory producers because they share one causal seam and failure mode. Defer atomic files, anonymous auto-delete handles, pre-existing /tmp debris, and unsampled external-tool hard-kill claims."
+    }
+  ],
+  "kind": "charness.bounded_review.v1",
+  "lens": "bounded fresh-eye causal reviewer; Fresh-Eye Satisfaction: parent-delegated",
+  "next_move": "Proceed to specification with the causal classification intact; do not treat this review as implementation approval or live-behavior proof.",
+  "non_claims": [
+    "No implementation design or fix is prescribed.",
+    "No workspace state was consulted beyond the inline semantic payload.",
+    "No claim is made that every external tool survives or cleans up after host hard-kill.",
+    "Goal evidence lineage is not-goal-bound: binding, draft, goal_run, and work_item are null.",
+    "Fresh-Eye Satisfaction: parent-delegated."
+  ],
+  "packet_sha256": "94a9dbfd918e2bb4d7f180a2bc11585cd17d49787afa2751b9b741a3b7783ec2",
+  "reviewed_input_identity_sha256": "65c7e5db9265d28776a9e0c01d0281b3452afb6bdd51291b47107dcf46e915b0",
+  "target_observations": [
+    {
+      "evidence": [
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:49",
+        "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md:102"
+      ],
+      "summary": "The supplied substrate supports the pre-design causal classification and bounded sibling scope; implementation and live hard-kill proof remain explicitly open.",
+      "target": "https://github.com/corca-ai/charness/issues/813",
+      "verdict": "pass"
+    }
+  ],
+  "verdict": "pass"
+}

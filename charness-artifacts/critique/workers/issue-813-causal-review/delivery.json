@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "issue-813-causal-review",
+      "scope": "Bug #813 pre-design causal review under 600 words; cite file:line; do not prescribe the fix.",
+      "packet_identity": "94a9dbfd918e2bb4d7f180a2bc11585cd17d49787afa2751b9b741a3b7783ec2",
+      "parent_receipt_identity": "parent-cf2de66b08c24174a700911992cc28e6c5e9cd312a98b249",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-12T10:46:17Z",
+      "history": [
+        {
+          "event_id": "595267ff0fce4f43961e6a58068c85a9",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-12T10:45:29Z",
+          "attempt_id": "issue-813-causal-review",
+          "scope": "Bug #813 pre-design causal review under 600 words; cite file:line; do not prescribe the fix.",
+          "packet_identity": "94a9dbfd918e2bb4d7f180a2bc11585cd17d49787afa2751b9b741a3b7783ec2",
+          "parent_receipt_identity": "parent-cf2de66b08c24174a700911992cc28e6c5e9cd312a98b249",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "d247a70fca1243c9aa21dba8d3c7bd7a",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-12T10:45:29Z",
+          "attempt_id": "issue-813-causal-review",
+          "scope": "Bug #813 pre-design causal review under 600 words; cite file:line; do not prescribe the fix.",
+          "packet_identity": "94a9dbfd918e2bb4d7f180a2bc11585cd17d49787afa2751b9b741a3b7783ec2",
+          "parent_receipt_identity": "parent-cf2de66b08c24174a700911992cc28e6c5e9cd312a98b249",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "c2ac7e76e82e46a0b8a1977be3bac049",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-12T10:46:17Z",
+          "attempt_id": "issue-813-causal-review",
+          "scope": "Bug #813 pre-design causal review under 600 words; cite file:line; do not prescribe the fix.",
+          "packet_identity": "94a9dbfd918e2bb4d7f180a2bc11585cd17d49787afa2751b9b741a3b7783ec2",
+          "parent_receipt_identity": "parent-cf2de66b08c24174a700911992cc28e6c5e9cd312a98b249",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "38b48ead1ce75da579b9adc773a251f1038a6ede5df7660f06c4c39f59f808ea"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "65c7e5db9265d28776a9e0c01d0281b3452afb6bdd51291b47107dcf46e915b0",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "c383438dfae87289888d27f85089cc4b4297a0c8fcd405e1235e038f9af48acd",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/issue-813-causal-review/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/issue-813-causal-review/receipt.json",
+      "producer_run_id": "run-issue-813-causal-review",
+      "findings_identity": "38b48ead1ce75da579b9adc773a251f1038a6ede5df7660f06c4c39f59f808ea"
+    }
+  ]
+}

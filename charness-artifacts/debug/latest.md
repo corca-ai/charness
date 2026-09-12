@@ -1,1 +1,1 @@
-2026-09-11-quality-catalog-repo-native-default.md
+2026-09-12-issue-813-temp-output-ownership.md

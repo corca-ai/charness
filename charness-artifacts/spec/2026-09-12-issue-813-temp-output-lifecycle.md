@@ -1,0 +1,127 @@
+# Spec: issue 813 temporary-output lifecycle
+
+Date: 2026-09-12
+Issue: corca-ai/charness#813
+
+## Problem
+
+The receipt-bound runtime scratch primitive is sound, but production temp-directory
+adoption is voluntary. Seven shell/JS producers can leave anonymous roots that the
+registry cannot attribute after abrupt process loss, and no gate rejects a new or
+stale producer classification.
+
+## Capability Contract
+
+Every production temporary-output producer has one executable disposition: owned
+scratch, atomic sibling, anonymous auto-delete file, bounded runtime/cache, durable
+output, or test/compatibility-only. Directory-producing run state is receipt-bound;
+the registry is the final consumer and never infers ownership from a filename prefix.
+
+## Current Slice
+
+Migrate the seven evidenced anonymous directory producers, add a semantic checked-in
+inventory with missing/stale negative controls, and add representative terminal-path
+and final-consumer acceptance. Preserve existing atomic-file and anonymous-handle
+implementations as explicit safe classifications.
+
+## Fixed Decisions
+
+- One manifest is the producer-registration owner; it keys stable call/function or
+  shell-variable identities, not line numbers.
+- Production directory roots require receipt-bound ownership. A parent carrier may
+  own child outputs only when it passes an explicit owned root to that child.
+- Static detection parses Python calls and narrowly detects shell `mktemp` and JS
+  `mkdtempSync(tmpdir())`; comments, docs, and capability example strings are excluded.
+- Missing producer and stale manifest entry both fail. New directory creators cannot
+  select a local-cleanup exemption merely because ordinary EXIT cleanup exists.
+- GC remains bounded to registered Charness roots and never sweeps arbitrary `/tmp`.
+
+## Probe Questions
+
+- Prefer a parent-owned temp-root environment for quality child gates if standalone
+  invocation can establish the same receipt owner; otherwise give shell runners the
+  thinnest lifecycle adapter over `OwnedScratch`.
+- Use process fixtures to determine the smallest reliable cancellation observation
+  without depending on wall-clock sleeps.
+
+## Deferred Decisions
+
+- Existing arbitrary `/tmp` debris is not retroactively attributed or deleted.
+- Unsampled external-tool behavior under machine loss or kernel SIGKILL remains a
+  non-claim; owner receipts make orphan recovery possible without claiming tool cleanup.
+
+## Non-Goals
+
+- A filename-prefix blacklist, repository-agnostic `/tmp` sweep, or one regression
+  fixture per historical path.
+- Moving colocated atomic replacements or anonymous auto-delete file handles into
+  long-lived run roots.
+
+## Deliberately Not Doing
+
+- No second GC implementation and no retention policy duplicated in each producer.
+- No claim that age alone authorizes deletion.
+
+## Constraints
+
+- Preserve exact gate exit codes and best-effort cleanup semantics.
+- Keep inventory cost deterministic and cheap enough for standing quality.
+- Keep generated plugin mirrors synchronized through the canonical exporter.
+
+## Success Criteria
+
+1. Every detected production temp producer has exactly one current disposition.
+2. All directory-producing run roots are receipt-bound or explicitly nested beneath
+   a receipt-bound parent passed by contract.
+3. Removing a manifest row, adding an unregistered producer, or leaving a stale row
+   fails focused negative controls.
+4. Representative success, exception/failure, timeout, and cancellation observations
+   end in inspectable terminal/orphan state with no anonymous directory outside the
+   declared root.
+5. Promoted evidence remains readable by its final consumer after scratch cleanup;
+   incomplete evidence cannot satisfy that consumer.
+6. GC refuses active, unknown, registered-worktree, retained, and unexpired roots and
+   reports independently checked exact reclaimed entries and bytes.
+
+## Acceptance Checks
+
+- `unit`: producer-inventory parser and missing/stale/unregistered negative controls.
+- `integration`: shell/JS producer fixtures run under owned roots and preserve their
+  existing verdicts on success and failure.
+- `integration`: controlled child-process terminal matrix covers success, failure,
+  timeout, and cancellation with registry readback.
+- `integration`: promotion/readback/GC fixture independently computes the retained
+  hash and reclaimed entry/byte totals.
+- `manual`: inspect the current repo runtime root and confirm every reported item has
+  producer, repo/run identity, state, retention, activity, and disposition.
+
+## Boundary Ownership
+
+- Producer: production command or parent carrier creating temporary state.
+- Transport: explicit owned-root environment or `OwnedScratch` receipt/lock.
+- Final consumer: runtime scratch inspect/recover/GC and the receipt-reading closeout.
+- Verdict: moved-to-owner when anonymous producers enter that transport; atomic local
+  files remain intentional boundaries.
+
+## Critique
+
+- Interrupt Source: `issue-813-temp-output-ownership`.
+- Seam Summary: production temp producer to runtime scratch registry/GC.
+- Chosen Next Step: factor the producer registration boundary now, then implement.
+- Impl Status: not-started.
+- Impl Status Reason: causal review had to bind the sibling set before mechanism choice.
+- What Disproving Observation Is Resolved: focused primitive tests disconfirmed a
+  broken registry; static inventory confirmed voluntary adoption and anonymous roots.
+- Causal review `issue-813-causal-review` passed with approval-eligible identity
+  `38b48ead1ce75da579b9adc773a251f1038a6ede5df7660f06c4c39f59f808ea`.
+
+## Canonical Artifact
+
+This file is the living implementation contract; the debug artifact owns RCA and the
+manifest/tests own executable acceptance.
+
+## First Implementation Slice
+
+Add the manifest/gate and negative controls first, then migrate every failing directory
+producer until the inventory is complete. Add process acceptance last against the
+integrated owner boundary.
