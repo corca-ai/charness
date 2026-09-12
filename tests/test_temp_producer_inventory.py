@@ -26,6 +26,20 @@ from scripts.runtime_scratch import inspect_scratch_roots
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_direct_run_bootstraps_restore_repo_import_path() -> None:
+    root = str(ROOT)
+    original = sys.path[:]
+    try:
+        sys.path[:] = [entry for entry in sys.path if entry != root]
+        inventory_cli._load_repo_runtime_bootstrap()
+        assert root in sys.path
+        sys.path[:] = [entry for entry in sys.path if entry != root]
+        temp_inventory_lib._load_repo_runtime_bootstrap()
+        assert root in sys.path
+    finally:
+        sys.path[:] = original
+
+
 def test_manifest_validation_reports_malformed_rows_and_cli_failure(tmp_path: Path, capsys) -> None:
     missing = inventory_cli.load_manifest(tmp_path, Path("missing.yaml"))
     assert "cannot read manifest" in missing[1][0]
