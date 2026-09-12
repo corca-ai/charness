@@ -29,6 +29,7 @@ GATE_ACCEPTS_REPO_ROOT_HATCH=1
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=scripts/exported-copy-guard.sh
 source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
+charness_exec_owned_scratch check-links-external "$CHARNESS_GATE_DIR/check-links-external.sh" "$@"
 
 if ! command -v lychee >/dev/null 2>&1; then
   cat >&2 <<'EOF'

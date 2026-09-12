@@ -123,6 +123,10 @@ def prepare_runtime(
         repo_root, "quality-engine", runtime_root_path=runtime_root
     )
     temp_dir = scratch_owner.open()
+    # Child gates receive the parent's receipt-bound root explicitly.  A child
+    # may create a named subdirectory beneath it, but it must not fall back to
+    # an anonymous system temporary directory.
+    environment["CHARNESS_OWNED_SCRATCH_ROOT"] = str(temp_dir)
     return RuntimeContext(
         repo_root, environment, runtime_root, state_args, temp_dir, regime, scratch_owner
     )

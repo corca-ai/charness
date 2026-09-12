@@ -307,6 +307,18 @@ phases:
     lane: standard
     timing_layer: stays
     note: src scripts/run-quality.sh:1028; labels literal (475-479).
+  - label: check-temp-producer-inventory
+    command:
+    - python3
+    - scripts/gates/check_temp_producer_inventory.py
+    - --repo-root
+    - $REPO_ROOT
+    - --manifest
+    - .agents/temp-producers.yaml
+    - --require-git-file-listing
+    lane: core
+    timing_layer: stays
+    note: receipt-bound temporary-output producer registration (#813).
   - label: check-inventory-declaration-coverage
     command:
     - python3

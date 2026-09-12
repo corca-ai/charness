@@ -7,6 +7,7 @@ import process from "node:process";
 
 export const CODEX_HOME_MODES = ["isolated", "inherit"];
 export const CODEX_AUTH_MODES = ["inherit", "env", "none"];
+const RUNTIME_PRODUCER = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 
 function pushOptionalPair(args, flag, value) {
 	if (value) {
@@ -64,24 +65,27 @@ function repoIdentity(repoRoot) {
 	return createHash("sha256").update(resolve(repoRoot), "utf-8").digest("hex").slice(0, 16);
 }
 
-function temporaryCodexHome(options, env = process.env) {
+export function temporaryOwnedRuntimeHome(options, producer, env = process.env) {
+	if (typeof producer !== "string" || !RUNTIME_PRODUCER.test(producer)) {
+		throw new Error(`temporary runtime producer must be a simple token: ${producer}`);
+	}
 	const runtimeRoot = env.CHARNESS_RUNTIME_ROOT
 		? resolve(env.CHARNESS_RUNTIME_ROOT)
 		: join(tmpdir(), "charness");
 	const runId = `${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 	const createdAt = new Date().toISOString();
-	const path = join(runtimeRoot, "scratch", "codex-eval", runId);
-	mkdirSync(join(runtimeRoot, "scratch", "codex-eval"), { recursive: true });
+	const path = join(runtimeRoot, "scratch", producer, runId);
+	mkdirSync(join(runtimeRoot, "scratch", producer), { recursive: true });
 	mkdirSync(path);
 	writeFileSync(
 		join(path, ".charness-owner.json"),
 		`${JSON.stringify(
 			{
-					schema: "charness.runtime-scratch-owner/v1",
-					owner: "charness",
-					producer: "codex-eval",
-					repo_root: options.repoRoot ?? null,
-					repo_identity: repoIdentity(options.repoRoot),
+				schema: "charness.runtime-scratch-owner/v1",
+				owner: "charness",
+				producer,
+				repo_root: options.repoRoot ?? null,
+				repo_identity: repoIdentity(options.repoRoot),
 				run_id: runId,
 				pid: process.pid,
 				created_at: createdAt,
@@ -110,7 +114,52 @@ function temporaryCodexHome(options, env = process.env) {
 		});
 		lockProcess.unref();
 	}
-	return { path, lockProcess };
+	const recordRunnerPid = (pid) => {
+		if (!Number.isInteger(pid) || pid <= 0) {
+			return;
+		}
+		const ownerPath = join(path, ".charness-owner.json");
+		if (!existsSync(ownerPath)) {
+			return;
+		}
+		const owner = JSON.parse(readFileSync(ownerPath, "utf-8"));
+		owner.runner_pid = pid;
+		owner.updated_at = new Date().toISOString();
+		writeFileSync(ownerPath, `${JSON.stringify(owner, null, 2)}\n`, "utf-8");
+	};
+	return { path, lockProcess, recordRunnerPid };
+}
+
+function temporaryCodexHome(options, env = process.env) {
+	return temporaryOwnedRuntimeHome(options, "codex-eval", env);
+}
+
+export function cleanupTemporaryOwnedHome(temporary, state = "succeeded") {
+	if (!temporary) {
+		return;
+	}
+	try {
+		if (temporary.lockProcess?.pid) {
+			try {
+				process.kill(-temporary.lockProcess.pid, "SIGTERM");
+			} catch {
+				try {
+					temporary.lockProcess.kill("SIGTERM");
+				} catch {
+					// The lock holder may have expired or already exited.
+				}
+			}
+		}
+		const ownerPath = join(temporary.path, ".charness-owner.json");
+		if (existsSync(ownerPath)) {
+			const owner = JSON.parse(readFileSync(ownerPath, "utf-8"));
+			owner.state = state;
+			owner.updated_at = new Date().toISOString();
+			writeFileSync(ownerPath, `${JSON.stringify(owner, null, 2)}\n`, "utf-8");
+		}
+	} finally {
+		rmSync(temporary.path, { recursive: true, force: true });
+	}
 }
 
 function withPreflightBlocker(runtime, summary) {
@@ -168,30 +217,13 @@ export function prepareCodexRuntimeEnv(options, baseEnv = process.env) {
 	const cleanup = configuredHome
 		? null
 		: (state = "succeeded") => {
-			try {
-				if (temporary.lockProcess?.pid) {
-					try {
-						process.kill(-temporary.lockProcess.pid, "SIGTERM");
-					} catch {
-						try {
-							temporary.lockProcess.kill("SIGTERM");
-						} catch {
-							// The lock holder may have expired or already exited.
-						}
-					}
-				}
-				const ownerPath = join(codexHome, ".charness-owner.json");
-				if (existsSync(ownerPath)) {
-					const owner = JSON.parse(readFileSync(ownerPath, "utf-8"));
-					owner.state = state;
-					owner.updated_at = new Date().toISOString();
-					writeFileSync(ownerPath, `${JSON.stringify(owner, null, 2)}\n`, "utf-8");
-				}
-			} finally {
-				rmSync(codexHome, { recursive: true, force: true });
-			}
+			cleanupTemporaryOwnedHome(temporary, state);
 		};
-	const env = { ...baseEnv, CODEX_HOME: codexHome };
+	const env = {
+		...baseEnv,
+		CODEX_HOME: codexHome,
+		...(temporary ? { CHARNESS_OWNED_SCRATCH_ROOT: temporary.path } : {}),
+	};
 	if (authMode === "none") {
 		for (const key of ["OPENAI_API_KEY", "CODEX_API_KEY"]) {
 			delete env[key];
@@ -200,19 +232,7 @@ export function prepareCodexRuntimeEnv(options, baseEnv = process.env) {
 	const runtime = {
 		env,
 		cleanup,
-		recordRunnerPid: (pid) => {
-			if (!temporary || !Number.isInteger(pid) || pid <= 0) {
-				return;
-			}
-			const ownerPath = join(codexHome, ".charness-owner.json");
-			if (!existsSync(ownerPath)) {
-				return;
-			}
-			const owner = JSON.parse(readFileSync(ownerPath, "utf-8"));
-			owner.runner_pid = pid;
-			owner.updated_at = new Date().toISOString();
-			writeFileSync(ownerPath, `${JSON.stringify(owner, null, 2)}\n`, "utf-8");
-		},
+		recordRunnerPid: temporary?.recordRunnerPid ?? null,
 		preflightBlocker: null,
 		telemetry: {
 			codex_home_mode: configuredHome ? "custom" : "isolated",

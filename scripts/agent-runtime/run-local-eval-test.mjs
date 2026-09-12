@@ -1,7 +1,6 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
-import { tmpdir } from "node:os";
 import process from "node:process";
 
 import { EVALUATION_OBSERVED_SCHEMA } from "./contract-versions.mjs";
@@ -16,14 +15,22 @@ import {
 import {
 	CODEX_AUTH_MODES,
 	CODEX_HOME_MODES,
+	cleanupTemporaryOwnedHome,
 	codexArgs,
 	codexFailureBlockerKind,
 	prepareCodexRuntimeEnv,
+	temporaryOwnedRuntimeHome,
 } from "./codex-eval-runtime.mjs";
 import { extractClaudeTelemetry } from "./skill-test-telemetry.mjs";
 
 export { normalizeInstructionSurfaceCaseSuite } from "./instruction-surface-case-suite.mjs";
-export { codexArgs, codexFailureBlockerKind, prepareCodexRuntimeEnv } from "./codex-eval-runtime.mjs";
+export {
+	cleanupTemporaryOwnedHome,
+	codexArgs,
+	codexFailureBlockerKind,
+	prepareCodexRuntimeEnv,
+	temporaryOwnedRuntimeHome,
+} from "./codex-eval-runtime.mjs";
 
 const CODEX_SESSION_MODES = ["ephemeral", "persistent"];
 
@@ -74,7 +81,14 @@ function claudeRuntime(options) {
 			cleanup: null,
 		};
 	}
-	const home = mkdtempSync(join(tmpdir(), "charness-claude-eval-"));
+	const temporary = process.env.CHARNESS_OWNED_SCRATCH_ROOT
+		? null
+		: temporaryOwnedRuntimeHome(options, "claude-eval", process.env);
+	const ownedScratchRoot = process.env.CHARNESS_OWNED_SCRATCH_ROOT ?? temporary.path;
+	const home = process.env.CHARNESS_OWNED_SCRATCH_ROOT
+		? join(process.env.CHARNESS_OWNED_SCRATCH_ROOT, "claude-eval-home")
+		: temporary.path;
+	mkdirSync(home, { recursive: true });
 	const env = {
 		PATH: `${join(options.repoRoot, "bin")}:${process.env.PATH ?? ""}`,
 		HOME: home,
@@ -84,6 +98,7 @@ function claudeRuntime(options) {
 		TERM: process.env.TERM ?? "dumb",
 		...CLAUDE_CLI_ENV,
 	};
+	env.CHARNESS_OWNED_SCRATCH_ROOT = ownedScratchRoot;
 	// Preserve only the authentication variables the CLI may need.  In
 	// particular, do not pass unrelated provider keys or the operator's config
 	// discovery environment into a read-only evaluator.
@@ -94,7 +109,14 @@ function claudeRuntime(options) {
 	}
 	return {
 		env,
-		cleanup: () => rmSync(home, { recursive: true, force: true }),
+		recordRunnerPid: temporary?.recordRunnerPid ?? null,
+		cleanup: (state = "succeeded") => {
+			if (temporary) {
+				cleanupTemporaryOwnedHome(temporary, state);
+				return;
+			}
+			rmSync(home, { recursive: true, force: true });
+		},
 	};
 }
 
@@ -734,6 +756,7 @@ export function runClaudeEvaluation(options, evaluation, outputDir, startedAt, s
 	const prompt = renderClaudePrompt(evaluation, schema);
 	writeFileSync(promptFile, prompt);
 	const runtime = claudeRuntime(options);
+	let cleanupState = "succeeded";
 	try {
 		const result = spawn("claude", claudeArgs(options), {
 			cwd: options.workspace,
@@ -743,6 +766,7 @@ export function runClaudeEvaluation(options, evaluation, outputDir, startedAt, s
 			timeout: options.timeoutMs,
 			detached: true,
 		});
+		runtime.recordRunnerPid?.(result.pid);
 		writeFileSync(stderrFile, result.stderr ?? "");
 		writeFileSync(rawFile, result.stdout ?? "");
 		// The stream-json stdout IS the natural transcript; persist it under an
@@ -755,6 +779,7 @@ export function runClaudeEvaluation(options, evaluation, outputDir, startedAt, s
 			artifactRef("stderr", stderrFile),
 		];
 		if (result.error?.code === "ETIMEDOUT") {
+			cleanupState = "failed";
 			terminateProcessGroup(result.pid);
 			return normalizeObservedResult(
 				evaluation,
@@ -764,6 +789,7 @@ export function runClaudeEvaluation(options, evaluation, outputDir, startedAt, s
 			);
 		}
 		if (result.status !== 0) {
+			cleanupState = "failed";
 			return normalizeObservedResult(
 				evaluation,
 				backendFailureResult(`The claude_code runner exited with status ${result.status}.`),
@@ -775,6 +801,7 @@ export function runClaudeEvaluation(options, evaluation, outputDir, startedAt, s
 		try {
 			observed = parseClaudeOutput(result.stdout ?? "");
 		} catch (error) {
+			cleanupState = "failed";
 			return normalizeObservedResult(
 				evaluation,
 				backendFailureResult(`The claude_code runner did not produce valid JSON: ${error.message}`),
@@ -788,8 +815,11 @@ export function runClaudeEvaluation(options, evaluation, outputDir, startedAt, s
 		// to the raw stdout for the legacy single-envelope transport.
 		const telemetry = extractClaudeTelemetry(findClaudeResultEvent(result.stdout ?? "") ?? result.stdout ?? "", options);
 		return normalizeObservedResult(evaluation, observed, artifactRefs, startedAt, telemetry);
+	} catch (error) {
+		cleanupState = "failed";
+		throw error;
 	} finally {
-		runtime.cleanup?.();
+		runtime.cleanup?.(cleanupState);
 	}
 }
 

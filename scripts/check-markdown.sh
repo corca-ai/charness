@@ -33,7 +33,7 @@ GATE_ACCEPTS_REPO_ROOT_HATCH=1
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=scripts/exported-copy-guard.sh
 source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
-
+charness_exec_owned_scratch check-markdown "$CHARNESS_GATE_DIR/check-markdown.sh" "$@"
 run_git_listing_to_file() {
   local context="$1"
   local output_path="$2"
@@ -88,7 +88,7 @@ else
   exit 1
 fi
 
-listing_dir="$(mktemp -d)"
+listing_dir="${CHARNESS_OWNED_SCRATCH_ROOT:-$REPO_ROOT/.charness-compat-scratch}/check-markdown"; mkdir -p "$listing_dir"
 inline_code_pid=""
 markdownlint_pid=""
 # Invoked through the EXIT trap below; ShellCheck cannot follow that indirect call.

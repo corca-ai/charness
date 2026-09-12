@@ -33,6 +33,7 @@ GATE_ACCEPTS_REPO_ROOT_HATCH=1
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=scripts/exported-copy-guard.sh
 source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
+charness_exec_owned_scratch check-secrets "$CHARNESS_GATE_DIR/check-secrets.sh" "$@"
 
 run_git_listing_to_file() {
   local context="$1"
@@ -122,7 +123,8 @@ if patterns:
 if command -v gitleaks >/dev/null 2>&1; then
   resolve_secrets_config
   if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    scan_dir="$(mktemp -d)"
+    scan_dir="$CHARNESS_OWNED_SCRATCH_ROOT/check-secrets-gitleaks"
+    mkdir -p "$scan_dir"
     tracked_files_path="$scan_dir/tracked-files.zlist"
     existing_files_path="$scan_dir/existing-files.zlist"
     # `|| true` so a failed removal cannot restate this gate's verdict: `set -e` is in
@@ -159,7 +161,8 @@ echo "check-secrets: gitleaks not found, falling back to secretlint via npm (~5s
 if command -v npm >/dev/null 2>&1; then
   if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     secretlint_files=()
-    secretlint_list_dir="$(mktemp -d)"
+    secretlint_list_dir="$CHARNESS_OWNED_SCRATCH_ROOT/check-secrets-secretlint"
+    mkdir -p "$secretlint_list_dir"
     secretlint_list_path="$secretlint_list_dir/tracked-files.zlist"
     secretlint_existing_list_path="$secretlint_list_dir/existing-files.zlist"
     trap 'rm -rf "$secretlint_list_dir" || true' EXIT

@@ -147,3 +147,20 @@ REPO_ROOT_ASSERTED="$_charness_asserted"
 # `exit` inherits the previous command's status, and `cd` failing here must never be
 # reported as the gate's own verdict.
 cd "$REPO_ROOT" || exit 1
+
+# A standalone shell gate gets the same receipt-bound transport as a child of
+# the quality runner.  With an existing parent root this is a no-op; otherwise
+# the adapter owns the gate process and preserves its exit code.
+charness_exec_owned_scratch() {
+  local adapter="$CHARNESS_GATE_DIR/gates/run_owned_scratch_command.py"
+  # Minimal gate fixtures copy the shell entrypoint and guard only; their
+  # test-owned temporary files are outside this production transport.
+  if [[ -n "${CHARNESS_OWNED_SCRATCH_ROOT:-}" || ! -f "$adapter" ]]; then
+    return 0
+  fi
+  local producer="$1"
+  local command="$2"
+  shift 2
+  exec python3 "$adapter" \
+    --repo-root "$REPO_ROOT" --producer "$producer" -- "$command" "$@"
+}

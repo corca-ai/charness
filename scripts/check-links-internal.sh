@@ -33,6 +33,7 @@ GATE_ACCEPTS_REPO_ROOT_HATCH=1
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=scripts/exported-copy-guard.sh
 source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
+charness_exec_owned_scratch check-links-internal "$CHARNESS_GATE_DIR/check-links-internal.sh" "$@"
 
 run_git_listing_to_file() {
   local context="$1"
@@ -67,7 +68,8 @@ EOF
   exit 1
 fi
 
-listing_dir="$(mktemp -d)"
+listing_dir="$CHARNESS_OWNED_SCRATCH_ROOT/check-links-internal"
+mkdir -p "$listing_dir"
 # `|| true` so a failed removal cannot restate this gate's verdict: `set -e` is in
 # force inside an EXIT trap, so an aborting `rm` replaces the pending status with its
 # own. Measured on run-quality.sh, where it turned a correct exit 2 into a 1.

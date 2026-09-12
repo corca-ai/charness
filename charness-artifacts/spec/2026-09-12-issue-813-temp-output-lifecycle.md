@@ -108,8 +108,8 @@ implementations as explicit safe classifications.
 - Interrupt Source: `issue-813-temp-output-ownership`.
 - Seam Summary: production temp producer to runtime scratch registry/GC.
 - Chosen Next Step: factor the producer registration boundary now, then implement.
-- Impl Status: not-started.
-- Impl Status Reason: causal review had to bind the sibling set before mechanism choice.
+- Impl Status: complete.
+- Impl Status Reason: the checked-in producer manifest/gate, receipt-bound shell and JS transport, and focused terminal/final-consumer acceptance are implemented and passing.
 - What Disproving Observation Is Resolved: focused primitive tests disconfirmed a
   broken registry; static inventory confirmed voluntary adoption and anonymous roots.
 - Causal review `issue-813-causal-review` passed with approval-eligible identity

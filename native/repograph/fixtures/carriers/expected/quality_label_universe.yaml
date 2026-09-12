@@ -27,6 +27,7 @@ labels:
 - validate-quality-artifact
 - validate-attention-state-visibility
 - validate-inventory-consumption
+- check-temp-producer-inventory
 - check-inventory-declaration-coverage
 - inventory-skill-script-references
 - check-unreferenced-scripts
@@ -135,6 +136,7 @@ sources:
   - validate-quality-artifact
   - validate-attention-state-visibility
   - validate-inventory-consumption
+  - check-temp-producer-inventory
   - check-inventory-declaration-coverage
   - inventory-skill-script-references
   - check-unreferenced-scripts

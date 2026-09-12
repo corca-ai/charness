@@ -44,6 +44,7 @@ GATE_ACCEPTS_REPO_ROOT_HATCH=0
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=scripts/exported-copy-guard.sh
 source "$CHARNESS_GATE_DIR/exported-copy-guard.sh"
+charness_exec_owned_scratch check-python-lint "$CHARNESS_GATE_DIR/check-python-lint.sh" "$@"
 
 # Runtime/cache isolation is owned by the same shell primitive as the hooks and
 # quality runner. Ruff is only one consumer of that environment.
@@ -64,7 +65,8 @@ if ! command -v ruff >/dev/null 2>&1; then
   exit 1
 fi
 
-universe_dir="$(mktemp -d)"
+universe_dir="$CHARNESS_OWNED_SCRATCH_ROOT/check-python-lint"
+mkdir -p "$universe_dir"
 trap 'rm -rf "$universe_dir" || true' EXIT
 universe_path="$universe_dir/python-files.txt"
 universe_stderr_path="$universe_dir/python-files.stderr"

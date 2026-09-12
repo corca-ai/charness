@@ -61,6 +61,7 @@ def test_run_quality_default_is_the_small_core_lane(
     for label in (
         "validate-skills",
         "validate-packaging",
+        "check-temp-producer-inventory",
         "check-shell",
         "py-compile",
         "ruff",
@@ -70,7 +71,7 @@ def test_run_quality_default_is_the_small_core_lane(
     assert "PASS check-changed-line-mutation-coverage" not in result.stdout
     assert "PASS check-command-docs" not in result.stdout
     assert "PASS check-test-production-ratio" not in result.stdout
-    assert_quality_receipt(repo, result, status="pass", passed=5, failed=0)
+    assert_quality_receipt(repo, result, status="pass", passed=6, failed=0)
 
 
 def test_run_quality_full_omits_release_or_explicit_only_advisories(

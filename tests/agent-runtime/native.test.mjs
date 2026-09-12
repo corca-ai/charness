@@ -575,6 +575,32 @@ test("read-only Claude runner enforces tools, config isolation, and cleanup", ()
 	});
 });
 
+test("read-only Claude runner nests its home beneath an explicit owned root", () => {
+	withTempDir((dir) => {
+		const ownedRoot = join(dir, "owned-root");
+		mkdirSync(ownedRoot);
+		const options = { workspace: dir, repoRoot: dir, timeoutMs: 1000 };
+		const stdout = JSON.stringify({ result: JSON.stringify(observedFixture()) });
+		const { calls, spawn } = recordingSpawn({ status: 0, stdout, stderr: "" });
+		const previousRoot = process.env.CHARNESS_OWNED_SCRATCH_ROOT;
+		process.env.CHARNESS_OWNED_SCRATCH_ROOT = ownedRoot;
+		try {
+			runClaudeEvaluation(options, evaluationFixture(dir), dir, SEAM_STARTED_AT, spawn);
+		} finally {
+			if (previousRoot === undefined) {
+				delete process.env.CHARNESS_OWNED_SCRATCH_ROOT;
+			} else {
+				process.env.CHARNESS_OWNED_SCRATCH_ROOT = previousRoot;
+			}
+		}
+
+		assert.ok(calls[0].spawnOptions.env.HOME.startsWith(`${ownedRoot}/`));
+		assert.equal(calls[0].spawnOptions.env.CHARNESS_OWNED_SCRATCH_ROOT, ownedRoot);
+		assert.equal(existsSync(calls[0].spawnOptions.env.HOME), false);
+		assert.equal(existsSync(ownedRoot), true);
+	});
+});
+
 test("read-only Claude runner rejects a permission override that broadens tools", () => {
 	withTempDir((dir) => {
 		const options = {

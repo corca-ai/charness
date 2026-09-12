@@ -340,6 +340,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-quality-artifact", "validate_quality_artifact.py"),
     ("validate-attention-state-visibility", "validate_attention_state_visibility.py"),
     ("validate-inventory-consumption", "validate_inventory_consumption.py"),
+    ("check-temp-producer-inventory", "check_temp_producer_inventory.py"),
     ("validate-inventory-consumption-declaration", "validate_inventory_consumption_declaration.py"),
     ("check-inventory-declaration-coverage", "check_inventory_declaration_coverage.py"),
     ("check-timing-layer-completeness", "check_timing_layer_completeness.py"),
