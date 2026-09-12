@@ -1,0 +1,47 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Independent check of semantic-byte refusal repair and unreachable final_carrier fallback deletion",
+  "packet_sha256": "438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6",
+  "reviewed_input_identity_sha256": "222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca",
+  "verdict": "pass",
+  "target_observations": [
+    {
+      "target": "v8.6.3",
+      "verdict": "pass",
+      "summary": "The bounded repair removes the duplicate reason argument failure, preserves non-approval refusal, and keeps retained-byte deletion after successful durable readback.",
+      "evidence": [
+        "run_review_recovery_inputs.py passes verification_reason=reason to invalid(), avoiding collision with its positional reason parameter while returning status='invalid' and ok=False.",
+        "run_review_recovery.py emits status='refused', approval_eligible=False, retained=True and returns before promotion when retained validation fails.",
+        "Every path reaching finalize_carrier has constructed final_carrier: missing reports and report-validation failures become invalid and return; successful report validation constructs the carrier. The deleted fallback is unnecessary.",
+        "validate_promoted_chain checks the delivered chain, manifest file integrity, lifecycle equality, identity binding and approval agreement before resume_retained_attempt calls owner.close(state='succeeded', remove_retained=True). Failed readback retains inputs.",
+        "The carrier_bytes regression exercises the formerly colliding call. Recovery terminal tests cover missing or invalid reports, identity and stream mismatches, failed promotion/readback, successful approval and recovered partial non-approval."
+      ]
+    }
+  ],
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "Removing the fallback could leave final_carrier unset.",
+      "bin": "disproved-by-control-flow",
+      "disposition": "All routes that skip construction refuse before finalization; no blocker."
+    },
+    {
+      "concern": "Recovery tests use mocked validators and do not independently establish full durable-storage behavior.",
+      "bin": "evidence-limitation",
+      "disposition": "The supplied source establishes cleanup ordering and the focused tests exercise relevant branches. Full integration verification remains outside this bounded repair."
+    },
+    {
+      "concern": "Other malformed inputs or concurrent filesystem mutation could require broader hardening.",
+      "bin": "out-of-scope-speculation",
+      "disposition": "No newly introduced failure is demonstrated by this repair; do not reopen the retained release critique."
+    }
+  ],
+  "next_move": "Accept this bounded repair; retain parent ownership of release authorization and remaining verification.",
+  "non_claims": [
+    "Reviewed all four supplied inline semantic inputs; no workspace inspection, edits or test execution performed.",
+    "Prior review evidence was not treated as approval.",
+    "No whole-workflow, full quality, packaging or public release approval is claimed.",
+    "Retained and partial evidence is not approval.",
+    "Goal evidence lineage: {\"binding\":null,\"disposition\":\"not-goal-bound\",\"draft\":null,\"goal_run\":null,\"kind\":\"charness.goal-lineage\",\"reason\":\"critique review was run without a Goal Run Work Item identity\",\"schema_version\":1,\"work_item\":null}"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "skills/public/critique/scripts/run_review_recovery.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release863-refusal-repair-20260912/semantic-input/0000-content.bin",
+      "content_sha256": "a85819387370786e0b7bc92a04b560f012ff203aaa6c3a8d86a4d9855878240e",
+      "carrier_sha256": "d78a800bb528315c3f52725c5f755fed9ba79ff6da9ea5172a00d8dc5bcd9cc8",
+      "source": "working-tree:skills/public/critique/scripts/run_review_recovery.py",
+      "size_bytes": 10204,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/public/critique/scripts/run_review_recovery_inputs.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release863-refusal-repair-20260912/semantic-input/0001-content.bin",
+      "content_sha256": "a90f1062516f853327a08d9ba81ca93ec9d2b86fbd173dd57149f6b3722ea4e8",
+      "carrier_sha256": "6bf2e6c3a9154fa8e2dbcbf06dea5f13a9a396712762f4d6ed5e89bacf117fc1",
+      "source": "working-tree:skills/public/critique/scripts/run_review_recovery_inputs.py",
+      "size_bytes": 13972,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/test_review_retained_integrity_matrix.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release863-refusal-repair-20260912/semantic-input/0002-content.bin",
+      "content_sha256": "5930ffd8fc492c8fd035e7be5042c00e4a75f5c093ab0f115d27c32275bf0d15",
+      "carrier_sha256": "506760827728db452e5d731d66cac31fe6693f3f89896c756af67cf75f640c0c",
+      "source": "working-tree:tests/test_review_retained_integrity_matrix.py",
+      "size_bytes": 6703,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/test_review_runner_terminal_paths.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release863-refusal-repair-20260912/semantic-input/0003-content.bin",
+      "content_sha256": "506ccc27d89c4b9119176245e3f20da38c0b85888c756d5cac5a3efa39b437b4",
+      "carrier_sha256": "dd5e7ffe98a2704c729208bcf64176561819fa81dfe7801309827753599d646c",
+      "source": "working-tree:tests/test_review_runner_terminal_paths.py",
+      "size_bytes": 8303,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

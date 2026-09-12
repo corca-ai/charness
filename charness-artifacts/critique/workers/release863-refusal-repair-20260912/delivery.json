@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release863-refusal-repair-20260912",
+      "scope": "v8.6.3 release-gate discovered semantic-byte refusal repair only; existing release critique is retained, not re-reviewed",
+      "packet_identity": "438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6",
+      "parent_receipt_identity": "parent-5122fdafbe9581e4fe8cb081f1e368056f74fade03e1174b",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-12T09:37:42Z",
+      "history": [
+        {
+          "event_id": "8e8957f72d9d43a9bcdb09b46bc36d86",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-12T09:37:14Z",
+          "attempt_id": "release863-refusal-repair-20260912",
+          "scope": "v8.6.3 release-gate discovered semantic-byte refusal repair only; existing release critique is retained, not re-reviewed",
+          "packet_identity": "438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6",
+          "parent_receipt_identity": "parent-5122fdafbe9581e4fe8cb081f1e368056f74fade03e1174b",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "1c56e29c9af64928b77c1df3e9442ac7",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-12T09:37:14Z",
+          "attempt_id": "release863-refusal-repair-20260912",
+          "scope": "v8.6.3 release-gate discovered semantic-byte refusal repair only; existing release critique is retained, not re-reviewed",
+          "packet_identity": "438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6",
+          "parent_receipt_identity": "parent-5122fdafbe9581e4fe8cb081f1e368056f74fade03e1174b",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "bf5bb34caedb48d7a526cd92463b0a7a",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-12T09:37:42Z",
+          "attempt_id": "release863-refusal-repair-20260912",
+          "scope": "v8.6.3 release-gate discovered semantic-byte refusal repair only; existing release critique is retained, not re-reviewed",
+          "packet_identity": "438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6",
+          "parent_receipt_identity": "parent-5122fdafbe9581e4fe8cb081f1e368056f74fade03e1174b",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "cc48be55fae41d5553040359497be96a4e1f0d7d093cd17f1eb9fcc5fa674e46"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "f7b1b4dd5019dab10b4ca1891ddc7c599e18a65804b450169a02c1940d7e7799",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release863-refusal-repair-20260912/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release863-refusal-repair-20260912/receipt.json",
+      "producer_run_id": "run-release863-refusal-repair-20260912",
+      "findings_identity": "cc48be55fae41d5553040359497be96a4e1f0d7d093cd17f1eb9fcc5fa674e46"
+    }
+  ]
+}

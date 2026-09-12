@@ -1,0 +1,64 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: v8.6.3 release-gate discovered semantic-byte refusal repair only; existing
+  release critique is retained, not re-reviewed
+attempt_id: release863-refusal-repair-20260912
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: f7b1b4dd5019dab10b4ca1891ddc7c599e18a65804b450169a02c1940d7e7799
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release863-refusal-repair-20260912/receipt.json
+ledger_path: charness-artifacts/critique/workers/release863-refusal-repair-20260912/delivery.json
+producer_run_id: run-release863-refusal-repair-20260912
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release863-refusal-repair-20260912/result.json
+  receipt_file: charness-artifacts/critique/workers/release863-refusal-repair-20260912/receipt.json
+  producer_run_id: run-release863-refusal-repair-20260912
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: cc48be55fae41d5553040359497be96a4e1f0d7d093cd17f1eb9fcc5fa674e46
+receipt_output_sha256: cc48be55fae41d5553040359497be96a4e1f0d7d093cd17f1eb9fcc5fa674e46
+packet_identity: 438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6
+reviewed_input_identity: 222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca
+parent_receipt_identity: parent-5122fdafbe9581e4fe8cb081f1e368056f74fade03e1174b
+provenance:
+  scope: v8.6.3 release-gate discovered semantic-byte refusal repair only; existing
+    release critique is retained, not re-reviewed
+  packet_identity: 438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6
+  reviewed_input_identity: 222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca
+  parent_receipt_identity: parent-5122fdafbe9581e4fe8cb081f1e368056f74fade03e1174b
+  attempt_id: release863-refusal-repair-20260912
+  attempt_scope: v8.6.3 release-gate discovered semantic-byte refusal repair only;
+    existing release critique is retained, not re-reviewed
+  attempt_packet_identity: 438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6
+  attempt_parent_receipt_identity: parent-5122fdafbe9581e4fe8cb081f1e368056f74fade03e1174b
+  result_packet_identity: 438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6
+  result_reviewed_input_identity: 222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: f7b1b4dd5019dab10b4ca1891ddc7c599e18a65804b450169a02c1940d7e7799
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

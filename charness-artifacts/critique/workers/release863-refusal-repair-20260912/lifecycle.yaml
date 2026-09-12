@@ -1,0 +1,172 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: runner-completed
+execution_state: terminal
+lifecycle_state: terminal
+reviewer_started: true
+delivery_state: findings-received
+verdict_state: pass
+review_verdict: pass
+classification: unclassified
+approval_eligible: true
+output:
+  state: terminal
+  approval_eligible: true
+  schema_version: charness.reviewer_worker_report.v1
+  findings_identity: cc48be55fae41d5553040359497be96a4e1f0d7d093cd17f1eb9fcc5fa674e46
+  partial_artifacts:
+  - schema_version: charness.reviewer_partial_output/v1
+    kind: bounded-review-result
+    path: charness-artifacts/critique/workers/release863-refusal-repair-20260912/partial-result.json
+    bytes: 3453
+    sha256: 9e5950aa01cf3fc22b1041e2677f4f39de671d01691a4c4ca9677ac688bc291b
+output_state: terminal
+failure_identity: c0326ac9f8d6cda80acc483a567521e7c91c7492aa9bb76785302f4899770d90
+next_move: consume the identity-bound delivered reviewer result
+runner_returncode: 0
+runner_status: runner-completed
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/release863-refusal-repair-20260912-packet.json
+  schema: charness-artifacts/critique/workers/release863-refusal-repair-20260912/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/release863-refusal-repair-20260912/capability.json
+  prompt: charness-artifacts/critique/workers/release863-refusal-repair-20260912/review-prompt.md
+  plan: charness-artifacts/critique/workers/release863-refusal-repair-20260912/run-plan.json
+  ledger: charness-artifacts/critique/workers/release863-refusal-repair-20260912/delivery.json
+  output: charness-artifacts/critique/workers/release863-refusal-repair-20260912/result.json
+  receipt: charness-artifacts/critique/workers/release863-refusal-repair-20260912/receipt.json
+  report: charness-artifacts/critique/workers/release863-refusal-repair-20260912/worker-report.yaml
+  runner_stdout: charness-artifacts/critique/workers/release863-refusal-repair-20260912/runner.stdout
+  runner_stderr: charness-artifacts/critique/workers/release863-refusal-repair-20260912/runner.stderr
+  backend_stdout: charness-artifacts/critique/workers/release863-refusal-repair-20260912/backend.stdout
+  backend_stderr: charness-artifacts/critique/workers/release863-refusal-repair-20260912/backend.stderr
+  summary: charness-artifacts/critique/workers/release863-refusal-repair-20260912/lifecycle.yaml
+  semantic-input/0000-content.bin: charness-artifacts/critique/workers/release863-refusal-repair-20260912/semantic-input/0000-content.bin
+  semantic-input/0001-content.bin: charness-artifacts/critique/workers/release863-refusal-repair-20260912/semantic-input/0001-content.bin
+  semantic-input/0002-content.bin: charness-artifacts/critique/workers/release863-refusal-repair-20260912/semantic-input/0002-content.bin
+  semantic-input/0003-content.bin: charness-artifacts/critique/workers/release863-refusal-repair-20260912/semantic-input/0003-content.bin
+  semantic-input/manifest.json: charness-artifacts/critique/workers/release863-refusal-repair-20260912/semantic-input/manifest.json
+  review-prompt.md: charness-artifacts/critique/workers/release863-refusal-repair-20260912/review-prompt.md
+  run-plan.json: charness-artifacts/critique/workers/release863-refusal-repair-20260912/run-plan.json
+  bounded-review-result.schema.json: charness-artifacts/critique/workers/release863-refusal-repair-20260912/bounded-review-result.schema.json
+  capability.json: charness-artifacts/critique/workers/release863-refusal-repair-20260912/capability.json
+  receipt.json: charness-artifacts/critique/workers/release863-refusal-repair-20260912/receipt.json
+  delivery.json: charness-artifacts/critique/workers/release863-refusal-repair-20260912/delivery.json
+  result.json: charness-artifacts/critique/workers/release863-refusal-repair-20260912/result.json
+  runner.stdout: charness-artifacts/critique/workers/release863-refusal-repair-20260912/runner.stdout
+  runner.stderr: charness-artifacts/critique/workers/release863-refusal-repair-20260912/runner.stderr
+  backend.stdout: charness-artifacts/critique/workers/release863-refusal-repair-20260912/backend.stdout
+  backend.stderr: charness-artifacts/critique/workers/release863-refusal-repair-20260912/backend.stderr
+  worker-report.yaml: charness-artifacts/critique/workers/release863-refusal-repair-20260912/worker-report.yaml
+  partial-result.json: charness-artifacts/critique/workers/release863-refusal-repair-20260912/partial-result.json
+  attempt-manifest.json: charness-artifacts/critique/workers/release863-refusal-repair-20260912/attempt-manifest.json
+  durable_report: charness-artifacts/critique/workers/release863-refusal-repair-20260912/worker-report.yaml
+identities:
+  attempt_id: release863-refusal-repair-20260912
+  scope: v8.6.3 release-gate discovered semantic-byte refusal repair only; existing
+    release critique is retained, not re-reviewed
+  packet_identity: 438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6
+  reviewed_input_identity: 222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca
+  parent_receipt_identity: parent-5122fdafbe9581e4fe8cb081f1e368056f74fade03e1174b
+  findings_identity: cc48be55fae41d5553040359497be96a4e1f0d7d093cd17f1eb9fcc5fa674e46
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/release863-refusal-repair-20260912-packet.json
+  packet_sha256: 438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6
+  identity_sha256: 222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+timeout_seconds: 900
+scope: v8.6.3 release-gate discovered semantic-byte refusal repair only; existing
+  release critique is retained, not re-reviewed
+lens: Independent check of the newly reproduced duplicate reason argument TypeError
+  and deletion of unreachable final_carrier fallback. Check retained-input refusal
+  returns structured invalid and never approval, and recovery removes retained bytes
+  only after durable chain readback. Review only the two changed source files and
+  focused regression tests. Do not reopen the previously reviewed release or redesign
+  the workflow. Report real blockers and counterweight speculative worries.
+parent_receipt_identity: parent-5122fdafbe9581e4fe8cb081f1e368056f74fade03e1174b
+semantic_input:
+  entries:
+  - path: skills/public/critique/scripts/run_review_recovery.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release863-refusal-repair-20260912/semantic-input/0000-content.bin
+    content_sha256: a85819387370786e0b7bc92a04b560f012ff203aaa6c3a8d86a4d9855878240e
+    carrier_sha256: d78a800bb528315c3f52725c5f755fed9ba79ff6da9ea5172a00d8dc5bcd9cc8
+    source: working-tree:skills/public/critique/scripts/run_review_recovery.py
+    size_bytes: 10204
+    prompt_encoding: utf-8
+  - path: skills/public/critique/scripts/run_review_recovery_inputs.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release863-refusal-repair-20260912/semantic-input/0001-content.bin
+    content_sha256: a90f1062516f853327a08d9ba81ca93ec9d2b86fbd173dd57149f6b3722ea4e8
+    carrier_sha256: 6bf2e6c3a9154fa8e2dbcbf06dea5f13a9a396712762f4d6ed5e89bacf117fc1
+    source: working-tree:skills/public/critique/scripts/run_review_recovery_inputs.py
+    size_bytes: 13972
+    prompt_encoding: utf-8
+  - path: tests/test_review_retained_integrity_matrix.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release863-refusal-repair-20260912/semantic-input/0002-content.bin
+    content_sha256: 5930ffd8fc492c8fd035e7be5042c00e4a75f5c093ab0f115d27c32275bf0d15
+    carrier_sha256: 506760827728db452e5d731d66cac31fe6693f3f89896c756af67cf75f640c0c
+    source: working-tree:tests/test_review_retained_integrity_matrix.py
+    size_bytes: 6703
+    prompt_encoding: utf-8
+  - path: tests/test_review_runner_terminal_paths.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release863-refusal-repair-20260912/semantic-input/0003-content.bin
+    content_sha256: 506ccc27d89c4b9119176245e3f20da38c0b85888c756d5cac5a3efa39b437b4
+    carrier_sha256: dd5e7ffe98a2704c729208bcf64176561819fa81dfe7801309827753599d646c
+    source: working-tree:tests/test_review_runner_terminal_paths.py
+    size_bytes: 8303
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/release863-refusal-repair-20260912/semantic-input/manifest.json
+  size_bytes: 39182
+runner_output:
+  status: runner-completed
+  returncode: 0
+runner_stream:
+  consistent: true
+  reason: null
+  runner_stdout_sha256: f6f2657b5a2efa25d94eb98d9b42c2968c52fd1408b5fda7ac46e0c7fe8881fe
+  canonical_report_sha256: f6f2657b5a2efa25d94eb98d9b42c2968c52fd1408b5fda7ac46e0c7fe8881fe
+boundary_readback:
+  mode: read-only-worker
+  required: false
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity
+identity_check:
+  status: matched
+  matches: true
+  checks:
+    packet_identity:
+      expected: 438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6
+      actual: 438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6
+      matches: true
+      provenance: 438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6
+    reviewed_input_identity:
+      expected: 222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca
+      actual: 222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca
+      matches: true
+      provenance: 222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca
+    parent_receipt_identity:
+      expected: parent-5122fdafbe9581e4fe8cb081f1e368056f74fade03e1174b
+      actual: parent-5122fdafbe9581e4fe8cb081f1e368056f74fade03e1174b
+      matches: true
+      provenance: parent-5122fdafbe9581e4fe8cb081f1e368056f74fade03e1174b
+  reason: null

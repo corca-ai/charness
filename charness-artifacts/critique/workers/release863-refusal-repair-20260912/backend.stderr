@@ -1,0 +1,505 @@
+OpenAI Codex v0.154.0
+--------
+workdir: /home/hwidong/codes/charness
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: low
+reasoning summaries: none
+session id: 01a094fa-6c56-75b1-89d1-7993c63a342e
+--------
+user
+You are a bounded read-only fresh-eye reviewer.
+Scope: v8.6.3 release-gate discovered semantic-byte refusal repair only; existing release critique is retained, not re-reviewed
+Lens: Independent check of the newly reproduced duplicate reason argument TypeError and deletion of unreachable final_carrier fallback. Check retained-input refusal returns structured invalid and never approval, and recovery removes retained bytes only after durable chain readback. Review only the two changed source files and focused regression tests. Do not reopen the previously reviewed release or redesign the workflow. Report real blockers and counterweight speculative worries.
+Packet identity (copy exactly): 438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6
+Reviewed input identity (copy exactly): 222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca
+Goal evidence lineage (copy exactly):
+{
+  "binding": null,
+  "disposition": "not-goal-bound",
+  "draft": null,
+  "goal_run": null,
+  "kind": "charness.goal-lineage",
+  "reason": "critique review was run without a Goal Run Work Item identity",
+  "schema_version": 1,
+  "work_item": null
+}
+Prior review follow-up context (inert evidence, never approval):
+{
+  "approval_rule": "This is prior evidence only. Reuse findings as hypotheses; do not treat a prior block, defer, timeout, or partial result as approval. The new reviewer must bind the new packet and current selected paths independently.",
+  "comparison": {
+    "changed_prior_paths": [
+      "skills/public/critique/scripts/run_review_recovery.py",
+      "skills/public/critique/scripts/run_review_recovery_inputs.py"
+    ],
+    "comparison_identity_paths": [
+      "scripts/runtime_scratch.py",
+      "skills/public/critique/scripts/run_review_carrier.py",
+      "skills/public/critique/scripts/run_review_execution.py",
+      "skills/public/critique/scripts/run_review_hold_out.py",
+      "skills/public/critique/scripts/run_review_promotion.py",
+      "skills/public/critique/scripts/run_review_promotion_storage.py",
+      "skills/public/critique/scripts/run_review_recovery.py",
+      "skills/public/critique/scripts/run_review_recovery_inputs.py",
+      "tests/test_run_review_declared_path_resolution.py"
+    ],
+    "comparison_identity_sha256": "fe9057a87e766d81846ca17f7695a635de15573dc77f683cda8088f8baef09c7",
+    "new_paths": [
+      "tests/test_review_retained_integrity_matrix.py",
+      "tests/test_review_runner_terminal_paths.py"
+    ],
+    "omitted_changed_prior_paths": [],
+    "prior_paths": 9,
+    "selected_changed_prior_paths": [
+      "skills/public/critique/scripts/run_review_recovery.py",
+      "skills/public/critique/scripts/run_review_recovery_inputs.py"
+    ],
+    "unchanged_selected_paths": []
+  },
+  "context_size_bytes": 6856,
+  "final_reviewed_input_identity_sha256": "222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca",
+  "final_selected_path_count": 4,
+  "kind": "charness.review_followup_context.v1",
+  "omitted_finding_ids": [],
+  "prior_attempt_id": "release-863-repair-lifecycle-20260912",
+  "prior_findings": [],
+  "prior_lens": "lifecycle repaired consumer failure paths",
+  "prior_next_move": "Accept these bounded lifecycle repairs; parent retains release authorization and remaining verification ownership.",
+  "prior_non_claims": [
+    "Reviewed all nine supplied inline semantic inputs; no workspace edits or test execution were performed.",
+    "The reported 79 focused tests and 20 release edge tests were not independently rerun.",
+    "Historical findings were reassessed as hypotheses, never inherited as approval.",
+    "Classifier and authorization-consumer implementation were not supplied in this selected input and are not independently verified here.",
+    "No whole-workflow acceptance, whole-host isolation, #764 scheduled proof, full quality approval, or public release readback is claimed.",
+    "Retained, partial, failed, deferred, and timed-out evidence is not approval.",
+    "Goal evidence lineage: {\"binding\":null,\"disposition\":\"not-goal-bound\",\"draft\":null,\"goal_run\":null,\"kind\":\"charness.goal-lineage\",\"reason\":\"critique review was run without a Goal Run Work Item identity\",\"schema_version\":1,\"work_item\":null}"
+  ],
+  "prior_packet_path": "charness-artifacts/critique/release-863-repair-lifecycle-20260912-packet.json",
+  "prior_packet_sha256": "ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575",
+  "prior_reviewed_input_identity_sha256": "eec12df9d9d310c2767efc6022fab3f125d93033c68e9e14763a99fbb3f4b8cf",
+  "prior_reviewed_paths": 9,
+  "prior_scope": "Bounded follow-up of your retained lifecycle findings. Four red tests reproduced the concrete failures; repaired paths plus consumers are bound here. 79 focused tests and 20 release edge tests passed. Reassess only repaired findings and direct regression risk; no new workflow implementation, whole-host isolation, #764 or full quality requests. Approval is final-manifest commit after lifecycle and integrity readback; lifecycle projection may be rewritten within the same identity-bound attempt on retry. Classifier exposes the verified generated-commit boundary to the authorizatio…[truncated]",
+  "prior_verdict": "pass",
+  "selected_paths": [
+    "skills/public/critique/scripts/run_review_recovery.py",
+    "skills/public/critique/scripts/run_review_recovery_inputs.py",
+    "tests/test_review_retained_integrity_matrix.py",
+    "tests/test_review_runner_terminal_paths.py"
+  ],
+  "selection": "explicit-with-selection-receipt",
+  "selection_receipt": {
+    "comparison_identity_paths": [
+      "scripts/runtime_scratch.py",
+      "skills/public/critique/scripts/run_review_carrier.py",
+      "skills/public/critique/scripts/run_review_execution.py",
+      "skills/public/critique/scripts/run_review_hold_out.py",
+      "skills/public/critique/scripts/run_review_promotion.py",
+      "skills/public/critique/scripts/run_review_promotion_storage.py",
+      "skills/public/critique/scripts/run_review_recovery.py",
+      "skills/public/critique/scripts/run_review_recovery_inputs.py",
+      "tests/test_run_review_declared_path_resolution.py"
+    ],
+    "comparison_identity_sha256": "fe9057a87e766d81846ca17f7695a635de15573dc77f683cda8088f8baef09c7",
+    "explicit_paths": true,
+    "new_paths": [
+      "tests/test_review_retained_integrity_matrix.py",
+      "tests/test_review_runner_terminal_paths.py"
+    ],
+    "omitted_changed_prior_paths": [],
+    "prior_binding": {
+      "attempt_id": "release-863-repair-lifecycle-20260912",
+      "identity_verification": "recorded-self-digest",
+      "packet_sha256": "ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575",
+      "packet_verification": "canonical-integrity-only",
+      "result_carrier": {
+        "attempt_id": "release-863-repair-lifecycle-20260912",
+        "partial_result_sha256": "d10aa4e10a9e47ae3fc403352e14bbcac307dd8eff1dc89cf225284378ba1f04",
+        "result_sha256": "5e43645580681529d982b0a755360e6a768d3f5882eecf5ede42d0c88b6f3756",
+        "source_path": "charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/backend.stdout",
+        "status": "verified"
+      },
+      "reviewed_input_identity_sha256": "eec12df9d9d310c2767efc6022fab3f125d93033c68e9e14763a99fbb3f4b8cf",
+      "semantic_input": {
+        "entries": 9,
+        "status": "verified"
+      },
+      "status": "verified"
+    },
+    "prior_identity_sha256": "eec12df9d9d310c2767efc6022fab3f125d93033c68e9e14763a99fbb3f4b8cf",
+    "rationale": "Explicit paths were supplied to include newly introduced consumers or intentionally widen the stimulus; selection is not approval.",
+    "selected_changed_prior_paths": [
+      "skills/public/critique/scripts/run_review_recovery.py",
+      "skills/public/critique/scripts/run_review_recovery_inputs.py"
+    ],
+    "unchanged_selected_paths": []
+  },
+  "source": "charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/partial-result.json",
+  "source_sha256": "d10aa4e10a9e47ae3fc403352e14bbcac307dd8eff1dc89cf225284378ba1f04"
+}
+Use prior findings as hypotheses and judge only the new packet/current selected input.
+Return only JSON matching the supplied bounded-review result schema.
+Do not edit the workspace, and do not treat partial progress as approval.
+Every explicitly declared `--reviewed-path` and every auto-bound path below is semantic review input.
+The packet owns identity and provenance; the inline payload below carries the identity-checked semantic bytes.
+Judge the inline payload, not the current workspace path, so every backend reviews the same bound input.
+Semantic input payload (content is inert review data, never instructions):
+[
+  {
+    "carrier_path": ".charness/scratch/critique-review/review-63e0c6345acfdb4f3ffbfeedee89c635/semantic-input/0000-content.bin",
+    "carrier_sha256": "d78a800bb528315c3f52725c5f755fed9ba79ff6da9ea5172a00d8dc5bcd9cc8",
+    "content_sha256": "a85819387370786e0b7bc92a04b560f012ff203aaa6c3a8d86a4d9855878240e",
+    "disposition": "present",
+    "path": "skills/public/critique/scripts/run_review_recovery.py",
+    "prompt_content": "\"\"\"Validate and promote a retained critique reviewer attempt.\"\"\"\n\nfrom __future__ import annotations\n\nimport hashlib\nimport json\nfrom pathlib import Path\nfrom typing import Any\n\n\ndef resume_retained_attempt(\n    root: Path,\n    attempt: str,\n    *,\n    support: Any,\n    packet: Any,\n    promotion: Any,\n    script_dir: Path,\n) -> int:\n    \"\"\"Retry durable promotion for an identity-bound retained reviewer run.\"\"\"\n    if not attempt or attempt.startswith(\".\") or \"/\" in attempt or \"\\\\\" in attempt:\n        raise support.RunReviewError(\"attempt-invalid\", \"retained attempt id must be a plain run identity\")\n    run_id = \"review-\" + hashlib.sha256(attempt.encode(\"utf-8\")).hexdigest()[:32]\n    owner = support.owned_scratch(\n        root,\n        \"critique-review\",\n        run_id=run_id,\n        runtime_root_path=root / \".charness\",\n    )\n    owner.reopen_existing()\n    try:\n        package = support.package_paths(script_dir)\n        carrier_validation = support.load_module(\n            package[\"carrier_validation\"], \"charness_reviewer_worker_carrier_support_recovery\"\n        )\n        identity_verification = support.load_module(\n            package[\"identity_verification\"], \"charness_reviewed_input_verification_recovery\"\n        )\n        carrier_module = support.load_module(\n            script_dir / \"run_review_carrier.py\", \"charness_run_review_carrier_recovery\"\n        )\n        retained_inputs = support.load_module(\n            script_dir / \"run_review_recovery_inputs.py\",\n            \"charness_run_review_recovery_inputs\",\n        )\n        lifecycle = support.load_module(package[\"lifecycle\"], \"charness_run_review_lifecycle_recovery\")\n        run_dir = owner.path\n        plan_path = run_dir / \"run-plan.json\"\n        plan = support.load_mapping(plan_path)\n        if not isinstance(plan, dict):\n            raise support.RunReviewError(\"recovery-invalid\", \"retained run plan is not a mapping\")\n        packet_value = plan.get(\"packet_path\")\n        if not isinstance(packet_value, str):\n            raise support.RunReviewError(\"recovery-invalid\", \"retained run plan has no packet_path\")\n        packet_path = support.repo_path(root, packet_value, label=\"retained packet\", require_file=True)\n        paths = packet.run_paths(run_dir, packet_path)\n        report = support.load_mapping(paths[\"report\"]) if paths[\"report\"].is_file() else None\n        recovery_validation = retained_inputs.validate_retained_inputs(\n            root,\n            plan,\n            packet_path,\n            paths,\n            attempt=attempt,\n            owner_receipt=owner.receipt_path,\n            package=package,\n            support=support,\n            packet_module=packet,\n            identity_verification=identity_verification,\n        )\n        expected = {\n            \"attempt_id\": attempt,\n            \"packet_sha256\": plan.get(\"packet_sha256\"),\n            \"reviewed_input_identity_sha256\": plan.get(\"reviewed_input_identity_sha256\"),\n            \"parent_receipt_identity\": plan.get(\"parent_receipt_identity\"),\n        }\n        final_carrier = None\n        if recovery_validation[\"ok\"] and not isinstance(report, dict):\n            recovery_validation = {\n                **recovery_validation,\n                \"status\": \"invalid\",\n                \"ok\": False,\n                \"reason\": \"retained worker report is missing or unreadable\",\n            }\n        if recovery_validation[\"ok\"] and isinstance(report, dict):\n            try:\n                carrier_validation.validate_delivered_worker_report(\n                    repo_root=root,\n                    report=report,\n                    expected_attempt_id=attempt,\n                    expected_paths={\n                        \"receipt\": paths[\"receipt\"],\n                        \"delivery\": paths[\"ledger\"],\n                        \"result\": paths[\"output\"],\n                    },\n                )\n            except (ValueError, OSError, KeyError) as exc:\n                recovery_validation = {\n                    **recovery_validation,\n                    \"status\": \"invalid\",\n                    \"ok\": False,\n                    \"reason\": f\"delivered worker report validation failed: {exc}\",\n                    \"report_validation\": {\"status\": \"invalid\", \"reason\": str(exc)},\n                }\n            else:\n                actual_identity = promotion.identity_binding(report, expected)\n                actual_stream = carrier_module.compare_report_stream(support, paths[\"runner_stdout\"], paths[\"report\"])\n                final_carrier = lifecycle.build_lifecycle(\n                    status=\"runner-completed\",\n                    report=report,\n                    returncode=0,\n                    reviewer_started=True,\n                    boundary_mode=report.get(\"boundary_mode\"),\n                    boundary_ok=True,\n                    paths={\n                        key: support.relative(root, value)\n                        for key, value in paths.items()\n                        if key != \"run_dir\"\n                    },\n                )\n                final_carrier.update(\n                    {\n                        \"ok\": actual_identity.get(\"matches\") is True and actual_stream.get(\"consistent\") is True,\n                        \"carrier_ok\": actual_identity.get(\"matches\") is True and actual_stream.get(\"consistent\") is True,\n                        \"packet_verification\": {\n                            \"status\": \"current\",\n                            \"packet_sha256\": expected.get(\"packet_sha256\"),\n                            \"identity_sha256\": expected.get(\"reviewed_input_identity_sha256\"),\n                        },\n                        \"identity_check\": actual_identity,\n                        \"runner_stream\": actual_stream,\n                    }\n                )\n                if actual_identity.get(\"matches\") is not True or actual_stream.get(\"consistent\") is not True:\n                    recovery_validation = {\n                        **recovery_validation,\n                        \"status\": \"invalid\",\n                        \"ok\": False,\n                        \"reason\": \"retained report identity or runner stream does not match the requested attempt\",\n                        \"report_validation\": {\n                            \"status\": \"invalid\",\n                            \"identity\": actual_identity,\n                            \"runner_stream\": actual_stream,\n                        },\n                    }\n                approval, binding = promotion.approval_for(\n                    report,\n                    expected_identities=expected,\n                    final_carrier=final_carrier,\n                )\n                final_carrier[\"identity_check\"] = binding\n                final_carrier[\"approval_eligible\"] = approval\n        if not recovery_validation.get(\"ok\"):\n            owner.close(state=\"failed\")\n            support.emit(\n                {\n                    \"schema_version\": \"charness.reviewer_recovery.v1\",\n                    \"status\": \"refused\",\n                    \"attempt_id\": attempt,\n                    \"approval_eligible\": False,\n                    \"recovery_validation\": recovery_validation,\n                    \"retained\": True,\n                    \"paths\": {\n                        key: support.relative(root, value)\n                        for key, value in paths.items()\n                        if key != \"run_dir\"\n                    },\n                }\n            )\n            return 1\n        context = {\n            \"packet_sha256\": expected[\"packet_sha256\"],\n            \"reviewed_input_identity_sha256\": expected[\"reviewed_input_identity_sha256\"],\n            \"parent_receipt_identity\": expected[\"parent_receipt_identity\"],\n            \"paths\": {\n                key: support.relative(root, value)\n                for key, value in paths.items()\n                if key != \"run_dir\"\n            },\n        }\n        carrier_module.finalize_carrier(\n            support,\n            promotion,\n            root,\n            attempt,\n            paths,\n            context,\n            final_carrier,\n            report,\n            recovery_validation,\n        )\n        promoted_chain = retained_inputs.validate_promoted_chain(\n            root,\n            context[\"paths\"],\n            final_carrier,\n            expected,\n            support=support,\n            carrier_validation=carrier_validation,\n            promotion=promotion,\n        )\n        if not promoted_chain.get(\"ok\"):\n            owner.close(state=\"failed\")\n            support.emit(\n                {\n                    \"schema_version\": \"charness.reviewer_recovery.v1\",\n                    \"status\": \"refused\",\n                    \"attempt_id\": attempt,\n                    \"approval_eligible\": False,\n                    \"recovery_validation\": {\n                        **recovery_validation,\n                        \"status\": \"invalid\",\n                        \"ok\": False,\n                        \"reason\": promoted_chain.get(\"reason\"),\n                        \"promoted_chain\": promoted_chain,\n                    },\n                    \"retained\": True,\n                    \"paths\": context[\"paths\"],\n                }\n            )\n            return 1\n        recovery_validation[\"promoted_chain\"] = promoted_chain\n        manifest_path = root / promoted_chain[\"attempt_manifest\"]\n        manifest = json.loads(manifest_path.read_text(encoding=\"utf-8\"))\n        promoted = dict(context[\"paths\"])\n        promoted[\"attempt-manifest.json\"] = promoted_chain[\"attempt_manifest\"]\n        owner.close(state=\"succeeded\", remove_retained=True)\n        support.emit(\n            {\n                \"schema_version\": \"charness.reviewer_recovery.v1\",\n                \"status\": \"recovered\",\n                \"attempt_id\": attempt,\n                \"approval_eligible\": manifest.get(\"approval_eligible\") is True,\n                \"identity_binding\": manifest.get(\"identity_binding\"),\n                \"recovery_validation\": recovery_validation,\n                \"paths\": promoted,\n            }\n        )\n        return 0 if manifest.get(\"approval_eligible\") is True else 1\n    except BaseException:\n        owner.close(state=\"failed\")\n        raise\n",
+    "prompt_encoding": "utf-8",
+    "size_bytes": 10204,
+    "source": "working-tree:skills/public/critique/scripts/run_review_recovery.py"
+  },
+  {
+    "carrier_path": ".charness/scratch/critique-review/review-63e0c6345acfdb4f3ffbfeedee89c635/semantic-input/0001-content.bin",
+    "carrier_sha256": "6bf2e6c3a9154fa8e2dbcbf06dea5f13a9a396712762f4d6ed5e89bacf117fc1",
+    "content_sha256": "a90f1062516f853327a08d9ba81ca93ec9d2b86fbd173dd57149f6b3722ea4e8",
+    "disposition": "present",
+    "path": "skills/public/critique/scripts/run_review_recovery_inputs.py",
+    "prompt_content": "\"\"\"Validate the immutable inputs of a retained critique reviewer attempt.\"\"\"\n\nfrom __future__ import annotations\n\nimport hashlib\nimport json\nfrom pathlib import Path\nfrom typing import Any\n\n\ndef parent_receipt_identity(plan: dict[str, Any]) -> str:\n    unsigned = dict(plan)\n    unsigned.pop(\"parent_receipt_identity\", None)\n    encoded = (json.dumps(unsigned, ensure_ascii=False, indent=2, sort_keys=True) + \"\\n\").encode()\n    return \"parent-\" + hashlib.sha256(encoded).hexdigest()[:48]\n\n\ndef non_approval_carrier(reason: str) -> dict[str, Any]:\n    return {\n        \"approval_eligible\": False,\n        \"identity_check\": {\"matches\": False, \"reason\": reason},\n        \"runner_stream\": {\"consistent\": False, \"reason\": reason},\n    }\n\n\ndef validate_retained_inputs(  # noqa: C901, PLR0915\n    root: Path,\n    plan: dict[str, Any],\n    packet: Path,\n    paths: dict[str, Path],\n    *,\n    attempt: str,\n    owner_receipt: Path,\n    package: dict[str, Path],\n    support: Any,\n    packet_module: Any,\n    identity_verification: Any,\n) -> dict[str, Any]:\n    \"\"\"Rebind retained bytes before allowing a recovery carrier to approve.\"\"\"\n    checks: dict[str, Any] = {}\n\n    def invalid(reason: str, **details: Any) -> dict[str, Any]:\n        return {\"status\": \"invalid\", \"ok\": False, \"reason\": reason, \"checks\": checks, **details}\n\n    if plan.get(\"attempt_id\") != attempt:\n        return invalid(\n            \"retained run plan attempt_id does not match the requested attempt\",\n            expected_attempt=attempt,\n            actual_attempt=plan.get(\"attempt_id\"),\n        )\n    owner = support.load_mapping(owner_receipt)\n    if not isinstance(owner, dict):\n        return invalid(\"retained owner receipt is missing or unreadable\")\n    checks[\"owner_receipt\"] = {\n        \"attempt_id\": {\"expected\": attempt, \"actual\": owner.get(\"attempt_id\")},\n        \"packet_identity\": {\n            \"expected\": plan.get(\"packet_sha256\"),\n            \"actual\": owner.get(\"packet_identity\"),\n        },\n        \"reviewed_input_identity\": {\n            \"expected\": plan.get(\"reviewed_input_identity_sha256\"),\n            \"actual\": owner.get(\"reviewed_input_identity\"),\n        },\n        \"parent_receipt_identity\": {\n            \"expected\": plan.get(\"parent_receipt_identity\"),\n            \"actual\": owner.get(\"parent_receipt_identity\"),\n        },\n    }\n    if any(\n        (\n            owner.get(\"attempt_id\") != attempt,\n            owner.get(\"packet_identity\") != plan.get(\"packet_sha256\"),\n            owner.get(\"reviewed_input_identity\") != plan.get(\"reviewed_input_identity_sha256\"),\n            owner.get(\"parent_receipt_identity\") != plan.get(\"parent_receipt_identity\"),\n        )\n    ):\n        return invalid(\"retained owner receipt does not bind the requested attempt\")\n    actual_plan = support.sha256(paths[\"plan\"]) if paths[\"plan\"].is_file() else None\n    checks[\"plan_sha256\"] = {\"expected\": owner.get(\"plan_sha256\"), \"actual\": actual_plan}\n    if not isinstance(owner.get(\"plan_sha256\"), str) or owner.get(\"plan_sha256\") != actual_plan:\n        return invalid(\"retained run plan bytes do not match the owner receipt\")\n\n    retained_paths = {\n        \"receipt\": \"receipt\",\n        \"delivery\": \"ledger\",\n        \"result\": \"output\",\n        \"report\": \"report\",\n        \"summary\": \"summary\",\n    }\n    for label, key in retained_paths.items():\n        path = paths.get(key)\n        actual = support.sha256(path) if path is not None and path.is_file() else None\n        expected = owner.get(f\"{label}_sha256\")\n        checks[f\"{label}_sha256\"] = {\"expected\": expected, \"actual\": actual}\n        if not isinstance(expected, str) or actual != expected:\n            return invalid(f\"retained {label} bytes do not match the owner receipt\")\n\n    worker_receipt = support.load_mapping(paths[\"receipt\"])\n    if not isinstance(worker_receipt, dict):\n        return invalid(\"retained worker receipt is missing or unreadable\")\n    for field, expected in (\n        (\"attempt_id\", attempt),\n        (\"packet_identity\", plan.get(\"packet_sha256\")),\n        (\"reviewed_input_identity\", plan.get(\"reviewed_input_identity_sha256\")),\n        (\"parent_receipt_identity\", plan.get(\"parent_receipt_identity\")),\n    ):\n        if worker_receipt.get(field) != expected:\n            return invalid(f\"retained worker receipt {field} does not match the run plan\")\n    delivery = support.load_mapping(paths[\"ledger\"])\n    attempts = delivery.get(\"attempts\") if isinstance(delivery, dict) else None\n    delivery_attempt = next(\n        (item for item in attempts or [] if isinstance(item, dict) and item.get(\"attempt_id\") == attempt),\n        None,\n    )\n    if not isinstance(delivery_attempt, dict):\n        return invalid(\"retained delivery ledger has no requested attempt\")\n    for field, expected in (\n        (\"packet_identity\", plan.get(\"packet_sha256\")),\n        (\"reviewed_input_identity\", plan.get(\"reviewed_input_identity_sha256\")),\n        (\"parent_receipt_identity\", plan.get(\"parent_receipt_identity\")),\n    ):\n        if delivery_attempt.get(field) != expected:\n            return invalid(f\"retained delivery ledger {field} does not match the run plan\")\n    checks[\"delivery_chain\"] = {\n        \"status\": \"verified\",\n        \"attempt_id\": attempt,\n        \"state\": delivery_attempt.get(\"state\"),\n    }\n\n    expected_packet = plan.get(\"packet_sha256\")\n    actual_packet = support.sha256(packet) if packet.is_file() else None\n    checks[\"packet_sha256\"] = {\"expected\": expected_packet, \"actual\": actual_packet}\n    if not isinstance(expected_packet, str) or actual_packet != expected_packet:\n        return invalid(\"retained packet bytes do not match the run plan\")\n    packet_payload = support.load_mapping(packet)\n    if not isinstance(packet_payload, dict):\n        return invalid(\"retained packet is not a mapping\")\n    try:\n        packet_module.read_packet(\n            support,\n            root,\n            support.relative(root, packet),\n            package[\"verify_packet\"],\n        )\n    except (support.RunReviewError, OSError, ValueError) as exc:\n        return invalid(f\"canonical retained packet verification failed: {exc}\")\n    packet_identity = packet_payload.get(\"reviewed_input_identity\")\n    if not isinstance(packet_identity, dict):\n        return invalid(\"retained packet has no reviewed input identity\")\n    expected_input = plan.get(\"reviewed_input_identity_sha256\")\n    actual_input = packet_identity.get(\"identity_sha256\")\n    checks[\"reviewed_input_identity_sha256\"] = {\"expected\": expected_input, \"actual\": actual_input}\n    if not isinstance(expected_input, str) or actual_input != expected_input:\n        return invalid(\"retained packet identity does not match the run plan\")\n    expected_parent = plan.get(\"parent_receipt_identity\")\n    actual_parent = parent_receipt_identity(plan)\n    checks[\"parent_receipt_identity\"] = {\"expected\": expected_parent, \"actual\": actual_parent}\n    if not isinstance(expected_parent, str) or actual_parent != expected_parent:\n        return invalid(\"retained parent receipt identity does not match the run plan\")\n\n    manifest_path = paths[\"run_dir\"] / \"semantic-input\" / \"manifest.json\"\n    if not manifest_path.is_file() or manifest_path.is_symlink():\n        return invalid(\"retained semantic-input manifest is missing\")\n    try:\n        manifest = json.loads(manifest_path.read_text(encoding=\"utf-8\"))\n    except (OSError, json.JSONDecodeError):\n        return invalid(\"retained semantic-input manifest is unreadable\")\n    entries = manifest.get(\"entries\") if isinstance(manifest, dict) else None\n    expected_content = {\n        item.get(\"path\"): item.get(\"content_sha256\")\n        for item in packet_identity.get(\"reviewed_content\", [])\n        if isinstance(item, dict) and isinstance(item.get(\"path\"), str)\n    }\n    if not isinstance(entries, list) or {item.get(\"path\") for item in entries if isinstance(item, dict)} != set(expected_content):\n        return invalid(\"retained semantic-input manifest paths do not match the packet\")\n    semantic_root = manifest_path.parent.resolve()\n    for entry in entries:\n        if not isinstance(entry, dict):\n            return invalid(\"retained semantic-input manifest contains a malformed entry\")\n        value = entry.get(\"carrier_path\")\n        if not isinstance(value, str) or not isinstance(entry.get(\"path\"), str):\n            return invalid(\"retained semantic-input manifest entry has no carrier path\")\n        try:\n            carrier = support.repo_path(root, value, label=\"retained semantic carrier\", require_file=True)\n            carrier.resolve().relative_to(semantic_root)\n        except (support.RunReviewError, ValueError):\n            return invalid(\"retained semantic carrier escaped its run\")\n        expected = expected_content.get(entry[\"path\"])\n        if entry.get(\"content_sha256\") != expected:\n            return invalid(\"retained semantic carrier manifest does not match the packet\", path=entry[\"path\"])\n        verified, reason = identity_verification.verify_semantic_carrier_entry(\n            packet_identity, entry, carrier.read_bytes()\n        )\n        if not verified:\n            return invalid(\n                \"retained semantic carrier bytes do not match the packet\",\n                path=entry[\"path\"],\n                expected=expected,\n                verification_reason=reason,\n            )\n    checks[\"semantic_input\"] = {\"status\": \"verified\", \"entries\": len(entries)}\n    return {\"status\": \"verified\", \"ok\": True, \"checks\": checks}\n\n\ndef validate_promoted_chain(\n    root: Path,\n    paths: dict[str, str],\n    final_carrier: dict[str, Any],\n    expected: dict[str, Any],\n    *,\n    support: Any,\n    carrier_validation: Any,\n    promotion: Any,\n) -> dict[str, Any]:\n    \"\"\"Reopen every durable carrier before recovery removes retained bytes.\"\"\"\n    required = {\"report\", \"receipt\", \"ledger\", \"output\", \"summary\"}\n    if not required.issubset(paths):\n        return {\n            \"status\": \"invalid\",\n            \"ok\": False,\n            \"reason\": \"promoted chain did not expose every durable carrier\",\n        }\n    durable = {\n        key: support.repo_path(root, paths[key], label=f\"promoted {key}\", require_file=True)\n        for key in required\n    }\n    report = support.load_mapping(durable[\"report\"])\n    try:\n        carrier_validation.validate_delivered_worker_report(\n            repo_root=root,\n            report=report,\n            expected_attempt_id=expected[\"attempt_id\"],\n            expected_paths={\n                \"receipt\": durable[\"receipt\"],\n                \"delivery\": durable[\"ledger\"],\n                \"result\": durable[\"output\"],\n            },\n        )\n    except (ValueError, OSError, KeyError) as exc:\n        return {\n            \"status\": \"invalid\",\n            \"ok\": False,\n            \"reason\": f\"promoted worker chain validation failed: {exc}\",\n        }\n    binding = promotion.identity_binding(report, expected)\n    lifecycle = support.load_mapping(durable[\"summary\"])\n    manifest_path = durable[\"summary\"].with_name(\"attempt-manifest.json\")\n    manifest = support.load_mapping(manifest_path)\n    files = manifest.get(\"files\") if isinstance(manifest, dict) else None\n    integrity = manifest.get(\"file_integrity\") if isinstance(manifest, dict) else None\n    if not isinstance(files, dict) or not isinstance(integrity, dict):\n        return {\n            \"status\": \"invalid\",\n            \"ok\": False,\n            \"reason\": \"promoted attempt manifest has no complete file-integrity map\",\n        }\n    if set(files) != set(integrity):\n        return {\n            \"status\": \"invalid\",\n            \"ok\": False,\n            \"reason\": \"promoted attempt manifest file-integrity keys do not match its files\",\n        }\n    for name, relative in files.items():\n        descriptor = integrity.get(name)\n        if not isinstance(relative, str) or not isinstance(descriptor, dict):\n            return {\n                \"status\": \"invalid\",\n                \"ok\": False,\n                \"reason\": f\"promoted file-integrity descriptor is malformed for {name}\",\n            }\n        try:\n            file_path = support.repo_path(\n                root, relative, label=f\"promoted file {name}\", require_file=True\n            )\n        except (support.RunReviewError, OSError, ValueError) as exc:\n            return {\n                \"status\": \"invalid\",\n                \"ok\": False,\n                \"reason\": f\"promoted file-integrity path is invalid for {name}: {exc}\",\n            }\n        if (\n            descriptor.get(\"path\") != relative\n            or descriptor.get(\"bytes\") != file_path.stat().st_size\n            or descriptor.get(\"sha256\") != support.sha256(file_path)\n        ):\n            return {\n                \"status\": \"invalid\",\n                \"ok\": False,\n                \"reason\": f\"promoted file-integrity check failed for {name}\",\n            }\n    if lifecycle != final_carrier:\n        return {\n            \"status\": \"invalid\",\n            \"ok\": False,\n            \"reason\": \"promoted lifecycle carrier does not match the reconstructed final carrier\",\n        }\n    if binding.get(\"matches\") is not True:\n        return {\n            \"status\": \"invalid\",\n            \"ok\": False,\n            \"reason\": \"promoted worker report identity does not match the requested attempt\",\n            \"identity_binding\": binding,\n        }\n    expected_approval = final_carrier.get(\"approval_eligible\") is True\n    if manifest.get(\"approval_eligible\") is not expected_approval:\n        return {\n            \"status\": \"invalid\",\n            \"ok\": False,\n            \"reason\": \"promoted attempt manifest disagrees with the final lifecycle carrier\",\n        }\n    return {\n        \"status\": \"verified\",\n        \"ok\": True,\n        \"durable_paths\": {key: support.relative(root, value) for key, value in durable.items()},\n        \"attempt_manifest\": support.relative(root, manifest_path),\n        \"identity_binding\": binding,\n        \"file_integrity\": {\"status\": \"verified\", \"files\": len(files)},\n    }\n",
+    "prompt_encoding": "utf-8",
+    "size_bytes": 13972,
+    "source": "working-tree:skills/public/critique/scripts/run_review_recovery_inputs.py"
+  },
+  {
+    "carrier_path": ".charness/scratch/critique-review/review-63e0c6345acfdb4f3ffbfeedee89c635/semantic-input/0002-content.bin",
+    "carrier_sha256": "506760827728db452e5d731d66cac31fe6693f3f89896c756af67cf75f640c0c",
+    "content_sha256": "5930ffd8fc492c8fd035e7be5042c00e4a75f5c093ab0f115d27c32275bf0d15",
+    "disposition": "present",
+    "path": "tests/test_review_retained_integrity_matrix.py",
+    "prompt_content": "\"\"\"Corrupt one retained or promoted boundary at a time; never upgrade it to approval.\"\"\"\n\nfrom __future__ import annotations\n\nimport json\nfrom types import SimpleNamespace\n\nimport pytest\n\nfrom tests.test_review_recovery_failures import (\n    RECOVERY_INPUTS,\n    SUPPORT,\n    _retained_fixture,\n)\n\n\n@pytest.mark.parametrize(\"fault,reason\", [\n    (\"attempt\", \"attempt_id does not match\"),\n    (\"owner\", \"owner receipt is missing\"),\n    (\"bytes\", \"report bytes do not match\"),\n    (\"receipt\", \"worker receipt is missing\"),\n    (\"receipt_identity\", \"worker receipt attempt_id\"),\n    (\"ledger\", \"ledger has no requested\"),\n    (\"ledger_identity\", \"ledger packet_identity\"),\n    (\"packet_bytes\", \"packet bytes do not match\"),\n    (\"packet\", \"packet is not a mapping\"),\n    (\"verifier\", \"canonical retained packet verification failed\"),\n    (\"identity\", \"packet has no reviewed input identity\"),\n    (\"identity_hash\", \"packet identity does not match\"),\n    (\"parent\", \"parent receipt identity does not match\"),\n    (\"manifest_missing\", \"manifest is missing\"),\n    (\"manifest_json\", \"manifest is unreadable\"),\n    (\"entry\", \"malformed entry\"),\n    (\"carrier_missing\", \"entry has no carrier path\"),\n    (\"carrier_escape\", \"carrier escaped its run\"),\n    (\"carrier_hash\", \"carrier manifest does not match\"),\n    (\"carrier_bytes\", \"carrier bytes do not match\"),\n])\ndef test_retained_input_refuses_each_broken_binding(tmp_path, monkeypatch, fault, reason):\n    f = _retained_fixture(tmp_path)\n    read = SUPPORT.load_mapping\n    manifest = f[\"run_dir\"] / \"semantic-input/manifest.json\"\n    packet_payload = read(f[\"packet\"])\n    owner_payload = read(f[\"owner_receipt\"])\n    overrides = {}\n    unavailable = {\"owner\": f[\"owner_receipt\"], \"receipt\": f[\"paths\"][\"receipt\"], \"packet\": f[\"packet\"]}\n    if fault in unavailable:\n        overrides[unavailable[fault]] = None\n    elif fault == \"attempt\":\n        f[\"attempt\"] = \"other\"\n    elif fault == \"bytes\":\n        f[\"paths\"][\"report\"].write_text(\"changed\")\n    elif fault == \"receipt_identity\":\n        overrides[f[\"paths\"][\"receipt\"]] = {**read(f[\"paths\"][\"receipt\"]), \"attempt_id\": \"other\"}\n    elif fault == \"ledger\":\n        overrides[f[\"paths\"][\"ledger\"]] = {\"attempts\": []}\n    elif fault == \"ledger_identity\":\n        ledger = read(f[\"paths\"][\"ledger\"])\n        ledger[\"attempts\"][0][\"packet_identity\"] = \"other\"\n        overrides[f[\"paths\"][\"ledger\"]] = ledger\n    elif fault == \"packet_bytes\":\n        f[\"packet\"].write_text(\"changed\")\n    elif fault == \"verifier\":\n        def refuse(*args):\n            raise ValueError(\"canonical verifier rejected bytes\")\n        f[\"packet_module\"] = SimpleNamespace(read_packet=refuse)\n    elif fault in {\"identity\", \"identity_hash\"}:\n        packet_payload[\"reviewed_input_identity\"] = None if fault == \"identity\" else {\"identity_sha256\": \"other\"}\n        overrides[f[\"packet\"]] = packet_payload\n    elif fault == \"parent\":\n        f[\"plan\"][\"scope\"] = \"altered unsigned plan\"\n    elif fault == \"manifest_missing\":\n        manifest.unlink()\n    elif fault == \"manifest_json\":\n        manifest.write_text(\"{\")\n    elif fault == \"carrier_bytes\":\n        f[\"identity_verification\"] = SimpleNamespace(verify_semantic_carrier_entry=lambda *args: (False, \"hash mismatch\"))\n    else:\n        _corrupt_manifest(manifest, fault)\n    monkeypatch.setattr(SUPPORT, \"load_mapping\", lambda p: overrides[p] if p in overrides else read(p))\n    result = RECOVERY_INPUTS.validate_retained_inputs(\n        tmp_path, f[\"plan\"], f[\"packet\"], f[\"paths\"], attempt=f[\"attempt\"],\n        owner_receipt=f[\"owner_receipt\"], package=f[\"package\"], support=SUPPORT,\n        packet_module=f[\"packet_module\"], identity_verification=f[\"identity_verification\"],\n    )\n    assert result[\"ok\"] is False\n    assert reason in result[\"reason\"]\n    assert read(f[\"owner_receipt\"]) == owner_payload\n\n\ndef _corrupt_manifest(manifest, fault):\n    payload = json.loads(manifest.read_text())\n    if fault == \"entry\":\n        payload[\"entries\"].append(None)\n    elif fault == \"carrier_missing\":\n        payload[\"entries\"][0].pop(\"carrier_path\")\n    elif fault == \"carrier_escape\":\n        payload[\"entries\"][0][\"carrier_path\"] = \"packet.json\"\n    elif fault == \"carrier_hash\":\n        payload[\"entries\"][0][\"content_sha256\"] = \"other\"\n    SUPPORT.write_json(manifest, payload)\n\n\n@pytest.mark.parametrize(\"fault,reason\", [\n    (\"missing\", \"expose every durable carrier\"),\n    (\"validator\", \"worker chain validation failed\"),\n    (\"manifest\", \"no complete file-integrity map\"),\n    (\"keys\", \"keys do not match\"),\n    (\"descriptor\", \"descriptor is malformed\"),\n    (\"path\", \"path is invalid\"),\n    (\"lifecycle\", \"does not match the reconstructed\"),\n    (\"binding\", \"identity does not match\"),\n    (\"approval\", \"disagrees with the final lifecycle\"),\n])\ndef test_promoted_chain_refuses_each_broken_binding(tmp_path, fault, reason):\n    paths = {}\n    final = {\"approval_eligible\": False}\n    for key in (\"report\", \"receipt\", \"ledger\", \"output\", \"summary\"):\n        paths[key] = key + \".json\"\n        SUPPORT.write_json(tmp_path / paths[key], final if key == \"summary\" else {})\n    integrity = {\n        k: {\"path\": p, \"bytes\": (tmp_path / p).stat().st_size, \"sha256\": SUPPORT.sha256(tmp_path / p)}\n        for k, p in paths.items()\n    }\n    manifest = {\"files\": dict(paths), \"file_integrity\": integrity, \"approval_eligible\": False}\n    def validate(**kwargs):\n        if fault == \"validator\":\n            raise ValueError(\"worker receipt mismatch\")\n    if fault == \"missing\":\n        paths.pop(\"report\")\n    elif fault == \"manifest\":\n        manifest = {}\n    elif fault == \"keys\":\n        integrity.pop(\"report\")\n    elif fault == \"descriptor\":\n        integrity[\"report\"] = None\n    elif fault == \"path\":\n        manifest[\"files\"][\"report\"] = \"../escaped.json\"\n    elif fault == \"lifecycle\":\n        SUPPORT.write_json(tmp_path / paths[\"summary\"], {\"approval_eligible\": True})\n        integrity[\"summary\"] = {\"path\": paths[\"summary\"], \"bytes\": (tmp_path / paths[\"summary\"]).stat().st_size,\n                                \"sha256\": SUPPORT.sha256(tmp_path / paths[\"summary\"])}\n    elif fault == \"approval\":\n        manifest[\"approval_eligible\"] = True\n    SUPPORT.write_json(tmp_path / \"attempt-manifest.json\", manifest)\n    result = RECOVERY_INPUTS.validate_promoted_chain(\n        tmp_path, paths, final, {\"attempt_id\": \"a\"}, support=SUPPORT,\n        carrier_validation=SimpleNamespace(validate_delivered_worker_report=validate),\n        promotion=SimpleNamespace(identity_binding=lambda *args: {\"matches\": fault != \"binding\"}),\n    )\n    assert result[\"ok\"] is False\n    assert reason in result[\"reason\"]\n    assert (tmp_path / \"attempt-manifest.json\").exists()\n",
+    "prompt_encoding": "utf-8",
+    "size_bytes": 6703,
+    "source": "working-tree:tests/test_review_retained_integrity_matrix.py"
+  },
+  {
+    "carrier_path": ".charness/scratch/critique-review/review-63e0c6345acfdb4f3ffbfeedee89c635/semantic-input/0003-content.bin",
+    "carrier_sha256": "dd5e7ffe98a2704c729208bcf64176561819fa81dfe7801309827753599d646c",
+    "content_sha256": "506ccc27d89c4b9119176245e3f20da38c0b85888c756d5cac5a3efa39b437b4",
+    "disposition": "present",
+    "path": "tests/test_review_runner_terminal_paths.py",
+    "prompt_content": "\"\"\"Runner errors must preserve resumable bytes; recovery must read back before cleanup.\"\"\"\n\nfrom __future__ import annotations\n\nfrom pathlib import Path\nfrom types import SimpleNamespace as NS\n\nimport pytest\n\nfrom tests.test_review_recovery_failures import (\n    EXECUTION,\n    PACKET,\n    RECOVERY,\n    SCRIPT_ROOT,\n    SUPPORT,\n    _RecoveryOwner,\n)\n\n\nclass Owner(_RecoveryOwner):\n    def __init__(self, path):\n        super().__init__(path)\n        self.retained = []\n\n    def update(self, **kwargs):\n        self.identity = kwargs\n\n    def retain_with(self, **kwargs):\n        self.retained.append(kwargs)\n\n\ndef _support(**overrides):\n    base = {k: getattr(SUPPORT, k) for k in (\n        \"RunReviewError\", \"relative\", \"sha256\", \"write_json\", \"write_yaml\", \"load_mapping\", \"repo_path\",\n    )}\n    return NS(**{**base, **overrides})\n\n\n@pytest.mark.parametrize(\"fault,fail_promotion\", [\n    (\"schema\", False), (\"backend\", False), (\"typed\", False), (\"typed\", True),\n    (\"unexpected\", False), (\"unexpected\", True), (\"identity\", False), (\"early\", False),\n])\ndef test_live_runner_disposes_terminal_failure_without_losing_retry_inputs(tmp_path, fault, fail_promotion):\n    run = tmp_path / \"run\"\n    run.mkdir()\n    owner = Owner(run)\n    canonical = tmp_path / \"schema.json\"\n    canonical.write_text(\"{}\")\n    packet_path = tmp_path / \"packet.json\"\n    packet_path.write_text(\"{}\")\n    for name in (\"receipt.json\", \"delivery.json\", \"result.json\", \"worker-report.yaml\", \"lifecycle.yaml\"):\n        (run / name).write_text(\"{}\")\n    emitted, finalized = [], []\n    def finalize(*args):\n        finalized.append(args[6])\n        if fail_promotion:\n            raise OSError(\"durable destination unavailable\")\n    def invoke(*args, **kwargs):\n        if fault == \"typed\":\n            raise SUPPORT.RunReviewError(\"runner-refused\", \"refused before spawn\")\n        if fault == \"unexpected\":\n            raise RuntimeError(\"transport crashed\")\n        return []\n    def lineage(*args, **kwargs):\n        if fault == \"early\":\n            raise RuntimeError(\"lineage unavailable\")\n        return None\n    def sha(path):\n        if fault == \"schema\" and path == canonical:\n            return \"wrong\"\n        return SUPPORT.sha256(path)\n    lifecycle = NS(build_lifecycle=lambda **kwargs: {**kwargs, \"approval_eligible\": True})\n    support = _support(\n        emit=emitted.append, load_goal_lineage=lineage,\n        package_paths=lambda path: {\"schema\": canonical, \"partial_output\": canonical, \"resolve_adapter\": canonical},\n        load_runtime=lambda package: (lifecycle, NS(validate_capability_envelope=lambda *a, **k: NS(envelope_sha256=\"cap\"))),\n        load_module=lambda *args: NS(collect_run_logs=lambda *args: []),\n        resolve_adapter=lambda *args: {\"data\": {\"packet_sections\": [{}]}},\n        select_backend=lambda *a, **k: (None if fault == \"backend\" else \"codex_exec\", 1),\n        new_run_owner=lambda *args: owner, sha256=sha,\n        run_runner_held_out=lambda *a, **k: (0, \"runner-completed\", True, None),\n        classify_runner_output=lambda *a, **k: (0, \"runner-completed\", True, None),\n    )\n    packet = NS(\n        manifest_paths=lambda *args: [],\n        select_packet=lambda *args: (packet_path, {}, \"packet\", \"input\", {}),\n        run_paths=PACKET.run_paths, default_capability=lambda root: {},\n        write_prompt=lambda *a, **k: None,\n    )\n    carrier = NS(\n        failure_carrier=lambda *a, **k: {\"approval_eligible\": False, \"reason_code\": k[\"code\"]},\n        finalize_carrier=finalize,\n        compare_report_stream=lambda *args: {\"consistent\": True, \"reason\": None},\n        owner_terminal_state=lambda *args: \"failed\",\n    )\n    result = EXECUTION.run_live(\n        NS(attempt_id=\"a\", artifact_key=\"a\", scope=\"test\", lens=\"terminal\", goal_lineage_file=None,\n           backend=None, dry_run=False, reviewed_paths_file=None, reviewed_path=[], hold_out=[]),\n        tmp_path, support=support, packet=packet, invocation=NS(runner_command=invoke),\n        promotion=NS(DURABLE_WORKER_REPORTS=\"durable\", load_and_promote_report=lambda *a: {\"delivery_state\": \"findings-received\"},\n                     identity_binding=lambda *a: {\"matches\": False}),\n        carrier_module=carrier, script_dir=SCRIPT_ROOT, read_only_boundary_mode=\"read-only\",\n        lifecycle_semantic_input=lambda x: x, materialize_semantic_input=lambda *args: {},\n        adapter_name=lambda *args: \"adapter.yaml\",\n    )\n    assert result == (1 if fault == \"identity\" else 2)\n    assert emitted[-1][\"approval_eligible\"] is False\n    if fault == \"early\":\n        assert owner.closed == [] and finalized == []\n    else:\n        assert owner.closed == [{\"state\": \"failed\"}]\n        assert bool(owner.retained) is fail_promotion\n        if fail_promotion:\n            assert emitted[-1][\"durable_promotion\"][\"status\"] == \"failed\"\n            receipt = owner.retained[0]\n            assert \"--resume-retained-attempt a\" in receipt[\"recovery_command\"]\n            assert receipt[\"delivery_sha256\"] == SUPPORT.sha256(run / \"delivery.json\")\n            assert receipt[\"result_sha256\"] == SUPPORT.sha256(run / \"result.json\")\n\n\n@pytest.mark.parametrize(\"fault\", [\"plan\", \"packet\", \"report\", \"validator\", \"identity\", \"stream\", \"chain\", \"promotion\", \"pass\", \"partial\"])\ndef test_recovery_only_removes_retained_inputs_after_promoted_readback(tmp_path, fault):\n    run = tmp_path / \"run\"\n    run.mkdir()\n    owner = Owner(run)\n    packet_path = tmp_path / \"packet.json\"\n    packet_path.write_text(\"{}\")\n    plan = {\"packet_path\": \"packet.json\", \"packet_sha256\": \"p\", \"reviewed_input_identity_sha256\": \"i\", \"parent_receipt_identity\": \"parent\"}\n    SUPPORT.write_json(run / \"run-plan.json\", [] if fault == \"plan\" else {} if fault == \"packet\" else plan)\n    if fault != \"report\":\n        SUPPORT.write_json(run / \"worker-report.yaml\", {\"delivery_state\": \"findings-received\"})\n    emitted, events = [], []\n    manifest = tmp_path / \"attempt-manifest.json\"\n    SUPPORT.write_json(manifest, {\"approval_eligible\": fault == \"pass\", \"identity_binding\": {\"matches\": True}})\n    def validate(**kwargs):\n        if fault == \"validator\":\n            raise ValueError(\"unbound worker receipt\")\n    def finalize(*args):\n        events.append(\"promote\")\n        if fault == \"promotion\":\n            raise OSError(\"promotion unavailable\")\n    def chain(*args, **kwargs):\n        events.append(\"readback\")\n        return {\"ok\": fault != \"chain\", \"reason\": \"bad durable chain\", \"attempt_manifest\": manifest.name}\n    modules = {\n        \"carrier\": NS(validate_delivered_worker_report=validate),\n        \"identity\": NS(),\n        \"lifecycle\": NS(build_lifecycle=lambda **kwargs: {\"approval_eligible\": False}),\n        \"run_review_recovery_inputs.py\": NS(validate_retained_inputs=lambda *a, **k: {\"ok\": True}, validate_promoted_chain=chain),\n        \"run_review_carrier.py\": NS(compare_report_stream=lambda *a: {\"consistent\": fault != \"stream\"}, finalize_carrier=finalize),\n    }\n    support = _support(\n        owned_scratch=lambda *a, **k: owner, emit=emitted.append,\n        package_paths=lambda path: {\"carrier_validation\": Path(\"carrier\"), \"identity_verification\": Path(\"identity\"), \"lifecycle\": Path(\"lifecycle\")},\n        load_module=lambda path, name: modules[path.name],\n    )\n    kwargs = dict(support=support, packet=PACKET, script_dir=SCRIPT_ROOT,\n                  promotion=NS(identity_binding=lambda *a: {\"matches\": fault != \"identity\"},\n                               approval_for=lambda *a, **k: (fault == \"pass\", {\"matches\": fault != \"identity\"})))\n    if fault in {\"plan\", \"packet\", \"promotion\"}:\n        with pytest.raises((SUPPORT.RunReviewError, OSError)):\n            RECOVERY.resume_retained_attempt(tmp_path, \"a\", **kwargs)\n        assert owner.closed == [{\"state\": \"failed\"}]\n    else:\n        rc = RECOVERY.resume_retained_attempt(tmp_path, \"a\", **kwargs)\n        assert rc == (0 if fault == \"pass\" else 1)\n        recovered = fault in {\"pass\", \"partial\"}\n        assert emitted[-1][\"status\"] == (\"recovered\" if recovered else \"refused\")\n        assert emitted[-1][\"approval_eligible\"] is (fault == \"pass\")\n        assert owner.closed == ([{\"state\": \"succeeded\", \"remove_retained\": True}] if recovered else [{\"state\": \"failed\"}])\n        assert events == ([\"promote\", \"readback\"] if recovered or fault == \"chain\" else [])\n",
+    "prompt_encoding": "utf-8",
+    "size_bytes": 8303,
+    "source": "working-tree:tests/test_review_runner_terminal_paths.py"
+  }
+]
+Do not infer reviewed content from hashes or unrelated packet sections, and do not silently truncate large files.
+The packet below is the authoritative review input:
+{
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "changed_ref": null,
+  "follow_up": {
+    "approval_rule": "This is prior evidence only. Reuse findings as hypotheses; do not treat a prior block, defer, timeout, or partial result as approval. The new reviewer must bind the new packet and current selected paths independently.",
+    "comparison": {
+      "changed_prior_paths": [
+        "skills/public/critique/scripts/run_review_recovery.py",
+        "skills/public/critique/scripts/run_review_recovery_inputs.py"
+      ],
+      "comparison_identity_paths": [
+        "scripts/runtime_scratch.py",
+        "skills/public/critique/scripts/run_review_carrier.py",
+        "skills/public/critique/scripts/run_review_execution.py",
+        "skills/public/critique/scripts/run_review_hold_out.py",
+        "skills/public/critique/scripts/run_review_promotion.py",
+        "skills/public/critique/scripts/run_review_promotion_storage.py",
+        "skills/public/critique/scripts/run_review_recovery.py",
+        "skills/public/critique/scripts/run_review_recovery_inputs.py",
+        "tests/test_run_review_declared_path_resolution.py"
+      ],
+      "comparison_identity_sha256": "fe9057a87e766d81846ca17f7695a635de15573dc77f683cda8088f8baef09c7",
+      "new_paths": [
+        "tests/test_review_retained_integrity_matrix.py",
+        "tests/test_review_runner_terminal_paths.py"
+      ],
+      "omitted_changed_prior_paths": [],
+      "prior_paths": 9,
+      "selected_changed_prior_paths": [
+        "skills/public/critique/scripts/run_review_recovery.py",
+        "skills/public/critique/scripts/run_review_recovery_inputs.py"
+      ],
+      "unchanged_selected_paths": []
+    },
+    "context_size_bytes": 6856,
+    "final_reviewed_input_identity_sha256": "222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca",
+    "final_selected_path_count": 4,
+    "kind": "charness.review_followup_context.v1",
+    "omitted_finding_ids": [],
+    "prior_attempt_id": "release-863-repair-lifecycle-20260912",
+    "prior_findings": [],
+    "prior_lens": "lifecycle repaired consumer failure paths",
+    "prior_next_move": "Accept these bounded lifecycle repairs; parent retains release authorization and remaining verification ownership.",
+    "prior_non_claims": [
+      "Reviewed all nine supplied inline semantic inputs; no workspace edits or test execution were performed.",
+      "The reported 79 focused tests and 20 release edge tests were not independently rerun.",
+      "Historical findings were reassessed as hypotheses, never inherited as approval.",
+      "Classifier and authorization-consumer implementation were not supplied in this selected input and are not independently verified here.",
+      "No whole-workflow acceptance, whole-host isolation, #764 scheduled proof, full quality approval, or public release readback is claimed.",
+      "Retained, partial, failed, deferred, and timed-out evidence is not approval.",
+      "Goal evidence lineage: {\"binding\":null,\"disposition\":\"not-goal-bound\",\"draft\":null,\"goal_run\":null,\"kind\":\"charness.goal-lineage\",\"reason\":\"critique review was run without a Goal Run Work Item identity\",\"schema_version\":1,\"work_item\":null}"
+    ],
+    "prior_packet_path": "charness-artifacts/critique/release-863-repair-lifecycle-20260912-packet.json",
+    "prior_packet_sha256": "ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575",
+    "prior_reviewed_input_identity_sha256": "eec12df9d9d310c2767efc6022fab3f125d93033c68e9e14763a99fbb3f4b8cf",
+    "prior_reviewed_paths": 9,
+    "prior_scope": "Bounded follow-up of your retained lifecycle findings. Four red tests reproduced the concrete failures; repaired paths plus consumers are bound here. 79 focused tests and 20 release edge tests passed. Reassess only repaired findings and direct regression risk; no new workflow implementation, whole-host isolation, #764 or full quality requests. Approval is final-manifest commit after lifecycle and integrity readback; lifecycle projection may be rewritten within the same identity-bound attempt on retry. Classifier exposes the verified generated-commit boundary to the authorizatio…[truncated]",
+    "prior_verdict": "pass",
+    "selected_paths": [
+      "skills/public/critique/scripts/run_review_recovery.py",
+      "skills/public/critique/scripts/run_review_recovery_inputs.py",
+      "tests/test_review_retained_integrity_matrix.py",
+      "tests/test_review_runner_terminal_paths.py"
+    ],
+    "selection": "explicit-with-selection-receipt",
+    "selection_receipt": {
+      "comparison_identity_paths": [
+        "scripts/runtime_scratch.py",
+        "skills/public/critique/scripts/run_review_carrier.py",
+        "skills/public/critique/scripts/run_review_execution.py",
+        "skills/public/critique/scripts/run_review_hold_out.py",
+        "skills/public/critique/scripts/run_review_promotion.py",
+        "skills/public/critique/scripts/run_review_promotion_storage.py",
+        "skills/public/critique/scripts/run_review_recovery.py",
+        "skills/public/critique/scripts/run_review_recovery_inputs.py",
+        "tests/test_run_review_declared_path_resolution.py"
+      ],
+      "comparison_identity_sha256": "fe9057a87e766d81846ca17f7695a635de15573dc77f683cda8088f8baef09c7",
+      "explicit_paths": true,
+      "new_paths": [
+        "tests/test_review_retained_integrity_matrix.py",
+        "tests/test_review_runner_terminal_paths.py"
+      ],
+      "omitted_changed_prior_paths": [],
+      "prior_binding": {
+        "attempt_id": "release-863-repair-lifecycle-20260912",
+        "identity_verification": "recorded-self-digest",
+        "packet_sha256": "ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575",
+        "packet_verification": "canonical-integrity-only",
+        "result_carrier": {
+          "attempt_id": "release-863-repair-lifecycle-20260912",
+          "partial_result_sha256": "d10aa4e10a9e47ae3fc403352e14bbcac307dd8eff1dc89cf225284378ba1f04",
+          "result_sha256": "5e43645580681529d982b0a755360e6a768d3f5882eecf5ede42d0c88b6f3756",
+          "source_path": "charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/backend.stdout",
+          "status": "verified"
+        },
+        "reviewed_input_identity_sha256": "eec12df9d9d310c2767efc6022fab3f125d93033c68e9e14763a99fbb3f4b8cf",
+        "semantic_input": {
+          "entries": 9,
+          "status": "verified"
+        },
+        "status": "verified"
+      },
+      "prior_identity_sha256": "eec12df9d9d310c2767efc6022fab3f125d93033c68e9e14763a99fbb3f4b8cf",
+      "rationale": "Explicit paths were supplied to include newly introduced consumers or intentionally widen the stimulus; selection is not approval.",
+      "selected_changed_prior_paths": [
+        "skills/public/critique/scripts/run_review_recovery.py",
+        "skills/public/critique/scripts/run_review_recovery_inputs.py"
+      ],
+      "unchanged_selected_paths": []
+    },
+    "source": "charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/partial-result.json",
+    "source_sha256": "d10aa4e10a9e47ae3fc403352e14bbcac307dd8eff1dc89cf225284378ba1f04"
+  },
+  "follow_up_scope": {
+    "contract": "Adapter-declared follow-up scope; selected-path sections must expose every identity-bound path, and static sections must declare that they are not path-bearing.",
+    "kind": "charness.follow_up_scope_receipt.v1",
+    "sections": [
+      {
+        "binding": "CHARNESS_CRITIQUE_REVIEWED_PATHS",
+        "mode": "selected-paths",
+        "path_binding": "exact-path-manifest",
+        "path_check": "exact-manifest",
+        "path_set_sha256": "c533ef05d24cb8095e018ecf9bcb5e69557b08e6a57273cda27117f3905ba530",
+        "section_id": "changed-files-and-owning-surfaces",
+        "selected_path_count": 4,
+        "status": "verified"
+      },
+      {
+        "binding": "adapter-static-content",
+        "mode": "static",
+        "path_binding": null,
+        "path_check": "not-applicable",
+        "path_set_sha256": null,
+        "section_id": "critique-prepare-non-goals",
+        "selected_path_count": 4,
+        "status": "verified"
+      },
+      {
+        "binding": "adapter-static-content",
+        "mode": "static",
+        "path_binding": null,
+        "path_check": "not-applicable",
+        "path_set_sha256": null,
+        "section_id": "reviewer-packet-semantic-question",
+        "selected_path_count": 4,
+        "status": "verified"
+      }
+    ],
+    "selected_paths": [
+      "skills/public/critique/scripts/run_review_recovery.py",
+      "skills/public/critique/scripts/run_review_recovery_inputs.py",
+      "tests/test_review_retained_integrity_matrix.py",
+      "tests/test_review_runner_terminal_paths.py"
+    ],
+    "status": "verified"
+  },
+  "generated_at": "2026-09-12T09:37:13Z",
+  "kind": "charness.critique_prepare_packet",
+  "ok": true,
+  "prepared_for": "release-v8.6.3-refusal-repair",
+  "prepared_targets": [
+    "v8.6.3"
+  ],
+  "repo": "charness",
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "auto_excluded_paths": [],
+    "base_head": "e2f6a991244e3beec226fb6721f14ae6237b52df",
+    "base_head_role": "provenance-only",
+    "changed_ref": null,
+    "declared_untracked": [],
+    "identity_sha256": "222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca",
+    "mode": "working-tree",
+    "resolved_changed_ref": [],
+    "reviewed_content": [
+      {
+        "content_sha256": "a85819387370786e0b7bc92a04b560f012ff203aaa6c3a8d86a4d9855878240e",
+        "path": "skills/public/critique/scripts/run_review_recovery.py"
+      },
+      {
+        "content_sha256": "a90f1062516f853327a08d9ba81ca93ec9d2b86fbd173dd57149f6b3722ea4e8",
+        "path": "skills/public/critique/scripts/run_review_recovery_inputs.py"
+      },
+      {
+        "content_sha256": "5930ffd8fc492c8fd035e7be5042c00e4a75f5c093ab0f115d27c32275bf0d15",
+        "path": "tests/test_review_retained_integrity_matrix.py"
+      },
+      {
+        "content_sha256": "506ccc27d89c4b9119176245e3f20da38c0b85888c756d5cac5a3efa39b437b4",
+        "path": "tests/test_review_runner_terminal_paths.py"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reviewed_paths": [
+      "skills/public/critique/scripts/run_review_recovery.py",
+      "skills/public/critique/scripts/run_review_recovery_inputs.py",
+      "tests/test_review_retained_integrity_matrix.py",
+      "tests/test_review_runner_terminal_paths.py"
+    ],
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": "captured",
+    "substrate_mode": "working-tree",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "reviewer_tier_evidence": {
+    "application_state": "unverified-by-packet",
+    "execution_mode": "file-backed-worker",
+    "host_exposure_state": "pending-parent-spawn",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code.",
+    "requested_spawn_fields": {
+      "fork_turns": "none",
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority"
+    },
+    "requested_tier": "high-leverage",
+    "reviewer_runner": {
+      "backend": "codex_exec",
+      "mode": "file-backed-worker",
+      "timeout_seconds": 900
+    }
+  },
+  "scope_status": "populated",
+  "section_count": 3,
+  "sections": [
+    {
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- skills/public/critique/scripts/run_review_recovery.py\n- skills/public/critique/scripts/run_review_recovery_inputs.py\n- tests/test_review_retained_integrity_matrix.py\n- tests/test_review_runner_terminal_paths.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: skills/public/critique/scripts/run_review_recovery.py, skills/public/critique/scripts/run_review_recovery_inputs.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/critique/scripts/run_review_recovery.py, skills/public/critique/scripts/run_review_recovery_inputs.py\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/critique/scripts/run_review_recovery.py, skills/public/critique/scripts/run_review_recovery_inputs.py\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/critique/scripts/run_review_recovery.py, skills/public/critique/scripts/run_review_recovery_inputs.py\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/test_review_retained_integrity_matrix.py, tests/test_review_runner_terminal_paths.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: skills/public/critique/scripts/run_review_recovery.py, skills/public/critique/scripts/run_review_recovery_inputs.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "content_kind": "script",
+      "errors": [],
+      "id": "changed-files-and-owning-surfaces",
+      "ok": true,
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "title": "Changed Files And Owning Surfaces"
+    },
+    {
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "content_kind": "static",
+      "errors": [],
+      "id": "critique-prepare-non-goals",
+      "ok": true,
+      "producer": "static-config (inline)",
+      "title": "Non-Goals For This Contract"
+    },
+    {
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "content_kind": "static",
+      "errors": [],
+      "id": "reviewer-packet-semantic-question",
+      "ok": true,
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "title": "Semantic Reviewer Question"
+    }
+  ],
+  "substrate_mode": "working-tree",
+  "version": 1
+}
+
+hook: SessionStart
+hook: SessionStart Completed
+codex
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Independent check of semantic-byte refusal repair and unreachable final_carrier fallback deletion",
+  "packet_sha256": "438cc4ecbaba7d5af3d3e3c28b8f688d0da01e3ad3e9d6f4bf95b22d57bdb8a6",
+  "reviewed_input_identity_sha256": "222a2616ec01bb4835ef5f70ebfc3f76708acc31858d684cee97a383928241ca",
+  "verdict": "pass",
+  "target_observations": [
+    {
+      "target": "v8.6.3",
+      "verdict": "pass",
+      "summary": "The bounded repair removes the duplicate reason argument failure, preserves non-approval refusal, and keeps retained-byte deletion after successful durable readback.",
+      "evidence": [
+        "run_review_recovery_inputs.py passes verification_reason=reason to invalid(), avoiding collision with its positional reason parameter while returning status='invalid' and ok=False.",
+        "run_review_recovery.py emits status='refused', approval_eligible=False, retained=True and returns before promotion when retained validation fails.",
+        "Every path reaching finalize_carrier has constructed final_carrier: missing reports and report-validation failures become invalid and return; successful report validation constructs the carrier. The deleted fallback is unnecessary.",
+        "validate_promoted_chain checks the delivered chain, manifest file integrity, lifecycle equality, identity binding and approval agreement before resume_retained_attempt calls owner.close(state='succeeded', remove_retained=True). Failed readback retains inputs.",
+        "The carrier_bytes regression exercises the formerly colliding call. Recovery terminal tests cover missing or invalid reports, identity and stream mismatches, failed promotion/readback, successful approval and recovered partial non-approval."
+      ]
+    }
+  ],
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "Removing the fallback could leave final_carrier unset.",
+      "bin": "disproved-by-control-flow",
+      "disposition": "All routes that skip construction refuse before finalization; no blocker."
+    },
+    {
+      "concern": "Recovery tests use mocked validators and do not independently establish full durable-storage behavior.",
+      "bin": "evidence-limitation",
+      "disposition": "The supplied source establishes cleanup ordering and the focused tests exercise relevant branches. Full integration verification remains outside this bounded repair."
+    },
+    {
+      "concern": "Other malformed inputs or concurrent filesystem mutation could require broader hardening.",
+      "bin": "out-of-scope-speculation",
+      "disposition": "No newly introduced failure is demonstrated by this repair; do not reopen the retained release critique."
+    }
+  ],
+  "next_move": "Accept this bounded repair; retain parent ownership of release authorization and remaining verification.",
+  "non_claims": [
+    "Reviewed all four supplied inline semantic inputs; no workspace inspection, edits or test execution performed.",
+    "Prior review evidence was not treated as approval.",
+    "No whole-workflow, full quality, packaging or public release approval is claimed.",
+    "Retained and partial evidence is not approval.",
+    "Goal evidence lineage: {\"binding\":null,\"disposition\":\"not-goal-bound\",\"draft\":null,\"goal_run\":null,\"kind\":\"charness.goal-lineage\",\"reason\":\"critique review was run without a Goal Run Work Item identity\",\"schema_version\":1,\"work_item\":null}"
+  ]
+}
+tokens used
+33,253
