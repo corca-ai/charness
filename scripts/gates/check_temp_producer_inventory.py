@@ -52,19 +52,19 @@ TEST_COMPAT_DIRECTORY_IDENTITIES = frozenset(
         "scripts/gates/check_coverage_lib.py::exercise_support_sync_scenarios::temp_dir",
         "scripts/prepush_close_keyword_guard.py::owned_scratch::path",
         "scripts/run_quality_engine_runtime.py::OwnedScratch.open::TemporaryDirectory",
-        "tools/check_coverage.py::collect_counts::tmpdir",
-        "tools/check_coverage_extra_lib.py::exercise_control_plane_helper_scenarios::temp_dir",
-        "tools/check_coverage_extra_lib.py::exercise_install_provenance_helper_scenarios::temp_dir",
-        "tools/check_coverage_extra_lib.py::exercise_install_tool_helper_scenarios::temp_dir",
-        "tools/check_coverage_extra_lib.py::exercise_support_sync_helper_scenarios::temp_dir",
-        "tools/eval_issue_scenarios.py::run_issue_sibling_search_concept_fixtures::tmpdir",
-        "tools/eval_setup.py::run_setup_inspect_states::tmpdir",
-        "tools/eval_setup.py::run_setup_inspect_states::tmpdir#2",
-        "tools/eval_setup.py::run_setup_inspect_states::tmpdir#3",
-        "tools/eval_setup.py::run_setup_operator_acceptance_synthesis::tmpdir",
-        "tools/run_evals.py::expect_adapter_bootstrap::tmpdir",
-        "tools/run_evals.py::scenario_quality_bootstrap_posture::tmpdir",
-        "tools/validate_packaging_committed.py::main::tmpdir",
+        "tools/check_coverage.py::collect_counts::tmpdir",  # export-guard: static producer identity, never executed
+        "tools/check_coverage_extra_lib.py::exercise_control_plane_helper_scenarios::temp_dir",  # export-guard: static producer identity, never executed
+        "tools/check_coverage_extra_lib.py::exercise_install_provenance_helper_scenarios::temp_dir",  # export-guard: static producer identity, never executed
+        "tools/check_coverage_extra_lib.py::exercise_install_tool_helper_scenarios::temp_dir",  # export-guard: static producer identity, never executed
+        "tools/check_coverage_extra_lib.py::exercise_support_sync_helper_scenarios::temp_dir",  # export-guard: static producer identity, never executed
+        "tools/eval_issue_scenarios.py::run_issue_sibling_search_concept_fixtures::tmpdir",  # export-guard: static producer identity, never executed
+        "tools/eval_setup.py::run_setup_inspect_states::tmpdir",  # export-guard: static producer identity, never executed
+        "tools/eval_setup.py::run_setup_inspect_states::tmpdir#2",  # export-guard: static producer identity, never executed
+        "tools/eval_setup.py::run_setup_inspect_states::tmpdir#3",  # export-guard: static producer identity, never executed
+        "tools/eval_setup.py::run_setup_operator_acceptance_synthesis::tmpdir",  # export-guard: static producer identity, never executed
+        "tools/run_evals.py::expect_adapter_bootstrap::tmpdir",  # export-guard: static producer identity, never executed
+        "tools/run_evals.py::scenario_quality_bootstrap_posture::tmpdir",  # export-guard: static producer identity, never executed
+        "tools/validate_packaging_committed.py::main::tmpdir",  # export-guard: static producer identity, never executed
     }
 )
 
