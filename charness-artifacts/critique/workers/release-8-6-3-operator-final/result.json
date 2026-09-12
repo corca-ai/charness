@@ -1,0 +1,125 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Operator and publication checklist",
+  "packet_sha256": "6e9f145db2761d4b8c1cf53d41031b6f430066d3684b62ded65ca077948c6f46",
+  "reviewed_input_identity_sha256": "cbd552ae77b16df3e4e209ad59ba2523746c2331d1a3f1da501629b45283ce44",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "OP-001",
+      "severity": "blocker",
+      "summary": "The Claude review backend does not enforce read-only execution or credential isolation.",
+      "evidence": [
+        "run-local-eval-test.mjs applies --sandbox only through codexArgs; claudeArgs has no sandbox enforcement and makes permission/tool restrictions optional.",
+        "runClaudeEvaluation passes process.env wholesale and does not isolate HOME/config/MCP state.",
+        "The prompt-level instruction not to modify files is not an enforcement boundary; the native tests cover parsing and exit handling, not mutation or credential access."
+      ],
+      "action": "Block release use of this backend until it has an enforced read-only tool policy, isolated config/environment, and mutation/credential-canary tests."
+    },
+    {
+      "id": "OP-002",
+      "severity": "blocker",
+      "summary": "The default isolated Codex home can place copied credentials inside the review workspace.",
+      "evidence": [
+        "codex-eval-runtime.mjs falls back to options.repoRoot/.charness for temporaryCodexHome when CHARNESS_RUNTIME_ROOT is absent.",
+        "authMode=inherit copies source auth.json into that temporary home, while runCodexEvaluation gives the child that CODEX_HOME and the workspace.",
+        "The tests only assert that the path is an owned scratch path; they do not establish that it is outside the model-readable workspace or that credentials are inaccessible to review tools."
+      ],
+      "action": "Put credential-bearing runtime state outside the workspace or behind a host-mediated auth boundary, scrub tool-visible secrets, and add a canary test proving the reviewer cannot read them."
+    },
+    {
+      "id": "OP-003",
+      "severity": "blocker",
+      "summary": "A non-claims release can become published but non-resumable when post-publication closeout fails before its carrier commit.",
+      "evidence": [
+        "publish_release_common.py runs install refresh, installed readback, release observer, and issue closeout before _commit_final_release_artifact.",
+        "publish_release_resume.py has explicit post-publication recovery only for classified carrier/final phases; otherwise a state with tag_remote and release_exists raises that the publish is already complete.",
+        "Thus a failure in an earlier closeout step can leave no durable post-publication phase marker while resume treats the external publication as terminal."
+      ],
+      "action": "Persist a durable post-publication closeout marker before the first closeout step, or make resume recognize and safely continue an externally published release with incomplete closeout; add failure-injection tests for each pre-carrier step."
+    },
+    {
+      "id": "OP-004",
+      "severity": "blocker",
+      "summary": "The reader-facing recovery advice is destructive and not copy-safe.",
+      "evidence": [
+        "publish_release_resume.py tells the published marker case to use git reset --hard <claims-evidence-commit>.",
+        "The message contains a placeholder rather than a verified commit identity and gives no backup, clean-tree check, or confirmation that only the generated commit will be removed.",
+        "The pre-publication branch says to reset to one prepared record without identifying the exact safe command or boundary."
+      ],
+      "action": "Replace this with non-destructive inspection and backup instructions, print verified commit IDs, and require explicit operator confirmation before any history rewrite."
+    },
+    {
+      "id": "OP-005",
+      "severity": "high",
+      "summary": "The install-facing import smoke is not established as an isolated fresh-install check.",
+      "evidence": [
+        "validate_packaging_install_surface.py defines smoke_exported_plugin_imports but the bound validate_materialized_plugin_export path shows no call to it; any external caller is outside this review input.",
+        "The smoke subprocess runs with cwd=Path.cwd(), which can leave the source checkout on Python's import path and allow source-tree modules to mask missing exported-package imports.",
+        "The packet does not bind the smoke template or a consumer-level invocation that proves this isolation."
+      ],
+      "action": "Bind the smoke to the packaging validator, run it from an isolated directory with only the exported tree importable, and add a deliberate dev-tree-only import failure test."
+    },
+    {
+      "id": "OP-006",
+      "severity": "high",
+      "summary": "Fresh-checkout probing has an exit-0 opt-out that can be mistaken for release proof.",
+      "evidence": [
+        "check_fresh_checkout_probes.py returns status=not_configured and exit 0 when the adapter declares no probes.",
+        "The current packet does not include the v8.6.3 release adapter or a release-policy check requiring probes, so it cannot establish that fresh-checkout behavior was tested."
+      ],
+      "action": "Require at least one release probe for v8.6.3, or explicitly render and gate not_configured as an accepted opt-out rather than a passed fresh-checkout claim."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Claude review execution can mutate the checkout or access host credentials.",
+      "bin": "Act Before Ship",
+      "disposition": "Critical boundary failure; prompt-only restrictions are insufficient."
+    },
+    {
+      "concern": "Codex auth material can be readable from the workspace.",
+      "bin": "Act Before Ship",
+      "disposition": "Credential isolation must be proven before release review execution."
+    },
+    {
+      "concern": "Published releases may strand before closeout recovery is recorded.",
+      "bin": "Act Before Ship",
+      "disposition": "The publication boundary needs a durable resumable state before post-publication side effects."
+    },
+    {
+      "concern": "Recovery guidance uses an unsafe placeholder reset command.",
+      "bin": "Act Before Ship",
+      "disposition": "Reader-facing instructions must be safe and directly executable."
+    },
+    {
+      "concern": "Install smoke wiring and import-path isolation are not bound by the packet.",
+      "bin": "Valid but Defer",
+      "disposition": "Do not count install proof until the isolated consumer invocation is evidenced."
+    },
+    {
+      "concern": "No declared fresh-checkout probes can exit successfully.",
+      "bin": "Valid but Defer",
+      "disposition": "Resolve against the v8.6.3 adapter policy before claiming fresh-checkout coverage."
+    },
+    {
+      "concern": "Purely internal task-run and lesson-ledger details outside the operator/publication boundary.",
+      "bin": "Over-Worry",
+      "disposition": "Ignored per scope."
+    },
+    {
+      "concern": "Failure-injection and credential-canary tests for the repairs.",
+      "bin": "Bundle Anyway",
+      "disposition": "Add with the boundary fixes as the minimum follow-up evidence."
+    }
+  ],
+  "next_move": "Block v8.6.3 publication. Repair enforced backend isolation, workspace credential handling, pre-closeout resume state, and recovery instructions; then run isolated install/import and fresh-checkout proof with a release-bound receipt.",
+  "non_claims": [
+    "No current workspace, live release, clone, install, or generated-mirror state was inspected; this result judges only the identity-bound inline payload.",
+    "The packet does not establish a current generated-surface synchronization receipt or installed readback.",
+    "#764 remains deferred and is not judged here."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+"""Hide named in-progress paths from a critique worker tree for one run."""
+
+from __future__ import annotations
+
+import shutil
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from pathlib import Path
+
+try:
+    from scripts.runtime_scratch import owned_scratch
+except ImportError:  # direct file loading from an installed skill mirror
+    _repo_root = next(
+        ancestor
+        for ancestor in Path(__file__).resolve().parents
+        if (ancestor / "scripts" / "runtime_scratch.py").is_file()
+    )
+    import sys
+
+    if str(_repo_root) not in sys.path:
+        sys.path.insert(0, str(_repo_root))
+    from scripts.runtime_scratch import owned_scratch
+
+
+@contextmanager
+def hold_out(
+    root: Path,
+    relative_paths: list[str],
+    *,
+    resolve_path: Callable[..., Path],
+    error_cls: type[Exception],
+) -> Iterator[None]:
+    owner = owned_scratch(root, "critique-hold-out")
+    with owner as staging_root:
+        staging = Path(staging_root)
+        moved: list[tuple[Path, Path]] = []
+        mappings: list[dict[str, str]] = []
+        try:
+            for index, value in enumerate(relative_paths):
+                src = resolve_path(root, value, label="hold-out path")
+                if not src.exists():
+                    raise error_cls(
+                        "hold-out-missing",
+                        f"hold-out path does not exist: {value}",
+                        details={"path": value},
+                    )
+                dest = staging / f"{index}-{src.name}"
+                try:
+                    source_name = src.relative_to(root.resolve()).as_posix()
+                    staged_name = dest.relative_to(staging.resolve()).as_posix()
+                except ValueError as exc:
+                    raise error_cls(
+                        "hold-out-invalid",
+                        f"hold-out path escaped its owner boundary: {value}",
+                        details={"path": value},
+                    ) from exc
+                mapping = {"source": source_name, "staged": staged_name, "state": "planned"}
+                mappings.append(mapping)
+                # Record before the move: a process death between the move and
+                # the next receipt write must still leave enough information for
+                # the runtime registry to restore the source.
+                owner.update(hold_out_paths=mappings)
+                shutil.move(str(src), str(dest))
+                moved.append((src, dest))
+                mapping["state"] = "moved"
+                owner.update(hold_out_paths=mappings)
+            yield
+        finally:
+            collisions = [
+                (src, dest)
+                for src, dest in moved
+                if dest.exists() and src.exists()
+            ]
+            if collisions:
+                # Never let the normal exit path delete the staging owner when
+                # a worker recreated a source path.  Keeping both copies is
+                # intentionally noisy; choosing one here would silently lose
+                # either the original or the worker's replacement.
+                for index, (src, dest) in enumerate(moved):
+                    if dest.exists() and src.exists():
+                        mappings[index]["state"] = "collision"
+                owner.retain_with(
+                    hold_out_paths=mappings,
+                    hold_out_recovery={
+                        "status": "refused",
+                        "reason": "hold-out source and staged paths both exist",
+                    },
+                )
+                src, dest = collisions[0]
+                raise error_cls(
+                    "hold-out-collision",
+                    "hold-out cleanup refused because the worker recreated a source path",
+                    details={"source": str(src), "staged": str(dest)},
+                )
+            for index, (src, dest) in reversed(list(enumerate(moved))):
+                if dest.exists() and not src.exists():
+                    shutil.move(str(dest), str(src))
+                    mappings[index]["state"] = "restored"
+                    owner.update(hold_out_paths=mappings)

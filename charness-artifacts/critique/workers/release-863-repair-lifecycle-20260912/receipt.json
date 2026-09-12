@@ -1,0 +1,84 @@
+{
+  "attempt_id": "release-863-repair-lifecycle-20260912",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-09-12T08:48:26Z",
+  "output_file": "charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/result.json",
+  "output_fresh": true,
+  "output_sha256": "5e43645580681529d982b0a755360e6a768d3f5882eecf5ede42d0c88b6f3756",
+  "output_size": 3450,
+  "packet_identity": "ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575",
+  "parent_receipt_identity": "parent-6de53bd707be0e5068eba761dbaccf237e145c1d8167ef22",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/review-prompt.md",
+  "prompt_sha256": "1f48f14ddb89347e49aff7eec48c61f79b9adccb2e790e79036ef3de38080646",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "retained_partial_output": {
+    "approval_eligible": false,
+    "bytes": 3317,
+    "kind": "bounded-review-result",
+    "path": "charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/partial-result.json",
+    "schema_version": "charness.reviewer_partial_output/v1",
+    "sha256": "d10aa4e10a9e47ae3fc403352e14bbcac307dd8eff1dc89cf225284378ba1f04",
+    "source": "charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/backend.stdout",
+    "validation": "model-shaped"
+  },
+  "reviewed_input_identity": "eec12df9d9d310c2767efc6022fab3f125d93033c68e9e14763a99fbb3f4b8cf",
+  "run_id": "run-release-863-repair-lifecycle-20260912",
+  "schema_file": "charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "Bounded follow-up of your retained lifecycle findings. Four red tests reproduced the concrete failures; repaired paths plus consumers are bound here. 79 focused tests and 20 release edge tests passed. Reassess only repaired findings and direct regression risk; no new workflow implementation, whole-host isolation, #764 or full quality requests. Approval is final-manifest commit after lifecycle and integrity readback; lifecycle projection may be rewritten within the same identity-bound attempt on retry. Classifier exposes the verified generated-commit boundary to the authorization consumer. Parent retains historical non-claims.",
+  "started_at": "2026-09-12T08:47:53Z",
+  "status": "succeeded",
+  "stderr_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/backend.stderr",
+  "stdout_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "workspace": "/home/hwidong/codes/charness"
+}

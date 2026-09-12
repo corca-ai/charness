@@ -1,0 +1,48 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "lifecycle repaired consumer failure paths",
+  "packet_sha256": "ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575",
+  "reviewed_input_identity_sha256": "eec12df9d9d310c2767efc6022fab3f125d93033c68e9e14763a99fbb3f4b8cf",
+  "verdict": "pass",
+  "target_observations": [
+    {
+      "target": "v8.6.3",
+      "verdict": "pass",
+      "summary": "The bound repairs address all three retained lifecycle findings; no concrete blocking regression was identified in the selected consumer paths.",
+      "evidence": [
+        "run_review_hold_out.py retains the owner and restoration mappings before propagating restoration failures; OwnedScratch preserves retained bytes on exit.",
+        "run_review_promotion.py requests non-final approval classification during metadata publication. run_review_carrier.py commits final manifest approval after lifecycle and integrity readback.",
+        "Finalizing promotion skips immutable comparison of an existing derived lifecycle, allowing finalization to rewrite it after path rebinding.",
+        "The supplied tests cover restoration I/O failure and failures at both integrity-refresh boundaries, followed by retry and durable hash verification."
+      ]
+    }
+  ],
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "LIFECYCLE-001: restoration failure deletes the staged original.",
+      "bin": "resolved",
+      "disposition": "The exception path now retains staging and mappings before context exit; the supplied regression checks original bytes and retained receipt."
+    },
+    {
+      "concern": "LIFECYCLE-002: approval becomes visible before final readback.",
+      "bin": "resolved",
+      "disposition": "Approval publication moves to the final atomic manifest replacement after lifecycle and integrity readback, consistent with the declared commit boundary."
+    },
+    {
+      "concern": "LIFECYCLE-003: rebound lifecycle prevents retry.",
+      "bin": "resolved",
+      "disposition": "Existing lifecycle projections can be rewritten during finalization. Immutable metadata remains subject to write-or-verify, and retained recovery validates attempt identities before finalization."
+    }
+  ],
+  "next_move": "Accept these bounded lifecycle repairs; parent retains release authorization and remaining verification ownership.",
+  "non_claims": [
+    "Reviewed all nine supplied inline semantic inputs; no workspace edits or test execution were performed.",
+    "The reported 79 focused tests and 20 release edge tests were not independently rerun.",
+    "Historical findings were reassessed as hypotheses, never inherited as approval.",
+    "Classifier and authorization-consumer implementation were not supplied in this selected input and are not independently verified here.",
+    "No whole-workflow acceptance, whole-host isolation, #764 scheduled proof, full quality approval, or public release readback is claimed.",
+    "Retained, partial, failed, deferred, and timed-out evidence is not approval.",
+    "Goal evidence lineage: {\"binding\":null,\"disposition\":\"not-goal-bound\",\"draft\":null,\"goal_run\":null,\"kind\":\"charness.goal-lineage\",\"reason\":\"critique review was run without a Goal Run Work Item identity\",\"schema_version\":1,\"work_item\":null}"
+  ]
+}

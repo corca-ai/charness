@@ -97,6 +97,7 @@ def _commit_artifact_before_push(
 
 def _assert_post_publication_resumable(state: dict[str, Any], *, tag_name: str) -> bool:
     post_publication_phases = {
+        "post-publication-pending",
         "post-publication-carrier",
         "post-publication-final",
         "post-publication-claims-carrier",
@@ -110,13 +111,20 @@ def _assert_post_publication_resumable(state: dict[str, Any], *, tag_name: str) 
         )
     claims_evidence = state.get("claims_evidence_commit", "")
     expected_parent = (
-        claims_evidence
+        state["tag_sha"]
+        if state["phase"] == "post-publication-pending"
+        else state["parent_sha"]
         if state["phase"] == "post-publication-claims-carrier"
         else state["tag_sha"]
         if state["phase"] == "post-publication-carrier"
         else state["parent_sha"]
     )
-    if state["phase"] == "post-publication-carrier":
+    if state["phase"] == "post-publication-pending":
+        valid, message = (
+            state["head_sha"] == state["tag_sha"],
+            "pending closeout HEAD is not exactly the published release tag.",
+        )
+    elif state["phase"] == "post-publication-carrier":
         valid, message = (
             state["head_parent_is_tag"],
             "carrier HEAD is not directly based on its release tag.",
@@ -128,17 +136,22 @@ def _assert_post_publication_resumable(state: dict[str, Any], *, tag_name: str) 
         )
     elif state["phase"] == "post-publication-claims-carrier":
         valid, message = (
-            state["parent_sha"] == claims_evidence,
+            bool(claims_evidence) and state.get("claims_parent_boundary", state["parent_sha"]) == claims_evidence,
             "claims carrier is not directly based on its claims evidence.",
         )
     else:
         valid, message = (
-            state["grandparent_sha"] == claims_evidence,
+            bool(claims_evidence) and state.get("claims_grandparent_boundary", state["grandparent_sha"]) == claims_evidence,
             "claims final HEAD is not based on its carrier and evidence.",
         )
     if not valid:
         raise SystemExit(f"--resume: `{tag_name}` {message}")
-    if state["remote_branch_sha"] not in {expected_parent, state["head_sha"]}:
+    allowed_remote_heads = {expected_parent, state["head_sha"]}
+    if state["phase"] == "post-publication-claims-carrier":
+        # The publication leg may have left generated artifact commits local
+        # when the remote already held the verified claims evidence.
+        allowed_remote_heads.add(claims_evidence)
+    if state["remote_branch_sha"] not in allowed_remote_heads:
         raise SystemExit(
             "--resume: remote branch is neither the release-content nor local carrier commit; "
             "refusing ambiguous closeout recovery."
@@ -189,17 +202,20 @@ def assert_resumable(state: dict[str, Any], *, tag_name: str) -> None:
         # likeliest action at a stop. Refuse instead of falling through.
         published = state.get("tag_remote") and state.get("release_exists")
         recovery = (
-            # Already published: the tag is on the remote and the release exists, so the
-            # "reset to one prepared record" advice would rewrite history behind a
-            # published tag and discard the committed claims record.
+            # Already published: the tag is on the remote and the release exists.  Never
+            # suggest a history rewrite from a classifier error: the operator must first
+            # preserve the current refs and verify the exact release-owned boundary.
             "The tag is already pushed and its release exists, so this is a publication "
-            "whose closeout did not finish -- do NOT reset past the claims record. Drop only "
-            "the post-push artifact commit (`git reset --hard <claims-evidence-commit>`) and "
-            "resume."
+            "whose closeout did not finish -- do NOT reset past the claims record. Do not "
+            "rewrite history from this message. "
+            "First save `git status --short`, record `git log --oneline --decorate -n 6`, "
+            "and create a backup ref for the current HEAD; then resume only after the exact "
+            "release-owned boundary and remote branch state have been verified."
             if published
             else "This is the state a second prepare over an outstanding marker produces; "
-            "reset to one prepared record before resuming rather than publishing through the "
-            "marker-free lane."
+            "inspect the prepared record, current status, and recent history before resuming; "
+            "the phrase `reset to one prepared record` is not an executable instruction, and "
+            "you must not rewrite history based on an inferred commit."
         )
         raise SystemExit(
             "--resume: HEAD's release record carries "
@@ -298,6 +314,18 @@ def resume_publish(
     cli: Any,
     state: dict[str, Any] | None = None,
 ) -> None:
+    def validate_claims_review_at_boundary(_repo_root: Path, current_state: dict[str, Any]) -> dict[str, Any]:
+        return _claims_review["validate_claims_review"](
+            _repo_root,
+            prepared=current_state["prepared"],
+            evidence_commit=current_state.get("claims_evidence_commit") or current_state["head_sha"],
+            artifact_path=args.claims_review_artifact,
+            target_version=plan["payload"].get("target_version") or plan["tag_name"].removeprefix("v"),
+            tag_name=plan["tag_name"],
+            run=cli.run,
+            previous_version=plan["payload"].get("previous_version"),
+        )
+
     _resume_publish["resume_publish"](
         repo_root,
         args=args,
@@ -311,4 +339,5 @@ def resume_publish(
         resume_closeout=_resume_closeout,
         commit_artifact_before_push=_commit_artifact_before_push,
         release_record_path=_claims_review["release_record_path"],
+        claims_review_validator=validate_claims_review_at_boundary,
     )

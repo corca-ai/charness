@@ -1,0 +1,294 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-12T08:40:54Z",
+  "prepared_for": "v8.6.3 operator release boundary",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- charness-artifacts/critique/workers/release-8-6-3-operator-final/result.json\n- charness-artifacts/debug/2026-09-12-release-workflow-dogfood-blocked.md\n- charness-artifacts/release/2026-09-12-cross-repo-release-workflow-incident.json\n- charness-artifacts/spec/2026-09-12-release-consumer-acceptance.md\n- docs/release-workflow-dogfood.md\n- scripts/agent-runtime/codex-eval-runtime.mjs\n- scripts/agent-runtime/run-local-eval-test.mjs\n- scripts/evidence/probe_stimulus_replay.py\n- scripts/lessons/lesson_ledger_writer_lib.py\n- scripts/plugin_export/validate_packaging_install_surface.py\n- scripts/prepush_close_keyword_guard.py\n- scripts/run_quality_engine.py\n- scripts/run_quality_engine_runtime.py\n- scripts/support_sync_lib.py\n- skills/public/quality/scripts/check_provenance_contract.py\n- skills/public/quality/scripts/inventory_empty_scope_honesty.py\n- skills/public/release/scripts/check_fresh_checkout_probes.py\n- skills/public/release/scripts/publish_release_artifact.py\n- skills/public/release/scripts/publish_release_common.py\n- skills/public/release/scripts/publish_release_resume.py\n- skills/public/release/scripts/publish_release_resume_closeout.py\n- skills/public/release/scripts/publish_release_resume_publish.py\n- skills/public/release/scripts/publish_release_resume_state.py\n- skills/support/markdown-preview/scripts/markdown_preview_render.py\n- tests/agent-runtime/native.test.mjs\n- tests/control_plane/test_support_sync_helpers.py\n- tests/quality_gates/quality_runner_seed.py\n- tests/quality_gates/support.py\n- tests/quality_gates/test_empty_scope_honesty_inventory.py\n- tests/quality_gates/test_packaging_validation.py\n- tests/quality_gates/test_prepush_close_keyword_guard.py\n- tests/quality_gates/test_quality_runner.py\n- tests/quality_gates/test_release_quality_status_binding.py\n- tests/quality_gates/test_release_resume_edge_coverage.py\n- tests/quality_gates/test_release_resume_state_validation.py\n- tests/quality_gates/test_release_resume_surface_revalidation.py\n- tests/quality_gates/test_semantic_review_command.py\n- tests/test_lesson_ledger.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/agent-runtime/codex-eval-runtime.mjs, scripts/agent-runtime/run-local-eval-test.mjs, scripts/evidence/probe_stimulus_replay.py, scripts/lessons/lesson_ledger_writer_lib.py, scripts/plugin_export/validate_packaging_install_surface.py, scripts/prepush_close_keyword_guard.py, scripts/run_quality_engine.py, scripts/run_quality_engine_runtime.py, scripts/support_sync_lib.py, skills/public/quality/scripts/check_provenance_contract.py, skills/public/quality/scripts/inventory_empty_scope_honesty.py, skills/public/release/scripts/check_fresh_checkout_probes.py, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_resume.py, skills/public/release/scripts/publish_release_resume_closeout.py, skills/public/release/scripts/publish_release_resume_publish.py, skills/public/release/scripts/publish_release_resume_state.py, skills/support/markdown-preview/scripts/markdown_preview_render.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/debug/2026-09-12-release-workflow-dogfood-blocked.md, charness-artifacts/spec/2026-09-12-release-consumer-acceptance.md, docs/release-workflow-dogfood.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/release/2026-09-12-cross-repo-release-workflow-incident.json\n  verify: python3 scripts/gates/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/gates/validate_quality_artifact.py --repo-root ., python3 scripts/gates/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/quality/scripts/check_provenance_contract.py, skills/public/quality/scripts/inventory_empty_scope_honesty.py, skills/public/release/scripts/check_fresh_checkout_probes.py, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_resume.py, skills/public/release/scripts/publish_release_resume_closeout.py, skills/public/release/scripts/publish_release_resume_publish.py, skills/public/release/scripts/publish_release_resume_state.py, skills/support/markdown-preview/scripts/markdown_preview_render.py\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/quality/scripts/check_provenance_contract.py, skills/public/quality/scripts/inventory_empty_scope_honesty.py, skills/public/release/scripts/check_fresh_checkout_probes.py, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_resume.py, skills/public/release/scripts/publish_release_resume_closeout.py, skills/public/release/scripts/publish_release_resume_publish.py, skills/public/release/scripts/publish_release_resume_state.py\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/quality/scripts/check_provenance_contract.py, skills/public/quality/scripts/inventory_empty_scope_honesty.py, skills/public/release/scripts/check_fresh_checkout_probes.py, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_resume.py, skills/public/release/scripts/publish_release_resume_closeout.py, skills/public/release/scripts/publish_release_resume_publish.py, skills/public/release/scripts/publish_release_resume_state.py\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- agent-runtime-js: Repo-owned JavaScript agent-runtime modules and their native test command.\n  source matches: scripts/agent-runtime/codex-eval-runtime.mjs, scripts/agent-runtime/run-local-eval-test.mjs, tests/agent-runtime/native.test.mjs\n  verify: npm run test:agent-runtime, npm run test:mutation:js:dry-run\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/workers/release-8-6-3-operator-final/result.json\n  verify: python3 scripts/review/validate_critique_artifacts.py --repo-root . --all\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-09-12-release-workflow-dogfood-blocked.md\n  sync: python3 scripts/retro_debug/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/retro_debug/build_debug_seam_risk_index.py --repo-root . --check\n- external-tool-control-plane: External tool manifests and install, update, doctor, support-sync, and upstream-release helpers whose behavior depends on host state.\n  source matches: scripts/support_sync_lib.py\n  verify: python3 -m tools.validate_integrations --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  source matches: scripts/support_sync_lib.py\n  verify: python3 -m tools.validate_integrations --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/evidence/probe_stimulus_replay.py, scripts/lessons/lesson_ledger_writer_lib.py, scripts/plugin_export/validate_packaging_install_surface.py, scripts/prepush_close_keyword_guard.py, scripts/run_quality_engine.py, scripts/run_quality_engine_runtime.py, scripts/support_sync_lib.py, tests/control_plane/test_support_sync_helpers.py, tests/quality_gates/quality_runner_seed.py, tests/quality_gates/support.py, tests/quality_gates/test_empty_scope_honesty_inventory.py, tests/quality_gates/test_packaging_validation.py, tests/quality_gates/test_prepush_close_keyword_guard.py, tests/quality_gates/test_quality_runner.py, tests/quality_gates/test_release_quality_status_binding.py, tests/quality_gates/test_release_resume_edge_coverage.py, tests/quality_gates/test_release_resume_state_validation.py, tests/quality_gates/test_release_resume_surface_revalidation.py, tests/quality_gates/test_semantic_review_command.py, tests/test_lesson_ledger.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/evidence/probe_stimulus_replay.py, scripts/lessons/lesson_ledger_writer_lib.py, scripts/plugin_export/validate_packaging_install_surface.py, scripts/prepush_close_keyword_guard.py, scripts/run_quality_engine.py, scripts/run_quality_engine_runtime.py, scripts/support_sync_lib.py, skills/public/quality/scripts/check_provenance_contract.py, skills/public/quality/scripts/inventory_empty_scope_honesty.py, skills/public/release/scripts/check_fresh_checkout_probes.py, skills/public/release/scripts/publish_release_artifact.py, skills/public/release/scripts/publish_release_common.py, skills/public/release/scripts/publish_release_resume.py, skills/public/release/scripts/publish_release_resume_closeout.py, skills/public/release/scripts/publish_release_resume_publish.py, skills/public/release/scripts/publish_release_resume_state.py, skills/support/markdown-preview/scripts/markdown_preview_render.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/retro_debug/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "prepared_targets": [
+    "v8.6.3"
+  ],
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "cdd25e1a106eb834441437a126ec59140f3d256c",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/critique/workers/release-8-6-3-operator-final/result.json",
+      "charness-artifacts/debug/2026-09-12-release-workflow-dogfood-blocked.md",
+      "charness-artifacts/release/2026-09-12-cross-repo-release-workflow-incident.json",
+      "charness-artifacts/spec/2026-09-12-release-consumer-acceptance.md",
+      "docs/release-workflow-dogfood.md",
+      "scripts/agent-runtime/codex-eval-runtime.mjs",
+      "scripts/agent-runtime/run-local-eval-test.mjs",
+      "scripts/evidence/probe_stimulus_replay.py",
+      "scripts/lessons/lesson_ledger_writer_lib.py",
+      "scripts/plugin_export/validate_packaging_install_surface.py",
+      "scripts/prepush_close_keyword_guard.py",
+      "scripts/run_quality_engine.py",
+      "scripts/run_quality_engine_runtime.py",
+      "scripts/support_sync_lib.py",
+      "skills/public/quality/scripts/check_provenance_contract.py",
+      "skills/public/quality/scripts/inventory_empty_scope_honesty.py",
+      "skills/public/release/scripts/check_fresh_checkout_probes.py",
+      "skills/public/release/scripts/publish_release_artifact.py",
+      "skills/public/release/scripts/publish_release_common.py",
+      "skills/public/release/scripts/publish_release_resume.py",
+      "skills/public/release/scripts/publish_release_resume_closeout.py",
+      "skills/public/release/scripts/publish_release_resume_publish.py",
+      "skills/public/release/scripts/publish_release_resume_state.py",
+      "skills/support/markdown-preview/scripts/markdown_preview_render.py",
+      "tests/agent-runtime/native.test.mjs",
+      "tests/control_plane/test_support_sync_helpers.py",
+      "tests/quality_gates/quality_runner_seed.py",
+      "tests/quality_gates/support.py",
+      "tests/quality_gates/test_empty_scope_honesty_inventory.py",
+      "tests/quality_gates/test_packaging_validation.py",
+      "tests/quality_gates/test_prepush_close_keyword_guard.py",
+      "tests/quality_gates/test_quality_runner.py",
+      "tests/quality_gates/test_release_quality_status_binding.py",
+      "tests/quality_gates/test_release_resume_edge_coverage.py",
+      "tests/quality_gates/test_release_resume_state_validation.py",
+      "tests/quality_gates/test_release_resume_surface_revalidation.py",
+      "tests/quality_gates/test_semantic_review_command.py",
+      "tests/test_lesson_ledger.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/critique/workers/release-8-6-3-operator-final/result.json",
+        "content_sha256": "c83ce9c3cfc28bcd6101271521ba6ce662b0b82eaa6f1845b589df092889c299"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-09-12-release-workflow-dogfood-blocked.md",
+        "content_sha256": "3ba324887f6942b12458f98be2ac1569e4bba93db1ceedb0df3141f681287ab8"
+      },
+      {
+        "path": "charness-artifacts/release/2026-09-12-cross-repo-release-workflow-incident.json",
+        "content_sha256": "9c3bdf0c795e72c85016860c4279cc4a3e1c8b39d9ece6b63964b147dede8d75"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-09-12-release-consumer-acceptance.md",
+        "content_sha256": "b72d5375ee01adf041af6640af574015d8121d6b863266fd7e4dbb45daeb4cf3"
+      },
+      {
+        "path": "docs/release-workflow-dogfood.md",
+        "content_sha256": "9c3eb37df77138701cddf5b6869a7802963c6d92d7b3a57b38fb0034ebb24ec1"
+      },
+      {
+        "path": "scripts/agent-runtime/codex-eval-runtime.mjs",
+        "content_sha256": "dbca1226d05c1e9365457bdd7930be261ef7e25be60a32e38cde463c91202b4f"
+      },
+      {
+        "path": "scripts/agent-runtime/run-local-eval-test.mjs",
+        "content_sha256": "60538ac95bafcb6ab0ad8e45ad92e127e1723bb8d25b6264a4106b80a2f183cf"
+      },
+      {
+        "path": "scripts/evidence/probe_stimulus_replay.py",
+        "content_sha256": "43c9d260c6a2d26219ba502c1a0f464d24a1bcdafe4d8eaac783a41bb5aee549"
+      },
+      {
+        "path": "scripts/lessons/lesson_ledger_writer_lib.py",
+        "content_sha256": "2f70027c9824e23cebc39d0deca54459ea17985131e2cb3649321616b9f063e2"
+      },
+      {
+        "path": "scripts/plugin_export/validate_packaging_install_surface.py",
+        "content_sha256": "5eeb59300861da9fb13cb5c7cdb423a3988f7ae4c99b4f87b5fe200cb018e3da"
+      },
+      {
+        "path": "scripts/prepush_close_keyword_guard.py",
+        "content_sha256": "264ac55826cd423e8ea9d5d34d8b19ec405e1ce93c0b3a9d089e71ceefe6a7ea"
+      },
+      {
+        "path": "scripts/run_quality_engine.py",
+        "content_sha256": "a3e4e82fa6c7284c2120b8709a46cd1e50fbb2d43146c3ad0b6cbb198650a09e"
+      },
+      {
+        "path": "scripts/run_quality_engine_runtime.py",
+        "content_sha256": "118f3c08652dc9fcb8f7b44b7f8ab9b7b637c997a491db914618c980bde22e64"
+      },
+      {
+        "path": "scripts/support_sync_lib.py",
+        "content_sha256": "38dbc2692565b52f9e71a6560c0d43f38edeb9953e17de11c4a1cfbc264fecb5"
+      },
+      {
+        "path": "skills/public/quality/scripts/check_provenance_contract.py",
+        "content_sha256": "af8d93bb1a623adc434fade0dbe764f3ca8fcb265a038c402db06ec88676bfa9"
+      },
+      {
+        "path": "skills/public/quality/scripts/inventory_empty_scope_honesty.py",
+        "content_sha256": "a6c0ecb55f2d7d9f1dfd8cfadd489542a37b36d0098c80542e6a4d3cde64538c"
+      },
+      {
+        "path": "skills/public/release/scripts/check_fresh_checkout_probes.py",
+        "content_sha256": "8aa5803fa6b8aa87dd4e8dca042538e85611131187d7704ff9b17432efa9efba"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_artifact.py",
+        "content_sha256": "2ee1b7b824be8c4b8d59a310ef388d4309c721706d18a3f04b6cdf78589edd43"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_common.py",
+        "content_sha256": "cc2efe5232e5515351d96a1e04db804a4c518749607db924a292d0347dabba2e"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_resume.py",
+        "content_sha256": "08151358cb2d46172d90b3e83b3919d54191c5fad6897f28303b686942d7552d"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_resume_closeout.py",
+        "content_sha256": "95b3c16bd93774a33930d292908a9459743af7c42e045c9e43f226e05f37475e"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_resume_publish.py",
+        "content_sha256": "9b4e47ad19e17550ad06725d7608c68867f0ac0eebcbe845af5e774468642c60"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_resume_state.py",
+        "content_sha256": "a3a9f5c30d6e6c84126acff3757039a279f2ce5fb6417cbecc8e629842af78f8"
+      },
+      {
+        "path": "skills/support/markdown-preview/scripts/markdown_preview_render.py",
+        "content_sha256": "d45036977ec19dea075165058faa095bb4b322163cdd039dfd10205c3a686c57"
+      },
+      {
+        "path": "tests/agent-runtime/native.test.mjs",
+        "content_sha256": "3a217251cbb811bb7cfee7e05a44922fc6ea04e81e3869670e72ed30e638408d"
+      },
+      {
+        "path": "tests/control_plane/test_support_sync_helpers.py",
+        "content_sha256": "5f4b4f207b612a27bb4e222b7a481a42665367a385171fe6682469709570bf0f"
+      },
+      {
+        "path": "tests/quality_gates/quality_runner_seed.py",
+        "content_sha256": "a3b8441c6fa2718119e26f0ab3d0e80c1d85750c1a8e44d2bd0114d53d0b5164"
+      },
+      {
+        "path": "tests/quality_gates/support.py",
+        "content_sha256": "eea3da10165053538d11b77d6ab610db3f650891290efcd5757aaf02410936a8"
+      },
+      {
+        "path": "tests/quality_gates/test_empty_scope_honesty_inventory.py",
+        "content_sha256": "346c05e53e998d4dfd01b88665b8fd668d2c57bc79a17954b8ca894966075433"
+      },
+      {
+        "path": "tests/quality_gates/test_packaging_validation.py",
+        "content_sha256": "ad2a68687216fcdd13b54465ee34fde844125030a9381313e50d41bab22a6574"
+      },
+      {
+        "path": "tests/quality_gates/test_prepush_close_keyword_guard.py",
+        "content_sha256": "f4aec31d04b1b783c833542fa9632223e1a5fa1da6d4190fc3935bb26d8a6f13"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_runner.py",
+        "content_sha256": "2fd6f965438fcc0d572ef5f52ac563a942c11d3fe81409bfbcf26227ea2c2cb9"
+      },
+      {
+        "path": "tests/quality_gates/test_release_quality_status_binding.py",
+        "content_sha256": "26ad2cf6487c5e21a3fca324d2b4c7a2f43407f2c073788df5c39073a951a6f8"
+      },
+      {
+        "path": "tests/quality_gates/test_release_resume_edge_coverage.py",
+        "content_sha256": "4a6f13bab5f136ee8972ec80608bdd0de1ae27862df980a4ab7d1607173a6c62"
+      },
+      {
+        "path": "tests/quality_gates/test_release_resume_state_validation.py",
+        "content_sha256": "9cea80c50b60e99de5364889020b29ec437e64197a4e233f523c26d9ec7844a6"
+      },
+      {
+        "path": "tests/quality_gates/test_release_resume_surface_revalidation.py",
+        "content_sha256": "d1ded94d801831cc3c691d6bbf8c439ae523d00a210b797014e3ab5209bc60c9"
+      },
+      {
+        "path": "tests/quality_gates/test_semantic_review_command.py",
+        "content_sha256": "64f28e6d12c7dd902564fc13a8d43d2ec009d497889b64b0c64d9ce23683c464"
+      },
+      {
+        "path": "tests/test_lesson_ledger.py",
+        "content_sha256": "0e568220600ec8799257151f089ee4676cd4a72ebb5d32205c0074d9a1fa9bd8"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "9e9ba7e905620df5a538e56489c843ad97dca359d11db3d62ad48bb263a96248",
+    "declared_untracked": [
+      {
+        "path": "charness-artifacts/critique/workers/release-8-6-3-operator-final/result.json",
+        "content_sha256": "c83ce9c3cfc28bcd6101271521ba6ce662b0b82eaa6f1845b589df092889c299"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-09-12-release-workflow-dogfood-blocked.md",
+        "content_sha256": "3ba324887f6942b12458f98be2ac1569e4bba93db1ceedb0df3141f681287ab8"
+      },
+      {
+        "path": "charness-artifacts/release/2026-09-12-cross-repo-release-workflow-incident.json",
+        "content_sha256": "9c3bdf0c795e72c85016860c4279cc4a3e1c8b39d9ece6b63964b147dede8d75"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-09-12-release-consumer-acceptance.md",
+        "content_sha256": "b72d5375ee01adf041af6640af574015d8121d6b863266fd7e4dbb45daeb4cf3"
+      },
+      {
+        "path": "docs/release-workflow-dogfood.md",
+        "content_sha256": "9c3eb37df77138701cddf5b6869a7802963c6d92d7b3a57b38fb0034ebb24ec1"
+      }
+    ],
+    "auto_excluded_paths": [],
+    "identity_sha256": "79f0cfeba5700e9adc8dffea8717bb31b43a04ecd659f0b1a551b6f0a1f75ee3"
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Lifecycle and evidence integrity",
+  "packet_sha256": "37776d8580b1304830ae0ca5d0f138e1106080e0bc5765a957a6015f1425a523",
+  "reviewed_input_identity_sha256": "9243215dfb51120afec94c28f604251010c05cfc70ab2c721b0dc7fa72915d77",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "LIFE-001",
+      "severity": "blocker",
+      "summary": "Retained recovery metadata is erased during owner close.",
+      "evidence": [
+        "scripts/runtime_scratch.py: retain_with writes recovery_command and identity extras, but close() rewrites retained receipts with _receipt(state=\"retained\") and does not merge those extras.",
+        "skills/public/critique/scripts/run_review_execution.py: the promotion-failure finally block records recovery_command, packet_identity, reviewed_input_identity, and parent_receipt_identity, then immediately calls run_owner.close()."
+      ],
+      "action": "Preserve or read back existing receipt fields when closing retained roots, and add a failure-injection test that verifies resume metadata survives cleanup."
+    },
+    {
+      "id": "LIFE-002",
+      "severity": "blocker",
+      "summary": "A durable attempt manifest can advertise approval before final stream and lifecycle validation, and recovery trusts self-reported approval too broadly.",
+      "evidence": [
+        "skills/public/critique/scripts/run_review_execution.py: load_and_promote_report() promotes the report before compare_report_stream() and supplies no final_carrier.",
+        "skills/public/critique/scripts/run_review_promotion.py and run_review_identity.py: approval_for() can mark the manifest eligible using only report approval_eligible plus identity matches when final_carrier is absent; no terminal delivery invariant is checked.",
+        "skills/public/critique/scripts/run_review.py: _resume_retained_attempt() recomputes identity and stream checks but still does not require terminal findings delivery or canonical report validation before retaining approval."
+      ],
+      "action": "Make approval fail closed until canonical report shape, terminal delivery, stream consistency, identity binding, and final manifest readback all pass; publish provisional manifests as non-approval."
+    },
+    {
+      "id": "LIFE-003",
+      "severity": "blocker",
+      "summary": "Promotion fallback can delete scratch after metadata-only success even when final durable lifecycle publication failed.",
+      "evidence": [
+        "skills/public/critique/scripts/run_review_carrier.py: finalize_carrier() performs path rebinding and write_promoted_yaml() after promote_attempt_metadata().",
+        "skills/public/critique/scripts/run_review_execution.py: finally retries only promote_attempt_metadata() when promotion_complete is false; a successful retry leaves promotion_ok true, so run_owner.close() deletes the scratch source without verifying the rebound lifecycle carrier."
+      ],
+      "action": "Treat promotion as one failure-atomic transaction: retain scratch after any post-metadata failure and delete it only after the final carrier, manifest, paths, and referenced bytes are read back and verified."
+    },
+    {
+      "id": "TASK-004",
+      "severity": "blocker",
+      "summary": "Task-run reviewer results can disappear from the typed reusable carrier when output is late, noisy, or oversized.",
+      "evidence": [
+        "scripts/task_run/task_run_execution.py: _result_delivery() clips stdout to 1 MiB and skips structured parsing when truncated.",
+        "scripts/task_run/task_run_execution.py: _reviewer_result_carrier() searches only the complete whole text or individual JSON lines, so a pretty-printed bounded result after diagnostic text is not found.",
+        "docs/agent-task-runs.md claims the bounded result body is retained beside its projection for failed, partial, timeout, and retry paths; these cases instead require log reparsing and may yield no reviewer_result."
+      ],
+      "action": "Use bounded windowed JSON extraction over retained logs or promote the typed result separately; preserve validation state and add late pretty-printed and over-1MiB-prefix tests."
+    },
+    {
+      "id": "SCRATCH-005",
+      "severity": "major",
+      "summary": "Scratch owner establishment is not failure-atomic and can strand an unreceipted root.",
+      "evidence": [
+        "scripts/runtime_scratch.py: OwnedScratch.open() creates the directory and holds the lock before writing the owner receipt, sets _opened only afterward, and has no unwind path on receipt failure.",
+        "skills/public/critique/scripts/run_review_support.py: new_run_owner() converts an OSError to RunReviewError without closing or retaining the partially established owner.",
+        "scripts/runtime_scratch_registry.py: missing or malformed receipts are classified as unknown and refused by GC, so the stranded root cannot be safely resumed or reclaimed."
+      ],
+      "action": "Add rollback-safe open/reopen handling that releases locks while preserving recoverable bytes and records a typed owner state; verify failed receipt writes remain inspectable and retryable."
+    },
+    {
+      "id": "TASK-006",
+      "severity": "major",
+      "summary": "A result-log read failure aborts task completion before terminal persistence or candidate retention.",
+      "evidence": [
+        "scripts/task_run/task_run_completion.py: complete_task() calls result_delivery(stdout_log) before any persistence and without an exception boundary.",
+        "scripts/task_run/task_run_execution.py: _result_delivery() performs read_bytes() after an is_file() check, so a permission or race failure can escape.",
+        "The exception path bypasses payload persistence and _apply_lane_retention(), leaving the terminal result and cleanup decision unrecorded."
+      ],
+      "action": "Make delivery capture total and fail closed: persist a typed read-error/non-delivery state, then run candidate retention with approval disabled."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "LIFE-001, LIFE-002, LIFE-003, and TASK-004 can either strand the recovery context or expose incomplete evidence as approval.",
+      "bin": "Act Before Ship",
+      "disposition": "Strong packet evidence; hold the release and repair the state transitions and approval predicate."
+    },
+    {
+      "concern": "Failure-injection tests for receipt writes, post-promotion publication, late result extraction, and result-log reads are missing from the demonstrated defenses.",
+      "bin": "Bundle Anyway",
+      "disposition": "Add these tests with the fixes because they exercise the exact changed lifecycle seams."
+    },
+    {
+      "concern": "Reworking unrelated support-cache LRU behavior, operator prose, or deferred #764 based on this packet.",
+      "bin": "Over-Worry",
+      "disposition": "Outside this lifecycle/evidence lens and unsupported by a failure in the bound input."
+    },
+    {
+      "concern": "Retained-evidence roots have no automatic reclamation policy and may accumulate after abandoned retries.",
+      "bin": "Valid but Defer",
+      "disposition": "Preserving recoverable bytes is the safer v8.6.3 choice; define explicit bounded cleanup and operator readback in a later lifecycle slice."
+    }
+  ],
+  "next_move": "Block v8.6.3. Repair the approval publication gate, retained-receipt preservation, full-promotion fallback, and typed-result extraction; make completion and owner establishment failure-atomic. Then rerun identity-bound failure, timeout, promotion-crash, cleanup, and late-output tests with durable readback before reconsidering release.",
+  "non_claims": [
+    "This is a packet-only review; no live host exposure, independent second reviewer, or release execution was observed.",
+    "No operator-prose review, unrelated support-cache review, or #764 disposition was performed.",
+    "Retained, partial, failed, deferred, or timeout evidence is not approval."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

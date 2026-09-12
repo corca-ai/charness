@@ -1,0 +1,84 @@
+{
+  "attempt_id": "release-863-bounded-lifecycle-20260912",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-863-bounded-lifecycle-20260912/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-09-12T08:41:54Z",
+  "output_file": "charness-artifacts/critique/workers/release-863-bounded-lifecycle-20260912/result.json",
+  "output_fresh": true,
+  "output_sha256": "e5036ce11b048e1c5de7fa25b117ba8034de758ae0fcea421b868725747feee6",
+  "output_size": 7803,
+  "packet_identity": "991dccac7153dd7d9002608a3a786f774d29eaa2bbe2eb38750efc0b61f71087",
+  "parent_receipt_identity": "parent-8d7a12f2338c27130d0a47d98864eaba6f7bcfb0262537a7",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-863-bounded-lifecycle-20260912/review-prompt.md",
+  "prompt_sha256": "3815f3ed70c5316c5f973f49536897393ae6352dd103a9ed4cd4cb95c3f2780b",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "retained_partial_output": {
+    "approval_eligible": false,
+    "bytes": 7670,
+    "kind": "bounded-review-result",
+    "path": "charness-artifacts/critique/workers/release-863-bounded-lifecycle-20260912/partial-result.json",
+    "schema_version": "charness.reviewer_partial_output/v1",
+    "sha256": "9ad2b827bc41c8aabccc143887693e6857ca2542e776d9bd1f0bb00193ae162f",
+    "source": "charness-artifacts/critique/workers/release-863-bounded-lifecycle-20260912/backend.stdout",
+    "validation": "model-shaped"
+  },
+  "reviewed_input_identity": "7edfcaefcf2a3842d8056e92c8e11558bb954953eba2ba8c9181a9fd0eff0d7b",
+  "run_id": "run-release-863-bounded-lifecycle-20260912",
+  "schema_file": "charness-artifacts/critique/workers/release-863-bounded-lifecycle-20260912/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "Review the current v8.6.3 patch repairs and explicitly reassess the included prior lifecycle-final result findings as historical evidence, never inherited approval. Release workflow experiment retired because no production consumers; whole workflow acceptance remains unproven. Success: safe failure recovery and honest claims. Out of scope: #764 scheduled proof and new workflow implementation. Parent owns full quality and public readback. Require concrete changed-consumer counterexamples before blockers; do not expand into hypothetical redesign.",
+  "started_at": "2026-09-12T08:40:54Z",
+  "status": "succeeded",
+  "stderr_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/release-863-bounded-lifecycle-20260912/backend.stderr",
+  "stdout_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/release-863-bounded-lifecycle-20260912/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "workspace": "/home/hwidong/codes/charness"
+}

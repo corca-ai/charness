@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-863-repair-lifecycle-20260912",
+      "scope": "Bounded follow-up of your retained lifecycle findings. Four red tests reproduced the concrete failures; repaired paths plus consumers are bound here. 79 focused tests and 20 release edge tests passed. Reassess only repaired findings and direct regression risk; no new workflow implementation, whole-host isolation, #764 or full quality requests. Approval is final-manifest commit after lifecycle and integrity readback; lifecycle projection may be rewritten within the same identity-bound attempt on retry. Classifier exposes the verified generated-commit boundary to the authorization consumer. Parent retains historical non-claims.",
+      "packet_identity": "ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575",
+      "parent_receipt_identity": "parent-6de53bd707be0e5068eba761dbaccf237e145c1d8167ef22",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-12T08:48:26Z",
+      "history": [
+        {
+          "event_id": "8eb6c6fb27194ed2b4bb4a5bc78a444c",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-12T08:47:53Z",
+          "attempt_id": "release-863-repair-lifecycle-20260912",
+          "scope": "Bounded follow-up of your retained lifecycle findings. Four red tests reproduced the concrete failures; repaired paths plus consumers are bound here. 79 focused tests and 20 release edge tests passed. Reassess only repaired findings and direct regression risk; no new workflow implementation, whole-host isolation, #764 or full quality requests. Approval is final-manifest commit after lifecycle and integrity readback; lifecycle projection may be rewritten within the same identity-bound attempt on retry. Classifier exposes the verified generated-commit boundary to the authorization consumer. Parent retains historical non-claims.",
+          "packet_identity": "ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575",
+          "parent_receipt_identity": "parent-6de53bd707be0e5068eba761dbaccf237e145c1d8167ef22",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "4a68e2c0f581464ca6c5af218cea311b",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-12T08:47:53Z",
+          "attempt_id": "release-863-repair-lifecycle-20260912",
+          "scope": "Bounded follow-up of your retained lifecycle findings. Four red tests reproduced the concrete failures; repaired paths plus consumers are bound here. 79 focused tests and 20 release edge tests passed. Reassess only repaired findings and direct regression risk; no new workflow implementation, whole-host isolation, #764 or full quality requests. Approval is final-manifest commit after lifecycle and integrity readback; lifecycle projection may be rewritten within the same identity-bound attempt on retry. Classifier exposes the verified generated-commit boundary to the authorization consumer. Parent retains historical non-claims.",
+          "packet_identity": "ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575",
+          "parent_receipt_identity": "parent-6de53bd707be0e5068eba761dbaccf237e145c1d8167ef22",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "0f2a71333a974d09bfae4c59270d6426",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-12T08:48:26Z",
+          "attempt_id": "release-863-repair-lifecycle-20260912",
+          "scope": "Bounded follow-up of your retained lifecycle findings. Four red tests reproduced the concrete failures; repaired paths plus consumers are bound here. 79 focused tests and 20 release edge tests passed. Reassess only repaired findings and direct regression risk; no new workflow implementation, whole-host isolation, #764 or full quality requests. Approval is final-manifest commit after lifecycle and integrity readback; lifecycle projection may be rewritten within the same identity-bound attempt on retry. Classifier exposes the verified generated-commit boundary to the authorization consumer. Parent retains historical non-claims.",
+          "packet_identity": "ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575",
+          "parent_receipt_identity": "parent-6de53bd707be0e5068eba761dbaccf237e145c1d8167ef22",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "5e43645580681529d982b0a755360e6a768d3f5882eecf5ede42d0c88b6f3756"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "eec12df9d9d310c2767efc6022fab3f125d93033c68e9e14763a99fbb3f4b8cf",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "1f48f14ddb89347e49aff7eec48c61f79b9adccb2e790e79036ef3de38080646",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/receipt.json",
+      "producer_run_id": "run-release-863-repair-lifecycle-20260912",
+      "findings_identity": "5e43645580681529d982b0a755360e6a768d3f5882eecf5ede42d0c88b6f3756"
+    }
+  ]
+}

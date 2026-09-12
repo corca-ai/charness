@@ -1,0 +1,105 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Weinberg lifecycle evidence retention, identity binding and failure-atomic cleanup",
+  "packet_sha256": "991dccac7153dd7d9002608a3a786f774d29eaa2bbe2eb38750efc0b61f71087",
+  "reviewed_input_identity_sha256": "7edfcaefcf2a3842d8056e92c8e11558bb954953eba2ba8c9181a9fd0eff0d7b",
+  "verdict": "block",
+  "target_observations": [
+    {
+      "target": "v8.6.3",
+      "verdict": "block",
+      "summary": "Several historical defects are repaired, but hold-out restoration can delete original bytes and promotion still has premature-approval and retry failures.",
+      "evidence": [
+        "run_review_hold_out.py retains staging on collisions but not on restoration exceptions.",
+        "run_review_promotion.py publishes approval before finalize_carrier completes durable lifecycle publication.",
+        "run_review_promotion_storage.py refuses differing lifecycle bytes on a subsequent promotion attempt."
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "LIFECYCLE-001",
+      "severity": "blocker",
+      "summary": "A failed hold-out restoration deletes the staged original.",
+      "evidence": [
+        "skills/public/critique/scripts/run_review_hold_out.py: the final restoration loop calls shutil.move without retaining the owner if that call raises.",
+        "Concrete stimulus: move an in-progress artifact into staging, then inject an OSError on the move back. The outer OwnedScratch.__exit__ calls close(state='failed'); because the owner is neither retained nor promoted, scripts/runtime_scratch.py removes its tree, including the original artifact.",
+        "The included hold-out tests cover worker failure and source collision, but neither covers restoration I/O failure."
+      ],
+      "action": "Retain staging before propagating any restoration failure, preserving the recorded mappings. Add a restore-failure test that reads back the original staged bytes after context exit."
+    },
+    {
+      "id": "LIFECYCLE-002",
+      "severity": "blocker",
+      "summary": "Final promotion still publishes approval before its final readback succeeds.",
+      "evidence": [
+        "skills/public/critique/scripts/run_review_carrier.py: finalize_carrier passes final_carrier into promote_attempt_metadata before writing and checking the rebound lifecycle.",
+        "skills/public/critique/scripts/run_review_promotion.py: promote_attempt_metadata writes approval_eligible=true and use_class='approval' before refresh_manifest_integrity returns.",
+        "Concrete stimulus: a terminal passing run reaches the manifest write, then its integrity refresh fails persistently. The exception finalization follows the same failing path, leaving the already-published approval manifest while run_live reports failed durable promotion and retains scratch."
+      ],
+      "action": "Keep the published manifest non-approval throughout finalization; publish approval only after the complete durable chain has passed readback. Test failure immediately after manifest publication."
+    },
+    {
+      "id": "LIFECYCLE-003",
+      "severity": "major",
+      "summary": "A failure after lifecycle rebinding can make retained promotion permanently refuse its own prior output.",
+      "evidence": [
+        "skills/public/critique/scripts/run_review_carrier.py: finalize_carrier rewrites durable lifecycle.yaml with updated paths, then performs another manifest integrity refresh.",
+        "skills/public/critique/scripts/run_review_promotion.py: a retry first sends the scratch lifecycle.yaml through STORAGE.write_or_verify.",
+        "skills/public/critique/scripts/run_review_promotion_storage.py: write_or_verify rejects an existing destination whose bytes differ.",
+        "Concrete stimulus: let the rebound lifecycle write succeed, then fail the following refresh. Scratch retains its earlier lifecycle representation; both exception finalization and --resume-retained-attempt encounter the differing durable lifecycle before reaching the rewrite step."
+      ],
+      "action": "Make retry recognize and validate an already-finalized lifecycle or replace that derived carrier transactionally. Verify recovery after a failure immediately following the rebound lifecycle write."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Historical LIFE-001: retained recovery metadata erased on close.",
+      "bin": "Over-Worry",
+      "disposition": "Disconfirmed for the reported normal-close path: _receipt_preserving now retains extra fields, and included tests assert recovery metadata survives close."
+    },
+    {
+      "concern": "Historical LIFE-002: premature approval and overly permissive recovery.",
+      "bin": "Act Before Ship",
+      "disposition": "Partially repaired: report-only promotion is non-approval and recovery validates the canonical delivered chain. Final publication ordering remains defective as LIFECYCLE-002."
+    },
+    {
+      "concern": "Historical LIFE-003: metadata-only fallback deletes scratch.",
+      "bin": "Act Before Ship",
+      "disposition": "The exact deletion fallback is removed. Retention is safer, but LIFECYCLE-003 demonstrates that retained bytes do not yet guarantee successful retry."
+    },
+    {
+      "concern": "Historical TASK-004: late, noisy, oversized-prefix results disappear.",
+      "bin": "Over-Worry",
+      "disposition": "The reported examples are repaired: extraction scans beyond the display prefix and accepts pretty-printed JSON; the included oversized-prefix test exercises this. Arbitrarily large or syntactically incomplete output is not proven reusable."
+    },
+    {
+      "concern": "Historical SCRATCH-005: initial owner establishment strands an unreceipted root.",
+      "bin": "Over-Worry",
+      "disposition": "The initial-open defect is repaired with a retained failure receipt or rollback of the newly created root. Reopen receipt-write failure remains unproven; it is not inherited approval from the initial-open test."
+    },
+    {
+      "concern": "Historical TASK-006: result-log read error bypasses terminal persistence.",
+      "bin": "Bundle Anyway",
+      "disposition": "The reported exception route is repaired by typed non-delivery capture and an explicit approval blocker. Add focused completion read-error evidence; no current blocker is inherited from the historical finding."
+    },
+    {
+      "concern": "Failure-injection coverage for the remaining publication and restoration seams.",
+      "bin": "Bundle Anyway",
+      "disposition": "Include the concrete tests named in these findings with their repairs."
+    },
+    {
+      "concern": "Whole release workflow acceptance and scheduled proof.",
+      "bin": "Valid but Defer",
+      "disposition": "Whole workflow acceptance remains unproven. Accept the stated retirement of the experiment with no production consumers; do not require new workflow implementation or #764 proof in this review."
+    }
+  ],
+  "next_move": "Repair the three concrete lifecycle failures and obtain focused failure/retry readback. Parent retains ownership of full quality and public readback; this result does not approve release.",
+  "non_claims": [
+    "Reviewed the supplied inline semantic bytes; no workspace edits or test execution were performed.",
+    "Historical findings were independently reassessed, never inherited as approval.",
+    "No whole-workflow acceptance, production-consumer proof, #764 scheduled proof, or public release readback is claimed.",
+    "Goal lineage is not-goal-bound: critique review was run without a Goal Run Work Item identity.",
+    "Retained, partial, failed, deferred, and timed-out evidence is not approval."
+  ]
+}

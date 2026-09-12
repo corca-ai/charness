@@ -18,6 +18,7 @@ from .release_resume_edge_support import (
     ClassifierCli as _ClassifierCli,
 )
 from .seeding_support import load_module
+from scripts.runtime_scratch import owned_scratch
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / "skills" / "public" / "release" / "scripts"
@@ -106,6 +107,7 @@ def _resume_claims_publication_leg(
         resume_closeout=SimpleNamespace(),
         commit_artifact_before_push=lambda *_args, **_kwargs: committed.append("artifact"),
         release_record_path=CLAIMS.release_record_path,
+        claims_review_validator=lambda _repo, current_state: current_state["claims_review"],
     )
     return commands, committed
 
@@ -304,6 +306,27 @@ def test_the_claims_carrier_still_classifies_across_the_resumes_own_artifact_com
     # the reviewed claims record, not against a generated inventory commit.
     assert carrier["claims_evidence_commit"] == "r-sha"
     assert carrier["prepared"]["commit"] == "tag-sha"
+    for remote_boundary in ("r-sha", "c-sha", "carrier-sha"):
+        carrier["remote_branch_sha"] = remote_boundary
+        RESUME.assert_resumable(carrier, tag_name="v1.2.3")
+    with pytest.raises(SystemExit, match="remote branch"):
+        RESUME.assert_resumable({**carrier, "remote_branch_sha": "unrelated"}, tag_name="v1.2.3")
+    final = RESUME_STATE.resumable_state(
+        Path("."), tag_name="v1.2.3", commit_message="Release demo 1.2.3",
+        remote="origin", branch="main", backend={}, record_path=_RECORD_PATH,
+        cli=_ClassifierCli(
+            revs={"HEAD": "final-sha", "HEAD^": "carrier-sha", "HEAD^^": "c-sha", "c-sha^": "r-sha", "tag": "tag-sha"},
+            subject="Record release issue closeout for v1.2.3",
+            messages={"HEAD": "final", "HEAD^": "carrier\n\nClose #44.", "c-sha": subject},
+            close_refs=["#44"], marked=("tag-sha",),
+            parents={"tag-sha": "base-sha", "r-sha": "tag-sha"}, children={"tag-sha": "r-sha"},
+        ),
+    )
+    assert final["phase"] == "post-publication-claims-final"
+    final["remote_branch_sha"] = "carrier-sha"
+    RESUME.assert_resumable(final, tag_name="v1.2.3")
+    with pytest.raises(SystemExit, match="claims final"):
+        RESUME.assert_resumable({**final, "claims_grandparent_boundary": "unrelated"}, tag_name="v1.2.3")
 
 
 def test_the_claims_carrier_classifies_an_adapter_owned_artifact_commit() -> None:
@@ -667,3 +690,35 @@ def test_the_unproven_warning_fires_only_for_an_unproven_verdict() -> None:
         written.clear()
         CLAIMS.unproven_claims_warning(quiet, write=written.append)
         assert written == []
+
+
+def test_pre_push_quality_receipt_is_promoted_before_release_scratch_closes(tmp_path: Path) -> None:
+    owner = owned_scratch(
+        tmp_path,
+        "release-prepush-quality",
+        run_id="receipt",
+        runtime_root_path=tmp_path / ".runtime",
+    )
+    receipt_path = owner.open() / "receipt.json"
+    receipt_path.write_text('{"verified_head":"abc"}\n', encoding="utf-8")
+    payload: dict = {}
+    destination = tmp_path / "charness-artifacts" / "release" / "1.2.3-prepush-quality.json"
+    destination.parent.mkdir(parents=True)
+    destination.write_text('{"verified_head":"stale"}\n', encoding="utf-8")
+    payload["prepush_quality_receipt"] = str(destination.relative_to(tmp_path))
+
+    RESUME_PUBLISH._promote_quality_receipt(
+        tmp_path,
+        owner=owner,
+        receipt_path=receipt_path,
+        record_path="charness-artifacts/release/latest.md",
+        tag_name="v1.2.3",
+        payload=payload,
+    )
+    owner.close(state="succeeded")
+
+    durable = destination
+    assert durable.read_text(encoding="utf-8") == '{"verified_head":"abc"}\n'
+    assert payload["prepush_quality_receipt"] == str(durable.relative_to(tmp_path))
+    assert payload["prepush_quality_receipt_sha256"]
+    assert not (tmp_path / ".runtime" / "scratch" / "release-prepush-quality" / "receipt").exists()

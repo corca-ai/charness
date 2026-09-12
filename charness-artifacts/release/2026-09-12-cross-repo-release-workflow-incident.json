@@ -1,0 +1,220 @@
+{
+  "schema_version": "charness.release_workflow_incident.v1",
+  "incident_class": "cross-repo-release-workflow",
+  "current_disposition": {
+    "status": "production-acceptance-unproven",
+    "experiment": "removed after confirming that its standalone runner had no production publish consumers",
+    "historical_measurement_scope": "simulation only; historical pass and timing fields below do not establish release acceptance",
+    "replacement": "existing review follow-up, reviewer lifecycle, publish resume state, and quality receipt consumer tests",
+    "remaining_acceptance": ["parallel scheduling in the real release path", "immutable intent and reviewer-specific reuse across the real release path", "release critical-path measurements"]
+  },
+  "recorded_at": "2026-09-12",
+  "repo": "charness",
+  "critical_path": [
+    "release",
+    "critique",
+    "claims-review",
+    "quality",
+    "publish"
+  ],
+  "ownership_split": {
+    "shared_skill_runner": [
+      "release intent and immutable scope/packet identity",
+      "durable release-run receipts and identity-bound stage resume",
+            "canonical intent-to-run/receipt ownership and concurrent serialization",
+      "parallel independent review lifecycle",
+      "result-ready child ownership and bounded shutdown",
+      "timeout and heartbeat evidence",
+      "partial/defer/failure retention and resume",
+      "targeted reviewer reruns",
+      "blocked/unproven state and resume command",
+      "claims, quality, and publish boundary semantics"
+    ],
+    "repo_adapter": [
+      "release surfaces and generated mirror sync",
+      "repository quality command",
+      "fresh-checkout probes",
+      "repo-specific dogfood invocation"
+    ],
+    "not_implicit_release_children": [
+      "implementation",
+      "issue-closeout",
+      "full-quality"
+    ]
+  },
+  "reproduction": {
+    "source": "the 2026-09-12 efficiency/review incident in this checkout",
+    "reported_baseline": {
+      "packet_paths": 48,
+      "packet_bytes_approximate": 760000,
+      "full_quality_seconds": 162,
+      "source_note": "operator-reported incident measurement"
+    },
+    "observed_review_attempts": {
+      "reviewer_invocations": 6,
+      "retry_rounds_after_initial": 2,
+      "reviewers_per_round": 2,
+      "rerun_policy": "both independent reviewers reran after each packet change",
+      "elapsed_from_first_spawn_to_last_observed_result_seconds": 5628,
+      "elapsed_from_first_spawn_to_last_observed_result": "2026-09-12T03:24:10Z/2026-09-12T04:57:58Z",
+      "rounds": [
+        {
+          "packet": "charness-artifacts/critique/efficiency-followup-review-packet.json",
+          "packet_identity": "03991d2bb0e9d860ea75dac156c5f18d7174243e4617bfcc762f8f8a6a94fd3b",
+          "semantic_entries": 11,
+          "semantic_input_bytes": 130571,
+          "reviewer_attempts": 2,
+          "reviewer_verdicts": {
+            "operator": "block",
+            "lifecycle": "defer"
+          }
+        },
+        {
+          "packet": "charness-artifacts/critique/efficiency-followup-delta-slim-packet-packet.json",
+          "packet_identity": "3d35b6018fead9ccae40eeb41284de7af083e157ebdd119bed3112694564f15f",
+          "semantic_entries": 26,
+          "semantic_input_bytes": 303854,
+          "reviewer_attempts": 2,
+          "reviewer_verdicts": {
+            "operator": "block",
+            "lifecycle": "block"
+          }
+        },
+        {
+          "packet": "charness-artifacts/critique/efficiency-followup-final-repair-20260912-packet.json",
+          "packet_identity": "09859cd56e02f653b85ca6d8dcca3e56017625057afca53a889489261416299b",
+          "semantic_entries": 39,
+          "semantic_input_bytes": 460568,
+          "reviewer_attempts": 2,
+          "reviewer_verdicts": {
+            "operator": "block",
+            "lifecycle": "block"
+          }
+        }
+      ]
+    },
+    "quality_observation": {
+      "passed": 84,
+      "failed": 0,
+      "not_run": 4,
+      "elapsed_seconds": 187.6,
+      "status": "passed"
+    },
+    "root_causes": [
+      "independent reviewers were on the same sequential critical path",
+      "a blocking first-eyes result caused a new packet and both reviewers were rerun",
+      "review input was repeatedly expanded instead of reusing unchanged reviewer evidence",
+      "failed/partial/defer artifacts were not first-class reusable carriers",
+      "quality duration was paid after review churn rather than as an explicitly bounded stage",
+            "the first dogfood draft manufactured review status and rerun evidence instead of invoking the carrier lifecycle",
+            "a ThreadPoolExecutor context-manager shutdown could extend a reviewer timeout after the deadline",
+            "partial-result bytes and post-recovery lifecycle bytes lacked complete immutable joins",
+            "timeout carriers claimed retention and resume without an observed attempt join",
+            "targeted rerun selection was counted as execution without a third receipt",
+            "the shared dispatcher had ordering but no fail-closed prerequisite gate",
+            "final lifecycle promotion could reject its own durable partial-receipt enrichment as stale",
+            "result-ready reviewer children were not proven terminated before collection",
+            "release-stage results had no durable run receipt or intent binding"
+    ]
+  },
+  "dogfood": {
+    "command": "python3 skills/public/release/scripts/run_release_workflow_dogfood.py --repo-root .",
+    "acceptance_id": "cross-repo-release-workflow-dogfood.v1",
+    "status": "pass",
+        "integration_fixture": {
+            "packet_preparation": "installed plugin prepare_packet.py",
+            "review_execution": "installed plugin run_review.py with file-backed worker",
+            "retained_recovery": "installed plugin --resume-retained-attempt",
+      "timeout_reconciliation": "real installed reviewer inside the timed-out callback, retained same-attempt recovery, process-group cleanup, bounded probes, and terminal readback",
+            "targeted_rerun": "installed plugin run_review.py against the changed follow-up packet",
+            "stage_gate_negative_control": "shared dispatcher blocks publish after blocked/deferred/failed/unproven or contradictory-open prerequisites",
+      "negative_controls": [
+        "replace partial-result and update its manifest descriptor while leaving backend.stdout unchanged",
+        "change one reviewer packet identity and derive only that reviewer as rerunnable",
+        "substitute a readable terminal carrier from another attempt and require reconciliation to remain pending",
+        "substitute a readable non-terminal carrier for the expected attempt and require reconciliation to remain pending",
+        "launch a non-returning reviewer descendant and require the owned process group to terminate it",
+        "make artifact discovery never return and require initial/reconciliation probes to remain bounded",
+        "run a command worker under spawn and fail a non-serializable callback closed as blocked-unproven",
+        "return a reviewer result while its child remains alive and require bounded shutdown",
+        "read and resume a release-run receipt from a fresh process without replaying completed stages",
+        "reject a conflicting packet for the same intent at both resume and new-run creation"
+        ,"reject foreign stage/attempt/key/run/readback identities during crash recovery",
+                "serialize two concurrent resume processes so one executes and one reads back complete",
+                "reject a sequential second receipt path for the same intent, scope, and packet",
+                "serialize concurrent receipt creation so one canonical owner executes and the loser has no stage effect",
+                "block a terminal closed stage until an adapter readback proves its effect state",
+                "reject durable creation without a resume command",
+                "keep requested and observed bindings separate for foreign receipt contention",
+                "retain stage attempt and readback history when an authorized retry fails"
+      ]
+    },
+    "sample_measurements": {
+            "initial_review_count": 2,
+            "diagnostic_failure_review_count": 1,
+            "resume_review_count": 1,
+      "timeout_reviewer_invocation_count": 2,
+      "recovery_invocation_count": 1,
+            "review_retry_count": 1,
+            "targeted_rerun_count": 1,
+            "total_review_invocations": 6,
+            "parallel_review_elapsed_seconds": 1.243144,
+            "dogfood_elapsed_seconds": 10.95334,
+            "timeout_probe_seconds": 0.05,
+            "partial_only_reuse": true,
+            "targeted_rerun_executed": true,
+      "timeout_reconciled": true,
+      "timeout_identity_joined": true,
+      "timeout_negative_controls_pending": true,
+      "timeout_resume_readback": true,
+      "timeout_successor_attempt": false,
+      "timeout_process_group_clean": true,
+      "timeout_probes_bounded": true,
+      "spawn_command_boundary_verified": true,
+      "result_ready_child_cleanup_verified": true,
+      "durable_release_run_receipt": true,
+      "durable_release_resume_cross_process": true,
+      "durable_release_completed_stage_replay": false,
+      "intent_packet_conflict_refused": true,
+      "durable_release_crash_resume": true,
+      "durable_release_inflight_readback": true,
+      "durable_release_idempotency_key_preserved": true,
+      "durable_release_readback_join_controls": true,
+            "durable_release_concurrent_resume_single_owner": true,
+            "durable_release_duplicate_intent_refused": true,
+            "durable_release_concurrent_creation_single_owner": true,
+            "durable_release_terminal_closed_readback_required": true,
+            "durable_release_resume_command_required": true,
+            "durable_release_foreign_contention_binding_separated": true,
+            "durable_release_retry_history_preserved": true,
+      "durable_release_readback_identity_recomputed": true,
+      "durable_release_lock_contention_bounded": true,
+            "workflow_blocked_by": "critique",
+            "downstream_not_run": [
+                "claims-review",
+                "quality",
+                "publish"
+            ],
+      "critical_path": [
+        "release",
+        "critique",
+        "claims-review",
+        "quality",
+        "publish"
+      ],
+      "non_implicit_stages": [
+        "implementation",
+        "issue-closeout",
+        "full-quality"
+      ]
+    },
+    "adapter_probe": ".agents/release-adapter.yaml:fresh_checkout_probes",
+    "publish_executed": false
+  },
+  "non_claims": [
+    "This artifact does not claim that a public release was pushed or published.",
+    "The dogfood timing is a deterministic contract sample, not a prediction of external model latency.",
+    "The reported baseline combines the operator's incident measurement with the retained reviewer receipts; it is not a cross-repo benchmark.",
+    "Issue closeout for #764, #812, or #813 is outside this implementation slice."
+  ]
+}

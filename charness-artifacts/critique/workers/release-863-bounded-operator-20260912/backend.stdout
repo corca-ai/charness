@@ -1,0 +1,77 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Gawande operational release recovery and Minto honest claims",
+  "packet_sha256": "9bbfe16db0d72d13d0edafa6106acbe852a6f5dda4e93a459c962c6484095e05",
+  "reviewed_input_identity_sha256": "79f0cfeba5700e9adc8dffea8717bb31b43a04ecd659f0b1a551b6f0a1f75ee3",
+  "verdict": "block",
+  "target_observations": [
+    {
+      "target": "v8.6.3",
+      "verdict": "block",
+      "summary": "The retirement narrative correctly leaves whole-workflow acceptance unproven, but recovery still rejects a commit sequence created by the release helper itself.",
+      "evidence": [
+        "publish_release_resume_state.py recognizes P -> R -> C -> carrier by walking generated artifact commits.",
+        "publish_release_resume.py subsequently requires the carrier's immediate parent to equal R, rejecting the same recognized sequence."
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "REC-001",
+      "severity": "blocker",
+      "summary": "Generated artifact commits remain an unrecoverable boundary between claims evidence and closeout.",
+      "evidence": [
+        "publish_release_resume_publish.py invokes commit_artifact_before_push after quality and receipt promotion, permitting generated commit C after claims evidence R.",
+        "publish_release_resume_state.py::_is_claims_evidence walks C and classifies P -> R -> C -> carrier as post-publication-claims-carrier, while binding claims_evidence_commit to R.",
+        "publish_release_resume.py::_assert_post_publication_resumable then checks parent_sha == claims_evidence_commit. For this sequence C != R, so it raises 'claims carrier is not directly based on its claims evidence'. The final phase similarly compares the immediate grandparent against R.",
+        "test_the_claims_carrier_still_classifies_across_the_resumes_own_artifact_commit verifies classification only; it does not pass that result through assert_resumable. Remote-branch validation also excludes C when C is the published branch tip before the carrier push."
+      ],
+      "action": "Make closeout authorization validate the same bounded generated-commit ancestry recognized by the classifier, including the actual permitted remote branch boundary. Add a consumer regression that feeds classification into assert_resumable and closeout recovery for P -> R -> C -> carrier and its final commit."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Historical OP-001: Claude execution restrictions and credential isolation.",
+      "bin": "Valid but Defer",
+      "disposition": "The former optional-policy and wholesale-environment premises are repaired: read-only execution fixes the tool set, isolates configuration, and allowlists authentication variables. Bound tests inspect injected spawn arguments, so actual CLI enforcement and credential-canary behavior remain unproven; no concrete current escape is established here."
+    },
+    {
+      "concern": "Historical OP-002: default Codex credentials inside the workspace.",
+      "bin": "Valid but Defer",
+      "disposition": "The default now uses tmpdir/charness and a test checks placement outside the repository. This resolves the specific default-placement finding, but does not prove credential unreadability or isolation for configured runtime roots."
+    },
+    {
+      "concern": "Historical OP-003: publication succeeds before closeout becomes resumable.",
+      "bin": "Act Before Ship",
+      "disposition": "The new post-publication-pending phase repairs the exact HEAD-equals-tag case. It is not comprehensive recovery proof; REC-001 establishes a concrete remaining failure through the helper's own generated commits."
+    },
+    {
+      "concern": "Historical OP-004: destructive recovery instructions.",
+      "bin": "Over-Worry",
+      "disposition": "The unsafe reset command is removed. Current guidance requires inspection and a backup ref and explicitly forbids inferred history rewriting. Lack of an automatic recovery command is not itself a destructive-action blocker."
+    },
+    {
+      "concern": "Historical OP-005: install import smoke wiring and isolation.",
+      "bin": "Valid but Defer",
+      "disposition": "The validator now invokes the smoke and moves cwd away from the authoring root. The smoke template and a deliberate source-only import negative control are not bound, so complete import isolation is not established."
+    },
+    {
+      "concern": "Historical OP-006: fresh-checkout opt-out mistaken for proof.",
+      "bin": "Valid but Defer",
+      "disposition": "The checker explicitly distinguishes not_configured, not_established, blocked, and passed. No bound v8.6.3 adapter or actual probe receipt establishes release-specific coverage; parent must preserve that distinction without treating opt-out as a passed probe."
+    },
+    {
+      "concern": "Retired workflow experiment and historical pass/timing fields.",
+      "bin": "Over-Worry",
+      "disposition": "The current disposition, regression page, and acceptance record explicitly limit historical results to simulation and leave production acceptance unproven. No bound current consumer is shown treating those historical fields as approval."
+    }
+  ],
+  "next_move": "Repair REC-001 and review the resulting consumer regression. Parent retains ownership of full quality, release-specific probe evidence, and public readback.",
+  "non_claims": [
+    "Reviewed only the supplied semantic bytes; no workspace inspection, edits, test execution, or live publication readback.",
+    "Prior operator-final findings were independently reassessed as historical evidence, never inherited approval.",
+    "Whole release-workflow acceptance remains unproven; experiment deletion was not independently verified from a bound deletion manifest.",
+    "#764 scheduled proof and new workflow implementation are outside scope.",
+    "Goal lineage is not-goal-bound; no Goal Run completion is claimed."
+  ]
+}

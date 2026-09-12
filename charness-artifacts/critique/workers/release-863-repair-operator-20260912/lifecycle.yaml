@@ -1,0 +1,207 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: runner-completed
+execution_state: terminal
+lifecycle_state: terminal
+reviewer_started: true
+delivery_state: findings-received
+verdict_state: block
+review_verdict: block
+classification: unclassified
+approval_eligible: false
+output:
+  state: terminal
+  approval_eligible: false
+  schema_version: charness.reviewer_worker_report.v1
+  findings_identity: 4df7144428af44f2aaec2f986813612e9b59cc436721cfd58534049c3fc02ea5
+  partial_artifacts:
+  - schema_version: charness.reviewer_partial_output/v1
+    kind: bounded-review-result
+    path: charness-artifacts/critique/workers/release-863-repair-operator-20260912/partial-result.json
+    bytes: 3727
+    sha256: 38fdb2825a5452cbc69636225d2eb04f104af3cd487bc40acca3e7127eded203
+output_state: terminal
+failure_identity: f20453d0fc3f630569f4514736a52437b7cc4fb63cd75badefa28c2dcf77e89c
+next_move: inspect the delivered findings; this is a reviewer block, not a runner
+  failure
+runner_returncode: 1
+runner_status: runner-completed
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/release-863-repair-operator-20260912-packet.json
+  schema: charness-artifacts/critique/workers/release-863-repair-operator-20260912/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/release-863-repair-operator-20260912/capability.json
+  prompt: charness-artifacts/critique/workers/release-863-repair-operator-20260912/review-prompt.md
+  plan: charness-artifacts/critique/workers/release-863-repair-operator-20260912/run-plan.json
+  ledger: charness-artifacts/critique/workers/release-863-repair-operator-20260912/delivery.json
+  output: charness-artifacts/critique/workers/release-863-repair-operator-20260912/result.json
+  receipt: charness-artifacts/critique/workers/release-863-repair-operator-20260912/receipt.json
+  report: charness-artifacts/critique/workers/release-863-repair-operator-20260912/worker-report.yaml
+  runner_stdout: charness-artifacts/critique/workers/release-863-repair-operator-20260912/runner.stdout
+  runner_stderr: charness-artifacts/critique/workers/release-863-repair-operator-20260912/runner.stderr
+  backend_stdout: charness-artifacts/critique/workers/release-863-repair-operator-20260912/backend.stdout
+  backend_stderr: charness-artifacts/critique/workers/release-863-repair-operator-20260912/backend.stderr
+  summary: charness-artifacts/critique/workers/release-863-repair-operator-20260912/lifecycle.yaml
+  semantic-input/0000-content.bin: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0000-content.bin
+  semantic-input/0001-content.bin: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0001-content.bin
+  semantic-input/0002-content.bin: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0002-content.bin
+  semantic-input/0003-content.bin: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0003-content.bin
+  semantic-input/0004-content.bin: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0004-content.bin
+  semantic-input/0005-content.bin: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0005-content.bin
+  semantic-input/0006-content.bin: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0006-content.bin
+  semantic-input/manifest.json: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/manifest.json
+  review-prompt.md: charness-artifacts/critique/workers/release-863-repair-operator-20260912/review-prompt.md
+  run-plan.json: charness-artifacts/critique/workers/release-863-repair-operator-20260912/run-plan.json
+  bounded-review-result.schema.json: charness-artifacts/critique/workers/release-863-repair-operator-20260912/bounded-review-result.schema.json
+  capability.json: charness-artifacts/critique/workers/release-863-repair-operator-20260912/capability.json
+  receipt.json: charness-artifacts/critique/workers/release-863-repair-operator-20260912/receipt.json
+  delivery.json: charness-artifacts/critique/workers/release-863-repair-operator-20260912/delivery.json
+  result.json: charness-artifacts/critique/workers/release-863-repair-operator-20260912/result.json
+  runner.stdout: charness-artifacts/critique/workers/release-863-repair-operator-20260912/runner.stdout
+  runner.stderr: charness-artifacts/critique/workers/release-863-repair-operator-20260912/runner.stderr
+  backend.stdout: charness-artifacts/critique/workers/release-863-repair-operator-20260912/backend.stdout
+  backend.stderr: charness-artifacts/critique/workers/release-863-repair-operator-20260912/backend.stderr
+  worker-report.yaml: charness-artifacts/critique/workers/release-863-repair-operator-20260912/worker-report.yaml
+  partial-result.json: charness-artifacts/critique/workers/release-863-repair-operator-20260912/partial-result.json
+  attempt-manifest.json: charness-artifacts/critique/workers/release-863-repair-operator-20260912/attempt-manifest.json
+  durable_report: charness-artifacts/critique/workers/release-863-repair-operator-20260912/worker-report.yaml
+identities:
+  attempt_id: release-863-repair-operator-20260912
+  scope: 'Bounded follow-up of your retained operator findings. Four red tests reproduced
+    the concrete failures; repaired paths plus consumers are bound here. 79 focused
+    tests and 20 release edge tests passed. Reassess only repaired findings and direct
+    regression risk; no new workflow implementation, whole-host isolation, #764 or
+    full quality requests. Approval is final-manifest commit after lifecycle and integrity
+    readback; lifecycle projection may be rewritten within the same identity-bound
+    attempt on retry. Classifier exposes the verified generated-commit boundary to
+    the authorization consumer. Parent retains historical non-claims.'
+  packet_identity: 0854e56836daec8ff5df94f77632c1328ef06ef5109d9a7c95703f49e0291cea
+  reviewed_input_identity: 28c436ccd78e8d1da2f2dd62be472b8791856fb98e5028db4687ecd5b9d5e159
+  parent_receipt_identity: parent-e7a5cea3eb319ef1e507af5d55b5e0a8f5cdf5ab40b7d804
+  findings_identity: 4df7144428af44f2aaec2f986813612e9b59cc436721cfd58534049c3fc02ea5
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/release-863-repair-operator-20260912-packet.json
+  packet_sha256: 0854e56836daec8ff5df94f77632c1328ef06ef5109d9a7c95703f49e0291cea
+  identity_sha256: 28c436ccd78e8d1da2f2dd62be472b8791856fb98e5028db4687ecd5b9d5e159
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+timeout_seconds: 900
+scope: 'Bounded follow-up of your retained operator findings. Four red tests reproduced
+  the concrete failures; repaired paths plus consumers are bound here. 79 focused
+  tests and 20 release edge tests passed. Reassess only repaired findings and direct
+  regression risk; no new workflow implementation, whole-host isolation, #764 or full
+  quality requests. Approval is final-manifest commit after lifecycle and integrity
+  readback; lifecycle projection may be rewritten within the same identity-bound attempt
+  on retry. Classifier exposes the verified generated-commit boundary to the authorization
+  consumer. Parent retains historical non-claims.'
+lens: operator repaired consumer failure paths
+parent_receipt_identity: parent-e7a5cea3eb319ef1e507af5d55b5e0a8f5cdf5ab40b7d804
+semantic_input:
+  entries:
+  - path: charness-artifacts/debug/2026-09-12-release-workflow-dogfood-blocked.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0000-content.bin
+    content_sha256: ed02a75f3e92b5170b1dd85f6309f11b66119129a93d2982618a4725018eaa2d
+    carrier_sha256: 32577d78160ca7e87ea76b29757a8800dde71ea985a9f99c983bd3ecfdd7673b
+    source: working-tree:charness-artifacts/debug/2026-09-12-release-workflow-dogfood-blocked.md
+    size_bytes: 7775
+    prompt_encoding: utf-8
+  - path: skills/public/release/scripts/publish_release_resume.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0001-content.bin
+    content_sha256: 4d99d53376a7dde807309e9be496d2590295cde7bc04d6534290fc46298320df
+    carrier_sha256: d51be28c651837ad3220eaf2e037783b709824a76cbfef9accea58f3c343a84a
+    source: working-tree:skills/public/release/scripts/publish_release_resume.py
+    size_bytes: 16005
+    prompt_encoding: utf-8
+  - path: skills/public/release/scripts/publish_release_resume_closeout.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0002-content.bin
+    content_sha256: 95b3c16bd93774a33930d292908a9459743af7c42e045c9e43f226e05f37475e
+    carrier_sha256: b8560378071d8dbf99260d6f77c56a2dbe5a9917b27ecbcf39417f752309234b
+    source: working-tree:skills/public/release/scripts/publish_release_resume_closeout.py
+    size_bytes: 13501
+    prompt_encoding: utf-8
+  - path: skills/public/release/scripts/publish_release_resume_publish.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0003-content.bin
+    content_sha256: 9b4e47ad19e17550ad06725d7608c68867f0ac0eebcbe845af5e774468642c60
+    carrier_sha256: 5223744749b5dc1b88d34bb39512677f486ef989da08ec8a842a879cc9c80d49
+    source: working-tree:skills/public/release/scripts/publish_release_resume_publish.py
+    size_bytes: 19924
+    prompt_encoding: utf-8
+  - path: skills/public/release/scripts/publish_release_resume_state.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0004-content.bin
+    content_sha256: 6f08b37dc6c6437898a86500f39f5e8abeb82949b10766afb75137d083aaf37c
+    carrier_sha256: 852340f5479c74ce6b2a2486e035075d2cb3d028717849bd2fc93d115a0507da
+    source: working-tree:skills/public/release/scripts/publish_release_resume_state.py
+    size_bytes: 16150
+    prompt_encoding: utf-8
+  - path: tests/quality_gates/test_release_resume_edge_coverage.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0005-content.bin
+    content_sha256: 7c178d1d03406d2b6d13f76a7e3532d293f11459d647b96048c41db9a44594ae
+    carrier_sha256: 7f9f2bfe14dbfcc2a1eb571f35a1fd1ebbc3c8037a586de23efa81b1d3d5a914
+    source: working-tree:tests/quality_gates/test_release_resume_edge_coverage.py
+    size_bytes: 32204
+    prompt_encoding: utf-8
+  - path: tests/quality_gates/test_release_resume_state_validation.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0006-content.bin
+    content_sha256: 9cea80c50b60e99de5364889020b29ec437e64197a4e233f523c26d9ec7844a6
+    carrier_sha256: bfbfae0bb7d8de837cecda1f2a42b784095032b49769682ae4ccec0ed6d6285b
+    source: working-tree:tests/quality_gates/test_release_resume_state_validation.py
+    size_bytes: 6634
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/manifest.json
+  size_bytes: 112193
+runner_output:
+  status: runner-completed
+  returncode: 1
+runner_stream:
+  consistent: true
+  reason: null
+  runner_stdout_sha256: 31e53decdb2061314ae2dc3fd8a9996ed13285ddb1973aef3ecb43dff06109d6
+  canonical_report_sha256: 31e53decdb2061314ae2dc3fd8a9996ed13285ddb1973aef3ecb43dff06109d6
+boundary_readback:
+  mode: read-only-worker
+  required: false
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity
+identity_check:
+  status: matched
+  matches: true
+  checks:
+    packet_identity:
+      expected: 0854e56836daec8ff5df94f77632c1328ef06ef5109d9a7c95703f49e0291cea
+      actual: 0854e56836daec8ff5df94f77632c1328ef06ef5109d9a7c95703f49e0291cea
+      matches: true
+      provenance: 0854e56836daec8ff5df94f77632c1328ef06ef5109d9a7c95703f49e0291cea
+    reviewed_input_identity:
+      expected: 28c436ccd78e8d1da2f2dd62be472b8791856fb98e5028db4687ecd5b9d5e159
+      actual: 28c436ccd78e8d1da2f2dd62be472b8791856fb98e5028db4687ecd5b9d5e159
+      matches: true
+      provenance: 28c436ccd78e8d1da2f2dd62be472b8791856fb98e5028db4687ecd5b9d5e159
+    parent_receipt_identity:
+      expected: parent-e7a5cea3eb319ef1e507af5d55b5e0a8f5cdf5ab40b7d804
+      actual: parent-e7a5cea3eb319ef1e507af5d55b5e0a8f5cdf5ab40b7d804
+      matches: true
+      provenance: parent-e7a5cea3eb319ef1e507af5d55b5e0a8f5cdf5ab40b7d804
+  reason: null

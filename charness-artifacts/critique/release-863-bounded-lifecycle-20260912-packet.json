@@ -1,0 +1,399 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-12T08:40:54Z",
+  "prepared_for": "v8.6.3 lifecycle release boundary",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- .agents/critique-adapter.yaml\n- charness-artifacts/critique/workers/release-8-6-3-lifecycle-final/result.json\n- docs/agent-task-runs.md\n- docs/development.md\n- docs/index.md\n- scripts/gates/check_test_production_ratio.py\n- scripts/review/critique_adapter_lib.py\n- scripts/review/critique_artifact_paths.py\n- scripts/review/critique_followup_scope.py\n- scripts/review/critique_packet_lib.py\n- scripts/review/render_critique_section_changed_surfaces.py\n- scripts/review/reviewed_input_verification.py\n- scripts/runtime_scratch.py\n- scripts/runtime_scratch_cli.py\n- scripts/runtime_scratch_promotion.py\n- scripts/runtime_scratch_registry.py\n- scripts/task_run/task_run_completion.py\n- scripts/task_run/task_run_completion_next_step.py\n- scripts/task_run/task_run_execution.py\n- skills/public/critique/SKILL.md\n- skills/public/critique/references/adapter-contract.md\n- skills/public/critique/references/prepare-packet.md\n- skills/public/critique/scripts/followup_scope_consumer.py\n- skills/public/critique/scripts/prepare_packet.py\n- skills/public/critique/scripts/review_followup.py\n- skills/public/critique/scripts/review_followup_context.py\n- skills/public/critique/scripts/review_followup_provenance.py\n- skills/public/critique/scripts/review_followup_selection.py\n- skills/public/critique/scripts/run_review.py\n- skills/public/critique/scripts/run_review_carrier.py\n- skills/public/critique/scripts/run_review_execution.py\n- skills/public/critique/scripts/run_review_hold_out.py\n- skills/public/critique/scripts/run_review_identity.py\n- skills/public/critique/scripts/run_review_packet.py\n- skills/public/critique/scripts/run_review_promotion.py\n- skills/public/critique/scripts/run_review_promotion_storage.py\n- skills/public/critique/scripts/run_review_recovery.py\n- skills/public/critique/scripts/run_review_recovery_inputs.py\n- skills/public/critique/scripts/run_review_support.py\n- skills/shared/scripts/reviewer_result_contract.py\n- skills/shared/scripts/reviewer_worker_carrier_support.py\n- tests/charness_cli/test_task_run_completion.py\n- tests/charness_cli/test_task_run_result.py\n- tests/test_critique_prepare_packet.py\n- tests/test_review_followup.py\n- tests/test_run_review_declared_path_resolution.py\n- tests/test_runtime_scratch.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/gates/check_test_production_ratio.py, scripts/review/critique_adapter_lib.py, scripts/review/critique_artifact_paths.py, scripts/review/critique_followup_scope.py, scripts/review/critique_packet_lib.py, scripts/review/render_critique_section_changed_surfaces.py, scripts/review/reviewed_input_verification.py, scripts/runtime_scratch.py, scripts/runtime_scratch_cli.py, scripts/runtime_scratch_promotion.py, scripts/runtime_scratch_registry.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_completion_next_step.py, scripts/task_run/task_run_execution.py, skills/public/critique/SKILL.md, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/followup_scope_consumer.py, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/review_followup.py, skills/public/critique/scripts/review_followup_context.py, skills/public/critique/scripts/review_followup_provenance.py, skills/public/critique/scripts/review_followup_selection.py, skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_carrier.py, skills/public/critique/scripts/run_review_execution.py, skills/public/critique/scripts/run_review_hold_out.py, skills/public/critique/scripts/run_review_identity.py, skills/public/critique/scripts/run_review_packet.py, skills/public/critique/scripts/run_review_promotion.py, skills/public/critique/scripts/run_review_promotion_storage.py, skills/public/critique/scripts/run_review_recovery.py, skills/public/critique/scripts/run_review_recovery_inputs.py, skills/public/critique/scripts/run_review_support.py, skills/shared/scripts/reviewer_result_contract.py, skills/shared/scripts/reviewer_worker_carrier_support.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: docs/agent-task-runs.md, docs/development.md, docs/index.md, skills/public/critique/SKILL.md, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/prepare-packet.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/critique/SKILL.md, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/followup_scope_consumer.py, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/review_followup.py, skills/public/critique/scripts/review_followup_context.py, skills/public/critique/scripts/review_followup_provenance.py, skills/public/critique/scripts/review_followup_selection.py, skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_carrier.py, skills/public/critique/scripts/run_review_execution.py, skills/public/critique/scripts/run_review_hold_out.py, skills/public/critique/scripts/run_review_identity.py, skills/public/critique/scripts/run_review_packet.py, skills/public/critique/scripts/run_review_promotion.py, skills/public/critique/scripts/run_review_promotion_storage.py, skills/public/critique/scripts/run_review_recovery.py, skills/public/critique/scripts/run_review_recovery_inputs.py, skills/public/critique/scripts/run_review_support.py, skills/shared/scripts/reviewer_result_contract.py, skills/shared/scripts/reviewer_worker_carrier_support.py\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/critique/SKILL.md, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/followup_scope_consumer.py, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/review_followup.py, skills/public/critique/scripts/review_followup_context.py, skills/public/critique/scripts/review_followup_provenance.py, skills/public/critique/scripts/review_followup_selection.py, skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_carrier.py, skills/public/critique/scripts/run_review_execution.py, skills/public/critique/scripts/run_review_hold_out.py, skills/public/critique/scripts/run_review_identity.py, skills/public/critique/scripts/run_review_packet.py, skills/public/critique/scripts/run_review_promotion.py, skills/public/critique/scripts/run_review_promotion_storage.py, skills/public/critique/scripts/run_review_recovery.py, skills/public/critique/scripts/run_review_recovery_inputs.py, skills/public/critique/scripts/run_review_support.py, skills/shared/scripts/reviewer_result_contract.py, skills/shared/scripts/reviewer_worker_carrier_support.py\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/critique/SKILL.md, skills/public/critique/references/adapter-contract.md, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/followup_scope_consumer.py, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/review_followup.py, skills/public/critique/scripts/review_followup_context.py, skills/public/critique/scripts/review_followup_provenance.py, skills/public/critique/scripts/review_followup_selection.py, skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_carrier.py, skills/public/critique/scripts/run_review_execution.py, skills/public/critique/scripts/run_review_hold_out.py, skills/public/critique/scripts/run_review_identity.py, skills/public/critique/scripts/run_review_packet.py, skills/public/critique/scripts/run_review_promotion.py, skills/public/critique/scripts/run_review_promotion_storage.py, skills/public/critique/scripts/run_review_recovery.py, skills/public/critique/scripts/run_review_recovery_inputs.py, skills/public/critique/scripts/run_review_support.py, skills/shared/scripts/reviewer_result_contract.py, skills/shared/scripts/reviewer_worker_carrier_support.py\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- adapters: Repo-local adapter contracts and adapter helper libraries.\n  source matches: .agents/critique-adapter.yaml\n  verify: python3 scripts/gates/validate_adapters.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/workers/release-8-6-3-lifecycle-final/result.json\n  verify: python3 scripts/review/validate_critique_artifacts.py --repo-root . --all\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/gates/check_test_production_ratio.py, scripts/review/critique_adapter_lib.py, scripts/review/critique_artifact_paths.py, scripts/review/critique_followup_scope.py, scripts/review/critique_packet_lib.py, scripts/review/render_critique_section_changed_surfaces.py, scripts/review/reviewed_input_verification.py, scripts/runtime_scratch.py, scripts/runtime_scratch_cli.py, scripts/runtime_scratch_promotion.py, scripts/runtime_scratch_registry.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_completion_next_step.py, scripts/task_run/task_run_execution.py, tests/charness_cli/test_task_run_completion.py, tests/charness_cli/test_task_run_result.py, tests/test_critique_prepare_packet.py, tests/test_review_followup.py, tests/test_run_review_declared_path_resolution.py, tests/test_runtime_scratch.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/gates/check_test_production_ratio.py, scripts/review/critique_adapter_lib.py, scripts/review/critique_artifact_paths.py, scripts/review/critique_followup_scope.py, scripts/review/critique_packet_lib.py, scripts/review/render_critique_section_changed_surfaces.py, scripts/review/reviewed_input_verification.py, scripts/runtime_scratch.py, scripts/runtime_scratch_cli.py, scripts/runtime_scratch_promotion.py, scripts/runtime_scratch_registry.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_completion_next_step.py, scripts/task_run/task_run_execution.py, skills/public/critique/scripts/followup_scope_consumer.py, skills/public/critique/scripts/prepare_packet.py, skills/public/critique/scripts/review_followup.py, skills/public/critique/scripts/review_followup_context.py, skills/public/critique/scripts/review_followup_provenance.py, skills/public/critique/scripts/review_followup_selection.py, skills/public/critique/scripts/run_review.py, skills/public/critique/scripts/run_review_carrier.py, skills/public/critique/scripts/run_review_execution.py, skills/public/critique/scripts/run_review_hold_out.py, skills/public/critique/scripts/run_review_identity.py, skills/public/critique/scripts/run_review_packet.py, skills/public/critique/scripts/run_review_promotion.py, skills/public/critique/scripts/run_review_promotion_storage.py, skills/public/critique/scripts/run_review_recovery.py, skills/public/critique/scripts/run_review_recovery_inputs.py, skills/public/critique/scripts/run_review_support.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "prepared_targets": [
+    "v8.6.3"
+  ],
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "cdd25e1a106eb834441437a126ec59140f3d256c",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      ".agents/critique-adapter.yaml",
+      "charness-artifacts/critique/workers/release-8-6-3-lifecycle-final/result.json",
+      "docs/agent-task-runs.md",
+      "docs/development.md",
+      "docs/index.md",
+      "scripts/gates/check_test_production_ratio.py",
+      "scripts/review/critique_adapter_lib.py",
+      "scripts/review/critique_artifact_paths.py",
+      "scripts/review/critique_followup_scope.py",
+      "scripts/review/critique_packet_lib.py",
+      "scripts/review/render_critique_section_changed_surfaces.py",
+      "scripts/review/reviewed_input_verification.py",
+      "scripts/runtime_scratch.py",
+      "scripts/runtime_scratch_cli.py",
+      "scripts/runtime_scratch_promotion.py",
+      "scripts/runtime_scratch_registry.py",
+      "scripts/task_run/task_run_completion.py",
+      "scripts/task_run/task_run_completion_next_step.py",
+      "scripts/task_run/task_run_execution.py",
+      "skills/public/critique/SKILL.md",
+      "skills/public/critique/references/adapter-contract.md",
+      "skills/public/critique/references/prepare-packet.md",
+      "skills/public/critique/scripts/followup_scope_consumer.py",
+      "skills/public/critique/scripts/prepare_packet.py",
+      "skills/public/critique/scripts/review_followup.py",
+      "skills/public/critique/scripts/review_followup_context.py",
+      "skills/public/critique/scripts/review_followup_provenance.py",
+      "skills/public/critique/scripts/review_followup_selection.py",
+      "skills/public/critique/scripts/run_review.py",
+      "skills/public/critique/scripts/run_review_carrier.py",
+      "skills/public/critique/scripts/run_review_execution.py",
+      "skills/public/critique/scripts/run_review_hold_out.py",
+      "skills/public/critique/scripts/run_review_identity.py",
+      "skills/public/critique/scripts/run_review_packet.py",
+      "skills/public/critique/scripts/run_review_promotion.py",
+      "skills/public/critique/scripts/run_review_promotion_storage.py",
+      "skills/public/critique/scripts/run_review_recovery.py",
+      "skills/public/critique/scripts/run_review_recovery_inputs.py",
+      "skills/public/critique/scripts/run_review_support.py",
+      "skills/shared/scripts/reviewer_result_contract.py",
+      "skills/shared/scripts/reviewer_worker_carrier_support.py",
+      "tests/charness_cli/test_task_run_completion.py",
+      "tests/charness_cli/test_task_run_result.py",
+      "tests/test_critique_prepare_packet.py",
+      "tests/test_review_followup.py",
+      "tests/test_run_review_declared_path_resolution.py",
+      "tests/test_runtime_scratch.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/critique-adapter.yaml",
+        "content_sha256": "5954e0c2dcb4fd96a6ef5e747a2aa6dfc93dca15b9e6b46b64357016c1c635d6"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/release-8-6-3-lifecycle-final/result.json",
+        "content_sha256": "126edea604fad2cdd917ac96ffeb4be63bfad19fb21e546f48d54dd799c98b8f"
+      },
+      {
+        "path": "docs/agent-task-runs.md",
+        "content_sha256": "5ec449ce15a7874c9570efe8cd59a38debbfd5ad234d3fe429219ee100abd879"
+      },
+      {
+        "path": "docs/development.md",
+        "content_sha256": "7f95c37474d0b19a8fe4b32f8801549473f7df12017c6772952929affacfe469"
+      },
+      {
+        "path": "docs/index.md",
+        "content_sha256": "a0c1a71f184ba94cb4897a251e5ef33eb45847d364d920946d8b242603145ab3"
+      },
+      {
+        "path": "scripts/gates/check_test_production_ratio.py",
+        "content_sha256": "300d85470ee7e5b5c9a7aa6515d419fb374f89e1ff8392b3309e226f058da33a"
+      },
+      {
+        "path": "scripts/review/critique_adapter_lib.py",
+        "content_sha256": "19a1256ccedda89e8ee06bcc6a35be5dbd92e72c712c6e289c6829f90c4a82c4"
+      },
+      {
+        "path": "scripts/review/critique_artifact_paths.py",
+        "content_sha256": "059ea4df68e8fa772f18d3f635685d62582fa2584b2721d0aebdfc2f7fd90aad"
+      },
+      {
+        "path": "scripts/review/critique_followup_scope.py",
+        "content_sha256": "3b41eef0d190e145432943fa2c0dcbaad7c5a22d9593ac2f814442ef034add79"
+      },
+      {
+        "path": "scripts/review/critique_packet_lib.py",
+        "content_sha256": "7faa08ce151ba7a0cbbf522a8fb2fec1153724289e8dbd7c01af27eef41404da"
+      },
+      {
+        "path": "scripts/review/render_critique_section_changed_surfaces.py",
+        "content_sha256": "921009808f2d00f0a01a710c20aa37e9f8c0e1e87bd538dcc7e9c7c0b7797545"
+      },
+      {
+        "path": "scripts/review/reviewed_input_verification.py",
+        "content_sha256": "a0efcfebd66d997ccae9f507695b2fd165f973f670a1108178d6246d9437445d"
+      },
+      {
+        "path": "scripts/runtime_scratch.py",
+        "content_sha256": "23ad7c44cd37f993d7f69285660dbf2a31e567a672bed24e2a618d336b84babf"
+      },
+      {
+        "path": "scripts/runtime_scratch_cli.py",
+        "content_sha256": "5bbc382dba975c5efc73ad2e52ec5bdce67bdd9b0e7be3b21c534d4f24ffbc90"
+      },
+      {
+        "path": "scripts/runtime_scratch_promotion.py",
+        "content_sha256": "a4d3d9a037790b2bb0aff990bc1fc22fe1adb063366518403b927b1a3db23192"
+      },
+      {
+        "path": "scripts/runtime_scratch_registry.py",
+        "content_sha256": "71796ad4f38eb42451b1a8c594b77511e52fe575d9bea8ddc9ad1c83c9c9b879"
+      },
+      {
+        "path": "scripts/task_run/task_run_completion.py",
+        "content_sha256": "36edf74e14773e14cce984ecc4a9b7d12f578d770818fd06324b860712be8ce0"
+      },
+      {
+        "path": "scripts/task_run/task_run_completion_next_step.py",
+        "content_sha256": "0cab5574c4384d78ab26da145924cafb4579986c4f842e2012079e4be0c1a15e"
+      },
+      {
+        "path": "scripts/task_run/task_run_execution.py",
+        "content_sha256": "73a0cd33dcbeea0bea447bcc090e1b44428caf550e2525e23f616597dc0e17c5"
+      },
+      {
+        "path": "skills/public/critique/SKILL.md",
+        "content_sha256": "072d9f27cbcc1fa4361010737ecee9358e97f24f856af5e6313f145320f066c3"
+      },
+      {
+        "path": "skills/public/critique/references/adapter-contract.md",
+        "content_sha256": "ce192b5a24146de40a87609516018528543cdec458dc56fc6803e45186249ed4"
+      },
+      {
+        "path": "skills/public/critique/references/prepare-packet.md",
+        "content_sha256": "5a0d09e42a00889ddf12c4b8660eea6a72133d72292f328463951abce6efa040"
+      },
+      {
+        "path": "skills/public/critique/scripts/followup_scope_consumer.py",
+        "content_sha256": "b250091f5d56fe31174247447e13bb016a3100c0d39f7a0edfe03f94b869aeca"
+      },
+      {
+        "path": "skills/public/critique/scripts/prepare_packet.py",
+        "content_sha256": "dc4338720f73df5eb16a511024c234ce64b4d8a7eccca05fc6d8fcae8790f280"
+      },
+      {
+        "path": "skills/public/critique/scripts/review_followup.py",
+        "content_sha256": "707d3887f32f816ea3a7b99de96834e78c00fed59cd03c77ce05912ff33c1038"
+      },
+      {
+        "path": "skills/public/critique/scripts/review_followup_context.py",
+        "content_sha256": "18f6d70840e90edb97ed1393fd413d7e36b6a30133e2935174461b17c51680a4"
+      },
+      {
+        "path": "skills/public/critique/scripts/review_followup_provenance.py",
+        "content_sha256": "b280676f60cf9f51249fb0428cbb21d67a0297970c349df826124bad15d4819d"
+      },
+      {
+        "path": "skills/public/critique/scripts/review_followup_selection.py",
+        "content_sha256": "24ad83510e3b2c82853ee0ca8c242e7dc0252e434c61da6ab7cbf4860f46ebf6"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review.py",
+        "content_sha256": "0c87ad89755244c4c95c3fd6e671a3d31b1abd254daa694f4812cd8da0fa5b6e"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_carrier.py",
+        "content_sha256": "53dd9f5fde7ec41702225054feee7035e9021021fbe3b7718de77f7987e55e13"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_execution.py",
+        "content_sha256": "24159792124f694187381671dd9e2b8879af26d0426bc64e7c74e5fdf715d399"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_hold_out.py",
+        "content_sha256": "bae3bb6b5f5475e8998f016b5c4cd4762856a70427111914c7a65dde5f40d3c9"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_identity.py",
+        "content_sha256": "cffc92503a8593280968b694bf85e161886b163afb4a79fca988a7d2d30a402a"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_packet.py",
+        "content_sha256": "d866ddcb647cfe3e431e656a849da74662e6ce43296daa5c1183a8f5dcf446aa"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_promotion.py",
+        "content_sha256": "11ff7c5ff0d25e7e9b0376d0ec50d403dc72057622520fecb517361673aea2c3"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_promotion_storage.py",
+        "content_sha256": "8cacbc6ca5f41dc0642f4d96426a26ffce8013e728eaa411985651cab3674ed9"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_recovery.py",
+        "content_sha256": "7403195deb907c429ac0db1996705990e80d5d959ab0ef1f3ec3bdf033b02122"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_recovery_inputs.py",
+        "content_sha256": "f6f2dd690353382f2334dab5dd1c04e8f6d39fa7bf3b6ad44af65961ba8a70d3"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_support.py",
+        "content_sha256": "bae162b873407d5ca7d6ec9da758f508d6b6092526ef85b695cb39b3030ca03a"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_result_contract.py",
+        "content_sha256": "3d11ec47163e06a47a82e396bde3d4c9168965c27f38931b5105a3a4a3802f9d"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_worker_carrier_support.py",
+        "content_sha256": "7a1130c59c5fa856a89b89c2ccc0d37512cd79685dab324dc49bbf5a46a44baa"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_completion.py",
+        "content_sha256": "24dd847d23fec5b0156e0c2d8c5ecbf6e90cf3b06179ac6a88d9159a9041775b"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_result.py",
+        "content_sha256": "685b96cbd433bf9ae4120fc85cd5c1aafb7f2e2aea716a7b0fd2fb8d3251f855"
+      },
+      {
+        "path": "tests/test_critique_prepare_packet.py",
+        "content_sha256": "692d3e085ca2ac3e9c477110ac21a5ad2ba0359c3ff226908ee349a2317e231f"
+      },
+      {
+        "path": "tests/test_review_followup.py",
+        "content_sha256": "fd61c040b1fbcea1ba4728d1d7eca9a38dad48aba4016f6f2871cbd3e18afd53"
+      },
+      {
+        "path": "tests/test_run_review_declared_path_resolution.py",
+        "content_sha256": "b8ce6327314956708bda41ecb0c2e11d640e371469ff43ef39b7e6aa69cc9125"
+      },
+      {
+        "path": "tests/test_runtime_scratch.py",
+        "content_sha256": "bb080f46574c900f792b489d59471c0d4f68704a45ed32afadf84100d09a3d78"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "ebb3d6b67d3a96eed2f78ce42e1f2baec155b911e0f529ffd8c4d864dffb135c",
+    "declared_untracked": [
+      {
+        "path": "charness-artifacts/critique/workers/release-8-6-3-lifecycle-final/result.json",
+        "content_sha256": "126edea604fad2cdd917ac96ffeb4be63bfad19fb21e546f48d54dd799c98b8f"
+      },
+      {
+        "path": "scripts/review/critique_followup_scope.py",
+        "content_sha256": "3b41eef0d190e145432943fa2c0dcbaad7c5a22d9593ac2f814442ef034add79"
+      },
+      {
+        "path": "scripts/runtime_scratch.py",
+        "content_sha256": "23ad7c44cd37f993d7f69285660dbf2a31e567a672bed24e2a618d336b84babf"
+      },
+      {
+        "path": "scripts/runtime_scratch_cli.py",
+        "content_sha256": "5bbc382dba975c5efc73ad2e52ec5bdce67bdd9b0e7be3b21c534d4f24ffbc90"
+      },
+      {
+        "path": "scripts/runtime_scratch_promotion.py",
+        "content_sha256": "a4d3d9a037790b2bb0aff990bc1fc22fe1adb063366518403b927b1a3db23192"
+      },
+      {
+        "path": "scripts/runtime_scratch_registry.py",
+        "content_sha256": "71796ad4f38eb42451b1a8c594b77511e52fe575d9bea8ddc9ad1c83c9c9b879"
+      },
+      {
+        "path": "scripts/task_run/task_run_completion_next_step.py",
+        "content_sha256": "0cab5574c4384d78ab26da145924cafb4579986c4f842e2012079e4be0c1a15e"
+      },
+      {
+        "path": "skills/public/critique/scripts/followup_scope_consumer.py",
+        "content_sha256": "b250091f5d56fe31174247447e13bb016a3100c0d39f7a0edfe03f94b869aeca"
+      },
+      {
+        "path": "skills/public/critique/scripts/review_followup.py",
+        "content_sha256": "707d3887f32f816ea3a7b99de96834e78c00fed59cd03c77ce05912ff33c1038"
+      },
+      {
+        "path": "skills/public/critique/scripts/review_followup_context.py",
+        "content_sha256": "18f6d70840e90edb97ed1393fd413d7e36b6a30133e2935174461b17c51680a4"
+      },
+      {
+        "path": "skills/public/critique/scripts/review_followup_provenance.py",
+        "content_sha256": "b280676f60cf9f51249fb0428cbb21d67a0297970c349df826124bad15d4819d"
+      },
+      {
+        "path": "skills/public/critique/scripts/review_followup_selection.py",
+        "content_sha256": "24ad83510e3b2c82853ee0ca8c242e7dc0252e434c61da6ab7cbf4860f46ebf6"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_carrier.py",
+        "content_sha256": "53dd9f5fde7ec41702225054feee7035e9021021fbe3b7718de77f7987e55e13"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_execution.py",
+        "content_sha256": "24159792124f694187381671dd9e2b8879af26d0426bc64e7c74e5fdf715d399"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_identity.py",
+        "content_sha256": "cffc92503a8593280968b694bf85e161886b163afb4a79fca988a7d2d30a402a"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_promotion_storage.py",
+        "content_sha256": "8cacbc6ca5f41dc0642f4d96426a26ffce8013e728eaa411985651cab3674ed9"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_recovery.py",
+        "content_sha256": "7403195deb907c429ac0db1996705990e80d5d959ab0ef1f3ec3bdf033b02122"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_recovery_inputs.py",
+        "content_sha256": "f6f2dd690353382f2334dab5dd1c04e8f6d39fa7bf3b6ad44af65961ba8a70d3"
+      },
+      {
+        "path": "tests/test_review_followup.py",
+        "content_sha256": "fd61c040b1fbcea1ba4728d1d7eca9a38dad48aba4016f6f2871cbd3e18afd53"
+      },
+      {
+        "path": "tests/test_runtime_scratch.py",
+        "content_sha256": "bb080f46574c900f792b489d59471c0d4f68704a45ed32afadf84100d09a3d78"
+      }
+    ],
+    "auto_excluded_paths": [],
+    "identity_sha256": "7edfcaefcf2a3842d8056e92c8e11558bb954953eba2ba8c9181a9fd0eff0d7b"
+  }
+}

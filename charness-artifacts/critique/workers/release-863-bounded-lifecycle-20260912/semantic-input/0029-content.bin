@@ -1,0 +1,299 @@
+"""Lifecycle and durable-path handling for one critique review carrier."""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+
+def refresh_manifest_integrity(
+    support: Any, storage: Any, root: Path, manifest_relative: str
+) -> dict[str, Any]:
+    """Hash every promoted file after the final lifecycle bytes are written."""
+    manifest = support.repo_path(
+        root, manifest_relative, label="promoted attempt manifest", require_file=True
+    )
+    payload = support.load_mapping(manifest)
+    if not isinstance(payload, dict):
+        raise support.RunReviewError(
+            "promotion-readback-failed", "promoted attempt manifest is not a mapping"
+        )
+    files = payload.get("files")
+    if not isinstance(files, dict):
+        raise support.RunReviewError(
+            "promotion-readback-failed", "promoted attempt manifest has no file map"
+        )
+    integrity: dict[str, dict[str, Any]] = {}
+    for name, relative in sorted(files.items()):
+        if not isinstance(name, str) or not isinstance(relative, str):
+            raise support.RunReviewError(
+                "promotion-readback-failed", "promoted attempt manifest contains a malformed file"
+            )
+        path = support.repo_path(root, relative, label=f"promoted file {name}", require_file=True)
+        integrity[name] = {
+            "path": relative,
+            "bytes": path.stat().st_size,
+            "sha256": support.sha256(path),
+        }
+    payload["file_integrity"] = integrity
+    storage.write_json_atomically(manifest, payload)
+    readback = support.load_mapping(manifest)
+    if not isinstance(readback, dict) or readback.get("file_integrity") != integrity:
+        raise support.RunReviewError(
+            "promotion-readback-failed", "promoted attempt manifest integrity did not read back"
+        )
+    return integrity
+
+
+def write_promoted_yaml(
+    support: Any, storage: Any, root: Path, relative_path: str, payload: dict[str, Any]
+) -> None:
+    """Atomically rewrite a promoted lifecycle carrier after path rebinding."""
+    lexical_destination = root / relative_path
+    if lexical_destination.is_symlink():
+        raise support.RunReviewError(
+            "stale-artifact-refused",
+            f"refusing to write through lifecycle symlink: {lexical_destination}",
+        )
+    destination = lexical_destination.resolve()
+    try:
+        destination.relative_to(root.resolve())
+    except ValueError as exc:
+        raise support.RunReviewError(
+            "path-invalid", "promoted lifecycle path escaped repository root"
+        ) from exc
+    encoded = yaml.safe_dump(payload, allow_unicode=True, sort_keys=False).encode("utf-8")
+    storage.write_bytes_atomically(destination, encoded)
+
+
+def compare_report_stream(support: Any, stream_path: Path, report_path: Path) -> dict[str, Any]:
+    """Record whether stdout and the durable report carry the same mapping."""
+    stream = support.load_mapping(stream_path)
+    report = support.load_mapping(report_path)
+    if stream is None or report is None:
+        reason = "runner stdout or canonical report is missing or unreadable"
+        consistent = False
+    elif stream != report:
+        reason = "runner stdout differs from the canonical report carrier"
+        consistent = False
+    else:
+        reason = None
+        consistent = True
+    return {
+        "consistent": consistent,
+        "reason": reason,
+        "runner_stdout_sha256": support.sha256(stream_path) if stream_path.is_file() else None,
+        "canonical_report_sha256": support.sha256(report_path) if report_path.is_file() else None,
+    }
+
+
+def failure_carrier(
+    packet_module: Any,
+    lifecycle: Any,
+    *,
+    scope: str,
+    lens: str,
+    error: str,
+    code: str,
+    details: dict[str, Any],
+) -> dict[str, Any]:
+    if lifecycle is None:
+        return {
+            "schema_version": "charness.reviewer_lifecycle.v1",
+            "status": "runner-invalid",
+            "execution_state": "preflight-blocked",
+            "lifecycle_state": "preflight-blocked",
+            "reviewer_started": False,
+            "delivery_state": "none",
+            "verdict_state": "not-applicable",
+            "review_verdict": None,
+            "classification": None,
+            "approval_eligible": False,
+            "output": {"state": "none", "approval_eligible": False, "artifacts": []},
+            "output_state": "none",
+            "failure_identity": None,
+            "next_move": "repair the named preflight boundary and rerun; reviewer did not start",
+            "runner_returncode": None,
+            "runner_status": "runner-invalid",
+            "boundary_ok": None,
+            "boundary_reason": None,
+            "paths": {},
+        }
+    carrier = lifecycle.build_lifecycle(
+        status="runner-invalid", error=error, reviewer_started=False, paths={}
+    )
+    carrier.update(
+        {
+            "ok": False,
+            "carrier_ok": False,
+            "reason_code": code,
+            "error": error,
+            "details": details,
+            "scope": scope,
+            "lens": lens,
+        }
+    )
+    for field in packet_module.REFUSAL_DETAIL_FIELDS:
+        if field in details:
+            carrier[field] = details[field]
+    return carrier
+
+
+def bind_promoted_paths(context: dict[str, Any], promoted: dict[str, str], promotion: Any) -> dict[str, str]:
+    """Replace runtime-only paths with their durable receipt paths."""
+    bound = context.setdefault("paths", {})
+    old_paths = dict(bound)
+    for name, relative in promoted.items():
+        source_key = promotion.SOURCE_KEYS.get(name)
+        if source_key is not None:
+            bound[source_key] = relative
+    worker_report = promoted.get("worker-report.yaml")
+    if worker_report is not None:
+        runtime_report = old_paths.get("report")
+        if runtime_report is not None and runtime_report != worker_report:
+            bound["runtime_report"] = runtime_report
+        bound["report"] = worker_report
+        bound["durable_report"] = worker_report
+    for name, source_key in promotion.LOG_SOURCE_KEYS.items():
+        relative = promoted.get(name)
+        if relative is not None:
+            bound[source_key] = relative
+    for key, value in list(bound.items()):
+        if isinstance(value, str) and Path(value).parts[:2] == (".charness", "scratch"):
+            bound.pop(key, None)
+    return bound
+
+
+def rebind_partial_artifacts(
+    carrier: dict[str, Any], old_paths: dict[str, str], new_paths: dict[str, str], promotion: Any
+) -> None:
+    """Keep lifecycle partial-output descriptors usable after scratch cleanup."""
+    collections = [carrier.get("partial_outputs")]
+    output = carrier.get("output")
+    if isinstance(output, dict):
+        collections.extend((output.get("artifacts"), output.get("partial_artifacts")))
+    for collection in collections:
+        if not isinstance(collection, list):
+            continue
+        for descriptor in collection:
+            if not isinstance(descriptor, dict):
+                continue
+            path = descriptor.get("path")
+            if not isinstance(path, str):
+                continue
+            for key in promotion.LOG_SOURCE_KEYS.values():
+                if path == old_paths.get(key) and key in new_paths:
+                    descriptor["path"] = new_paths[key]
+                    break
+
+
+def replace_exact_strings(value: Any, replacements: dict[str, str]) -> Any:
+    if isinstance(value, dict):
+        for key, nested in list(value.items()):
+            value[key] = replace_exact_strings(nested, replacements)
+        return value
+    if isinstance(value, list):
+        return [replace_exact_strings(item, replacements) for item in value]
+    if isinstance(value, str):
+        return replacements.get(value, value)
+    return value
+
+
+def finalize_carrier(
+    support: Any,
+    promotion: Any,
+    root: Path,
+    promotion_attempt: str,
+    paths: dict[str, Path],
+    context: dict[str, Any],
+    carrier: dict[str, Any],
+    report: dict[str, Any] | None,
+    recovery_validation: dict[str, Any] | None = None,
+) -> None:
+    """Promote all terminal bytes, then emit paths that survive owner cleanup."""
+    old_paths = dict(context.setdefault("paths", {}))
+    promoted = promotion.promote_attempt_metadata(
+        root,
+        promotion_attempt,
+        paths,
+        report,
+        finalize=True,
+        expected_identities={
+            "packet_sha256": context.get("packet_sha256"),
+            "reviewed_input_identity_sha256": context.get("reviewed_input_identity_sha256"),
+            "parent_receipt_identity": context.get("parent_receipt_identity"),
+        },
+        final_carrier=carrier,
+        recovery_validation=recovery_validation,
+    )
+    semantic_replacements: dict[str, str] = {}
+    run_dir = paths.get("run_dir")
+    source_dir = run_dir / "semantic-input" if run_dir is not None else None
+    if source_dir is not None and source_dir.is_dir():
+        for source in source_dir.rglob("*"):
+            if not source.is_file() or source.is_symlink():
+                continue
+            relative = source.relative_to(source_dir)
+            promoted_key = f"semantic-input/{relative.as_posix()}"
+            durable = promoted.get(promoted_key)
+            if durable is not None:
+                semantic_replacements[support.relative(root, source)] = durable
+    if semantic_replacements:
+        carrier["semantic_input"] = replace_exact_strings(
+            carrier.get("semantic_input"), semantic_replacements
+        )
+    bound = bind_promoted_paths(context, promoted, promotion)
+    rebind_partial_artifacts(carrier, old_paths, bound, promotion)
+    carrier["paths"] = dict(bound)
+    summary = promoted.get("lifecycle.yaml")
+    if summary is not None:
+        write_promoted_yaml(support, promotion.STORAGE, root, summary, carrier)
+        saved_summary = support.load_mapping(root / summary)
+        if not isinstance(saved_summary, dict):
+            raise support.RunReviewError(
+                "promotion-readback-failed",
+                "promoted lifecycle carrier could not be read back as a mapping",
+            )
+        for key in (
+            "schema_version",
+            "execution_state",
+            "lifecycle_state",
+            "delivery_state",
+            "approval_eligible",
+            "identity_check",
+            "runner_stream",
+        ):
+            if key in carrier and saved_summary.get(key) != carrier.get(key):
+                raise support.RunReviewError(
+                    "promotion-readback-failed",
+                    f"promoted lifecycle carrier changed at `{key}` during read-back",
+                )
+    manifest_path = promoted.get("attempt-manifest.json")
+    if manifest_path is not None:
+        promotion.refresh_manifest_integrity(root, manifest_path)
+    manifest = support.load_mapping(root / manifest_path) if manifest_path else None
+    if not isinstance(manifest, dict):
+        raise support.RunReviewError(
+            "promotion-readback-failed",
+            "promoted reviewer attempt manifest could not be read back",
+        )
+    expected_approval = carrier.get("approval_eligible") is True
+    if manifest.get("approval_eligible") is not expected_approval:
+        raise support.RunReviewError(
+            "promotion-readback-failed",
+            "promoted reviewer manifest approval does not match the final lifecycle carrier",
+        )
+
+
+def owner_terminal_state(status: str, carrier: dict[str, Any]) -> str:
+    """Map reviewer execution state to the scratch owner's explicit terminal state."""
+    delivery = carrier.get("delivery_state")
+    if status == "runner-timeout" or delivery == "timed-out":
+        return "timed-out"
+    if status == "runner-interrupted" or delivery == "interrupted":
+        return "cancelled"
+    if carrier.get("execution_state") == "terminal" and delivery == "findings-received":
+        return "succeeded"
+    return "failed"

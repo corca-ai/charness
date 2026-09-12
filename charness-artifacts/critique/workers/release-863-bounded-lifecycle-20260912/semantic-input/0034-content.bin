@@ -1,0 +1,376 @@
+"""Promote a completed or failed reviewer carrier into visible knowledge."""
+
+from __future__ import annotations
+
+import hashlib
+import importlib.util
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+
+def _support() -> Any:
+    for name in ("charness_run_review_support", "run_review_support"):
+        module = sys.modules.get(name)
+        if module is not None:
+            return module
+    path = Path(__file__).with_name("run_review_support.py")
+    spec = importlib.util.spec_from_file_location("charness_run_review_support", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load run_review_support: {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["charness_run_review_support"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+SUPPORT = _support()
+IDENTITY = SUPPORT.load_module(
+    Path(__file__).with_name("run_review_identity.py"),
+    "charness_run_review_identity",
+)
+STORAGE = SUPPORT.load_module(
+    Path(__file__).with_name("run_review_promotion_storage.py"),
+    "charness_run_review_promotion_storage",
+)
+CARRIER = SUPPORT.load_module(
+    Path(__file__).with_name("run_review_carrier.py"), "charness_run_review_carrier"
+)
+DURABLE_WORKER_REPORTS = STORAGE.DURABLE_WORKER_REPORTS
+PROMOTED_METADATA = STORAGE.PROMOTED_METADATA
+SOURCE_KEYS = STORAGE.SOURCE_KEYS
+LOG_SOURCE_KEYS = STORAGE.LOG_SOURCE_KEYS
+identity_binding = IDENTITY.identity_binding
+approval_for = IDENTITY.approval_for
+
+
+def promote_worker_report(root: Path, attempt: str, runtime_report: Path) -> Path | None:
+    return STORAGE.promote_worker_report(root, attempt, runtime_report)
+
+
+def refresh_manifest_integrity(root: Path, manifest_relative: str) -> dict[str, Any]:
+    return CARRIER.refresh_manifest_integrity(SUPPORT, STORAGE, root, manifest_relative)
+
+
+def promote_attempt_metadata(  # noqa: C901, PLR0915
+    root: Path,
+    attempt: str,
+    paths: dict[str, Path],
+    report: dict[str, Any] | None,
+    *,
+    finalize: bool = False,
+    expected_identities: dict[str, Any] | None = None,
+    final_carrier: dict[str, Any] | None = None,
+    recovery_validation: dict[str, Any] | None = None,
+) -> dict[str, str]:
+    """Retain typed terminal metadata for both approval and retry paths.
+
+    Raw runner logs stay in the managed runtime and are referenced by the
+    lifecycle's partial-output descriptors. Small typed files are copied to the
+    durable attempt directory, with a manifest that explicitly says whether the
+    carrier is approval-eligible. A failed carrier can therefore be inspected or
+    retried after runtime GC without ever being mistaken for approval.
+    """
+    lexical_dest_dir = root / DURABLE_WORKER_REPORTS / attempt
+    if lexical_dest_dir.is_symlink():
+        raise _support().RunReviewError(
+            "stale-artifact-refused",
+            f"refusing to write through durable worker directory symlink: {lexical_dest_dir}",
+        )
+    dest_dir = lexical_dest_dir.resolve()
+    try:
+        dest_dir.relative_to(root.resolve())
+    except ValueError as exc:
+        raise _support().RunReviewError(
+            "path-invalid", "durable worker metadata directory escaped repository root"
+        ) from exc
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    promoted: dict[str, str] = {}
+    promoted.update(STORAGE.promote_semantic_inputs(root, paths, dest_dir))
+    pending_metadata: list[tuple[str, Path, Path]] = []
+    for name in PROMOTED_METADATA:
+        if name == "worker-report.yaml":
+            continue
+        source_key = SOURCE_KEYS.get(name)
+        source = paths.get(source_key) if source_key is not None else None
+        if source is None or not source.is_file():
+            continue
+        destination = dest_dir / name
+        promoted[name] = _support().relative(root, destination)
+        pending_metadata.append((name, source, destination))
+    logs: dict[str, dict[str, Any]] = {}
+    for name, source_key in LOG_SOURCE_KEYS.items():
+        source = paths.get(source_key)
+        if source is None or not source.is_file() or source.stat().st_size == 0:
+            continue
+        destination = dest_dir / name
+        logs[name] = STORAGE.promote_log(root, source, destination)
+        promoted[name] = logs[name]["path"]
+    report_source = paths.get("report")
+    if report_source is not None and report_source.is_file():
+        report_destination = dest_dir / "worker-report.yaml"
+        durable_report = _support().relative(root, report_destination)
+        promoted["worker-report.yaml"] = durable_report
+        pending_metadata.append(("worker-report.yaml", report_source, report_destination))
+    replacements = STORAGE.report_path_replacements(paths, promoted)
+    # Runtime reports normally carry repository-relative paths.  The storage
+    # helper also accepts absolute path spellings, but recovery must rebind both
+    # forms before validating the promoted chain.
+    for name, source_key in {**SOURCE_KEYS, **LOG_SOURCE_KEYS}.items():
+        source = paths.get(source_key)
+        durable = promoted.get(name)
+        if source is not None and durable is not None:
+            replacements[_support().relative(root, source)] = durable
+    report_source = paths.get("report")
+    durable_report = promoted.get("worker-report.yaml")
+    if report_source is not None and durable_report is not None:
+        replacements[_support().relative(root, report_source)] = durable_report
+    replacements.update(STORAGE.semantic_path_replacements(root, paths, promoted))
+    for name, source, destination in pending_metadata:
+        payload = source.read_bytes()
+        if name in {
+            "worker-report.yaml",
+            "review-prompt.md",
+            "run-plan.json",
+            "lifecycle.yaml",
+            "receipt.json",
+            "delivery.json",
+        }:
+            payload = STORAGE.rewrite_path_references(payload, replacements)
+        if name == "receipt.json" and destination.is_file():
+            # The first promotion may add a durable partial-output descriptor
+            # to the receipt.  A later lifecycle finalization re-reads the
+            # original scratch receipt; preserve that immutable join instead
+            # of treating the intentional enrichment as stale metadata.
+            try:
+                candidate_receipt = json.loads(payload.decode("utf-8"))
+                existing_receipt = SUPPORT.load_mapping(destination)
+            except (UnicodeDecodeError, json.JSONDecodeError, OSError):
+                candidate_receipt = None
+                existing_receipt = None
+            if (
+                isinstance(candidate_receipt, dict)
+                and isinstance(existing_receipt, dict)
+                and "retained_partial_output" not in candidate_receipt
+                and isinstance(existing_receipt.get("retained_partial_output"), dict)
+            ):
+                candidate_receipt["retained_partial_output"] = existing_receipt[
+                    "retained_partial_output"
+                ]
+                payload = (
+                    json.dumps(candidate_receipt, ensure_ascii=False, indent=2, sort_keys=True)
+                    + "\n"
+                ).encode("utf-8")
+        STORAGE.write_or_verify(destination, payload)
+    partial_diagnostics: dict[str, Any] = {}
+    partial = STORAGE.extract_partial_review(
+        paths,
+        report,
+        partial_diagnostics,
+        expected_identities=expected_identities,
+    )
+    partial_descriptor: dict[str, Any] | None = None
+    if partial is not None:
+        candidate, source, validation = partial
+        partial_path = dest_dir / "partial-result.json"
+        if partial_path.is_symlink():
+            raise _support().RunReviewError(
+                "stale-artifact-refused",
+                f"refusing to overwrite durable partial reviewer result: {partial_path}",
+            )
+        if partial_path.exists():
+            try:
+                existing_partial = json.loads(partial_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                raise _support().RunReviewError(
+                    "stale-artifact-refused",
+                    f"existing durable partial reviewer result is unreadable: {partial_path}",
+                ) from exc
+            if existing_partial != candidate:
+                raise _support().RunReviewError(
+                    "stale-artifact-refused",
+                    f"refusing to overwrite durable partial reviewer result: {partial_path}",
+                )
+        else:
+            STORAGE.write_json_atomically(partial_path, candidate)
+        partial_bytes = partial_path.read_bytes()
+        partial_descriptor = {
+            "schema_version": "charness.reviewer_partial_output/v1",
+            "kind": "bounded-review-result",
+            "path": _support().relative(root, partial_path),
+            "source": next(
+                (
+                    promoted[name]
+                    for name, source_key in LOG_SOURCE_KEYS.items()
+                    if paths.get(source_key) == source and name in promoted
+                ),
+                _support().relative(root, source),
+            ),
+            "bytes": len(partial_bytes),
+            "sha256": hashlib.sha256(partial_bytes).hexdigest(),
+            "validation": validation,
+            "approval_eligible": False,
+        }
+        promoted["partial-result.json"] = partial_descriptor["path"]
+        retained_receipt = dest_dir / "receipt.json"
+        if retained_receipt.is_file() and not retained_receipt.is_symlink():
+            receipt_payload = SUPPORT.load_mapping(retained_receipt)
+            if isinstance(receipt_payload, dict):
+                receipt_payload["retained_partial_output"] = partial_descriptor
+                STORAGE.write_json_atomically(retained_receipt, receipt_payload)
+    manifest = dest_dir / "attempt-manifest.json"
+    if manifest.is_symlink():
+        raise _support().RunReviewError(
+            "stale-artifact-refused",
+            f"refusing to overwrite durable reviewer attempt manifest: {manifest}",
+        )
+    existing_manifest: dict[str, Any] = {}
+    if manifest.exists():
+        if not finalize:
+            raise _support().RunReviewError(
+                "stale-artifact-refused",
+                f"refusing to overwrite durable reviewer attempt manifest: {manifest}",
+            )
+        try:
+            loaded_manifest = json.loads(manifest.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise _support().RunReviewError(
+                "stale-artifact-refused",
+                f"existing durable reviewer attempt manifest is unreadable: {manifest}",
+            ) from exc
+        if not isinstance(loaded_manifest, dict) or loaded_manifest.get("attempt_id") != attempt:
+            raise _support().RunReviewError(
+                "stale-artifact-refused",
+                f"existing durable reviewer attempt identity does not match: {manifest}",
+            )
+        existing_manifest = loaded_manifest
+    previous_files = existing_manifest.get("files")
+    previous_logs = existing_manifest.get("logs")
+    merged_files = dict(previous_files) if isinstance(previous_files, dict) else {}
+    merged_files.update(promoted)
+    merged_logs = dict(previous_logs) if isinstance(previous_logs, dict) else {}
+    merged_logs.update(logs)
+    retained_partial = partial_descriptor
+    if retained_partial is None:
+        prior_partial = existing_manifest.get("partial_result")
+        if isinstance(prior_partial, dict):
+            retained_partial = prior_partial
+    if report is not None:
+        approval_eligible, binding = approval_for(
+            report,
+            expected_identities=expected_identities,
+            final_carrier=final_carrier,
+        )
+    else:
+        approval_eligible = False
+        binding = {
+            "status": "unavailable",
+            "matches": False,
+            "checks": {},
+            "reason": "worker report unavailable",
+        }
+    prior_unavailable = existing_manifest.get("partial_result_unavailable")
+    partial_unavailable = None if partial is not None else partial_diagnostics
+    manifest_payload = {
+        "schema_version": "charness.reviewer_attempt_manifest.v1",
+        "attempt_id": attempt,
+        "reusable": True,
+        "approval_eligible": approval_eligible,
+        "use_class": "approval" if approval_eligible else "diagnostic-retryable",
+        "packet_identity": (
+            report.get("packet_identity") if report is not None
+            else existing_manifest.get("packet_identity")
+            or (expected_identities or {}).get("packet_sha256")
+        ),
+        "reviewed_input_identity": (
+            report.get("reviewed_input_identity") if report is not None
+            else existing_manifest.get("reviewed_input_identity")
+            or (expected_identities or {}).get("reviewed_input_identity_sha256")
+        ),
+        "identity_binding": "worker-report-bound" if approval_eligible else "consumer-required",
+        "identity_check": binding,
+        "delivery_state": (
+            report.get("delivery_state") if report is not None
+            else existing_manifest.get("delivery_state", "unknown")
+        ),
+        "review_verdict": (
+            report.get("review_verdict") if report is not None
+            else existing_manifest.get("review_verdict")
+        ),
+        "reason": (
+            report.get("reason") if report is not None
+            else existing_manifest.get("reason", "worker report unavailable")
+        ),
+        "files": merged_files,
+        "logs": merged_logs,
+        "partial_result": retained_partial,
+        "partial_result_unavailable": partial_unavailable or prior_unavailable,
+        "recovery_validation": (
+            recovery_validation
+            if recovery_validation is not None
+            else existing_manifest.get("recovery_validation")
+        ),
+    }
+    STORAGE.write_json_atomically(manifest, manifest_payload)
+    promoted["attempt-manifest.json"] = _support().relative(root, manifest)
+    refresh_manifest_integrity(root, promoted["attempt-manifest.json"])
+    return promoted
+
+
+def load_and_promote_report(
+    root: Path, attempt: str, paths: dict[str, Path], context: dict[str, Any]
+) -> dict[str, Any] | None:
+    support = _support()
+    report_path = paths.get("report")
+    report = support.load_mapping(report_path) if report_path is not None else None
+    promoted = promote_attempt_metadata(
+        root,
+        attempt,
+        paths,
+        report,
+        expected_identities={
+            "packet_sha256": context.get("packet_sha256"),
+            "reviewed_input_identity_sha256": context.get("reviewed_input_identity_sha256"),
+            "parent_receipt_identity": context.get("parent_receipt_identity"),
+        },
+    )
+    context["paths"].update(promoted)
+    durable = promoted.get("worker-report.yaml")
+    if durable is not None:
+        cited = durable
+        context["paths"]["runtime_report"] = context["paths"]["report"]
+        context["paths"]["report"] = cited
+        context["paths"]["durable_report"] = cited
+        partial_path = promoted.get("partial-result.json")
+        if partial_path is not None and isinstance(report, dict):
+            report = dict(report)
+            partial_file = root / partial_path
+            partial_bytes = partial_file.read_bytes()
+            report["partial_output"] = {
+                "schema_version": "charness.reviewer_partial_output/v1",
+                "kind": "bounded-review-result",
+                "path": partial_path,
+                "bytes": len(partial_bytes),
+                "sha256": hashlib.sha256(partial_bytes).hexdigest(),
+            }
+            report["partial_output_ok"] = True
+            report["partial_output_reason"] = (
+                "matching bounded-review JSON preserved from runner logs"
+            )
+        elif isinstance(report, dict) and (
+            report.get("delivery_state") != "findings-received"
+            or report.get("approval_eligible") is not True
+        ):
+            manifest = root / promoted["attempt-manifest.json"]
+            try:
+                manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                manifest_payload = {}
+            unavailable = manifest_payload.get("partial_result_unavailable")
+            if isinstance(unavailable, dict):
+                report = dict(report)
+                report["partial_output_ok"] = False
+                report["partial_output"] = unavailable
+                report["partial_output_reason"] = unavailable.get("reason")
+    return report

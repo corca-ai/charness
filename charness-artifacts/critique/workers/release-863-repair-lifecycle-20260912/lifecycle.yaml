@@ -1,0 +1,224 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: runner-completed
+execution_state: terminal
+lifecycle_state: terminal
+reviewer_started: true
+delivery_state: findings-received
+verdict_state: pass
+review_verdict: pass
+classification: unclassified
+approval_eligible: true
+output:
+  state: terminal
+  approval_eligible: true
+  schema_version: charness.reviewer_worker_report.v1
+  findings_identity: 5e43645580681529d982b0a755360e6a768d3f5882eecf5ede42d0c88b6f3756
+  partial_artifacts:
+  - schema_version: charness.reviewer_partial_output/v1
+    kind: bounded-review-result
+    path: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/partial-result.json
+    bytes: 3317
+    sha256: d10aa4e10a9e47ae3fc403352e14bbcac307dd8eff1dc89cf225284378ba1f04
+output_state: terminal
+failure_identity: c0326ac9f8d6cda80acc483a567521e7c91c7492aa9bb76785302f4899770d90
+next_move: consume the identity-bound delivered reviewer result
+runner_returncode: 0
+runner_status: runner-completed
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/release-863-repair-lifecycle-20260912-packet.json
+  schema: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/capability.json
+  prompt: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/review-prompt.md
+  plan: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/run-plan.json
+  ledger: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/delivery.json
+  output: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/result.json
+  receipt: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/receipt.json
+  report: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/worker-report.yaml
+  runner_stdout: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/runner.stdout
+  runner_stderr: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/runner.stderr
+  backend_stdout: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/backend.stdout
+  backend_stderr: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/backend.stderr
+  summary: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/lifecycle.yaml
+  semantic-input/0000-content.bin: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0000-content.bin
+  semantic-input/0001-content.bin: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0001-content.bin
+  semantic-input/0002-content.bin: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0002-content.bin
+  semantic-input/0003-content.bin: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0003-content.bin
+  semantic-input/0004-content.bin: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0004-content.bin
+  semantic-input/0005-content.bin: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0005-content.bin
+  semantic-input/0006-content.bin: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0006-content.bin
+  semantic-input/0007-content.bin: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0007-content.bin
+  semantic-input/0008-content.bin: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0008-content.bin
+  semantic-input/manifest.json: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/manifest.json
+  review-prompt.md: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/review-prompt.md
+  run-plan.json: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/run-plan.json
+  bounded-review-result.schema.json: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/bounded-review-result.schema.json
+  capability.json: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/capability.json
+  receipt.json: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/receipt.json
+  delivery.json: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/delivery.json
+  result.json: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/result.json
+  runner.stdout: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/runner.stdout
+  runner.stderr: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/runner.stderr
+  backend.stdout: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/backend.stdout
+  backend.stderr: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/backend.stderr
+  worker-report.yaml: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/worker-report.yaml
+  partial-result.json: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/partial-result.json
+  attempt-manifest.json: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/attempt-manifest.json
+  durable_report: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/worker-report.yaml
+identities:
+  attempt_id: release-863-repair-lifecycle-20260912
+  scope: 'Bounded follow-up of your retained lifecycle findings. Four red tests reproduced
+    the concrete failures; repaired paths plus consumers are bound here. 79 focused
+    tests and 20 release edge tests passed. Reassess only repaired findings and direct
+    regression risk; no new workflow implementation, whole-host isolation, #764 or
+    full quality requests. Approval is final-manifest commit after lifecycle and integrity
+    readback; lifecycle projection may be rewritten within the same identity-bound
+    attempt on retry. Classifier exposes the verified generated-commit boundary to
+    the authorization consumer. Parent retains historical non-claims.'
+  packet_identity: ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575
+  reviewed_input_identity: eec12df9d9d310c2767efc6022fab3f125d93033c68e9e14763a99fbb3f4b8cf
+  parent_receipt_identity: parent-6de53bd707be0e5068eba761dbaccf237e145c1d8167ef22
+  findings_identity: 5e43645580681529d982b0a755360e6a768d3f5882eecf5ede42d0c88b6f3756
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/release-863-repair-lifecycle-20260912-packet.json
+  packet_sha256: ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575
+  identity_sha256: eec12df9d9d310c2767efc6022fab3f125d93033c68e9e14763a99fbb3f4b8cf
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+timeout_seconds: 900
+scope: 'Bounded follow-up of your retained lifecycle findings. Four red tests reproduced
+  the concrete failures; repaired paths plus consumers are bound here. 79 focused
+  tests and 20 release edge tests passed. Reassess only repaired findings and direct
+  regression risk; no new workflow implementation, whole-host isolation, #764 or full
+  quality requests. Approval is final-manifest commit after lifecycle and integrity
+  readback; lifecycle projection may be rewritten within the same identity-bound attempt
+  on retry. Classifier exposes the verified generated-commit boundary to the authorization
+  consumer. Parent retains historical non-claims.'
+lens: lifecycle repaired consumer failure paths
+parent_receipt_identity: parent-6de53bd707be0e5068eba761dbaccf237e145c1d8167ef22
+semantic_input:
+  entries:
+  - path: scripts/runtime_scratch.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0000-content.bin
+    content_sha256: 23ad7c44cd37f993d7f69285660dbf2a31e567a672bed24e2a618d336b84babf
+    carrier_sha256: adfd26e4ce7b49b5ab33c767bc88fdfc9b47084e14a41f4299898ece5e1b7eb4
+    source: working-tree:scripts/runtime_scratch.py
+    size_bytes: 18775
+    prompt_encoding: utf-8
+  - path: skills/public/critique/scripts/run_review_carrier.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0001-content.bin
+    content_sha256: e40f52f526315c2414b2d15b4f43059f184d8f6ae8ba8e2fc2bd7e16926ffa74
+    carrier_sha256: 3d2bdfef615b0c3019c72694feb813ccfb8221fa366090aa5b22e44b4d4ed1f5
+    source: working-tree:skills/public/critique/scripts/run_review_carrier.py
+    size_bytes: 12771
+    prompt_encoding: utf-8
+  - path: skills/public/critique/scripts/run_review_execution.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0002-content.bin
+    content_sha256: 24159792124f694187381671dd9e2b8879af26d0426bc64e7c74e5fdf715d399
+    carrier_sha256: 214a7eee1ffb6c305518e7fdb0c85ddf958f43a0c63462c0a7ec1674e085f4a5
+    source: working-tree:skills/public/critique/scripts/run_review_execution.py
+    size_bytes: 15109
+    prompt_encoding: utf-8
+  - path: skills/public/critique/scripts/run_review_hold_out.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0003-content.bin
+    content_sha256: e1a59d702611954a5440a02e97448349980fe522c1142517da693904a9bd6ef5
+    carrier_sha256: caebb52096dab1458fdd37613e26aee4055ae73f3d2a34211610a75ec54b3075
+    source: working-tree:skills/public/critique/scripts/run_review_hold_out.py
+    size_bytes: 4370
+    prompt_encoding: utf-8
+  - path: skills/public/critique/scripts/run_review_promotion.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0004-content.bin
+    content_sha256: 27d9ae13ffa0af5e9096c9bb08d592dd5177e479d445245a514d2226c34a4446
+    carrier_sha256: bc8a0fc212a13981a876401bafae6a7b0f031a219513ea85f12a0207ebed25a8
+    source: working-tree:skills/public/critique/scripts/run_review_promotion.py
+    size_bytes: 17069
+    prompt_encoding: utf-8
+  - path: skills/public/critique/scripts/run_review_promotion_storage.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0005-content.bin
+    content_sha256: 8cacbc6ca5f41dc0642f4d96426a26ffce8013e728eaa411985651cab3674ed9
+    carrier_sha256: 3789c245311cff6681a81a3fa0f5d25003163179a89897db7c0faed909463bbe
+    source: working-tree:skills/public/critique/scripts/run_review_promotion_storage.py
+    size_bytes: 15602
+    prompt_encoding: utf-8
+  - path: skills/public/critique/scripts/run_review_recovery.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0006-content.bin
+    content_sha256: 7403195deb907c429ac0db1996705990e80d5d959ab0ef1f3ec3bdf033b02122
+    carrier_sha256: 847a70f6e76fc2079a956a56770154ece3398106ec71dcb0f48e53d968d12ea1
+    source: working-tree:skills/public/critique/scripts/run_review_recovery.py
+    size_bytes: 10409
+    prompt_encoding: utf-8
+  - path: skills/public/critique/scripts/run_review_recovery_inputs.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0007-content.bin
+    content_sha256: f6f2dd690353382f2334dab5dd1c04e8f6d39fa7bf3b6ad44af65961ba8a70d3
+    carrier_sha256: fa3cb52f4d9ecd782982b40ea9c095feb6afde40c07fa4654ad3bb86296bf443
+    source: working-tree:skills/public/critique/scripts/run_review_recovery_inputs.py
+    size_bytes: 13959
+    prompt_encoding: utf-8
+  - path: tests/test_run_review_declared_path_resolution.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/0008-content.bin
+    content_sha256: b12c57dd897e56d0385cacde452b32575c447d36af7844ac5a678426b0407f1d
+    carrier_sha256: aaa1d3c39b352cf3e8b71098875376f9d7eb5ca584b5b4d2a72611343dd86b46
+    source: working-tree:tests/test_run_review_declared_path_resolution.py
+    size_bytes: 22888
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/release-863-repair-lifecycle-20260912/semantic-input/manifest.json
+  size_bytes: 130952
+runner_output:
+  status: runner-completed
+  returncode: 0
+runner_stream:
+  consistent: true
+  reason: null
+  runner_stdout_sha256: 5e591ab875def6e3fadb5d1ad697f26cfea39ab70828e10fadd7d4769385ab3d
+  canonical_report_sha256: 5e591ab875def6e3fadb5d1ad697f26cfea39ab70828e10fadd7d4769385ab3d
+boundary_readback:
+  mode: read-only-worker
+  required: false
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity
+identity_check:
+  status: matched
+  matches: true
+  checks:
+    packet_identity:
+      expected: ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575
+      actual: ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575
+      matches: true
+      provenance: ff941d23eab058054fa10f359c2207516aaaafa6c4cc869ea29e6db62b966575
+    reviewed_input_identity:
+      expected: eec12df9d9d310c2767efc6022fab3f125d93033c68e9e14763a99fbb3f4b8cf
+      actual: eec12df9d9d310c2767efc6022fab3f125d93033c68e9e14763a99fbb3f4b8cf
+      matches: true
+      provenance: eec12df9d9d310c2767efc6022fab3f125d93033c68e9e14763a99fbb3f4b8cf
+    parent_receipt_identity:
+      expected: parent-6de53bd707be0e5068eba761dbaccf237e145c1d8167ef22
+      actual: parent-6de53bd707be0e5068eba761dbaccf237e145c1d8167ef22
+      matches: true
+      provenance: parent-6de53bd707be0e5068eba761dbaccf237e145c1d8167ef22
+  reason: null

@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-863-repair-operator-20260912",
+      "scope": "Bounded follow-up of your retained operator findings. Four red tests reproduced the concrete failures; repaired paths plus consumers are bound here. 79 focused tests and 20 release edge tests passed. Reassess only repaired findings and direct regression risk; no new workflow implementation, whole-host isolation, #764 or full quality requests. Approval is final-manifest commit after lifecycle and integrity readback; lifecycle projection may be rewritten within the same identity-bound attempt on retry. Classifier exposes the verified generated-commit boundary to the authorization consumer. Parent retains historical non-claims.",
+      "packet_identity": "0854e56836daec8ff5df94f77632c1328ef06ef5109d9a7c95703f49e0291cea",
+      "parent_receipt_identity": "parent-e7a5cea3eb319ef1e507af5d55b5e0a8f5cdf5ab40b7d804",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-12T08:48:31Z",
+      "history": [
+        {
+          "event_id": "24bda93179bd44d99b97b2d6e17e6578",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-12T08:47:53Z",
+          "attempt_id": "release-863-repair-operator-20260912",
+          "scope": "Bounded follow-up of your retained operator findings. Four red tests reproduced the concrete failures; repaired paths plus consumers are bound here. 79 focused tests and 20 release edge tests passed. Reassess only repaired findings and direct regression risk; no new workflow implementation, whole-host isolation, #764 or full quality requests. Approval is final-manifest commit after lifecycle and integrity readback; lifecycle projection may be rewritten within the same identity-bound attempt on retry. Classifier exposes the verified generated-commit boundary to the authorization consumer. Parent retains historical non-claims.",
+          "packet_identity": "0854e56836daec8ff5df94f77632c1328ef06ef5109d9a7c95703f49e0291cea",
+          "parent_receipt_identity": "parent-e7a5cea3eb319ef1e507af5d55b5e0a8f5cdf5ab40b7d804",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "cb540e16a6f14cf59a6401cad552ce26",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-12T08:47:53Z",
+          "attempt_id": "release-863-repair-operator-20260912",
+          "scope": "Bounded follow-up of your retained operator findings. Four red tests reproduced the concrete failures; repaired paths plus consumers are bound here. 79 focused tests and 20 release edge tests passed. Reassess only repaired findings and direct regression risk; no new workflow implementation, whole-host isolation, #764 or full quality requests. Approval is final-manifest commit after lifecycle and integrity readback; lifecycle projection may be rewritten within the same identity-bound attempt on retry. Classifier exposes the verified generated-commit boundary to the authorization consumer. Parent retains historical non-claims.",
+          "packet_identity": "0854e56836daec8ff5df94f77632c1328ef06ef5109d9a7c95703f49e0291cea",
+          "parent_receipt_identity": "parent-e7a5cea3eb319ef1e507af5d55b5e0a8f5cdf5ab40b7d804",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "699744b5518c4daea618fbe83289925b",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-12T08:48:31Z",
+          "attempt_id": "release-863-repair-operator-20260912",
+          "scope": "Bounded follow-up of your retained operator findings. Four red tests reproduced the concrete failures; repaired paths plus consumers are bound here. 79 focused tests and 20 release edge tests passed. Reassess only repaired findings and direct regression risk; no new workflow implementation, whole-host isolation, #764 or full quality requests. Approval is final-manifest commit after lifecycle and integrity readback; lifecycle projection may be rewritten within the same identity-bound attempt on retry. Classifier exposes the verified generated-commit boundary to the authorization consumer. Parent retains historical non-claims.",
+          "packet_identity": "0854e56836daec8ff5df94f77632c1328ef06ef5109d9a7c95703f49e0291cea",
+          "parent_receipt_identity": "parent-e7a5cea3eb319ef1e507af5d55b5e0a8f5cdf5ab40b7d804",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "4df7144428af44f2aaec2f986813612e9b59cc436721cfd58534049c3fc02ea5"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "28c436ccd78e8d1da2f2dd62be472b8791856fb98e5028db4687ecd5b9d5e159",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "3707cb6676103f35ed475cd93179c23d4ec89b3c43f73e16fe5e4c2724cfcb05",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-863-repair-operator-20260912/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-863-repair-operator-20260912/receipt.json",
+      "producer_run_id": "run-release-863-repair-operator-20260912",
+      "findings_identity": "4df7144428af44f2aaec2f986813612e9b59cc436721cfd58534049c3fc02ea5"
+    }
+  ]
+}

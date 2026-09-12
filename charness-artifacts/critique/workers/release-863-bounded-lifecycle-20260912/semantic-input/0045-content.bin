@@ -1,0 +1,482 @@
+"""How the critique runner spells a DECLARED reviewed path.
+
+Separate from the identity tests, which own what a path BINDS. This owns the step
+before: turning a manifest line into the name the packet declares. The two must
+agree, and they did not — the runner refused symlinks the identity had just been
+taught to bind, then renamed the ones it allowed.
+"""
+from __future__ import annotations
+
+import importlib.util
+import json
+import sys
+from pathlib import Path
+
+import pytest
+
+from tests.module_eviction import evict_module
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+def _support():
+    spec = importlib.util.spec_from_file_location(
+        "run_review_support", ROOT / "skills/public/critique/scripts/run_review_support.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _promotion():
+    if "run_review_support" not in sys.modules:
+        _support()
+    spec = importlib.util.spec_from_file_location(
+        "run_review_promotion", ROOT / "skills/public/critique/scripts/run_review_promotion.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _pointer_repo(tmp_path: Path) -> Path:
+    records = tmp_path / "charness-artifacts" / "quality"
+    records.mkdir(parents=True)
+    (records / "2026-08-30-record.md").write_text("# Record\n", encoding="utf-8")
+    (records / "latest.md").symlink_to("2026-08-30-record.md")
+    return tmp_path
+
+
+def test_a_declared_current_pointer_keeps_its_own_name(tmp_path: Path) -> None:
+    """`.resolve()` renamed the pointer to the record it points at.
+
+    The declared set then carried the target while the reviewed range carried the
+    pointer, so `changed-ref-path-mismatch` fired forever on any range that
+    touched a `latest.md` — which is every range that files a record.
+    """
+    support = _support()
+    root = _pointer_repo(tmp_path)
+
+    resolved = support.repo_path(
+        root, "charness-artifacts/quality/latest.md", label="reviewed path", allow_symlink=True
+    )
+
+    assert support.relative(root, resolved) == "charness-artifacts/quality/latest.md"
+
+
+def test_hold_out_hides_the_path_during_the_run_and_restores_it(tmp_path: Path) -> None:
+    support = _support()
+    target = tmp_path / "in-progress.md"
+    target.write_text("TODO\n", encoding="utf-8")
+    seen_inside: list[bool] = []
+
+    with support.hold_out(tmp_path, ["in-progress.md"]):
+        seen_inside.append(target.exists())
+
+    assert seen_inside == [False]
+    assert target.read_text(encoding="utf-8") == "TODO\n"
+
+
+def test_hold_out_refuses_a_missing_path(tmp_path: Path) -> None:
+    support = _support()
+    with pytest.raises(support.RunReviewError, match="hold-out path does not exist"):
+        with support.hold_out(tmp_path, ["gone.md"]):
+            pass
+
+
+def test_hold_out_restores_the_path_after_a_failed_run(tmp_path: Path) -> None:
+    support = _support()
+    target = tmp_path / "in-progress.md"
+    target.write_text("TODO\n", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="boom"):
+        with support.hold_out(tmp_path, ["in-progress.md"]):
+            raise RuntimeError("boom")
+
+    assert target.read_text(encoding="utf-8") == "TODO\n"
+
+
+def test_hold_out_retains_both_copies_when_the_worker_recreates_source(tmp_path: Path) -> None:
+    support = _support()
+    target = tmp_path / "in-progress.md"
+    target.write_text("original\n", encoding="utf-8")
+
+    with pytest.raises(support.RunReviewError, match="recreated a source path"):
+        with support.hold_out(tmp_path, ["in-progress.md"]):
+            target.write_text("replacement\n", encoding="utf-8")
+
+    assert target.read_text(encoding="utf-8") == "replacement\n"
+    from scripts.runtime_bootstrap import runtime_root
+
+    staged = list((runtime_root(tmp_path) / "scratch" / "critique-hold-out").glob("*/0-in-progress.md"))
+    assert len(staged) == 1
+    assert staged[0].read_text(encoding="utf-8") == "original\n"
+
+
+def test_new_run_owner_is_repo_relative_and_cleans_terminal_scratch(tmp_path: Path) -> None:
+    support = _support()
+    owner = support.new_run_owner(tmp_path, "attempt:with-colon")
+
+    assert owner.path.is_dir()
+    assert owner.path.is_relative_to(tmp_path / ".charness" / "scratch")
+    assert (owner.path / ".charness-owner.json").is_file()
+    owner.close(state="failed")
+
+    assert not owner.path.exists()
+
+
+def test_promote_worker_report_copies_the_combined_report_atomically(tmp_path: Path) -> None:
+    promotion = _promotion()
+    runtime = tmp_path / ".charness" / "reviewer-round-attempt-1"
+    runtime.mkdir(parents=True)
+    (runtime / "worker-report.yaml").write_text("schema_version: charness.reviewer_worker_report.v1\n", encoding="utf-8")
+    (runtime / "runner.stderr").write_text("noise\n", encoding="utf-8")
+
+    dest = promotion.promote_worker_report(tmp_path, "attempt-1", runtime / "worker-report.yaml")
+
+    assert dest == tmp_path / "charness-artifacts" / "critique" / "workers" / "attempt-1" / "worker-report.yaml"
+    assert dest.read_text(encoding="utf-8") == "schema_version: charness.reviewer_worker_report.v1\n"
+    assert not (dest.parent / "runner.stderr").exists()
+    assert promotion.promote_worker_report(tmp_path, "attempt-1", runtime / "missing.yaml") is None
+    with pytest.raises(ValueError, match="overwrite existing durable worker report"):
+        promotion.promote_worker_report(tmp_path, "attempt-1", runtime / "worker-report.yaml")
+
+
+def test_load_and_promote_report_rewrites_the_emitted_report_path(tmp_path: Path) -> None:
+    promotion = _promotion()
+    runtime = tmp_path / ".charness" / "reviewer-round-ok"
+    runtime.mkdir(parents=True)
+    report = runtime / "worker-report.yaml"
+    report.write_text("schema_version: v1\napproval_eligible: true\n", encoding="utf-8")
+    paths = {"report": report}
+    context = {"paths": {"report": ".charness/reviewer-round-ok/worker-report.yaml"}}
+
+    loaded = promotion.load_and_promote_report(tmp_path, "ok", paths, context)
+
+    assert loaded is not None and loaded["approval_eligible"] is True
+    cited = "charness-artifacts/critique/workers/ok/worker-report.yaml"
+    assert context["paths"]["report"] == cited
+    assert context["paths"]["durable_report"] == cited
+    assert context["paths"]["runtime_report"] == ".charness/reviewer-round-ok/worker-report.yaml"
+
+
+def test_load_and_promote_report_retains_a_non_approval_report_for_retry(tmp_path: Path) -> None:
+    promotion = _promotion()
+    runtime = tmp_path / ".charness" / "reviewer-round-no"
+    runtime.mkdir(parents=True)
+    report = runtime / "worker-report.yaml"
+    report.write_text("schema_version: v1\napproval_eligible: false\n", encoding="utf-8")
+    context = {"paths": {"report": ".charness/reviewer-round-no/worker-report.yaml"}}
+
+    promotion.load_and_promote_report(tmp_path, "no", {"report": report}, context)
+
+    assert context["paths"]["report"] == "charness-artifacts/critique/workers/no/worker-report.yaml"
+    assert context["paths"]["durable_report"] == "charness-artifacts/critique/workers/no/worker-report.yaml"
+    manifest = tmp_path / "charness-artifacts" / "critique" / "workers" / "no" / "attempt-manifest.json"
+    assert json.loads(manifest.read_text(encoding="utf-8"))["use_class"] == "diagnostic-retryable"
+    assert json.loads(manifest.read_text(encoding="utf-8"))["reusable"] is True
+
+
+def test_report_only_promotion_cannot_advertise_approval_without_final_carrier(tmp_path: Path) -> None:
+    promotion = _promotion()
+    runtime = tmp_path / ".charness" / "reviewer-round-report-only"
+    runtime.mkdir(parents=True)
+    report = runtime / "worker-report.yaml"
+    report.write_text(
+        "schema_version: charness.reviewer_worker_report.v1\n"
+        "delivery_state: findings-received\nreview_verdict: pass\n"
+        "approval_eligible: true\npacket_identity: packet-a\n"
+        "reviewed_input_identity: input-a\nparent_receipt_identity: parent-a\n",
+        encoding="utf-8",
+    )
+    context = {
+        "paths": {"report": ".charness/reviewer-round-report-only/worker-report.yaml"},
+        "packet_sha256": "packet-a",
+        "reviewed_input_identity_sha256": "input-a",
+        "parent_receipt_identity": "parent-a",
+    }
+
+    promotion.load_and_promote_report(tmp_path, "report-only", {"report": report}, context)
+
+    manifest = tmp_path / "charness-artifacts" / "critique" / "workers" / "report-only" / "attempt-manifest.json"
+    saved = json.loads(manifest.read_text(encoding="utf-8"))
+    assert saved["approval_eligible"] is False
+    assert saved["use_class"] == "diagnostic-retryable"
+
+
+def test_load_and_promote_report_keeps_matching_partial_review_json(tmp_path: Path) -> None:
+    promotion = _promotion()
+    runtime = tmp_path / ".charness" / "reviewer-round-partial"
+    runtime.mkdir(parents=True)
+    packet = "a" * 64
+    reviewed = "b" * 64
+    report = runtime / "worker-report.yaml"
+    report.write_text(
+        f"delivery_state: timed-out\npacket_identity: {packet}\n"
+        f"reviewed_input_identity: {reviewed}\napproval_eligible: false\n",
+        encoding="utf-8",
+    )
+    (runtime / "runner.stderr").write_text(
+        json.dumps(
+            {
+                "kind": "charness.bounded_review.v1",
+                "lens": "causal",
+                "packet_sha256": packet,
+                "reviewed_input_identity_sha256": reviewed,
+                "verdict": "defer",
+                "findings": [],
+                "counterweight_triage": [],
+                "next_move": "retry",
+                "non_claims": ["not approval"],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    context = {"paths": {"report": ".charness/reviewer-round-partial/worker-report.yaml"}}
+
+    loaded = promotion.load_and_promote_report(
+        tmp_path,
+        "partial",
+        {"report": report, "runner_stderr": runtime / "runner.stderr"},
+        context,
+    )
+
+    assert loaded is not None
+    assert loaded["partial_output_ok"] is True
+    partial = tmp_path / "charness-artifacts" / "critique" / "workers" / "partial" / "partial-result.json"
+    assert json.loads(partial.read_text(encoding="utf-8"))["verdict"] == "defer"
+    manifest = json.loads(
+        (partial.parent / "attempt-manifest.json").read_text(encoding="utf-8")
+    )
+    assert manifest["partial_result"]["approval_eligible"] is False
+    assert manifest["partial_result"]["validation"] == "model-shaped"
+    assert manifest["packet_identity"] == packet
+    assert manifest["reviewed_input_identity"] == reviewed
+    durable_log = partial.parent / "runner.stderr"
+    assert durable_log.is_file()
+    assert manifest["logs"]["runner.stderr"]["path"].endswith("/runner.stderr")
+
+
+def test_failed_carrier_without_report_keeps_logs_but_not_unbound_review_json(
+    tmp_path: Path,
+) -> None:
+    promotion = _promotion()
+    runtime = tmp_path / ".charness" / "reviewer-round-no-report"
+    runtime.mkdir(parents=True)
+    (runtime / "runner.stderr").write_text(
+        '{"kind":"charness.bounded_review.v1","verdict":"pass"}\n',
+        encoding="utf-8",
+    )
+    context = {"paths": {"report": ".charness/reviewer-round-no-report/worker-report.yaml"}}
+
+    loaded = promotion.load_and_promote_report(
+        tmp_path,
+        "no-report",
+        {"report": runtime / "worker-report.yaml", "runner_stderr": runtime / "runner.stderr"},
+        context,
+    )
+
+    assert loaded is None
+    durable = tmp_path / "charness-artifacts" / "critique" / "workers" / "no-report"
+    manifest = json.loads((durable / "attempt-manifest.json").read_text(encoding="utf-8"))
+    assert manifest["approval_eligible"] is False
+    assert manifest["use_class"] == "diagnostic-retryable"
+    assert manifest["partial_result"] is None
+    assert (durable / "runner.stderr").is_file()
+
+
+def test_partial_review_is_retained_when_the_canonical_report_is_missing(tmp_path: Path) -> None:
+    promotion = _promotion()
+    runtime = tmp_path / ".charness" / "reviewer-round-missing-report"
+    runtime.mkdir(parents=True)
+    packet = "q" * 64
+    reviewed = "r" * 64
+    result = {
+        "kind": "charness.bounded_review.v1",
+        "lens": "missing-report",
+        "packet_sha256": packet,
+        "reviewed_input_identity_sha256": reviewed,
+        "verdict": "defer",
+        "findings": [],
+        "counterweight_triage": [],
+        "next_move": "retry",
+        "non_claims": ["not approval"],
+    }
+    (runtime / "runner.stderr").write_text(json.dumps(result) + "\n", encoding="utf-8")
+    context = {
+        "paths": {"report": ".charness/reviewer-round-missing-report/worker-report.yaml"},
+        "packet_sha256": packet,
+        "reviewed_input_identity_sha256": reviewed,
+        "parent_receipt_identity": "parent-missing-report",
+    }
+
+    loaded = promotion.load_and_promote_report(
+        tmp_path,
+        "missing-report",
+        {"report": runtime / "worker-report.yaml", "runner_stderr": runtime / "runner.stderr"},
+        context,
+    )
+
+    assert loaded is None
+    durable = tmp_path / "charness-artifacts" / "critique" / "workers" / "missing-report"
+    partial = json.loads((durable / "partial-result.json").read_text(encoding="utf-8"))
+    assert partial["packet_sha256"] == packet
+    manifest = json.loads((durable / "attempt-manifest.json").read_text(encoding="utf-8"))
+    assert manifest["packet_identity"] == packet
+    assert manifest["reviewed_input_identity"] == reviewed
+    assert manifest["partial_result"]["approval_eligible"] is False
+    assert manifest["partial_result"]["validation"] == "model-shaped"
+
+
+def test_partial_review_extractor_keeps_late_pretty_printed_identity_match(tmp_path: Path) -> None:
+    promotion = _promotion()
+    runtime = tmp_path / ".charness" / "reviewer-round-late"
+    runtime.mkdir(parents=True)
+    packet = "p" * 64
+    reviewed = "i" * 64
+    report = runtime / "worker-report.yaml"
+    report.write_text(
+        f"delivery_state: timed-out\npacket_identity: {packet}\n"
+        f"reviewed_input_identity: {reviewed}\nparent_receipt_identity: parent-1\n"
+        "approval_eligible: false\n",
+        encoding="utf-8",
+    )
+    result = {
+        "kind": "charness.bounded_review.v1",
+        "lens": "late",
+        "packet_sha256": packet,
+        "reviewed_input_identity_sha256": reviewed,
+        "verdict": "defer",
+        "findings": [],
+        "counterweight_triage": [],
+        "next_move": "retry",
+        "non_claims": ["not approval"],
+        "capability_non_claims": [],
+        "capability_non_claims_sha256": "d" * 64,
+    }
+    (runtime / "runner.stderr").write_text(
+        "x" * (9 * 1024 * 1024) + "\n" + json.dumps(result, indent=2),
+        encoding="utf-8",
+    )
+
+    context = {
+        "paths": {"report": ".charness/reviewer-round-late/worker-report.yaml"},
+        "packet_sha256": packet,
+        "reviewed_input_identity_sha256": reviewed,
+        "parent_receipt_identity": "parent-1",
+    }
+    loaded = promotion.load_and_promote_report(
+        tmp_path,
+        "late",
+        {"report": report, "runner_stderr": runtime / "runner.stderr"},
+        context,
+    )
+
+    assert loaded is not None and loaded["partial_output_ok"] is True
+    partial = (
+        tmp_path
+        / "charness-artifacts"
+        / "critique"
+        / "workers"
+        / "late"
+        / "partial-result.json"
+    )
+    assert json.loads(partial.read_text(encoding="utf-8"))["next_move"] == "retry"
+
+
+def test_promotion_never_approves_a_report_bound_to_foreign_run_plan(tmp_path: Path) -> None:
+    promotion = _promotion()
+    runtime = tmp_path / ".charness" / "reviewer-round-foreign"
+    runtime.mkdir(parents=True)
+    report = runtime / "worker-report.yaml"
+    report.write_text(
+        "delivery_state: findings-received\nreview_verdict: pass\napproval_eligible: true\n"
+        "packet_identity: packet-a\nreviewed_input_identity: input-a\nparent_receipt_identity: parent-a\n",
+        encoding="utf-8",
+    )
+    context = {
+        "paths": {"report": ".charness/reviewer-round-foreign/worker-report.yaml"},
+        "packet_sha256": "packet-b",
+        "reviewed_input_identity_sha256": "input-a",
+        "parent_receipt_identity": "parent-a",
+    }
+
+    promotion.load_and_promote_report(tmp_path, "foreign", {"report": report}, context)
+    manifest = json.loads(
+        (
+            tmp_path
+            / "charness-artifacts"
+            / "critique"
+            / "workers"
+            / "foreign"
+            / "attempt-manifest.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert manifest["approval_eligible"] is False
+    assert manifest["identity_binding"] == "consumer-required"
+    assert manifest["identity_check"]["status"] == "mismatch"
+
+
+def test_promote_worker_report_refuses_a_destination_outside_the_repo(tmp_path: Path) -> None:
+    promotion = _promotion()
+    runtime = tmp_path / "worker-report.yaml"
+    runtime.write_text("schema_version: v1\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="escaped repository root"):
+        promotion.promote_worker_report(tmp_path, "/tmp/outside-attempt", runtime)
+
+
+def test_promotion_reuses_an_already_loaded_support_module() -> None:
+    promotion = _promotion()
+    first = promotion._support()
+    second = promotion._support()
+    assert first is second
+
+
+def test_promotion_refuses_when_support_cannot_load(monkeypatch: pytest.MonkeyPatch) -> None:
+    promotion = _promotion()
+    monkeypatch.setattr(promotion.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
+    evict_module(monkeypatch, "charness_run_review_support")
+    evict_module(monkeypatch, "run_review_support")
+
+    with pytest.raises(RuntimeError, match="cannot load run_review_support"):
+        promotion._support()
+
+
+def test_a_file_the_runner_opens_still_refuses_a_symlink(tmp_path: Path) -> None:
+    """The discriminator: `allow_symlink` must not leak to the read paths.
+
+    A packet or manifest behind a link could be swapped underneath the runner, so
+    that refusal is correct where it applies and must survive this change.
+    """
+    support = _support()
+    root = _pointer_repo(tmp_path)
+
+    with pytest.raises(support.RunReviewError, match="must not be a symlink"):
+        support.repo_path(root, "charness-artifacts/quality/latest.md", label="packet-file")
+
+
+def test_an_ordinary_path_is_unaffected(tmp_path: Path) -> None:
+    support = _support()
+    root = _pointer_repo(tmp_path)
+
+    resolved = support.repo_path(
+        root, "charness-artifacts/quality/2026-08-30-record.md", label="reviewed path"
+    )
+
+    assert support.relative(root, resolved) == "charness-artifacts/quality/2026-08-30-record.md"
+
+
+def test_a_symlink_escaping_the_repo_root_is_still_refused(tmp_path: Path) -> None:
+    """Allowing symlinks must not open the boundary `.resolve()` was guarding."""
+    support = _support()
+    root = tmp_path / "repo"
+    root.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "secret.md").write_text("secret\n", encoding="utf-8")
+    (root / "escape.md").symlink_to(outside / "secret.md")
+
+    with pytest.raises(support.RunReviewError, match="resolves outside"):
+        support.repo_path(root, "escape.md", label="reviewed path", allow_symlink=True)

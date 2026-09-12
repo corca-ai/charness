@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-863-bounded-lifecycle-20260912",
+      "scope": "Review the current v8.6.3 patch repairs and explicitly reassess the included prior lifecycle-final result findings as historical evidence, never inherited approval. Release workflow experiment retired because no production consumers; whole workflow acceptance remains unproven. Success: safe failure recovery and honest claims. Out of scope: #764 scheduled proof and new workflow implementation. Parent owns full quality and public readback. Require concrete changed-consumer counterexamples before blockers; do not expand into hypothetical redesign.",
+      "packet_identity": "991dccac7153dd7d9002608a3a786f774d29eaa2bbe2eb38750efc0b61f71087",
+      "parent_receipt_identity": "parent-8d7a12f2338c27130d0a47d98864eaba6f7bcfb0262537a7",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-12T08:41:54Z",
+      "history": [
+        {
+          "event_id": "2e0b7537fb0e4eb89f0e0ec84afa37ea",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-12T08:40:54Z",
+          "attempt_id": "release-863-bounded-lifecycle-20260912",
+          "scope": "Review the current v8.6.3 patch repairs and explicitly reassess the included prior lifecycle-final result findings as historical evidence, never inherited approval. Release workflow experiment retired because no production consumers; whole workflow acceptance remains unproven. Success: safe failure recovery and honest claims. Out of scope: #764 scheduled proof and new workflow implementation. Parent owns full quality and public readback. Require concrete changed-consumer counterexamples before blockers; do not expand into hypothetical redesign.",
+          "packet_identity": "991dccac7153dd7d9002608a3a786f774d29eaa2bbe2eb38750efc0b61f71087",
+          "parent_receipt_identity": "parent-8d7a12f2338c27130d0a47d98864eaba6f7bcfb0262537a7",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "49483116812d463d9c600aececbe8b1a",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-12T08:40:54Z",
+          "attempt_id": "release-863-bounded-lifecycle-20260912",
+          "scope": "Review the current v8.6.3 patch repairs and explicitly reassess the included prior lifecycle-final result findings as historical evidence, never inherited approval. Release workflow experiment retired because no production consumers; whole workflow acceptance remains unproven. Success: safe failure recovery and honest claims. Out of scope: #764 scheduled proof and new workflow implementation. Parent owns full quality and public readback. Require concrete changed-consumer counterexamples before blockers; do not expand into hypothetical redesign.",
+          "packet_identity": "991dccac7153dd7d9002608a3a786f774d29eaa2bbe2eb38750efc0b61f71087",
+          "parent_receipt_identity": "parent-8d7a12f2338c27130d0a47d98864eaba6f7bcfb0262537a7",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "bd3d02bd6349401892eb8195e62d3810",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-12T08:41:54Z",
+          "attempt_id": "release-863-bounded-lifecycle-20260912",
+          "scope": "Review the current v8.6.3 patch repairs and explicitly reassess the included prior lifecycle-final result findings as historical evidence, never inherited approval. Release workflow experiment retired because no production consumers; whole workflow acceptance remains unproven. Success: safe failure recovery and honest claims. Out of scope: #764 scheduled proof and new workflow implementation. Parent owns full quality and public readback. Require concrete changed-consumer counterexamples before blockers; do not expand into hypothetical redesign.",
+          "packet_identity": "991dccac7153dd7d9002608a3a786f774d29eaa2bbe2eb38750efc0b61f71087",
+          "parent_receipt_identity": "parent-8d7a12f2338c27130d0a47d98864eaba6f7bcfb0262537a7",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "e5036ce11b048e1c5de7fa25b117ba8034de758ae0fcea421b868725747feee6"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "7edfcaefcf2a3842d8056e92c8e11558bb954953eba2ba8c9181a9fd0eff0d7b",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "3815f3ed70c5316c5f973f49536897393ae6352dd103a9ed4cd4cb95c3f2780b",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-863-bounded-lifecycle-20260912/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-863-bounded-lifecycle-20260912/receipt.json",
+      "producer_run_id": "run-release-863-bounded-lifecycle-20260912",
+      "findings_identity": "e5036ce11b048e1c5de7fa25b117ba8034de758ae0fcea421b868725747feee6"
+    }
+  ]
+}

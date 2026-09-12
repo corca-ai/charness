@@ -1,0 +1,58 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "operator repaired consumer failure paths",
+  "packet_sha256": "0854e56836daec8ff5df94f77632c1328ef06ef5109d9a7c95703f49e0291cea",
+  "reviewed_input_identity_sha256": "28c436ccd78e8d1da2f2dd62be472b8791856fb98e5028db4687ecd5b9d5e159",
+  "verdict": "block",
+  "target_observations": [
+    {
+      "target": "v8.6.3",
+      "verdict": "block",
+      "summary": "The generated ancestry repair handles remote C, but excludes a reachable remote R boundary.",
+      "evidence": [
+        "The classifier now exposes claims_parent_boundary and claims_grandparent_boundary, and authorization consumes them while retaining R as claims_evidence_commit.",
+        "The new regression passes classifier output through assert_resumable with remote C for the carrier and remote carrier for the final commit.",
+        "The publication consumer can leave the remote at R after creating C; carrier authorization now permits only C or the carrier HEAD."
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "REC-001",
+      "severity": "blocker",
+      "summary": "Claims-carrier recovery still refuses when the publication consumer leaves the remote at R.",
+      "evidence": [
+        "publish_release_resume_publish.py::_resume_publish_impl calls commit_artifact_before_push, allowing P -> R -> C, then computes branch_needed by comparing remote_branch_sha against claims_evidence_commit R rather than the resulting HEAD C.",
+        "When the remote already equals R, branch_needed is false. The consumer can push only a missing tag or skip pushes, then create the release while C remains local.",
+        "If closeout leaves a local carrier before its push succeeds, classification recognizes P -> R -> C -> carrier, but _assert_post_publication_resumable sets expected_parent to C and rejects remote R because it permits only expected_parent or head_sha.",
+        "The added test sets remote_branch_sha to C; it does not exercise this reachable R boundary or pass it through closeout recovery."
+      ],
+      "action": "Preserve recovery from the verified R boundary when generated C remains local, or ensure publication reconciles C before creating the release. Add a regression spanning artifact creation, branch-push selection, classification, authorization, and closeout recovery with remote initially at R."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The original immediate-parent mismatch",
+      "bin": "resolved",
+      "disposition": "The classifier-provided boundary now reaches authorization for both claims carrier and final phases."
+    },
+    {
+      "concern": "Remote R might be unrelated advancement",
+      "bin": "blocker",
+      "disposition": "R is the identity-bound claims evidence and is explicitly reachable through the supplied publication consumer's branch_needed calculation."
+    },
+    {
+      "concern": "Broader workflow and release acceptance",
+      "bin": "out-of-scope",
+      "disposition": "No additional workflow implementation, whole-host isolation, #764, or full quality request."
+    }
+  ],
+  "next_move": "Repair and verify the remote-R consumer case, then repeat the bounded review before final-manifest approval.",
+  "non_claims": [
+    "Reviewed only the seven supplied semantic inputs; no workspace inspection, edits, test execution, or live publication readback.",
+    "Reported passing test counts were not independently executed.",
+    "No lifecycle or integrity readback, final-manifest commit, or release approval is claimed.",
+    "Historical non-claims remain with the parent; whole release-workflow acceptance remains unproven.",
+    "Goal lineage is not-goal-bound; no Goal Run completion is claimed."
+  ]
+}

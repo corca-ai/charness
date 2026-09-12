@@ -1,0 +1,37 @@
+{
+  "schema_version": "charness.debug.reproduction.v1",
+  "subject": "release-workflow-dogfood-blocked",
+  "stimulus": "pytest -q tests/quality_gates/test_release_workflow_dogfood.py",
+  "observed": {
+    "pytest_result": "1 failed, 4 passed",
+    "final_status": "blocked-unproven",
+    "failed_acceptance": "durable-release-run-resume",
+    "creation_recovery": {
+      "owner_returncode": 1,
+      "owner_reached_creation_boundary": false,
+      "creating_binding_observed": false,
+      "receipt_missing_before_resume": false,
+      "resume_returncode": 1,
+      "resume_calls": []
+    },
+    "lock_timeout": {
+      "status": "blocked-unproven",
+      "resume_command_readback_executed": true,
+      "bounded": false
+    },
+    "other_durable_controls": {
+      "concurrent_creation": "passed",
+      "terminal_closed_readback": "passed",
+      "retry_history_preserved": "passed"
+    }
+  },
+  "initial_hypothesis": "The owner-death control loads the generated plugin mirror, which may not contain the newly changed shared runner contract; the source and mirror must be compared before changing behavior.",
+  "disconfirmer": "Synchronize the generated plugin mirror, rerun the focused dogfood, and inspect the child return code and acceptance evidence.",
+  "follow_up_observation": {
+    "mirror_parity": "confirmed after sync",
+    "second_failure_pattern": "receipt_missing_before_resume was measured after resume, so a precondition was overwritten by the action under test",
+    "repair": "capture explicit before_resume and after_resume snapshots before invoking the resume command",
+    "verification": "pytest -q tests/quality_gates/test_release_workflow_dogfood.py: 5 passed"
+  },
+  "source": "tests/quality_gates/test_release_workflow_dogfood.py"
+}

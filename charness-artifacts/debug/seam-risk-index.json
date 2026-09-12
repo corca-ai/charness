@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 194,
-  "indexed_artifact_count": 179,
+  "source_artifact_count": 195,
+  "indexed_artifact_count": 180,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 8,
     "none": 79,
     "operator-visible-recovery": 23,
-    "repeated-symptom": 22
+    "repeated-symptom": 23
   },
   "generalization_pressure_counts": {
     "factor-now": 25,
-    "monitor": 125,
+    "monitor": 126,
     "none": 29
   },
   "entries": [
@@ -2523,6 +2523,20 @@
       "critique_required": true,
       "next_step": "spec",
       "handoff_artifact": "charness-artifacts/spec/2026-09-08-resolved-debug-risk.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-09-12-release-workflow-dogfood-blocked.md",
+      "is_current_pointer": false,
+      "interrupt_id": "release-workflow-dogfood-blocked",
+      "risk_classes": [
+        "repeated-symptom"
+      ],
+      "seam": "shared source runner to generated plugin consumer",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-09-12-release-consumer-acceptance.md",
       "forced": true
     },
     {

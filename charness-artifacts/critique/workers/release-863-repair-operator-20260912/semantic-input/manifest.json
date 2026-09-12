@@ -1,0 +1,75 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "charness-artifacts/debug/2026-09-12-release-workflow-dogfood-blocked.md",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0000-content.bin",
+      "content_sha256": "ed02a75f3e92b5170b1dd85f6309f11b66119129a93d2982618a4725018eaa2d",
+      "carrier_sha256": "32577d78160ca7e87ea76b29757a8800dde71ea985a9f99c983bd3ecfdd7673b",
+      "source": "working-tree:charness-artifacts/debug/2026-09-12-release-workflow-dogfood-blocked.md",
+      "size_bytes": 7775,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/public/release/scripts/publish_release_resume.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0001-content.bin",
+      "content_sha256": "4d99d53376a7dde807309e9be496d2590295cde7bc04d6534290fc46298320df",
+      "carrier_sha256": "d51be28c651837ad3220eaf2e037783b709824a76cbfef9accea58f3c343a84a",
+      "source": "working-tree:skills/public/release/scripts/publish_release_resume.py",
+      "size_bytes": 16005,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/public/release/scripts/publish_release_resume_closeout.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0002-content.bin",
+      "content_sha256": "95b3c16bd93774a33930d292908a9459743af7c42e045c9e43f226e05f37475e",
+      "carrier_sha256": "b8560378071d8dbf99260d6f77c56a2dbe5a9917b27ecbcf39417f752309234b",
+      "source": "working-tree:skills/public/release/scripts/publish_release_resume_closeout.py",
+      "size_bytes": 13501,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/public/release/scripts/publish_release_resume_publish.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0003-content.bin",
+      "content_sha256": "9b4e47ad19e17550ad06725d7608c68867f0ac0eebcbe845af5e774468642c60",
+      "carrier_sha256": "5223744749b5dc1b88d34bb39512677f486ef989da08ec8a842a879cc9c80d49",
+      "source": "working-tree:skills/public/release/scripts/publish_release_resume_publish.py",
+      "size_bytes": 19924,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/public/release/scripts/publish_release_resume_state.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0004-content.bin",
+      "content_sha256": "6f08b37dc6c6437898a86500f39f5e8abeb82949b10766afb75137d083aaf37c",
+      "carrier_sha256": "852340f5479c74ce6b2a2486e035075d2cb3d028717849bd2fc93d115a0507da",
+      "source": "working-tree:skills/public/release/scripts/publish_release_resume_state.py",
+      "size_bytes": 16150,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/quality_gates/test_release_resume_edge_coverage.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0005-content.bin",
+      "content_sha256": "7c178d1d03406d2b6d13f76a7e3532d293f11459d647b96048c41db9a44594ae",
+      "carrier_sha256": "7f9f2bfe14dbfcc2a1eb571f35a1fd1ebbc3c8037a586de23efa81b1d3d5a914",
+      "source": "working-tree:tests/quality_gates/test_release_resume_edge_coverage.py",
+      "size_bytes": 32204,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/quality_gates/test_release_resume_state_validation.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-863-repair-operator-20260912/semantic-input/0006-content.bin",
+      "content_sha256": "9cea80c50b60e99de5364889020b29ec437e64197a4e233f523c26d9ec7844a6",
+      "carrier_sha256": "bfbfae0bb7d8de837cecda1f2a42b784095032b49769682ae4ccec0ed6d6285b",
+      "source": "working-tree:tests/quality_gates/test_release_resume_state_validation.py",
+      "size_bytes": 6634,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

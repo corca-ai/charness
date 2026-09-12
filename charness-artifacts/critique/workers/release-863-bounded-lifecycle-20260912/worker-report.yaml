@@ -1,0 +1,79 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Review the current v8.6.3 patch repairs and explicitly reassess the included
+  prior lifecycle-final result findings as historical evidence, never inherited approval.
+  Release workflow experiment retired because no production consumers; whole workflow
+  acceptance remains unproven. Success: safe failure recovery and honest claims. Out
+  of scope: #764 scheduled proof and new workflow implementation. Parent owns full
+  quality and public readback. Require concrete changed-consumer counterexamples before
+  blockers; do not expand into hypothetical redesign.'
+attempt_id: release-863-bounded-lifecycle-20260912
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 3815f3ed70c5316c5f973f49536897393ae6352dd103a9ed4cd4cb95c3f2780b
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release-863-bounded-lifecycle-20260912/receipt.json
+ledger_path: charness-artifacts/critique/workers/release-863-bounded-lifecycle-20260912/delivery.json
+producer_run_id: run-release-863-bounded-lifecycle-20260912
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release-863-bounded-lifecycle-20260912/result.json
+  receipt_file: charness-artifacts/critique/workers/release-863-bounded-lifecycle-20260912/receipt.json
+  producer_run_id: run-release-863-bounded-lifecycle-20260912
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: e5036ce11b048e1c5de7fa25b117ba8034de758ae0fcea421b868725747feee6
+receipt_output_sha256: e5036ce11b048e1c5de7fa25b117ba8034de758ae0fcea421b868725747feee6
+packet_identity: 991dccac7153dd7d9002608a3a786f774d29eaa2bbe2eb38750efc0b61f71087
+reviewed_input_identity: 7edfcaefcf2a3842d8056e92c8e11558bb954953eba2ba8c9181a9fd0eff0d7b
+parent_receipt_identity: parent-8d7a12f2338c27130d0a47d98864eaba6f7bcfb0262537a7
+provenance:
+  scope: 'Review the current v8.6.3 patch repairs and explicitly reassess the included
+    prior lifecycle-final result findings as historical evidence, never inherited
+    approval. Release workflow experiment retired because no production consumers;
+    whole workflow acceptance remains unproven. Success: safe failure recovery and
+    honest claims. Out of scope: #764 scheduled proof and new workflow implementation.
+    Parent owns full quality and public readback. Require concrete changed-consumer
+    counterexamples before blockers; do not expand into hypothetical redesign.'
+  packet_identity: 991dccac7153dd7d9002608a3a786f774d29eaa2bbe2eb38750efc0b61f71087
+  reviewed_input_identity: 7edfcaefcf2a3842d8056e92c8e11558bb954953eba2ba8c9181a9fd0eff0d7b
+  parent_receipt_identity: parent-8d7a12f2338c27130d0a47d98864eaba6f7bcfb0262537a7
+  attempt_id: release-863-bounded-lifecycle-20260912
+  attempt_scope: 'Review the current v8.6.3 patch repairs and explicitly reassess
+    the included prior lifecycle-final result findings as historical evidence, never
+    inherited approval. Release workflow experiment retired because no production
+    consumers; whole workflow acceptance remains unproven. Success: safe failure recovery
+    and honest claims. Out of scope: #764 scheduled proof and new workflow implementation.
+    Parent owns full quality and public readback. Require concrete changed-consumer
+    counterexamples before blockers; do not expand into hypothetical redesign.'
+  attempt_packet_identity: 991dccac7153dd7d9002608a3a786f774d29eaa2bbe2eb38750efc0b61f71087
+  attempt_parent_receipt_identity: parent-8d7a12f2338c27130d0a47d98864eaba6f7bcfb0262537a7
+  result_packet_identity: 991dccac7153dd7d9002608a3a786f774d29eaa2bbe2eb38750efc0b61f71087
+  result_reviewed_input_identity: 7edfcaefcf2a3842d8056e92c8e11558bb954953eba2ba8c9181a9fd0eff0d7b
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 3815f3ed70c5316c5f973f49536897393ae6352dd103a9ed4cd4cb95c3f2780b
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes
