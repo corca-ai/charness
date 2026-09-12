@@ -1,7 +1,6 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
-import { randomUUID } from "node:crypto";
 import process from "node:process";
 
 import { EVALUATION_OBSERVED_SCHEMA } from "./contract-versions.mjs";
@@ -87,7 +86,7 @@ function claudeRuntime(options) {
 		: temporaryOwnedRuntimeHome(options, "claude-eval", process.env);
 	const ownedScratchRoot = process.env.CHARNESS_OWNED_SCRATCH_ROOT ?? temporary.path;
 	const home = process.env.CHARNESS_OWNED_SCRATCH_ROOT
-		? join(process.env.CHARNESS_OWNED_SCRATCH_ROOT, `claude-eval-home-${randomUUID()}`)
+		? join(process.env.CHARNESS_OWNED_SCRATCH_ROOT, "claude-eval-home")
 		: temporary.path;
 	mkdirSync(home, { recursive: true });
 	const env = {

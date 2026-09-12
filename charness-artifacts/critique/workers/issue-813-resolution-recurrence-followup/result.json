@@ -1,0 +1,51 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Assess the resolution and recurrence protection for each target, with an evidence-backed behavioral verdict. Pass only when the repair is supported; block or defer when it is not. Diagnosis alone is insufficient. Additional caller focus: Re-review the whole repaired surface after blocker findings. Confirm test-compatibility-only is now mechanically bounded, all seven producer migrations and standing gate wiring are present, and identify only remaining code blockers.",
+  "packet_sha256": "2d81e0bcdbf5bbea70c6b9ef0e8c76d18d44aa709a02e9c4ea979a0d0dd409ae",
+  "reviewed_input_identity_sha256": "599faf40a83a709169447e4c53d9e9fa013a4304fa92c1211843f56ac3c80387",
+  "verdict": "pass",
+  "target_observations": [
+    {
+      "target": "corca-ai/charness#813",
+      "verdict": "pass",
+      "summary": "The repaired surface provides receipt-bound ownership for all seven identified directory producers, mechanically restricts the test-compatibility-only exemption, and installs the inventory check as a standing quality gate. No remaining code blocker is evident in the bound input.",
+      "evidence": [
+        "The seven migrated producer identities are represented by the Claude evaluator home plus owned child directories in check-links-internal, check-markdown, check-python-lint, both check-secrets paths, and check-shell; their manifest dispositions are owned-scratch.",
+        "scripts/run_quality_engine_runtime.py opens an OwnedScratch owner and explicitly passes CHARNESS_OWNED_SCRATCH_ROOT to child gates; scripts/exported-copy-guard.sh gives standalone gates the receipt-backed run_owned_scratch_command.py adapter and isolates concurrent children beneath invocation-local roots.",
+        "scripts/agent-runtime/run-local-eval-test.mjs either nests the Claude home beneath an inherited owned root or creates a temporaryOwnedRuntimeHome with receipt lifecycle cleanup.",
+        "scripts/gates/check_temp_producer_inventory.py permits test-compatibility-only directory classifications only when the detected stable identity is present in the executable TEST_COMPAT_DIRECTORY_IDENTITIES allowlist; a manifest row alone cannot select the exemption.",
+        "The inventory validator fails missing, stale, raw unowned-directory, invalid compatibility, parse-error, path mismatch, symbol mismatch, and incorrect owned-directory disposition cases.",
+        "tests/test_temp_producer_inventory.py includes negative controls for unregistered, missing, stale, and unauthorized test-compatibility-only producers, plus process-bound success, failure, timeout, and cancellation checks for the standalone ownership adapter.",
+        ".agents/quality-gates.yaml wires check-temp-producer-inventory into the standard main phase with --require-git-file-listing, making recurrence detection part of the standing gate surface.",
+        "Parent-supplied execution evidence reports a complete 47/47 inventory, focused tests, full release gates, and a changed-line clean run."
+      ]
+    }
+  ],
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "The compatibility fallback in exported-copy-guard.sh creates a repo-local compatibility root when the receipt adapter is absent.",
+      "bin": "bounded non-blocker",
+      "disposition": "The branch is mechanically conditioned on the adapter being absent and is documented for deliberately minimal gate fixtures; production source and packaged surfaces are expected to carry the adapter, while the manifest cannot independently grant this exemption."
+    },
+    {
+      "concern": "The packet does not contain raw output from the reported inventory and gate executions.",
+      "bin": "packet limitation",
+      "disposition": "Execution is explicitly parent-supplied evidence under the review instructions. The bound code and tests support the behavioral claims, but this review does not independently authenticate those runs."
+    },
+    {
+      "concern": "Abrupt machine loss or kernel SIGKILL may prevent producer-local cleanup.",
+      "bin": "explicit non-claim",
+      "disposition": "This does not defeat the repair: receipt ownership makes orphan inspection and recovery possible, and the spec expressly avoids claiming external-tool cleanup under those conditions."
+    }
+  ],
+  "next_move": "Approval is supported for corca-ai/charness#813; retain the inventory gate and its executable compatibility allowlist as the recurrence boundary.",
+  "non_claims": [
+    "This review did not execute the reported 47/47 inventory, focused tests, release gates, or changed-line coverage run.",
+    "This review judged only the identity-bound inline semantic payload and did not infer additional behavior from the current workspace.",
+    "This review does not claim cleanup under machine loss or kernel SIGKILL; it claims attributable receipt state and bounded recovery.",
+    "Goal evidence lineage is not goal-bound."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

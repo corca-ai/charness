@@ -53,12 +53,9 @@ are refused before merge.
 
 ## Verification
 
-- Result: resolved. The standing inventory reports 47 detected identities and 47
-  current declarations, rejects missing/stale/unregistered producers and restricts
-  directory `test-compatibility-only` to a code-owned identity allowlist. Process
-  acceptance covers success, failure, timeout, and cancellation; promotion and GC
-  readback verify the durable hash and exact reclaimed entries/bytes. The full release
-  suite and release changed-line coverage passed on the repaired committed surface.
+- Result: confirmed for the current absence claim — AST/text inventory found both
+  registered and unresolved producers, while no existing production gate owns that
+  classification. Implementation verification remains pending.
 
 ## Root Cause
 
@@ -117,7 +114,7 @@ structurally unable to see.
 
 ## Interrupt Decision
 
-- Resolution: resolved
+- Resolution: open
 - Critique Required: yes
 - Next Step: spec
 - Handoff Artifact: charness-artifacts/spec/2026-09-12-issue-813-temp-output-lifecycle.md

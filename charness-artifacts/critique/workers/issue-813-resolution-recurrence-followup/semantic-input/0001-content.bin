@@ -1,0 +1,237 @@
+schema: charness/temp-producers/v1
+producers:
+- identity: scripts/agent-runtime/run-local-eval-test.mjs::claudeRuntime::home
+  path: scripts/agent-runtime/run-local-eval-test.mjs
+  symbol: home
+  disposition: owned-scratch
+  rationale: Claude read-only evaluation homes are nested beneath the explicit parent root or receive their own runtime receipt.
+- identity: scripts/check-links-external.sh::shell::tmp_links
+  path: scripts/check-links-external.sh
+  symbol: tmp_links
+  disposition: anonymous-auto-delete-file
+  rationale: The link listing intentionally remains an anonymous auto-delete file boundary.
+- identity: scripts/check-links-internal.sh::shell::listing_dir
+  path: scripts/check-links-internal.sh
+  symbol: listing_dir
+  disposition: owned-scratch
+  rationale: Link-check logs and listings are nested beneath the parent quality receipt.
+- identity: scripts/check-markdown.sh::shell::listing_dir
+  path: scripts/check-markdown.sh
+  symbol: listing_dir
+  disposition: owned-scratch
+  rationale: Markdown child logs and listings are nested beneath the parent quality receipt.
+- identity: scripts/check-python-lint.sh::shell::universe_dir
+  path: scripts/check-python-lint.sh
+  symbol: universe_dir
+  disposition: owned-scratch
+  rationale: Ruff universe listings are nested beneath the parent quality receipt.
+- identity: scripts/check-secrets.sh::shell::scan_dir
+  path: scripts/check-secrets.sh
+  symbol: scan_dir
+  disposition: owned-scratch
+  rationale: The staged secret-scan tree is nested beneath the parent quality receipt.
+- identity: scripts/check-secrets.sh::shell::secretlint_list_dir
+  path: scripts/check-secrets.sh
+  symbol: secretlint_list_dir
+  disposition: owned-scratch
+  rationale: Secretlint listing files are nested beneath the parent quality receipt.
+- identity: scripts/check-shell.sh::shell::listing_dir
+  path: scripts/check-shell.sh
+  symbol: listing_dir
+  disposition: owned-scratch
+  rationale: Shell universe listings are nested beneath the parent quality receipt.
+- identity: scripts/gates/check_coverage_lib.py::exercise_control_plane_scenarios::temp_dir
+  path: scripts/gates/check_coverage_lib.py
+  symbol: temp_dir
+  disposition: test-compatibility-only
+  rationale: Coverage scenario fixtures use local TemporaryDirectory only while exercising isolated test projects.
+- identity: scripts/gates/check_coverage_lib.py::exercise_install_provenance_scenarios::temp_dir
+  path: scripts/gates/check_coverage_lib.py
+  symbol: temp_dir
+  disposition: test-compatibility-only
+  rationale: Coverage scenario fixtures use local TemporaryDirectory only while exercising isolated test projects.
+- identity: scripts/gates/check_coverage_lib.py::exercise_lifecycle_scenarios::temp_dir
+  path: scripts/gates/check_coverage_lib.py
+  symbol: temp_dir
+  disposition: test-compatibility-only
+  rationale: Coverage scenario fixtures use local TemporaryDirectory only while exercising isolated test projects.
+- identity: scripts/gates/check_coverage_lib.py::exercise_support_sync_scenarios::temp_dir
+  path: scripts/gates/check_coverage_lib.py
+  symbol: temp_dir
+  disposition: test-compatibility-only
+  rationale: Coverage scenario fixtures use local TemporaryDirectory only while exercising isolated test projects.
+- identity: scripts/gates/check_spec_evidence_durability.py::git_check_ignore::input_file
+  path: scripts/gates/check_spec_evidence_durability.py
+  symbol: input_file
+  disposition: anonymous-auto-delete-file
+  rationale: Git check-ignore receives an anonymous file handle that is deleted by the context manager.
+- identity: scripts/hooks/check_staged_test_boundaries.py::_staged_blobs::input_file
+  path: scripts/hooks/check_staged_test_boundaries.py
+  symbol: input_file
+  disposition: anonymous-auto-delete-file
+  rationale: Staged blob input uses an anonymous auto-delete file handle.
+- identity: scripts/lessons/lesson_ledger_writer_lib.py::replace_payload::temporary
+  path: scripts/lessons/lesson_ledger_writer_lib.py
+  symbol: temporary
+  disposition: anonymous-auto-delete-file
+  rationale: Ledger replacement uses an anonymous auto-delete file before the atomic replacement boundary.
+- identity: scripts/premise/premise_git_snapshot.py::_batch_objects::source
+  path: scripts/premise/premise_git_snapshot.py
+  symbol: source
+  disposition: anonymous-auto-delete-file
+  rationale: Git object batching uses an anonymous TemporaryFile handle owned by the current process.
+- identity: scripts/prepush_close_keyword_guard.py::owned_scratch::path
+  path: scripts/prepush_close_keyword_guard.py
+  symbol: path
+  disposition: test-compatibility-only
+  rationale: The fallback exists only for minimal compatibility fixtures when the optional runtime owner module is absent.
+- identity: scripts/review/reviewed_input_nonblob.py::_run_with_input::source
+  path: scripts/review/reviewed_input_nonblob.py
+  symbol: source
+  disposition: anonymous-auto-delete-file
+  rationale: Reviewed non-blob input uses an anonymous TemporaryFile handle for one subprocess call.
+- identity: scripts/run_quality_engine_runtime.py::OwnedScratch.open::TemporaryDirectory
+  path: scripts/run_quality_engine_runtime.py
+  symbol: TemporaryDirectory
+  disposition: test-compatibility-only
+  rationale: The fallback owner is only reachable in deliberately partial fixtures without the optional runtime module.
+- identity: scripts/runtime_scratch.py::_write_json::mkstemp
+  path: scripts/runtime_scratch.py
+  symbol: mkstemp
+  disposition: atomic-sibling
+  rationale: Receipt metadata is written to an atomic sibling and replaced with os.replace.
+- identity: scripts/runtime_scratch_promotion.py::promote_file::mkstemp
+  path: scripts/runtime_scratch_promotion.py
+  symbol: mkstemp
+  disposition: atomic-sibling
+  rationale: Promotion writes a sibling temporary file before the final atomic replacement.
+- identity: scripts/task_run/task_run_execution.py::_execute_codex::prompt_handle
+  path: scripts/task_run/task_run_execution.py
+  symbol: prompt_handle
+  disposition: anonymous-auto-delete-file
+  rationale: The Codex prompt is streamed through an anonymous TemporaryFile handle.
+- identity: scripts/task_run/task_run_runtime.py::write_task_result::mkstemp
+  path: scripts/task_run/task_run_runtime.py
+  symbol: mkstemp
+  disposition: atomic-sibling
+  rationale: Task results use an atomic sibling before publication.
+- identity: skills/public/achieve/scripts/goal_binding.py::write_immutable_binding::handle
+  path: skills/public/achieve/scripts/goal_binding.py
+  symbol: handle
+  disposition: anonymous-auto-delete-file
+  rationale: Binding serialization uses an anonymous auto-delete file before the durable write boundary.
+- identity: skills/public/critique/scripts/run_review_promotion_storage.py::_copy_atomically::mkstemp
+  path: skills/public/critique/scripts/run_review_promotion_storage.py
+  symbol: mkstemp
+  disposition: atomic-sibling
+  rationale: Review promotion copies use an atomic sibling before replacement.
+- identity: skills/public/critique/scripts/run_review_promotion_storage.py::write_bytes_atomically::mkstemp
+  path: skills/public/critique/scripts/run_review_promotion_storage.py
+  symbol: mkstemp
+  disposition: atomic-sibling
+  rationale: Byte writes use an atomic sibling before replacement.
+- identity: skills/public/critique/scripts/run_review_promotion_storage.py::write_json_atomically::mkstemp
+  path: skills/public/critique/scripts/run_review_promotion_storage.py
+  symbol: mkstemp
+  disposition: atomic-sibling
+  rationale: JSON writes use an atomic sibling before replacement.
+- identity: skills/public/issue/scripts/issue_goal_run_terminal.py::update_metadata::handle
+  path: skills/public/issue/scripts/issue_goal_run_terminal.py
+  symbol: handle
+  disposition: anonymous-auto-delete-file
+  rationale: Terminal metadata serialization uses an anonymous auto-delete file before publication.
+- identity: skills/public/issue/scripts/issue_tracker_observation.py::_write_immutable::handle
+  path: skills/public/issue/scripts/issue_tracker_observation.py
+  symbol: handle
+  disposition: anonymous-auto-delete-file
+  rationale: Tracker observation serialization uses an anonymous auto-delete file before publication.
+- identity: skills/public/release/scripts/release_issue_closeout_message.py::validate_release_closeout_commit_message::handle
+  path: skills/public/release/scripts/release_issue_closeout_message.py
+  symbol: handle
+  disposition: anonymous-auto-delete-file
+  rationale: Release closeout validation uses a process-local anonymous file for commit-message input.
+- identity: skills/shared/scripts/reviewer_delivery.py::_write::mkstemp
+  path: skills/shared/scripts/reviewer_delivery.py
+  symbol: mkstemp
+  disposition: atomic-sibling
+  rationale: Reviewer delivery writes a sibling temporary file before atomic publication.
+- identity: skills/shared/scripts/reviewer_worker_backend.py::atomic_write_json::mkstemp
+  path: skills/shared/scripts/reviewer_worker_backend.py
+  symbol: mkstemp
+  disposition: atomic-sibling
+  rationale: Worker JSON writes use an atomic sibling before replacement.
+- identity: skills/shared/scripts/reviewer_worker_runner_support.py::atomic_write_yaml::mkstemp
+  path: skills/shared/scripts/reviewer_worker_runner_support.py
+  symbol: mkstemp
+  disposition: atomic-sibling
+  rationale: Worker YAML writes use an atomic sibling before replacement.
+- identity: skills/shared/scripts/reviewer_worker_runtime.py::run::mkstemp
+  path: skills/shared/scripts/reviewer_worker_runtime.py
+  symbol: mkstemp
+  disposition: atomic-sibling
+  rationale: Worker runtime output uses an atomic sibling before publication.
+- identity: tools/check_coverage.py::collect_counts::tmpdir
+  path: tools/check_coverage.py
+  symbol: tmpdir
+  disposition: test-compatibility-only
+  rationale: Coverage collection creates local fixture projects for test-only measurement.
+- identity: tools/check_coverage_extra_lib.py::exercise_control_plane_helper_scenarios::temp_dir
+  path: tools/check_coverage_extra_lib.py
+  symbol: temp_dir
+  disposition: test-compatibility-only
+  rationale: Coverage helper scenarios create isolated test projects only.
+- identity: tools/check_coverage_extra_lib.py::exercise_install_provenance_helper_scenarios::temp_dir
+  path: tools/check_coverage_extra_lib.py
+  symbol: temp_dir
+  disposition: test-compatibility-only
+  rationale: Coverage helper scenarios create isolated test projects only.
+- identity: tools/check_coverage_extra_lib.py::exercise_install_tool_helper_scenarios::temp_dir
+  path: tools/check_coverage_extra_lib.py
+  symbol: temp_dir
+  disposition: test-compatibility-only
+  rationale: Coverage helper scenarios create isolated test projects only.
+- identity: tools/check_coverage_extra_lib.py::exercise_support_sync_helper_scenarios::temp_dir
+  path: tools/check_coverage_extra_lib.py
+  symbol: temp_dir
+  disposition: test-compatibility-only
+  rationale: Coverage helper scenarios create isolated test projects only.
+- identity: tools/eval_issue_scenarios.py::run_issue_sibling_search_concept_fixtures::tmpdir
+  path: tools/eval_issue_scenarios.py
+  symbol: tmpdir
+  disposition: test-compatibility-only
+  rationale: Evaluation scenarios create local fixture repositories only.
+- identity: tools/eval_setup.py::run_setup_inspect_states::tmpdir
+  path: tools/eval_setup.py
+  symbol: tmpdir
+  disposition: test-compatibility-only
+  rationale: Setup evaluation scenarios create local fixture repositories only.
+- identity: tools/eval_setup.py::run_setup_inspect_states::tmpdir#2
+  path: tools/eval_setup.py
+  symbol: tmpdir
+  disposition: test-compatibility-only
+  rationale: Setup evaluation scenarios create local fixture repositories only.
+- identity: tools/eval_setup.py::run_setup_inspect_states::tmpdir#3
+  path: tools/eval_setup.py
+  symbol: tmpdir
+  disposition: test-compatibility-only
+  rationale: Setup evaluation scenarios create local fixture repositories only.
+- identity: tools/eval_setup.py::run_setup_operator_acceptance_synthesis::tmpdir
+  path: tools/eval_setup.py
+  symbol: tmpdir
+  disposition: test-compatibility-only
+  rationale: Setup evaluation scenarios create local fixture repositories only.
+- identity: tools/run_evals.py::expect_adapter_bootstrap::tmpdir
+  path: tools/run_evals.py
+  symbol: tmpdir
+  disposition: test-compatibility-only
+  rationale: Eval adapter bootstrap checks use isolated local fixture directories only.
+- identity: tools/run_evals.py::scenario_quality_bootstrap_posture::tmpdir
+  path: tools/run_evals.py
+  symbol: tmpdir
+  disposition: test-compatibility-only
+  rationale: Eval bootstrap scenarios use isolated local fixture directories only.
+- identity: tools/validate_packaging_committed.py::main::tmpdir
+  path: tools/validate_packaging_committed.py
+  symbol: tmpdir
+  disposition: test-compatibility-only
+  rationale: Packaging validation uses a local temporary fixture workspace only.

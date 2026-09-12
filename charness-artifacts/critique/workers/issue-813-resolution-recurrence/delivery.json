@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "issue-813-resolution-recurrence",
+      "scope": "issue-resolution: review resolution/recurrence and per-target behavioral observations for corca-ai/charness#813; do not merely diagnose causes",
+      "packet_identity": "d2a196cffe726c5a0ef04f4da5f5d9912e4dbd414ce7ea76e43552e1f591c93e",
+      "parent_receipt_identity": "parent-cb164864d5e382e0bd1351d6998d49423288f44e9d39981d",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-12T12:26:21Z",
+      "history": [
+        {
+          "event_id": "1bdb8ad2b00e49d4b3fa50bfcf1ed33d",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-12T12:25:13Z",
+          "attempt_id": "issue-813-resolution-recurrence",
+          "scope": "issue-resolution: review resolution/recurrence and per-target behavioral observations for corca-ai/charness#813; do not merely diagnose causes",
+          "packet_identity": "d2a196cffe726c5a0ef04f4da5f5d9912e4dbd414ce7ea76e43552e1f591c93e",
+          "parent_receipt_identity": "parent-cb164864d5e382e0bd1351d6998d49423288f44e9d39981d",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "22ef62c4184a45f1b6fe3affa06f01a6",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-12T12:25:13Z",
+          "attempt_id": "issue-813-resolution-recurrence",
+          "scope": "issue-resolution: review resolution/recurrence and per-target behavioral observations for corca-ai/charness#813; do not merely diagnose causes",
+          "packet_identity": "d2a196cffe726c5a0ef04f4da5f5d9912e4dbd414ce7ea76e43552e1f591c93e",
+          "parent_receipt_identity": "parent-cb164864d5e382e0bd1351d6998d49423288f44e9d39981d",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "90b5ed2599e6471098efc20a642a0981",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-12T12:26:21Z",
+          "attempt_id": "issue-813-resolution-recurrence",
+          "scope": "issue-resolution: review resolution/recurrence and per-target behavioral observations for corca-ai/charness#813; do not merely diagnose causes",
+          "packet_identity": "d2a196cffe726c5a0ef04f4da5f5d9912e4dbd414ce7ea76e43552e1f591c93e",
+          "parent_receipt_identity": "parent-cb164864d5e382e0bd1351d6998d49423288f44e9d39981d",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "9c83322bf82294877106884db39799707cf4fae1a8aa2afc645df8a75a36ee04"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "e2903a3d6e63ffaae7abc7cd11e43d69fa9d6b116d9238e83148d9b1e160683e",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "e7ce7d240e0acc24c71084f524d37194d777c2747432b321ebd9c8868c39f994",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/issue-813-resolution-recurrence/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/issue-813-resolution-recurrence/receipt.json",
+      "producer_run_id": "run-issue-813-resolution-recurrence",
+      "findings_identity": "9c83322bf82294877106884db39799707cf4fae1a8aa2afc645df8a75a36ee04"
+    }
+  ]
+}

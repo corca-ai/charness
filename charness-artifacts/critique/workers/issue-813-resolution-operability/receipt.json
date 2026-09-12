@@ -1,0 +1,84 @@
+{
+  "attempt_id": "issue-813-resolution-operability",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/issue-813-resolution-operability/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-09-12T12:25:58Z",
+  "output_file": "charness-artifacts/critique/workers/issue-813-resolution-operability/result.json",
+  "output_fresh": true,
+  "output_sha256": "80fb81294ba9e47df1b424a44dbbb5a90b3ee283e7da0ca19a08066d1a6c28f0",
+  "output_size": 8169,
+  "packet_identity": "d2a196cffe726c5a0ef04f4da5f5d9912e4dbd414ce7ea76e43552e1f591c93e",
+  "parent_receipt_identity": "parent-50cccc01da2d0b4fe4f4a0634149d978acbd7647c41b0db6",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/issue-813-resolution-operability/review-prompt.md",
+  "prompt_sha256": "e0f1461f3ba34b25aa01b4b923efa7c499b7e04c309af95a3e3f7d83f672e158",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "retained_partial_output": {
+    "approval_eligible": false,
+    "bytes": 8036,
+    "kind": "bounded-review-result",
+    "path": "charness-artifacts/critique/workers/issue-813-resolution-operability/partial-result.json",
+    "schema_version": "charness.reviewer_partial_output/v1",
+    "sha256": "5b4b3785c6e864f538759dbaab1ce6670249a3345c405ef07d2199105d76f5eb",
+    "source": "charness-artifacts/critique/workers/issue-813-resolution-operability/backend.stdout",
+    "validation": "model-shaped"
+  },
+  "reviewed_input_identity": "e2903a3d6e63ffaae7abc7cd11e43d69fa9d6b116d9238e83148d9b1e160683e",
+  "run_id": "run-issue-813-resolution-operability",
+  "schema_file": "charness-artifacts/critique/workers/issue-813-resolution-operability/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "issue-resolution: review resolution/recurrence and per-target behavioral observations for corca-ai/charness#813; do not merely diagnose causes",
+  "started_at": "2026-09-12T12:25:13Z",
+  "status": "succeeded",
+  "stderr_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/issue-813-resolution-operability/backend.stderr",
+  "stdout_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/issue-813-resolution-operability/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "workspace": "/home/hwidong/codes/charness"
+}

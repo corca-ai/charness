@@ -1,0 +1,51 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Assess the resolution and recurrence protection for each target, with an evidence-backed behavioral verdict. Pass only when the repair is supported; block or defer when it is not. Diagnosis alone is insufficient. Additional caller focus: Final whole-surface review after the shared Claude HOME repair. Decide whether any concrete #813 ownership/lifecycle acceptance blocker remains. Verify distinct evaluator homes, constrained compatibility exemptions, representative owner timeout/cancellation, exact GC/promotion evidence, and gate wiring. Treat live streaming and exhaustive per-backend descendant tests as separate hardening unless the issue acceptance logically requires them.",
+  "packet_sha256": "faa3516b2d154ed43f0fa5ed064592c6297f175c2cb51c097ba422d73968f168",
+  "reviewed_input_identity_sha256": "43e62da2e52c7caad15b65d99bc2af09a278f227991b0863393323493e265181",
+  "verdict": "pass",
+  "target_observations": [
+    {
+      "target": "corca-ai/charness#813",
+      "verdict": "pass",
+      "summary": "No concrete ownership/lifecycle acceptance blocker remains in the bound surface. The repair gives concurrent read-only Claude evaluations distinct child homes under the receipt-owned parent; producer classification is mandatory and compatibility exemptions are code-constrained; representative owner success, failure, timeout, and cancellation paths preserve verdicts and leave no registered scratch roots; promotion and GC assertions independently verify durable hashes and exact reclaimed counts; and the inventory gate is wired into the standing main quality phase.",
+      "evidence": [
+        "scripts/agent-runtime/run-local-eval-test.mjs creates `claude-eval-home-${randomUUID()}` beneath an existing `CHARNESS_OWNED_SCRATCH_ROOT`, passes the parent root through the environment, removes only the invocation-local home, and uses a separately receipt-owned home when no parent exists.",
+        "tests/agent-runtime/native.test.mjs invokes the read-only Claude runner twice beneath one owned root and asserts two distinct `claude-eval-home-` paths, cleanup of both child homes, and preservation of the parent root.",
+        "scripts/gates/check_temp_producer_inventory.py fails missing and stale declarations, unowned directory creators, parse failures, path/symbol drift, and directory producers that self-select `test-compatibility-only` outside the executable `TEST_COMPAT_DIRECTORY_IDENTITIES` allowlist.",
+        "tests/test_temp_producer_inventory.py supplies negative controls for missing, newly unregistered, stale, and unauthorized compatibility-only directory producers, plus a real-process matrix for success, failure, timeout, and cancellation that asserts expected exit codes, empty producer roots, and empty registry inspection.",
+        "tests/test_runtime_scratch.py verifies promotion by reading the durable payload and comparing its SHA-256 with the promotion receipt; it refuses incomplete promotion and retains failed-promotion source evidence for retry.",
+        "tests/test_runtime_scratch.py independently enumerates an expired root before GC, computes entry and byte totals, verifies dry-run refusal to mutate, then asserts the executed GC reports those exact totals and removes only the eligible root; adjacent tests cover active, repo-mismatched, unknown/forged, registered-worktree uncertainty, retained, and unexpired refusal behavior.",
+        "`.agents/quality-gates.yaml` wires `check-temp-producer-inventory` into the standard main phase using the checked-in manifest and `--require-git-file-listing`, making recurrence protection part of the standing quality surface.",
+        "The debug and spec artifacts align the implementation with #813 acceptance while explicitly excluding arbitrary pre-existing `/tmp` debris and exhaustive external-tool hard-kill behavior from the resolution claim."
+      ]
+    }
+  ],
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "Live Claude stream handling is not required to close temporary-output ownership.",
+      "bin": "separate-hardening",
+      "disposition": "The bound implementation already persists stream-json and handles timeout cleanup, but streaming behavior is a transport concern rather than a #813 ownership/lifecycle blocker."
+    },
+    {
+      "concern": "Every backend and external descendant process is not tested under every termination mechanism.",
+      "bin": "separate-hardening",
+      "disposition": "The issue contract calls for representative terminal-path acceptance, which the real-process shell owner matrix provides. Exhaustive per-backend descendant coverage and machine-loss/SIGKILL behavior remain correctly stated non-claims."
+    },
+    {
+      "concern": "Compatibility-only directory exemptions could become an escape hatch.",
+      "bin": "resolved",
+      "disposition": "Manifest classification alone is insufficient: the gate also requires membership in a fixed executable identity allowlist, and a negative control proves an arbitrary producer cannot self-select the exemption."
+    }
+  ],
+  "next_move": "Accept the bounded #813 resolution. Track live streaming and broader per-backend descendant termination coverage separately if maintainers want additional execution-model hardening.",
+  "non_claims": [
+    "This review does not claim arbitrary existing system-temp debris is attributable to or safely removable by Charness.",
+    "This review does not prove machine-loss or SIGKILL cleanup behavior for every external tool or backend.",
+    "This review does not independently execute the supplied tests or release suite; it judges the identity-bound implementation, executable assertions, gate wiring, and recorded verification in the packet.",
+    "The review is not Goal Run bound; the supplied goal lineage disposition is `not-goal-bound`."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

@@ -1,0 +1,138 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-12T12:35:21Z",
+  "prepared_for": "working tree",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- .agents/quality-gates.yaml\n- .agents/temp-producers.yaml\n- charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md\n- charness-artifacts/spec/2026-09-12-issue-813-temp-output-lifecycle.md\n- scripts/agent-runtime/run-local-eval-test.mjs\n- scripts/exported-copy-guard.sh\n- scripts/gates/check_temp_producer_inventory.py\n- scripts/gates/run_owned_scratch_command.py\n- tests/agent-runtime/native.test.mjs\n- tests/test_runtime_scratch.py\n- tests/test_temp_producer_inventory.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/agent-runtime/run-local-eval-test.mjs, scripts/exported-copy-guard.sh, scripts/gates/check_temp_producer_inventory.py, scripts/gates/run_owned_scratch_command.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md, charness-artifacts/spec/2026-09-12-issue-813-temp-output-lifecycle.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- agent-runtime-js: Repo-owned JavaScript agent-runtime modules and their native test command.\n  source matches: scripts/agent-runtime/run-local-eval-test.mjs, tests/agent-runtime/native.test.mjs\n  verify: npm run test:agent-runtime, npm run test:mutation:js:dry-run\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md\n  sync: python3 scripts/retro_debug/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/retro_debug/build_debug_seam_risk_index.py --repo-root . --check\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/gates/check_temp_producer_inventory.py, scripts/gates/run_owned_scratch_command.py, tests/test_runtime_scratch.py, tests/test_temp_producer_inventory.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/gates/check_temp_producer_inventory.py, scripts/gates/run_owned_scratch_command.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/retro_debug/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "prepared_targets": [
+    "corca-ai/charness#813"
+  ],
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "8364436835302515cf8268ed8ad95f21028f6f0c",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      ".agents/quality-gates.yaml",
+      ".agents/temp-producers.yaml",
+      "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md",
+      "charness-artifacts/spec/2026-09-12-issue-813-temp-output-lifecycle.md",
+      "scripts/agent-runtime/run-local-eval-test.mjs",
+      "scripts/exported-copy-guard.sh",
+      "scripts/gates/check_temp_producer_inventory.py",
+      "scripts/gates/run_owned_scratch_command.py",
+      "tests/agent-runtime/native.test.mjs",
+      "tests/test_runtime_scratch.py",
+      "tests/test_temp_producer_inventory.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/quality-gates.yaml",
+        "content_sha256": "d16c9e329dc79bb45d8a1768d6b07783a7a4b21add155baa2d811fdf425ab6e7"
+      },
+      {
+        "path": ".agents/temp-producers.yaml",
+        "content_sha256": "f147c8a32a0fe9d442837eda5f7dc3141c214b35d90ed4e74bc9ce3373704eac"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-09-12-issue-813-temp-output-ownership.md",
+        "content_sha256": "3acd40e9a30710569a60b27cd420586365c7b1287a81fc37ff64b6a0c8ea918d"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-09-12-issue-813-temp-output-lifecycle.md",
+        "content_sha256": "5ac0c59db1fe1dad75b80acba38eadadad69dab19aae2b9d849d3e9db3dd8328"
+      },
+      {
+        "path": "scripts/agent-runtime/run-local-eval-test.mjs",
+        "content_sha256": "726613759add7b826e6e38023d45beb1ca5201c34ee050eaf5804eb3dddc1c48"
+      },
+      {
+        "path": "scripts/exported-copy-guard.sh",
+        "content_sha256": "28e2093a9b4f79ae3823ed72f49556fbab53c4fb436f7160cffbf18bbd413fb1"
+      },
+      {
+        "path": "scripts/gates/check_temp_producer_inventory.py",
+        "content_sha256": "42954d50322bdd3ad1f0a09dce7f4322fda8e17deb21ab50f1478878905ce517"
+      },
+      {
+        "path": "scripts/gates/run_owned_scratch_command.py",
+        "content_sha256": "7fe2a257d3b7537f4cdc22ad26cbfdf280bae5ac6ac9c6e876a8a611e7be4b08"
+      },
+      {
+        "path": "tests/agent-runtime/native.test.mjs",
+        "content_sha256": "c637bb262797e85ca3efab9e12dcf58e3a18a7377871f775100b6105813560ac"
+      },
+      {
+        "path": "tests/test_runtime_scratch.py",
+        "content_sha256": "b287bbdcb7e38580684224a75f320e722e513679fba770559b59e15b118642e8"
+      },
+      {
+        "path": "tests/test_temp_producer_inventory.py",
+        "content_sha256": "080b7800dbeaf4d656f4e7cf3ca0d002a853ed6c4845bc7236005910ffc13a14"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "b88f4fb5b6ffe08bd9c95fe040040443dd20fa17ddc77e2ae60e4305a5a0acdf",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "43e62da2e52c7caad15b65d99bc2af09a278f227991b0863393323493e265181"
+  }
+}

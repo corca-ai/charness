@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "issue-813-resolution-operability-final",
+      "scope": "issue-resolution: review resolution/recurrence and per-target behavioral observations for corca-ai/charness#813; do not merely diagnose causes",
+      "packet_identity": "faa3516b2d154ed43f0fa5ed064592c6297f175c2cb51c097ba422d73968f168",
+      "parent_receipt_identity": "parent-6f31e9d5457dc1d004f0a6907b7050704a8e41d094688858",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-12T12:36:03Z",
+      "history": [
+        {
+          "event_id": "4ea3e3357ead4ea9b0085eec04d4b46b",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-12T12:35:21Z",
+          "attempt_id": "issue-813-resolution-operability-final",
+          "scope": "issue-resolution: review resolution/recurrence and per-target behavioral observations for corca-ai/charness#813; do not merely diagnose causes",
+          "packet_identity": "faa3516b2d154ed43f0fa5ed064592c6297f175c2cb51c097ba422d73968f168",
+          "parent_receipt_identity": "parent-6f31e9d5457dc1d004f0a6907b7050704a8e41d094688858",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "a7a2c49b34b047ccbb7ddfbe94fc4c79",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-12T12:35:21Z",
+          "attempt_id": "issue-813-resolution-operability-final",
+          "scope": "issue-resolution: review resolution/recurrence and per-target behavioral observations for corca-ai/charness#813; do not merely diagnose causes",
+          "packet_identity": "faa3516b2d154ed43f0fa5ed064592c6297f175c2cb51c097ba422d73968f168",
+          "parent_receipt_identity": "parent-6f31e9d5457dc1d004f0a6907b7050704a8e41d094688858",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "f53f050a14c7415f89c1c4bf5d95beaf",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-12T12:36:03Z",
+          "attempt_id": "issue-813-resolution-operability-final",
+          "scope": "issue-resolution: review resolution/recurrence and per-target behavioral observations for corca-ai/charness#813; do not merely diagnose causes",
+          "packet_identity": "faa3516b2d154ed43f0fa5ed064592c6297f175c2cb51c097ba422d73968f168",
+          "parent_receipt_identity": "parent-6f31e9d5457dc1d004f0a6907b7050704a8e41d094688858",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "abbb6da4635fd315f2441057e74b518ebae01f2c0a0e306b4c7963ce73afaafd"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "43e62da2e52c7caad15b65d99bc2af09a278f227991b0863393323493e265181",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "dfdbf7aaa9d22fc3c339c64243d8e7f8b9dd14fe9ee4ca0a9fc1cd9cc2ce8fc9",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/issue-813-resolution-operability-final/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/issue-813-resolution-operability-final/receipt.json",
+      "producer_run_id": "run-issue-813-resolution-operability-final",
+      "findings_identity": "abbb6da4635fd315f2441057e74b518ebae01f2c0a0e306b4c7963ce73afaafd"
+    }
+  ]
+}

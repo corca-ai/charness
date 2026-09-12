@@ -114,17 +114,6 @@ implementations as explicit safe classifications.
   broken registry; static inventory confirmed voluntary adoption and anonymous roots.
 - Causal review `issue-813-causal-review` passed with approval-eligible identity
   `38b48ead1ce75da579b9adc773a251f1038a6ede5df7660f06c4c39f59f808ea`.
-- Resolution recurrence follow-up passed with approval-eligible identity
-  `e7e2f4d6e1bf1701bc4eb625456cd8659f8faf38c45b6f03da4d3731babf5e6b`.
-- The operability follow-up found a shared Claude home; the repair now assigns a
-  UUID-named child beneath the parent receipt and tests two independent invocations.
-  Its broader asynchronous evaluator/process-group request is dispositioned as a
-  separate execution-model hardening opportunity: #813 proves representative
-  timeout/cancellation at the shared root owner, and does not claim live streaming
-  or every external backend's descendant behavior.
-- The final whole-surface operability review passed after that repair with
-  approval-eligible identity
-  `abbb6da4635fd315f2441057e74b518ebae01f2c0a0e306b4c7963ce73afaafd`.
 
 ## Canonical Artifact
 

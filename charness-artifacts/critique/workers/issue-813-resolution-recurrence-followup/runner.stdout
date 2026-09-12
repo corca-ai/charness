@@ -1,0 +1,64 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'issue-resolution: review resolution/recurrence and per-target behavioral observations
+  for corca-ai/charness#813; do not merely diagnose causes'
+attempt_id: issue-813-resolution-recurrence-followup
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 855904c8389572f75e422ec020198c3744a4403971fbf819c7666f51e3a83540
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-9f789dcd780230e437e78832f2ed78f6/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-9f789dcd780230e437e78832f2ed78f6/delivery.json
+producer_run_id: run-issue-813-resolution-recurrence-followup
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-9f789dcd780230e437e78832f2ed78f6/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-9f789dcd780230e437e78832f2ed78f6/receipt.json
+  producer_run_id: run-issue-813-resolution-recurrence-followup
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: e7e2f4d6e1bf1701bc4eb625456cd8659f8faf38c45b6f03da4d3731babf5e6b
+receipt_output_sha256: e7e2f4d6e1bf1701bc4eb625456cd8659f8faf38c45b6f03da4d3731babf5e6b
+packet_identity: 2d81e0bcdbf5bbea70c6b9ef0e8c76d18d44aa709a02e9c4ea979a0d0dd409ae
+reviewed_input_identity: 599faf40a83a709169447e4c53d9e9fa013a4304fa92c1211843f56ac3c80387
+parent_receipt_identity: parent-c6209a22a6a45eac76727ace68abdc145a31512f91d05689
+provenance:
+  scope: 'issue-resolution: review resolution/recurrence and per-target behavioral
+    observations for corca-ai/charness#813; do not merely diagnose causes'
+  packet_identity: 2d81e0bcdbf5bbea70c6b9ef0e8c76d18d44aa709a02e9c4ea979a0d0dd409ae
+  reviewed_input_identity: 599faf40a83a709169447e4c53d9e9fa013a4304fa92c1211843f56ac3c80387
+  parent_receipt_identity: parent-c6209a22a6a45eac76727ace68abdc145a31512f91d05689
+  attempt_id: issue-813-resolution-recurrence-followup
+  attempt_scope: 'issue-resolution: review resolution/recurrence and per-target behavioral
+    observations for corca-ai/charness#813; do not merely diagnose causes'
+  attempt_packet_identity: 2d81e0bcdbf5bbea70c6b9ef0e8c76d18d44aa709a02e9c4ea979a0d0dd409ae
+  attempt_parent_receipt_identity: parent-c6209a22a6a45eac76727ace68abdc145a31512f91d05689
+  result_packet_identity: 2d81e0bcdbf5bbea70c6b9ef0e8c76d18d44aa709a02e9c4ea979a0d0dd409ae
+  result_reviewed_input_identity: 599faf40a83a709169447e4c53d9e9fa013a4304fa92c1211843f56ac3c80387
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 855904c8389572f75e422ec020198c3744a4403971fbf819c7666f51e3a83540
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

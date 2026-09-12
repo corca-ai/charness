@@ -601,30 +601,6 @@ test("read-only Claude runner nests its home beneath an explicit owned root", ()
 	});
 });
 
-test("read-only Claude invocations use distinct homes beneath one owned root", () => {
-	withTempDir((dir) => {
-		const ownedRoot = join(dir, "owned-root");
-		mkdirSync(ownedRoot);
-		const options = { workspace: dir, repoRoot: dir, timeoutMs: 1000 };
-		const stdout = JSON.stringify({ result: JSON.stringify(observedFixture()) });
-		const { calls, spawn } = recordingSpawn({ status: 0, stdout, stderr: "" });
-		const previousRoot = process.env.CHARNESS_OWNED_SCRATCH_ROOT;
-		process.env.CHARNESS_OWNED_SCRATCH_ROOT = ownedRoot;
-		try {
-			runClaudeEvaluation(options, evaluationFixture(dir), dir, SEAM_STARTED_AT, spawn);
-			runClaudeEvaluation(options, evaluationFixture(dir), dir, SEAM_STARTED_AT, spawn);
-		} finally {
-			if (previousRoot === undefined) delete process.env.CHARNESS_OWNED_SCRATCH_ROOT;
-			else process.env.CHARNESS_OWNED_SCRATCH_ROOT = previousRoot;
-		}
-		const homes = calls.map((call) => call.spawnOptions.env.HOME);
-		assert.equal(new Set(homes).size, 2);
-		assert.ok(homes.every((home) => home.startsWith(`${ownedRoot}/claude-eval-home-`)));
-		assert.ok(homes.every((home) => !existsSync(home)));
-		assert.equal(existsSync(ownedRoot), true);
-	});
-});
-
 test("read-only Claude runner rejects a permission override that broadens tools", () => {
 	withTempDir((dir) => {
 		const options = {

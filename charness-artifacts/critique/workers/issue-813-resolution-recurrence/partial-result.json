@@ -1,0 +1,97 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "non-claim",
+      "concern": "Arbitrary historical /tmp debris is not attributed or deleted.",
+      "disposition": "Consistent with the stated deferred decision and not a blocker for this repair."
+    },
+    {
+      "bin": "non-claim",
+      "concern": "Kernel SIGKILL or machine-loss cleanup for every external tool is not proven.",
+      "disposition": "Acceptable only as a bounded non-claim; approval still requires proof that receipt ownership makes sampled orphan state inspectable and recoverable."
+    },
+    {
+      "bin": "not-a-defect-by-itself",
+      "concern": "Atomic sibling files and anonymous auto-delete handles are not migrated into owned directories.",
+      "disposition": "Their explicit classification is compatible with the contract, subject to complete discovery and bounded implementation evidence."
+    },
+    {
+      "bin": "supporting-evidence",
+      "concern": "Focused primitive lifecycle tests are extensive.",
+      "disposition": "They support the existing runtime-scratch primitive but do not close producer migration, enforcement, or discovery-completeness blockers."
+    }
+  ],
+  "findings": [
+    {
+      "action": "Make test-compatibility-only mechanically constrained to verified test/fixture contexts or replace it with narrowly identified, executable exemptions; add a negative control showing that a production producer cannot self-select this disposition.",
+      "evidence": [
+        "validate_inventory computes raw_directories only when disposition != test-compatibility-only.",
+        "No predicate ties test-compatibility-only to a test path, fixture context, optional-module fallback, or otherwise mechanically verified reachability.",
+        "Consequently, adding a detected production tempfile.mkdtemp or TemporaryDirectory call together with a test-compatibility-only manifest row can satisfy missing/stale checks while avoiding the unowned-directory failure."
+      ],
+      "id": "BR-813-001",
+      "severity": "blocker",
+      "summary": "The recurrence gate has a manifest-controlled exemption that can admit a new production directory producer."
+    },
+    {
+      "action": "Bind the migrated producer implementations and evidence showing each target's transport and verdict behavior; include integrated observations for the acceptance matrix and registry/final-consumer readback.",
+      "evidence": [
+        "The RCA names seven affected producer sites, but six relevant shell implementations are absent from the semantic input.",
+        "Manifest declarations and rationales do not prove those producers consume CHARNESS_OWNED_SCRATCH_ROOT, preserve existing exit behavior, or avoid anonymous roots on success, failure, timeout, and cancellation.",
+        "The supplied process matrix exercises a synthetic shell fixture through run_owned_scratch_command.py, not each migrated shell/JS target or a representative integrated quality-runner path."
+      ],
+      "id": "BR-813-002",
+      "severity": "blocker",
+      "summary": "Migration and per-target acceptance are not evidenced for all historical producers."
+    },
+    {
+      "action": "Include and verify the canonical gate registration, with an execution receipt demonstrating missing, stale, and unregistered mutations fail the actual standing/pre-merge path.",
+      "evidence": [
+        "A checker implementation and its unit tests are present, but no gate list, workflow, hook, or standing-quality registration that invokes it is reviewed.",
+        "The packet's owning-surface validators do not list check_temp_producer_inventory.py as an acceptance command.",
+        "A discoverer that is not proven to run cannot replace the voluntary-adoption mental model identified as the root cause."
+      ],
+      "id": "BR-813-003",
+      "severity": "blocker",
+      "summary": "The packet does not establish that producer discovery is enforced before merge."
+    },
+    {
+      "action": "Document and bind a complete candidate-search inventory for supported languages/APIs, add axis-varying escape tests for import scope and command syntax, and disposition any intentionally unsupported producer families.",
+      "evidence": [
+        "Python discovery recognizes only tempfile imports found at module top level and a fixed API set.",
+        "Shell discovery is regex- and line-shape-dependent; directory recognition only matches whitespace-delimited -d or --directory.",
+        "JavaScript discovery narrowly recognizes mkdtempSync(...tmpdir()) and an assignment pattern containing CHARNESS_OWNED_SCRATCH_ROOT.",
+        "The tests cover selected quoting, comments, aliases, and stable identities, but no evidence establishes completeness across all production temporary-output APIs and syntactic variants."
+      ],
+      "id": "BR-813-004",
+      "severity": "major",
+      "summary": "The claimed exhaustive sibling search exceeds the detector's demonstrated coverage."
+    }
+  ],
+  "kind": "charness.bounded_review.v1",
+  "lens": "Assess the resolution and recurrence protection for each target, with an evidence-backed behavioral verdict. Pass only when the repair is supported; block or defer when it is not. Diagnosis alone is insufficient. Additional caller focus: Verify the bug root cause is actually removed, every acceptance boundary has concrete evidence, producer discovery prevents recurrence, and no sibling temporary-output path remains unaccounted for. Distinguish blockers from non-claims.",
+  "next_move": "Keep issue #813 open. Remove the production-exemption bypass, bind the inventory checker into an executed standing gate, and provide behavioral evidence for every historical producer plus an exhaustive, dispositioned sibling search.",
+  "non_claims": [
+    "This review does not claim the runtime-scratch primitive itself is defective.",
+    "This review does not require Charness to sweep arbitrary system temporary directories.",
+    "This review does not require proof of external-tool cleanup after every possible host or kernel failure.",
+    "No judgment is made about files outside the identity-bound semantic payload."
+  ],
+  "packet_sha256": "d2a196cffe726c5a0ef04f4da5f5d9912e4dbd414ce7ea76e43552e1f591c93e",
+  "reviewed_input_identity_sha256": "e2903a3d6e63ffaae7abc7cd11e43d69fa9d6b116d9238e83148d9b1e160683e",
+  "target_observations": [
+    {
+      "evidence": [
+        "The seven historical shell/JS producer implementations are not all included: only scripts/agent-runtime/run-local-eval-test.mjs is present; the cited check-shell, check-python-lint, check-links-internal, check-links-external, check-markdown, and check-secrets implementations are absent.",
+        "scripts/gates/check_temp_producer_inventory.py exempts every detected directory producer whose manifest disposition is test-compatibility-only, without validating that the producer is actually confined to tests or compatibility fixtures.",
+        "The packet includes the inventory checker but no quality configuration or execution receipt proving that this checker is invoked by the required pre-merge/standing gate.",
+        "tests/test_temp_producer_inventory.py supplies missing, unregistered, and stale controls and a standalone adapter terminal matrix, but the packet supplies no test-run results and no per-historical-producer behavioral observations.",
+        "The spec declares implementation complete while the debug artifact still says Implementation verification remains pending and Resolution: open."
+      ],
+      "summary": "The packet demonstrates a plausible owned-scratch adapter and focused controls, but it does not prove that every historical producer was migrated or that the inventory is an enforced, non-bypassable recurrence boundary. The repair therefore remains approval-ineligible.",
+      "target": "corca-ai/charness#813",
+      "verdict": "block"
+    }
+  ],
+  "verdict": "block"
+}

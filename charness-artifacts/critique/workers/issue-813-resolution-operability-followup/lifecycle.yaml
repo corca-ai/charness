@@ -1,0 +1,300 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: runner-completed
+execution_state: terminal
+lifecycle_state: terminal
+reviewer_started: true
+delivery_state: findings-received
+verdict_state: block
+review_verdict: block
+classification: unclassified
+approval_eligible: false
+output:
+  state: terminal
+  approval_eligible: false
+  schema_version: charness.reviewer_worker_report.v1
+  findings_identity: daa65b324e4b9ad26c4cf444081ec1c149e67290b9230b89f146026e8b68aabb
+  partial_artifacts:
+  - schema_version: charness.reviewer_partial_output/v1
+    kind: bounded-review-result
+    path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/partial-result.json
+    bytes: 8275
+    sha256: d7dd4619ab2c01d7aa11974ffac5bc8712932ed5b863fc16a45a2b09346261a3
+output_state: terminal
+failure_identity: f20453d0fc3f630569f4514736a52437b7cc4fb63cd75badefa28c2dcf77e89c
+next_move: inspect the delivered findings; this is a reviewer block, not a runner
+  failure
+runner_returncode: 1
+runner_status: runner-completed
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/issue-813-resolution-operability-followup-packet.json
+  schema: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/capability.json
+  prompt: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/review-prompt.md
+  plan: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/run-plan.json
+  ledger: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/delivery.json
+  output: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/result.json
+  receipt: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/receipt.json
+  report: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/worker-report.yaml
+  runner_stdout: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/runner.stdout
+  runner_stderr: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/runner.stderr
+  backend_stdout: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/backend.stdout
+  backend_stderr: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/backend.stderr
+  summary: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/lifecycle.yaml
+  semantic-input/0000-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0000-content.bin
+  semantic-input/0001-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0001-content.bin
+  semantic-input/0002-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0002-content.bin
+  semantic-input/0003-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0003-content.bin
+  semantic-input/0004-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0004-content.bin
+  semantic-input/0005-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0005-content.bin
+  semantic-input/0006-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0006-content.bin
+  semantic-input/0007-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0007-content.bin
+  semantic-input/0008-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0008-content.bin
+  semantic-input/0009-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0009-content.bin
+  semantic-input/0010-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0010-content.bin
+  semantic-input/0011-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0011-content.bin
+  semantic-input/0012-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0012-content.bin
+  semantic-input/0013-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0013-content.bin
+  semantic-input/0014-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0014-content.bin
+  semantic-input/0015-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0015-content.bin
+  semantic-input/0016-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0016-content.bin
+  semantic-input/0017-content.bin: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0017-content.bin
+  semantic-input/manifest.json: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/manifest.json
+  review-prompt.md: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/review-prompt.md
+  run-plan.json: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/run-plan.json
+  bounded-review-result.schema.json: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/bounded-review-result.schema.json
+  capability.json: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/capability.json
+  receipt.json: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/receipt.json
+  delivery.json: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/delivery.json
+  result.json: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/result.json
+  runner.stdout: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/runner.stdout
+  runner.stderr: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/runner.stderr
+  backend.stdout: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/backend.stdout
+  backend.stderr: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/backend.stderr
+  worker-report.yaml: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/worker-report.yaml
+  partial-result.json: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/partial-result.json
+  attempt-manifest.json: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/attempt-manifest.json
+  durable_report: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/worker-report.yaml
+identities:
+  attempt_id: issue-813-resolution-operability-followup
+  scope: 'issue-resolution: review resolution/recurrence and per-target behavioral
+    observations for corca-ai/charness#813; do not merely diagnose causes'
+  packet_identity: 2d81e0bcdbf5bbea70c6b9ef0e8c76d18d44aa709a02e9c4ea979a0d0dd409ae
+  reviewed_input_identity: 599faf40a83a709169447e4c53d9e9fa013a4304fa92c1211843f56ac3c80387
+  parent_receipt_identity: parent-fff689c570d39449a58203be9cc152d2721d0e81f48ba089
+  findings_identity: daa65b324e4b9ad26c4cf444081ec1c149e67290b9230b89f146026e8b68aabb
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/issue-813-resolution-operability-followup-packet.json
+  packet_sha256: 2d81e0bcdbf5bbea70c6b9ef0e8c76d18d44aa709a02e9c4ea979a0d0dd409ae
+  identity_sha256: 599faf40a83a709169447e4c53d9e9fa013a4304fa92c1211843f56ac3c80387
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+timeout_seconds: 900
+scope: 'issue-resolution: review resolution/recurrence and per-target behavioral observations
+  for corca-ai/charness#813; do not merely diagnose causes'
+lens: 'Assess the resolution and recurrence protection for each target, with an evidence-backed
+  behavioral verdict. Pass only when the repair is supported; block or defer when
+  it is not. Diagnosis alone is insufficient. Additional caller focus: Re-review operational
+  safety after repair. Focus on invocation-local parallel isolation, timeout/cancellation/output
+  streaming, evaluator behavior, exact GC accounting, packaging/gate wiring, and the
+  constrained compatibility allowlist. Identify concrete close blockers only; separate
+  desirable extra tests and SIGKILL non-claims.'
+parent_receipt_identity: parent-fff689c570d39449a58203be9cc152d2721d0e81f48ba089
+semantic_input:
+  entries:
+  - path: .agents/quality-gates.yaml
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0000-content.bin
+    content_sha256: d16c9e329dc79bb45d8a1768d6b07783a7a4b21add155baa2d811fdf425ab6e7
+    carrier_sha256: 0305447472eb62d9ba273ad54e3d986ed658af95cc54c01b99d831d87c43aeb1
+    source: working-tree:.agents/quality-gates.yaml
+    size_bytes: 34661
+    prompt_encoding: utf-8
+  - path: .agents/temp-producers.yaml
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0001-content.bin
+    content_sha256: f147c8a32a0fe9d442837eda5f7dc3141c214b35d90ed4e74bc9ce3373704eac
+    carrier_sha256: dfb143cc3d9bd1e3d497bbfb42b7d41a69c32196dc3b70bcbb51a62e18362eca
+    source: working-tree:.agents/temp-producers.yaml
+    size_bytes: 12853
+    prompt_encoding: utf-8
+  - path: charness-artifacts/spec/2026-09-12-issue-813-temp-output-lifecycle.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0002-content.bin
+    content_sha256: 7f905ca531377922d7789f0ffb361a8792be67e7a15b791e6853465212d4fcc3
+    carrier_sha256: 4051874dfc3bd73cfe848ec96a9a7b6f61cc6f1d5c65f70c377087c1bcb32c20
+    source: working-tree:charness-artifacts/spec/2026-09-12-issue-813-temp-output-lifecycle.md
+    size_bytes: 6065
+    prompt_encoding: utf-8
+  - path: scripts/agent-runtime/run-local-eval-test.mjs
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0003-content.bin
+    content_sha256: 62e366583d0703a37b9f7e3ea3d7744c49fe112e8de8472c69baac54631f54a0
+    carrier_sha256: f150cb4d38ff8eb6cf95bc6dd4df84d987f12aea8afa4d720008d3b283506b16
+    source: working-tree:scripts/agent-runtime/run-local-eval-test.mjs
+    size_bytes: 30562
+    prompt_encoding: utf-8
+  - path: scripts/check-links-external.sh
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0004-content.bin
+    content_sha256: c3c4afe2019407bd88712f79a52f6a819e282f4818668369913b98e98855ef54
+    carrier_sha256: 1a8e9986bedbc6582548415aabab44d38df8ed765c1b9386db638bdd7848feb4
+    source: working-tree:scripts/check-links-external.sh
+    size_bytes: 3636
+    prompt_encoding: utf-8
+  - path: scripts/check-links-internal.sh
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0005-content.bin
+    content_sha256: 054f64a60c0801f68b2608e1bc3d27aa490f3b6a743ff459ce041180c6d4fa36
+    carrier_sha256: e0e3fc383c9862e23a9469c13927cc3630fe79bf9bf50d1534f782e2fc136311
+    source: working-tree:scripts/check-links-internal.sh
+    size_bytes: 4122
+    prompt_encoding: utf-8
+  - path: scripts/check-markdown.sh
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0006-content.bin
+    content_sha256: 647e0af85218385930361c9b1c7e1cfefce0e5aec95e6684ca42d02aeffab715
+    carrier_sha256: 1f19bb2b0ed469570483c382ff2f98d7138b368234648ef01a2f011a37ec75bd
+    source: working-tree:scripts/check-markdown.sh
+    size_bytes: 9424
+    prompt_encoding: utf-8
+  - path: scripts/check-python-lint.sh
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0007-content.bin
+    content_sha256: 7c78f6547db27e8cfa2ea10cf204287d61e74f66534340854918a7d71f04271d
+    carrier_sha256: eb229f0b5d9fa25bad9120aa8fbc913e97446a1d161d124d65d3fed3dd15c428
+    source: working-tree:scripts/check-python-lint.sh
+    size_bytes: 4934
+    prompt_encoding: utf-8
+  - path: scripts/check-secrets.sh
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0008-content.bin
+    content_sha256: ae82cb29b2870f438be1efe29183832322209cecb5e292db7c18b957dcdda947
+    carrier_sha256: c9c5beac62f4036d5a2e17a380455a0ec3efbb2f19d2538daa6cb3bbf4e04bce
+    source: working-tree:scripts/check-secrets.sh
+    size_bytes: 7277
+    prompt_encoding: utf-8
+  - path: scripts/check-shell.sh
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0009-content.bin
+    content_sha256: fe078f6fa57da6feb7d10ffdda5f8842e5d25a47a885aa92a179c08233b9c96e
+    carrier_sha256: 9039b7ca22c2273c94d737d58b0fcfa3e7502981d5addc56ff7cdf526bbb822b
+    source: working-tree:scripts/check-shell.sh
+    size_bytes: 3460
+    prompt_encoding: utf-8
+  - path: scripts/exported-copy-guard.sh
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0010-content.bin
+    content_sha256: 28e2093a9b4f79ae3823ed72f49556fbab53c4fb436f7160cffbf18bbd413fb1
+    carrier_sha256: bcdef0b50d85f0c0d9c17df0b1b7fc04050283b9ef0273ed47672511c5a204d9
+    source: working-tree:scripts/exported-copy-guard.sh
+    size_bytes: 9579
+    prompt_encoding: utf-8
+  - path: scripts/gates/check_temp_producer_inventory.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0011-content.bin
+    content_sha256: 42954d50322bdd3ad1f0a09dce7f4322fda8e17deb21ab50f1478878905ce517
+    carrier_sha256: ab2d9cac9de9c7b034fb6c65a46f32d954bbee1afdb1ed36ddbe30911cb5db80
+    source: working-tree:scripts/gates/check_temp_producer_inventory.py
+    size_bytes: 9385
+    prompt_encoding: utf-8
+  - path: scripts/gates/run_owned_scratch_command.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0012-content.bin
+    content_sha256: 7fe2a257d3b7537f4cdc22ad26cbfdf280bae5ac6ac9c6e876a8a611e7be4b08
+    carrier_sha256: 0dd1d9bbfef3c4de165713648e4b2f9c130812f4aa4699150d4f9a97b917ffcd
+    source: working-tree:scripts/gates/run_owned_scratch_command.py
+    size_bytes: 2928
+    prompt_encoding: utf-8
+  - path: scripts/gates/temp_producer_inventory_lib.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0013-content.bin
+    content_sha256: ce5c804b9892f677df7c1e0c20fa727df6710c721d1a764a65bb84a8e41faa79
+    carrier_sha256: 7bb046d3a9773ce1cc84476fb019669d69c4a962504e90e574f92043a08a2b99
+    source: working-tree:scripts/gates/temp_producer_inventory_lib.py
+    size_bytes: 13865
+    prompt_encoding: utf-8
+  - path: scripts/run_quality_engine_runtime.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0014-content.bin
+    content_sha256: fa543c0aa327b4b180adc00a9b7bad17c6bcba90615b6f8864fcd7118ccc400e
+    carrier_sha256: ad99f17e0749d8dc413b4f1cdda1e4eee61763abbae39bd238d3a509b8bb8dcd
+    source: working-tree:scripts/run_quality_engine_runtime.py
+    size_bytes: 18826
+    prompt_encoding: utf-8
+  - path: tests/agent-runtime/native.test.mjs
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0015-content.bin
+    content_sha256: 2fb0f629ec8cda0875fcdecbe29702ea7848322ddfd2ca608d4690f7fe51fb49
+    carrier_sha256: 6095a93b82b9f9ae60d755d27f386bd79a15412190b131dd727cf90ff63680e2
+    source: working-tree:tests/agent-runtime/native.test.mjs
+    size_bytes: 23451
+    prompt_encoding: utf-8
+  - path: tests/test_runtime_scratch.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0016-content.bin
+    content_sha256: b287bbdcb7e38580684224a75f320e722e513679fba770559b59e15b118642e8
+    carrier_sha256: 91bb519fda286053b8c0a65814089ab6062b8ec9d40d9626b900a8cd4866c8a4
+    source: working-tree:tests/test_runtime_scratch.py
+    size_bytes: 14493
+    prompt_encoding: utf-8
+  - path: tests/test_temp_producer_inventory.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/0017-content.bin
+    content_sha256: 080b7800dbeaf4d656f4e7cf3ca0d002a853ed6c4845bc7236005910ffc13a14
+    carrier_sha256: 3fdba0fab9231047b969b46c207e41773074b1965c35450e68202c0de633eb30
+    source: working-tree:tests/test_temp_producer_inventory.py
+    size_bytes: 15202
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/issue-813-resolution-operability-followup/semantic-input/manifest.json
+  size_bytes: 224723
+runner_output:
+  status: runner-completed
+  returncode: 1
+runner_stream:
+  consistent: true
+  reason: null
+  runner_stdout_sha256: 0661bb06cbb551aab2bbffa1e56154661f29ef7010d7b7961357a7d28b66713f
+  canonical_report_sha256: 0661bb06cbb551aab2bbffa1e56154661f29ef7010d7b7961357a7d28b66713f
+boundary_readback:
+  mode: read-only-worker
+  required: false
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity
+identity_check:
+  status: matched
+  matches: true
+  checks:
+    packet_identity:
+      expected: 2d81e0bcdbf5bbea70c6b9ef0e8c76d18d44aa709a02e9c4ea979a0d0dd409ae
+      actual: 2d81e0bcdbf5bbea70c6b9ef0e8c76d18d44aa709a02e9c4ea979a0d0dd409ae
+      matches: true
+      provenance: 2d81e0bcdbf5bbea70c6b9ef0e8c76d18d44aa709a02e9c4ea979a0d0dd409ae
+    reviewed_input_identity:
+      expected: 599faf40a83a709169447e4c53d9e9fa013a4304fa92c1211843f56ac3c80387
+      actual: 599faf40a83a709169447e4c53d9e9fa013a4304fa92c1211843f56ac3c80387
+      matches: true
+      provenance: 599faf40a83a709169447e4c53d9e9fa013a4304fa92c1211843f56ac3c80387
+    parent_receipt_identity:
+      expected: parent-fff689c570d39449a58203be9cc152d2721d0e81f48ba089
+      actual: parent-fff689c570d39449a58203be9cc152d2721d0e81f48ba089
+      matches: true
+      provenance: parent-fff689c570d39449a58203be9cc152d2721d0e81f48ba089
+  reason: null
