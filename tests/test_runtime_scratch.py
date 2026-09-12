@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -225,7 +226,10 @@ def test_complete_evidence_is_atomically_promoted_and_partial_is_refused(tmp_pat
         source.write_text('{"status":"pass"}\n', encoding="utf-8")
         receipt = owner.promote_file(source, destination)
     assert destination.read_text(encoding="utf-8") == '{"status":"pass"}\n'
-    assert json.loads(receipt.read_text(encoding="utf-8"))["state"] == "retained"
+    durable_receipt = json.loads(receipt.read_text(encoding="utf-8"))
+    assert durable_receipt["state"] == "retained"
+    assert durable_receipt["evidence_path"] == str(destination)
+    assert durable_receipt["evidence_sha256"] == hashlib.sha256(destination.read_bytes()).hexdigest()
     assert not (runtime / "scratch" / "proof" / "complete").exists()
 
     incomplete = owned_scratch(repo, "proof", run_id="partial", runtime_root_path=runtime)
@@ -323,13 +327,17 @@ def test_gc_is_dry_run_by_default_and_removes_only_expired_scratch(tmp_path: Pat
     receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
     (path / "old.txt").write_text("old\n", encoding="utf-8")
 
+    expected_paths = list(path.rglob("*"))
+    expected_entries = len(expected_paths)
+    expected_bytes = sum(item.stat().st_size for item in expected_paths if item.is_file())
+
     preview = gc_scratch_roots(repo, runtime_root_path=runtime)
     assert preview["dry_run"] is True
     assert preview["roots"][0]["disposition"] == "would-remove"
     assert path.exists()
 
     executed = gc_scratch_roots(repo, runtime_root_path=runtime, dry_run=False)
-    assert executed["reclaimed_entries"] == 2
-    assert executed["reclaimed_bytes"] > 0
+    assert executed["reclaimed_entries"] == expected_entries
+    assert executed["reclaimed_bytes"] == expected_bytes
     assert executed["roots"][0]["disposition"] == "removed"
     assert not path.exists()

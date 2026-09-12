@@ -153,14 +153,27 @@ cd "$REPO_ROOT" || exit 1
 # the adapter owns the gate process and preserves its exit code.
 charness_exec_owned_scratch() {
   local adapter="$CHARNESS_GATE_DIR/gates/run_owned_scratch_command.py"
-  # Minimal gate fixtures copy the shell entrypoint and guard only; their
-  # test-owned temporary files are outside this production transport.
-  if [[ -n "${CHARNESS_OWNED_SCRATCH_ROOT:-}" || ! -f "$adapter" ]]; then
-    return 0
-  fi
   local producer="$1"
   local command="$2"
   shift 2
+  # A parent receipt owns the lifetime, but parallel children still need
+  # invocation-local names so one gate cannot remove another gate's files.
+  if [[ -n "${CHARNESS_OWNED_SCRATCH_ROOT:-}" ]]; then
+    local parent_root="$CHARNESS_OWNED_SCRATCH_ROOT"
+    local child_root="$parent_root/${producer}-${BASHPID}-${RANDOM}"
+    mkdir "$child_root"
+    CHARNESS_OWNED_SCRATCH_ROOT="$child_root"
+    export CHARNESS_OWNED_SCRATCH_ROOT
+    return 0
+  fi
+  # Minimal gate fixtures copy the shell entrypoint and guard only. Give those
+  # fixtures the same variable contract without pretending they have a runtime
+  # receipt; their enclosing test directory owns the compatibility root.
+  if [[ ! -f "$adapter" ]]; then
+    CHARNESS_OWNED_SCRATCH_ROOT="$REPO_ROOT/.charness-compat-scratch/${producer}-${BASHPID}-${RANDOM}"
+    export CHARNESS_OWNED_SCRATCH_ROOT
+    return 0
+  fi
   exec python3 "$adapter" \
     --repo-root "$REPO_ROOT" --producer "$producer" -- "$command" "$@"
 }

@@ -66,9 +66,8 @@ def main(argv: list[str] | None = None) -> int:
             env=environment,
             phase=f"owned-scratch:{args.producer}",
             timeout_seconds=args.timeout_seconds,
+            capture=False,
         )
-        sys.stdout.write(result.stdout or "")
-        sys.stderr.write(result.stderr or "")
         returncode = _exit_code(int(result.returncode))
     except KeyboardInterrupt:
         returncode = 130

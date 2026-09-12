@@ -9,12 +9,13 @@ from pathlib import Path
 from typing import Any, Iterable
 
 
-def _load_repo_runtime_bootstrap() -> None:
-    pathlib, sys_module = __import__("pathlib"), __import__("sys")
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
     marker = ("scripts", "adapter_lib.py")
-    root = next((parent for parent in pathlib.Path(__file__).resolve().parents if parent.joinpath(*marker).is_file()), None)
-    if root is not None and str(root) not in sys_module.path:
-        sys_module.path.insert(0, str(root))
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
 
 
 _load_repo_runtime_bootstrap()
