@@ -98,7 +98,9 @@ def test_lesson_writer_fallback_bootstraps_a_partial_layout_root(
     source = ROOT / "scripts" / "lessons" / "lesson_ledger_writer_lib.py"
     partial_root = tmp_path / "partial-install"
     (partial_root / "scripts").mkdir(parents=True)
-    (partial_root / "scripts" / "runtime_bootstrap.py").write_text("# layout marker\n", encoding="utf-8")
+    (partial_root / "scripts" / "runtime_bootstrap.py").write_text(
+        "# layout marker\n", encoding="utf-8"
+    )
     original_resolve = Path.resolve
 
     def resolve_partial_source(path: Path, *args, **kwargs):  # type: ignore[no-untyped-def]
@@ -162,8 +164,12 @@ def test_quality_engine_recovery_refusal_still_closes_runtime(
     context = SimpleNamespace(repo_root=tmp_path, environment={}, terminal_state="active")
     closed: list[SimpleNamespace] = []
     monkeypatch.setattr("scripts.run_quality_engine.prepare_runtime", lambda *a, **k: context)
-    monkeypatch.setattr("scripts.run_quality_engine.close_runtime", lambda value: closed.append(value))
-    monkeypatch.setattr("scripts.run_quality_engine.load_gate_list", lambda _path: SimpleNamespace(gates=()))
+    monkeypatch.setattr(
+        "scripts.run_quality_engine.close_runtime", lambda value: closed.append(value)
+    )
+    monkeypatch.setattr(
+        "scripts.run_quality_engine.load_gate_list", lambda _path: SimpleNamespace(gates=())
+    )
     monkeypatch.setattr("scripts.run_quality_engine._mutation_recovery_pending", lambda _ctx: True)
     args = _quality_args(tmp_path)
 
@@ -180,8 +186,12 @@ def test_quality_engine_empty_selection_finishes_then_closes_runtime(
     closed: list[SimpleNamespace] = []
     finished: list[dict[str, object]] = []
     monkeypatch.setattr("scripts.run_quality_engine.prepare_runtime", lambda *a, **k: context)
-    monkeypatch.setattr("scripts.run_quality_engine.close_runtime", lambda value: closed.append(value))
-    monkeypatch.setattr("scripts.run_quality_engine.load_gate_list", lambda _path: SimpleNamespace(gates=()))
+    monkeypatch.setattr(
+        "scripts.run_quality_engine.close_runtime", lambda value: closed.append(value)
+    )
+    monkeypatch.setattr(
+        "scripts.run_quality_engine.load_gate_list", lambda _path: SimpleNamespace(gates=())
+    )
     monkeypatch.setattr("scripts.run_quality_engine._mutation_recovery_pending", lambda _ctx: False)
     monkeypatch.setattr("scripts.run_quality_engine.select_gates", lambda *a, **k: {})
     monkeypatch.setattr("scripts.run_quality_engine.not_run_gates", lambda *a, **k: ())
@@ -214,8 +224,12 @@ def test_quality_engine_early_preflight_returns_close_runtime(
     calls: list[str] = []
     selected = {"phase": (SimpleNamespace(label="selected"),)}
     monkeypatch.setattr("scripts.run_quality_engine.prepare_runtime", lambda *a, **k: context)
-    monkeypatch.setattr("scripts.run_quality_engine.close_runtime", lambda value: closed.append(value))
-    monkeypatch.setattr("scripts.run_quality_engine.load_gate_list", lambda _path: SimpleNamespace(gates=()))
+    monkeypatch.setattr(
+        "scripts.run_quality_engine.close_runtime", lambda value: closed.append(value)
+    )
+    monkeypatch.setattr(
+        "scripts.run_quality_engine.load_gate_list", lambda _path: SimpleNamespace(gates=())
+    )
     monkeypatch.setattr("scripts.run_quality_engine._mutation_recovery_pending", lambda _ctx: False)
     monkeypatch.setattr("scripts.run_quality_engine.select_gates", lambda *a, **k: selected)
     monkeypatch.setattr("scripts.run_quality_engine.not_run_gates", lambda *a, **k: ())
@@ -285,6 +299,25 @@ def test_runtime_engine_optional_owner_fallback_cleans_fixture_scratch(
     owner.close(state="failed")
     assert not scratch.exists()
     assert owner._directory is None
+
+
+def test_runtime_engine_passes_owned_root_to_child_environment(tmp_path: Path) -> None:
+    module = load_script_module(
+        "quality_runtime_owned_root",
+        ROOT / "scripts" / "run_quality_engine_runtime.py",
+    )
+    runtime = tmp_path / "runtime"
+    module.configure_runtime_environment = lambda _repo, environment: {
+        **environment,
+        "CHARNESS_RUNTIME_ROOT": str(runtime),
+        "CHARNESS_RUNTIME_ROOT_AUTO": "0",
+    }
+    context = module.prepare_runtime(tmp_path, mode="read-only", labels="")
+    try:
+        assert context.environment["CHARNESS_OWNED_SCRATCH_ROOT"] == str(context.temp_dir)
+        assert context.temp_dir.is_dir()
+    finally:
+        context.scratch_owner.close()
 
 
 def _tarball(entries: list[tarfile.TarInfo], payloads: dict[str, bytes] | None = None) -> bytes:
@@ -475,7 +508,9 @@ def _bounded_review() -> dict[str, object]:
 def test_task_execution_recovers_nested_and_windowed_bounded_reviews(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    nested = json.dumps([{"noise": []}, [{"kind": "charness.bounded_review.v1", "verdict": "defer"}]])
+    nested = json.dumps(
+        [{"noise": []}, [{"kind": "charness.bounded_review.v1", "verdict": "defer"}]]
+    )
     nested_carrier = task_run_execution._reviewer_result_carrier({"text": nested})
     assert nested_carrier is not None
     assert nested_carrier["source"] == "text-json"
