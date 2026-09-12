@@ -116,6 +116,27 @@ construction refuse before finalization. This is not a third round reopening
 the earlier release design or an upgrade of the retained operator block.
 Parent owns final integration gates; mocked validator tests are not a live proof.
 
+### Final install regression disposition
+
+The first prepared commit `a13afe47f9ad` and claims child `000f41070e0b` are
+preserved on local branch `archive/release863-before-support-subtree-fix`.
+Nothing was pushed or published. Final release pytest passed 9,748 tests and
+failed 19 install/update tests, all on the same unused upstream archive link:
+`specdown-main/CLAUDE.md`. The support consumer requests only
+`cmd/specdown/skills/specdown`; extracting the whole repo made unrelated files
+an installation dependency. Extraction now selects that declared subtree and
+continues to reject consumed links, special entries, and destination escapes.
+The default whole-archive helper behavior is unchanged.
+
+The focused archive tests passed 21 cases; the affected install/update group
+passed 52 cases with release-only tests enabled. Independent bounded reviewer
+`release863-support-subtree-20260912` passed without findings in 31.4 seconds.
+Its packet is `release863-support-subtree-20260912-packet.json`, SHA256
+`cde025908f93ba7b6ea4a062da71c644580b090b3299e8c2c3f5231e20d2a6b6`,
+input identity `0e8d07317395094d7dc10ced36270768205429e01cbabcc9864266ac736fa93c`.
+The complete worker carrier and counterweight remain under `workers/`.
+Old claims approval is not reused for the replacement prepared record.
+
 ## Reviewed Input Identity
 
 - Packet consumed: charness-artifacts/critique/release863-refusal-repair-20260912-packet.json

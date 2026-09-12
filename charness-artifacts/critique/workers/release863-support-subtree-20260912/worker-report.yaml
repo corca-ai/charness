@@ -1,0 +1,61 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'v8.6.3 installation regression: scoped upstream archive extraction'
+attempt_id: release863-support-subtree-20260912
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 0484b37525ece9b1dc602ec7b63ca47c42f1df7114d704bfe1afce5c01e93b43
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release863-support-subtree-20260912/receipt.json
+ledger_path: charness-artifacts/critique/workers/release863-support-subtree-20260912/delivery.json
+producer_run_id: run-release863-support-subtree-20260912
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release863-support-subtree-20260912/result.json
+  receipt_file: charness-artifacts/critique/workers/release863-support-subtree-20260912/receipt.json
+  producer_run_id: run-release863-support-subtree-20260912
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 381a42c3be466e1bef0d63d5ad866cae4c493e6605859013d9a52d78a857bfa4
+receipt_output_sha256: 381a42c3be466e1bef0d63d5ad866cae4c493e6605859013d9a52d78a857bfa4
+packet_identity: cde025908f93ba7b6ea4a062da71c644580b090b3299e8c2c3f5231e20d2a6b6
+reviewed_input_identity: 0e8d07317395094d7dc10ced36270768205429e01cbabcc9864266ac736fa93c
+parent_receipt_identity: parent-8b3011397e7bdd8791aa25e73a208f983cc4f915ff8be61a
+provenance:
+  scope: 'v8.6.3 installation regression: scoped upstream archive extraction'
+  packet_identity: cde025908f93ba7b6ea4a062da71c644580b090b3299e8c2c3f5231e20d2a6b6
+  reviewed_input_identity: 0e8d07317395094d7dc10ced36270768205429e01cbabcc9864266ac736fa93c
+  parent_receipt_identity: parent-8b3011397e7bdd8791aa25e73a208f983cc4f915ff8be61a
+  attempt_id: release863-support-subtree-20260912
+  attempt_scope: 'v8.6.3 installation regression: scoped upstream archive extraction'
+  attempt_packet_identity: cde025908f93ba7b6ea4a062da71c644580b090b3299e8c2c3f5231e20d2a6b6
+  attempt_parent_receipt_identity: parent-8b3011397e7bdd8791aa25e73a208f983cc4f915ff8be61a
+  result_packet_identity: cde025908f93ba7b6ea4a062da71c644580b090b3299e8c2c3f5231e20d2a6b6
+  result_reviewed_input_identity: 0e8d07317395094d7dc10ced36270768205429e01cbabcc9864266ac736fa93c
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 0484b37525ece9b1dc602ec7b63ca47c42f1df7114d704bfe1afce5c01e93b43
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

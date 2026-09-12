@@ -1,0 +1,53 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "v8.6.3 installation regression: scoped upstream archive extraction",
+  "packet_sha256": "cde025908f93ba7b6ea4a062da71c644580b090b3299e8c2c3f5231e20d2a6b6",
+  "reviewed_input_identity_sha256": "0e8d07317395094d7dc10ced36270768205429e01cbabcc9864266ac736fa93c",
+  "verdict": "pass",
+  "target_observations": [
+    {
+      "target": "v8.6.3",
+      "verdict": "pass",
+      "summary": "The bounded repair excludes the unrelated root symlink while preserving destination confinement and rejecting selected links and special files.",
+      "evidence": [
+        "The manifest selects cmd/specdown/skills/specdown; _resolve_upstream_source_path passes that path as subtree and subsequently checks archive_root / relative_source_path.",
+        "_safe_extract_tarball filters members before validation and extraction, so specdown-main/CLAUDE.md is neither validated nor extracted.",
+        "Every selected member is checked for links, special types, and resolved destination containment before any selected member is extracted.",
+        "Without subtree, all archive members remain subject to the original validation.",
+        "Provided tests cover the unrelated root symlink, selected symlinks and hardlinks, unconfined subtree arguments, and default full-archive link rejection."
+      ]
+    }
+  ],
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "Skipped ancestor links might redirect selected descendants.",
+      "bin": "non-blocking",
+      "disposition": "Ancestor entries outside the selected subtree are never extracted. They cannot create an archive-supplied redirection; links at the selected root or below it are rejected."
+    },
+    {
+      "concern": "Absolute paths and traversal could escape the extraction destination.",
+      "bin": "non-blocking",
+      "disposition": "Skipped entries cause no writes. Selected entries undergo resolved destination containment checks. Traversal remaining within the destination can materialize unrelated scratch content, but does not establish an escape or link bypass."
+    },
+    {
+      "concern": "Nested or multiple archive roots could silently select an incorrect skill.",
+      "bin": "non-blocking",
+      "disposition": "Selection removes exactly one wrapper component. An extra wrapper ordinarily produces no selected members and fails root validation; multiple extracted directory roots also fail. The caller additionally requires the configured skill directory before promotion."
+    },
+    {
+      "concern": "Focused tests do not exercise every requested edge case or archive caller propagation.",
+      "bin": "verification-gap",
+      "disposition": "Static inspection supports the bounded repair. Additional regression cases for selected ancestor links, absolute member names, traversal, nested roots, and the fetch-to-promotion caller would strengthen evidence without requiring release redesign."
+    }
+  ],
+  "next_move": "Proceed with focused installation verification; this review does not establish that the 19 failed installations have been rerun successfully.",
+  "non_claims": [
+    "Reviewed only the three supplied semantic payloads; no workspace changes or test execution.",
+    "No whole-release approval or live installation success claim.",
+    "Reviewer tier application remains unverified by the packet.",
+    "Goal lineage is not-goal-bound: critique review was run without a Goal Run Work Item identity; binding, draft, goal_run, and work_item are null."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

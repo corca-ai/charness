@@ -1,0 +1,163 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: runner-completed
+execution_state: terminal
+lifecycle_state: terminal
+reviewer_started: true
+delivery_state: findings-received
+verdict_state: pass
+review_verdict: pass
+classification: unclassified
+approval_eligible: true
+output:
+  state: terminal
+  approval_eligible: true
+  schema_version: charness.reviewer_worker_report.v1
+  findings_identity: 381a42c3be466e1bef0d63d5ad866cae4c493e6605859013d9a52d78a857bfa4
+  partial_artifacts:
+  - schema_version: charness.reviewer_partial_output/v1
+    kind: bounded-review-result
+    path: charness-artifacts/critique/workers/release863-support-subtree-20260912/partial-result.json
+    bytes: 3521
+    sha256: 93bbd21d7c3352aeeabb69594bddd18d7e485481106da90dfe4a3b2dd9f890f2
+output_state: terminal
+failure_identity: c0326ac9f8d6cda80acc483a567521e7c91c7492aa9bb76785302f4899770d90
+next_move: consume the identity-bound delivered reviewer result
+runner_returncode: 0
+runner_status: runner-completed
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/release863-support-subtree-20260912-packet.json
+  schema: charness-artifacts/critique/workers/release863-support-subtree-20260912/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/release863-support-subtree-20260912/capability.json
+  prompt: charness-artifacts/critique/workers/release863-support-subtree-20260912/review-prompt.md
+  plan: charness-artifacts/critique/workers/release863-support-subtree-20260912/run-plan.json
+  ledger: charness-artifacts/critique/workers/release863-support-subtree-20260912/delivery.json
+  output: charness-artifacts/critique/workers/release863-support-subtree-20260912/result.json
+  receipt: charness-artifacts/critique/workers/release863-support-subtree-20260912/receipt.json
+  report: charness-artifacts/critique/workers/release863-support-subtree-20260912/worker-report.yaml
+  runner_stdout: charness-artifacts/critique/workers/release863-support-subtree-20260912/runner.stdout
+  runner_stderr: charness-artifacts/critique/workers/release863-support-subtree-20260912/runner.stderr
+  backend_stdout: charness-artifacts/critique/workers/release863-support-subtree-20260912/backend.stdout
+  backend_stderr: charness-artifacts/critique/workers/release863-support-subtree-20260912/backend.stderr
+  summary: charness-artifacts/critique/workers/release863-support-subtree-20260912/lifecycle.yaml
+  semantic-input/0000-content.bin: charness-artifacts/critique/workers/release863-support-subtree-20260912/semantic-input/0000-content.bin
+  semantic-input/0001-content.bin: charness-artifacts/critique/workers/release863-support-subtree-20260912/semantic-input/0001-content.bin
+  semantic-input/0002-content.bin: charness-artifacts/critique/workers/release863-support-subtree-20260912/semantic-input/0002-content.bin
+  semantic-input/manifest.json: charness-artifacts/critique/workers/release863-support-subtree-20260912/semantic-input/manifest.json
+  review-prompt.md: charness-artifacts/critique/workers/release863-support-subtree-20260912/review-prompt.md
+  run-plan.json: charness-artifacts/critique/workers/release863-support-subtree-20260912/run-plan.json
+  bounded-review-result.schema.json: charness-artifacts/critique/workers/release863-support-subtree-20260912/bounded-review-result.schema.json
+  capability.json: charness-artifacts/critique/workers/release863-support-subtree-20260912/capability.json
+  receipt.json: charness-artifacts/critique/workers/release863-support-subtree-20260912/receipt.json
+  delivery.json: charness-artifacts/critique/workers/release863-support-subtree-20260912/delivery.json
+  result.json: charness-artifacts/critique/workers/release863-support-subtree-20260912/result.json
+  runner.stdout: charness-artifacts/critique/workers/release863-support-subtree-20260912/runner.stdout
+  runner.stderr: charness-artifacts/critique/workers/release863-support-subtree-20260912/runner.stderr
+  backend.stdout: charness-artifacts/critique/workers/release863-support-subtree-20260912/backend.stdout
+  backend.stderr: charness-artifacts/critique/workers/release863-support-subtree-20260912/backend.stderr
+  worker-report.yaml: charness-artifacts/critique/workers/release863-support-subtree-20260912/worker-report.yaml
+  partial-result.json: charness-artifacts/critique/workers/release863-support-subtree-20260912/partial-result.json
+  attempt-manifest.json: charness-artifacts/critique/workers/release863-support-subtree-20260912/attempt-manifest.json
+  durable_report: charness-artifacts/critique/workers/release863-support-subtree-20260912/worker-report.yaml
+identities:
+  attempt_id: release863-support-subtree-20260912
+  scope: 'v8.6.3 installation regression: scoped upstream archive extraction'
+  packet_identity: cde025908f93ba7b6ea4a062da71c644580b090b3299e8c2c3f5231e20d2a6b6
+  reviewed_input_identity: 0e8d07317395094d7dc10ced36270768205429e01cbabcc9864266ac736fa93c
+  parent_receipt_identity: parent-8b3011397e7bdd8791aa25e73a208f983cc4f915ff8be61a
+  findings_identity: 381a42c3be466e1bef0d63d5ad866cae4c493e6605859013d9a52d78a857bfa4
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/release863-support-subtree-20260912-packet.json
+  packet_sha256: cde025908f93ba7b6ea4a062da71c644580b090b3299e8c2c3f5231e20d2a6b6
+  identity_sha256: 0e8d07317395094d7dc10ced36270768205429e01cbabcc9864266ac736fa93c
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+timeout_seconds: 900
+scope: 'v8.6.3 installation regression: scoped upstream archive extraction'
+lens: 'Review only the newly discovered release install regression and repair. All
+  19 final install failures had ValueError for specdown-main/CLAUDE.md: Charness needs
+  cmd/specdown/skills/specdown, not that repository root symlink. _safe_extract_tarball
+  now filters selected subtree before extraction and retains rejection of links, special
+  files, and escaped paths inside the consumed subtree. Default full-archive calls
+  still reject links. Check path traversal, selected ancestor links, absolute paths,
+  nested archive roots, and propagation to caller. Distinguish real unsafe behavior
+  from irrelevant skipped files; no whole release redesign.'
+parent_receipt_identity: parent-8b3011397e7bdd8791aa25e73a208f983cc4f915ff8be61a
+semantic_input:
+  entries:
+  - path: integrations/tools/specdown.json
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release863-support-subtree-20260912/semantic-input/0000-content.bin
+    content_sha256: 8aef7d84999f4ab70d11635f8837b465e667a0baed2b03a6638be876acc61cb8
+    carrier_sha256: 5579cd08b913b98c103fc90c254044af0f273bd33f0ff5c3feed41b0d74ce497
+    source: working-tree:integrations/tools/specdown.json
+    size_bytes: 3112
+    prompt_encoding: utf-8
+  - path: scripts/support_sync_lib.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release863-support-subtree-20260912/semantic-input/0001-content.bin
+    content_sha256: 33fbf4798ed80603e7b4096c41967cf32babc743015d3948a3840df47b0ccbc4
+    carrier_sha256: fdb7753fa10d08a03b96c8880f5ecadb3e06ff0cf32a724774baa667bec0cec5
+    source: working-tree:scripts/support_sync_lib.py
+    size_bytes: 19096
+    prompt_encoding: utf-8
+  - path: tests/control_plane/test_support_sync_helpers.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release863-support-subtree-20260912/semantic-input/0002-content.bin
+    content_sha256: b32755f6df7a94a8d236fe4e1e85efb4c33e6a6c0f54afe9cae189e2be046bee
+    carrier_sha256: 65161d3ec55fce2feb594ce1dc99821860bca58186a7d25ff972550af169d027
+    source: working-tree:tests/control_plane/test_support_sync_helpers.py
+    size_bytes: 16451
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/release863-support-subtree-20260912/semantic-input/manifest.json
+  size_bytes: 38659
+runner_output:
+  status: runner-completed
+  returncode: 0
+runner_stream:
+  consistent: true
+  reason: null
+  runner_stdout_sha256: ff59d0a26289e47e4043f21d5a739a3558bc1a2dd9807d47b51164fd286d9f76
+  canonical_report_sha256: ff59d0a26289e47e4043f21d5a739a3558bc1a2dd9807d47b51164fd286d9f76
+boundary_readback:
+  mode: read-only-worker
+  required: false
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity
+identity_check:
+  status: matched
+  matches: true
+  checks:
+    packet_identity:
+      expected: cde025908f93ba7b6ea4a062da71c644580b090b3299e8c2c3f5231e20d2a6b6
+      actual: cde025908f93ba7b6ea4a062da71c644580b090b3299e8c2c3f5231e20d2a6b6
+      matches: true
+      provenance: cde025908f93ba7b6ea4a062da71c644580b090b3299e8c2c3f5231e20d2a6b6
+    reviewed_input_identity:
+      expected: 0e8d07317395094d7dc10ced36270768205429e01cbabcc9864266ac736fa93c
+      actual: 0e8d07317395094d7dc10ced36270768205429e01cbabcc9864266ac736fa93c
+      matches: true
+      provenance: 0e8d07317395094d7dc10ced36270768205429e01cbabcc9864266ac736fa93c
+    parent_receipt_identity:
+      expected: parent-8b3011397e7bdd8791aa25e73a208f983cc4f915ff8be61a
+      actual: parent-8b3011397e7bdd8791aa25e73a208f983cc4f915ff8be61a
+      matches: true
+      provenance: parent-8b3011397e7bdd8791aa25e73a208f983cc4f915ff8be61a
+  reason: null

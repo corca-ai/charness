@@ -1,0 +1,35 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "integrations/tools/specdown.json",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release863-support-subtree-20260912/semantic-input/0000-content.bin",
+      "content_sha256": "8aef7d84999f4ab70d11635f8837b465e667a0baed2b03a6638be876acc61cb8",
+      "carrier_sha256": "5579cd08b913b98c103fc90c254044af0f273bd33f0ff5c3feed41b0d74ce497",
+      "source": "working-tree:integrations/tools/specdown.json",
+      "size_bytes": 3112,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/support_sync_lib.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release863-support-subtree-20260912/semantic-input/0001-content.bin",
+      "content_sha256": "33fbf4798ed80603e7b4096c41967cf32babc743015d3948a3840df47b0ccbc4",
+      "carrier_sha256": "fdb7753fa10d08a03b96c8880f5ecadb3e06ff0cf32a724774baa667bec0cec5",
+      "source": "working-tree:scripts/support_sync_lib.py",
+      "size_bytes": 19096,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/control_plane/test_support_sync_helpers.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release863-support-subtree-20260912/semantic-input/0002-content.bin",
+      "content_sha256": "b32755f6df7a94a8d236fe4e1e85efb4c33e6a6c0f54afe9cae189e2be046bee",
+      "carrier_sha256": "65161d3ec55fce2feb594ce1dc99821860bca58186a7d25ff972550af169d027",
+      "source": "working-tree:tests/control_plane/test_support_sync_helpers.py",
+      "size_bytes": 16451,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}
