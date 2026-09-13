@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "artifact_kind": "capability-catalog",
-  "generated_at": "2026-08-29T01:09:34Z",
-  "repo": "charness",
+  "generated_at": "2026-09-13T22:31:12Z",
+  "repo": "charness-nose-0.21.0",
   "inventory": {
     "adapter": {
       "found": false,
@@ -157,9 +157,9 @@
           "skills/public/debug/references/pattern-ladder.md",
           "skills/public/debug/references/disconfirmer-first.md",
           "skills/public/debug/references/named-target-verification.md",
+          "skills/public/debug/references/detection-gap.md",
           "skills/public/debug/references/five-whys-causal-chain.md",
           "skills/public/debug/references/invariant-first-review.md",
-          "skills/public/debug/references/detection-gap.md",
           "skills/public/debug/references/sibling-search.md",
           "skills/shared/references/rca-ledger-append.md",
           "skills/public/debug/references/adapter-contract.md",
@@ -279,6 +279,7 @@
         "skill_dir": "skills/public/impl",
         "canonical_path": "skills/public/impl/SKILL.md",
         "referenced_paths": [
+          "skills/public/debug/SKILL.md",
           "skills/shared/references/prescribed-path-self-test.md",
           "skills/shared/references/source-bound-records.md",
           "skills/public/impl/references/adapter-contract.md",
@@ -301,13 +302,13 @@
         "canonical_path": "skills/public/issue/SKILL.md",
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
+          "skills/public/issue/references/issue-shaping.md",
+          "skills/public/issue/references/closeout-discipline.md",
+          "skills/public/issue/references/issue-backend.md",
           "skills/public/issue/adapter.example.yaml",
           "skills/public/issue/references/resolve-flow.md",
-          "skills/public/issue/references/issue-shaping.md",
           "skills/public/issue/references/resolution-brief.md",
           "skills/public/issue/references/causal-review.md",
-          "skills/public/issue/references/issue-backend.md",
-          "skills/public/issue/references/closeout-discipline.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/shared/references/rca-ledger-append.md",
@@ -404,15 +405,17 @@
         "canonical_path": "skills/public/retro/SKILL.md",
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
-          "skills/public/retro/references/expert-lens.md",
           "skills/public/retro/references/adapter-contract.md",
           "skills/public/retro/references/phase-aware-efficiency.md",
           "skills/public/retro/references/prepare-packet.md",
+          "skills/public/issue/references/issue-shaping.md",
           "skills/public/retro/references/section-guide.md",
           "skills/public/retro/references/waste-sibling-scan.md",
           "skills/shared/references/retro-issue-destination-split.md",
+          "skills/shared/references/lesson-graduation.md",
           "skills/shared/references/rca-ledger-append.md",
           "skills/public/retro/references/trigger-and-persistence.md",
+          "skills/public/retro/references/expert-lens.md",
           "skills/public/debug/references/sibling-search.md"
         ],
         "source": "local-public",
@@ -909,7 +912,7 @@
       {
         "id": "nose",
         "kind": "external_binary",
-        "summary": "Required (>=0.17.0) clone scanner used by `quality`: advisory code clone families plus the Markdown near-duplicate engine that replaced the bespoke document near-copy gate. The code path runs `nose query` (`nose scan` was removed in 0.13.3). The committed dup-ratchet/clone baselines are seeded on 0.17.0 (schema v7) and keyed by gate-computed offset/path-independent content fingerprints (slice 4), not nose family ids; the family SET nose groups is still scanner-version-scoped.",
+        "summary": "Required (>=0.17.0) clone scanner used by `quality`: advisory code clone families plus the Markdown near-duplicate engine that replaced the bespoke document near-copy gate. The code path runs `nose query` (`nose scan` was removed in 0.13.3). The committed clone fingerprint baseline is seeded on 0.21.0 (schema v10) and keyed by gate-computed offset/path-independent content fingerprints (slice 4), not nose family ids; the family SET nose groups is still scanner-version-scoped.",
         "access_modes": [
           "binary"
         ],

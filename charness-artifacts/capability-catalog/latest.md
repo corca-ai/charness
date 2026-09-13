@@ -1,6 +1,6 @@
 # Capability Catalog
-Date: 2026-08-29
-Updated: 2026-08-29T01:09:34Z
+Date: 2026-09-13
+Updated: 2026-09-13T22:31:12Z
 
 ## Summary
 - public skills: 19
@@ -46,7 +46,7 @@ Updated: 2026-08-29T01:09:34Z
 - `gitleaks` (external integration): Fast Go-based secret scanner. Preferred over the secretlint fallback by `scripts/check-secrets.sh`; sub-second on the charness tree vs ~5s for the npm secretlint path.
 - `glow` (external integration): Terminal markdown renderer used by doc-facing seams such as `narrative` and `quality` for width-specific rendered review artifacts.
 - `lychee` (external integration): Fast Markdown link checker used by the canonical docs lint to validate internal and external links.
-- `nose` (external integration): Required (>=0.17.0) clone scanner used by `quality`: advisory code clone families plus the Markdown near-duplicate engine that replaced the bespoke document near-copy gate. The code path runs `nose query` (`nose scan` was removed in 0.13.3). The committed dup-ratchet/clone baselines are seeded on 0.17.0 (schema v7) and keyed by gate-computed offset/path-independent content fingerprints (slice 4), not nose family ids; the family SET nose groups is still scanner-version-scoped.
+- `nose` (external integration): Required (>=0.17.0) clone scanner used by `quality`: advisory code clone families plus the Markdown near-duplicate engine that replaced the bespoke document near-copy gate. The code path runs `nose query` (`nose scan` was removed in 0.13.3). The committed clone fingerprint baseline is seeded on 0.21.0 (schema v10) and keyed by gate-computed offset/path-independent content fingerprints (slice 4), not nose family ids; the family SET nose groups is still scanner-version-scoped.
 - `repograph` (external integration): Rust repository-topology analyzer built from the `native/repograph` crate that ships in the charness checkout. Use when a gate needs export-safety, plugin-reference, standalone-target, or path-classification facts derived from real Python ASTs instead of regex approximations.
 - `ruff` (external integration): Fast Python linter used by `scripts/run-quality.sh` as the standing Python lint gate, including mccabe complexity checks.
 - `specdown` (external integration): Executable specification runner that turns Markdown specs into runnable tests and reports.
