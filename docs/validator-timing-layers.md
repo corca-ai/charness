@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-06
+> Last verified: 2026-09-14
 
 One portable validator, invoked at as many cheap timings as fit — never a
 forked rule copy per timing. The validator stays the single source of truth;
@@ -25,7 +25,10 @@ Timings, ordered by feedback latency (earliest first):
    the cheap owners of staged files
    ([check_staged_cheap_owners.py](../scripts/hooks/check_staged_cheap_owners.py))
    in `.githooks/pre-commit`, plus the commit-msg release-lane receipt check
-   (`Slice-reopen:` skips that receipt, not the cheap owners).
+   (`Slice-reopen:` skips that receipt, not the cheap owners). The same script
+   accepts `--paths` for unstaged edits: run it on the files just edited
+   before a bundle-boundary lane. Waiting for pre-commit is how
+   `gate-failures-patched-serially` recurs.
 4. **Bundle boundary** — the broad gate
    ([run-quality.sh](../scripts/run-quality.sh)) plus the pre-push hook.
    [Verification applicability](./operating-contract.md#verification) is owned

@@ -2,7 +2,7 @@
 
 > Status: conditional (operator takeover path)
 > Source of truth: functional checks, the active Goal Run parent/cursor, and the active plan
-> Last verified: 2026-09-04
+> Last verified: 2026-09-14
 
 This document translates active work into operator-owned acceptance runs. The
 plan of record is the active Goal Run parent ([goal lifecycle](./goal-lifecycle.md)).
@@ -21,7 +21,7 @@ work touches integrations or packaging, read
 
 ## Progressive Operator Path
 
-See [docs/operator-progressive-path.md](./operator-progressive-path.md) for the per-horizon operator capability map (Day 1, Week 8, Month 6).
+See [docs/operator-progressive-path.md](./operator-progressive-path.md) for the operator capability map.
 
 ## Remaining Items
 

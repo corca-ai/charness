@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: this page and its linked executable surfaces
-> Last verified: 2026-09-06
+> Last verified: 2026-09-14
 
 This document owns the detail behind the parallel-work rule in
 [AGENTS.md](../AGENTS.md). The root file states the default; this one states
@@ -51,8 +51,9 @@ stronger tier for critical-path integration, architecture, ambiguous repair, or
 the high-leverage review classes named by their owning skill.
 
 A repository or user may name the concrete host mapping. This repository keeps
-that mapping in [repo-local host notes](../.agents/codex-host.md); portable
-public skills keep the tier name and let the consuming host resolve it. An
+that mapping in [Codex](../.agents/codex-host.md), [Claude](../.agents/claude-host.md),
+and [Grok](../.agents/grok-host.md) host notes; portable public skills keep the
+tier name and let the consuming host resolve it. An
 explicit choice remains active across compaction, reload, and routine goal
 pickup until the user or repository changes it. Omitting a model field means
 "inherit"; it does not satisfy an explicit fast-tier choice.

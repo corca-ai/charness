@@ -303,6 +303,21 @@
       ],
       "rationale": "Filtered mutation work is summarized by inspected and skipped counts."
     },
+    "scripts/mutation/mutation_outer_budget.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "operator_summary",
+        "artifact_visible",
+        "hard_failure_or_blocker"
+      ],
+      "evidence_terms": [
+        "exec_skipped_outer_budget",
+        "skipped"
+      ],
+      "rationale": "When remaining GitHub job time cannot fit cosmic-ray exec plus dump, the wrapper skips exec, writes exec_skipped_outer_budget on the timeout marker, prints the reason, and returns non-zero. That skip is a refuse, not a scored mutation pass."
+    },
     "scripts/core/gate_report_emit.py": {
       "states": [
         "skipped"

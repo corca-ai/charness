@@ -410,6 +410,31 @@ def test_impl_keeps_optional_proof_conditional() -> None:
     assert "changed-line proof" in skill_text
 
 
+def test_impl_reference_triggers_are_exclusive() -> None:
+    """Ordinary impl completes from SKILL.md; a bulk reference sweep is a skill bug."""
+    skill_text = IMPL_SKILL
+    assert "Ordinary implementation completes from this file" in skill_text
+    assert "do not sweep them" in skill_text
+    references_block = skill_text.split("## References", 1)[1]
+    assert "Ordinary implementation completes from this file" not in references_block
+    listed = [
+        line.strip()
+        for line in skill_text.split("## References", 1)[1].splitlines()
+        if line.startswith("- `")
+    ]
+    assert listed, skill_text
+    for line in listed:
+        assert " (only " in line, line
+    for path in (
+        "references/adapter-contract.md",
+        "references/contract-consumption.md",
+        "references/design-lenses.md",
+        "references/sequence-discipline.md",
+    ):
+        assert any(path in line and " (only " in line for line in listed), path
+    assert "cheap owner of the files just edited" in skill_text
+
+
 def test_impl_source_and_materialized_plugin_export_are_byte_identical(exported_plugin_tree) -> None:
     assert (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_bytes() == (
         (exported_plugin_tree / "skills" / "impl" / "SKILL.md").read_bytes()

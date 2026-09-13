@@ -134,7 +134,8 @@
       "acceptance_evidence": [
         "routes the prompt to `impl` instead of an adjacent public skill",
         "names or refreshes `charness-artifacts/impl` when the skill persists durable state",
-        "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
+        "handles the skill's load-bearing contract without needing the user to restate obvious repo context",
+        "opens impl references only when their listed trigger is live; ordinary implementation completes from SKILL.md"
       ]
     },
     {

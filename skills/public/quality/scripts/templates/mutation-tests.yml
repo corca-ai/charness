@@ -35,6 +35,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
+      - name: Record mutation job outer budget
+        # Inner exec timeout must not outlive this job. The wrapper caps
+        # `--exec-timeout-seconds` to remaining job time minus dump reserve
+        # (recurrence-class: inner-timeout-outlives-outer-budget).
+        run: |
+          echo "MUTATION_JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
+          echo "MUTATION_JOB_TIMEOUT_SECONDS=10800" >> "$GITHUB_ENV"
       - name: Checkout
         uses: actions/checkout@v6
         with:
@@ -291,9 +298,13 @@ jobs:
             // sliced away -- so the D repair silently disabled the B repair for exactly
             // the population B is about: the runs with the most diagnostic output, whose
             // summary describes a collateral symptom while the log names the real failure.
+            const unmeasured = /- Status: \*\*UNMEASURED\*\*/.test(summary);
+            const lead = (unmeasured || runOutcome === 'skipped')
+              ? `Mutation run did not measure on \`${context.sha}\`. This is not a scored mutation regression; read the blocking signal and step outcomes.`
+              : `Mutation testing failed on \`${context.sha}\`.`;
             const body = [
               marker,
-              `Mutation testing failed on \`${context.sha}\`.`,
+              lead,
               '',
               `Workflow run: ${runUrl}`,
               '',

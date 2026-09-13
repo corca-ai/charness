@@ -193,6 +193,38 @@ def test_a_failing_run_headlines_collateral_and_attaches_the_log_despite_a_summa
     assert "baseline failed: ImportError" in body
 
 
+def test_an_unmeasured_summary_is_not_headlined_as_a_mutation_regression(
+    workflow: Path, tmp_path: Path
+) -> None:
+    """UNMEASURED means nothing was scored. Leading with 'Mutation testing failed'
+    is the same false-headline class as calling a baseline abort a score drop.
+
+    Drive RUN_OUTCOME=failure, not skipped: the #764 baseline-abort shape ran
+    commands and still scored nothing. Pairing UNMEASURED with skipped lets a
+    regression drop the unmeasured disjunct and stay green.
+    """
+    calls = _run(
+        workflow,
+        tmp_path,
+        {
+            "SUMMARY_PATH": _write(
+                tmp_path,
+                "summary.md",
+                "- Status: **UNMEASURED**\n- Blocking signal: sampler baseline aborted\n",
+            ),
+            "SAMPLE_PATH": _write(tmp_path, "sample.md", "none"),
+            "RUN_LOG_PATH": _write(tmp_path, "run.log", "baseline failed\n"),
+            "RUN_OUTCOME": "failure",
+            "SUMMARY_OUTCOME": "failure",
+            "SAMPLE_OUTCOME": "success",
+        },
+    )
+    body = _posted_body(calls)
+    assert "did not measure" in body
+    assert "not a scored mutation regression" in body
+    assert "Mutation testing failed on `cafebabe`" not in body
+
+
 def test_a_skipped_run_says_the_commands_never_ran(workflow: Path, tmp_path: Path) -> None:
     """`Run mutation` has no `always()`, so a failing sample step SKIPS it. A two-way
     branch reported "the mutation commands completed" for a run in which they never
@@ -241,6 +273,8 @@ def test_a_successful_run_attributes_the_verdict_to_the_summary(
     assert "the summary's own verdict" in body
     assert "Run log tail" not in body
     assert "COLLATERAL" not in body
+    assert "Mutation testing failed on `cafebabe`" in body
+    assert "did not measure" not in body
 
 
 def test_an_unset_run_outcome_is_reported_unexplained(workflow: Path, tmp_path: Path) -> None:

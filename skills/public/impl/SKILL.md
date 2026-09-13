@@ -17,7 +17,8 @@ evidence that the next decision does not require rework.
    pickup.
 2. Read the current implementation contract. If none exists, write a small
    working contract in the task context: intended behavior, acceptance check,
-   and explicit non-claims.
+   and explicit non-claims. If that contract and the current diff disagree, or
+   the work must route back to spec or ideation, open `references/contract-consumption.md`.
 3. Inspect the exact target paths and current diff. Preserve unrelated parent
    worktree changes. When using an implementation worktree, it must be clean at
    entry and its runtime/cache paths must be outside the worktree.
@@ -56,7 +57,11 @@ stronger proof, or conflicting evidence.
   The slice's seam is every surface it edits — code, config, test, or
   artifact — with that surface's direct consumers, readers, and generated
   derivatives. Repair inside the seam; name a match outside it as a follow-up,
-  not a wider slice.
+  not a wider slice. When slice size versus interface or seam shape is the live
+  uncertainty, open `references/design-lenses.md`. When multiple slices compete
+  for order, open `references/sequence-discipline.md`. When resolving,
+  scaffolding, or changing the impl adapter or repo-specific verification
+  tools, open `references/adapter-contract.md`.
 
 ## Verify
 
@@ -64,6 +69,7 @@ Reuse already-read guidance and passing checks while their inputs and applicabil
 
 Run the narrowest evidence that answers the changed behavior:
 
+- the cheap owner of the files just edited, before any broad lane; a commit hook is not that check if you have not committed;
 - focused tests for the changed module or user flow;
 - the default `<repo-root>/scripts/run-quality.sh` core lane when the change is broad;
 - `<repo-root>/scripts/run-quality.sh --full --read-only` only for an explicit broad,
@@ -102,14 +108,14 @@ remaining non-claims. If the active goal needs a provider transition, Achieve
 or `issue` updates the parent/child state through the existing provider command.
 Do not invent a second coordination channel. Commit only after the relevant
 verification has passed; do not push, release, tag, or mutate an installed host
-without its explicit authorization.
+without its explicit authorization. Ordinary implementation completes from this file; the deepening files above are named at their triggers — do not sweep them.
 
 ## References
 
-- `references/adapter-contract.md`
-- `references/contract-consumption.md`
-- `references/design-lenses.md`
-- `references/sequence-discipline.md`
+- `references/adapter-contract.md` (only when resolving, scaffolding, or changing the impl adapter or repo-specific verification tools)
+- `references/contract-consumption.md` (only when the written contract and the current diff disagree, or the work must route back to spec or ideation)
+- `references/design-lenses.md` (only when slice size versus interface or seam shape is the live uncertainty)
+- `references/sequence-discipline.md` (only when multiple slices compete for order)
 - `references/external-api-contract.md` (only for an external API seam)
 - `../../shared/references/prescribed-path-self-test.md` (only for a prescribed path)
 - `../../shared/references/source-bound-records.md` (only for a multi-source or durable record)

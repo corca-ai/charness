@@ -30,6 +30,7 @@ from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script 
 
 _abort_lib = import_repo_module(__file__, "scripts.mutation.mutation_baseline_abort_lib")
 _sampling = import_repo_module(__file__, "scripts.mutation.mutation_sampling_lib")
+_outer = import_repo_module(__file__, "scripts.mutation.mutation_outer_budget")
 _guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 
 REPO_ROOT = repo_root_from_script(__file__)
@@ -372,9 +373,10 @@ def main() -> int:
         type=int,
         default=DEFAULT_EXEC_TIMEOUT_SECONDS,
         help=(
-            "Internal timeout for `cosmic-ray exec` in seconds. Default 9000 (150 min) "
-            "leaves headroom under the workflow's 180-minute job ceiling so the "
-            "downstream `cosmic-ray dump` always gets a chance to run."
+            "Internal timeout for `cosmic-ray exec` in seconds. Default 9000. "
+            "When MUTATION_JOB_START_EPOCH and MUTATION_JOB_TIMEOUT_SECONDS are "
+            "set, the wrapper caps this to remaining job time minus dump reserve "
+            "so the outer job cannot cancel dump first."
         ),
     )
     parser.add_argument(
@@ -446,6 +448,27 @@ def main() -> int:
             else:
                 run(filter_command, repo_root)
         if args.mode == "full":
+            job_start, job_timeout = _outer.job_budget_from_env()
+            try:
+                exec_timeout, cap_reason = _outer.resolve_exec_timeout_seconds(
+                    args.exec_timeout_seconds,
+                    job_start_epoch=job_start,
+                    job_timeout_seconds=job_timeout,
+                    require_job_budget=os.environ.get("GITHUB_ACTIONS") == "true",
+                )
+            except _outer.InnerTimeoutExceedsOuterBudget as exc:
+                sys.stdout.write(f"{exc}\n")
+                sys.stdout.flush()
+                _outer.write_outer_budget_skip_marker(
+                    timeout_marker,
+                    requested=args.exec_timeout_seconds,
+                    reason=str(exc),
+                )
+                dump_returncode = _dump_session(session, dump_path, repo_root)
+                return dump_returncode if dump_returncode != 0 else 2
+            if cap_reason:
+                sys.stdout.write(f"{cap_reason}\n")
+                sys.stdout.flush()
             failure = _run_full_mode(
                 config,
                 session,
@@ -453,7 +476,7 @@ def main() -> int:
                 timeout_marker,
                 module_paths,
                 repo_root,
-                args.exec_timeout_seconds,
+                exec_timeout,
             )
             if failure:
                 return failure
