@@ -1,0 +1,162 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-14T00:02:42Z",
+  "prepared_for": "session-north-star-consumer-rework",
+  "changed_ref": "f3036255ab14dc1cbc159a922d4da98a3dfce35d",
+  "substrate_mode": "committed-ref",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `f3036255ab14dc1cbc159a922d4da98a3dfce35d`:\nExact reviewed-path manifest:\n- .agents/grok-host.md\n- .github/workflows/mutation-tests.yml\n- charness-artifacts/create-skill/2026-09-14-impl-conditional-references.md\n- charness-artifacts/impl/2026-09-14-north-star-consumer-rework.md\n- docs/operator-acceptance.md\n- docs/parallel-execution.md\n- docs/public-skill-dogfood.json\n- docs/validator-timing-layers.md\n- scripts/mutation/mutation_outer_budget.py\n- scripts/mutation/run_cosmic_ray_mutation.py\n- skills/public/impl/SKILL.md\n- skills/public/quality/references/attention-state-visibility.json\n- skills/public/quality/scripts/templates/mutation-tests.yml\n- tests/quality_gates/test_mutation_issue_report_body.py\n- tests/quality_gates/test_mutation_outer_budget.py\n- tests/quality_gates/test_skill_docs_contracts.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/mutation/mutation_outer_budget.py, scripts/mutation/run_cosmic_ray_mutation.py, skills/public/impl/SKILL.md, skills/public/quality/references/attention-state-visibility.json, skills/public/quality/scripts/templates/mutation-tests.yml\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/create-skill/2026-09-14-impl-conditional-references.md, charness-artifacts/impl/2026-09-14-north-star-consumer-rework.md, docs/operator-acceptance.md, docs/parallel-execution.md, docs/validator-timing-layers.md, skills/public/impl/SKILL.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/impl/SKILL.md, skills/public/quality/references/attention-state-visibility.json, skills/public/quality/scripts/templates/mutation-tests.yml\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/impl/SKILL.md, skills/public/quality/references/attention-state-visibility.json, skills/public/quality/scripts/templates/mutation-tests.yml\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: docs/public-skill-dogfood.json, skills/public/impl/SKILL.md, skills/public/quality/references/attention-state-visibility.json, skills/public/quality/scripts/templates/mutation-tests.yml\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- mutation-testing-workflow: Repo-owned scheduled mutation testing workflow, runner config, and adapter slot behavior.\n  source matches: .github/workflows/mutation-tests.yml, scripts/mutation/run_cosmic_ray_mutation.py, skills/public/quality/scripts/templates/mutation-tests.yml\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 -m pytest -q tests/quality_gates/test_quality_mutation_testing.py, python3 -m pytest -q tests/quality_gates/test_coverage_builder_policy_parity.py, python3 scripts/gates/check_github_actions.py --repo-root ., python3 scripts/gates/validate_adapters.py --repo-root ., python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/mutation/mutation_outer_budget.py, scripts/mutation/run_cosmic_ray_mutation.py, tests/quality_gates/test_mutation_issue_report_body.py, tests/quality_gates/test_mutation_outer_budget.py, tests/quality_gates/test_skill_docs_contracts.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/mutation/mutation_outer_budget.py, scripts/mutation/run_cosmic_ray_mutation.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "committed-ref",
+    "substrate_mode": "committed-ref",
+    "changed_ref": "f3036255ab14dc1cbc159a922d4da98a3dfce35d",
+    "resolved_changed_ref": [
+      "f3036255ab14dc1cbc159a922d4da98a3dfce35d"
+    ],
+    "base_head": "f3036255ab14dc1cbc159a922d4da98a3dfce35d",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      ".agents/grok-host.md",
+      ".github/workflows/mutation-tests.yml",
+      "charness-artifacts/create-skill/2026-09-14-impl-conditional-references.md",
+      "charness-artifacts/impl/2026-09-14-north-star-consumer-rework.md",
+      "docs/operator-acceptance.md",
+      "docs/parallel-execution.md",
+      "docs/public-skill-dogfood.json",
+      "docs/validator-timing-layers.md",
+      "scripts/mutation/mutation_outer_budget.py",
+      "scripts/mutation/run_cosmic_ray_mutation.py",
+      "skills/public/impl/SKILL.md",
+      "skills/public/quality/references/attention-state-visibility.json",
+      "skills/public/quality/scripts/templates/mutation-tests.yml",
+      "tests/quality_gates/test_mutation_issue_report_body.py",
+      "tests/quality_gates/test_mutation_outer_budget.py",
+      "tests/quality_gates/test_skill_docs_contracts.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/grok-host.md",
+        "content_sha256": "04bc8919d7f036c84fe4bf40371ea0c9e9208e53d3eacd9153e49ab689981779"
+      },
+      {
+        "path": ".github/workflows/mutation-tests.yml",
+        "content_sha256": "6af0c8e41d8b3a3d83ba4b683d7f5ae35ca5a449504d4a86ef65556ca1ec9d36"
+      },
+      {
+        "path": "charness-artifacts/create-skill/2026-09-14-impl-conditional-references.md",
+        "content_sha256": "4aad0fcb93221b3b12014ba7b9895420103d4ceadfe241b8405120c37a530a26"
+      },
+      {
+        "path": "charness-artifacts/impl/2026-09-14-north-star-consumer-rework.md",
+        "content_sha256": "77954c8a69309f6336ef1a9a00f4e4f252fd4aa674d37f70fbe258b3b42da57a"
+      },
+      {
+        "path": "docs/operator-acceptance.md",
+        "content_sha256": "cfb590ddbc734283a151f45f896fac218b1a33ac06470b2eee4da80e23bfcd0e"
+      },
+      {
+        "path": "docs/parallel-execution.md",
+        "content_sha256": "9efef9c1b00d3999c7d3b515d22262000deb630614d3d95544847411a865cc0b"
+      },
+      {
+        "path": "docs/public-skill-dogfood.json",
+        "content_sha256": "7f724daf77c30a80291a2a66c72e53a5954f1cef58c970a3e7cc0a2d7a3f1f70"
+      },
+      {
+        "path": "docs/validator-timing-layers.md",
+        "content_sha256": "515e959b8156b4889a7037f82e52b911099d3b63c08fc1975742d82557af934d"
+      },
+      {
+        "path": "scripts/mutation/mutation_outer_budget.py",
+        "content_sha256": "78ede1bf778c6729f94a582da84ff46f97273021bfa347a7fae7f57929bfdfbe"
+      },
+      {
+        "path": "scripts/mutation/run_cosmic_ray_mutation.py",
+        "content_sha256": "daadba56d0e19dad5c478c5417e963c2d158cdb6a192918a946ef247f78eadf2"
+      },
+      {
+        "path": "skills/public/impl/SKILL.md",
+        "content_sha256": "e84eaea023b3e327884ae552beb3063c4f2fdea55e9208db0282e75ebb580494"
+      },
+      {
+        "path": "skills/public/quality/references/attention-state-visibility.json",
+        "content_sha256": "869b81422135b31fbd108d0ea32111b6aaab1059db1b1c0edbcf9feb3e6fa157"
+      },
+      {
+        "path": "skills/public/quality/scripts/templates/mutation-tests.yml",
+        "content_sha256": "cb240da4de46f9c55aa2f5c3c283d0b80779bf72842a2a930c75d5e9307f7004"
+      },
+      {
+        "path": "tests/quality_gates/test_mutation_issue_report_body.py",
+        "content_sha256": "2c19b38763e65fb8c90ff440d39b6ca489f33afe2028e9bdc6d49da83f73b85d"
+      },
+      {
+        "path": "tests/quality_gates/test_mutation_outer_budget.py",
+        "content_sha256": "47b04251ec33584992b8108591f8ffc26ef4573dbf463fabe54b52692b7219b6"
+      },
+      {
+        "path": "tests/quality_gates/test_skill_docs_contracts.py",
+        "content_sha256": "30c4bec1d54466d99b267474a7bf0384837e4416dc883b959a6538e63d7f638e"
+      }
+    ],
+    "reviewed_patch_sha256": "6b566e7e9167abeab6f1b33bc4c64bd5332fdd654f335122cc3eb137e743fdb7",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "6ab5de7887869858307b50a1adc13937fde88905143b837d0528bd8b9ef8a2d7"
+  }
+}
