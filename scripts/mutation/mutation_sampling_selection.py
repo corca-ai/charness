@@ -140,7 +140,12 @@ def select_budgeted_sample(
         if max_executable_mutants and selected_workload + workload > max_executable_mutants:
             excluded.append(path)
             continue
-        if coverage_enabled and not file_test_nodeids(repo_root, path, line_contexts):
+        contexts_present = any(line_contexts.values())
+        if (
+            coverage_enabled
+            and contexts_present
+            and not file_test_nodeids(repo_root, path, line_contexts)
+        ):
             excluded.append(path)
             continue
         proposed = selected + chosen + [path]

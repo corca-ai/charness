@@ -35,7 +35,6 @@ from scripts.mutation.mutation_baseline_abort_lib import (
     write_baseline_abort_marker,
 )
 from scripts.mutation.mutation_sampling_lib import CoverageCommandError
-from scripts.mutation.sample_mutation_files import select_eligible_for_mutation
 from tests.script_main import run_loaded_script_main
 
 _ADAPTER_HEADER = dedent(
@@ -168,19 +167,22 @@ def test_select_eligible_writes_marker_and_names_nodeid_on_baseline_failure(
             "",
         )
 
-    monkeypatch.setattr(sample_mutation_files, "run_test_coverage", fake_run_test_coverage)
+    monkeypatch.setattr(
+        "scripts.mutation.mutation_sample_scope.run_test_coverage", fake_run_test_coverage
+    )
+    monkeypatch.setattr(
+        "scripts.mutation.mutation_sample_scope.mapped_test_targets",
+        lambda repo_root, paths, *, limit: ["tests/x.py"],
+    )
     marker_path = tmp_path / "reports" / "mutation" / "baseline-abort.json"
 
     with pytest.raises(SystemExit) as exc_info:
-        select_eligible_for_mutation(
+        sample_mutation_files.focused_statement_lines_for_changed_files(
             repo_root=tmp_path,
-            config_path=tmp_path / "cosmic-ray.toml",
-            all_eligible=["scripts/a.py"],
-            coverage_enabled=True,
+            changed_paths=["scripts/a.py"],
             coverage_json=tmp_path / "reports" / "mutation" / "test-coverage.json",
-            test_command="python3 -m pytest -q tests",
-            min_file_coverage=0.85,
             baseline_abort_marker_path=marker_path,
+            max_test_nodeids=40,
         )
 
     assert "tests/x.py::test_y" in str(exc_info.value)
@@ -188,7 +190,8 @@ def test_select_eligible_writes_marker_and_names_nodeid_on_baseline_failure(
     assert marker is not None
     assert marker["failing_nodeids"] == ["tests/x.py::test_y"]
     assert marker["exit_code"] == 1
-    assert marker["test_command"] == "python3 -m pytest -q tests"
+    assert "--pytest-target" in marker["test_command"]
+    assert "tests/x.py" in marker["test_command"]
 
 
 def test_select_eligible_writes_log_tail_when_no_nodeids_parsed(
@@ -197,19 +200,22 @@ def test_select_eligible_writes_log_tail_when_no_nodeids_parsed(
     def fake_run_test_coverage(repo_root, test_command, coverage_json, **_kwargs):
         raise CoverageCommandError(2, test_command, "collection error: ModuleNotFoundError\n", "")
 
-    monkeypatch.setattr(sample_mutation_files, "run_test_coverage", fake_run_test_coverage)
+    monkeypatch.setattr(
+        "scripts.mutation.mutation_sample_scope.run_test_coverage", fake_run_test_coverage
+    )
+    monkeypatch.setattr(
+        "scripts.mutation.mutation_sample_scope.mapped_test_targets",
+        lambda repo_root, paths, *, limit: ["tests/x.py"],
+    )
     marker_path = tmp_path / "reports" / "mutation" / "baseline-abort.json"
 
     with pytest.raises(SystemExit):
-        select_eligible_for_mutation(
+        sample_mutation_files.focused_statement_lines_for_changed_files(
             repo_root=tmp_path,
-            config_path=tmp_path / "cosmic-ray.toml",
-            all_eligible=["scripts/a.py"],
-            coverage_enabled=True,
+            changed_paths=["scripts/a.py"],
             coverage_json=tmp_path / "reports" / "mutation" / "test-coverage.json",
-            test_command="python3 -m pytest -q tests",
-            min_file_coverage=0.85,
             baseline_abort_marker_path=marker_path,
+            max_test_nodeids=40,
         )
 
     marker = read_baseline_abort_marker(marker_path)

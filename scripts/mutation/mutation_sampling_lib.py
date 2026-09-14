@@ -286,6 +286,10 @@ def run_test_coverage(
     sys.stderr.write(outcome.stderr)
     if outcome.returncode != 0:
         raise CoverageCommandError(outcome.returncode, command, outcome.stdout, outcome.stderr)
+    sys.stdout.write(
+        f"coverage tests exited 0; exporting json show_contexts={str(dynamic_context).lower()}\n"
+    )
+    sys.stdout.flush()
     combine_and_export_coverage(
         repo_root, rcfile, data_file, coverage_json, env, show_contexts=dynamic_context
     )

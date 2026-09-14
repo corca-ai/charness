@@ -34,37 +34,28 @@ from scripts.adapters.quality_universes_lib import DEFAULT_UNIVERSES  # noqa: E4
 from scripts.core.subprocess_guard import run_process  # noqa: E402
 from scripts.mutation.mutation_baseline_abort_lib import (  # noqa: E402
     DEFAULT_BASELINE_ABORT_MARKER,
-    STAGE_SAMPLER_COVERAGE,
     delete_stale_baseline_abort_marker,
-    log_tail_lines,
-    parse_failed_nodeids,
     resolve_baseline_abort_marker,
-    write_baseline_abort_marker,
 )
 from scripts.mutation.mutation_changed_files_lib import (  # noqa: E402
     classify_changed_sample_scope,
-    invalidate_changed_line_coverage_marker,
     resolved_mutation_pool,
 )
 from scripts.mutation.mutation_manifest_lib import (  # noqa: E402
     build_manifest_from_state,
     write_manifest,
 )
+from scripts.mutation.mutation_sample_scope import (  # noqa: E402
+    cap_mutants_to_remaining_job,
+    focused_statement_lines_for_changed_files,
+    mutation_test_command_for_sample,
+)
 from scripts.mutation.mutation_sampling_lib import (  # noqa: E402
     DEFAULT_SAMPLE_COVERAGE_JSON,
-    CoverageCommandError,
-    build_mutation_line_coverage,
-    filter_eligible_by_coverage,
-    filter_eligible_by_mutation_line_coverage,
-    load_covered_lines,
-    load_file_statement_lines,
-    load_line_contexts,
     read_test_command,
     rewrite_cosmic_ray_targets,
     rewrite_cosmic_ray_test_command,
-    run_test_coverage,
     select_budgeted_sample,
-    select_test_nodeids,
 )
 
 DEFAULT_MAX_FILES = 10
@@ -228,69 +219,17 @@ def select_eligible_for_mutation(
     dict[str, dict[int, set[str]]],
     dict[str, dict[str, int]],
 ]:
-    if not coverage_enabled:
-        return all_eligible, all_eligible, {}, {}
-    # This probe owns the sampler report. If an operator explicitly points it at
-    # a changed-line report, invalidate that producer's marker before replacing
-    # the JSON; otherwise an old matching marker would certify the new corpus.
-    invalidate_changed_line_coverage_marker(coverage_json)
-    try:
-        run_test_coverage(repo_root, test_command, coverage_json)
-    except CoverageCommandError as exc:
-        combined_output = f"{exc.output or ''}{exc.stderr or ''}"
-        failing_nodeids = parse_failed_nodeids(combined_output)
-        write_baseline_abort_marker(
-            baseline_abort_marker_path,
-            exit_code=exc.returncode,
-            test_command=test_command,
-            failing_nodeids=failing_nodeids,
-            log_tail=[] if failing_nodeids else log_tail_lines(combined_output),
-            stage=STAGE_SAMPLER_COVERAGE,
-        )
-        message = f"test-command coverage probe failed with exit {exc.returncode}: {test_command}"
-        if failing_nodeids:
-            message += "\nfailing nodeids:\n" + "\n".join(
-                f"  - {nodeid}" for nodeid in failing_nodeids
-            )
-        raise SystemExit(message) from exc
-
-    covered_lines = load_covered_lines(repo_root, coverage_json)
-    statement_lines = load_file_statement_lines(repo_root, coverage_json)
-    line_contexts = load_line_contexts(repo_root, coverage_json)
-    coverage_eligible = filter_eligible_by_coverage(
-        all_eligible,
-        covered_lines,
-        statement_lines,
-        min_file_coverage=min_file_coverage,
-    )
-    mutation_line_coverage = build_mutation_line_coverage(
-        repo_root,
+    _ = (
         config_path,
-        coverage_eligible,
-        covered_lines,
+        coverage_json,
+        test_command,
+        min_file_coverage,
+        baseline_abort_marker_path,
     )
-    return (
-        filter_eligible_by_mutation_line_coverage(coverage_eligible, mutation_line_coverage),
-        coverage_eligible,
-        line_contexts,
-        mutation_line_coverage,
-    )
-
-
-def mutation_test_command_for_sample(
-    repo_root: Path,
-    sample: list[str],
-    line_contexts: dict[str, dict[int, set[str]]],
-    fallback_command: str,
-    *,
-    coverage_enabled: bool,
-) -> str | None:
-    if not coverage_enabled:
-        return fallback_command
-    test_nodeids = select_test_nodeids(repo_root, sample, line_contexts)
-    if not test_nodeids:
-        return None
-    return shlex.join(["python3", "-m", "pytest", "-q", *test_nodeids])
+    # Sampling is a rotating budgeted slice, not a whole-tree proof. Running the
+    # standing suite (with or without per-test contexts) here is what OOM-killed
+    # hosted jobs after a green pytest and left #764 silent.
+    return all_eligible, all_eligible, {}, {}
 
 
 def parse_workload_limits() -> tuple[int, int, int]:
@@ -432,6 +371,7 @@ def main() -> int:
     min_file_coverage = parse_min_file_coverage()
     workload_limits = parse_workload_limits()
     max_executable_mutants, max_executable_mutants_per_file, max_test_nodeids = workload_limits
+    max_executable_mutants = cap_mutants_to_remaining_job(max_executable_mutants)
 
     coverage_json = (
         args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
@@ -468,14 +408,22 @@ def main() -> int:
             patterns=pool_universe.patterns,
         )
         return 1
-    statement_lines = (
-        load_file_statement_lines(repo_root, coverage_json) if coverage_enabled else {}
-    )
     changed_before_coverage = [
         path
         for path in list_changed(repo_root, base_sha or "", head_sha)
         if path in set(all_eligible)
     ]
+    statement_lines = (
+        focused_statement_lines_for_changed_files(
+            repo_root=repo_root,
+            changed_paths=changed_before_coverage,
+            coverage_json=coverage_json,
+            baseline_abort_marker_path=baseline_abort_marker_path,
+            max_test_nodeids=max_test_nodeids,
+        )
+        if coverage_enabled
+        else {}
+    )
     (
         changed,
         changed_files_excluded_by_file_coverage,
@@ -520,7 +468,12 @@ def main() -> int:
         return 1
 
     mutation_test_command = mutation_test_command_for_sample(
-        repo_root, sample, line_contexts, test_command, coverage_enabled=coverage_enabled
+        repo_root,
+        sample,
+        line_contexts,
+        test_command,
+        coverage_enabled=coverage_enabled,
+        max_test_nodeids=max_test_nodeids,
     )
     if mutation_test_command is None:
         sys.stderr.write("no pytest test nodeids were observed for the selected mutation sample\n")
