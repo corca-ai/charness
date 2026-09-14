@@ -110,8 +110,9 @@ full mutation set and is the wrong default on a hosted runner.
      regressions and defeated the stratified-sampling intent.
 3. always runs `commands.summary` and uploads `report_paths.*` as the
    `mutation-report` actions artifact.
-4. when `auto_issue.enabled` is true and the run failed, opens or comments on
-   an issue labeled `auto_issue.label`, marked
+4. when `auto_issue.enabled` is true and the run failed — including a failed
+   `sample` step, which leaves `run` skipped rather than failed — opens or
+   comments on an issue labeled `auto_issue.label`, marked
    `<!-- ${{ github.repository }}-${marker_token} -->`. The marker is what
    identifies an issue as this workflow's own, on both the open-or-comment path
    and the recovery path. Both paths list open issues by label and select on the
@@ -391,7 +392,9 @@ fails), two traps waste time and produce false proof:
   the environment fully intact. The gate's `subprocess_coverage_advisory`
   payload names those cases on a BLOCK.
 - **`workflow_dispatch` cannot prove a changed-line fix.** Only `schedule`
-  events compute `base_sha` (see `mutation-tests.yml`); a dispatch run has zero
+  events compute `base_sha` (see `mutation-tests.yml`), and the scheduled base
+  lookup only considers `schedule`-triggered predecessors, so a manual dispatch
+  can neither supply nor consume a changed range. A dispatch run has zero
   changed files, so the changed-line classifier is inert. A green dispatch
   proves only the **score/survivor** path. This false-proof class recurred
   after its prose-only lesson, so the rule is now gate-shaped: before citing a

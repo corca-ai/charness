@@ -1,0 +1,88 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "Over-Worry",
+      "concern": "The release surface has no controls at all.",
+      "disposition": "The packet does contain a manifest sync command, a release-only committed-packaging gate, and a serial mutate-sync-verify-publish rule; the blocker is the missing candidate-bound execution and evidence, not total absence of controls."
+    },
+    {
+      "bin": "Bundle Anyway",
+      "concern": "The mutation issue reporter is broadly untested.",
+      "disposition": "The packet shows substantial tests and implementation for log tails, step outcomes, body clamping, issue deduplication, and recovery candidates. Those controls should remain, but they do not cover the sample-failure trigger or scheduled-base selection."
+    },
+    {
+      "bin": "Valid but Defer",
+      "concern": "Clean-install and existing-workflow checks may be owned by an external release procedure.",
+      "disposition": "If an authoritative release procedure and receipts exist outside this packet, attach them to the release record; without that evidence this review cannot treat the lock-in as closed."
+    }
+  ],
+  "findings": [
+    {
+      "action": "Before tagging, run a candidate-bound sequence that syncs generated manifests, verifies committed packaging, asserts no post-sync diff, and records the candidate commit, generated-surface hashes, validation results, and tag identity.",
+      "evidence": [
+        ".agents/quality-gates.yaml declares validate-packaging-committed as release-only, but declaration is not execution evidence.",
+        "The changed-surfaces section lists sync and validation commands as planned commands, without a candidate SHA, post-sync clean-diff assertion, tag boundary, or receipt.",
+        "docs/operator-acceptance.md lists install/update/doctor experiments but does not define the required pre-tag ordering or final artifact identity."
+      ],
+      "id": "OP-REL-001",
+      "severity": "blocker",
+      "summary": "The packet does not establish an executable v8.6.4 release-lock sequence tying the final tag to synchronized manifests and committed packaging."
+    },
+    {
+      "action": "Install the exact v8.6.4 artifact into a disposable clean checkout or host, run doctor there, verify the installed version and generated manifest/payload from the installed location, and retain the readback evidence.",
+      "evidence": [
+        "docs/operator-acceptance.md says to start from a clean tree and use a managed checkout under ~/.agents/src/charness with charness init/update, but does not require installing the exact v8.6.4 artifact.",
+        "The same page lists charness doctor and host-copy readback, but supplies no fresh-install version check, artifact hash, or installed-manifest/payload receipt."
+      ],
+      "id": "OP-REL-002",
+      "severity": "blocker",
+      "summary": "Operator acceptance is not bound to installation of the exact release artifact in a fresh clean checkout, and doctor success is not recorded against that installed payload."
+    },
+    {
+      "action": "Include sample failure in the issue-reporting and final-failure conditions, preserve the sample failure in the report, and add a regression test covering failed sampling with no summary artifact in both workflow copies.",
+      "evidence": [
+        ".github/workflows/mutation-tests.yml opens or updates an issue only when steps.run.outcome or steps.summary.outcome is failure; steps.sample.outcome is absent from that condition.",
+        "The workflow body explicitly carries SAMPLE_OUTCOME and documents three states, so the reporting code recognizes sample failure while the step trigger does not.",
+        "skills/public/quality/scripts/templates/mutation-tests.yml carries the same condition, so the shipped template repeats the gap."
+      ],
+      "id": "OP-MUT-001",
+      "severity": "high",
+      "summary": "A mutation sample-selection failure can make the scheduled job red without opening or updating the configured regression issue."
+    },
+    {
+      "action": "Restrict the previous-run lookup to valid scheduled runs, or mark the base unestablished and refuse changed-line claims when no valid scheduled predecessor exists; add coverage for a dispatch run preceding a scheduled run.",
+      "evidence": [
+        "The scheduled Plan run query filters completed runs by workflow, default branch, and success/failure, then selects the first result without filtering event to schedule.",
+        "That selected head_sha becomes MUTATION_BASE_SHA for Select mutation sample.",
+        "skills/public/quality/references/mutation-testing.md states that workflow_dispatch cannot prove the changed-line fix and that only scheduled runs compute the base SHA."
+      ],
+      "id": "OP-MUT-002",
+      "severity": "high",
+      "summary": "Scheduled changed-range sampling can select a manual dispatch as its previous base, despite the workflow documentation saying dispatch cannot prove changed-line fixes."
+    },
+    {
+      "action": "Provide an explicit workflow migration or stale-template doctor check, and exercise both a new installation and an existing managed installation before closing the release.",
+      "evidence": [
+        "skills/public/quality/references/mutation-testing.md states that the workflow is written once at first install, is never re-rendered, and has no re-render command; changing the template or schedule therefore requires manual editing or deletion and reinstall.",
+        "The release packet provides no migration, stale-workflow detection, or existing-install acceptance step for v8.6.4."
+      ],
+      "id": "OP-MUT-003",
+      "severity": "high",
+      "summary": "Changes to the mutation workflow are not guaranteed to reach existing installations at release time."
+    }
+  ],
+  "kind": "charness.bounded_review.v1",
+  "lens": "operational",
+  "next_move": "Block the tag. Add and execute one release-boundary checklist covering final-candidate manifest sync, committed packaging validation, clean-diff proof, exact artifact installation, doctor and installed-payload readback, then repair and test the two scheduled mutation workflow conditions and verify migration behavior for existing installs.",
+  "non_claims": [
+    "No claim is made that v8.6.4 was tagged, packaged, installed, or successfully doctored.",
+    "No claim is made that validate-packaging-committed ran on the final candidate commit.",
+    "No claim is made that a clean managed checkout read back the release artifact or host-visible payload.",
+    "No claim is made that scheduled mutation changed-line sampling has produced a valid prior-run baseline.",
+    "No claim is made that every packet path has been reviewed beyond the identity-bound semantic content provided."
+  ],
+  "packet_sha256": "ced7f9680da12f051fcf505ae29708a8dd32654c420d83ab9a5aeede7dc264a8",
+  "reviewed_input_identity_sha256": "8e0ca6ac1d4e96da321548847c8aa348020adfaa81de1727eaa85f06a501b29c",
+  "target_observations": null,
+  "verdict": "block"
+}

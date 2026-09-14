@@ -1,0 +1,330 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-14T02:37:42Z",
+  "prepared_for": "v8.6.4 release critique",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- .agents/grok-host.md\n- .agents/quality-gates.yaml\n- .agents/temp-producers.yaml\n- .github/workflows/mutation-tests.yml\n- docs/operator-acceptance.md\n- docs/parallel-execution.md\n- docs/public-skill-dogfood.json\n- docs/validator-timing-layers.md\n- integrations/tools/nose.json\n- native/repograph/fixtures/carriers/expected/quality_label_universe.yaml\n- scripts/agent-runtime/codex-eval-runtime.mjs\n- scripts/agent-runtime/run-local-eval-test.mjs\n- scripts/check-links-external.sh\n- scripts/check-links-internal.sh\n- scripts/check-markdown.sh\n- scripts/check-python-lint.sh\n- scripts/check-secrets.sh\n- scripts/check-shell.sh\n- scripts/exported-copy-guard.sh\n- scripts/gates/check_temp_producer_inventory.py\n- scripts/gates/run_owned_scratch_command.py\n- scripts/gates/temp_producer_inventory_lib.py\n- scripts/mutation/mutation_outer_budget.py\n- scripts/mutation/mutation_sample_scope.py\n- scripts/mutation/mutation_sampling_lib.py\n- scripts/mutation/mutation_sampling_selection.py\n- scripts/mutation/run_cosmic_ray_mutation.py\n- scripts/mutation/sample_mutation_files.py\n- scripts/run_quality_engine_runtime.py\n- skills/public/impl/SKILL.md\n- skills/public/quality/references/attention-state-visibility.json\n- skills/public/quality/references/consumer-validator-catalog.yaml\n- skills/public/quality/references/mutation-testing.md\n- skills/public/quality/scripts/templates/mutation-tests.yml\n- tests/agent-runtime/native.test.mjs\n- tests/quality_gates/fixtures/.agents/quality-gates.yaml\n- tests/quality_gates/support.py\n- tests/quality_gates/test_distinct_mutation_coverage.py\n- tests/quality_gates/test_mutation_baseline_abort.py\n- tests/quality_gates/test_mutation_coverage_probe.py\n- tests/quality_gates/test_mutation_issue_report_body.py\n- tests/quality_gates/test_mutation_outer_budget.py\n- tests/quality_gates/test_mutation_sampler_scope.py\n- tests/quality_gates/test_quality_mutation_coverage.py\n- tests/quality_gates/test_quality_runner.py\n- tests/quality_gates/test_run_cosmic_ray_mutation_resilience.py\n- tests/quality_gates/test_skill_docs_contracts.py\n- tests/test_common_runner_failure_coverage.py\n- tests/test_runtime_scratch.py\n- tests/test_temp_producer_inventory.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: integrations/tools/nose.json, scripts/agent-runtime/codex-eval-runtime.mjs, scripts/agent-runtime/run-local-eval-test.mjs, scripts/check-links-external.sh, scripts/check-links-internal.sh, scripts/check-markdown.sh, scripts/check-python-lint.sh, scripts/check-secrets.sh, scripts/check-shell.sh, scripts/exported-copy-guard.sh, scripts/gates/check_temp_producer_inventory.py, scripts/gates/run_owned_scratch_command.py, scripts/gates/temp_producer_inventory_lib.py, scripts/mutation/mutation_outer_budget.py, scripts/mutation/mutation_sample_scope.py, scripts/mutation/mutation_sampling_lib.py, scripts/mutation/mutation_sampling_selection.py, scripts/mutation/run_cosmic_ray_mutation.py, scripts/mutation/sample_mutation_files.py, scripts/run_quality_engine_runtime.py, skills/public/impl/SKILL.md, skills/public/quality/references/attention-state-visibility.json, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/quality/references/mutation-testing.md, skills/public/quality/scripts/templates/mutation-tests.yml\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: docs/operator-acceptance.md, docs/parallel-execution.md, docs/validator-timing-layers.md, skills/public/impl/SKILL.md, skills/public/quality/references/mutation-testing.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/impl/SKILL.md, skills/public/quality/references/attention-state-visibility.json, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/quality/references/mutation-testing.md, skills/public/quality/scripts/templates/mutation-tests.yml\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- consumer-validator-catalog: Explicit packaged consumer-validator inventory, adoption decisions, and the installed/source-layout checker that enforces the contract.\n  source matches: skills/public/quality/references/consumer-validator-catalog.yaml\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/gates/check_consumer_validator_catalog.py --repo-root . --adoption-path .agents/consumer-validator-adoption.yaml --require-adoption, python3 -m pytest -q tests/test_consumer_validator_catalog.py tests/test_capability_catalog.py\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/impl/SKILL.md, skills/public/quality/references/attention-state-visibility.json, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/quality/references/mutation-testing.md, skills/public/quality/scripts/templates/mutation-tests.yml\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: docs/public-skill-dogfood.json, skills/public/impl/SKILL.md, skills/public/quality/references/attention-state-visibility.json, skills/public/quality/references/consumer-validator-catalog.yaml, skills/public/quality/references/mutation-testing.md, skills/public/quality/scripts/templates/mutation-tests.yml\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- agent-runtime-js: Repo-owned JavaScript agent-runtime modules and their native test command.\n  source matches: scripts/agent-runtime/codex-eval-runtime.mjs, scripts/agent-runtime/run-local-eval-test.mjs, tests/agent-runtime/native.test.mjs\n  verify: npm run test:agent-runtime, npm run test:mutation:js:dry-run\n- mutation-testing-workflow: Repo-owned scheduled mutation testing workflow, runner config, and adapter slot behavior.\n  source matches: .github/workflows/mutation-tests.yml, scripts/mutation/mutation_sampling_lib.py, scripts/mutation/run_cosmic_ray_mutation.py, scripts/mutation/sample_mutation_files.py, skills/public/quality/scripts/templates/mutation-tests.yml\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 -m pytest -q tests/quality_gates/test_quality_mutation_testing.py, python3 -m pytest -q tests/quality_gates/test_coverage_builder_policy_parity.py, python3 scripts/gates/check_github_actions.py --repo-root ., python3 scripts/gates/validate_adapters.py --repo-root ., python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- external-tool-control-plane: External tool manifests and install, update, doctor, support-sync, and upstream-release helpers whose behavior depends on host state.\n  source matches: integrations/tools/nose.json\n  verify: python3 -m tools.validate_integrations --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  source matches: integrations/tools/nose.json\n  verify: python3 -m tools.validate_integrations --repo-root ., python3 scripts/sync_support.py --repo-root ., python3 scripts/update_tools.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/gates/check_temp_producer_inventory.py, scripts/gates/run_owned_scratch_command.py, scripts/gates/temp_producer_inventory_lib.py, scripts/mutation/mutation_outer_budget.py, scripts/mutation/mutation_sample_scope.py, scripts/mutation/mutation_sampling_lib.py, scripts/mutation/mutation_sampling_selection.py, scripts/mutation/run_cosmic_ray_mutation.py, scripts/mutation/sample_mutation_files.py, scripts/run_quality_engine_runtime.py, tests/quality_gates/support.py, tests/quality_gates/test_distinct_mutation_coverage.py, tests/quality_gates/test_mutation_baseline_abort.py, tests/quality_gates/test_mutation_coverage_probe.py, tests/quality_gates/test_mutation_issue_report_body.py, tests/quality_gates/test_mutation_outer_budget.py, tests/quality_gates/test_mutation_sampler_scope.py, tests/quality_gates/test_quality_mutation_coverage.py, tests/quality_gates/test_quality_runner.py, tests/quality_gates/test_run_cosmic_ray_mutation_resilience.py, tests/quality_gates/test_skill_docs_contracts.py, tests/test_common_runner_failure_coverage.py, tests/test_runtime_scratch.py, tests/test_temp_producer_inventory.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/gates/check_temp_producer_inventory.py, scripts/gates/run_owned_scratch_command.py, scripts/gates/temp_producer_inventory_lib.py, scripts/mutation/mutation_outer_budget.py, scripts/mutation/mutation_sample_scope.py, scripts/mutation/mutation_sampling_lib.py, scripts/mutation/mutation_sampling_selection.py, scripts/mutation/run_cosmic_ray_mutation.py, scripts/mutation/sample_mutation_files.py, scripts/run_quality_engine_runtime.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "95bc9b6ccba4bce0ce055ee0dd4337774caa4c43",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      ".agents/grok-host.md",
+      ".agents/quality-gates.yaml",
+      ".agents/temp-producers.yaml",
+      ".github/workflows/mutation-tests.yml",
+      "docs/operator-acceptance.md",
+      "docs/parallel-execution.md",
+      "docs/public-skill-dogfood.json",
+      "docs/validator-timing-layers.md",
+      "integrations/tools/nose.json",
+      "native/repograph/fixtures/carriers/expected/quality_label_universe.yaml",
+      "scripts/agent-runtime/codex-eval-runtime.mjs",
+      "scripts/agent-runtime/run-local-eval-test.mjs",
+      "scripts/check-links-external.sh",
+      "scripts/check-links-internal.sh",
+      "scripts/check-markdown.sh",
+      "scripts/check-python-lint.sh",
+      "scripts/check-secrets.sh",
+      "scripts/check-shell.sh",
+      "scripts/exported-copy-guard.sh",
+      "scripts/gates/check_temp_producer_inventory.py",
+      "scripts/gates/run_owned_scratch_command.py",
+      "scripts/gates/temp_producer_inventory_lib.py",
+      "scripts/mutation/mutation_outer_budget.py",
+      "scripts/mutation/mutation_sample_scope.py",
+      "scripts/mutation/mutation_sampling_lib.py",
+      "scripts/mutation/mutation_sampling_selection.py",
+      "scripts/mutation/run_cosmic_ray_mutation.py",
+      "scripts/mutation/sample_mutation_files.py",
+      "scripts/run_quality_engine_runtime.py",
+      "skills/public/impl/SKILL.md",
+      "skills/public/quality/references/attention-state-visibility.json",
+      "skills/public/quality/references/consumer-validator-catalog.yaml",
+      "skills/public/quality/references/mutation-testing.md",
+      "skills/public/quality/scripts/templates/mutation-tests.yml",
+      "tests/agent-runtime/native.test.mjs",
+      "tests/quality_gates/fixtures/.agents/quality-gates.yaml",
+      "tests/quality_gates/support.py",
+      "tests/quality_gates/test_distinct_mutation_coverage.py",
+      "tests/quality_gates/test_mutation_baseline_abort.py",
+      "tests/quality_gates/test_mutation_coverage_probe.py",
+      "tests/quality_gates/test_mutation_issue_report_body.py",
+      "tests/quality_gates/test_mutation_outer_budget.py",
+      "tests/quality_gates/test_mutation_sampler_scope.py",
+      "tests/quality_gates/test_quality_mutation_coverage.py",
+      "tests/quality_gates/test_quality_runner.py",
+      "tests/quality_gates/test_run_cosmic_ray_mutation_resilience.py",
+      "tests/quality_gates/test_skill_docs_contracts.py",
+      "tests/test_common_runner_failure_coverage.py",
+      "tests/test_runtime_scratch.py",
+      "tests/test_temp_producer_inventory.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/grok-host.md",
+        "content_sha256": "5bf91ddd197ac6c06999e52f2282d1fde4a996555e93a403bb401ba3f2b975ed"
+      },
+      {
+        "path": ".agents/quality-gates.yaml",
+        "content_sha256": "d16c9e329dc79bb45d8a1768d6b07783a7a4b21add155baa2d811fdf425ab6e7"
+      },
+      {
+        "path": ".agents/temp-producers.yaml",
+        "content_sha256": "f147c8a32a0fe9d442837eda5f7dc3141c214b35d90ed4e74bc9ce3373704eac"
+      },
+      {
+        "path": ".github/workflows/mutation-tests.yml",
+        "content_sha256": "e020819e7f1124d772dda96216509688141372929a417a4393edc362b9d8ce38"
+      },
+      {
+        "path": "docs/operator-acceptance.md",
+        "content_sha256": "fde0f55c7fd3129da09cedbaf1fbaeda9395dc01ceed987b5ebeeb945908052d"
+      },
+      {
+        "path": "docs/parallel-execution.md",
+        "content_sha256": "dc841069811bd3b358b76ddad540904b259f7361890350e59802854e375ff5a2"
+      },
+      {
+        "path": "docs/public-skill-dogfood.json",
+        "content_sha256": "6bd6028a2149a1045b703762da7ba023dd8483376269ad5fb2e4b9a13b0812ad"
+      },
+      {
+        "path": "docs/validator-timing-layers.md",
+        "content_sha256": "01bae7de8514673f16f665a76fc9fb343686670a742b155c5a331227885e20a0"
+      },
+      {
+        "path": "integrations/tools/nose.json",
+        "content_sha256": "241f2eed5bb30b058f186a6beba8e60c714fcd3bb67fa0016648e9bc34c2e9c6"
+      },
+      {
+        "path": "native/repograph/fixtures/carriers/expected/quality_label_universe.yaml",
+        "content_sha256": "19909f332dfd48a2780b02296f3c1095521cb592c288271ca1e2953e71cbecf9"
+      },
+      {
+        "path": "scripts/agent-runtime/codex-eval-runtime.mjs",
+        "content_sha256": "40dd201612043726315b0e60558f230245c1f047bff1a21c2003a7e47678610f"
+      },
+      {
+        "path": "scripts/agent-runtime/run-local-eval-test.mjs",
+        "content_sha256": "726613759add7b826e6e38023d45beb1ca5201c34ee050eaf5804eb3dddc1c48"
+      },
+      {
+        "path": "scripts/check-links-external.sh",
+        "content_sha256": "c3c4afe2019407bd88712f79a52f6a819e282f4818668369913b98e98855ef54"
+      },
+      {
+        "path": "scripts/check-links-internal.sh",
+        "content_sha256": "054f64a60c0801f68b2608e1bc3d27aa490f3b6a743ff459ce041180c6d4fa36"
+      },
+      {
+        "path": "scripts/check-markdown.sh",
+        "content_sha256": "647e0af85218385930361c9b1c7e1cfefce0e5aec95e6684ca42d02aeffab715"
+      },
+      {
+        "path": "scripts/check-python-lint.sh",
+        "content_sha256": "7c78f6547db27e8cfa2ea10cf204287d61e74f66534340854918a7d71f04271d"
+      },
+      {
+        "path": "scripts/check-secrets.sh",
+        "content_sha256": "ae82cb29b2870f438be1efe29183832322209cecb5e292db7c18b957dcdda947"
+      },
+      {
+        "path": "scripts/check-shell.sh",
+        "content_sha256": "fe078f6fa57da6feb7d10ffdda5f8842e5d25a47a885aa92a179c08233b9c96e"
+      },
+      {
+        "path": "scripts/exported-copy-guard.sh",
+        "content_sha256": "28e2093a9b4f79ae3823ed72f49556fbab53c4fb436f7160cffbf18bbd413fb1"
+      },
+      {
+        "path": "scripts/gates/check_temp_producer_inventory.py",
+        "content_sha256": "a839477a59c1c1280161519f9485ccc07c77d5dddfb60b946352978e4c7f31b9"
+      },
+      {
+        "path": "scripts/gates/run_owned_scratch_command.py",
+        "content_sha256": "7fe2a257d3b7537f4cdc22ad26cbfdf280bae5ac6ac9c6e876a8a611e7be4b08"
+      },
+      {
+        "path": "scripts/gates/temp_producer_inventory_lib.py",
+        "content_sha256": "ce5c804b9892f677df7c1e0c20fa727df6710c721d1a764a65bb84a8e41faa79"
+      },
+      {
+        "path": "scripts/mutation/mutation_outer_budget.py",
+        "content_sha256": "bf4dc235fa0074ece31f04e51c939df671617418bfa9c02b8664f0ad6f521ce5"
+      },
+      {
+        "path": "scripts/mutation/mutation_sample_scope.py",
+        "content_sha256": "7d8250413d5d8ba176a8c9198cb789d6c18aa61fc8d99a6b71bba6e711dba3b6"
+      },
+      {
+        "path": "scripts/mutation/mutation_sampling_lib.py",
+        "content_sha256": "3c53b721c7b5860bd1c2541713e1f118be0e8e226d5490d947177979b289e198"
+      },
+      {
+        "path": "scripts/mutation/mutation_sampling_selection.py",
+        "content_sha256": "f5eb7113e80c2b4858b94b75c56f6092ffbeaf408b7dabb37d0fe89b8081df4b"
+      },
+      {
+        "path": "scripts/mutation/run_cosmic_ray_mutation.py",
+        "content_sha256": "c8e33acf28bb4cf6241dfaf75565dab7cb855faffece89ce9442270e688aac3a"
+      },
+      {
+        "path": "scripts/mutation/sample_mutation_files.py",
+        "content_sha256": "c3927d4ced99607b92e296d2606b0e353a9ee0c8e66123a03d52387c1b681982"
+      },
+      {
+        "path": "scripts/run_quality_engine_runtime.py",
+        "content_sha256": "fa543c0aa327b4b180adc00a9b7bad17c6bcba90615b6f8864fcd7118ccc400e"
+      },
+      {
+        "path": "skills/public/impl/SKILL.md",
+        "content_sha256": "02485757dd7b724151c753ff584efc159aa548d585d164e01458fe2d7175741e"
+      },
+      {
+        "path": "skills/public/quality/references/attention-state-visibility.json",
+        "content_sha256": "aa576d0f8a3141f47c61d96f4aa0f952a8e85931dacb5cb406692cf79c946fba"
+      },
+      {
+        "path": "skills/public/quality/references/consumer-validator-catalog.yaml",
+        "content_sha256": "e2c1b67ef70da18ddba28b1d394172a8574e6765d22629b1dd3d13d7927f7b20"
+      },
+      {
+        "path": "skills/public/quality/references/mutation-testing.md",
+        "content_sha256": "ca5036533188515c52917d143aa9aae52d3858c0eefc2f0022c5dbf0a70e2001"
+      },
+      {
+        "path": "skills/public/quality/scripts/templates/mutation-tests.yml",
+        "content_sha256": "dbcd6811b70d5d759cfbed48292b770eb6c8d7d9491b3aa92c371e271fbd1a22"
+      },
+      {
+        "path": "tests/agent-runtime/native.test.mjs",
+        "content_sha256": "c637bb262797e85ca3efab9e12dcf58e3a18a7377871f775100b6105813560ac"
+      },
+      {
+        "path": "tests/quality_gates/fixtures/.agents/quality-gates.yaml",
+        "content_sha256": "153387e9843f84601f52ca1fbcb88e7119e7f90a1cd02d940e434fcf0c9d150b"
+      },
+      {
+        "path": "tests/quality_gates/support.py",
+        "content_sha256": "b59affc0c9203c60ab343c255052703caf39532ef4857298aadc4ce6856e3514"
+      },
+      {
+        "path": "tests/quality_gates/test_distinct_mutation_coverage.py",
+        "content_sha256": "e1c61d026cd97b31f39c1c82640a4944839302e22bca114ccd518d471e19ab85"
+      },
+      {
+        "path": "tests/quality_gates/test_mutation_baseline_abort.py",
+        "content_sha256": "c13af58ef179c8e5c2ff6e077c251a1dfa4f2c45d37ebd8de6063ee0db937b03"
+      },
+      {
+        "path": "tests/quality_gates/test_mutation_coverage_probe.py",
+        "content_sha256": "46864c8aaaf6298368105fdecaef9f928141cb59c440faf097df9031e262779b"
+      },
+      {
+        "path": "tests/quality_gates/test_mutation_issue_report_body.py",
+        "content_sha256": "d01c7317bc360789e530866067e707f203b415bce1f7a7aa7683c77e5a507003"
+      },
+      {
+        "path": "tests/quality_gates/test_mutation_outer_budget.py",
+        "content_sha256": "5440e63fb4cebddefc71860812fde69dcf76b424ba45f29462313a422c011644"
+      },
+      {
+        "path": "tests/quality_gates/test_mutation_sampler_scope.py",
+        "content_sha256": "5da778ecc352db222912a4152258ecc4b3caf5d74989a3fbd410663d524e996d"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_mutation_coverage.py",
+        "content_sha256": "84276bc14025f1ff587b4b8157e618ab813ccf4ecb23be45f32e19bd3e31686e"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_runner.py",
+        "content_sha256": "6146ab5487f3f63435c753753cb7c3387cae9c391c2c7aebe581066ff94ad757"
+      },
+      {
+        "path": "tests/quality_gates/test_run_cosmic_ray_mutation_resilience.py",
+        "content_sha256": "f24eaf02f4f02b4d611f399a9fdc56ef155f9633b01533ba4f4343e0848efc71"
+      },
+      {
+        "path": "tests/quality_gates/test_skill_docs_contracts.py",
+        "content_sha256": "5c642ff0aec5473a9874bfeda87ac86b0a8614f6ddce53cd65313fd2caddd022"
+      },
+      {
+        "path": "tests/test_common_runner_failure_coverage.py",
+        "content_sha256": "2014b5c44ddb000cb04a19fa93e64eeafc44d3316a57af101a18c17033917425"
+      },
+      {
+        "path": "tests/test_runtime_scratch.py",
+        "content_sha256": "b287bbdcb7e38580684224a75f320e722e513679fba770559b59e15b118642e8"
+      },
+      {
+        "path": "tests/test_temp_producer_inventory.py",
+        "content_sha256": "080b7800dbeaf4d656f4e7cf3ca0d002a853ed6c4845bc7236005910ffc13a14"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "8e0ca6ac1d4e96da321548847c8aa348020adfaa81de1727eaa85f06a501b29c"
+  }
+}

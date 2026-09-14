@@ -123,7 +123,9 @@ jobs:
                 status: 'completed',
                 per_page: 10,
               });
-              const previousCompleted = data.workflow_runs.find((run) => run.id !== context.runId && ['success', 'failure'].includes(run.conclusion));
+              // Scheduled base must come from a scheduled predecessor: a manual
+              // dispatch run cannot prove changed-line fixes (OP-MUT-002).
+              const previousCompleted = data.workflow_runs.find((run) => run.id !== context.runId && run.event === 'schedule' && ['success', 'failure'].includes(run.conclusion));
               basePreviousSha = previousCompleted?.head_sha ?? '';
               core.info(previousCompleted
                 ? `Previous completed mutation workflow ran at ${previousCompleted.head_sha}. Current SHA is ${context.sha}.`
@@ -190,7 +192,9 @@ jobs:
           retention-days: 14
 
       - name: Open or update mutation issue
-        if: always() && steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && steps.plan.outputs.mode == 'full' && steps.adapter.outputs.auto_issue_enabled == 'true' && (steps.run.outcome == 'failure' || steps.summary.outcome == 'failure')
+        # steps.sample is included because a failed sample leaves `run`
+        # skipped: without it a red scheduled job files nothing (OP-MUT-001).
+        if: always() && steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && steps.plan.outputs.mode == 'full' && steps.adapter.outputs.auto_issue_enabled == 'true' && (steps.sample.outcome == 'failure' || steps.run.outcome == 'failure' || steps.summary.outcome == 'failure')
         uses: actions/github-script@v8
         env:
           SUMMARY_PATH: ${{ steps.adapter.outputs.summary_md }}
@@ -477,5 +481,5 @@ jobs:
             }
 
       - name: Fail workflow on mutation failure
-        if: steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && (steps.run.outcome == 'failure' || steps.summary.outcome == 'failure')
+        if: steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && (steps.sample.outcome == 'failure' || steps.run.outcome == 'failure' || steps.summary.outcome == 'failure')
         run: exit 1

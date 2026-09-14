@@ -1,0 +1,85 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "communication",
+  "packet_sha256": "ced7f9680da12f051fcf505ae29708a8dd32654c420d83ab9a5aeede7dc264a8",
+  "reviewed_input_identity_sha256": "8e0ca6ac1d4e96da321548847c8aa348020adfaa81de1727eaa85f06a501b29c",
+  "verdict": "defer",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "communication.release-surface-missing",
+      "severity": "blocker",
+      "summary": "The bound input contains no v8.6.4 release-note, changelog, or announcement surface, so communication readiness cannot be approved.",
+      "evidence": [
+        "The packet's reviewed-path manifest contains technical, workflow, test, and operator-acceptance files but no v8.6.4 announcement or release-note artifact.",
+        "docs/public-skill-dogfood.json identifies `charness-artifacts/announcement/latest.md` as the durable announcement surface, but that path is not included in the reviewed input.",
+        "docs/operator-acceptance.md is explicitly marked `Status: conditional (operator takeover path)` and describes acceptance runs rather than a release narrative."
+      ],
+      "action": "Bind the exact v8.6.4 announcement or release-note artifact and rerun this review against it."
+    },
+    {
+      "id": "communication.behavior-delta-unclassified",
+      "severity": "high",
+      "summary": "The material does not distinguish operator-visible behavior from maintainer-only gate, CI, and test changes, leaving the user impact of v8.6.4 unclear.",
+      "evidence": [
+        ".agents/quality-gates.yaml and docs/validator-timing-layers.md are dominated by internal gate labels, timing layers, and enforcement mechanics.",
+        ".github/workflows/mutation-tests.yml and skills/public/quality/references/mutation-testing.md contain extensive workflow mechanics and incident history rather than a consumer-facing behavior summary.",
+        "integrations/tools/nose.json documents a required external dependency and update path, but the bound input does not say whether that requirement is new, whom it affects, or how it relates to v8.6.4."
+      ],
+      "action": "Add a compact behavior matrix classifying each release item as operator-visible, maintainer-only, or no user action, with the affected audience and observable result."
+    },
+    {
+      "id": "communication.announcement-density",
+      "severity": "high",
+      "summary": "The available material is too dense and evidence-oriented to function as a first-read announcement for operators who did not follow development.",
+      "evidence": [
+        "docs/validator-timing-layers.md compresses a large generated validator inventory into dense rows and policy prose.",
+        "The mutation workflow and mutation-testing reference retain detailed issue archaeology, internal statuses, and implementation mechanics such as `UNMEASURED` and recovery-candidate handling.",
+        "docs/parallel-execution.md explains repository operating policy but does not provide a concise v8.6.4 problem, benefit, impact, and action summary."
+      ],
+      "action": "Keep the detailed technical documents as linked references, but derive a short announcement with the user problem, visible change, affected operators, required action, and verification result."
+    },
+    {
+      "id": "communication.upgrade-path-undemonstrated",
+      "severity": "high",
+      "summary": "The packet lists generic install and update commands but does not provide a version-specific, end-to-end v8.6.4 upgrade and verification path.",
+      "evidence": [
+        "docs/operator-acceptance.md lists `charness init`, `charness update`, `charness update all`, `charness doctor`, and tool updates, but does not select the correct v8.6.4 sequence for managed installs versus existing installs.",
+        "The same page refers to a documented restart/reload step without naming that step or showing the post-update readback an operator should perform.",
+        "integrations/tools/nose.json supplies tool-specific installation and failure hints, but the bound input does not connect them to the v8.6.4 upgrade decision."
+      ],
+      "action": "Document the starting state, exact upgrade command, external-tool prerequisites, restart/reload requirement, version and installed-payload checks, and recovery path for v8.6.4."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "No exact v8.6.4 announcement or release-note bytes are bound.",
+      "bin": "Act Before Ship",
+      "disposition": "Real blocker: the communication surface itself is not available for review, so release lock-in must wait."
+    },
+    {
+      "concern": "All internal gate and mutation history should be rewritten into the announcement.",
+      "bin": "Bundle Anyway",
+      "disposition": "Keep the detailed evidence and maintainer references; derive only the concise operator summary and link the rest."
+    },
+    {
+      "concern": "Every changed test, fixture, and CI guard needs a user-facing release bullet.",
+      "bin": "Over-Worry",
+      "disposition": "Not required; mention only changes affecting installed payloads, commands, prerequisites, operator workflow, or observable status."
+    },
+    {
+      "concern": "Generic acceptance commands are sufficient to infer the v8.6.4 upgrade path.",
+      "bin": "Valid but Defer",
+      "disposition": "They are useful candidate steps, but the release-specific sequence and post-update readback are not established in the bound input."
+    }
+  ],
+  "next_move": "Bind a v8.6.4 release-note or announcement artifact containing a concise behavior summary, affected-operator matrix, exact upgrade path, prerequisites, restart/reload guidance, and post-upgrade verification; then rerun the communication review. Do not lock the release communication before that review.",
+  "non_claims": [
+    "This review makes no claim about code correctness, test results, packaging validity, or overall release safety.",
+    "The finding about the missing release surface applies to the bound reviewed input; it does not infer current workspace state.",
+    "No structured prepared targets were supplied, so target_observations is null.",
+    "The goal lineage is not goal-bound; no Goal Run outcome or approval is inferred."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

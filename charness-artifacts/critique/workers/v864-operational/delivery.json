@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "v864-operational",
+      "scope": "v8.6.4 release lock-in, operational angle: missing release-time steps, manifest sync before tag, doctor on clean checkout, install artifact, scheduled mutation job behavior",
+      "packet_identity": "ced7f9680da12f051fcf505ae29708a8dd32654c420d83ab9a5aeede7dc264a8",
+      "parent_receipt_identity": "parent-16e12968688884f55d4f24f7cd3053900d4162a2322fee47",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-14T02:43:33Z",
+      "history": [
+        {
+          "event_id": "79b8a7087b8c4298b38fd753578e26ef",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-14T02:37:57Z",
+          "attempt_id": "v864-operational",
+          "scope": "v8.6.4 release lock-in, operational angle: missing release-time steps, manifest sync before tag, doctor on clean checkout, install artifact, scheduled mutation job behavior",
+          "packet_identity": "ced7f9680da12f051fcf505ae29708a8dd32654c420d83ab9a5aeede7dc264a8",
+          "parent_receipt_identity": "parent-16e12968688884f55d4f24f7cd3053900d4162a2322fee47",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "230858f5717c4d4081fb4cdc4131ce13",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-14T02:37:57Z",
+          "attempt_id": "v864-operational",
+          "scope": "v8.6.4 release lock-in, operational angle: missing release-time steps, manifest sync before tag, doctor on clean checkout, install artifact, scheduled mutation job behavior",
+          "packet_identity": "ced7f9680da12f051fcf505ae29708a8dd32654c420d83ab9a5aeede7dc264a8",
+          "parent_receipt_identity": "parent-16e12968688884f55d4f24f7cd3053900d4162a2322fee47",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "227a2a8db257443d9334fb0e7b169600",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-14T02:43:33Z",
+          "attempt_id": "v864-operational",
+          "scope": "v8.6.4 release lock-in, operational angle: missing release-time steps, manifest sync before tag, doctor on clean checkout, install artifact, scheduled mutation job behavior",
+          "packet_identity": "ced7f9680da12f051fcf505ae29708a8dd32654c420d83ab9a5aeede7dc264a8",
+          "parent_receipt_identity": "parent-16e12968688884f55d4f24f7cd3053900d4162a2322fee47",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "9ebecdf90f2095a87bc42a63ee87977ef345df9c43571172c458f09656bc71f6"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "8e0ca6ac1d4e96da321548847c8aa348020adfaa81de1727eaa85f06a501b29c",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "767463ac9a218f390956cd30cf98b448b40d6cc1ce0f895e645196f701c081f0",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/v864-operational/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/v864-operational/receipt.json",
+      "producer_run_id": "run-v864-operational",
+      "findings_identity": "9ebecdf90f2095a87bc42a63ee87977ef345df9c43571172c458f09656bc71f6"
+    }
+  ]
+}

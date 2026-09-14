@@ -337,6 +337,23 @@ def _mutation_workflow_copies() -> list[Path]:
     ]
 
 
+def test_issue_and_fail_conditions_include_sample_failure() -> None:
+    """A failed sample leaves `run` skipped: without the sample term a red
+    scheduled job files no issue and exits green (OP-MUT-001). Both the
+    open-or-update gate and the fail gate must carry it, in both copies."""
+    for path in _mutation_workflow_copies():
+        body = path.read_text(encoding="utf-8")
+        assert body.count("steps.sample.outcome == 'failure'") >= 2, path
+
+
+def test_scheduled_base_lookup_ignores_dispatch_runs() -> None:
+    """A manual dispatch run cannot prove changed-line fixes, so it must not
+    become a scheduled run's base SHA (OP-MUT-002)."""
+    for path in _mutation_workflow_copies():
+        body = path.read_text(encoding="utf-8")
+        assert "run.event === 'schedule'" in body, path
+
+
 def test_auto_issue_label_with_comma_is_refused() -> None:
     """`issues.listForRepo(labels: ...)` reads its value as a comma-separated
     AND-filter, so a label whose own name contains a comma is created and attached

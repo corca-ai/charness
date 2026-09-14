@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "v864-communication",
+      "scope": "v8.6.4 release lock-in, communication angle: release notes legibility for operators who did not follow development, announcement density, user-visible behavior framing, upgrade path",
+      "packet_identity": "ced7f9680da12f051fcf505ae29708a8dd32654c420d83ab9a5aeede7dc264a8",
+      "parent_receipt_identity": "parent-25a61b76a7a4ca2c56a00efe08ca6c15aa34ed3e3c02c65c",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-14T02:47:46Z",
+      "history": [
+        {
+          "event_id": "4deaef0705e84104896a697a580b5d3a",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-14T02:43:04Z",
+          "attempt_id": "v864-communication",
+          "scope": "v8.6.4 release lock-in, communication angle: release notes legibility for operators who did not follow development, announcement density, user-visible behavior framing, upgrade path",
+          "packet_identity": "ced7f9680da12f051fcf505ae29708a8dd32654c420d83ab9a5aeede7dc264a8",
+          "parent_receipt_identity": "parent-25a61b76a7a4ca2c56a00efe08ca6c15aa34ed3e3c02c65c",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "921bc61c08e245da92afd87965c2cb61",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-14T02:43:04Z",
+          "attempt_id": "v864-communication",
+          "scope": "v8.6.4 release lock-in, communication angle: release notes legibility for operators who did not follow development, announcement density, user-visible behavior framing, upgrade path",
+          "packet_identity": "ced7f9680da12f051fcf505ae29708a8dd32654c420d83ab9a5aeede7dc264a8",
+          "parent_receipt_identity": "parent-25a61b76a7a4ca2c56a00efe08ca6c15aa34ed3e3c02c65c",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "d4cc7e3aa07e4286809c705912a81f10",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-14T02:47:46Z",
+          "attempt_id": "v864-communication",
+          "scope": "v8.6.4 release lock-in, communication angle: release notes legibility for operators who did not follow development, announcement density, user-visible behavior framing, upgrade path",
+          "packet_identity": "ced7f9680da12f051fcf505ae29708a8dd32654c420d83ab9a5aeede7dc264a8",
+          "parent_receipt_identity": "parent-25a61b76a7a4ca2c56a00efe08ca6c15aa34ed3e3c02c65c",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "04cb55b774c95fbbb940764be56669d5d2e2641e103090aeb5e91c1842caedf3"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "8e0ca6ac1d4e96da321548847c8aa348020adfaa81de1727eaa85f06a501b29c",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "f3837e6b5c652dbedc910c129f2523ea0df89fd56d67664f455dfd889570d014",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/v864-communication/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/v864-communication/receipt.json",
+      "producer_run_id": "run-v864-communication",
+      "findings_identity": "04cb55b774c95fbbb940764be56669d5d2e2641e103090aeb5e91c1842caedf3"
+    }
+  ]
+}
