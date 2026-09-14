@@ -32,7 +32,7 @@ except ImportError:  # pragma: no cover
     msvcrt = None
 
 try:
-    from scripts.core.git_checkout import git_dir_at
+    from scripts.core.git_checkout import ancestors_until_ceiling, git_dir_at
     from scripts.runtime_bootstrap import runtime_root
 except ImportError:  # direct installed/helper layout
     _repo_root = next(
@@ -49,7 +49,7 @@ except ImportError:  # direct installed/helper layout
 
     if str(_repo_root) not in sys.path:
         sys.path.insert(0, str(_repo_root))
-    from scripts.core.git_checkout import git_dir_at
+    from scripts.core.git_checkout import ancestors_until_ceiling, git_dir_at
     from scripts.runtime_bootstrap import runtime_root
 
 
@@ -57,33 +57,13 @@ def _fail(message: str) -> None:
     raise ValueError(f"lesson ledger writer: {message}")
 
 
-def _ceiling_directories() -> set[str]:
-    raw = os.environ.get("GIT_CEILING_DIRECTORIES", "")
-    ceilings: set[str] = set()
-    for entry in raw.split(os.pathsep):
-        entry = entry.strip()
-        if not entry:
-            continue
-        try:
-            ceilings.add(str(Path(entry).expanduser().resolve()))
-        except OSError:
-            continue
-    return ceilings
-
-
 def _repository_root(path: Path) -> Path | None:
     # A bare `.git` name is not a repository: an empty or foreign marker
     # (stray init, dotfiles above tmp) must not capture the walk. The
-    # checkout owner decides what counts. GIT_CEILING_DIRECTORIES bounds
-    # the ascent the same way it does for git discovery: a ceiling
-    # ancestor is never inspected, so a repository AT the ceiling cannot
-    # capture a ledger below it. Only the starting path itself is
-    # inspected unconditionally.
+    # checkout owner decides what counts, including where
+    # GIT_CEILING_DIRECTORIES stops the ascent.
     resolved = path.expanduser().resolve()
-    ceilings = _ceiling_directories()
-    for index, candidate in enumerate((resolved, *resolved.parents)):
-        if index > 0 and str(candidate) in ceilings:
-            break
+    for candidate in ancestors_until_ceiling(resolved):
         if git_dir_at(candidate) is not None:
             return candidate
     return None

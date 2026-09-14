@@ -17,7 +17,6 @@ import hashlib
 import importlib
 import importlib.util
 import json
-import os
 import sys
 from datetime import date
 from pathlib import Path
@@ -329,20 +328,6 @@ def verify_packet_binding(
     if not isinstance(declared, list) or not declared:
         return False, "declared reviewed inputs cover zero paths"
     return True, "legacy-packet-integrity-only" if legacy_packet else "packet-integrity-only"
-def _ceiling_directories() -> set[str]:
-    raw = os.environ.get("GIT_CEILING_DIRECTORIES", "")
-    ceilings: set[str] = set()
-    for entry in raw.split(os.pathsep):
-        entry = entry.strip()
-        if not entry:
-            continue
-        try:
-            ceilings.add(str(Path(entry).expanduser().resolve()))
-        except OSError:
-            continue
-    return ceilings
-
-
 def verify_artifact_binding(
     artifact_path: Path,
     fields: dict[str, str],
@@ -363,16 +348,13 @@ def verify_artifact_binding(
                 resolved_root = layout_root
         if resolved_root is None:
             # A bare `.git` name is not a repository: an empty or foreign
-            # marker above the artifact must not capture the walk.
-            # GIT_CEILING_DIRECTORIES bounds the ascent the same way it
-            # does for git discovery: a ceiling ancestor is never
-            # inspected, so an unrelated repository above the ceiling
-            # cannot capture the artifact. The artifact's own directory
-            # is still inspected.
-            ceilings = _ceiling_directories()
-            for index, parent in enumerate(artifact_path.resolve().parents):
-                if index > 0 and str(parent) in ceilings:
-                    break
+            # marker above the artifact must not capture the walk. The
+            # checkout owner bounds the ascent at GIT_CEILING_DIRECTORIES,
+            # so an unrelated repository above the ceiling cannot capture
+            # the artifact. The artifact's own directory is still inspected.
+            for parent in _git_checkout.ancestors_until_ceiling(
+                artifact_path.resolve().parent
+            ):
                 if _git_checkout.git_dir_at(parent) is not None:
                     resolved_root = parent
                     break

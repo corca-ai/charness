@@ -90,3 +90,25 @@ def test_status_capture_does_not_spawn_git_when_undiscoverable(
     with pytest.raises(GitStatusError, match="Git discovery preflight"):
         capture_status(repo)
     assert launches == []
+
+
+def test_ancestors_until_ceiling_stops_before_a_ceiling_ancestor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    outer = (tmp_path / "outer").resolve()
+    inner = outer / "inner"
+    inner.mkdir(parents=True)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(outer))
+    assert list(checkout.ancestors_until_ceiling(inner / "ledger.json")) == [
+        inner / "ledger.json",
+        inner,
+    ]
+
+
+def test_ancestors_until_ceiling_still_yields_the_starting_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    outer = (tmp_path / "outer").resolve()
+    outer.mkdir(parents=True)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(outer))
+    assert next(iter(checkout.ancestors_until_ceiling(outer))) == outer

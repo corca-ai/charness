@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import re
 from pathlib import Path
-from typing import NamedTuple
+from typing import Iterator, NamedTuple
 
 DISCOVERY_ENV = ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR")
 # Index redirection is not repo discovery, but on-disk HEAD is no longer the
@@ -21,6 +21,40 @@ _GIT_OID_RE = re.compile(r"^(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})$")
 
 def discovery_redirected(*, names: tuple[str, ...] = DISCOVERY_ENV) -> bool:
     return any(os.environ.get(name) for name in names)
+
+
+def ceiling_directories() -> set[str]:
+    """Absolute directories Git must not ascend into while discovering a repo.
+
+    Mirrors `GIT_CEILING_DIRECTORIES`: the starting directory is always
+    inspected, but the walk stops before entering a ceiling ancestor, so a
+    repository at the ceiling cannot capture a caller below it.
+    """
+    raw = os.environ.get("GIT_CEILING_DIRECTORIES", "")
+    ceilings: set[str] = set()
+    for entry in raw.split(os.pathsep):
+        entry = entry.strip()
+        if not entry:
+            continue
+        try:
+            ceilings.add(str(Path(entry).expanduser().resolve()))
+        except OSError:
+            continue
+    return ceilings
+
+
+def ancestors_until_ceiling(start: Path) -> Iterator[Path]:
+    """Yield `start` then its ancestors, stopping before a ceiling ancestor.
+
+    The starting directory is always yielded: ceilings refuse the ascent,
+    not the starting point.
+    """
+    ceilings = ceiling_directories()
+    yield start
+    for ancestor in start.parents:
+        if str(ancestor) in ceilings:
+            return
+        yield ancestor
 
 
 def git_dir_at(repo_root: Path) -> Path | None:
