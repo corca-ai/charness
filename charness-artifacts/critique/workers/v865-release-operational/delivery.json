@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "v865-release-operational",
+      "scope": "v8.6.5 release critique, operational angle: ship v8.6.5 patch (ceiling-aware repo discovery centralized in git_checkout; ledger and artifact binding consume the shared walk; hold_out yields staged destinations). Judge whether the release is safe to ship: missed callers assuming pre-ceiling semantics, lock-path changes for existing installs, and any release-time step this publish needs. Broader mutation/sampler delta was covered by the v8.6.4 critique rounds with blockers fixed in-tree; this round covers only the new ceiling repair surface.",
+      "packet_identity": "e131e86af2b75378e2869de68aad85f777b3f5d27e3cf71ca04822e34765cd9f",
+      "parent_receipt_identity": "parent-2ea994b0804f42df89f0b179967a09134f8c35753610fbd9",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-14T05:13:35Z",
+      "history": [
+        {
+          "event_id": "60c1916c488c4357b376723f57946b3c",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-14T05:13:00Z",
+          "attempt_id": "v865-release-operational",
+          "scope": "v8.6.5 release critique, operational angle: ship v8.6.5 patch (ceiling-aware repo discovery centralized in git_checkout; ledger and artifact binding consume the shared walk; hold_out yields staged destinations). Judge whether the release is safe to ship: missed callers assuming pre-ceiling semantics, lock-path changes for existing installs, and any release-time step this publish needs. Broader mutation/sampler delta was covered by the v8.6.4 critique rounds with blockers fixed in-tree; this round covers only the new ceiling repair surface.",
+          "packet_identity": "e131e86af2b75378e2869de68aad85f777b3f5d27e3cf71ca04822e34765cd9f",
+          "parent_receipt_identity": "parent-2ea994b0804f42df89f0b179967a09134f8c35753610fbd9",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "d4396a042e8f4fff91672ebefd36c36b",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-14T05:13:00Z",
+          "attempt_id": "v865-release-operational",
+          "scope": "v8.6.5 release critique, operational angle: ship v8.6.5 patch (ceiling-aware repo discovery centralized in git_checkout; ledger and artifact binding consume the shared walk; hold_out yields staged destinations). Judge whether the release is safe to ship: missed callers assuming pre-ceiling semantics, lock-path changes for existing installs, and any release-time step this publish needs. Broader mutation/sampler delta was covered by the v8.6.4 critique rounds with blockers fixed in-tree; this round covers only the new ceiling repair surface.",
+          "packet_identity": "e131e86af2b75378e2869de68aad85f777b3f5d27e3cf71ca04822e34765cd9f",
+          "parent_receipt_identity": "parent-2ea994b0804f42df89f0b179967a09134f8c35753610fbd9",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "44424cd52fa841da83d7b2a7c354f529",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-14T05:13:35Z",
+          "attempt_id": "v865-release-operational",
+          "scope": "v8.6.5 release critique, operational angle: ship v8.6.5 patch (ceiling-aware repo discovery centralized in git_checkout; ledger and artifact binding consume the shared walk; hold_out yields staged destinations). Judge whether the release is safe to ship: missed callers assuming pre-ceiling semantics, lock-path changes for existing installs, and any release-time step this publish needs. Broader mutation/sampler delta was covered by the v8.6.4 critique rounds with blockers fixed in-tree; this round covers only the new ceiling repair surface.",
+          "packet_identity": "e131e86af2b75378e2869de68aad85f777b3f5d27e3cf71ca04822e34765cd9f",
+          "parent_receipt_identity": "parent-2ea994b0804f42df89f0b179967a09134f8c35753610fbd9",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "c32348b79a6de357a8036e48ced3af9640a96e5bac4200ac81af57fcd2f598f1"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "329366b830f1adc1a7c8f9daa5d5bbd3223b866e50efc7ee7cdc490d12b094c3",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "2791e06e44ed6c48667acf2615ea380ac42f33336c8be527f05c0b63017e5d84",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/v865-release-operational/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/v865-release-operational/receipt.json",
+      "producer_run_id": "run-v865-release-operational",
+      "findings_identity": "c32348b79a6de357a8036e48ced3af9640a96e5bac4200ac81af57fcd2f598f1"
+    }
+  ]
+}

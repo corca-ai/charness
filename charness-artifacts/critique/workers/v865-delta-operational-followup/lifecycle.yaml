@@ -1,0 +1,192 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: runner-completed
+execution_state: terminal
+lifecycle_state: terminal
+reviewer_started: true
+delivery_state: findings-received
+verdict_state: block
+review_verdict: block
+classification: unclassified
+approval_eligible: false
+output:
+  state: terminal
+  approval_eligible: false
+  schema_version: charness.reviewer_worker_report.v1
+  findings_identity: a36229f528efe106f1defc628432c42b1396e66afb376d6b72d0dd01ff058927
+  partial_artifacts:
+  - schema_version: charness.reviewer_partial_output/v1
+    kind: bounded-review-result
+    path: charness-artifacts/critique/workers/v865-delta-operational-followup/partial-result.json
+    bytes: 3751
+    sha256: a53703723642d15afdae39803416c20c82af09a304ada5973ed0114c533d56f1
+output_state: terminal
+failure_identity: f20453d0fc3f630569f4514736a52437b7cc4fb63cd75badefa28c2dcf77e89c
+next_move: inspect the delivered findings; this is a reviewer block, not a runner
+  failure
+runner_returncode: 1
+runner_status: runner-completed
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/v865-delta-operational-followup-packet.json
+  schema: charness-artifacts/critique/workers/v865-delta-operational-followup/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/v865-delta-operational-followup/capability.json
+  prompt: charness-artifacts/critique/workers/v865-delta-operational-followup/review-prompt.md
+  plan: charness-artifacts/critique/workers/v865-delta-operational-followup/run-plan.json
+  ledger: charness-artifacts/critique/workers/v865-delta-operational-followup/delivery.json
+  output: charness-artifacts/critique/workers/v865-delta-operational-followup/result.json
+  receipt: charness-artifacts/critique/workers/v865-delta-operational-followup/receipt.json
+  report: charness-artifacts/critique/workers/v865-delta-operational-followup/worker-report.yaml
+  runner_stdout: charness-artifacts/critique/workers/v865-delta-operational-followup/runner.stdout
+  runner_stderr: charness-artifacts/critique/workers/v865-delta-operational-followup/runner.stderr
+  backend_stdout: charness-artifacts/critique/workers/v865-delta-operational-followup/backend.stdout
+  backend_stderr: charness-artifacts/critique/workers/v865-delta-operational-followup/backend.stderr
+  summary: charness-artifacts/critique/workers/v865-delta-operational-followup/lifecycle.yaml
+  semantic-input/0000-content.bin: charness-artifacts/critique/workers/v865-delta-operational-followup/semantic-input/0000-content.bin
+  semantic-input/0001-content.bin: charness-artifacts/critique/workers/v865-delta-operational-followup/semantic-input/0001-content.bin
+  semantic-input/0002-content.bin: charness-artifacts/critique/workers/v865-delta-operational-followup/semantic-input/0002-content.bin
+  semantic-input/0003-content.bin: charness-artifacts/critique/workers/v865-delta-operational-followup/semantic-input/0003-content.bin
+  semantic-input/0004-content.bin: charness-artifacts/critique/workers/v865-delta-operational-followup/semantic-input/0004-content.bin
+  semantic-input/0005-content.bin: charness-artifacts/critique/workers/v865-delta-operational-followup/semantic-input/0005-content.bin
+  semantic-input/manifest.json: charness-artifacts/critique/workers/v865-delta-operational-followup/semantic-input/manifest.json
+  review-prompt.md: charness-artifacts/critique/workers/v865-delta-operational-followup/review-prompt.md
+  run-plan.json: charness-artifacts/critique/workers/v865-delta-operational-followup/run-plan.json
+  bounded-review-result.schema.json: charness-artifacts/critique/workers/v865-delta-operational-followup/bounded-review-result.schema.json
+  capability.json: charness-artifacts/critique/workers/v865-delta-operational-followup/capability.json
+  receipt.json: charness-artifacts/critique/workers/v865-delta-operational-followup/receipt.json
+  delivery.json: charness-artifacts/critique/workers/v865-delta-operational-followup/delivery.json
+  result.json: charness-artifacts/critique/workers/v865-delta-operational-followup/result.json
+  runner.stdout: charness-artifacts/critique/workers/v865-delta-operational-followup/runner.stdout
+  runner.stderr: charness-artifacts/critique/workers/v865-delta-operational-followup/runner.stderr
+  backend.stdout: charness-artifacts/critique/workers/v865-delta-operational-followup/backend.stdout
+  backend.stderr: charness-artifacts/critique/workers/v865-delta-operational-followup/backend.stderr
+  worker-report.yaml: charness-artifacts/critique/workers/v865-delta-operational-followup/worker-report.yaml
+  partial-result.json: charness-artifacts/critique/workers/v865-delta-operational-followup/partial-result.json
+  attempt-manifest.json: charness-artifacts/critique/workers/v865-delta-operational-followup/attempt-manifest.json
+  durable_report: charness-artifacts/critique/workers/v865-delta-operational-followup/worker-report.yaml
+identities:
+  attempt_id: v865-delta-operational-followup
+  scope: 'v8.6.5 delta follow-up, operational angle: ceiling stop rule centralized
+    in git_checkout (ceiling_directories plus ancestors_until_ceiling); ledger writer
+    and artifact binding consume the shared walk. Verify both ceiling findings are
+    closed, the shared walk preserves starting-directory behavior, and flag any new
+    missed callers or lock-path changes.'
+  packet_identity: 5c9c61f8ee888026d87f31a7d9510e665f1a08e100521e5ec00200fa5ab643fd
+  reviewed_input_identity: 1ecda7e64089945046c84335dadeae042e37ef79875c990ab656d4f1f0d57293
+  parent_receipt_identity: parent-7f86e8f3723580c8b5ac6bd61436e91edd93abf92f7eac83
+  findings_identity: a36229f528efe106f1defc628432c42b1396e66afb376d6b72d0dd01ff058927
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/v865-delta-operational-followup-packet.json
+  packet_sha256: 5c9c61f8ee888026d87f31a7d9510e665f1a08e100521e5ec00200fa5ab643fd
+  identity_sha256: 1ecda7e64089945046c84335dadeae042e37ef79875c990ab656d4f1f0d57293
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+timeout_seconds: 900
+scope: 'v8.6.5 delta follow-up, operational angle: ceiling stop rule centralized in
+  git_checkout (ceiling_directories plus ancestors_until_ceiling); ledger writer and
+  artifact binding consume the shared walk. Verify both ceiling findings are closed,
+  the shared walk preserves starting-directory behavior, and flag any new missed callers
+  or lock-path changes.'
+lens: operational
+parent_receipt_identity: parent-7f86e8f3723580c8b5ac6bd61436e91edd93abf92f7eac83
+semantic_input:
+  entries:
+  - path: scripts/core/git_checkout.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/v865-delta-operational-followup/semantic-input/0000-content.bin
+    content_sha256: be3b979044f75a196bef3740852ee6d882c4475e91506df4c3f3c4c0d5bce673
+    carrier_sha256: 1cc81a0cb950e28745a9b07b0d8d9d8ff9fad193a7dcdcb202f953c8e15a7b17
+    source: working-tree:scripts/core/git_checkout.py
+    size_bytes: 6853
+    prompt_encoding: utf-8
+  - path: scripts/lessons/lesson_ledger_writer_lib.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/v865-delta-operational-followup/semantic-input/0001-content.bin
+    content_sha256: 99c4ad824e8cfe4bfa94bf6fb5a848f99e0a92a46e159a4924c516013fe22000
+    carrier_sha256: 20709e0a30977b928afdfe94cdf5cbc52614ce52ea10df4083d05184551cbff1
+    source: working-tree:scripts/lessons/lesson_ledger_writer_lib.py
+    size_bytes: 6093
+    prompt_encoding: utf-8
+  - path: scripts/review/reviewed_input_verification.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/v865-delta-operational-followup/semantic-input/0002-content.bin
+    content_sha256: 31ce05e2b2fda1f17516110bef449f3fb0615a95fb8320608fe2c3cc3fbfe6e3
+    carrier_sha256: 1daa8405ded4ced25f822a520c2cfed91130b2d852ebe0f87143493511153aa4
+    source: working-tree:scripts/review/reviewed_input_verification.py
+    size_bytes: 20195
+    prompt_encoding: utf-8
+  - path: tests/test_git_checkout.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/v865-delta-operational-followup/semantic-input/0003-content.bin
+    content_sha256: 28d18083da462f73c95fa276e6a179b828cabbc82fbffe9e6a64b247fee55e8f
+    carrier_sha256: 4094420f576756ece165cc3811fe643ae4e527ea9ce6ea129d563bdbe843e838
+    source: working-tree:tests/test_git_checkout.py
+    size_bytes: 4027
+    prompt_encoding: utf-8
+  - path: tests/test_lesson_ledger.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/v865-delta-operational-followup/semantic-input/0004-content.bin
+    content_sha256: 50ba07a85c79b502bcdaa6090ede1b688b38e02598850c5339b8e5a4d41ab97c
+    carrier_sha256: a3eaa2ae99ae6cf47dc02773570e2a9a91e7c270ce46735a5f1e41dc8d20ab97
+    source: working-tree:tests/test_lesson_ledger.py
+    size_bytes: 21405
+    prompt_encoding: utf-8
+  - path: tests/test_reviewed_input_identity_failures.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/v865-delta-operational-followup/semantic-input/0005-content.bin
+    content_sha256: c02d4dcb3445b675cd565925187d2d17820b5279ab66d9ecfa9ea429cd203378
+    carrier_sha256: fb52fcac18687fb231cb5bcb47f6c4ec41ce19e473407cf1001e1400f1c4ddba
+    source: working-tree:tests/test_reviewed_input_identity_failures.py
+    size_bytes: 11896
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/v865-delta-operational-followup/semantic-input/manifest.json
+  size_bytes: 70469
+runner_output:
+  status: runner-completed
+  returncode: 1
+runner_stream:
+  consistent: true
+  reason: null
+  runner_stdout_sha256: edf1f521e68f86b6c08e494b7e14121267a5562017922fd4971b38c8152e0656
+  canonical_report_sha256: edf1f521e68f86b6c08e494b7e14121267a5562017922fd4971b38c8152e0656
+boundary_readback:
+  mode: read-only-worker
+  required: false
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity
+identity_check:
+  status: matched
+  matches: true
+  checks:
+    packet_identity:
+      expected: 5c9c61f8ee888026d87f31a7d9510e665f1a08e100521e5ec00200fa5ab643fd
+      actual: 5c9c61f8ee888026d87f31a7d9510e665f1a08e100521e5ec00200fa5ab643fd
+      matches: true
+      provenance: 5c9c61f8ee888026d87f31a7d9510e665f1a08e100521e5ec00200fa5ab643fd
+    reviewed_input_identity:
+      expected: 1ecda7e64089945046c84335dadeae042e37ef79875c990ab656d4f1f0d57293
+      actual: 1ecda7e64089945046c84335dadeae042e37ef79875c990ab656d4f1f0d57293
+      matches: true
+      provenance: 1ecda7e64089945046c84335dadeae042e37ef79875c990ab656d4f1f0d57293
+    parent_receipt_identity:
+      expected: parent-7f86e8f3723580c8b5ac6bd61436e91edd93abf92f7eac83
+      actual: parent-7f86e8f3723580c8b5ac6bd61436e91edd93abf92f7eac83
+      matches: true
+      provenance: parent-7f86e8f3723580c8b5ac6bd61436e91edd93abf92f7eac83
+  reason: null

@@ -1,0 +1,25 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "scripts/lessons/lesson_ledger_writer_lib.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-release-operational-followup/semantic-input/0000-content.bin",
+      "content_sha256": "91e870e4d26a10a7a9ddaf1b71bf1283a46e21a3bd20aefc07a965437436060b",
+      "carrier_sha256": "4e99df5c18e1b67f1b660c759cec1106daf7087eeec537b017bf04a5fe96be3c",
+      "source": "working-tree:scripts/lessons/lesson_ledger_writer_lib.py",
+      "size_bytes": 6349,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/test_lesson_ledger.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-release-operational-followup/semantic-input/0001-content.bin",
+      "content_sha256": "4adf8d349d47fbda8c5232e47b0de7b129751cff8c27ace42fb3c56972098682",
+      "carrier_sha256": "e64354c37f411af56bce96ee66307f19e4c12ecc405cc853fb0144eba1ec5e03",
+      "source": "working-tree:tests/test_lesson_ledger.py",
+      "size_bytes": 21147,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

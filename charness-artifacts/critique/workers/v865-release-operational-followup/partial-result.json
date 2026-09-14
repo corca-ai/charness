@@ -1,0 +1,57 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "resolved-in-source",
+      "concern": "The original ceiling-dependent namespace split remains in the selected helper.",
+      "disposition": "The explicit ceiling dependency is removed, and a focused path-equality regression addresses the recorded example. No remaining split is demonstrated in these bytes."
+    },
+    {
+      "bin": "not-a-blocker",
+      "concern": "Ignoring ceilings incorrectly broadens ordinary repository discovery.",
+      "disposition": "The helper explicitly scopes this behavior to lock placement; preserving one cooperative lock across ceiling environments is appropriate."
+    },
+    {
+      "bin": "partially-supported",
+      "concern": "Bare .git names capture lock placement.",
+      "disposition": "The writer delegates marker validation to git_dir_at and includes a bare-marker exclusion test. The dependency implementation and test execution are outside the supplied evidence."
+    }
+  ],
+  "findings": [
+    {
+      "action": "Provide bounded dependency/caller evidence and compare released versus proposed lock locations. If locations differ, require existing writers to finish before updated writers start; otherwise document why no migration is needed. Complete export synchronization and release validation.",
+      "evidence": [
+        "_repository_root now walks resolved ancestors directly through git_dir_at, removing its explicit ceiling-sensitive discovery step.",
+        "The bound input excludes git_dir_at, runtime_root, production callers, and installed-version lock behavior; their compatibility cannot be established from these two files.",
+        "The packet lists export synchronization and validators as planned commands, without completion evidence or a disposition of whether existing writers change lock locations."
+      ],
+      "id": "operational-followup-1",
+      "severity": "medium",
+      "summary": "The local repair is convincing, but caller and rollout compatibility remain unproven."
+    },
+    {
+      "action": "Add and run a deterministic two-process regression demonstrating that a writer with a ceiling cannot enter the protected read-modify-write section while a writer without that ceiling holds the lock.",
+      "evidence": [
+        "test_lock_path_agrees_across_ceiling_environments compares two _lock_path results while changing GIT_CEILING_DIRECTORIES.",
+        "The supplied tests contain no pair of independent writers with differing ceiling environments contending for the same ledger.",
+        "No execution results accompany the supplied tests."
+      ],
+      "id": "operational-followup-2",
+      "severity": "medium",
+      "summary": "Cross-ceiling lock-path equality is covered, but concurrent writer serialization has no supplied regression."
+    }
+  ],
+  "kind": "charness.bounded_review.v1",
+  "lens": "operational",
+  "next_move": "Supply dependency, caller, and rollout dispositions plus an executed cross-ceiling contention regression, then reassess release readiness.",
+  "non_claims": [
+    "Reviewed only the two inline semantic inputs; no workspace inspection or test execution.",
+    "No demonstrated remaining defect in the repaired ceiling-independent ancestor walk.",
+    "No approval of synchronized plugin exports, broader release changes, or completed release checks.",
+    "Goal lineage is not-goal-bound: critique review was run without a Goal Run Work Item identity.",
+    "Requested reviewer tier application is unverified by the packet."
+  ],
+  "packet_sha256": "aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d",
+  "reviewed_input_identity_sha256": "d02fc5f98dfbc4aa9ed1bad090218cc97545f0c88eeb50b495d9934a8c265bdb",
+  "target_observations": null,
+  "verdict": "defer"
+}

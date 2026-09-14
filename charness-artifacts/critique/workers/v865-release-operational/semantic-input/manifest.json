@@ -1,0 +1,85 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "scripts/core/git_checkout.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-release-operational/semantic-input/0000-content.bin",
+      "content_sha256": "75f976840a820c09438264fade424bb50f998d27196c57b0eff19f8aa4f06519",
+      "carrier_sha256": "08d35070d635a35343c2fd53f858a8b538bab59182db50c9b91511d4e3f8f533",
+      "source": "working-tree:scripts/core/git_checkout.py",
+      "size_bytes": 6981,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/lessons/lesson_ledger_writer_lib.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-release-operational/semantic-input/0001-content.bin",
+      "content_sha256": "99c4ad824e8cfe4bfa94bf6fb5a848f99e0a92a46e159a4924c516013fe22000",
+      "carrier_sha256": "20709e0a30977b928afdfe94cdf5cbc52614ce52ea10df4083d05184551cbff1",
+      "source": "working-tree:scripts/lessons/lesson_ledger_writer_lib.py",
+      "size_bytes": 6093,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/review/reviewed_input_verification.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-release-operational/semantic-input/0002-content.bin",
+      "content_sha256": "31ce05e2b2fda1f17516110bef449f3fb0615a95fb8320608fe2c3cc3fbfe6e3",
+      "carrier_sha256": "1daa8405ded4ced25f822a520c2cfed91130b2d852ebe0f87143493511153aa4",
+      "source": "working-tree:scripts/review/reviewed_input_verification.py",
+      "size_bytes": 20195,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/public/critique/scripts/run_review_hold_out.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-release-operational/semantic-input/0003-content.bin",
+      "content_sha256": "a3a87d85921c0b834d704ddf7a09158f83b4e9c2a7631c9b04f6c9fedb932cdc",
+      "carrier_sha256": "ff015339b4959f99b0fe2078d93ec2a4d7079e9a6f5e67a76dad0f4ca44a9424",
+      "source": "working-tree:skills/public/critique/scripts/run_review_hold_out.py",
+      "size_bytes": 4714,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/test_git_checkout.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-release-operational/semantic-input/0004-content.bin",
+      "content_sha256": "6fa5c2fe49fd3b38cd0ce6f47586ad2469b094d49fe18c5b019cc0c91b47e74b",
+      "carrier_sha256": "0a69aad1365aebd3f925c25e0d8e0a2fae45853a8834741bb8c061cc93b2c50f",
+      "source": "working-tree:tests/test_git_checkout.py",
+      "size_bytes": 5596,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/test_lesson_ledger.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-release-operational/semantic-input/0005-content.bin",
+      "content_sha256": "50ba07a85c79b502bcdaa6090ede1b688b38e02598850c5339b8e5a4d41ab97c",
+      "carrier_sha256": "a3eaa2ae99ae6cf47dc02773570e2a9a91e7c270ce46735a5f1e41dc8d20ab97",
+      "source": "working-tree:tests/test_lesson_ledger.py",
+      "size_bytes": 21405,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/test_reviewed_input_identity_failures.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-release-operational/semantic-input/0006-content.bin",
+      "content_sha256": "c02d4dcb3445b675cd565925187d2d17820b5279ab66d9ecfa9ea429cd203378",
+      "carrier_sha256": "fb52fcac18687fb231cb5bcb47f6c4ec41ce19e473407cf1001e1400f1c4ddba",
+      "source": "working-tree:tests/test_reviewed_input_identity_failures.py",
+      "size_bytes": 11896,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/test_run_review_declared_path_resolution.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-release-operational/semantic-input/0007-content.bin",
+      "content_sha256": "96d600fb53d80929415d7cde619ee6c8c39328f193528a149279aef20990636e",
+      "carrier_sha256": "17a4257c31335ec6e5e9e7534a6f06202ca2fd75b7c8d0cd9a60d1054a5c7e17",
+      "source": "working-tree:tests/test_run_review_declared_path_resolution.py",
+      "size_bytes": 22663,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

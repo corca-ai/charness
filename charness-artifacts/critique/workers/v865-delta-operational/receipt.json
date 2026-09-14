@@ -1,0 +1,84 @@
+{
+  "attempt_id": "v865-delta-operational",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/v865-delta-operational/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-09-14T04:55:20Z",
+  "output_file": "charness-artifacts/critique/workers/v865-delta-operational/result.json",
+  "output_fresh": true,
+  "output_sha256": "ac2585815112cbcf21665a41212c28f33ac739ff62a7198786e77e640ebefe5e",
+  "output_size": 3701,
+  "packet_identity": "ff341884c750e47dd3a482918233de1c8563b33b2be5fcac78364fee7bd86f38",
+  "parent_receipt_identity": "parent-acc0713c6c6c0b4ac36ad940004995c0ada0afbd21173ed7",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/v865-delta-operational/review-prompt.md",
+  "prompt_sha256": "7c8822be474bef9e8f474a151a5313bb76195d253ae20936139a2b3d022a797f",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "retained_partial_output": {
+    "approval_eligible": false,
+    "bytes": 3568,
+    "kind": "bounded-review-result",
+    "path": "charness-artifacts/critique/workers/v865-delta-operational/partial-result.json",
+    "schema_version": "charness.reviewer_partial_output/v1",
+    "sha256": "a76ae7a6f1f436cfdbf0831687e8177ac60789faf8eb3192f1a0109108787e91",
+    "source": "charness-artifacts/critique/workers/v865-delta-operational/backend.stdout",
+    "validation": "model-shaped"
+  },
+  "reviewed_input_identity": "e61c26453bb6fc0d116e022a417a5a40b513aa810fcdf9a6b17d3cdb4708631a",
+  "run_id": "run-v865-delta-operational",
+  "schema_file": "charness-artifacts/critique/workers/v865-delta-operational/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "v8.6.5 delta review, operational angle: repo-root discovery now requires a real administration directory and honors ceilings; hold_out yields staged destinations for per-owner assertions. Look for missed callers still assuming bare-marker or global-count semantics, lock-path changes for existing installs, and any release-time step this delta needs.",
+  "started_at": "2026-09-14T04:54:49Z",
+  "status": "succeeded",
+  "stderr_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/v865-delta-operational/backend.stderr",
+  "stdout_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/v865-delta-operational/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "workspace": "/home/hwidong/codes/charness"
+}

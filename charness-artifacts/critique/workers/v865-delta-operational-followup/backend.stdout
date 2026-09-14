@@ -1,0 +1,52 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "operational",
+  "packet_sha256": "5c9c61f8ee888026d87f31a7d9510e665f1a08e100521e5ec00200fa5ab643fd",
+  "reviewed_input_identity_sha256": "1ecda7e64089945046c84335dadeae042e37ef79875c990ab656d4f1f0d57293",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "operational-followup-1",
+      "severity": "medium",
+      "summary": "Two discovery functions in the shared owner still bypass the ceiling walk.",
+      "evidence": [
+        "scripts/core/git_checkout.py::discoverable scans (root, *root.parents) without ancestors_until_ceiling.",
+        "scripts/core/git_checkout.py::worktree_root_from_files scans root.parents without checking ceilings.",
+        "For an existing /outer/inner directory, a valid /outer/.git, and GIT_CEILING_DIRECTORIES=/outer, these functions return True and /outer respectively, while the new shared walk excludes /outer.",
+        "tests/test_git_checkout.py covers the shared iterator's ceiling behavior but does not exercise either discovery function under a ceiling."
+      ],
+      "action": "Route both ancestor-discovery functions through ancestors_until_ceiling, preserving their starting-root and bare-repository handling. Add regressions for repositories at and above the ceiling and a repository at the starting directory."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Prior operational-1: ledger discovery inspects a ceiling repository.",
+      "bin": "closed",
+      "disposition": "_repository_root now consumes the shared walk, which stops before yielding a ceiling ancestor. The new repository-at-ceiling regression directly covers the reported case."
+    },
+    {
+      "concern": "Prior operational-2: artifact ancestor discovery ignores ceilings.",
+      "bin": "closed",
+      "disposition": "The ancestor scan now consumes ancestors_until_ceiling from the artifact's directory. Its regression covers the layout-shortcut miss with a valid repository at the ceiling. Explicit-root and layout-based resolution remain separate behavior."
+    },
+    {
+      "concern": "Starting-directory behavior changes.",
+      "bin": "non-blocking",
+      "disposition": "The iterator unconditionally yields start before inspecting ancestors. Both consumers pass resolved paths; artifact discovery starts at the containing directory, and ledger discovery preserves its existing start at the ledger path. The iterator test explicitly verifies yielding a starting directory that equals the ceiling."
+    },
+    {
+      "concern": "Ledger lock namespace changes.",
+      "bin": "operational-follow-up",
+      "disposition": "A ledger previously captured by a repository at the ceiling now uses the temporary-directory fallback when no nearer repository exists. The digest and lock primitives are unchanged. Ordinary repositories below ceilings retain managed-runtime locks. Old and new writers can therefore choose different locks for the corrected boundary case; avoid overlapping those writers during rollout."
+    }
+  ],
+  "next_move": "Fix the two missed discovery functions, verify the affected lock-path cases, then regenerate exports and run the packet-declared focused and packaging checks before renewed review.",
+  "non_claims": [
+    "Reviewed all six supplied inline semantic files; no workspace inspection, edits, or test execution.",
+    "Caller search was bounded to the supplied files; no exhaustive external-caller or installed-layout audit.",
+    "No structured prepared targets were supplied.",
+    "Packaging commands are declared plans, not execution evidence or release approval.",
+    "Goal lineage is not-goal-bound: critique review was run without a Goal Run Work Item identity."
+  ]
+}

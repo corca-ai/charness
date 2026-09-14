@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "v865-delta-operational-followup",
+      "scope": "v8.6.5 delta follow-up, operational angle: ceiling stop rule centralized in git_checkout (ceiling_directories plus ancestors_until_ceiling); ledger writer and artifact binding consume the shared walk. Verify both ceiling findings are closed, the shared walk preserves starting-directory behavior, and flag any new missed callers or lock-path changes.",
+      "packet_identity": "5c9c61f8ee888026d87f31a7d9510e665f1a08e100521e5ec00200fa5ab643fd",
+      "parent_receipt_identity": "parent-7f86e8f3723580c8b5ac6bd61436e91edd93abf92f7eac83",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-14T05:08:10Z",
+      "history": [
+        {
+          "event_id": "8fd127cddd6e4859b1c13234563a831c",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-14T05:07:38Z",
+          "attempt_id": "v865-delta-operational-followup",
+          "scope": "v8.6.5 delta follow-up, operational angle: ceiling stop rule centralized in git_checkout (ceiling_directories plus ancestors_until_ceiling); ledger writer and artifact binding consume the shared walk. Verify both ceiling findings are closed, the shared walk preserves starting-directory behavior, and flag any new missed callers or lock-path changes.",
+          "packet_identity": "5c9c61f8ee888026d87f31a7d9510e665f1a08e100521e5ec00200fa5ab643fd",
+          "parent_receipt_identity": "parent-7f86e8f3723580c8b5ac6bd61436e91edd93abf92f7eac83",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "d5c9d277d6db4ff9956be36d1bc581e4",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-14T05:07:38Z",
+          "attempt_id": "v865-delta-operational-followup",
+          "scope": "v8.6.5 delta follow-up, operational angle: ceiling stop rule centralized in git_checkout (ceiling_directories plus ancestors_until_ceiling); ledger writer and artifact binding consume the shared walk. Verify both ceiling findings are closed, the shared walk preserves starting-directory behavior, and flag any new missed callers or lock-path changes.",
+          "packet_identity": "5c9c61f8ee888026d87f31a7d9510e665f1a08e100521e5ec00200fa5ab643fd",
+          "parent_receipt_identity": "parent-7f86e8f3723580c8b5ac6bd61436e91edd93abf92f7eac83",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "75a4a57b74454ea4a45090c84177b08b",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-14T05:08:10Z",
+          "attempt_id": "v865-delta-operational-followup",
+          "scope": "v8.6.5 delta follow-up, operational angle: ceiling stop rule centralized in git_checkout (ceiling_directories plus ancestors_until_ceiling); ledger writer and artifact binding consume the shared walk. Verify both ceiling findings are closed, the shared walk preserves starting-directory behavior, and flag any new missed callers or lock-path changes.",
+          "packet_identity": "5c9c61f8ee888026d87f31a7d9510e665f1a08e100521e5ec00200fa5ab643fd",
+          "parent_receipt_identity": "parent-7f86e8f3723580c8b5ac6bd61436e91edd93abf92f7eac83",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "a36229f528efe106f1defc628432c42b1396e66afb376d6b72d0dd01ff058927"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "1ecda7e64089945046c84335dadeae042e37ef79875c990ab656d4f1f0d57293",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "ce655a7b3bf8c1fcb3ad0d51523e66cc2b140c469da6ac1215be97ad1a217ebd",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/v865-delta-operational-followup/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/v865-delta-operational-followup/receipt.json",
+      "producer_run_id": "run-v865-delta-operational-followup",
+      "findings_identity": "a36229f528efe106f1defc628432c42b1396e66afb376d6b72d0dd01ff058927"
+    }
+  ]
+}

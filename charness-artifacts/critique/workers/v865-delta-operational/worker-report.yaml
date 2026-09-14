@@ -1,0 +1,73 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'v8.6.5 delta review, operational angle: repo-root discovery now requires a
+  real administration directory and honors ceilings; hold_out yields staged destinations
+  for per-owner assertions. Look for missed callers still assuming bare-marker or
+  global-count semantics, lock-path changes for existing installs, and any release-time
+  step this delta needs.'
+attempt_id: v865-delta-operational
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 7c8822be474bef9e8f474a151a5313bb76195d253ae20936139a2b3d022a797f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/v865-delta-operational/receipt.json
+ledger_path: charness-artifacts/critique/workers/v865-delta-operational/delivery.json
+producer_run_id: run-v865-delta-operational
+producer_binding:
+  output_file: charness-artifacts/critique/workers/v865-delta-operational/result.json
+  receipt_file: charness-artifacts/critique/workers/v865-delta-operational/receipt.json
+  producer_run_id: run-v865-delta-operational
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: ac2585815112cbcf21665a41212c28f33ac739ff62a7198786e77e640ebefe5e
+receipt_output_sha256: ac2585815112cbcf21665a41212c28f33ac739ff62a7198786e77e640ebefe5e
+packet_identity: ff341884c750e47dd3a482918233de1c8563b33b2be5fcac78364fee7bd86f38
+reviewed_input_identity: e61c26453bb6fc0d116e022a417a5a40b513aa810fcdf9a6b17d3cdb4708631a
+parent_receipt_identity: parent-acc0713c6c6c0b4ac36ad940004995c0ada0afbd21173ed7
+provenance:
+  scope: 'v8.6.5 delta review, operational angle: repo-root discovery now requires
+    a real administration directory and honors ceilings; hold_out yields staged destinations
+    for per-owner assertions. Look for missed callers still assuming bare-marker or
+    global-count semantics, lock-path changes for existing installs, and any release-time
+    step this delta needs.'
+  packet_identity: ff341884c750e47dd3a482918233de1c8563b33b2be5fcac78364fee7bd86f38
+  reviewed_input_identity: e61c26453bb6fc0d116e022a417a5a40b513aa810fcdf9a6b17d3cdb4708631a
+  parent_receipt_identity: parent-acc0713c6c6c0b4ac36ad940004995c0ada0afbd21173ed7
+  attempt_id: v865-delta-operational
+  attempt_scope: 'v8.6.5 delta review, operational angle: repo-root discovery now
+    requires a real administration directory and honors ceilings; hold_out yields
+    staged destinations for per-owner assertions. Look for missed callers still assuming
+    bare-marker or global-count semantics, lock-path changes for existing installs,
+    and any release-time step this delta needs.'
+  attempt_packet_identity: ff341884c750e47dd3a482918233de1c8563b33b2be5fcac78364fee7bd86f38
+  attempt_parent_receipt_identity: parent-acc0713c6c6c0b4ac36ad940004995c0ada0afbd21173ed7
+  result_packet_identity: ff341884c750e47dd3a482918233de1c8563b33b2be5fcac78364fee7bd86f38
+  result_reviewed_input_identity: e61c26453bb6fc0d116e022a417a5a40b513aa810fcdf9a6b17d3cdb4708631a
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 7c8822be474bef9e8f474a151a5313bb76195d253ae20936139a2b3d022a797f
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

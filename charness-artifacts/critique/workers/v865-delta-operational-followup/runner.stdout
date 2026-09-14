@@ -1,0 +1,73 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'v8.6.5 delta follow-up, operational angle: ceiling stop rule centralized in
+  git_checkout (ceiling_directories plus ancestors_until_ceiling); ledger writer and
+  artifact binding consume the shared walk. Verify both ceiling findings are closed,
+  the shared walk preserves starting-directory behavior, and flag any new missed callers
+  or lock-path changes.'
+attempt_id: v865-delta-operational-followup
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: ce655a7b3bf8c1fcb3ad0d51523e66cc2b140c469da6ac1215be97ad1a217ebd
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-8a73d43c41542590baff151d0115f810/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-8a73d43c41542590baff151d0115f810/delivery.json
+producer_run_id: run-v865-delta-operational-followup
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-8a73d43c41542590baff151d0115f810/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-8a73d43c41542590baff151d0115f810/receipt.json
+  producer_run_id: run-v865-delta-operational-followup
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: a36229f528efe106f1defc628432c42b1396e66afb376d6b72d0dd01ff058927
+receipt_output_sha256: a36229f528efe106f1defc628432c42b1396e66afb376d6b72d0dd01ff058927
+packet_identity: 5c9c61f8ee888026d87f31a7d9510e665f1a08e100521e5ec00200fa5ab643fd
+reviewed_input_identity: 1ecda7e64089945046c84335dadeae042e37ef79875c990ab656d4f1f0d57293
+parent_receipt_identity: parent-7f86e8f3723580c8b5ac6bd61436e91edd93abf92f7eac83
+provenance:
+  scope: 'v8.6.5 delta follow-up, operational angle: ceiling stop rule centralized
+    in git_checkout (ceiling_directories plus ancestors_until_ceiling); ledger writer
+    and artifact binding consume the shared walk. Verify both ceiling findings are
+    closed, the shared walk preserves starting-directory behavior, and flag any new
+    missed callers or lock-path changes.'
+  packet_identity: 5c9c61f8ee888026d87f31a7d9510e665f1a08e100521e5ec00200fa5ab643fd
+  reviewed_input_identity: 1ecda7e64089945046c84335dadeae042e37ef79875c990ab656d4f1f0d57293
+  parent_receipt_identity: parent-7f86e8f3723580c8b5ac6bd61436e91edd93abf92f7eac83
+  attempt_id: v865-delta-operational-followup
+  attempt_scope: 'v8.6.5 delta follow-up, operational angle: ceiling stop rule centralized
+    in git_checkout (ceiling_directories plus ancestors_until_ceiling); ledger writer
+    and artifact binding consume the shared walk. Verify both ceiling findings are
+    closed, the shared walk preserves starting-directory behavior, and flag any new
+    missed callers or lock-path changes.'
+  attempt_packet_identity: 5c9c61f8ee888026d87f31a7d9510e665f1a08e100521e5ec00200fa5ab643fd
+  attempt_parent_receipt_identity: parent-7f86e8f3723580c8b5ac6bd61436e91edd93abf92f7eac83
+  result_packet_identity: 5c9c61f8ee888026d87f31a7d9510e665f1a08e100521e5ec00200fa5ab643fd
+  result_reviewed_input_identity: 1ecda7e64089945046c84335dadeae042e37ef79875c990ab656d4f1f0d57293
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: ce655a7b3bf8c1fcb3ad0d51523e66cc2b140c469da6ac1215be97ad1a217ebd
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

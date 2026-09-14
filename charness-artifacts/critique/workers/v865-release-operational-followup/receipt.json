@@ -1,0 +1,84 @@
+{
+  "attempt_id": "v865-release-operational-followup",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/v865-release-operational-followup/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-09-14T05:19:32Z",
+  "output_file": "charness-artifacts/critique/workers/v865-release-operational-followup/result.json",
+  "output_fresh": true,
+  "output_sha256": "2dd1641a7ebac89228959f656c3095324f2c3e2d22fb144fd9388651abeac79f",
+  "output_size": 3893,
+  "packet_identity": "aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d",
+  "parent_receipt_identity": "parent-dd116132d079c3f688e5aaa9f1cfe753f8df3defd13eeb52",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/v865-release-operational-followup/review-prompt.md",
+  "prompt_sha256": "088a3353a6f4f28eeb34e37e4a1c2f662f06536008d1c93c864c127beb026a14",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "retained_partial_output": {
+    "approval_eligible": false,
+    "bytes": 3760,
+    "kind": "bounded-review-result",
+    "path": "charness-artifacts/critique/workers/v865-release-operational-followup/partial-result.json",
+    "schema_version": "charness.reviewer_partial_output/v1",
+    "sha256": "61e0faa199bd1ae68048f82260dce9c440777224c21e2b608f2f3b7a1dbec4fb",
+    "source": "charness-artifacts/critique/workers/v865-release-operational-followup/backend.stdout",
+    "validation": "model-shaped"
+  },
+  "reviewed_input_identity": "d02fc5f98dfbc4aa9ed1bad090218cc97545f0c88eeb50b495d9934a8c265bdb",
+  "run_id": "run-v865-release-operational-followup",
+  "schema_file": "charness-artifacts/critique/workers/v865-release-operational-followup/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "v8.6.5 release follow-up, operational angle: ledger lock identity is now independent of ceilings (writer lookup ignores GIT_CEILING_DIRECTORIES; bare .git names still excluded). Verify the lock-namespace split is closed, cross-ceiling writers meet at one lock, and no new caller or rollout hazard remains.",
+  "started_at": "2026-09-14T05:19:00Z",
+  "status": "succeeded",
+  "stderr_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/v865-release-operational-followup/backend.stderr",
+  "stdout_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/v865-release-operational-followup/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "workspace": "/home/hwidong/codes/charness"
+}

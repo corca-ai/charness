@@ -1,0 +1,213 @@
+{
+  "approval_eligible": false,
+  "attempt_id": "v865-delta-operational",
+  "delivery_state": "findings-received",
+  "file_integrity": {
+    "backend.stderr": {
+      "bytes": 97439,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/backend.stderr",
+      "sha256": "861fcf7c625dd735c4beb76055f7d549200e7d98ee20cc6126e31ce26c7d7aea"
+    },
+    "backend.stdout": {
+      "bytes": 3568,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/backend.stdout",
+      "sha256": "b650d64387db5506e6822b6efe5891b7c7aa526b94cb2c33c30bedccde69d834"
+    },
+    "bounded-review-result.schema.json": {
+      "bytes": 3640,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/bounded-review-result.schema.json",
+      "sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304"
+    },
+    "capability.json": {
+      "bytes": 944,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/capability.json",
+      "sha256": "44c43f4816b5c84c4504894210b76ba5a410e715d47d5d262ccd9ad8930ebb62"
+    },
+    "delivery.json": {
+      "bytes": 4932,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/delivery.json",
+      "sha256": "9b3856f75bb0833b55b1afced674f1c7135462392f4ca6e8c3bcd953e8744e44"
+    },
+    "lifecycle.yaml": {
+      "bytes": 10387,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/lifecycle.yaml",
+      "sha256": "ab6265975de0ef9e78fda2788b91a2f7475dcc51da530a014c146d67f89f5ad2"
+    },
+    "partial-result.json": {
+      "bytes": 3568,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/partial-result.json",
+      "sha256": "a76ae7a6f1f436cfdbf0831687e8177ac60789faf8eb3192f1a0109108787e91"
+    },
+    "receipt.json": {
+      "bytes": 3965,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/receipt.json",
+      "sha256": "8ef1bf11f00c80095e4b31966797d14dc5a6e32c1d8a4cdb18e8323e522df292"
+    },
+    "result.json": {
+      "bytes": 3701,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/result.json",
+      "sha256": "ac2585815112cbcf21665a41212c28f33ac739ff62a7198786e77e640ebefe5e"
+    },
+    "review-prompt.md": {
+      "bytes": 93471,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/review-prompt.md",
+      "sha256": "abbf8759c47eeed0409f17e6f28b9e39df7c88bfe01ef7f8f48931766b584ec1"
+    },
+    "run-plan.json": {
+      "bytes": 82907,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/run-plan.json",
+      "sha256": "42e7b8da1659d7cccfc9fbe4c0025cd14fd02f4b8dc84b3dd6a6242ae19aa6ac"
+    },
+    "runner.stderr": {
+      "bytes": 459,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/runner.stderr",
+      "sha256": "1e46dcd2bbc039bc85ce336d6177070874d724e7f5d96cd63aec8cd176cbd26d"
+    },
+    "runner.stdout": {
+      "bytes": 4612,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/runner.stdout",
+      "sha256": "ab7b4061c4071df4042529c3debe796891dc621da1c7c92f3ba00aa7ac50565d"
+    },
+    "semantic-input/0000-content.bin": {
+      "bytes": 6544,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0000-content.bin",
+      "sha256": "12a92a7ddc0bbb31eee6e3b79daa827ea08745bc7606a01ffcce2c5eb9d6eb9a"
+    },
+    "semantic-input/0001-content.bin": {
+      "bytes": 19972,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0001-content.bin",
+      "sha256": "b3509e49a9c65bdc57f6ed3faf69b5fc045650ff7698d93c43773a1102592379"
+    },
+    "semantic-input/0002-content.bin": {
+      "bytes": 4714,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0002-content.bin",
+      "sha256": "ff015339b4959f99b0fe2078d93ec2a4d7079e9a6f5e67a76dad0f4ca44a9424"
+    },
+    "semantic-input/0003-content.bin": {
+      "bytes": 20655,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0003-content.bin",
+      "sha256": "324919fed334676fb6033ddb546b1d01295fc6327fed633cf53913fefc1a93c4"
+    },
+    "semantic-input/0004-content.bin": {
+      "bytes": 22663,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0004-content.bin",
+      "sha256": "17a4257c31335ec6e5e9e7534a6f06202ca2fd75b7c8d0cd9a60d1054a5c7e17"
+    },
+    "semantic-input/manifest.json": {
+      "bytes": 2782,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/manifest.json",
+      "sha256": "adecf84859893fce5df6848bc823ae770084307a9c881e11b98e213c3eb8632c"
+    },
+    "worker-report.yaml": {
+      "bytes": 4436,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/worker-report.yaml",
+      "sha256": "4b7d3f069587014fed8d9e2a95f033a6442528a4b506d88c7e119342b11a628d"
+    }
+  },
+  "files": {
+    "backend.stderr": "charness-artifacts/critique/workers/v865-delta-operational/backend.stderr",
+    "backend.stdout": "charness-artifacts/critique/workers/v865-delta-operational/backend.stdout",
+    "bounded-review-result.schema.json": "charness-artifacts/critique/workers/v865-delta-operational/bounded-review-result.schema.json",
+    "capability.json": "charness-artifacts/critique/workers/v865-delta-operational/capability.json",
+    "delivery.json": "charness-artifacts/critique/workers/v865-delta-operational/delivery.json",
+    "lifecycle.yaml": "charness-artifacts/critique/workers/v865-delta-operational/lifecycle.yaml",
+    "partial-result.json": "charness-artifacts/critique/workers/v865-delta-operational/partial-result.json",
+    "receipt.json": "charness-artifacts/critique/workers/v865-delta-operational/receipt.json",
+    "result.json": "charness-artifacts/critique/workers/v865-delta-operational/result.json",
+    "review-prompt.md": "charness-artifacts/critique/workers/v865-delta-operational/review-prompt.md",
+    "run-plan.json": "charness-artifacts/critique/workers/v865-delta-operational/run-plan.json",
+    "runner.stderr": "charness-artifacts/critique/workers/v865-delta-operational/runner.stderr",
+    "runner.stdout": "charness-artifacts/critique/workers/v865-delta-operational/runner.stdout",
+    "semantic-input/0000-content.bin": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0000-content.bin",
+    "semantic-input/0001-content.bin": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0001-content.bin",
+    "semantic-input/0002-content.bin": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0002-content.bin",
+    "semantic-input/0003-content.bin": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0003-content.bin",
+    "semantic-input/0004-content.bin": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0004-content.bin",
+    "semantic-input/manifest.json": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/manifest.json",
+    "worker-report.yaml": "charness-artifacts/critique/workers/v865-delta-operational/worker-report.yaml"
+  },
+  "identity_binding": "consumer-required",
+  "identity_check": {
+    "approval": {
+      "matches": false,
+      "reason": "final lifecycle carrier is not terminal approval evidence",
+      "status": "mismatch"
+    },
+    "checks": {
+      "packet_identity": {
+        "actual": "ff341884c750e47dd3a482918233de1c8563b33b2be5fcac78364fee7bd86f38",
+        "expected": "ff341884c750e47dd3a482918233de1c8563b33b2be5fcac78364fee7bd86f38",
+        "matches": true,
+        "provenance": "ff341884c750e47dd3a482918233de1c8563b33b2be5fcac78364fee7bd86f38"
+      },
+      "parent_receipt_identity": {
+        "actual": "parent-acc0713c6c6c0b4ac36ad940004995c0ada0afbd21173ed7",
+        "expected": "parent-acc0713c6c6c0b4ac36ad940004995c0ada0afbd21173ed7",
+        "matches": true,
+        "provenance": "parent-acc0713c6c6c0b4ac36ad940004995c0ada0afbd21173ed7"
+      },
+      "reviewed_input_identity": {
+        "actual": "e61c26453bb6fc0d116e022a417a5a40b513aa810fcdf9a6b17d3cdb4708631a",
+        "expected": "e61c26453bb6fc0d116e022a417a5a40b513aa810fcdf9a6b17d3cdb4708631a",
+        "matches": true,
+        "provenance": "e61c26453bb6fc0d116e022a417a5a40b513aa810fcdf9a6b17d3cdb4708631a"
+      }
+    },
+    "matches": true,
+    "reason": null,
+    "status": "matched"
+  },
+  "logs": {
+    "backend.stderr": {
+      "bytes": 97439,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/backend.stderr",
+      "retained_bytes": 97439,
+      "sha256": "861fcf7c625dd735c4beb76055f7d549200e7d98ee20cc6126e31ce26c7d7aea",
+      "source": ".charness/scratch/critique-review/review-7204007d34c13bb88afeede6b3d96d18/backend.stderr",
+      "truncated": false
+    },
+    "backend.stdout": {
+      "bytes": 3568,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/backend.stdout",
+      "retained_bytes": 3568,
+      "sha256": "b650d64387db5506e6822b6efe5891b7c7aa526b94cb2c33c30bedccde69d834",
+      "source": ".charness/scratch/critique-review/review-7204007d34c13bb88afeede6b3d96d18/backend.stdout",
+      "truncated": false
+    },
+    "runner.stderr": {
+      "bytes": 459,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/runner.stderr",
+      "retained_bytes": 459,
+      "sha256": "1e46dcd2bbc039bc85ce336d6177070874d724e7f5d96cd63aec8cd176cbd26d",
+      "source": ".charness/scratch/critique-review/review-7204007d34c13bb88afeede6b3d96d18/runner.stderr",
+      "truncated": false
+    },
+    "runner.stdout": {
+      "bytes": 4612,
+      "path": "charness-artifacts/critique/workers/v865-delta-operational/runner.stdout",
+      "retained_bytes": 4612,
+      "sha256": "ab7b4061c4071df4042529c3debe796891dc621da1c7c92f3ba00aa7ac50565d",
+      "source": ".charness/scratch/critique-review/review-7204007d34c13bb88afeede6b3d96d18/runner.stdout",
+      "truncated": false
+    }
+  },
+  "packet_identity": "ff341884c750e47dd3a482918233de1c8563b33b2be5fcac78364fee7bd86f38",
+  "partial_result": {
+    "approval_eligible": false,
+    "bytes": 3568,
+    "kind": "bounded-review-result",
+    "path": "charness-artifacts/critique/workers/v865-delta-operational/partial-result.json",
+    "schema_version": "charness.reviewer_partial_output/v1",
+    "sha256": "a76ae7a6f1f436cfdbf0831687e8177ac60789faf8eb3192f1a0109108787e91",
+    "source": "charness-artifacts/critique/workers/v865-delta-operational/backend.stdout",
+    "validation": "model-shaped"
+  },
+  "partial_result_unavailable": null,
+  "reason": "typed reviewer verdict is not pass: 'block'",
+  "recovery_validation": null,
+  "reusable": true,
+  "review_verdict": "block",
+  "reviewed_input_identity": "e61c26453bb6fc0d116e022a417a5a40b513aa810fcdf9a6b17d3cdb4708631a",
+  "schema_version": "charness.reviewer_attempt_manifest.v1",
+  "use_class": "diagnostic-retryable"
+}

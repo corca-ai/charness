@@ -1,0 +1,55 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "scripts/lessons/lesson_ledger_writer_lib.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0000-content.bin",
+      "content_sha256": "db08eb9c398a03ed16170786fdb712b9d5cea2efb0937b99e4e40caa49deb7b0",
+      "carrier_sha256": "12a92a7ddc0bbb31eee6e3b79daa827ea08745bc7606a01ffcce2c5eb9d6eb9a",
+      "source": "working-tree:scripts/lessons/lesson_ledger_writer_lib.py",
+      "size_bytes": 6544,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/review/reviewed_input_verification.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0001-content.bin",
+      "content_sha256": "8374f564ff2db3afbe8c20587f6220c1f43cc6877688b232fdf959b3f6cf9cd9",
+      "carrier_sha256": "b3509e49a9c65bdc57f6ed3faf69b5fc045650ff7698d93c43773a1102592379",
+      "source": "working-tree:scripts/review/reviewed_input_verification.py",
+      "size_bytes": 19972,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/public/critique/scripts/run_review_hold_out.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0002-content.bin",
+      "content_sha256": "a3a87d85921c0b834d704ddf7a09158f83b4e9c2a7631c9b04f6c9fedb932cdc",
+      "carrier_sha256": "ff015339b4959f99b0fe2078d93ec2a4d7079e9a6f5e67a76dad0f4ca44a9424",
+      "source": "working-tree:skills/public/critique/scripts/run_review_hold_out.py",
+      "size_bytes": 4714,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/test_lesson_ledger.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0003-content.bin",
+      "content_sha256": "735a760b82163734979265054b8f2dbe3ca6f6c24db60424ef33a69bde6f4ce3",
+      "carrier_sha256": "324919fed334676fb6033ddb546b1d01295fc6327fed633cf53913fefc1a93c4",
+      "source": "working-tree:tests/test_lesson_ledger.py",
+      "size_bytes": 20655,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/test_run_review_declared_path_resolution.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v865-delta-operational/semantic-input/0004-content.bin",
+      "content_sha256": "96d600fb53d80929415d7cde619ee6c8c39328f193528a149279aef20990636e",
+      "carrier_sha256": "17a4257c31335ec6e5e9e7534a6f06202ca2fd75b7c8d0cd9a60d1054a5c7e17",
+      "source": "working-tree:tests/test_run_review_declared_path_resolution.py",
+      "size_bytes": 22663,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "not-a-blocker",
+      "concern": "The new hold_out return value breaks callers that ignore it.",
+      "disposition": "Ignoring a context-manager yield remains compatible. Bound tests now inspect staged destinations directly; the production support wrapper and other callers are absent from the semantic payload, so complete propagation remains unverified."
+    },
+    {
+      "bin": "conditional-operational-risk",
+      "concern": "Existing installations require universal lock migration.",
+      "disposition": "The digest and managed lock suffix are unchanged for repositories still discovered identically. Rejected markers or newly effective ceilings can change the lock namespace; overlapping writers using different discovery behavior need quiescence or demonstrated coordination."
+    },
+    {
+      "bin": "release-follow-through",
+      "concern": "Release export synchronization is missing.",
+      "disposition": "The packet explicitly plans sync_root_plugin_manifests.py and packaging validation. Execute those after the fixes and verify the installed export includes the git_checkout dependency; the packet does not establish completion."
+    }
+  ],
+  "findings": [
+    {
+      "action": "Stop before inspecting a ceiling ancestor, preserving appropriate starting-directory behavior, and add a repository-at-ceiling regression case.",
+      "evidence": [
+        "scripts/lessons/lesson_ledger_writer_lib.py::_repository_root calls git_dir_at(candidate) before checking whether candidate is in ceilings.",
+        "For a ledger below /outer/inner with GIT_CEILING_DIRECTORIES=/outer and a valid /outer/.git, discovery returns /outer instead of stopping before inspecting that ancestor.",
+        "test_repository_root_stops_at_the_ceiling places the repository above the ceiling, leaving the repository-at-ceiling case uncovered."
+      ],
+      "id": "operational-1",
+      "severity": "high",
+      "summary": "Ledger discovery still selects a repository at the ceiling boundary."
+    },
+    {
+      "action": "Apply ceiling-aware discovery to the ancestor fallback and test an artifact below a ceiling with an unrelated valid repository above it.",
+      "evidence": [
+        "scripts/review/reviewed_input_verification.py::verify_artifact_binding scans all artifact ancestors using _git_checkout.git_dir_at(parent).",
+        "The ancestor scan has no GIT_CEILING_DIRECTORIES check, so when the packet-layout shortcut misses it can select an unrelated real repository beyond the ceiling."
+      ],
+      "id": "operational-2",
+      "severity": "medium",
+      "summary": "Artifact ancestor discovery does not honor ceilings."
+    }
+  ],
+  "kind": "charness.bounded_review.v1",
+  "lens": "operational",
+  "next_move": "Fix both ceiling cases, verify wrapper propagation and affected lock namespaces, then regenerate exports and run the declared focused and packaging checks before renewed review.",
+  "non_claims": [
+    "Reviewed only the five inline semantic files; no workspace edits or test execution.",
+    "No exhaustive caller audit, installed-layout verification, or release approval.",
+    "No structured prepared targets were supplied.",
+    "Goal lineage is not-goal-bound: critique review was run without a Goal Run Work Item identity."
+  ],
+  "packet_sha256": "ff341884c750e47dd3a482918233de1c8563b33b2be5fcac78364fee7bd86f38",
+  "reviewed_input_identity_sha256": "e61c26453bb6fc0d116e022a417a5a40b513aa810fcdf9a6b17d3cdb4708631a",
+  "target_observations": null,
+  "verdict": "block"
+}

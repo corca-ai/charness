@@ -1,0 +1,53 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "operational",
+  "packet_sha256": "e131e86af2b75378e2869de68aad85f777b3f5d27e3cf71ca04822e34765cd9f",
+  "reviewed_input_identity_sha256": "329366b830f1adc1a7c8f9daa5d5bbd3223b866e50efc7ee7cdc490d12b094c3",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "operational-1",
+      "severity": "high",
+      "summary": "The same ledger can acquire different locks depending on the writer's ceiling environment, allowing concurrent writes to lose updates.",
+      "evidence": [
+        "lesson_ledger_writer_lib._lock_path hashes the resolved ledger path but chooses the lock directory through the ceiling-sensitive _repository_root.",
+        "For /repo/inner/ledger.json, a writer without a ceiling selects runtime_root(/repo)/locks/lesson-ledger/<digest>.lock. A writer with GIT_CEILING_DIRECTORIES=/repo selects the temporary-directory fallback for the identical ledger.",
+        "test_repository_root_stops_before_a_repository_at_the_ceiling explicitly establishes the latter discovery result; no supplied test establishes mutual exclusion across those two environments.",
+        "Atomic replacement protects each individual replacement, but cannot serialize read-modify-write operations protected by different lock files."
+      ],
+      "action": "Make the cooperative lock identity independent of discovery ceilings, or refuse writes when a ceiling would move an existing repository ledger into another lock namespace. Add a concurrent-writer regression across differing ceiling environments. If upgrading changes an existing lock location, require all old writers to finish before new writers start."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Every existing installation needs lock migration.",
+      "bin": "over-worry",
+      "disposition": "Ordinary valid checkouts without an intersecting ceiling retain the shown repository lock selection and digest. The concrete risk concerns writers whose discovery environments select different namespaces."
+    },
+    {
+      "concern": "Yielding staged destinations breaks hold-out cleanup.",
+      "bin": "non-blocker",
+      "disposition": "The yielded value does not alter the shown move, restoration, or retention logic. Supplied tests exercise destination handles after collisions and restoration failures."
+    },
+    {
+      "concern": "Missed external callers still assume previous discovery or hold-out semantics.",
+      "bin": "insufficient-evidence",
+      "disposition": "The bound payload includes selected consumers, but not the complete caller inventory or run_review_support wrapper. Repository-wide caller compatibility is unproven."
+    },
+    {
+      "concern": "Publishing source changes alone updates installed plugin copies.",
+      "bin": "release-step",
+      "disposition": "The packet explicitly requires sync_root_plugin_manifests.py before packaging validation, including validate_packaging_committed. These are planned steps, not supplied execution evidence."
+    }
+  ],
+  "next_move": "Resolve the lock-namespace split, verify affected callers, then synchronize plugin exports and complete the packet-listed release checks before publishing v8.6.5.",
+  "non_claims": [
+    "Reviewed only the supplied semantic bytes; no tests were executed.",
+    "No approval of broader v8.6.4 changes or completed release validation.",
+    "Goal lineage is not-goal-bound: critique review was run without a Goal Run Work Item identity.",
+    "Requested reviewer tier application is unverified by the packet."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

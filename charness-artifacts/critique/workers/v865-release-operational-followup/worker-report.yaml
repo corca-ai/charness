@@ -1,0 +1,70 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'v8.6.5 release follow-up, operational angle: ledger lock identity is now independent
+  of ceilings (writer lookup ignores GIT_CEILING_DIRECTORIES; bare .git names still
+  excluded). Verify the lock-namespace split is closed, cross-ceiling writers meet
+  at one lock, and no new caller or rollout hazard remains.'
+attempt_id: v865-release-operational-followup
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 088a3353a6f4f28eeb34e37e4a1c2f662f06536008d1c93c864c127beb026a14
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/v865-release-operational-followup/receipt.json
+ledger_path: charness-artifacts/critique/workers/v865-release-operational-followup/delivery.json
+producer_run_id: run-v865-release-operational-followup
+producer_binding:
+  output_file: charness-artifacts/critique/workers/v865-release-operational-followup/result.json
+  receipt_file: charness-artifacts/critique/workers/v865-release-operational-followup/receipt.json
+  producer_run_id: run-v865-release-operational-followup
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: defer
+receipt_provenance_ok: true
+findings_identity: 2dd1641a7ebac89228959f656c3095324f2c3e2d22fb144fd9388651abeac79f
+receipt_output_sha256: 2dd1641a7ebac89228959f656c3095324f2c3e2d22fb144fd9388651abeac79f
+packet_identity: aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d
+reviewed_input_identity: d02fc5f98dfbc4aa9ed1bad090218cc97545f0c88eeb50b495d9934a8c265bdb
+parent_receipt_identity: parent-dd116132d079c3f688e5aaa9f1cfe753f8df3defd13eeb52
+provenance:
+  scope: 'v8.6.5 release follow-up, operational angle: ledger lock identity is now
+    independent of ceilings (writer lookup ignores GIT_CEILING_DIRECTORIES; bare .git
+    names still excluded). Verify the lock-namespace split is closed, cross-ceiling
+    writers meet at one lock, and no new caller or rollout hazard remains.'
+  packet_identity: aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d
+  reviewed_input_identity: d02fc5f98dfbc4aa9ed1bad090218cc97545f0c88eeb50b495d9934a8c265bdb
+  parent_receipt_identity: parent-dd116132d079c3f688e5aaa9f1cfe753f8df3defd13eeb52
+  attempt_id: v865-release-operational-followup
+  attempt_scope: 'v8.6.5 release follow-up, operational angle: ledger lock identity
+    is now independent of ceilings (writer lookup ignores GIT_CEILING_DIRECTORIES;
+    bare .git names still excluded). Verify the lock-namespace split is closed, cross-ceiling
+    writers meet at one lock, and no new caller or rollout hazard remains.'
+  attempt_packet_identity: aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d
+  attempt_parent_receipt_identity: parent-dd116132d079c3f688e5aaa9f1cfe753f8df3defd13eeb52
+  result_packet_identity: aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d
+  result_reviewed_input_identity: d02fc5f98dfbc4aa9ed1bad090218cc97545f0c88eeb50b495d9934a8c265bdb
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 088a3353a6f4f28eeb34e37e4a1c2f662f06536008d1c93c864c127beb026a14
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''defer'''
+partial_output_reason: worker did not preserve partial output bytes

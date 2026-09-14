@@ -1,0 +1,153 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: runner-completed
+execution_state: terminal
+lifecycle_state: terminal
+reviewer_started: true
+delivery_state: findings-received
+verdict_state: not-applicable
+review_verdict: defer
+classification: null
+approval_eligible: false
+output:
+  state: terminal
+  approval_eligible: false
+  schema_version: charness.reviewer_worker_report.v1
+  findings_identity: 2dd1641a7ebac89228959f656c3095324f2c3e2d22fb144fd9388651abeac79f
+  partial_artifacts:
+  - schema_version: charness.reviewer_partial_output/v1
+    kind: bounded-review-result
+    path: charness-artifacts/critique/workers/v865-release-operational-followup/partial-result.json
+    bytes: 3760
+    sha256: 61e0faa199bd1ae68048f82260dce9c440777224c21e2b608f2f3b7a1dbec4fb
+output_state: terminal
+failure_identity: d4902e566b1fd3594c5298c36cf6641840572220a70b27238e7dfd8b19261887
+next_move: inspect the typed carrier before treating the run as approval
+runner_returncode: 1
+runner_status: runner-completed
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/v865-release-operational-followup-packet.json
+  schema: charness-artifacts/critique/workers/v865-release-operational-followup/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/v865-release-operational-followup/capability.json
+  prompt: charness-artifacts/critique/workers/v865-release-operational-followup/review-prompt.md
+  plan: charness-artifacts/critique/workers/v865-release-operational-followup/run-plan.json
+  ledger: charness-artifacts/critique/workers/v865-release-operational-followup/delivery.json
+  output: charness-artifacts/critique/workers/v865-release-operational-followup/result.json
+  receipt: charness-artifacts/critique/workers/v865-release-operational-followup/receipt.json
+  report: charness-artifacts/critique/workers/v865-release-operational-followup/worker-report.yaml
+  runner_stdout: charness-artifacts/critique/workers/v865-release-operational-followup/runner.stdout
+  runner_stderr: charness-artifacts/critique/workers/v865-release-operational-followup/runner.stderr
+  backend_stdout: charness-artifacts/critique/workers/v865-release-operational-followup/backend.stdout
+  backend_stderr: charness-artifacts/critique/workers/v865-release-operational-followup/backend.stderr
+  summary: charness-artifacts/critique/workers/v865-release-operational-followup/lifecycle.yaml
+  semantic-input/0000-content.bin: charness-artifacts/critique/workers/v865-release-operational-followup/semantic-input/0000-content.bin
+  semantic-input/0001-content.bin: charness-artifacts/critique/workers/v865-release-operational-followup/semantic-input/0001-content.bin
+  semantic-input/manifest.json: charness-artifacts/critique/workers/v865-release-operational-followup/semantic-input/manifest.json
+  review-prompt.md: charness-artifacts/critique/workers/v865-release-operational-followup/review-prompt.md
+  run-plan.json: charness-artifacts/critique/workers/v865-release-operational-followup/run-plan.json
+  bounded-review-result.schema.json: charness-artifacts/critique/workers/v865-release-operational-followup/bounded-review-result.schema.json
+  capability.json: charness-artifacts/critique/workers/v865-release-operational-followup/capability.json
+  receipt.json: charness-artifacts/critique/workers/v865-release-operational-followup/receipt.json
+  delivery.json: charness-artifacts/critique/workers/v865-release-operational-followup/delivery.json
+  result.json: charness-artifacts/critique/workers/v865-release-operational-followup/result.json
+  runner.stdout: charness-artifacts/critique/workers/v865-release-operational-followup/runner.stdout
+  runner.stderr: charness-artifacts/critique/workers/v865-release-operational-followup/runner.stderr
+  backend.stdout: charness-artifacts/critique/workers/v865-release-operational-followup/backend.stdout
+  backend.stderr: charness-artifacts/critique/workers/v865-release-operational-followup/backend.stderr
+  worker-report.yaml: charness-artifacts/critique/workers/v865-release-operational-followup/worker-report.yaml
+  partial-result.json: charness-artifacts/critique/workers/v865-release-operational-followup/partial-result.json
+  attempt-manifest.json: charness-artifacts/critique/workers/v865-release-operational-followup/attempt-manifest.json
+  durable_report: charness-artifacts/critique/workers/v865-release-operational-followup/worker-report.yaml
+identities:
+  attempt_id: v865-release-operational-followup
+  scope: 'v8.6.5 release follow-up, operational angle: ledger lock identity is now
+    independent of ceilings (writer lookup ignores GIT_CEILING_DIRECTORIES; bare .git
+    names still excluded). Verify the lock-namespace split is closed, cross-ceiling
+    writers meet at one lock, and no new caller or rollout hazard remains.'
+  packet_identity: aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d
+  reviewed_input_identity: d02fc5f98dfbc4aa9ed1bad090218cc97545f0c88eeb50b495d9934a8c265bdb
+  parent_receipt_identity: parent-dd116132d079c3f688e5aaa9f1cfe753f8df3defd13eeb52
+  findings_identity: 2dd1641a7ebac89228959f656c3095324f2c3e2d22fb144fd9388651abeac79f
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/v865-release-operational-followup-packet.json
+  packet_sha256: aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d
+  identity_sha256: d02fc5f98dfbc4aa9ed1bad090218cc97545f0c88eeb50b495d9934a8c265bdb
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+timeout_seconds: 900
+scope: 'v8.6.5 release follow-up, operational angle: ledger lock identity is now independent
+  of ceilings (writer lookup ignores GIT_CEILING_DIRECTORIES; bare .git names still
+  excluded). Verify the lock-namespace split is closed, cross-ceiling writers meet
+  at one lock, and no new caller or rollout hazard remains.'
+lens: operational
+parent_receipt_identity: parent-dd116132d079c3f688e5aaa9f1cfe753f8df3defd13eeb52
+semantic_input:
+  entries:
+  - path: scripts/lessons/lesson_ledger_writer_lib.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/v865-release-operational-followup/semantic-input/0000-content.bin
+    content_sha256: 91e870e4d26a10a7a9ddaf1b71bf1283a46e21a3bd20aefc07a965437436060b
+    carrier_sha256: 4e99df5c18e1b67f1b660c759cec1106daf7087eeec537b017bf04a5fe96be3c
+    source: working-tree:scripts/lessons/lesson_ledger_writer_lib.py
+    size_bytes: 6349
+    prompt_encoding: utf-8
+  - path: tests/test_lesson_ledger.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/v865-release-operational-followup/semantic-input/0001-content.bin
+    content_sha256: 4adf8d349d47fbda8c5232e47b0de7b129751cff8c27ace42fb3c56972098682
+    carrier_sha256: e64354c37f411af56bce96ee66307f19e4c12ecc405cc853fb0144eba1ec5e03
+    source: working-tree:tests/test_lesson_ledger.py
+    size_bytes: 21147
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/v865-release-operational-followup/semantic-input/manifest.json
+  size_bytes: 27496
+runner_output:
+  status: runner-completed
+  returncode: 1
+runner_stream:
+  consistent: true
+  reason: null
+  runner_stdout_sha256: 13be9510176a82e9b8d23b2cb77fc0b0e588bf2c7c538330afe45dee0fa70769
+  canonical_report_sha256: 13be9510176a82e9b8d23b2cb77fc0b0e588bf2c7c538330afe45dee0fa70769
+boundary_readback:
+  mode: read-only-worker
+  required: false
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity
+identity_check:
+  status: matched
+  matches: true
+  checks:
+    packet_identity:
+      expected: aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d
+      actual: aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d
+      matches: true
+      provenance: aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d
+    reviewed_input_identity:
+      expected: d02fc5f98dfbc4aa9ed1bad090218cc97545f0c88eeb50b495d9934a8c265bdb
+      actual: d02fc5f98dfbc4aa9ed1bad090218cc97545f0c88eeb50b495d9934a8c265bdb
+      matches: true
+      provenance: d02fc5f98dfbc4aa9ed1bad090218cc97545f0c88eeb50b495d9934a8c265bdb
+    parent_receipt_identity:
+      expected: parent-dd116132d079c3f688e5aaa9f1cfe753f8df3defd13eeb52
+      actual: parent-dd116132d079c3f688e5aaa9f1cfe753f8df3defd13eeb52
+      matches: true
+      provenance: parent-dd116132d079c3f688e5aaa9f1cfe753f8df3defd13eeb52
+  reason: null

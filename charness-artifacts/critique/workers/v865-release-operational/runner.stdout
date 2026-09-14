@@ -1,0 +1,79 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'v8.6.5 release critique, operational angle: ship v8.6.5 patch (ceiling-aware
+  repo discovery centralized in git_checkout; ledger and artifact binding consume
+  the shared walk; hold_out yields staged destinations). Judge whether the release
+  is safe to ship: missed callers assuming pre-ceiling semantics, lock-path changes
+  for existing installs, and any release-time step this publish needs. Broader mutation/sampler
+  delta was covered by the v8.6.4 critique rounds with blockers fixed in-tree; this
+  round covers only the new ceiling repair surface.'
+attempt_id: v865-release-operational
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 2791e06e44ed6c48667acf2615ea380ac42f33336c8be527f05c0b63017e5d84
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-de32eaf688be1edd08caa5985839bcc2/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-de32eaf688be1edd08caa5985839bcc2/delivery.json
+producer_run_id: run-v865-release-operational
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-de32eaf688be1edd08caa5985839bcc2/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-de32eaf688be1edd08caa5985839bcc2/receipt.json
+  producer_run_id: run-v865-release-operational
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: c32348b79a6de357a8036e48ced3af9640a96e5bac4200ac81af57fcd2f598f1
+receipt_output_sha256: c32348b79a6de357a8036e48ced3af9640a96e5bac4200ac81af57fcd2f598f1
+packet_identity: e131e86af2b75378e2869de68aad85f777b3f5d27e3cf71ca04822e34765cd9f
+reviewed_input_identity: 329366b830f1adc1a7c8f9daa5d5bbd3223b866e50efc7ee7cdc490d12b094c3
+parent_receipt_identity: parent-2ea994b0804f42df89f0b179967a09134f8c35753610fbd9
+provenance:
+  scope: 'v8.6.5 release critique, operational angle: ship v8.6.5 patch (ceiling-aware
+    repo discovery centralized in git_checkout; ledger and artifact binding consume
+    the shared walk; hold_out yields staged destinations). Judge whether the release
+    is safe to ship: missed callers assuming pre-ceiling semantics, lock-path changes
+    for existing installs, and any release-time step this publish needs. Broader mutation/sampler
+    delta was covered by the v8.6.4 critique rounds with blockers fixed in-tree; this
+    round covers only the new ceiling repair surface.'
+  packet_identity: e131e86af2b75378e2869de68aad85f777b3f5d27e3cf71ca04822e34765cd9f
+  reviewed_input_identity: 329366b830f1adc1a7c8f9daa5d5bbd3223b866e50efc7ee7cdc490d12b094c3
+  parent_receipt_identity: parent-2ea994b0804f42df89f0b179967a09134f8c35753610fbd9
+  attempt_id: v865-release-operational
+  attempt_scope: 'v8.6.5 release critique, operational angle: ship v8.6.5 patch (ceiling-aware
+    repo discovery centralized in git_checkout; ledger and artifact binding consume
+    the shared walk; hold_out yields staged destinations). Judge whether the release
+    is safe to ship: missed callers assuming pre-ceiling semantics, lock-path changes
+    for existing installs, and any release-time step this publish needs. Broader mutation/sampler
+    delta was covered by the v8.6.4 critique rounds with blockers fixed in-tree; this
+    round covers only the new ceiling repair surface.'
+  attempt_packet_identity: e131e86af2b75378e2869de68aad85f777b3f5d27e3cf71ca04822e34765cd9f
+  attempt_parent_receipt_identity: parent-2ea994b0804f42df89f0b179967a09134f8c35753610fbd9
+  result_packet_identity: e131e86af2b75378e2869de68aad85f777b3f5d27e3cf71ca04822e34765cd9f
+  result_reviewed_input_identity: 329366b830f1adc1a7c8f9daa5d5bbd3223b866e50efc7ee7cdc490d12b094c3
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 2791e06e44ed6c48667acf2615ea380ac42f33336c8be527f05c0b63017e5d84
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

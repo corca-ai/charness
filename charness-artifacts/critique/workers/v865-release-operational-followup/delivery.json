@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "v865-release-operational-followup",
+      "scope": "v8.6.5 release follow-up, operational angle: ledger lock identity is now independent of ceilings (writer lookup ignores GIT_CEILING_DIRECTORIES; bare .git names still excluded). Verify the lock-namespace split is closed, cross-ceiling writers meet at one lock, and no new caller or rollout hazard remains.",
+      "packet_identity": "aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d",
+      "parent_receipt_identity": "parent-dd116132d079c3f688e5aaa9f1cfe753f8df3defd13eeb52",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-14T05:19:32Z",
+      "history": [
+        {
+          "event_id": "86bb852485b848579dc1e08a313ff4fb",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-14T05:19:00Z",
+          "attempt_id": "v865-release-operational-followup",
+          "scope": "v8.6.5 release follow-up, operational angle: ledger lock identity is now independent of ceilings (writer lookup ignores GIT_CEILING_DIRECTORIES; bare .git names still excluded). Verify the lock-namespace split is closed, cross-ceiling writers meet at one lock, and no new caller or rollout hazard remains.",
+          "packet_identity": "aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d",
+          "parent_receipt_identity": "parent-dd116132d079c3f688e5aaa9f1cfe753f8df3defd13eeb52",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "dd00ca2d33d242eab6b7fc4d704722c8",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-14T05:19:00Z",
+          "attempt_id": "v865-release-operational-followup",
+          "scope": "v8.6.5 release follow-up, operational angle: ledger lock identity is now independent of ceilings (writer lookup ignores GIT_CEILING_DIRECTORIES; bare .git names still excluded). Verify the lock-namespace split is closed, cross-ceiling writers meet at one lock, and no new caller or rollout hazard remains.",
+          "packet_identity": "aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d",
+          "parent_receipt_identity": "parent-dd116132d079c3f688e5aaa9f1cfe753f8df3defd13eeb52",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "08b4f142604244a9b362348f25979d16",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-14T05:19:32Z",
+          "attempt_id": "v865-release-operational-followup",
+          "scope": "v8.6.5 release follow-up, operational angle: ledger lock identity is now independent of ceilings (writer lookup ignores GIT_CEILING_DIRECTORIES; bare .git names still excluded). Verify the lock-namespace split is closed, cross-ceiling writers meet at one lock, and no new caller or rollout hazard remains.",
+          "packet_identity": "aff5a6cb41d9398b99aca23c2988440e99d982f46f315dfffe11a31dd016cf2d",
+          "parent_receipt_identity": "parent-dd116132d079c3f688e5aaa9f1cfe753f8df3defd13eeb52",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "2dd1641a7ebac89228959f656c3095324f2c3e2d22fb144fd9388651abeac79f"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "d02fc5f98dfbc4aa9ed1bad090218cc97545f0c88eeb50b495d9934a8c265bdb",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "088a3353a6f4f28eeb34e37e4a1c2f662f06536008d1c93c864c127beb026a14",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/v865-release-operational-followup/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/v865-release-operational-followup/receipt.json",
+      "producer_run_id": "run-v865-release-operational-followup",
+      "findings_identity": "2dd1641a7ebac89228959f656c3095324f2c3e2d22fb144fd9388651abeac79f"
+    }
+  ]
+}
