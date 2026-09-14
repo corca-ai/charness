@@ -31,6 +31,7 @@ from scripts.task_run.task_run_contract import (  # noqa: E402
     SCHEMA_VERSION,
     TASK_EFFORTS,
     TASK_MODEL,
+    TASK_MUSE_EFFORTS,
     TaskRunError,
 )
 
@@ -46,6 +47,21 @@ def _resolve_codex(value: str) -> str:
     resolved = shutil.which(value)
     if resolved is None:
         raise TaskRunError(f"Codex executable is not on PATH: {value}")
+    return resolved
+
+
+def resolve_executor_executable(value: str, *, executor: str) -> str:
+    """Resolve the lane executable for the selected executor."""
+    if not value.strip():
+        raise TaskRunError(f"{executor} executor must name an executable")
+    if "/" in value:
+        candidate = Path(value).expanduser().resolve()
+        if not candidate.is_file() or not os.access(candidate, os.X_OK):
+            raise TaskRunError(f"{executor} executable is not runnable: {value}")
+        return str(candidate)
+    resolved = shutil.which(value)
+    if resolved is None:
+        raise TaskRunError(f"{executor} executable is not on PATH: {value}")
     return resolved
 
 
@@ -86,7 +102,7 @@ def build_codex_args(
     args.extend(["-m", TASK_MODEL])
     if effort not in TASK_EFFORTS:
         allowed = ", ".join(TASK_EFFORTS)
-        raise TaskRunError(f"--effort must be one of: {allowed}")
+        raise TaskRunError(f"--effort must be one of: {allowed} (codex executor)")
     args.extend(["-c", f"model_reasoning_effort={effort}"])
     return args
 
@@ -103,6 +119,46 @@ def build_codex_command(
         "exec",
         *build_codex_args(effort=effort, writable_dirs=writable_dirs),
         "-",
+    ]
+
+
+def build_muse_args(
+    *,
+    effort: str,
+    prompt_file: Path,
+    writable_dirs: Sequence[Path] = (),
+) -> list[str]:
+    """Build Muse host arguments with the task runner's curated effort preset.
+
+    `muse exec` takes no stdin prompt, so the lane prompt travels via
+    `--prompt-file`. Approval prompts cannot be answered headless, so they are
+    disabled; the OS sandbox stays on (the Codex lane's workspace-write
+    equivalent) and each writable dir is rooted as a workspace.
+    """
+    if effort not in TASK_MUSE_EFFORTS:
+        allowed = ", ".join(TASK_MUSE_EFFORTS)
+        raise TaskRunError(f"--effort must be one of: {allowed} (muse executor)")
+    args: list[str] = ["--reasoning-effort", effort, "--disable-approval"]
+    for writable_dir in writable_dirs:
+        args.extend(["--workspace", str(writable_dir.resolve())])
+    args.extend(["--prompt-file", str(prompt_file)])
+    return args
+
+
+def build_muse_command(
+    executable: str,
+    *,
+    effort: str,
+    prompt_file: Path,
+    writable_dirs: Sequence[Path] = (),
+) -> list[str]:
+    """Build the Muse command; the task prompt travels via --prompt-file."""
+    return [
+        executable,
+        "exec",
+        *build_muse_args(
+            effort=effort, prompt_file=prompt_file, writable_dirs=writable_dirs
+        ),
     ]
 
 

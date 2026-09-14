@@ -17,7 +17,11 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-from scripts.task_run.task_run_contract import TaskRunError  # noqa: E402
+from scripts.task_run.task_run_contract import (  # noqa: E402
+    TASK_EXECUTOR_DEFAULT,
+    TASK_EXECUTORS,
+    TaskRunError,
+)
 from scripts.task_run.task_run_git import (  # noqa: E402
     _git_common_dir,
     _resolve_base_sha,
@@ -29,6 +33,8 @@ from scripts.task_run.task_run_runtime import (  # noqa: E402
     _runtime_preview,
     _task_id,
     build_codex_args,
+    build_muse_args,
+    resolve_executor_executable,
     validate_lane_id,
 )
 from scripts.task_run.task_run_scope import normalize_scopes, resolve_scope_specs  # noqa: E402
@@ -44,7 +50,8 @@ def resolve_task_inputs(
     scopes: Sequence[str],
     prompt: str,
     codex: str,
-    effort: str | None,
+    executor: str | None = None,
+    effort: str | None = None,
     task_id: str | None,
     prepare: bool | None,
     require_change: bool | None,
@@ -57,6 +64,10 @@ def resolve_task_inputs(
         raise TaskRunError("--prepare and --skip-prepare cannot be used together")
     if require_change and allow_no_change:
         raise TaskRunError("--require-change and --allow-no-change cannot be used together")
+    resolved_executor = executor or TASK_EXECUTOR_DEFAULT
+    if resolved_executor not in TASK_EXECUTORS:
+        allowed_executors = ", ".join(TASK_EXECUTORS)
+        raise TaskRunError(f"--executor must be one of: {allowed_executors}")
     if lane is not None:
         if any(value is not None for value in (target_path, branch, base)):
             raise TaskRunError(
@@ -102,13 +113,24 @@ def resolve_task_inputs(
         if repo_snapshot is not None
         else _git_common_dir(resolved_repo)
     )
-    codex_path = _resolve_codex(codex)
+    if resolved_executor == "codex" and codex == "codex":
+        codex_path = _resolve_codex(codex)
+    else:
+        executable_name = codex if codex != "codex" else resolved_executor
+        codex_path = resolve_executor_executable(
+            executable_name, executor=resolved_executor
+        )
     if not isinstance(timeout_seconds, int) or timeout_seconds < 1:
         raise TaskRunError("--timeout-seconds must be a positive integer")
     if lane is None:
         resolved_task_id = _task_id(resolved_branch, task_id)
         runtime_path = _runtime_preview(resolved_repo)
-    build_codex_args(effort=effort)
+    if resolved_executor == "muse":
+        # Validate the muse effort preset; the real prompt file is written at
+        # execution time, this path only exercises argument validation.
+        build_muse_args(effort=effort, prompt_file=Path("prompt.md"))
+    else:
+        build_codex_args(effort=effort)
     return {
         "lane": resolved_lane,
         "target_path": resolved_target,
@@ -119,6 +141,7 @@ def resolve_task_inputs(
         "scopes": normalized_scopes,
         "scope_specs": scope_specs,
         "codex_path": codex_path,
+        "executor": resolved_executor,
         "effort": effort,
         "task_id": resolved_task_id,
         "runtime_path": runtime_path,

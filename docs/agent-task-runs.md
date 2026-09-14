@@ -2,10 +2,23 @@
 
 > Status: current
 > Source of truth: this page and the `charness task run/status` implementation
-> Last verified: 2026-09-05
+> Last verified: 2026-09-14
 
-`charness task` provides `task run` for one bounded Codex lane and `task status`
+`charness task` provides `task run` for one bounded lane and `task status`
 for reading its external result store. It does not add a scheduler lifecycle.
+`--executor` selects the lane runner (default: `codex`): `codex` runs the fixed
+`gpt-5.6-luna` model with effort one of medium, xhigh, max; `muse` runs the
+muse default model with effort one of medium, high, xhigh, max.
+`charness task run --help` is the typed surface.
+
+Receipt shape is per executor. The canonical block is `payload["executor"]`
+(`kind`, `executable`, `model`, `effort`, `timeout_scope`, `command`).
+Codex lanes keep the legacy `payload["codex"]` alias, `codex-exec` scope, and
+`codex.stdout/stderr.log` names. Muse lanes carry only the `executor` block
+with `timeout_scope: muse-exec` and `muse.stdout/stderr.log` logs; their
+`model` reads `"default"`, meaning whatever `muse exec` ships, unpinned.
+Readers keyed on the `codex` names must branch on `executor.kind` before
+consuming muse lanes.
 
 ## Run
 

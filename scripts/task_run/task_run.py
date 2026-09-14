@@ -24,6 +24,7 @@ _load_repo_runtime_bootstrap()
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 from scripts.task_run import task_run_changed_line as _changed_line  # noqa: E402
 from scripts.task_run import task_run_completion as _completion  # noqa: E402
+from scripts.task_run import task_run_lane_runner as _lane_runner  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402
 from scripts.task_run.task_run_git import _checkout_own_dir, _repo_snapshot  # noqa: E402
 from scripts.task_run.task_run_plan import resolve_task_inputs as _resolve_task_inputs  # noqa: E402
@@ -59,6 +60,8 @@ _validate_worktree_path = _support._validate_worktree_path
 _validate_lane_id = _support.validate_lane_id
 build_codex_args = _support.build_codex_args
 build_codex_command = _support.build_codex_command
+build_muse_args = _support.build_muse_args
+build_muse_command = _support.build_muse_command
 normalize_scopes = _support.normalize_scopes
 
 
@@ -206,6 +209,7 @@ def run_task(
     scopes: Sequence[str],
     prompt: str,
     codex: str = "codex",
+    executor: str | None = None,
     effort: str | None = None,
     task_id: str | None = None,
     prepare: bool | None = None,
@@ -237,6 +241,7 @@ def run_task(
             scopes=scopes,
             prompt=prompt,
             codex=codex,
+            executor=executor,
             effort=effort,
             task_id=task_id,
             prepare=prepare,
@@ -261,6 +266,7 @@ def run_task(
     base_sha = resolved["base_sha"]
     normalized_scopes = resolved["scopes"]
     codex_path = resolved["codex_path"]
+    resolved_executor = resolved["executor"]
     resolved_task_id = resolved["task_id"]
     runtime_path = resolved["runtime_path"]
     execution_runtime_path = _task_execution_runtime_root(runtime_path, resolved_task_id)
@@ -282,11 +288,6 @@ def run_task(
         "git_common_dir": str(resolved["git_common_dir"]),
         "scopes": normalized_scopes,
         "scope_specs": resolved["scope_specs"],
-        "codex": {
-            "executable": codex_path,
-            "model": _support.TASK_MODEL,
-            "effort": resolved["effort"],
-        },
         "runtime_root": str(runtime_path),
         "execution_runtime_root": str(execution_runtime_path),
         "result_path": str(_support.task_result_path(runtime_path, resolved_task_id)),
@@ -297,18 +298,29 @@ def run_task(
         "timestamps": {"launched_at": _support.utc_now_iso()},
         "timings_ms": {},
     }
-    payload["codex"].update(timeout_seconds=timeout_seconds, timeout_scope="codex-exec")
+    _lane_runner.record_lane_runner(
+        payload,
+        executor=resolved_executor,
+        executable=codex_path,
+        effort=resolved["effort"],
+        timeout_seconds=timeout_seconds,
+    )
     if resolved_lane is not None:
         payload["lane"] = resolved_lane
     if dry_run:
         payload["status"] = PASS
         payload["approval_eligibility"] = "not-applicable"
         payload["next_step"] = (
-            "Re-run without --dry-run to create the named worktree and execute Codex."
+            "Re-run without --dry-run to create the named worktree and execute "
+            f"{resolved_executor}."
         )
         payload["actions"] = [
             {"id": "create-worktree", "status": "planned"},
-            {"id": "codex-exec", "status": "planned", "cwd": str(resolved_target)},
+            {
+                "id": f"{resolved_executor}-exec",
+                "status": "planned",
+                "cwd": str(resolved_target),
+            },
         ]
         return payload
 
@@ -366,13 +378,16 @@ def run_task(
         writable_dirs = _codex_writable_dirs(
             payload, resolved, git_worktree_dir, execution_runtime_path
         )
-        command = build_codex_command(
-            codex_path,
+        command = _lane_runner.lane_command(
+            executor=resolved_executor,
+            executable=codex_path,
             effort=resolved["effort"],
+            prompt=prompt,
+            execution_runtime_path=execution_runtime_path,
             writable_dirs=writable_dirs,
         )
         payload["git_worktree_dir"] = str(git_worktree_dir)
-        payload["codex"]["command"] = command
+        payload["executor"]["command"] = command
 
         scope_specs = resolved["scope_specs"]
         before_exec = _collect_populations(resolved_target)
@@ -384,18 +399,21 @@ def run_task(
                 payload,
                 runtime_path,
                 status="failed",
-                next_step="The newly-created worktree was not clean before Codex; inspect it and use a fresh path.",
+                next_step=f"The newly-created worktree was not clean before {resolved_executor}; inspect it and use a fresh path.",
             )
 
         log_dir = runtime_path / "task-run" / resolved_task_id
         log_dir.mkdir(parents=True, exist_ok=True)
-        stdout_log = log_dir / "codex.stdout.log"
-        stderr_log = log_dir / "codex.stderr.log"
+        stdout_log = log_dir / f"{resolved_executor}.stdout.log"
+        stderr_log = log_dir / f"{resolved_executor}.stderr.log"
         payload["logs"] = {"stdout": str(stdout_log), "stderr": str(stderr_log)}
         exec_started_at = _mark_phase(payload, "exec", "exec_started_at")
         _persist(payload, runtime_path)
 
-        print(f"task run: executing Codex in {resolved_target}", file=sys.stderr)
+        print(
+            f"task run: executing {resolved_executor} in {resolved_target}",
+            file=sys.stderr,
+        )
         execution = _execute_codex(
             command,
             prompt=prompt,

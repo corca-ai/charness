@@ -5274,6 +5274,7 @@ def cmd_task_run(args: argparse.Namespace) -> int:
         lane=args.lane,
         scopes=args.scope,
         prompt=prompt_text or "",
+        executor=args.executor,
         effort=args.effort,
         task_id=args.task_id,
         prepare=args.prepare,
@@ -5577,7 +5578,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     task_run_parser = task_subparsers.add_parser(
         "run",
-        help="Run one independently delegable Codex lane in a clean named worktree and emit a compact receipt.",
+        help="Run one independently delegable lane in a clean named worktree and emit a compact receipt.",
         description=(
             "Run one independently delegable lane: shorthand derives a named branch, external "
             "worktree, task id, and HEAD base; the explicit form remains available for diagnostics. "
@@ -5601,11 +5602,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Repository-relative candidate path or quoted glob; repeatable, and a `{a,b}` group expands to one scope per alternative. Existing directories include descendants; a path absent from the base is an exact file, so enumerate planned files in a new directory. Globs must match before launch and retain the pattern for new matching paths.",
     )
     task_run_prompt = task_run_parser.add_mutually_exclusive_group(required=True)
-    task_run_prompt.add_argument("--prompt", help="Implementation instructions passed to `codex exec`.")
+    task_run_prompt.add_argument("--prompt", help="Implementation instructions passed to the lane executor.")
     task_run_prompt.add_argument("--prompt-file", type=Path, help="Read implementation instructions from this file.")
-    task_run_parser.add_argument("--effort", required=True, help="Orchestrator-selected Codex reasoning effort: medium, xhigh, or max.")
+    task_run_parser.add_argument(
+        "--executor",
+        choices=("codex", "muse"),
+        default="codex",
+        help="Lane executor: codex (fixed gpt-5.6-luna model) or muse (muse default model). Default: codex. Effort presets depend on the executor.",
+    )
+    task_run_parser.add_argument("--effort", required=True, help="Orchestrator-selected reasoning effort: medium, xhigh, or max for codex; medium, high, xhigh, or max for muse.")
     task_run_parser.add_argument("--task-id", help="Optional receipt/log identifier for explicit runs; shorthand derives it from --lane.")
-    task_run_parser.add_argument("--prepare", action="store_true", default=None, help="Run the worktree adapter prepare step before Codex.")
+    task_run_parser.add_argument("--prepare", action="store_true", default=None, help="Run the worktree adapter prepare step before the lane executor.")
     task_run_parser.add_argument("--require-change", action="store_true", default=None, help="Fail unless the candidate changes at least one path.")
     task_run_parser.add_argument("--skip-prepare", action="store_true", help="Shorthand diagnostic opt-out: skip the default preparation step.")
     task_run_parser.add_argument("--allow-no-change", action="store_true", help="Shorthand diagnostic opt-out: allow an unchanged candidate.")

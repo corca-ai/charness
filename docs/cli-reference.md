@@ -235,8 +235,8 @@ positional arguments:
   {status,run}
     status      Show one external task-run result, or list all task-run
                 results.
-    run         Run one independently delegable Codex lane in a clean named
-                worktree and emit a compact receipt.
+    run         Run one independently delegable lane in a clean named worktree
+                and emit a compact receipt.
 
 options:
   -h, --help    show this help message and exit
@@ -262,9 +262,9 @@ options:
 usage: charness task run [-h] [--repo-root REPO_ROOT] [--lane LANE]
                          [--path PATH] [--branch BRANCH] [--base BASE] --scope
                          SCOPE (--prompt PROMPT | --prompt-file PROMPT_FILE)
-                         --effort EFFORT [--task-id TASK_ID] [--prepare]
-                         [--require-change] [--skip-prepare]
-                         [--allow-no-change]
+                         [--executor {codex,muse}] --effort EFFORT
+                         [--task-id TASK_ID] [--prepare] [--require-change]
+                         [--skip-prepare] [--allow-no-change]
                          [--timeout-seconds TIMEOUT_SECONDS] [--dry-run]
 
 Run one independently delegable lane: shorthand derives a named branch,
@@ -292,14 +292,21 @@ options:
                         file, so enumerate planned files in a new directory.
                         Globs must match before launch and retain the pattern
                         for new matching paths.
-  --prompt PROMPT       Implementation instructions passed to `codex exec`.
+  --prompt PROMPT       Implementation instructions passed to the lane
+                        executor.
   --prompt-file PROMPT_FILE
                         Read implementation instructions from this file.
-  --effort EFFORT       Orchestrator-selected Codex reasoning effort: medium,
-                        xhigh, or max.
+  --executor {codex,muse}
+                        Lane executor: codex (fixed gpt-5.6-luna model) or
+                        muse (muse default model). Default: codex. Effort
+                        presets depend on the executor.
+  --effort EFFORT       Orchestrator-selected reasoning effort: medium, xhigh,
+                        or max for codex; medium, high, xhigh, or max for
+                        muse.
   --task-id TASK_ID     Optional receipt/log identifier for explicit runs;
                         shorthand derives it from --lane.
-  --prepare             Run the worktree adapter prepare step before Codex.
+  --prepare             Run the worktree adapter prepare step before the lane
+                        executor.
   --require-change      Fail unless the candidate changes at least one path.
   --skip-prepare        Shorthand diagnostic opt-out: skip the default
                         preparation step.
