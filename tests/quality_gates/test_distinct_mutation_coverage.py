@@ -182,38 +182,22 @@ def test_sampler_invalidates_changed_line_marker_before_shared_override(
     marker.write_text("old changed-line marker", encoding="utf-8")
 
     def fake_probe(_repo_root, _command, coverage_json, **_kwargs) -> None:
-        Path(coverage_json).write_text('{"files": {}}', encoding="utf-8")
+        Path(coverage_json).write_text('{"meta": {}, "files": {}}', encoding="utf-8")
 
-    monkeypatch.setattr(sample_mutation_files, "run_test_coverage", fake_probe)
-    monkeypatch.setattr(sample_mutation_files, "load_covered_lines", lambda *_args: {})
-    monkeypatch.setattr(sample_mutation_files, "load_file_statement_lines", lambda *_args: {})
-    monkeypatch.setattr(sample_mutation_files, "load_line_contexts", lambda *_args: {})
     monkeypatch.setattr(
-        sample_mutation_files,
-        "filter_eligible_by_coverage",
-        lambda candidates, *_args, **_kwargs: candidates,
+        "scripts.mutation.mutation_sample_scope.run_test_coverage", fake_probe
     )
     monkeypatch.setattr(
-        sample_mutation_files,
-        "build_mutation_line_coverage",
-        lambda *_args: {},
-    )
-    monkeypatch.setattr(
-        sample_mutation_files,
-        "filter_eligible_by_mutation_line_coverage",
-        lambda candidates, *_args: candidates,
+        "scripts.mutation.mutation_sample_scope.mapped_test_targets",
+        lambda repo_root, paths, *, limit: ["tests/test_foo.py"],
     )
 
-    result = sample_mutation_files.select_eligible_for_mutation(
+    sample_mutation_files.focused_statement_lines_for_changed_files(
         repo_root=tmp_path,
-        config_path=tmp_path / "cosmic-ray.toml",
-        all_eligible=["scripts/foo.py"],
-        coverage_enabled=True,
+        changed_paths=["scripts/foo.py"],
         coverage_json=coverage,
-        test_command="pytest -q",
-        min_file_coverage=0.85,
         baseline_abort_marker_path=tmp_path / "baseline-abort.json",
+        max_test_nodeids=40,
     )
 
-    assert result[0] == ["scripts/foo.py"]
     assert not marker.exists()
