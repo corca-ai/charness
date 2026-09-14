@@ -371,6 +371,24 @@ def test_repository_root_stops_at_the_ceiling(
     assert writer._repository_root(target) is None
 
 
+def test_repository_root_stops_before_a_repository_at_the_ceiling(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A repository AT the ceiling must not capture a ledger below it.
+
+    With GIT_CEILING_DIRECTORIES=/outer a valid /outer/.git is never
+    inspected from /outer/inner/ledger.json, so discovery stops instead
+    of returning /outer.
+    """
+    outer = tmp_path / "outer"
+    (outer / ".git" / "objects").mkdir(parents=True)
+    (outer / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+    target = outer / "inner" / "lesson-ledger.json"
+    target.parent.mkdir(parents=True)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(outer))
+    assert writer._repository_root(target) is None
+
+
 def test_repository_root_finds_a_real_administration_directory(
     tmp_path: Path,
 ) -> None:

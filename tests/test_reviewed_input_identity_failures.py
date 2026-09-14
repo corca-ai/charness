@@ -294,6 +294,33 @@ def test_artifact_binding_repo_fallbacks(tmp_path: Path) -> None:
     ) == (False, "cannot resolve repository root for reviewed input binding")
 
 
+def test_artifact_binding_ancestor_scan_honors_the_ceiling(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An unrelated repository above the ceiling must not capture the artifact.
+
+    With GIT_CEILING_DIRECTORIES=/outer the valid /outer/.git is never
+    inspected from /outer/inner/artifact.md, so binding falls through to
+    the layout fallback instead of reading outer/stale.json.
+    """
+    outer = tmp_path / "outer"
+    (outer / ".git" / "objects").mkdir(parents=True)
+    (outer / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+    (outer / "stale.json").write_text("{}", encoding="utf-8")
+    artifact = outer / "inner" / "artifact.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("artifact", encoding="utf-8")
+    fields = {
+        "packet path": "stale.json",
+        "packet sha256": "0" * 64,
+        "identity sha256": "0" * 64,
+    }
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(outer))
+    assert verification_lib.verify_artifact_binding(
+        artifact, fields, expected_kind="critique-prepare-packet"
+    ) == (False, "reviewed packet does not exist: stale.json")
+
+
 def test_declared_binding_reports_missing_fields(tmp_path: Path) -> None:
     assert verification_lib.verify_declared_binding(
         tmp_path / "artifact.md",

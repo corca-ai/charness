@@ -75,14 +75,17 @@ def _repository_root(path: Path) -> Path | None:
     # A bare `.git` name is not a repository: an empty or foreign marker
     # (stray init, dotfiles above tmp) must not capture the walk. The
     # checkout owner decides what counts. GIT_CEILING_DIRECTORIES bounds
-    # the ascent the same way it does for git discovery.
+    # the ascent the same way it does for git discovery: a ceiling
+    # ancestor is never inspected, so a repository AT the ceiling cannot
+    # capture a ledger below it. Only the starting path itself is
+    # inspected unconditionally.
     resolved = path.expanduser().resolve()
     ceilings = _ceiling_directories()
-    for candidate in (resolved, *resolved.parents):
+    for index, candidate in enumerate((resolved, *resolved.parents)):
+        if index > 0 and str(candidate) in ceilings:
+            break
         if git_dir_at(candidate) is not None:
             return candidate
-        if str(candidate) in ceilings:
-            break
     return None
 
 
