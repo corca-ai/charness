@@ -32,7 +32,7 @@ except ImportError:  # pragma: no cover
     msvcrt = None
 
 try:
-    from scripts.core.git_checkout import ancestors_until_ceiling, git_dir_at
+    from scripts.core.git_checkout import git_dir_at
     from scripts.runtime_bootstrap import runtime_root
 except ImportError:  # direct installed/helper layout
     _repo_root = next(
@@ -49,7 +49,7 @@ except ImportError:  # direct installed/helper layout
 
     if str(_repo_root) not in sys.path:
         sys.path.insert(0, str(_repo_root))
-    from scripts.core.git_checkout import ancestors_until_ceiling, git_dir_at
+    from scripts.core.git_checkout import git_dir_at
     from scripts.runtime_bootstrap import runtime_root
 
 
@@ -58,12 +58,16 @@ def _fail(message: str) -> None:
 
 
 def _repository_root(path: Path) -> Path | None:
-    # A bare `.git` name is not a repository: an empty or foreign marker
-    # (stray init, dotfiles above tmp) must not capture the walk. The
-    # checkout owner decides what counts, including where
-    # GIT_CEILING_DIRECTORIES stops the ascent.
+    # Repository lookup FOR LOCK PLACEMENT ONLY. Lock identity must be a
+    # pure function of the ledger path: two writers with different
+    # GIT_CEILING_DIRECTORIES must still meet at the same lock file, or
+    # concurrent read-modify-write ledgers lose updates. Ceilings bound
+    # discovery scope, never lock identity, so this walk deliberately
+    # ignores them. A bare `.git` name is still not a repository: an empty
+    # or foreign marker (stray init, dotfiles above tmp) must not capture
+    # the walk; the checkout owner decides what counts.
     resolved = path.expanduser().resolve()
-    for candidate in ancestors_until_ceiling(resolved):
+    for candidate in (resolved, *resolved.parents):
         if git_dir_at(candidate) is not None:
             return candidate
     return None

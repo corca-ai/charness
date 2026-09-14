@@ -348,8 +348,7 @@ def test_repository_root_skips_a_bare_git_name(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """An empty `.git` directory (stray init, dotfiles above tmp) is not a
-    repository and must not capture the upward walk. The ceiling keeps the
-    walk inside the fixture so an ambient ancestor repo cannot interfere."""
+    repository and must not capture the upward walk."""
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
     target = repo / "charness-artifacts" / "retro" / "lesson-ledger.json"
@@ -358,27 +357,18 @@ def test_repository_root_skips_a_bare_git_name(
     assert writer._repository_root(target) is None
 
 
-def test_repository_root_stops_at_the_ceiling(
+def test_lock_path_agrees_across_ceiling_environments(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    outer = tmp_path / "outer"
-    (outer / ".git" / "objects").mkdir(parents=True)
-    (outer / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
-    inner = outer / "inner"
-    target = inner / "lesson-ledger.json"
-    target.parent.mkdir(parents=True)
-    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(inner))
-    assert writer._repository_root(target) is None
+    """Writers with different ceilings must meet at the same lock file.
 
-
-def test_repository_root_stops_before_a_repository_at_the_ceiling(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """A repository AT the ceiling must not capture a ledger below it.
-
-    With GIT_CEILING_DIRECTORIES=/outer a valid /outer/.git is never
-    inspected from /outer/inner/ledger.json, so discovery stops instead
-    of returning /outer.
+    Lock identity is a pure function of the ledger path: a writer whose
+    ceiling hides /outer and a writer without that ceiling select the
+    identical lock for /outer/inner/ledger.json, so concurrent
+    read-modify-write ledgers stay mutually exclusive. (The ceiling-stop
+    contract itself lives with the checkout owner in
+    tests/test_git_checkout.py; the writer lookup deliberately ignores
+    ceilings.)
     """
     outer = tmp_path / "outer"
     (outer / ".git" / "objects").mkdir(parents=True)
@@ -386,7 +376,9 @@ def test_repository_root_stops_before_a_repository_at_the_ceiling(
     target = outer / "inner" / "lesson-ledger.json"
     target.parent.mkdir(parents=True)
     monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(outer))
-    assert writer._repository_root(target) is None
+    hidden = writer._lock_path(target)
+    monkeypatch.delenv("GIT_CEILING_DIRECTORIES", raising=False)
+    assert writer._lock_path(target) == hidden
 
 
 def test_repository_root_finds_a_real_administration_directory(
