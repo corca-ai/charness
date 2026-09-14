@@ -36,10 +36,10 @@ def ceiling_directories() -> set[str]:
         entry = entry.strip()
         if not entry:
             continue
-        try:
-            ceilings.add(str(Path(entry).expanduser().resolve()))
-        except OSError:
-            continue
+        # Non-strict resolve tolerates missing or unreadable paths, so no
+        # error branch is needed here: a strange entry simply never matches
+        # a real ancestor.
+        ceilings.add(str(Path(entry).expanduser().resolve()))
     return ceilings
 
 

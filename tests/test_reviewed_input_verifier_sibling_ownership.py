@@ -70,6 +70,29 @@ def test_the_verifier_resolves_its_own_adjacent_sibling(monkeypatch) -> None:
     )
 
 
+def test_the_verifier_falls_back_to_the_package_checkout_without_its_file_tree(
+    monkeypatch,
+) -> None:
+    """An installed mirror can ship the verifier without its core tree.
+
+    With the owning `core/git_checkout.py` hidden, the fallback package
+    import must still supply the real administration-directory check.
+    Only that one path is hidden; every other `is_file` answer is genuine.
+    """
+    from scripts.core import git_checkout as real
+    from scripts.review import reviewed_input_verification as verifier
+
+    genuine_is_file = Path.is_file
+
+    def selective_is_file(self: Path) -> bool:
+        if self.match("core/git_checkout.py"):
+            return False
+        return genuine_is_file(self)
+
+    monkeypatch.setattr(Path, "is_file", selective_is_file)
+    assert verifier._load_git_checkout() is real
+
+
 def test_the_owner_is_the_same_object_whichever_module_loads_first(monkeypatch) -> None:
     """Which object you get must not depend on who imported first.
 

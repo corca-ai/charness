@@ -321,6 +321,33 @@ def test_artifact_binding_ancestor_scan_honors_the_ceiling(
     ) == (False, "reviewed packet does not exist: stale.json")
 
 
+def test_artifact_binding_ancestor_scan_finds_the_enclosing_repository(
+    tmp_path: Path,
+) -> None:
+    """The ancestor walk must still select a real repository below any ceiling.
+
+    The artifact sits three levels deep so the layout shortcut (which only
+    checks the grandparent directory) misses, and the walk finds the
+    enclosing repository: reading the packet there proceeds past discovery
+    to the recorded-hash check.
+    """
+    repo = tmp_path / "repo"
+    (repo / ".git" / "objects").mkdir(parents=True)
+    (repo / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+    (repo / "real.json").write_text("{}", encoding="utf-8")
+    artifact = repo / "a" / "b" / "c" / "artifact.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("artifact", encoding="utf-8")
+    fields = {
+        "packet path": "real.json",
+        "packet sha256": "0" * 64,
+        "identity sha256": "0" * 64,
+    }
+    assert verification_lib.verify_artifact_binding(
+        artifact, fields, expected_kind="critique-prepare-packet"
+    ) == (False, "reviewed packet bytes are stale or tampered")
+
+
 def test_declared_binding_reports_missing_fields(tmp_path: Path) -> None:
     assert verification_lib.verify_declared_binding(
         tmp_path / "artifact.md",

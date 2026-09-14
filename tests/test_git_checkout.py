@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
@@ -112,6 +113,17 @@ def test_ancestors_until_ceiling_still_yields_the_starting_directory(
     outer.mkdir(parents=True)
     monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(outer))
     assert next(iter(checkout.ancestors_until_ceiling(outer))) == outer
+
+
+def test_ceiling_directories_skips_blank_entries(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    outer = (tmp_path / "outer").resolve()
+    outer.mkdir(parents=True)
+    monkeypatch.setenv(
+        "GIT_CEILING_DIRECTORIES", os.pathsep.join(("", str(outer), " ", ""))
+    )
+    assert checkout.ceiling_directories() == {str(outer)}
 
 
 def _make_repo(root: Path) -> Path:
