@@ -86,6 +86,15 @@ changed set. Fail before publishing sample manifests, workflow outputs, or
 tool config rewrites so downstream summary gates cannot mistake missing
 discovery for zero changed files.
 
+A scheduled sample is a rotating slice that must finish inside the job and
+leave a verdict. It is not a whole-tree proof. Do not run the full test suite,
+and do not export per-test coverage contexts, in order to pick a handful of
+files. Pick files first (changed plus fill), map tests onto that sample, and
+collect statement coverage only for those tests when changed-line teeth need
+it. Per-mutant `test-command` must be that mapped set, not the suite. Size
+mutant count to remaining job time. Omitting `commands.sample` still runs the
+full mutation set and is the wrong default on a hosted runner.
+
 ## Workflow template
 
 `scripts/templates/mutation-tests.yml` is installed at the adapter's
@@ -182,13 +191,13 @@ release metadata on 2026-05-15. These helpers are dogfood support for this
 repo's own mutation workflow, not a portable requirement for consumers:
 
 - `<plugin-dir>/scripts/mutation/sample_mutation_files.py` rewrites `cosmic-ray.toml`'s
-  `[cosmic-ray].module-path` list, derives the pytest node ids that actually
-  covered the selected mutation surface, rewrites `[cosmic-ray].test-command`
-  for that sampled surface, applies executable-mutant and pytest-nodeid
-  workload budgets, and writes the sample manifest.
-  Its coverage probe defaults to `reports/mutation/sample-coverage.json`, which
-  is separate from the changed-line producer's
-  `reports/mutation/test-coverage.json`.
+  `[cosmic-ray].module-path` list from changed files plus fill, maps standing
+  tests onto that sample, rewrites `[cosmic-ray].test-command` to those
+  targets, caps mutant count to remaining job time, and writes the sample
+  manifest. It does not run the standing suite to choose files. Focused
+  statement coverage of mapped tests is only for changed-line teeth, at
+  `reports/mutation/sample-coverage.json`, separate from the changed-line
+  producer's `reports/mutation/test-coverage.json`.
 - `scripts/mutation/run_cosmic_ray_mutation.py --mode dry-run` runs baseline + init,
   then filters known low-signal annotation-only work items from the session.
 - `scripts/mutation/run_cosmic_ray_mutation.py --mode full` runs baseline + init +
@@ -273,20 +282,23 @@ only needs executed-vs-missing lines, and per-test context can balloon the
 coverage JSON by orders of magnitude. Measured on the authoring repo, same
 coverage data with the export flag as the only difference: **8.22 GB vs 12.26 MB
 (671x), and 36.5s / 20.44 GiB peak RSS vs 0.13s / 0.06 GiB just to load it.**
+12.26 MB is still a whole-tree JSON dump of every executed/missing line number
+after the standing suite — verbose interchange, not a sampling working set.
+Do not produce it to pick a handful of files; map tests, then instrument those.
 
-Size is the lesser half. **20 GB of peak RSS to read a report is a correctness
-risk, not a speed one:** on a host with less headroom that load raises
-`MemoryError`, and a gate with no branch for it reports an out-of-memory crash as
-a tool failure rather than as the refusal-to-judge it is — which is exactly the
-distinction a changed-line gate exists to keep.
+Size is the lesser half. **20 GB of peak RSS to read a context-bearing report is
+a correctness risk, not a speed one:** on a host with less headroom that load
+raises `MemoryError`, and a gate with no branch for it reports an out-of-memory
+crash as a tool failure rather than as the refusal-to-judge it is — which is
+exactly the distinction a changed-line gate exists to keep.
 
 Make the collection an **explicit flag**, never a side effect of an adjacent one.
 The authoring repo tied it to the flag that stamps the freshness marker, so the
 cheap path arrived only for callers who happened to want a marker, and the other
-arm paid 671x for a column the verdict never reads. Where a second consumer *does*
-read contexts (a mutant sampler resolving per-line test nodeids), give it its own
-report path rather than sharing one: whichever tool ran last then decides whether
-the other one works.
+arm paid 671x for a column the verdict never reads. A mutant sampler must not
+opt into contexts to recover nodeids; map tests from source references instead.
+`run_test_coverage` defaults to statement coverage. Pass `dynamic_context=True`
+only when a local probe with enough RAM is explicitly measuring that column.
 
 Run the cheap deterministic doc/lint gates *before* paying for the instrumented
 run so a late failure does not force a re-pay.

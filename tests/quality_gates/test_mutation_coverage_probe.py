@@ -46,6 +46,7 @@ def test_mutation_coverage_ignores_deleted_sources_outside_repo(tmp_path: Path) 
     payload = json.loads(coverage_json.read_text(encoding="utf-8"))
     assert "scripts/repo_target.py" in payload["files"]
     assert all("deleted_source.py" not in path for path in payload["files"])
+    assert payload.get("meta", {}).get("show_contexts") is not True
 
 
 def test_run_test_coverage_failure_raises_with_captured_output(tmp_path: Path) -> None:

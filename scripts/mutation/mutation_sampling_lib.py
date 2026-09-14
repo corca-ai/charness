@@ -264,7 +264,7 @@ def prepare_plain_coverage(
 
 
 def run_test_coverage(
-    repo_root: Path, test_command: str, coverage_json: Path, *, dynamic_context: bool = True
+    repo_root: Path, test_command: str, coverage_json: Path, *, dynamic_context: bool = False
 ) -> None:
     data_file, rcfile, sitecustomize_dir = _write_coverage_config(
         repo_root, coverage_json, dynamic_context=dynamic_context

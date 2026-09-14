@@ -101,7 +101,12 @@ def test_mutation_coverage_tracks_python_subprocesses(tmp_path: Path) -> None:
     )
 
     coverage_json = repo / "reports" / "mutation" / "coverage.json"
-    run_test_coverage(repo, "python3 -m pytest -q tests/test_cli_target.py", coverage_json)
+    run_test_coverage(
+        repo,
+        "python3 -m pytest -q tests/test_cli_target.py",
+        coverage_json,
+        dynamic_context=True,
+    )
 
     payload = json.loads(coverage_json.read_text(encoding="utf-8"))
     assert "scripts/cli_target.py" in payload["files"]

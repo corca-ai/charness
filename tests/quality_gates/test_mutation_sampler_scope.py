@@ -13,6 +13,8 @@ from scripts.mutation.mutation_sample_scope import (
 )
 from scripts.mutation.sample_mutation_files import select_eligible_for_mutation
 
+ROOT = Path(__file__).resolve().parents[2]
+
 
 def test_select_eligible_does_not_run_whole_suite_coverage(tmp_path: Path) -> None:
     coverage_json = tmp_path / "coverage.json"
@@ -88,6 +90,16 @@ def test_mapped_test_targets_honor_the_nodeid_budget(tmp_path: Path, monkeypatch
 def test_standing_pytest_command_passes_each_target() -> None:
     command = standing_pytest_command(["tests/a.py", "tests/b.py"])
     assert command.count("--pytest-target") == 2
+
+
+def test_public_sample_contract_forbids_whole_suite_probes() -> None:
+    text = (
+        ROOT / "skills" / "public" / "quality" / "references" / "mutation-testing.md"
+    ).read_text(encoding="utf-8")
+    assert "Do not run the full test suite" in text
+    assert "per-test coverage contexts" in text
+    assert "run_test_coverage` defaults to statement coverage" in text
+    assert "mutant sampler must not" in text
 
 
 def test_cap_mutants_shrinks_to_remaining_job_budget(monkeypatch) -> None:
