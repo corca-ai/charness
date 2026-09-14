@@ -32,6 +32,7 @@ except ImportError:  # pragma: no cover
     msvcrt = None
 
 try:
+    from scripts.core.git_checkout import git_dir_at
     from scripts.runtime_bootstrap import runtime_root
 except ImportError:  # direct installed/helper layout
     _repo_root = next(
@@ -48,6 +49,7 @@ except ImportError:  # direct installed/helper layout
 
     if str(_repo_root) not in sys.path:
         sys.path.insert(0, str(_repo_root))
+    from scripts.core.git_checkout import git_dir_at
     from scripts.runtime_bootstrap import runtime_root
 
 
@@ -55,12 +57,33 @@ def _fail(message: str) -> None:
     raise ValueError(f"lesson ledger writer: {message}")
 
 
+def _ceiling_directories() -> set[str]:
+    raw = os.environ.get("GIT_CEILING_DIRECTORIES", "")
+    ceilings: set[str] = set()
+    for entry in raw.split(os.pathsep):
+        entry = entry.strip()
+        if not entry:
+            continue
+        try:
+            ceilings.add(str(Path(entry).expanduser().resolve()))
+        except OSError:
+            continue
+    return ceilings
+
+
 def _repository_root(path: Path) -> Path | None:
+    # A bare `.git` name is not a repository: an empty or foreign marker
+    # (stray init, dotfiles above tmp) must not capture the walk. The
+    # checkout owner decides what counts. GIT_CEILING_DIRECTORIES bounds
+    # the ascent the same way it does for git discovery.
     resolved = path.expanduser().resolve()
-    return next(
-        (candidate for candidate in (resolved, *resolved.parents) if (candidate / ".git").exists()),
-        None,
-    )
+    ceilings = _ceiling_directories()
+    for candidate in (resolved, *resolved.parents):
+        if git_dir_at(candidate) is not None:
+            return candidate
+        if str(candidate) in ceilings:
+            break
+    return None
 
 
 def _lock_path(path: Path) -> Path:

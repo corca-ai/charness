@@ -102,14 +102,11 @@ def test_hold_out_retains_both_copies_when_the_worker_recreates_source(tmp_path:
     target.write_text("original\n", encoding="utf-8")
 
     with pytest.raises(support.RunReviewError, match="recreated a source path"):
-        with support.hold_out(tmp_path, ["in-progress.md"]):
+        with support.hold_out(tmp_path, ["in-progress.md"]) as staged:
             target.write_text("replacement\n", encoding="utf-8")
 
     assert target.read_text(encoding="utf-8") == "replacement\n"
-    from scripts.runtime_bootstrap import runtime_root
-
-    staged = list((runtime_root(tmp_path) / "scratch" / "critique-hold-out").glob("*/0-in-progress.md"))
-    assert len(staged) == 1
+    assert [path.name for path in staged] == ["0-in-progress.md"]
     assert staged[0].read_text(encoding="utf-8") == "original\n"
 
 
@@ -127,7 +124,6 @@ def test_new_run_owner_is_repo_relative_and_cleans_terminal_scratch(tmp_path: Pa
 
 def test_hold_out_keeps_original_when_restore_io_fails(tmp_path: Path, monkeypatch) -> None:
     import shutil
-    from scripts.runtime_bootstrap import runtime_root
 
     support = _support()
     target = tmp_path / "in-progress.md"
@@ -141,10 +137,9 @@ def test_hold_out_keeps_original_when_restore_io_fails(tmp_path: Path, monkeypat
 
     monkeypatch.setattr(shutil, "move", fail_restore)
     with pytest.raises(OSError, match="restore unavailable"):
-        with support.hold_out(tmp_path, ["in-progress.md"]):
+        with support.hold_out(tmp_path, ["in-progress.md"]) as staged:
             pass
-    staged = list((runtime_root(tmp_path) / "scratch" / "critique-hold-out").glob("*/0-in-progress.md"))
-    assert len(staged) == 1
+    assert [path.name for path in staged] == ["0-in-progress.md"]
     assert staged[0].read_text() == "original\n"
     receipt = json.loads((staged[0].parent / ".charness-owner.json").read_text())
     assert receipt["retention"] == "retained-evidence"

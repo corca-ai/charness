@@ -327,7 +327,10 @@ def test_writer_places_repository_lock_under_managed_runtime(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     repo = tmp_path / "repo"
-    (repo / ".git").mkdir(parents=True)
+    # A real administration directory, not a bare `.git` name: empty or
+    # foreign markers must not capture repository discovery.
+    (repo / ".git" / "objects").mkdir(parents=True)
+    (repo / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
     path = repo / "charness-artifacts" / "retro" / "lesson-ledger.json"
     path.parent.mkdir(parents=True)
     path.write_text("{}", encoding="utf-8")
@@ -339,6 +342,44 @@ def test_writer_places_repository_lock_under_managed_runtime(
 
     locks = list((runtime / "locks" / "lesson-ledger").glob("*.lock"))
     assert len(locks) == 1
+
+
+def test_repository_root_skips_a_bare_git_name(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An empty `.git` directory (stray init, dotfiles above tmp) is not a
+    repository and must not capture the upward walk. The ceiling keeps the
+    walk inside the fixture so an ambient ancestor repo cannot interfere."""
+    repo = tmp_path / "repo"
+    (repo / ".git").mkdir(parents=True)
+    target = repo / "charness-artifacts" / "retro" / "lesson-ledger.json"
+    target.parent.mkdir(parents=True)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(tmp_path))
+    assert writer._repository_root(target) is None
+
+
+def test_repository_root_stops_at_the_ceiling(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    outer = tmp_path / "outer"
+    (outer / ".git" / "objects").mkdir(parents=True)
+    (outer / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+    inner = outer / "inner"
+    target = inner / "lesson-ledger.json"
+    target.parent.mkdir(parents=True)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(inner))
+    assert writer._repository_root(target) is None
+
+
+def test_repository_root_finds_a_real_administration_directory(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".git" / "objects").mkdir(parents=True)
+    (repo / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+    target = repo / "nested" / "lesson-ledger.json"
+    target.parent.mkdir(parents=True)
+    assert writer._repository_root(target) == repo
 
 
 def test_writer_reports_open_acquire_and_release_failures(

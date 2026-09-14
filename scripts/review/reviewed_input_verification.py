@@ -79,6 +79,29 @@ def _load_identity():
     return module
 
 
+def _load_git_checkout():
+    """`git_dir_at` from the checkout that owns this file, never a namesake.
+
+    Same substitution discipline as `_load_identity`: this module can be
+    loaded by file path inside a consumer repo, where `scripts.core` may
+    resolve to the consumer's own package. The administration-directory
+    check decides repository boundaries, so it must come from this file's
+    own checkout.
+    """
+    target = Path(__file__).resolve().parents[1] / "core" / "git_checkout.py"
+    if target.is_file():
+        spec = importlib.util.spec_from_file_location("charness_git_checkout", target)
+        if spec is not None and spec.loader is not None:
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    from scripts.core import git_checkout as module  # noqa: PLC0415
+
+    return module
+
+
+_git_checkout = _load_git_checkout()
+
 _identity = _load_identity()
 
 ALGORITHM = _identity.ALGORITHM
@@ -324,8 +347,14 @@ def verify_artifact_binding(
             if (layout_root / fields.get("packet path", "")).is_file():
                 resolved_root = layout_root
         if resolved_root is None:
+            # A bare `.git` name is not a repository: an empty or foreign
+            # marker above the artifact must not capture the walk.
             resolved_root = next(
-                (parent for parent in artifact_path.resolve().parents if (parent / ".git").exists()),
+                (
+                    parent
+                    for parent in artifact_path.resolve().parents
+                    if _git_checkout.git_dir_at(parent) is not None
+                ),
                 None,
             )
         # Artifacts produced under the canonical `charness-artifacts/<kind>/`

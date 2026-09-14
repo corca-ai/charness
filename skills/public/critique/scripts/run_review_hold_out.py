@@ -30,7 +30,14 @@ def hold_out(
     *,
     resolve_path: Callable[..., Path],
     error_cls: type[Exception],
-) -> Iterator[None]:
+) -> Iterator[list[Path]]:
+    """Stage sources aside and yield their staged destinations.
+
+    The yielded destinations are the caller's stable handle: with several
+    owners sharing one scratch root, globbing the root cannot tell staged
+    files apart, so callers assert on these paths instead of counting the
+    directory.
+    """
     owner = owned_scratch(root, "critique-hold-out")
     with owner as staging_root:
         staging = Path(staging_root)
@@ -65,7 +72,7 @@ def hold_out(
                 moved.append((src, dest))
                 mapping["state"] = "moved"
                 owner.update(hold_out_paths=mappings)
-            yield
+            yield [dest for _, dest in moved]
         finally:
             collisions = [
                 (src, dest)
