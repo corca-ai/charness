@@ -5,24 +5,40 @@ from __future__ import annotations
 import shlex
 from pathlib import Path
 
-from scripts.mutation.mutation_baseline_abort_lib import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.mutation.mutation_baseline_abort_lib import (  # noqa: E402
     STAGE_SAMPLER_COVERAGE,
     log_tail_lines,
     parse_failed_nodeids,
     write_baseline_abort_marker,
 )
-from scripts.mutation.mutation_changed_files_lib import invalidate_changed_line_coverage_marker
-from scripts.mutation.mutation_outer_budget import (
+from scripts.mutation.mutation_changed_files_lib import (  # noqa: E402
+    invalidate_changed_line_coverage_marker,
+)
+from scripts.mutation.mutation_outer_budget import (  # noqa: E402
     InnerTimeoutExceedsOuterBudget,
     job_budget_from_env,
     resolve_exec_timeout_seconds,
 )
-from scripts.mutation.mutation_sampling_lib import (
+from scripts.mutation.mutation_sampling_lib import (  # noqa: E402
     CoverageCommandError,
     load_file_statement_lines,
     run_test_coverage,
 )
-from scripts.mutation.suggest_mutation_coverage_command import tests_referencing_paths
+from scripts.mutation.suggest_mutation_coverage_command import (  # noqa: E402
+    tests_referencing_paths,
+)
 
 DEFAULT_MAX_TEST_NODEIDS = 40
 SECONDS_PER_MUTANT = 45
