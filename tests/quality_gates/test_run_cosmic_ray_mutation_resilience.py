@@ -370,6 +370,52 @@ def test_main_full_returns_dump_failure_after_timeout(tmp_path: Path) -> None:
     restore_mock.assert_called_once()
 
 
+def test_main_full_skips_exec_when_outer_budget_is_gone(
+    tmp_path: Path, capsys
+) -> None:
+    repo = _full_repo(tmp_path)
+    argv = ["run_cosmic_ray_mutation.py", "--repo-root", str(repo), "--mode", "full"]
+    with (
+        patch.object(sys, "argv", argv),
+        patch.object(RCRM, "run"),
+        patch.object(RCRM, "_run_baseline"),
+        patch.object(
+            RCRM._outer,
+            "resolve_exec_timeout_seconds",
+            side_effect=RCRM._outer.InnerTimeoutExceedsOuterBudget("no budget left"),
+        ),
+        patch.object(RCRM, "_dump_session", return_value=0) as dump_mock,
+        patch.object(RCRM, "_restore_module_paths"),
+    ):
+        rc = RCRM.main()
+
+    assert rc == 2
+    dump_mock.assert_called_once()
+    assert "no budget left" in capsys.readouterr().out
+
+
+def test_main_full_reports_a_capped_exec_timeout(tmp_path: Path, capsys) -> None:
+    repo = _full_repo(tmp_path)
+    argv = ["run_cosmic_ray_mutation.py", "--repo-root", str(repo), "--mode", "full"]
+    with (
+        patch.object(sys, "argv", argv),
+        patch.object(RCRM, "run"),
+        patch.object(RCRM, "_run_baseline"),
+        patch.object(
+            RCRM._outer,
+            "resolve_exec_timeout_seconds",
+            return_value=(123, "capped exec timeout 9000s -> 123s"),
+        ),
+        patch.object(RCRM, "_run_exec_with_timeout", return_value=(False, 0)),
+        patch.object(RCRM, "_dump_session", return_value=0),
+        patch.object(RCRM, "_restore_module_paths"),
+    ):
+        rc = RCRM.main()
+
+    assert rc == 0
+    assert "capped exec timeout 9000s -> 123s" in capsys.readouterr().out
+
+
 def test_main_dry_run_does_not_restore(tmp_path: Path) -> None:
     repo = _full_repo(tmp_path)
     argv = ["run_cosmic_ray_mutation.py", "--repo-root", str(repo), "--mode", "dry-run"]

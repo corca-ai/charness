@@ -74,6 +74,14 @@ def test_job_budget_from_env_parses_and_ignores_junk() -> None:
     assert timeout is None
 
 
+def test_job_budget_from_env_ignores_a_bad_timeout_but_keeps_start() -> None:
+    start, timeout = job_budget_from_env(
+        {"MUTATION_JOB_START_EPOCH": "10", "MUTATION_JOB_TIMEOUT_SECONDS": "nope"}
+    )
+    assert start == 10
+    assert timeout is None
+
+
 def test_both_mutation_workflows_export_the_outer_budget_env() -> None:
     from tests.quality_gates.test_quality_mutation_testing import _mutation_workflow_copies
 

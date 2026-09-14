@@ -6,7 +6,9 @@ from pathlib import Path
 
 from scripts.mutation.mutation_sample_scope import (
     SECONDS_PER_MUTANT,
+    _load_repo_runtime_bootstrap,
     cap_mutants_to_remaining_job,
+    focused_statement_lines_for_changed_files,
     mapped_test_targets,
     mutation_test_command_for_sample,
     standing_pytest_command,
@@ -112,3 +114,75 @@ def test_cap_mutants_shrinks_to_remaining_job_budget(monkeypatch) -> None:
         lambda requested, **_kwargs: (900, None),
     )
     assert cap_mutants_to_remaining_job(120) == 900 // SECONDS_PER_MUTANT
+
+
+def test_cap_mutants_falls_back_to_one_when_budget_is_gone(monkeypatch) -> None:
+    from scripts.mutation.mutation_outer_budget import InnerTimeoutExceedsOuterBudget
+
+    monkeypatch.setattr(
+        "scripts.mutation.mutation_sample_scope.job_budget_from_env",
+        lambda: (1_000_000, 10_800),
+    )
+
+    def _raise(requested, **_kwargs):
+        raise InnerTimeoutExceedsOuterBudget("gone")
+
+    monkeypatch.setattr(
+        "scripts.mutation.mutation_sample_scope.resolve_exec_timeout_seconds", _raise
+    )
+    assert cap_mutants_to_remaining_job(120) == 1
+
+
+def test_focused_statement_lines_skips_empty_changed_paths(tmp_path: Path) -> None:
+    assert (
+        focused_statement_lines_for_changed_files(
+            repo_root=tmp_path,
+            changed_paths=[],
+            coverage_json=tmp_path / "coverage.json",
+            baseline_abort_marker_path=tmp_path / "abort.json",
+            max_test_nodeids=40,
+        )
+        == {}
+    )
+
+
+def test_focused_statement_lines_skips_when_nothing_maps(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        "scripts.mutation.mutation_sample_scope.tests_referencing_paths",
+        lambda repo_root, paths: {},
+    )
+    assert (
+        focused_statement_lines_for_changed_files(
+            repo_root=tmp_path,
+            changed_paths=["scripts/a.py"],
+            coverage_json=tmp_path / "coverage.json",
+            baseline_abort_marker_path=tmp_path / "abort.json",
+            max_test_nodeids=40,
+        )
+        == {}
+    )
+
+
+def test_mapped_test_targets_dedupes_shared_targets(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        "scripts.mutation.mutation_sample_scope.tests_referencing_paths",
+        lambda repo_root, paths: {
+            "scripts/a.py": ["tests/test_shared.py"],
+            "scripts/b.py": ["tests/test_shared.py"],
+        },
+    )
+    assert mapped_test_targets(
+        tmp_path, ["scripts/a.py", "scripts/b.py"], limit=40
+    ) == ["tests/test_shared.py"]
+
+
+def test_bootstrap_reinserts_repo_root_when_missing(monkeypatch) -> None:
+    import sys
+
+    kept = [p for p in sys.path if p not in (str(ROOT), "")]
+    monkeypatch.setattr(sys, "path", kept)
+    assert str(ROOT) not in sys.path
+    _load_repo_runtime_bootstrap()
+    assert str(ROOT) in sys.path
