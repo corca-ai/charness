@@ -186,3 +186,34 @@ def test_bootstrap_reinserts_repo_root_when_missing(monkeypatch) -> None:
     assert str(ROOT) not in sys.path
     _load_repo_runtime_bootstrap()
     assert str(ROOT) in sys.path
+
+
+def test_focused_statement_lines_exports_only_changed_paths(
+    tmp_path: Path, monkeypatch
+) -> None:
+    captured: dict = {}
+    sentinel = {"scripts/a.py": ({1}, {2})}
+
+    def fake_probe(repo_root, command, coverage_json, **kwargs):
+        captured.update(kwargs)
+
+    monkeypatch.setattr(
+        "scripts.mutation.mutation_sample_scope.run_test_coverage", fake_probe
+    )
+    monkeypatch.setattr(
+        "scripts.mutation.mutation_sample_scope.load_file_statement_lines",
+        lambda repo_root, coverage_json: sentinel,
+    )
+    monkeypatch.setattr(
+        "scripts.mutation.mutation_sample_scope.tests_referencing_paths",
+        lambda repo_root, paths: {"scripts/a.py": ["tests/test_a.py"]},
+    )
+    result = focused_statement_lines_for_changed_files(
+        repo_root=tmp_path,
+        changed_paths=["scripts/a.py"],
+        coverage_json=tmp_path / "coverage.json",
+        baseline_abort_marker_path=tmp_path / "abort.json",
+        max_test_nodeids=40,
+    )
+    assert result is sentinel
+    assert captured["include_paths"] == ["scripts/a.py"]

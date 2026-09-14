@@ -65,3 +65,27 @@ def test_run_test_coverage_failure_raises_with_captured_output(tmp_path: Path) -
 
     combined = f"{excinfo.value.output or ''}{excinfo.value.stderr or ''}"
     assert "test_always_red" in combined
+
+
+def test_run_test_coverage_forwards_include_paths(tmp_path: Path, monkeypatch) -> None:
+    from types import SimpleNamespace
+
+    import scripts.mutation.mutation_sampling_lib as lib
+
+    captured: dict = {}
+
+    def fake_phase(command, **_kwargs):
+        return SimpleNamespace(stdout="", stderr="", returncode=0)
+
+    def fake_combine(repo_root, rcfile, data_file, coverage_json, env, **kwargs):
+        captured.update(kwargs)
+
+    monkeypatch.setattr(lib, "run_monitored_phase", fake_phase)
+    monkeypatch.setattr(lib, "combine_and_export_coverage", fake_combine)
+    run_test_coverage(
+        tmp_path,
+        "python3 -m pytest -q tests",
+        tmp_path / "coverage.json",
+        include_paths=["scripts/a.py"],
+    )
+    assert captured["include_paths"] == ["scripts/a.py"]

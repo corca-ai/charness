@@ -90,7 +90,13 @@ def focused_statement_lines_for_changed_files(
         return {}
     command = standing_pytest_command(targets)
     try:
-        run_test_coverage(repo_root, command, coverage_json, dynamic_context=False)
+        run_test_coverage(
+            repo_root,
+            command,
+            coverage_json,
+            dynamic_context=False,
+            include_paths=changed_paths,
+        )
     except CoverageCommandError as exc:
         combined_output = f"{exc.output or ''}{exc.stderr or ''}"
         failing_nodeids = parse_failed_nodeids(combined_output)

@@ -264,7 +264,12 @@ def prepare_plain_coverage(
 
 
 def run_test_coverage(
-    repo_root: Path, test_command: str, coverage_json: Path, *, dynamic_context: bool = False
+    repo_root: Path,
+    test_command: str,
+    coverage_json: Path,
+    *,
+    dynamic_context: bool = False,
+    include_paths: Sequence[str] | None = None,
 ) -> None:
     data_file, rcfile, sitecustomize_dir = _write_coverage_config(
         repo_root, coverage_json, dynamic_context=dynamic_context
@@ -291,7 +296,13 @@ def run_test_coverage(
     )
     sys.stdout.flush()
     combine_and_export_coverage(
-        repo_root, rcfile, data_file, coverage_json, env, show_contexts=dynamic_context
+        repo_root,
+        rcfile,
+        data_file,
+        coverage_json,
+        env,
+        show_contexts=dynamic_context,
+        include_paths=list(include_paths) if include_paths else None,
     )
 
 
