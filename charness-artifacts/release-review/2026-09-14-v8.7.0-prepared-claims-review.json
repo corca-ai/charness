@@ -1,0 +1,50 @@
+{
+  "schema_version": "charness.release.claims-review.v4",
+  "prepared_commit": "1d51de8a661805505794be554b478f0ced510b46",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "a484b93fc0809f38fe41951e11dfc6df07eab44a1f85f0f4361cea2073a82e73",
+  "target_version": "8.7.0",
+  "tag_name": "v8.7.0",
+  "verdict": "pass",
+  "preparer_context": "release helper prepare phase for 8.7.0 (Release charness 8.7.0, prepared commit 1d51de8a)",
+  "reviewer_context": "parent agent; prepared the release lane; wrote the claims narrative",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "distinct read-only subagent v870-claims-review audited every record assertion independently: PASS on all 8 checks plus one completeness note (see charness-artifacts/release-review/2026-09-14-v8.7.0-claims.md)",
+    "review_artifact": "charness-artifacts/release-review/2026-09-14-v8.7.0-claims.md"
+  },
+  "review_scope": {
+    "blocking_paths": [
+      ".claude-plugin/marketplace.json",
+      "charness",
+      "charness-artifacts/critique/v870-muse-executor-release-critique.md",
+      "charness-artifacts/probe/2026-09-14-v8.6.5-release-observer.json",
+      "charness-artifacts/release-review/2026-09-14-v8.6.5-prepared-claims-review.json",
+      "charness-artifacts/release/.8.6.5-prepush-quality.json.charness-receipt.json",
+      "charness-artifacts/release/8.6.5-prepush-quality.json",
+      "charness-artifacts/release/latest.md",
+      "docs/agent-task-runs.md",
+      "docs/cli-reference.md",
+      "packaging/charness.json",
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_contract.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "scripts/task_run/task_run_plan.py",
+      "scripts/task_run/task_run_runtime.py",
+      "scripts/task_run/task_run_support.py",
+      "tests/charness_cli/test_task_run.py",
+      "tests/charness_cli/test_task_run_muse_executor.py"
+    ],
+    "advisory_paths": [
+      "charness-artifacts/release-review/2026-09-14-v8.6.5-claims.md"
+    ]
+  },
+  "scope_basis": {
+    "base_ref": "refs/tags/v8.6.5",
+    "changed_paths_sha256": "423e8ffcbc232baa402423fa6850c2127a4db8a7b7f98ded6541db36a4fd2e44",
+    "changed_path_count": 20
+  },
+  "advisory_findings": [
+    "timing and quality exit-0 claims rely on helper self-report; observer did not re-run the quality gate"
+  ]
+}
