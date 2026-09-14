@@ -96,7 +96,7 @@ def discoverable(repo_root: Path) -> bool:
         return False
     if _is_bare(root):
         return True
-    return any(git_dir_at(candidate) is not None for candidate in (root, *root.parents))
+    return any(git_dir_at(candidate) is not None for candidate in ancestors_until_ceiling(root))
 
 
 def local_checkout(repo_root: Path) -> bool:
@@ -174,7 +174,9 @@ def worktree_root_from_files(repo_root: Path) -> Path | None:
         return None
     if git_dir_at(root) is not None or _is_bare(root):
         return root
-    for candidate in root.parents:
+    for candidate in ancestors_until_ceiling(root):
+        if candidate == root:
+            continue  # decided above; the walk never excludes its start
         if git_dir_at(candidate) is not None:
             return candidate
     return None

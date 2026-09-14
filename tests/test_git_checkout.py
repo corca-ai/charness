@@ -112,3 +112,48 @@ def test_ancestors_until_ceiling_still_yields_the_starting_directory(
     outer.mkdir(parents=True)
     monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(outer))
     assert next(iter(checkout.ancestors_until_ceiling(outer))) == outer
+
+
+def _make_repo(root: Path) -> Path:
+    (root / ".git" / "objects").mkdir(parents=True)
+    (root / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+    return root.resolve()
+
+
+def test_discoverable_ignores_a_repository_at_the_ceiling(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    outer = _make_repo(tmp_path / "outer")
+    start = outer / "inner"
+    start.mkdir(parents=True)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(outer))
+    assert checkout.discoverable(start) is False
+
+
+def test_discoverable_ignores_a_repository_above_the_ceiling(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _make_repo(tmp_path / "outer")
+    middle = tmp_path / "outer" / "middle"
+    start = middle / "inner"
+    start.mkdir(parents=True)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(middle.resolve()))
+    assert checkout.discoverable(start) is False
+
+
+def test_discoverable_finds_a_repository_at_the_starting_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _make_repo(tmp_path / "outer")
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(repo))
+    assert checkout.discoverable(repo) is True
+
+
+def test_worktree_root_from_files_stops_before_a_repository_at_the_ceiling(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    outer = _make_repo(tmp_path / "outer")
+    start = outer / "inner"
+    start.mkdir(parents=True)
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(outer))
+    assert checkout.worktree_root_from_files(start) is None
