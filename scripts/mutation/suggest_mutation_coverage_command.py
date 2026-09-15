@@ -323,13 +323,17 @@ def _candidate_module_sources(repo_root: Path) -> list[str]:
 
 def tests_referencing_paths(repo_root: Path, changed_paths: list[str]) -> dict[str, list[str]]:
     source_text: dict[str, str] = {}
-    for source_path in [*_candidate_test_sources(repo_root), *_candidate_module_sources(repo_root)]:
+    candidate_modules = _candidate_module_sources(repo_root)
+    for source_path in [*_candidate_test_sources(repo_root), *candidate_modules]:
         if source_path in source_text:
             continue
         try:
             source_text[source_path] = (repo_root / source_path).read_text(encoding="utf-8")
         except OSError:
             continue
+    stem_counts: dict[str, int] = {}
+    for module_path in candidate_modules:
+        stem_counts[Path(module_path).stem] = stem_counts.get(Path(module_path).stem, 0) + 1
     test_sources = _test_source_closures(source_text)
     module_paths = _module_name_to_path(list(source_text))
     loader_tokens = {
@@ -387,7 +391,22 @@ def tests_referencing_paths(repo_root: Path, changed_paths: list[str]) -> dict[s
                 and changed_path
                 in _local_import_paths(test_path, source_text[test_path], module_paths)
             }
-            matches[changed_path] = sorted(direct) + sorted(all_found - direct)
+            rest = all_found - direct
+            # A stem-only reference (loader token or bare path string with no
+            # directory) matches every same-stem module in the repo. When the
+            # stem is genuinely ambiguous, those matches spend the capped
+            # budget last: a test carrying the full path still sorts ahead,
+            # and recall is unchanged (F1).
+            ambiguous = stem_counts.get(Path(changed_path).stem, 0) > 1
+            stem_only = {
+                test_path
+                for test_path in rest
+                if ambiguous
+                and changed_path not in source_text.get(test_path, "")
+            }
+            matches[changed_path] = (
+                sorted(direct) + sorted(rest - stem_only) + sorted(stem_only)
+            )
     # Tier order (direct importers, then the rest) is the contract; do not
     # re-sort here.
     return {path: paths for path, paths in matches.items() if paths}

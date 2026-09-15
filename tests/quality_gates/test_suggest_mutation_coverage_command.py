@@ -437,6 +437,35 @@ def test_direct_importers_sort_before_transitive_matches(tmp_path: Path) -> None
     }
 
 
+def test_ambiguous_stem_matches_spend_budget_last(tmp_path: Path) -> None:
+    """A stem-only reference matching two same-stem modules sorts last (F1).
+
+    Static imports stay path-precise (only `one/shared.py` claims the direct
+    importer); the stem-only loader reference still maps both modules
+    (recall unchanged) but behind any test carrying the full path.
+    """
+    repo = install_committed_repo(
+        tmp_path / "repo",
+        {
+            "scripts/one/shared.py": "VALUE = 1\n",
+            "scripts/two/shared.py": "VALUE = 2\n",
+            "tests/test_one.py": (
+                "from scripts.one import shared\n\n\ndef test_one():\n    assert shared.VALUE == 1\n"
+            ),
+            "tests/test_loader.py": (
+                'MODULE = load_local_skill_module(str(ROOT / "shared.py"), "shared_lib")\n'
+            ),
+        },
+        message="base",
+    )
+    assert sugg.tests_referencing_paths(
+        repo, ["scripts/one/shared.py", "scripts/two/shared.py"]
+    ) == {
+        "scripts/one/shared.py": ["tests/test_one.py", "tests/test_loader.py"],
+        "scripts/two/shared.py": ["tests/test_loader.py"],
+    }
+
+
 def test_a_path_in_both_source_sets_is_read_once(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
