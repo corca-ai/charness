@@ -150,6 +150,8 @@ def test_task_run_muse_executor_uses_prompt_file_and_high_effort(
     assert payload["executor"]["model"] == "default"
     assert payload["executor"]["timeout_scope"] == "muse-exec"
     assert "codex" not in payload
+    assert payload["workspace"] == payload["worktree_path"]
+    assert "writable_dirs" not in payload
     args = captured_args.read_text(encoding="utf-8").splitlines()
     workspaces = [args[index + 1] for index, arg in enumerate(args) if arg == "--workspace"]
     assert workspaces == [payload["worktree_path"]]
