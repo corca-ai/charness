@@ -1,0 +1,70 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: '8.7.1 release content, all prior findings closed: F1 ambiguous-stem tiering
+  with negative control, F2 lane roundtrip probe, F3 bound receipts, delegation claim
+  narrowed to observed log lines; full quality green except this artifact conformance
+  item'
+attempt_id: review-20260915T115159Z-2789777
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 1ecf36ebaf5e6a92089c41a67e5fb87f40f7b882930bb08c36b251435939464a
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-3eb1a1b1c30dde3c2db5944cbafe19d1/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-3eb1a1b1c30dde3c2db5944cbafe19d1/delivery.json
+producer_run_id: run-review-20260915T115159Z-2789777
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-3eb1a1b1c30dde3c2db5944cbafe19d1/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-3eb1a1b1c30dde3c2db5944cbafe19d1/receipt.json
+  producer_run_id: run-review-20260915T115159Z-2789777
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: defer
+receipt_provenance_ok: true
+findings_identity: 8876e01c4e745716a4fb9b9f30cd0fa036e70f1c6256c1d724221f32f0251962
+receipt_output_sha256: 8876e01c4e745716a4fb9b9f30cd0fa036e70f1c6256c1d724221f32f0251962
+packet_identity: 4874243f76f1435c86d7817269fea5cb50c8fec7fa9236125cd56ee5954a72b1
+reviewed_input_identity: 274c0fb34056a25c1cc36f78cd5ff6cf02404f0f6682fdb806a767de8a5c05a6
+parent_receipt_identity: parent-5332f3e6574df4504e5a445850b57f2dfb78fa9987c1434a
+provenance:
+  scope: '8.7.1 release content, all prior findings closed: F1 ambiguous-stem tiering
+    with negative control, F2 lane roundtrip probe, F3 bound receipts, delegation
+    claim narrowed to observed log lines; full quality green except this artifact
+    conformance item'
+  packet_identity: 4874243f76f1435c86d7817269fea5cb50c8fec7fa9236125cd56ee5954a72b1
+  reviewed_input_identity: 274c0fb34056a25c1cc36f78cd5ff6cf02404f0f6682fdb806a767de8a5c05a6
+  parent_receipt_identity: parent-5332f3e6574df4504e5a445850b57f2dfb78fa9987c1434a
+  attempt_id: review-20260915T115159Z-2789777
+  attempt_scope: '8.7.1 release content, all prior findings closed: F1 ambiguous-stem
+    tiering with negative control, F2 lane roundtrip probe, F3 bound receipts, delegation
+    claim narrowed to observed log lines; full quality green except this artifact
+    conformance item'
+  attempt_packet_identity: 4874243f76f1435c86d7817269fea5cb50c8fec7fa9236125cd56ee5954a72b1
+  attempt_parent_receipt_identity: parent-5332f3e6574df4504e5a445850b57f2dfb78fa9987c1434a
+  result_packet_identity: 4874243f76f1435c86d7817269fea5cb50c8fec7fa9236125cd56ee5954a72b1
+  result_reviewed_input_identity: 274c0fb34056a25c1cc36f78cd5ff6cf02404f0f6682fdb806a767de8a5c05a6
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 1ecf36ebaf5e6a92089c41a67e5fb87f40f7b882930bb08c36b251435939464a
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''defer'''
+partial_output_reason: worker did not preserve partial output bytes

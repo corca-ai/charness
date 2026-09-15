@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "review-20260915T115159Z-2789777",
+      "scope": "8.7.1 release content, all prior findings closed: F1 ambiguous-stem tiering with negative control, F2 lane roundtrip probe, F3 bound receipts, delegation claim narrowed to observed log lines; full quality green except this artifact conformance item",
+      "packet_identity": "4874243f76f1435c86d7817269fea5cb50c8fec7fa9236125cd56ee5954a72b1",
+      "parent_receipt_identity": "parent-5332f3e6574df4504e5a445850b57f2dfb78fa9987c1434a",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-15T02:52:45Z",
+      "history": [
+        {
+          "event_id": "4c1ba271857544f0aafe39ecaf20e04f",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-15T02:51:59Z",
+          "attempt_id": "review-20260915T115159Z-2789777",
+          "scope": "8.7.1 release content, all prior findings closed: F1 ambiguous-stem tiering with negative control, F2 lane roundtrip probe, F3 bound receipts, delegation claim narrowed to observed log lines; full quality green except this artifact conformance item",
+          "packet_identity": "4874243f76f1435c86d7817269fea5cb50c8fec7fa9236125cd56ee5954a72b1",
+          "parent_receipt_identity": "parent-5332f3e6574df4504e5a445850b57f2dfb78fa9987c1434a",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "738eeeacff6e4fc680f8dbf7f35fd7d0",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-15T02:51:59Z",
+          "attempt_id": "review-20260915T115159Z-2789777",
+          "scope": "8.7.1 release content, all prior findings closed: F1 ambiguous-stem tiering with negative control, F2 lane roundtrip probe, F3 bound receipts, delegation claim narrowed to observed log lines; full quality green except this artifact conformance item",
+          "packet_identity": "4874243f76f1435c86d7817269fea5cb50c8fec7fa9236125cd56ee5954a72b1",
+          "parent_receipt_identity": "parent-5332f3e6574df4504e5a445850b57f2dfb78fa9987c1434a",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "97d458f4b18c41ea9100076c3ebb5d2f",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-15T02:52:45Z",
+          "attempt_id": "review-20260915T115159Z-2789777",
+          "scope": "8.7.1 release content, all prior findings closed: F1 ambiguous-stem tiering with negative control, F2 lane roundtrip probe, F3 bound receipts, delegation claim narrowed to observed log lines; full quality green except this artifact conformance item",
+          "packet_identity": "4874243f76f1435c86d7817269fea5cb50c8fec7fa9236125cd56ee5954a72b1",
+          "parent_receipt_identity": "parent-5332f3e6574df4504e5a445850b57f2dfb78fa9987c1434a",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "8876e01c4e745716a4fb9b9f30cd0fa036e70f1c6256c1d724221f32f0251962"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "274c0fb34056a25c1cc36f78cd5ff6cf02404f0f6682fdb806a767de8a5c05a6",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "1ecf36ebaf5e6a92089c41a67e5fb87f40f7b882930bb08c36b251435939464a",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/review-20260915T115159Z-2789777/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/review-20260915T115159Z-2789777/receipt.json",
+      "producer_run_id": "run-review-20260915T115159Z-2789777",
+      "findings_identity": "8876e01c4e745716a4fb9b9f30cd0fa036e70f1c6256c1d724221f32f0251962"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "real-but-temporary",
+      "concern": "The only full-quality failure is the artifact currently being resolved, not a reported code regression.",
+      "disposition": "This supports deferral rather than a substantive code-change block, but a known red gate cannot serve as release approval."
+    },
+    {
+      "bin": "closed-by-bounded-evidence",
+      "concern": "Prior findings F1-F3 and the delegation-claim narrowing may need reopening.",
+      "disposition": "The supplied code, tests, documentation, and lane receipt show the declared closures; no distinct regression warranting reopening was found in the semantic input."
+    }
+  ],
+  "findings": [
+    {
+      "action": "Produce the conforming critique artifact, rerun the complete release-quality gate and required full Stryker verification against the resulting final content head, and bind passing receipts before approving the release.",
+      "evidence": [
+        "The verification receipt records `full_release_quality.result` as `exit 1; 9839 passed, 1 failed`.",
+        "The receipt identifies the sole failure as typed-value conformance of `v871-release-critique.md`, the artifact item under resolution.",
+        "The Stryker full result is labeled `earlier_run`, and its note explicitly requires a rerun at release time after any tree change.",
+        "Only the Stryker dry run and the 227-test suite are recorded as passing at the bound head."
+      ],
+      "id": "F4-final-release-verification-outstanding",
+      "severity": "high",
+      "summary": "The bound receipts do not establish a green final release-quality run at the reviewed content head, so release approval must wait."
+    }
+  ],
+  "kind": "charness.bounded_review.v1",
+  "lens": "release critique",
+  "next_move": "Regenerate the artifact with this bounded result, then rerun and bind the final full release-quality and full mutation checks at the final content head.",
+  "non_claims": [
+    "This review does not approve the 8.7.1 release while final verification remains red or stale.",
+    "This review does not infer results from the current workspace or from hashes alone.",
+    "This review does not claim delegation was exercised during the Muse lane probe.",
+    "This review does not reopen the previously closed F1-F3 findings."
+  ],
+  "packet_sha256": "4874243f76f1435c86d7817269fea5cb50c8fec7fa9236125cd56ee5954a72b1",
+  "reviewed_input_identity_sha256": "274c0fb34056a25c1cc36f78cd5ff6cf02404f0f6682fdb806a767de8a5c05a6",
+  "target_observations": null,
+  "verdict": "defer"
+}
