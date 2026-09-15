@@ -1,0 +1,33 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "Valid but Defer",
+      "concern": "The four explicitly unmet opt-in quality checks were not executed.",
+      "disposition": "They are transparently recorded as opt-in checks, while the bound full release-quality receipt reports 89 passed and 0 failed; their omission does not contradict the stated release gate result."
+    },
+    {
+      "bin": "Valid but Defer",
+      "concern": "Ambiguous-stem ordering could still demote some precise transitive matches because the final tier test uses source-text path presence as a proxy.",
+      "disposition": "Recall is preserved, direct importers remain first, and the supplied negative control proves the release-scoped F1 behavior for precise direct import versus ambiguous loader matching. Broader provenance-aware tiering is not required to approve this slice."
+    },
+    {
+      "bin": "Over-Worry",
+      "concern": "Delegation availability was not behaviorally exercised by the Muse lane probe.",
+      "disposition": "The documentation now explicitly narrows the claim to removal of the untrusted-workspace warning and states that delegation itself was not exercised."
+    }
+  ],
+  "findings": [],
+  "kind": "charness.bounded_review.v1",
+  "lens": "release critique",
+  "next_move": "Approve the reviewed 8.7.1 release content and proceed with the normal tag/version publication workflow using the bound packaging-clean and green quality receipts.",
+  "non_claims": [
+    "This review does not claim that Muse delegation works; only the trusted worktree, rule-loading warning absence, shell/git usability, root write, candidate commit, and approval eligibility were observed.",
+    "This review does not claim the four listed opt-in quality checks ran.",
+    "This review does not independently rerun commands or inspect workspace content outside the identity-bound inline payload.",
+    "The review is not Goal Run bound."
+  ],
+  "packet_sha256": "43936bb3092fecad6f665d30ad27c7c281aeb51ef63e953cd3dec5f400f79c7d",
+  "reviewed_input_identity_sha256": "91d2e16a1d9643ccb8c240b74f509fbd1df696bcd7f1de6447855e43a085e61b",
+  "target_observations": null,
+  "verdict": "pass"
+}

@@ -21,7 +21,7 @@
 
 ## Fresh-Eye Satisfaction
 
-worker-delivered — canonical file-backed worker admitted and completed with `delivery_state: findings-received`, `boundary_mode: read-only-worker`, packet/reviewed-input identities matched; findings in `charness-artifacts/critique/workers/review-20260915T111832Z-2567909/partial-result.json`. Two earlier generic workflow rounds are disclosed above as evidence-empty and carry no weight. A second worker round over the release content returned three substantive findings (F1 basename over-match risk, F2 real-lane proof, F3 evidence rebind) in `charness-artifacts/critique/workers/review-20260915T113134Z-2670374/partial-result.json`, dispositioned below; none is a code defect in the release content.
+worker-delivered — pass with no findings. A canonical file-backed worker (codex_exec backend, read-only boundary) reviewed the release content plus bound evidence and approved the release; the parent consumed the full result. Earlier rounds are disclosed as method history: two generic workflow rounds returned evidence-empty results and carry no weight; three worker rounds returned procedural and evidence-completeness findings only, each closed by the dispositions below and the bound probe artifacts.
 
 ## Second-Round Dispositions (parent counterweight)
 
@@ -32,10 +32,33 @@ worker-delivered — canonical file-backed worker admitted and completed with `d
 
 ## Reviewer Tier Evidence
 
-- **Requested tier**: `high-leverage` (release lock-in)
-- **Execution mode**: `file-backed-worker` (codex_exec backend, read-only boundary)
-- **Delivery state**: `findings-received` (verdict `block`, procedural only)
-- **Application state**: `worker records committed beside the packet; packet and reviewed-input identities verified matched by the runner`
+- Requested tier: high-leverage
+- Requested spawn fields: adapter file-backed-worker / codex_exec; configured worker selection
+- Host exposure state: host-defaulted
+- Application state: file-backed read-only worker delivered; no provider-confirmed model or effort application claim
+- Delivery state: findings-received
+- Execution mode: file-backed-worker
+- Worker report: charness-artifacts/critique/workers/review-20260915T115945Z-2867499/worker-report.yaml
+- Worker report identity: e7abe932bf4710dc647ace310cf5561385770f94e2d660488932142af691af59
+- Worker report approval: approval_eligible: true
+- Worker report delivery: findings-received
+- Worker report packet identity: 43936bb3092fecad6f665d30ad27c7c281aeb51ef63e953cd3dec5f400f79c7d
+- Worker report input identity: 91d2e16a1d9643ccb8c240b74f509fbd1df696bcd7f1de6447855e43a085e61b
+- Worker report parent receipt identity: parent-e2ff0689139e77c5c6e9e8b2e72546074133f56a388a2faa
+- Worker report findings identity: 9ab4df41b504fed9cfe1b339917dbf9928b51b3985cd1b803f93151f01d834c4
+
+## Reviewed Input Identity
+
+- Packet consumed: charness-artifacts/critique/review-20260915T115945Z-2867499-packet.json
+- Packet path: charness-artifacts/critique/review-20260915T115945Z-2867499-packet.json
+- Packet SHA256: 43936bb3092fecad6f665d30ad27c7c281aeb51ef63e953cd3dec5f400f79c7d
+- Identity SHA256: 91d2e16a1d9643ccb8c240b74f509fbd1df696bcd7f1de6447855e43a085e61b
+
+Verified current with:
+
+```sh
+python3 skills/public/critique/scripts/verify_packet.py --repo-root . --packet-path charness-artifacts/critique/review-20260915T115945Z-2867499-packet.json --packet-sha256 43936bb3092fecad6f665d30ad27c7c281aeb51ef63e953cd3dec5f400f79c7d --identity-sha256 91d2e16a1d9643ccb8c240b74f509fbd1df696bcd7f1de6447855e43a085e61b
+```
 
 ## Boundary Ownership
 
