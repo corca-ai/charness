@@ -1,0 +1,73 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: '8.7.2 final approval round: prepared 8.7.2 surfaces, passing claims review,
+  resume pytest-release at the publish candidate (9846 passed, single failure is the
+  critique artifact''s own typed conformance under repair, no code defect), focused
+  task_run 157 passed and changed-line PASS at the fix head; close or confirm round-2
+  finding final-candidate-verification-not-bound'
+attempt_id: review-20260915T132114Z-3697960
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 62ecced0c92ef623a87100d05b06db4b8e2d34f5e662666dc992586e3f065f7c
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-f83296d489b91bbe29952a92ca2ea7ef/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-f83296d489b91bbe29952a92ca2ea7ef/delivery.json
+producer_run_id: run-review-20260915T132114Z-3697960
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-f83296d489b91bbe29952a92ca2ea7ef/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-f83296d489b91bbe29952a92ca2ea7ef/receipt.json
+  producer_run_id: run-review-20260915T132114Z-3697960
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 06f9ab3101b25a58b80fe382d9cfbeaf3f07f1292261f603276a5583f0067b00
+receipt_output_sha256: 06f9ab3101b25a58b80fe382d9cfbeaf3f07f1292261f603276a5583f0067b00
+packet_identity: 4ac130681260b9717aa964a40b74c4339d34f3cc5ba561b4d0e5f0430d54d953
+reviewed_input_identity: 4032be6cc16888fd18890777efea0a874fce366b3cf8e9a9f47554ca8708991e
+parent_receipt_identity: parent-7f0b23e44f579875603e98e1e761dd49447fa6a3d135adbb
+provenance:
+  scope: '8.7.2 final approval round: prepared 8.7.2 surfaces, passing claims review,
+    resume pytest-release at the publish candidate (9846 passed, single failure is
+    the critique artifact''s own typed conformance under repair, no code defect),
+    focused task_run 157 passed and changed-line PASS at the fix head; close or confirm
+    round-2 finding final-candidate-verification-not-bound'
+  packet_identity: 4ac130681260b9717aa964a40b74c4339d34f3cc5ba561b4d0e5f0430d54d953
+  reviewed_input_identity: 4032be6cc16888fd18890777efea0a874fce366b3cf8e9a9f47554ca8708991e
+  parent_receipt_identity: parent-7f0b23e44f579875603e98e1e761dd49447fa6a3d135adbb
+  attempt_id: review-20260915T132114Z-3697960
+  attempt_scope: '8.7.2 final approval round: prepared 8.7.2 surfaces, passing claims
+    review, resume pytest-release at the publish candidate (9846 passed, single failure
+    is the critique artifact''s own typed conformance under repair, no code defect),
+    focused task_run 157 passed and changed-line PASS at the fix head; close or confirm
+    round-2 finding final-candidate-verification-not-bound'
+  attempt_packet_identity: 4ac130681260b9717aa964a40b74c4339d34f3cc5ba561b4d0e5f0430d54d953
+  attempt_parent_receipt_identity: parent-7f0b23e44f579875603e98e1e761dd49447fa6a3d135adbb
+  result_packet_identity: 4ac130681260b9717aa964a40b74c4339d34f3cc5ba561b4d0e5f0430d54d953
+  result_reviewed_input_identity: 4032be6cc16888fd18890777efea0a874fce366b3cf8e9a9f47554ca8708991e
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 62ecced0c92ef623a87100d05b06db4b8e2d34f5e662666dc992586e3f065f7c
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

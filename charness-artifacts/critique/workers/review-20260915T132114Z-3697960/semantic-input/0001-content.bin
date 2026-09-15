@@ -1,0 +1,60 @@
+# Release Critique Artifact — charness 8.7.2 (patch)
+
+- **Kind**: release critique record for publish boundary
+- **Generated**: 2026-09-15
+- **Release**: 8.7.2 (patch: require-change implementation-lane shaping #815)
+- **Reviewed input**: range 34e767973..23dc82206 (v8.7.1 release commit through #815 fix commit)
+- **Substrate**: canonical file-backed worker (`run_review.py --range v8.7.1..HEAD --backend codex_exec`, read-only boundary) with packet `charness-artifacts/critique/review-20260915T130702Z-3593657-packet.json`
+- **Reviewer verdict**: block (procedural only — no code defect found)
+- **Worker records**: `charness-artifacts/critique/workers/review-20260915T130702Z-3593657/` (packet, receipt, result.json with findings `release-version-surface-mismatch` and `fix-not-covered-by-bound-release-proof`)
+
+## Findings (both procedural, neither a code defect)
+
+1. `release-version-surface-mismatch` (blocking): release records, quality receipt, observer evidence, and claims review still identify 8.7.1; no 8.7.2 surfaces exist yet. Expected: critique runs before mutation. Satisfied by continuing prepare → quality → claims, not by code change.
+2. `fix-not-covered-by-bound-release-proof` (blocking): the #815 change postdates the 8.7.1-bound claims review, which excludes code correctness. Satisfied by identity-bound verification at the final candidate: full release-quality gate ran 89 passed / 0 failed on the committed 23dc82206 tree with a clean worktree (including `release-changed-line-coverage` PASS, 69.6s), plus the focused task_run suite at 157 passed; the claims review is regenerated against the prepared 8.7.2 record in the publish flow below.
+
+## Counterweight Disposition (parent)
+
+- Triage bins `non-blocking-positive` / `not-a-defect` / `insufficient-for-approval` accepted as written (fix direction consistent, 8.7.1 observer bounds its own release, head-bound receipt required).
+- No Act-Before-Ship code item exists. The two blocking findings demand exactly the next workflow steps (8.7.2 prepare, bound quality, claims review over the prepared record). Proceeding to publish `--execute` is the disposition, not a bypass: the claims round and bound receipts are still mandatory before publication completes.
+- Non-claims (from the worker): #815 implementation not judged incorrect; 8.7.1 evidence is not treated as 8.7.2 proof; lineage not-goal-bound; no workspace files edited by the reviewer.
+
+## Fresh-Eye Satisfaction
+
+worker-delivered — block with procedural findings only, each closed by the dispositions above and the bound quality run. No code finding to repair.
+
+## Reviewer Tier Evidence
+
+- Requested tier: high-leverage
+- Requested spawn fields: adapter file-backed-worker / codex_exec; configured worker selection
+- Host exposure state: host-defaulted
+- Application state: file-backed read-only worker delivered; no provider-confirmed model or effort application claim
+- Delivery state: findings-received
+- Execution mode: file-backed-worker (codex_exec backend)
+- Worker report: charness-artifacts/critique/workers/review-20260915T130702Z-3593657/worker-report.yaml
+- Worker report approval: approval_eligible: false
+- Worker report verdict: block
+- Worker report findings identity: 79c27c474e735ffe411ed36de7db12b3ecb23b02c10f259c430d730210ecc670
+- Worker report packet identity: ece07cd3c79105db9e7958c8ce21759544d7cd0001f70be11944a7fda0d8a3f9
+- Worker report input identity: cfbd91d35143c82b0d01823b7846df7a8415c9f804b2383e95f28766e9b198f6
+- Worker report parent receipt identity: parent-1d29742d99e336972b5ae358f148e7d7040dd4052498b469
+
+## Reviewed Input Identity
+
+- Packet consumed: charness-artifacts/critique/review-20260915T130702Z-3593657-packet.json
+- Packet path: charness-artifacts/critique/review-20260915T130702Z-3593657-packet.json
+- Packet SHA256: ece07cd3c79105db9e7958c8ce21759544d7cd0001f70be11944a7fda0d8a3f9
+- Identity SHA256: cfbd91d35143c82b0d01823b7846df7a8415c9f804b2383e95f28766e9b198f6
+
+Verified current with:
+
+```sh
+python3 skills/public/critique/scripts/verify_packet.py --repo-root . --packet-path charness-artifacts/critique/review-20260915T130702Z-3593657-packet.json --packet-sha256 ece07cd3c79105db9e7958c8ce21759544d7cd0001f70be11944a7fda0d8a3f9 --identity-sha256 cfbd91d35143c82b0d01823b7846df7a8415c9f804b2383e95f28766e9b198f6
+```
+
+## Boundary Ownership
+
+- **Producer:** `scripts/task_run/` lane-runner owners (lane prompt shaping, lane progress receipt block, stall/blocker signals)
+- **Consumer:** parent orchestrators reading `task run` receipts' `lane_progress`, plus operators reading `docs/agent-task-runs.md`
+- **Owning surface:** task-run lane surface (implementation, tests, docs move together in this change; prompt shaping with the lane runner, progress parsing with the lane runner, stall lines with the lane runner)
+- **Verdict:** `owned-correctly` — each piece lives with its owner (prompt shaping, progress parsing, and blocker lines with the lane runner; completion only calls `apply_lane_receipt`) and is consumed where that owner publishes.

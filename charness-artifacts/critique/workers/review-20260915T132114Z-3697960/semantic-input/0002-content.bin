@@ -1,0 +1,54 @@
+# v8.7.2 claims review (parent narrative)
+
+Date: 2026-09-15. Reviewer: parent agent (prepared the release lane).
+Observer: distinct workflow child agent, verdict PASS, no findings.
+
+This narrative binds the prepared commit `53e61b8344b2b0b8ac83db5959fa864a8e1f5813` only.
+
+## What was audited
+
+The prepared record `charness-artifacts/release/latest.md` at `53e61b83` —
+its assertions only, not code correctness (covered by the release critique
+worker `review-20260915T130702Z-3593657` and the standing suite).
+
+## Observer findings (all hold)
+
+1. Record claims target 8.7.2 / tag v8.7.2, previous 8.7.1 (latest.md:7,11-12).
+2. Prepared commit diff bumps packaging/charness.json 8.7.1→8.7.2
+   (3 version fields) and .claude-plugin/marketplace.json 8.7.1→8.7.2 —
+   bump matches the claimed target.
+3. Working-tree corroboration: packaging/charness.json lines 5,26,69 all
+   8.7.2; marketplace lines 8,14 both 8.7.2; materialized
+   plugins/charness/.claude-plugin/plugin.json line 3 is 8.7.2 — matches
+   the record's no-drift end state (latest.md:19).
+4. Quality line claims exit 0 AND discloses "quality unestablished:
+   pytest-release pending final resume" at post-bump, pre-commit —
+   no bound-receipt overclaim; runtime (quality_command 86.991s) is
+   consistent with the claimed 87.0s.
+5. Fresh-checkout probes claimed passed with the 3 declared commands
+   (latest.md:68-73); runtime corroborates a probe step ran (5.491s);
+   no public-surface pass claimed (push/release/publication all pending).
+6. Bump rationale present verbatim (latest.md:85-87): patch not minor,
+   #815 implementation-lane repair, no registered public surface moved —
+   matches the critique record's release line.
+7. Critique artifact binds Release 8.7.2; packet verify exits current
+   with sha ece07cdc… matching the artifact's recorded identities.
+8. State marker `prepared-awaiting-claims-review`; the record stages
+   itself for this review rather than claiming the critique findings
+   satisfied.
+
+## Minor observations (not failures)
+
+- Probe-pass and quality-exit-0 rest on the helper's own runs; the
+  observer did not re-execute them, and the record discloses the
+  residual (pytest-release pending final resume).
+- Single prepare line: no recovery/reset history unlike 8.7.1.
+
+## Out of scope (not counted against)
+
+Code correctness — owned by the critique artifact and the standing suite.
+
+## Disposition
+
+No unsupported numbers, figures, or verification sentences found.
+Proceed to resume publication.
