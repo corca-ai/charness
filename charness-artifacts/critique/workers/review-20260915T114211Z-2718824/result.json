@@ -1,0 +1,68 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release critique",
+  "packet_sha256": "1055e807b96731f32ef34faa63fa4372b098224e838fa6d0671f8483dbc08b44",
+  "reviewed_input_identity_sha256": "8ed15a89282efc8496eac49882e4ef386718b7115f0742d6a068b3276b047acf",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "release-evidence-incomplete",
+      "severity": "blocking",
+      "summary": "The bound receipts do not establish the declared release verification surface.",
+      "evidence": [
+        "The packet declares documentation, secrets, Python lint, code-length, scan-hygiene, subprocess-form, shell, packaging validation, adapter, workflow, and standing-pytest checks as owning-surface validators.",
+        "The verification receipt records only packaging sync as clean, one JS mutation dry-run, an earlier full JS mutation run, and 227 tests across 11 focused targets.",
+        "No bound result is supplied for the remaining declared validators, and focused targets are not evidence that the full standing pytest gate passed."
+      ],
+      "action": "Run or bind receipts for every applicable declared owning-surface validator, explicitly disposition any inapplicable command, and regenerate the final-head verification receipt."
+    },
+    {
+      "id": "full-mutation-not-final-head-bound",
+      "severity": "blocking",
+      "summary": "The full Stryker result is explicitly stale-by-contract for release approval.",
+      "evidence": [
+        "The receipt labels the full run as an earlier run and says to rerun it at release time after any tree change.",
+        "Only the dry-run is stated to be bound to head e61e13959.",
+        "The reviewed identity also includes two untracked evidence files, so the abbreviated Git head alone does not bind the complete reviewed input identity."
+      ],
+      "action": "Rerun the required full mutation proof after the release content is frozen and bind its result to the exact reviewed-input identity or an equivalent complete content manifest."
+    },
+    {
+      "id": "delegation-claim-unproven",
+      "severity": "high",
+      "summary": "The lane probe proves root workspace writing and trust-warning absence, but not the reader-facing claim that delegation remains available.",
+      "evidence": [
+        "docs/agent-task-runs.md states that trusting the worktree means delegation stays available.",
+        "The probe records only that \"Agent delegation: auto unavailable\" was absent from stderr; absence of that message is not a delegation roundtrip.",
+        "The probe's performed behavior was git status plus creation and commit of probe-871.txt."
+      ],
+      "action": "Either add a bounded delegation exercise/readback to the lane probe or narrow the documentation and evidence claim to what was actually observed."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The Muse workspace-root fix itself may still be invalid.",
+      "bin": "not-a-blocker-on-current-evidence",
+      "disposition": "The command construction, focused tests, and live lane write/commit probe consistently support the single trusted worktree workspace behavior."
+    },
+    {
+      "concern": "The earlier full Stryker result had six surviving mutants.",
+      "bin": "not-inherently-blocking",
+      "disposition": "The reported score is above the configured 80 threshold and has zero NoCoverage mutants; the problem is final-content binding, not the survivor count."
+    },
+    {
+      "concern": "No Goal Run lineage is present.",
+      "bin": "not-applicable",
+      "disposition": "The packet explicitly records not-goal-bound critique lineage; this does not substitute for or invalidate release evidence."
+    }
+  ],
+  "next_move": "Freeze the release content, run and bind the complete applicable release gate set—including a final-content full Stryker run—and either prove delegation behavior or narrow that claim before requesting another bounded review.",
+  "non_claims": [
+    "This review does not claim the current workspace differs from the inline payload.",
+    "This review does not reject the Muse workspace-root implementation itself.",
+    "This review does not treat unbound or partial verification progress as release approval."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

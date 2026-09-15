@@ -1,0 +1,64 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: '8.7.1 release content plus bound evidence: lane roundtrip probe and verification
+  receipts'
+attempt_id: review-20260915T114211Z-2718824
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: c35f2451c3182c0b089019ed91abbe64ba8350e7ee5a819e69ce2d3669516394
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-0af78bf267302d33b6003ad0115a1ee9/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-0af78bf267302d33b6003ad0115a1ee9/delivery.json
+producer_run_id: run-review-20260915T114211Z-2718824
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-0af78bf267302d33b6003ad0115a1ee9/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-0af78bf267302d33b6003ad0115a1ee9/receipt.json
+  producer_run_id: run-review-20260915T114211Z-2718824
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 6f447cb8f11d4059944c23eb8d31b02b1df3e0fad7c0c91d0e210b83271f41cd
+receipt_output_sha256: 6f447cb8f11d4059944c23eb8d31b02b1df3e0fad7c0c91d0e210b83271f41cd
+packet_identity: 1055e807b96731f32ef34faa63fa4372b098224e838fa6d0671f8483dbc08b44
+reviewed_input_identity: 8ed15a89282efc8496eac49882e4ef386718b7115f0742d6a068b3276b047acf
+parent_receipt_identity: parent-87a33e353986b7de590baabc3d175baff97ed9ac7a0ac0a6
+provenance:
+  scope: '8.7.1 release content plus bound evidence: lane roundtrip probe and verification
+    receipts'
+  packet_identity: 1055e807b96731f32ef34faa63fa4372b098224e838fa6d0671f8483dbc08b44
+  reviewed_input_identity: 8ed15a89282efc8496eac49882e4ef386718b7115f0742d6a068b3276b047acf
+  parent_receipt_identity: parent-87a33e353986b7de590baabc3d175baff97ed9ac7a0ac0a6
+  attempt_id: review-20260915T114211Z-2718824
+  attempt_scope: '8.7.1 release content plus bound evidence: lane roundtrip probe
+    and verification receipts'
+  attempt_packet_identity: 1055e807b96731f32ef34faa63fa4372b098224e838fa6d0671f8483dbc08b44
+  attempt_parent_receipt_identity: parent-87a33e353986b7de590baabc3d175baff97ed9ac7a0ac0a6
+  result_packet_identity: 1055e807b96731f32ef34faa63fa4372b098224e838fa6d0671f8483dbc08b44
+  result_reviewed_input_identity: 8ed15a89282efc8496eac49882e4ef386718b7115f0742d6a068b3276b047acf
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: c35f2451c3182c0b089019ed91abbe64ba8350e7ee5a819e69ce2d3669516394
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes
