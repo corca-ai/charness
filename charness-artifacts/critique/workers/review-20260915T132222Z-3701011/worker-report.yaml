@@ -1,0 +1,76 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: "8.7.2 approval decision: all prior procedural findings now have identity-bound\
+  \ closure evidence \u2014 prepared 8.7.2 surfaces (53e61b83), passing claims review\
+  \ (737b87426), verification receipts binding the resume pytest-release result (9846\
+  \ passed, sole failure is this artifact's own typed conformance under repair) and\
+  \ the changed-line PASS at the fix head; pass if the record is now approval-complete,\
+  \ else name only what remains"
+attempt_id: review-20260915T132222Z-3701011
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 6652ef4945d4e80be655ea748ef02e313d821c71a465948855b668fe498d4af7
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/review-20260915T132222Z-3701011/receipt.json
+ledger_path: charness-artifacts/critique/workers/review-20260915T132222Z-3701011/delivery.json
+producer_run_id: run-review-20260915T132222Z-3701011
+producer_binding:
+  output_file: charness-artifacts/critique/workers/review-20260915T132222Z-3701011/result.json
+  receipt_file: charness-artifacts/critique/workers/review-20260915T132222Z-3701011/receipt.json
+  producer_run_id: run-review-20260915T132222Z-3701011
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 8940db4555b7c56a0162b8706c1b043d9fa40aadac0f80763fc2e4566f7f48d0
+receipt_output_sha256: 8940db4555b7c56a0162b8706c1b043d9fa40aadac0f80763fc2e4566f7f48d0
+packet_identity: 85398611847fc7acbaf53e52545b4c51eef34bf7bbe8f44987f82d9b3c8a4da8
+reviewed_input_identity: f351d81710998f0702cc572c8e3c58c8073108ffb3dd02f03bc0d9cd8a6e1583
+parent_receipt_identity: parent-bbe6dcec5f36ee8dd98855507c68dc89c5abda8738e3c214
+provenance:
+  scope: "8.7.2 approval decision: all prior procedural findings now have identity-bound\
+    \ closure evidence \u2014 prepared 8.7.2 surfaces (53e61b83), passing claims review\
+    \ (737b87426), verification receipts binding the resume pytest-release result\
+    \ (9846 passed, sole failure is this artifact's own typed conformance under repair)\
+    \ and the changed-line PASS at the fix head; pass if the record is now approval-complete,\
+    \ else name only what remains"
+  packet_identity: 85398611847fc7acbaf53e52545b4c51eef34bf7bbe8f44987f82d9b3c8a4da8
+  reviewed_input_identity: f351d81710998f0702cc572c8e3c58c8073108ffb3dd02f03bc0d9cd8a6e1583
+  parent_receipt_identity: parent-bbe6dcec5f36ee8dd98855507c68dc89c5abda8738e3c214
+  attempt_id: review-20260915T132222Z-3701011
+  attempt_scope: "8.7.2 approval decision: all prior procedural findings now have\
+    \ identity-bound closure evidence \u2014 prepared 8.7.2 surfaces (53e61b83), passing\
+    \ claims review (737b87426), verification receipts binding the resume pytest-release\
+    \ result (9846 passed, sole failure is this artifact's own typed conformance under\
+    \ repair) and the changed-line PASS at the fix head; pass if the record is now\
+    \ approval-complete, else name only what remains"
+  attempt_packet_identity: 85398611847fc7acbaf53e52545b4c51eef34bf7bbe8f44987f82d9b3c8a4da8
+  attempt_parent_receipt_identity: parent-bbe6dcec5f36ee8dd98855507c68dc89c5abda8738e3c214
+  result_packet_identity: 85398611847fc7acbaf53e52545b4c51eef34bf7bbe8f44987f82d9b3c8a4da8
+  result_reviewed_input_identity: f351d81710998f0702cc572c8e3c58c8073108ffb3dd02f03bc0d9cd8a6e1583
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 6652ef4945d4e80be655ea748ef02e313d821c71a465948855b668fe498d4af7
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

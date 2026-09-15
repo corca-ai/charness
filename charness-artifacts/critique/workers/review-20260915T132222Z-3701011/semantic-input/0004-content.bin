@@ -1,0 +1,73 @@
+{
+  "schema_version": "charness.release.claims-review.v4",
+  "prepared_commit": "53e61b8344b2b0b8ac83db5959fa864a8e1f5813",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "b6cbe9c0093d4dccab9534c575d1696689724b62fab2004f2636e7d754e75d34",
+  "target_version": "8.7.2",
+  "tag_name": "v8.7.2",
+  "verdict": "pass",
+  "preparer_context": "release helper prepare: 8.7.1 previous, 8.7.2 target, prepared commit 53e61b83, quality post-bump pre-commit exit 0 with pytest-release pending final resume, fresh-checkout probes passed",
+  "reviewer_context": "parent agent: prepared the 8.7.2 release lane, wrote the narrative binding prepared commit 53e61b83 after the distinct observer returned pass with no findings",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "workflow child agent claims review over the prepared 8.7.2 record: verdict pass, findings empty, 8 path:line-backed evidence items covering version bump, no-drift state, quality-line honesty, probe claims, bump rationale, and critique binding; one disclosed residual (quality/probes not re-executed, record itself marks pytest-release pending final resume)",
+    "review_artifact": "charness-artifacts/release-review/2026-09-15-v8.7.2-claims.md"
+  },
+  "review_scope": {
+    "blocking_paths": [
+      ".claude-plugin/marketplace.json",
+      "charness-artifacts/critique/review-20260915T130702Z-3593657-packet.json",
+      "charness-artifacts/critique/review-20260915T130702Z-3593657-packet.md",
+      "charness-artifacts/critique/v872-release-critique.md",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/attempt-manifest.json",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/backend.stderr",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/backend.stdout",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/bounded-review-result.schema.json",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/capability.json",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/delivery.json",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/lifecycle.yaml",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/partial-result.json",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/receipt.json",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/result.json",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/review-prompt.md",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/run-plan.json",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/runner.stderr",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/runner.stdout",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/semantic-input/0000-content.bin",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/semantic-input/0001-content.bin",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/semantic-input/0002-content.bin",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/semantic-input/0003-content.bin",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/semantic-input/0004-content.bin",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/semantic-input/0005-content.bin",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/semantic-input/0006-content.bin",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/semantic-input/0007-content.bin",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/semantic-input/0008-content.bin",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/semantic-input/0009-content.bin",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/semantic-input/0010-content.bin",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/semantic-input/0011-content.bin",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/semantic-input/manifest.json",
+      "charness-artifacts/critique/workers/review-20260915T130702Z-3593657/worker-report.yaml",
+      "charness-artifacts/probe/2026-09-15-v8.7.1-release-observer.json",
+      "charness-artifacts/release-review/2026-09-15-v8.7.1-prepared-claims-review.json",
+      "charness-artifacts/release/.8.7.1-prepush-quality.json.charness-receipt.json",
+      "charness-artifacts/release/8.7.1-prepush-quality.json",
+      "charness-artifacts/release/latest.md",
+      "docs/agent-task-runs.md",
+      "packaging/charness.json",
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_completion.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "tests/charness_cli/test_task_run_implementation_lane.py",
+      "tests/charness_cli/test_task_run_muse_executor.py"
+    ],
+    "advisory_paths": [
+      "charness-artifacts/release-review/2026-09-15-v8.7.1-claims.md"
+    ]
+  },
+  "scope_basis": {
+    "base_ref": "refs/tags/v8.7.1",
+    "changed_paths_sha256": "74e197b0d85d189f850bbaa44f8f288c40a35d7959f4b99bb60c2770b91483a1",
+    "changed_path_count": 45
+  },
+  "advisory_findings": []
+}

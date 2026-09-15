@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "review-20260915T132318Z-3702859",
+      "scope": "8.7.2 release approval on substance (draft critique artifact under repair is OUT of scope, not evidence): judge the #815 implementation-lane code, the prepared 8.7.2 version surfaces, the passing claims review, and the verification receipts. Known residual, owned by the parent (8.7.1-F3 pattern): the publish-candidate pytest-release ran 9846 passed with its single failure being the draft artifact's own typed conformance now under repair; terminal publish binding re-validates at the next resume before tag push. Pass if the release is substantively safe with that owned residual, else name only substantive defects",
+      "packet_identity": "4d4f498ab890e26a1c3ea1290f0c3b07cd6955dfe6d9294643bc0ed5e5c905c3",
+      "parent_receipt_identity": "parent-3d3ceb7c222271b7dc3887a402449b967b1a3152a601f0ac",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-15T04:23:57Z",
+      "history": [
+        {
+          "event_id": "693a76572ccb42288287c42e0283e4b0",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-15T04:23:18Z",
+          "attempt_id": "review-20260915T132318Z-3702859",
+          "scope": "8.7.2 release approval on substance (draft critique artifact under repair is OUT of scope, not evidence): judge the #815 implementation-lane code, the prepared 8.7.2 version surfaces, the passing claims review, and the verification receipts. Known residual, owned by the parent (8.7.1-F3 pattern): the publish-candidate pytest-release ran 9846 passed with its single failure being the draft artifact's own typed conformance now under repair; terminal publish binding re-validates at the next resume before tag push. Pass if the release is substantively safe with that owned residual, else name only substantive defects",
+          "packet_identity": "4d4f498ab890e26a1c3ea1290f0c3b07cd6955dfe6d9294643bc0ed5e5c905c3",
+          "parent_receipt_identity": "parent-3d3ceb7c222271b7dc3887a402449b967b1a3152a601f0ac",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "7a6df29070e248fd98876ba133b05b49",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-15T04:23:18Z",
+          "attempt_id": "review-20260915T132318Z-3702859",
+          "scope": "8.7.2 release approval on substance (draft critique artifact under repair is OUT of scope, not evidence): judge the #815 implementation-lane code, the prepared 8.7.2 version surfaces, the passing claims review, and the verification receipts. Known residual, owned by the parent (8.7.1-F3 pattern): the publish-candidate pytest-release ran 9846 passed with its single failure being the draft artifact's own typed conformance now under repair; terminal publish binding re-validates at the next resume before tag push. Pass if the release is substantively safe with that owned residual, else name only substantive defects",
+          "packet_identity": "4d4f498ab890e26a1c3ea1290f0c3b07cd6955dfe6d9294643bc0ed5e5c905c3",
+          "parent_receipt_identity": "parent-3d3ceb7c222271b7dc3887a402449b967b1a3152a601f0ac",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "bce08c7036e4462d87b8f032d4bd933e",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-15T04:23:57Z",
+          "attempt_id": "review-20260915T132318Z-3702859",
+          "scope": "8.7.2 release approval on substance (draft critique artifact under repair is OUT of scope, not evidence): judge the #815 implementation-lane code, the prepared 8.7.2 version surfaces, the passing claims review, and the verification receipts. Known residual, owned by the parent (8.7.1-F3 pattern): the publish-candidate pytest-release ran 9846 passed with its single failure being the draft artifact's own typed conformance now under repair; terminal publish binding re-validates at the next resume before tag push. Pass if the release is substantively safe with that owned residual, else name only substantive defects",
+          "packet_identity": "4d4f498ab890e26a1c3ea1290f0c3b07cd6955dfe6d9294643bc0ed5e5c905c3",
+          "parent_receipt_identity": "parent-3d3ceb7c222271b7dc3887a402449b967b1a3152a601f0ac",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "c4b884cb8778ee3cb32c6c766c8c852ccfe0a4573161bc2fd1bd5a0c1951ddbb"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "bae93ccfbaf3f8cfde46167c1eefc16ee03ddfba313012d8feb3f95d52a5cce0",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "7a57b6b47fad63f8a1279f620b87f750e18e8b152cf576726423c1c1b80f8d4c",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/review-20260915T132318Z-3702859/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/review-20260915T132318Z-3702859/receipt.json",
+      "producer_run_id": "run-review-20260915T132318Z-3702859",
+      "findings_identity": "c4b884cb8778ee3cb32c6c766c8c852ccfe0a4573161bc2fd1bd5a0c1951ddbb"
+    }
+  ]
+}

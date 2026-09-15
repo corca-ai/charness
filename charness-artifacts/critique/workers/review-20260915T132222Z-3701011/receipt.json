@@ -1,0 +1,84 @@
+{
+  "attempt_id": "review-20260915T132222Z-3701011",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/review-20260915T132222Z-3701011/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-09-15T04:22:44Z",
+  "output_file": "charness-artifacts/critique/workers/review-20260915T132222Z-3701011/result.json",
+  "output_fresh": true,
+  "output_sha256": "8940db4555b7c56a0162b8706c1b043d9fa40aadac0f80763fc2e4566f7f48d0",
+  "output_size": 2743,
+  "packet_identity": "85398611847fc7acbaf53e52545b4c51eef34bf7bbe8f44987f82d9b3c8a4da8",
+  "parent_receipt_identity": "parent-bbe6dcec5f36ee8dd98855507c68dc89c5abda8738e3c214",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/review-20260915T132222Z-3701011/review-prompt.md",
+  "prompt_sha256": "6652ef4945d4e80be655ea748ef02e313d821c71a465948855b668fe498d4af7",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "retained_partial_output": {
+    "approval_eligible": false,
+    "bytes": 2610,
+    "kind": "bounded-review-result",
+    "path": "charness-artifacts/critique/workers/review-20260915T132222Z-3701011/partial-result.json",
+    "schema_version": "charness.reviewer_partial_output/v1",
+    "sha256": "c2cc4b8e03bed954457865dc425cb855fc64b4ef8f4053ed1675139a12074d7b",
+    "source": "charness-artifacts/critique/workers/review-20260915T132222Z-3701011/backend.stdout",
+    "validation": "model-shaped"
+  },
+  "reviewed_input_identity": "f351d81710998f0702cc572c8e3c58c8073108ffb3dd02f03bc0d9cd8a6e1583",
+  "run_id": "run-review-20260915T132222Z-3701011",
+  "schema_file": "charness-artifacts/critique/workers/review-20260915T132222Z-3701011/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "8.7.2 approval decision: all prior procedural findings now have identity-bound closure evidence — prepared 8.7.2 surfaces (53e61b83), passing claims review (737b87426), verification receipts binding the resume pytest-release result (9846 passed, sole failure is this artifact's own typed conformance under repair) and the changed-line PASS at the fix head; pass if the record is now approval-complete, else name only what remains",
+  "started_at": "2026-09-15T04:22:23Z",
+  "status": "succeeded",
+  "stderr_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/review-20260915T132222Z-3701011/backend.stderr",
+  "stdout_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/review-20260915T132222Z-3701011/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "workspace": "/home/hwidong/codes/charness"
+}

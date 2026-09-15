@@ -1,0 +1,43 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release critique",
+  "packet_sha256": "85398611847fc7acbaf53e52545b4c51eef34bf7bbe8f44987f82d9b3c8a4da8",
+  "reviewed_input_identity_sha256": "f351d81710998f0702cc572c8e3c58c8073108ffb3dd02f03bc0d9cd8a6e1583",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "terminal-release-proof-not-passing",
+      "severity": "blocking",
+      "summary": "The approval record is not complete: the publish-candidate pytest-release run still has one failure, and the supplied evidence explicitly leaves the critique artifact’s typed conformance and terminal publish binding unfinished.",
+      "evidence": [
+        "The verification receipt records `1 failed, 9846 passed` at candidate `737b87426`.",
+        "The failing test reports missing critique carrier fields: `worker report identity` and `worker report delivery`.",
+        "The receipt describes the artifact as `under repair` and says `carrier rebinding follows the passing worker round`.",
+        "The receipt states that a future publish resume is the `terminal binding`; no passing resumed terminal run is included in this packet."
+      ],
+      "action": "Bind the required worker-report identity and delivery fields into the critique artifact, then provide the passing resumed pytest-release/final-candidate receipt."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The sole pytest failure is procedural artifact conformance rather than a product-code defect.",
+      "bin": "real-blocker",
+      "disposition": "Narrow but still approval-blocking because the requested decision requires an approval-complete release record and forbids treating partial progress as approval."
+    },
+    {
+      "concern": "Prepared 8.7.2 version surfaces, claims review, fix-head quality, and changed-line proof are present.",
+      "bin": "closed-prior-findings",
+      "disposition": "These close the earlier version-surface and fix-coverage concerns but do not replace the missing passing terminal release proof."
+    }
+  ],
+  "next_move": "Repair and rebind the critique artifact’s required worker carrier fields, resume the release gate at the final candidate, and return the identity-bound passing receipt.",
+  "non_claims": [
+    "No code defect is asserted from the single failing artifact-conformance test.",
+    "The 9846 passing tests and fix-head changed-line PASS are not disputed.",
+    "Publication, tag push, GitHub release creation, and public-surface verification were not reviewed as completed.",
+    "Goal lineage is not goal-bound."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

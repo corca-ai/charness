@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "review-20260915T132222Z-3701011",
+      "scope": "8.7.2 approval decision: all prior procedural findings now have identity-bound closure evidence — prepared 8.7.2 surfaces (53e61b83), passing claims review (737b87426), verification receipts binding the resume pytest-release result (9846 passed, sole failure is this artifact's own typed conformance under repair) and the changed-line PASS at the fix head; pass if the record is now approval-complete, else name only what remains",
+      "packet_identity": "85398611847fc7acbaf53e52545b4c51eef34bf7bbe8f44987f82d9b3c8a4da8",
+      "parent_receipt_identity": "parent-bbe6dcec5f36ee8dd98855507c68dc89c5abda8738e3c214",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-15T04:22:44Z",
+      "history": [
+        {
+          "event_id": "6f9af59d59ab4d0188d6cfacb8eae08d",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-15T04:22:23Z",
+          "attempt_id": "review-20260915T132222Z-3701011",
+          "scope": "8.7.2 approval decision: all prior procedural findings now have identity-bound closure evidence — prepared 8.7.2 surfaces (53e61b83), passing claims review (737b87426), verification receipts binding the resume pytest-release result (9846 passed, sole failure is this artifact's own typed conformance under repair) and the changed-line PASS at the fix head; pass if the record is now approval-complete, else name only what remains",
+          "packet_identity": "85398611847fc7acbaf53e52545b4c51eef34bf7bbe8f44987f82d9b3c8a4da8",
+          "parent_receipt_identity": "parent-bbe6dcec5f36ee8dd98855507c68dc89c5abda8738e3c214",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "b6268c73b1544bb7ac7473f020cc4c74",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-15T04:22:23Z",
+          "attempt_id": "review-20260915T132222Z-3701011",
+          "scope": "8.7.2 approval decision: all prior procedural findings now have identity-bound closure evidence — prepared 8.7.2 surfaces (53e61b83), passing claims review (737b87426), verification receipts binding the resume pytest-release result (9846 passed, sole failure is this artifact's own typed conformance under repair) and the changed-line PASS at the fix head; pass if the record is now approval-complete, else name only what remains",
+          "packet_identity": "85398611847fc7acbaf53e52545b4c51eef34bf7bbe8f44987f82d9b3c8a4da8",
+          "parent_receipt_identity": "parent-bbe6dcec5f36ee8dd98855507c68dc89c5abda8738e3c214",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "12009f88120e4d5e90a8c483c16e850c",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-15T04:22:44Z",
+          "attempt_id": "review-20260915T132222Z-3701011",
+          "scope": "8.7.2 approval decision: all prior procedural findings now have identity-bound closure evidence — prepared 8.7.2 surfaces (53e61b83), passing claims review (737b87426), verification receipts binding the resume pytest-release result (9846 passed, sole failure is this artifact's own typed conformance under repair) and the changed-line PASS at the fix head; pass if the record is now approval-complete, else name only what remains",
+          "packet_identity": "85398611847fc7acbaf53e52545b4c51eef34bf7bbe8f44987f82d9b3c8a4da8",
+          "parent_receipt_identity": "parent-bbe6dcec5f36ee8dd98855507c68dc89c5abda8738e3c214",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "8940db4555b7c56a0162b8706c1b043d9fa40aadac0f80763fc2e4566f7f48d0"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "f351d81710998f0702cc572c8e3c58c8073108ffb3dd02f03bc0d9cd8a6e1583",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "6652ef4945d4e80be655ea748ef02e313d821c71a465948855b668fe498d4af7",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/review-20260915T132222Z-3701011/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/review-20260915T132222Z-3701011/receipt.json",
+      "producer_run_id": "run-review-20260915T132222Z-3701011",
+      "findings_identity": "8940db4555b7c56a0162b8706c1b043d9fa40aadac0f80763fc2e4566f7f48d0"
+    }
+  ]
+}

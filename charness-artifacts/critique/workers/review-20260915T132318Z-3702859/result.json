@@ -1,0 +1,29 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release critique",
+  "packet_sha256": "4d4f498ab890e26a1c3ea1290f0c3b07cd6955dfe6d9294643bc0ed5e5c905c3",
+  "reviewed_input_identity_sha256": "bae93ccfbaf3f8cfde46167c1eefc16ee03ddfba313012d8feb3f95d52a5cce0",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "The publish-candidate pytest-release has one failure in the draft critique artifact's typed conformance.",
+      "bin": "Valid but Defer",
+      "disposition": "Owned release-process residual, not a substantive code or packaging defect: 9846 tests passed, the failing draft artifact is explicitly outside this review's evidence, and terminal publish binding must revalidate the repaired final candidate before tag push."
+    },
+    {
+      "concern": "The prepared release record still describes claims review and publication as pending.",
+      "bin": "Over-Worry",
+      "disposition": "The record intentionally binds the earlier prepared commit; the separately committed passing claims-review evidence advances the workflow without retroactively rewriting that bound snapshot."
+    }
+  ],
+  "next_move": "Repair and rebind the critique artifact, then resume the release helper and require its terminal full-gate validation to pass before pushing v8.7.2.",
+  "non_claims": [
+    "This review does not approve the draft critique artifact under repair.",
+    "This review does not claim that the future tag, push, GitHub release, install refresh, or public release surface has been verified.",
+    "This review does not substitute the supplied receipts for terminal publish-candidate revalidation."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}
