@@ -1,0 +1,60 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release critique",
+  "packet_sha256": "ece07cd3c79105db9e7958c8ce21759544d7cd0001f70be11944a7fda0d8a3f9",
+  "reviewed_input_identity_sha256": "cfbd91d35143c82b0d01823b7846df7a8415c9f804b2383e95f28766e9b198f6",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "release-version-surface-mismatch",
+      "severity": "blocking",
+      "summary": "The packet does not establish an approvable 8.7.2 release surface; its release records, quality receipt, observer evidence, and claims review all identify 8.7.1.",
+      "evidence": [
+        "Scope requests approval of “8.7.2 release content” over v8.7.1.",
+        "charness-artifacts/release/latest.md states target version 8.7.1 and tag v8.7.1.",
+        "charness-artifacts/release/8.7.1-prepush-quality.json identifies the 8.7.1 receipt and verifies head 5d4d59eff391eadecc079e9099432c308c4b4071, not the packet target 23dc82206dd5f18fdc4524f55ad48286b63f5820.",
+        "The observer and prepared claims-review records bind v8.7.1 and prepared commit 34e767973e60fff9fcadf054e165085356e44f6b."
+      ],
+      "action": "Prepare and bind the actual 8.7.2 version surfaces, release record, quality receipt, claims review, and observer/proof records to the final 8.7.2 candidate commit."
+    },
+    {
+      "id": "fix-not-covered-by-bound-release-proof",
+      "severity": "blocking",
+      "summary": "The #815 implementation-lane change occurs after the commit bound by the supplied release claims review, while that review explicitly excludes code correctness.",
+      "evidence": [
+        "The reviewed delta is 34e767973e60fff9fcadf054e165085356e44f6b..23dc82206dd5f18fdc4524f55ad48286b63f5820.",
+        "The claims review binds only prepared commit 34e767973e60fff9fcadf054e165085356e44f6b.",
+        "Its narrative says code correctness is out of scope and owned by a critique artifact and standing suite, but no identity-bound #815 critique result or test execution receipt for target 23dc82206dd5f18fdc4524f55ad48286b63f5820 is included.",
+        "The quality receipt verifies head 5d4d59eff391eadecc079e9099432c308c4b4071 rather than the reviewed target commit."
+      ],
+      "action": "Run and include fresh identity-bound critique and proportionate verification for #815 at the final release candidate, then regenerate the claims review against that same candidate."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The implementation-lane prompt shaping and focused tests appear directionally consistent with #815.",
+      "bin": "non-blocking-positive",
+      "disposition": "The code and tests cover prompt shaping, marker parsing, typed blockers, stalls, successful editing, passthrough behavior, and Muse prompt transmission; this does not substitute for release-candidate-bound execution evidence."
+    },
+    {
+      "concern": "The v8.7.1 public observer correctly limits what unauthenticated HTTP establishes.",
+      "bin": "not-a-defect",
+      "disposition": "Its non-claim is appropriately bounded, but it proves the previous release rather than 8.7.2."
+    },
+    {
+      "concern": "A complete repository quality run may have passed during earlier preparation.",
+      "bin": "insufficient-for-approval",
+      "disposition": "The supplied receipt is bound to another head, so it cannot approve the reviewed target or an 8.7.2 candidate."
+    }
+  ],
+  "next_move": "Defer publication and prepare a coherent 8.7.2 packet whose version surfaces and all release, quality, claims-review, and #815 verification evidence bind the same final candidate commit.",
+  "non_claims": [
+    "This review does not infer workspace state beyond the inline semantic payload.",
+    "This review does not claim the #815 implementation is incorrect; it finds the release approval evidence unbound to the requested 8.7.2 candidate.",
+    "No Goal Run binding was supplied; the lineage is not-goal-bound.",
+    "No workspace files were edited and no commands were run."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}
