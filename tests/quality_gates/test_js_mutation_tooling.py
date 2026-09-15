@@ -50,6 +50,9 @@ def test_stryker_config_mutates_only_agent_runtime_sources() -> None:
     assert config["mutate"] == ["scripts/agent-runtime/**/*.mjs"]
     assert "plugins/**" in config["ignorePatterns"]
     assert "node_modules/**" in config["ignorePatterns"]
+    # The repograph dangling-symlink fixture crashes Stryker's sandbox copy,
+    # leaving the whole JS slice UNMEASURED (#764).
+    assert "native/**" in config["ignorePatterns"]
     assert config["testRunner"] == "command"
     assert config["commandRunner"]["command"] == "npm run test:agent-runtime"
     assert "pytest" not in config["commandRunner"]["command"]

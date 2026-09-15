@@ -48,15 +48,25 @@ def mapped_test_targets(repo_root: Path, paths: list[str], *, limit: int) -> lis
     matches = tests_referencing_paths(repo_root, paths)
     ordered: list[str] = []
     seen: set[str] = set()
-    for path in paths:
-        for target in matches.get(path, []):
-            if target in seen:
-                continue
-            seen.add(target)
-            ordered.append(target)
+    # Round-robin across changed paths so the budget represents every changed
+    # file (#764). Filling path-by-path let one broadly-referenced file (e.g.
+    # the `charness` entrypoint, matched by hundreds of tests) swallow the
+    # whole budget while sibling files' tests never ran, so their changed
+    # lines read as uncovered and their mutation lines filtered everything out.
+    while True:
+        progressed = False
+        for path in paths:
+            for target in matches.get(path, []):
+                if target in seen:
+                    continue
+                seen.add(target)
+                ordered.append(target)
+                progressed = True
+                break
             if limit and len(ordered) >= limit:
                 return ordered
-    return ordered
+        if not progressed:
+            return ordered
 
 
 def standing_pytest_command(targets: list[str]) -> str:

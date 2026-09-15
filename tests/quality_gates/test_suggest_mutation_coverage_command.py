@@ -409,6 +409,34 @@ def test_maps_a_module_reached_only_through_another_production_module(tmp_path: 
     assert payload["unmapped_changed_pool_files"] == []
 
 
+def test_direct_importers_sort_before_transitive_matches(tmp_path: Path) -> None:
+    """The budgeted probe spends its first picks on the closest tests (#764).
+
+    `test_direct.py` names the changed module; `test_indirect.py` only
+    reaches it through another production module. Both map, but the direct
+    importer must come first so a capped selection still runs it.
+    """
+    repo = install_committed_repo(
+        tmp_path / "repo",
+        {
+            "scripts/leaf.py": "def leaf():\n    return 1\n",
+            "scripts/mid.py": (
+                "from scripts.leaf import leaf\n\n\ndef mid():\n    return leaf()\n"
+            ),
+            "tests/test_z_direct.py": (
+                "from scripts import leaf\n\n\ndef test_leaf():\n    assert leaf.leaf() == 1\n"
+            ),
+            "tests/test_a_indirect.py": (
+                "from scripts import mid\n\n\ndef test_mid():\n    assert mid.mid() == 1\n"
+            ),
+        },
+        message="base",
+    )
+    assert sugg.tests_referencing_paths(repo, ["scripts/leaf.py"]) == {
+        "scripts/leaf.py": ["tests/test_z_direct.py", "tests/test_a_indirect.py"]
+    }
+
+
 def test_a_path_in_both_source_sets_is_read_once(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

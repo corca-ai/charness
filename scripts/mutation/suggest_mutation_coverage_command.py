@@ -331,6 +331,7 @@ def tests_referencing_paths(repo_root: Path, changed_paths: list[str]) -> dict[s
         except OSError:
             continue
     test_sources = _test_source_closures(source_text)
+    module_paths = _module_name_to_path(list(source_text))
     loader_tokens = {
         source_path: _loader_literal_tokens(text)
         for source_path, text in source_text.items()
@@ -373,8 +374,23 @@ def tests_referencing_paths(repo_root: Path, changed_paths: list[str]) -> dict[s
             )
         all_found.update(reached_by)
         if all_found:
-            matches[changed_path] = sorted(all_found)
-    return {path: sorted(paths) for path, paths in matches.items() if paths}
+            # Direct static importers first: a test that names the changed
+            # module covers its lines far more surely than one that reaches
+            # it transitively or by path string (#764). Within a tier the
+            # order stays alphabetical, so the budgeted round-robin in
+            # `mapped_test_targets` spends its first picks on the closest
+            # tests instead of the alphabetically first ones.
+            direct = {
+                test_path
+                for test_path in all_found
+                if test_path in source_text
+                and changed_path
+                in _local_import_paths(test_path, source_text[test_path], module_paths)
+            }
+            matches[changed_path] = sorted(direct) + sorted(all_found - direct)
+    # Tier order (direct importers, then the rest) is the contract; do not
+    # re-sort here.
+    return {path: paths for path, paths in matches.items() if paths}
 
 
 def build_recommendation(repo_root: Path, *, base_sha: str | None = None) -> dict[str, object]:

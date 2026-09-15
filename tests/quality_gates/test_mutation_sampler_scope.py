@@ -178,6 +178,27 @@ def test_mapped_test_targets_dedupes_shared_targets(tmp_path: Path, monkeypatch)
     ) == ["tests/test_shared.py"]
 
 
+def test_mapped_test_targets_share_the_budget_across_paths(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """The budget represents every changed file, not just the first (#764).
+
+    Filling path-by-path let one broadly-referenced file swallow the whole
+    budget while sibling files' tests never ran, so their changed lines read
+    as uncovered and the mutation-line filter dropped everything.
+    """
+    monkeypatch.setattr(
+        "scripts.mutation.mutation_sample_scope.tests_referencing_paths",
+        lambda repo_root, paths: {
+            "scripts/a.py": ["tests/test_a1.py", "tests/test_a2.py", "tests/test_a3.py"],
+            "scripts/b.py": ["tests/test_b1.py", "tests/test_b2.py"],
+        },
+    )
+    assert mapped_test_targets(
+        tmp_path, ["scripts/a.py", "scripts/b.py"], limit=3
+    ) == ["tests/test_a1.py", "tests/test_b1.py", "tests/test_a2.py"]
+
+
 def test_bootstrap_reinserts_repo_root_when_missing(monkeypatch) -> None:
     import sys
 

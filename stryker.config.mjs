@@ -31,6 +31,11 @@ export default {
 		".git/**",
 		".venv/**",
 		"charness-artifacts/**",
+		// native/repograph ships a committed dangling-symlink fixture
+		// (fixtures/links/dangling.py); Stryker's sandbox copy uses copyfile
+		// and crashes on it, so the whole JS slice stays UNMEASURED. The
+		// agent-runtime command runner never reads native/.
+		"native/**",
 		"node_modules/**",
 		"plugins/**",
 		"reports/**",
