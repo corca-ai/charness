@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "review-20260915T131817Z-3688323",
+      "scope": "8.7.2 release recheck for approval: prepared 8.7.2 surfaces, bound verification at the final candidate, and closure of the two prior procedural findings",
+      "packet_identity": "fcc25264f63ce9a73ae295fceb2834e0c47c315eae22109b75be0b506c5f1ceb",
+      "parent_receipt_identity": "parent-f3834c0cef240df64cc1f631840cfca03d9a3ff4f855be62",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-15T04:18:45Z",
+      "history": [
+        {
+          "event_id": "95ce4e6b687c46328523746c2541d00f",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-15T04:18:18Z",
+          "attempt_id": "review-20260915T131817Z-3688323",
+          "scope": "8.7.2 release recheck for approval: prepared 8.7.2 surfaces, bound verification at the final candidate, and closure of the two prior procedural findings",
+          "packet_identity": "fcc25264f63ce9a73ae295fceb2834e0c47c315eae22109b75be0b506c5f1ceb",
+          "parent_receipt_identity": "parent-f3834c0cef240df64cc1f631840cfca03d9a3ff4f855be62",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "5daf8e3cd54a40e48de383222b33637e",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-15T04:18:18Z",
+          "attempt_id": "review-20260915T131817Z-3688323",
+          "scope": "8.7.2 release recheck for approval: prepared 8.7.2 surfaces, bound verification at the final candidate, and closure of the two prior procedural findings",
+          "packet_identity": "fcc25264f63ce9a73ae295fceb2834e0c47c315eae22109b75be0b506c5f1ceb",
+          "parent_receipt_identity": "parent-f3834c0cef240df64cc1f631840cfca03d9a3ff4f855be62",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "b460284607a2473899b03f90654cc7cc",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-15T04:18:45Z",
+          "attempt_id": "review-20260915T131817Z-3688323",
+          "scope": "8.7.2 release recheck for approval: prepared 8.7.2 surfaces, bound verification at the final candidate, and closure of the two prior procedural findings",
+          "packet_identity": "fcc25264f63ce9a73ae295fceb2834e0c47c315eae22109b75be0b506c5f1ceb",
+          "parent_receipt_identity": "parent-f3834c0cef240df64cc1f631840cfca03d9a3ff4f855be62",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "9c53aca76efbe84b8d1da9efe019ae7fd6d9642825c5b39ee401ffbb415ab85d"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "491045aabea3e07ef5b3bca56be9692cb56868cc4dd39485978a3502b3387432",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "f566e0ac85bed270ace13ca2cb8ffe60699a81bb5bd204800921cd083fca2612",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/review-20260915T131817Z-3688323/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/review-20260915T131817Z-3688323/receipt.json",
+      "producer_run_id": "run-review-20260915T131817Z-3688323",
+      "findings_identity": "9c53aca76efbe84b8d1da9efe019ae7fd6d9642825c5b39ee401ffbb415ab85d"
+    }
+  ]
+}

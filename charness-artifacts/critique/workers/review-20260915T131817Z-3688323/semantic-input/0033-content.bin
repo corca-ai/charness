@@ -1,0 +1,45 @@
+# v8.7.1 claims review (parent narrative, second prepare)
+
+Date: 2026-09-15. Reviewer: parent agent (prepared the release lane).
+Observer: distinct read-only subagent (`v871-claims-review-2`), verdict PASS.
+
+This is a fresh review: the first prepare's line could not resume after a
+reviewer-demanded code repair landed on top of it, so the line was
+recovered (backup ref `backup-871-release-attempt1`, reset to pre-prepare,
+content replayed) and prepared anew. This narrative binds the NEW prepared
+commit `34e767973e60fff9fcadf054e165085356e44f6b` only.
+
+## What was audited
+
+The prepared record `charness-artifacts/release/latest.md` at `34e767973` —
+its assertions only, not code correctness (covered by the release critique
+worker and the standing suite).
+
+## Observer findings (all hold)
+
+1. Previous 8.7.0 in pre-bump manifests; target 8.7.1 on every versioned
+   surface (3 version lines in packaging, 2 in marketplace).
+2. Tag `v8.7.1` absent locally and on origin; latest published tag `v8.7.0`.
+3. Branch `main`, remote `origin`.
+4. No-drift report matches an independent `current_release.py` re-run
+   exactly (4 versioned + 1 presence-only).
+5. Fresh-checkout probe set matches the declared set.
+6. Critique artifact exists and is tracked.
+7. Bump rationale rendered verbatim.
+8. Quality numbers internally consistent (exit 0 in 163.0s vs 163.021s);
+   pending states honestly bounded; no overclaim.
+
+## Minor observations (not failures)
+
+- Probe-pass status rests on the helper's own probe runs (advisory).
+- Bare `current_release.py` re-run reports probes `not_established`
+  (expected; probes run under the helper, not the listing).
+
+## Out of scope (not counted against)
+
+Code correctness — owned by the critique artifact and the standing suite.
+
+## Disposition
+
+No unsupported numbers, figures, or verification sentences found.
+Proceed to resume publication.

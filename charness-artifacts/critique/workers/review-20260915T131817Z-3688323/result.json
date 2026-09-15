@@ -1,0 +1,50 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release critique",
+  "packet_sha256": "fcc25264f63ce9a73ae295fceb2834e0c47c315eae22109b75be0b506c5f1ceb",
+  "reviewed_input_identity_sha256": "491045aabea3e07ef5b3bca56be9692cb56868cc4dd39485978a3502b3387432",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "final-candidate-verification-not-bound",
+      "severity": "blocking",
+      "summary": "The prepared 8.7.2 surfaces close the prior version-surface mismatch, but the packet does not contain completed release-quality verification bound to the final candidate 737b874260e3063d9d586c669c8069622b4de1ea.",
+      "evidence": [
+        "The authoritative packet identifies 737b874260e3063d9d586c669c8069622b4de1ea as the target and final reviewed candidate.",
+        "charness-artifacts/release/latest.md explicitly says “quality unestablished: pytest-release pending final resume.”",
+        "The only supplied full release-quality receipt is charness-artifacts/release/8.7.1-prepush-quality.json, which verifies head 5d4d59eff391eadecc079e9099432c308c4b4071 and therefore cannot prove the 8.7.2 candidate.",
+        "charness-artifacts/critique/v872-release-critique.md reports a full quality run on committed tree 23dc82206dd5f18fdc4524f55ad48286b63f5820, which predates both the prepared 8.7.2 commit 53e61b8344b2b0b8ac83db5959fa864a8e1f5813 and final packet target 737b874260e3063d9d586c669c8069622b4de1ea.",
+        "The 8.7.2 claims review correctly binds the prepared record at 53e61b8344b2b0b8ac83db5959fa864a8e1f5813, but it expressly treats code correctness as out of scope and does not supply the missing final-candidate quality receipt."
+      ],
+      "action": "Run the mandatory final-resume release-quality verification on the exact publish candidate, retain an identity-bound passing receipt, and rebind or regenerate the approval packet if that run changes the candidate."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The prior release-version-surface-mismatch finding remains open.",
+      "bin": "closed",
+      "disposition": "The packet now includes consistent 8.7.2 marketplace and packaging versions, an 8.7.2 prepared release record, a stated patch rationale, and a passing claims review bound to prepared commit 53e61b8344b2b0b8ac83db5959fa864a8e1f5813."
+    },
+    {
+      "concern": "The #815 implementation itself lacks any verification.",
+      "bin": "partially-closed",
+      "disposition": "The critique artifact records focused tests and a full release-quality run on 23dc82206dd5f18fdc4524f55ad48286b63f5820, so the original code slice has meaningful evidence; however, that evidence is not bound to the final 8.7.2 candidate and cannot complete release approval."
+    },
+    {
+      "concern": "The prepared claims review is insufficient because it predates the commit carrying its own review artifacts.",
+      "bin": "not-a-defect",
+      "disposition": "Binding the claims review to the prepared release record is coherent for the prepare/resume workflow; the blocker is the explicitly pending final-resume quality proof, not merely that the claims artifact was committed later."
+    }
+  ],
+  "next_move": "Do not approve publication yet. Complete final-resume release quality on the exact 8.7.2 publish candidate and provide its bound passing receipt; the two prior procedural findings are otherwise narrowed to this single remaining proof gap.",
+  "non_claims": [
+    "This review does not claim the #815 implementation is incorrect.",
+    "This review does not treat the prior 8.7.1 observer or quality artifacts as 8.7.2 proof.",
+    "This review judges only the inline identity-bound semantic payload and does not infer current workspace state.",
+    "No Goal Run binding was supplied; the lineage is not-goal-bound.",
+    "No workspace files were edited and no commands were run."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

@@ -26,7 +26,6 @@ worker-delivered — block with procedural findings only, each closed by the dis
 ## Reviewer Tier Evidence
 
 - Requested tier: high-leverage
-- Requested spawn fields: adapter file-backed-worker / codex_exec; configured worker selection
 - Host exposure state: host-defaulted
 - Application state: file-backed read-only worker delivered; no provider-confirmed model or effort application claim
 - Delivery state: findings-received
