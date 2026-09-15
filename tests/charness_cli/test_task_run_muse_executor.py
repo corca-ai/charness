@@ -48,28 +48,52 @@ def test_lane_runner_module_bootstraps_repo_root_on_import() -> None:
 
 
 def test_muse_arguments_pin_high_effort_and_prompt_file(tmp_path: Path) -> None:
-    git_common_dir = tmp_path / ".git"
-    git_common_dir.mkdir()
+    worktree = tmp_path / "worktree"
+    worktree.mkdir()
     prompt_file = tmp_path / "prompt.md"
     prompt_file.write_text("implement the slice", encoding="utf-8")
     assert task_run.build_muse_args(
         effort="high",
         prompt_file=prompt_file,
-        writable_dirs=[git_common_dir],
+        worktree=worktree,
     ) == [
         "--reasoning-effort",
         "high",
         "--disable-approval",
+        "--trust-workspace",
         "--workspace",
-        str(git_common_dir),
+        str(worktree),
         "--prompt-file",
         str(prompt_file),
     ]
 
 
+def test_muse_workspace_is_the_worktree_root_not_agents(tmp_path: Path) -> None:
+    """One workspace root: the lane worktree (#814).
+
+    `muse exec` honors a single effective workspace (the last `--workspace`
+    wins), so passing every writable dir as `--workspace` rooted the lane at
+    `<worktree>/.agents` and every write outside it was refused.
+    """
+    worktree = tmp_path / "worktree"
+    (worktree / ".agents").mkdir(parents=True)
+    prompt_file = tmp_path / "prompt.md"
+    prompt_file.write_text("implement the slice", encoding="utf-8")
+    args = task_run.build_muse_args(
+        effort="high",
+        prompt_file=prompt_file,
+        worktree=worktree,
+    )
+    workspaces = [args[index + 1] for index, arg in enumerate(args) if arg == "--workspace"]
+    assert workspaces == [str(worktree)]
+    assert "--trust-workspace" in args
+
+
 def test_muse_effort_is_limited_to_curated_presets() -> None:
     with pytest.raises(task_run.TaskRunError, match="medium, high, xhigh, max"):
-        task_run.build_muse_args(effort="ultra", prompt_file=Path("prompt.md"))
+        task_run.build_muse_args(
+            effort="ultra", prompt_file=Path("prompt.md"), worktree=Path("worktree")
+        )
     with pytest.raises(task_run.TaskRunError, match="--executor must be one of"):
         task_run_plan.resolve_task_inputs(
             Path("."),
@@ -127,6 +151,9 @@ def test_task_run_muse_executor_uses_prompt_file_and_high_effort(
     assert payload["executor"]["timeout_scope"] == "muse-exec"
     assert "codex" not in payload
     args = captured_args.read_text(encoding="utf-8").splitlines()
+    workspaces = [args[index + 1] for index, arg in enumerate(args) if arg == "--workspace"]
+    assert workspaces == [payload["worktree_path"]]
+    assert "--trust-workspace" in args
     assert args[:2] == ["exec", "--reasoning-effort"]
     assert args[args.index("--reasoning-effort") + 1] == "high"
     assert "--disable-approval" in args

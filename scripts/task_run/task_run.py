@@ -178,27 +178,6 @@ def _complete_task(
     )
 
 
-def _codex_writable_dirs(
-    payload: dict[str, Any],
-    resolved: dict[str, Any],
-    git_worktree_dir: Path,
-    execution_runtime_path: Path,
-) -> list[Path]:
-    """Directories Codex may write beyond the worktree itself.
-
-    Codex's workspace-write sandbox holds a workdir's `.agents/` read-only (measured
-    2026-09-02: two lanes scoped to an adapter ended uncommitted with "read-only").
-    The scope guard decides what a lane may change; the sandbox should not silently
-    veto one directory of it, so the worktree's `.agents/` is granted when present.
-    """
-    writable_dirs = [resolved["git_common_dir"], git_worktree_dir, execution_runtime_path]
-    worktree_agents_dir = Path(payload["worktree_path"]) / ".agents"
-    if worktree_agents_dir.is_dir():
-        writable_dirs.append(worktree_agents_dir)
-    payload["writable_dirs"] = [str(path) for path in writable_dirs]
-    return writable_dirs
-
-
 def run_task(
     repo_root: Path,
     *,
@@ -375,8 +354,13 @@ def run_task(
             os.environ.copy(),
             runtime_root=execution_runtime_path,
         )
-        writable_dirs = _codex_writable_dirs(
-            payload, resolved, git_worktree_dir, execution_runtime_path
+        writable_dirs = _lane_runner.lane_writable_dirs(
+            payload,
+            resolved,
+            git_worktree_dir,
+            execution_runtime_path,
+            executor=resolved_executor,
+            worktree=resolved_target,
         )
         command = _lane_runner.lane_command(
             executor=resolved_executor,
@@ -385,6 +369,7 @@ def run_task(
             prompt=prompt,
             execution_runtime_path=execution_runtime_path,
             writable_dirs=writable_dirs,
+            worktree=resolved_target,
         )
         payload["git_worktree_dir"] = str(git_worktree_dir)
         payload["executor"]["command"] = command

@@ -20,6 +20,12 @@ with `timeout_scope: muse-exec` and `muse.stdout/stderr.log` logs; their
 Readers keyed on the `codex` names must branch on `executor.kind` before
 consuming muse lanes.
 
+A muse lane roots its single `muse exec --workspace` at the lane worktree
+itself and trusts it (`--trust-workspace`), so the repo's rules load and
+delegation stays available. `muse exec` honors one effective workspace, so
+the Codex `--add-dir` grants do not apply; the receipt records the root as
+top-level `workspace` instead of `writable_dirs`.
+
 ## Run
 
 ```bash

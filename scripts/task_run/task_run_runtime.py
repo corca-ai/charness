@@ -126,23 +126,33 @@ def build_muse_args(
     *,
     effort: str,
     prompt_file: Path,
-    writable_dirs: Sequence[Path] = (),
+    worktree: Path,
 ) -> list[str]:
     """Build Muse host arguments with the task runner's curated effort preset.
 
     `muse exec` takes no stdin prompt, so the lane prompt travels via
     `--prompt-file`. Approval prompts cannot be answered headless, so they are
     disabled; the OS sandbox stays on (the Codex lane's workspace-write
-    equivalent) and each writable dir is rooted as a workspace.
+    equivalent). `muse exec` honors a single effective workspace (the last
+    `--workspace` wins), so the lane worktree root is passed exactly once:
+    passing every writable dir rooted the lane at `<worktree>/.agents` and
+    every write outside it was refused (#814). The lane worktree is created
+    for the agent, so it is trusted: otherwise the repo's rules are skipped
+    and delegation stays unavailable.
     """
     if effort not in TASK_MUSE_EFFORTS:
         allowed = ", ".join(TASK_MUSE_EFFORTS)
         raise TaskRunError(f"--effort must be one of: {allowed} (muse executor)")
-    args: list[str] = ["--reasoning-effort", effort, "--disable-approval"]
-    for writable_dir in writable_dirs:
-        args.extend(["--workspace", str(writable_dir.resolve())])
-    args.extend(["--prompt-file", str(prompt_file)])
-    return args
+    return [
+        "--reasoning-effort",
+        effort,
+        "--disable-approval",
+        "--trust-workspace",
+        "--workspace",
+        str(worktree),
+        "--prompt-file",
+        str(prompt_file),
+    ]
 
 
 def build_muse_command(
@@ -150,14 +160,14 @@ def build_muse_command(
     *,
     effort: str,
     prompt_file: Path,
-    writable_dirs: Sequence[Path] = (),
+    worktree: Path,
 ) -> list[str]:
     """Build the Muse command; the task prompt travels via --prompt-file."""
     return [
         executable,
         "exec",
         *build_muse_args(
-            effort=effort, prompt_file=prompt_file, writable_dirs=writable_dirs
+            effort=effort, prompt_file=prompt_file, worktree=worktree
         ),
     ]
 

@@ -126,9 +126,11 @@ def resolve_task_inputs(
         resolved_task_id = _task_id(resolved_branch, task_id)
         runtime_path = _runtime_preview(resolved_repo)
     if resolved_executor == "muse":
-        # Validate the muse effort preset; the real prompt file is written at
-        # execution time, this path only exercises argument validation.
-        build_muse_args(effort=effort, prompt_file=Path("prompt.md"))
+        # Validate the muse effort preset; the real prompt file and worktree
+        # are written at execution time, these paths only exercise validation.
+        build_muse_args(
+            effort=effort, prompt_file=Path("prompt.md"), worktree=Path("worktree")
+        )
     else:
         build_codex_args(effort=effort)
     return {
