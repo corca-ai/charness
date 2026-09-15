@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "review-20260915T111751Z-2565010",
+      "scope": "8.7.1 release lock-in: two patch fixes (muse lane workspace, mutation probe)",
+      "packet_identity": "076c05560cffdcc735568d17fa4a4c49af3fff3f1adaff306a1a92b7a51e6f94",
+      "parent_receipt_identity": "parent-fcea75fcac1172bfff5c0555b2b4e3431b878eedcd4dad93",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-15T02:18:27Z",
+      "history": [
+        {
+          "event_id": "e0a23f3a7669480faa58aafd3f9a5e06",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-15T02:17:51Z",
+          "attempt_id": "review-20260915T111751Z-2565010",
+          "scope": "8.7.1 release lock-in: two patch fixes (muse lane workspace, mutation probe)",
+          "packet_identity": "076c05560cffdcc735568d17fa4a4c49af3fff3f1adaff306a1a92b7a51e6f94",
+          "parent_receipt_identity": "parent-fcea75fcac1172bfff5c0555b2b4e3431b878eedcd4dad93",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "f128569b160d478fa10d9180c12b3b3e",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-15T02:17:51Z",
+          "attempt_id": "review-20260915T111751Z-2565010",
+          "scope": "8.7.1 release lock-in: two patch fixes (muse lane workspace, mutation probe)",
+          "packet_identity": "076c05560cffdcc735568d17fa4a4c49af3fff3f1adaff306a1a92b7a51e6f94",
+          "parent_receipt_identity": "parent-fcea75fcac1172bfff5c0555b2b4e3431b878eedcd4dad93",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "9d9f0c832ffe4ae58128a3d8203942a8",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-15T02:18:27Z",
+          "attempt_id": "review-20260915T111751Z-2565010",
+          "scope": "8.7.1 release lock-in: two patch fixes (muse lane workspace, mutation probe)",
+          "packet_identity": "076c05560cffdcc735568d17fa4a4c49af3fff3f1adaff306a1a92b7a51e6f94",
+          "parent_receipt_identity": "parent-fcea75fcac1172bfff5c0555b2b4e3431b878eedcd4dad93",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "0e08e99dc5f34e03e852d190806351089e32059aa3212504583732c9cb9c1b1d"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "a8c34855b3045feaa9128ac50f7297d29b450eb1bc3026482846b0bbf1e2ea07",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "469f6e993792929138f06def401c3e24e0c520c89c56c1101db3f394e09fb11a",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/review-20260915T111751Z-2565010/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/review-20260915T111751Z-2565010/receipt.json",
+      "producer_run_id": "run-review-20260915T111751Z-2565010",
+      "findings_identity": "0e08e99dc5f34e03e852d190806351089e32059aa3212504583732c9cb9c1b1d"
+    }
+  ]
+}

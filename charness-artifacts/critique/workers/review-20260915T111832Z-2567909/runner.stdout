@@ -1,0 +1,62 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: '8.7.1 release lock-in: two patch fixes (muse lane workspace, mutation probe)'
+attempt_id: review-20260915T111832Z-2567909
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: e03424d978fb960ed92084f56710db1512ddba20231607c14df6e7909db4be5f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-b80d34b848985c6b173e892102a570cb/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-b80d34b848985c6b173e892102a570cb/delivery.json
+producer_run_id: run-review-20260915T111832Z-2567909
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-b80d34b848985c6b173e892102a570cb/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-b80d34b848985c6b173e892102a570cb/receipt.json
+  producer_run_id: run-review-20260915T111832Z-2567909
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 3007e7ddb2d381f307d503ebca411aba78aea8d0011a064433beb7a73c72822b
+receipt_output_sha256: 3007e7ddb2d381f307d503ebca411aba78aea8d0011a064433beb7a73c72822b
+packet_identity: adbe2549e3abb43353e2cb6825d2a67dbbc5b279d9965253cc4c77974756ad67
+reviewed_input_identity: a8c34855b3045feaa9128ac50f7297d29b450eb1bc3026482846b0bbf1e2ea07
+parent_receipt_identity: parent-f716bb1898373d00268944de78c356ccbe37bb6806ceb7ee
+provenance:
+  scope: '8.7.1 release lock-in: two patch fixes (muse lane workspace, mutation probe)'
+  packet_identity: adbe2549e3abb43353e2cb6825d2a67dbbc5b279d9965253cc4c77974756ad67
+  reviewed_input_identity: a8c34855b3045feaa9128ac50f7297d29b450eb1bc3026482846b0bbf1e2ea07
+  parent_receipt_identity: parent-f716bb1898373d00268944de78c356ccbe37bb6806ceb7ee
+  attempt_id: review-20260915T111832Z-2567909
+  attempt_scope: '8.7.1 release lock-in: two patch fixes (muse lane workspace, mutation
+    probe)'
+  attempt_packet_identity: adbe2549e3abb43353e2cb6825d2a67dbbc5b279d9965253cc4c77974756ad67
+  attempt_parent_receipt_identity: parent-f716bb1898373d00268944de78c356ccbe37bb6806ceb7ee
+  result_packet_identity: adbe2549e3abb43353e2cb6825d2a67dbbc5b279d9965253cc4c77974756ad67
+  result_reviewed_input_identity: a8c34855b3045feaa9128ac50f7297d29b450eb1bc3026482846b0bbf1e2ea07
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: e03424d978fb960ed92084f56710db1512ddba20231607c14df6e7909db4be5f
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

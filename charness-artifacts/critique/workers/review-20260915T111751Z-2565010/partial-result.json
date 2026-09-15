@@ -1,0 +1,57 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "resolved",
+      "concern": "Muse may receive multiple effective workspaces and remain rooted at .agents.",
+      "disposition": "The command builder emits exactly one --workspace using the lane worktree, records that workspace, and has both argument-level and end-to-end coverage."
+    },
+    {
+      "bin": "non-blocking",
+      "concern": "Trusting the Muse worktree may weaken containment.",
+      "disposition": "The reviewed command retains Muse's OS sandbox and disables interactive approval; --trust-workspace controls rule loading/delegation and is intentional for the disposable lane."
+    },
+    {
+      "bin": "rejected",
+      "concern": "Existing v8.7.0 publication evidence should count as proof for the patch release.",
+      "disposition": "It proves an earlier release surface, not behavior or quality of the later 8.7.1 patch head."
+    }
+  ],
+  "findings": [
+    {
+      "action": "Run the proportionate focused tests and the release-quality gate on the exact 8.7.1 candidate head, then bind fresh receipts to that head before approval.",
+      "evidence": [
+        "The packet target is 98431a41c0e0b977a4431fc62a46817237d2a9e5.",
+        "charness-artifacts/release/8.7.0-prepush-quality.json records verified_head c10b107b5412b5b3ab093e5c305c56409fa74f1a.",
+        "The supplied release observer and release narrative concern v8.7.0 at commit 1d51de8a661805505794be554b478f0ced510b46, not an 8.7.1 candidate containing this patch.",
+        "No execution receipt in the semantic payload demonstrates the focused tests or release gate against 98431a41c0e0b977a4431fc62a46817237d2a9e5."
+      ],
+      "id": "release-proof-does-not-cover-patch-head",
+      "severity": "blocking",
+      "summary": "The supplied full-quality receipt predates the reviewed patch head, so it cannot lock in the two 8.7.1 fixes."
+    },
+    {
+      "action": "Handle UnicodeDecodeError consistently when building source_text and add a wired regression test containing a non-UTF-8 candidate module to prove the recommendation/probe completes.",
+      "evidence": [
+        "tests_referencing_paths reads every candidate test and mutation-pool module with read_text(encoding=\"utf-8\") but catches only OSError.",
+        "UnicodeDecodeError is not an OSError, so one non-UTF-8 candidate aborts the mapper instead of being skipped.",
+        "_local_loader_ancestor_levels explicitly catches (OSError, UnicodeDecodeError) and documents native/repograph/fixtures/non_utf8.py as a known non-UTF-8 fixture.",
+        "The new _candidate_module_sources contract expands scanning to the mutation pool, but the supplied tests cover OSError reads only and do not exercise a non-UTF-8 candidate source."
+      ],
+      "id": "mutation-source-scan-can-crash-on-non-utf8-file",
+      "severity": "blocking",
+      "summary": "The expanded mutation-pool source scan does not tolerate UnicodeDecodeError, despite the same file documenting a known non-UTF-8 repository fixture."
+    }
+  ],
+  "kind": "charness.bounded_review.v1",
+  "lens": "release critique",
+  "next_move": "Repair and test the mutation scanner's non-UTF-8 boundary, then produce exact-head focused and release-quality evidence for the 8.7.1 candidate and rerun the bounded critique.",
+  "non_claims": [
+    "This review does not infer execution success from test source, recorded status, hashes, or an earlier release receipt.",
+    "This review does not assess current workspace content outside the supplied identity-bound semantic payload.",
+    "The Muse workspace patch is not declared live-host proven; the supplied evidence is source and test coverage only."
+  ],
+  "packet_sha256": "076c05560cffdcc735568d17fa4a4c49af3fff3f1adaff306a1a92b7a51e6f94",
+  "reviewed_input_identity_sha256": "a8c34855b3045feaa9128ac50f7297d29b450eb1bc3026482846b0bbf1e2ea07",
+  "target_observations": null,
+  "verdict": "block"
+}
