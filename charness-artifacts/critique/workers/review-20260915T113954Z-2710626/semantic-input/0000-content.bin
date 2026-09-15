@@ -22,11 +22,9 @@ consuming muse lanes.
 
 A muse lane roots its single `muse exec --workspace` at the lane worktree
 itself and trusts it (`--trust-workspace`), so the repo's rules load and
-the untrusted-workspace delegation block clears (observed: the
-`delegation unavailable: workspace is untrusted` warning is gone;
-delegation itself was not exercised). `muse exec` honors one effective
-workspace, so the Codex `--add-dir` grants do not apply; the receipt
-records the root as top-level `workspace` instead of `writable_dirs`.
+delegation stays available. `muse exec` honors one effective workspace, so
+the Codex `--add-dir` grants do not apply; the receipt records the root as
+top-level `workspace` instead of `writable_dirs`.
 
 ## Run
 

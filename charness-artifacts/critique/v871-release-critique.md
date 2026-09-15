@@ -21,4 +21,25 @@
 
 ## Fresh-Eye Satisfaction
 
-Canonical worker admitted and completed with `delivery_state: findings-received`, `boundary_mode: read-only-worker`, identities matched. Two earlier generic workflow rounds are disclosed above as evidence-empty and carry no weight.
+worker-delivered — canonical file-backed worker admitted and completed with `delivery_state: findings-received`, `boundary_mode: read-only-worker`, packet/reviewed-input identities matched; findings in `charness-artifacts/critique/workers/review-20260915T111832Z-2567909/partial-result.json`. Two earlier generic workflow rounds are disclosed above as evidence-empty and carry no weight. A second worker round over the release content returned three substantive findings (F1 basename over-match risk, F2 real-lane proof, F3 evidence rebind) in `charness-artifacts/critique/workers/review-20260915T113134Z-2670374/partial-result.json`, dispositioned below; none is a code defect in the release content.
+
+## Second-Round Dispositions (parent counterweight)
+
+- **F1 (basename over-match vs capped budget)**: FIXED in `e61e13959` — ambiguous stem-only matches now sort last (ordering only; recall unchanged). Verified: duplicate-stem negative control added (`test_ambiguous_stem_matches_spend_budget_last`); only 10 of 805 repo stems are duplicated and none belongs to this release's files, so the release probe selection (RR-40) is byte-identical before/after. Static imports were already path-precise.
+- **F2 (real-Muse boundary proof)**: satisfied by the persisted lane roundtrip probe `charness-artifacts/probe/2026-09-15-v8.7.1-muse-lane-roundtrip.json` (final tree: single worktree workspace, trusted, shell+git usable, `probe-871.txt` at root committed `b10a94e3`, approval-eligible, exit 0). Delegation beyond the trust flag was not exercised, so the docs claim was narrowed to the observed log lines (`docs/agent-task-runs.md`).
+- **F3 (sync + verification rebind)**: plugin manifests sync clean; focused suites (227 passed) + full Stryker dry-run green at the final head in `charness-artifacts/probe/2026-09-15-v8.7.1-verification-receipts.json`; full release quality is red on exactly one test — this artifact's own typed-value conformance, the item under resolution. Publish resume's bound gates re-verify before tag push.
+- **F-round5 (evidence completeness, delegation claim, mutation staleness)**: delegation claim narrowed as above; verification receipts regenerated at the final head; full Stryker rerun bound in the receipts file. Residual changed-line debt for the old range measures 20 statement targets (down from 163), all in probe-unselected or layout-fallback lines; ordinary incremental debt, not a release blocker (release's own new lines are covered — pre-push changed-line gate passed on both fix pushes).
+
+## Reviewer Tier Evidence
+
+- **Requested tier**: `high-leverage` (release lock-in)
+- **Execution mode**: `file-backed-worker` (codex_exec backend, read-only boundary)
+- **Delivery state**: `findings-received` (verdict `block`, procedural only)
+- **Application state**: `worker records committed beside the packet; packet and reviewed-input identities verified matched by the runner`
+
+## Boundary Ownership
+
+- **Producer:** `scripts/task_run/` lane-runner owners (muse workspace/trust invocation, receipt block) and `scripts/mutation/` sampler owners (budget sharing, match ordering, JS slice config)
+- **Consumer:** parent orchestrators reading `task run` receipts and the scheduled mutation gate reading the sampler/mapper contract, plus operators reading `docs/agent-task-runs.md`
+- **Owning surface:** task-run lane surface and mutation probe surface (implementation, tests, docs move together in this change; no producer-owned state encoded in a foreign layer)
+- **Verdict:** `owned-correctly` — each fix lives with its owner (lane invocation with the lane runner, probe allocation with the sampler, match order with the mapper) and is consumed where that owner publishes.
