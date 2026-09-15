@@ -22,6 +22,138 @@ from scripts.task_run import task_run_support as _support  # noqa: E402
 build_codex_command = _support.build_codex_command
 build_muse_command = _support.build_muse_command
 
+LANE_PHASES = ("CONTRACT-READ", "EDITING", "TESTING")
+
+
+def build_lane_prompt(
+    prompt: str, *, require_change: bool, scopes: Sequence[str]
+) -> str:
+    """Shape the lane prompt; implementation lanes get carrier directives.
+
+    A require-change lane once spent a full model run in analysis without a
+    scoped edit (#815): the user prompt used to travel verbatim, so nothing
+    told the executor it was in an implementation lane. Require-change lanes
+    now name the scope, demand prompt entry into the edit loop, and define a
+    typed early blocker; all other lanes pass through untouched.
+    """
+    if not require_change:
+        return prompt
+    scope_list = ", ".join(scopes)
+    return (
+        "[charness task-run: implementation lane]\n"
+        f"Scope: {scope_list}. This is an implementation lane, not a critique lane.\n"
+        "After the minimum contract reads, enter the scoped edit/test loop "
+        "promptly and prioritize producing the first scoped diff.\n"
+        "Emit progress lines as you go, one per line: CONTRACT-READ when "
+        "contract reads are done, EDITING when the first scoped edit lands, "
+        "TESTING when verification runs.\n"
+        "If you cannot make a scoped change, stop promptly and reply with a "
+        "typed blocker on its own line: BLOCKED: <concrete reason>. Do not "
+        "consume the run in further analysis once blocked.\n"
+        "---\n"
+        f"{prompt}"
+    )
+
+
+def lane_progress(stdout_text: str) -> dict[str, Any]:
+    """Parse phase markers and the typed blocker from lane stdout (#815)."""
+    phases: list[str] = []
+    blocker: str | None = None
+    for line in stdout_text.splitlines():
+        stripped = line.strip()
+        if stripped in LANE_PHASES and stripped not in phases:
+            phases.append(stripped)
+        elif blocker is None and stripped.startswith("BLOCKED:"):
+            blocker = stripped[len("BLOCKED:"):].strip() or None
+    return {"phases": phases, "blocker": blocker}
+
+
+def lane_receipt_blockers(
+    *,
+    progress: dict[str, Any],
+    require_change: bool,
+    scope: Any,
+) -> list[str]:
+    """Blocker lines naming how a finished lane stalled, if it did (#815).
+
+    A typed `BLOCKED:` line becomes a `lane reported blocker` entry so the
+    receipt and next step carry the lane's own reason. A changeless
+    require-change lane that never emitted `EDITING` names that stall
+    instead; lanes that edited or changed scope need no lane entry.
+    """
+    if progress["blocker"] is not None:
+        return [f"lane reported blocker: {progress['blocker']}"]
+    if (
+        require_change
+        and not scope.get("changed_paths")
+        and not scope.get("disallowed_paths")
+        and "EDITING" not in progress["phases"]
+    ):
+        return [
+            "lane stalled: require-change lane ended without EDITING and no scoped change"
+        ]
+    return []
+
+
+def apply_lane_receipt(
+    payload: dict[str, Any],
+    blockers: list[str],
+    *,
+    delivery: Any,
+    require_change: bool,
+    scope: Any,
+) -> None:
+    """Record `lane_progress` on the receipt and append lane stall blockers."""
+    progress = lane_progress(delivery.get("text") or "")
+    payload["lane_progress"] = progress
+    blockers.extend(
+        lane_receipt_blockers(progress=progress, require_change=require_change, scope=scope)
+    )
+
+
+def prepare_lane_execution(
+    payload: dict[str, Any],
+    resolved: dict[str, Any],
+    git_worktree_dir: Path,
+    execution_runtime_path: Path,
+    *,
+    prompt: str,
+    require_change: bool,
+    scopes: Sequence[str],
+    executor: str,
+    executable: str,
+    effort: str,
+    worktree: Path,
+) -> tuple[list[Path], str, list[str]]:
+    """Resolve sandbox grants, shape the lane prompt, and build its command.
+
+    One call prepares everything the lane runner needs to execute: writable
+    grants (recorded on the receipt), the shaped prompt (implementation
+    directives for require-change lanes, verbatim otherwise), and the
+    executor command carrying that prompt.
+    """
+    writable_dirs = lane_writable_dirs(
+        payload,
+        resolved,
+        git_worktree_dir,
+        execution_runtime_path,
+        executor=executor,
+        worktree=worktree,
+    )
+    lane_prompt = build_lane_prompt(
+        prompt, require_change=require_change, scopes=scopes
+    )
+    command = lane_command(
+        executor=executor,
+        executable=executable,
+        effort=effort,
+        prompt=lane_prompt,
+        execution_runtime_path=execution_runtime_path,
+        writable_dirs=writable_dirs,
+        worktree=worktree,
+    )
+    return writable_dirs, lane_prompt, command
+
 
 def lane_writable_dirs(
     payload: dict[str, Any],

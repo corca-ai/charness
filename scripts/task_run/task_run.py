@@ -354,21 +354,17 @@ def run_task(
             os.environ.copy(),
             runtime_root=execution_runtime_path,
         )
-        writable_dirs = _lane_runner.lane_writable_dirs(
+        writable_dirs, lane_prompt, command = _lane_runner.prepare_lane_execution(
             payload,
             resolved,
             git_worktree_dir,
             execution_runtime_path,
-            executor=resolved_executor,
-            worktree=resolved_target,
-        )
-        command = _lane_runner.lane_command(
+            prompt=prompt,
+            require_change=resolved_require_change,
+            scopes=normalized_scopes,
             executor=resolved_executor,
             executable=codex_path,
             effort=resolved["effort"],
-            prompt=prompt,
-            execution_runtime_path=execution_runtime_path,
-            writable_dirs=writable_dirs,
             worktree=resolved_target,
         )
         payload["git_worktree_dir"] = str(git_worktree_dir)
@@ -401,7 +397,7 @@ def run_task(
         )
         execution = _execute_codex(
             command,
-            prompt=prompt,
+            prompt=lane_prompt,
             target_path=resolved_target,
             configured_env=configured_env,
             stdout_log=stdout_log,

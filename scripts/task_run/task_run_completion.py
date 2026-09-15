@@ -20,6 +20,7 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.gates_support.runtime_root_retention import _rmtree_writable  # noqa: E402
+from scripts.task_run import task_run_lane_runner as _lane_runner  # noqa: E402
 from scripts.task_run.task_run_completion_next_step import _next_step  # noqa: E402
 from scripts.task_run.task_run_contract import TaskRunError  # noqa: E402
 from scripts.task_run.task_run_git import (  # noqa: E402
@@ -126,6 +127,9 @@ def complete_task(
         parent_progress=parent_progress,
         pass_value=pass_value,
         delivery=delivery,
+    )
+    _lane_runner.apply_lane_receipt(
+        payload, blockers, delivery=delivery, require_change=require_change, scope=scope
     )
     gate, blockers, result_state = _prove_ready_candidate(
         payload,

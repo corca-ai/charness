@@ -163,4 +163,6 @@ def test_task_run_muse_executor_uses_prompt_file_and_high_effort(
     assert "-" not in args
     prompt_path = Path(args[args.index("--prompt-file") + 1])
     assert prompt_path.name == "prompt.md"
-    assert captured_prompt.read_text(encoding="utf-8") == "update the module"
+    transmitted = captured_prompt.read_text(encoding="utf-8")
+    assert transmitted.rstrip().endswith("update the module")
+    assert "implementation lane" in transmitted

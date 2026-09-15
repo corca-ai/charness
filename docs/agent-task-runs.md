@@ -28,6 +28,15 @@ delegation itself was not exercised). `muse exec` honors one effective
 workspace, so the Codex `--add-dir` grants do not apply; the receipt
 records the root as top-level `workspace` instead of `writable_dirs`.
 
+A `--require-change` lane is an implementation lane: the carrier prepends
+directives naming the scope, demanding prompt entry into the scoped
+edit/test loop, and defining a typed early blocker (`BLOCKED: <reason>`
+on its own line) with `CONTRACT-READ` / `EDITING` / `TESTING` progress
+markers. The receipt records `lane_progress` (phases observed plus the
+blocker, if any); a changeless require-change lane that never emitted
+`EDITING` fails with that stall named. Other lanes transmit the prompt
+verbatim.
+
 ## Run
 
 ```bash
