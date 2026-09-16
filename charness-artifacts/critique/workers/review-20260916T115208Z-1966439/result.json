@@ -1,0 +1,35 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release safety: confirm fail-closed staged finalization, three-sided floor digest join with joined enforcement, and the packet-binding move preserve all joined behavior",
+  "packet_sha256": "6e8d2d1a036a819349cba6e0cec7195793c426062b9b1b2898fee202ba03a224",
+  "reviewed_input_identity_sha256": "ce08896ab9c2efab13b34fa0bd240e17f321374025590e3c2392bf6a255e4cc4",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "F1-staged-index-finalization-fails-open",
+      "bin": "resolved",
+      "disposition": "The STAGED_HEAD finalization branch now returns drift when final resolve_staged_tree is None, preventing a verdict; the supplied regression covers an unchanged fingerprint with an unresolvable final tree."
+    },
+    {
+      "concern": "F2-coverage-declaration-not-bound-to-durable-provenance",
+      "bin": "resolved",
+      "disposition": "The normalized floor digest is recorded in the findings-received ledger attempt, report, and report provenance; durable validation requires three-way equality, verifies the carried declaration against that digest, and re-enforces coverage against the hashed result. Regressions cover deletion, alteration, missing ledger backing, malformed declarations, and provenance tampering."
+    },
+    {
+      "concern": "Packet-binding move could weaken joined behavior",
+      "bin": "not-a-blocker",
+      "disposition": "The carrier now verifies generic packet/input identity once, returns the parsed packet to the semantic consumer, and retains report-to-artifact identity joins plus the full receipt/result/ledger chain when required; no joined approval behavior is dropped in the selected input."
+    }
+  ],
+  "next_move": "The reviewed F1 and F2 release blockers are resolved in this identity-bound packet; proceed with the remaining 8.8.0 release gates outside this bounded review.",
+  "non_claims": [
+    "No workspace state or content outside the identity-bound inline payload was inspected.",
+    "Tests were reviewed as semantic input but were not executed by this read-only review.",
+    "This verdict does not assess packaging, generated exports, release notes, or release gates outside the 13 selected paths.",
+    "The packet declares no structured prepared_targets, so no per-target observations are invented."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

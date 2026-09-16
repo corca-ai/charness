@@ -1,0 +1,308 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-16T02:52:09Z",
+  "prepared_for": "8.8.0 minor release second follow-up critique",
+  "changed_ref": "4df268812047f0843dc01d63de5d11118279ead9",
+  "substrate_mode": "committed-ref",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for ref `4df268812047f0843dc01d63de5d11118279ead9`: (narrow follow-up scope)\nExact reviewed-path manifest:\n- scripts/gates_support/changed_line_run_trust.py\n- skills/shared/scripts/reviewer_delivery_attempt.py\n- skills/shared/scripts/reviewer_delivery_attempt_codec.py\n- skills/shared/scripts/reviewer_delivery_fields.py\n- skills/shared/scripts/reviewer_delivery_history.py\n- skills/shared/scripts/reviewer_result_contract.py\n- skills/shared/scripts/reviewer_runner_support.py\n- skills/shared/scripts/reviewer_worker_carrier.py\n- skills/shared/scripts/reviewer_worker_carrier_support.py\n- skills/shared/scripts/reviewer_worker_report.py\n- tests/quality_gates/test_changed_line_staged_head.py\n- tests/quality_gates/test_reviewer_delivery_state_machine.py\n- tests/test_reviewer_result_coverage.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/gates_support/changed_line_run_trust.py, skills/shared/scripts/reviewer_delivery_attempt.py, skills/shared/scripts/reviewer_delivery_attempt_codec.py, skills/shared/scripts/reviewer_delivery_fields.py, skills/shared/scripts/reviewer_delivery_history.py, skills/shared/scripts/reviewer_result_contract.py, skills/shared/scripts/reviewer_runner_support.py, skills/shared/scripts/reviewer_worker_carrier.py, skills/shared/scripts/reviewer_worker_carrier_support.py, skills/shared/scripts/reviewer_worker_report.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/shared/scripts/reviewer_delivery_attempt.py, skills/shared/scripts/reviewer_delivery_attempt_codec.py, skills/shared/scripts/reviewer_delivery_fields.py, skills/shared/scripts/reviewer_delivery_history.py, skills/shared/scripts/reviewer_result_contract.py, skills/shared/scripts/reviewer_runner_support.py, skills/shared/scripts/reviewer_worker_carrier.py, skills/shared/scripts/reviewer_worker_carrier_support.py, skills/shared/scripts/reviewer_worker_report.py\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/shared/scripts/reviewer_delivery_attempt.py, skills/shared/scripts/reviewer_delivery_attempt_codec.py, skills/shared/scripts/reviewer_delivery_fields.py, skills/shared/scripts/reviewer_delivery_history.py, skills/shared/scripts/reviewer_result_contract.py, skills/shared/scripts/reviewer_runner_support.py, skills/shared/scripts/reviewer_worker_carrier.py, skills/shared/scripts/reviewer_worker_carrier_support.py, skills/shared/scripts/reviewer_worker_report.py\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/shared/scripts/reviewer_delivery_attempt.py, skills/shared/scripts/reviewer_delivery_attempt_codec.py, skills/shared/scripts/reviewer_delivery_fields.py, skills/shared/scripts/reviewer_delivery_history.py, skills/shared/scripts/reviewer_result_contract.py, skills/shared/scripts/reviewer_runner_support.py, skills/shared/scripts/reviewer_worker_carrier.py, skills/shared/scripts/reviewer_worker_carrier_support.py, skills/shared/scripts/reviewer_worker_report.py\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/gates_support/changed_line_run_trust.py, tests/quality_gates/test_changed_line_staged_head.py, tests/quality_gates/test_reviewer_delivery_state_machine.py, tests/test_reviewer_result_coverage.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/gates_support/changed_line_run_trust.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "committed-ref",
+    "substrate_mode": "committed-ref",
+    "changed_ref": "4df268812047f0843dc01d63de5d11118279ead9",
+    "resolved_changed_ref": [
+      "4df268812047f0843dc01d63de5d11118279ead9"
+    ],
+    "base_head": "4df268812047f0843dc01d63de5d11118279ead9",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      "scripts/gates_support/changed_line_run_trust.py",
+      "skills/shared/scripts/reviewer_delivery_attempt.py",
+      "skills/shared/scripts/reviewer_delivery_attempt_codec.py",
+      "skills/shared/scripts/reviewer_delivery_fields.py",
+      "skills/shared/scripts/reviewer_delivery_history.py",
+      "skills/shared/scripts/reviewer_result_contract.py",
+      "skills/shared/scripts/reviewer_runner_support.py",
+      "skills/shared/scripts/reviewer_worker_carrier.py",
+      "skills/shared/scripts/reviewer_worker_carrier_support.py",
+      "skills/shared/scripts/reviewer_worker_report.py",
+      "tests/quality_gates/test_changed_line_staged_head.py",
+      "tests/quality_gates/test_reviewer_delivery_state_machine.py",
+      "tests/test_reviewer_result_coverage.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "scripts/gates_support/changed_line_run_trust.py",
+        "content_sha256": "a45d0524a6d2f0a0e768d35a256534cc9a7dfafe1a2e48c5ab042745d4e85cc9"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_delivery_attempt.py",
+        "content_sha256": "aa148574846e49017968b99065fe1099eeab2634b008282ea7bbcacd35ae444a"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_delivery_attempt_codec.py",
+        "content_sha256": "e352309810284cb2219ddcbfeaffc6f6f9aaae63a07d54dfa8975c597ebbb409"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_delivery_fields.py",
+        "content_sha256": "25bef822de6041495603a36ac4c876ec8f46d0dc9328bf4844dd9c81553b980d"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_delivery_history.py",
+        "content_sha256": "cec09803f582d06a7271f009cba1da95995ce195cb5c363031b6eca5e85baec5"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_result_contract.py",
+        "content_sha256": "776b57ecc2ebc4995069a6e3debfb47f25a91df6cac4d4c01bc0aad6a937b9b9"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_runner_support.py",
+        "content_sha256": "871db3762d235adc149be04b4ca39554a92e4d179a72d6f2759ab6f309ae1ae6"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_worker_carrier.py",
+        "content_sha256": "d713538395e276f8bdc63104f21b940fb749b3651c291bb6fa415cdae89dc4e2"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_worker_carrier_support.py",
+        "content_sha256": "53801d43cb64e4e03523a5cdb17edcf35b7af9b33228ac07c0e0dbf43b153fcf"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_worker_report.py",
+        "content_sha256": "368c5728b45a7da552bc9d10ac6579b28de024b5df7317421b45a5de3f3b578a"
+      },
+      {
+        "path": "tests/quality_gates/test_changed_line_staged_head.py",
+        "content_sha256": "bea94132dd6bb6fac471a7e29d33666f3726cf04e75a34350110e5ba213e8bb6"
+      },
+      {
+        "path": "tests/quality_gates/test_reviewer_delivery_state_machine.py",
+        "content_sha256": "fdbe3b3c77929551156453c2778242376b468247c1be6071f9b9c5baf0bdbfb5"
+      },
+      {
+        "path": "tests/test_reviewer_result_coverage.py",
+        "content_sha256": "618f3e7934766c343cbe8580d3463e8a2547543a3a094b814abe45b74cb0a9ca"
+      }
+    ],
+    "reviewed_patch_sha256": "e4f227ff43c3d16336bbe58dc779ad1e1ffb02630534c19f163e95c3692e9ad5",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "ce08896ab9c2efab13b34fa0bd240e17f321374025590e3c2392bf6a255e4cc4"
+  },
+  "follow_up": {
+    "kind": "charness.review_followup_context.v1",
+    "source": "charness-artifacts/critique/workers/review-20260916T112122Z-1782551/partial-result.json",
+    "source_sha256": "78663a2cfa663ba1cffe501292d1a2fb7b9b7efd03f1de4e86ac8cd2042cce82",
+    "prior_attempt_id": "review-20260916T112122Z-1782551",
+    "prior_verdict": "block",
+    "prior_scope": "8.8.0 minor release follow-up: verify F1-F4 blockers resolved",
+    "prior_lens": "release safety: confirm staged-index drift guard, durable coverage floor, pre-chain grandfathering, and child CAS resolve the prior block",
+    "prior_packet_path": "charness-artifacts/critique/review-20260916T112122Z-1782551-packet.json",
+    "prior_packet_sha256": "91153bf598c1f81ccd67ec36da932b13b2db41826a29567ca949e6b10befcf00",
+    "prior_reviewed_input_identity_sha256": "420d8dc83d58d2a209c0f9e6939ca2edf93286b75f348104c937f6c8dd4c80dd",
+    "selection": "explicit-with-selection-receipt",
+    "selected_paths": [
+      "scripts/gates_support/changed_line_run_trust.py",
+      "skills/shared/scripts/reviewer_delivery_attempt.py",
+      "skills/shared/scripts/reviewer_delivery_attempt_codec.py",
+      "skills/shared/scripts/reviewer_delivery_fields.py",
+      "skills/shared/scripts/reviewer_delivery_history.py",
+      "skills/shared/scripts/reviewer_result_contract.py",
+      "skills/shared/scripts/reviewer_runner_support.py",
+      "skills/shared/scripts/reviewer_worker_carrier.py",
+      "skills/shared/scripts/reviewer_worker_carrier_support.py",
+      "skills/shared/scripts/reviewer_worker_report.py",
+      "tests/quality_gates/test_changed_line_staged_head.py",
+      "tests/quality_gates/test_reviewer_delivery_state_machine.py",
+      "tests/test_reviewer_result_coverage.py"
+    ],
+    "prior_reviewed_paths": 9,
+    "comparison": {
+      "prior_paths": 9,
+      "changed_prior_paths": [],
+      "selected_changed_prior_paths": [],
+      "new_paths": [
+        "skills/shared/scripts/reviewer_delivery_attempt.py",
+        "skills/shared/scripts/reviewer_delivery_attempt_codec.py",
+        "skills/shared/scripts/reviewer_delivery_fields.py",
+        "skills/shared/scripts/reviewer_delivery_history.py",
+        "skills/shared/scripts/reviewer_runner_support.py",
+        "skills/shared/scripts/reviewer_worker_carrier.py",
+        "tests/quality_gates/test_reviewer_delivery_state_machine.py"
+      ],
+      "unchanged_selected_paths": [],
+      "omitted_changed_prior_paths": [],
+      "comparison_ref": {
+        "prior": "6f63cebcbb61442c285a36b10b2661b9bf032dae",
+        "current": "4df268812047f0843dc01d63de5d11118279ead9"
+      }
+    },
+    "selection_receipt": {
+      "prior_binding": {
+        "status": "verified",
+        "attempt_id": "review-20260916T112122Z-1782551",
+        "packet_sha256": "91153bf598c1f81ccd67ec36da932b13b2db41826a29567ca949e6b10befcf00",
+        "reviewed_input_identity_sha256": "420d8dc83d58d2a209c0f9e6939ca2edf93286b75f348104c937f6c8dd4c80dd",
+        "packet_verification": "canonical-integrity-only",
+        "identity_verification": "recorded-self-digest",
+        "semantic_input": {
+          "status": "verified",
+          "entries": 9
+        },
+        "result_carrier": {
+          "status": "verified",
+          "attempt_id": "review-20260916T112122Z-1782551",
+          "partial_result_sha256": "78663a2cfa663ba1cffe501292d1a2fb7b9b7efd03f1de4e86ac8cd2042cce82",
+          "result_sha256": "b60213f1fc4568199f476482e1eb436d72c3245aae45cb4416251c44996d4955",
+          "source_path": "charness-artifacts/critique/workers/review-20260916T112122Z-1782551/backend.stdout"
+        }
+      },
+      "explicit_paths": true,
+      "rationale": "Explicit paths were supplied because the committed review ref differs from the prior ref; selection is not approval."
+    },
+    "prior_findings": [
+      {
+        "id": "F1-staged-index-finalization-fails-open",
+        "severity": "high",
+        "summary": "The staged-tree drift guard detects a changed final tree, but a failed final tree inspection still permits a verdict, so staged-index identity is not established at finalization.",
+        "action": "Fail closed when final resolve_staged_tree returns None and add a regression test showing final staged-tree inspection failure produces an untrusted/no-verdict result.",
+        "evidence": [
+          "In run_state_drift's STAGED_HEAD branch, resolve_staged_tree(repo_root) is compared with pinned[\"resolved_head_sha\"] only when tree_now is not None.",
+          "The accompanying comment explicitly says an unresolvable final tree skips the secondary guard.",
+          "A final git write-tree failure therefore returns no staged-tree drift when the pool fingerprint is unchanged, despite the run being unable to prove that the staged index still matches the analyzed tree.",
+          "test_staged_drift_catches_an_index_only_change covers a successfully resolved changed tree, but no test requires final resolve failure to mark the run untrusted."
+        ]
+      },
+      {
+        "id": "F2-coverage-declaration-not-bound-to-durable-provenance",
+        "severity": "high",
+        "summary": "The durable coverage floor remains removable from the worker report, allowing the same thin result to validate after expected_targets is omitted.",
+        "action": "Cryptographically join the normalized expected-target set or its digest into immutable attempt/receipt/report provenance, require consistency at durable validation, and add tests that deletion or alteration of the report declaration cannot make a thin result deliverable.",
+        "evidence": [
+          "build_report carries expected_targets and coverage_ok only as ordinary report fields; neither is joined to the receipt, ledger attempt, or provenance digest.",
+          "validate_delivered_worker_report does not require expected_targets or coverage_ok among its mandatory fields.",
+          "_validate_receipt_and_result falls back to report.get(\"expected_targets\"); when that field is absent or null, report_declared_targets returns None and validate_bounded_result performs no coverage check.",
+          "test_durable_carrier_rejects_a_thin_file_despite_the_report preserves expected_targets in the report; it does not test removal or alteration of that declaration before durable validation."
+        ]
+      }
+    ],
+    "omitted_finding_ids": [],
+    "prior_next_move": "Do not release 8.8.0 from this packet. Make final staged-tree resolution fail closed and bind the expected-target declaration into immutable delivery provenance; then add the two adversarial regressions and rerun the bounded follow-up review.",
+    "prior_non_claims": [
+      "No workspace state, test execution, or content outside the identity-bound inline payload was inspected.",
+      "This review does not dispute the supplied pre-chain grandfathering or child-CAS fixes.",
+      "This review does not assess packaging, release notes, or non-pool execution-input boundaries beyond the selected semantic input."
+    ],
+    "approval_rule": "This is prior evidence only. Reuse findings as hypotheses; do not treat a prior block, defer, timeout, or partial result as approval. The new reviewer must bind the new packet and current selected paths independently.",
+    "final_reviewed_input_identity_sha256": "ce08896ab9c2efab13b34fa0bd240e17f321374025590e3c2392bf6a255e4cc4",
+    "final_selected_path_count": 13,
+    "context_size_bytes": 7214
+  },
+  "follow_up_scope": {
+    "kind": "charness.follow_up_scope_receipt.v1",
+    "status": "verified",
+    "selected_paths": [
+      "scripts/gates_support/changed_line_run_trust.py",
+      "skills/shared/scripts/reviewer_delivery_attempt.py",
+      "skills/shared/scripts/reviewer_delivery_attempt_codec.py",
+      "skills/shared/scripts/reviewer_delivery_fields.py",
+      "skills/shared/scripts/reviewer_delivery_history.py",
+      "skills/shared/scripts/reviewer_result_contract.py",
+      "skills/shared/scripts/reviewer_runner_support.py",
+      "skills/shared/scripts/reviewer_worker_carrier.py",
+      "skills/shared/scripts/reviewer_worker_carrier_support.py",
+      "skills/shared/scripts/reviewer_worker_report.py",
+      "tests/quality_gates/test_changed_line_staged_head.py",
+      "tests/quality_gates/test_reviewer_delivery_state_machine.py",
+      "tests/test_reviewer_result_coverage.py"
+    ],
+    "sections": [
+      {
+        "section_id": "changed-files-and-owning-surfaces",
+        "mode": "selected-paths",
+        "binding": "CHARNESS_CRITIQUE_REVIEWED_PATHS",
+        "path_binding": "exact-path-manifest",
+        "selected_path_count": 13,
+        "path_set_sha256": "798962e651eb079d348d42789c1d1cbd7ad838446391723427d6ebbe6d0f4414",
+        "status": "verified",
+        "path_check": "exact-manifest"
+      },
+      {
+        "section_id": "critique-prepare-non-goals",
+        "mode": "static",
+        "binding": "adapter-static-content",
+        "path_binding": null,
+        "selected_path_count": 13,
+        "path_set_sha256": null,
+        "status": "verified",
+        "path_check": "not-applicable"
+      },
+      {
+        "section_id": "reviewer-packet-semantic-question",
+        "mode": "static",
+        "binding": "adapter-static-content",
+        "path_binding": null,
+        "selected_path_count": 13,
+        "path_set_sha256": null,
+        "status": "verified",
+        "path_check": "not-applicable"
+      }
+    ],
+    "contract": "Adapter-declared follow-up scope; selected-path sections must expose every identity-bound path, and static sections must declare that they are not path-bearing."
+  }
+}

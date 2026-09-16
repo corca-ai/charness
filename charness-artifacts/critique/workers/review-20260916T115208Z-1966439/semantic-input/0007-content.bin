@@ -1,0 +1,252 @@
+"""Validate the typed report carrier used by a file-backed reviewer.
+
+The sibling support module owns repository I/O and receipt/ledger/result
+joins. This surface owns the artifact-field contract, the reviewed-packet
+binding, and joins those results to the cited critique, so public consumers
+share one approval meaning.
+"""
+
+from __future__ import annotations
+
+import importlib.util
+import re
+from pathlib import Path
+from typing import Any, Callable
+
+import yaml
+
+
+def _load_support_module():
+    candidate = Path(__file__).resolve().with_name("reviewer_worker_carrier_support.py")
+    spec = importlib.util.spec_from_file_location("charness_reviewer_worker_carrier_support", candidate)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"package-local worker carrier support is unavailable: {candidate}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_SUPPORT = _load_support_module()
+PARENT_RECEIPT_ID_RE = _SUPPORT.PARENT_RECEIPT_ID_RE
+WorkerCarrierError = _SUPPORT.WorkerCarrierError
+_report_path = _SUPPORT._report_path
+_sha256 = _SUPPORT._sha256
+_validate_delivery_chain = _SUPPORT._validate_delivery_chain
+
+
+def _load_identity_verifier():
+    for ancestor in list(Path(__file__).resolve().parents)[:6]:
+        candidate = ancestor / "scripts" / "review" / "reviewed_input_verification.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("charness_reviewed_input_verification", candidate)
+            if spec is not None and spec.loader is not None:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                return module
+    return None
+
+
+def _validate_packet_binding(
+    *,
+    repo_root: Path,
+    artifact_binding_fields: dict[str, str],
+    required_issue_numbers: list[int] | None = None,
+    required_repository: str | None = None,
+) -> dict[str, Any]:
+    """Verify the generic packet/input identity and return its parsed bytes.
+
+    The optional issue arguments remain accepted for compatibility with older
+    callers, but issue membership is intentionally not interpreted here.  A
+    consumer that owns target semantics must validate the returned packet.
+    """
+    packet_path = artifact_binding_fields.get("packet path", "").strip().strip("`")
+    if not packet_path:
+        raise WorkerCarrierError("worker-delivered requires the Reviewed Input Identity packet path")
+    verifier = _load_identity_verifier()
+    if verifier is None:
+        raise WorkerCarrierError("package reviewed-input verifier is unavailable")
+    try:
+        packet = _SUPPORT._read_json(_report_path(repo_root, packet_path), "reviewed packet")
+        ok, reason = verifier.verify_packet_binding(
+            repo_root=repo_root,
+            packet_path=packet_path,
+            packet_sha256=artifact_binding_fields.get("packet sha256", "").strip().lower(),
+            identity_sha256=artifact_binding_fields.get("identity sha256", "").strip().lower(),
+            expected_kind=_SUPPORT.EXPECTED_PACKET_KIND,
+            check_current=True,
+        )
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        raise WorkerCarrierError(f"reviewed packet binding could not be verified: {exc}") from exc
+    if not ok:
+        raise WorkerCarrierError(f"reviewed packet binding is not current: {reason}")
+    return packet
+
+WORKER_REPORT_FIELDS = (
+    "worker report",
+    "worker report identity",
+    "worker report approval",
+    "worker report delivery",
+    "worker report packet identity",
+    "worker report input identity",
+    "worker report parent receipt identity",
+    "worker report findings identity",
+)
+
+
+def _validate_artifact_fields(fields: dict[str, str]) -> None:
+    missing = [field for field in WORKER_REPORT_FIELDS if not fields.get(field)]
+    if missing:
+        raise WorkerCarrierError(f"`worker-delivered` requires the durable worker report carrier fields: {missing}")
+    if fields["worker report approval"].strip().lower() != "approval_eligible: true":
+        raise WorkerCarrierError("worker-delivered requires `Worker report approval: approval_eligible: true`; a receipt or output file alone is not approval")
+    if fields["worker report delivery"].strip().lower() != "findings-received":
+        raise WorkerCarrierError("worker-delivered requires `Worker report delivery: findings-received`; a spawned or recovered worker is not a delivered report")
+    for field in (
+        "worker report identity",
+        "worker report packet identity",
+        "worker report input identity",
+        "worker report findings identity",
+    ):
+        if not re.fullmatch(r"[0-9a-f]{64}", fields[field].strip().lower()):
+            raise WorkerCarrierError(f"`{field}` must carry a lowercase SHA-256 identity from the combined worker report")
+    if not PARENT_RECEIPT_ID_RE.fullmatch(fields["worker report parent receipt identity"].strip()):
+        raise WorkerCarrierError("`worker report parent receipt identity` must carry the non-empty, single-line receipt identity from the combined worker report")
+
+
+def _read_report(report_file: Path, expected_identity: str) -> dict[str, Any]:
+    if _sha256(report_file) != expected_identity.strip().lower():
+        raise WorkerCarrierError("worker report carrier SHA-256 does not match its recorded identity")
+    try:
+        report = yaml.safe_load(report_file.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        raise WorkerCarrierError(f"worker report carrier is not readable YAML: {exc}") from exc
+    if not isinstance(report, dict):
+        raise WorkerCarrierError("worker report carrier must contain a mapping")
+    required = {
+        "schema_version": "charness.reviewer_worker_report.v1",
+        "execution_mode": "file-backed-worker",
+        "approval_eligible": True,
+        "delivery_state": "findings-received",
+        "receipt_ok": True,
+        "ledger_ok": True,
+        "provenance_ok": True,
+    }
+    mismatches = [key for key, expected in required.items() if report.get(key) != expected]
+    if mismatches:
+        raise WorkerCarrierError(f"worker report carrier does not prove approval for fields: {mismatches}")
+    return report
+
+
+def _validate_identity_joins(
+    *, report: dict[str, Any], fields: dict[str, str], artifact_binding_fields: dict[str, str] | None
+) -> None:
+    report_fields = {
+        "worker report packet identity": report.get("packet_identity"),
+        "worker report input identity": report.get("reviewed_input_identity"),
+        "worker report parent receipt identity": report.get("parent_receipt_identity"),
+        "worker report findings identity": report.get("findings_identity"),
+    }
+    mismatches = [
+        field
+        for field, expected in report_fields.items()
+        if expected
+        != (
+            fields[field].strip()
+            if field == "worker report parent receipt identity"
+            else fields[field].strip().lower()
+        )
+    ]
+    if mismatches:
+        raise WorkerCarrierError(f"worker report carrier identity joins do not match: {mismatches}")
+    if artifact_binding_fields is None or not all(
+        artifact_binding_fields.get(field, "").strip()
+        for field in ("packet sha256", "identity sha256")
+    ):
+        raise WorkerCarrierError("worker-delivered requires a Reviewed Input Identity binding so the worker report's packet and input identities can be joined to the artifact it closes")
+    binding_mismatches = []
+    for report_field, binding_field in (
+        ("worker report packet identity", "packet sha256"),
+        ("worker report input identity", "identity sha256"),
+    ):
+        binding_value = artifact_binding_fields.get(binding_field, "").strip().lower()
+        if not binding_value or report_fields[report_field] != binding_value:
+            binding_mismatches.append(f"{report_field} != Reviewed Input Identity:{binding_field}")
+    if binding_mismatches:
+        raise WorkerCarrierError("worker report identities do not match the artifact's Reviewed Input Identity: " + str(binding_mismatches))
+
+
+def validate_worker_report_carrier(
+    *,
+    artifact_label: str,
+    fields: dict[str, str],
+    repo_root: Path,
+    artifact_binding_fields: dict[str, str] | None,
+    require_delivery_chain: bool = False,
+    required_issue_numbers: list[int] | None = None,
+    required_repository: str | None = None,
+    required_scope_prefix: str | None = None,
+) -> dict[str, Any]:
+    """Validate and return the joined worker-report mapping.
+
+    Compatibility wrapper for consumers that only need the report.  Consumers
+    that own packet/result semantics should use
+    :func:`validate_worker_report_evidence` so the already-validated JSON bytes
+    are returned without a second packet/result read.
+    """
+    evidence = validate_worker_report_evidence(
+        artifact_label=artifact_label,
+        fields=fields,
+        repo_root=repo_root,
+        artifact_binding_fields=artifact_binding_fields,
+        require_delivery_chain=require_delivery_chain,
+        required_issue_numbers=required_issue_numbers,
+        required_repository=required_repository,
+        required_scope_prefix=required_scope_prefix,
+    )
+    return evidence["report"]
+
+
+def validate_worker_report_evidence(
+    *,
+    artifact_label: str,
+    fields: dict[str, str],
+    repo_root: Path,
+    artifact_binding_fields: dict[str, str] | None,
+    require_delivery_chain: bool = False,
+    required_issue_numbers: list[int] | None = None,
+    required_repository: str | None = None,
+    required_scope_prefix: str | None = None,
+    packet_validator: Callable[[dict[str, Any]], None] | None = None,
+) -> dict[str, Any]:
+    """Return the validated report, packet, and result as one evidence join.
+
+    The issue skill is the owner of target membership.  The shared layer only
+    proves packet/input/result/delivery identity and leaves the opaque packet
+    fields untouched.
+    """
+    _validate_artifact_fields(fields)
+    report = _read_report(_report_path(repo_root, fields["worker report"]), fields["worker report identity"])
+    if required_scope_prefix and not str(report.get("scope", "")).startswith(required_scope_prefix):
+        raise WorkerCarrierError(f"worker report scope must start with {required_scope_prefix!r} for this consumer")
+    _validate_identity_joins(report=report, fields=fields, artifact_binding_fields=artifact_binding_fields)
+    packet = None
+    receipt = None
+    result = None
+    output_hash = None
+    if require_delivery_chain:
+        packet = _validate_packet_binding(
+            repo_root=repo_root,
+            artifact_binding_fields=artifact_binding_fields or {},
+            required_issue_numbers=required_issue_numbers,
+            required_repository=required_repository,
+        )
+        if packet_validator is not None:
+            packet_validator(packet)
+        receipt, result, output_hash = _validate_delivery_chain(repo_root=repo_root, report=report)
+    return {
+        "report": report,
+        "packet": packet,
+        "result": result,
+        "receipt": receipt,
+        "output_sha256": output_hash,
+    }
