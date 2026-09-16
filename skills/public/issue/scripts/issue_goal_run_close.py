@@ -79,6 +79,7 @@ def _verify_children(
                 f"child {repo}#{entry['number']} evidence identity is not present in issue-owned comments"
             )
     CONTRACT.BINDING.require_created_children(binding, issues, metadata)
+    CONTRACT.BINDING.require_body_descent(binding, issues, metadata)
 
 
 def _prepare_close(

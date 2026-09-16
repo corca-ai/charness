@@ -88,9 +88,12 @@ from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
 REPO_ROOT = repo_root_from_script(__file__)
 
 from scripts.core.subprocess_guard import run_monitored_phase  # noqa: E402
+from scripts.gates_support import changed_line_run_trust as _trust  # noqa: E402
 from scripts.gates_support import changed_line_verdict_codes as _verdict_codes  # noqa: E402
+from scripts.gates_support.changed_line_staged_head import STAGED_HEAD  # noqa: E402
 from scripts.mutation import mutation_coverage_producer as _producer  # noqa: E402
 from scripts.mutation import suggest_mutation_coverage_command as _suggest  # noqa: E402
+from scripts.mutation.sample_mutation_files import list_eligible  # noqa: E402
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
@@ -416,6 +419,15 @@ def main(argv: list[str] | None = None) -> int:
             f"them: {', '.join(unmapped)}"
         )
 
+    # A clean tree analyzes HEAD exactly as before. Uncommitted pool changes
+    # analyze the staged index tree instead: the receipt the commit-msg hook
+    # demands can then be earned BEFORE the commit, which is what breaks the
+    # commit-then-prove deadlock for a first commit of pool changes. Unstaged
+    # or untracked pool changes stay staged-invisible and refuse inside the
+    # consumer with staging instructions.
+    dirty = _trust.uncommitted_pool_changes(repo_root, set(list_eligible(repo_root)))
+    head_arg = STAGED_HEAD if dirty else "HEAD"
+
     consumer_argv = [
         sys.executable,
         str(repo_root / CONSUMER),
@@ -424,7 +436,7 @@ def main(argv: list[str] | None = None) -> int:
         "--base-sha",
         base_sha,
         "--head-sha",
-        "HEAD",
+        head_arg,
         "--coverage-json",
         str(coverage_json),
         "--reuse-coverage",
@@ -461,6 +473,7 @@ def main(argv: list[str] | None = None) -> int:
         "status": status,
         "reason": reason,
         "base_sha": base_sha,
+        "analyzed_head": head_arg,
         "analyzed_changed_pool_files": mapped,
         "unmapped_changed_pool_files": unmapped,
         "consumer_returncode": result.returncode,

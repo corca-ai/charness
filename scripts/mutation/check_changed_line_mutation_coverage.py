@@ -96,6 +96,11 @@ from scripts.gates_support.changed_line_scope_counts import (  # noqa: E402
     scope_counts,
     scope_counts_not_computed,
 )
+from scripts.gates_support.changed_line_staged_head import (  # noqa: E402
+    STAGED_HEAD,
+    staged_dirty_refusal,
+    staged_false_green_message,
+)
 from scripts.gates_support.changed_line_verdict_codes import (  # noqa: E402
     PARTIAL_EXIT,
     REFUSED_EXIT,
@@ -351,6 +356,21 @@ def _emit_dirty_refusal(uncommitted: list[str], metadata: dict) -> int:
     return REFUSED_EXIT
 
 
+def _emit_staged_dirty_refusal(uncommitted: list[str], metadata: dict, tree: str) -> int:
+    """Startup refusal when the staged tree cannot see worktree pool changes."""
+    message = staged_dirty_refusal(uncommitted, tree)
+    sys.stderr.write(f"ERROR (changed-line mutation gate): {message}\n")
+    _emit({
+        "ok": False,
+        "blocking": [],
+        "refused": True,
+        "reason": message,
+        **metadata,
+        "changed_line_proof": "refused",
+    })
+    return REFUSED_EXIT
+
+
 def _run_metadata(base_sha: str, head_sha: str, pinned: dict[str, str], contaminated: list[str]) -> dict:
     """Additive payload metadata shared by every verdict this run can emit."""
     metadata: dict[str, object] = {
@@ -459,9 +479,21 @@ def main() -> int:
             "changed_line_proof": "refused",
             "reason": trust.unestablished_reason,
         }, repo_root, base_sha, head_sha, pinned, REFUSED_EXIT)
+    staged = head_sha == STAGED_HEAD
     if contaminated and not args.allow_dirty:
+        if staged:
+            return _emit_staged_dirty_refusal(
+                contaminated, metadata, pinned["resolved_head_sha"]
+            )
         return _emit_dirty_refusal(contaminated, metadata)
-    fg_warning = false_green_message(contaminated) if contaminated else None
+    if contaminated:
+        fg_warning = (
+            staged_false_green_message(contaminated, pinned["resolved_head_sha"])
+            if staged
+            else false_green_message(contaminated)
+        )
+    else:
+        fg_warning = None
     if fg_warning:
         sys.stderr.write(f"WARNING (changed-line mutation gate): {fg_warning}\n")
     analyzed_head = pinned["resolved_head_sha"]

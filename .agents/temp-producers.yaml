@@ -140,6 +140,11 @@ producers:
   symbol: handle
   disposition: anonymous-auto-delete-file
   rationale: Terminal metadata serialization uses an anonymous auto-delete file before publication.
+- identity: skills/public/issue/scripts/issue_goal_run_operations.py::_record_body_revision::handle
+  path: skills/public/issue/scripts/issue_goal_run_operations.py
+  symbol: handle
+  disposition: anonymous-auto-delete-file
+  rationale: Body revision serialization uses an anonymous auto-delete file before publication.
 - identity: skills/public/issue/scripts/issue_tracker_observation.py::_write_immutable::handle
   path: skills/public/issue/scripts/issue_tracker_observation.py
   symbol: handle

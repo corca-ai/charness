@@ -76,8 +76,10 @@ def approved_issue_identities(binding: dict[str, Any]) -> set[tuple[str, int]]:
     }
 
 
-def work_item_marker(key: str) -> str:
-    return f"<!-- charness-work-item-key: {key} -->"
+CHAIN = _load_local("issue_goal_run_body_chain", "issue_goal_run_binding_chain")
+work_item_marker = CHAIN.work_item_marker
+require_marker = CHAIN.require_marker
+require_body_descent = CHAIN.require_body_descent
 
 
 def amended_items(metadata: dict[str, Any] | None) -> list[dict[str, Any]]:
@@ -146,13 +148,6 @@ def work_item_for_target(
                 f"{binding['parent']['repo']}#{number} in the immutable Goal Binding"
             )
     return item
-
-
-def require_marker(key: str, body: bytes | str, *, context: str) -> None:
-    """A child's identity is its work-item marker, present exactly once."""
-    text = body.decode("utf-8") if isinstance(body, bytes) else body
-    if text.count(work_item_marker(key)) != 1:
-        raise RuntimeError(f"{context} must carry the marker for Work Item {key!r} exactly once")
 
 
 def validate_managed_body(

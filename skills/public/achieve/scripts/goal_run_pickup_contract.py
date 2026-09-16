@@ -23,6 +23,7 @@ PROGRESS_OPTIONAL_FIELDS = {"membership_sha256"}
 NEXT_FIELDS = {"key", "repo", "number", "url", "state"}
 AMENDMENT_FIELDS = {"key", "repo", "number", "url", "rank", "dependencies", "reason", "approval"}
 AMENDMENT_APPROVAL_FIELDS = {"response", "session_id", "observed_at"}
+BODY_REVISION_FIELDS = {"key", "number", "body_sha256", "supersedes_sha256"}
 KEY_RE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 
 
@@ -95,6 +96,7 @@ def validate_metadata(
                 "metadata-invalid", f"metadata.{field} must be a non-empty repo-relative path"
             )
     validate_amendments(metadata.get("amendments"), repo=repo)
+    validate_body_revisions(metadata.get("body_revisions"))
     return dict(metadata)
 
 
@@ -151,6 +153,56 @@ def validate_amendments(value: Any, *, repo: str) -> list[dict[str, Any]]:
             )
         result.append(dict(entry))
     return result
+
+
+def validate_body_revisions(value: Any) -> list[dict[str, Any]]:
+    """Validate the parent-owned append-only Work Item body revision chain.
+
+    One entry records one authorized managed-body mutation: the Work Item key
+    and issue number it applied to, the submitted body's digest, and the live
+    digest it superseded (the chain genesis when first recorded). Entries are
+    written only by the validated update-body path, oldest first; closeout
+    accepts a live body only when it descends from this chain (or from the
+    binding's observed digest where one was recorded). Absent means no managed
+    body was ever updated through the operation path, which preserves the
+    historical marker-only behavior for untouched items.
+    """
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise PickupError("metadata-invalid", "metadata.body_revisions must be a list")
+    result = []
+    for index, entry in enumerate(value):
+        context = f"metadata.body_revisions[{index}]"
+        if not isinstance(entry, dict) or set(entry) != BODY_REVISION_FIELDS:
+            raise PickupError("metadata-invalid", f"{context} has the wrong fields")
+        key = entry["key"]
+        if not isinstance(key, str) or not KEY_RE.fullmatch(key):
+            raise PickupError("metadata-invalid", f"{context}.key is invalid")
+        number = entry["number"]
+        if type(number) is not int or number <= 0:
+            raise PickupError("metadata-invalid", f"{context}.number must be a positive integer")
+        _sha(entry["body_sha256"], f"{context}.body_sha256")
+        supersedes = entry["supersedes_sha256"]
+        if supersedes is not None:
+            _sha(supersedes, f"{context}.supersedes_sha256")
+        result.append(dict(entry))
+    return result
+
+
+def body_revision_digests(
+    metadata: dict[str, Any] | None, *, key: str
+) -> set[str]:
+    """Every digest the authorized chain knows for one Work Item key."""
+    if not metadata:
+        return set()
+    digests: set[str] = set()
+    for entry in validate_body_revisions(metadata.get("body_revisions")):
+        if entry["key"] == key:
+            digests.add(entry["body_sha256"])
+            if entry["supersedes_sha256"] is not None:
+                digests.add(entry["supersedes_sha256"])
+    return digests
 
 
 def amendment_items(metadata: dict[str, Any]) -> list[dict[str, Any]]:

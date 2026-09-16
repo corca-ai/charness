@@ -62,6 +62,7 @@ def finalize_attempt(
     parent_receipt_identity: str,
     execution_mode: str,
     build_report: Callable[..., dict[str, Any]],
+    expected_targets: list[str] | tuple[str, ...] | None = None,
 ) -> dict[str, Any]:
     """Validate collection before changing the attempt to findings-received."""
     receipt: dict[str, Any] | None = None
@@ -82,6 +83,7 @@ def finalize_attempt(
                 reviewed_input_identity=reviewed_input_identity,
                 parent_receipt_identity=parent_receipt_identity,
                 expected_execution_mode=execution_mode,
+                expected_targets=expected_targets,
             )
         except (OSError, ValueError, KeyError, TypeError) as exc:
             receipt_error = exc
@@ -134,4 +136,5 @@ def finalize_attempt(
         reviewed_input_identity=reviewed_input_identity,
         parent_receipt_identity=parent_receipt_identity,
         expected_execution_mode=execution_mode,
+        expected_targets=expected_targets,
     )

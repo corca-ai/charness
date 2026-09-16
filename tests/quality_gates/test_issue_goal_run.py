@@ -24,6 +24,9 @@ PROVIDER_PATH = ROOT / "skills/public/issue/scripts/issue_goal_run.py"
 CLOSE_PATH = ROOT / "skills/public/issue/scripts/issue_goal_run_close.py"
 CLOSE_BACKEND_PATH = ROOT / "skills/public/issue/scripts/issue_close.py"
 REPO = "corca-ai/charness"
+# Live provider reads always carry the body (READ_FIELDS); the fixture binding
+# records this digest as the reuse item's observed genesis.
+CHILD_BODY = "old child body\n"
 
 
 def _provider():
@@ -270,11 +273,7 @@ def test_goal_run_close_reuses_parent_read_for_carrier_preflight(tmp_path: Path)
         "body": _parent_body(tmp_path),
         "comments": [],
     }
-    child = {
-        "number": 725,
-        "state": "CLOSED",
-        "comments": [{"url": "comment"}],
-    }
+    child = {"number": 725, "state": "CLOSED", "body": CHILD_BODY, "comments": [{"url": "comment"}]}
     reads: list[int] = []
     updated_parent = dict(parent)
 
@@ -421,7 +420,7 @@ def test_goal_run_close_reports_metadata_failure_after_verified_close(tmp_path: 
         "body": _parent_body(tmp_path),
         "comments": [],
     }
-    child = {"number": 725, "state": "CLOSED", "comments": [{"url": "comment"}]}
+    child = {"number": 725, "state": "CLOSED", "body": CHILD_BODY, "comments": [{"url": "comment"}]}
     reads: list[int] = []
 
     def read_issue(_repo: str, number: int, **_kwargs: object) -> dict[str, object]:
@@ -478,7 +477,7 @@ def test_goal_run_close_retry_repairs_metadata_without_reclosing(
         "body": _parent_body(tmp_path),
         "comments": [],
     }
-    child = {"number": 725, "state": "CLOSED", "comments": [{"url": "comment"}]}
+    child = {"number": 725, "state": "CLOSED", "body": CHILD_BODY, "comments": [{"url": "comment"}]}
     updates = 0
     closes = 0
 
@@ -593,7 +592,7 @@ def test_goal_run_close_retry_reuses_prior_comment(tmp_path: Path) -> None:
         "state": "OPEN",
         "body": _parent_body(tmp_path),
     }
-    child = {"number": 725, "state": "CLOSED", "comments": [{"url": "comment"}]}
+    child = {"number": 725, "state": "CLOSED", "body": CHILD_BODY, "comments": [{"url": "comment"}]}
     calls = {"comment": 0, "resume": 0}
 
     def read_issue(_repo: str, number: int, **_kwargs: object) -> dict[str, object]:
@@ -704,7 +703,7 @@ def test_goal_run_close_refuses_unverifiable_already_closed_metadata(tmp_path: P
             terminal_observation_sha256="c" * 64,
         ),
     }
-    child = {"number": 725, "state": "CLOSED", "comments": [{"url": "comment"}]}
+    child = {"number": 725, "state": "CLOSED", "body": CHILD_BODY, "comments": [{"url": "comment"}]}
     module["command_close"].__globals__["READ"] = SimpleNamespace(
         read_issue_with_comments=lambda _repo, number, **_kwargs: {
             "issue": parent if number == 724 else child
@@ -742,7 +741,7 @@ def test_goal_run_close_reports_parent_readback_failure_after_metadata_update(
         "body": _parent_body(tmp_path),
         "comments": [],
     }
-    child = {"number": 725, "state": "CLOSED", "comments": [{"url": "comment"}]}
+    child = {"number": 725, "state": "CLOSED", "body": CHILD_BODY, "comments": [{"url": "comment"}]}
     reads: list[int] = []
 
     def read_issue(_repo: str, number: int, **_kwargs: object) -> dict[str, object]:

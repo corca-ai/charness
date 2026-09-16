@@ -206,6 +206,7 @@ def build_report(
     reviewed_input_identity: str,
     parent_receipt_identity: str,
     expected_execution_mode: str = "file-backed-worker",
+    expected_targets: list[str] | tuple[str, ...] | None = None,
 ) -> dict[str, Any]:
     receipt_file, receipt = _read_json(receipt_path, "receipt_file")
     ledger_file, ledger_payload = _read_json(ledger_path, "ledger_file")
@@ -231,6 +232,7 @@ def build_report(
                 packet_identity=packet_identity,
                 reviewed_input_identity=reviewed_input_identity,
                 require_pass=False,
+                expected_targets=expected_targets,
             )
             semantic_reason = (
                 "typed reviewer verdict is not pass: "
@@ -327,6 +329,11 @@ def build_report(
         "receipt_ok": receipt_ok,
         "ledger_ok": ledger_ok,
         "result_schema_ok": semantic_result is not None,
+        # None when no floor was declared; otherwise whether validation
+        # (including the declared floor) passed. The failure class behind a
+        # False lives in the reason string and the contract's distinct error
+        # types, never merged into one unverified outcome.
+        "coverage_ok": None if expected_targets is None else semantic_result is not None,
         "collection_ready": collection_ready,
         "partial_output": partial_output,
         "partial_output_ok": partial_output is not None,

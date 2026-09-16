@@ -17,6 +17,16 @@ class ReviewerResultError(ValueError):
     """A result cannot support a bounded-review approval claim."""
 
 
+class ReviewerCoverageError(ReviewerResultError):
+    """A schema-valid result does not cover its declared target set.
+
+    Kept distinct from a schema failure on purpose: the runner must tell
+    "the model/tool failed", "the JSON shape is wrong", and "the shape is
+    right but admitted inputs went unobserved" apart instead of merging all
+    three into one unverified outcome.
+    """
+
+
 def canonical_schema_path() -> Path:
     here = Path(__file__).resolve()
     for ancestor in (here.parent, *here.parents):
@@ -110,14 +120,93 @@ def _read_result(path: Path) -> dict[str, Any]:
     return payload
 
 
+def _normalize_expected_targets(expected_targets: Any) -> set[str]:
+    """Validate an author-declared coverage set without naming any workflow's items.
+
+    The runner never embeds item names: the author derives the set from the
+    admitted inputs (for example a packet's prepared targets) and the contract
+    only enforces set coverage. A malformed declaration is the author's
+    programming error, so it raises the schema-class error, never the
+    coverage-class one reserved for result shortfalls.
+    """
+    if not isinstance(expected_targets, (list, tuple)) or not expected_targets:
+        raise ReviewerResultError("expected target set must be a nonempty list of strings")
+    declared: set[str] = set()
+    for target in expected_targets:
+        if not isinstance(target, str) or not target.strip():
+            raise ReviewerResultError("expected targets must be nonempty strings")
+        if target in declared:
+            raise ReviewerResultError(f"expected target set contains a duplicate: {target!r}")
+        declared.add(target)
+    return declared
+
+
+def _require_target_coverage(payload: dict[str, Any], *, expected: set[str]) -> None:
+    """Refuse a schema-valid result that leaves declared targets unobserved.
+
+    Coverage is verdict-agnostic on purpose: a ``block`` verdict that observes
+    every target is still a delivered finding, while a ``pass`` that observes
+    none of them is a dummy. ``target_observations: null`` stays valid only
+    when no targets are declared, which keeps legitimate finding-free and
+    target-free results passing.
+    """
+    observations = payload.get("target_observations")
+    if observations is None:
+        raise ReviewerCoverageError(
+            f"worker result observes none of the {len(expected)} expected targets"
+        )
+    if not isinstance(observations, list):
+        raise ReviewerCoverageError("worker result target_observations must be an array")
+    by_target: dict[str, list[dict[str, Any]]] = {}
+    for entry in observations:
+        if not isinstance(entry, dict) or not isinstance(entry.get("target"), str):
+            raise ReviewerCoverageError("target observations must name string targets")
+        by_target.setdefault(entry["target"], []).append(entry)
+    missing = sorted(expected - set(by_target))
+    if missing:
+        raise ReviewerCoverageError(
+            f"worker result does not observe expected targets: {missing!r}"
+        )
+    for target in sorted(expected):
+        entries = by_target[target]
+        if len(entries) != 1:
+            raise ReviewerCoverageError(
+                f"target {target!r} has {len(entries)} observations, want exactly one"
+            )
+        entry = entries[0]
+        summary = entry.get("summary")
+        if not isinstance(summary, str) or not summary.strip():
+            raise ReviewerCoverageError(
+                f"target {target!r} observation needs a nonempty summary"
+            )
+        evidence = entry.get("evidence")
+        if (
+            not isinstance(evidence, list)
+            or not evidence
+            or not all(isinstance(item, str) and item.strip() for item in evidence)
+        ):
+            raise ReviewerCoverageError(
+                f"target {target!r} observation needs a nonempty evidence array"
+            )
+
+
 def validate_bounded_result(
     path: Path,
     *,
     packet_identity: str,
     reviewed_input_identity: str,
     require_pass: bool,
+    expected_targets: list[str] | tuple[str, ...] | None = None,
 ) -> dict[str, Any]:
-    """Validate the canonical result and optionally require a passing verdict."""
+    """Validate the canonical result and optionally require a passing verdict.
+
+    ``expected_targets`` is the opt-in declarative coverage floor: when the
+    author declares the admitted target set, a schema-valid result must
+    observe every member or validation raises ``ReviewerCoverageError``.
+    ``None`` (the default) preserves the historical shape-only behavior for
+    target-free packets, so legitimate aggregation and finding-free results
+    keep passing.
+    """
     payload = _read_result(path)
     try:
         import jsonschema
@@ -134,6 +223,8 @@ def validate_bounded_result(
         raise ReviewerResultError(
             "worker result reviewed_input_identity_sha256 does not match the delivery request"
         )
+    if expected_targets is not None:
+        _require_target_coverage(payload, expected=_normalize_expected_targets(expected_targets))
     if require_pass and payload.get("verdict") != "pass":
         raise ReviewerResultError(
             f"worker reviewer verdict is not approval-eligible: {payload.get('verdict')!r}"

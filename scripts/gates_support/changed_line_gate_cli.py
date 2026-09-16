@@ -40,7 +40,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Reproduce the mutation gate's blocking changed-line signal locally.")
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--base-sha", default=None, help="Base SHA; defaults to $MUTATION_BASE_SHA.")
-    parser.add_argument("--head-sha", default=None, help="Head SHA; defaults to $MUTATION_HEAD_SHA, else HEAD.")
+    parser.add_argument("--head-sha", default=None, help="Head SHA; defaults to $MUTATION_HEAD_SHA, else HEAD. Pass :staged: to analyze the staged index tree instead of a commit — the run then requires the worktree's pool bytes to equal the staged tree's.")
+
     parser.add_argument("--config", type=Path, default=Path("cosmic-ray.toml"))
     parser.add_argument("--coverage-json", type=Path, default=Path("reports/mutation/test-coverage.json"))
     parser.add_argument(

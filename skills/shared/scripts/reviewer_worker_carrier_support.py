@@ -189,7 +189,11 @@ def _validate_packet_binding(
 
 
 def _validate_receipt_and_result(
-    *, repo_root: Path, report: dict[str, Any], require_pass: bool = True
+    *,
+    repo_root: Path,
+    report: dict[str, Any],
+    require_pass: bool = True,
+    expected_targets: list[str] | tuple[str, ...] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], str]:
     receipt_value = report.get("receipt_path")
     if not isinstance(receipt_value, str):
@@ -221,6 +225,7 @@ def _validate_receipt_and_result(
             packet_identity=str(report.get("packet_identity", "")),
             reviewed_input_identity=str(report.get("reviewed_input_identity", "")),
             require_pass=require_pass,
+            expected_targets=expected_targets,
         )
     except (ImportError, ValueError) as exc:
         raise WorkerCarrierError(str(exc)) from exc
@@ -307,10 +312,17 @@ def _validate_ledger(
 
 
 def _validate_delivery_chain(
-    *, repo_root: Path, report: dict[str, Any], require_pass: bool = True
+    *,
+    repo_root: Path,
+    report: dict[str, Any],
+    require_pass: bool = True,
+    expected_targets: list[str] | tuple[str, ...] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], str]:
     receipt, result, output_hash = _validate_receipt_and_result(
-        repo_root=repo_root, report=report, require_pass=require_pass
+        repo_root=repo_root,
+        report=report,
+        require_pass=require_pass,
+        expected_targets=expected_targets,
     )
     _validate_ledger(repo_root=repo_root, report=report, receipt=receipt, output_hash=output_hash)
     return receipt, result, output_hash

@@ -56,6 +56,7 @@ if str(REPO_ROOT) not in sys.path:  # pragma: no cover - import bootstrap
 
 from scripts.core.git_status_snapshot import GitStatusError  # noqa: E402
 from scripts.core.git_status_snapshot import parse as parse_git_status  # noqa: E402
+from scripts.gates_support import changed_line_staged_head as _staged  # noqa: E402
 from scripts.mutation.mutation_changed_files_lib import changed_pool_fingerprint  # noqa: E402
 from scripts.worktree.checkout_view import CheckoutView, GitCheckout  # noqa: E402
 
@@ -225,6 +226,30 @@ def probe_run_trust(
             "could not inspect the worktree for uncommitted mutation-pool changes",
             INSPECTION_FAILED,
         )
+    if head_sha == _staged.STAGED_HEAD:
+        # Staged-tree analysis: the anti-false-green invariant becomes
+        # "worktree pool bytes == analyzed tree pool bytes" instead of
+        # "analyzed head == HEAD and the worktree is clean". Staged-only dirt
+        # is IN the analyzed tree; only staged-invisible changes contaminate.
+        # The full snapshot is captured here (not reused from above) so the
+        # existing paths-only snapshot shape — and its test fakes — stay put.
+        tree = _staged.resolve_staged_tree(repo_root)
+        if tree is None:
+            return TrustProbe(
+                [],
+                "could not materialize the staged index tree for analysis",
+                INSPECTION_FAILED,
+            )
+        invisible = _staged.staged_invisible_pool_changes(
+            repo_root, eligible, checkout=checkout
+        )
+        if invisible is None:
+            return TrustProbe(
+                [],
+                "could not inspect the worktree for staged-invisible pool changes",
+                INSPECTION_FAILED,
+            )
+        return TrustProbe(invisible, None, None, (tree, live_head))
     if head_sha == "HEAD":
         pair = (live_head, live_head)
     elif _GIT_OID_RE.fullmatch(head_sha):
@@ -344,6 +369,13 @@ def run_state_drift(
     """
     now = _pin_run_state(repo_root, base_sha, head_sha)
     drift = []
+    if head_sha == _staged.STAGED_HEAD:
+        # A mid-run commit cannot invalidate tree analysis: the analyzed tree
+        # is immutable and the worktree fingerprint below still guards the
+        # execution side. Only worktree movement matters here.
+        if now["pool_fingerprint"] != pinned["pool_fingerprint"]:
+            drift.append("mutation-pool worktree content changed during the run")
+        return "; ".join(drift) if drift else None
     if now["head_commit"] != pinned["head_commit"]:
         drift.append(
             f"HEAD moved {pinned['head_commit'][:12] or '<unknown>'} -> "
