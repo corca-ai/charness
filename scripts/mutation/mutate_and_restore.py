@@ -79,6 +79,11 @@ _load_repo_runtime_bootstrap()
 
 from scripts.core.subprocess_guard import run_monitored_phase  # noqa: E402
 from scripts.mutation import mutation_test_reporters as _reporters  # noqa: E402
+from scripts.mutation.mutation_expected_failure import (  # noqa: E402
+    ExpectedFailureError,
+    named_failure_refusal,
+    parse_expected_failing_test,
+)
 from scripts.mutation.mutation_plan_semantics import (  # noqa: E402
     MutationPlanError,
     removed_calls,
@@ -142,6 +147,7 @@ class MutantResult:
     verdict: str
     detail: str = ""
     returncode: int | None = None
+
     # None means "not classified" (the mutant was refused before it was applied, or one
     # side would not parse) and is deliberately distinct from `()`, which means "applied,
     # parsed, removed no call". Collapsing them would let an unclassifiable sweep read as
@@ -152,6 +158,10 @@ class MutantResult:
     # finding, and evidence nobody declared cannot tell an intended caller test from an
     # incidental `.join` removal.
     declared_call_site: bool = False
+    # The declarative expected failing test identity (#820). None means "any
+    # reported test failure kills"; a string means "only this named test kills".
+    # Appended last so every existing positional construction keeps its meaning.
+    expected_failing_test: str | None = None
 
 
 @dataclass
@@ -303,8 +313,8 @@ def restore(path: Path, original: bytes) -> None:
     invalidate_bytecode(path)
 
 
-def classify_mutant_run(
-    completed: subprocess.CompletedProcess, baseline: Baseline, reporter=_reporters.PytestReporter
+def classify_mutant_run(completed: subprocess.CompletedProcess, baseline: Baseline,
+        reporter=_reporters.PytestReporter, expected_failing_test: str | None = None
 ) -> tuple[str, str]:
     """Decide killed / survived / refused from EVIDENCE, not from the exit byte.
 
@@ -312,6 +322,9 @@ def classify_mutant_run(
     non-zero exit as a kill is the same mistake one level in: a replacement that
     does not parse, a collection error, or a crashed runner all exit non-zero
     with no test having caught anything.
+
+    `#820`: with `expected_failing_test` set, only the INTENDED test's failure
+    kills; a failure elsewhere is REFUSED, and a green run still survives.
     """
     output = completed.stdout + completed.stderr
     counts = reporter.read(output)
@@ -338,6 +351,13 @@ def classify_mutant_run(
         # Checked BEFORE the error branch: pytest reports a teardown/fixture
         # error alongside a genuine `failed`, and refusing that would throw away
         # a real kill.
+        if expected_failing_test is not None:
+            # #820: the kill needs the INTENDED test among the failures. The
+            # contract (parse + match) lives in `mutation_expected_failure`.
+            refusal = named_failure_refusal(reporter, output, expected_failing_test)
+            if refusal is None:
+                return KILLED, ""
+            return REFUSED, refusal
         return KILLED, ""
     if counts.errors:
         return REFUSED, (
@@ -384,16 +404,21 @@ def run_mutant(
             "declare a caller test nobody wrote and silence the caller-side non-claim",
         )
     declared = declared_raw
+    # Read BEFORE the early returns, like `declared_call_site` above, so a
+    # mutant refused on its path or find text still reports what the plan
+    # required. The contract lives in `mutation_expected_failure`.
+    try:
+        expected = parse_expected_failing_test(spec)
+    except ExpectedFailureError as exc:
+        return MutantResult(spec.get("id") or spec["path"], spec["path"], REFUSED, str(exc))
     path = (repo_root / spec["path"]).resolve()
     mutant_id = spec.get("id") or f"{spec['path']}:{spec['find'][:40]}"
     if not path.is_relative_to(repo_root.resolve()):
         return MutantResult(
-            mutant_id, spec["path"], REFUSED, "target escapes the repo root", None, None, declared
-        )
+            mutant_id, spec["path"], REFUSED, "target escapes the repo root", None, None, declared, expected)
     if not path.is_file():
         return MutantResult(
-            mutant_id, spec["path"], REFUSED, "target file does not exist", None, None, declared
-        )
+            mutant_id, spec["path"], REFUSED, "target file does not exist", None, None, declared, expected)
     # Read the pristine bytes BEFORE any write, so the restore in `finally`
     # covers the write itself. Taking them from apply_mutation's return left a
     # window where a failure after the write had no copy to restore from.
@@ -401,7 +426,7 @@ def run_mutant(
     try:
         expected_mutated = mutation_bytes(original, spec["find"], spec["replace"])
     except SweepError as exc:
-        return MutantResult(mutant_id, spec["path"], REFUSED, str(exc), None, None, declared)
+        return MutantResult(mutant_id, spec["path"], REFUSED, str(exc), None, None, declared, expected)
     recovery = MutationRecovery(repo_root)
     journal_id = recovery.begin(path, original, expected_mutated)
     try:
@@ -409,7 +434,7 @@ def run_mutant(
     except SweepError as exc:
         restore(path, original)
         recovery.clear(journal_id)
-        return MutantResult(mutant_id, spec["path"], REFUSED, str(exc), None, None, declared)
+        return MutantResult(mutant_id, spec["path"], REFUSED, str(exc), None, None, declared, expected)
     except BaseException:
         # apply_mutation writes and THEN invalidates bytecode; a failure between
         # those two would otherwise leave the tree mutated with no restore.
@@ -437,12 +462,12 @@ def run_mutant(
                 None,
                 removed,
                 declared,
+                expected,
             )
         completed = run_mutation_command(command, repo_root, recovery, journal_id)
-        verdict, detail = classify_mutant_run(completed, baseline, reporter)
+        verdict, detail = classify_mutant_run(completed, baseline, reporter, expected)
         return MutantResult(
-            mutant_id, spec["path"], verdict, detail, completed.returncode, removed, declared
-        )
+            mutant_id, spec["path"], verdict, detail, completed.returncode, removed, declared, expected)
     finally:
         restore(path, original)
         # The journal is cleared only AFTER restore's byte-for-byte verification.
@@ -487,6 +512,8 @@ def run_sweep(plan: dict, repo_root: Path, emit=print) -> Sweep:
         # test and an incidental `.join` identically, leaving the `N call-site` count
         # unauditable until the sweep finished.
         bits = ["call-site"] if result.declared_call_site else []
+        if result.expected_failing_test is not None:
+            bits.append(f"expects {result.expected_failing_test!r}")
         if result.removed_calls:
             bits.append("removes " + ", ".join(result.removed_calls))
         calls = f" [{'; '.join(bits)}]" if bits else ""
@@ -516,12 +543,13 @@ def main() -> int:
         type=Path,
         help=(
             'JSON: {"test_command": [...], "reporter": "pytest"|"node-test", '
-            '"mutants": [{"path":..., "find":..., "replace":..., "call_site": true}]}. '
+            '"mutants": [{"path":..., "find":..., "replace":..., "call_site": true, "expected_failing_test": "name"}]}. '
             "`reporter` selects how the runner's COUNTS are read and defaults to "
             "`pytest`; a Node repository needs `node-test`, or the sweep refuses a "
             "green baseline it cannot parse. Set `call_site` on the mutant that "
             "deletes the repair's CALLER; without one the sweep reports what it did "
-            "not establish (#564)."
+            "not establish (#564). `expected_failing_test` kills only when that one "
+            "TAP test name failed (#820; `node-test` only)."
         ),
     )
     action.add_argument(

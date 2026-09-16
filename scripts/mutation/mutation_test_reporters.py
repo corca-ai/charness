@@ -96,7 +96,9 @@ _NODE_SUMMARY_KEY_RE = re.compile(
 )
 _NODE_DURATION_RE = re.compile(r"^# duration_ms \d+(?:\.\d+)?\s*$", re.MULTILINE)
 _NODE_TAP_START_RE = re.compile(r"^TAP version \d+\s*$", re.MULTILINE)
-_NODE_RESULT_START_RE = re.compile(r"^(?:not )?ok (?P<number>\d+)(?: - .*)?\s*$", re.MULTILINE)
+_NODE_RESULT_START_RE = re.compile(
+    r"^(?:(?P<failed>not )?ok (?P<number>\d+)(?: - (?P<name>.*))?)\s*$", re.MULTILINE
+)
 _NODE_PLAN_RE = re.compile(r"^1\.\.(\d+)\s*$", re.MULTILINE)
 #: Enough to recognise node's `spec` output so the refusal can be specific.
 _NODE_SPEC_RE = re.compile(r"^\u2139 (?:tests|pass|fail) \d+\s*$", re.MULTILINE)
@@ -153,6 +155,11 @@ class PytestReporter:
                 return stripped
         return None
 
+    # No `failed_tests` here, deliberately. This reader is counts-only: it
+    # reports how many failed, never which. A plan that needs a NAMED failure
+    # must use a reporter that exposes test identities (`node-test`); the
+    # caller detects the missing method and refuses rather than guessing from
+    # the transcript.
     @classmethod
     def read(cls, output: str) -> RunCounts | None:
         line = cls.summary(output)
@@ -309,6 +316,28 @@ class NodeTestReporter:
         """The summary block owned by the latest structurally complete run."""
         selected_run = cls._selected_run(output)
         return selected_run.summary if selected_run is not None else None
+
+    @classmethod
+    def failed_tests(cls, output: str) -> tuple[str, ...] | None:
+        """Names of the owned `not ok` results in the selected run, else None.
+
+        Only the line-anchored, in-sequence results owned by the latest
+        structurally complete run count. An echoed `not ok ...` line inside a
+        test body either breaks the 1..N ownership check (so the run is
+        unreadable and this returns None) or sits indented/outside the window
+        (so it is not collected). Both directions fail toward refusal, never
+        toward a manufactured kill. Names are stripped of surrounding
+        whitespace; matching in the caller is exact and case-sensitive.
+        """
+        selected_run = cls._selected_run(output)
+        if selected_run is None:
+            return None
+        names: list[str] = []
+        for match in _NODE_RESULT_START_RE.finditer(selected_run.text):
+            if match.group("failed") is None:
+                continue
+            names.append((match.group("name") or "").strip())
+        return tuple(names)
 
     @classmethod
     def read(cls, output: str) -> RunCounts | None:

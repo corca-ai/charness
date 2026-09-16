@@ -31,6 +31,7 @@ def render(sweep) -> dict:  # noqa: ANN001
                 "returncode": m.returncode,
                 "removed_calls": list(m.removed_calls) if m.removed_calls is not None else None,
                 "declared_call_site": m.declared_call_site,
+                "expected_failing_test": getattr(m, "expected_failing_test", None),
             }
             for m in sweep.mutants
         ],

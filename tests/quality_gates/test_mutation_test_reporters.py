@@ -34,6 +34,13 @@ reporters = import_repo_module(
 mar = import_repo_module(
     "scripts/mutation/mutate_and_restore.py", "scripts.mutation.mutate_and_restore"
 )
+expfail = import_repo_module(
+    "scripts/mutation/mutation_expected_failure.py",
+    "scripts.mutation.mutation_expected_failure",
+)
+sweep_report = import_repo_module(
+    "scripts/mutation/mutation_sweep_report.py", "scripts.mutation.mutation_sweep_report"
+)
 
 _NODE_PASS = """\
 TAP version 13
@@ -755,3 +762,213 @@ def test_a_green_run_zeroes_the_process_failure_mechanism() -> None:
     counts = reporters.NodeTestReporter.read(noisy)
 
     assert (counts.passed, counts.failed, counts.errors) == (2, 0, 0)
+
+
+# --------------------------------------------------------------------------- #
+# #820: one declarative expected failing test for Node/TAP execution.
+# --------------------------------------------------------------------------- #
+
+
+_NODE_ONE_NAMED_FAILURE = (
+    _NODE_PASS.replace("ok 1 - t1", "not ok 1 - t1")
+    .replace("# pass 2", "# pass 1")
+    .replace("# fail 0", "# fail 1")
+)
+
+
+def test_failed_tests_names_the_owned_not_ok_results() -> None:
+    """The kill criterion for `#820` reads owned `not ok` names, never a scan
+    of the whole transcript. A green run names nothing; a one-test failure
+    names exactly that test."""
+    assert reporters.NodeTestReporter.failed_tests(_NODE_PASS) == ()
+    assert reporters.NodeTestReporter.failed_tests(_NODE_ONE_NAMED_FAILURE) == ("t1",)
+
+
+def test_an_echoed_name_cannot_supply_a_failed_test() -> None:
+    """A test body that prints a TAP-like line mid-line must not feed the named
+    criterion -- the node-side form of the transcript-scanning defect both
+    readers already learned."""
+    output = "ok 1 - prints 'not ok 9 - t1' somewhere\n" + _NODE_ONE_NAMED_FAILURE
+
+    assert reporters.NodeTestReporter.failed_tests(output) == ("t1",)
+
+
+def test_an_unreadable_run_names_no_failed_test() -> None:
+    assert reporters.NodeTestReporter.failed_tests("total gibberish") is None
+    # The counts-only reader has no name-listing capability at all, so the
+    # caller -- not a None return -- owns its refusal.
+    assert getattr(reporters.PytestReporter, "failed_tests", None) is None
+
+
+def test_the_expected_named_failure_kills() -> None:
+    completed = subprocess.CompletedProcess([], 1, _NODE_ONE_NAMED_FAILURE, "")
+    baseline = mar.Baseline(returncode=0, passed=2, output="")
+
+    verdict, _detail = mar.classify_mutant_run(
+        completed, baseline, reporters.NodeTestReporter, "t1"
+    )
+
+    assert verdict == mar.KILLED
+
+
+def test_a_failure_elsewhere_refuses_instead_of_killing() -> None:
+    """An unrelated test failure is unestablished proof: REFUSED, never a kill
+    and never a survivor. This is the claim Ceal cannot retire its runner
+    without."""
+    completed = subprocess.CompletedProcess([], 1, _NODE_ONE_NAMED_FAILURE, "")
+    baseline = mar.Baseline(returncode=0, passed=2, output="")
+
+    verdict, detail = mar.classify_mutant_run(
+        completed, baseline, reporters.NodeTestReporter, "some-other-test"
+    )
+
+    assert verdict == mar.REFUSED
+    assert "'some-other-test'" in detail
+    assert "'t1'" in detail
+
+
+def test_a_green_run_with_an_expectation_still_survives() -> None:
+    """The expectation only narrows the kill; it never turns a green run into
+    a refusal."""
+    completed = subprocess.CompletedProcess([], 0, _NODE_PASS, "")
+    baseline = mar.Baseline(returncode=0, passed=2, output="")
+
+    verdict, _detail = mar.classify_mutant_run(
+        completed, baseline, reporters.NodeTestReporter, "t1"
+    )
+
+    assert verdict == mar.SURVIVED
+
+
+def test_parse_accepts_an_absent_or_single_name() -> None:
+    """The contract `mutate_and_restore` delegates to: absent or null means any
+    failure kills, one stripped name narrows the kill."""
+    assert expfail.parse_expected_failing_test({}) is None
+    assert expfail.parse_expected_failing_test({"expected_failing_test": None}) is None
+    assert expfail.parse_expected_failing_test({"expected_failing_test": "t1"}) == "t1"
+    assert expfail.parse_expected_failing_test({"expected_failing_test": "  t1  "}) == "t1"
+
+
+@pytest.mark.parametrize("value", ["", "   ", [], 5, ["t1"], {}, False])
+def test_parse_refuses_an_unmatchable_expectation(value) -> None:
+    """Like `call_site`: a templated empty or non-string value raises rather
+    than coercing -- `bool("false")` is True, and a stripped-nothing name
+    could never kill."""
+    with pytest.raises(expfail.ExpectedFailureError, match="expected_failing_test"):
+        expfail.parse_expected_failing_test({"expected_failing_test": value})
+
+
+def test_named_refusal_passes_the_match_and_names_the_miss() -> None:
+    assert expfail.named_failure_refusal(reporters.NodeTestReporter, _NODE_ONE_NAMED_FAILURE, "t1") is None
+
+    refusal = expfail.named_failure_refusal(
+        reporters.NodeTestReporter, _NODE_ONE_NAMED_FAILURE, "other"
+    )
+    assert "'other'" in refusal
+    assert "'t1'" in refusal
+
+
+def test_named_refusal_without_a_run_lists_no_names() -> None:
+    """A reporter that read this run but cannot name its failures refuses with
+    the run's evidence gap, distinct from a reporter with no such capability."""
+    refusal = expfail.named_failure_refusal(reporters.NodeTestReporter, "gibberish", "t1")
+
+    assert "'t1'" in refusal
+    assert "could not list" in refusal
+
+
+def test_render_carries_the_declared_expectation() -> None:
+    """The YAML payload must show what each mutant required, so a consumer can
+    audit a named kill without re-reading the plan."""
+    sweep = mar.Sweep(
+        baseline=mar.Baseline(returncode=0, passed=2, output=""),
+        mutants=[
+            mar.MutantResult("m1", "src/calc.js", mar.KILLED, "", 1, (), False, "t1"),
+            mar.MutantResult("m2", "src/calc.js", mar.KILLED, "", 1, (), False),
+        ],
+    )
+
+    payload = sweep_report.render(sweep)
+
+    assert payload["mutants"][0]["expected_failing_test"] == "t1"
+    assert payload["mutants"][1]["expected_failing_test"] is None
+
+
+def test_an_expectation_on_the_counts_only_reporter_refuses() -> None:
+    """The pytest reader reports how many failed, never which. Requiring a name
+    from it refuses rather than guessing from the transcript."""
+    completed = subprocess.CompletedProcess([], 1, "1 failed, 2 passed in 0.10s", "")
+    baseline = mar.Baseline(returncode=0, passed=2, output="")
+
+    verdict, detail = mar.classify_mutant_run(
+        completed, baseline, reporters.PytestReporter, "test_add"
+    )
+
+    assert verdict == mar.REFUSED
+    assert "cannot list failing test names" in detail
+
+
+@pytest.mark.parametrize("value", ["", "   ", [], 5, ["t1"], {}])
+def test_an_unusable_expectation_is_refused_not_matched(tmp_path: Path, value) -> None:
+    """Like `call_site` and `reporter`: a templated plan that renders an empty
+    or non-string expectation must refuse, never silently match anything."""
+    repo = _seed_node_fixture(tmp_path)
+
+    result = _run_harness(
+        repo,
+        {
+            "test_command": ["node", "--test"],
+            "reporter": "node-test",
+            "mutants": [
+                {
+                    "id": "m",
+                    "path": "src/calc.js",
+                    "find": "return a + b;",
+                    "replace": "return a * b;",
+                    "expected_failing_test": value,
+                }
+            ],
+        },
+        tmp_path,
+    )
+
+    payload = yaml.safe_load(result.stdout)
+    assert payload["mutants"][0]["verdict"] == "refused"
+    assert "expected_failing_test" in payload["mutants"][0]["detail"]
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_a_node_sweep_kills_only_the_expected_named_test(tmp_path: Path) -> None:
+    """End to end against real `node --test`: the `a * b` mutant fails both
+    fixture tests, so the declared name kills while an unfailed name refuses
+    the same red run -- and the file is restored either way."""
+    repo = _seed_node_fixture(tmp_path)
+
+    killed = _run_harness(
+        repo,
+        {
+            "test_command": ["node", "--test"],
+            "reporter": "node-test",
+            "mutants": [dict(_MUTANT, expected_failing_test="add sums")],
+        },
+        tmp_path,
+    )
+    killed_payload = yaml.safe_load(killed.stdout)
+    assert killed_payload["mutants"][0]["verdict"] == "killed"
+    assert killed_payload["mutants"][0]["expected_failing_test"] == "add sums"
+
+    refused = _run_harness(
+        repo,
+        {
+            "test_command": ["node", "--test"],
+            "reporter": "node-test",
+            "mutants": [dict(_MUTANT, expected_failing_test="no-such-test")],
+        },
+        tmp_path,
+    )
+    refused_payload = yaml.safe_load(refused.stdout)
+    assert refused_payload["mutants"][0]["verdict"] == "refused"
+    assert "'no-such-test'" in refused_payload["mutants"][0]["detail"]
+
+    assert "return a + b;" in (repo / "src" / "calc.js").read_text(encoding="utf-8")
+    assert "return a * b;" not in (repo / "src" / "calc.js").read_text(encoding="utf-8")
