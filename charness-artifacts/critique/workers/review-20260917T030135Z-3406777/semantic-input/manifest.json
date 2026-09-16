@@ -1,0 +1,55 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "scripts/mutation/mutate_and_restore.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260917T030135Z-3406777/semantic-input/0000-content.bin",
+      "content_sha256": "5233a07e005e2b5e1903944b1da579602b6118c76641aa1575e380c9c76e2f97",
+      "carrier_sha256": "5233a07e005e2b5e1903944b1da579602b6118c76641aa1575e380c9c76e2f97",
+      "source": "96b9c6560d113b15a80f8feea2e9902c8dec9e2b:scripts/mutation/mutate_and_restore.py",
+      "size_bytes": 30099,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/mutation/mutation_expected_failure.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260917T030135Z-3406777/semantic-input/0001-content.bin",
+      "content_sha256": "5c069f1fe5f31aae0f61fefee82fbbf4fb14a7ea1e0d7fbcc52bc02308794e12",
+      "carrier_sha256": "5c069f1fe5f31aae0f61fefee82fbbf4fb14a7ea1e0d7fbcc52bc02308794e12",
+      "source": "96b9c6560d113b15a80f8feea2e9902c8dec9e2b:scripts/mutation/mutation_expected_failure.py",
+      "size_bytes": 3234,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/mutation/mutation_sweep_report.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260917T030135Z-3406777/semantic-input/0002-content.bin",
+      "content_sha256": "41c4ffc738af9865b1fd7ee7c1f449bf9763dbea2fcebc4f563712adf0c573e3",
+      "carrier_sha256": "41c4ffc738af9865b1fd7ee7c1f449bf9763dbea2fcebc4f563712adf0c573e3",
+      "source": "96b9c6560d113b15a80f8feea2e9902c8dec9e2b:scripts/mutation/mutation_sweep_report.py",
+      "size_bytes": 5339,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/mutation/mutation_test_reporters.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260917T030135Z-3406777/semantic-input/0003-content.bin",
+      "content_sha256": "be57869b44cbceababd4db2d2b4cb1f7e5a3857b09ebbf407fcfc47510ffed9d",
+      "carrier_sha256": "be57869b44cbceababd4db2d2b4cb1f7e5a3857b09ebbf407fcfc47510ffed9d",
+      "source": "96b9c6560d113b15a80f8feea2e9902c8dec9e2b:scripts/mutation/mutation_test_reporters.py",
+      "size_bytes": 20725,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/quality_gates/test_mutation_test_reporters.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260917T030135Z-3406777/semantic-input/0004-content.bin",
+      "content_sha256": "56289146d860aa052ceffdaeb77c8e57f4ceb42d21537327488c6f8839535a13",
+      "carrier_sha256": "56289146d860aa052ceffdaeb77c8e57f4ceb42d21537327488c6f8839535a13",
+      "source": "96b9c6560d113b15a80f8feea2e9902c8dec9e2b:tests/quality_gates/test_mutation_test_reporters.py",
+      "size_bytes": 35452,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

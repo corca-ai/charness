@@ -1,0 +1,81 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: '8.9.0 minor release critique (communication/operator-surface angle): #820
+  named expected-failing-test for Node/TAP mutation cases. Emphasize Minto structure/communication
+  and Raskin humane interface plus Jackson problem framing: are release notes legible
+  to an operator who did not follow the thread, is the expected_failing_test contract
+  understandable and its refusal messages actionable, is the release framed by the
+  downstream user problem (ceal#830), and any Act-Before-Ship communication gaps.'
+attempt_id: review-20260917T030236Z-3407357
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 58ce40e4f7b75a4041cbf165921609ec70db96992f090652f7bd1f10547879cc
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-2396279f3b344b2b8e7e92e9a1d029bd/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-2396279f3b344b2b8e7e92e9a1d029bd/delivery.json
+producer_run_id: run-review-20260917T030236Z-3407357
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-2396279f3b344b2b8e7e92e9a1d029bd/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-2396279f3b344b2b8e7e92e9a1d029bd/receipt.json
+  producer_run_id: run-review-20260917T030236Z-3407357
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 5f3ff829a1b1c29a97b4d9d887fc25d08c2b5c74adcf419547984da4d9a2bed7
+receipt_output_sha256: 5f3ff829a1b1c29a97b4d9d887fc25d08c2b5c74adcf419547984da4d9a2bed7
+packet_identity: 403efe454cfa4b91206b68d33ff00d86d4e77313e0dac1c11226029804ffc454
+reviewed_input_identity: da187164719b3b95fc1eecc2f6bda5cc69faf7494e7e1cc7d6e7ec89399ddd5d
+parent_receipt_identity: parent-4481b8afdf4c628bfbd55cd1bdd299cc5fb7ccba142e6527
+provenance:
+  scope: '8.9.0 minor release critique (communication/operator-surface angle): #820
+    named expected-failing-test for Node/TAP mutation cases. Emphasize Minto structure/communication
+    and Raskin humane interface plus Jackson problem framing: are release notes legible
+    to an operator who did not follow the thread, is the expected_failing_test contract
+    understandable and its refusal messages actionable, is the release framed by the
+    downstream user problem (ceal#830), and any Act-Before-Ship communication gaps.'
+  packet_identity: 403efe454cfa4b91206b68d33ff00d86d4e77313e0dac1c11226029804ffc454
+  reviewed_input_identity: da187164719b3b95fc1eecc2f6bda5cc69faf7494e7e1cc7d6e7ec89399ddd5d
+  parent_receipt_identity: parent-4481b8afdf4c628bfbd55cd1bdd299cc5fb7ccba142e6527
+  expected_targets_sha256: null
+  attempt_id: review-20260917T030236Z-3407357
+  attempt_scope: '8.9.0 minor release critique (communication/operator-surface angle):
+    #820 named expected-failing-test for Node/TAP mutation cases. Emphasize Minto
+    structure/communication and Raskin humane interface plus Jackson problem framing:
+    are release notes legible to an operator who did not follow the thread, is the
+    expected_failing_test contract understandable and its refusal messages actionable,
+    is the release framed by the downstream user problem (ceal#830), and any Act-Before-Ship
+    communication gaps.'
+  attempt_packet_identity: 403efe454cfa4b91206b68d33ff00d86d4e77313e0dac1c11226029804ffc454
+  attempt_parent_receipt_identity: parent-4481b8afdf4c628bfbd55cd1bdd299cc5fb7ccba142e6527
+  result_packet_identity: 403efe454cfa4b91206b68d33ff00d86d4e77313e0dac1c11226029804ffc454
+  result_reviewed_input_identity: da187164719b3b95fc1eecc2f6bda5cc69faf7494e7e1cc7d6e7ec89399ddd5d
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 58ce40e4f7b75a4041cbf165921609ec70db96992f090652f7bd1f10547879cc
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

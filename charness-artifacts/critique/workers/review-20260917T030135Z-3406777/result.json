@@ -1,0 +1,68 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release-critique",
+  "packet_sha256": "b0abe4204666fc2a8133c6099bf76197634de5c31667247f13563f324d64b692",
+  "reviewed_input_identity_sha256": "da187164719b3b95fc1eecc2f6bda5cc69faf7494e7e1cc7d6e7ec89399ddd5d",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "REL-820-1",
+      "severity": "blocker",
+      "summary": "The real Node acceptance tests omit the TAP reporter flag required by the implementation.",
+      "evidence": [
+        "tests/quality_gates/test_mutation_test_reporters.py invokes node with [\"node\", \"--test\"] in every end-to-end #820 case.",
+        "NodeTestReporter intentionally refuses spec output and requires --test-reporter=tap; unreadable_refusal() explicitly names that escape hatch.",
+        "Therefore the acceptance path can refuse a green baseline instead of proving kill/refuse/survive behavior, depending on Node's default reporter."
+      ],
+      "action": "Make every Node/TAP verification command explicitly include --test-reporter=tap, and assert the release-time command surface uses the same setting."
+    },
+    {
+      "id": "REL-820-2",
+      "severity": "blocker",
+      "summary": "Manifest synchronization and packaging verification are identified but not demonstrated as release gates.",
+      "evidence": [
+        "The packet lists sync_root_plugin_manifests.py and packaging validators as owning-surface commands, but none of the reviewed code or tests invokes them.",
+        "No generated manifest, committed-export check, or pre-tag verification evidence is included.",
+        "A source-only commit can therefore be tagged while the materialized plugin export remains stale."
+      ],
+      "action": "Run manifest sync before tagging, inspect and commit the resulting generated changes, then run both packaging validators from a fresh checkout and record their results."
+    },
+    {
+      "id": "REL-820-3",
+      "severity": "high",
+      "summary": "Recovery and fresh-checkout operator closure are available as commands but are not part of the demonstrated release contract.",
+      "evidence": [
+        "--check-recovery and --recover provide operator signals, while run_sweep() only calls assert_clear() at sweep start.",
+        "The reviewed tests do not exercise SIGKILL/untrappable interruption, pending-journal detection, recovery, or a fresh-checkout doctor sequence.",
+        "The packet supplies no evidence that a release operator will detect and clear an interrupted mutation before verification or tagging."
+      ],
+      "action": "Add an Act-Before-Ship checklist/gate: run doctor or --check-recovery, simulate or consume an interrupted journal, verify --recover and byte restoration, and repeat the relevant Node/TAP and packaging checks from a clean checkout."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The kill/refuse/survive contract may be implemented at the wrong layer.",
+      "bin": "not a blocker",
+      "disposition": "The split is appropriate: the reporter owns runner-specific counts and named failures; classification owns verdicts. Named-test mismatch refuses, green runs survive, and matching failures kill."
+    },
+    {
+      "concern": "Call-site reachability is not mechanically established for Node/JavaScript targets.",
+      "bin": "real limitation",
+      "disposition": "The Python AST check is explicitly inapplicable to .js and emits a non-claim. This is honest, but release notes and operator checks must not present #820 as proving production caller reachability."
+    },
+    {
+      "concern": "Restore/journal lifecycle may silently leave mutations behind.",
+      "bin": "insufficient evidence",
+      "disposition": "The finally-based restore and byte verification are plausibly layered correctly, but the packet lacks interruption/recovery execution evidence; retain as an open verification item."
+    }
+  ],
+  "next_move": "Block the 8.9.0 tag until the Node commands explicitly select TAP, manifests are synchronized and packaging-validated, and recovery plus fresh-checkout operator checks produce recorded evidence.",
+  "non_claims": [
+    "This is a bounded packet review only; it does not establish that the tests pass in the current workspace.",
+    "No approval is inferred from the implementation's extensive self-tests or from the claimed end-to-end coverage.",
+    "The review was not Goal Run-bound, consistent with the supplied goal lineage."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

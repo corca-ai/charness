@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "review-20260917T030135Z-3406777",
+      "scope": "8.9.0 minor release critique (operator/verification angle): #820 named expected-failing-test for Node/TAP mutation cases. Emphasize Gawande operational checklist and Weinberg diagnostic layer: manifest sync before tag, doctor/fresh-checkout signals, whether the kill/refuse/survive contract is at the right layer, and any Act-Before-Ship release-time gaps.",
+      "packet_identity": "b0abe4204666fc2a8133c6099bf76197634de5c31667247f13563f324d64b692",
+      "parent_receipt_identity": "parent-989b7d9248fa1b181ca9b06d4337afe586a815842e788e5f",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-16T18:02:19Z",
+      "history": [
+        {
+          "event_id": "5bcabb06b2da4c3785309ac9b2be58dc",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-16T18:01:36Z",
+          "attempt_id": "review-20260917T030135Z-3406777",
+          "scope": "8.9.0 minor release critique (operator/verification angle): #820 named expected-failing-test for Node/TAP mutation cases. Emphasize Gawande operational checklist and Weinberg diagnostic layer: manifest sync before tag, doctor/fresh-checkout signals, whether the kill/refuse/survive contract is at the right layer, and any Act-Before-Ship release-time gaps.",
+          "packet_identity": "b0abe4204666fc2a8133c6099bf76197634de5c31667247f13563f324d64b692",
+          "parent_receipt_identity": "parent-989b7d9248fa1b181ca9b06d4337afe586a815842e788e5f",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "86593a0d6bf14dc08718d74fb426a46e",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-16T18:01:36Z",
+          "attempt_id": "review-20260917T030135Z-3406777",
+          "scope": "8.9.0 minor release critique (operator/verification angle): #820 named expected-failing-test for Node/TAP mutation cases. Emphasize Gawande operational checklist and Weinberg diagnostic layer: manifest sync before tag, doctor/fresh-checkout signals, whether the kill/refuse/survive contract is at the right layer, and any Act-Before-Ship release-time gaps.",
+          "packet_identity": "b0abe4204666fc2a8133c6099bf76197634de5c31667247f13563f324d64b692",
+          "parent_receipt_identity": "parent-989b7d9248fa1b181ca9b06d4337afe586a815842e788e5f",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "32a490f10e4d40d69932f1e81e8b3720",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-16T18:02:19Z",
+          "attempt_id": "review-20260917T030135Z-3406777",
+          "scope": "8.9.0 minor release critique (operator/verification angle): #820 named expected-failing-test for Node/TAP mutation cases. Emphasize Gawande operational checklist and Weinberg diagnostic layer: manifest sync before tag, doctor/fresh-checkout signals, whether the kill/refuse/survive contract is at the right layer, and any Act-Before-Ship release-time gaps.",
+          "packet_identity": "b0abe4204666fc2a8133c6099bf76197634de5c31667247f13563f324d64b692",
+          "parent_receipt_identity": "parent-989b7d9248fa1b181ca9b06d4337afe586a815842e788e5f",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "3afa410b651b4aa9d6b8099d96528cf9ea5cf18c5d5ac19bdf84171cd4306253"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "da187164719b3b95fc1eecc2f6bda5cc69faf7494e7e1cc7d6e7ec89399ddd5d",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "b7782e618b2acf35232ab362f28b199162f24dd5525e3cc43408dacdcfb12aae",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/review-20260917T030135Z-3406777/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/review-20260917T030135Z-3406777/receipt.json",
+      "producer_run_id": "run-review-20260917T030135Z-3406777",
+      "findings_identity": "3afa410b651b4aa9d6b8099d96528cf9ea5cf18c5d5ac19bdf84171cd4306253"
+    }
+  ]
+}

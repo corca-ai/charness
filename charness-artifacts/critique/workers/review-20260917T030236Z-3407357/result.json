@@ -1,0 +1,88 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release-critique",
+  "packet_sha256": "403efe454cfa4b91206b68d33ff00d86d4e77313e0dac1c11226029804ffc454",
+  "reviewed_input_identity_sha256": "da187164719b3b95fc1eecc2f6bda5cc69faf7494e7e1cc7d6e7ec89399ddd5d",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "release-communication-evidence-missing",
+      "severity": "blocker",
+      "summary": "The packet contains implementation and tests but no 8.9.0 release notes, announcement, operator instructions, manifest evidence, or ceal#830 problem statement. An operator who did not follow the thread therefore cannot be shown what changes, why it matters, or what action is required.",
+      "evidence": [
+        "Reviewed paths are limited to five mutation implementation/test files.",
+        "No release-note or operator-facing artifact is present in the authoritative packet.",
+        "The requested downstream framing by ceal#830 is not included."
+      ],
+      "action": "Before ship, provide the release-note/operator-surface artifacts and ceal#830 context, then review the complete communication path."
+    },
+    {
+      "id": "expected-failing-test-contract-too-implicit",
+      "severity": "major",
+      "summary": "The code contract is technically precise but its operator-facing explanation is fragmented across docstrings. The refusal behavior, exact case-sensitive name match, TAP-only limitation, and required reporter configuration are not consolidated into a concise copy-pasteable operator contract.",
+      "evidence": [
+        "mutation_expected_failure.py says matching is exact and case-sensitive, but only in implementation documentation.",
+        "mutate_and_restore.py help text says the named TAP test must fail but does not summarize refusal versus survivor semantics or the exact-name requirement.",
+        "Refusal text is actionable for missing names and unsupported reporters, but an operator must discover the contract by reading multiple internals."
+      ],
+      "action": "Bundle a short operator-facing contract with one valid plan example and examples for named failure, unrelated failure, green survivor, unsupported reporter, and invalid expectation."
+    },
+    {
+      "id": "downstream-problem-framing-unproven",
+      "severity": "blocker",
+      "summary": "The implementation narrative is framed around internal defects (#689, #820, #564) rather than the downstream user problem the release is meant to solve. The packet does not establish the causal bridge to ceal#830.",
+      "evidence": [
+        "Module and test prose repeatedly foregrounds internal issue numbers and mutation-run mechanics.",
+        "No consumer-facing statement connects Node/TAP expected-failing-test support to the failure experienced in ceal#830."
+      ],
+      "action": "Add a Minto-style lead: downstream problem, affected operator, shipped capability, and required configuration; retain issue numbers as supporting detail."
+    },
+    {
+      "id": "act-before-ship-checklist-unverified",
+      "severity": "major",
+      "summary": "Act-Before-Ship closure is absent. The packet does not prove generated/plugin surfaces were synchronized, nor that a fresh operator can install or invoke the Node/TAP path successfully.",
+      "evidence": [
+        "Owning-surface metadata names manifest sync and packaging validators, but no execution receipts are included.",
+        "The tests exercise a temporary Node fixture, not a documented fresh-host installation or release artifact."
+      ],
+      "action": "Run and record manifest/package validation plus a fresh-clone or fresh-host operator smoke test using the documented invocation; include rollback or refusal recovery instructions."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Missing release-note and operator-surface evidence",
+      "bin": "Act Before Ship",
+      "disposition": "Hold release communication approval until the actual release artifacts and operator path are reviewed."
+    },
+    {
+      "concern": "Fragmented expected_failing_test explanation",
+      "bin": "Bundle Anyway",
+      "disposition": "A concise contract and examples are a cheap same-release documentation improvement."
+    },
+    {
+      "concern": "Unproven ceal#830 framing",
+      "bin": "Act Before Ship",
+      "disposition": "The requested user-problem narrative cannot be validated without the downstream issue/context."
+    },
+    {
+      "concern": "Fresh-host and packaging proof absent",
+      "bin": "Act Before Ship",
+      "disposition": "Record the release-boundary checks before announcing the version."
+    },
+    {
+      "concern": "Potential stylistic improvements to internal docstrings",
+      "bin": "Over-Worry",
+      "disposition": "Do not block on internal prose aesthetics once the operator contract is consolidated."
+    }
+  ],
+  "next_move": "Defer release-communication approval: attach the 8.9.0 notes/operator instructions, ceal#830 problem statement, and packaging/fresh-host receipts; then perform a focused follow-up review of the complete surface.",
+  "non_claims": [
+    "The packet does not establish whether the implementation itself passes its full repository gates.",
+    "The packet does not establish whether generated artifacts or manifests are synchronized.",
+    "The packet does not establish the actual ceal#830 downstream impact.",
+    "No approval is inferred from the presence of extensive tests or implementation comments."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

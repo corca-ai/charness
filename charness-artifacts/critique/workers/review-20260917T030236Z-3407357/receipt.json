@@ -1,0 +1,84 @@
+{
+  "attempt_id": "review-20260917T030236Z-3407357",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/review-20260917T030236Z-3407357/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-09-16T18:03:33Z",
+  "output_file": "charness-artifacts/critique/workers/review-20260917T030236Z-3407357/result.json",
+  "output_fresh": true,
+  "output_sha256": "5f3ff829a1b1c29a97b4d9d887fc25d08c2b5c74adcf419547984da4d9a2bed7",
+  "output_size": 5651,
+  "packet_identity": "403efe454cfa4b91206b68d33ff00d86d4e77313e0dac1c11226029804ffc454",
+  "parent_receipt_identity": "parent-4481b8afdf4c628bfbd55cd1bdd299cc5fb7ccba142e6527",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/review-20260917T030236Z-3407357/review-prompt.md",
+  "prompt_sha256": "58ce40e4f7b75a4041cbf165921609ec70db96992f090652f7bd1f10547879cc",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "retained_partial_output": {
+    "approval_eligible": false,
+    "bytes": 5518,
+    "kind": "bounded-review-result",
+    "path": "charness-artifacts/critique/workers/review-20260917T030236Z-3407357/partial-result.json",
+    "schema_version": "charness.reviewer_partial_output/v1",
+    "sha256": "fe19868d636ae11458cb1d6acf6519b28e9e9e7f1d3e7d2df7bb897c021c791b",
+    "source": "charness-artifacts/critique/workers/review-20260917T030236Z-3407357/backend.stdout",
+    "validation": "model-shaped"
+  },
+  "reviewed_input_identity": "da187164719b3b95fc1eecc2f6bda5cc69faf7494e7e1cc7d6e7ec89399ddd5d",
+  "run_id": "run-review-20260917T030236Z-3407357",
+  "schema_file": "charness-artifacts/critique/workers/review-20260917T030236Z-3407357/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "8.9.0 minor release critique (communication/operator-surface angle): #820 named expected-failing-test for Node/TAP mutation cases. Emphasize Minto structure/communication and Raskin humane interface plus Jackson problem framing: are release notes legible to an operator who did not follow the thread, is the expected_failing_test contract understandable and its refusal messages actionable, is the release framed by the downstream user problem (ceal#830), and any Act-Before-Ship communication gaps.",
+  "started_at": "2026-09-16T18:02:36Z",
+  "status": "succeeded",
+  "stderr_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/review-20260917T030236Z-3407357/backend.stderr",
+  "stdout_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/review-20260917T030236Z-3407357/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "workspace": "/home/hwidong/codes/charness"
+}

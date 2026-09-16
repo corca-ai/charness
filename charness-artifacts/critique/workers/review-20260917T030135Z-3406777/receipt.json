@@ -1,0 +1,84 @@
+{
+  "attempt_id": "review-20260917T030135Z-3406777",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/review-20260917T030135Z-3406777/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-09-16T18:02:19Z",
+  "output_file": "charness-artifacts/critique/workers/review-20260917T030135Z-3406777/result.json",
+  "output_fresh": true,
+  "output_sha256": "3afa410b651b4aa9d6b8099d96528cf9ea5cf18c5d5ac19bdf84171cd4306253",
+  "output_size": 4626,
+  "packet_identity": "b0abe4204666fc2a8133c6099bf76197634de5c31667247f13563f324d64b692",
+  "parent_receipt_identity": "parent-989b7d9248fa1b181ca9b06d4337afe586a815842e788e5f",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/review-20260917T030135Z-3406777/review-prompt.md",
+  "prompt_sha256": "b7782e618b2acf35232ab362f28b199162f24dd5525e3cc43408dacdcfb12aae",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "retained_partial_output": {
+    "approval_eligible": false,
+    "bytes": 4493,
+    "kind": "bounded-review-result",
+    "path": "charness-artifacts/critique/workers/review-20260917T030135Z-3406777/partial-result.json",
+    "schema_version": "charness.reviewer_partial_output/v1",
+    "sha256": "8e3a3b8fb80142566ec0940b5862eb4644b880dbe531ac08273f2c002ab57c81",
+    "source": "charness-artifacts/critique/workers/review-20260917T030135Z-3406777/backend.stdout",
+    "validation": "model-shaped"
+  },
+  "reviewed_input_identity": "da187164719b3b95fc1eecc2f6bda5cc69faf7494e7e1cc7d6e7ec89399ddd5d",
+  "run_id": "run-review-20260917T030135Z-3406777",
+  "schema_file": "charness-artifacts/critique/workers/review-20260917T030135Z-3406777/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "8.9.0 minor release critique (operator/verification angle): #820 named expected-failing-test for Node/TAP mutation cases. Emphasize Gawande operational checklist and Weinberg diagnostic layer: manifest sync before tag, doctor/fresh-checkout signals, whether the kill/refuse/survive contract is at the right layer, and any Act-Before-Ship release-time gaps.",
+  "started_at": "2026-09-16T18:01:36Z",
+  "status": "succeeded",
+  "stderr_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/review-20260917T030135Z-3406777/backend.stderr",
+  "stdout_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/review-20260917T030135Z-3406777/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "workspace": "/home/hwidong/codes/charness"
+}
