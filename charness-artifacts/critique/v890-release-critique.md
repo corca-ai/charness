@@ -83,6 +83,50 @@
   helper**, same as REL-820-2 (sync + validators + fresh probes +
   install-refresh readback with receipts).
 
+## Fresh-Eye Satisfaction
+
+parent-delegated — two file-backed workers (operator/verification and
+communication angles, lens `release-critique`) delivered block verdicts
+with evidence-backed findings; the parent-owned counterweight above
+dispositioned every blocker (one verifier-defect refutation with new
+measurement, three scope-too-broad routings to publish-helper gates, one
+Over-Worry) and binned the majors/high. `worker-delivered` is not
+claimed: both worker reports read `approval_eligible: false` (block
+verdicts carry findings, not approval), so the artifact claims only the
+completed delegation plus the parent disposition, not approval. No
+same-agent substitution.
+
+## Reviewer Tier Evidence
+
+- Requested tier: high-leverage
+- Requested spawn fields: fork_turns=none, model=gpt-5.6-terra, reasoning_effort=medium, service_tier=priority
+- Host exposure state: host-defaulted
+- Host detail: this host ran both reviewers through `run_review.py` file-backed workers (backend `codex exec`, read-only); no provider-confirmed model or effort application claim
+- Application state: file-backed read-only workers delivered; two block verdicts with findings received, approval not inferred
+- Execution mode: file-backed-worker
+- Delivery state: findings-received
+- Worker A report: charness-artifacts/critique/workers/review-20260917T030135Z-3406777/worker-report.yaml (verdict block, 2 blockers + 1 high)
+- Worker B report: charness-artifacts/critique/workers/review-20260917T030236Z-3407357/worker-report.yaml (verdict block, 2 blockers + 2 majors)
+
+## Boundary Ownership
+
+- **Producer:** `scripts/mutation/` — the plan/run contract
+  (`mutation_expected_failure.py`), reporter-owned failing-test names
+  (`mutation_test_reporters.py`), verdict classification
+  (`mutate_and_restore.py`), and sweep payload rendering
+  (`mutation_sweep_report.py`).
+- **Consumer:** downstream Ceal guard-mutation runner (declarative
+  `expected_failing_test` cases) and operators reading sweep YAML
+  `expected_failing_test` per mutant.
+- **Owning surface:** mutation operator surface — contract, reporter
+  names, classification, rendering, and standing tests move together in
+  this change; no generic/shared reducer encodes caller-specific
+  knowledge (the pytest counts-only reader refuses naming rather than
+  guessing).
+- **Verdict:** `owned-correctly` — each fact is produced and consumed by
+  its correct owner: the plan asserts, the reporter names, classification
+  decides, the sweep renders.
+
 ## Operator Action Required
 
 None beyond the standard publish gates: run the repo-owned publish
