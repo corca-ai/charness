@@ -9,16 +9,28 @@ failure (ReviewerResultError), and thin-but-valid results
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
 import pytest
 
+from skills.shared.scripts import reviewer_delivery as delivery
+from skills.shared.scripts.reviewer_capability import (
+    non_claims_sha256,
+    validate_capability_envelope,
+)
 from skills.shared.scripts.reviewer_result_contract import (
     ReviewerCoverageError,
     ReviewerResultError,
     validate_bounded_result,
 )
+from skills.shared.scripts.reviewer_worker_carrier_support import (
+    WorkerCarrierError,
+    validate_delivered_worker_report,
+)
+from skills.shared.scripts.reviewer_worker_report import build_report
+from tests.quality_gates.reviewer_capability_support import ready_capability
 
 PACKET = "a" * 64
 INPUT = "b" * 64
@@ -151,3 +163,201 @@ def test_empty_evidence_fails_at_schema_layer_first(tmp_path: Path) -> None:
 def test_coverage_error_stays_compatible_with_value_handlers() -> None:
     assert issubclass(ReviewerCoverageError, ReviewerResultError)
     assert issubclass(ReviewerCoverageError, ValueError)
+
+
+_E2E_ATTEMPT = "attempt-e2e"
+_E2E_SCOPE = "e2e-scope"
+_E2E_PARENT = "receipt-e2e"
+_E2E_BACKEND = "e2e-backend"
+_E2E_TARGETS = ["packet-target-alpha", "packet-target-beta"]
+
+
+def _e2e_result(*, observations: object) -> dict:
+    digest = non_claims_sha256([])
+    return _result(
+        target_observations=observations,
+        capability_non_claims=[],
+        capability_non_claims_sha256=digest,
+    )
+
+
+def _e2e_envelope() -> tuple[dict, str]:
+    env = ready_capability(_E2E_ATTEMPT)
+    decision = validate_capability_envelope(
+        {
+            "schema_version": env["schema_version"],
+            "task_kind": "read",
+            "requested_capabilities": env["requested_capabilities"],
+            "effective_capabilities": env["effective_capabilities"],
+            "preflight": env["preflight"],
+            "capability_non_claims": [],
+        },
+        attempt_id=_E2E_ATTEMPT,
+        require_ready=True,
+    )
+    return env, decision
+
+
+def _e2e_files(tmp_path: Path, result_payload: dict) -> dict:
+    """Fabricate a consistent report/receipt/ledger triple via public APIs."""
+    result_path = tmp_path / "result.json"
+    result_path.write_text(json.dumps(result_payload), encoding="utf-8")
+    output_hash = hashlib.sha256(result_path.read_bytes()).hexdigest()
+    output_size = result_path.stat().st_size
+    env, decision = _e2e_envelope()
+    digest = non_claims_sha256([])
+    receipt = {
+        "schema_version": "charness.reviewer_worker.v1",
+        "status": "succeeded",
+        "terminal": True,
+        "exit_code": 0,
+        "output_fresh": True,
+        "output_sha256": output_hash,
+        "output_size": output_size,
+        "requested_capabilities": env["requested_capabilities"],
+        "effective_capabilities": env["effective_capabilities"],
+        "preflight": env["preflight"],
+        "capability_non_claims": [],
+        "capability_non_claims_sha256": digest,
+        "capability_status": decision.status,
+        "capability_envelope_sha256": decision.envelope_sha256,
+        "capability_launch_envelope_sha256": decision.envelope_sha256,
+        "capability_collection_envelope_sha256": decision.envelope_sha256,
+        "attempt_id": _E2E_ATTEMPT,
+        "scope": _E2E_SCOPE,
+        "packet_identity": PACKET,
+        "reviewed_input_identity": INPUT,
+        "parent_receipt_identity": _E2E_PARENT,
+        "boundary_mode": "read-only-worker",
+        "execution_mode": "file-backed-worker",
+        "backend": _E2E_BACKEND,
+        "prompt_sha256": "e" * 64,
+        "schema_sha256": "f" * 64,
+        "run_id": "run-e2e",
+        "output_file": str(result_path),
+        "receipt_file": str(tmp_path / "receipt.json"),
+        "producer_run_id": "run-e2e",
+    }
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+    ledger = delivery.DeliveryLedger.empty()
+    ledger.start(
+        attempt_id=_E2E_ATTEMPT,
+        scope=_E2E_SCOPE,
+        packet_identity=PACKET,
+        parent_receipt_identity=_E2E_PARENT,
+        recorded_at="2026-09-16T00:00:00Z",
+        boundary_mode="read-only-worker",
+        reviewed_input_identity=INPUT,
+        execution_mode="file-backed-worker",
+        backend=_E2E_BACKEND,
+        prompt_sha256="e" * 64,
+        schema_sha256="f" * 64,
+        capability_launch_envelope_sha256=decision.envelope_sha256,
+        output_file=str(result_path),
+        receipt_file=str(receipt_path),
+        producer_run_id="run-e2e",
+    )
+    ledger.require(_E2E_ATTEMPT).transition(
+        delivery.RUNNING, "reviewer started", "2026-09-16T00:00:10Z"
+    )
+    assert ledger.require(_E2E_ATTEMPT).record_findings(
+        scope=_E2E_SCOPE,
+        packet_identity=PACKET,
+        parent_receipt_identity=_E2E_PARENT,
+        findings_identity=output_hash,
+        recorded_at="2026-09-16T00:01:00Z",
+    )
+    ledger_path = tmp_path / "ledger.json"
+    ledger_path.write_text(json.dumps(ledger.to_dict()), encoding="utf-8")
+    report = {
+        "schema_version": "charness.reviewer_worker_report.v1",
+        "delivery_state": "findings-received",
+        "collection_ready": True,
+        "provenance_ok": True,
+        "receipt_ok": True,
+        "ledger_ok": True,
+        "result_schema_ok": True,
+        "attempt_id": _E2E_ATTEMPT,
+        "producer_run_id": "run-e2e",
+        "scope": _E2E_SCOPE,
+        "packet_identity": PACKET,
+        "reviewed_input_identity": INPUT,
+        "parent_receipt_identity": _E2E_PARENT,
+        "boundary_mode": "read-only-worker",
+        "findings_identity": output_hash,
+        "receipt_output_sha256": output_hash,
+        "receipt_path": "receipt.json",
+        "ledger_path": "ledger.json",
+        "execution_mode": "file-backed-worker",
+        "backend": _E2E_BACKEND,
+        "prompt_sha256": "e" * 64,
+        "schema_sha256": "f" * 64,
+        "capability_launch_envelope_sha256": decision.envelope_sha256,
+        "capability_non_claims": [],
+        "capability_non_claims_sha256": digest,
+        "provenance": {
+            "scope": _E2E_SCOPE,
+            "packet_identity": PACKET,
+            "reviewed_input_identity": INPUT,
+            "parent_receipt_identity": _E2E_PARENT,
+            "attempt_id": _E2E_ATTEMPT,
+            "attempt_scope": _E2E_SCOPE,
+            "attempt_packet_identity": PACKET,
+            "attempt_parent_receipt_identity": _E2E_PARENT,
+            "result_packet_identity": PACKET,
+            "result_reviewed_input_identity": INPUT,
+            "boundary_mode": "read-only-worker",
+            "boundary_fingerprint": None,
+            "execution_mode": "file-backed-worker",
+            "backend": _E2E_BACKEND,
+            "prompt_sha256": "e" * 64,
+            "schema_sha256": "f" * 64,
+            "capability_launch_envelope_sha256": decision.envelope_sha256,
+            "capability_non_claims_sha256": digest,
+        },
+    }
+    return {"report": report, "output_hash": output_hash}
+
+
+def test_collection_carries_the_declared_floor_into_the_report(tmp_path: Path) -> None:
+    files = _e2e_files(
+        tmp_path, _e2e_result(observations=[_observation(t) for t in _E2E_TARGETS])
+    )
+    report = build_report(
+        receipt_path=str(tmp_path / "receipt.json"),
+        ledger_path=str(tmp_path / "ledger.json"),
+        attempt_id=_E2E_ATTEMPT,
+        scope=_E2E_SCOPE,
+        packet_identity=PACKET,
+        reviewed_input_identity=INPUT,
+        parent_receipt_identity=_E2E_PARENT,
+        expected_targets=_E2E_TARGETS,
+    )
+    assert report["coverage_ok"] is True
+    assert report["expected_targets"] == _E2E_TARGETS
+    assert files["report"]["findings_identity"] == report["findings_identity"]
+    receipt, result, _ = validate_delivered_worker_report(
+        repo_root=tmp_path, report=report
+    )
+    assert result["verdict"] == "pass"
+
+
+def test_durable_carrier_rejects_a_thin_file_despite_the_report(tmp_path: Path) -> None:
+    # A thin file swapped in after collection: the hand-built report models a
+    # collection that declared the floor, and the durable boundary must
+    # re-enforce it from the carried declaration even with no caller argument.
+    files = _e2e_files(tmp_path, _e2e_result(observations=None))
+    report = files["report"] | {"coverage_ok": True, "expected_targets": list(_E2E_TARGETS)}
+    with pytest.raises(WorkerCarrierError, match="expected targets"):
+        validate_delivered_worker_report(repo_root=tmp_path, report=report)
+
+
+def test_durable_carrier_passes_an_undeclared_thin_result(tmp_path: Path) -> None:
+    # Opt-in preserved end to end: with no declared floor anywhere, a thin
+    # but schema-valid result still delivers.
+    files = _e2e_files(tmp_path, _e2e_result(observations=None))
+    _, result, _ = validate_delivered_worker_report(
+        repo_root=tmp_path, report=files["report"]
+    )
+    assert result["verdict"] == "pass"

@@ -372,7 +372,14 @@ def run_state_drift(
     if head_sha == _staged.STAGED_HEAD:
         # A mid-run commit cannot invalidate tree analysis: the analyzed tree
         # is immutable and the worktree fingerprint below still guards the
-        # execution side. Only worktree movement matters here.
+        # execution side. But an index-only operation (unstaging, blob
+        # replacement) CAN move the staged tree under a still-identical
+        # worktree, so the pinned tree itself is re-resolved and compared. An
+        # unresolvable tree (broken git) skips this secondary guard instead of
+        # inventing drift; the fingerprint comparison below still runs.
+        tree_now = _staged.resolve_staged_tree(repo_root)
+        if tree_now is not None and tree_now != pinned["resolved_head_sha"]:
+            return "staged index tree changed during the run"
         if now["pool_fingerprint"] != pinned["pool_fingerprint"]:
             drift.append("mutation-pool worktree content changed during the run")
         return "; ".join(drift) if drift else None

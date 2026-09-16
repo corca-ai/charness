@@ -118,11 +118,17 @@ def test_descent_accepts_live_matching_recorded_chain(tmp_path: Path) -> None:
     )
 
 
-def test_descent_accepts_binding_observed_genesis(tmp_path: Path) -> None:
+def test_descent_grandfathers_pre_chain_items_despite_observed_digest(
+    tmp_path: Path,
+) -> None:
+    # The fixture binding records an observed digest, but with no chain the
+    # item is untouched by the new contract: even a body matching NEITHER the
+    # observed digest NOR any chain entry still closes (marker path), so runs
+    # established before the chain stay closeable.
     binding = _binding(tmp_path)
     module = runpy.run_path(str(BINDING_PATH))
     module["require_body_descent"](
-        binding, [{"number": 725, "body": OLD_CHILD_BODY}], None
+        binding, [{"number": 725, "body": "edited pre-chain prose\n"}], None
     )
 
 
@@ -181,11 +187,46 @@ def test_descent_skips_non_matching_keys_before_the_match() -> None:
     module["require_body_descent"](binding, [{"number": 1, "body": "b\n"}], None)
 
 
+def test_descent_collects_observed_digest_past_non_matching_items() -> None:
+    # With an adopted chain, _accepted_body_digests walks every work item:
+    # the leading non-matching key is skipped while the matching item's
+    # observed digest still joins the accepted set.
+    module = runpy.run_path(str(BINDING_PATH))
+    binding = {
+        "approved_work_items": [
+            {
+                "key": "other",
+                "issue": {"number": 2},
+                "observed": {"body_sha256": _sha("other\n")},
+            },
+            {
+                "key": "mine",
+                "issue": {"number": 1},
+                "observed": {"body_sha256": _sha("b\n")},
+            },
+        ]
+    }
+    metadata = {
+        "body_revisions": [
+            {
+                "key": "mine",
+                "number": 1,
+                "body_sha256": _sha("b\n"),
+                "supersedes_sha256": None,
+            }
+        ]
+    }
+    module["require_body_descent"](binding, [{"number": 1, "body": "b\n"}], metadata)
+
+
 def test_descent_refuses_an_unreadable_body_with_an_anchor(tmp_path: Path) -> None:
+    # Post-adoption (a chain exists), so the anchor enforces and an unreadable
+    # live body cannot prove descent.
     binding = _binding(tmp_path)
     module = runpy.run_path(str(BINDING_PATH))
+    metadata = {"body_revisions": [_revision(NEW_CHILD_BODY)]}
     with pytest.raises(RuntimeError, match="no readable live body"):
-        module["require_body_descent"](binding, [{"number": 725}], None)
+        module["require_body_descent"](binding, [{"number": 725}], metadata)
 
 
 def test_descent_refuses_unrecorded_replacement(tmp_path: Path) -> None:
@@ -222,11 +263,14 @@ def _close_module(tmp_path: Path, parent: dict, child: dict) -> dict:
 
 
 def test_close_refuses_unrecorded_child_body_before_mutation(tmp_path: Path) -> None:
+    # Post-adoption scenario: the run recorded an authorized revision, then the
+    # live body was replaced outside the operation path. The live digest is in
+    # neither the chain nor the observed evidence, so close refuses pre-write.
     proof = _close_inputs(tmp_path, attempt_id="close-chain-neg")
     parent = {
         "number": 724,
         "state": "OPEN",
-        "body": _parent_body(tmp_path),
+        "body": _parent_body(tmp_path, body_revisions=[_revision(NEW_CHILD_BODY)]),
         "comments": [],
     }
     child = {
@@ -299,12 +343,16 @@ def test_close_accepts_chain_recorded_evolution(tmp_path: Path) -> None:
     assert emitted[0]["status"] == "verified-write"
 
 
+RACE_BODY = "<!-- charness-work-item-key: child-725 -->\nconcurrent edit\n"
+
+
 def _update_harness(
     tmp_path: Path,
     *,
     parent_body: object,
     child_body: object,
     fail_parent_write: bool = False,
+    race_child: bool = False,
 ) -> SimpleNamespace:
     """Stateful provider double: tracks write order for record-first proofs."""
     _close_inputs(tmp_path)
@@ -336,8 +384,16 @@ def _update_harness(
     ) -> dict[str, object]:
         calls.append(("write", number))
         current = store[number]
-        if expected_body_sha256 is not None:
-            assert _sha(current) == expected_body_sha256
+        if race_child and number == 725:
+            # A concurrent edit lands after the operation's live read.
+            current = store[number] = RACE_BODY
+        if expected_body_sha256 is not None and _sha(current) != expected_body_sha256:
+            return {
+                "ok": False,
+                "status": "unverified-write",
+                "outcome": "unverified-write",
+                "mutation_invoked": True,
+            }
         desired = body_file.read_text(encoding="utf-8")
         if callable(pre_write_validator):
             pre_write_validator(current, desired)
@@ -529,3 +585,20 @@ def test_update_body_writes_nothing_when_the_parent_record_fails(
     assert "was not recorded" in emitted[0]["error"]
     assert harness.calls == [("write", 724)]
     assert harness.store[725] == OLD_CHILD_BODY
+
+
+def test_concurrent_child_edit_refuses_instead_of_overwriting(tmp_path: Path) -> None:
+    harness = _update_harness(
+        tmp_path,
+        parent_body=_parent_body(tmp_path),
+        child_body=OLD_CHILD_BODY,
+        race_child=True,
+    )
+    rc, emitted = harness.apply()
+    assert rc == 2
+    assert emitted[0]["status"] == "unverified-write"
+    assert harness.calls == [("write", 724), ("write", 725)]
+    assert harness.store[725] == RACE_BODY
+    # The recorded edge is unused and harmless: closeout still fails closed on
+    # the unrecorded live body rather than having overwritten it.
+    assert _recorded_revisions(harness.store[724]) == [_revision(NEW_CHILD_BODY)]

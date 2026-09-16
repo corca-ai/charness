@@ -141,6 +141,20 @@ def _normalize_expected_targets(expected_targets: Any) -> set[str]:
     return declared
 
 
+def report_declared_targets(value: Any) -> list[str] | None:
+    """The coverage floor a collection report carries, if the author declared one.
+
+    A malformed declaration is a contract violation in the schema class (an
+    authoring error, like a malformed declaration argument); absence stays
+    None so undeclared flows behave exactly as before.
+    """
+    if value is None:
+        return None
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise ReviewerResultError("collection report carries a malformed expected-target set")
+    return list(value)
+
+
 def _require_target_coverage(payload: dict[str, Any], *, expected: set[str]) -> None:
     """Refuse a schema-valid result that leaves declared targets unobserved.
 

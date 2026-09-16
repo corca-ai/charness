@@ -216,11 +216,16 @@ def _update_managed_body(
         tracker=tracker,
         guard=guard,
     )
+    # Compare-and-swap on the digest read before recording: a concurrent child
+    # edit in between refuses here instead of being silently overwritten under
+    # a recorded supersession edge that never happened. The unused chain entry
+    # stays harmless, and closeout fails closed on the unrecorded live body.
     result = tracker.update_issue_body(
         repo,
         target["number"],
         body_file,
         backend=backend,
+        expected_body_sha256=supersedes_sha256,
     )
     result = dict(result)
     result["body_revision"] = record["entry"]

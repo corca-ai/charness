@@ -195,6 +195,14 @@ def _validate_receipt_and_result(
     require_pass: bool = True,
     expected_targets: list[str] | tuple[str, ...] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], str]:
+    try:
+        contract = _load_result_contract()
+        if expected_targets is None:
+            # Fall back to the collection-time declaration so a declared floor
+            # stays enforced here when the durable caller passes none.
+            expected_targets = contract.report_declared_targets(report.get("expected_targets"))
+    except (ImportError, ValueError) as exc:
+        raise WorkerCarrierError(str(exc)) from exc
     receipt_value = report.get("receipt_path")
     if not isinstance(receipt_value, str):
         raise WorkerCarrierError("worker report has no repo-readable receipt path")
@@ -220,7 +228,7 @@ def _validate_receipt_and_result(
     if output_hash != receipt.get("output_sha256") or output.stat().st_size != receipt.get("output_size"):
         raise WorkerCarrierError("worker output does not match the typed receipt hash/size")
     try:
-        result = _load_result_contract().validate_bounded_result(
+        result = contract.validate_bounded_result(
             output,
             packet_identity=str(report.get("packet_identity", "")),
             reviewed_input_identity=str(report.get("reviewed_input_identity", "")),
@@ -312,17 +320,10 @@ def _validate_ledger(
 
 
 def _validate_delivery_chain(
-    *,
-    repo_root: Path,
-    report: dict[str, Any],
-    require_pass: bool = True,
-    expected_targets: list[str] | tuple[str, ...] | None = None,
+    *, repo_root: Path, report: dict[str, Any], require_pass: bool = True
 ) -> tuple[dict[str, Any], dict[str, Any], str]:
     receipt, result, output_hash = _validate_receipt_and_result(
-        repo_root=repo_root,
-        report=report,
-        require_pass=require_pass,
-        expected_targets=expected_targets,
+        repo_root=repo_root, report=report, require_pass=require_pass
     )
     _validate_ledger(repo_root=repo_root, report=report, receipt=receipt, output_hash=output_hash)
     return receipt, result, output_hash

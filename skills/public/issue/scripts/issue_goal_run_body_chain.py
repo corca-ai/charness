@@ -71,8 +71,17 @@ def _accepted_body_digests(
     key: str,
     metadata: dict[str, Any] | None = None,
 ) -> set[str]:
-    """Digests a live body may descend from: chain first, observed as evidence."""
+    """Digests a live body may descend from.
+
+    The chain is the enforcing anchor: once a run operates under the new
+    contract (at least one recorded revision), the live body must match the
+    chain or the binding's observed digest. With no chain the item is
+    untouched by the new contract, so nothing enforces and pre-chain runs —
+    whose marker-preserving edits were valid when made — stay closeable.
+    """
     accepted = PICKUP.body_revision_digests(metadata, key=key)
+    if not accepted:
+        return set()
     for item in _all_work_items(binding, metadata):
         if item.get("key") != key:
             continue
@@ -91,9 +100,12 @@ def require_body_descent(
 ) -> None:
     """Accept an evolved managed body only through the authorized chain.
 
-    A live body whose Work Item owns chain entries (or a binding observed
-    digest) must digest-match one of them; anything else is an unrecorded
-    replacement and refuses before any write.
+    A live body whose Work Item owns chain entries must digest-match the
+    chain (or the binding's observed digest alongside it); anything else is
+    an unrecorded replacement and refuses before any write. Enforcement
+    follows adoption: items with no recorded chain keep the historical
+    marker-only behavior, so runs established before the chain existed stay
+    closeable no matter what their observed digests say.
     """
     for issue in issues:
         key = _work_item_key_for_issue(binding, issue, metadata)

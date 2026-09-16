@@ -100,6 +100,25 @@ def test_staged_drift_ignores_a_mid_run_commit(tmp_path: Path, monkeypatch) -> N
     assert trust.run_state_drift(tmp_path, "base", STAGED_HEAD, pinned) is None
 
 
+def test_staged_drift_catches_an_index_only_change(tmp_path: Path) -> None:
+    from scripts.gates_support import changed_line_run_trust as trust_module
+
+    repo, base, _head = _seed(tmp_path)
+    foo = repo / "scripts" / "foo.py"
+    foo.write_text(foo.read_text(encoding="utf-8") + "\n# staged note\n", encoding="utf-8")
+    _git(repo, "add", "scripts/foo.py")
+    probe = trust_module.probe_run_trust(repo, STAGED_HEAD, POOL)
+    assert probe.unestablished_kind is None
+    pinned = trust_module._pin_run_state(
+        repo, base, STAGED_HEAD, resolved_pair=probe.resolved_pair
+    )
+    # Index-only movement: unstage while the worktree (and its fingerprint)
+    # stays identical, so only the tree comparison can catch it.
+    _git(repo, "reset", "-q", "HEAD", "--", "scripts/foo.py")
+    drift = trust_module.run_state_drift(repo, base, STAGED_HEAD, pinned)
+    assert drift is not None and "staged index tree changed" in drift
+
+
 def test_staged_messages_name_staging_not_committing() -> None:
     assert "git add" in staged_dirty_refusal(["scripts/foo.py"], "b" * 64)
     assert "staged index" in staged_false_green_message(["scripts/foo.py"], "b" * 64)

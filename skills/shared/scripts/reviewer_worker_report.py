@@ -334,6 +334,10 @@ def build_report(
         # False lives in the reason string and the contract's distinct error
         # types, never merged into one unverified outcome.
         "coverage_ok": None if expected_targets is None else semantic_result is not None,
+        # The declared set travels with the report so the durable carrier
+        # boundary can re-enforce the same floor even when its own caller
+        # passes none — a thin file swapped in after collection still refuses.
+        "expected_targets": list(expected_targets) if expected_targets is not None else None,
         "collection_ready": collection_ready,
         "partial_output": partial_output,
         "partial_output_ok": partial_output is not None,
