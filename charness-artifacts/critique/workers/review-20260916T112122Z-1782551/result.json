@@ -1,0 +1,65 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release safety: confirm staged-index drift guard, durable coverage floor, pre-chain grandfathering, and child CAS resolve the prior block",
+  "packet_sha256": "91153bf598c1f81ccd67ec36da932b13b2db41826a29567ca949e6b10befcf00",
+  "reviewed_input_identity_sha256": "420d8dc83d58d2a209c0f9e6939ca2edf93286b75f348104c937f6c8dd4c80dd",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "F1-staged-index-finalization-fails-open",
+      "severity": "high",
+      "summary": "The staged-tree drift guard detects a changed final tree, but a failed final tree inspection still permits a verdict, so staged-index identity is not established at finalization.",
+      "evidence": [
+        "In run_state_drift's STAGED_HEAD branch, resolve_staged_tree(repo_root) is compared with pinned[\"resolved_head_sha\"] only when tree_now is not None.",
+        "The accompanying comment explicitly says an unresolvable final tree skips the secondary guard.",
+        "A final git write-tree failure therefore returns no staged-tree drift when the pool fingerprint is unchanged, despite the run being unable to prove that the staged index still matches the analyzed tree.",
+        "test_staged_drift_catches_an_index_only_change covers a successfully resolved changed tree, but no test requires final resolve failure to mark the run untrusted."
+      ],
+      "action": "Fail closed when final resolve_staged_tree returns None and add a regression test showing final staged-tree inspection failure produces an untrusted/no-verdict result."
+    },
+    {
+      "id": "F2-coverage-declaration-not-bound-to-durable-provenance",
+      "severity": "high",
+      "summary": "The durable coverage floor remains removable from the worker report, allowing the same thin result to validate after expected_targets is omitted.",
+      "evidence": [
+        "build_report carries expected_targets and coverage_ok only as ordinary report fields; neither is joined to the receipt, ledger attempt, or provenance digest.",
+        "validate_delivered_worker_report does not require expected_targets or coverage_ok among its mandatory fields.",
+        "_validate_receipt_and_result falls back to report.get(\"expected_targets\"); when that field is absent or null, report_declared_targets returns None and validate_bounded_result performs no coverage check.",
+        "test_durable_carrier_rejects_a_thin_file_despite_the_report preserves expected_targets in the report; it does not test removal or alteration of that declaration before durable validation.",
+        "test_durable_carrier_passes_an_undeclared_thin_result demonstrates that the resulting no-floor shape is accepted."
+      ],
+      "action": "Cryptographically join the normalized expected-target set or its digest into immutable attempt/receipt/report provenance, require consistency at durable validation, and add tests that deletion or alteration of the report declaration cannot make a thin result deliverable."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Pre-chain Goal Runs with observed body digests could become uncloseable.",
+      "bin": "resolved",
+      "disposition": "_accepted_body_digests now returns an empty set unless the item has recorded revision-chain digests, preserving historical marker-only behavior; the supplied regression covers a pre-chain edited body despite an observed digest."
+    },
+    {
+      "concern": "A concurrent child edit could be overwritten after the parent revision is recorded.",
+      "bin": "resolved",
+      "disposition": "The child update now supplies expected_body_sha256 from the pre-record read, and the supplied race test verifies refusal while preserving the concurrent body."
+    },
+    {
+      "concern": "The staged drift guard now compares the pinned and final staged tree.",
+      "bin": "partial",
+      "disposition": "It catches a successfully resolved changed tree, but final inspection failure still fails open."
+    },
+    {
+      "concern": "The coverage declaration is carried into the durable report.",
+      "bin": "partial",
+      "disposition": "The durable validator reuses the declaration when present, but the declaration is optional and is not provenance-bound, so removal disables the floor."
+    }
+  ],
+  "next_move": "Do not release 8.8.0 from this packet. Make final staged-tree resolution fail closed and bind the expected-target declaration into immutable delivery provenance; then add the two adversarial regressions and rerun the bounded follow-up review.",
+  "non_claims": [
+    "No workspace state, test execution, or content outside the identity-bound inline payload was inspected.",
+    "This review does not dispute the supplied pre-chain grandfathering or child-CAS fixes.",
+    "This review does not assess packaging, release notes, or non-pool execution-input boundaries beyond the selected semantic input."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}
