@@ -1,8 +1,9 @@
 """Validate the typed report carrier used by a file-backed reviewer.
 
-The sibling support module owns repository I/O and receipt/ledger joins. This
-surface owns the artifact-field contract and joins those results to the cited
-critique, so public consumers share one approval meaning.
+The sibling support module owns repository I/O and receipt/ledger/result
+joins. This surface owns the artifact-field contract, the reviewed-packet
+binding, and joins those results to the cited critique, so public consumers
+share one approval meaning.
 """
 
 from __future__ import annotations
@@ -31,7 +32,54 @@ WorkerCarrierError = _SUPPORT.WorkerCarrierError
 _report_path = _SUPPORT._report_path
 _sha256 = _SUPPORT._sha256
 _validate_delivery_chain = _SUPPORT._validate_delivery_chain
-_validate_packet_binding = _SUPPORT._validate_packet_binding
+
+
+def _load_identity_verifier():
+    for ancestor in list(Path(__file__).resolve().parents)[:6]:
+        candidate = ancestor / "scripts" / "review" / "reviewed_input_verification.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("charness_reviewed_input_verification", candidate)
+            if spec is not None and spec.loader is not None:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                return module
+    return None
+
+
+def _validate_packet_binding(
+    *,
+    repo_root: Path,
+    artifact_binding_fields: dict[str, str],
+    required_issue_numbers: list[int] | None = None,
+    required_repository: str | None = None,
+) -> dict[str, Any]:
+    """Verify the generic packet/input identity and return its parsed bytes.
+
+    The optional issue arguments remain accepted for compatibility with older
+    callers, but issue membership is intentionally not interpreted here.  A
+    consumer that owns target semantics must validate the returned packet.
+    """
+    packet_path = artifact_binding_fields.get("packet path", "").strip().strip("`")
+    if not packet_path:
+        raise WorkerCarrierError("worker-delivered requires the Reviewed Input Identity packet path")
+    verifier = _load_identity_verifier()
+    if verifier is None:
+        raise WorkerCarrierError("package reviewed-input verifier is unavailable")
+    try:
+        packet = _SUPPORT._read_json(_report_path(repo_root, packet_path), "reviewed packet")
+        ok, reason = verifier.verify_packet_binding(
+            repo_root=repo_root,
+            packet_path=packet_path,
+            packet_sha256=artifact_binding_fields.get("packet sha256", "").strip().lower(),
+            identity_sha256=artifact_binding_fields.get("identity sha256", "").strip().lower(),
+            expected_kind=_SUPPORT.EXPECTED_PACKET_KIND,
+            check_current=True,
+        )
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        raise WorkerCarrierError(f"reviewed packet binding could not be verified: {exc}") from exc
+    if not ok:
+        raise WorkerCarrierError(f"reviewed packet binding is not current: {reason}")
+    return packet
 
 WORKER_REPORT_FIELDS = (
     "worker report",

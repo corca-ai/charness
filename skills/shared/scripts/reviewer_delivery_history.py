@@ -66,6 +66,7 @@ def validate_history(
     state: str,
     attempt_id: str,
     findings_identity: str | None,
+    expected_targets_sha256: str | None = None,
     *,
     spawn_accepted: str,
     canonical_states: tuple[str, ...],
@@ -99,5 +100,10 @@ def validate_history(
     if state == "findings-received":
         if history[-1].get("findings_identity") != findings_identity:
             raise ValueError("findings-received history must bind its findings_identity")
+        if expected_targets_sha256 is not None and history[-1].get("expected_targets_sha256") != expected_targets_sha256:
+            raise ValueError("findings-received history must bind its expected-targets digest")
     elif any(item.get("findings_identity") is not None for item in history):
         raise ValueError("non-findings history cannot carry findings_identity")
+    if any(item.get("expected_targets_sha256") is not None for item in history):
+        if state != "findings-received" or expected_targets_sha256 is None:
+            raise ValueError("non-findings history cannot carry an expected-targets digest")

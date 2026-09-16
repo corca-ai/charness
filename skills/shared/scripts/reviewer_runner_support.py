@@ -109,6 +109,7 @@ def finalize_attempt(
                     parent_receipt_identity=parent_receipt_identity,
                     findings_identity=receipt.get("output_sha256", ""),
                     recorded_at=receipt.get("finished_at", "") or utc_now(),
+                    expected_targets_sha256=pre_report.get("expected_targets_sha256"),
                 )
                 _write(ledger_path, ledger)
         else:

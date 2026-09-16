@@ -375,10 +375,13 @@ def run_state_drift(
         # execution side. But an index-only operation (unstaging, blob
         # replacement) CAN move the staged tree under a still-identical
         # worktree, so the pinned tree itself is re-resolved and compared. An
-        # unresolvable tree (broken git) skips this secondary guard instead of
-        # inventing drift; the fingerprint comparison below still runs.
+        # unresolvable final tree fails closed: without a re-resolved tree
+        # the run cannot prove the staged index still matches the analyzed
+        # one, so no verdict is emitted instead of a possibly stale one.
         tree_now = _staged.resolve_staged_tree(repo_root)
-        if tree_now is not None and tree_now != pinned["resolved_head_sha"]:
+        if tree_now is None:
+            return "staged index tree could not be re-resolved at finalization"
+        if tree_now != pinned["resolved_head_sha"]:
             return "staged index tree changed during the run"
         if now["pool_fingerprint"] != pinned["pool_fingerprint"]:
             drift.append("mutation-pool worktree content changed during the run")

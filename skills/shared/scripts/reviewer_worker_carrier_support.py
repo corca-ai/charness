@@ -1,4 +1,8 @@
-"""Repository I/O and provenance-chain checks for worker report carriers."""
+"""Repository I/O and receipt/ledger/result joins for worker report carriers.
+
+Reviewed-packet binding lives with the carrier surface that consumes it;
+this module proves the delivery chain behind a cited report.
+"""
 
 from __future__ import annotations
 
@@ -89,18 +93,6 @@ def _load_delivery_attempt_parser():
                 sys.modules[public_name] = previous
 
 
-def _load_identity_verifier():
-    for ancestor in list(Path(__file__).resolve().parents)[:6]:
-        candidate = ancestor / "scripts" / "review" / "reviewed_input_verification.py"
-        if candidate.is_file():
-            spec = importlib.util.spec_from_file_location("charness_reviewed_input_verification", candidate)
-            if spec is not None and spec.loader is not None:
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
-                return module
-    return None
-
-
 class WorkerCarrierError(ValueError):
     """The supplied artifact cannot prove a delivered worker approval."""
 
@@ -152,56 +144,18 @@ def _read_json(path: Path, label: str) -> dict[str, Any]:
     return payload
 
 
-def _validate_packet_binding(
-    *,
-    repo_root: Path,
-    artifact_binding_fields: dict[str, str],
-    required_issue_numbers: list[int] | None = None,
-    required_repository: str | None = None,
-) -> dict[str, Any]:
-    """Verify the generic packet/input identity and return its parsed bytes.
-
-    The optional issue arguments remain accepted for compatibility with older
-    callers, but issue membership is intentionally not interpreted here.  A
-    consumer that owns target semantics must validate the returned packet.
-    """
-    packet_path = artifact_binding_fields.get("packet path", "").strip().strip("`")
-    if not packet_path:
-        raise WorkerCarrierError("worker-delivered requires the Reviewed Input Identity packet path")
-    verifier = _load_identity_verifier()
-    if verifier is None:
-        raise WorkerCarrierError("package reviewed-input verifier is unavailable")
-    try:
-        packet = _read_json(_report_path(repo_root, packet_path), "reviewed packet")
-        ok, reason = verifier.verify_packet_binding(
-            repo_root=repo_root,
-            packet_path=packet_path,
-            packet_sha256=artifact_binding_fields.get("packet sha256", "").strip().lower(),
-            identity_sha256=artifact_binding_fields.get("identity sha256", "").strip().lower(),
-            expected_kind=EXPECTED_PACKET_KIND,
-            check_current=True,
-        )
-    except (OSError, KeyError, TypeError, ValueError) as exc:
-        raise WorkerCarrierError(f"reviewed packet binding could not be verified: {exc}") from exc
-    if not ok:
-        raise WorkerCarrierError(f"reviewed packet binding is not current: {reason}")
-    return packet
-
-
 def _validate_receipt_and_result(
     *,
     repo_root: Path,
     report: dict[str, Any],
     require_pass: bool = True,
-    expected_targets: list[str] | tuple[str, ...] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], str]:
+    # Coverage enforcement lives in the ledger join below, which verifies the
+    # declared set against the attempt and provenance before enforcing it.
+    # This phase binds the receipt and validates result shape only.
     try:
         contract = _load_result_contract()
-        if expected_targets is None:
-            # Fall back to the collection-time declaration so a declared floor
-            # stays enforced here when the durable caller passes none.
-            expected_targets = contract.report_declared_targets(report.get("expected_targets"))
-    except (ImportError, ValueError) as exc:
+    except ImportError as exc:
         raise WorkerCarrierError(str(exc)) from exc
     receipt_value = report.get("receipt_path")
     if not isinstance(receipt_value, str):
@@ -233,9 +187,8 @@ def _validate_receipt_and_result(
             packet_identity=str(report.get("packet_identity", "")),
             reviewed_input_identity=str(report.get("reviewed_input_identity", "")),
             require_pass=require_pass,
-            expected_targets=expected_targets,
         )
-    except (ImportError, ValueError) as exc:
+    except ValueError as exc:
         raise WorkerCarrierError(str(exc)) from exc
     try:
         capability_contract.validate_result_capability_non_claims(result, receipt)
@@ -281,7 +234,12 @@ def _validate_joined_fields(
 
 
 def _validate_ledger(
-    *, repo_root: Path, report: dict[str, Any], receipt: dict[str, Any], output_hash: str
+    *,
+    repo_root: Path,
+    report: dict[str, Any],
+    receipt: dict[str, Any],
+    output_hash: str,
+    require_pass: bool = True,
 ) -> None:
     ledger_value = report.get("ledger_path")
     provenance = report.get("provenance")
@@ -317,6 +275,35 @@ def _validate_ledger(
         raise WorkerCarrierError("delivery ledger does not prove findings-received completion")
     if attempt.findings_identity != output_hash:
         raise WorkerCarrierError("delivery ledger findings identity does not match the result")
+    _require_coverage_declaration_join(
+        repo_root=repo_root, report=report, receipt=receipt,
+        attempt=attempt, provenance=provenance, require_pass=require_pass,
+    )
+
+
+def _require_coverage_declaration_join(
+    *,
+    repo_root: Path,
+    report: dict[str, Any],
+    receipt: dict[str, Any],
+    attempt: Any,
+    provenance: dict[str, Any],
+    require_pass: bool,
+) -> None:
+    """Enforce the joined coverage floor; the contract owns the policy."""
+    try:
+        contract = _load_result_contract()
+        contract.require_joined_floor(
+            report=report,
+            attempt_digest=attempt.expected_targets_sha256,
+            provenance=provenance,
+            output=_report_path(repo_root, receipt["output_file"], allow_hidden=True),
+            packet_identity=str(report.get("packet_identity", "")),
+            reviewed_input_identity=str(report.get("reviewed_input_identity", "")),
+            require_pass=require_pass,
+        )
+    except (ImportError, ValueError) as exc:
+        raise WorkerCarrierError(str(exc)) from exc
 
 
 def _validate_delivery_chain(
@@ -325,7 +312,10 @@ def _validate_delivery_chain(
     receipt, result, output_hash = _validate_receipt_and_result(
         repo_root=repo_root, report=report, require_pass=require_pass
     )
-    _validate_ledger(repo_root=repo_root, report=report, receipt=receipt, output_hash=output_hash)
+    _validate_ledger(
+        repo_root=repo_root, report=report, receipt=receipt,
+        output_hash=output_hash, require_pass=require_pass,
+    )
     return receipt, result, output_hash
 
 

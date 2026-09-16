@@ -8,6 +8,7 @@ can be consumed as reviewer approval.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -155,6 +156,21 @@ def report_declared_targets(value: Any) -> list[str] | None:
     return list(value)
 
 
+def declared_targets_digest(value: Any) -> str | None:
+    """Canonical digest of a declared coverage floor, for cross-record joins.
+
+    The digest is over the sorted normalized set, so declaration order never
+    affects the join. Absence stays None so undeclared flows join as equal
+    Nones; a malformed declaration raises the schema-class error, never a
+    digest mismatch, so authoring errors stay distinguishable from tampering.
+    """
+    declared = report_declared_targets(value)
+    if declared is None:
+        return None
+    canonical = json.dumps(sorted(set(declared)), separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def _require_target_coverage(payload: dict[str, Any], *, expected: set[str]) -> None:
     """Refuse a schema-valid result that leaves declared targets unobserved.
 
@@ -244,3 +260,45 @@ def validate_bounded_result(
             f"worker reviewer verdict is not approval-eligible: {payload.get('verdict')!r}"
         )
     return payload
+
+
+def require_joined_floor(
+    *,
+    report: dict[str, Any],
+    attempt_digest: str | None,
+    provenance: dict[str, Any],
+    output: Path,
+    packet_identity: str,
+    reviewed_input_identity: str,
+    require_pass: bool,
+) -> None:
+    """Enforce the declared coverage floor only when three sides agree.
+
+    The declaration list in a delivered report is mutable evidence on its
+    own; its digest is recorded independently in the ledger attempt (under
+    lock at collection) and in the report provenance. Any side disagreeing
+    — a deleted or altered declaration included — raises instead of
+    enforcing, and the joined set is re-enforced against the hashed result,
+    so a thin file cannot validate on a dropped floor. Undeclared on all
+    three sides stays the opt-in no-floor shape.
+    """
+    report_digest = report.get("expected_targets_sha256")
+    provenance_digest = provenance.get("expected_targets_sha256")
+    if not (attempt_digest == report_digest == provenance_digest):
+        raise ReviewerResultError(
+            "coverage declaration digest does not match report, ledger attempt, and provenance"
+        )
+    if attempt_digest is None:
+        return
+    declared = report_declared_targets(report.get("expected_targets"))
+    if declared is None or declared_targets_digest(declared) != attempt_digest:
+        raise ReviewerResultError(
+            "coverage declaration digest does not match its joined declaration"
+        )
+    validate_bounded_result(
+        output,
+        packet_identity=packet_identity,
+        reviewed_input_identity=reviewed_input_identity,
+        require_pass=require_pass,
+        expected_targets=declared,
+    )

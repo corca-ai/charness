@@ -407,3 +407,48 @@ def test_ledger_lock_holds_a_real_exclusive_file_lock(tmp_path) -> None:
     finally:
         release_holder.set()
         holder.join()
+
+
+def test_findings_digest_round_trips_through_readback() -> None:
+    ledger = _ledger()
+    assert _findings(ledger, expected_targets_sha256="d" * 64) is True
+    attempt = ledger.require("a1")
+    assert attempt.expected_targets_sha256 == "d" * 64
+    assert attempt.history[-1]["expected_targets_sha256"] == "d" * 64
+    restored = delivery.DeliveryLedger.from_dict(ledger.to_dict()).require("a1")
+    assert restored.expected_targets_sha256 == "d" * 64
+    assert restored.history[-1]["expected_targets_sha256"] == "d" * 64
+
+
+def test_readback_refuses_findings_history_missing_the_digest() -> None:
+    ledger = _ledger()
+    assert _findings(ledger, expected_targets_sha256="d" * 64) is True
+    payload = ledger.to_dict()
+    del payload["attempts"][0]["history"][-1]["expected_targets_sha256"]
+    with pytest.raises(delivery.DeliveryError, match="expected-targets digest"):
+        delivery.DeliveryLedger.from_dict(payload)
+
+
+def test_readback_refuses_a_digest_without_payload_declaration() -> None:
+    ledger = _ledger()
+    assert _findings(ledger, expected_targets_sha256="d" * 64) is True
+    payload = ledger.to_dict()
+    del payload["attempts"][0]["expected_targets_sha256"]
+    with pytest.raises(delivery.DeliveryError, match="expected-targets digest"):
+        delivery.DeliveryLedger.from_dict(payload)
+
+
+def test_record_findings_refuses_a_malformed_digest() -> None:
+    ledger = _ledger()
+    with pytest.raises(delivery.DeliveryError, match="lowercase SHA-256"):
+        _findings(ledger, expected_targets_sha256="not-a-digest")
+
+
+def test_undeclared_findings_leave_no_digest() -> None:
+    ledger = _ledger()
+    assert _findings(ledger) is True
+    attempt = ledger.require("a1")
+    assert attempt.expected_targets_sha256 is None
+    assert "expected_targets_sha256" not in attempt.history[-1]
+    restored = delivery.DeliveryLedger.from_dict(ledger.to_dict()).require("a1")
+    assert restored.expected_targets_sha256 is None

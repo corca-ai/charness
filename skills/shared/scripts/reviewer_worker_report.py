@@ -241,11 +241,18 @@ def build_report(
         except (OSError, ValueError, KeyError, TypeError) as exc:
             semantic_result = None
             semantic_reason = str(exc)
+    # The floor digest joins the declaration to the ledger attempt and the
+    # provenance below: deleting or altering the carried set after collection
+    # breaks the durable join instead of silently dropping the floor.
+    targets_digest = _load_result_contract().declared_targets_digest(
+        list(expected_targets) if expected_targets is not None else None
+    )
     provenance = {
         "scope": scope,
         "packet_identity": packet_identity,
         "reviewed_input_identity": reviewed_input_identity,
         "parent_receipt_identity": parent_receipt_identity,
+        "expected_targets_sha256": targets_digest,
         "attempt_id": attempt.attempt_id,
         "attempt_scope": attempt.scope,
         "attempt_packet_identity": attempt.packet_identity,
@@ -337,7 +344,11 @@ def build_report(
         # The declared set travels with the report so the durable carrier
         # boundary can re-enforce the same floor even when its own caller
         # passes none — a thin file swapped in after collection still refuses.
+        # Its digest joins the ledger attempt and provenance: the set is
+        # enforced only when all three agree, so removal or alteration of
+        # this field alone cannot launder a thin result.
         "expected_targets": list(expected_targets) if expected_targets is not None else None,
+        "expected_targets_sha256": targets_digest,
         "collection_ready": collection_ready,
         "partial_output": partial_output,
         "partial_output_ok": partial_output is not None,

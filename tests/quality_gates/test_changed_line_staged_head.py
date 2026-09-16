@@ -97,7 +97,25 @@ def test_staged_drift_ignores_a_mid_run_commit(tmp_path: Path, monkeypatch) -> N
     monkeypatch.setattr(
         trust, "_pin_run_state", lambda *_args, **_kwargs: dict(pinned, head_commit="c" * 40)
     )
+    monkeypatch.setattr(
+        trust._staged, "resolve_staged_tree", lambda *_args, **_kwargs: "b" * 40
+    )
     assert trust.run_state_drift(tmp_path, "base", STAGED_HEAD, pinned) is None
+
+
+def test_staged_drift_fails_closed_when_the_final_tree_is_unresolvable(
+    tmp_path: Path, monkeypatch
+) -> None:
+    # A final `git write-tree` failure must not emit a verdict over a tree
+    # the run can no longer prove matches the analyzed one — even when the
+    # worktree fingerprint is unchanged.
+    pinned = {"head_commit": "a" * 40, "pool_fingerprint": "fp", "resolved_head_sha": "b" * 40}
+    monkeypatch.setattr(
+        trust, "_pin_run_state", lambda *_args, **_kwargs: dict(pinned, head_commit="c" * 40)
+    )
+    monkeypatch.setattr(trust._staged, "resolve_staged_tree", lambda *_args, **_kwargs: None)
+    drift = trust.run_state_drift(tmp_path, "base", STAGED_HEAD, pinned)
+    assert drift is not None and "could not be re-resolved" in drift
 
 
 def test_staged_drift_catches_an_index_only_change(tmp_path: Path) -> None:
@@ -237,6 +255,9 @@ def test_staged_drift_reports_worktree_movement(tmp_path: Path, monkeypatch) -> 
     pinned = {"head_commit": "a" * 40, "pool_fingerprint": "fp", "resolved_head_sha": "b" * 40}
     monkeypatch.setattr(
         trust, "_pin_run_state", lambda *_args, **_kwargs: dict(pinned, pool_fingerprint="moved")
+    )
+    monkeypatch.setattr(
+        trust._staged, "resolve_staged_tree", lambda *_args, **_kwargs: "b" * 40
     )
     drift = trust.run_state_drift(tmp_path, "base", STAGED_HEAD, pinned)
     assert drift is not None and "worktree content changed" in drift

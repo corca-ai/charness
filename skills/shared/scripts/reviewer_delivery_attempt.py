@@ -77,6 +77,7 @@ class DeliveryAttempt:
     receipt_file: str | None = None
     producer_run_id: str | None = None
     findings_identity: str | None = None
+    expected_targets_sha256: str | None = None
     partial_output: dict[str, Any] | None = None
     retry_of: str | None = None
     retry_count: int = 0
@@ -259,13 +260,23 @@ class DeliveryAttempt:
         parent_receipt_identity: str,
         findings_identity: str,
         recorded_at: str,
+        expected_targets_sha256: str | None = None,
     ) -> bool:
         when = _text(recorded_at, "recorded_at")
+        try:
+            targets_digest = (
+                _sha256(expected_targets_sha256, "expected_targets_sha256")
+                if expected_targets_sha256 is not None
+                else None
+            )
+        except ValueError as exc:
+            raise DeliveryError(str(exc)) from exc
         supplied = {
             "scope": _text(scope, "scope"),
             "packet_identity": _text(packet_identity, "packet_identity"),
             "parent_receipt_identity": _validated_parent_receipt_identity(parent_receipt_identity),
             "findings_identity": _sha256(findings_identity, "findings_identity"),
+            "expected_targets_sha256": targets_digest,
         }
         if self.state in TERMINAL_STATES:
             self.observations.append(
@@ -303,11 +314,15 @@ class DeliveryAttempt:
             )
             return False
         self.findings_identity = supplied["findings_identity"]
+        self.expected_targets_sha256 = supplied["expected_targets_sha256"]
+        event_fields: dict[str, Any] = {"findings_identity": self.findings_identity}
+        if self.expected_targets_sha256 is not None:
+            event_fields["expected_targets_sha256"] = self.expected_targets_sha256
         self._apply_transition(
             FINDINGS_RECEIVED,
             "findings received in parent context",
             when,
-            event_fields={"findings_identity": self.findings_identity},
+            event_fields=event_fields,
         )
         return True
 
