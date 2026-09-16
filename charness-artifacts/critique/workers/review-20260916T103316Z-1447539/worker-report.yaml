@@ -1,0 +1,66 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: '8.8.0 minor release: is shipping #818 (body-revision chain), #819 (coverage
+  floor), and staged-tree changed-line analysis as 8.8.0 a good idea and safe?'
+attempt_id: review-20260916T103316Z-1447539
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 726d6ecbac21dd0c2b93c80b2921d2c81ed79a921de4b6b98fddbd5a9ec97611
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/review-20260916T103316Z-1447539/receipt.json
+ledger_path: charness-artifacts/critique/workers/review-20260916T103316Z-1447539/delivery.json
+producer_run_id: run-review-20260916T103316Z-1447539
+producer_binding:
+  output_file: charness-artifacts/critique/workers/review-20260916T103316Z-1447539/result.json
+  receipt_file: charness-artifacts/critique/workers/review-20260916T103316Z-1447539/receipt.json
+  producer_run_id: run-review-20260916T103316Z-1447539
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 54a599a47a7c7af38b949c795f051ef6afb3039679ef281a0ba702ec28f4ebe7
+receipt_output_sha256: 54a599a47a7c7af38b949c795f051ef6afb3039679ef281a0ba702ec28f4ebe7
+packet_identity: 80057df89efdf5839961131d5cbfaaadb8dd46f5609d5e3a2ac35b4c7a87c424
+reviewed_input_identity: 3dbe5c27838ee3ac35ac23525a075b8ab0caddb3545668fbd8707d0782b086cf
+parent_receipt_identity: parent-da8bd3e996e12baebec0ba4adc8bb19e317f8af9053a8d8b
+provenance:
+  scope: '8.8.0 minor release: is shipping #818 (body-revision chain), #819 (coverage
+    floor), and staged-tree changed-line analysis as 8.8.0 a good idea and safe?'
+  packet_identity: 80057df89efdf5839961131d5cbfaaadb8dd46f5609d5e3a2ac35b4c7a87c424
+  reviewed_input_identity: 3dbe5c27838ee3ac35ac23525a075b8ab0caddb3545668fbd8707d0782b086cf
+  parent_receipt_identity: parent-da8bd3e996e12baebec0ba4adc8bb19e317f8af9053a8d8b
+  attempt_id: review-20260916T103316Z-1447539
+  attempt_scope: '8.8.0 minor release: is shipping #818 (body-revision chain), #819
+    (coverage floor), and staged-tree changed-line analysis as 8.8.0 a good idea and
+    safe?'
+  attempt_packet_identity: 80057df89efdf5839961131d5cbfaaadb8dd46f5609d5e3a2ac35b4c7a87c424
+  attempt_parent_receipt_identity: parent-da8bd3e996e12baebec0ba4adc8bb19e317f8af9053a8d8b
+  result_packet_identity: 80057df89efdf5839961131d5cbfaaadb8dd46f5609d5e3a2ac35b4c7a87c424
+  result_reviewed_input_identity: 3dbe5c27838ee3ac35ac23525a075b8ab0caddb3545668fbd8707d0782b086cf
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 726d6ecbac21dd0c2b93c80b2921d2c81ed79a921de4b6b98fddbd5a9ec97611
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes
