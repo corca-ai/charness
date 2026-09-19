@@ -46,6 +46,25 @@ def binding_path_for_draft(draft_path: str | Path) -> Path:
     return path.with_suffix(".binding.json")
 
 
+def _canonicalize_dependency_order(
+    items: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Sort and deduplicate dependency lists whose order carries no meaning.
+
+    Malformed shapes pass through untouched so item validation still raises
+    the typed refusal for them.
+    """
+    normalized: list[dict[str, Any]] = []
+    for item in items:
+        if isinstance(item, dict) and isinstance(item.get("dependencies"), list):
+            dependencies = item["dependencies"]
+            if all(isinstance(dep, str) for dep in dependencies):
+                normalized.append({**item, "dependencies": sorted(set(dependencies))})
+                continue
+        normalized.append(item)
+    return normalized
+
+
 def build_binding(
     *,
     draft_path: str,
@@ -67,8 +86,12 @@ def build_binding(
     parent_value = _validate_identity(parent, context="parent")
     if not isinstance(approved_work_items, list) or not approved_work_items:
         raise BindingError("schema-invalid", "approved_work_items must be a non-empty list")
+    # Dependency order carries no meaning; accept planner order and store
+    # the canonical sorted-unique form. Stored bytes stay strict: structural
+    # validation still refuses a non-canonical dependency list.
+    normalized = _canonicalize_dependency_order(approved_work_items)
     # Planner order is accepted; the producer emits only canonical key order.
-    prevalidated = [_validate_item(item, parent=parent_value) for item in approved_work_items]
+    prevalidated = [_validate_item(item, parent=parent_value) for item in normalized]
     items = sorted(prevalidated, key=lambda item: item["key"])
     _validate_manifest(items, parent=parent_value)
     return {
@@ -349,3 +372,18 @@ def validate_binding(
         expected_draft_sha256=expected_draft_sha256,
         expected_binding_sha256=expected_binding_sha256,
     ) | {"authority": "parent-bound"}
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the freeze CLI without giving the library itself a CLI cost.
+
+    The front-end lives in the sibling ``goal_binding_freeze.py``; this stays a
+    thin dispatcher so ``python3 goal_binding.py freeze ...`` keeps working.
+    """
+    from goal_binding_freeze import main as freeze_main
+
+    return freeze_main(argv)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -98,7 +98,20 @@ After explicit approval of the exact briefing and draft bytes:
 1. read the intended parent through the selected issue provider;
 2. freeze and hash the complete Goal Draft; and
 3. create the immutable Goal Binding containing the parent identity and approved
-   Work Item manifest.
+   Work Item manifest, with the freeze CLI so the draft hash is supplied once:
+
+```bash
+python3 "$SKILL_DIR/scripts/goal_binding.py" freeze --repo-root . \
+  --draft charness-artifacts/goals/<yyyy-mm-dd-slug>.md \
+  --parent-repo <owner/repo> --parent-number <n> \
+  --briefing-sha256 <hex> --approval-response "<text>" \
+  --approval-session-id <id> --approval-observed-at <ts> \
+  --manifest /tmp/work-items.json
+```
+
+The manifest file is a JSON list of Work Items (or an object holding
+`approved_work_items`); dependency order is canonicalized at freeze, and the
+binding lands at the draft's deterministic `.binding.json` sibling.
 
 The binding is the frozen identity. The Goal Draft is not edited during
 execution, and no local status or progress mutation is authorized.

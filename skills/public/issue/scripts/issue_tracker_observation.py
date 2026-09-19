@@ -33,7 +33,10 @@ def _with_receipt_hash(payload: dict[str, Any]) -> dict[str, Any]:
 def _write_immutable(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
-        raise RuntimeError(f"provider observation already exists and is immutable: {path}")
+        raise RuntimeError(
+            f"provider observation already exists and is immutable: {path}; "
+            "attempt ids are single-use, retry with a new attempt_id"
+        )
     rendered = _canonical_bytes(payload)
     temporary: str | None = None
     try:
@@ -46,7 +49,10 @@ def _write_immutable(path: Path, payload: dict[str, Any]) -> None:
             os.fsync(handle.fileno())
         os.link(temporary, path)
     except FileExistsError as exc:
-        raise RuntimeError(f"provider observation already exists and is immutable: {path}") from exc
+        raise RuntimeError(
+            f"provider observation already exists and is immutable: {path}; "
+            "attempt ids are single-use, retry with a new attempt_id"
+        ) from exc
     finally:
         if temporary is not None:
             Path(temporary).unlink(missing_ok=True)

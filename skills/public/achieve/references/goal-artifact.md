@@ -61,8 +61,10 @@ python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . \
 
 The JSON file may contain `title` and `goal-body`; it keeps prose out of a
 shell. A new call scaffolds the complete planning shape. A later call updates
-only the title and `## Goal` body, preserving authored planning sections. Once
-the sibling `.binding.json` exists, the writer refuses all changes.
+only the title and `## Goal` body, preserving authored planning sections. That
+is intentional: edit every other planning section directly in the file; the
+writer keeps those bytes intact and `check_planning_shape` validates the shape.
+Once the sibling `.binding.json` exists, the writer refuses all changes.
 
 Do not add execution state to this record. Use the issue-owned Goal Run for
 provider mutation and execution state.

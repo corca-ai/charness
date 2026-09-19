@@ -232,6 +232,24 @@ started/terminal observations, and returns typed
 Create recovery performs exact discovery before any retry, so a provider/index
 race can be read back and reused without a second create.
 
+The bootstrap body file must already contain the managed block. The first
+`update-body` does not invent metadata: `--body-file` carries human prose plus
+exactly one `<!-- charness-goal-run:v1 {JSON} -->` block, and the block holds
+exactly eight fields: `binding_schema` (the literal
+`charness.goal-binding/v1`), `binding_path`, `binding_sha256`, `draft_path`,
+`draft_sha256`, `initial_graph_sha256`, `bootstrap_verification` (the literal
+`verified-target-roundtrip`), and `parent_identity` (`repo`, `number`, `url`).
+The desired block is checked against the immutable binding before any provider
+write; a body without the block refuses as `parent update must carry complete
+Goal Run metadata`, and a block that contradicts the binding refuses before
+mutation.
+
+Every operation names a single-use attempt id. The provider writes the
+`started` receipt before the backend call and the `terminal` receipt after it,
+and both are immutable. A refused outcome with `mutation_invoked: false` still
+consumes its attempt id, so retry with a new id (for example `<base>-retry-1`);
+reusing the same id refuses as `observation-refused` without a provider call.
+
 Closing is deliberately separate:
 
 ```bash

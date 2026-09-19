@@ -14,3 +14,17 @@ Pickup returns `verified-read` or a typed refusal. It does not infer execution
 state from a local artifact, scan or reconcile the provider graph, mutate the
 provider, or create a second progress record. Use the issue-owned Goal Run
 bootstrap, sync, apply, and close commands for those operations.
+
+## Parent execution cursor
+
+The parent-owned cursor is the object at metadata `progress`. It holds exactly
+six required fields: `schema` (the literal `charness.goal-progress/v1`),
+`revision` (positive integer), `total`, `completed`, `open` (`total` is
+positive and `completed + open` equals `total`), and `next`. `next` is `null`
+when `open` is zero, otherwise one object with `key`, `repo`, `number`, `url`,
+and `state` (`state` is `OPEN`, the URL is the canonical issue URL, and the key
+names an approved Work Item). Two legacy digests are tolerated and never
+compared: `progress.membership_sha256` and top-level
+`current_membership_sha256`. Either may be absent; when present, pickup ignores
+the value. Membership truth is the provider's sub-issue graph plus parent
+`amendments`, so write the minimal cursor without inventing a hash.
