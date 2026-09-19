@@ -10,6 +10,7 @@ MARKER_RE = re.compile(r"<!--\s*charness-goal-run:(?P<version>[^\s]+)")
 BLOCK_RE = re.compile(
     r"<!--\s*charness-goal-run:v1\s*\n(?P<payload>\{.*?\})\s*\n\s*-->", re.DOTALL
 )
+_INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 
 
 def parse_goal_run_metadata(body: Any, *, context: str = "issue body") -> dict[str, Any] | None:
@@ -34,9 +35,33 @@ def parse_goal_run_metadata(body: Any, *, context: str = "issue body") -> dict[s
     return payload
 
 
+def _strip_code_spans(text: str) -> str:
+    """Remove fenced and inline code spans before marker scanning.
+
+    A marker mention inside code (for example an issue report quoting
+    ```<!-- charness-goal-run:v1 ... -->```) renders as code and carries no
+    managed block, but the raw-text marker scan cannot tell it from a real
+    one. Real managed blocks are always bare prose, so stripping code spans
+    here cannot hide one. This stays in the close guard only: provider paths
+    keep reading raw bytes, where a code-wrapped block is still refused as
+    malformed rather than silently accepted.
+    """
+    lines = text.splitlines(keepends=True)
+    kept: list[str] = []
+    in_fence = False
+    for line in lines:
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        if not in_fence:
+            kept.append(_INLINE_CODE_RE.sub("", line))
+    return "".join(kept)
+
+
 def refuse_generic_close(body: Any, *, context: str = "issue body") -> None:
     """Generic close ingress cannot close a Goal Run."""
-    if parse_goal_run_metadata(body, context=context) is not None:
+    scannable = _strip_code_spans(body) if isinstance(body, str) else body
+    if parse_goal_run_metadata(scannable, context=context) is not None:
         raise RuntimeError(
             "goal-run-close-required: generic issue close cannot close a Goal Run; "
             "use the dedicated guarded Goal Run close operation"

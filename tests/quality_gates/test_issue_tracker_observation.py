@@ -123,6 +123,64 @@ def test_unverified_create_observation_blocks_same_identity_retry(tmp_path: Path
     assert changed_body["requested_submitted_body_sha256"] == "d" * 64
 
 
+def test_unreadable_started_receipt_fails_closed_for_create(tmp_path: Path) -> None:
+    observation_dir = Path("observations")
+    directory = tmp_path / observation_dir
+    directory.mkdir(parents=True)
+    (directory / "create-crashed-1.started.json").write_text(
+        "{corrupted receipt bytes", encoding="utf-8"
+    )
+
+    unresolved = OBSERVATION["find_unresolved_create"](
+        repo_root=tmp_path,
+        observation_dir=observation_dir,
+        repo="corca-ai/charness",
+        parent_number=724,
+        work_item_key="unrelated-key",
+        submitted_body_sha256=None,
+        exclude_attempt_id="another-attempt",
+    )
+
+    assert unresolved["reason"] == "started-observation-unreadable-or-invalid"
+    assert unresolved["started_path"].endswith("create-crashed-1.started.json")
+    assert unresolved["started_sha256"] is None
+    assert unresolved["terminal_path"] is None
+
+
+def test_tampered_started_receipt_fails_closed_for_create(tmp_path: Path) -> None:
+    observation_dir = Path("observations")
+    started = OBSERVATION["begin"](
+        repo_root=tmp_path,
+        observation_dir=observation_dir,
+        attempt_id="create-tampered-1",
+        draft_sha256="a" * 64,
+        binding_sha256="b" * 64,
+        repo="corca-ai/charness",
+        parent_number=724,
+        operation="create-child",
+        target={"repo": "corca-ai/charness", "work_item_key": "goal-binding-v1"},
+        submitted_body_sha256="c" * 64,
+        backend={"id": "gh", "binary": "gh"},
+    )
+    path = tmp_path / started["path"]
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["receipt_sha256"] = "0" * 64
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    unresolved = OBSERVATION["find_unresolved_create"](
+        repo_root=tmp_path,
+        observation_dir=observation_dir,
+        repo="corca-ai/charness",
+        parent_number=724,
+        work_item_key="goal-binding-v1",
+        submitted_body_sha256="c" * 64,
+        exclude_attempt_id="create-binding-2",
+    )
+
+    assert unresolved["reason"] == "started-observation-unreadable-or-invalid"
+    assert unresolved["started_path"].endswith("create-tampered-1.started.json")
+
+
 def test_verified_create_observation_does_not_block_retry_scan(tmp_path: Path) -> None:
     observation_dir = Path("observations")
     started = OBSERVATION["begin"](

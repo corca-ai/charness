@@ -204,13 +204,37 @@ def find_unresolved_create(
     exclude_attempt_id: str,
     compare_submitted_body: bool = True,
 ) -> dict[str, Any] | None:
-    """Return an unresolved create; body digest comparison is legacy-only."""
+    """Return an unresolved create; body digest comparison is legacy-only.
+
+    A started file that fails receipt validation is reported as unresolved
+    (``started-observation-unreadable-or-invalid``) rather than skipped: an
+    unreadable receipt could record this exact create, so skipping it would
+    permit a second provider mutation on a mutation-free assumption nothing
+    can prove.
+    """
     directory = _validated_dir(repo_root, observation_dir)
     if not directory.is_dir():
         return None
+    root = repo_root.resolve()
     for started_path in sorted(directory.glob("*.started.json")):
         started = _read_receipt(started_path)
-        if started is None or started.get("attempt_id") == exclude_attempt_id:
+        if started is None:
+            # A started file that cannot be validated is not evidence of a
+            # clean history: its operation, parent, and work item are
+            # unreadable, so it could record this exact create. Fail closed
+            # and require operator disposition instead of silently
+            # permitting a second provider create.
+            attempt_id = started_path.name.removesuffix(".started.json")
+            terminal_path = directory / f"{attempt_id}.terminal.json"
+            return {
+                "started_path": str(started_path.relative_to(root)),
+                "started_sha256": None,
+                "terminal_path": (
+                    str(terminal_path.relative_to(root)) if terminal_path.exists() else None
+                ),
+                "reason": "started-observation-unreadable-or-invalid",
+            }
+        if started.get("attempt_id") == exclude_attempt_id:
             continue
         if (
             started.get("kind") != "charness.goal-run-observation/v1"
