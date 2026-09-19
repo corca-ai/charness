@@ -155,7 +155,15 @@ DONE: update complete`
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: `state-verified`.
+- GitHub repo: `corca-ai/charness`
+- Issue #821: `CLOSED` (https://github.com/corca-ai/charness/issues/821)
+  - carrier: `charness-artifacts/release/8.9.1-issue-821-carrier.md`
+  - verify-closeout: `verified` (manual-fallback, operator-directed-manual-close)
+  - manual fallback used: `True` — `close-with-comment` refuses the target
+    because the issue body quotes the Goal Run marker in inline code; the
+    guard reads it as duplicate/malformed metadata. Closed via
+    `gh issue comment --body-file` plus `gh issue close`, then verified.
 
 ## User Update Steps
 
