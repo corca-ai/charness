@@ -1,0 +1,50 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "real-gap",
+      "concern": "The supplied tests cover normal freeze success, typed input failures, immutable attempt reuse, and an os.link race.",
+      "disposition": "Those tests do not exercise malformed matching receipts or out-of-repository draft paths, so they do not retire either finding."
+    },
+    {
+      "bin": "defer",
+      "concern": "Freeze approval and parent identity are supplied as CLI arguments rather than live provider reads.",
+      "disposition": "The packet documents provider verification later in Goal Run establishment; this review does not treat that interface choice alone as a blocker without the omitted caller/adapter contract."
+    }
+  ],
+  "findings": [
+    {
+      "action": "Fail closed on any matching malformed or hash-invalid started receipt: return an unresolved/refusal outcome requiring operator disposition or a new verified recovery path, rather than continuing to create.",
+      "evidence": [
+        "issue_tracker_observation.py find_unresolved_create skips any started receipt for which _read_receipt returns None.",
+        "The documented contract says an incomplete or invalid observation is unresolved and must not be treated as a mutation-free history.",
+        "A crash or receipt corruption can therefore permit a second create without first establishing whether the original provider mutation occurred."
+      ],
+      "id": "R1",
+      "severity": "high",
+      "summary": "Unresolved create recovery can ignore a corrupted started receipt and retry a provider create."
+    },
+    {
+      "action": "Validate and resolve the draft path against repo_root before reading it; reject absolute, traversal, and symlink-escaping paths before hashing.",
+      "evidence": [
+        "goal_binding_freeze.py run_freeze calls sha256_file(repo_root / draft_arg) before build_binding validates draft_path.",
+        "An absolute path or traversal path can cause the CLI to read and hash a file outside the repository before refusing the binding.",
+        "The later path validation prevents writing a binding, but it does not prevent the out-of-scope read."
+      ],
+      "id": "R2",
+      "severity": "medium",
+      "summary": "The freeze CLI hashes the draft before validating that the supplied path is repository-relative."
+    }
+  ],
+  "kind": "charness.bounded_review.v1",
+  "lens": "operator verification and release safety",
+  "next_move": "Repair the fail-open observation recovery and prevalidate draft paths, then add focused regression tests before release approval.",
+  "non_claims": [
+    "No provider roundtrip, host exposure, or external issue-state verification was performed.",
+    "This review judges only the identity-checked inline payload, not the current workspace.",
+    "No claim is made about unreviewed files or the complete Goal Run implementation."
+  ],
+  "packet_sha256": "daa8d78a88ab7201a9a29877c96d58f4c1815f8b9c6f56cd303981efa217e7a5",
+  "reviewed_input_identity_sha256": "7f0311e26d5963157a9bc6ad5f0f3ecdf4c5c686849ce610b33c34380f04a82f",
+  "target_observations": null,
+  "verdict": "block"
+}

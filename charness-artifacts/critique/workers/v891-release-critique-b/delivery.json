@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "v891-release-critique-b",
+      "scope": "release-critique of the #821 Goal Run establishment repair (freeze CLI, bootstrap/attempt-id/cursor docs, observation hint)",
+      "packet_identity": "daa8d78a88ab7201a9a29877c96d58f4c1815f8b9c6f56cd303981efa217e7a5",
+      "parent_receipt_identity": "parent-1536f9d7b333247a35cf4bc04b6415bd02ccfcf6f315d68b",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-19T05:02:56Z",
+      "history": [
+        {
+          "event_id": "2eadab03744e4fc7b035a23b18fc2f1c",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-19T05:02:28Z",
+          "attempt_id": "v891-release-critique-b",
+          "scope": "release-critique of the #821 Goal Run establishment repair (freeze CLI, bootstrap/attempt-id/cursor docs, observation hint)",
+          "packet_identity": "daa8d78a88ab7201a9a29877c96d58f4c1815f8b9c6f56cd303981efa217e7a5",
+          "parent_receipt_identity": "parent-1536f9d7b333247a35cf4bc04b6415bd02ccfcf6f315d68b",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "6a190f6547a24be0b6f465edf1ee6c8b",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-19T05:02:28Z",
+          "attempt_id": "v891-release-critique-b",
+          "scope": "release-critique of the #821 Goal Run establishment repair (freeze CLI, bootstrap/attempt-id/cursor docs, observation hint)",
+          "packet_identity": "daa8d78a88ab7201a9a29877c96d58f4c1815f8b9c6f56cd303981efa217e7a5",
+          "parent_receipt_identity": "parent-1536f9d7b333247a35cf4bc04b6415bd02ccfcf6f315d68b",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "4a31f9411f034cb8a120375229430431",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-19T05:02:56Z",
+          "attempt_id": "v891-release-critique-b",
+          "scope": "release-critique of the #821 Goal Run establishment repair (freeze CLI, bootstrap/attempt-id/cursor docs, observation hint)",
+          "packet_identity": "daa8d78a88ab7201a9a29877c96d58f4c1815f8b9c6f56cd303981efa217e7a5",
+          "parent_receipt_identity": "parent-1536f9d7b333247a35cf4bc04b6415bd02ccfcf6f315d68b",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "a52ba8409f0e99020b5c59416632fc3fdb0ae57d70f6af262dc417361479631d"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "7f0311e26d5963157a9bc6ad5f0f3ecdf4c5c686849ce610b33c34380f04a82f",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "a4ab3e66282a50fcd8f5434623a711a0087d22ee9967f2248197957e063df569",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/v891-release-critique-b/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/v891-release-critique-b/receipt.json",
+      "producer_run_id": "run-v891-release-critique-b",
+      "findings_identity": "a52ba8409f0e99020b5c59416632fc3fdb0ae57d70f6af262dc417361479631d"
+    }
+  ]
+}

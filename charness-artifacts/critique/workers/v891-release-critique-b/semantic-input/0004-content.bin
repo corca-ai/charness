@@ -25,9 +25,6 @@ from goal_binding import (  # noqa: E402
     sha256_file,
     write_immutable_binding,
 )
-from goal_binding_support import (  # noqa: E402
-    _validate_relative_text_path,
-)
 
 
 def load_manifest_file(path: Path) -> list[dict[str, Any]]:
@@ -47,27 +44,6 @@ def load_manifest_file(path: Path) -> list[dict[str, Any]]:
         "schema-invalid",
         "manifest file must be a JSON list or an object with approved_work_items",
     )
-
-
-def resolve_draft_for_read(repo_root: Path, draft_arg: str) -> Path:
-    """Resolve the draft to read, refusing out-of-repository paths first.
-
-    The binding validator would refuse these paths anyway, but only after the
-    draft bytes were read. Hashing is a read, so the containment check comes
-    before it: absolute paths, traversal spellings, and symlink escapes are
-    refused before any file is opened.
-    """
-    _validate_relative_text_path(draft_arg, context="draft", suffix=".md")
-    candidate = repo_root / draft_arg
-    try:
-        resolved = candidate.resolve()
-    except (OSError, ValueError) as exc:
-        raise BindingError("draft-missing", f"could not resolve Goal Draft {draft_arg}: {exc}") from exc
-    try:
-        resolved.relative_to(repo_root)
-    except ValueError as exc:
-        raise BindingError("path-invalid", "draft path escapes the repository") from exc
-    return candidate
 
 
 def parent_identity(repo: str, number: int) -> dict[str, Any]:
@@ -126,13 +102,22 @@ def build_freeze_parser() -> Any:
         type=Path,
         help="JSON list of work items, or an object with approved_work_items",
     )
+    freeze.add_argument(
+        "--binding-path",
+        type=Path,
+        default=None,
+        help="Binding path (default: the draft's deterministic .binding.json sibling)",
+    )
     return parser
 
 
 def run_freeze(args: Any) -> dict[str, Any]:
     repo_root = args.repo_root.expanduser().resolve()
     draft_arg = args.draft
-    draft_sha = sha256_file(resolve_draft_for_read(repo_root, draft_arg))
+    try:
+        draft_sha = sha256_file(repo_root / draft_arg)
+    except BindingError as exc:
+        raise BindingError("draft-missing", str(exc)) from exc
     items = load_manifest_file(args.manifest.expanduser())
     parent = parent_identity(args.parent_repo, args.parent_number)
     payload = build_binding(
@@ -145,7 +130,7 @@ def run_freeze(args: Any) -> dict[str, Any]:
         parent=parent,
         approved_work_items=items,
     )
-    target = binding_path_for_draft(payload["draft"]["path"])
+    target = args.binding_path or binding_path_for_draft(payload["draft"]["path"])
     digest = write_immutable_binding(
         Path(target),
         payload,

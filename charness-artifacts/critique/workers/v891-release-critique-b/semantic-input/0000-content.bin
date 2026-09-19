@@ -111,11 +111,7 @@ python3 "$SKILL_DIR/scripts/goal_binding.py" freeze --repo-root . \
 
 The manifest file is a JSON list of Work Items (or an object holding
 `approved_work_items`); dependency order is canonicalized at freeze, and the
-binding lands at the draft's deterministic `.binding.json` sibling. The
-provider parent read in step 1 is an external prerequisite: transcribe its
-repo and number into `--parent-repo`/`--parent-number`. The CLI performs no
-provider call; provider authority over the binding is enforced later by the
-issue skill's `goal-run-apply` against live parent metadata.
+binding lands at the draft's deterministic `.binding.json` sibling.
 
 The binding is the frozen identity. The Goal Draft is not edited during
 execution, and no local status or progress mutation is authorized.

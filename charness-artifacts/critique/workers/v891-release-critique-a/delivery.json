@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "v891-release-critique-a",
+      "scope": "release-critique of the #821 Goal Run establishment repair (freeze CLI, bootstrap/attempt-id/cursor docs, observation hint)",
+      "packet_identity": "daa8d78a88ab7201a9a29877c96d58f4c1815f8b9c6f56cd303981efa217e7a5",
+      "parent_receipt_identity": "parent-2284edd1440841592c4c66c73c26fa59c17a46e4c7ddc952",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-19T05:01:33Z",
+      "history": [
+        {
+          "event_id": "fa9b05b6663b4a3ea428cf751a68db42",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-19T05:00:50Z",
+          "attempt_id": "v891-release-critique-a",
+          "scope": "release-critique of the #821 Goal Run establishment repair (freeze CLI, bootstrap/attempt-id/cursor docs, observation hint)",
+          "packet_identity": "daa8d78a88ab7201a9a29877c96d58f4c1815f8b9c6f56cd303981efa217e7a5",
+          "parent_receipt_identity": "parent-2284edd1440841592c4c66c73c26fa59c17a46e4c7ddc952",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "f57c86f199624e79940dbceb93920478",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-19T05:00:50Z",
+          "attempt_id": "v891-release-critique-a",
+          "scope": "release-critique of the #821 Goal Run establishment repair (freeze CLI, bootstrap/attempt-id/cursor docs, observation hint)",
+          "packet_identity": "daa8d78a88ab7201a9a29877c96d58f4c1815f8b9c6f56cd303981efa217e7a5",
+          "parent_receipt_identity": "parent-2284edd1440841592c4c66c73c26fa59c17a46e4c7ddc952",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "c77c785a885548fb98594692cdf8e0f5",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-19T05:01:33Z",
+          "attempt_id": "v891-release-critique-a",
+          "scope": "release-critique of the #821 Goal Run establishment repair (freeze CLI, bootstrap/attempt-id/cursor docs, observation hint)",
+          "packet_identity": "daa8d78a88ab7201a9a29877c96d58f4c1815f8b9c6f56cd303981efa217e7a5",
+          "parent_receipt_identity": "parent-2284edd1440841592c4c66c73c26fa59c17a46e4c7ddc952",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "e0f825cca2d6317429c87717476e8dc373dc647c4c8a56c9a183e3ae6e453f43"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "7f0311e26d5963157a9bc6ad5f0f3ecdf4c5c686849ce610b33c34380f04a82f",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "c72f56689cb7620c3ddda8319bfc4cdb28c78123a06351b1ad8e8d6b83b1fe51",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/v891-release-critique-a/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/v891-release-critique-a/receipt.json",
+      "producer_run_id": "run-v891-release-critique-a",
+      "findings_identity": "e0f825cca2d6317429c87717476e8dc373dc647c4c8a56c9a183e3ae6e453f43"
+    }
+  ]
+}

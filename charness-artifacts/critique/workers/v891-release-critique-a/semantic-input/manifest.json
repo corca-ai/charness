@@ -1,0 +1,85 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "skills/public/achieve/SKILL.md",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v891-release-critique-a/semantic-input/0000-content.bin",
+      "content_sha256": "415d595f1b98b0ac1d49faad31c7ddf51d9f9cef60b4015142ddf886c6a94e7b",
+      "carrier_sha256": "415d595f1b98b0ac1d49faad31c7ddf51d9f9cef60b4015142ddf886c6a94e7b",
+      "source": "4b7722b0275ae07b534c608a5eee87b0c8669905:skills/public/achieve/SKILL.md",
+      "size_bytes": 7975,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/public/achieve/references/goal-artifact.md",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v891-release-critique-a/semantic-input/0001-content.bin",
+      "content_sha256": "ff41a9790f39e990adf442516bae43d803a69d30b8d78a4bf1df9cda9186db54",
+      "carrier_sha256": "ff41a9790f39e990adf442516bae43d803a69d30b8d78a4bf1df9cda9186db54",
+      "source": "4b7722b0275ae07b534c608a5eee87b0c8669905:skills/public/achieve/references/goal-artifact.md",
+      "size_bytes": 3275,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/public/achieve/references/lifecycle-during.md",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v891-release-critique-a/semantic-input/0002-content.bin",
+      "content_sha256": "d62408649fea1c48d880f335b4a46abee324c74388fff4c92c06e9acd7627a44",
+      "carrier_sha256": "d62408649fea1c48d880f335b4a46abee324c74388fff4c92c06e9acd7627a44",
+      "source": "4b7722b0275ae07b534c608a5eee87b0c8669905:skills/public/achieve/references/lifecycle-during.md",
+      "size_bytes": 1718,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/public/achieve/scripts/goal_binding.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v891-release-critique-a/semantic-input/0003-content.bin",
+      "content_sha256": "1d3b18185b7c203281ee9c3b694c31b59f7a331ea4e5501644474d5917bcfdfb",
+      "carrier_sha256": "1d3b18185b7c203281ee9c3b694c31b59f7a331ea4e5501644474d5917bcfdfb",
+      "source": "4b7722b0275ae07b534c608a5eee87b0c8669905:skills/public/achieve/scripts/goal_binding.py",
+      "size_bytes": 15842,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/public/achieve/scripts/goal_binding_freeze.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v891-release-critique-a/semantic-input/0004-content.bin",
+      "content_sha256": "3819a08fa27015b9b6c99279a7e23773923f08fea7655387264cd36b76cecb5b",
+      "carrier_sha256": "3819a08fa27015b9b6c99279a7e23773923f08fea7655387264cd36b76cecb5b",
+      "source": "4b7722b0275ae07b534c608a5eee87b0c8669905:skills/public/achieve/scripts/goal_binding_freeze.py",
+      "size_bytes": 5976,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/public/issue/references/issue-backend.md",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v891-release-critique-a/semantic-input/0005-content.bin",
+      "content_sha256": "89736273142c680980667608c1ee35d5d02fb92fdfde53ff0dddca20c7447b4d",
+      "carrier_sha256": "89736273142c680980667608c1ee35d5d02fb92fdfde53ff0dddca20c7447b4d",
+      "source": "4b7722b0275ae07b534c608a5eee87b0c8669905:skills/public/issue/references/issue-backend.md",
+      "size_bytes": 24578,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/public/issue/scripts/issue_tracker_observation.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v891-release-critique-a/semantic-input/0006-content.bin",
+      "content_sha256": "b42792f4a2900c5303a50f2d31cda427e5e33c85ffa12b9642d2b82e89c536e4",
+      "carrier_sha256": "b42792f4a2900c5303a50f2d31cda427e5e33c85ffa12b9642d2b82e89c536e4",
+      "source": "4b7722b0275ae07b534c608a5eee87b0c8669905:skills/public/issue/scripts/issue_tracker_observation.py",
+      "size_bytes": 12113,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/quality_gates/test_goal_binding_freeze_cli.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v891-release-critique-a/semantic-input/0007-content.bin",
+      "content_sha256": "50c0eee562706487a45f3e71f15fb7a1906b494185b8af0a30d0e40105dfc9b7",
+      "carrier_sha256": "50c0eee562706487a45f3e71f15fb7a1906b494185b8af0a30d0e40105dfc9b7",
+      "source": "4b7722b0275ae07b534c608a5eee87b0c8669905:tests/quality_gates/test_goal_binding_freeze_cli.py",
+      "size_bytes": 13554,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

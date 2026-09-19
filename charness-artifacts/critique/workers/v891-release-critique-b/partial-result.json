@@ -1,0 +1,50 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "real-but-nonblocking",
+      "concern": "The freeze command has typed YAML success/refusal output and tests cover help, successful creation, malformed manifests, missing drafts, and immutable attempt reuse.",
+      "disposition": "These improve operator diagnostics but do not resolve the misleading parent-authority and binding-path contract."
+    },
+    {
+      "bin": "real-but-nonblocking",
+      "concern": "The documentation is detailed and names the bootstrap, attempt-id, cursor, and observation concepts.",
+      "disposition": "The breadth of documentation does not compensate for the two contradictory operator contracts identified above."
+    }
+  ],
+  "findings": [
+    {
+      "action": "Either make freeze explicitly a post-readback command by requiring and validating a provider-read parent identity, or revise the documentation and operator messaging to state that provider parent verification is an external prerequisite and expose the verification artifact clearly.",
+      "evidence": [
+        "skills/public/achieve/SKILL.md: approval and identity says to read the intended parent before freezing.",
+        "skills/public/achieve/scripts/goal_binding_freeze.py: parent_identity() constructs the URL and identity directly from CLI arguments; run_freeze() passes that synthetic value as expected_parent.",
+        "No provider adapter, parent read command, or parent-readback input is present in the reviewed CLI surface."
+      ],
+      "id": "CLARITY-001",
+      "severity": "blocker",
+      "summary": "The documented freeze flow requires reading the intended provider parent, but the freeze CLI never performs or accepts that readback; it constructs parent identity solely from --parent-repo and --parent-number."
+    },
+    {
+      "action": "Remove --binding-path or make it genuinely supported; align help, implementation, error behavior, and emitted binding_path before release.",
+      "evidence": [
+        "goal_binding_freeze.py help text says '--binding-path Binding path (default: the draft's deterministic .binding.json sibling)', implying custom paths are supported.",
+        "goal_binding.py _validate_payload() rejects any binding whose path is not binding_path_for_draft(draft_path).",
+        "goal_binding_freeze.py run_freeze() passes the custom target to write_immutable_binding(), so a custom path predictably refuses as path-invalid."
+      ],
+      "id": "CLARITY-002",
+      "severity": "blocker",
+      "summary": "The --binding-path option is presented as an override, but any non-deterministic path is rejected during validation and the success output always reports the deterministic sibling."
+    }
+  ],
+  "kind": "charness.bounded_review.v1",
+  "lens": "communication and operator surface clarity",
+  "next_move": "Repair the freeze CLI contract and its documentation together, then add focused tests for parent-readback provenance and custom binding-path behavior before re-review.",
+  "non_claims": [
+    "No live provider execution or host-rendered reviewer receipt was available in the packet.",
+    "This review does not assess implementation behavior outside the supplied semantic payload.",
+    "The verdict is based on operator-facing contract contradictions, not on inferred current-workspace state."
+  ],
+  "packet_sha256": "daa8d78a88ab7201a9a29877c96d58f4c1815f8b9c6f56cd303981efa217e7a5",
+  "reviewed_input_identity_sha256": "7f0311e26d5963157a9bc6ad5f0f3ecdf4c5c686849ce610b33c34380f04a82f",
+  "target_observations": null,
+  "verdict": "block"
+}

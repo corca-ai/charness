@@ -1,0 +1,68 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'release-critique of the #821 Goal Run establishment repair (freeze CLI, bootstrap/attempt-id/cursor
+  docs, observation hint)'
+attempt_id: v891-release-critique-b
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: a4ab3e66282a50fcd8f5434623a711a0087d22ee9967f2248197957e063df569
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/v891-release-critique-b/receipt.json
+ledger_path: charness-artifacts/critique/workers/v891-release-critique-b/delivery.json
+producer_run_id: run-v891-release-critique-b
+producer_binding:
+  output_file: charness-artifacts/critique/workers/v891-release-critique-b/result.json
+  receipt_file: charness-artifacts/critique/workers/v891-release-critique-b/receipt.json
+  producer_run_id: run-v891-release-critique-b
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: a52ba8409f0e99020b5c59416632fc3fdb0ae57d70f6af262dc417361479631d
+receipt_output_sha256: a52ba8409f0e99020b5c59416632fc3fdb0ae57d70f6af262dc417361479631d
+packet_identity: daa8d78a88ab7201a9a29877c96d58f4c1815f8b9c6f56cd303981efa217e7a5
+reviewed_input_identity: 7f0311e26d5963157a9bc6ad5f0f3ecdf4c5c686849ce610b33c34380f04a82f
+parent_receipt_identity: parent-1536f9d7b333247a35cf4bc04b6415bd02ccfcf6f315d68b
+provenance:
+  scope: 'release-critique of the #821 Goal Run establishment repair (freeze CLI,
+    bootstrap/attempt-id/cursor docs, observation hint)'
+  packet_identity: daa8d78a88ab7201a9a29877c96d58f4c1815f8b9c6f56cd303981efa217e7a5
+  reviewed_input_identity: 7f0311e26d5963157a9bc6ad5f0f3ecdf4c5c686849ce610b33c34380f04a82f
+  parent_receipt_identity: parent-1536f9d7b333247a35cf4bc04b6415bd02ccfcf6f315d68b
+  expected_targets_sha256: null
+  attempt_id: v891-release-critique-b
+  attempt_scope: 'release-critique of the #821 Goal Run establishment repair (freeze
+    CLI, bootstrap/attempt-id/cursor docs, observation hint)'
+  attempt_packet_identity: daa8d78a88ab7201a9a29877c96d58f4c1815f8b9c6f56cd303981efa217e7a5
+  attempt_parent_receipt_identity: parent-1536f9d7b333247a35cf4bc04b6415bd02ccfcf6f315d68b
+  result_packet_identity: daa8d78a88ab7201a9a29877c96d58f4c1815f8b9c6f56cd303981efa217e7a5
+  result_reviewed_input_identity: 7f0311e26d5963157a9bc6ad5f0f3ecdf4c5c686849ce610b33c34380f04a82f
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: a4ab3e66282a50fcd8f5434623a711a0087d22ee9967f2248197957e063df569
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes
