@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "v892-release-critique-a",
+      "scope": "release-critique of the fail-closed create recovery and code-span close-guard repair",
+      "packet_identity": "3804d3b768126d5f6e88c5fa0368f57fc9d29728407fb143e0d6a5c9fc1985f7",
+      "parent_receipt_identity": "parent-e20fd2e7a09f95c451502b40a3ef48fd2fd8514e45ce91ce",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-19T08:07:25Z",
+      "history": [
+        {
+          "event_id": "94805541605340ed8e8cbc9841bb703f",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-19T08:06:43Z",
+          "attempt_id": "v892-release-critique-a",
+          "scope": "release-critique of the fail-closed create recovery and code-span close-guard repair",
+          "packet_identity": "3804d3b768126d5f6e88c5fa0368f57fc9d29728407fb143e0d6a5c9fc1985f7",
+          "parent_receipt_identity": "parent-e20fd2e7a09f95c451502b40a3ef48fd2fd8514e45ce91ce",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "a8acd152e86d4a0f87d5cb2b0449ad0b",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-19T08:06:43Z",
+          "attempt_id": "v892-release-critique-a",
+          "scope": "release-critique of the fail-closed create recovery and code-span close-guard repair",
+          "packet_identity": "3804d3b768126d5f6e88c5fa0368f57fc9d29728407fb143e0d6a5c9fc1985f7",
+          "parent_receipt_identity": "parent-e20fd2e7a09f95c451502b40a3ef48fd2fd8514e45ce91ce",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "b3dbe44d93cd42768e45a82979975e61",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-19T08:07:25Z",
+          "attempt_id": "v892-release-critique-a",
+          "scope": "release-critique of the fail-closed create recovery and code-span close-guard repair",
+          "packet_identity": "3804d3b768126d5f6e88c5fa0368f57fc9d29728407fb143e0d6a5c9fc1985f7",
+          "parent_receipt_identity": "parent-e20fd2e7a09f95c451502b40a3ef48fd2fd8514e45ce91ce",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "e102e8156d039c30aa8624d3e884f2ff03fdcc3b384e503921e38fdeaa487268"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "290f6cf08a7678f6af14bd030e0486dfcb633750fa4511bfd61725dd6b87b4e5",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "2bee84ffd241227e7c019a701ce0433bc61785a19debe76a721dde2e9cb0a8bc",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/v892-release-critique-a/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/v892-release-critique-a/receipt.json",
+      "producer_run_id": "run-v892-release-critique-a",
+      "findings_identity": "e102e8156d039c30aa8624d3e884f2ff03fdcc3b384e503921e38fdeaa487268"
+    }
+  ]
+}

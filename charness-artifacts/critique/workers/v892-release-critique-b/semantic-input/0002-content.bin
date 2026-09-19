@@ -58,24 +58,3 @@ def test_bare_malformed_marker_still_refuses() -> None:
 
 def test_non_string_body_is_not_a_goal_run() -> None:
     GUARD["refuse_generic_close"](None, context="target issue body")
-
-
-def test_tilde_fenced_marker_mention_does_not_block_close() -> None:
-    body = f"## Evidence\n\n~~~\n{MENTION}\n~~~\n\nPlain prose after the fence.\n"
-    GUARD["refuse_generic_close"](body, context="target issue body")
-
-
-def test_unclosed_fence_cannot_hide_a_later_real_block() -> None:
-    with pytest.raises(RuntimeError, match="goal-run-close-required"):
-        GUARD["refuse_generic_close"](
-            f"```text\nsome quoted code\n\n{_real_block()}\n",
-            context="target issue body",
-        )
-
-
-def test_unclosed_fence_with_only_a_mention_still_refuses() -> None:
-    with pytest.raises(RuntimeError, match="duplicate or malformed"):
-        GUARD["refuse_generic_close"](
-            "```text\nA bare <!-- charness-goal-run:v1 fragment after an unclosed fence.\n",
-            context="target issue body",
-        )

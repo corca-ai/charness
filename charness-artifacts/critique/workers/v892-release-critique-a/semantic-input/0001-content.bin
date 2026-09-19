@@ -210,10 +210,7 @@ def find_unresolved_create(
     (``started-observation-unreadable-or-invalid``) rather than skipped: an
     unreadable receipt could record this exact create, so skipping it would
     permit a second provider mutation on a mutation-free assumption nothing
-    can prove. The same holds for a hash-valid receipt whose target is not
-    a mapping (``started-observation-schema-invalid``): it cannot be matched
-    to a work item, so nested access is refused in favor of an explicit
-    unresolved reason instead of crashing.
+    can prove.
     """
     directory = _validated_dir(repo_root, observation_dir)
     if not directory.is_dir():
@@ -244,25 +241,8 @@ def find_unresolved_create(
             or started.get("phase") != "started"
             or started.get("operation") != "create-child"
             or started.get("parent") != {"repo": repo, "number": parent_number}
+            or started.get("target", {}).get("work_item_key") != work_item_key
         ):
-            continue
-        target = started.get("target")
-        if not isinstance(target, dict):
-            # A hash-valid receipt with a non-mapping target cannot be
-            # matched to a work item, so it could record this exact
-            # create. Fail closed with an explicit reason instead of
-            # crashing on the nested access.
-            attempt_id = started_path.name.removesuffix(".started.json")
-            terminal_path = directory / f"{attempt_id}.terminal.json"
-            return {
-                "started_path": str(started_path.relative_to(root)),
-                "started_sha256": started.get("receipt_sha256"),
-                "terminal_path": (
-                    str(terminal_path.relative_to(root)) if terminal_path.exists() else None
-                ),
-                "reason": "started-observation-schema-invalid",
-            }
-        if target.get("work_item_key") != work_item_key:
             continue
         attempt_id = started.get("attempt_id")
         terminal_path = directory / f"{attempt_id}.terminal.json"

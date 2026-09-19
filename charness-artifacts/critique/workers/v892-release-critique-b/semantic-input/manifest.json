@@ -1,0 +1,45 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "skills/public/issue/scripts/issue_goal_run_guard.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v892-release-critique-b/semantic-input/0000-content.bin",
+      "content_sha256": "02a69f0413ba2579e34119b2754f811c2ae3891b1004a48dcf5d92cf876c32d4",
+      "carrier_sha256": "02a69f0413ba2579e34119b2754f811c2ae3891b1004a48dcf5d92cf876c32d4",
+      "source": "a5309008c641c43a1bbbdac0c087a3322a75b222:skills/public/issue/scripts/issue_goal_run_guard.py",
+      "size_bytes": 2801,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/public/issue/scripts/issue_tracker_observation.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v892-release-critique-b/semantic-input/0001-content.bin",
+      "content_sha256": "dcb12f551c988933c1157f694b30a508ac58c3f1d83a539cd30a77be86d459db",
+      "carrier_sha256": "dcb12f551c988933c1157f694b30a508ac58c3f1d83a539cd30a77be86d459db",
+      "source": "a5309008c641c43a1bbbdac0c087a3322a75b222:skills/public/issue/scripts/issue_tracker_observation.py",
+      "size_bytes": 13321,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/quality_gates/test_issue_goal_run_close_guard.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v892-release-critique-b/semantic-input/0002-content.bin",
+      "content_sha256": "b13dc50fba813da8c9adc0992d29bf3bd1fa18b1af400060454d5e9d89c74573",
+      "carrier_sha256": "b13dc50fba813da8c9adc0992d29bf3bd1fa18b1af400060454d5e9d89c74573",
+      "source": "a5309008c641c43a1bbbdac0c087a3322a75b222:tests/quality_gates/test_issue_goal_run_close_guard.py",
+      "size_bytes": 1886,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/quality_gates/test_issue_tracker_observation.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v892-release-critique-b/semantic-input/0003-content.bin",
+      "content_sha256": "5ecda4670169a9ac80baeba299dbc470bf4157bc8375e3492edb8b2781960cd1",
+      "carrier_sha256": "5ecda4670169a9ac80baeba299dbc470bf4157bc8375e3492edb8b2781960cd1",
+      "source": "a5309008c641c43a1bbbdac0c087a3322a75b222:tests/quality_gates/test_issue_tracker_observation.py",
+      "size_bytes": 7986,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}
