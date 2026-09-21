@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "v897-critique-b",
+      "scope": "mutation scope-gap coverage and guard helper placement",
+      "packet_identity": "e66f8b3ecc330d684cc1987d4b5709f9dc8d48827937ff358871058aa20d8d52",
+      "parent_receipt_identity": "parent-5a0d792ac3cf183316e2fbb3eaff021491fe846ffcea75aa",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-21T20:36:01Z",
+      "history": [
+        {
+          "event_id": "b31e3a4325ca4f5b8c114cc7d9b0086e",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-21T20:35:09Z",
+          "attempt_id": "v897-critique-b",
+          "scope": "mutation scope-gap coverage and guard helper placement",
+          "packet_identity": "e66f8b3ecc330d684cc1987d4b5709f9dc8d48827937ff358871058aa20d8d52",
+          "parent_receipt_identity": "parent-5a0d792ac3cf183316e2fbb3eaff021491fe846ffcea75aa",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "22bae8f01c654cabb893768bcd24141b",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-21T20:35:09Z",
+          "attempt_id": "v897-critique-b",
+          "scope": "mutation scope-gap coverage and guard helper placement",
+          "packet_identity": "e66f8b3ecc330d684cc1987d4b5709f9dc8d48827937ff358871058aa20d8d52",
+          "parent_receipt_identity": "parent-5a0d792ac3cf183316e2fbb3eaff021491fe846ffcea75aa",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "8a0e1bfeef9941a6bb8be764a3e16353",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-21T20:36:01Z",
+          "attempt_id": "v897-critique-b",
+          "scope": "mutation scope-gap coverage and guard helper placement",
+          "packet_identity": "e66f8b3ecc330d684cc1987d4b5709f9dc8d48827937ff358871058aa20d8d52",
+          "parent_receipt_identity": "parent-5a0d792ac3cf183316e2fbb3eaff021491fe846ffcea75aa",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "7dd3d5dd524c14f0f8f06bd1daf557e110b0aa86a47444d80b50c9ebafa67fbb"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "575adad298c0a5579c80c7bb19df1ae8b1cd00eb6060cdd9a97cbdb87ce90640",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "48849d56e380b89d788760be299b04101bdb80656e4d3023dd0f6434c1c0d0d9",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/v897-critique-b/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/v897-critique-b/receipt.json",
+      "producer_run_id": "run-v897-critique-b",
+      "findings_identity": "7dd3d5dd524c14f0f8f06bd1daf557e110b0aa86a47444d80b50c9ebafa67fbb"
+    }
+  ]
+}

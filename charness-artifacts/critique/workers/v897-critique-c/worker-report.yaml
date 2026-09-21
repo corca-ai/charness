@@ -1,0 +1,65 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: independent linger-stop configuration and receipt fields
+attempt_id: v897-critique-c
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 25fda54f9eb3746771c2a5ef434b9aa3414876304eac7aed0a3e1fe0149f75a2
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/v897-critique-c/receipt.json
+ledger_path: charness-artifacts/critique/workers/v897-critique-c/delivery.json
+producer_run_id: run-v897-critique-c
+producer_binding:
+  output_file: charness-artifacts/critique/workers/v897-critique-c/result.json
+  receipt_file: charness-artifacts/critique/workers/v897-critique-c/receipt.json
+  producer_run_id: run-v897-critique-c
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: fcfeb4ae0a7a9860a3afb0887c375a96a597adbdf5fb5a31e43736591455f80f
+receipt_output_sha256: fcfeb4ae0a7a9860a3afb0887c375a96a597adbdf5fb5a31e43736591455f80f
+packet_identity: cfa9d1df9c760397727138ae63ba2e0dea135c1298b73b2a6c0fc082d01d6df0
+reviewed_input_identity: b91f6a6092bd04d4f8e3333a8d354bce2c4662aa9f4d5acb5bae4435c0f9b937
+parent_receipt_identity: parent-1a91c833fc560310f6fa1b9c9d6698834cbad78c0ff826b6
+provenance:
+  scope: independent linger-stop configuration and receipt fields
+  packet_identity: cfa9d1df9c760397727138ae63ba2e0dea135c1298b73b2a6c0fc082d01d6df0
+  reviewed_input_identity: b91f6a6092bd04d4f8e3333a8d354bce2c4662aa9f4d5acb5bae4435c0f9b937
+  parent_receipt_identity: parent-1a91c833fc560310f6fa1b9c9d6698834cbad78c0ff826b6
+  expected_targets_sha256: null
+  attempt_id: v897-critique-c
+  attempt_scope: independent linger-stop configuration and receipt fields
+  attempt_packet_identity: cfa9d1df9c760397727138ae63ba2e0dea135c1298b73b2a6c0fc082d01d6df0
+  attempt_parent_receipt_identity: parent-1a91c833fc560310f6fa1b9c9d6698834cbad78c0ff826b6
+  result_packet_identity: cfa9d1df9c760397727138ae63ba2e0dea135c1298b73b2a6c0fc082d01d6df0
+  result_reviewed_input_identity: b91f6a6092bd04d4f8e3333a8d354bce2c4662aa9f4d5acb5bae4435c0f9b937
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 25fda54f9eb3746771c2a5ef434b9aa3414876304eac7aed0a3e1fe0149f75a2
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

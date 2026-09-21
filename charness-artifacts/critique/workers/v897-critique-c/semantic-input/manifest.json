@@ -1,0 +1,35 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "docs/agent-task-runs.md",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v897-critique-c/semantic-input/0000-content.bin",
+      "content_sha256": "31b066e30ca7d96a6be410bed3473a2b02bf6d3a58db3b163b09ddbb38cd44fd",
+      "carrier_sha256": "31b066e30ca7d96a6be410bed3473a2b02bf6d3a58db3b163b09ddbb38cd44fd",
+      "source": "4a899229e9fc2657b4d12f888353a4ac9a7fa32b:docs/agent-task-runs.md",
+      "size_bytes": 7539,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_progress.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v897-critique-c/semantic-input/0001-content.bin",
+      "content_sha256": "4a3654332d6d42b868c3c08c09608174c94dd4dd3d48933e886680b81404c932",
+      "carrier_sha256": "4a3654332d6d42b868c3c08c09608174c94dd4dd3d48933e886680b81404c932",
+      "source": "4a899229e9fc2657b4d12f888353a4ac9a7fa32b:scripts/task_run/task_run_progress.py",
+      "size_bytes": 16899,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/charness_cli/test_task_run_implementation_lane.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/v897-critique-c/semantic-input/0002-content.bin",
+      "content_sha256": "7575643274dd9d104fafc1b712b85bcf295fbf6cd0f729d5b1be3502d3e606d0",
+      "carrier_sha256": "7575643274dd9d104fafc1b712b85bcf295fbf6cd0f729d5b1be3502d3e606d0",
+      "source": "4a899229e9fc2657b4d12f888353a4ac9a7fa32b:tests/charness_cli/test_task_run_implementation_lane.py",
+      "size_bytes": 26123,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}
