@@ -44,6 +44,34 @@ wrapper or symbol in `docs/` or `skills/`, [check_symbol_residue.py](../scripts/
 remains advisory by design (#259): use it to find consumers, then let the owning
 focused test decide.
 
+## Repair posture
+
+Every failure is repaired structurally, not naively fixed and retried. Ask
+whether the repair changes the pattern that produced the failure, and the
+pattern behind that pattern. The [north star](./design-north-star.md) stays
+the governing standard; this section is where its repair half is worked.
+
+Treat these as defects rather than preferences, and repair the pattern that
+produced each one:
+
+- a hardcoded value with no stated basis;
+- a fact copied instead of derived from the source of truth that owns it;
+- coupling or validation beyond what the boundary needs;
+- a behavior bent to satisfy a failing validator instead of first suspecting
+  the validator;
+- two gates with one intent, or two bootstrap paths for one job;
+- code or tests that exist for a moment rather than for a behavior, coupled to
+  a date, an incident, a run id, or a count;
+- a test whose result depends on wall-clock time or machine environment;
+- a blurred domain-model boundary;
+- backward compatibility carried during development for something never
+  shipped;
+- worse resource efficiency in tokens, disk, memory, or processor time,
+  whether for this repository or for the people running what it builds.
+
+Beyond this list, look creatively for anything that makes the code and the
+environment better. There is always a better way.
+
 ## Worktree and runtime hygiene
 
 Worktree rules are owned by
