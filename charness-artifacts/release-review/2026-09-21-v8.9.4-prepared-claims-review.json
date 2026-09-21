@@ -1,0 +1,50 @@
+{
+  "schema_version": "charness.release.claims-review.v4",
+  "prepared_commit": "af8a854ae6307826f073f7bd3807f02918c6933e",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "7721518b04af879f39ce33e032f79affce8fd8b45b692a82b9f792022d03e210",
+  "target_version": "8.9.4",
+  "tag_name": "v8.9.4",
+  "verdict": "pass",
+  "preparer_context": "Prepared release commit af8a854ae (8.9.3 to 8.9.4 patch: failed-draft readiness refusal plus stale failure-log sweep with regression tests; repaired critique artifacts satisfying validator floors); critique charness-artifacts/critique/v894-release-critique.md with reviewer packets A and B PASS.",
+  "reviewer_context": "Independent prepared-claims reviewer (second pass) verified all prepared-release claims at commit af8a854ae (patch-only version bump, latest.md, critique validator zero Invalid over 992 artifacts, regression suites re-run green, fresh-checkout smoke in /tmp clone of af8a854ae); verdict pass. One disclosed unverifiable: 90.7s quality figure is helper self-report pending final resume.",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "Fresh-checkout smoke of prepared commit af8a854ae in a /tmp clone: declared probes passed, smoke commands exit 0, packaging 8.9.4; dated observer record filed in the release probe directory.",
+    "review_artifact": "charness-artifacts/release-review/2026-09-21-v8.9.4-prepared-claims-review.md"
+  },
+  "review_scope": {
+    "blocking_paths": [
+      ".claude-plugin/marketplace.json",
+      "charness-artifacts/critique/v894-release-critique-a-packet.json",
+      "charness-artifacts/critique/v894-release-critique-a-packet.md",
+      "charness-artifacts/critique/v894-release-critique-b-packet.json",
+      "charness-artifacts/critique/v894-release-critique-b-packet.md",
+      "charness-artifacts/critique/v894-release-critique.md",
+      "charness-artifacts/probe/2026-09-21-v8.9.3-release-observer.json",
+      "charness-artifacts/release-review/2026-09-21-v8.9.3-prepared-claims-review.json",
+      "charness-artifacts/release/.8.9.3-prepush-quality.json.charness-receipt.json",
+      "charness-artifacts/release/8.9.3-prepush-quality.json",
+      "charness-artifacts/release/latest.md",
+      "packaging/charness.json",
+      "scripts/run_quality_engine.py",
+      "scripts/run_quality_engine_output.py",
+      "skills/public/issue/scripts/issue_validate_closeout_draft.py",
+      "tests/quality_gates/test_gate_summary_names_failures.py",
+      "tests/quality_gates/test_issue_closeout_draft_validation.py",
+      "tests/quality_gates/test_quality_runner.py"
+    ],
+    "advisory_paths": [
+      "charness-artifacts/release-review/2026-09-21-v8.9.3-claims-review.md"
+    ]
+  },
+  "scope_basis": {
+    "base_ref": "refs/tags/v8.9.3",
+    "changed_paths_sha256": "3b574befee5b6735a064b6089e01ed824aa589c1402eb0f5d034740856332b59",
+    "changed_path_count": 19
+  },
+  "advisory_findings": [
+    "Concurrent quality runs can race the failure-log sweep window (pre-existing tool limitation, no repair demanded).",
+    "No committed 8.9.4 prepush-quality receipt; 90.7s quality figure pending final resume verification."
+  ]
+}
