@@ -1,0 +1,68 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'issue-resolution: review resolution/recurrence and per-target behavioral observations
+  for corca-ai/charness#764; do not merely diagnose causes'
+attempt_id: review-20260921T103054Z-755282
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: fcc145b5f138e09791404bb38aee3f088d5e3fd27f2a83c8807619de489c753c
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/review-20260921T103054Z-755282/receipt.json
+ledger_path: charness-artifacts/critique/workers/review-20260921T103054Z-755282/delivery.json
+producer_run_id: run-review-20260921T103054Z-755282
+producer_binding:
+  output_file: charness-artifacts/critique/workers/review-20260921T103054Z-755282/result.json
+  receipt_file: charness-artifacts/critique/workers/review-20260921T103054Z-755282/receipt.json
+  producer_run_id: run-review-20260921T103054Z-755282
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: f3901ece08ab3372de3ba8f538c556e148ded6e74b08419975f39126d7a8d041
+receipt_output_sha256: f3901ece08ab3372de3ba8f538c556e148ded6e74b08419975f39126d7a8d041
+packet_identity: 609fbefe91e6e7711ea7181a92156e62bd678cb22fb3f8c4384dd8ffe4e72f3f
+reviewed_input_identity: 2e3d02537fda51d4b1ece7fc324ebf7f39dfa9c1f4ab14e95cfa0c6af0b5a594
+parent_receipt_identity: parent-4595d8a6678686668ef87a805212cc2eeafdd2cb5551b011
+provenance:
+  scope: 'issue-resolution: review resolution/recurrence and per-target behavioral
+    observations for corca-ai/charness#764; do not merely diagnose causes'
+  packet_identity: 609fbefe91e6e7711ea7181a92156e62bd678cb22fb3f8c4384dd8ffe4e72f3f
+  reviewed_input_identity: 2e3d02537fda51d4b1ece7fc324ebf7f39dfa9c1f4ab14e95cfa0c6af0b5a594
+  parent_receipt_identity: parent-4595d8a6678686668ef87a805212cc2eeafdd2cb5551b011
+  expected_targets_sha256: null
+  attempt_id: review-20260921T103054Z-755282
+  attempt_scope: 'issue-resolution: review resolution/recurrence and per-target behavioral
+    observations for corca-ai/charness#764; do not merely diagnose causes'
+  attempt_packet_identity: 609fbefe91e6e7711ea7181a92156e62bd678cb22fb3f8c4384dd8ffe4e72f3f
+  attempt_parent_receipt_identity: parent-4595d8a6678686668ef87a805212cc2eeafdd2cb5551b011
+  result_packet_identity: 609fbefe91e6e7711ea7181a92156e62bd678cb22fb3f8c4384dd8ffe4e72f3f
+  result_reviewed_input_identity: 2e3d02537fda51d4b1ece7fc324ebf7f39dfa9c1f4ab14e95cfa0c6af0b5a594
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: fcc145b5f138e09791404bb38aee3f088d5e3fd27f2a83c8807619de489c753c
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

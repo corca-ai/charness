@@ -1,0 +1,45 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "issue-resolution: resolution/recurrence and per-target behavioral observations",
+  "packet_sha256": "609fbefe91e6e7711ea7181a92156e62bd678cb22fb3f8c4384dd8ffe4e72f3f",
+  "reviewed_input_identity_sha256": "2e3d02537fda51d4b1ece7fc324ebf7f39dfa9c1f4ab14e95cfa0c6af0b5a594",
+  "verdict": "pass",
+  "target_observations": [
+    {
+      "target": "corca-ai/charness#764",
+      "verdict": "pass",
+      "summary": "The current-main contents integrate the named-failure contract into mutation execution and kill classification, and provide standing recurrence tests for killed, refused, and survived outcomes, including end-to-end execution through a real Node test runner. This repairs the uncovered-mutant blocking-signal class by refusing a red run unless the declared test is among the reporter-owned failures.",
+      "evidence": [
+        "run_mutant calls parse_expected_failing_test(spec), refuses ExpectedFailureError, preserves the parsed expectation in MutantResult, and passes it to classify_mutant_run after executing the mutation command.",
+        "classify_mutant_run invokes named_failure_refusal(reporter, output, expected_failing_test) inside the failed-test kill branch; only a None refusal produces KILLED, while a missing or unrelated named failure produces REFUSED.",
+        "mutation_expected_failure.py defines strict plan parsing and exact, case-sensitive matching against reporter-owned failed-test names; reporters without name support and unreadable runs explicitly refuse.",
+        "NodeTestReporter.failed_tests derives names only from the structurally selected TAP run and its owned in-sequence `not ok` results, avoiding whole-transcript matching.",
+        "Standing tests directly cover expected-name KILLED, unrelated-name REFUSED, and green-run SURVIVED semantics.",
+        "test_a_node_sweep_kills_only_the_expected_named_test runs mutate_and_restore end to end with real `node --test`, proving the declared failing name kills, an absent name refuses the same red run, and the mutated file is restored.",
+        "test_a_node_repository_gets_a_real_verdict and test_a_module_breaking_mutant_is_refused_not_killed additionally map real Node execution to genuine-kill and blocking-signal refusal behavior.",
+        "The test asserting that a failure elsewhere refuses explicitly identifies this behavior as the downstream blocking-signal claim, tying the repair to the uncovered-mutant class rather than merely testing helper parsing."
+      ]
+    }
+  ],
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "The survived named-failure case is tested at classification level rather than by a separate end-to-end Node sweep.",
+      "bin": "non-blocking",
+      "disposition": "The semantic branch is directly pinned by test_a_green_run_with_an_expectation_still_survives, while the same standing suite separately exercises the integrated harness with real `node --test`; the requested integration and behavioral mapping are present."
+    },
+    {
+      "concern": "Pytest cannot enumerate failing test identities.",
+      "bin": "intentional-safe-refusal",
+      "disposition": "The implementation refuses named-failure classification with the counts-only PytestReporter, and a standing test pins that behavior, so this limitation cannot manufacture approval."
+    }
+  ],
+  "next_move": "Approve resolution of corca-ai/charness#764 on the reviewed contents; retain the named kill/refuse/survive and real Node sweep tests as recurrence protection.",
+  "non_claims": [
+    "No commands or tests were executed during this bounded read-only review; the verdict assesses the identity-bound inline contents and their standing test definitions.",
+    "The packet reports application state as unverified-by-packet; this review does not claim host-tier application or external delivery state.",
+    "The review does not claim behavior for reporters other than the explicitly covered node-test and safe-refusing pytest paths."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

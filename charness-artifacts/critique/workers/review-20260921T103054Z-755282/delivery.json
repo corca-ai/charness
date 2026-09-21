@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "review-20260921T103054Z-755282",
+      "scope": "issue-resolution: review resolution/recurrence and per-target behavioral observations for corca-ai/charness#764; do not merely diagnose causes",
+      "packet_identity": "609fbefe91e6e7711ea7181a92156e62bd678cb22fb3f8c4384dd8ffe4e72f3f",
+      "parent_receipt_identity": "parent-4595d8a6678686668ef87a805212cc2eeafdd2cb5551b011",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-21T01:31:18Z",
+      "history": [
+        {
+          "event_id": "943629f33bc14bd49fa11abba64a1a3b",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-21T01:30:54Z",
+          "attempt_id": "review-20260921T103054Z-755282",
+          "scope": "issue-resolution: review resolution/recurrence and per-target behavioral observations for corca-ai/charness#764; do not merely diagnose causes",
+          "packet_identity": "609fbefe91e6e7711ea7181a92156e62bd678cb22fb3f8c4384dd8ffe4e72f3f",
+          "parent_receipt_identity": "parent-4595d8a6678686668ef87a805212cc2eeafdd2cb5551b011",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "624210eb154b452a938bd41de430453a",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-21T01:30:54Z",
+          "attempt_id": "review-20260921T103054Z-755282",
+          "scope": "issue-resolution: review resolution/recurrence and per-target behavioral observations for corca-ai/charness#764; do not merely diagnose causes",
+          "packet_identity": "609fbefe91e6e7711ea7181a92156e62bd678cb22fb3f8c4384dd8ffe4e72f3f",
+          "parent_receipt_identity": "parent-4595d8a6678686668ef87a805212cc2eeafdd2cb5551b011",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "40a51211c0ab42bd8007a2c76207f53a",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-21T01:31:18Z",
+          "attempt_id": "review-20260921T103054Z-755282",
+          "scope": "issue-resolution: review resolution/recurrence and per-target behavioral observations for corca-ai/charness#764; do not merely diagnose causes",
+          "packet_identity": "609fbefe91e6e7711ea7181a92156e62bd678cb22fb3f8c4384dd8ffe4e72f3f",
+          "parent_receipt_identity": "parent-4595d8a6678686668ef87a805212cc2eeafdd2cb5551b011",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "f3901ece08ab3372de3ba8f538c556e148ded6e74b08419975f39126d7a8d041"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "2e3d02537fda51d4b1ece7fc324ebf7f39dfa9c1f4ab14e95cfa0c6af0b5a594",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "fcc145b5f138e09791404bb38aee3f088d5e3fd27f2a83c8807619de489c753c",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/review-20260921T103054Z-755282/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/review-20260921T103054Z-755282/receipt.json",
+      "producer_run_id": "run-review-20260921T103054Z-755282",
+      "findings_identity": "f3901ece08ab3372de3ba8f538c556e148ded6e74b08419975f39126d7a8d041"
+    }
+  ]
+}

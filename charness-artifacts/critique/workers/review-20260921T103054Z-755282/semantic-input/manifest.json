@@ -1,0 +1,45 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "scripts/mutation/mutate_and_restore.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260921T103054Z-755282/semantic-input/0000-content.bin",
+      "content_sha256": "b2ee5750731b08a4aa602319c7e7f7e5fd2662d9e1293fa56b12d2c2ffd36231",
+      "carrier_sha256": "5233a07e005e2b5e1903944b1da579602b6118c76641aa1575e380c9c76e2f97",
+      "source": "working-tree:scripts/mutation/mutate_and_restore.py",
+      "size_bytes": 30099,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/mutation/mutation_expected_failure.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260921T103054Z-755282/semantic-input/0001-content.bin",
+      "content_sha256": "6217148394661444e43678f01ce1e67491fd0e19080ab18e32b706081577c311",
+      "carrier_sha256": "5c069f1fe5f31aae0f61fefee82fbbf4fb14a7ea1e0d7fbcc52bc02308794e12",
+      "source": "working-tree:scripts/mutation/mutation_expected_failure.py",
+      "size_bytes": 3234,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/mutation/mutation_test_reporters.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260921T103054Z-755282/semantic-input/0002-content.bin",
+      "content_sha256": "464efeb212f9ec24ec185e9be5ecc0d1fa026ea517b53d74b6ade3ca196cdc5c",
+      "carrier_sha256": "be57869b44cbceababd4db2d2b4cb1f7e5a3857b09ebbf407fcfc47510ffed9d",
+      "source": "working-tree:scripts/mutation/mutation_test_reporters.py",
+      "size_bytes": 20725,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/quality_gates/test_mutation_test_reporters.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260921T103054Z-755282/semantic-input/0003-content.bin",
+      "content_sha256": "d6b69f9aae9e4735862df25127e478b5a43ab4f3ed790328a383732b8f000152",
+      "carrier_sha256": "56289146d860aa052ceffdaeb77c8e57f4ceb42d21537327488c6f8839535a13",
+      "source": "working-tree:tests/quality_gates/test_mutation_test_reporters.py",
+      "size_bytes": 35452,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}
