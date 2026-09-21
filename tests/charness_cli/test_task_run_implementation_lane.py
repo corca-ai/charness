@@ -295,6 +295,39 @@ def test_watch_tick_spares_overdue_lane_it_cannot_observe(tmp_path: Path) -> Non
         (watch._worktree / ".git-broken").rename(watch._worktree / ".git")
 
 
+def test_stop_mechanisms_are_independent_in_receipt(tmp_path: Path) -> None:
+    watch = _watch(tmp_path)
+    receipt = watch.receipt()
+    assert receipt["stop_enabled"] is True
+    assert receipt["linger_stop_enabled"] is True
+    assert receipt["blocked_grace_seconds"] == prog.DEFAULT_BLOCKED_GRACE_SECONDS
+
+    watch._stderr_log.write_text("CONTRACT-READ\n", encoding="utf-8")
+    _drive(watch)
+    watch._budget_seconds = 0
+    assert watch.tick(10_000.0) is None
+    assert watch.receipt()["stop_enabled"] is False
+    assert watch.receipt()["linger_stop_enabled"] is True
+
+    watch._stderr_log.write_text(
+        "CONTRACT-READ\nBLOCKED: scope mismatch - real owner elsewhere\n",
+        encoding="utf-8",
+    )
+    assert watch.tick(10_000.0) is None
+    reason = watch.tick(10_000.0 + 60.0)
+    assert reason is not None and "kept running" in reason
+
+
+def test_non_positive_grace_turns_linger_stop_off(tmp_path: Path) -> None:
+    watch = _watch(tmp_path)
+    watch._blocked_grace_seconds = 0
+    _drive(watch)
+    watch._stderr_log.write_text("BLOCKED: scope mismatch\n", encoding="utf-8")
+    assert watch.tick(0.0) is None
+    assert watch.tick(10_000.0) is None
+    assert watch.receipt()["linger_stop_enabled"] is False
+
+
 def test_lingering_blocked_lane_is_stopped_after_grace(tmp_path: Path) -> None:
     watch = _watch(tmp_path)
     _drive(watch)

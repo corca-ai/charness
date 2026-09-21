@@ -49,8 +49,10 @@ and no real scoped diff once the no-progress budget is spent
 stop) is killed and recorded with a typed `NO-PROGRESS-STOP` blocker; the
 guard configuration and outcome live on the receipt as `progress_guard`.
 A lane that declares `BLOCKED` but keeps running past the blocked grace
-(`CHARNESS_TASK_RUN_BLOCKED_GRACE_SECONDS`, default 60) is likewise
-stopped, so the declaration cannot burn the full timeout. When the
+(`CHARNESS_TASK_RUN_BLOCKED_GRACE_SECONDS`, default 60; non-positive
+turns that stop off) is likewise stopped, so the declaration cannot
+burn the full timeout. The receipt records both stops independently
+(`stop_enabled`, `linger_stop_enabled`). When the
 transcript marker is lost, the guard stop reason itself becomes the
 receipt blocker, and guard-observed phases merge into `lane_progress` in
 canonical order.

@@ -262,7 +262,9 @@ class LaneProgressWatch:
         return {
             "enabled": True,
             "stop_enabled": self._budget_seconds > 0,
+            "linger_stop_enabled": self._blocked_grace_seconds > 0,
             "budget_seconds": self._budget_seconds,
+            "blocked_grace_seconds": self._blocked_grace_seconds,
             "poll_seconds": self._poll_seconds,
             "stop_reason": self.stop_reason,
             "last_phases": list(self._last_phases),
@@ -300,7 +302,11 @@ class LaneProgressWatch:
         if blocker is not None:
             # A declared block is terminal semantics, not a stall to watch:
             # a lane that lingers past the grace after declaring BLOCKED is
-            # stopped, so the declaration cannot burn the full timeout.
+            # stopped, so the declaration cannot burn the full timeout. A
+            # non-positive grace turns the linger stop off independently of
+            # the no-progress budget.
+            if self._blocked_grace_seconds <= 0:
+                return None
             if self._blocker_at is None:
                 self._blocker_at = now
                 return None
