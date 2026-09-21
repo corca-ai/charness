@@ -170,10 +170,21 @@ def run_live(  # noqa: C901, PLR0915
 
         if backend is None:
             raise support.RunReviewError("backend-unavailable", "no backend selected for a live run")
+        prepared_targets = packet_payload.get("prepared_targets")
+        if prepared_targets is not None and (
+            not isinstance(prepared_targets, list)
+            or not all(isinstance(target, str) and target.strip() for target in prepared_targets)
+        ):
+            raise support.RunReviewError(
+                "packet-prepared-targets-invalid",
+                "prepared packet carries a malformed prepared_targets declaration; "
+                "the coverage floor cannot enforce what the packet does not cleanly declare",
+            )
         command = invocation.runner_command(
             support, package, paths, root=root, backend=backend, scope=args.scope,
             attempt=args.attempt_id, packet_sha=packet_sha, input_sha=input_sha,
             parent_receipt=parent_receipt, boundary_mode=boundary_mode, boundary_sha=boundary_sha,
+            prepared_targets=prepared_targets,
         )
         returncode, status, started, error = support.run_runner_held_out(
             command, root=root, stdout_path=paths["runner_stdout"],

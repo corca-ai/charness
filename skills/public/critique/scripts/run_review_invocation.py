@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 
 def runner_command(
@@ -22,8 +22,15 @@ def runner_command(
     parent_receipt: str,
     boundary_mode: str,
     boundary_sha: str | None,
+    prepared_targets: Sequence[str] | None = None,
 ) -> list[str]:
-    """Bind one worker process to the prepared packet and artifact paths."""
+    """Bind one worker process to the prepared packet and artifact paths.
+
+    ``prepared_targets`` declares the packet's admitted set to the worker's
+    coverage floor: a schema-valid result that silently drops one fails as
+    coverage, not shape (#819). No declaration keeps the historical
+    shape-only behavior.
+    """
 
     def relative(key: str) -> str:
         return support.relative(root, paths[key])
@@ -52,4 +59,6 @@ def runner_command(
     ]
     if boundary_sha is not None:
         command.extend(["--boundary-fingerprint", boundary_sha])
+    for target in prepared_targets or ():
+        command.extend(["--expected-target", target])
     return command

@@ -334,6 +334,18 @@ def write_prompt(
         json.dumps(packet["follow_up"], ensure_ascii=False, indent=2, sort_keys=True),
         "Use prior findings as hypotheses and judge only the new packet/current selected input.",
     ) if isinstance(packet.get("follow_up"), dict) else ()
+    declared_targets = packet.get("prepared_targets")
+    target_lines = (
+        (
+            "This packet declares prepared targets "
+            f"{json.dumps(declared_targets, ensure_ascii=False, sort_keys=True)}: emit exactly one "
+            "`target_observations` entry per target, each with a nonempty summary and a nonempty "
+            "evidence array. A schema-valid result that silently drops a declared target is refused "
+            "as incomplete coverage, so never invent observations for targets you did not review.",
+        )
+        if isinstance(declared_targets, list) and declared_targets
+        else ()
+    )
     path.write_text(
         "\n".join(
             (
@@ -346,6 +358,7 @@ def write_prompt(
                 *follow_up_lines,
                 "Return only JSON matching the supplied bounded-review result schema.",
                 "Do not edit the workspace, and do not treat partial progress as approval.",
+                *target_lines,
                 *semantic_lines,
                 "The packet below is the authoritative review input:",
                 json.dumps(packet, ensure_ascii=False, indent=2, sort_keys=True),
