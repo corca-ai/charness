@@ -1,0 +1,18 @@
+{
+  "name": "corca-charness",
+  "owner": {
+    "name": "Corca"
+  },
+  "metadata": {
+    "description": "Portable Corca harness layer exported into Claude and Codex plugin layouts from shared repo artifacts.",
+    "version": "8.9.6"
+  },
+  "plugins": [
+    {
+      "name": "charness",
+      "source": "./plugins/charness",
+      "version": "8.9.6",
+      "description": "Portable Corca harness layer exported into Claude and Codex plugin layouts from shared repo artifacts."
+    }
+  ]
+}

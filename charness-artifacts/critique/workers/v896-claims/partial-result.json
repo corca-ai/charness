@@ -1,0 +1,59 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "Over-Worry",
+      "concern": "Version drift across the supplied version surfaces",
+      "disposition": "The supplied marketplace and packaging manifests consistently declare `8.9.6`; no mismatch is present in the bounded input."
+    },
+    {
+      "bin": "Over-Worry",
+      "concern": "Quality runtime figure inconsistency",
+      "disposition": "`163.5s` is a valid one-decimal rendering of the detailed `163.470s` runtime, and the record explicitly qualifies quality as unestablished pending pytest-release."
+    },
+    {
+      "bin": "Act Before Ship",
+      "concern": "Issue closeout linkage ambiguity",
+      "disposition": "The release record must choose and substantiate a single closeout state before publication."
+    },
+    {
+      "bin": "Act Before Ship",
+      "concern": "Review-proof path is presently unverified",
+      "disposition": "Publication is already described as stopped for claims review; the final committed record must bind the completed review artifact rather than leave a prospective path as proof."
+    }
+  ],
+  "findings": [
+    {
+      "action": "Before publication, record one exact state: verified with durable issue/ledger linkage, pending with the required next step, or not applicable with a reason.",
+      "evidence": [
+        "`charness-artifacts/release/latest.md` states: `Issue closeout verification: pending or not requested.`",
+        "The line conflates two materially different states and provides neither linked issue/ledger evidence nor an explicit not-applicable rationale."
+      ],
+      "id": "F1",
+      "severity": "high",
+      "summary": "Issue closeout linkage is unresolved and cannot support release closeout."
+    },
+    {
+      "action": "After this review is durably recorded, verify that the named critique artifact exists, carries this packet and reviewed-input identity, records the verdict, and is linked by the final release record before publication.",
+      "evidence": [
+        "The release record names `charness-artifacts/critique/v896-release-critique.md` as review proof.",
+        "That artifact is not among the three identity-bound semantic inputs, while the same record says claims review has not yet been performed."
+      ],
+      "id": "F2",
+      "severity": "medium",
+      "summary": "The declared review-proof linkage is not established by the reviewed input."
+    }
+  ],
+  "kind": "charness.bounded_review.v1",
+  "lens": "release-critique",
+  "next_move": "Hold publication. Resolve the issue-closeout state and commit an identity-bound claims-review artifact at the declared proof path; then update the release record so both linkages are concrete and verifiable.",
+  "non_claims": [
+    "No public GitHub release, tag push, install refresh, or public release-surface verification is established by this packet.",
+    "The underlying quality command and fresh-checkout probes were not independently rerun by this review.",
+    "The claim of no drift across all four versioned surfaces is not independently established from only the supplied subset, although the supplied version values are consistent.",
+    "No Goal Run binding exists; the supplied lineage disposition is `not-goal-bound`."
+  ],
+  "packet_sha256": "bc5e5ce26c1e68fd7547c4bccbc8756ebaf25e0cb2ae2b0f30b3b7d609600ed8",
+  "reviewed_input_identity_sha256": "28035dc693f1d32daabd1375506a7df604c5c0594971f7ae9f65b01aa2067cff",
+  "target_observations": null,
+  "verdict": "block"
+}

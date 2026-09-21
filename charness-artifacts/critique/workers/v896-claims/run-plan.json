@@ -1,0 +1,65 @@
+{
+  "attempt_id": "v896-claims",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "goal_lineage": {
+    "binding": null,
+    "disposition": "not-goal-bound",
+    "draft": null,
+    "goal_run": null,
+    "kind": "charness.goal-lineage",
+    "reason": "critique review was run without a Goal Run Work Item identity",
+    "schema_version": 1,
+    "work_item": null
+  },
+  "kind": "charness.review_run_plan.v1",
+  "lens": "release-critique",
+  "packet_path": "charness-artifacts/critique/v896-claims-packet.json",
+  "packet_sha256": "bc5e5ce26c1e68fd7547c4bccbc8756ebaf25e0cb2ae2b0f30b3b7d609600ed8",
+  "parent_receipt_identity": "parent-67f2536818cf127b396c14ffe07b8cd8403542cd3fce4808",
+  "reviewed_input_identity_sha256": "28035dc693f1d32daabd1375506a7df604c5c0594971f7ae9f65b01aa2067cff",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "scope": "release record claims audit for v8.9.6: version, notes figures, verification lines, closeout linkage",
+  "semantic_input": {
+    "entries": [
+      {
+        "carrier_path": "charness-artifacts/critique/workers/v896-claims/semantic-input/0000-content.bin",
+        "carrier_sha256": "2398bfb755b134e15632aa9f5d4ae0170fb53564158d6fa6ee56efdaa7bde06e",
+        "content_sha256": "2398bfb755b134e15632aa9f5d4ae0170fb53564158d6fa6ee56efdaa7bde06e",
+        "disposition": "present",
+        "path": ".claude-plugin/marketplace.json",
+        "prompt_content": "{\n  \"name\": \"corca-charness\",\n  \"owner\": {\n    \"name\": \"Corca\"\n  },\n  \"metadata\": {\n    \"description\": \"Portable Corca harness layer exported into Claude and Codex plugin layouts from shared repo artifacts.\",\n    \"version\": \"8.9.6\"\n  },\n  \"plugins\": [\n    {\n      \"name\": \"charness\",\n      \"source\": \"./plugins/charness\",\n      \"version\": \"8.9.6\",\n      \"description\": \"Portable Corca harness layer exported into Claude and Codex plugin layouts from shared repo artifacts.\"\n    }\n  ]\n}\n",
+        "prompt_encoding": "utf-8",
+        "size_bytes": 486,
+        "source": "4bfd428c8181b214ef38b75f855c1a2d76a1dc1e:.claude-plugin/marketplace.json"
+      },
+      {
+        "carrier_path": "charness-artifacts/critique/workers/v896-claims/semantic-input/0001-content.bin",
+        "carrier_sha256": "1ed97d4820badb086ecfc16faf5008234954d93f5f7bbea02fac08be618daf9a",
+        "content_sha256": "1ed97d4820badb086ecfc16faf5008234954d93f5f7bbea02fac08be618daf9a",
+        "disposition": "present",
+        "path": "charness-artifacts/release/latest.md",
+        "prompt_content": "# Release Surface Check\n<!-- charness-release-state:prepared-awaiting-claims-review -->\nDate: 2026-09-21\n\n## Scope\n\nAdvanced `charness` toward release `8.9.6` (tag `v8.9.6`) through the repo-owned release helper.\n\n## Current Version\n\n- previous version: `8.9.5`\n- target version: `8.9.6`\n- git branch: `main`\n- git remote: `origin`\n\n## Verification\n\n- `./scripts/run-quality.sh --release --read-only` exited 0 in 163.5s at `post-bump, pre-commit`, measured by this helper (`./scripts/run-quality.sh --release --read-only --release-prepare`); quality unestablished: pytest-release pending final resume.\n- `current_release.py` reported no version drift across 4 versioned surface(s), with 1 presence-only surface(s) not version-checked against target `8.9.6`, checked at `post-bump, pre-commit`.\n\n## Release State\n\n- local release mutation: complete\n- branch/tag push: pending independent claims review.\n- GitHub release record: pending independent claims review before creation\n- public release surface verification: pending independent claims review\n- audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice\n\n## Public Release Verification\n\n- GitHub release publication: expected after branch/tag push; not verified yet.\n\n## Release Adapter Preflight\n\n- Release adapter focused preflight status: `not_required`.\n- Reason: release adapter did not change in the release delta\n- Focused preflight commands: none planned.\n- Focused preflight execution: `not_run`.\n- This is a recorded absence, not a passing preflight: no focused adapter check is claimed to have completed successfully for this release.\n  - Reason: focused preflight status is `not_required`; no commands were required\n\n## Review Proof\n\n- Review proof: `charness-artifacts/critique/v896-release-critique.md`.\n\n## Claims Review\n\n- Claims review: not yet performed -- THIS record is the subject of the pending independent review, and publication is stopped until that review is committed.\n\n## Requested Review Gate\n\n- Requested-review gate status: `ok`.\n- Configuration status: `advisory_only`.\n- Policy: `advisory-only`.\n- Configured command count: `0`.\n\n## Install Refresh\n\n- Post-publish install refresh: pending final publish verification.\n\n## Release Runtime\n\n- `requested_review_gate`: 0.007s\n- `cli_skill_surface_gate`: 2.256s\n- `quality_command`: 163.470s\n- `fresh_checkout_probes_initial`: 6.637s\n\n## Fresh Checkout Probes\n\n- Fresh-checkout probe status: passed.\n- `./charness --help >/dev/null`\n- `./charness goal run --help >/dev/null`\n- `python3 scripts/doctor.py --repo-root . --skip-release-probe >/dev/null`\n\n## Issue Closeout\n\n- Issue closeout verification: pending or not requested.\n\n## User Update Steps\n\n- Run `charness update` to fast-forward the managed checkout on its configured branch; that branch carries the latest published Charness release and any commits landed after it, and `charness version` names the installed version.\n- Read the GitHub release notes for release-specific behavior changes, migrations, or rollback notes.\n\n\n## Bump Rationale\n\n> patch, not minor: require-change stall repairs, unchanged-interrupt classification repair, and guard backstops with regression tests; no new public skill, command, or install surface, and no existing invocation breaks.",
+        "prompt_encoding": "utf-8",
+        "size_bytes": 3313,
+        "source": "4bfd428c8181b214ef38b75f855c1a2d76a1dc1e:charness-artifacts/release/latest.md"
+      },
+      {
+        "carrier_path": "charness-artifacts/critique/workers/v896-claims/semantic-input/0002-content.bin",
+        "carrier_sha256": "a316bf046b7efc027358d5e0943cbc74c57ee2e4e8ec4f3f548ec9f9526c99ab",
+        "content_sha256": "a316bf046b7efc027358d5e0943cbc74c57ee2e4e8ec4f3f548ec9f9526c99ab",
+        "disposition": "present",
+        "path": "packaging/charness.json",
+        "prompt_content": "{\n  \"schema_version\": \"1\",\n  \"package_id\": \"charness\",\n  \"display_name\": \"charness\",\n  \"version\": \"8.9.6\",\n  \"summary\": \"Portable Corca harness layer exported into Claude and Codex plugin layouts from shared repo artifacts.\",\n  \"author\": {\n    \"name\": \"Corca\",\n    \"url\": \"https://www.corca.ai/\"\n  },\n  \"homepage\": \"https://github.com/corca-ai/charness\",\n  \"repository\": \"https://github.com/corca-ai/charness\",\n  \"source\": {\n    \"readme\": \"README.md\",\n    \"skills_dir\": \"skills\",\n    \"public_skills_dir\": \"skills/public\",\n    \"support_skills_dir\": \"skills/support\",\n    \"profiles_dir\": \"profiles\",\n    \"presets_dir\": \"presets\",\n    \"integrations_dir\": \"integrations/tools\"\n  },\n  \"codex\": {\n    \"manifest_path\": \".codex-plugin/plugin.json\",\n    \"manifest\": {\n      \"name\": \"charness\",\n      \"version\": \"8.9.6\",\n      \"description\": \"Portable Corca harness layer exported into Claude and Codex plugin layouts from shared repo artifacts.\",\n      \"author\": {\n        \"name\": \"Corca\",\n        \"url\": \"https://www.corca.ai/\"\n      },\n      \"homepage\": \"https://github.com/corca-ai/charness\",\n      \"repository\": \"https://github.com/corca-ai/charness\",\n      \"keywords\": [\n        \"workflow\",\n        \"skills\",\n        \"harness\",\n        \"integrations\"\n      ],\n      \"skills\": \"./skills/\",\n      \"interface\": {\n        \"displayName\": \"charness\",\n        \"shortDescription\": \"Portable workflow skills and integration guidance.\",\n        \"longDescription\": \"Install the charness workflow surface for portable skills, profiles, presets, and external integration guidance.\",\n        \"developerName\": \"Corca\",\n        \"category\": \"Productivity\",\n        \"capabilities\": [\n          \"Read\",\n          \"Write\"\n        ],\n        \"websiteURL\": \"https://github.com/corca-ai/charness\",\n        \"defaultPrompt\": [\n          \"Use charness to apply portable workflow skills, profiles, presets, and integration guidance in this repo.\"\n        ]\n      }\n    },\n    \"repo_marketplace\": {\n      \"path\": \".agents/plugins/marketplace.json\",\n      \"default_source_path\": \"./plugins/charness\",\n      \"materialized_source_path\": \"./plugins/charness\",\n      \"display_name\": \"charness\",\n      \"category\": \"Productivity\"\n    }\n  },\n  \"claude\": {\n    \"manifest_path\": \".claude-plugin/plugin.json\",\n    \"manifest\": {\n      \"name\": \"charness\",\n      \"version\": \"8.9.6\",\n      \"description\": \"Portable Corca harness layer exported into Claude and Codex plugin layouts from shared repo artifacts.\",\n      \"author\": {\n        \"name\": \"Corca\",\n        \"url\": \"https://www.corca.ai/\"\n      },\n      \"repository\": \"https://github.com/corca-ai/charness\"\n    },\n    \"marketplace\": {\n      \"path\": \".claude-plugin/marketplace.json\",\n      \"name\": \"corca-charness\",\n      \"source_path\": \"./plugins/charness\"\n    }\n  }\n}\n",
+        "prompt_encoding": "utf-8",
+        "size_bytes": 2777,
+        "source": "4bfd428c8181b214ef38b75f855c1a2d76a1dc1e:packaging/charness.json"
+      }
+    ],
+    "manifest": "charness-artifacts/critique/workers/v896-claims/semantic-input/manifest.json",
+    "size_bytes": 6576
+  },
+  "timeout_seconds": 900
+}

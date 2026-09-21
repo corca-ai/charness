@@ -54,13 +54,27 @@ occurred.
 
 ## Reviewed Input Identity
 
-- Final packet path: charness-artifacts/critique/v896-critique-d-packet.json
+- Packet path: charness-artifacts/critique/v896-critique-d-packet.json
 - Packet SHA256: 6880c98f141f1b320cdff77269c33d7c7d7b3303365903a9673d7cc266817963
 - Identity SHA256: f7d118a8837480ee7e8088336d0d42dc26695fcd72a13e8703e6087ec4994317
 - Verify command: `python3 skills/public/critique/scripts/verify_packet.py --repo-root . --packet-path charness-artifacts/critique/v896-critique-d-packet.json --packet-sha256 6880c98f141f1b320cdff77269c33d7c7d7b3303365903a9673d7cc266817963 --identity-sha256 f7d118a8837480ee7e8088336d0d42dc26695fcd72a13e8703e6087ec4994317`
 - Round-1 packets (superseded delta, retained as evidence): `v896-critique-a-packet.json` (packet 4318d6c44241dde775fb6b5390e58992c15a4b5d5e1dee757fb7e542f38ba129, identity f6083ade41edf3d3e0acef9fcc57a0b5a6014f8e410e49c3b4c513ca2b5484b4), `v896-critique-b-packet.json` (packet c27262139d2b075ffbb01d55fcb40120dd94498024a9e30b1319838a474dba2c, identity f6083ade41edf3d3e0acef9fcc57a0b5a6014f8e410e49c3b4c513ca2b5484b4)
 - Round-2 packets (superseded delta, retained as evidence): `v896-critique-a2-packet.json` (packet 4604513003e6b10479617f2927df2c19064955031ef6f6dbcf1d9fa5369ea8b8, identity aec251e1697cce17131e74e57bd642b7ab9f7082d74e82321d2f05e8f3f88b78), `v896-critique-b2-packet.json` (packet 6862e711cca4d7ffe07efb1ab52f5ead8af14da25c4110b3f3c427cbe4fccd86, identity aec251e1697cce17131e74e57bd642b7ab9f7082d74e82321d2f05e8f3f88b78)
 - Follow-up packet (retained as evidence): `v896-critique-c2-packet.json` (packet 90def7ab0b7ee10bfcc26951c33b67f6417b5195bcf7d3a8ccaf68fa0ae26c71, identity bf9bcb5c76db92e32d32409cbb3a3d75cf885c18607d1bf93a80bf5a65e82316)
+
+## Boundary Ownership
+
+- **Producer:** task-run lane runner and progress guard, completion
+  receipt, changed-line verdict, attention declarations, and the
+  release/critique lanes themselves.
+- **Consumer:** lane operators reading `lane_progress`/`progress_guard`
+  without tailing executor logs; committers under the length and
+  attention gates; release readers of the record and notes.
+- **Verdict:** `owned-correctly` — phase parsing and the live guard live
+  in the new `task_run_progress.py`, interruption classification in
+  `task_run_state.py`, verdict helpers in `task_run_changed_line.py`,
+  and status reading in `task_run_runtime.py`, each with standing tests
+  beside it; the narrative sections below name the same owners.
 
 ## Counterweight Disposition
 
