@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-09-21T04:25:39Z",
+  "evidence_path": "/home/hwidong/codes/charness/charness-artifacts/release/8.9.4-prepush-quality.json",
+  "evidence_sha256": "2fb310423559ba3e411098eca641bad11cf022e296837e69364a1a3a8f47217b",
+  "expires_at": "2026-09-22T04:31:00Z",
+  "owner": "charness",
+  "pid": 1737336,
+  "producer": "release-prepush-quality",
+  "repo_identity": "811b9f8f8a808bfa",
+  "repo_root": "/home/hwidong/codes/charness",
+  "retention": "retained-evidence",
+  "run_id": "1737336-1789964739117515452",
+  "schema": "charness.runtime-scratch-owner/v1",
+  "source_receipt": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/release-prepush-quality/1737336-1789964739117515452/.charness-owner.json",
+  "source_scratch_root": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/release-prepush-quality/1737336-1789964739117515452",
+  "state": "retained",
+  "updated_at": "2026-09-21T04:31:00Z"
+}
