@@ -11,6 +11,26 @@
   change (`resources/issue/scripts/issue_validate_closeout_draft.py` and its
   tests). Another reviewer owns that slice.
 
+Fresh-eye satisfaction: parent-delegated — the spawned subagent reviewer ran the scoped diff, the regression tests, and an extra edge case beyond the suite, and delivered this packet with verdict PASS; no same-agent substitution.
+
+## Reviewer Tier Evidence
+
+- **Requested tier**: `n/a` (no tier requested; host-defaulted)
+- **Requested spawn fields**: `n/a` (subagent defaults; no explicit model/effort ask)
+- **Host exposure state**: `host-defaulted`
+- **Application state**: `spawned subagent reviewer delivered; verdict PASS received, approval not inferred`
+- **Delivery state**: `findings-received`
+- **Execution mode**: `typed-subagent`
+
+## Boundary Ownership
+
+- **Producer:** the quality engine owns failure-log lifecycle
+  (`scripts/run_quality_engine_output.py`, called from
+  `scripts/run_quality_engine.py`).
+- **Consumer:** operators reading quality failure summaries.
+- **Verdict:** `single-surface` — a run-start sweep plus regression tests;
+  no other surface semantics move with this change.
+
 ## What the change does
 
 - New `sweep_stale_failure_logs(failure_dir, *, older_than_ns)` in

@@ -8,6 +8,25 @@ Scope: commit `4e24ed9ee`'s change to
 regression test in `tests/quality_gates/test_issue_closeout_draft_validation.py`.
 (Nothing else in the commit or release is in scope for this critique.)
 
+Fresh-eye satisfaction: parent-delegated — the spawned subagent reviewer ran the scoped diff, the regression test, and an extra edge case beyond the suite, and delivered this packet with verdict PASS; no same-agent substitution.
+
+## Reviewer Tier Evidence
+
+- **Requested tier**: `n/a` (no tier requested; host-defaulted)
+- **Requested spawn fields**: `n/a` (subagent defaults; no explicit model/effort ask)
+- **Host exposure state**: `host-defaulted`
+- **Application state**: `spawned subagent reviewer delivered; verdict PASS received, approval not inferred`
+- **Delivery state**: `findings-received`
+- **Execution mode**: `typed-subagent`
+
+## Boundary Ownership
+
+- **Producer:** the issue skill owns closeout-draft readiness
+  (`skills/public/issue/scripts/issue_validate_closeout_draft.py`).
+- **Consumer:** operators relying on ready/draft_blocked closeout status.
+- **Verdict:** `single-surface` — one script's readiness mapping plus its
+  regression test; no other surface semantics move with this change.
+
 ## What the change actually is
 
 The delegation brief paraphrases this as "refuses ready when new_closeout_data

@@ -19,10 +19,32 @@ requiring repair before release.
 
 ## Reviewer Tier Evidence
 
+- **Requested tier**: `n/a` (no tier requested; host-defaulted)
+- **Requested spawn fields**: `n/a` (subagent defaults; no explicit model/effort ask)
+- **Host exposure state**: `host-defaulted`
+- **Host detail**: parent spawned two subagent reviewers (roles
+  `release-critique-reviewer-a` / `release-critique-reviewer-b`); no
+  provider-confirmed model or effort application claim
+- **Application state**: `both reviewers delivered; verdicts PASS received, approval not inferred`
+- **Delivery state**: `findings-received`
+- **Execution mode**: `typed-subagent`
 - **Reviewer A** (closeout-draft readiness refusal):
   packet `v894-release-critique-a-packet.md` (+ `.json`) — verdict PASS.
 - **Reviewer B** (quality failure-log sweep):
   packet `v894-release-critique-b-packet.md` (+ `.json`) — verdict PASS.
+
+## Boundary Ownership
+
+- **Producer:** the issue skill owns closeout-draft readiness
+  (`issue_validate_closeout_draft.py`); the quality engine owns
+  failure-log lifecycle (`run_quality_engine_output.py`).
+- **Consumer:** operators relying on ready/draft_blocked closeout status
+  and on quality failure summaries naming current-run logs.
+- **Owning surface:** the issue-validation and quality-engine tooling
+  surfaces — release scope, receipt schema, and adapter machinery are
+  untouched, so their semantics do not move with this change.
+- **Verdict:** `owned-correctly` — each repair lives in the module that
+  owns the refused behavior, with standing tests beside it.
 
 ## Open Risks
 
