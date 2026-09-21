@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 import threading
 import time
@@ -170,11 +171,19 @@ def _guard_stop_reason(payload: Mapping[str, Any]) -> str:
 
 
 def _env_seconds(name: str, default: float) -> float:
-    """A tuned duration from the environment, falling back to the default."""
+    """A tuned duration from the environment, falling back to the default.
+
+    Non-finite values (NaN/inf) parse but break every comparison the guard
+    and the receipt predicates rely on, so they fall back like unparsable
+    ones instead of arming a stop the receipt reports as disabled.
+    """
     try:
-        return float(os.environ.get(name, default))
+        value = float(os.environ.get(name, default))
     except (TypeError, ValueError):
         return default
+    if not math.isfinite(value):
+        return default
+    return value
 
 
 def _tail_text(path: Path, limit: int = 64 * 1024) -> str:

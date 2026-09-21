@@ -541,6 +541,25 @@ def test_stderr_unreadable_scans_as_no_markers(
     assert prog._tail_text(stderr_log) == ""
 
 
+def test_nonfinite_durations_fall_back_to_defaults(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setenv(prog.NO_PROGRESS_BUDGET_ENV, "nan")
+    monkeypatch.setenv(prog.BLOCKED_GRACE_ENV, "inf")
+    monkeypatch.setenv(prog.PROGRESS_POLL_ENV, "-inf")
+    watch = prog.build_progress_watch(
+        require_change=True,
+        stdout_log=tmp_path / "o.log",
+        stderr_log=tmp_path / "e.log",
+        worktree=tmp_path,
+        base_sha="deadbeef",
+        scope_specs=[],
+    )
+    assert watch is not None
+    receipt = watch.receipt()
+    assert receipt["budget_seconds"] == prog.DEFAULT_NO_PROGRESS_BUDGET_SECONDS
+    assert receipt["stop_enabled"] is True
+    assert receipt["linger_stop_enabled"] is True
+
+
 def test_invalid_budget_env_falls_back_to_default(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setenv(prog.NO_PROGRESS_BUDGET_ENV, "not-a-number")
     watch = prog.build_progress_watch(
