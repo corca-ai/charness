@@ -134,6 +134,7 @@ def complete_task(
         require_change=require_change,
         scope=scope,
         stderr_text=_progress._lane_stderr_text(stdout_log, stderr_log),
+        guard_phases=_guard_phases(payload),
     )
     gate, blockers, result_state = _prove_ready_candidate(
         payload,
@@ -187,6 +188,17 @@ def complete_task(
     )
     print(f"task run: {payload['status']} ({payload['task_id']})", file=sys.stderr)
     return payload
+
+
+def _guard_phases(payload: Mapping[str, Any]) -> list[str]:
+    """Phases the live guard observed, for the terminal receipt merge (#815)."""
+    guard = payload.get("progress_guard")
+    if not isinstance(guard, Mapping):
+        return []
+    phases = guard.get("last_phases")
+    if not isinstance(phases, list):
+        return []
+    return [phase for phase in phases if isinstance(phase, str)]
 
 
 def _execution_reviewer_result(delivery: Mapping[str, Any]) -> dict[str, Any] | None:

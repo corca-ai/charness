@@ -72,18 +72,22 @@ def no_progress_stop_due(
     contract_read_at: float | None,
     now: float,
     budget_seconds: float,
-    diff_present: bool,
+    diff_present: bool | None,
 ) -> str | None:
     """Whether the no-progress guard must stop the lane now (#815).
 
     Pure in its inputs (including `now`) so tests drive it on a controlled
     clock: a require-change lane that announced `CONTRACT-READ` but shows no
     `EDITING` and no real scoped diff once the budget is spent is a typed
-    stall, not a lane still worth its remaining timeout.
+    stall, not a lane still worth its remaining timeout. An unobservable
+    diff (`None`) suppresses the stop: the guard may only kill on an
+    affirmative observed-absent worktree, never on a failed observation.
     """
     if budget_seconds <= 0:
         return None
     if "EDITING" in phases or diff_present:
+        return None
+    if diff_present is None:
         return None
     if "CONTRACT-READ" not in phases or contract_read_at is None:
         return None
@@ -97,20 +101,21 @@ def no_progress_stop_due(
 
 def scoped_diff_present(
     worktree: Path, base_sha: str, scope_specs: Sequence[Mapping[str, Any]]
-) -> bool:
+) -> bool | None:
     """Whether the worktree currently holds a real scoped diff.
 
     Reuses the checkpoint's own classification (refreshed specs plus the
     carrier's changed paths), so the live guard and the terminal checkpoint
-    agree on what counts as progress. An unreadable worktree reads as no
-    diff: the guard must not kill a lane it cannot observe.
+    agree on what counts as progress. Three-valued: True/False for an
+    observed worktree, None when the worktree cannot be observed — the guard
+    must not kill a lane it cannot see.
     """
     try:
         refreshed = _support._refresh_scope_specs(worktree, list(scope_specs))
         changed = _support._candidate_carrier(worktree, base_sha)["changed_paths"]
         return bool(_support._paths_in_scopes(changed, refreshed))
-    except Exception:  # noqa: BLE001 - an unobservable tree must not trigger a kill
-        return False
+    except Exception:  # noqa: BLE001 - an unobservable tree reads as unknown
+        return None
 
 
 def _lane_stderr_text(stdout_log: Path, stderr_log: Path | None) -> str:
@@ -226,6 +231,7 @@ class LaneProgressWatch:
         """The guard configuration and outcome for the lane receipt."""
         return {
             "enabled": True,
+            "stop_enabled": self._budget_seconds > 0,
             "budget_seconds": self._budget_seconds,
             "poll_seconds": self._poll_seconds,
             "stop_reason": self.stop_reason,
@@ -233,15 +239,27 @@ class LaneProgressWatch:
         }
 
     def tick(self, now: float) -> str | None:
-        """One poll: relay new phases and report a stop reason, if due."""
+        """One poll: relay new phases and report a stop reason, if due.
+
+        Cumulative: markers are one-line events the executor need not
+        repeat, so phases union into the watched set and the first
+        `CONTRACT-READ` observation time is kept. A marker that aged out of
+        the tail window still counts (#815).
+        """
         progress = lane_progress(
             _tail_text(self._stdout_log), _tail_text(self._stderr_log)
         )
-        phases = [phase for phase in progress["phases"]]
-        if phases != self._last_phases:
-            self._last_phases = phases
+        fresh = [phase for phase in progress["phases"]]
+        new = [phase for phase in LANE_PHASES if phase in fresh and phase not in self._last_phases]
+        if new:
+            self._last_phases = [
+                phase
+                for phase in LANE_PHASES
+                if phase in self._last_phases or phase in fresh
+            ]
             if self._emit is not None and self._started_at is not None:
-                self._emit(phases, now - self._started_at)
+                self._emit(list(self._last_phases), now - self._started_at)
+        phases = list(self._last_phases)
         if progress["blocker"] is not None:
             return None
         if "CONTRACT-READ" not in phases:

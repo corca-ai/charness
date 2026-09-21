@@ -81,7 +81,9 @@ opt-outs. The fully explicit `--path/--branch/--base` form remains for
 exceptional host setup.
 
 The parent reads the receipt before integrating. A lane is done only when
-`changed_line_gate` is `clean` or `noop`. A useful candidate whose worker left a
+`changed_line_gate` is `clean` or `noop` (`proof_status`; the diagnostic
+`status` may still read `not-applicable` on trees without the gate script).
+A useful candidate whose worker left a
 dirty tree is committed onto the lane branch before proof and retention, so `target_sha`
 carries the files; completion re-observes the carrier after an invoked gate and
 denies approval for dirt, read failure, or identity change. Retention may release

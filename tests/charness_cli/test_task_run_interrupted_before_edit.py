@@ -96,6 +96,29 @@ def test_before_edit_next_step_recommends_cleanup_not_salvage() -> None:
     assert "mid-edit" not in step
 
 
+def test_combined_timeout_and_interrupt_agree_on_timed_out() -> None:
+    execution = {"exit_code": -15, "timed_out": True, "interrupted": True}
+    assert task_run_state._abnormal_exit_state(execution) == "timed-out"
+    assert (
+        task_run_state._execution_state(execution, {"status": "delivered"})
+        == "timed-out"
+    )
+
+
+def test_progress_stop_plus_negative_exit_splits_checkpoint_and_receipt() -> None:
+    execution = {
+        "exit_code": -15,
+        "timed_out": False,
+        "interrupted": False,
+        "progress_stopped": "no EDITING and no scoped diff within 300s",
+    }
+    assert task_run_state._abnormal_exit_state(execution) == "interrupted"
+    assert (
+        task_run_state._execution_state(execution, {"status": "non-delivery"})
+        == "failed"
+    )
+
+
 def test_progress_stopped_execution_is_failed() -> None:
     execution = {
         "exit_code": -15,

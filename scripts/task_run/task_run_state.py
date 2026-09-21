@@ -6,10 +6,11 @@ record. It answers one question -- given what the execution and scope observed,
 what state is this run in -- so the answer can be read and reviewed without
 following the orchestration around it.
 
-`_execution_state` and `_abnormal_exit_state` are split out TOGETHER on purpose,
-and the second one's own comment says why: it repeats the first's predicate order
-minus the delivery question, and keeping the two orders identical is what stops
-the WIP checkpoint and the reported status from naming two different things about
+`_execution_state` and `_abnormal_exit_state` both run the one
+`_abnormal_child_state` order: the former layers the delivery question after
+it, the latter skips delivery, which is not yet answered where it is called.
+Sharing the helper (instead of repeating the predicates) is what stops the
+WIP checkpoint and the reported status from naming two different things about
 one run. Separating them across modules would put that invariant across a
 boundary no reader crosses by accident.
 """
@@ -43,31 +44,15 @@ TaskRunError = _support.TaskRunError
 _ABNORMAL_EXIT_STATES = ("timed-out", "interrupted", "failed")
 
 
-def _execution_state(execution: dict[str, Any], delivery: dict[str, Any]) -> str:
-    if execution.get("progress_stopped"):
-        return "failed"
-    if execution["interrupted"] or (
-        execution["exit_code"] is not None and execution["exit_code"] < 0
-    ):
-        return "interrupted"
-    if execution["timed_out"]:
-        return "timed-out"
-    if execution.get("exec_error") or execution["exit_code"] is None:
-        return "failed"
-    if execution["exit_code"] != 0:
-        return "failed"
-    if delivery["status"] == "non-delivery":
-        return "non-delivery"
-    return "completed"
+def _abnormal_child_state(execution: dict[str, Any]) -> str | None:
+    """The one abnormal-exit predicate order every state question shares.
 
-
-def _abnormal_exit_state(execution: dict[str, Any]) -> str | None:
-    """The abnormal post-execution state, or None when the child exited normally.
-
-    Deliberately the same predicate order as `_execution_state`, minus the delivery
-    question, which is not yet answered where this is called. Keeping the order
-    identical is what stops the WIP checkpoint and the reported status from naming
-    two different things about one run.
+    `_abnormal_exit_state` (asked before delivery, for the WIP checkpoint)
+    and `_execution_state` (asked after delivery, for the receipt) both run
+    this order, so the checkpoint and the reported status cannot name two
+    different states for one run. `progress_stopped` stays outside it: a
+    guard kill is an explicitly identified cause, layered before the flag
+    checks rather than inferred from them.
     """
     if execution["timed_out"]:
         return "timed-out"
@@ -80,6 +65,26 @@ def _abnormal_exit_state(execution: dict[str, Any]) -> str | None:
     if execution["exit_code"] != 0:
         return "failed"
     return None
+
+
+def _execution_state(execution: dict[str, Any], delivery: dict[str, Any]) -> str:
+    if execution.get("progress_stopped"):
+        return "failed"
+    abnormal = _abnormal_child_state(execution)
+    if abnormal is not None:
+        return abnormal
+    if delivery["status"] == "non-delivery":
+        return "non-delivery"
+    return "completed"
+
+
+def _abnormal_exit_state(execution: dict[str, Any]) -> str | None:
+    """The abnormal post-execution state, or None when the child exited normally.
+
+    The shared `_abnormal_child_state` order, minus the delivery question,
+    which is not yet answered where this is called.
+    """
+    return _abnormal_child_state(execution)
 
 
 def _checkpoint_found_no_changes(

@@ -93,9 +93,25 @@ def apply_lane_receipt(
     require_change: bool,
     scope: Any,
     stderr_text: str = "",
+    guard_phases: Sequence[str] = (),
 ) -> None:
-    """Record `lane_progress` on the receipt and append lane stall blockers."""
-    progress = _progress.lane_progress(delivery.get("text") or "", stderr_text)
+    """Record `lane_progress` on the receipt and append lane stall blockers.
+
+    Guard-observed phases merge in canonical order: the live watcher may
+    have seen markers that aged out of the terminal transcript scan window,
+    and the durable receipt must not be weaker than the live relay (#815).
+    """
+    parsed = _progress.lane_progress(delivery.get("text") or "", stderr_text)
+    phases = [
+        phase
+        for phase in _progress.LANE_PHASES
+        if phase in parsed["phases"] or phase in guard_phases
+    ]
+    progress = {
+        "phases": phases,
+        "blocker": parsed["blocker"],
+        "merged_guard_phases": [phase for phase in phases if phase not in parsed["phases"]],
+    }
     payload["lane_progress"] = progress
     blockers.extend(
         lane_receipt_blockers(progress=progress, require_change=require_change, scope=scope)

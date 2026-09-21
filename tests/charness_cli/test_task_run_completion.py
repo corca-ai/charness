@@ -680,3 +680,15 @@ def test_a_failed_runtime_removal_and_an_absent_runtime_are_both_named(tmp_path:
     assert "busy" in failed["reason"]
     absent, _ = _released(tmp_path / "absent", candidate=complete, runtime=False)
     assert absent["runtime"] == "absent"
+
+
+def test_guard_phases_reads_only_string_lists() -> None:
+    assert task_run_completion._guard_phases({}) == []
+    assert task_run_completion._guard_phases({"progress_guard": None}) == []
+    assert (
+        task_run_completion._guard_phases({"progress_guard": {"last_phases": "CR"}})
+        == []
+    )
+    assert task_run_completion._guard_phases(
+        {"progress_guard": {"last_phases": ["CONTRACT-READ", 7]}}
+    ) == ["CONTRACT-READ"]

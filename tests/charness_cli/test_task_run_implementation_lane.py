@@ -204,6 +204,16 @@ def test_watch_tick_spares_editing_lane(tmp_path: Path) -> None:
     assert watch.tick(10_000.0) is None
 
 
+def test_watch_keeps_phases_that_aged_out_of_tail(tmp_path: Path) -> None:
+    watch = _watch(tmp_path)
+    _drive(watch)
+    watch._stderr_log.write_text("CONTRACT-READ\n", encoding="utf-8")
+    assert watch.tick(0.0) is None
+    watch._stderr_log.write_bytes(b"x" * (70 * 1024))
+    reason = watch.tick(1000.0)
+    assert reason is not None and "no scoped diff" in reason
+
+
 def test_watch_tick_spares_lane_with_real_scoped_diff(tmp_path: Path) -> None:
     watch = _watch(tmp_path)
     _drive(watch)
@@ -253,10 +263,59 @@ def test_scoped_diff_present_reads_dirty_tree(tmp_path: Path) -> None:
     )
 
 
-def test_scoped_diff_present_is_false_when_unobservable(tmp_path: Path) -> None:
+def test_scoped_diff_present_is_unknown_when_unobservable(tmp_path: Path) -> None:
+    assert prog.scoped_diff_present(tmp_path / "absent", "deadbeef", []) is None
+
+
+def test_no_progress_stop_due_spares_unobservable_diff() -> None:
     assert (
-        prog.scoped_diff_present(tmp_path / "absent", "deadbeef", []) is False
+        prog.no_progress_stop_due(
+            phases=["CONTRACT-READ"],
+            contract_read_at=0.0,
+            now=9999.0,
+            budget_seconds=300.0,
+            diff_present=None,
+        )
+        is None
     )
+
+
+def test_watch_tick_spares_overdue_lane_it_cannot_observe(tmp_path: Path) -> None:
+    watch = _watch(tmp_path)
+    _drive(watch)
+    watch._stderr_log.write_text("CONTRACT-READ\n", encoding="utf-8")
+    assert watch.tick(0.0) is None
+    (watch._worktree / ".git").rename(watch._worktree / ".git-broken")
+    try:
+        assert prog.scoped_diff_present(
+            watch._worktree, watch._base_sha, watch._scope_specs
+        ) is None
+        assert watch.tick(10_000.0) is None
+    finally:
+        (watch._worktree / ".git-broken").rename(watch._worktree / ".git")
+
+
+def test_receipt_merges_guard_phases_missing_from_transcript() -> None:
+    from scripts.task_run import task_run_lane_runner as lane_runner
+
+    payload: dict = {}
+    blockers: list = []
+    lane_runner.apply_lane_receipt(
+        payload,
+        blockers,
+        delivery={"text": "analysis only\n"},
+        require_change=True,
+        scope={"changed_paths": [], "disallowed_paths": []},
+        stderr_text="",
+        guard_phases=["CONTRACT-READ", "EDITING"],
+    )
+    assert payload["lane_progress"]["phases"] == ["CONTRACT-READ", "EDITING"]
+    assert payload["lane_progress"]["merged_guard_phases"] == [
+        "CONTRACT-READ",
+        "EDITING",
+    ]
+    assert payload["lane_progress"]["blocker"] is None
+    assert blockers == []
 
 
 def test_stderr_sibling_fallback_is_used_without_explicit_log(
