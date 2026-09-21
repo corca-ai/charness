@@ -163,3 +163,23 @@ def test_stable_staged_file_passes_the_worktree_guard(tmp_path: Path) -> None:
     code, text = owners.run_cheap_owners(repo)
 
     assert (code, text) == (0, "")
+
+
+def test_empty_staged_scope_skips_the_worktree_guard(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    init_git_repo(repo)
+
+    assert owners.run_cheap_owners(repo) == (0, "")
+
+
+def test_git_failure_leaves_the_guard_without_a_signal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        owners,
+        "run_process",
+        lambda *_a, **_k: SimpleNamespace(returncode=128, stderr="not a repo\n", stdout=""),
+    )
+
+    assert owners._worktree_unstable_paths(tmp_path, ["docs/n.md"]) == []

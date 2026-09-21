@@ -117,15 +117,12 @@ def _iter_scan_paths(repo_root: Path, *, require_git: bool) -> list[Path]:
     ]
 
 
-def select_targets(root: Path, *, paths: list[Path] | None) -> list[Path]:
-    """Whole-repo scan by default. When ``paths`` is given (e.g. staged files in
-    a pre-commit hook), restrict to the subset of those paths the whole-repo
-    scan would also gate, so the owner module, fixture children, and files
-    outside ``tests/`` are never gated. Staged-only by design: a pre-existing
-    site not in ``paths`` is left to the whole-repo run.
+def select_targets(root: Path, *, paths: list[Path]) -> list[Path]:
+    """Restrict ``paths`` (e.g. staged files in a pre-commit hook) to the subset
+    the whole-repo scan would also gate, so the owner module, fixture children,
+    and files outside ``tests/`` are never gated. Staged-only by design: a
+    pre-existing site not in ``paths`` is left to the whole-repo run.
     """
-    if paths is None:
-        return _iter_scan_paths(root, require_git=False)
     universe = {(p.resolve()) for p in _iter_scan_paths(root, require_git=False)}
     requested = {(p if p.is_absolute() else root / p).resolve() for p in paths}
     return sorted(universe & requested)
