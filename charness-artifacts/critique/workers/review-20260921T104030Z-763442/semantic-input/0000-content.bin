@@ -117,8 +117,9 @@ Do not put `--release-prepare` in the adapter: execute owns that choice.
   approval remain outside this planner's claim. Report the declared `command`
   verbatim and never recompose its argument forwarding: the separator shape
   belongs to the target repo's declared script, not to the planner. Rewriting
-  `pnpm run release:candidate:dispatch --source-sha <sha>` with an assumed
-  ` -- ` separator hands the script a literal leading `--` it rejects.
+  `pnpm run release:candidate:dispatch --source-sha <sha>` as
+  `pnpm run release:candidate:dispatch -- --source-sha <sha>` hands the script
+  a literal leading `--` it rejects (#817).
 - `product_surfaces`: empty list
 - `cli_skill_surface_*`: empty lists
 - `fresh_checkout_probes`: empty list

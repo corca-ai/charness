@@ -223,7 +223,7 @@ def test_release_run_planner_reports_declared_lane_command_verbatim(tmp_path: Pa
         REPO_ROOT / "skills" / "public" / "release" / "references" / "adapter-contract.md"
     ).read_text(encoding="utf-8")
     assert "Report the declared `command`\n  verbatim" in contract
-    assert "` -- ` separator" in contract
+    assert "-- --source-sha" in contract
 
 
 def test_release_run_planner_requires_critique_before_publish(tmp_path: Path) -> None:
