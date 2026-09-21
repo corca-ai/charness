@@ -88,8 +88,12 @@ def validate_closeout_draft(
         result["ok"] = False
         result.setdefault("refusals", []).append(authorization)
     result["status"] = "draft_verified" if result["ok"] else "draft_failed"
+    # publication_status must never read as ready on a failed draft: an operator
+    # greps the readiness line, not the whole verdict, before committing.
     result["publication_status"] = (
-        "ready_to_commit_push" if carrier == "direct-commit" else "ready_to_publish"
+        ("ready_to_commit_push" if carrier == "direct-commit" else "ready_to_publish")
+        if result["ok"]
+        else "draft_blocked"
     )
     return result
 

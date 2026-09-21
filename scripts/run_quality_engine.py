@@ -10,7 +10,12 @@ import time
 from pathlib import Path
 
 from run_quality_engine_model import RunnerError, load_gate_list
-from run_quality_engine_output import Ledger, add_filter_failure, consume_result
+from run_quality_engine_output import (
+    Ledger,
+    add_filter_failure,
+    consume_result,
+    sweep_stale_failure_logs,
+)
 from run_quality_engine_phase import run_phase
 from run_quality_engine_receipt import finish
 from run_quality_engine_runtime import (
@@ -279,6 +284,11 @@ def run(args: argparse.Namespace) -> int:
                 seen.add(gate.label)
         return 0
     context = prepare_runtime(repo_root, mode=mode, labels=labels, base_environment=environment)
+    # Minimal test doubles stub the context without a failure log dir; the
+    # sweep is a no-op for them rather than a new required attribute.
+    failure_log_dir = getattr(context, "failure_log_dir", None)
+    if failure_log_dir is not None:
+        sweep_stale_failure_logs(failure_log_dir, older_than_ns=time.time_ns())
     started_at = time.monotonic()
     ledger = Ledger()
     exit_code = 1

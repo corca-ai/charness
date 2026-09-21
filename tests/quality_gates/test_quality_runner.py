@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -894,3 +896,52 @@ def test_quality_runner_leaves_no_specdown_state_in_the_worktree(
         handed = helper.build_ephemeral_config(source, tmp_path / "out")
     for reporter in handed["reporters"]:
         assert not Path(reporter["outFile"]).is_relative_to(repo), reporter
+
+
+def test_failure_log_sweep_removes_only_previous_run_logs(tmp_path: Path) -> None:
+    """A `[log:]` pointer must name a file this run wrote: the sweep clears
+    logs predating the run start while keeping fresh logs, non-log files,
+    and missing directories harmless."""
+    from scripts.run_quality_engine_output import sweep_stale_failure_logs
+
+    failure_dir = tmp_path / "quality-failure-logs"
+    failure_dir.mkdir()
+    stale = failure_dir / "pytest-release.log"
+    stale.write_text("previous run", encoding="utf-8")
+    keeper = failure_dir / "notes.txt"
+    keeper.write_text("not a log", encoding="utf-8")
+    old_ns = time.time_ns() - 10_000_000_000
+    os.utime(stale, ns=(old_ns, old_ns))
+    run_started_ns = time.time_ns()
+    fresh = failure_dir / "ruff.log"
+    fresh.write_text("this run", encoding="utf-8")
+    fresh_ns = time.time_ns() + 10_000_000_000
+    os.utime(fresh, ns=(fresh_ns, fresh_ns))
+
+    removed = sweep_stale_failure_logs(failure_dir, older_than_ns=run_started_ns)
+
+    assert removed == 1
+    assert not stale.exists()
+    assert fresh.read_text(encoding="utf-8") == "this run"
+    assert keeper.exists()
+    assert sweep_stale_failure_logs(tmp_path / "absent-dir", older_than_ns=time.time_ns()) == 0
+
+
+def test_failure_log_sweep_survives_unremovable_files(tmp_path: Path) -> None:
+    """An undeletable stale log (read-only directory) is skipped, not fatal:
+    the sweep returns what it removed and leaves the rest for the copy path
+    to refuse with a warning."""
+    from scripts.run_quality_engine_output import sweep_stale_failure_logs
+
+    failure_dir = tmp_path / "quality-failure-logs"
+    failure_dir.mkdir()
+    stuck = failure_dir / "pytest-release.log"
+    stuck.write_text("previous run", encoding="utf-8")
+    old_ns = time.time_ns() - 10_000_000_000
+    os.utime(stuck, ns=(old_ns, old_ns))
+    failure_dir.chmod(0o500)
+    try:
+        assert sweep_stale_failure_logs(failure_dir, older_than_ns=time.time_ns()) == 0
+        assert stuck.exists()
+    finally:
+        failure_dir.chmod(0o700)

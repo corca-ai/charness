@@ -29,6 +29,33 @@ class Ledger:
     recoveries: list[str] = field(default_factory=list)
 
 
+def sweep_stale_failure_logs(failure_dir: Path, *, older_than_ns: int) -> int:
+    """Remove failure logs predating this run so a `[log:]` pointer can only name a file this run wrote.
+
+    The runtime root is shared across runs, so without a sweep a fresh failure
+    summary can point at a previous run's log under the same gate label. Only
+    files strictly older than the run start go: a concurrent sibling run's logs
+    (mtime at or after its own start) are left alone. True overlap still races,
+    and that residual is documented, not solved, here.
+    """
+    try:
+        entries = list(failure_dir.iterdir())
+    except OSError:
+        return 0
+    removed = 0
+    for entry in entries:
+        if not entry.is_file() or entry.suffix != ".log":
+            continue
+        try:
+            if entry.stat().st_mtime_ns >= older_than_ns:
+                continue
+            entry.unlink()
+            removed += 1
+        except OSError:
+            continue
+    return removed
+
+
 def consume_result(result: GateResult, *, verbose: bool, failure_dir: Path, ledger: Ledger) -> None:
     print(
         f"{result.status.upper().replace('UNESTABLISHED', 'UNPROVEN')} {result.gate.label:<24} {format_elapsed(result.elapsed_ms)}"

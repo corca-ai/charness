@@ -204,17 +204,22 @@ def test_a_log_copy_that_fails_warns_instead_of_promising_a_stale_file(gate_repo
     """
     _seed_gate(gate_repo, "raise SystemExit(1)\n")
 
-    # Occupy the copy target with a read-only file, so the copy cannot land.
+    # Occupy the copy target inside a read-only directory, so neither the
+    # run-start stale-log sweep nor the copy can land. A merely read-only
+    # stale file would be swept away at run start, which is the desired new
+    # behavior, not the copy-failure path this test pins.
     log_dir = gate_repo.parent / "quality-runtime" / "quality-failure-logs"
     log_dir.mkdir(parents=True, exist_ok=True)
     stale = log_dir / "validate-retro-artifact.log"
     stale.write_text("STALE OUTPUT FROM AN EARLIER RUN\n", encoding="utf-8")
     stale.chmod(0o400)
+    log_dir.chmod(0o500)
 
     receipt_path = gate_repo / "receipt.json"
     try:
         result = _run_gate(gate_repo, receipt_path=receipt_path)
     finally:
+        log_dir.chmod(0o700)
         stale.chmod(0o600)
 
     assert "could not save full output for validate-retro-artifact" in result.stderr, result.stderr[-400:]

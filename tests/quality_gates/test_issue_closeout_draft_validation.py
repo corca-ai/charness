@@ -145,6 +145,45 @@ def test_validate_closeout_draft_accepts_direct_commit_message_before_push(
     assert payload["commit_message_file"] == str(commit_message)
 
 
+def test_validate_closeout_draft_failed_draft_never_reports_ready(
+    tmp_path: Path,
+) -> None:
+    """A refused rehearsal must not print a ready publication status: the
+    readiness line is what an operator greps before committing, and a stale
+    ready on a failed draft is exactly the round-trip this rehearsal exists
+    to prevent."""
+    failing = tmp_path / "commit-message.txt"
+    failing.write_text(
+        _bug_body().replace("JTBD: resolve GitHub issues end-to-end.\n\n", ""),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        SCRIPT,
+        "validate-closeout-draft",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--classification",
+        "bug",
+        "--carrier",
+        "direct-commit",
+        "--commit-message-file",
+        str(failing),
+    )
+
+    assert result.returncode == 2, result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["ok"] is False
+    assert payload["status"] == "draft_failed"
+    assert "jtbd" in payload["missing_fields"]
+    assert payload["publication_status"] == "draft_blocked"
+    assert not payload["publication_status"].startswith("ready_")
+
+
 def test_validate_closeout_draft_direct_commit_requires_message_file(
     tmp_path: Path,
 ) -> None:
