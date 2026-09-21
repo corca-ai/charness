@@ -200,6 +200,80 @@ def test_the_module_main_guard_executes(tmp_path: Path, monkeypatch) -> None:
     assert excinfo.value.code == 0
 
 
+def test_paths_restricts_the_scan_to_the_universe_subset(tmp_path: Path) -> None:
+    """Staged-file mode gates what the whole-repo scan would gate: the owner,
+    fixture children, and files outside tests/ are never selected."""
+    repo = _seed(tmp_path, "def test_x():\n    assert True\n", baseline={})
+    owner = repo / gate.OWNER_REL
+    owner.write_text('import sys\n\ndel sys.modules["x"]\n', encoding="utf-8")
+    child = repo / "tests" / "fixtures" / "evicting_child.py"
+    child.parent.mkdir()
+    child.write_text('import sys\n\ndel sys.modules["x"]\n', encoding="utf-8")
+    outside = repo / "scripts" / "tool.py"
+    outside.parent.mkdir()
+    outside.write_text('import sys\n\ndel sys.modules["x"]\n', encoding="utf-8")
+
+    selected = gate.select_targets(
+        repo,
+        paths=[
+            repo / "tests" / "test_probe.py",
+            owner,
+            child,
+            outside,
+            repo / "tests" / "deleted.py",
+        ],
+    )
+    assert [path.relative_to(repo).as_posix() for path in selected] == [
+        "tests/test_probe.py"
+    ]
+
+
+def test_paths_catches_a_staged_site_and_passes_a_clean_selection(tmp_path: Path, capsys) -> None:
+    """The 09-05 serial miss shape: a raw eviction in a staged test file must
+    refuse at commit time, not surface one release-lane run later."""
+    repo = _seed(
+        tmp_path,
+        'import sys\n\n\ndef test_x():\n    del sys.modules["a"]\n',
+        baseline={},
+    )
+    assert (
+        gate.main(["--repo-root", str(repo), "--paths", "tests/test_probe.py"]) == 1
+    )
+    assert "1 raw sys.modules eviction(s), baseline 0" in capsys.readouterr().err
+    (repo / "tests" / "test_probe.py").write_text(
+        "def test_x():\n    assert True\n", encoding="utf-8"
+    )
+    assert (
+        gate.main(["--repo-root", str(repo), "--paths", "tests/test_probe.py"]) == 0
+    )
+
+
+def test_paths_with_no_universe_files_is_a_clean_no_op(tmp_path: Path, capsys) -> None:
+    """Explicit paths outside the universe are a precise empty selection, not the
+    S40 broad-scan refusal: a commit touching only fixtures must not block."""
+    repo = _seed(tmp_path, "def test_x():\n    assert True\n", baseline={})
+    child = repo / "tests" / "fixtures" / "evicting_child.py"
+    child.parent.mkdir()
+    child.write_text('import sys\n\ndel sys.modules["x"]\n', encoding="utf-8")
+    assert (
+        gate.main(
+            ["--repo-root", str(repo), "--paths", "tests/fixtures/evicting_child.py"]
+        )
+        == 0
+    )
+    assert "no eviction-universe files" in capsys.readouterr().out
+
+
+def test_write_baseline_refuses_a_path_scoped_run(tmp_path: Path) -> None:
+    """A scoped write would shrink the record to its selection, so it refuses
+    instead of recording a partial universe as the whole."""
+    repo = _seed(tmp_path, "def test_x():\n    assert True\n", baseline={})
+    with pytest.raises(SystemExit, match="refusing to write .* from a path-scoped run"):
+        gate.main(
+            ["--repo-root", str(repo), "--paths", "tests/test_probe.py", "--write-baseline"]
+        )
+
+
 def test_bootstrap_shim_inserts_the_repo_root_when_it_is_absent(monkeypatch) -> None:
     # The shim's insert branch runs only in a process where the root is not yet
     # on sys.path, which pytest never is; strip it so the branch is exercised.

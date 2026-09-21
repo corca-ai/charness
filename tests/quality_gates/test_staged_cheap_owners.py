@@ -11,7 +11,7 @@ from scripts.hooks import check_staged_cheap_owners as owners
 
 ROOT = Path(__file__).resolve().parents[2]
 pytestmark = pytest.mark.boundary_contract(
-    reason="observe the cheap-owner child commands (docs-length, tokei, seam-index)"
+    reason="observe the cheap-owner child commands (docs-length, tokei, eviction-form, seam-index)"
 )
 
 
@@ -92,6 +92,17 @@ def test_a_schema_path_selects_enum_axis() -> None:
 
 def test_an_unrelated_path_selects_no_cheap_owner() -> None:
     assert _labels(["README.md"]) == []
+
+
+def test_a_staged_test_file_selects_the_eviction_owner() -> None:
+    path = "tests/quality_gates/test_module_eviction_form_gate.py"
+    assert "check-module-eviction-form (staged)" in _labels([path])
+
+
+def test_a_non_test_python_path_does_not_select_the_eviction_owner() -> None:
+    path = "scripts/hooks/check_staged_cheap_owners.py"
+    assert "check-python-lengths (staged)" in _labels([path])
+    assert "check-module-eviction-form (staged)" not in _labels([path])
 
 
 @pytest.mark.parametrize("path, label", [

@@ -117,9 +117,29 @@ def _iter_scan_paths(repo_root: Path, *, require_git: bool) -> list[Path]:
     ]
 
 
-def measure(repo_root: Path, *, require_git: bool) -> tuple[dict[str, list[tuple[int, str]]], int]:
+def select_targets(root: Path, *, paths: list[Path] | None) -> list[Path]:
+    """Whole-repo scan by default. When ``paths`` is given (e.g. staged files in
+    a pre-commit hook), restrict to the subset of those paths the whole-repo
+    scan would also gate, so the owner module, fixture children, and files
+    outside ``tests/`` are never gated. Staged-only by design: a pre-existing
+    site not in ``paths`` is left to the whole-repo run.
+    """
+    if paths is None:
+        return _iter_scan_paths(root, require_git=False)
+    universe = {(p.resolve()) for p in _iter_scan_paths(root, require_git=False)}
+    requested = {(p if p.is_absolute() else root / p).resolve() for p in paths}
+    return sorted(universe & requested)
+
+
+def measure(
+    repo_root: Path, *, require_git: bool, paths: list[Path] | None = None
+) -> tuple[dict[str, list[tuple[int, str]]], int]:
     """Per-file raw eviction sites for every scanned test file, plus the file count."""
-    scan_paths = _iter_scan_paths(repo_root, require_git=require_git)
+    scan_paths = (
+        _iter_scan_paths(repo_root, require_git=require_git)
+        if paths is None
+        else select_targets(repo_root, paths=paths)
+    )
     found: dict[str, list[tuple[int, str]]] = {}
     for path in scan_paths:
         relative = path.relative_to(repo_root).as_posix()
@@ -144,9 +164,17 @@ def load_baseline(path: Path) -> dict[str, int]:
 
 
 def judge(
-    found: dict[str, list[tuple[int, str]]], baseline: dict[str, int]
+    found: dict[str, list[tuple[int, str]]],
+    baseline: dict[str, int],
+    *,
+    selected: set[str] | None = None,
 ) -> tuple[list[str], list[str]]:
-    """`(failures, shrink_prompts)` for the measured tree against the record."""
+    """`(failures, shrink_prompts)` for the measured tree against the record.
+
+    ``selected`` bounds a path-scoped run to its files: baseline entries
+    outside the selection are left to the whole-repo run instead of prompting
+    on every staged commit.
+    """
     failures: list[str] = []
     prompts: list[str] = []
     for relative, sites in sorted(found.items()):
@@ -161,7 +189,7 @@ def judge(
         elif len(sites) < allowed:
             prompts.append(f"{relative}: {len(sites)} < baseline {allowed}; lower the record")
     for relative, allowed in sorted(baseline.items()):
-        if relative not in found:
+        if relative not in found and (selected is None or relative in selected):
             prompts.append(f"{relative}: 0 < baseline {allowed}; drop it from the record")
     return failures, prompts
 
@@ -187,23 +215,50 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--require-git-file-listing", action="store_true")
     parser.add_argument("--baseline", type=Path, default=None)
     parser.add_argument("--write-baseline", action="store_true")
+    parser.add_argument(
+        "--paths",
+        nargs="+",
+        type=Path,
+        default=None,
+        help=(
+            "Explicit files to check (e.g. staged files in a pre-commit hook). "
+            "Restricts the check to the subset of these paths the whole-repo "
+            "scan would also gate. Takes precedence over the glob scan; "
+            "--require-git-file-listing is then irrelevant."
+        ),
+    )
     args = parser.parse_args(argv)
 
     repo_root = args.repo_root.resolve()
     baseline_path = args.baseline or (repo_root / DEFAULT_BASELINE_REL)
-    found, scanned = measure(repo_root, require_git=args.require_git_file_listing)
+    found, scanned = measure(
+        repo_root, require_git=args.require_git_file_listing, paths=args.paths
+    )
     if not scanned:
+        if args.paths is not None:
+            print("Validated module-eviction form: no eviction-universe files among --paths.")
+            return 0
         raise SystemExit(
             "refusing empty matched universe for check_module_eviction_form "
             f"(scan globs: {', '.join(DEFAULT_SCAN_GLOBS)})."
         )
     previous = load_baseline(baseline_path)
     if args.write_baseline:
+        if args.paths is not None:
+            raise SystemExit(
+                "refusing to write the module-eviction baseline from a path-scoped run; "
+                "run without --paths so the record covers the whole universe."
+            )
         write_baseline(baseline_path, found, previous)
         total = sum(len(sites) for sites in found.values())
         print(f"Wrote module-eviction baseline: {total} site(s) in {len(found)} file(s).")
         return 0
-    failures, prompts = judge(found, previous)
+    selected = (
+        None
+        if args.paths is None
+        else {path.relative_to(repo_root).as_posix() for path in select_targets(repo_root, paths=args.paths)}
+    )
+    failures, prompts = judge(found, previous, selected=selected)
     for prompt in prompts:
         print(f"ADVISORY: {prompt}", file=sys.stderr)
     if failures:

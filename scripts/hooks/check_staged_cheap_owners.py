@@ -3,9 +3,9 @@
 
 ``Slice-reopen:`` admits a commit without a release-lane receipt. It must not
 also skip the sub-second owners of the files just edited. Those owners are
-docs-length, Python tokei caps, and the debug seam-risk index — the class
-that turned eight release-lane surprises into a session
-(recurrence-class: gate-failures-patched-serially).
+docs-length, Python tokei caps, the module-eviction form, and the debug
+seam-risk index — the class that turned eight release-lane surprises into a
+session (recurrence-class: gate-failures-patched-serially).
 """
 
 from __future__ import annotations
@@ -43,7 +43,11 @@ def cheap_owner_gates(
     """Path-scoped cheap owners. Deletions still trigger corpus checks."""
     present = existing if existing is not None else [path for path in paths if (repo_root / path).is_file()]
     gates: list[GateCommand] = []
-    staged_py = [path for path in present if path.endswith(".py")]
+    # Each owner selects from the full staged Python set: one owner's universe
+    # must not narrow another's, so the lengths-selected subset below is never
+    # reused here.
+    staged_py_all = [path for path in present if path.endswith(".py")]
+    staged_py = list(staged_py_all)
     if staged_py and (repo_root / "scripts/gates/check_code_lengths.py").is_file():
         lengths = import_repo_module(__file__, "scripts.gates.check_code_lengths")
         try:
@@ -70,6 +74,25 @@ def cheap_owner_gates(
                 ),
             )
         )
+    if staged_py_all and (repo_root / "scripts/gates/check_module_eviction_form.py").is_file():
+        eviction = import_repo_module(__file__, "scripts.gates.check_module_eviction_form")
+        selected = eviction.select_targets(
+            repo_root, paths=[Path(path) for path in staged_py_all]
+        )
+        if selected:
+            gates.append(
+                GateCommand(
+                    "check-module-eviction-form (staged)",
+                    (
+                        "python3",
+                        "scripts/gates/check_module_eviction_form.py",
+                        "--repo-root",
+                        str(repo_root),
+                        "--paths",
+                        *(path.relative_to(repo_root).as_posix() for path in selected),
+                    ),
+                )
+            )
     if any(path.startswith("docs/") and path.endswith(".md") for path in paths) and (
         repo_root / "scripts/gates/check_docs_length.py"
     ).is_file():
