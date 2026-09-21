@@ -233,6 +233,7 @@ def main(argv: list[str] | None = None) -> int:
             parent_receipt_identity=args.parent_receipt_identity,
             execution_mode=mode,
             build_report=build_report,
+            expected_targets=args.expected_target,
         )
         _atomic_write_yaml(report_target, report)
         emit_yaml(report)

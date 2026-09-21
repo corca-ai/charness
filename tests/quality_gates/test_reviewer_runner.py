@@ -276,6 +276,133 @@ def test_file_backed_runner_rejects_caller_backend_override(tmp_path: Path) -> N
     assert "authoritative" in payload["error"]
 
 
+def _run_worker_with_result(
+    tmp_path: Path, body: dict[str, object], expected_targets: list[str] | None = None
+) -> tuple[int, dict[str, object]]:
+    """Run the worker end to end against a fake backend emitting ``body``."""
+    files = _common(tmp_path)
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "critique-adapter.yaml").write_text(
+        "version: 1\nreviewer_runner:\n  mode: file-backed-worker\n  backend: codex_exec\n  timeout_seconds: 900\n",
+        encoding="utf-8",
+    )
+    body_file = tmp_path / "backend-body.json"
+    body_file.write_text(json.dumps(body), encoding="utf-8")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _executable(
+        bin_dir / "codex",
+        "#!/bin/sh\n"
+        'out=""\n'
+        'while [ "$#" -gt 0 ]; do\n'
+        '  if [ "$1" = "-o" ]; then out="$2"; shift 2; continue; fi\n'
+        "  shift\n"
+        "done\n"
+        f'cat "{body_file}" > "$out"\n',
+    )
+    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"}
+    command = [
+        sys.executable,
+        str(SCRIPT),
+        "--repo-root",
+        str(tmp_path),
+        "--backend",
+        "codex_exec",
+        "--prompt-file",
+        str(files["prompt"]),
+        "--schema-file",
+        str(files["schema"]),
+        "--capability-file",
+        str(files["capability"]),
+        "--scope",
+        "scope-1",
+        "--packet-identity",
+        "a" * 64,
+        "--reviewed-input-identity",
+        "a" * 64,
+        "--attempt-id",
+        "attempt-1",
+        "--parent-receipt-identity",
+        "parent-1",
+        "--boundary-fingerprint",
+        "boundary-1",
+        "--ledger-file",
+        str(files["ledger"]),
+        "--output-file",
+        str(files["output"]),
+        "--receipt-file",
+        str(files["receipt"]),
+        "--report-file",
+        str(files["report"]),
+    ]
+    for target in expected_targets or []:
+        command.extend(["--expected-target", target])
+    result = subprocess.run(command, cwd=ROOT, env=env, capture_output=True, text=True, check=False)
+    return result.returncode, yaml.safe_load(result.stdout)
+
+
+def _thin_result_body() -> dict[str, object]:
+    """Schema-valid result that observes no admitted target."""
+    return {
+        "kind": "charness.bounded_review.v1",
+        "lens": "runner test",
+        "verdict": "pass",
+        "findings": [],
+        "counterweight_triage": [],
+        "next_move": "test",
+        "non_claims": ["test"],
+        "capability_non_claims": [],
+        "capability_non_claims_sha256": EMPTY_NON_CLAIMS_SHA256,
+        "packet_sha256": "a" * 64,
+        "reviewed_input_identity_sha256": "a" * 64,
+    }
+
+
+def test_declared_targets_refuse_a_shape_valid_but_unobserving_result(
+    tmp_path: Path,
+) -> None:
+    """--expected-target opts the attempt into the coverage floor (#819): a
+    schema-valid result that silently drops the admitted target fails as a
+    coverage shortfall instead of passing on shape alone."""
+    returncode, report = _run_worker_with_result(
+        tmp_path, _thin_result_body(), expected_targets=["item-a"]
+    )
+    assert returncode == 1
+    assert report["approval_eligible"] is False
+    assert report["coverage_ok"] is False
+    assert report["expected_targets"] == ["item-a"]
+    assert "expected targets" in report["reason"]
+
+
+def test_declared_targets_pass_when_each_is_observed_once(tmp_path: Path) -> None:
+    """The floor is verdict-agnostic and declaration-shaped: one substantive
+    observation per declared target keeps the attempt eligible."""
+    body = _thin_result_body()
+    body["target_observations"] = [
+        {
+            "target": "item-a",
+            "verdict": "pass",
+            "summary": "item-a reviewed against the packet",
+            "evidence": ["packet line 1"],
+        }
+    ]
+    returncode, report = _run_worker_with_result(
+        tmp_path, body, expected_targets=["item-a"]
+    )
+    assert returncode == 0, report.get("reason")
+    assert report["approval_eligible"] is True
+    assert report["coverage_ok"] is True
+
+
+def test_undeclared_attempts_keep_the_shape_only_floor(tmp_path: Path) -> None:
+    """No declaration means no floor: the same thin result still passes, so
+    legitimate target-free flows are unaffected by the opt-in flag."""
+    returncode, report = _run_worker_with_result(tmp_path, _thin_result_body())
+    assert returncode == 0, report.get("reason")
+    assert report["approval_eligible"] is True
+    assert report["coverage_ok"] is None
+
+
 def test_file_backed_runner_does_not_turn_explicit_zero_timeout_into_adapter_default(
     tmp_path: Path,
 ) -> None:

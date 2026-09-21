@@ -121,6 +121,18 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--stdout-file", type=Path)
     result.add_argument("--stderr-file", type=Path)
     result.add_argument("--backend", choices=("codex_exec", "claude_p"))
+    result.add_argument(
+        "--expected-target",
+        action="append",
+        default=None,
+        help=(
+            "Opaque admitted target the result must observe; repeat for bundled targets. "
+            "Declaring the set opts the attempt into the coverage floor: a schema-valid "
+            "result that silently drops a target fails as ReviewerCoverageError instead "
+            "of passing on shape alone (#819). The runner never embeds item names beyond "
+            "this declaration; the contract only enforces set coverage."
+        ),
+    )
     result.add_argument("--execution-mode", choices=("file-backed-worker", "typed-subagent"))
     result.add_argument("--timeout-seconds", type=float)
     result.add_argument("--run-id")
