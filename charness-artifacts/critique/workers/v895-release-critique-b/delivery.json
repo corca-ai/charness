@@ -1,0 +1,70 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "v895-release-critique-b",
+      "scope": "release-critique",
+      "packet_identity": "0ea96d3103bf2304fa335063cfa0bab2d3bc61ccd1c01612f7834e1d771e350a",
+      "parent_receipt_identity": "parent-0673dc87037b991c6d28252236ab225aa8e4e1a39bec1698",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-21T09:31:13Z",
+      "history": [
+        {
+          "event_id": "080492fc2b494a2fa7f1a3265f58f95b",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-21T09:30:19Z",
+          "attempt_id": "v895-release-critique-b",
+          "scope": "release-critique",
+          "packet_identity": "0ea96d3103bf2304fa335063cfa0bab2d3bc61ccd1c01612f7834e1d771e350a",
+          "parent_receipt_identity": "parent-0673dc87037b991c6d28252236ab225aa8e4e1a39bec1698",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "07f46fb8c79a48f19522fa52256bbffa",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-21T09:30:19Z",
+          "attempt_id": "v895-release-critique-b",
+          "scope": "release-critique",
+          "packet_identity": "0ea96d3103bf2304fa335063cfa0bab2d3bc61ccd1c01612f7834e1d771e350a",
+          "parent_receipt_identity": "parent-0673dc87037b991c6d28252236ab225aa8e4e1a39bec1698",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "390de40f4a8548e88c44e747e31ca75b",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-21T09:31:13Z",
+          "attempt_id": "v895-release-critique-b",
+          "scope": "release-critique",
+          "packet_identity": "0ea96d3103bf2304fa335063cfa0bab2d3bc61ccd1c01612f7834e1d771e350a",
+          "parent_receipt_identity": "parent-0673dc87037b991c6d28252236ab225aa8e4e1a39bec1698",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "f550dc6aeb6a4f3ed9426bba73178a4abf27706066d7192976eac264f5be9484",
+          "expected_targets_sha256": "dc07f3a4b97dfd9bd64d1515a3e1fbbb559dce4bd01962383d065d02a39f85fe"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "294d9fb8d4ed1d5c262526b0fcf87ac48445f5b4ec54c87f4237f741e3e2abd7",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "97e8a83cfb50a782e26179a254a3054c785da6150836cb69218b6e237afd3035",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/v895-release-critique-b/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/v895-release-critique-b/receipt.json",
+      "producer_run_id": "run-v895-release-critique-b",
+      "findings_identity": "f550dc6aeb6a4f3ed9426bba73178a4abf27706066d7192976eac264f5be9484",
+      "expected_targets_sha256": "dc07f3a4b97dfd9bd64d1515a3e1fbbb559dce4bd01962383d065d02a39f85fe"
+    }
+  ]
+}

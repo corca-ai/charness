@@ -1,0 +1,183 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-21T09:28:23Z",
+  "prepared_for": "working tree",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- .githooks/pre-commit\n- scripts/gates/check_module_eviction_form.py\n- scripts/hooks/check_staged_cheap_owners.py\n- scripts/task_run/task_run_completion.py\n- scripts/task_run/task_run_git.py\n- scripts/task_run/task_run_lane_runner.py\n- skills/public/critique/references/prepare-packet.md\n- skills/public/critique/scripts/run_review_execution.py\n- skills/public/critique/scripts/run_review_invocation.py\n- skills/public/critique/scripts/run_review_packet.py\n- skills/public/release/scripts/plan_release_run_packets.py\n- skills/shared/scripts/reviewer_worker_runner_support.py\n- skills/shared/scripts/run_reviewer_worker.py\n- tests/charness_cli/test_task_run_completion.py\n- tests/quality_gates/test_module_eviction_form_gate.py\n- tests/quality_gates/test_release_run_planner_prepared_stop.py\n- tests/quality_gates/test_review_target_coverage_floor.py\n- tests/quality_gates/test_reviewer_runner.py\n- tests/quality_gates/test_staged_cheap_owners.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/gates/check_module_eviction_form.py, scripts/hooks/check_staged_cheap_owners.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_git.py, scripts/task_run/task_run_lane_runner.py, skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/run_review_execution.py, skills/public/critique/scripts/run_review_invocation.py, skills/public/critique/scripts/run_review_packet.py, skills/public/release/scripts/plan_release_run_packets.py, skills/shared/scripts/reviewer_worker_runner_support.py, skills/shared/scripts/run_reviewer_worker.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: skills/public/critique/references/prepare-packet.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/run_review_execution.py, skills/public/critique/scripts/run_review_invocation.py, skills/public/critique/scripts/run_review_packet.py, skills/public/release/scripts/plan_release_run_packets.py, skills/shared/scripts/reviewer_worker_runner_support.py, skills/shared/scripts/run_reviewer_worker.py\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/run_review_execution.py, skills/public/critique/scripts/run_review_invocation.py, skills/public/critique/scripts/run_review_packet.py, skills/public/release/scripts/plan_release_run_packets.py, skills/shared/scripts/reviewer_worker_runner_support.py, skills/shared/scripts/run_reviewer_worker.py\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/critique/references/prepare-packet.md, skills/public/critique/scripts/run_review_execution.py, skills/public/critique/scripts/run_review_invocation.py, skills/public/critique/scripts/run_review_packet.py, skills/public/release/scripts/plan_release_run_packets.py, skills/shared/scripts/reviewer_worker_runner_support.py, skills/shared/scripts/run_reviewer_worker.py\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- maintainer-hooks: Repo-owned maintainer hook and hook bootstrap validation.\n  source matches: .githooks/pre-commit\n  verify: python3 scripts/setup/validate_maintainer_setup.py --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/gates/check_module_eviction_form.py, scripts/hooks/check_staged_cheap_owners.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_git.py, scripts/task_run/task_run_lane_runner.py, tests/charness_cli/test_task_run_completion.py, tests/quality_gates/test_module_eviction_form_gate.py, tests/quality_gates/test_release_run_planner_prepared_stop.py, tests/quality_gates/test_review_target_coverage_floor.py, tests/quality_gates/test_reviewer_runner.py, tests/quality_gates/test_staged_cheap_owners.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/gates/check_module_eviction_form.py, scripts/hooks/check_staged_cheap_owners.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_git.py, scripts/task_run/task_run_lane_runner.py, skills/public/critique/scripts/run_review_execution.py, skills/public/critique/scripts/run_review_invocation.py, skills/public/critique/scripts/run_review_packet.py, skills/public/release/scripts/plan_release_run_packets.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "prepared_targets": [
+    "task-run-persist-scope",
+    "release-resume-notes-placeholder",
+    "staged-eviction-owner",
+    "worker-expected-targets",
+    "prepared-target-worker-wiring",
+    "lane-target-declaration"
+  ],
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "834eed31c78a6f46dd10823b3c40f01896cf22c7",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      ".githooks/pre-commit",
+      "scripts/gates/check_module_eviction_form.py",
+      "scripts/hooks/check_staged_cheap_owners.py",
+      "scripts/task_run/task_run_completion.py",
+      "scripts/task_run/task_run_git.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "skills/public/critique/references/prepare-packet.md",
+      "skills/public/critique/scripts/run_review_execution.py",
+      "skills/public/critique/scripts/run_review_invocation.py",
+      "skills/public/critique/scripts/run_review_packet.py",
+      "skills/public/release/scripts/plan_release_run_packets.py",
+      "skills/shared/scripts/reviewer_worker_runner_support.py",
+      "skills/shared/scripts/run_reviewer_worker.py",
+      "tests/charness_cli/test_task_run_completion.py",
+      "tests/quality_gates/test_module_eviction_form_gate.py",
+      "tests/quality_gates/test_release_run_planner_prepared_stop.py",
+      "tests/quality_gates/test_review_target_coverage_floor.py",
+      "tests/quality_gates/test_reviewer_runner.py",
+      "tests/quality_gates/test_staged_cheap_owners.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".githooks/pre-commit",
+        "content_sha256": "5dd9d61b5f15b1b5c5ec7e1af77bdd08a820b7c4f82e1de27ef03a203666ad3e"
+      },
+      {
+        "path": "scripts/gates/check_module_eviction_form.py",
+        "content_sha256": "59c804a4f5da58eeefb5e0d589bbe47fb2fe7d4c3b0f9b264b62c7df202e175b"
+      },
+      {
+        "path": "scripts/hooks/check_staged_cheap_owners.py",
+        "content_sha256": "73e79533ade735125e0a66cf2ed79275bd121072e3641bd238febad16d364184"
+      },
+      {
+        "path": "scripts/task_run/task_run_completion.py",
+        "content_sha256": "081de450cfec685d43e4dbf3278c571760c0bd633f74c695d7e11a1b38155543"
+      },
+      {
+        "path": "scripts/task_run/task_run_git.py",
+        "content_sha256": "4e04beacdaeb77b58a153b4cbe9d0835f56828d63eb819c1dc0752dac120c90a"
+      },
+      {
+        "path": "scripts/task_run/task_run_lane_runner.py",
+        "content_sha256": "428a5f01806d4f8152e378e6d11b7926364ed6daf1c35fc6519aa993146e63b6"
+      },
+      {
+        "path": "skills/public/critique/references/prepare-packet.md",
+        "content_sha256": "f88d49f09b43b538ce71f92ad2bafce738c17f82398d3b7464a388e1a9a6cd0d"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_execution.py",
+        "content_sha256": "58a89764fd0ebc3c6beba2bc7c239fb4a4955e2b0876822fbcbbce2804cf8037"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_invocation.py",
+        "content_sha256": "c4f87230bd7df70b12b0402dab1ae0860b8baa2916a7fe58effdf3461b1ea20d"
+      },
+      {
+        "path": "skills/public/critique/scripts/run_review_packet.py",
+        "content_sha256": "d8316f257c59196e84f9a6a1da19694faa97d629597c5c54cd5d6bc321196c04"
+      },
+      {
+        "path": "skills/public/release/scripts/plan_release_run_packets.py",
+        "content_sha256": "0ef6809988d28631f64109ebff7f593bf2d43d932048a24563e71edc4ebef231"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_worker_runner_support.py",
+        "content_sha256": "feba5a6cff9f78bbb7cc9bb2844326b683bdaa8203170e44f3d65b26f2a6e3c6"
+      },
+      {
+        "path": "skills/shared/scripts/run_reviewer_worker.py",
+        "content_sha256": "c647e0dc2154d2e38fe037e934bfce6d82ac2983ae45806c9a9f7370564d9ef9"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_completion.py",
+        "content_sha256": "8397ed8764c68532444e84a232da0cdbcf865d1fb4761610eb341a686900a3e6"
+      },
+      {
+        "path": "tests/quality_gates/test_module_eviction_form_gate.py",
+        "content_sha256": "a4ccda3fd6e55a7aaa80cf619dcf67212d9a22a6990cee32fa53c53392f937f2"
+      },
+      {
+        "path": "tests/quality_gates/test_release_run_planner_prepared_stop.py",
+        "content_sha256": "e7cc346885b78a82f54279a5f33240e8f47aa934c49c4c035fad6d4ae2e56d27"
+      },
+      {
+        "path": "tests/quality_gates/test_review_target_coverage_floor.py",
+        "content_sha256": "bfb6c1318a0fcd46d48e57ae2821c70bd0a8b553ea9e8797dfb7ca9fbbf448ae"
+      },
+      {
+        "path": "tests/quality_gates/test_reviewer_runner.py",
+        "content_sha256": "4c4d85bb371da17fc3d1a5f5860caca9294581554190df5941e075b9f6847a57"
+      },
+      {
+        "path": "tests/quality_gates/test_staged_cheap_owners.py",
+        "content_sha256": "32a796e1842c16f7cfaa37f533c4ea8324e5260eb246d00329c9d05bc5562c5f"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "294d9fb8d4ed1d5c262526b0fcf87ac48445f5b4ec54c87f4237f741e3e2abd7"
+  }
+}
