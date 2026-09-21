@@ -91,7 +91,7 @@ the source paths that establish every target's claims. When the review runs on
 the file-backed worker, repeat each prepared target as `--expected-target` to
 `run_reviewer_worker.py` and instruct the prompt to emit exactly one
 `target_observations` entry per target: the coverage floor then refuses a
-schema-valid result that silently drops one (#819). On lanes without that
+schema-valid result that silently drops one as incomplete coverage. On lanes without that
 wiring the declarations stay opaque and the consuming skill judges membership
 and the reviewer's per-target observations. Adding labels does not expand what
 was reviewed. Existing packets cannot be combined with packet-generation flags.

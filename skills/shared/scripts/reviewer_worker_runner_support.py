@@ -129,7 +129,7 @@ def parser() -> argparse.ArgumentParser:
             "Opaque admitted target the result must observe; repeat for bundled targets. "
             "Declaring the set opts the attempt into the coverage floor: a schema-valid "
             "result that silently drops a target fails as ReviewerCoverageError instead "
-            "of passing on shape alone (#819). The runner never embeds item names beyond "
+            "of passing on shape alone. The runner never embeds item names beyond "
             "this declaration; the contract only enforces set coverage."
         ),
     )

@@ -28,8 +28,8 @@ def runner_command(
 
     ``prepared_targets`` declares the packet's admitted set to the worker's
     coverage floor: a schema-valid result that silently drops one fails as
-    coverage, not shape (#819). No declaration keeps the historical
-    shape-only behavior.
+    coverage, not shape. No declaration keeps the historical shape-only
+    behavior.
     """
 
     def relative(key: str) -> str:
