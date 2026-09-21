@@ -92,10 +92,19 @@ def resume_claims_packets(prepared: dict[str, Any] | None) -> list[dict[str, obj
     # Same reasoning, and now load-bearing rather than convenient: the resume lane RUNS the
     # notes-file preflight, so a command emitted without `--notes-file` in a repo that has
     # drafted notes for this tag is a command the operator will be refused for running
-    # verbatim. Placed only when exactly one candidate exists; two candidates is a choice
-    # the planner must not make silently.
+    # verbatim. Placed verbatim when exactly one candidate exists; two candidates is a
+    # choice the planner must not make silently, but silently omitting the flag is worse --
+    # the command then looks runnable and is refused -- so the hole is named as a
+    # placeholder like every other unfillable value below. No candidates means the
+    # preflight stays silent, so nothing is placed.
     notes_candidates = prepared.get("drafted_notes_candidates") or []
-    notes = ["--notes-file", notes_candidates[0]] if len(notes_candidates) == 1 else []
+    if len(notes_candidates) == 1:
+        notes_value = notes_candidates[0]
+    elif notes_candidates:
+        notes_value = "<notes-file>"
+    else:
+        notes_value = None
+    notes = ["--notes-file", notes_value] if notes_value is not None else []
 
     scaffold = {
         "id": "claims-review-scaffold",
@@ -161,7 +170,11 @@ def resume_claims_packets(prepared: dict[str, Any] | None) -> list[dict[str, obj
                 "--close-issue-carrier-file", "--bump-rationale",
             ],
             "placeholders": sorted(
-                {value for value in (critique_value, claims_value) if value.startswith("<") or "<" in value}
+                {
+                    value
+                    for value in (critique_value, claims_value, notes_value or "")
+                    if value.startswith("<") or "<" in value
+                }
             ),
         }
 

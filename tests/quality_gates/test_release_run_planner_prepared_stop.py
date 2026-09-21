@@ -497,6 +497,38 @@ def test_prepared_claims_packets_are_exercised_in_process(tmp_path: Path) -> Non
         assert RECORD in action["reason"]
 
 
+def test_resume_packet_marks_an_ambiguous_notes_file_as_a_placeholder() -> None:
+    """Two drafted-notes candidates is a choice the planner must not make silently.
+
+    Silently omitting the flag is worse: the resume lane's notes-file preflight
+    refuses a choiceless run, so a runnable-looking command without `--notes-file`
+    is refused verbatim. The packet names the hole like every other placeholder.
+    """
+    base = {
+        "critique_artifact_candidates": ["charness-artifacts/critique/a.md"],
+        "committed_claims_record": "charness-artifacts/release-review/r.json",
+    }
+    two = _PACKETS.resume_claims_packets(
+        {**base, "drafted_notes_candidates": ["n1.md", "n2.md"]}
+    )
+    execute = next(p for p in two if p["id"] == "publish-resume-execute")
+    assert "--notes-file" in execute["command"]
+    assert "<notes-file>" in execute["command"]
+    assert "<notes-file>" in execute["placeholders"]
+
+    one = _PACKETS.resume_claims_packets(
+        {**base, "drafted_notes_candidates": ["n1.md"]}
+    )
+    single = next(p for p in one if p["id"] == "publish-resume-execute")
+    assert "--notes-file n1.md" in single["command"]
+    assert "<notes-file>" not in single["placeholders"]
+
+    none = _PACKETS.resume_claims_packets({**base, "drafted_notes_candidates": []})
+    bare = next(p for p in none if p["id"] == "publish-resume-execute")
+    assert "--notes-file" not in bare["command"]
+    assert "<notes-file>" not in bare["placeholders"]
+
+
 def test_resume_summary_lines_selects_scaffold_and_resume_packets() -> None:
     """The summary line is the operator-facing half of the prepared-stop repair, and it
     is only ever reached through a subprocess planner run."""
