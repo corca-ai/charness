@@ -150,8 +150,9 @@ def _commit_lane_snapshot(
     ``paths`` stages and commits only the named repository-relative paths: the
     commit itself carries the pathspec, so content the lane staged outside the
     scope stays staged and out of the commit. ``None`` keeps the historical
-    stage-everything shape for the completed-lane persistence path, whose scope
-    verdict already ran.
+    stage-everything shape for callers with no scope classification to reuse;
+    the completed-lane persistence path passes the scope verdict's admitted
+    set instead of staging everything.
     """
     git_run = git if git is not None else _git
     read_output = git_output if git_output is not None else _git_output

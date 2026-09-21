@@ -8,7 +8,7 @@ from typing import Any
 
 import pytest
 
-from scripts.task_run import task_run_completion, task_run_git
+from scripts.task_run import task_run_completion, task_run_git, task_run_lane_runner
 from tests.quality_gates.repo_shapes import install_committed_repo
 
 
@@ -465,7 +465,7 @@ def test_persist_incomplete_candidate_commits_dirty_and_untracked(tmp_path: Path
     (worktree / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
     (worktree / "new.py").write_text("NEW = 1\n", encoding="utf-8")
 
-    snapshot = task_run_completion.persist_incomplete_candidate(
+    snapshot = task_run_lane_runner.persist_incomplete_candidate(
         worktree,
         git=task_run_git._git,
         git_output=task_run_git._git_output,
@@ -477,6 +477,100 @@ def test_persist_incomplete_candidate_commits_dirty_and_untracked(tmp_path: Path
     assert show == "NEW = 1\n"
     porcelain = task_run_git._git_output(worktree, "status", "--porcelain")
     assert porcelain.strip() == ""
+
+
+def test_persist_incomplete_candidate_scopes_commit_to_allowed_paths(tmp_path: Path) -> None:
+    worktree = install_committed_repo(tmp_path / "lane", {"module.py": "VALUE = 1\n"})
+    (worktree / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+    (worktree / "probe.py").write_text("PROBE = 1\n", encoding="utf-8")
+
+    snapshot = task_run_lane_runner.persist_incomplete_candidate(
+        worktree,
+        paths=["module.py"],
+        git=task_run_git._git,
+        git_output=task_run_git._git_output,
+    )
+
+    assert snapshot["status"] == "committed"
+    show = task_run_git._git_output(worktree, "show", f"{snapshot['sha']}:module.py")
+    assert show == "VALUE = 2\n"
+    probe = task_run_git._git(worktree, "show", f"{snapshot['sha']}:probe.py")
+    assert probe.returncode != 0
+    porcelain = task_run_git._git_output(worktree, "status", "--porcelain")
+    assert "probe.py" in porcelain
+
+
+def test_persist_incomplete_candidate_skips_with_no_in_scope_paths(tmp_path: Path) -> None:
+    worktree = install_committed_repo(tmp_path / "lane", {"module.py": "VALUE = 1\n"})
+    (worktree / "probe.py").write_text("PROBE = 1\n", encoding="utf-8")
+    base_sha = task_run_git._git_output(worktree, "rev-parse", "HEAD").strip()
+
+    snapshot = task_run_lane_runner.persist_incomplete_candidate(
+        worktree,
+        paths=[],
+        git=task_run_git._git,
+        git_output=task_run_git._git_output,
+    )
+
+    assert snapshot["status"] == "skipped"
+    assert task_run_git._git_output(worktree, "rev-parse", "HEAD").strip() == base_sha
+    assert "probe.py" in task_run_git._git_output(worktree, "status", "--porcelain")
+
+
+def test_prove_ready_candidate_persists_only_allowed_paths(tmp_path: Path) -> None:
+    worktree = install_committed_repo(tmp_path / "lane", {"module.py": "VALUE = 1\n"})
+    (worktree / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+    (worktree / "probe.py").write_text("PROBE = 1\n", encoding="utf-8")
+    base_sha = task_run_git._git_output(worktree, "rev-parse", "HEAD").strip()
+    candidate: dict[str, Any] = {
+        "useful": True,
+        "changed_paths": ["module.py", "probe.py"],
+        "disallowed_paths": ["probe.py"],
+    }
+
+    reason = task_run_completion._persist_useful_dirty_candidate(
+        {},
+        candidate,
+        resolved_target=worktree,
+        base_sha=base_sha,
+        execution_status="completed",
+        git=task_run_git._git,
+        git_output=task_run_git._git_output,
+    )
+
+    assert candidate["persist"]["status"] == "committed"
+    head = task_run_git._git_output(worktree, "rev-parse", "HEAD").strip()
+    assert head != base_sha
+    assert task_run_git._git_output(worktree, "show", f"{head}:module.py") == "VALUE = 2\n"
+    assert task_run_git._git(worktree, "show", f"{head}:probe.py").returncode != 0
+    assert reason is not None and "after persistence" in reason
+
+
+def test_prove_ready_candidate_skips_persist_when_all_changes_are_disallowed(
+    tmp_path: Path,
+) -> None:
+    worktree = install_committed_repo(tmp_path / "lane", {"module.py": "VALUE = 1\n"})
+    (worktree / "probe.py").write_text("PROBE = 1\n", encoding="utf-8")
+    base_sha = task_run_git._git_output(worktree, "rev-parse", "HEAD").strip()
+    candidate: dict[str, Any] = {
+        "useful": True,
+        "changed_paths": ["probe.py"],
+        "disallowed_paths": ["probe.py"],
+    }
+
+    reason = task_run_completion._persist_useful_dirty_candidate(
+        {},
+        candidate,
+        resolved_target=worktree,
+        base_sha=base_sha,
+        execution_status="completed",
+        git=task_run_git._git,
+        git_output=task_run_git._git_output,
+    )
+
+    assert candidate["persist"]["status"] == "skipped"
+    assert task_run_git._git_output(worktree, "rev-parse", "HEAD").strip() == base_sha
+    assert reason is not None and "no in-scope changes" in reason
 
 
 def test_commit_lane_snapshot_raises_when_git_commit_fails(tmp_path: Path) -> None:

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 
 def _load_repo_runtime_bootstrap():
@@ -175,6 +175,56 @@ def _checkpoint_interrupted_lane(
             "correctness_verified": False,
         }
     return _support._commit_wip_candidate(resolved_target, scoped)
+
+
+def _in_scope_candidate_paths(candidate: Mapping[str, Any]) -> Sequence[str] | None:
+    """The candidate changes the scope verdict admitted, or None when unclassified.
+
+    The scope verdict already split ``changed_paths`` into admitted and
+    ``disallowed_paths``; the persistence path reuses that classification
+    instead of re-deriving it, mirroring the interrupted-lane WIP checkpoint
+    above (#816). ``None`` keeps the historical stage-everything shape for
+    callers with no classification to reuse.
+    """
+    changed = candidate.get("changed_paths")
+    if not isinstance(changed, list):
+        return None
+    disallowed = set(candidate.get("disallowed_paths") or [])
+    return [path for path in changed if path not in disallowed]
+
+
+def persist_incomplete_candidate(
+    worktree: Path,
+    *,
+    paths: Sequence[str] | None = None,
+    git: Callable[..., Any] | None = None,
+    git_output: Callable[..., str] | None = None,
+) -> dict[str, Any]:
+    """Copy a useful dirty candidate onto the lane branch so HEAD carries it (#797).
+
+    ``paths`` carries the scope verdict's admitted set: only those paths are
+    staged and committed, so out-of-scope residue never rides the candidate
+    commit. An empty set records a skip instead of an empty commit (#816).
+    ``None`` keeps the historical stage-everything shape for callers with no
+    classification to reuse.
+    """
+    if paths is not None and not list(paths):
+        return {
+            "status": "skipped",
+            "reason": "no in-scope changes: no persistence commit created",
+            "changed_paths": [],
+            "correctness_verified": False,
+        }
+    try:
+        return _support._commit_lane_snapshot(
+            worktree,
+            message=_support.PERSIST_CANDIDATE_COMMIT_MESSAGE,
+            paths=None if paths is None else list(paths),
+            git=git,
+            git_output=git_output,
+        )
+    except (OSError, _support.TaskRunError, TypeError, AttributeError, ValueError) as exc:
+        return {"status": "failed", "error": str(exc), "correctness_verified": False}
 
 
 def lane_writable_dirs(

@@ -23,11 +23,7 @@ from scripts.gates_support.runtime_root_retention import _rmtree_writable  # noq
 from scripts.task_run import task_run_lane_runner as _lane_runner  # noqa: E402
 from scripts.task_run.task_run_completion_next_step import _next_step  # noqa: E402
 from scripts.task_run.task_run_contract import TaskRunError  # noqa: E402
-from scripts.task_run.task_run_git import (  # noqa: E402
-    PERSIST_CANDIDATE_COMMIT_MESSAGE,
-    _candidate_carrier,
-    _commit_lane_snapshot,
-)
+from scripts.task_run.task_run_git import _candidate_carrier  # noqa: E402
 
 
 def complete_task(
@@ -286,10 +282,18 @@ def _persist_useful_dirty_candidate(
         return None
     if _carrier_is_complete(candidate):
         return None
-    snapshot = persist_incomplete_candidate(
-        resolved_target, git=git, git_output=git_output
+    snapshot = _lane_runner.persist_incomplete_candidate(
+        resolved_target,
+        paths=_lane_runner._in_scope_candidate_paths(candidate),
+        git=git,
+        git_output=git_output,
     )
     candidate["persist"] = snapshot
+    if snapshot.get("status") == "skipped":
+        return (
+            "candidate persistence skipped: no in-scope changes to carry on the "
+            "lane branch; lane residue stays in the worktree"
+        )
     if snapshot.get("status") != "committed":
         detail = snapshot.get("error") or "the lane snapshot was not committed"
         return f"candidate persistence failed: {detail}"
@@ -402,24 +406,6 @@ def _apply_lane_retention(
             _candidate_has_work(candidate) and not candidate.get("head_is_complete")
         )
         persist(payload, runtime_path)
-
-
-def persist_incomplete_candidate(
-    worktree: Path,
-    *,
-    git: Callable[..., Any],
-    git_output: Callable[..., str],
-) -> dict[str, Any]:
-    """Copy a useful dirty candidate onto the lane branch so HEAD carries it (#797)."""
-    try:
-        return _commit_lane_snapshot(
-            worktree,
-            message=PERSIST_CANDIDATE_COMMIT_MESSAGE,
-            git=git,
-            git_output=git_output,
-        )
-    except (OSError, TaskRunError, TypeError, AttributeError, ValueError) as exc:
-        return {"status": "failed", "error": str(exc), "correctness_verified": False}
 
 
 def release_finished_lane(
