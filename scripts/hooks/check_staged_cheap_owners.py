@@ -140,8 +140,42 @@ def cheap_owner_gates(
     return gates
 
 
+def _worktree_unstable_paths(repo_root: Path, scoped: list[str]) -> list[str]:
+    """Staged-scope paths whose worktree bytes differ from the index.
+
+    Every cheap owner reads worktree bytes while the commit takes index bytes,
+    so judging an unstable file lets staged unsafe content pass behind
+    worktree-clean bytes. The pre-commit hook always runs inside a repo; a git
+    failure here means a non-repo fixture with no index to disagree with.
+    """
+    if not scoped:
+        return []
+    result = run_process(
+        ["git", "-C", str(repo_root), "diff", "--name-only", "--", *scoped],
+        cwd=repo_root,
+        timeout_seconds=None,
+    )
+    if result.returncode != 0:
+        return []
+    dirty = {line.strip() for line in (result.stdout or "").splitlines() if line.strip()}
+    return sorted(path for path in scoped if path in dirty)
+
+
 def run_cheap_owners(repo_root: Path, paths: list[str] | None = None) -> tuple[int, str]:
-    scoped = paths if paths is not None else collect_staged_scope_paths(repo_root)
+    if paths is not None:
+        # Explicit worktree judgment, not a commit verdict: the caller names
+        # worktree bytes on purpose, so index agreement is out of scope.
+        scoped = paths
+    else:
+        scoped = collect_staged_scope_paths(repo_root)
+        unstable = _worktree_unstable_paths(repo_root, scoped)
+        if unstable:
+            listed = ", ".join(unstable)
+            return (
+                2,
+                f"charness pre-commit: staged files differ from the worktree ({listed}); "
+                "restage so the cheap owners judge the committed bytes",
+            )
     existing = [path for path in scoped if (repo_root / path).is_file()]
     for gate in cheap_owner_gates(repo_root, scoped, existing):
         result = run_process(list(gate.argv), cwd=repo_root, timeout_seconds=None)

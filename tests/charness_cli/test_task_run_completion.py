@@ -546,6 +546,29 @@ def test_prove_ready_candidate_persists_only_allowed_paths(tmp_path: Path) -> No
     assert reason is not None and "after persistence" in reason
 
 
+def test_prove_ready_candidate_skips_persist_without_a_classification(
+    tmp_path: Path,
+) -> None:
+    worktree = install_committed_repo(tmp_path / "lane", {"module.py": "VALUE = 1\n"})
+    (worktree / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+    base_sha = task_run_git._git_output(worktree, "rev-parse", "HEAD").strip()
+    candidate: dict[str, Any] = {"useful": True}
+
+    reason = task_run_completion._persist_useful_dirty_candidate(
+        {},
+        candidate,
+        resolved_target=worktree,
+        base_sha=base_sha,
+        execution_status="completed",
+        git=task_run_git._git,
+        git_output=task_run_git._git_output,
+    )
+
+    assert candidate["persist"]["status"] == "skipped"
+    assert task_run_git._git_output(worktree, "rev-parse", "HEAD").strip() == base_sha
+    assert reason is not None and "no usable scope classification" in reason
+
+
 def test_prove_ready_candidate_skips_persist_when_all_changes_are_disallowed(
     tmp_path: Path,
 ) -> None:

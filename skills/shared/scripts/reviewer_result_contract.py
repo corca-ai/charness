@@ -171,6 +171,15 @@ def declared_targets_digest(value: Any) -> str | None:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+#: Shared remedy for a coverage refusal: what the author does about it. Stated
+#: once so every refusal names the mistake AND the fix instead of only the
+#: mistake.
+_COVERAGE_REMEDY = (
+    "emit exactly one target_observations entry per expected target, each with "
+    "a nonempty summary and a nonempty evidence array, or declare fewer targets"
+)
+
+
 def _require_target_coverage(payload: dict[str, Any], *, expected: set[str]) -> None:
     """Refuse a schema-valid result that leaves declared targets unobserved.
 
@@ -183,7 +192,8 @@ def _require_target_coverage(payload: dict[str, Any], *, expected: set[str]) -> 
     observations = payload.get("target_observations")
     if observations is None:
         raise ReviewerCoverageError(
-            f"worker result observes none of the {len(expected)} expected targets"
+            f"worker result observes none of the {len(expected)} expected targets "
+            f"{sorted(expected)!r}; {_COVERAGE_REMEDY}"
         )
     if not isinstance(observations, list):
         raise ReviewerCoverageError("worker result target_observations must be an array")
@@ -195,7 +205,7 @@ def _require_target_coverage(payload: dict[str, Any], *, expected: set[str]) -> 
     missing = sorted(expected - set(by_target))
     if missing:
         raise ReviewerCoverageError(
-            f"worker result does not observe expected targets: {missing!r}"
+            f"worker result does not observe expected targets: {missing!r}; {_COVERAGE_REMEDY}"
         )
     for target in sorted(expected):
         entries = by_target[target]

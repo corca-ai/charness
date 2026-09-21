@@ -42,6 +42,7 @@ def test_declared_packet_targets_refuse_an_unobserving_lane_result(tmp_path: Pat
     assert report["coverage_ok"] is False
     assert report["expected_targets"] == ["item-a"]
     assert "expected targets" in report["reason"]
+    assert "item-a" in report["reason"]
 
 
 def test_declared_packet_targets_pass_when_each_is_observed_once(tmp_path: Path) -> None:

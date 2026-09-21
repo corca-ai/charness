@@ -282,9 +282,15 @@ def _persist_useful_dirty_candidate(
         return None
     if _carrier_is_complete(candidate):
         return None
+    allowed = _lane_runner._in_scope_candidate_paths(candidate)
+    if allowed is None:
+        # No usable classification: staging everything would preserve the exact
+        # hole this path closes, so the residue stays in the worktree instead.
+        candidate["persist"] = {"status": "skipped", "reason": "candidate classification unavailable", "changed_paths": [], "correctness_verified": False}
+        return "candidate persistence skipped: no usable scope classification; refusing the unscoped stage-everything shape"
     snapshot = _lane_runner.persist_incomplete_candidate(
         resolved_target,
-        paths=_lane_runner._in_scope_candidate_paths(candidate),
+        paths=allowed,
         git=git,
         git_output=git_output,
     )

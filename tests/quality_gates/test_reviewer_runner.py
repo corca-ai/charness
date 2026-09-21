@@ -372,6 +372,7 @@ def test_declared_targets_refuse_a_shape_valid_but_unobserving_result(
     assert report["coverage_ok"] is False
     assert report["expected_targets"] == ["item-a"]
     assert "expected targets" in report["reason"]
+    assert "item-a" in report["reason"]
 
 
 def test_declared_targets_pass_when_each_is_observed_once(tmp_path: Path) -> None:

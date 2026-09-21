@@ -9,6 +9,8 @@ import pytest
 
 from scripts.hooks import check_staged_cheap_owners as owners
 
+from .git_fixture_support import init_git_repo
+
 ROOT = Path(__file__).resolve().parents[2]
 pytestmark = pytest.mark.boundary_contract(
     reason="observe the cheap-owner child commands (docs-length, tokei, eviction-form, seam-index)"
@@ -130,3 +132,34 @@ def test_live_docs_length_on_this_tree_passes() -> None:
 def test_pre_commit_hook_invokes_the_cheap_owners() -> None:
     hook = (ROOT / ".githooks" / "pre-commit").read_text(encoding="utf-8")
     assert "scripts/hooks/check_staged_cheap_owners.py" in hook
+
+
+def test_staged_file_with_unstaged_edits_refuses_before_any_owner(tmp_path: Path) -> None:
+    """Owners read worktree bytes while the commit takes index bytes: a staged
+    file edited again afterwards is refused so staged unsafe content cannot
+    pass behind worktree-clean bytes."""
+    repo = tmp_path / "repo"
+    target = repo / "docs" / "n.md"
+    target.parent.mkdir(parents=True)
+    target.write_text("staged\n", encoding="utf-8")
+    init_git_repo(repo, "docs/n.md")
+    target.write_text("worktree cleaned\n", encoding="utf-8")
+
+    code, text = owners.run_cheap_owners(repo)
+
+    assert code == 2
+    assert "differ from the worktree" in text
+    assert "docs/n.md" in text
+    assert "restage" in text
+
+
+def test_stable_staged_file_passes_the_worktree_guard(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    target = repo / "docs" / "n.md"
+    target.parent.mkdir(parents=True)
+    target.write_text("staged\n", encoding="utf-8")
+    init_git_repo(repo, "docs/n.md")
+
+    code, text = owners.run_cheap_owners(repo)
+
+    assert (code, text) == (0, "")
