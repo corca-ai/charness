@@ -347,6 +347,45 @@ def test_transcript_blocker_wins_over_guard_blocker() -> None:
     assert payload["lane_progress"]["blocker"] == "lease event never fires"
 
 
+def test_evicted_blocker_still_arms_linger_stop(tmp_path: Path) -> None:
+    watch = _watch(tmp_path)
+    _drive(watch)
+    watch._stderr_log.write_text(
+        "BLOCKED: scope mismatch - real owner elsewhere\n", encoding="utf-8"
+    )
+    assert watch.tick(0.0) is None
+    watch._stderr_log.write_bytes(b"x" * (70 * 1024))
+    assert watch.tick(59.0) is None
+    reason = watch.tick(60.0)
+    assert reason is not None and "kept running" in reason
+    assert "scope mismatch" in reason
+
+
+def test_lingering_blocked_lane_is_killed_live_and_receipted(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv(prog.BLOCKED_GRACE_ENV, "1")
+    monkeypatch.setenv(prog.PROGRESS_POLL_ENV, "0.05")
+    repo = _repo(tmp_path)
+    executable = _stub(
+        tmp_path, 'echo "BLOCKED: scope mismatch - real owner elsewhere" >&2\nsleep 300'
+    )
+    payload = _run(
+        repo,
+        tmp_path,
+        executable,
+        scopes=["gateway/lease.py"],
+        require_change=True,
+        timeout_seconds=60,
+    )
+    assert payload["status"] == "failed", payload
+    assert "kept running" in (payload["execution"].get("progress_stopped") or "")
+    assert payload["lane_progress"]["blocker"] == (
+        "scope mismatch - real owner elsewhere"
+    )
+    assert payload["progress_guard"]["stop_reason"] is not None
+
+
 def test_stalled_lane_is_killed_live_and_receipted(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv(prog.NO_PROGRESS_BUDGET_ENV, "1")
     monkeypatch.setenv(prog.PROGRESS_POLL_ENV, "0.05")

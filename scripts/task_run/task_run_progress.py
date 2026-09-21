@@ -207,6 +207,7 @@ class LaneProgressWatch:
         self._clock = clock
         self._contract_read_at: float | None = None
         self._blocker_at: float | None = None
+        self._blocker: str | None = None
         self._last_phases: list[str] = []
         self._started_at: float | None = None
         self._emit: Callable[[list[str], float], None] | None = None
@@ -269,7 +270,14 @@ class LaneProgressWatch:
             if self._emit is not None and self._started_at is not None:
                 self._emit(list(self._last_phases), now - self._started_at)
         phases = list(self._last_phases)
-        if progress["blocker"] is not None:
+        # The declared blocker is cumulative like phases: a marker that ages
+        # out of the tail window still counts, so a lingering lane cannot
+        # evade the grace by emitting enough output after declaring BLOCKED.
+        observed = progress["blocker"]
+        if observed is not None and self._blocker is None:
+            self._blocker = observed
+        blocker = observed if observed is not None else self._blocker
+        if blocker is not None:
             # A declared block is terminal semantics, not a stall to watch:
             # a lane that lingers past the grace after declaring BLOCKED is
             # stopped, so the declaration cannot burn the full timeout.
@@ -279,7 +287,7 @@ class LaneProgressWatch:
             if now - self._blocker_at < self._blocked_grace_seconds:
                 return None
             return (
-                f"lane declared BLOCKED ({progress['blocker']}) but kept running; "
+                f"lane declared BLOCKED ({blocker}) but kept running; "
                 f"stopped after {self._blocked_grace_seconds:g}s"
             )
         if "CONTRACT-READ" not in phases:
