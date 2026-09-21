@@ -187,10 +187,11 @@ def _in_scope_candidate_paths(candidate: Mapping[str, Any]) -> Sequence[str] | N
     callers with no classification to reuse.
     """
     changed = candidate.get("changed_paths")
-    if not isinstance(changed, list):
+    disallowed = candidate.get("disallowed_paths")
+    if not isinstance(changed, list) or not isinstance(disallowed, list):
         return None
-    disallowed = set(candidate.get("disallowed_paths") or [])
-    return [path for path in changed if path not in disallowed]
+    denied = set(disallowed)
+    return [path for path in changed if path not in denied]
 
 
 def persist_incomplete_candidate(

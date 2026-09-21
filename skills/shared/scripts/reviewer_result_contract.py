@@ -196,11 +196,15 @@ def _require_target_coverage(payload: dict[str, Any], *, expected: set[str]) -> 
             f"{sorted(expected)!r}; {_COVERAGE_REMEDY}"
         )
     if not isinstance(observations, list):
-        raise ReviewerCoverageError("worker result target_observations must be an array")
+        raise ReviewerCoverageError(
+            f"worker result target_observations must be an array; {_COVERAGE_REMEDY}"
+        )
     by_target: dict[str, list[dict[str, Any]]] = {}
     for entry in observations:
         if not isinstance(entry, dict) or not isinstance(entry.get("target"), str):
-            raise ReviewerCoverageError("target observations must name string targets")
+            raise ReviewerCoverageError(
+                f"target observations must name string targets; {_COVERAGE_REMEDY}"
+            )
         by_target.setdefault(entry["target"], []).append(entry)
     missing = sorted(expected - set(by_target))
     if missing:
@@ -211,13 +215,13 @@ def _require_target_coverage(payload: dict[str, Any], *, expected: set[str]) -> 
         entries = by_target[target]
         if len(entries) != 1:
             raise ReviewerCoverageError(
-                f"target {target!r} has {len(entries)} observations, want exactly one"
+                f"target {target!r} has {len(entries)} observations, want exactly one; {_COVERAGE_REMEDY}"
             )
         entry = entries[0]
         summary = entry.get("summary")
         if not isinstance(summary, str) or not summary.strip():
             raise ReviewerCoverageError(
-                f"target {target!r} observation needs a nonempty summary"
+                f"target {target!r} observation needs a nonempty summary; {_COVERAGE_REMEDY}"
             )
         evidence = entry.get("evidence")
         if (
@@ -226,7 +230,7 @@ def _require_target_coverage(payload: dict[str, Any], *, expected: set[str]) -> 
             or not all(isinstance(item, str) and item.strip() for item in evidence)
         ):
             raise ReviewerCoverageError(
-                f"target {target!r} observation needs a nonempty evidence array"
+                f"target {target!r} observation needs a nonempty evidence array; {_COVERAGE_REMEDY}"
             )
 
 

@@ -146,8 +146,9 @@ def test_observations_need_substance_and_singularity(
     tmp_path: Path, observations: object
 ) -> None:
     payload = _result(target_observations=observations)
-    with pytest.raises(ReviewerCoverageError):
+    with pytest.raises(ReviewerCoverageError) as exc:
         _validate(payload, tmp_path, expected_targets=["t1"])
+    assert "exactly one target_observations entry" in str(exc.value)
 
 
 def test_empty_evidence_fails_at_schema_layer_first(tmp_path: Path) -> None:

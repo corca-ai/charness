@@ -40,6 +40,10 @@ def _complete(
         "status": "validated" if useful else "absent",
         "useful": useful,
         **carrier,
+        # Production candidates always carry the verdict's denied set (possibly
+        # empty); the fixture states it explicitly so the persist path classifies
+        # exactly what production classifies.
+        "disallowed_paths": [],
     }
     if result_state is None:
         result_state = "validated-partial-result" if parent_blocking else "completed"
@@ -563,6 +567,54 @@ def test_prove_ready_candidate_skips_persist_without_a_classification(
         git=task_run_git._git,
         git_output=task_run_git._git_output,
     )
+
+    assert candidate["persist"]["status"] == "skipped"
+    assert task_run_git._git_output(worktree, "rev-parse", "HEAD").strip() == base_sha
+    assert reason is not None and "no usable scope classification" in reason
+
+
+def _prove_ready(worktree: Path, base_sha: str, candidate: dict[str, Any]) -> Any:
+    return task_run_completion._persist_useful_dirty_candidate(
+        {},
+        candidate,
+        resolved_target=worktree,
+        base_sha=base_sha,
+        execution_status="completed",
+        git=task_run_git._git,
+        git_output=task_run_git._git_output,
+    )
+
+
+def test_prove_ready_candidate_skips_persist_without_a_denied_set(
+    tmp_path: Path,
+) -> None:
+    """A missing disallowed_paths is unclassifiable, not an empty denied set:
+    admitting everything would preserve the exact hole this path closes."""
+    worktree = install_committed_repo(tmp_path / "lane", {"module.py": "VALUE = 1\n"})
+    (worktree / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+    base_sha = task_run_git._git_output(worktree, "rev-parse", "HEAD").strip()
+    candidate: dict[str, Any] = {"useful": True, "changed_paths": ["module.py"]}
+
+    reason = _prove_ready(worktree, base_sha, candidate)
+
+    assert candidate["persist"]["status"] == "skipped"
+    assert task_run_git._git_output(worktree, "rev-parse", "HEAD").strip() == base_sha
+    assert reason is not None and "no usable scope classification" in reason
+
+
+def test_prove_ready_candidate_skips_persist_with_a_malformed_denied_set(
+    tmp_path: Path,
+) -> None:
+    worktree = install_committed_repo(tmp_path / "lane", {"module.py": "VALUE = 1\n"})
+    (worktree / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+    base_sha = task_run_git._git_output(worktree, "rev-parse", "HEAD").strip()
+    candidate: dict[str, Any] = {
+        "useful": True,
+        "changed_paths": ["module.py"],
+        "disallowed_paths": "module.py",
+    }
+
+    reason = _prove_ready(worktree, base_sha, candidate)
 
     assert candidate["persist"]["status"] == "skipped"
     assert task_run_git._git_output(worktree, "rev-parse", "HEAD").strip() == base_sha
