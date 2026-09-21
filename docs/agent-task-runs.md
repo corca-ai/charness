@@ -63,6 +63,12 @@ changes reports a known unchanged candidate (`interrupted-before-edit`,
 `interrupted-mid-edit`. The WIP shape is reserved for worktrees that
 actually contain changes whose completeness is unknown.
 
+A completed lane whose useful dirty candidate the carrier persists after
+blockers were already reported records that intent explicitly
+(`candidate persisted for review`, persistence/correctness/approval kept
+as separate facts) instead of leaving the executor's pre-persist
+declaration beside the persisted commit as a contradiction.
+
 ## Run
 
 ```bash

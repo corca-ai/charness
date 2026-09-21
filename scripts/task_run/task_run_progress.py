@@ -149,6 +149,26 @@ def _lane_stderr_text(stdout_log: Path, stderr_log: Path | None) -> str:
         return ""
 
 
+def _guard_phases(payload: Mapping[str, Any]) -> list[str]:
+    """Phases the live guard observed, for the terminal receipt merge (#815)."""
+    guard = payload.get("progress_guard")
+    if not isinstance(guard, Mapping):
+        return []
+    phases = guard.get("last_phases")
+    if not isinstance(phases, list):
+        return []
+    return [phase for phase in phases if isinstance(phase, str)]
+
+
+def _guard_stop_reason(payload: Mapping[str, Any]) -> str:
+    """The live guard stop reason, for when the transcript marker is lost (#815)."""
+    guard = payload.get("progress_guard")
+    if not isinstance(guard, Mapping):
+        return ""
+    reason = guard.get("stop_reason")
+    return reason if isinstance(reason, str) else ""
+
+
 def _env_seconds(name: str, default: float) -> float:
     """A tuned duration from the environment, falling back to the default."""
     try:

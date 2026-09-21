@@ -500,3 +500,180 @@ def test_release_run_packets_next_action_blockers(
     )
 
     assert action["kind"] == expected
+
+
+def _prepared_state(tmp_path: Path, **overrides: object) -> dict | None:
+    values: dict[str, object] = {
+        "current_version": "8.9.6",
+        "binding_tokens": ["8.9.6"],
+        "accepts": lambda rel: True,
+        "marker_text": _PACKETS.PREPARED_MARKER,
+        "release_record": "charness-artifacts/release/latest.md",
+    }
+    values.update(overrides)
+    return _PACKETS.prepared_claims_state(tmp_path, **values)  # type: ignore[arg-type]
+
+
+def test_prepared_claims_state_without_marker_is_none(tmp_path: Path) -> None:
+    assert _prepared_state(tmp_path, marker_text=None) is None
+    assert _prepared_state(tmp_path, marker_text="no marker here") is None
+
+
+def test_prepared_claims_state_names_binding_candidates(tmp_path: Path) -> None:
+    critique = tmp_path / "charness-artifacts" / "critique"
+    critique.mkdir(parents=True)
+    (critique / "notes.md").write_text("evidence", encoding="utf-8")
+    (critique / "empty.md").write_text("", encoding="utf-8")
+
+    state = _prepared_state(tmp_path)
+    assert state is not None
+    assert state["marker"] == _PACKETS.PREPARED_MARKER
+    assert state["critique_artifact_candidates"] == ["charness-artifacts/critique/notes.md"]
+    assert state["tag_name"] == "v8.9.6"
+    assert state["drafted_notes_candidates"] == []
+
+
+def test_prepared_claims_state_without_tokens_or_version(tmp_path: Path) -> None:
+    state = _prepared_state(tmp_path, binding_tokens=[], current_version=None)
+    assert state is not None
+    assert state["critique_artifact_candidates"] == []
+    assert state["tag_name"] is None
+    assert state["drafted_notes_candidates"] == []
+
+
+def test_prepared_claims_state_sorts_drafted_notes(tmp_path: Path) -> None:
+    state = _prepared_state(tmp_path, drafted_notes=["b.md", "a.md"])
+    assert state is not None
+    assert state["drafted_notes_candidates"] == ["a.md", "b.md"]
+
+
+def _resume_packets(**overrides: object) -> list[dict]:
+    prepared: dict[str, object] = {
+        "critique_artifact_candidates": [],
+        "committed_claims_record": None,
+        "drafted_notes_candidates": [],
+    }
+    prepared.update(overrides)
+    return _PACKETS.resume_claims_packets(prepared)  # type: ignore[arg-type]
+
+
+def test_resume_claims_packets_without_prepared_is_empty() -> None:
+    assert _PACKETS.resume_claims_packets(None) == []
+
+
+def test_resume_claims_packets_places_single_notes_file_verbatim() -> None:
+    packets = _resume_packets(
+        critique_artifact_candidates=["charness-artifacts/critique/v.md"],
+        drafted_notes_candidates=["notes.md"],
+    )
+    execute = next(item for item in packets if item["id"] == "publish-resume-execute")
+    assert "--notes-file" in execute["command"]
+    assert "notes.md" in execute["command"]
+    assert "<notes-file>" not in execute["command"]
+    assert "--execute" in execute["command"]
+    assert execute["requires_user_confirmation"] is True
+    dry = next(item for item in packets if item["id"] == "publish-resume-dry-run")
+    assert "--execute" not in dry["command"]
+    assert dry["requires_user_confirmation"] is False
+
+
+def test_resume_claims_packets_names_ambiguous_notes_file() -> None:
+    packets = _resume_packets(drafted_notes_candidates=["a.md", "b.md"])
+    execute = next(item for item in packets if item["id"] == "publish-resume-execute")
+    assert "<notes-file>" in execute["command"]
+    assert execute["placeholders"] == [
+        "<notes-file>",
+        "<release-critique-artifact>",
+        "charness-artifacts/release-review/<claims-review-record>.json",
+    ]
+
+
+def test_resume_claims_packets_omits_notes_without_candidates() -> None:
+    packets = _resume_packets(
+        critique_artifact_candidates=["a", "b"],
+        committed_claims_record="charness-artifacts/release-review/r.json",
+    )
+    execute = next(item for item in packets if item["id"] == "publish-resume-execute")
+    assert "--notes-file" not in execute["command"]
+    assert "<release-critique-artifact>" in execute["command"]
+
+
+def test_specialized_release_lane_action_routes_one_or_many() -> None:
+    assert _PACKETS.specialized_release_lane_action({"valid": False}) is None
+    assert _PACKETS.specialized_release_lane_action({"valid": True}) is None
+    assert (
+        _PACKETS.specialized_release_lane_action({"valid": True, "data": {"specialized_release_lanes": []}})
+        is None
+    )
+    one = _PACKETS.specialized_release_lane_action(
+        {"valid": True, "data": {"specialized_release_lanes": ["lane-a"]}}
+    )
+    assert one is not None and one["kind"] == "route_specialized_release_lane"
+    many = _PACKETS.specialized_release_lane_action(
+        {"valid": True, "data": {"specialized_release_lanes": ["a", "b"]}}
+    )
+    assert many is not None and many["kind"] == "select_specialized_release_lane"
+    assert "2 lanes" in many["reason"]
+
+
+def test_command_text_quotes_later_parts() -> None:
+    assert _PACKETS.command_text(["a", "b c", "d"]) == "a 'b c' d"
+
+
+def test_publish_packets_selectors_and_critique_variants() -> None:
+    assert _PACKETS.publish_packets(_args(), target_version=None, next_action_kind="publish_dry_run") == []
+    assert (
+        _PACKETS.publish_packets(_args(), target_version="1.2.3", next_action_kind="other") == []
+    )
+    current = _PACKETS.publish_packets(
+        _args(publish_current=True), target_version="1.2.3", next_action_kind="publish_dry_run"
+    )
+    assert "--publish-current" in current[0]["command"]
+    assert "--set-version" not in current[0]["command"]
+    blocked = _PACKETS.publish_packets(
+        _args(set_version="2.0.0", critique_blocked="host-down"),
+        target_version="2.0.0",
+        next_action_kind="publish_dry_run",
+    )
+    assert "--critique-blocked" in blocked[0]["command"]
+    assert "--critique-artifact" not in blocked[0]["command"]
+    plain = _PACKETS.publish_packets(
+        _args(), target_version="1.2.3", next_action_kind="publish_dry_run"
+    )
+    assert "--part" in plain[0]["command"]
+    assert "--critique-artifact" not in plain[1]["command"]
+    assert plain[0]["requires_user_confirmation"] is False
+    assert plain[1]["requires_user_confirmation"] is True
+    assert plain[0]["purpose"] != plain[1]["purpose"]
+
+
+def test_next_action_prepared_claims_critique_hints() -> None:
+    base = {"release_record": "r.md", "tag_name": "v1.2.3", "critique_binding_tokens": ["1.2.3"]}
+    one = _PACKETS.next_action(
+        args=_args(),
+        adapter={"found": True, "valid": True},
+        release_payload={},
+        target_version=None,
+        update_blocker=None,
+        prepared_claims={**base, "critique_artifact_candidates": ["c.md"]},
+    )
+    assert one["kind"] == "resume_prepared_claims_review"
+    assert "--critique-artifact c.md" in one["reason"]
+    many = _PACKETS.next_action(
+        args=_args(),
+        adapter={"found": True, "valid": True},
+        release_payload={},
+        target_version=None,
+        update_blocker=None,
+        prepared_claims={**base, "critique_artifact_candidates": ["a", "b"]},
+    )
+    assert "one of" in many["reason"]
+    none = _PACKETS.next_action(
+        args=_args(),
+        adapter={"found": True, "valid": True},
+        release_payload={},
+        target_version=None,
+        update_blocker=None,
+        prepared_claims={**base, "critique_artifact_candidates": []},
+    )
+    assert "owed first" in none["reason"]

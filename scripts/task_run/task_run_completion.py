@@ -134,8 +134,8 @@ def complete_task(
         require_change=require_change,
         scope=scope,
         stderr_text=_progress._lane_stderr_text(stdout_log, stderr_log),
-        guard_phases=_guard_phases(payload),
-        guard_blocker=_guard_stop_reason(payload),
+        guard_phases=_progress._guard_phases(payload),
+        guard_blocker=_progress._guard_stop_reason(payload),
     )
     gate, blockers, result_state = _prove_ready_candidate(
         payload,
@@ -189,26 +189,6 @@ def complete_task(
     )
     print(f"task run: {payload['status']} ({payload['task_id']})", file=sys.stderr)
     return payload
-
-
-def _guard_phases(payload: Mapping[str, Any]) -> list[str]:
-    """Phases the live guard observed, for the terminal receipt merge (#815)."""
-    guard = payload.get("progress_guard")
-    if not isinstance(guard, Mapping):
-        return []
-    phases = guard.get("last_phases")
-    if not isinstance(phases, list):
-        return []
-    return [phase for phase in phases if isinstance(phase, str)]
-
-
-def _guard_stop_reason(payload: Mapping[str, Any]) -> str:
-    """The live guard stop reason, for when the transcript marker is lost (#815)."""
-    guard = payload.get("progress_guard")
-    if not isinstance(guard, Mapping):
-        return ""
-    reason = guard.get("stop_reason")
-    return reason if isinstance(reason, str) else ""
 
 
 def _execution_reviewer_result(delivery: Mapping[str, Any]) -> dict[str, Any] | None:
@@ -289,9 +269,40 @@ def _prove_ready_candidate(
         if post_gate_reason:
             blockers.append(post_gate_reason)
 
+    _reconcile_persisted_blockers(payload, candidate, blockers, resolved_target)
+
     if blockers and result_state == "completed" and candidate.get("useful"):
         result_state = "validated-partial-result"
     return gate, blockers, result_state
+
+
+def _reconcile_persisted_blockers(
+    payload: dict[str, Any],
+    candidate: dict[str, Any],
+    blockers: list[str],
+    resolved_target: Path,
+) -> None:
+    """Name an intentional recovery commit beside pre-persist blockers (#823).
+
+    Persistence, correctness, and approval are separate facts: a commit the
+    carrier persists after blockers were already reported is preserved for
+    review, not a correctness or approval claim. Without this entry the
+    executor's pre-persist declaration (e.g. "staged but uncommitted")
+    stands beside the persisted commit as a contradiction no caller can
+    resolve. Clean persists (no blockers) record nothing.
+    """
+    persist = candidate.get("persist")
+    if not isinstance(persist, dict) or persist.get("status") != "committed":
+        return
+    if not blockers or persist.get("after_block"):
+        return
+    persist["after_block"] = True
+    sha = persist.get("sha") or payload.get("target_sha")
+    where = payload.get("target_branch") or str(resolved_target)
+    blockers.append(
+        f"candidate persisted for review as {sha} on {where} with blockers "
+        "already reported; correctness unverified and approval ineligible"
+    )
 
 
 def _persist_useful_dirty_candidate(

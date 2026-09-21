@@ -386,6 +386,59 @@ def test_lingering_blocked_lane_is_killed_live_and_receipted(
     assert payload["progress_guard"]["stop_reason"] is not None
 
 
+def test_persisted_candidate_retires_uncommitted_claim(tmp_path: Path) -> None:
+    """#823: a lane that declares BLOCKED as uncommitted but leaves a useful
+    dirty candidate must receipt an explicit persisted-for-review disposition,
+    not a stale uncommitted claim beside a persisted commit."""
+    repo = _repo(tmp_path)
+    executable = _stub(
+        tmp_path,
+        'echo "CONTRACT-READ"\n'
+        'echo "EDITING"\n'
+        "printf 'VALUE = 2\\n' > module.py\n"
+        'echo "BLOCKED: commit gate failed - candidate staged but uncommitted"\n'
+        'echo "done"\n',
+    )
+    payload = _run(
+        repo,
+        tmp_path,
+        executable,
+        scopes=["module.py"],
+        require_change=True,
+    )
+    assert payload["status"] == "validated-partial-result", payload
+    persist = payload["candidate"]["persist"]
+    assert persist["status"] == "committed"
+    assert persist["after_block"] is True
+    assert payload["lane_progress"]["blocker"] == (
+        "commit gate failed - candidate staged but uncommitted"
+    )
+    assert "persisted for review" in payload["next_step"]
+    assert "correctness unverified" in payload["next_step"]
+    assert "ineligible" in payload["next_step"]
+
+
+def test_clean_persist_records_no_after_block(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _stub(
+        tmp_path,
+        'echo "CONTRACT-READ"\n'
+        'echo "EDITING"\n'
+        "printf 'VALUE = 2\\n' > module.py\n"
+        'echo "done"\n',
+    )
+    payload = _run(
+        repo,
+        tmp_path,
+        executable,
+        scopes=["module.py"],
+        require_change=True,
+    )
+    persist = payload["candidate"].get("persist") or {}
+    assert "after_block" not in persist
+    assert "persisted for review" not in payload["next_step"]
+
+
 def test_stalled_lane_is_killed_live_and_receipted(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv(prog.NO_PROGRESS_BUDGET_ENV, "1")
     monkeypatch.setenv(prog.PROGRESS_POLL_ENV, "0.05")

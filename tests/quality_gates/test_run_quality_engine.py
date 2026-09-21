@@ -452,3 +452,39 @@ def test_summary_omits_the_not_run_clause_when_the_requested_scope_all_ran(
     assert summary == f"Quality summary: 3 passed, 0 failed, total {elapsed}"
     receipt = json.loads((repo / "receipt.json").read_text(encoding="utf-8"))
     assert receipt["details"]["not_run"] == []
+
+
+def test_print_docs_only_labels_lists_documented_gates(tmp_path: Path) -> None:
+    repo, env = _seed(tmp_path)
+    gates = FIXTURE.read_text(encoding="utf-8") + (
+        "      - label: documented\n"
+        "        command:\n"
+        "          - python3\n"
+        "          - tests/quality_gates/fixtures/engine_gate.py\n"
+        "          - core\n"
+        "        lane: core\n"
+        "        docs_only: true\n"
+    )
+    documented_yaml = repo / "quality-gates-docs.yaml"
+    documented_yaml.write_text(gates, encoding="utf-8")
+    result = run_loaded_script_main(
+        "run_quality_engine.py",
+        ENGINE,
+        "--repo-root",
+        str(repo),
+        "--gates",
+        str(documented_yaml),
+        "--print-docs-only-labels",
+        env=env,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.split() == ["documented"]
+
+
+def test_explicit_label_filter_without_match_returns_exit_two(tmp_path: Path) -> None:
+    repo, env = _seed(tmp_path)
+    result = _run(repo, env, "--labels", "no-such-gate")
+
+    assert result.returncode == 2
+    assert "matched no queued checks" in result.stderr

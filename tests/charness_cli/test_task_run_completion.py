@@ -8,7 +8,12 @@ from typing import Any
 
 import pytest
 
-from scripts.task_run import task_run_completion, task_run_git, task_run_lane_runner
+from scripts.task_run import (
+    task_run_completion,
+    task_run_git,
+    task_run_lane_runner,
+    task_run_progress,
+)
 from tests.quality_gates.repo_shapes import install_committed_repo
 
 
@@ -23,6 +28,7 @@ def _complete(
     parent_blocking: bool = False,
     git: Any = None,
     persist_events: list[str] | None = None,
+    carrier_override: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     target = install_committed_repo(tmp_path / "worktree", {"module.py": "VALUE = 1\n"})
     base_sha = task_run_git._git_output(target, "rev-parse", "HEAD").strip()
@@ -35,6 +41,8 @@ def _complete(
         raise AssertionError(f"unknown candidate fixture: {candidate_kind}")
     branch = task_run_git._git_output(target, "symbolic-ref", "--quiet", "--short", "HEAD").strip()
     carrier = task_run_git._candidate_carrier(target, base_sha, branch=branch)
+    if carrier_override is not None:
+        carrier = {**carrier, **carrier_override}
     useful = candidate_kind != "absent"
     candidate = {
         "status": "validated" if useful else "absent",
@@ -683,27 +691,50 @@ def test_a_failed_runtime_removal_and_an_absent_runtime_are_both_named(tmp_path:
 
 
 def test_guard_phases_reads_only_string_lists() -> None:
-    assert task_run_completion._guard_phases({}) == []
-    assert task_run_completion._guard_phases({"progress_guard": None}) == []
+    assert task_run_progress._guard_phases({}) == []
+    assert task_run_progress._guard_phases({"progress_guard": None}) == []
     assert (
-        task_run_completion._guard_phases({"progress_guard": {"last_phases": "CR"}})
+        task_run_progress._guard_phases({"progress_guard": {"last_phases": "CR"}})
         == []
     )
-    assert task_run_completion._guard_phases(
+    assert task_run_progress._guard_phases(
         {"progress_guard": {"last_phases": ["CONTRACT-READ", 7]}}
     ) == ["CONTRACT-READ"]
 
 
 def test_guard_stop_reason_reads_only_strings() -> None:
-    assert task_run_completion._guard_stop_reason({}) == ""
-    assert task_run_completion._guard_stop_reason({"progress_guard": None}) == ""
+    assert task_run_progress._guard_stop_reason({}) == ""
+    assert task_run_progress._guard_stop_reason({"progress_guard": None}) == ""
     assert (
-        task_run_completion._guard_stop_reason({"progress_guard": {"stop_reason": 7}})
+        task_run_progress._guard_stop_reason({"progress_guard": {"stop_reason": 7}})
         == ""
     )
     assert (
-        task_run_completion._guard_stop_reason(
+        task_run_progress._guard_stop_reason(
             {"progress_guard": {"stop_reason": "stalled lane"}}
         )
         == "stalled lane"
     )
+
+
+def test_completion_resolves_branch_when_carrier_has_none(tmp_path: Path) -> None:
+    payload = _complete(
+        tmp_path,
+        candidate_kind="clean",
+        carrier_override={"observed_branch": None, "observed_head_sha": None},
+    )
+    target = tmp_path / "worktree"
+    expected = task_run_git._git_output(
+        target, "symbolic-ref", "--quiet", "--short", "HEAD"
+    ).strip()
+    assert expected
+    assert payload["target_branch"] == expected
+
+
+def test_completion_prefers_observed_carrier_branch(tmp_path: Path) -> None:
+    payload = _complete(
+        tmp_path,
+        candidate_kind="clean",
+        carrier_override={"observed_branch": "lane/x", "observed_head_sha": "abc123"},
+    )
+    assert payload["target_branch"] == "lane/x"
