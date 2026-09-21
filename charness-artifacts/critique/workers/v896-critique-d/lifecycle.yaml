@@ -1,0 +1,147 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: runner-completed
+execution_state: terminal
+lifecycle_state: terminal
+reviewer_started: true
+delivery_state: findings-received
+verdict_state: pass
+review_verdict: pass
+classification: unclassified
+approval_eligible: true
+output:
+  state: terminal
+  approval_eligible: true
+  schema_version: charness.reviewer_worker_report.v1
+  findings_identity: 60b8ccb64c14b0f3d7c0105341c22572e700bd3268fc5444e332ae4e987814c0
+  partial_artifacts:
+  - schema_version: charness.reviewer_partial_output/v1
+    kind: bounded-review-result
+    path: charness-artifacts/critique/workers/v896-critique-d/partial-result.json
+    bytes: 3228
+    sha256: a6f8c85b4a56256a39ca3bfccda08317dab91589d41cee39173a7db51806b458
+output_state: terminal
+failure_identity: c0326ac9f8d6cda80acc483a567521e7c91c7492aa9bb76785302f4899770d90
+next_move: consume the identity-bound delivered reviewer result
+runner_returncode: 0
+runner_status: runner-completed
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/v896-critique-d-packet.json
+  schema: charness-artifacts/critique/workers/v896-critique-d/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/v896-critique-d/capability.json
+  prompt: charness-artifacts/critique/workers/v896-critique-d/review-prompt.md
+  plan: charness-artifacts/critique/workers/v896-critique-d/run-plan.json
+  ledger: charness-artifacts/critique/workers/v896-critique-d/delivery.json
+  output: charness-artifacts/critique/workers/v896-critique-d/result.json
+  receipt: charness-artifacts/critique/workers/v896-critique-d/receipt.json
+  report: charness-artifacts/critique/workers/v896-critique-d/worker-report.yaml
+  runner_stdout: charness-artifacts/critique/workers/v896-critique-d/runner.stdout
+  runner_stderr: charness-artifacts/critique/workers/v896-critique-d/runner.stderr
+  backend_stdout: charness-artifacts/critique/workers/v896-critique-d/backend.stdout
+  backend_stderr: charness-artifacts/critique/workers/v896-critique-d/backend.stderr
+  summary: charness-artifacts/critique/workers/v896-critique-d/lifecycle.yaml
+  semantic-input/0000-content.bin: charness-artifacts/critique/workers/v896-critique-d/semantic-input/0000-content.bin
+  semantic-input/0001-content.bin: charness-artifacts/critique/workers/v896-critique-d/semantic-input/0001-content.bin
+  semantic-input/manifest.json: charness-artifacts/critique/workers/v896-critique-d/semantic-input/manifest.json
+  review-prompt.md: charness-artifacts/critique/workers/v896-critique-d/review-prompt.md
+  run-plan.json: charness-artifacts/critique/workers/v896-critique-d/run-plan.json
+  bounded-review-result.schema.json: charness-artifacts/critique/workers/v896-critique-d/bounded-review-result.schema.json
+  capability.json: charness-artifacts/critique/workers/v896-critique-d/capability.json
+  receipt.json: charness-artifacts/critique/workers/v896-critique-d/receipt.json
+  delivery.json: charness-artifacts/critique/workers/v896-critique-d/delivery.json
+  result.json: charness-artifacts/critique/workers/v896-critique-d/result.json
+  runner.stdout: charness-artifacts/critique/workers/v896-critique-d/runner.stdout
+  runner.stderr: charness-artifacts/critique/workers/v896-critique-d/runner.stderr
+  backend.stdout: charness-artifacts/critique/workers/v896-critique-d/backend.stdout
+  backend.stderr: charness-artifacts/critique/workers/v896-critique-d/backend.stderr
+  worker-report.yaml: charness-artifacts/critique/workers/v896-critique-d/worker-report.yaml
+  partial-result.json: charness-artifacts/critique/workers/v896-critique-d/partial-result.json
+  attempt-manifest.json: charness-artifacts/critique/workers/v896-critique-d/attempt-manifest.json
+  durable_report: charness-artifacts/critique/workers/v896-critique-d/worker-report.yaml
+identities:
+  attempt_id: v896-critique-d
+  scope: cumulative declared-blocker retention for linger enforcement
+  packet_identity: 6880c98f141f1b320cdff77269c33d7c7d7b3303365903a9673d7cc266817963
+  reviewed_input_identity: f7d118a8837480ee7e8088336d0d42dc26695fcd72a13e8703e6087ec4994317
+  parent_receipt_identity: parent-640df6faafa497e6c7f6be23de34897978800364f740ee16
+  findings_identity: 60b8ccb64c14b0f3d7c0105341c22572e700bd3268fc5444e332ae4e987814c0
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/v896-critique-d-packet.json
+  packet_sha256: 6880c98f141f1b320cdff77269c33d7c7d7b3303365903a9673d7cc266817963
+  identity_sha256: f7d118a8837480ee7e8088336d0d42dc26695fcd72a13e8703e6087ec4994317
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+timeout_seconds: 900
+scope: cumulative declared-blocker retention for linger enforcement
+lens: code-critique
+parent_receipt_identity: parent-640df6faafa497e6c7f6be23de34897978800364f740ee16
+semantic_input:
+  entries:
+  - path: scripts/task_run/task_run_progress.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/v896-critique-d/semantic-input/0000-content.bin
+    content_sha256: 0184b1878b26607fc9094b2a657ab57668c7cb77814099071f0ecd670f64ea9d
+    carrier_sha256: 0184b1878b26607fc9094b2a657ab57668c7cb77814099071f0ecd670f64ea9d
+    source: ae07fa7b1ae04c72ff60cb816f5b8c9d4b9a3df6:scripts/task_run/task_run_progress.py
+    size_bytes: 15836
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_task_run_implementation_lane.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/v896-critique-d/semantic-input/0001-content.bin
+    content_sha256: 6b883ca906cb6c8ec0a6577174493be934337a14b1e625535b9b451f86db7c37
+    carrier_sha256: 6b883ca906cb6c8ec0a6577174493be934337a14b1e625535b9b451f86db7c37
+    source: ae07fa7b1ae04c72ff60cb816f5b8c9d4b9a3df6:tests/charness_cli/test_task_run_implementation_lane.py
+    size_bytes: 23095
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/v896-critique-d/semantic-input/manifest.json
+  size_bytes: 38931
+runner_output:
+  status: runner-completed
+  returncode: 0
+runner_stream:
+  consistent: true
+  reason: null
+  runner_stdout_sha256: 0dc7c91a759e9b9d8c1d8b06bfaaae2de89db907e3c329c48c1d9a3cf2f21217
+  canonical_report_sha256: 0dc7c91a759e9b9d8c1d8b06bfaaae2de89db907e3c329c48c1d9a3cf2f21217
+boundary_readback:
+  mode: read-only-worker
+  required: false
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity
+identity_check:
+  status: matched
+  matches: true
+  checks:
+    packet_identity:
+      expected: 6880c98f141f1b320cdff77269c33d7c7d7b3303365903a9673d7cc266817963
+      actual: 6880c98f141f1b320cdff77269c33d7c7d7b3303365903a9673d7cc266817963
+      matches: true
+      provenance: 6880c98f141f1b320cdff77269c33d7c7d7b3303365903a9673d7cc266817963
+    reviewed_input_identity:
+      expected: f7d118a8837480ee7e8088336d0d42dc26695fcd72a13e8703e6087ec4994317
+      actual: f7d118a8837480ee7e8088336d0d42dc26695fcd72a13e8703e6087ec4994317
+      matches: true
+      provenance: f7d118a8837480ee7e8088336d0d42dc26695fcd72a13e8703e6087ec4994317
+    parent_receipt_identity:
+      expected: parent-640df6faafa497e6c7f6be23de34897978800364f740ee16
+      actual: parent-640df6faafa497e6c7f6be23de34897978800364f740ee16
+      matches: true
+      provenance: parent-640df6faafa497e6c7f6be23de34897978800364f740ee16
+  reason: null

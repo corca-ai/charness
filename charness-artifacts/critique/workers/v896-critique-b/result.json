@@ -1,0 +1,73 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "code-critique",
+  "packet_sha256": "c27262139d2b075ffbb01d55fcb40120dd94498024a9e30b1319838a474dba2c",
+  "reviewed_input_identity_sha256": "f6083ade41edf3d3e0acef9fcc57a0b5a6014f8e410e49c3b4c513ca2b5484b4",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "progress-marker-tail-evades-guard",
+      "severity": "high",
+      "summary": "The no-progress guard can permanently forget a once-emitted CONTRACT-READ marker, allowing a stalled require-change lane to run until the outer timeout and making the terminal receipt omit phases that were actually observed.",
+      "evidence": [
+        "build_lane_prompt instructs the executor to emit each progress marker as a one-line event; it does not require repeated emission.",
+        "LaneProgressWatch.tick reparses only the last 64 KiB of each log on every poll and keeps no cumulative phase state beyond replacing _last_phases with the current tail-derived list.",
+        "If CONTRACT-READ and more than 64 KiB of later analysis output are written before a poll, CONTRACT-READ is absent from phases, _contract_read_at is never set, and no_progress_stop_due can never fire.",
+        "_lane_stderr_text similarly retains only the last 256 KiB for the terminal receipt, and test_stderr_scan_is_bounded_to_tail explicitly confirms that an earlier CONTRACT-READ marker is discarded.",
+        "This contradicts docs/agent-task-runs.md claims that the guard stops a lane after CONTRACT-READ without EDITING/diff and that lane_progress reports the phases it emitted."
+      ],
+      "action": "Make progress parsing cumulative, for example by tracking log offsets and unioning phases as new bytes arrive, while preserving the first CONTRACT-READ observation time. Persist or pass the accumulated watch result into lane_progress so terminal receipts retain every observed phase. Add a regression test where CONTRACT-READ is followed by more than both scan windows of noise before the next poll."
+    },
+    {
+      "id": "changed-line-status-doc-mismatch",
+      "severity": "medium",
+      "summary": "The documentation names `changed_line_gate` status as `noop`, but the receipt actually retains `status: not-applicable` and adds a separate `proof_status: noop`.",
+      "evidence": [
+        "docs/agent-task-runs.md states: “A lane is done only when changed_line_gate is clean or noop.”",
+        "run_changed_line_gate returns status `not-applicable` when the lane tree lacks the gate script.",
+        "_changed_line_verdict preserves that status and adds `proof_status: noop`; release_finished_lane consults proof_status first.",
+        "A reader following the documented field/status contract can therefore reject an approval-eligible external-repository receipt or incorrectly conclude that the implementation violates its own completion rule."
+      ],
+      "action": "Document the exact distinction between diagnostic `changed_line_gate.status` and approval/retention `changed_line_gate.proof_status`, or normalize the public receipt to expose a single canonical proof status."
+    },
+    {
+      "id": "abnormal-state-order-invariant-broken",
+      "severity": "medium",
+      "summary": "The supposedly shared abnormal-exit predicate ordering has diverged, so simultaneous timeout/interruption signals can drive checkpoint classification and final execution classification through different states.",
+      "evidence": [
+        "task_run_state.py says `_abnormal_exit_state` deliberately has the same predicate order as `_execution_state` and that this prevents contradictory states.",
+        "_execution_state checks progress_stopped, then interruption/negative exit, then timed_out.",
+        "_abnormal_exit_state does not check progress_stopped and checks timed_out before interruption/negative exit.",
+        "For an execution carrying both timed_out=true and interrupted=true or a negative exit code, `_abnormal_exit_state` returns timed-out while `_execution_state` returns interrupted."
+      ],
+      "action": "Derive both decisions from one shared abnormal-state helper, with the delivery-only branch layered afterward, and add combined-flag tests including progress_stopped plus negative exit."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The task-run orchestration remains spread across several modules.",
+      "bin": "not-a-blocker",
+      "disposition": "The split is mostly cohesive: execution, progress watching, state derivation, completion, and operator next-step rendering have recognizable ownership boundaries."
+    },
+    {
+      "concern": "Muse still runs through a function named `_execute_codex` and live progress output is labeled `[codex]`.",
+      "bin": "follow-up",
+      "disposition": "This is confusing naming and inaccurate operator labeling, but the supplied command execution path is otherwise executor-agnostic and the receipt records the selected executor correctly."
+    },
+    {
+      "concern": "The attention-state declaration for task_run_completion describes changed-line verdict ownership that moved to task_run_changed_line.",
+      "bin": "follow-up",
+      "disposition": "The rationale is stale in detail, but task_run_completion still contains and persists skipped candidate-persistence states, so the declaration is not wholly orphaned."
+    }
+  ],
+  "next_move": "Fix the cumulative progress-marker loss first, then align the changed-line receipt documentation and consolidate abnormal-state derivation; rerun focused implementation-lane tests with large-output and combined-terminal-flag cases before approval.",
+  "non_claims": [
+    "No workspace files were edited.",
+    "No commands or tests were run; this verdict is based only on the identity-bound inline semantic payload.",
+    "Goal evidence is not bound because the supplied lineage disposition is not-goal-bound.",
+    "This review does not assess files outside the declared semantic input."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

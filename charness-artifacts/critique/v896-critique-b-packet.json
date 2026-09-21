@@ -1,0 +1,157 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-21T13:04:55Z",
+  "prepared_for": "1f459e7fb9f2e558b29a2e540f6120a5f5b9bddf",
+  "changed_ref": "1f459e7fb9f2e558b29a2e540f6120a5f5b9bddf",
+  "substrate_mode": "committed-ref",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `1f459e7fb9f2e558b29a2e540f6120a5f5b9bddf`:\nExact reviewed-path manifest:\n- docs/agent-task-runs.md\n- scripts/task_run/task_run.py\n- scripts/task_run/task_run_changed_line.py\n- scripts/task_run/task_run_completion.py\n- scripts/task_run/task_run_completion_next_step.py\n- scripts/task_run/task_run_execution.py\n- scripts/task_run/task_run_lane_runner.py\n- scripts/task_run/task_run_progress.py\n- scripts/task_run/task_run_runtime.py\n- scripts/task_run/task_run_state.py\n- scripts/task_run/task_run_support.py\n- skills/public/quality/references/attention-state-visibility.json\n- tests/charness_cli/test_task_run_implementation_lane.py\n- tests/charness_cli/test_task_run_interrupted_before_edit.py\n- tests/charness_cli/test_task_run_result.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_changed_line.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_completion_next_step.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_runtime.py, scripts/task_run/task_run_state.py, scripts/task_run/task_run_support.py, skills/public/quality/references/attention-state-visibility.json\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: docs/agent-task-runs.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/quality/references/attention-state-visibility.json\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/quality/references/attention-state-visibility.json\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/quality/references/attention-state-visibility.json\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_changed_line.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_completion_next_step.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_runtime.py, scripts/task_run/task_run_state.py, scripts/task_run/task_run_support.py, tests/charness_cli/test_task_run_implementation_lane.py, tests/charness_cli/test_task_run_interrupted_before_edit.py, tests/charness_cli/test_task_run_result.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_changed_line.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_completion_next_step.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_runtime.py, scripts/task_run/task_run_state.py, scripts/task_run/task_run_support.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "committed-ref",
+    "substrate_mode": "committed-ref",
+    "changed_ref": "1f459e7fb9f2e558b29a2e540f6120a5f5b9bddf",
+    "resolved_changed_ref": [
+      "1f459e7fb9f2e558b29a2e540f6120a5f5b9bddf"
+    ],
+    "base_head": "1f459e7fb9f2e558b29a2e540f6120a5f5b9bddf",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      "docs/agent-task-runs.md",
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_changed_line.py",
+      "scripts/task_run/task_run_completion.py",
+      "scripts/task_run/task_run_completion_next_step.py",
+      "scripts/task_run/task_run_execution.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "scripts/task_run/task_run_progress.py",
+      "scripts/task_run/task_run_runtime.py",
+      "scripts/task_run/task_run_state.py",
+      "scripts/task_run/task_run_support.py",
+      "skills/public/quality/references/attention-state-visibility.json",
+      "tests/charness_cli/test_task_run_implementation_lane.py",
+      "tests/charness_cli/test_task_run_interrupted_before_edit.py",
+      "tests/charness_cli/test_task_run_result.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "docs/agent-task-runs.md",
+        "content_sha256": "c6742050b4e964ffbb6cecf580f629c4c5d0c0e54b7e3b88d43bb387c3db2f47"
+      },
+      {
+        "path": "scripts/task_run/task_run.py",
+        "content_sha256": "287efd2815eeec0659ea3a84607ee3e3c2e289f9e57295b8bc5a1bfdd6edc978"
+      },
+      {
+        "path": "scripts/task_run/task_run_changed_line.py",
+        "content_sha256": "85ad6030fb81dce49d987cf54076fcdd85054f375a79e30d6e23d0dbda7d3a5d"
+      },
+      {
+        "path": "scripts/task_run/task_run_completion.py",
+        "content_sha256": "c28686223bd3c1a9cf94fbe59135ccfabb7e413ef538e3ef293f1770439e0d69"
+      },
+      {
+        "path": "scripts/task_run/task_run_completion_next_step.py",
+        "content_sha256": "556f06b64f2581dd645e594ac2d7ef155e0a6e376edc33565fe8e77a161b7e30"
+      },
+      {
+        "path": "scripts/task_run/task_run_execution.py",
+        "content_sha256": "6b0b5e895b37377b857956275df4a1d93f4b3485e8bb90485f22a9f386419bcb"
+      },
+      {
+        "path": "scripts/task_run/task_run_lane_runner.py",
+        "content_sha256": "b657df1dad4d68ccd0cba2410979472fedca57a3c16dfe70c1a7a34783d5f30b"
+      },
+      {
+        "path": "scripts/task_run/task_run_progress.py",
+        "content_sha256": "1656402f4a22422aa447f3fc303c75a504e7bb1ad579a3930cc5540eb23e711d"
+      },
+      {
+        "path": "scripts/task_run/task_run_runtime.py",
+        "content_sha256": "2f391fdb02ccb7e5b13218e6032d7f21e534a8c34b3bb4f656448677bb6c9e15"
+      },
+      {
+        "path": "scripts/task_run/task_run_state.py",
+        "content_sha256": "590f80463c9401fedbb63cccaad271595593a0365324230a61c18eabdc192878"
+      },
+      {
+        "path": "scripts/task_run/task_run_support.py",
+        "content_sha256": "db2ef8e01b6b6a5c618dd16dab87802d406069a4afd74e47f78a5660d83660cf"
+      },
+      {
+        "path": "skills/public/quality/references/attention-state-visibility.json",
+        "content_sha256": "262fe3aead38f0ca534957b43976ab531830ca62405e1010a365e956c43f63ce"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_implementation_lane.py",
+        "content_sha256": "d8ba00b142b95c3e5e496df65549eeab4301370674a532e41157f695001000ef"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_interrupted_before_edit.py",
+        "content_sha256": "3e9596911485a5deb548d5817785eacad784f72335b057b11b9cff4fdbc8b08e"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_result.py",
+        "content_sha256": "b117d6d462ed35516ab4405b3199c5a5a28a5aa6aef0fd56da9a72d96441b0aa"
+      }
+    ],
+    "reviewed_patch_sha256": "b44ddb01e0c68c9dc7299ed83a58e00079665d3c8d2ba7210c6282ab6c865eba",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "f6083ade41edf3d3e0acef9fcc57a0b5a6014f8e410e49c3b4c513ca2b5484b4"
+  }
+}

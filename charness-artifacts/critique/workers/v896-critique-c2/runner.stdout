@@ -1,0 +1,68 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'round-2 critique answers: blocked-linger enforcement, stop-reason merge, live
+  end-to-end proof'
+attempt_id: v896-critique-c2
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 0d8622a2ace4735ef8175532cf30d0ca6e03d53c95b58800ade04596315bfdd3
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-a85ef74b1329e98a9ac6db5aa18e1452/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-a85ef74b1329e98a9ac6db5aa18e1452/delivery.json
+producer_run_id: run-v896-critique-c2
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-a85ef74b1329e98a9ac6db5aa18e1452/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-a85ef74b1329e98a9ac6db5aa18e1452/receipt.json
+  producer_run_id: run-v896-critique-c2
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: a9d67fddb11706b7ac6a447278b9cba88c05a56ddcd0a348ba40e7796c77b4ce
+receipt_output_sha256: a9d67fddb11706b7ac6a447278b9cba88c05a56ddcd0a348ba40e7796c77b4ce
+packet_identity: 90def7ab0b7ee10bfcc26951c33b67f6417b5195bcf7d3a8ccaf68fa0ae26c71
+reviewed_input_identity: bf9bcb5c76db92e32d32409cbb3a3d75cf885c18607d1bf93a80bf5a65e82316
+parent_receipt_identity: parent-1d7d226b982ffe49c8b054a8e5c59c573525cac4c6be3b29
+provenance:
+  scope: 'round-2 critique answers: blocked-linger enforcement, stop-reason merge,
+    live end-to-end proof'
+  packet_identity: 90def7ab0b7ee10bfcc26951c33b67f6417b5195bcf7d3a8ccaf68fa0ae26c71
+  reviewed_input_identity: bf9bcb5c76db92e32d32409cbb3a3d75cf885c18607d1bf93a80bf5a65e82316
+  parent_receipt_identity: parent-1d7d226b982ffe49c8b054a8e5c59c573525cac4c6be3b29
+  expected_targets_sha256: null
+  attempt_id: v896-critique-c2
+  attempt_scope: 'round-2 critique answers: blocked-linger enforcement, stop-reason
+    merge, live end-to-end proof'
+  attempt_packet_identity: 90def7ab0b7ee10bfcc26951c33b67f6417b5195bcf7d3a8ccaf68fa0ae26c71
+  attempt_parent_receipt_identity: parent-1d7d226b982ffe49c8b054a8e5c59c573525cac4c6be3b29
+  result_packet_identity: 90def7ab0b7ee10bfcc26951c33b67f6417b5195bcf7d3a8ccaf68fa0ae26c71
+  result_reviewed_input_identity: bf9bcb5c76db92e32d32409cbb3a3d75cf885c18607d1bf93a80bf5a65e82316
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 0d8622a2ace4735ef8175532cf30d0ca6e03d53c95b58800ade04596315bfdd3
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

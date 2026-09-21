@@ -1,0 +1,59 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release-critique",
+  "packet_sha256": "90def7ab0b7ee10bfcc26951c33b67f6417b5195bcf7d3a8ccaf68fa0ae26c71",
+  "reviewed_input_identity_sha256": "bf9bcb5c76db92e32d32409cbb3a3d75cf885c18607d1bf93a80bf5a65e82316",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "blocked-marker-tail-eviction-disables-linger-enforcement",
+      "severity": "high",
+      "summary": "Blocked-linger enforcement is not durable: after the first BLOCKED observation, the watch still requires the marker to remain in the bounded log tail on every later poll. If a lingering executor emits enough output to evict the marker before the grace expires, the lane is never stopped for lingering after BLOCKED.",
+      "evidence": [
+        "scripts/task_run/task_run_progress.py: LaneProgressWatch.tick sets `_blocker_at` when `progress[\"blocker\"]` is present, but has no cumulative stored blocker value.",
+        "scripts/task_run/task_run_progress.py: subsequent ticks enter the blocked-grace branch only when the current bounded `_tail_text` scan still returns a blocker; otherwise execution falls through to the CONTRACT-READ/no-progress logic.",
+        "scripts/task_run/task_run_progress.py: `_tail_text` reads only the last 64 KiB, so continued output can remove the BLOCKED marker from observation.",
+        "tests/charness_cli/test_task_run_implementation_lane.py tests phase-marker aging but does not test a BLOCKED marker aging out during its grace period."
+      ],
+      "action": "Persist the first observed blocker in LaneProgressWatch and enforce the grace deadline from that cumulative state even after the marker leaves the tail. Add a regression test that observes BLOCKED, replaces or grows the log beyond the tail window, advances to the grace deadline, and verifies a stop reason."
+    },
+    {
+      "id": "missing-live-blocked-linger-proof",
+      "severity": "medium",
+      "summary": "The packet does not provide live end-to-end proof that an actually running lane which declares BLOCKED is killed after the grace period and receipted with both its declared blocker and guard stop outcome.",
+      "evidence": [
+        "tests/charness_cli/test_task_run_implementation_lane.py: `test_lingering_blocked_lane_is_stopped_after_grace` drives `tick()` directly and never starts a subprocess, invokes the kill callback, or completes a receipt.",
+        "The live subprocess test `test_stalled_lane_is_killed_live_and_receipted` covers the no-progress path, not the blocked-linger path.",
+        "The packet includes no execution results or other live proof artifact; source and test text alone do not establish that the blocked-linger round trip works."
+      ],
+      "action": "Add and run an end-to-end test using a stub executor that emits BLOCKED and sleeps, with a short blocked grace and poll interval; assert early process termination, `progress_guard.stop_reason`, preservation of the declared `lane_progress.blocker`, failed/ineligible completion, and elapsed time below the executor timeout."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Transcript blocker takes precedence over the guard stop reason in `apply_lane_receipt`.",
+      "bin": "acceptable-with-existing-evidence",
+      "disposition": "The declared blocker remains the primary lane reason while `progress_guard.stop_reason` separately records forced termination. This is not itself a blocker, provided the end-to-end receipt proves both fields survive."
+    },
+    {
+      "concern": "A non-positive no-progress budget might disable blocked-linger enforcement.",
+      "bin": "not-a-finding",
+      "disposition": "The blocked-linger branch is independent of `budget_seconds`; disabling the no-progress stop does not disable blocked-grace handling."
+    },
+    {
+      "concern": "Blocked grace configuration is not exposed in the guard receipt.",
+      "bin": "follow-up",
+      "disposition": "The receipt records budget and poll settings but omits `blocked_grace_seconds`. This weakens auditability, though it is secondary to the enforcement escape and missing live proof."
+    }
+  ],
+  "next_move": "Block release until BLOCKED observation is cumulative across bounded-tail eviction and a real subprocess round trip proves lingering-block termination and terminal receipt behavior.",
+  "non_claims": [
+    "No workspace files were read or modified; this judgment uses only the identity-bound inline payload.",
+    "No test suite or live task-run command was executed.",
+    "This review does not assess behavior outside the six bound semantic input paths.",
+    "Goal evidence is not goal-bound, as stated by the supplied lineage."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

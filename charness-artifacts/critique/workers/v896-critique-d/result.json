@@ -1,0 +1,50 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "code-critique",
+  "packet_sha256": "6880c98f141f1b320cdff77269c33d7c7d7b3303365903a9673d7cc266817963",
+  "reviewed_input_identity_sha256": "f7d118a8837480ee7e8088336d0d42dc26695fcd72a13e8703e6087ec4994317",
+  "verdict": "pass",
+  "target_observations": [
+    {
+      "target": "scripts/task_run/task_run_progress.py",
+      "verdict": "pass",
+      "summary": "The watch retains the first observed declared blocker independently of the bounded transcript tail and continues enforcing the linger grace after that marker ages out.",
+      "evidence": [
+        "tick() stores the first non-null parsed blocker in self._blocker and subsequently falls back to that stored value when the current tail no longer contains the marker.",
+        "self._blocker_at is initialized once and is not reset when the marker disappears or reappears, so elapsed grace remains cumulative.",
+        "The linger-stop reason incorporates the retained blocker and fire() records the typed stop before invoking the lane kill callback."
+      ]
+    },
+    {
+      "target": "tests/charness_cli/test_task_run_implementation_lane.py",
+      "verdict": "pass",
+      "summary": "The tests directly cover blocker retention after tail eviction and live termination/receipt behavior.",
+      "evidence": [
+        "test_evicted_blocker_still_arms_linger_stop replaces the transcript with more than the tail limit after initial observation, then verifies stopping at the original cumulative grace boundary and preservation of the blocker text.",
+        "test_lingering_blocked_lane_is_stopped_after_grace verifies the grace boundary at 59 versus 60 seconds.",
+        "test_lingering_blocked_lane_is_killed_live_and_receipted verifies the integrated process is stopped and the original declared blocker remains on lane_progress."
+      ]
+    }
+  ],
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "A blocker emitted and evicted before the watch's first poll cannot be retained.",
+      "bin": "not-a-blocker",
+      "disposition": "The change guarantees cumulative retention after observation; eliminating the bounded-tail sampling race would require a different streaming or offset-based log reader and is not evidence of a regression in the reviewed retention logic."
+    },
+    {
+      "concern": "The grace interval begins at observation time rather than the exact marker-write time.",
+      "bin": "acceptable-tradeoff",
+      "disposition": "The declaration timestamp is unavailable from the transcript, so observation time is the defensible clock boundary; enforcement may be delayed by at most the configured polling cadence."
+    }
+  ],
+  "next_move": "Accept the reviewed cumulative blocker-retention change; no corrective action is required within this bounded scope.",
+  "non_claims": [
+    "No workspace state or tests were executed; the verdict is based only on the identity-bound inline semantic payload.",
+    "This review does not establish behavior of unreviewed lane-runner or execution code beyond the interfaces exercised or referenced by the supplied tests.",
+    "This review does not validate packaging synchronization or repository-wide quality gates."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

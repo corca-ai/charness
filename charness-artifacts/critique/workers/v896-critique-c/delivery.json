@@ -1,0 +1,66 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "v896-critique-c",
+      "scope": "round-2 critique answers: blocked-linger enforcement, stop-reason merge, live end-to-end proof",
+      "packet_identity": "f24b0a1f03535a75f5c81e50e58f3e440ec1f19b83ff88faf825d72d7a2a723d",
+      "parent_receipt_identity": "parent-293c6ae781cd35ce86e52fb97879c106d51676ca9ecd2580",
+      "boundary_mode": "read-only-worker",
+      "state": "collection-failed",
+      "observed_signal": "worker collection validation failed before findings-received: worker receipt status is 'backend-failed'",
+      "terminal": true,
+      "recorded_at": "2026-09-21T13:28:15Z",
+      "history": [
+        {
+          "event_id": "e9d934b1a4494b58ad1d9a52f07af35d",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-21T13:28:11Z",
+          "attempt_id": "v896-critique-c",
+          "scope": "round-2 critique answers: blocked-linger enforcement, stop-reason merge, live end-to-end proof",
+          "packet_identity": "f24b0a1f03535a75f5c81e50e58f3e440ec1f19b83ff88faf825d72d7a2a723d",
+          "parent_receipt_identity": "parent-293c6ae781cd35ce86e52fb97879c106d51676ca9ecd2580",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "04b3cdc80e3941489c45fe97ee15251b",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-21T13:28:11Z",
+          "attempt_id": "v896-critique-c",
+          "scope": "round-2 critique answers: blocked-linger enforcement, stop-reason merge, live end-to-end proof",
+          "packet_identity": "f24b0a1f03535a75f5c81e50e58f3e440ec1f19b83ff88faf825d72d7a2a723d",
+          "parent_receipt_identity": "parent-293c6ae781cd35ce86e52fb97879c106d51676ca9ecd2580",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "770fb2647b8043f582c5c4652a8f3a12",
+          "state": "collection-failed",
+          "signal": "worker collection validation failed before findings-received: worker receipt status is 'backend-failed'",
+          "terminal": true,
+          "recorded_at": "2026-09-21T13:28:15Z",
+          "attempt_id": "v896-critique-c",
+          "scope": "round-2 critique answers: blocked-linger enforcement, stop-reason merge, live end-to-end proof",
+          "packet_identity": "f24b0a1f03535a75f5c81e50e58f3e440ec1f19b83ff88faf825d72d7a2a723d",
+          "parent_receipt_identity": "parent-293c6ae781cd35ce86e52fb97879c106d51676ca9ecd2580",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "bf9bcb5c76db92e32d32409cbb3a3d75cf885c18607d1bf93a80bf5a65e82316",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "f5a028589b8549820fee107dc5d9aece9504bd4100c2633f6c7308cc1a117b60",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "/home/hwidong/codes/charness/.charness/scratch/critique-review/review-0c137818c88cd2e84441d31b1e95ff56/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/v896-critique-c/receipt.json",
+      "producer_run_id": "run-v896-critique-c"
+    }
+  ]
+}
