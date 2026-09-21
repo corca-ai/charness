@@ -1,0 +1,908 @@
+"""End-to-end contract for the semantic critique review command."""
+
+from __future__ import annotations
+
+import hashlib
+import importlib.util
+import json
+import os
+import shutil
+import signal
+import stat
+import subprocess
+import sys
+from functools import cache
+from pathlib import Path
+from typing import Sequence
+
+import pytest
+import yaml
+
+from tests.fifo_witness import FifoWitness
+from tests.quality_gates.repo_shapes import install_committed_repo
+from tests.seed_cache import get_or_build
+
+ROOT = Path(__file__).resolve().parents[2]
+pytestmark = pytest.mark.boundary_contract(
+    reason="observe the semantic review command's real backend child and typed process-interruption state"
+)
+WRAPPER = ROOT / "skills/public/critique/scripts/run_review.py"
+PACKET_HELPER = ROOT / "skills/public/critique/scripts/run_review_packet.py"
+
+
+@cache
+def _cached_working_tree_packet() -> dict:
+    """Capture one immutable working-tree packet for runner-state tests."""
+    from tests.reviewed_input_identity_fixtures import reviewed_identity_seed
+
+    return {
+        "kind": "charness.critique_prepare_packet",
+        "repo": "semantic-review-fixture",
+        "prepared_for": "working tree",
+        "ok": True,
+        "scope_status": "captured",
+        "section_count": 1,
+        "sections": [
+            {
+                "id": "smoke",
+                "title": "Smoke",
+                "content_kind": "static",
+                "content": "smoke-body",
+            }
+        ],
+        "substrate_mode": "working-tree",
+        "changed_ref": None,
+        "reviewed_input_identity": reviewed_identity_seed(),
+    }
+
+
+def _install_cached_working_tree_packet(repo: Path) -> str:
+    path = repo / "charness-artifacts" / "critique" / "cached-working-tree-packet.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(_cached_working_tree_packet(), separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+    return path.relative_to(repo).as_posix()
+
+
+def _write_executable(path: Path, body: str) -> None:
+    path.write_text(body, encoding="utf-8")
+    path.chmod(path.stat().st_mode | stat.S_IXUSR)
+
+
+def _git(repo: Path, *args: str) -> None:
+    subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
+
+
+def _git_output(repo: Path, *args: str) -> str:
+    return subprocess.check_output(["git", *args], cwd=repo, text=True).strip()
+
+
+def _write_repo_fixture(repo: Path, *, timeout: int = 5, with_packet_sections: bool = True) -> None:
+    (repo / "reviewed.txt").write_text("base\n", encoding="utf-8")
+    (repo / ".gitignore").write_text(".charness/\n", encoding="utf-8")
+    (repo / ".agents").mkdir(exist_ok=True)
+    adapter_lines = [
+        "version: 1",
+        "repo: semantic-review-fixture",
+        "reviewer_runner:",
+        "  mode: file-backed-worker",
+        "  backend: codex_exec",
+        f"  timeout_seconds: {timeout}",
+    ]
+    if with_packet_sections:
+        adapter_lines.extend(
+            [
+                "packet_sections:",
+                "  - id: smoke",
+                "    title: Smoke",
+                "    content_kind: static",
+                "    content: smoke-body",
+            ]
+        )
+    (repo / ".agents" / "critique-adapter.yaml").write_text(
+        "\n".join(adapter_lines) + "\n", encoding="utf-8"
+    )
+
+
+def _build_repo_seed(seed_root: Path) -> None:
+    from tests.quality_gates.repo_shapes import replace_with_committed_repo
+
+    repo = seed_root / "repo"
+    repo.mkdir()
+    _write_repo_fixture(repo)
+    replace_with_committed_repo(
+        repo,
+        message="fixture",
+        author_date="2000-01-01T00:00:00+0000",
+    )
+
+
+def _repo(tmp_path: Path, *, timeout: int = 5, with_packet_sections: bool = True) -> None:
+    seed = get_or_build("semantic-review-command-repo-seed", _build_repo_seed) / "repo"
+    shutil.copytree(seed, tmp_path, dirs_exist_ok=True)
+    _write_repo_fixture(tmp_path, timeout=timeout, with_packet_sections=with_packet_sections)
+    if timeout != 5 or not with_packet_sections:
+        _git(tmp_path, "add", ".agents/critique-adapter.yaml")
+        _git(
+            tmp_path,
+            "-c",
+            "user.name=Charness Test",
+            "-c",
+            "user.email=tests@example.com",
+            "commit",
+            "--amend",
+            "--no-edit",
+        )
+
+
+def _fake_codex(path: Path) -> None:
+    _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+marker = Path(__file__).with_name("review-called")
+marker.write_text(str(int(marker.read_text()) + 1) if marker.exists() else "1")
+sleep_for = float(os.environ.get("FAKE_REVIEW_SLEEP", "0"))
+if sleep_for:
+    witness_path = os.environ.get("FAKE_REVIEW_WITNESS")
+    if witness_path:
+        child_source = (
+            "import os\\n"
+            f"_witness = open({witness_path!r}, 'w')\\n"
+            "_witness.write(str(os.getpid()) + chr(10))\\n"
+            "_witness.flush()\\n"
+            "import time\\n"
+            "time.sleep(3600)\\n"
+        )
+    else:
+        child_source = "import time; time.sleep(30)"
+    child = subprocess.Popen([sys.executable, "-c", child_source])
+    time.sleep(sleep_for)
+prompt = sys.stdin.read()
+packet = re.search(r"^Packet identity \\(copy exactly\\): ([0-9a-f]{64})$", prompt, re.MULTILINE).group(1)
+reviewed = re.search(r"^Reviewed input identity \\(copy exactly\\): ([0-9a-f]{64})$", prompt, re.MULTILINE).group(1)
+lens = re.search(r"^Lens: (.+)$", prompt, re.MULTILINE).group(1)
+out = Path(sys.argv[sys.argv.index("-o") + 1])
+payload = {
+    "kind": "charness.bounded_review.v1",
+    "lens": lens,
+    "packet_sha256": packet,
+    "reviewed_input_identity_sha256": reviewed,
+    "verdict": os.environ.get("FAKE_REVIEW_VERDICT", "pass"),
+    "target_observations": json.loads(os.environ["FAKE_REVIEW_OBSERVATIONS"])
+    if os.environ.get("FAKE_REVIEW_OBSERVATIONS")
+    else None,
+    "findings": [],
+    "counterweight_triage": [],
+    "next_move": "consume the typed result",
+    "non_claims": ["the fixture does not prove external systems"],
+}
+schema = json.loads(Path(sys.argv[sys.argv.index("--output-schema") + 1]).read_text())
+assert set(schema["properties"]) == set(schema["required"])
+assert set(payload) == set(schema["required"])
+out.write_text(json.dumps(payload), encoding="utf-8")
+""",
+    )
+
+
+def _seed_lineage(repo: Path) -> str:
+    draft = repo / "charness-artifacts" / "goals" / "draft.md"
+    binding = repo / "charness-artifacts" / "goals" / "draft.binding.json"
+    draft.parent.mkdir(parents=True)
+    draft.write_text("# Frozen draft\n", encoding="utf-8")
+    binding.write_text('{"kind": "binding"}\n', encoding="utf-8")
+    lineage = repo / ".charness" / "lineage.json"
+    lineage.parent.mkdir(exist_ok=True)
+
+    def sha(path: Path) -> str:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+
+    lineage.write_text(
+        json.dumps(
+            {
+                "kind": "charness.goal-lineage",
+                "schema_version": 1,
+                "disposition": "goal-bound",
+                "draft": {"path": "charness-artifacts/goals/draft.md", "sha256": sha(draft)},
+                "binding": {
+                    "path": "charness-artifacts/goals/draft.binding.json",
+                    "sha256": sha(binding),
+                },
+                "goal_run": {
+                    "repo": "acme/project",
+                    "number": 10,
+                    "url": "https://github.com/acme/project/issues/10",
+                },
+                "work_item": {
+                    "key": "implementation",
+                    "repo": "acme/project",
+                    "number": 11,
+                    "url": "https://github.com/acme/project/issues/11",
+                },
+                "reason": None,
+            }
+        ),
+        encoding="utf-8",
+    )
+    return ".charness/lineage.json"
+
+
+def _run(
+    repo: Path,
+    bin_dir: Path,
+    attempt: str,
+    *,
+    verdict: str = "pass",
+    sleep: float | None = None,
+    packet_file: str | None = None,
+    dry_run: bool = False,
+    goal_lineage: str | None = None,
+    reviewed_path: str | None = "reviewed.txt",
+    packet_reviewed_path: str | None = None,
+    prepared_targets: Sequence[str] | None = None,
+    expected_targets: Sequence[str] | None = None,
+    scope: str = "semantic command",
+    observations: object | None = None,
+) -> subprocess.CompletedProcess[str]:
+    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_REVIEW_VERDICT": verdict}
+    if sleep is not None:
+        env["FAKE_REVIEW_SLEEP"] = str(sleep)
+    if observations is not None:
+        env["FAKE_REVIEW_OBSERVATIONS"] = json.dumps(observations)
+    else:
+        env.pop("FAKE_REVIEW_OBSERVATIONS", None)
+    command = [
+        sys.executable,
+        str(WRAPPER),
+        "--repo-root",
+        str(repo),
+        "--scope",
+        scope,
+        "--lens",
+        "operability",
+        "--attempt-id",
+        attempt,
+        "--backend",
+        "codex_exec",
+    ]
+    if reviewed_path is not None and packet_file is None:
+        command.extend(["--reviewed-path", reviewed_path])
+    elif packet_file is not None:
+        command.extend(["--packet-file", packet_file])
+        if packet_reviewed_path is not None:
+            command.extend(["--reviewed-path", packet_reviewed_path])
+    for target in prepared_targets or ():
+        command.extend(["--prepared-target", target])
+    for target in expected_targets or ():
+        command.extend(["--expected-target", target])
+    if goal_lineage is not None:
+        command.extend(["--goal-lineage-file", goal_lineage])
+    if dry_run:
+        command.append("--dry-run")
+    return subprocess.run(command, cwd=ROOT, env=env, capture_output=True, text=True, check=False)
+
+
+def _packet_helper():
+    spec = importlib.util.spec_from_file_location("test_run_review_packet", PACKET_HELPER)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _deleted_packet(path: str, content_sha256: str) -> dict:
+    return {
+        "reviewed_input_identity": {
+            "mode": "working-tree",
+            "substrate_mode": "working-tree",
+            "changed_ref": None,
+            "reviewed_paths": [path],
+            "reviewed_content": [
+                {"path": path, "content_sha256": content_sha256, "disposition": "deleted"}
+            ],
+        }
+    }
+
+
+def _payload(result: subprocess.CompletedProcess[str]) -> dict:
+    assert result.stdout, result.stderr
+    return yaml.safe_load(result.stdout)
+
+
+def test_dry_run_derives_one_typed_carrier_without_starting_backend(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    result = _run(tmp_path, bin_dir, "dry-run", dry_run=True)
+    payload = _payload(result)
+
+    assert result.returncode == 0, result.stderr
+    assert payload["status"] == "dry-run-ready"
+    assert payload["execution_state"] == "preflight-blocked"
+    assert payload["reviewer_started"] is False
+    assert payload["delivery_state"] == "none"
+    assert payload["verdict_state"] == "not-applicable"
+    assert payload["paths"]["schema"].startswith(
+        "charness-artifacts/critique/workers/.preview-dry-run/"
+    )
+    assert (tmp_path / payload["paths"]["schema"]).read_bytes() == (
+        ROOT / "skills/shared/references/bounded-review-result.schema.json"
+    ).read_bytes()
+    assert not (tmp_path / "bin" / "review-called").exists()
+
+
+def test_sectionless_adapter_refuses_before_reviewer_run_is_created(tmp_path: Path) -> None:
+    _repo(tmp_path, with_packet_sections=False)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    result = _run(tmp_path, bin_dir, "sectionless", dry_run=True)
+    payload = _payload(result)
+
+    assert result.returncode != 0
+    assert payload["reason_code"] == "adapter-no-sections"
+    assert payload["scope_status"] == "adapter-no-sections"
+    assert payload["section_count"] == 0
+    assert payload["adapter_path"] == ".agents/critique-adapter.yaml"
+    assert "Declare at least one packet_sections entry" in payload["remedy"]
+    assert not (tmp_path / ".charness").exists()
+
+
+def test_empty_declared_producer_refuses_before_reviewer_start_with_its_own_cause(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    (tmp_path / ".agents" / "critique-adapter.yaml").write_text(
+        "version: 1\nrepo: semantic-review-fixture\n"
+        "reviewer_runner:\n  mode: file-backed-worker\n  backend: codex_exec\n"
+        "  timeout_seconds: 5\npacket_sections:\n"
+        "  - id: empty\n    title: Empty\n    content_kind: script\n    command: \"printf ''\"\n",
+        encoding="utf-8",
+    )
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    result = _run(tmp_path, bin_dir, "empty-producer", dry_run=True)
+    payload = _payload(result)
+
+    assert result.returncode != 0
+    assert payload["reason_code"] == "producer-empty"
+    assert payload["scope_status"] == "producer-empty"
+    assert payload["section_count"] == 1
+    assert payload["usable"] is False
+    assert "producer failure" in payload["warning"]
+    assert "Repair the declared packet producer" in payload["remedy"]
+    assert not (tmp_path / ".charness").exists()
+    packet = json.loads(
+        (tmp_path / "charness-artifacts/critique/.preview-empty-producer-packet.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert packet["ok"] is False
+    assert packet["reason_code"] == "producer-empty"
+
+
+def test_prompt_reaches_explicit_reviewed_path_beyond_unrelated_section(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    (tmp_path / ".agents" / "critique-adapter.yaml").write_text(
+        "version: 1\nrepo: semantic-review-fixture\n"
+        "reviewer_runner:\n  mode: file-backed-worker\n  backend: codex_exec\n"
+        "packet_sections:\n  - id: unrelated\n    title: Unrelated\n"
+        "    content_kind: static\n    content: unrelated context\n",
+        encoding="utf-8",
+    )
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    result = _run(
+        tmp_path,
+        bin_dir,
+        "path-prompt",
+        dry_run=True,
+        packet_file=_install_cached_working_tree_packet(tmp_path),
+    )
+    payload = _payload(result)
+
+    assert result.returncode == 0, result.stderr
+    prompt = (tmp_path / payload["paths"]["prompt"]).read_text(encoding="utf-8")
+    assert "Every explicitly declared `--reviewed-path`" in prompt
+    assert "Judge the inline payload, not the current workspace path" in prompt
+    assert '"path": "reviewed.txt"' in prompt
+    assert '"prompt_content": "base\\n"' in prompt
+    assert "Do not infer reviewed content from hashes or unrelated packet sections" in prompt
+
+
+def test_deletion_only_reviewed_input_reaches_worker_with_hash_checked_preimage(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    (tmp_path / "reviewed.txt").unlink()
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    result = _run(tmp_path, bin_dir, "deleted-only")
+    payload = _payload(result)
+
+    assert result.returncode == 0, result.stderr
+    assert payload["execution_state"] == "terminal"
+    assert payload["reviewer_started"] is True
+    assert payload["delivery_state"] == "findings-received"
+    plan = json.loads((tmp_path / payload["paths"]["plan"]).read_text(encoding="utf-8"))
+    entry = plan["semantic_input"]["entries"][0]
+    carrier = tmp_path / entry["carrier_path"]
+    assert carrier.read_bytes() == b"base\n"
+    assert stat.S_IMODE(carrier.stat().st_mode) == 0o444
+    prompt = (tmp_path / payload["paths"]["prompt"]).read_text(encoding="utf-8")
+    assert '"disposition": "deleted-preimage"' in prompt
+    assert '"prompt_content": "base\\n"' in prompt
+    assert entry["carrier_path"] in prompt
+
+
+def test_present_committed_ref_uses_bound_target_bytes_not_current_workspace(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    (tmp_path / "reviewed.txt").write_text("bound target\n", encoding="utf-8")
+    _git(tmp_path, "add", "reviewed.txt")
+    _git(tmp_path, "commit", "-m", "bound target")
+    target = _git_output(tmp_path, "rev-parse", "HEAD")
+    (tmp_path / "reviewed.txt").write_text("later workspace\n", encoding="utf-8")
+    content = b"bound target\n"
+    packet = {
+        "reviewed_input_identity": {
+            "mode": "committed-ref",
+            "substrate_mode": "committed-ref",
+            "changed_ref": target,
+            "base_head": target,
+            "resolved_changed_ref": [target],
+            "reviewed_paths": ["reviewed.txt"],
+            "reviewed_content": [
+                {
+                    "path": "reviewed.txt",
+                    "content_sha256": hashlib.sha256(content).hexdigest(),
+                }
+            ],
+        }
+    }
+    module = _packet_helper()
+    run_dir = tmp_path / ".charness" / "committed-present"
+    run_dir.mkdir(parents=True)
+
+    semantic_input = module.materialize_semantic_input(tmp_path, packet, run_dir)
+
+    entry = semantic_input["entries"][0]
+    assert entry["prompt_content"] == "bound target\n"
+    assert (tmp_path / entry["carrier_path"]).read_bytes() == content
+    assert entry["source"] == f"{target}:reviewed.txt"
+
+
+def test_committed_deletion_preimage_reaches_carrier_for_commit_and_range(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    parent = _git_output(tmp_path, "rev-parse", "HEAD")
+    (tmp_path / "reviewed.txt").unlink()
+    _git(tmp_path, "add", "reviewed.txt")
+    _git(tmp_path, "commit", "-m", "delete reviewed input")
+    target = _git_output(tmp_path, "rev-parse", "HEAD")
+    module = _packet_helper()
+    for ref_kind, changed_ref, resolved in (
+        ("commit", target, [target]),
+        ("range", f"{parent}..{target}", [parent, target]),
+    ):
+        packet = {
+            "reviewed_input_identity": {
+                "mode": "committed-ref",
+                "substrate_mode": "committed-ref",
+                "changed_ref": changed_ref,
+                "resolved_changed_ref": resolved,
+                "reviewed_paths": ["reviewed.txt"],
+                "reviewed_content": [
+                    {
+                        "path": "reviewed.txt",
+                        "content_sha256": hashlib.sha256(b"base\n").hexdigest(),
+                        "disposition": "deleted",
+                    }
+                ],
+            }
+        }
+        run_dir = tmp_path / ".charness" / f"committed-{ref_kind}"
+        run_dir.mkdir(parents=True)
+        semantic_input = module.materialize_semantic_input(tmp_path, packet, run_dir)
+        entry = semantic_input["entries"][0]
+        assert (tmp_path / entry["carrier_path"]).read_bytes() == b"base\n"
+        assert entry["source"] == f"{parent}:reviewed.txt"
+
+
+def test_deleted_preimage_refusals_on_one_tree(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    (tmp_path / "reviewed.txt").unlink()
+    module = _packet_helper()
+
+    mismatch_dir = tmp_path / ".charness" / "hash-mismatch"
+    mismatch_dir.mkdir(parents=True)
+    with pytest.raises(module.SemanticInputError) as caught:
+        module.materialize_semantic_input(
+            tmp_path, _deleted_packet("reviewed.txt", "0" * 64), mismatch_dir
+        )
+    assert caught.value.code == "preimage-hash-mismatch"
+    assert caught.value.details["path"] == "reviewed.txt"
+
+    unavailable_dir = tmp_path / ".charness" / "preimage-unavailable"
+    unavailable_dir.mkdir(parents=True)
+    with pytest.raises(module.SemanticInputError) as caught:
+        module.materialize_semantic_input(
+            tmp_path,
+            _deleted_packet("missing.txt", hashlib.sha256(b"missing\n").hexdigest()),
+            unavailable_dir,
+        )
+    assert caught.value.code == "preimage-unavailable"
+    assert caught.value.details["path"] == "missing.txt"
+
+    content = b"x" * (module.MAX_PREIMAGE_BYTES + 1)
+    (tmp_path / "large.bin").write_bytes(content)
+    _git(tmp_path, "add", "large.bin")
+    _git(tmp_path, "commit", "-m", "large fixture")
+    (tmp_path / "large.bin").unlink()
+    oversize_dir = tmp_path / ".charness" / "preimage-oversize"
+    oversize_dir.mkdir(parents=True)
+    with pytest.raises(module.SemanticInputError) as caught:
+        module.materialize_semantic_input(
+            tmp_path,
+            _deleted_packet("large.bin", hashlib.sha256(content).hexdigest()),
+            oversize_dir,
+        )
+    assert caught.value.code == "preimage-too-large"
+    assert caught.value.details["path"] == "large.bin"
+    assert caught.value.details["max_bytes"] == module.MAX_PREIMAGE_BYTES
+
+
+def test_empty_reviewed_input_refuses_even_with_unrelated_section(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    bin_dir = tmp_path / "bin"
+
+    result = _run(tmp_path, bin_dir, "empty-input", dry_run=True, reviewed_path=None)
+    payload = _payload(result)
+
+    assert result.returncode == 2
+    assert payload["reason_code"] == "empty-reviewed-paths"
+    assert payload["scope_status"] == "empty-reviewed-input"
+    assert payload["reviewer_started"] is False
+    assert payload["usable"] is False
+    assert not (tmp_path / ".charness").exists()
+
+
+def test_goal_run_lineage_is_carried_into_plan_prompt_and_carrier(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    lineage = _seed_lineage(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    result = _run(
+        tmp_path,
+        bin_dir,
+        "lineage",
+        dry_run=True,
+        goal_lineage=lineage,
+        packet_file=_install_cached_working_tree_packet(tmp_path),
+    )
+    payload = _payload(result)
+
+    assert result.returncode == 0, result.stderr
+    assert payload["goal_lineage"]["disposition"] == "goal-bound"
+    plan = tmp_path / payload["paths"]["plan"]
+    prompt = tmp_path / payload["paths"]["prompt"]
+    plan_data = json.loads(plan.read_text(encoding="utf-8"))
+    assert plan_data["goal_lineage"]["work_item"]["number"] == 11
+    assert "Goal evidence lineage (copy exactly):" in prompt.read_text(encoding="utf-8")
+
+
+def test_delivered_pass_and_block_are_distinct_from_runner_failure(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    packet_file = _install_cached_working_tree_packet(tmp_path)
+    passed = _payload(_run(tmp_path, bin_dir, "delivered-pass", packet_file=packet_file))
+    blocked = _payload(
+        _run(tmp_path, bin_dir, "delivered-block", verdict="block", packet_file=packet_file)
+    )
+
+    assert passed["execution_state"] == "terminal"
+    assert passed["reviewer_started"] is True
+    assert passed["delivery_state"] == "findings-received"
+    assert passed["verdict_state"] == "pass"
+    assert passed["approval_eligible"] is True
+    assert "partial_artifacts" not in passed["output"]
+    assert passed["runner_stream"]["consistent"] is True
+    assert blocked["execution_state"] == "terminal"
+    assert blocked["reviewer_started"] is True
+    assert blocked["delivery_state"] == "findings-received"
+    assert blocked["verdict_state"] == "block"
+    assert blocked["approval_eligible"] is False
+    assert "reviewer block" in blocked["next_move"]
+
+
+def test_worker_timeout_keeps_started_and_non_approval_state(tmp_path: Path) -> None:
+    _repo(tmp_path, timeout=1)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    result = _run(tmp_path, bin_dir, "backend-timeout", sleep=10)
+    payload = _payload(result)
+
+    assert result.returncode == 1, result.stderr
+    assert payload["reviewer_started"] is True
+    assert payload["delivery_state"] == "timed-out"
+    assert payload["verdict_state"] == "not-applicable"
+    assert payload["approval_eligible"] is False
+    assert payload["execution_state"] == "started"
+    assert payload["lifecycle_state"] == "timed-out"
+    assert payload["output_state"] == "partial"
+    assert payload["output"]["approval_eligible"] is False
+    assert payload["output"]["artifacts"]
+    ledger = json.loads((tmp_path / payload["paths"]["ledger"]).read_text(encoding="utf-8"))
+    assert ledger["attempts"][-1]["state"] == "timed-out"
+    durable = (tmp_path / payload["paths"]["summary"]).parent
+    manifest = json.loads((durable / "attempt-manifest.json").read_text(encoding="utf-8"))
+    assert manifest["reusable"] is True
+    assert manifest["approval_eligible"] is False
+    assert manifest["use_class"] == "diagnostic-retryable"
+    assert (durable / "review-prompt.md").is_file()
+    assert (durable / "run-plan.json").is_file()
+    assert all(
+        not (isinstance(path, str) and path.startswith(".charness/scratch/"))
+        for path in payload["paths"].values()
+    )
+
+
+@pytest.mark.parametrize("supplied_packet", [False, True])
+def test_preview_does_not_reserve_live_attempt(tmp_path: Path, supplied_packet: bool) -> None:
+    _repo(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+    packet_file = _install_cached_working_tree_packet(tmp_path) if supplied_packet else None
+    preview = _payload(_run(tmp_path, bin_dir, "same-id", dry_run=True, packet_file=packet_file))
+    assert preview["status"] == "dry-run-ready"
+    preview_files = {
+        str(path): path.read_bytes()
+        for path in (tmp_path / preview["paths"]["plan"]).parent.rglob("*")
+        if path.is_file()
+    }
+    preview_packet = tmp_path / preview["paths"]["packet"]
+    preview_files[str(preview_packet)] = preview_packet.read_bytes()
+    if not supplied_packet:
+        (tmp_path / "reviewed.txt").write_text("changed after preview\n", encoding="utf-8")
+    live = _payload(_run(tmp_path, bin_dir, "same-id", packet_file=packet_file))
+    assert live["approval_eligible"] is True, live
+    assert (bin_dir / "review-called").read_text() == "1"
+    if not supplied_packet:
+        live_packet = json.loads((tmp_path / live["paths"]["packet"]).read_text())
+        old_packet = json.loads(preview_files[str(preview_packet)])
+        assert live_packet["reviewed_input_identity"] != old_packet["reviewed_input_identity"]
+    assert all(Path(path).read_bytes() == content for path, content in preview_files.items())
+    duplicate = _payload(_run(tmp_path, bin_dir, "same-id", packet_file=packet_file))
+    assert duplicate["reason_code"] == "stale-artifact-refused"
+    assert duplicate["reviewer_started"] is False
+    repeat_preview = _payload(_run(tmp_path, bin_dir, "same-id", dry_run=True, packet_file=packet_file))
+    assert repeat_preview["reason_code"] == "stale-artifact-refused"
+    assert (bin_dir / "review-called").read_text() == "1"
+
+
+@pytest.mark.parametrize("explicit_path", ["reviewed.txt", "other.txt"])
+def test_supplied_packet_requires_exact_explicit_paths(tmp_path: Path, explicit_path: str) -> None:
+    _repo(tmp_path)
+    (tmp_path / "other.txt").write_text("other\n", encoding="utf-8")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+    result = _run(
+        tmp_path, bin_dir, "explicit-path", dry_run=True,
+        packet_file=_install_cached_working_tree_packet(tmp_path),
+        packet_reviewed_path=explicit_path,
+    )
+    payload = _payload(result)
+    if explicit_path == "reviewed.txt":
+        assert result.returncode == 0
+        assert payload["status"] == "dry-run-ready"
+    else:
+        assert result.returncode != 0
+        assert payload["reason_code"] == "input-mismatch"
+        assert payload["reviewer_started"] is False
+    assert not (bin_dir / "review-called").exists()
+
+
+def test_generated_packet_preserves_repeated_prepared_targets(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+    targets = ["corca-ai/charness#42", "corca-ai/charness#42", "corca-ai/charness#43"]
+
+    result = _run(
+        tmp_path,
+        bin_dir,
+        "prepared-targets",
+        dry_run=True,
+        prepared_targets=targets,
+    )
+    payload = _payload(result)
+
+    assert result.returncode == 0, result.stderr
+    packet = json.loads((tmp_path / payload["paths"]["packet"]).read_text(encoding="utf-8"))
+    assert packet["prepared_targets"] == targets
+
+
+def test_supplied_packet_still_refuses_prepared_target_generation(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    result = _run(
+        tmp_path,
+        bin_dir,
+        "prepared-target-conflict",
+        dry_run=True,
+        packet_file=_install_cached_working_tree_packet(tmp_path),
+        prepared_targets=["corca-ai/charness#42"],
+    )
+
+    assert result.returncode == 2
+    assert "--packet-file cannot be combined with packet-generation inputs" in result.stderr
+    assert not (bin_dir / "review-called").exists()
+
+
+def test_directory_input_has_actionable_preflight_refusal(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+    result = _run(tmp_path, bin_dir, "directory", dry_run=True, reviewed_path="bin")
+    payload = _payload(result)
+    assert result.returncode != 0
+    assert payload["reason_code"] == "reviewed-path-directory"
+    assert payload["reviewer_started"] is False
+    assert payload["details"]["path"] == "bin"
+    assert "individual files" in payload["details"]["remedy"]
+    assert not list(tmp_path.glob("charness-artifacts/critique/*-packet.json"))
+    assert not (bin_dir / "review-called").exists()
+
+
+def test_stale_packet_is_preflight_blocked_without_reviewer_start(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+
+    prepared = _payload(_run(tmp_path, bin_dir, "prepare-only", dry_run=True))
+    (tmp_path / "reviewed.txt").write_text("changed after packet\n", encoding="utf-8")
+    stale = _payload(
+        _run(
+            tmp_path,
+            bin_dir,
+            "stale-packet",
+            packet_file=prepared["paths"]["packet"],
+        )
+    )
+
+    assert stale["status"] == "runner-invalid"
+    assert stale["execution_state"] == "preflight-blocked"
+    assert stale["reviewer_started"] is False
+    assert stale["delivery_state"] == "none"
+    assert stale["verdict_state"] == "not-applicable"
+    assert stale["reason_code"] == "packet-stale"
+
+
+def test_parent_interrupt_returns_typed_state_and_kills_backend_descendant(tmp_path: Path) -> None:
+    _repo(tmp_path, timeout=30)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _fake_codex(bin_dir / "codex")
+    packet_file = _install_cached_working_tree_packet(tmp_path)
+    with FifoWitness(tmp_path / "witness") as witness:
+        env = {
+            **os.environ,
+            "PATH": f"{bin_dir}:{os.environ['PATH']}",
+            "FAKE_REVIEW_SLEEP": "30",
+            "FAKE_REVIEW_WITNESS": str(witness.path),
+        }
+        command = [
+            sys.executable,
+            str(WRAPPER),
+            "--repo-root",
+            str(tmp_path),
+            "--scope",
+            "semantic command",
+            "--lens",
+            "operability",
+            "--attempt-id",
+            "parent-interrupt",
+            "--backend",
+            "codex_exec",
+            "--packet-file",
+            packet_file,
+        ]
+        process = subprocess.Popen(command, cwd=ROOT, env=env, stdout=subprocess.PIPE, text=True)
+        try:
+            child_pid = int(witness.wait_line())
+            process.send_signal(signal.SIGTERM)
+            stdout, _ = process.communicate(timeout=10)
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.wait(timeout=5)
+
+        assert child_pid > 0
+        payload = yaml.safe_load(stdout)
+        assert payload["status"] == "runner-interrupted"
+        assert payload["reviewer_started"] is True
+        assert payload["delivery_state"] == "interrupted"
+        assert payload["approval_eligible"] is False
+        witness.wait_eof()
+
+
+def test_the_deleted_preimage_digest_matches_the_binder_across_the_skill_boundary(
+    tmp_path: Path,
+) -> None:
+    """The producer BINDS a deletion; a portable skill script CHECKS it. Neither can import
+    the other, so the framing is restated on both sides -- and it drifted.
+
+    There are TWO framings, one per substrate, and that is the part the drift hid. The
+    working-tree binder folds the exec bit in (`b"file\\0" + mode_tag + blob`); the
+    committed-ref binder hashes raw bytes. The checker compared raw for both, so committed
+    ranges kept passing while every deletion-only working-tree review refused with
+    `preimage-hash-mismatch` -- a half-green that reads as an unrelated flake.
+
+    Drives the real binders rather than restating their constants a THIRD time: a test that
+    hardcodes the framing goes green with the checker against a binder that has moved on,
+    which is the failure it is here to catch.
+    """
+    from scripts.review import reviewed_input_identity as binder
+
+    spec = importlib.util.spec_from_file_location(
+        "semantic_review_input_drift",
+        ROOT / "skills/public/critique/scripts/semantic_review_input.py",
+    )
+    checker = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(checker)
+
+    repo = install_committed_repo(
+        tmp_path / "repo",
+        {"plain.txt": "base\n", "runner.sh": "#!/bin/sh\n"},
+        executable=("runner.sh",),
+    )
+
+    for path, blob in (("plain.txt", b"base\n"), ("runner.sh", b"#!/bin/sh\n")):
+        worktree_bound = binder._recorded_blob_digest(repo, path, None, blob)
+        assert worktree_bound in checker.worktree_deleted_digests(blob), path
+        assert binder._sha256(blob) in checker.committed_deleted_digests(blob), path
+
+    # The substrate test must actually SELECT between them, or carrying two framings buys
+    # nothing -- this is the branch that was missing.
+    assert checker._preimage_digests({}) is checker.worktree_deleted_digests
+    assert (
+        checker._preimage_digests({"substrate_mode": "committed-ref", "changed_ref": "HEAD~1"})
+        is checker.committed_deleted_digests
+    )
+    # The two exec-bit tags must stay distinguishable, or "matches under either" is vacuous.
+    assert len(set(checker.worktree_deleted_digests(b"base\n"))) == 2
