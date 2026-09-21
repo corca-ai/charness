@@ -48,6 +48,12 @@ and no real scoped diff once the no-progress budget is spent
 (`CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS`, default 300; `0` disables the
 stop) is killed and recorded with a typed `NO-PROGRESS-STOP` blocker; the
 guard configuration and outcome live on the receipt as `progress_guard`.
+A lane that declares `BLOCKED` but keeps running past the blocked grace
+(`CHARNESS_TASK_RUN_BLOCKED_GRACE_SECONDS`, default 60) is likewise
+stopped, so the declaration cannot burn the full timeout. When the
+transcript marker is lost, the guard stop reason itself becomes the
+receipt blocker, and guard-observed phases merge into `lane_progress` in
+canonical order.
 A changeless require-change lane that never emitted `EDITING` fails with
 that stall named. Other lanes transmit the prompt verbatim.
 

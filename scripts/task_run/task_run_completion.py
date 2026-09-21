@@ -135,6 +135,7 @@ def complete_task(
         scope=scope,
         stderr_text=_progress._lane_stderr_text(stdout_log, stderr_log),
         guard_phases=_guard_phases(payload),
+        guard_blocker=_guard_stop_reason(payload),
     )
     gate, blockers, result_state = _prove_ready_candidate(
         payload,
@@ -199,6 +200,15 @@ def _guard_phases(payload: Mapping[str, Any]) -> list[str]:
     if not isinstance(phases, list):
         return []
     return [phase for phase in phases if isinstance(phase, str)]
+
+
+def _guard_stop_reason(payload: Mapping[str, Any]) -> str:
+    """The live guard stop reason, for when the transcript marker is lost (#815)."""
+    guard = payload.get("progress_guard")
+    if not isinstance(guard, Mapping):
+        return ""
+    reason = guard.get("stop_reason")
+    return reason if isinstance(reason, str) else ""
 
 
 def _execution_reviewer_result(delivery: Mapping[str, Any]) -> dict[str, Any] | None:

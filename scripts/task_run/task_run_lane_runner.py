@@ -94,14 +94,19 @@ def apply_lane_receipt(
     scope: Any,
     stderr_text: str = "",
     guard_phases: Sequence[str] = (),
+    guard_blocker: str = "",
 ) -> None:
     """Record `lane_progress` on the receipt and append lane stall blockers.
 
     Guard-observed phases merge in canonical order: the live watcher may
     have seen markers that aged out of the terminal transcript scan window,
     and the durable receipt must not be weaker than the live relay (#815).
+    When the transcript carries no blocker but the guard stopped the lane,
+    the guard stop reason is the blocker, so a lost marker write cannot
+    silently drop the typed stall.
     """
     parsed = _progress.lane_progress(delivery.get("text") or "", stderr_text)
+    blocker = parsed["blocker"] or guard_blocker or None
     phases = [
         phase
         for phase in _progress.LANE_PHASES
@@ -109,7 +114,7 @@ def apply_lane_receipt(
     ]
     progress = {
         "phases": phases,
-        "blocker": parsed["blocker"],
+        "blocker": blocker,
         "merged_guard_phases": [phase for phase in phases if phase not in parsed["phases"]],
     }
     payload["lane_progress"] = progress

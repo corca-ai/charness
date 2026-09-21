@@ -692,3 +692,18 @@ def test_guard_phases_reads_only_string_lists() -> None:
     assert task_run_completion._guard_phases(
         {"progress_guard": {"last_phases": ["CONTRACT-READ", 7]}}
     ) == ["CONTRACT-READ"]
+
+
+def test_guard_stop_reason_reads_only_strings() -> None:
+    assert task_run_completion._guard_stop_reason({}) == ""
+    assert task_run_completion._guard_stop_reason({"progress_guard": None}) == ""
+    assert (
+        task_run_completion._guard_stop_reason({"progress_guard": {"stop_reason": 7}})
+        == ""
+    )
+    assert (
+        task_run_completion._guard_stop_reason(
+            {"progress_guard": {"stop_reason": "stalled lane"}}
+        )
+        == "stalled lane"
+    )

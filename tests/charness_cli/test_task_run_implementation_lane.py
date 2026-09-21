@@ -223,7 +223,7 @@ def test_watch_tick_spares_lane_with_real_scoped_diff(tmp_path: Path) -> None:
     assert watch.tick(10_000.0) is None
 
 
-def test_watch_tick_ignores_declared_blocker(tmp_path: Path) -> None:
+def test_watch_tick_gives_blocker_time_to_exit(tmp_path: Path) -> None:
     watch = _watch(tmp_path)
     _drive(watch)
     watch._stderr_log.write_text(
@@ -231,7 +231,7 @@ def test_watch_tick_ignores_declared_blocker(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     assert watch.tick(0.0) is None
-    assert watch.tick(10_000.0) is None
+    assert watch.tick(59.0) is None
 
 
 def test_watch_fire_records_marker_and_kills(tmp_path: Path) -> None:
@@ -293,6 +293,79 @@ def test_watch_tick_spares_overdue_lane_it_cannot_observe(tmp_path: Path) -> Non
         assert watch.tick(10_000.0) is None
     finally:
         (watch._worktree / ".git-broken").rename(watch._worktree / ".git")
+
+
+def test_lingering_blocked_lane_is_stopped_after_grace(tmp_path: Path) -> None:
+    watch = _watch(tmp_path)
+    _drive(watch)
+    watch._stderr_log.write_text(
+        "CONTRACT-READ\nBLOCKED: scope mismatch - real owner elsewhere\n",
+        encoding="utf-8",
+    )
+    assert watch.tick(0.0) is None
+    assert watch.tick(59.0) is None
+    reason = watch.tick(60.0)
+    assert reason is not None and "kept running" in reason
+
+
+def test_guard_blocker_covers_lost_transcript_marker() -> None:
+    from scripts.task_run import task_run_lane_runner as lane_runner
+
+    payload: dict = {}
+    blockers: list = []
+    lane_runner.apply_lane_receipt(
+        payload,
+        blockers,
+        delivery={"text": ""},
+        require_change=True,
+        scope={"changed_paths": [], "disallowed_paths": []},
+        stderr_text="",
+        guard_phases=["CONTRACT-READ"],
+        guard_blocker="require-change lane produced no EDITING",
+    )
+    assert payload["lane_progress"]["blocker"] == (
+        "require-change lane produced no EDITING"
+    )
+    assert blockers == [
+        "lane reported blocker: require-change lane produced no EDITING"
+    ]
+
+
+def test_transcript_blocker_wins_over_guard_blocker() -> None:
+    from scripts.task_run import task_run_lane_runner as lane_runner
+
+    payload: dict = {}
+    blockers: list = []
+    lane_runner.apply_lane_receipt(
+        payload,
+        blockers,
+        delivery={"text": "BLOCKED: lease event never fires\n"},
+        require_change=True,
+        scope={"changed_paths": [], "disallowed_paths": []},
+        guard_blocker="require-change lane produced no EDITING",
+    )
+    assert payload["lane_progress"]["blocker"] == "lease event never fires"
+
+
+def test_stalled_lane_is_killed_live_and_receipted(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv(prog.NO_PROGRESS_BUDGET_ENV, "1")
+    monkeypatch.setenv(prog.PROGRESS_POLL_ENV, "0.05")
+    repo = _repo(tmp_path)
+    executable = _stub(tmp_path, 'echo "CONTRACT-READ" >&2\nsleep 300')
+    payload = _run(
+        repo,
+        tmp_path,
+        executable,
+        scopes=["gateway/lease.py"],
+        require_change=True,
+        timeout_seconds=60,
+    )
+    assert payload["status"] == "failed", payload
+    assert "no EDITING" in (payload["execution"].get("progress_stopped") or "")
+    assert payload["lane_progress"]["phases"] == ["CONTRACT-READ"]
+    assert "no EDITING" in (payload["lane_progress"]["blocker"] or "")
+    assert payload["candidate"]["status"] == "absent"
+    assert payload["progress_guard"]["stop_reason"] is not None
 
 
 def test_receipt_merges_guard_phases_missing_from_transcript() -> None:

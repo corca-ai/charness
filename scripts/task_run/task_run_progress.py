@@ -34,8 +34,14 @@ NO_PROGRESS_STOP_PREFIX = "NO-PROGRESS-STOP:"
 #: as a typed no-progress blocker. `<= 0` turns the stop off.
 NO_PROGRESS_BUDGET_ENV = "CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS"
 PROGRESS_POLL_ENV = "CHARNESS_TASK_RUN_PROGRESS_POLL_SECONDS"
+BLOCKED_GRACE_ENV = "CHARNESS_TASK_RUN_BLOCKED_GRACE_SECONDS"
 DEFAULT_NO_PROGRESS_BUDGET_SECONDS = 300.0
 DEFAULT_PROGRESS_POLL_SECONDS = 15.0
+#: Grace after a declared `BLOCKED:` marker before a still-running lane is
+#: stopped. Compliant executors exit promptly on their own; only a lane that
+#: lingers past the grace is killed, so a block declaration cannot become a
+#: full-timeout consumption.
+DEFAULT_BLOCKED_GRACE_SECONDS = 60.0
 
 #: Phase-marker scan window for the executor transcript. Stderr can grow
 #: without bound on long lanes; markers are emitted throughout the run, so the
@@ -187,6 +193,7 @@ class LaneProgressWatch:
         scope_specs: Sequence[Mapping[str, Any]],
         budget_seconds: float,
         poll_seconds: float,
+        blocked_grace_seconds: float = DEFAULT_BLOCKED_GRACE_SECONDS,
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self._stdout_log = stdout_log
@@ -196,8 +203,10 @@ class LaneProgressWatch:
         self._scope_specs = list(scope_specs)
         self._budget_seconds = budget_seconds
         self._poll_seconds = max(poll_seconds, 0.05)
+        self._blocked_grace_seconds = blocked_grace_seconds
         self._clock = clock
         self._contract_read_at: float | None = None
+        self._blocker_at: float | None = None
         self._last_phases: list[str] = []
         self._started_at: float | None = None
         self._emit: Callable[[list[str], float], None] | None = None
@@ -261,7 +270,18 @@ class LaneProgressWatch:
                 self._emit(list(self._last_phases), now - self._started_at)
         phases = list(self._last_phases)
         if progress["blocker"] is not None:
-            return None
+            # A declared block is terminal semantics, not a stall to watch:
+            # a lane that lingers past the grace after declaring BLOCKED is
+            # stopped, so the declaration cannot burn the full timeout.
+            if self._blocker_at is None:
+                self._blocker_at = now
+                return None
+            if now - self._blocker_at < self._blocked_grace_seconds:
+                return None
+            return (
+                f"lane declared BLOCKED ({progress['blocker']}) but kept running; "
+                f"stopped after {self._blocked_grace_seconds:g}s"
+            )
         if "CONTRACT-READ" not in phases:
             return None
         if self._contract_read_at is None:
@@ -329,6 +349,9 @@ def build_progress_watch(
             NO_PROGRESS_BUDGET_ENV, DEFAULT_NO_PROGRESS_BUDGET_SECONDS
         ),
         poll_seconds=_env_seconds(PROGRESS_POLL_ENV, DEFAULT_PROGRESS_POLL_SECONDS),
+        blocked_grace_seconds=_env_seconds(
+            BLOCKED_GRACE_ENV, DEFAULT_BLOCKED_GRACE_SECONDS
+        ),
     )
 
 
