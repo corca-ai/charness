@@ -1,0 +1,58 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "non-blocking evidence limitation",
+      "concern": "The packet contains test source but no test-run transcript.",
+      "disposition": "The requested acceptance boundary is whether each repair is present in the bound current-main contents and mapped to regression tests. Both are directly established; no claim is made that the tests were executed in this review."
+    },
+    {
+      "bin": "not a blocker",
+      "concern": "lane_writable_dirs uses the broader condition `executor != \"codex\"` rather than testing `executor == \"muse\"`.",
+      "disposition": "The reviewed behavior for Muse is correct, and the supplied regression test also covers executor validation rejecting unsupported executor names."
+    }
+  ],
+  "findings": [],
+  "kind": "charness.bounded_review.v1",
+  "lens": "issue-resolution: resolution/recurrence and per-target behavioral observations",
+  "next_move": "Approve resolution of both targets; retain the named regression tests as recurrence protection and run the focused suites in the normal verification pipeline.",
+  "non_claims": [
+    "This review does not claim that the regression tests were executed; it evaluates their bound source and behavioral mapping.",
+    "This review does not establish live Muse delegation behavior or host trust behavior beyond the constructed command and documented observation.",
+    "Goal evidence lineage is not goal-bound."
+  ],
+  "packet_sha256": "e5c8e8eb56bf886c6a5c38c5b34ec43a9ee3005990ab5c408c4a688d3a12598c",
+  "reviewed_input_identity_sha256": "e588fbf4ac064364ae890bedbb955978d105f3ec6d1a404d0e73de6d54f6ca77",
+  "target_observations": [
+    {
+      "evidence": [
+        "scripts/task_run/task_run_runtime.py: build_muse_args emits one `--trust-workspace` and one `--workspace` whose value is `str(worktree)`.",
+        "scripts/task_run/task_run_lane_runner.py: lane_command passes the lane `worktree` directly to build_muse_command.",
+        "scripts/task_run/task_run_lane_runner.py: lane_writable_dirs records `payload[\"workspace\"] = str(worktree)` and returns `[]` for Muse/non-Codex executors; `writable_dirs` is only recorded for Codex.",
+        "tests/charness_cli/test_task_run_muse_executor.py: test_muse_arguments_pin_high_effort_and_prompt_file asserts the complete argument vector, including the trusted single worktree workspace.",
+        "tests/charness_cli/test_task_run_muse_executor.py: test_muse_workspace_is_the_worktree_root_not_agents explicitly asserts the sole workspace is the worktree rather than `.agents`.",
+        "tests/charness_cli/test_task_run_muse_executor.py: test_task_run_muse_executor_uses_prompt_file_and_high_effort exercises the lane and asserts one worktree-root workspace, `--trust-workspace`, an empty Muse grant surface represented by absence of `writable_dirs`, and the receipt `workspace` value."
+      ],
+      "summary": "The Muse repair is present and protected by unit and end-to-end regression coverage: Muse receives exactly one trusted workspace rooted at the lane worktree, while Muse receives no Codex-style writable-directory grants.",
+      "target": "corca-ai/charness#814",
+      "verdict": "pass"
+    },
+    {
+      "evidence": [
+        "scripts/task_run/task_run_lane_runner.py: build_lane_prompt leaves ordinary lanes unchanged but prepends require-change lanes with the scoped implementation-lane directive, CONTRACT-READ/EDITING/TESTING markers, and the standalone `BLOCKED: <concrete reason>` protocol.",
+        "scripts/task_run/task_run_lane_runner.py: prepare_lane_execution applies build_lane_prompt before constructing either executor command.",
+        "scripts/task_run/task_run_lane_runner.py: lane_progress parses unique phase markers and the first typed BLOCKED reason.",
+        "scripts/task_run/task_run_lane_runner.py: apply_lane_receipt writes `payload[\"lane_progress\"]` and adds either the reported blocker or the changeless-without-EDITING stall blocker.",
+        "tests/charness_cli/test_task_run_implementation_lane.py: test_implementation_prompt_names_scope_and_blocker_protocol and test_non_require_change_prompt_passes_through_untouched cover prompt behavior.",
+        "tests/charness_cli/test_task_run_implementation_lane.py: test_lane_progress_parses_phases_and_blocker and test_lane_progress_without_markers_is_empty cover typed progress parsing.",
+        "tests/charness_cli/test_task_run_implementation_lane.py: test_blocked_lane_records_typed_blocker proves a BLOCKED reason reaches `lane_progress` and failure guidance.",
+        "tests/charness_cli/test_task_run_implementation_lane.py: test_stalled_lane_names_missing_editing proves a changeless require-change lane without EDITING fails with the stall named.",
+        "tests/charness_cli/test_task_run_implementation_lane.py: test_editing_lane_records_phases_and_completes proves all three phases are recorded on a successful receipt.",
+        "tests/charness_cli/test_task_run_muse_executor.py: test_task_run_muse_executor_uses_prompt_file_and_high_effort additionally proves implementation-lane directives are transmitted through the Muse prompt-file path."
+      ],
+      "summary": "The require-change repair is present and protected by prompt-shaping, parsing, failure-path, and successful-lane regression coverage: implementation directives and a typed blocker protocol are delivered, and parsed lane progress is attached to the receipt.",
+      "target": "corca-ai/charness#815",
+      "verdict": "pass"
+    }
+  ],
+  "verdict": "pass"
+}

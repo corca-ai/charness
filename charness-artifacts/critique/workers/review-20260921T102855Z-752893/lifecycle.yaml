@@ -1,0 +1,186 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: runner-completed
+execution_state: terminal
+lifecycle_state: terminal
+reviewer_started: true
+delivery_state: findings-received
+verdict_state: pass
+review_verdict: pass
+classification: unclassified
+approval_eligible: true
+output:
+  state: terminal
+  approval_eligible: true
+  schema_version: charness.reviewer_worker_report.v1
+  findings_identity: 8e07d30f6db413c8f9011f8b9c1c1730f1b053c26ecf9e6c8435ba5dc3ab6c7f
+  partial_artifacts:
+  - schema_version: charness.reviewer_partial_output/v1
+    kind: bounded-review-result
+    path: charness-artifacts/critique/workers/review-20260921T102855Z-752893/partial-result.json
+    bytes: 5539
+    sha256: 27c51f0544e3b794e68b04bf9f335143f66cc2270c77c46826589b6b04f0364e
+output_state: terminal
+failure_identity: c0326ac9f8d6cda80acc483a567521e7c91c7492aa9bb76785302f4899770d90
+next_move: consume the identity-bound delivered reviewer result
+runner_returncode: 0
+runner_status: runner-completed
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/review-20260921T102855Z-752893-packet.json
+  schema: charness-artifacts/critique/workers/review-20260921T102855Z-752893/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/review-20260921T102855Z-752893/capability.json
+  prompt: charness-artifacts/critique/workers/review-20260921T102855Z-752893/review-prompt.md
+  plan: charness-artifacts/critique/workers/review-20260921T102855Z-752893/run-plan.json
+  ledger: charness-artifacts/critique/workers/review-20260921T102855Z-752893/delivery.json
+  output: charness-artifacts/critique/workers/review-20260921T102855Z-752893/result.json
+  receipt: charness-artifacts/critique/workers/review-20260921T102855Z-752893/receipt.json
+  report: charness-artifacts/critique/workers/review-20260921T102855Z-752893/worker-report.yaml
+  runner_stdout: charness-artifacts/critique/workers/review-20260921T102855Z-752893/runner.stdout
+  runner_stderr: charness-artifacts/critique/workers/review-20260921T102855Z-752893/runner.stderr
+  backend_stdout: charness-artifacts/critique/workers/review-20260921T102855Z-752893/backend.stdout
+  backend_stderr: charness-artifacts/critique/workers/review-20260921T102855Z-752893/backend.stderr
+  summary: charness-artifacts/critique/workers/review-20260921T102855Z-752893/lifecycle.yaml
+  semantic-input/0000-content.bin: charness-artifacts/critique/workers/review-20260921T102855Z-752893/semantic-input/0000-content.bin
+  semantic-input/0001-content.bin: charness-artifacts/critique/workers/review-20260921T102855Z-752893/semantic-input/0001-content.bin
+  semantic-input/0002-content.bin: charness-artifacts/critique/workers/review-20260921T102855Z-752893/semantic-input/0002-content.bin
+  semantic-input/0003-content.bin: charness-artifacts/critique/workers/review-20260921T102855Z-752893/semantic-input/0003-content.bin
+  semantic-input/0004-content.bin: charness-artifacts/critique/workers/review-20260921T102855Z-752893/semantic-input/0004-content.bin
+  semantic-input/manifest.json: charness-artifacts/critique/workers/review-20260921T102855Z-752893/semantic-input/manifest.json
+  review-prompt.md: charness-artifacts/critique/workers/review-20260921T102855Z-752893/review-prompt.md
+  run-plan.json: charness-artifacts/critique/workers/review-20260921T102855Z-752893/run-plan.json
+  bounded-review-result.schema.json: charness-artifacts/critique/workers/review-20260921T102855Z-752893/bounded-review-result.schema.json
+  capability.json: charness-artifacts/critique/workers/review-20260921T102855Z-752893/capability.json
+  receipt.json: charness-artifacts/critique/workers/review-20260921T102855Z-752893/receipt.json
+  delivery.json: charness-artifacts/critique/workers/review-20260921T102855Z-752893/delivery.json
+  result.json: charness-artifacts/critique/workers/review-20260921T102855Z-752893/result.json
+  runner.stdout: charness-artifacts/critique/workers/review-20260921T102855Z-752893/runner.stdout
+  runner.stderr: charness-artifacts/critique/workers/review-20260921T102855Z-752893/runner.stderr
+  backend.stdout: charness-artifacts/critique/workers/review-20260921T102855Z-752893/backend.stdout
+  backend.stderr: charness-artifacts/critique/workers/review-20260921T102855Z-752893/backend.stderr
+  worker-report.yaml: charness-artifacts/critique/workers/review-20260921T102855Z-752893/worker-report.yaml
+  partial-result.json: charness-artifacts/critique/workers/review-20260921T102855Z-752893/partial-result.json
+  attempt-manifest.json: charness-artifacts/critique/workers/review-20260921T102855Z-752893/attempt-manifest.json
+  durable_report: charness-artifacts/critique/workers/review-20260921T102855Z-752893/worker-report.yaml
+identities:
+  attempt_id: review-20260921T102855Z-752893
+  scope: 'issue-resolution: review resolution/recurrence and per-target behavioral
+    observations for corca-ai/charness#814, corca-ai/charness#815; do not merely diagnose
+    causes'
+  packet_identity: e5c8e8eb56bf886c6a5c38c5b34ec43a9ee3005990ab5c408c4a688d3a12598c
+  reviewed_input_identity: e588fbf4ac064364ae890bedbb955978d105f3ec6d1a404d0e73de6d54f6ca77
+  parent_receipt_identity: parent-2b823c80a27893f53bc5711da6db5c90b7b17ab14d54a734
+  findings_identity: 8e07d30f6db413c8f9011f8b9c1c1730f1b053c26ecf9e6c8435ba5dc3ab6c7f
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/review-20260921T102855Z-752893-packet.json
+  packet_sha256: e5c8e8eb56bf886c6a5c38c5b34ec43a9ee3005990ab5c408c4a688d3a12598c
+  identity_sha256: e588fbf4ac064364ae890bedbb955978d105f3ec6d1a404d0e73de6d54f6ca77
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+timeout_seconds: 900
+scope: 'issue-resolution: review resolution/recurrence and per-target behavioral observations
+  for corca-ai/charness#814, corca-ai/charness#815; do not merely diagnose causes'
+lens: 'Assess the resolution and recurrence protection for each target, with an evidence-backed
+  behavioral verdict. Pass only when the repair is supported; block or defer when
+  it is not. Diagnosis alone is insufficient. Additional caller focus: Working tree
+  is clean main HEAD: file contents are current-main evidence. #814: confirm build_muse_args
+  passes exactly one --workspace at the lane worktree root with --trust-workspace,
+  lane_writable_dirs returns no grants for muse, and name the regression tests covering
+  it. #815: confirm require-change lanes get implementation-lane directives plus typed
+  BLOCKED protocol with lane_progress on the receipt, and name the regression tests
+  covering it. Pass only if each repair is present in these contents and mapped to
+  its tests.'
+parent_receipt_identity: parent-2b823c80a27893f53bc5711da6db5c90b7b17ab14d54a734
+semantic_input:
+  entries:
+  - path: docs/agent-task-runs.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/review-20260921T102855Z-752893/semantic-input/0000-content.bin
+    content_sha256: c026044cad6c76efa28c71c54bc04bd29606a12a1df68ae6de44394dab1ac451
+    carrier_sha256: cbd62dc79ae0fb13686d792b58f5542e5f895d6a401aa44ead95bfcb0e1134fa
+    source: working-tree:docs/agent-task-runs.md
+    size_bytes: 5259
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_lane_runner.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/review-20260921T102855Z-752893/semantic-input/0001-content.bin
+    content_sha256: f6a6688922132fca181f2fd4482f77fbefb8414d15c0e79dfdf0f856c286fc26
+    carrier_sha256: ac75e16f88d465100e9f575435d0394d667ce1d081538089299df81815e316f1
+    source: working-tree:scripts/task_run/task_run_lane_runner.py
+    size_bytes: 8293
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_runtime.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/review-20260921T102855Z-752893/semantic-input/0002-content.bin
+    content_sha256: a04aa434c7bd4e5c1c5e195956db6458befd6aaaf7f5a5a449c317a5c37bc9b2
+    carrier_sha256: 01aa20565de2bf66d0f531ec07e46a9a360b1bb02e35c2988f13cb9008481f58
+    source: working-tree:scripts/task_run/task_run_runtime.py
+    size_bytes: 9984
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_task_run_implementation_lane.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/review-20260921T102855Z-752893/semantic-input/0003-content.bin
+    content_sha256: 45f31dbcfa611769b2468be3d161b4e9063fdabfc36fabd60ae5b0c14e829697
+    carrier_sha256: 43dc884ff7a5fc5cfe248562e6d4ce9bf17e5747b403ae72dfcb01edf2b64990
+    source: working-tree:tests/charness_cli/test_task_run_implementation_lane.py
+    size_bytes: 3561
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_task_run_muse_executor.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/review-20260921T102855Z-752893/semantic-input/0004-content.bin
+    content_sha256: 0ceb81b9a5ea9b435f5b64a7743ba44a3b3731c46d557160e1086477da2400de
+    carrier_sha256: 0cf26f7911d9cd965a7933af3f02247dbf06b2ae1205f918b5b0224b06b5fb84
+    source: working-tree:tests/charness_cli/test_task_run_muse_executor.py
+    size_bytes: 5952
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/review-20260921T102855Z-752893/semantic-input/manifest.json
+  size_bytes: 33049
+runner_output:
+  status: runner-completed
+  returncode: 0
+runner_stream:
+  consistent: true
+  reason: null
+  runner_stdout_sha256: 58654e8e71ea6f30fdcdfb86a913af361864cc51dd53bb4fb4849446558437a0
+  canonical_report_sha256: 58654e8e71ea6f30fdcdfb86a913af361864cc51dd53bb4fb4849446558437a0
+boundary_readback:
+  mode: read-only-worker
+  required: false
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity
+identity_check:
+  status: matched
+  matches: true
+  checks:
+    packet_identity:
+      expected: e5c8e8eb56bf886c6a5c38c5b34ec43a9ee3005990ab5c408c4a688d3a12598c
+      actual: e5c8e8eb56bf886c6a5c38c5b34ec43a9ee3005990ab5c408c4a688d3a12598c
+      matches: true
+      provenance: e5c8e8eb56bf886c6a5c38c5b34ec43a9ee3005990ab5c408c4a688d3a12598c
+    reviewed_input_identity:
+      expected: e588fbf4ac064364ae890bedbb955978d105f3ec6d1a404d0e73de6d54f6ca77
+      actual: e588fbf4ac064364ae890bedbb955978d105f3ec6d1a404d0e73de6d54f6ca77
+      matches: true
+      provenance: e588fbf4ac064364ae890bedbb955978d105f3ec6d1a404d0e73de6d54f6ca77
+    parent_receipt_identity:
+      expected: parent-2b823c80a27893f53bc5711da6db5c90b7b17ab14d54a734
+      actual: parent-2b823c80a27893f53bc5711da6db5c90b7b17ab14d54a734
+      matches: true
+      provenance: parent-2b823c80a27893f53bc5711da6db5c90b7b17ab14d54a734
+  reason: null
