@@ -32,10 +32,30 @@ A `--require-change` lane is an implementation lane: the carrier prepends
 directives naming the scope, demanding prompt entry into the scoped
 edit/test loop, and defining a typed early blocker (`BLOCKED: <reason>`
 on its own line) with `CONTRACT-READ` / `EDITING` / `TESTING` progress
-markers. The receipt records `lane_progress` (phases observed plus the
-blocker, if any); a changeless require-change lane that never emitted
-`EDITING` fails with that stall named. Other lanes transmit the prompt
-verbatim.
+markers. Discovery that the real owner of the requested behavior lies
+outside the declared scope must end in
+`BLOCKED: scope mismatch - real owner <path> is outside declared scope`
+instead of further adjacent-file exploration. The receipt records
+`lane_progress` (phases observed plus the blocker, if any), parsed from
+both the delivery stream (stdout) and the executor transcript (stderr),
+so a lane with an empty delivery still reports the phases it emitted and
+the parent can tell "alive and editing" from "alive but still exploring"
+without tailing executor logs. While the lane runs, the carrier relays
+phase changes as `PROGRESS` lines on its own stderr, so the parent watches
+"alive and editing" versus "alive but still exploring" live. A
+require-change lane that announced `CONTRACT-READ` but shows no `EDITING`
+and no real scoped diff once the no-progress budget is spent
+(`CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS`, default 300; `0` disables the
+stop) is killed and recorded with a typed `NO-PROGRESS-STOP` blocker; the
+guard configuration and outcome live on the receipt as `progress_guard`.
+A changeless require-change lane that never emitted `EDITING` fails with
+that stall named. Other lanes transmit the prompt verbatim.
+
+An interrupted lane whose checkpoint proved the worktree held no scoped
+changes reports a known unchanged candidate (`interrupted-before-edit`,
+`state_known: true`) with cleanup-or-corrected-scope retry guidance, not
+`interrupted-mid-edit`. The WIP shape is reserved for worktrees that
+actually contain changes whose completeness is unknown.
 
 ## Run
 

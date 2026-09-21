@@ -251,7 +251,7 @@ def test_interruption_is_a_distinct_terminal_state(tmp_path: Path, monkeypatch) 
     repo = _repo(tmp_path)
     executable = _codex(tmp_path, "exit 0")
     monkeypatch.setattr(
-        task_run,
+        task_run_execution,
         "_execute_codex",
         lambda *_args, **_kwargs: {
             "exit_code": None,
@@ -387,3 +387,18 @@ def test_task_status_projects_an_advisory_runner_pid_check(
     ]
     assert task_run.task_status(repo, "stale")["liveness"]["alive"] is False
     assert "liveness" not in json.loads(record_path.read_text(encoding="utf-8"))
+
+
+def test_task_status_reports_a_missing_task_id(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+
+    assert task_run.task_status(repo, "absent") == {
+        "schema_version": 1,
+        "event": "task-status",
+        "repo_root": str(repo),
+        "task_id": "absent",
+        "status": "missing",
+        "result_path": str(
+            task_run_runtime.task_runtime_root(repo) / "task-run" / "absent" / "result.json"
+        ),
+    }

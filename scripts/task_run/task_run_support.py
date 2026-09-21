@@ -82,6 +82,7 @@ utc_now_iso = _runtime.utc_now_iso
 task_execution_runtime_root = _runtime.task_execution_runtime_root
 task_result_path = _runtime.task_result_path
 task_runtime_root = _runtime.task_runtime_root
+task_status = _runtime.task_status
 validate_lane_id = _runtime.validate_lane_id
 write_task_result = _runtime.write_task_result
 _resolve_codex = _runtime._resolve_codex

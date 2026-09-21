@@ -25,6 +25,7 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.runtime_bootstrap import runtime_root  # noqa: E402
+from scripts.task_run import task_run_git as _git_owner  # noqa: E402
 from scripts.task_run.task_run_contract import (  # noqa: E402
     _TASK_ID_RE,
     FAIL,
@@ -257,6 +258,34 @@ def read_task_results(runtime_path: Path) -> list[dict[str, Any]]:
             raise TaskRunError(f"task result must be a JSON object: {path}")
         results.append(payload)
     return results
+
+
+def task_status(repo_root: Path, task_id: str | None = None) -> dict[str, Any]:
+    """Read the one external task-run result store without mutation."""
+    resolved_repo = _git_owner._require_git_root(repo_root)
+    runtime_path = task_runtime_root(resolved_repo)
+    if task_id is not None:
+        record = read_task_result(runtime_path, task_id)
+        if record is not None:
+            return {**record, "liveness": runner_liveness(record)}
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "event": "task-status",
+            "repo_root": str(resolved_repo),
+            "task_id": task_id,
+            "status": "missing",
+            "result_path": str(task_result_path(runtime_path, task_id)),
+        }
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "event": "task-status-list",
+        "repo_root": str(resolved_repo),
+        "runtime_root": str(runtime_path),
+        "tasks": [
+            {**record, "liveness": runner_liveness(record)}
+            for record in read_task_results(runtime_path)
+        ],
+    }
 
 
 def _failure_payload(

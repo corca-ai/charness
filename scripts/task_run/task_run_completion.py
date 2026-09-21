@@ -20,7 +20,9 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.gates_support.runtime_root_retention import _rmtree_writable  # noqa: E402
+from scripts.task_run import task_run_changed_line as _changed_line  # noqa: E402
 from scripts.task_run import task_run_lane_runner as _lane_runner  # noqa: E402
+from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run.task_run_completion_next_step import _next_step  # noqa: E402
 from scripts.task_run.task_run_contract import TaskRunError  # noqa: E402
 from scripts.task_run.task_run_git import _candidate_carrier  # noqa: E402
@@ -39,6 +41,7 @@ def complete_task(
     parent_before: dict[str, list[str]],
     parent_before_head: str,
     stdout_log: Path,
+    stderr_log: Path | None = None,
     execution: dict[str, Any],
     started_at: float,
     persist: Callable[[dict[str, Any], Path], None],
@@ -125,7 +128,12 @@ def complete_task(
         delivery=delivery,
     )
     _lane_runner.apply_lane_receipt(
-        payload, blockers, delivery=delivery, require_change=require_change, scope=scope
+        payload,
+        blockers,
+        delivery=delivery,
+        require_change=require_change,
+        scope=scope,
+        stderr_text=_progress._lane_stderr_text(stdout_log, stderr_log),
     )
     gate, blockers, result_state = _prove_ready_candidate(
         payload,
@@ -320,9 +328,7 @@ def _persist_useful_dirty_candidate(
     return None
 
 
-def _candidate_has_work(candidate: Mapping[str, Any]) -> bool:
-    """Whether a completed candidate has bytes worth preserving, even if invalid."""
-    return bool(candidate.get("useful") or candidate.get("changed_paths"))
+_candidate_has_work = _changed_line._candidate_has_work
 
 
 def _carrier_is_complete(carrier: Mapping[str, Any]) -> bool:
@@ -485,55 +491,4 @@ def release_finished_lane(
     return retention
 
 
-def _changed_line_verdict(
-    changed_line_gate: Callable[..., dict[str, Any]] | None,
-    *,
-    execution_status: str,
-    candidate: Mapping[str, Any],
-    worktree: Path,
-    base_sha: str,
-    log_dir: Path,
-    skip_reason: str | None = None,
-) -> dict[str, Any]:
-    """Run the gate for a validated candidate; otherwise say why it did not run."""
-    has_work = _candidate_has_work(candidate)
-    if changed_line_gate is None:
-        return {
-            "status": "not-run",
-            "blocking": has_work,
-            "reason": "no changed-line gate was supplied to completion",
-            "summary": (
-                "changed-line gate not run: none supplied"
-                + ("; changed candidate is not approval-eligible" if has_work else "")
-            ),
-        }
-    if skip_reason:
-        return {
-            "status": "skipped",
-            "blocking": has_work,
-            "reason": skip_reason,
-            "summary": (
-                f"changed-line gate skipped: {skip_reason}"
-                + ("; changed candidate is not approval-eligible" if has_work else "")
-            ),
-        }
-    if execution_status != "completed" or not candidate.get("useful"):
-        reason = (
-            f"execution ended {execution_status} with candidate status "
-            f"{candidate.get('status')!r}; there is no validated candidate to judge"
-        )
-        return {
-            "status": "skipped",
-            "blocking": False,
-            "reason": reason,
-            "summary": f"changed-line gate skipped: {reason}",
-        }
-    verdict = changed_line_gate(worktree, base_sha=base_sha, log_dir=log_dir)
-    # A repository that does not carry this release-only gate has an explicit
-    # typed no-op, unlike a caller that omitted the gate or skipped it.  Keep
-    # the original status for diagnostics while exposing the proof class used by
-    # retention and approval consumers.
-    if has_work and verdict.get("status") == "not-applicable" and not verdict.get("blocking"):
-        verdict = dict(verdict)
-        verdict["proof_status"] = "noop"
-    return verdict
+_changed_line_verdict = _changed_line._changed_line_verdict

@@ -106,6 +106,7 @@ def _execute_codex(
     stdout_log: Path,
     stderr_log: Path,
     timeout_seconds: int,
+    lane_watch: Any | None = None,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {"exit_code": None, "timed_out": False, "interrupted": False}
     group_path = stdout_log.with_suffix(".pgid")
@@ -123,6 +124,16 @@ def _execute_codex(
                 terminal_stderr = os.fdopen(os.dup(2), "w", buffering=1, closefd=True)
                 outcome = None
                 try:
+                    if lane_watch is not None:
+                        lane_watch.start(
+                            emit=lambda phases, elapsed: print(
+                                f"PROGRESS [codex] elapsed={elapsed:.1f}s "
+                                f"phases={','.join(phases) if phases else 'none'}",
+                                file=terminal_stderr,
+                                flush=True,
+                            ),
+                            kill=lambda: _kill_recorded_process_group(group_path),
+                        )
                     with _redirect_stdio(prompt_handle, stdout_handle, stderr_handle):
                         outcome = run_monitored_phase(
                             _command_with_normal_completion_cleanup(
@@ -139,11 +150,19 @@ def _execute_codex(
                 except KeyboardInterrupt:
                     result["interrupted"] = True
                 finally:
+                    if lane_watch is not None:
+                        lane_watch.stop()
                     terminal_stderr.close()
                     _kill_recorded_process_group(group_path)
                 if outcome is not None:
                     result["timed_out"] = outcome.timed_out
                     result["exit_code"] = None if outcome.timed_out else outcome.returncode
+                if (
+                    lane_watch is not None
+                    and lane_watch.stop_reason is not None
+                    and not result["interrupted"]
+                ):
+                    result["progress_stopped"] = lane_watch.stop_reason
     except OSError as exc:
         result["exec_error"] = str(exc)
     return result

@@ -25,6 +25,7 @@ from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 from scripts.task_run import task_run_changed_line as _changed_line  # noqa: E402
 from scripts.task_run import task_run_completion as _completion  # noqa: E402
 from scripts.task_run import task_run_lane_runner as _lane_runner  # noqa: E402
+from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402
 from scripts.task_run.task_run_git import _checkout_own_dir, _repo_snapshot  # noqa: E402
 from scripts.task_run.task_run_plan import resolve_task_inputs as _resolve_task_inputs  # noqa: E402
@@ -42,7 +43,6 @@ FAIL = _support.FAIL
 TaskRunError = _support.TaskRunError
 _collect_populations = _support._collect_populations
 _completion_evidence = _support._completion_evidence
-_execute_codex = _support._execute_codex
 _failure_payload = _support._failure_payload
 _git = _support._git
 _git_common_dir = _support._git_common_dir
@@ -145,6 +145,7 @@ def _complete_task(
     parent_before: dict[str, list[str]],
     parent_before_head: str,
     stdout_log: Path,
+    stderr_log: Path | None = None,
     execution: dict[str, Any],
     started_at: float,
     candidate_commit: dict[str, Any] | None,
@@ -162,6 +163,7 @@ def _complete_task(
         parent_before=parent_before,
         parent_before_head=parent_before_head,
         stdout_log=stdout_log,
+        stderr_log=stderr_log,
         execution=execution,
         started_at=started_at,
         candidate_commit=candidate_commit,
@@ -395,14 +397,18 @@ def run_task(
             f"task run: executing {resolved_executor} in {resolved_target}",
             file=sys.stderr,
         )
-        execution = _execute_codex(
+        execution = _progress._execute_watched_lane(
+            payload,
             command,
-            prompt=lane_prompt,
-            target_path=resolved_target,
+            lane_prompt=lane_prompt,
+            resolved_target=resolved_target,
             configured_env=configured_env,
             stdout_log=stdout_log,
             stderr_log=stderr_log,
             timeout_seconds=timeout_seconds,
+            require_change=resolved_require_change,
+            base_sha=base_sha,
+            scope_specs=scope_specs,
         )
         _record_timing(payload, "exec", exec_started_at)
         candidate_commit = None
@@ -454,6 +460,7 @@ def run_task(
             parent_before=parent_before,
             parent_before_head=parent_before_head,
             stdout_log=stdout_log,
+            stderr_log=stderr_log,
             execution=execution,
             started_at=started_at,
             candidate_commit=candidate_commit,
@@ -480,29 +487,4 @@ def run_task(
         )
 
 
-def task_status(repo_root: Path, task_id: str | None = None) -> dict[str, Any]:
-    """Read the one external task-run result store without mutation."""
-    resolved_repo = _support._require_git_root(repo_root)
-    runtime_path = _support.task_runtime_root(resolved_repo)
-    if task_id is not None:
-        record = _support.read_task_result(runtime_path, task_id)
-        if record is not None:
-            return {**record, "liveness": _support.runner_liveness(record)}
-        return {
-            "schema_version": _support.SCHEMA_VERSION,
-            "event": "task-status",
-            "repo_root": str(resolved_repo),
-            "task_id": task_id,
-            "status": "missing",
-            "result_path": str(_support.task_result_path(runtime_path, task_id)),
-        }
-    return {
-        "schema_version": _support.SCHEMA_VERSION,
-        "event": "task-status-list",
-        "repo_root": str(resolved_repo),
-        "runtime_root": str(runtime_path),
-        "tasks": [
-            {**record, "liveness": _support.runner_liveness(record)}
-            for record in _support.read_task_results(runtime_path)
-        ],
-    }
+task_status = _support.task_status

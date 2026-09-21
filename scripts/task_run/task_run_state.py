@@ -44,6 +44,8 @@ _ABNORMAL_EXIT_STATES = ("timed-out", "interrupted", "failed")
 
 
 def _execution_state(execution: dict[str, Any], delivery: dict[str, Any]) -> str:
+    if execution.get("progress_stopped"):
+        return "failed"
     if execution["interrupted"] or (
         execution["exit_code"] is not None and execution["exit_code"] < 0
     ):
@@ -80,6 +82,24 @@ def _abnormal_exit_state(execution: dict[str, Any]) -> str | None:
     return None
 
 
+def _checkpoint_found_no_changes(
+    candidate: dict[str, Any], candidate_commit: dict[str, Any]
+) -> bool:
+    """Whether the WIP checkpoint proved the worktree held no scoped changes.
+
+    A skipped checkpoint plus an empty scope verdict means the lane was
+    stopped before its first edit (#822): there is no partial code to salvage,
+    so the candidate reports a known unchanged state instead of
+    `interrupted-mid-edit`. A failed checkpoint is genuinely unknown and keeps
+    the WIP shape.
+    """
+    return (
+        candidate_commit.get("status") == "skipped"
+        and not candidate.get("changed_paths")
+        and not candidate.get("disallowed_paths")
+    )
+
+
 def _candidate_result_state(
     *,
     execution_state: str,
@@ -100,6 +120,16 @@ def _candidate_result_state(
     if execution_state in _ABNORMAL_EXIT_STATES:
         if candidate_commit is None:
             raise TaskRunError(f"{execution_state} task is missing its WIP candidate commit")
+        if _checkpoint_found_no_changes(candidate, candidate_commit):
+            candidate.update(
+                {
+                    "status": "absent",
+                    "state": f"{execution_state}-before-edit",
+                    "state_known": True,
+                    "commit": candidate_commit,
+                }
+            )
+            return candidate, execution_state
         candidate.update(
             {
                 "status": "wip",

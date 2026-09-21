@@ -17,12 +17,11 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
+from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402
 
 build_codex_command = _support.build_codex_command
 build_muse_command = _support.build_muse_command
-
-LANE_PHASES = ("CONTRACT-READ", "EDITING", "TESTING")
 
 
 def build_lane_prompt(
@@ -47,25 +46,16 @@ def build_lane_prompt(
         "Emit progress lines as you go, one per line: CONTRACT-READ when "
         "contract reads are done, EDITING when the first scoped edit lands, "
         "TESTING when verification runs.\n"
+        "If discovery shows the real owner of the requested behavior (the file "
+        "that must change or the test that owns it) lies outside the declared "
+        "scope, do not keep exploring adjacent files: stop promptly and reply "
+        "BLOCKED: scope mismatch - real owner <path> is outside declared scope.\n"
         "If you cannot make a scoped change, stop promptly and reply with a "
         "typed blocker on its own line: BLOCKED: <concrete reason>. Do not "
         "consume the run in further analysis once blocked.\n"
         "---\n"
         f"{prompt}"
     )
-
-
-def lane_progress(stdout_text: str) -> dict[str, Any]:
-    """Parse phase markers and the typed blocker from lane stdout (#815)."""
-    phases: list[str] = []
-    blocker: str | None = None
-    for line in stdout_text.splitlines():
-        stripped = line.strip()
-        if stripped in LANE_PHASES and stripped not in phases:
-            phases.append(stripped)
-        elif blocker is None and stripped.startswith("BLOCKED:"):
-            blocker = stripped[len("BLOCKED:"):].strip() or None
-    return {"phases": phases, "blocker": blocker}
 
 
 def lane_receipt_blockers(
@@ -102,9 +92,10 @@ def apply_lane_receipt(
     delivery: Any,
     require_change: bool,
     scope: Any,
+    stderr_text: str = "",
 ) -> None:
     """Record `lane_progress` on the receipt and append lane stall blockers."""
-    progress = lane_progress(delivery.get("text") or "")
+    progress = _progress.lane_progress(delivery.get("text") or "", stderr_text)
     payload["lane_progress"] = progress
     blockers.extend(
         lane_receipt_blockers(progress=progress, require_change=require_change, scope=scope)

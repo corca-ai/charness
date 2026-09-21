@@ -951,6 +951,45 @@
         "retention"
       ],
       "rationale": "The runtime-root sweep records `skipped` for every entry it deliberately left alone (a running lane, a key or subtree touched within the active window, a live pytest run lock, an unverifiable salvage), each with its reason, in the JSON log under `<key>/retention/` and, for the by-hand CLI, on stderr; the standing-runner hook prints the counts on one summary line. A skip is a retention decision the operator can read, never a claim that anything was cleaned."
+    },
+    "scripts/task_run/task_run_completion_next_step.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "clean up"
+      ],
+      "rationale": "The interrupted-lane next step branches on candidate.commit status skipped to recommend worktree cleanup or corrected-scope retry instead of candidate salvage. The branch reads the typed persisted commit status from the terminal receipt; lanes with a committed or failed checkpoint keep the WIP wording."
+    },
+    "scripts/task_run/task_run_state.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "before-edit"
+      ],
+      "rationale": "An abnormal lane whose WIP checkpoint recorded commit status skipped with empty changed and disallowed paths reports candidate status absent with state <execution-state>-before-edit and state_known true instead of interrupted-mid-edit. The skipped commit status is a typed persisted field in the terminal result.json candidate.commit; a failed checkpoint keeps the unknown WIP shape."
+    },
+    "scripts/task_run/task_run_changed_line.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "blocking"
+      ],
+      "rationale": "The changed-line verdict reports typed skipped/not-run states when no gate was supplied, when blockers skip it, or when the execution never produced a validated candidate. Each carries a reason and summary onto the terminal result.json changed_line_gate, and a changed candidate with a skipped gate stays approval-ineligible, so the skip cannot read as proof."
     }
   }
 }

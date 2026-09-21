@@ -20,7 +20,7 @@ from __future__ import annotations
 import sys
 import time
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 import yaml
 
@@ -246,4 +246,63 @@ def run_changed_line_gate(
         )
     else:
         verdict["summary"] = f"changed-line gate {status}: {reason}".rstrip(": ")
+    return verdict
+
+
+def _candidate_has_work(candidate: Mapping[str, Any]) -> bool:
+    """Whether a completed candidate has bytes worth preserving, even if invalid."""
+    return bool(candidate.get("useful") or candidate.get("changed_paths"))
+
+
+def _changed_line_verdict(
+    changed_line_gate: Callable[..., dict[str, Any]] | None,
+    *,
+    execution_status: str,
+    candidate: Mapping[str, Any],
+    worktree: Path,
+    base_sha: str,
+    log_dir: Path,
+    skip_reason: str | None = None,
+) -> dict[str, Any]:
+    """Run the gate for a validated candidate; otherwise say why it did not run."""
+    has_work = _candidate_has_work(candidate)
+    if changed_line_gate is None:
+        return {
+            "status": "not-run",
+            "blocking": has_work,
+            "reason": "no changed-line gate was supplied to completion",
+            "summary": (
+                "changed-line gate not run: none supplied"
+                + ("; changed candidate is not approval-eligible" if has_work else "")
+            ),
+        }
+    if skip_reason:
+        return {
+            "status": "skipped",
+            "blocking": has_work,
+            "reason": skip_reason,
+            "summary": (
+                f"changed-line gate skipped: {skip_reason}"
+                + ("; changed candidate is not approval-eligible" if has_work else "")
+            ),
+        }
+    if execution_status != "completed" or not candidate.get("useful"):
+        reason = (
+            f"execution ended {execution_status} with candidate status "
+            f"{candidate.get('status')!r}; there is no validated candidate to judge"
+        )
+        return {
+            "status": "skipped",
+            "blocking": False,
+            "reason": reason,
+            "summary": f"changed-line gate skipped: {reason}",
+        }
+    verdict = changed_line_gate(worktree, base_sha=base_sha, log_dir=log_dir)
+    # A repository that does not carry this release-only gate has an explicit
+    # typed no-op, unlike a caller that omitted the gate or skipped it.  Keep
+    # the original status for diagnostics while exposing the proof class used by
+    # retention and approval consumers.
+    if has_work and verdict.get("status") == "not-applicable" and not verdict.get("blocking"):
+        verdict = dict(verdict)
+        verdict["proof_status"] = "noop"
     return verdict

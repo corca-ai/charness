@@ -24,6 +24,17 @@ def _next_step(
     blockers: list[str],
 ) -> str:
     location = _candidate_location(payload, resolved_target, candidate)
+    if execution_status == "interrupted" and (candidate.get("commit") or {}).get(
+        "status"
+    ) == "skipped":
+        suffix = f"; {'; '.join(blockers)}." if blockers else "."
+        return (
+            f"No scoped changes were retained from the interrupted lane — it stopped "
+            f"before its first edit, so there is no partial candidate to salvage; "
+            f"clean up the retained worktree in {resolved_target} or retry with a "
+            f"corrected scope"
+            + suffix
+        )
     if execution_status == "timed-out":
         suffix = f"; {'; '.join(blockers)}." if blockers else "."
         if (candidate.get("commit") or {}).get("status") != "committed":
