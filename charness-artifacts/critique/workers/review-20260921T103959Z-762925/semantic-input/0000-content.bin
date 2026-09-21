@@ -409,9 +409,29 @@ def run_task(
         abnormal = _abnormal_exit_state(execution)
         if abnormal is not None:
             try:
-                candidate_commit = _lane_runner._checkpoint_interrupted_lane(
-                    resolved_target, base_sha, scope_specs
+                # The WIP checkpoint carries declared-scope changes only: stale
+                # harness residue or an empty lane must not become a candidate
+                # commit (#816). The scope verdict below already classifies the
+                # same population; this reuses its specs rather than redefining
+                # them.
+                refreshed_specs = _support._refresh_scope_specs(
+                    resolved_target, scope_specs
                 )
+                changed = _support._candidate_carrier(
+                    resolved_target, base_sha
+                )["changed_paths"]
+                scoped = _support._paths_in_scopes(changed, refreshed_specs)
+                if scoped:
+                    candidate_commit = _support._commit_wip_candidate(
+                        resolved_target, scoped
+                    )
+                else:
+                    candidate_commit = {
+                        "status": "skipped",
+                        "reason": "no scoped changes: no WIP candidate commit created",
+                        "changed_paths": [],
+                        "correctness_verified": False,
+                    }
             except (
                 OSError,
                 RuntimeError,

@@ -1,0 +1,43 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "issue-resolution: resolution/recurrence and per-target behavioral observations",
+  "packet_sha256": "0b97eb1f4917e191aa88106ff34716402bfed21283230c8fb312a84b839fa561",
+  "reviewed_input_identity_sha256": "41528b962ca4523714d201ba7e58eb0ee62273a013596e9a74863cb136db8cdd",
+  "verdict": "pass",
+  "target_observations": [
+    {
+      "target": "corca-ai/charness#816",
+      "verdict": "pass",
+      "summary": "The reviewed contents repair the abnormal-exit WIP behavior and provide mapped recurrence protection for out-of-scope-only, empty, and mixed-change cases.",
+      "evidence": [
+        "scripts/task_run/task_run.py refreshes scope specs, derives changed paths from the candidate carrier, filters them through _paths_in_scopes, and calls _commit_wip_candidate only when the scoped set is non-empty.",
+        "When no scoped paths exist, scripts/task_run/task_run.py records candidate commit status \"skipped\" with reason \"no scoped changes: no WIP candidate commit created\" and does not advance target_head.",
+        "scripts/task_run/task_run_git.py requires an explicit paths sequence in _commit_wip_candidate and delegates without allow_empty, so its commit command cannot include --allow-empty.",
+        "scripts/task_run/task_run_completion_next_step.py reports timed-out, non-committed candidates as having no WIP candidate commit, matching the skipped outcome.",
+        "tests/charness_cli/test_task_run.py contains three focused regressions: test_timeout_with_only_out_of_scope_change_creates_no_wip_commit, test_timeout_with_no_changes_creates_no_wip_commit, and test_timeout_with_scoped_change_commits_only_scoped_paths.",
+        "The mixed-case test verifies that only module.py is committed while probe.md remains dirty; the out-of-scope-only and empty tests verify HEAD remains at base and the commit record is skipped."
+      ]
+    }
+  ],
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "The timed-out next-step branch treats every non-committed candidate as having no scoped changes.",
+      "bin": "not-blocking-in-reviewed-flow",
+      "disposition": "The abnormal-exit commit failure path returns a terminal result before completion rendering, while the supplied successful non-committed path is the explicit zero-scoped-change skipped record."
+    },
+    {
+      "concern": "The packet supplies test contents but no test-execution receipt.",
+      "bin": "bounded-non-claim",
+      "disposition": "The caller's pass condition asks whether the repair and regression-test mapping are present in these contents; both are present. Runtime execution is not inferred."
+    }
+  ],
+  "next_move": "Accept the issue-resolution contents; run the focused task-run tests through the owning verification workflow before integration if execution evidence is required.",
+  "non_claims": [
+    "No tests or validators were executed as part of this read-only semantic review.",
+    "This verdict does not assess files outside the four identity-bound reviewed paths.",
+    "This verdict does not claim goal-bound evidence; the supplied lineage is explicitly not-goal-bound."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

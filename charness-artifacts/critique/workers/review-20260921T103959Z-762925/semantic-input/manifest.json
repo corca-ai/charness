@@ -1,0 +1,45 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "scripts/task_run/task_run.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0000-content.bin",
+      "content_sha256": "c9fab6176d91c680e69e7648e4b6048cd8223862cccd6450d45cba0966bda94c",
+      "carrier_sha256": "b06049326ae5509638205fb2e7382dabdc12964715e6f97fd463cd1910b4f155",
+      "source": "working-tree:scripts/task_run/task_run.py",
+      "size_bytes": 20262,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_completion_next_step.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0001-content.bin",
+      "content_sha256": "987589ccedab6739161c7707be59d499a543cd7205db1813139a3aaf0ac82a6f",
+      "carrier_sha256": "d890e8fe9bce5fdba98c55112bbe2a20084c1a25f46b6376e089fa97edf8f781",
+      "source": "working-tree:scripts/task_run/task_run_completion_next_step.py",
+      "size_bytes": 1918,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_git.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0002-content.bin",
+      "content_sha256": "23ff17133d7eb634cc8346c4600048def2009583791a2a93c780fd05d2338be7",
+      "carrier_sha256": "0bdaf487cb952276ebba2b5c6f4e1e18ebf0d1bcce4f02c88bf424ada5547d91",
+      "source": "working-tree:scripts/task_run/task_run_git.py",
+      "size_bytes": 20275,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/charness_cli/test_task_run.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0003-content.bin",
+      "content_sha256": "6a068823a607af5ebdd1c543ec160062a407a84a7cb15fae55696bc5c6b73916",
+      "carrier_sha256": "bea10fbf068ad6f22b7eeba8a678432a68a533cd8cf9cca29d3dadf1bde16a18",
+      "source": "working-tree:tests/charness_cli/test_task_run.py",
+      "size_bytes": 36475,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

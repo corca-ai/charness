@@ -155,6 +155,28 @@ def prepare_lane_execution(
     return writable_dirs, lane_prompt, command
 
 
+def _checkpoint_interrupted_lane(
+    resolved_target: Path, base_sha: str, scope_specs: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Commit declared-scope changes as the WIP candidate, or record the skip.
+
+    Stale harness residue or an empty lane must not become a candidate commit
+    (#816). The scope verdict in completion classifies the same population, so
+    this reuses its refreshed specs rather than redefining them.
+    """
+    refreshed_specs = _support._refresh_scope_specs(resolved_target, scope_specs)
+    changed = _support._candidate_carrier(resolved_target, base_sha)["changed_paths"]
+    scoped = _support._paths_in_scopes(changed, refreshed_specs)
+    if not scoped:
+        return {
+            "status": "skipped",
+            "reason": "no scoped changes: no WIP candidate commit created",
+            "changed_paths": [],
+            "correctness_verified": False,
+        }
+    return _support._commit_wip_candidate(resolved_target, scoped)
+
+
 def lane_writable_dirs(
     payload: dict[str, Any],
     resolved: dict[str, Any],

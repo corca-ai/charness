@@ -1,0 +1,68 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'issue-resolution: review resolution/recurrence and per-target behavioral observations
+  for corca-ai/charness#816; do not merely diagnose causes'
+attempt_id: review-20260921T103959Z-762925
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: ba6a9081154d2cdca50c7c67d4ff788b1e5fcde4524d219db3d2cc9445848bab
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-7d86ea9bcd9fb09ef16ea491b6a2dc64/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-7d86ea9bcd9fb09ef16ea491b6a2dc64/delivery.json
+producer_run_id: run-review-20260921T103959Z-762925
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-7d86ea9bcd9fb09ef16ea491b6a2dc64/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-7d86ea9bcd9fb09ef16ea491b6a2dc64/receipt.json
+  producer_run_id: run-review-20260921T103959Z-762925
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: a7fa6f4c61b2ca5b5838de219d36fb79afaf5d035b54385ca806e5209f8799fd
+receipt_output_sha256: a7fa6f4c61b2ca5b5838de219d36fb79afaf5d035b54385ca806e5209f8799fd
+packet_identity: 0b97eb1f4917e191aa88106ff34716402bfed21283230c8fb312a84b839fa561
+reviewed_input_identity: 41528b962ca4523714d201ba7e58eb0ee62273a013596e9a74863cb136db8cdd
+parent_receipt_identity: parent-74583c2ec6d5839f3cea03c1052343fdea67a65e2b08cc21
+provenance:
+  scope: 'issue-resolution: review resolution/recurrence and per-target behavioral
+    observations for corca-ai/charness#816; do not merely diagnose causes'
+  packet_identity: 0b97eb1f4917e191aa88106ff34716402bfed21283230c8fb312a84b839fa561
+  reviewed_input_identity: 41528b962ca4523714d201ba7e58eb0ee62273a013596e9a74863cb136db8cdd
+  parent_receipt_identity: parent-74583c2ec6d5839f3cea03c1052343fdea67a65e2b08cc21
+  expected_targets_sha256: null
+  attempt_id: review-20260921T103959Z-762925
+  attempt_scope: 'issue-resolution: review resolution/recurrence and per-target behavioral
+    observations for corca-ai/charness#816; do not merely diagnose causes'
+  attempt_packet_identity: 0b97eb1f4917e191aa88106ff34716402bfed21283230c8fb312a84b839fa561
+  attempt_parent_receipt_identity: parent-74583c2ec6d5839f3cea03c1052343fdea67a65e2b08cc21
+  result_packet_identity: 0b97eb1f4917e191aa88106ff34716402bfed21283230c8fb312a84b839fa561
+  result_reviewed_input_identity: 41528b962ca4523714d201ba7e58eb0ee62273a013596e9a74863cb136db8cdd
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: ba6a9081154d2cdca50c7c67d4ff788b1e5fcde4524d219db3d2cc9445848bab
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

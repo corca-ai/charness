@@ -910,6 +910,19 @@
       ],
       "rationale": "Web-fetch skipped acquisition attempts are explicit trace entries."
     },
+    "scripts/task_run/task_run_lane_runner.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "reason"
+      ],
+      "rationale": "An interrupted lane with zero declared-scope changes records candidate commit `status: skipped` with a `reason` instead of an empty WIP commit. It is a typed, persisted field in the lane's terminal `result.json`, and the timed-out next-step names the missing commit, so a skipped checkpoint cannot read as a recorded candidate."
+    },
     "scripts/task_run/task_run_completion.py": {
       "states": [
         "skipped"
