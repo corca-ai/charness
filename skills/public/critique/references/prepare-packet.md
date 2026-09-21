@@ -87,10 +87,14 @@ own packet identity, worker delivery, and approval readback.
 
 For a review that genuinely covers several caller-owned targets, repeat
 `--prepared-target <target>` on `run_review.py` or `prepare_packet.py` and bind
-the source paths that establish every target's claims. These declarations are
-opaque to the shared runner; the consuming skill judges membership and the
-reviewer's per-target observations. Adding labels does not expand what was
-reviewed. Existing packets cannot be combined with packet-generation flags.
+the source paths that establish every target's claims. When the review runs on
+the file-backed worker, repeat each prepared target as `--expected-target` to
+`run_reviewer_worker.py` and instruct the prompt to emit exactly one
+`target_observations` entry per target: the coverage floor then refuses a
+schema-valid result that silently drops one (#819). On lanes without that
+wiring the declarations stay opaque and the consuming skill judges membership
+and the reviewer's per-target observations. Adding labels does not expand what
+was reviewed. Existing packets cannot be combined with packet-generation flags.
 The issue consumer's [bundled closeout path](../../issue/references/closeout-discipline.md#bundled-closeout)
 accepts a current review directly when its exact scope and evidence fit.
 
