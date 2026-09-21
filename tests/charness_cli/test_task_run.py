@@ -858,6 +858,34 @@ def test_timeout_with_scoped_change_commits_only_scoped_paths(
     assert "probe.md" in _git(worktree, "status", "--porcelain=v1").stdout
 
 
+def test_timeout_with_prestaged_out_of_scope_change_keeps_it_out_of_wip(
+    tmp_path: Path,
+) -> None:
+    """#816 / release critique A-001: content the lane staged outside the scope
+    stays staged and out of the WIP commit, because the commit itself carries
+    the scope pathspec instead of committing the whole index."""
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "printf 'VALUE = 2\\n' > module.py\nprintf 'probe\\n' > probe.md\n"
+        "git add probe.md\nsleep 5",
+    )
+
+    payload = _run(repo, tmp_path, executable, timeout_seconds=1)
+
+    worktree = Path(payload["worktree_path"])
+    commit = payload["candidate"]["commit"]
+
+    assert payload["status"] == "timed-out"
+    assert commit["status"] == "committed"
+    committed = _git(
+        worktree, "show", "--name-only", "--format=", commit["sha"]
+    ).stdout.split()
+    assert committed == ["module.py"]
+    status = _git(worktree, "status", "--porcelain=v1").stdout
+    assert "probe.md" in status
+
+
 def test_task_kills_same_group_background_descendants_before_evidence(tmp_path: Path) -> None:
     """The runtime kills the whole process group before collecting evidence, so a
     background descendant that survives codex's own exit must not be allowed to

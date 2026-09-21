@@ -147,9 +147,11 @@ def _commit_lane_snapshot(
 ) -> dict[str, Any]:
     """Commit lane output onto the current branch.
 
-    ``paths`` stages only the named repository-relative paths; ``None`` keeps
-    the historical stage-everything shape for the completed-lane persistence
-    path, whose scope verdict already ran.
+    ``paths`` stages and commits only the named repository-relative paths: the
+    commit itself carries the pathspec, so content the lane staged outside the
+    scope stays staged and out of the commit. ``None`` keeps the historical
+    stage-everything shape for the completed-lane persistence path, whose scope
+    verdict already ran.
     """
     git_run = git if git is not None else _git
     read_output = git_output if git_output is not None else _git_output
@@ -166,6 +168,8 @@ def _commit_lane_snapshot(
     if allow_empty:
         commit_cmd.append("--allow-empty")
     commit_cmd.extend(["--no-verify", "--message", message])
+    if paths is not None:
+        commit_cmd.extend(["--", *paths])
     committed = git_run(
         repo_root,
         "-c",
@@ -195,9 +199,11 @@ def _commit_lane_snapshot(
 def _commit_wip_candidate(repo_root: Path, paths: Sequence[str]) -> dict[str, Any]:
     """Checkpoint declared-scope lane output as an explicitly unverified WIP.
 
-    Only the named paths are staged, and the commit is never empty: a caller
-    with zero scoped changes must skip the commit instead of recording one
-    (#816). An empty stage fails the commit rather than recording nothing.
+    Only the named paths are staged and committed, and the commit is never
+    empty: a caller with zero scoped changes must skip the commit instead of
+    recording one (#816). Content staged outside the scope stays staged and
+    out of the commit. An empty stage fails the commit rather than recording
+    nothing.
     """
     return _commit_lane_snapshot(
         repo_root,
