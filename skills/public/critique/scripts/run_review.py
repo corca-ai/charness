@@ -77,6 +77,16 @@ def _parser() -> argparse.ArgumentParser:
         help="Opaque target covered by a generated packet; repeat for bundles",
     )
     parser.add_argument("--reviewed-path", action="append", default=None, help="Repo-relative path to include")
+    parser.add_argument(
+        "--expected-target",
+        action="append",
+        default=None,
+        help=(
+            "Admitted target the result must observe; repeat for bundles. Declaring "
+            "opts this run into the worker coverage floor, independent of the "
+            "packet's prepared-target labels."
+        ),
+    )
     parser.add_argument("--reviewed-paths-file", help="Repo-relative newline-delimited reviewed-path manifest")
     parser.add_argument(
         "--follow-up-from",

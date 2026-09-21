@@ -249,6 +249,7 @@ def _run(
     reviewed_path: str | None = "reviewed.txt",
     packet_reviewed_path: str | None = None,
     prepared_targets: Sequence[str] | None = None,
+    expected_targets: Sequence[str] | None = None,
     scope: str = "semantic command",
     observations: object | None = None,
 ) -> subprocess.CompletedProcess[str]:
@@ -281,6 +282,8 @@ def _run(
             command.extend(["--reviewed-path", packet_reviewed_path])
     for target in prepared_targets or ():
         command.extend(["--prepared-target", target])
+    for target in expected_targets or ():
+        command.extend(["--expected-target", target])
     if goal_lineage is not None:
         command.extend(["--goal-lineage-file", goal_lineage])
     if dry_run:

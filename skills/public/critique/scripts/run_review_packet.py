@@ -9,7 +9,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 REFUSAL_DETAIL_FIELDS = (
     "adapter_path",
@@ -300,6 +300,7 @@ def write_prompt(
     input_sha: str,
     goal_lineage: dict[str, Any] | None = None,
     semantic_input: dict[str, Any] | None = None,
+    expected_targets: Sequence[str] | None = None,
 ) -> None:
     readable_paths, deleted_paths = _semantic_review_paths(packet)
     semantic_lines = [
@@ -334,18 +335,14 @@ def write_prompt(
         json.dumps(packet["follow_up"], ensure_ascii=False, indent=2, sort_keys=True),
         "Use prior findings as hypotheses and judge only the new packet/current selected input.",
     ) if isinstance(packet.get("follow_up"), dict) else ()
-    declared_targets = packet.get("prepared_targets")
+    declared = sorted(set(expected_targets or ()))
     target_lines = (
-        (
-            "This packet declares prepared targets "
-            f"{json.dumps(declared_targets, ensure_ascii=False, sort_keys=True)}: emit exactly one "
-            "`target_observations` entry per target, each with a nonempty summary and a nonempty "
-            "evidence array. A schema-valid result that silently drops a declared target is refused "
-            "as incomplete coverage, so never invent observations for targets you did not review.",
-        )
-        if isinstance(declared_targets, list) and declared_targets
-        else ()
-    )
+        "This run declares admitted targets "
+        f"{json.dumps(declared, ensure_ascii=False)}: emit exactly one "
+        "`target_observations` entry per target, each with a nonempty summary and a nonempty "
+        "evidence array. A schema-valid result that silently drops a declared target is refused "
+        "as incomplete coverage, so never invent observations for targets you did not review.",
+    ) if declared else ()
     path.write_text(
         "\n".join(
             (

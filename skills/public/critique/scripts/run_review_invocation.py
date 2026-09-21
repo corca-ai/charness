@@ -22,14 +22,17 @@ def runner_command(
     parent_receipt: str,
     boundary_mode: str,
     boundary_sha: str | None,
-    prepared_targets: Sequence[str] | None = None,
+    expected_targets: Sequence[str] | None = None,
 ) -> list[str]:
     """Bind one worker process to the prepared packet and artifact paths.
 
-    ``prepared_targets`` declares the packet's admitted set to the worker's
-    coverage floor: a schema-valid result that silently drops one fails as
-    coverage, not shape. No declaration keeps the historical shape-only
-    behavior.
+    ``expected_targets`` opts the run into the worker's coverage floor: a
+    schema-valid result that silently drops a declared target fails as
+    coverage, not shape. It is deliberately separate from the packet's
+    ``prepared_targets`` metadata, which stays opaque membership data for
+    the consuming skill — declaring a floor is the caller's explicit choice,
+    never an automatic promotion of packet labels. No declaration keeps the
+    historical shape-only behavior.
     """
 
     def relative(key: str) -> str:
@@ -59,6 +62,6 @@ def runner_command(
     ]
     if boundary_sha is not None:
         command.extend(["--boundary-fingerprint", boundary_sha])
-    for target in prepared_targets or ():
+    for target in expected_targets or ():
         command.extend(["--expected-target", target])
     return command
