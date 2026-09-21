@@ -11,6 +11,10 @@
   enforcement, unchanged-interrupt classification) plus regression tests
   and cohesive module splits; no new public skill, command, or install
   surface, and no existing invocation breaks.
+- **Closes**: #815 (reopened require-change stall regression — dual-stream
+  phase parsing, live PROGRESS relay, no-progress and linger guards) and
+  #822 (unchanged interrupted lane mislabeled interrupted-mid-edit —
+  known before-edit classification).
 - **Reviewed delta**: `f274a39aa..HEAD` at review time across three rounds.
   Round 1 (`a`/`b`) reviewed the base fix; round 2 (`a2`/`b2`) reviewed
   the round-1 answers; the `c2` follow-up reviewed the round-2 answers;
