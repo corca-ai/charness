@@ -1,0 +1,338 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-21T02:10:06Z",
+  "prepared_for": "849119829220c85d63ca20a20be1308b4e4c7a2b..a2b18fcf2169a3636995d0ed94b3dfe88c66ed02",
+  "changed_ref": "849119829220c85d63ca20a20be1308b4e4c7a2b..a2b18fcf2169a3636995d0ed94b3dfe88c66ed02",
+  "substrate_mode": "committed-ref",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for ref `849119829220c85d63ca20a20be1308b4e4c7a2b..a2b18fcf2169a3636995d0ed94b3dfe88c66ed02`: (narrow follow-up scope)\nExact reviewed-path manifest:\n- charness-artifacts/critique/review-20260921T103959Z-762925-packet.json\n- charness-artifacts/critique/review-20260921T103959Z-762925-packet.md\n- charness-artifacts/critique/review-20260921T104030Z-763442-packet.json\n- charness-artifacts/critique/review-20260921T104030Z-763442-packet.md\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/attempt-manifest.json\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/backend.stderr\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/backend.stdout\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/bounded-review-result.schema.json\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/capability.json\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/delivery.json\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/lifecycle.yaml\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/partial-result.json\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/receipt.json\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/result.json\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/review-prompt.md\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/run-plan.json\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/runner.stderr\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/runner.stdout\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0000-content.bin\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0001-content.bin\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0002-content.bin\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0003-content.bin\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/manifest.json\n- charness-artifacts/critique/workers/review-20260921T103959Z-762925/worker-report.yaml\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/attempt-manifest.json\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/backend.stderr\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/backend.stdout\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/bounded-review-result.schema.json\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/capability.json\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/delivery.json\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/lifecycle.yaml\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/partial-result.json\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/receipt.json\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/result.json\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/review-prompt.md\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/run-plan.json\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/runner.stderr\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/runner.stdout\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/semantic-input/0000-content.bin\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/semantic-input/0001-content.bin\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/semantic-input/manifest.json\n- charness-artifacts/critique/workers/review-20260921T104030Z-763442/worker-report.yaml\n- docs/implementation-discipline.md\n- scripts/task_run/task_run.py\n- scripts/task_run/task_run_completion_next_step.py\n- scripts/task_run/task_run_git.py\n- scripts/task_run/task_run_lane_runner.py\n- skills/public/quality/references/attention-state-visibility.json\n- skills/public/release/references/adapter-contract.md\n- tests/charness_cli/test_task_run.py\n- tests/quality_gates/test_release_run_planner.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_completion_next_step.py, scripts/task_run/task_run_git.py, scripts/task_run/task_run_lane_runner.py, skills/public/quality/references/attention-state-visibility.json, skills/public/release/references/adapter-contract.md\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/review-20260921T103959Z-762925-packet.md, charness-artifacts/critique/review-20260921T104030Z-763442-packet.md, charness-artifacts/critique/workers/review-20260921T103959Z-762925/review-prompt.md, charness-artifacts/critique/workers/review-20260921T104030Z-763442/review-prompt.md, docs/implementation-discipline.md, skills/public/release/references/adapter-contract.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/quality/references/attention-state-visibility.json, skills/public/release/references/adapter-contract.md\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/quality/references/attention-state-visibility.json, skills/public/release/references/adapter-contract.md\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/quality/references/attention-state-visibility.json, skills/public/release/references/adapter-contract.md\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/review-20260921T103959Z-762925-packet.json, charness-artifacts/critique/review-20260921T103959Z-762925-packet.md, charness-artifacts/critique/review-20260921T104030Z-763442-packet.json, charness-artifacts/critique/review-20260921T104030Z-763442-packet.md, charness-artifacts/critique/workers/review-20260921T103959Z-762925/attempt-manifest.json, charness-artifacts/critique/workers/review-20260921T103959Z-762925/backend.stderr, charness-artifacts/critique/workers/review-20260921T103959Z-762925/backend.stdout, charness-artifacts/critique/workers/review-20260921T103959Z-762925/bounded-review-result.schema.json, charness-artifacts/critique/workers/review-20260921T103959Z-762925/capability.json, charness-artifacts/critique/workers/review-20260921T103959Z-762925/delivery.json, charness-artifacts/critique/workers/review-20260921T103959Z-762925/lifecycle.yaml, charness-artifacts/critique/workers/review-20260921T103959Z-762925/partial-result.json, charness-artifacts/critique/workers/review-20260921T103959Z-762925/receipt.json, charness-artifacts/critique/workers/review-20260921T103959Z-762925/result.json, charness-artifacts/critique/workers/review-20260921T103959Z-762925/review-prompt.md, charness-artifacts/critique/workers/review-20260921T103959Z-762925/run-plan.json, charness-artifacts/critique/workers/review-20260921T103959Z-762925/runner.stderr, charness-artifacts/critique/workers/review-20260921T103959Z-762925/runner.stdout, charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0000-content.bin, charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0001-content.bin, charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0002-content.bin, charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0003-content.bin, charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/manifest.json, charness-artifacts/critique/workers/review-20260921T103959Z-762925/worker-report.yaml, charness-artifacts/critique/workers/review-20260921T104030Z-763442/attempt-manifest.json, charness-artifacts/critique/workers/review-20260921T104030Z-763442/backend.stderr, charness-artifacts/critique/workers/review-20260921T104030Z-763442/backend.stdout, charness-artifacts/critique/workers/review-20260921T104030Z-763442/bounded-review-result.schema.json, charness-artifacts/critique/workers/review-20260921T104030Z-763442/capability.json, charness-artifacts/critique/workers/review-20260921T104030Z-763442/delivery.json, charness-artifacts/critique/workers/review-20260921T104030Z-763442/lifecycle.yaml, charness-artifacts/critique/workers/review-20260921T104030Z-763442/partial-result.json, charness-artifacts/critique/workers/review-20260921T104030Z-763442/receipt.json, charness-artifacts/critique/workers/review-20260921T104030Z-763442/result.json, charness-artifacts/critique/workers/review-20260921T104030Z-763442/review-prompt.md, charness-artifacts/critique/workers/review-20260921T104030Z-763442/run-plan.json, charness-artifacts/critique/workers/review-20260921T104030Z-763442/runner.stderr, charness-artifacts/critique/workers/review-20260921T104030Z-763442/runner.stdout, charness-artifacts/critique/workers/review-20260921T104030Z-763442/semantic-input/0000-content.bin, charness-artifacts/critique/workers/review-20260921T104030Z-763442/semantic-input/0001-content.bin, charness-artifacts/critique/workers/review-20260921T104030Z-763442/semantic-input/manifest.json, charness-artifacts/critique/workers/review-20260921T104030Z-763442/worker-report.yaml\n  verify: python3 scripts/review/validate_critique_artifacts.py --repo-root . --all\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_completion_next_step.py, scripts/task_run/task_run_git.py, scripts/task_run/task_run_lane_runner.py, tests/charness_cli/test_task_run.py, tests/quality_gates/test_release_run_planner.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_completion_next_step.py, scripts/task_run/task_run_git.py, scripts/task_run/task_run_lane_runner.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "committed-ref",
+    "substrate_mode": "committed-ref",
+    "changed_ref": "849119829220c85d63ca20a20be1308b4e4c7a2b..a2b18fcf2169a3636995d0ed94b3dfe88c66ed02",
+    "resolved_changed_ref": [
+      "849119829220c85d63ca20a20be1308b4e4c7a2b",
+      "a2b18fcf2169a3636995d0ed94b3dfe88c66ed02"
+    ],
+    "base_head": "a2b18fcf2169a3636995d0ed94b3dfe88c66ed02",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      "charness-artifacts/critique/review-20260921T103959Z-762925-packet.json",
+      "charness-artifacts/critique/review-20260921T103959Z-762925-packet.md",
+      "charness-artifacts/critique/review-20260921T104030Z-763442-packet.json",
+      "charness-artifacts/critique/review-20260921T104030Z-763442-packet.md",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/attempt-manifest.json",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/backend.stderr",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/backend.stdout",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/bounded-review-result.schema.json",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/capability.json",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/delivery.json",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/lifecycle.yaml",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/partial-result.json",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/receipt.json",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/result.json",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/review-prompt.md",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/run-plan.json",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/runner.stderr",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/runner.stdout",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0000-content.bin",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0001-content.bin",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0002-content.bin",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0003-content.bin",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/manifest.json",
+      "charness-artifacts/critique/workers/review-20260921T103959Z-762925/worker-report.yaml",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/attempt-manifest.json",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/backend.stderr",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/backend.stdout",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/bounded-review-result.schema.json",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/capability.json",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/delivery.json",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/lifecycle.yaml",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/partial-result.json",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/receipt.json",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/result.json",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/review-prompt.md",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/run-plan.json",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/runner.stderr",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/runner.stdout",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/semantic-input/0000-content.bin",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/semantic-input/0001-content.bin",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/semantic-input/manifest.json",
+      "charness-artifacts/critique/workers/review-20260921T104030Z-763442/worker-report.yaml",
+      "docs/implementation-discipline.md",
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_completion_next_step.py",
+      "scripts/task_run/task_run_git.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "skills/public/quality/references/attention-state-visibility.json",
+      "skills/public/release/references/adapter-contract.md",
+      "tests/charness_cli/test_task_run.py",
+      "tests/quality_gates/test_release_run_planner.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/critique/review-20260921T103959Z-762925-packet.json",
+        "content_sha256": "0b97eb1f4917e191aa88106ff34716402bfed21283230c8fb312a84b839fa561"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260921T103959Z-762925-packet.md",
+        "content_sha256": "48331bc6b13c06efd94268571f8d6dbef5f1c10279ef88bff82f626710801b14"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260921T104030Z-763442-packet.json",
+        "content_sha256": "7958a9c5e4a203efc2fd6369a22c64cd6c6b1ad53c58e82cc37ac7d48e3c81a7"
+      },
+      {
+        "path": "charness-artifacts/critique/review-20260921T104030Z-763442-packet.md",
+        "content_sha256": "765b6f812086e0005412eb40267642f52062e48bd5c5acf12fbb88bdf373a9fb"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/attempt-manifest.json",
+        "content_sha256": "b712e16a686de13c3409061e118afacd655bd4ceb1d762cc3325a0bba2d7506e"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/backend.stderr",
+        "content_sha256": "876512d63626cb3d8f5341ef05f02f74b5d27e0a1ee3bbd5bd62d93b837db835"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/backend.stdout",
+        "content_sha256": "9d51d4c4dc055de43fd5b040d035d62bb2ee6dfd8704b0d1e7c053880b6c6134"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/bounded-review-result.schema.json",
+        "content_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/capability.json",
+        "content_sha256": "44c43f4816b5c84c4504894210b76ba5a410e715d47d5d262ccd9ad8930ebb62"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/delivery.json",
+        "content_sha256": "eceb3fe4dae014ad61d1fa9476d8fdddafbd78e914cba95c7ff2e6e0b3614ca8"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/lifecycle.yaml",
+        "content_sha256": "4b3296cc7c0224cb5640766c094ef3e3a0e73298be1f131ccfe35abb857d85d0"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/partial-result.json",
+        "content_sha256": "43cd3d647de6806b5c78da8524e8fe920f360f9afc972258199ee2da3f760f8e"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/receipt.json",
+        "content_sha256": "790393853609ee085579e2f0ca1a10fe4dbdd526c2d9e341c8486981c8054d18"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/result.json",
+        "content_sha256": "a7fa6f4c61b2ca5b5838de219d36fb79afaf5d035b54385ca806e5209f8799fd"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/review-prompt.md",
+        "content_sha256": "3666c0105c6f8e45997c722950d7eae2e4cb1725fc870c8d68ef1ddf06fc4be3"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/run-plan.json",
+        "content_sha256": "05b81442b55934e700ec34843c97aa66333b91c0702c0d40783d02916a643621"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/runner.stderr",
+        "content_sha256": "7eef1a5f31b4404e4382da7bec429a1df317ed2325f0aa7cf49c01a6ff66cd26"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/runner.stdout",
+        "content_sha256": "7273a8b913e15c4311a9b9c227f5b6acb8ab9b1ee676870400b1ed3382a3acb2"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0000-content.bin",
+        "content_sha256": "b06049326ae5509638205fb2e7382dabdc12964715e6f97fd463cd1910b4f155"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0001-content.bin",
+        "content_sha256": "d890e8fe9bce5fdba98c55112bbe2a20084c1a25f46b6376e089fa97edf8f781"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0002-content.bin",
+        "content_sha256": "0bdaf487cb952276ebba2b5c6f4e1e18ebf0d1bcce4f02c88bf424ada5547d91"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/0003-content.bin",
+        "content_sha256": "bea10fbf068ad6f22b7eeba8a678432a68a533cd8cf9cca29d3dadf1bde16a18"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/semantic-input/manifest.json",
+        "content_sha256": "c00e81616395ccf0afe2139a8fca9d978ccea6e5561e3b6b19e84fc113206c59"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/worker-report.yaml",
+        "content_sha256": "5b064b19d7a465a8ee9c419eedb47d41ff19b734a0d4825268a8f69d903067f7"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/attempt-manifest.json",
+        "content_sha256": "b5da0c37d8961c8df78cc71e13ba0f8e5a78bf22bfb73310d7e4ed2095645ab5"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/backend.stderr",
+        "content_sha256": "72178d169173fd0b4bfad79b592d01ad0d817e45f5fb9843cb3b08a54957cbb9"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/backend.stdout",
+        "content_sha256": "4f5830b00c5316941c7403e88a5c9af0b18ff02e3f6e9f4849227697e1497762"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/bounded-review-result.schema.json",
+        "content_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/capability.json",
+        "content_sha256": "44c43f4816b5c84c4504894210b76ba5a410e715d47d5d262ccd9ad8930ebb62"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/delivery.json",
+        "content_sha256": "18b8e62cd378f587db4e00cbff7a9e8322b975a585284bfc15c6940878b14a54"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/lifecycle.yaml",
+        "content_sha256": "8fd9206e73f644503950a829e4f6467ed127513d22e78e80a10ff87c25b637af"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/partial-result.json",
+        "content_sha256": "90b309f983a6f6cce68d8da442b193be4e57818fef0999de45afb604cb6e18ae"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/receipt.json",
+        "content_sha256": "3404c8bd9cbfe61a8c82f1b370758228165d71bff14f0dbe327056fbbd92e996"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/result.json",
+        "content_sha256": "b044514da9655ed4957ccb40432afd1ecca4ab76030b9e9b566a153a2cf25bc0"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/review-prompt.md",
+        "content_sha256": "6d7e20fb75c123dcdb30b2724df3dbb55144c8234cc719bea6d226fb5640e6dd"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/run-plan.json",
+        "content_sha256": "cc8f5e843e5bc8936ee1c9809137e07fc093b71126da07fb662be3c6db57de9e"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/runner.stderr",
+        "content_sha256": "5a4cffaf1cb40552cebfed340ee515a18ac4b6f32044c46525531f6822028584"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/runner.stdout",
+        "content_sha256": "39797508a2ca36e30018a4345ce6d5ec1ffe2de098ed68f2c55977c362871cdf"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/semantic-input/0000-content.bin",
+        "content_sha256": "7fef8577f9d1bd9ffd10de9b2f38b78553c1a32069a00346bc53284b420e45ca"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/semantic-input/0001-content.bin",
+        "content_sha256": "d5de9ae7cf2f06cd384c7e14ae17a93764e1032812e34da20abb141f508ab9df"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/semantic-input/manifest.json",
+        "content_sha256": "da99664aa10bbe646cec20ca1254329f87ef1a967cb11518bd508fb0e3c3e18d"
+      },
+      {
+        "path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/worker-report.yaml",
+        "content_sha256": "0e012460ec46c96818d5c1f8321eadd96dbe52274d03782521e4ed98639ba190"
+      },
+      {
+        "path": "docs/implementation-discipline.md",
+        "content_sha256": "91677d4eb3c34518fc0571b8c5858acc77c753bb67befe59bd0cf53a36cc80e2"
+      },
+      {
+        "path": "scripts/task_run/task_run.py",
+        "content_sha256": "a93f4ccf1fc1c58ebe0f7b1e0f10b86a88d4915ea93159ed92c3d7cc7a40eb60"
+      },
+      {
+        "path": "scripts/task_run/task_run_completion_next_step.py",
+        "content_sha256": "d890e8fe9bce5fdba98c55112bbe2a20084c1a25f46b6376e089fa97edf8f781"
+      },
+      {
+        "path": "scripts/task_run/task_run_git.py",
+        "content_sha256": "0bdaf487cb952276ebba2b5c6f4e1e18ebf0d1bcce4f02c88bf424ada5547d91"
+      },
+      {
+        "path": "scripts/task_run/task_run_lane_runner.py",
+        "content_sha256": "5ff6311b8b47b0e2745ff78f205ab819f84c1d52a9c5af1055042bdd932cea3d"
+      },
+      {
+        "path": "skills/public/quality/references/attention-state-visibility.json",
+        "content_sha256": "87487b0119902e095155a81e0f47f0926a2a0face142f5fc854a6bff80c895a4"
+      },
+      {
+        "path": "skills/public/release/references/adapter-contract.md",
+        "content_sha256": "eefd9c74e3587a8e48c26d031da31c19f43c0c934f04c0a902967dc62b0174d5"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run.py",
+        "content_sha256": "bea10fbf068ad6f22b7eeba8a678432a68a533cd8cf9cca29d3dadf1bde16a18"
+      },
+      {
+        "path": "tests/quality_gates/test_release_run_planner.py",
+        "content_sha256": "cd2b34f61fc62692e90476636e2d3836c22a71c5bd56431d85bd78645cd7f799"
+      }
+    ],
+    "reviewed_patch_sha256": "fe52d87aaf22a9f293c800c839d8915c2ece8234a80e6604a12f6f7696709ab9",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "a91b1b080a6be7c8da5251b2280597e0087254780d6e5cde7ea48c35eb174ac5"
+  }
+}

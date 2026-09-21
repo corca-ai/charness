@@ -1,0 +1,59 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Release critique lens A (correctness and refusal safety) for the pending 8.9.3 patch",
+  "packet_sha256": "170827c8ddb01456eb08552530544cc59b46d8048ca91a89628772fca2f99994",
+  "reviewed_input_identity_sha256": "a91b1b080a6be7c8da5251b2280597e0087254780d6e5cde7ea48c35eb174ac5",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "release-a-001",
+      "severity": "high",
+      "summary": "The scoped WIP checkpoint can commit an out-of-scope path that the interrupted lane staged before termination.",
+      "evidence": [
+        "scripts/task_run/task_run_lane_runner.py filters candidate-carrier changed paths to declared scope and passes only that list to _commit_wip_candidate.",
+        "scripts/task_run/task_run_git.py then runs `git add -- <scoped paths>` followed by an ordinary `git commit`; it does not clear or isolate the existing index first.",
+        "A lane may run `git add` on an out-of-scope path before timing out. That path is already staged, survives the scoped `git add`, and is included by the subsequent commit despite not appearing in `scoped`.",
+        "The mixed regression test creates an out-of-scope file but never stages it, so it does not exercise this bypass. The clean-worktree preflight occurs before lane execution and cannot prevent the lane from staging paths during execution."
+      ],
+      "action": "Make the checkpoint commit from an index proven to contain only the filtered paths, without destroying retained worktree changes; add a regression where the timed-out executor stages an out-of-scope path alongside a scoped change and assert the commit contains only the scoped path."
+    },
+    {
+      "id": "release-a-002",
+      "severity": "medium",
+      "summary": "The supplied approval receipts predate the final helper move and attention-state declaration, so they do not establish the final release delta or its gate interplay.",
+      "evidence": [
+        "The #816 review receipt is bound to reviewed identity 41528b962ca4523714d201ba7e58eb0ee62273a013596e9a74863cb136db8cdd, where checkpoint logic lived in task_run.py.",
+        "The pending release payload instead moves checkpoint logic into task_run_lane_runner.py and adds attention-state metadata, under reviewed identity a91b1b080a6be7c8da5251b2280597e0087254780d6e5cde7ea48c35eb174ac5.",
+        "No final-delta test or gate execution receipt is supplied for the moved helper, file-length gate, attention-state validator, packaging validation, or focused task-run tests."
+      ],
+      "action": "After fixing the index isolation defect, run and record focused task-run regressions plus the declared code-length, attention-state, packaging, and relevant repository gates against the final committed delta."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The WIP helper itself does not pass `--allow-empty`.",
+      "bin": "confirmed-but-insufficient",
+      "disposition": "This closes the direct allow-empty escape, and zero filtered paths produce a typed skipped record, but it does not prevent an already-populated index from adding out-of-scope content to a non-empty commit."
+    },
+    {
+      "concern": "The skipped checkpoint is declared in the attention-state inventory and the timed-out next step names the absence of a WIP commit.",
+      "bin": "positive-nonblocking-evidence",
+      "disposition": "Receipt visibility appears aligned: the skipped record contains status and reason and the operator text does not claim a commit. This does not mitigate the staged-index scope bypass."
+    },
+    {
+      "concern": "Moving the helper to task_run_lane_runner.py addresses file-length pressure.",
+      "bin": "plausible-unproved",
+      "disposition": "The move is structurally reasonable, but the final code-length and attention-state gates are not evidenced as executed in the supplied payload."
+    }
+  ],
+  "next_move": "Block 8.9.3 until the checkpoint isolates or verifies the Git index, a staged-out-of-scope regression passes, and final-delta gate receipts cover the moved helper and attention-state declaration.",
+  "non_claims": [
+    "No workspace files were read beyond the identity-bound inline semantic payload, and no workspace edits were made.",
+    "The prior #816 and #817 reviewer passes are not treated as approval of this later release delta.",
+    "This review does not claim that any final-delta tests or gates were executed.",
+    "Goal evidence is explicitly not goal-bound."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

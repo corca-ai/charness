@@ -1,0 +1,84 @@
+{
+  "attempt_id": "review-20260921T103959Z-762925",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-09-21T01:40:20Z",
+  "output_file": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/result.json",
+  "output_fresh": true,
+  "output_sha256": "a7fa6f4c61b2ca5b5838de219d36fb79afaf5d035b54385ca806e5209f8799fd",
+  "output_size": 3306,
+  "packet_identity": "0b97eb1f4917e191aa88106ff34716402bfed21283230c8fb312a84b839fa561",
+  "parent_receipt_identity": "parent-74583c2ec6d5839f3cea03c1052343fdea67a65e2b08cc21",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/review-prompt.md",
+  "prompt_sha256": "ba6a9081154d2cdca50c7c67d4ff788b1e5fcde4524d219db3d2cc9445848bab",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "retained_partial_output": {
+    "approval_eligible": false,
+    "bytes": 3173,
+    "kind": "bounded-review-result",
+    "path": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/partial-result.json",
+    "schema_version": "charness.reviewer_partial_output/v1",
+    "sha256": "43cd3d647de6806b5c78da8524e8fe920f360f9afc972258199ee2da3f760f8e",
+    "source": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/backend.stdout",
+    "validation": "model-shaped"
+  },
+  "reviewed_input_identity": "41528b962ca4523714d201ba7e58eb0ee62273a013596e9a74863cb136db8cdd",
+  "run_id": "run-review-20260921T103959Z-762925",
+  "schema_file": "charness-artifacts/critique/workers/review-20260921T103959Z-762925/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "issue-resolution: review resolution/recurrence and per-target behavioral observations for corca-ai/charness#816; do not merely diagnose causes",
+  "started_at": "2026-09-21T01:40:00Z",
+  "status": "succeeded",
+  "stderr_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/review-20260921T103959Z-762925/backend.stderr",
+  "stdout_file": "/home/hwidong/codes/charness/charness-artifacts/critique/workers/review-20260921T103959Z-762925/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "workspace": "/home/hwidong/codes/charness"
+}

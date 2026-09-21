@@ -1,0 +1,25 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "skills/public/release/references/adapter-contract.md",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/semantic-input/0000-content.bin",
+      "content_sha256": "9cb2f32ad06da218d55a02332e7d0352dd8fcf47c52c44967cddc0525093da1a",
+      "carrier_sha256": "7fef8577f9d1bd9ffd10de9b2f38b78553c1a32069a00346bc53284b420e45ca",
+      "source": "working-tree:skills/public/release/references/adapter-contract.md",
+      "size_bytes": 16339,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/quality_gates/test_release_run_planner.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/review-20260921T104030Z-763442/semantic-input/0001-content.bin",
+      "content_sha256": "1db3a0d59ecefa4542d999fa4a1b6eb57cdfe1dce41ad296d6d6820dfb62d41b",
+      "carrier_sha256": "d5de9ae7cf2f06cd384c7e14ae17a93764e1032812e34da20abb141f508ab9df",
+      "source": "working-tree:tests/quality_gates/test_release_run_planner.py",
+      "size_bytes": 19311,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}
