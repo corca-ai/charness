@@ -1,0 +1,195 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-22T21:57:24Z",
+  "prepared_for": "v8.9.8-release",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- charness\n- docs/agent-task-runs.md\n- docs/cli-reference.md\n- scripts/task_run/task_run.py\n- scripts/task_run/task_run_attempts.py\n- scripts/task_run/task_run_completion.py\n- scripts/task_run/task_run_completion_next_step.py\n- scripts/task_run/task_run_evidence.py\n- scripts/task_run/task_run_execution.py\n- scripts/task_run/task_run_git.py\n- scripts/task_run/task_run_persistence.py\n- scripts/task_run/task_run_plan.py\n- scripts/task_run/task_run_progress.py\n- scripts/task_run/task_run_retention.py\n- scripts/task_run/task_run_state.py\n- skills/public/achieve/references/coordination.md\n- skills/public/achieve/references/lifecycle-during.md\n- skills/public/achieve/scripts/goal_artifact_template.md\n- skills/public/achieve/scripts/goal_binding_support.py\n- skills/public/achieve/scripts/goal_dependency_edges.py\n- skills/public/achieve/scripts/goal_run_amendments.py\n- skills/public/achieve/scripts/goal_run_pickup_contract.py\n- skills/public/issue/scripts/issue_goal_run_contract.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_attempts.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_completion_next_step.py, scripts/task_run/task_run_evidence.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_git.py, scripts/task_run/task_run_persistence.py, scripts/task_run/task_run_plan.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_retention.py, scripts/task_run/task_run_state.py, skills/public/achieve/references/coordination.md, skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/goal_artifact_template.md, skills/public/achieve/scripts/goal_binding_support.py, skills/public/achieve/scripts/goal_dependency_edges.py, skills/public/achieve/scripts/goal_run_amendments.py, skills/public/achieve/scripts/goal_run_pickup_contract.py, skills/public/issue/scripts/issue_goal_run_contract.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: docs/agent-task-runs.md, docs/cli-reference.md, skills/public/achieve/references/coordination.md, skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/goal_artifact_template.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/achieve/references/coordination.md, skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/goal_artifact_template.md, skills/public/achieve/scripts/goal_binding_support.py, skills/public/achieve/scripts/goal_dependency_edges.py, skills/public/achieve/scripts/goal_run_amendments.py, skills/public/achieve/scripts/goal_run_pickup_contract.py, skills/public/issue/scripts/issue_goal_run_contract.py\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- capability-catalog: Deterministic capability inventory, stale-path resolver, and canonical current-pointer artifacts.\n  source matches: charness\n  verify: python3 -m pytest -q tests/test_capability_catalog.py, python3 -m tools.validate_current_pointer_freshness --repo-root ., python3 -m json.tool .agents/surfaces.json\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/achieve/references/coordination.md, skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/goal_artifact_template.md, skills/public/achieve/scripts/goal_binding_support.py, skills/public/achieve/scripts/goal_dependency_edges.py, skills/public/achieve/scripts/goal_run_amendments.py, skills/public/achieve/scripts/goal_run_pickup_contract.py, skills/public/issue/scripts/issue_goal_run_contract.py\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/achieve/references/coordination.md, skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/goal_artifact_template.md, skills/public/achieve/scripts/goal_binding_support.py, skills/public/achieve/scripts/goal_dependency_edges.py, skills/public/achieve/scripts/goal_run_amendments.py, skills/public/achieve/scripts/goal_run_pickup_contract.py, skills/public/issue/scripts/issue_goal_run_contract.py\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: charness, scripts/task_run/task_run.py, scripts/task_run/task_run_attempts.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_completion_next_step.py, scripts/task_run/task_run_evidence.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_git.py, scripts/task_run/task_run_persistence.py, scripts/task_run/task_run_plan.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_retention.py, scripts/task_run/task_run_state.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_attempts.py, scripts/task_run/task_run_completion.py, scripts/task_run/task_run_completion_next_step.py, scripts/task_run/task_run_evidence.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_git.py, scripts/task_run/task_run_persistence.py, scripts/task_run/task_run_plan.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_retention.py, scripts/task_run/task_run_state.py, skills/public/achieve/scripts/goal_binding_support.py, skills/public/achieve/scripts/goal_dependency_edges.py, skills/public/achieve/scripts/goal_run_amendments.py, skills/public/achieve/scripts/goal_run_pickup_contract.py, skills/public/issue/scripts/issue_goal_run_contract.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "f1b790c8fa4f74a4d611949bb6da9a0bd09a2b71",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness",
+      "docs/agent-task-runs.md",
+      "docs/cli-reference.md",
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_attempts.py",
+      "scripts/task_run/task_run_completion.py",
+      "scripts/task_run/task_run_completion_next_step.py",
+      "scripts/task_run/task_run_evidence.py",
+      "scripts/task_run/task_run_execution.py",
+      "scripts/task_run/task_run_git.py",
+      "scripts/task_run/task_run_persistence.py",
+      "scripts/task_run/task_run_plan.py",
+      "scripts/task_run/task_run_progress.py",
+      "scripts/task_run/task_run_retention.py",
+      "scripts/task_run/task_run_state.py",
+      "skills/public/achieve/references/coordination.md",
+      "skills/public/achieve/references/lifecycle-during.md",
+      "skills/public/achieve/scripts/goal_artifact_template.md",
+      "skills/public/achieve/scripts/goal_binding_support.py",
+      "skills/public/achieve/scripts/goal_dependency_edges.py",
+      "skills/public/achieve/scripts/goal_run_amendments.py",
+      "skills/public/achieve/scripts/goal_run_pickup_contract.py",
+      "skills/public/issue/scripts/issue_goal_run_contract.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness",
+        "content_sha256": "5a6c72bc32aa347b3e1f81939c0896b1a95e8a52214d1bbd0324841d8928db06"
+      },
+      {
+        "path": "docs/agent-task-runs.md",
+        "content_sha256": "ec1dbaf1ce03c85cba95dd6326f7154d3185fa11792c4c44b3cda9319c92b610"
+      },
+      {
+        "path": "docs/cli-reference.md",
+        "content_sha256": "e637342c0fe305c13df7a6baa850697c54a75f651e457a5bdaee968790eee8f6"
+      },
+      {
+        "path": "scripts/task_run/task_run.py",
+        "content_sha256": "ad8b35dc7d71dccd3cdf0537fea1aa6bd81edc36a64261942db3af6dc67bb6fe"
+      },
+      {
+        "path": "scripts/task_run/task_run_attempts.py",
+        "content_sha256": "beccf92b8162530cb16ff398cff1a6d7abdfc2448386eee83996ec45e26ab7ed"
+      },
+      {
+        "path": "scripts/task_run/task_run_completion.py",
+        "content_sha256": "3a9111833519b9a4509b373571ad82a14509047a75fcfe13d8951634dcff3e33"
+      },
+      {
+        "path": "scripts/task_run/task_run_completion_next_step.py",
+        "content_sha256": "11fda958b1ca3c70fed170296b92948423df347e7efc4b52a858e3c3ecfcb6a8"
+      },
+      {
+        "path": "scripts/task_run/task_run_evidence.py",
+        "content_sha256": "85e5c8a020b49a36bafda06282e4f33404d41db3268acafaca4c4b5fe57db99c"
+      },
+      {
+        "path": "scripts/task_run/task_run_execution.py",
+        "content_sha256": "63d194be7dc76f8d3a02bf70020484102a8760688e6fa0d5d1556982bda63a8c"
+      },
+      {
+        "path": "scripts/task_run/task_run_git.py",
+        "content_sha256": "e446451e441882afa5e038e73885b0747fd4b146ccad08f9e6b54757f925cfa2"
+      },
+      {
+        "path": "scripts/task_run/task_run_persistence.py",
+        "content_sha256": "5e68acd68d5d4e76016b63a0d3532de0bd2ad8cc7b235158ca8dab3bc783e2ae"
+      },
+      {
+        "path": "scripts/task_run/task_run_plan.py",
+        "content_sha256": "cbdec18a86df634254e273144401ce7e861af4ea7f6975a965cfe9c8d378b110"
+      },
+      {
+        "path": "scripts/task_run/task_run_progress.py",
+        "content_sha256": "f06aa07712717733cdec2c364643dae10e76f349f7abc970659498a42034b1a4"
+      },
+      {
+        "path": "scripts/task_run/task_run_retention.py",
+        "content_sha256": "df32fb5832e65e257b90060196359c3962c00c3214b31df5653d4a14d872a05f"
+      },
+      {
+        "path": "scripts/task_run/task_run_state.py",
+        "content_sha256": "1f5f159a875c0ba76d5cba1c6dab6999f12877f0937ed3894d0172f5b770908c"
+      },
+      {
+        "path": "skills/public/achieve/references/coordination.md",
+        "content_sha256": "694d65f1ebd0ee17e028d8a091f282e7c5a124cb09ecdef87d24ec7ef34587db"
+      },
+      {
+        "path": "skills/public/achieve/references/lifecycle-during.md",
+        "content_sha256": "6a20683c4b81428029b10d8054a7c02fc25520843317e2be11ec22bc4a313c1e"
+      },
+      {
+        "path": "skills/public/achieve/scripts/goal_artifact_template.md",
+        "content_sha256": "5a4451190bd9d3303f5b0dcfc1b2ac21a0e3efc9aaa701c41932c72f36c5cc43"
+      },
+      {
+        "path": "skills/public/achieve/scripts/goal_binding_support.py",
+        "content_sha256": "492fedbd64b4e9d9975057adc1a3154392afe401485570b31beb7bc4b4153f69"
+      },
+      {
+        "path": "skills/public/achieve/scripts/goal_dependency_edges.py",
+        "content_sha256": "a1d2ebac5f33c3b06d7933b1fe4cb31ca98bbf10832955a8b5287d12cc7918f7"
+      },
+      {
+        "path": "skills/public/achieve/scripts/goal_run_amendments.py",
+        "content_sha256": "18449e12d7ca933ec93dc64a4a753fb11eec3d3acb76500d657bf9e5ac030479"
+      },
+      {
+        "path": "skills/public/achieve/scripts/goal_run_pickup_contract.py",
+        "content_sha256": "cda042d3fc5c03aa00b796cd58f6401d4177779922ad44f26a9a249c91cf190a"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_goal_run_contract.py",
+        "content_sha256": "f1643a88d969df510ccdeeb51b5c325277dde429bd6f9c241297b10ff3d682b4"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "f3f05340e05de6a9f0de980caf692dc72e839aa15a600a7b2dbe269568b2fabe"
+  }
+}
