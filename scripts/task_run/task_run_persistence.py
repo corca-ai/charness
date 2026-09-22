@@ -14,9 +14,11 @@ import re
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
-#: Removed lines matching these block the lane: the candidate discards
-#: persisted data with no replacement in the same diff.
-_DROP_RE = re.compile(r"(?i)^\s*DROP\s+(TABLE|COLUMN)\b")
+#: Lines matching these block the lane, added or removed: the candidate
+#: introduces or executes a destructive persistence statement with no
+#: replacement in the same diff. Kept to statement keywords that are
+#: rarely part of legitimate application diffs.
+_DROP_RE = re.compile(r"(?i)^\s*(DROP\s+(TABLE|COLUMN|INDEX|SCHEMA|DATABASE)|TRUNCATE\s+TABLE)\b")
 _UNSCOPED_DELETE_RE = re.compile(r"(?i)^\s*DELETE\s+FROM\s+\S+\s*;?\s*$")
 
 #: Added lines matching these are advisory: an empty substitute where the
@@ -38,12 +40,25 @@ def scan_persistence_risks(
     # The lane branch commit lands after completion (the changed-line gate
     # persists the validated candidate), so at scan time the work may still
     # be uncommitted: diff the worktree against the base, not HEAD.
+    # Fail closed: an unreadable diff blocks rather than shipping silent loss.
     try:
         diff = git(worktree, "diff", base_sha, "--", *changed_paths)
-    except Exception:  # noqa: BLE001 - an unreadable diff reads as unknown
-        return {"findings": [], "blocking": False, "error": "candidate diff unreadable"}
+    except Exception:  # noqa: BLE001 - an unreadable diff blocks, never ships silent loss
+        return {
+            "findings": [
+                {"path": "", "shape": "candidate-diff-unreadable", "detail": "git diff failed"}
+            ],
+            "blocking": True,
+            "error": "candidate diff unreadable",
+        }
     if diff.returncode != 0:
-        return {"findings": [], "blocking": False, "error": "candidate diff unreadable"}
+        return {
+            "findings": [
+                {"path": "", "shape": "candidate-diff-unreadable", "detail": "git diff failed"}
+            ],
+            "blocking": True,
+            "error": "candidate diff unreadable",
+        }
     findings: list[dict[str, Any]] = []
     path = ""
     removed = False
@@ -70,7 +85,19 @@ def scan_persistence_risks(
                 )
         elif line.startswith("+"):
             body = line[1:]
-            if _EMPTY_SUB_RE.match(body) and removed:
+            if _DROP_RE.search(body):
+                findings.append(
+                    {
+                        "path": path,
+                        "shape": "dropped-persistence-structure",
+                        "detail": body.strip()[:120],
+                    }
+                )
+            elif _UNSCOPED_DELETE_RE.search(body):
+                findings.append(
+                    {"path": path, "shape": "unscoped-delete", "detail": body.strip()[:120]}
+                )
+            elif _EMPTY_SUB_RE.match(body) and removed:
                 findings.append(
                     {"path": path, "shape": "empty-substitution", "detail": body.strip()[:120]}
                 )

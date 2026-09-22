@@ -23,12 +23,29 @@ IDLE_LINE = "agent loop failed: model failed: model stream idle timeout after 18
 def test_classify_failure_names_idle_stall_retryable() -> None:
     failure = state.classify_failure(
         {"exit_code": 1, "timed_out": False, "interrupted": False},
-        stderr_text=f"reads\n{IDLE_LINE}\n",
+        stderr_text=f"\n   \nreads\n{IDLE_LINE}\n",
         delivery={"status": "non-delivery"},
     )
     assert failure["kind"] == "model-stream-idle"
     assert failure["retryable"] is True
     assert "idle" in failure["message"]
+
+
+def test_bare_loop_failure_fails_fast_without_retry() -> None:
+    failure = state.classify_failure(
+        {"exit_code": 1, "timed_out": False, "interrupted": False},
+        stderr_text="agent loop failed: bad auth\n",
+        delivery={"status": "non-delivery"},
+    )
+    assert failure["kind"] == "executor-error"
+    assert failure["retryable"] is False
+    idle_loop = state.classify_failure(
+        {"exit_code": 1, "timed_out": False, "interrupted": False},
+        stderr_text="agent loop failed: idle timeout after 180s\n",
+        delivery={"status": "non-delivery"},
+    )
+    assert idle_loop["kind"] == "model-stream-idle"
+    assert idle_loop["retryable"] is True
 
 
 def test_classify_failure_kinds_cover_timeout_interrupt_executor_delivery() -> None:

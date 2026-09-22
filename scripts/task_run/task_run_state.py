@@ -49,9 +49,6 @@ _ABNORMAL_EXIT_STATES = ("timed-out", "interrupted", "failed")
 #: requires a clean `completed`.
 NEEDS_REVIEW_STATE = "completed-needs-review"
 
-#: Executor stderr markers naming a transient model-stream stall (#829).
-#: Matched case-insensitively against the transcript tail.
-MODEL_STREAM_IDLE_MARKERS = ("model stream idle", "agent loop failed")
 
 #: Typed executor/infra failure kinds carried on the receipt's `failure`
 #: field so a poller reads the cause without forensics (#829). Only the
@@ -102,11 +99,19 @@ def _execution_state(execution: dict[str, Any], delivery: dict[str, Any]) -> str
 
 
 def _idle_stall_line(stderr_text: str) -> str | None:
-    """First transcript line naming a transient model-stream stall, if any."""
-    lowered_markers = [marker.lower() for marker in MODEL_STREAM_IDLE_MARKERS]
+    """First transcript line naming a transient model-stream stall, if any.
+
+    An "agent loop failed" line counts only alongside idle wording, so a
+    fatal loop error (auth, config) fails fast instead of burning retries.
+    """
     for line in stderr_text.splitlines():
         stripped = line.strip()
-        if stripped and any(marker in stripped.lower() for marker in lowered_markers):
+        if not stripped:
+            continue
+        lowered = stripped.lower()
+        if "model stream idle" in lowered or (
+            "agent loop failed" in lowered and "idle" in lowered
+        ):
             return stripped[:300]
     return None
 

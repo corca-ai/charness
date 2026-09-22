@@ -68,14 +68,34 @@ def test_empty_substitution_is_advisory_only(tmp_path: Path) -> None:
     ]
 
 
-def test_unreadable_diff_reads_as_unknown(tmp_path: Path) -> None:
+def test_unreadable_diff_blocks_fail_closed(tmp_path: Path) -> None:
     repo = install_committed_repo(tmp_path / "lane", {"module.py": "x = 1\n"})
 
     def _boom(_cwd: Path, *args: object) -> object:
         raise RuntimeError("git down")
 
     result = persistence.scan_persistence_risks(repo, "abc", ["module.py"], git=_boom)
-    assert result == {"findings": [], "blocking": False, "error": "candidate diff unreadable"}
+    assert result["blocking"] is True
+    assert result["error"] == "candidate diff unreadable"
+    assert result["findings"][0]["shape"] == "candidate-diff-unreadable"
+
+
+def test_added_destruction_and_truncate_block(tmp_path: Path) -> None:
+    repo = install_committed_repo(tmp_path / "lane", {"migration.sql": "SELECT 1;\n"})
+    base = task_run_git._git_output(repo, "rev-parse", "HEAD").strip()
+    (repo / "migration.sql").write_text(
+        "SELECT 1;\nDROP TABLE principals;\nTRUNCATE TABLE sessions;\nDELETE FROM audit;\n",
+        encoding="utf-8",
+    )
+    task_run_git._git(repo, "add", "--", "migration.sql")
+    task_run_git._git(repo, "commit", "-m", "lane work", "--", "migration.sql")
+    result = _scan(repo, base, ["migration.sql"])
+    assert result["blocking"] is True
+    assert sorted(finding["shape"] for finding in result["findings"]) == [
+        "dropped-persistence-structure",
+        "dropped-persistence-structure",
+        "unscoped-delete",
+    ]
 
 
 def test_clean_change_and_unreadable_diff_stay_quiet(tmp_path: Path) -> None:
@@ -87,7 +107,7 @@ def test_clean_change_and_unreadable_diff_stay_quiet(tmp_path: Path) -> None:
     assert _scan(repo, base, ["module.py"]) == {"findings": [], "blocking": False}
     assert _scan(repo, base, []) == {"findings": [], "blocking": False}
     broken = _scan(repo, "0" * 40, ["module.py"])
-    assert broken["blocking"] is False
+    assert broken["blocking"] is True
     assert broken["error"] == "candidate diff unreadable"
 
 

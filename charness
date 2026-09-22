@@ -5618,7 +5618,7 @@ def build_parser() -> argparse.ArgumentParser:
     task_run_parser.add_argument("--skip-prepare", action="store_true", help="Shorthand diagnostic opt-out: skip the default preparation step.")
     task_run_parser.add_argument("--allow-no-change", action="store_true", help="Shorthand diagnostic opt-out: allow an unchanged candidate.")
     task_run_parser.add_argument("--report-only", action="store_true", help="Report-only lane: force require-change off, treat the delivered stdout report as the terminal artifact, and never classify parent progress as a writer conflict. Cannot be combined with --require-change.")
-    task_run_parser.add_argument("--timeout-seconds", type=int, default=3600)
+    task_run_parser.add_argument("--timeout-seconds", type=int, default=3600, help="Per-attempt executor timeout in seconds; a retried stall reruns the full budget (see CHARNESS_TASK_RUN_MAX_ATTEMPTS).")
     task_run_parser.add_argument("--dry-run", action="store_true", help="Validate inputs and show the planned lane without creating or running it.")
     task_run_parser.add_argument("--home-root", type=Path, default=default_home_root(), help=argparse.SUPPRESS)
     task_run_parser.add_argument("--charness-checkout", type=Path, help=argparse.SUPPRESS)

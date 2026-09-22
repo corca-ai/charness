@@ -317,6 +317,9 @@ options:
                         never classify parent progress as a writer conflict.
                         Cannot be combined with --require-change.
   --timeout-seconds TIMEOUT_SECONDS
+                        Per-attempt executor timeout in seconds; a retried
+                        stall reruns the full budget (see
+                        CHARNESS_TASK_RUN_MAX_ATTEMPTS).
   --dry-run             Validate inputs and show the planned lane without
                         creating or running it.
 ```
