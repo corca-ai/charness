@@ -154,6 +154,7 @@ def review_reasons(
     *,
     scope: Mapping[str, Any] | dict[str, Any],
     parent_progress: Mapping[str, Any] | dict[str, Any],
+    persistence: Mapping[str, Any] | dict[str, Any] | None = None,
 ) -> list[str]:
     """Why a finished lane needs operator review instead of a relaunch (#829)."""
     reasons = []
@@ -161,7 +162,22 @@ def review_reasons(
         reasons.append("out-of-scope-paths")
     if isinstance(parent_progress, Mapping) and parent_progress.get("blocking"):
         reasons.append("parent-progress")
+    if isinstance(persistence, Mapping) and persistence.get("blocking"):
+        reasons.append("persistence-risk")
     return reasons
+
+
+def apply_persistence_state(
+    result_state: str, persistence: Mapping[str, Any] | dict[str, Any] | None
+) -> str:
+    """A finished lane that discards persisted data is needs-review, never clean (#830)."""
+    if (
+        isinstance(persistence, Mapping)
+        and persistence.get("blocking")
+        and result_state in ("completed", "validated-partial-result")
+    ):
+        return NEEDS_REVIEW_STATE
+    return result_state
 
 
 def _abnormal_exit_state(execution: dict[str, Any]) -> str | None:

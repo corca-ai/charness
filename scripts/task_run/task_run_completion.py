@@ -21,6 +21,7 @@ _load_repo_runtime_bootstrap()
 
 from scripts.task_run import task_run_changed_line as _changed_line  # noqa: E402
 from scripts.task_run import task_run_lane_runner as _lane_runner  # noqa: E402
+from scripts.task_run import task_run_persistence as _persistence  # noqa: E402
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run import task_run_retention as _retention  # noqa: E402
 from scripts.task_run import task_run_state as _state  # noqa: E402
@@ -117,7 +118,6 @@ def complete_task(
     payload["execution"]["status"] = execution_status
     stderr_text = _progress._lane_stderr_text(stdout_log, stderr_log)
     payload["failure"] = _state.classify_failure(execution, stderr_text=stderr_text, delivery=delivery)
-    payload["review_required"] = _state.review_reasons(scope=scope, parent_progress=parent_progress)
     candidate, result_state = candidate_result_state(
         execution_state=execution_status,
         scope=scope,
@@ -125,6 +125,9 @@ def complete_task(
         candidate_commit=candidate_commit,
     )
     payload["candidate"] = candidate
+    payload["persistence"] = _persistence.scan_persistence_risks(
+        resolved_target, base_sha, candidate.get("changed_paths") or [], git=git
+    )
 
     blockers = _completion_blockers(
         execution_status=execution_status,
@@ -133,6 +136,7 @@ def complete_task(
         pass_value=pass_value,
         delivery=delivery,
         report_only=report_only,
+        persistence=payload["persistence"],
     )
     _lane_runner.apply_lane_receipt(
         payload,
@@ -164,6 +168,10 @@ def complete_task(
         # with blockers present the only remaining "completed" shape is a
         # clipped report, and "non-delivery" is the missing report (#827).
         result_state = "failed"
+    result_state = _state.apply_persistence_state(result_state, payload["persistence"])
+    payload["review_required"] = _state.review_reasons(
+        scope=scope, parent_progress=parent_progress, persistence=payload["persistence"]
+    )
     payload["status"] = result_state
     payload["approval_eligibility"] = (
         "eligible" if result_state == "completed" and not blockers else "ineligible"
@@ -220,8 +228,10 @@ def _completion_blockers(
     pass_value: str,
     delivery: Mapping[str, Any],
     report_only: bool = False,
+    persistence: Mapping[str, Any] | None = None,
 ) -> list[str]:
     blockers = [f"execution: {execution_status}"] if execution_status != "completed" else []
+    blockers.extend(_persistence.persistence_blockers(persistence))
     if scope["verdict"] != pass_value:
         blockers.append(str(scope["reason"]))
     if parent_progress["blocking"]:
