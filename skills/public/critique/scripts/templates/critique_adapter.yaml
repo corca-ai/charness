@@ -7,13 +7,13 @@ output_dir: charness-artifacts/critique
 # their host-specific reviewer model.
 reviewer_tiers:
   high-leverage:
-    model: gpt-5.6-terra
-    reasoning_effort: medium
+    model: gpt-6-luna
+    reasoning_effort: xhigh
     service_tier: priority
     fork_turns: none
   medium:
-    model: gpt-5.6-terra
-    reasoning_effort: medium
+    model: gpt-6-luna
+    reasoning_effort: xhigh
     fork_turns: none
 # Default execution is a file-backed worker. Set the concrete host backend in
 # the repo adapter (`codex_exec` or `claude_p`); consumers use its typed receipt

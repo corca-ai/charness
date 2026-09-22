@@ -98,14 +98,14 @@ def test_live_critique_adapter_pins_codex_high_leverage_default() -> None:
     assert errors == []
     tier = data["reviewer_tiers"]["high-leverage"]
     assert tier == {
-        "model": "gpt-5.6-terra",
-        "reasoning_effort": "medium",
+        "model": "gpt-6-luna",
+        "reasoning_effort": "xhigh",
         "service_tier": "priority",
         "fork_turns": "none",
     }
     assert data["reviewer_tiers"]["medium"] == {
-        "model": "gpt-5.6-terra",
-        "reasoning_effort": "medium",
+        "model": "gpt-6-luna",
+        "reasoning_effort": "xhigh",
         "fork_turns": "none",
     }
     assert data["reviewer_runner"] == {
@@ -121,13 +121,13 @@ def test_critique_init_adapter_scaffolds_reviewer_tiers(tmp_path) -> None:
     raw = load_yaml_file(tmp_path / ".agents" / "critique-adapter.yaml")
     data, errors, _ = validate_adapter_data(raw if isinstance(raw, dict) else {}, tmp_path)
     assert errors == []
-    assert data["reviewer_tiers"]["high-leverage"]["model"] == "gpt-5.6-terra"
-    assert data["reviewer_tiers"]["high-leverage"]["reasoning_effort"] == "medium"
+    assert data["reviewer_tiers"]["high-leverage"]["model"] == "gpt-6-luna"
+    assert data["reviewer_tiers"]["high-leverage"]["reasoning_effort"] == "xhigh"
     assert data["reviewer_tiers"]["high-leverage"]["service_tier"] == "priority"
     assert data["reviewer_tiers"]["high-leverage"]["fork_turns"] == "none"
     assert data["reviewer_tiers"]["medium"] == {
-        "model": "gpt-5.6-terra",
-        "reasoning_effort": "medium",
+        "model": "gpt-6-luna",
+        "reasoning_effort": "xhigh",
         "fork_turns": "none",
     }
 

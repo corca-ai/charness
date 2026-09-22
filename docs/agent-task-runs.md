@@ -7,7 +7,7 @@
 `charness task` provides `task run` for one bounded lane and `task status`
 for reading its external result store. It does not add a scheduler lifecycle.
 `--executor` selects the lane runner (default: `codex`): `codex` runs the fixed
-`gpt-5.6-luna` model with effort one of medium, xhigh, max; `muse` runs the
+`gpt-6-luna` model with effort one of medium, xhigh, max; `muse` runs the
 muse default model with effort one of medium, high, xhigh, max.
 
 Receipt shape is per executor. The canonical block is `payload["executor"]`

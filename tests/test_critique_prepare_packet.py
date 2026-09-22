@@ -432,8 +432,8 @@ version: 1
 repo: rt
 reviewer_tiers:
   high-leverage:
-    model: gpt-5.6-terra
-    reasoning_effort: medium
+    model: gpt-6-luna
+    reasoning_effort: xhigh
     service_tier: priority
     fork_turns: none
 packet_sections:
@@ -447,15 +447,15 @@ packet_sections:
     evidence = packet["reviewer_tier_evidence"]
     assert evidence["requested_tier"] == "high-leverage"
     assert evidence["requested_spawn_fields"] == {
-        "model": "gpt-5.6-terra",
-        "reasoning_effort": "medium",
+        "model": "gpt-6-luna",
+        "reasoning_effort": "xhigh",
         "service_tier": "priority",
         "fork_turns": "none",
     }
     assert evidence["host_exposure_state"] == "pending-parent-spawn"
     assert evidence["execution_mode"] == "file-backed-worker"
     md = render_markdown(packet)
-    assert "model=gpt-5.6-terra" in md
+    assert "model=gpt-6-luna" in md
     assert "pending-parent-spawn" in md
     assert "**Execution mode**: `file-backed-worker`" in md
     evidence["reviewer_runner"] = "not a mapping"

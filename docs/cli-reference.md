@@ -297,9 +297,9 @@ options:
   --prompt-file PROMPT_FILE
                         Read implementation instructions from this file.
   --executor {codex,muse}
-                        Lane executor: codex (fixed gpt-5.6-luna model) or
-                        muse (muse default model). Default: codex. Effort
-                        presets depend on the executor.
+                        Lane executor: codex (fixed gpt-6-luna model) or muse
+                        (muse default model). Default: codex. Effort presets
+                        depend on the executor.
   --effort EFFORT       Orchestrator-selected reasoning effort: medium, xhigh,
                         or max for codex; medium, high, xhigh, or max for
                         muse.

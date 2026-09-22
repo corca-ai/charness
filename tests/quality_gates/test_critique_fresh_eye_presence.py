@@ -119,7 +119,7 @@ def test_critique_artifact_validator_accepts_parent_delegated_post_cutoff(
                 "## Reviewer Tier Evidence",
                 "",
                 "- **Requested tier**: `high-leverage`",
-                "- **Requested spawn fields**: `model=gpt-5.6-terra`",
+                "- **Requested spawn fields**: `model=gpt-6-luna`",
                 "- **Host exposure state**: `requested_fields_sent`",
                 "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`",
                 "",

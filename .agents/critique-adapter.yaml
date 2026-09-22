@@ -12,13 +12,13 @@ output_dir: charness-artifacts/critique
 # Claude host describe the Codex-scoped request, not this host's ask.
 reviewer_tiers:
   high-leverage:
-    model: gpt-5.6-terra
-    reasoning_effort: medium
+    model: gpt-6-luna
+    reasoning_effort: xhigh
     service_tier: priority
     fork_turns: none
   medium:
-    model: gpt-5.6-terra
-    reasoning_effort: medium
+    model: gpt-6-luna
+    reasoning_effort: xhigh
     fork_turns: none
 # The default execution path is a Charness-owned file-backed worker. The host
 # adapter chooses the concrete CLI; consumers read the worker receipt plus the

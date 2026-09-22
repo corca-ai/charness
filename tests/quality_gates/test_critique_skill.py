@@ -254,7 +254,7 @@ def test_critique_artifact_validator_allows_parent_delegated_artifact_with_block
         "## Reviewer Tier Evidence",
         "",
         "- **Requested tier**: `high-leverage`",
-        "- **Requested spawn fields**: `model=gpt-5.6-terra`",
+        "- **Requested spawn fields**: `model=gpt-6-luna`",
         "- **Host exposure state**: `requested_fields_sent`",
         "- **Delivery state**: `findings-received`",
         "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`",
@@ -368,7 +368,7 @@ def test_critique_artifact_validator_accepts_reviewer_tier_evidence(tmp_path: Pa
         "## Reviewer Tier Evidence",
         "",
         "- **Requested tier**: `high-leverage`",
-        "- **Requested spawn fields**: `model=gpt-5.6-terra, reasoning_effort=medium, service_tier=priority`",
+        "- **Requested spawn fields**: `model=gpt-6-luna, reasoning_effort=xhigh, service_tier=priority`",
         "- **Host exposure state**: `requested_fields_sent`",
         "- **Delivery state**: `findings-received`",
         "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`",
@@ -398,7 +398,7 @@ def test_critique_artifact_validator_rejects_applied_without_host_confirmation(
         "## Reviewer Tier Evidence",
         "",
         "- **Requested tier**: `high-leverage`",
-        "- **Requested spawn fields**: `model=gpt-5.6-terra`",
+        "- **Requested spawn fields**: `model=gpt-6-luna`",
         "- **Host exposure state**: `applied`",
         "- **Delivery state**: `findings-received`",
         "- **Application state**: `fields were sent`",
@@ -538,7 +538,7 @@ _STRUCTURED_PRELUDE = (
     "## Reviewer Tier Evidence\n"
     "\n"
     "- **Requested tier**: `high-leverage`\n"
-    "- **Requested spawn fields**: `model=gpt-5.6-terra`\n"
+    "- **Requested spawn fields**: `model=gpt-6-luna`\n"
     "- **Host exposure state**: `requested_fields_sent`\n"
     "- **Delivery state**: `findings-received`\n"
     "- **Application state**: `fields accepted by spawn call; provider application not independently confirmed`\n"

@@ -7,7 +7,7 @@ import re
 PASS = "pass"
 FAIL = "fail"
 SCHEMA_VERSION = 1
-TASK_MODEL = "gpt-5.6-luna"
+TASK_MODEL = "gpt-6-luna"
 TASK_EFFORTS = ("medium", "xhigh", "max")
 TASK_EXECUTORS = ("codex", "muse")
 TASK_EXECUTOR_DEFAULT = "codex"

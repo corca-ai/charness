@@ -176,7 +176,7 @@ def test_codex_arguments_fix_luna_sandbox_and_effort(tmp_path: Path) -> None:
         "--add-dir",
         str(git_common_dir),
         "-m",
-        "gpt-5.6-luna",
+        "gpt-6-luna",
         "-c",
         "model_reasoning_effort=xhigh",
     ]
@@ -219,7 +219,7 @@ def test_task_run_lane_shorthand_owns_safe_defaults_and_external_target(
     assert payload["codex"] == {
         "kind": "codex",
         "executable": str(executable),
-        "model": "gpt-5.6-luna",
+        "model": "gpt-6-luna",
         "effort": "xhigh",
         "timeout_seconds": 3600,
         "timeout_scope": "codex-exec",
@@ -253,7 +253,7 @@ def test_task_prompt_is_stdin_not_an_option_bearing_argv_value(tmp_path: Path) -
     assert payload["status"] == "completed", payload
     assert args[-1] == "-"
     assert prompt not in args
-    assert args[args.index("-m") + 1] == "gpt-5.6-luna"
+    assert args[args.index("-m") + 1] == "gpt-6-luna"
     assert captured_stdin.read_text(encoding="utf-8") == prompt
 
 

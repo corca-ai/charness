@@ -5609,7 +5609,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--executor",
         choices=("codex", "muse"),
         default="codex",
-        help="Lane executor: codex (fixed gpt-5.6-luna model) or muse (muse default model). Default: codex. Effort presets depend on the executor.",
+        help="Lane executor: codex (fixed gpt-6-luna model) or muse (muse default model). Default: codex. Effort presets depend on the executor.",
     )
     task_run_parser.add_argument("--effort", required=True, help="Orchestrator-selected reasoning effort: medium, xhigh, or max for codex; medium, high, xhigh, or max for muse.")
     task_run_parser.add_argument("--task-id", help="Optional receipt/log identifier for explicit runs; shorthand derives it from --lane.")

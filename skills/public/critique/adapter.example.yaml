@@ -6,10 +6,10 @@ output_dir: charness-artifacts/critique
 # skills/shared/references/fresh-eye-subagent-review.md. The portable policy
 # names only the tier; each host maps it to that host's reviewer fields.
 # Set the values for the host this repo runs on. Known host defaults:
-#   Codex host:        high-leverage -> model: gpt-5.6-terra,
-#                        reasoning_effort: medium, service_tier: priority,
+#   Codex host:        high-leverage -> model: gpt-6-luna,
+#                        reasoning_effort: xhigh, service_tier: priority,
 #                        fork_turns: none
-#                      medium -> model: gpt-5.6-terra, reasoning_effort: medium,
+#                      medium -> model: gpt-6-luna, reasoning_effort: xhigh,
 #                        fork_turns: none
 #   Claude Code host:  high-leverage -> model: sonnet-4.6
 # reasoning_effort / service_tier only apply where the host exposes them.
@@ -18,13 +18,13 @@ output_dir: charness-artifacts/critique
 # Codex role / `agent_type` may override caller-selected model or effort.
 reviewer_tiers:
   high-leverage:
-    model: gpt-5.6-terra
-    reasoning_effort: medium
+    model: gpt-6-luna
+    reasoning_effort: xhigh
     service_tier: priority
     fork_turns: none
   medium:
-    model: gpt-5.6-terra
-    reasoning_effort: medium
+    model: gpt-6-luna
+    reasoning_effort: xhigh
     fork_turns: none
 reviewer_runner:
   mode: file-backed-worker
