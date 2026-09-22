@@ -9,7 +9,6 @@ for reading its external result store. It does not add a scheduler lifecycle.
 `--executor` selects the lane runner (default: `codex`): `codex` runs the fixed
 `gpt-5.6-luna` model with effort one of medium, xhigh, max; `muse` runs the
 muse default model with effort one of medium, high, xhigh, max.
-`charness task run --help` is the typed surface.
 
 Receipt shape is per executor. The canonical block is `payload["executor"]`
 (`kind`, `executable`, `model`, `effort`, `timeout_scope`, `command`).
@@ -22,9 +21,8 @@ consuming muse lanes.
 
 A muse lane roots its single `muse exec --workspace` at the lane worktree
 itself and trusts it (`--trust-workspace`), so the repo's rules load and
-the untrusted-workspace delegation block clears (observed: the
-`delegation unavailable: workspace is untrusted` warning is gone;
-delegation itself was not exercised). `muse exec` honors one effective
+the untrusted-workspace delegation block clears (observed: the warning is
+gone; delegation itself was not exercised). `muse exec` honors one effective
 workspace, so the Codex `--add-dir` grants do not apply; the receipt
 records the root as top-level `workspace` instead of `writable_dirs`.
 
@@ -40,9 +38,8 @@ instead of further adjacent-file exploration. The receipt records
 both the delivery stream (stdout) and the executor transcript (stderr),
 so a lane with an empty delivery still reports the phases it emitted.
 While the lane runs, the carrier relays phase changes as `PROGRESS` lines
-on its own stderr and publishes `live` (phase, changed-file and commit
-counts, last commit subject, seconds since the logs last grew, attempt) to
-result.json on every guard poll. A
+on stderr and publishes `live` (phase, file/commit counts, last commit
+subject, log idle seconds, attempt) to result.json on every guard poll. A
 require-change lane that announced `CONTRACT-READ` but shows no `EDITING`
 and no real scoped diff once the no-progress budget is spent
 (`CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS`, default 300; `0` disables the
@@ -76,6 +73,11 @@ A transient model-stream stall retries in the same worktree
 their `failure_kind`. Every receipt carries `failure: {kind, retryable,
 message}`. Finished-but-unapprovable work reports `completed-needs-review`
 with `review_required` reasons: merge or re-scope, never relaunch.
+
+A persistence-risk lens blocks lanes adding or removing
+`DROP`/`TRUNCATE` or unscoped `DELETE FROM` with no replacement
+(`completed-needs-review`). Green-to-red; see release notes.
+Budget wall time as `MAX_ATTEMPTS` x `--timeout-seconds`.
 
 ## Run
 
