@@ -539,8 +539,9 @@ def test_new_glob_matching_directory_does_not_widen_to_descendants(tmp_path: Pat
 
     payload = _run(repo, tmp_path, executable, scopes=["*.py"])
 
-    assert payload["status"] == "failed"
+    assert payload["status"] == "completed-needs-review"
     assert payload["scope"]["disallowed_paths"] == ["escape.py/secret.txt"]
+    assert payload["review_required"] == ["out-of-scope-paths"]
     assert payload["scope"]["specs"][0]["directory_matches"] == []
 
 
@@ -562,7 +563,7 @@ def test_absent_scope_remains_exact_when_command_creates_a_directory(tmp_path: P
 
     payload = _run(repo, tmp_path, executable, scopes=["newdir"])
 
-    assert payload["status"] == "failed"
+    assert payload["status"] == "completed-needs-review"
     assert payload["scope"]["specs"] == [{"path": "newdir", "kind": "exact"}]
     assert payload["scope"]["disallowed_paths"] == ["newdir/item.py"]
 
@@ -681,7 +682,7 @@ def test_out_of_scope_change_names_the_offending_paths(tmp_path: Path) -> None:
 
     payload = _run(repo, tmp_path, executable, scopes=["module.py"])
 
-    assert payload["status"] == "failed", payload
+    assert payload["status"] == "completed-needs-review", payload
     assert payload["candidate"]["status"] == "invalid"
     assert payload["candidate"]["disallowed_paths"] == ["stray.py"]
     assert "outside the declared scope: stray.py" in payload["next_step"]

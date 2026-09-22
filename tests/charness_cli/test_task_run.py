@@ -516,8 +516,11 @@ def test_task_run_blocks_new_untracked_output_and_retains_lane(tmp_path: Path) -
 
     payload = _run(repo, tmp_path, executable)
 
-    assert payload["status"] == "failed"
+    assert payload["status"] == "completed-needs-review"
     assert payload["scope"]["disallowed_paths"] == ["leak.txt"]
+    assert payload["review_required"] == ["out-of-scope-paths"]
+    assert payload["failure"]["kind"] == "none"
+    assert payload["approval_eligibility"] == "ineligible"
     assert "outside the declared scope" in payload["next_step"]
     assert (tmp_path / "lane" / "leak.txt").is_file()
     assert payload["parent"]["unchanged"] is True

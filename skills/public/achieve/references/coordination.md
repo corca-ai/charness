@@ -65,4 +65,9 @@ If a finding is not required for the current Goal Run, file or defer it through
 convenient. If it is an in-scope independently closable Work Item, add it through the
 issue-owned `add-child` operation with an `amendment` (rank, dependencies,
 reason, operator approval); the parent metadata's `amendments` list records it
-and the immutable initial binding is preserved.
+and the immutable initial binding is preserved. To relax, tighten, or reorder
+an existing edge mid-run, record a `dependency-amendment` (key, new
+dependencies, optional edge kinds, reason, operator approval) the same way.
+Name each edge `hard` (blocks start; default), `soft` (merge-conflict risk
+only), or `integration-gate` (blocks integration, not start), and justify each
+hard edge by the interface or data the successor consumes.

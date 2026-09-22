@@ -21,7 +21,6 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-from scripts.task_run import task_run_execution as _execution  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402
 
 LANE_PHASES = ("CONTRACT-READ", "EDITING", "TESTING")
@@ -48,8 +47,6 @@ DEFAULT_BLOCKED_GRACE_SECONDS = 60.0
 #: without bound on long lanes; markers are emitted throughout the run, so the
 #: tail carries the phases that matter for the receipt.
 _MAX_LANE_STDERR_SCAN_BYTES = 256 * 1024
-
-
 def lane_progress(stdout_text: str, stderr_text: str = "") -> dict[str, Any]:
     """Parse phase markers and the typed blocker from lane output (#815).
 
@@ -123,6 +120,25 @@ def scoped_diff_present(
         return bool(_support._paths_in_scopes(changed, refreshed))
     except Exception:  # noqa: BLE001 - an unobservable tree reads as unknown
         return None
+
+
+def _worktree_liveliness(worktree: Path, base_sha: str) -> dict[str, Any] | None:
+    """Changed files, lane-branch commits, and the last subject, or None when unobservable."""
+    try:
+        changed = _support._candidate_carrier(worktree, base_sha)["changed_paths"]
+        log = _support._git(worktree, "log", f"{base_sha}..HEAD", "--format=%s")
+        subjects = (
+            [line.strip() for line in log.stdout.splitlines() if line.strip()]
+            if log.returncode == 0
+            else []
+        )
+    except Exception:  # noqa: BLE001 - an unobservable tree reads as unknown
+        return None
+    return {
+        "files_changed": len(changed),
+        "commits": len(subjects),
+        "last_commit_subject": subjects[0][:120] if subjects else None,
+    }
 
 
 def _lane_stderr_text(stdout_log: Path, stderr_log: Path | None) -> str:
@@ -224,6 +240,7 @@ class LaneProgressWatch:
         poll_seconds: float,
         blocked_grace_seconds: float = DEFAULT_BLOCKED_GRACE_SECONDS,
         clock: Callable[[], float] = time.monotonic,
+        observe: Callable[[dict[str, Any]], None] | None = None,
     ) -> None:
         self._stdout_log = stdout_log
         self._stderr_log = stderr_log
@@ -234,6 +251,9 @@ class LaneProgressWatch:
         self._poll_seconds = max(poll_seconds, 0.05)
         self._blocked_grace_seconds = blocked_grace_seconds
         self._clock = clock
+        self._observe = observe
+        self._last_log_sizes: tuple[int, int] = (-1, -1)
+        self._last_growth_at: float | None = None
         self._contract_read_at: float | None = None
         self._blocker_at: float | None = None
         self._blocker: str | None = None
@@ -280,6 +300,49 @@ class LaneProgressWatch:
         }
 
     def tick(self, now: float) -> str | None:
+        """One poll: relay new phases, publish a live snapshot, report a stop reason."""
+        self._track_log_growth(now)
+        reason = self._poll(now)
+        if self._observe is not None:
+            try:
+                self._observe(self.snapshot(now))
+            except Exception:  # noqa: BLE001 - a failed snapshot must not kill the watch
+                pass
+        return reason
+
+    def snapshot(self, now: float) -> dict[str, Any]:
+        """Cheap live lane signal for result.json pollers (#829).
+
+        Phase plus worktree truth the orchestrator previously re-derived by
+        hand: changed-file count, lane-branch commit count, and the last
+        commit subject. Tool-call counts are executor-private and stay out;
+        log silence is reported as seconds since the logs last grew.
+        """
+        lively = _worktree_liveliness(self._worktree, self._base_sha)
+        lively = lively if isinstance(lively, dict) else {}
+        age = None if self._last_growth_at is None else max(0.0, now - self._last_growth_at)
+        return {
+            "phase": self._last_phases[-1] if self._last_phases else None,
+            "phases": list(self._last_phases),
+            "files_changed": lively.get("files_changed"),
+            "commits": lively.get("commits"),
+            "last_commit_subject": lively.get("last_commit_subject"),
+            "seconds_since_log_growth": age,
+        }
+
+    def _track_log_growth(self, now: float) -> None:
+        try:
+            sizes = (
+                self._stdout_log.stat().st_size if self._stdout_log.is_file() else 0,
+                self._stderr_log.stat().st_size if self._stderr_log.is_file() else 0,
+            )
+        except OSError:
+            return
+        if sizes != self._last_log_sizes:
+            self._last_log_sizes = sizes
+            self._last_growth_at = now
+
+    def _poll(self, now: float) -> str | None:
         """One poll: relay new phases and report a stop reason, if due.
 
         Cumulative: markers are one-line events the executor need not
@@ -374,6 +437,7 @@ def build_progress_watch(
     worktree: Path,
     base_sha: str,
     scope_specs: Sequence[Mapping[str, Any]],
+    observe: Callable[[dict[str, Any]], None] | None = None,
 ) -> LaneProgressWatch | None:
     """The live guard for a require-change lane, or None when it is off.
 
@@ -395,48 +459,11 @@ def build_progress_watch(
         blocked_grace_seconds=_env_seconds(
             BLOCKED_GRACE_ENV, DEFAULT_BLOCKED_GRACE_SECONDS
         ),
+        observe=observe,
     )
 
+def _execute_watched_lane(payload: dict[str, Any], command: list[str], **kwargs: Any) -> dict[str, Any]:
+    """Run the lane executor; the attempt loop owns retries (see task_run_attempts)."""
+    from scripts.task_run import task_run_attempts as _attempts
 
-def _execute_watched_lane(
-    payload: dict[str, Any],
-    command: list[str],
-    *,
-    lane_prompt: str,
-    resolved_target: Path,
-    configured_env: dict[str, str],
-    stdout_log: Path,
-    stderr_log: Path,
-    timeout_seconds: int,
-    require_change: bool,
-    base_sha: str,
-    scope_specs: list[dict[str, Any]],
-) -> dict[str, Any]:
-    """Run the lane executor under its live progress guard (#815).
-
-    Require-change lanes tail their logs for phase markers (relayed as
-    `PROGRESS` lines) and are stopped early once the no-progress budget is
-    spent with no `EDITING` and no scoped diff. The guard configuration and
-    outcome are recorded on the receipt beside the execution.
-    """
-    lane_watch = build_progress_watch(
-        require_change=require_change,
-        stdout_log=stdout_log,
-        stderr_log=stderr_log,
-        worktree=resolved_target,
-        base_sha=base_sha,
-        scope_specs=scope_specs,
-    )
-    execution = _execution._execute_codex(
-        command,
-        prompt=lane_prompt,
-        target_path=resolved_target,
-        configured_env=configured_env,
-        stdout_log=stdout_log,
-        stderr_log=stderr_log,
-        timeout_seconds=timeout_seconds,
-        lane_watch=lane_watch,
-    )
-    if lane_watch is not None:
-        payload["progress_guard"] = lane_watch.receipt()
-    return execution
+    return _attempts._execute_watched_lane(payload, command, **kwargs)

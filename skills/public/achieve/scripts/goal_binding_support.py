@@ -6,9 +6,16 @@ import hashlib
 import json
 import os
 import re
+import sys
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping
 from urllib.parse import urlparse
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+from goal_dependency_edges import hard_dependencies, validate_edge_kinds  # noqa: E402
 
 SCHEMA = "charness.goal-binding/v1"
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -24,7 +31,7 @@ DRAFT_FIELDS = frozenset({"path", "sha256"})
 APPROVAL_FIELDS = frozenset({"briefing_sha256", "response", "session_id", "observed_at"})
 PARENT_FIELDS = frozenset({"repo", "number", "url"})
 WORK_ITEM_FIELDS = frozenset({"key", "intent", "issue", "dependencies", "rank", "observed"})
-OPTIONAL_WORK_ITEM_FIELDS = frozenset({"body_policy", "body_sha256"})
+OPTIONAL_WORK_ITEM_FIELDS = frozenset({"body_policy", "body_sha256", "dependency_kinds"})
 # Compatibility alias for callers that imported the old complete field set.
 ITEM_FIELDS = WORK_ITEM_FIELDS | OPTIONAL_WORK_ITEM_FIELDS
 ISSUE_FIELDS = frozenset({"repo", "number", "url"})
@@ -274,6 +281,13 @@ def _validate_item(item: Any, *, parent: dict[str, Any]) -> dict[str, Any]:  # n
         raise BindingError("schema-invalid", f"work item {key!r} dependencies are invalid")
     if dependencies != sorted(set(dependencies)) or key in dependencies:
         raise BindingError("schema-invalid", f"work item {key!r} dependencies are not canonical")
+    validate_edge_kinds(
+        value.get("dependency_kinds"),
+        dependencies,
+        context=f"work item {key!r}",
+        error=BindingError,
+        code="schema-invalid",
+    )
     rank = value["rank"]
     if type(rank) is not int or rank <= 0:
         raise BindingError("schema-invalid", f"work item {key!r} rank must be positive")
@@ -365,7 +379,7 @@ def _validate_manifest(items: Any, *, parent: dict[str, Any]) -> list[dict[str, 
         if state == 2:
             return
         visit_state[key] = 1
-        for dependency in by_key[key]["dependencies"]:
+        for dependency in hard_dependencies(by_key[key]):
             visit(dependency, (*trail, key))
         visit_state[key] = 2
 
@@ -374,7 +388,7 @@ def _validate_manifest(items: Any, *, parent: dict[str, Any]) -> list[dict[str, 
 
     ranks = {item["key"]: item["rank"] for item in validated}
     for item in validated:
-        if any(ranks[dependency] >= item["rank"] for dependency in item["dependencies"]):
+        if any(ranks[dependency] >= item["rank"] for dependency in hard_dependencies(item)):
             raise BindingError(
                 "dependency-rank-invalid",
                 f"work item {item['key']!r} must rank strictly after every dependency",

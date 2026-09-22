@@ -19,10 +19,11 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-from scripts.gates_support.runtime_root_retention import _rmtree_writable  # noqa: E402
 from scripts.task_run import task_run_changed_line as _changed_line  # noqa: E402
 from scripts.task_run import task_run_lane_runner as _lane_runner  # noqa: E402
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
+from scripts.task_run import task_run_retention as _retention  # noqa: E402
+from scripts.task_run import task_run_state as _state  # noqa: E402
 from scripts.task_run.task_run_completion_next_step import _next_step  # noqa: E402
 from scripts.task_run.task_run_contract import TaskRunError  # noqa: E402
 from scripts.task_run.task_run_git import _candidate_carrier  # noqa: E402
@@ -38,6 +39,7 @@ def complete_task(
     base_sha: str,
     scope_specs: list[dict[str, Any]],
     require_change: bool,
+    report_only: bool = False,
     parent_before: dict[str, list[str]],
     parent_before_head: str,
     stdout_log: Path,
@@ -76,6 +78,7 @@ def complete_task(
         base_sha=base_sha,
         scope_specs=scope_specs,
         require_change=require_change,
+        report_only=report_only,
         parent_before=parent_before,
         parent_before_head=parent_before_head,
         target_head=target_head,
@@ -112,6 +115,9 @@ def complete_task(
 
     execution_status = execution_state(execution, delivery)
     payload["execution"]["status"] = execution_status
+    stderr_text = _progress._lane_stderr_text(stdout_log, stderr_log)
+    payload["failure"] = _state.classify_failure(execution, stderr_text=stderr_text, delivery=delivery)
+    payload["review_required"] = _state.review_reasons(scope=scope, parent_progress=parent_progress)
     candidate, result_state = candidate_result_state(
         execution_state=execution_status,
         scope=scope,
@@ -126,6 +132,7 @@ def complete_task(
         parent_progress=parent_progress,
         pass_value=pass_value,
         delivery=delivery,
+        report_only=report_only,
     )
     _lane_runner.apply_lane_receipt(
         payload,
@@ -133,7 +140,7 @@ def complete_task(
         delivery=delivery,
         require_change=require_change,
         scope=scope,
-        stderr_text=_progress._lane_stderr_text(stdout_log, stderr_log),
+        stderr_text=stderr_text,
         guard_phases=_progress._guard_phases(payload),
         guard_blocker=_progress._guard_stop_reason(payload),
     )
@@ -152,6 +159,11 @@ def complete_task(
     )
     payload["changed_line_gate"] = gate
 
+    if report_only and result_state in ("completed", "non-delivery") and blockers:
+        # A report-only lane has no candidate to salvage as a partial result:
+        # with blockers present the only remaining "completed" shape is a
+        # clipped report, and "non-delivery" is the missing report (#827).
+        result_state = "failed"
     payload["status"] = result_state
     payload["approval_eligibility"] = (
         "eligible" if result_state == "completed" and not blockers else "ineligible"
@@ -163,7 +175,9 @@ def complete_task(
         if data.get("verdict") == "warn"
     ]
     if parent_progress["classification"] == "concurrent-parent-progress":
-        warnings.append("parent made disjoint progress while the task ran")
+        scoped = report_only and parent_progress.get("overlap_paths")
+        note = "parent progressed inside the read scope while the task ran; recorded without writer-conflict blocking"
+        warnings.append(note if scoped else "parent made disjoint progress while the task ran")
     if warnings:
         payload["warnings"] = warnings
 
@@ -205,6 +219,7 @@ def _completion_blockers(
     parent_progress: Mapping[str, Any],
     pass_value: str,
     delivery: Mapping[str, Any],
+    report_only: bool = False,
 ) -> list[str]:
     blockers = [f"execution: {execution_status}"] if execution_status != "completed" else []
     if scope["verdict"] != pass_value:
@@ -213,6 +228,19 @@ def _completion_blockers(
         blockers.append("parent changed within the resolved candidate scope")
     if delivery.get("delivery_error"):
         blockers.append(f"result delivery could not be read: {delivery['delivery_error']}")
+    if report_only:
+        # The delivered stdout report is the terminal artifact of a
+        # report-only lane (#827): a missing or clipped report fails the lane
+        # even when the executor exited cleanly and nothing changed.
+        delivered_text = delivery.get("text") if isinstance(delivery, Mapping) else ""
+        if delivery.get("status") != "delivered" or not str(delivered_text or "").strip():
+            blockers.append(
+                "report-only task delivered no report: the lane must print its report to stdout"
+            )
+        elif delivery.get("truncated"):
+            blockers.append(
+                "report-only task result was truncated: the delivered report is incomplete"
+            )
     return blockers
 
 
@@ -418,110 +446,6 @@ def _refresh_after_gate(
     return None
 
 
-def _apply_lane_retention(
-    payload: dict[str, Any],
-    candidate: Mapping[str, Any],
-    *,
-    result_state: str,
-    resolved_repo: Path,
-    resolved_target: Path,
-    record_dir: Path,
-    git: Callable[..., Any],
-    persist: Callable[[dict[str, Any], Path], None],
-    runtime_path: Path,
-) -> None:
-    retention = release_finished_lane(
-        payload,
-        resolved_repo=resolved_repo,
-        resolved_target=resolved_target,
-        record_dir=record_dir,
-        git=git,
-    )
-    if retention is not None:
-        payload["retention"] = retention
-        payload["keep_worktree"] = retention.get("worktree") != "removed"
-        if retention.get("worktree") == "removed":
-            payload["next_step"] = payload["next_step"].rstrip(".") + (
-                "; the lane worktree was released because that commit carries the whole candidate."
-            )
-        persist(payload, runtime_path)
-        return
-    if result_state in {"completed", "validated-partial-result", "failed"}:
-        payload["keep_worktree"] = bool(
-            _candidate_has_work(candidate) and not candidate.get("head_is_complete")
-        )
-        persist(payload, runtime_path)
-
-
-def release_finished_lane(
-    payload: Mapping[str, Any],
-    *,
-    resolved_repo: Path,
-    resolved_target: Path,
-    record_dir: Path,
-    git: Callable[..., Any],
-) -> dict[str, Any] | None:
-    """Release a finished worktree only when its commit carries the whole candidate.
-
-    Receipt and logs survive cleanup. Incomplete or unknown content stays in the
-    worktree with keep_worktree set, so the runtime sweep preserves its only copy.
-    """
-    candidate = payload.get("candidate")
-    if not isinstance(candidate, Mapping) or payload.get("status") not in {
-        "completed",
-        "validated-partial-result",
-    }:
-        return None
-    if not candidate.get("head_is_complete") or candidate.get("carrier_kind") != "commit-only":
-        return {
-            "worktree": "retained",
-            "runtime": "retained",
-            "reason": (
-                f"carrier {candidate.get('carrier_kind')!r} is not carried whole by lane HEAD; "
-                "keep_worktree stays true so the sweep cannot delete the named copy"
-            ),
-        }
-    # A complete commit is not enough for a changed candidate.  The changed-line
-    # gate is the proof that the commit is safe to release, and a missing or
-    # skipped gate must leave the named worktree available for an explicit retry.
-    # No-change lanes have no changed lines to prove and retain the historical
-    # cheap release path.
-    if _candidate_has_work(candidate):
-        gate = payload.get("changed_line_gate")
-        proof_status = gate.get("proof_status") if isinstance(gate, Mapping) else None
-        if proof_status is None and isinstance(gate, Mapping):
-            proof_status = gate.get("status")
-        if (
-            not isinstance(gate, Mapping)
-            or proof_status not in {"clean", "noop"}
-            or gate.get("blocking")
-        ):
-            return {
-                "worktree": "retained",
-                "runtime": "retained",
-                "reason": (
-                    "changed-line proof is absent or not clean/noop; keep_worktree stays true "
-                    "until the candidate is re-observed after a passing gate"
-                ),
-            }
-    retention: dict[str, Any] = {"worktree": "retained", "runtime": "retained"}
-    removal = git(resolved_repo, "worktree", "remove", "--force", str(resolved_target))
-    if removal.returncode != 0:
-        retention["reason"] = f"git worktree remove failed: {removal.stderr.strip()[-300:]}"
-        return retention
-    retention["worktree"] = "removed"
-    runtime_dir = record_dir / "runtime"
-    if runtime_dir.is_dir():
-        try:
-            _rmtree_writable(runtime_dir)
-            retention["runtime"] = "removed"
-        except OSError as exc:
-            retention["reason"] = f"runtime removal failed: {exc}"
-    else:
-        retention["runtime"] = "absent"
-    retention["carrier"] = f"{payload.get('target_branch')}@{payload.get('target_sha')}"
-    retention["kept"] = ["result.json", *sorted(p.name for p in record_dir.glob("*.log"))]
-    return retention
-
-
+_apply_lane_retention = _retention._apply_lane_retention
+release_finished_lane = _retention.release_finished_lane
 _changed_line_verdict = _changed_line._changed_line_verdict

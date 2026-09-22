@@ -1,9 +1,48 @@
-"""Pure contracts for issue-native ``/goal #N`` pickup."""
+"""Pure contracts for issue-native ``/goal #N`` pickup.
+
+Amendment ownership lives in the adjacent ``goal_run_amendments`` module;
+this contract re-exports its names so existing ``PICKUP.*`` callers keep
+working.
+"""
 
 from __future__ import annotations
 
 import re
+import sys
+from pathlib import Path
 from typing import Any
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+from goal_dependency_edges import EDGE_KINDS, hard_dependencies, ready_frontier  # noqa: E402
+from goal_run_amendments import (  # noqa: E402
+    AMENDMENT_APPROVAL_FIELDS,
+    AMENDMENT_FIELDS,
+    AMENDMENT_KINDS,
+    AMENDMENT_OPTIONAL_FIELDS,
+    PickupError,
+    amendment_items,
+    dependency_overlays,
+    effective_work_items,
+    validate_amendments,
+)
+
+__all__ = [
+    "AMENDMENT_APPROVAL_FIELDS",
+    "AMENDMENT_FIELDS",
+    "AMENDMENT_KINDS",
+    "AMENDMENT_OPTIONAL_FIELDS",
+    "EDGE_KINDS",
+    "PickupError",
+    "amendment_items",
+    "dependency_overlays",
+    "effective_work_items",
+    "hard_dependencies",
+    "ready_frontier",
+    "validate_amendments",
+]
 
 OBJECTIVE_RE = re.compile(r"^/goal +#([1-9][0-9]*)$")
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -19,21 +58,10 @@ PROGRESS_FIELDS = {
     "next",
 }
 # Tolerated for pre-amendment parents; never required and never compared.
-PROGRESS_OPTIONAL_FIELDS = {"membership_sha256"}
+PROGRESS_OPTIONAL_FIELDS = {"membership_sha256", "ready_keys"}
 NEXT_FIELDS = {"key", "repo", "number", "url", "state"}
-AMENDMENT_FIELDS = {"key", "repo", "number", "url", "rank", "dependencies", "reason", "approval"}
-AMENDMENT_APPROVAL_FIELDS = {"response", "session_id", "observed_at"}
 BODY_REVISION_FIELDS = {"key", "number", "body_sha256", "supersedes_sha256"}
 KEY_RE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
-
-
-class PickupError(ValueError):
-    """Typed refusal that tells the operator which identity failed."""
-
-    def __init__(self, code: str, message: str, *, details: Any = None) -> None:
-        self.code = code
-        self.details = details
-        super().__init__(message)
 
 
 def parse_objective(value: Any) -> int:
@@ -100,59 +128,6 @@ def validate_metadata(
     return dict(metadata)
 
 
-def validate_amendments(value: Any, *, repo: str) -> list[dict[str, Any]]:
-    """Validate the parent-owned list of Work Items appended after binding.
-
-    An amendment is the one sanctioned way to widen a live Goal Run. It names an
-    existing issue, its rank and dependencies, the reason, and the operator's
-    approval. The immutable binding is untouched; the parent records the change.
-    """
-    if value is None:
-        return []
-    if not isinstance(value, list):
-        raise PickupError("metadata-invalid", "metadata.amendments must be a list")
-    seen: set[str] = set()
-    result = []
-    for index, entry in enumerate(value):
-        context = f"metadata.amendments[{index}]"
-        if not isinstance(entry, dict) or set(entry) != AMENDMENT_FIELDS:
-            raise PickupError("metadata-invalid", f"{context} has the wrong fields")
-        key = entry["key"]
-        if not isinstance(key, str) or not KEY_RE.fullmatch(key) or key in seen:
-            raise PickupError("metadata-invalid", f"{context}.key is invalid or duplicated")
-        seen.add(key)
-        if not isinstance(entry["repo"], str) or entry["repo"].lower() != repo.lower():
-            raise PickupError(
-                "metadata-invalid", f"{context}.repo differs from the Goal Run repository"
-            )
-        number = entry["number"]
-        if type(number) is not int or number <= 0:
-            raise PickupError("metadata-invalid", f"{context}.number must be a positive integer")
-        if entry["url"] != f"https://github.com/{repo}/issues/{number}":
-            raise PickupError(
-                "metadata-invalid", f"{context}.url does not match its repository and number"
-            )
-        if type(entry["rank"]) is not int or entry["rank"] <= 0:
-            raise PickupError("metadata-invalid", f"{context}.rank must be positive")
-        deps = entry["dependencies"]
-        if not isinstance(deps, list) or any(
-            not isinstance(d, str) or not KEY_RE.fullmatch(d) for d in deps
-        ):
-            raise PickupError("metadata-invalid", f"{context}.dependencies are invalid")
-        if not isinstance(entry["reason"], str) or not entry["reason"].strip():
-            raise PickupError("metadata-invalid", f"{context}.reason must be non-empty text")
-        approval = entry["approval"]
-        if (
-            not isinstance(approval, dict)
-            or set(approval) != AMENDMENT_APPROVAL_FIELDS
-            or any(not isinstance(approval[f], str) or not approval[f].strip() for f in approval)
-        ):
-            raise PickupError(
-                "metadata-invalid",
-                f"{context}.approval must record response, session_id, observed_at",
-            )
-        result.append(dict(entry))
-    return result
 
 
 def validate_body_revisions(value: Any) -> list[dict[str, Any]]:
@@ -205,35 +180,6 @@ def body_revision_digests(
     return digests
 
 
-def amendment_items(metadata: dict[str, Any]) -> list[dict[str, Any]]:
-    """Project parent amendments into the Work Item shape pickup and close use."""
-    return [
-        {
-            "key": entry["key"],
-            "intent": "amended",
-            "issue": {"repo": entry["repo"], "number": entry["number"], "url": entry["url"]},
-            "dependencies": list(entry["dependencies"]),
-            "rank": entry["rank"],
-            "observed": None,
-        }
-        for entry in (metadata.get("amendments") or [])
-    ]
-
-
-def effective_work_items(
-    binding_items: list[dict[str, Any]], metadata: dict[str, Any]
-) -> list[dict[str, Any]]:
-    """Binding items plus parent amendments; keys must not collide."""
-    items = list(binding_items)
-    keys = {item.get("key") for item in items}
-    for item in amendment_items(metadata):
-        if item["key"] in keys:
-            raise PickupError(
-                "metadata-invalid", f"amendment {item['key']!r} collides with an approved Work Item"
-            )
-        keys.add(item["key"])
-        items.append(item)
-    return items
 
 
 def _validate_progress_next(
@@ -321,7 +267,29 @@ def validate_progress(
     if progress["total"] <= 0 or progress["completed"] + progress["open"] != progress["total"]:
         raise PickupError("progress-invalid", "parent execution counts do not reconcile")
     # Membership is the provider's sub-issue graph; the cursor does not restate it.
-    _validate_progress_next(progress, effective_work_items(binding_items, metadata), repo=repo)
+    effective = effective_work_items(binding_items, metadata)
+    _validate_progress_next(progress, effective, repo=repo)
+    ready_keys = progress.get("ready_keys")
+    if ready_keys is not None:
+        if (
+            not isinstance(ready_keys, list)
+            or not ready_keys
+            or any(not isinstance(k, str) or not KEY_RE.fullmatch(k) for k in ready_keys)
+            or sorted(set(ready_keys)) != list(ready_keys)
+        ):
+            raise PickupError("progress-invalid", "progress.ready_keys must be a sorted unique key list")
+        known = {item.get("key") for item in effective}
+        unknown = sorted(set(ready_keys) - known)
+        if unknown:
+            raise PickupError(
+                "graph-work-item-mismatch", f"progress.ready_keys names unknown items {unknown!r}"
+            )
+        if progress["open"] == 0:
+            raise PickupError("progress-invalid", "a completed cursor cannot name a ready frontier")
+        if progress["next"] is not None and progress["next"]["key"] not in ready_keys:
+            raise PickupError(
+                "progress-invalid", "progress.next must belong to the ready frontier"
+            )
     return dict(progress)
 
 
@@ -333,17 +301,24 @@ def select_from_parent_progress(
     if next_child is None:
         raise PickupError("all-children-closed", "the parent cursor has no remaining child")
     item = next(item for item in binding_items if item.get("key") == next_child["key"])
+    ready_keys = progress.get("ready_keys")
+    if ready_keys is None:
+        ready_keys = [next_child["key"]]
+    selected: dict[str, Any] = {
+        "key": next_child["key"],
+        "number": next_child["number"],
+        "repo": repo,
+        "rank": item["rank"],
+        "dependencies": list(item.get("dependencies", [])),
+        "title": next_child.get("title"),
+        "selection_source": "parent-progress",
+        "cursor_revision": progress["revision"],
+    }
+    if item.get("dependency_kinds") is not None:
+        selected["dependency_kinds"] = dict(item["dependency_kinds"])
     return {
-        "selected_child": {
-            "key": next_child["key"],
-            "number": next_child["number"],
-            "repo": repo,
-            "rank": item["rank"],
-            "dependencies": list(item.get("dependencies", [])),
-            "title": next_child.get("title"),
-            "selection_source": "parent-progress",
-            "cursor_revision": progress["revision"],
-        },
+        "selected_child": selected,
+        "ready_keys": list(ready_keys),
         "blocked": [],
         "invalid_open": [],
     }

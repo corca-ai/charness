@@ -38,26 +38,25 @@ outside the declared scope must end in
 instead of further adjacent-file exploration. The receipt records
 `lane_progress` (phases observed plus the blocker, if any), parsed from
 both the delivery stream (stdout) and the executor transcript (stderr),
-so a lane with an empty delivery still reports the phases it emitted and
-the parent can tell "alive and editing" from "alive but still exploring"
-without tailing executor logs. While the lane runs, the carrier relays
-phase changes as `PROGRESS` lines on its own stderr, so the parent watches
-"alive and editing" versus "alive but still exploring" live. A
+so a lane with an empty delivery still reports the phases it emitted.
+While the lane runs, the carrier relays phase changes as `PROGRESS` lines
+on its own stderr and publishes `live` (phase, changed-file and commit
+counts, last commit subject, seconds since the logs last grew, attempt) to
+result.json on every guard poll. A
 require-change lane that announced `CONTRACT-READ` but shows no `EDITING`
 and no real scoped diff once the no-progress budget is spent
 (`CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS`, default 300; `0` disables the
 stop) is killed and recorded with a typed `NO-PROGRESS-STOP` blocker; the
 guard configuration and outcome live on the receipt as `progress_guard`.
-A lane that declares `BLOCKED` but keeps running past the blocked grace
-(`CHARNESS_TASK_RUN_BLOCKED_GRACE_SECONDS`, default 60; non-positive
-turns that stop off) is likewise stopped, so the declaration cannot
-burn the full timeout. The receipt records both stops independently
-(`stop_enabled`, `linger_stop_enabled`). When the
-transcript marker is lost, the guard stop reason itself becomes the
-receipt blocker, and guard-observed phases merge into `lane_progress` in
-canonical order.
+A lane that declares `BLOCKED` but outlives the blocked grace
+(`CHARNESS_TASK_RUN_BLOCKED_GRACE_SECONDS`, default 60) is stopped; both
+stops are recorded independently, a lost marker's guard reason becomes the
+blocker, and guard-observed phases merge into `lane_progress`.
 A changeless require-change lane that never emitted `EDITING` fails with
 that stall named. Other lanes transmit the prompt verbatim.
+A `--report-only` lane inspects without changing: it forces
+`require_change` off, treats the delivered stdout report as the artifact
+(missing or truncated delivery fails), and never reports `writer-conflict`.
 
 An interrupted lane whose checkpoint proved the worktree held no scoped
 changes reports a known unchanged candidate (`interrupted-before-edit`,
@@ -70,6 +69,13 @@ blockers were already reported records that intent explicitly
 (`candidate persisted for review`, persistence/correctness/approval kept
 as separate facts) instead of leaving the executor's pre-persist
 declaration beside the persisted commit as a contradiction.
+
+A transient model-stream stall retries in the same worktree
+(`CHARNESS_TASK_RUN_MAX_ATTEMPTS`, default 3; backoff
+`CHARNESS_TASK_RUN_RETRY_BACKOFF_SECONDS`, default 30); attempts record
+their `failure_kind`. Every receipt carries `failure: {kind, retryable,
+message}`. Finished-but-unapprovable work reports `completed-needs-review`
+with `review_required` reasons: merge or re-scope, never relaunch.
 
 ## Run
 

@@ -23,8 +23,12 @@ Planning record: mutable until Goal Binding; the binding freezes these exact byt
 
 ## Slice Plan
 
-| Slice | Objective | Why Now | Dependencies |
+| Slice | Objective | Why Now | Dependencies (suffix `~soft` or `~gate` for non-blocking edges) |
 | --- | --- | --- | --- |
+
+## Dependency Strategy
+
+Speed-versus-conflict policy plus one-line consumed-interface justification per hard edge.
 
 ## Discuss Before Activation
 

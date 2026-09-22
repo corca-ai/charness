@@ -142,6 +142,7 @@ def _complete_task(
     base_sha: str,
     scope_specs: list[dict[str, Any]],
     require_change: bool,
+    report_only: bool = False,
     parent_before: dict[str, list[str]],
     parent_before_head: str,
     stdout_log: Path,
@@ -160,6 +161,7 @@ def _complete_task(
         base_sha=base_sha,
         scope_specs=scope_specs,
         require_change=require_change,
+        report_only=report_only,
         parent_before=parent_before,
         parent_before_head=parent_before_head,
         stdout_log=stdout_log,
@@ -199,6 +201,7 @@ def run_task(
     allow_no_change: bool = False,
     timeout_seconds: int = 3600,
     dry_run: bool = False,
+    report_only: bool = False,
 ) -> dict[str, Any]:
     """Create, run, and receipt one bounded Codex worktree task."""
     resolved_repo: Path | None = None
@@ -231,6 +234,7 @@ def run_task(
             allow_no_change=allow_no_change,
             timeout_seconds=timeout_seconds,
             repo_snapshot=repo_snapshot,
+            report_only=report_only,
         )
     except (OSError, TaskRunError, subprocess.SubprocessError) as exc:
         return _failure_payload(
@@ -253,6 +257,7 @@ def run_task(
     execution_runtime_path = _task_execution_runtime_root(runtime_path, resolved_task_id)
     resolved_prepare = resolved["prepare"]
     resolved_require_change = resolved["require_change"]
+    resolved_report_only = resolved["report_only"]
     payload: dict[str, Any] = {
         "schema_version": _support.SCHEMA_VERSION,
         "event": "task-run",
@@ -274,6 +279,7 @@ def run_task(
         "result_path": str(_support.task_result_path(runtime_path, resolved_task_id)),
         "prepare": resolved_prepare,
         "require_change": resolved_require_change,
+        "report_only": resolved_report_only,
         "keep_worktree": True,
         "runner_pid": os.getpid(),
         "timestamps": {"launched_at": _support.utc_now_iso()},
@@ -409,6 +415,8 @@ def run_task(
             require_change=resolved_require_change,
             base_sha=base_sha,
             scope_specs=scope_specs,
+            executor=resolved_executor,
+            runtime_path=runtime_path,
         )
         _record_timing(payload, "exec", exec_started_at)
         candidate_commit = None
@@ -454,6 +462,7 @@ def run_task(
             base_sha=base_sha,
             scope_specs=scope_specs,
             require_change=resolved_require_change,
+            report_only=resolved_report_only,
             parent_before=parent_before,
             parent_before_head=parent_before_head,
             stdout_log=stdout_log,

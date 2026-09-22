@@ -145,13 +145,25 @@ def _validate_amendment_input(value: dict[str, Any]) -> None:
         return
     if value.get("operation") != "add-child":
         raise _error("schema-invalid", "amendment is only valid for add-child")
-    if not isinstance(amendment, dict) or set(amendment) != {
-        "rank",
-        "dependencies",
-        "reason",
-        "approval",
-    }:
+    if not isinstance(amendment, dict):
         raise _error("schema-invalid", "amendment must carry rank, dependencies, reason, approval")
+    if not {"rank", "dependencies", "reason", "approval"}.issubset(amendment):
+        raise _error("schema-invalid", "amendment must carry rank, dependencies, reason, approval")
+    if set(amendment) - {"rank", "dependencies", "reason", "approval", "kind", "dependency_kinds"}:
+        raise _error("schema-invalid", "amendment must carry rank, dependencies, reason, approval")
+    if amendment.get("kind", "add-child") != "add-child":
+        raise _error("schema-invalid", "add-child amendment kind must be add-child")
+    kinds = amendment.get("dependency_kinds")
+    if kinds is not None:
+        deps = amendment.get("dependencies")
+        if (
+            not isinstance(kinds, dict)
+            or any(not isinstance(dep, str) or not dep.strip() for dep in kinds)
+            or any(kind not in {"hard", "soft", "integration-gate"} for kind in kinds.values())
+            or not isinstance(deps, list)
+            or not set(kinds) <= set(deps)
+        ):
+            raise _error("schema-invalid", "amendment dependency_kinds are invalid")
 
 
 def load_operation(path: Path, *, repo: str, parent_number: int) -> dict[str, Any]:

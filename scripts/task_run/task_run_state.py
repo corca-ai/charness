@@ -17,7 +17,7 @@ boundary no reader crosses by accident.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Mapping
 
 
 def _load_repo_runtime_bootstrap():
@@ -42,6 +42,29 @@ TaskRunError = _support.TaskRunError
 #: any abnormal child exit": a signal and a non-zero exit leave the same untyped
 #: pile, and the parent then triages it by hand or re-runs the whole lane.
 _ABNORMAL_EXIT_STATES = ("timed-out", "interrupted", "failed")
+
+#: Finished lanes whose agent work exists but the gates cannot approve: the
+#: orchestrator merges or re-scopes them instead of relaunching (#829). This
+#: is an agent-outcome/gate-outcome split, never approval: eligibility still
+#: requires a clean `completed`.
+NEEDS_REVIEW_STATE = "completed-needs-review"
+
+#: Executor stderr markers naming a transient model-stream stall (#829).
+#: Matched case-insensitively against the transcript tail.
+MODEL_STREAM_IDLE_MARKERS = ("model stream idle", "agent loop failed")
+
+#: Typed executor/infra failure kinds carried on the receipt's `failure`
+#: field so a poller reads the cause without forensics (#829). Only the
+#: transient model-stream stall is retryable.
+FAILURE_KINDS = (
+    "none",
+    "model-stream-idle",
+    "timed-out",
+    "interrupted",
+    "executor-error",
+    "delivery-failed",
+)
+_RETRYABLE_FAILURES = frozenset({"model-stream-idle"})
 
 
 def _abnormal_child_state(execution: dict[str, Any]) -> str | None:
@@ -76,6 +99,69 @@ def _execution_state(execution: dict[str, Any], delivery: dict[str, Any]) -> str
     if delivery["status"] == "non-delivery":
         return "non-delivery"
     return "completed"
+
+
+def _idle_stall_line(stderr_text: str) -> str | None:
+    """First transcript line naming a transient model-stream stall, if any."""
+    lowered_markers = [marker.lower() for marker in MODEL_STREAM_IDLE_MARKERS]
+    for line in stderr_text.splitlines():
+        stripped = line.strip()
+        if stripped and any(marker in stripped.lower() for marker in lowered_markers):
+            return stripped[:300]
+    return None
+
+
+def classify_failure(
+    execution: Mapping[str, Any] | dict[str, Any],
+    *,
+    stderr_text: str = "",
+    delivery: Mapping[str, Any] | dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Typed executor/infra failure for the receipt, from the executor's own reason (#829).
+
+    Tolerant of sparse inputs (tests and lifecycle paths pass partial
+    execution records): unknown shapes read as `executor-error`, never crash.
+    """
+    execution = execution if isinstance(execution, Mapping) else {}
+    delivery = delivery if isinstance(delivery, Mapping) else {}
+    if execution.get("timed_out"):
+        return {"kind": "timed-out", "retryable": False, "message": "lane exceeded its timeout"}
+    if execution.get("interrupted") or (
+        isinstance(execution.get("exit_code"), int) and execution["exit_code"] < 0
+    ):
+        return {"kind": "interrupted", "retryable": False, "message": "lane was interrupted"}
+    idle = _idle_stall_line(stderr_text or "")
+    exit_code = execution.get("exit_code")
+    abnormal_exit = exit_code is None or (isinstance(exit_code, int) and exit_code != 0)
+    if idle is not None and abnormal_exit and not execution.get("exec_error"):
+        return {"kind": "model-stream-idle", "retryable": True, "message": idle}
+    if execution.get("exec_error") or exit_code is None:
+        detail = execution.get("exec_error") or "executor exit code is unknown"
+        return {"kind": "executor-error", "retryable": False, "message": str(detail)[:300]}
+    if isinstance(exit_code, int) and exit_code != 0:
+        return {
+            "kind": "executor-error",
+            "retryable": False,
+            "message": f"executor exited with code {exit_code}",
+        }
+    if delivery.get("status") == "non-delivery" or delivery.get("delivery_error"):
+        detail = delivery.get("delivery_error") or "executor produced no result delivery"
+        return {"kind": "delivery-failed", "retryable": False, "message": str(detail)[:300]}
+    return {"kind": "none", "retryable": False, "message": ""}
+
+
+def review_reasons(
+    *,
+    scope: Mapping[str, Any] | dict[str, Any],
+    parent_progress: Mapping[str, Any] | dict[str, Any],
+) -> list[str]:
+    """Why a finished lane needs operator review instead of a relaunch (#829)."""
+    reasons = []
+    if isinstance(scope, Mapping) and scope.get("disallowed_paths"):
+        reasons.append("out-of-scope-paths")
+    if isinstance(parent_progress, Mapping) and parent_progress.get("blocking"):
+        reasons.append("parent-progress")
+    return reasons
 
 
 def _abnormal_exit_state(execution: dict[str, Any]) -> str | None:
@@ -148,6 +234,12 @@ def _candidate_result_state(
         return candidate, "completed"
     if candidate_useful:
         return candidate, "validated-partial-result"
+    if (
+        execution_state == "completed"
+        and (changed_paths or scope.get("disallowed_paths"))
+        and (not candidate_valid or parent_progress["blocking"])
+    ):
+        return candidate, NEEDS_REVIEW_STATE
     if not candidate_valid or parent_progress["blocking"]:
         return candidate, "failed"
     return candidate, execution_state

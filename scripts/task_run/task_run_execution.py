@@ -107,6 +107,7 @@ def _execute_codex(
     stderr_log: Path,
     timeout_seconds: int,
     lane_watch: Any | None = None,
+    executor: str = "codex",
 ) -> dict[str, Any]:
     result: dict[str, Any] = {"exit_code": None, "timed_out": False, "interrupted": False}
     group_path = stdout_log.with_suffix(".pgid")
@@ -127,7 +128,7 @@ def _execute_codex(
                     if lane_watch is not None:
                         lane_watch.start(
                             emit=lambda phases, elapsed: print(
-                                f"PROGRESS [codex] elapsed={elapsed:.1f}s "
+                                f"PROGRESS [{executor}] elapsed={elapsed:.1f}s "
                                 f"phases={','.join(phases) if phases else 'none'}",
                                 file=terminal_stderr,
                                 flush=True,

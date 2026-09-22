@@ -5283,6 +5283,7 @@ def cmd_task_run(args: argparse.Namespace) -> int:
         allow_no_change=args.allow_no_change,
         timeout_seconds=args.timeout_seconds,
         dry_run=args.dry_run,
+        report_only=args.report_only,
     )
     emit_yaml(payload)
     return 0 if payload.get("approval_eligibility") == "eligible" or payload.get("status") == lib.PASS else 1
@@ -5616,6 +5617,7 @@ def build_parser() -> argparse.ArgumentParser:
     task_run_parser.add_argument("--require-change", action="store_true", default=None, help="Fail unless the candidate changes at least one path.")
     task_run_parser.add_argument("--skip-prepare", action="store_true", help="Shorthand diagnostic opt-out: skip the default preparation step.")
     task_run_parser.add_argument("--allow-no-change", action="store_true", help="Shorthand diagnostic opt-out: allow an unchanged candidate.")
+    task_run_parser.add_argument("--report-only", action="store_true", help="Report-only lane: force require-change off, treat the delivered stdout report as the terminal artifact, and never classify parent progress as a writer conflict. Cannot be combined with --require-change.")
     task_run_parser.add_argument("--timeout-seconds", type=int, default=3600)
     task_run_parser.add_argument("--dry-run", action="store_true", help="Validate inputs and show the planned lane without creating or running it.")
     task_run_parser.add_argument("--home-root", type=Path, default=default_home_root(), help=argparse.SUPPRESS)

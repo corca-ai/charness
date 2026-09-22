@@ -264,7 +264,7 @@ usage: charness task run [-h] [--repo-root REPO_ROOT] [--lane LANE]
                          SCOPE (--prompt PROMPT | --prompt-file PROMPT_FILE)
                          [--executor {codex,muse}] --effort EFFORT
                          [--task-id TASK_ID] [--prepare] [--require-change]
-                         [--skip-prepare] [--allow-no-change]
+                         [--skip-prepare] [--allow-no-change] [--report-only]
                          [--timeout-seconds TIMEOUT_SECONDS] [--dry-run]
 
 Run one independently delegable lane: shorthand derives a named branch,
@@ -312,6 +312,10 @@ options:
                         preparation step.
   --allow-no-change     Shorthand diagnostic opt-out: allow an unchanged
                         candidate.
+  --report-only         Report-only lane: force require-change off, treat the
+                        delivered stdout report as the terminal artifact, and
+                        never classify parent progress as a writer conflict.
+                        Cannot be combined with --require-change.
   --timeout-seconds TIMEOUT_SECONDS
   --dry-run             Validate inputs and show the planned lane without
                         creating or running it.

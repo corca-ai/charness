@@ -13,6 +13,7 @@ from scripts.task_run import (
     task_run_git,
     task_run_lane_runner,
     task_run_progress,
+    task_run_retention,
 )
 from tests.quality_gates.repo_shapes import install_committed_repo
 
@@ -682,7 +683,7 @@ def test_a_failed_runtime_removal_and_an_absent_runtime_are_both_named(tmp_path:
     def refuse(_path: Path) -> None:
         raise OSError("busy")
 
-    monkeypatch.setattr(task_run_completion, "_rmtree_writable", refuse)
+    monkeypatch.setattr(task_run_retention, "_rmtree_writable", refuse)
     failed, _ = _released(tmp_path, candidate=complete)
     assert failed["worktree"] == "removed" and failed["runtime"] == "retained"
     assert "busy" in failed["reason"]

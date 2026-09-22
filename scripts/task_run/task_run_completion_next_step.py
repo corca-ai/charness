@@ -60,4 +60,10 @@ def _next_step(
             f"Review the validated candidate {location}; "
             "it is useful but not approval-eligible."
         )
+    if result_state == "completed-needs-review":
+        return (
+            f"Merge or re-scope the finished candidate {location}; the agent "
+            "completed its work but a gate needs review, so relaunching would "
+            "repeat finished work."
+        )
     return f"Review the candidate {location}; the typed result is approval-eligible."

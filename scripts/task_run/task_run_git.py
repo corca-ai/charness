@@ -136,6 +136,34 @@ def _repo_snapshot(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _partition_addable_paths(
+    repo_root: Path, paths: Sequence[str], git_run: Callable[..., Any]
+) -> tuple[list[str], list[str]]:
+    """Split checkpoint paths into addable ones and already-staged deletions (#826).
+
+    Re-adding an already-staged deletion fails (`pathspec did not match`),
+    so a path absent from both the worktree and the index but present in
+    HEAD is skipped: its deletion is already staged and the commit pathspec
+    below carries it. Anything else stages normally, preserving the typed
+    refusal for genuinely unknown paths.
+    """
+    tracked = set()
+    if paths:
+        listed = git_run(repo_root, "ls-files", "--", *paths)
+        if listed.returncode == 0:
+            tracked = set(listed.stdout.splitlines())
+    addable: list[str] = []
+    staged: list[str] = []
+    for path in paths:
+        if os.path.lexists(repo_root / path) or path in tracked:
+            addable.append(path)
+        elif git_run(repo_root, "cat-file", "-e", f"HEAD:{path}").returncode == 0:
+            staged.append(path)
+        else:
+            addable.append(path)
+    return addable, staged
+
+
 def _commit_lane_snapshot(
     repo_root: Path,
     *,
@@ -159,8 +187,9 @@ def _commit_lane_snapshot(
     if paths is None:
         staged = git_run(repo_root, "add", "--all", "--", ".")
     else:
-        staged = git_run(repo_root, "add", "--", *paths)
-    if staged.returncode != 0:
+        addable, _already_staged = _partition_addable_paths(repo_root, list(paths), git_run)
+        staged = git_run(repo_root, "add", "--", *addable) if addable else None
+    if staged is not None and staged.returncode != 0:
         detail = str(
             getattr(staged, "stderr", None) or getattr(staged, "stdout", None) or "git add failed"
         ).strip()

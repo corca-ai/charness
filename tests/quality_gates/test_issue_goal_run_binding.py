@@ -829,3 +829,68 @@ def test_apply_bootstrap_without_explicit_identity_is_refused_before_provider(tm
     assert rc == 2
     assert emitted[0]["status"] == "parent-unverified"
     assert not (tmp_path / "observations").exists()
+
+
+def _add_child_operation(tmp_path: Path, amendment: dict[str, object] | None) -> Path:
+    return _bound_operation(
+        tmp_path,
+        "add-child",
+        {"repo": REPO, "sub_issue_number": 725, "work_item_key": "slice-1"},
+        amendment=amendment,
+    )
+
+
+def _approval() -> dict[str, object]:
+    return {"response": "yes", "session_id": "s", "observed_at": "t"}
+
+
+def test_add_child_amendment_accepts_kinds_and_defaults_kind(tmp_path: Path) -> None:
+    close_inputs(tmp_path)
+    contract = runpy.run_path(str(CONTRACT_PATH))
+    operation = _add_child_operation(
+        tmp_path,
+        {
+            "rank": 2,
+            "dependencies": [],
+            "dependency_kinds": {},
+            "reason": "speed",
+            "approval": _approval(),
+        },
+    )
+    loaded = contract["load_operation"](operation, repo=REPO, parent_number=724)
+    assert loaded["amendment"]["dependency_kinds"] == {}
+    assert loaded["amendment"].get("kind", "add-child") == "add-child"
+
+
+@pytest.mark.parametrize(
+    ("amendment", "match"),
+    [
+        ({"reason": "x", "approval": {}}, "must carry rank"),
+        (
+            {"rank": 1, "dependencies": [], "reason": "x", "approval": {}, "extra": 1},
+            "must carry rank",
+        ),
+        (
+            {
+                "kind": "dependency-amendment",
+                "rank": 1,
+                "dependencies": [],
+                "reason": "x",
+                "approval": {},
+            },
+            "must be add-child",
+        ),
+        (
+            {"rank": 1, "dependencies": [], "reason": "x", "approval": {}, "dependency_kinds": {"z": "soft"}},
+            "dependency_kinds are invalid",
+        ),
+    ],
+)
+def test_add_child_amendment_refuses_bad_shapes(
+    tmp_path: Path, amendment: dict[str, object], match: str
+) -> None:
+    close_inputs(tmp_path)
+    contract = runpy.run_path(str(CONTRACT_PATH))
+    operation = _add_child_operation(tmp_path, amendment)
+    with pytest.raises(contract["GoalRunInputError"], match=match):
+        contract["load_operation"](operation, repo=REPO, parent_number=724)

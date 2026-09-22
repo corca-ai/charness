@@ -40,6 +40,7 @@ def _parent_progress(
     parent_before_head: str,
     specs: Sequence[Mapping[str, Any]],
     glob_matches: Callable[[Path, str], tuple[list[str], list[str]]] | None = None,
+    report_only: bool = False,
 ) -> tuple[dict[str, Any], dict[str, list[str]]]:
     parent_after, parent_after_head, _ = _collect_populations_with_metadata(parent_root)
     if parent_after_head is None:
@@ -81,9 +82,19 @@ def _parent_progress(
     changed = sorted(set(committed) | set(dirty_paths))
     refreshed = _refresh_scope_specs(parent_root, specs, glob_matches=glob_matches)
     overlap = _paths_in_scopes(changed, refreshed)
-    classification = (
-        "normal" if not changed else "writer-conflict" if overlap else "concurrent-parent-progress"
-    )
+    if report_only:
+        # A report-only lane carries no write candidate, so scoped parent
+        # movement cannot collide with it (#827). Overlap stays recorded in
+        # `overlap_paths` with the before/after HEADs, but never blocks.
+        classification = "normal" if not changed else "concurrent-parent-progress"
+    else:
+        classification = (
+            "normal"
+            if not changed
+            else "writer-conflict"
+            if overlap
+            else "concurrent-parent-progress"
+        )
     progress = {
         "classification": classification,
         "blocking": classification == "writer-conflict",
@@ -110,6 +121,7 @@ def _completion_evidence(
     parent_before_head: str,
     target_head: str | None = None,
     glob_matches: Callable[[Path, str], tuple[list[str], list[str]]] | None = None,
+    report_only: bool = False,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     after_exec, observed_head, observed_branch = _collect_populations_with_metadata(target_path)
     populations = _population_delta(before_exec, after_exec)
@@ -133,6 +145,7 @@ def _completion_evidence(
         parent_before_head=parent_before_head,
         specs=scope_specs,
         glob_matches=glob_matches,
+        report_only=report_only,
     )
     evidence = {
         "after_exec": _snapshot_payload(after_exec),

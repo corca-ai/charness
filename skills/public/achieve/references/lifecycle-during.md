@@ -27,4 +27,6 @@ names an approved Work Item). Two legacy digests are tolerated and never
 compared: `progress.membership_sha256` and top-level
 `current_membership_sha256`. Either may be absent; when present, pickup ignores
 the value. Membership truth is the provider's sub-issue graph plus parent
-`amendments`, so write the minimal cursor without inventing a hash.
+`amendments`, so write the minimal cursor without inventing a hash. The cursor
+may also carry `ready_keys`, the sorted ready frontier whose hard dependencies
+are satisfied; `next` stays the primary resume pointer and must belong to it.

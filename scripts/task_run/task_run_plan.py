@@ -40,6 +40,31 @@ from scripts.task_run.task_run_runtime import (  # noqa: E402
 from scripts.task_run.task_run_scope import normalize_scopes, resolve_scope_specs  # noqa: E402
 
 
+def _resolve_require_change(
+    *,
+    require_change: bool | None,
+    allow_no_change: bool,
+    report_only: bool,
+    default: bool,
+) -> bool:
+    """Whether the lane must change at least one path (#827).
+
+    Report-only lanes never require a change. Otherwise shorthand lanes
+    require one unless `--allow-no-change` opts out, while explicit lanes
+    require one only when `--require-change` is passed.
+    """
+    if report_only and require_change:
+        raise TaskRunError(
+            "--report-only cannot be used with --require-change; "
+            "a report-only lane must leave the worktree unchanged"
+        )
+    if report_only:
+        return False
+    if require_change is None:
+        return default and not allow_no_change
+    return bool(require_change) and not allow_no_change
+
+
 def resolve_task_inputs(
     resolved_repo: Path,
     *,
@@ -59,6 +84,7 @@ def resolve_task_inputs(
     allow_no_change: bool,
     timeout_seconds: int,
     repo_snapshot: Mapping[str, Any] | None = None,
+    report_only: bool = False,
 ) -> dict[str, Any]:
     if prepare and skip_prepare:
         raise TaskRunError("--prepare and --skip-prepare cannot be used together")
@@ -85,7 +111,12 @@ def resolve_task_inputs(
         )
         resolved_base = "HEAD"
         resolved_prepare = not skip_prepare if prepare is None else prepare
-        resolved_require_change = not allow_no_change if require_change is None else require_change
+        resolved_require_change = _resolve_require_change(
+            require_change=require_change,
+            allow_no_change=allow_no_change,
+            report_only=report_only,
+            default=True,
+        )
     else:
         if any(value is None for value in (target_path, branch, base)):
             raise TaskRunError(
@@ -97,7 +128,12 @@ def resolve_task_inputs(
         resolved_branch = _validate_branch(resolved_repo, branch)
         resolved_base = base
         resolved_prepare = bool(prepare) and not skip_prepare
-        resolved_require_change = bool(require_change) and not allow_no_change
+        resolved_require_change = _resolve_require_change(
+            require_change=require_change,
+            allow_no_change=allow_no_change,
+            report_only=report_only,
+            default=False,
+        )
     if not prompt.strip():
         raise TaskRunError("--prompt or --prompt-file must contain non-empty instructions")
     if effort is None:
@@ -149,4 +185,5 @@ def resolve_task_inputs(
         "runtime_path": runtime_path,
         "prepare": resolved_prepare,
         "require_change": resolved_require_change,
+        "report_only": report_only,
     }
