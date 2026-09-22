@@ -418,13 +418,10 @@ def run_task(
                 candidate_commit = _lane_runner._checkpoint_interrupted_lane(
                     resolved_target, base_sha, scope_specs
                 )
-            except (
-                OSError,
-                RuntimeError,
-                TypeError,
-                TaskRunError,
-                subprocess.SubprocessError,
-            ) as exc:
+            # One line on purpose: an except tuple split across lines leaves each
+            # continuation line without statement coverage, and mutants placed
+            # there read as scope gaps no test can cover (#825).
+            except (OSError, RuntimeError, TypeError, TaskRunError, subprocess.SubprocessError) as exc:
                 payload["execution"] = {**execution, "status": abnormal}
                 payload["candidate"] = {
                     "status": "wip",
