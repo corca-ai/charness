@@ -1,8 +1,7 @@
-"""Implementation-lane shaping for require-change task runs (#815).
+"""Implementation-lane shaping for require-change task runs.
 
-A require-change lane once spent a full model run in analysis without a
-scoped edit. The carrier now marks implementation lanes, demands prompt
-entry into the edit loop, and records phase/blocker signals on the receipt.
+The carrier treats declared scope as an edit boundary, requires premise and
+owner validation before editing, and records phase/blocker signals.
 """
 
 from __future__ import annotations
@@ -15,7 +14,7 @@ from scripts.task_run import task_run_progress as prog
 from tests.charness_cli.test_task_run_fixtures import _repo, _run
 
 
-def test_implementation_prompt_names_scope_and_blocker_protocol() -> None:
+def test_implementation_prompt_separates_edit_scope_from_judgment() -> None:
     shaped = lane_runner.build_lane_prompt(
         "Fix the lease delta.",
         require_change=True,
@@ -23,10 +22,34 @@ def test_implementation_prompt_names_scope_and_blocker_protocol() -> None:
     )
     assert "implementation lane" in shaped
     assert "gateway/lease.py" in shaped
+    assert "declared scope limits edits, not judgment" in shaped
+    assert "Before editing" in shaped
+    assert "real consumer" in shaped
+    assert "meaningful product-state difference" in shaped
+    assert "option, check, verifier, fixture, or simulation" in shaped
+    assert "actual behavior owner" in shaped
+    assert "inventing or replacing it" in shaped
     assert "EDITING" in shaped
-    assert "BLOCKED:" in shaped
-    assert "scope mismatch" in shaped
+    assert "BLOCKED: premise/scope mismatch - <concrete reason>" in shaped
     assert shaped.rstrip().endswith("Fix the lease delta.")
+
+
+def test_implementation_prompt_does_not_prejudge_a_change_or_hurry_a_diff() -> None:
+    requests = (
+        "Add a --json mode even though the command always returns JSON.",
+        "Make a synthetic Host pass without exercising the real Host lifecycle.",
+    )
+    for request in requests:
+        shaped = lane_runner.build_lane_prompt(
+            request,
+            require_change=True,
+            scopes=["tests/fixture.py"],
+        )
+        assert "not a critique lane" not in shaped
+        assert "minimum contract reads" not in shaped
+        assert "prioritize producing the first scoped diff" not in shaped
+        assert shaped.index("Before editing") < shaped.index("EDITING")
+        assert shaped.rstrip().endswith(request)
 
 
 def test_non_require_change_prompt_passes_through_untouched() -> None:

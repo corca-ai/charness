@@ -30,27 +30,28 @@ def build_lane_prompt(
 ) -> str:
     """Shape the lane prompt; implementation lanes get carrier directives.
 
-    A require-change lane once spent a full model run in analysis without a
-    scoped edit (#815): the user prompt used to travel verbatim, so nothing
-    told the executor it was in an implementation lane. Require-change lanes
-    now name the scope, demand prompt entry into the edit loop, and define a
-    typed early blocker; all other lanes pass through untouched.
+    A require-change scope is a write boundary, not evidence that the requested
+    change is warranted. The carrier requires premise and owner validation
+    before editing, then defines progress and typed-blocker signals; all other
+    lanes pass through untouched.
     """
     if not require_change:
         return prompt
     scope_list = ", ".join(scopes)
     return (
         "[charness task-run: implementation lane]\n"
-        f"Scope: {scope_list}. This is an implementation lane, not a critique lane.\n"
-        "After the minimum contract reads, enter the scoped edit/test loop "
-        "promptly and prioritize producing the first scoped diff.\n"
+        f"Scope: {scope_list}. The declared scope limits edits, not judgment "
+        "about whether the requested change is valid.\n"
+        "Before editing, verify that the request names a real consumer and a "
+        "meaningful product-state difference. Any requested option, check, "
+        "verifier, fixture, or simulation must exercise that contract through "
+        "the actual behavior owner rather than inventing or replacing it, and "
+        "that owner must be within scope. If not, do not edit; stop promptly "
+        "and reply on its own line: BLOCKED: premise/scope mismatch - "
+        "<concrete reason>.\n"
         "Emit progress lines as you go, one per line: CONTRACT-READ when "
-        "contract reads are done, EDITING when the first scoped edit lands, "
-        "TESTING when verification runs.\n"
-        "If discovery shows the real owner of the requested behavior (the file "
-        "that must change or the test that owns it) lies outside the declared "
-        "scope, do not keep exploring adjacent files: stop promptly and reply "
-        "BLOCKED: scope mismatch - real owner <path> is outside declared scope.\n"
+        "contract and premise validation are done, EDITING when the first "
+        "scoped edit lands, TESTING when verification runs.\n"
         "If you cannot make a scoped change, stop promptly and reply with a "
         "typed blocker on its own line: BLOCKED: <concrete reason>. Do not "
         "consume the run in further analysis once blocked.\n"
