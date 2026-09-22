@@ -31,9 +31,9 @@ def build_lane_prompt(
     """Shape the lane prompt; implementation lanes get carrier directives.
 
     A require-change scope is a write boundary, not evidence that the requested
-    change is warranted. The carrier requires premise and owner validation
-    before editing, then defines progress and typed-blocker signals; all other
-    lanes pass through untouched.
+    change is warranted. The carrier requires concept, consumer, owner, and
+    evidence-level validation before editing, then defines progress and
+    typed-blocker signals; all other lanes pass through untouched.
     """
     if not require_change:
         return prompt
@@ -42,14 +42,18 @@ def build_lane_prompt(
         "[charness task-run: implementation lane]\n"
         f"Scope: {scope_list}. The declared scope limits edits, not judgment "
         "about whether the requested change is valid.\n"
-        "Before editing, verify that each requested option, check, or verifier "
-        "has a real consumer and a meaningful contract or product-state "
-        "difference. A fixture or simulation may own a bounded lower-level "
-        "claim, but must never substitute for or be reported as product or "
-        "release behavior. A requested product or release claim must exercise "
-        "its contract through the actual behavior owner, and that owner must be "
-        "within scope. If a required premise is false or the required owner is "
-        "outside scope, do not edit; stop promptly and reply on its own line: "
+        "Before editing, apply one claim-boundary frame: validate the concept "
+        "and premise; name a real consumer and distinct observable state; "
+        "follow the contract to its canonical behavior owner rather than a "
+        "substitute; and state the evidence level with an observer and "
+        "falsifier that can see that level. A fixture or simulation may own an "
+        "honestly labelled lower-level claim, but must never substitute for or "
+        "be reported as product or release behavior. If the available observer "
+        "cannot see the requested level, proceed only when the claim can be "
+        "explicitly narrowed within user intent while retaining the higher "
+        "non-claim. If a required premise is false, the required owner is "
+        "outside scope, or the claim cannot be narrowed honestly, do not edit; "
+        "stop promptly and reply on its own line: "
         "BLOCKED: premise/scope mismatch - <concrete reason>.\n"
         "Emit progress lines as you go, one per line: CONTRACT-READ when "
         "contract and premise validation are done, EDITING when the first "

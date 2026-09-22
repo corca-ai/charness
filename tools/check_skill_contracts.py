@@ -86,6 +86,9 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
     ),
     "skills/public/impl/SKILL.md": (
         "Read the current implementation contract",
+        "claim boundary frame",
+        "concept and premise, named consumer and distinct state, canonical behavior",
+        "claimed evidence level with its observer and falsifier",
         "smallest useful change (including deleting obsolete code or tests)",
         "focused tests for the changed module or user flow",
         "Additional proof is conditional",
@@ -94,6 +97,8 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/prove/SKILL.md": (
         "Use Prove only when the user, current contract, or boundary owner explicitly",
         "Identify the claim.",
+        "claim boundary frame",
+        "claimed evidence level with an observer and falsifier",
         "Run the narrowest strongest evidence.",
         "Sync actual truth surfaces.",
         "Report evidence and non-claims.",

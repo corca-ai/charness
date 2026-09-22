@@ -14,6 +14,11 @@ workflow.
 1. Identify the claim.
    - State what changed, what the evidence must establish, and the non-claims
      that will remain open.
+   - Apply the [claim boundary frame](../../shared/references/claim-boundary-frame.md):
+     validate the premise, named consumer and distinct state, canonical behavior
+     owner, and claimed evidence level with an observer and falsifier that can
+     actually see that level. Narrow or leave open any claim the available
+     observer cannot see; an honestly labelled lower-level result remains useful.
 2. Run the narrowest strongest evidence.
    - Prefer an executed test, command, consumer, or provider observation over
      inspection. Use the smallest path that can actually observe the claim.
@@ -38,3 +43,4 @@ workflow.
 
 - `references/verification-ladder.md`
 - `references/review-gate.md`
+- `../../shared/references/claim-boundary-frame.md`

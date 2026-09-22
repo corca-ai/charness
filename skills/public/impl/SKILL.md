@@ -17,8 +17,14 @@ evidence that the next decision does not require rework.
    pickup.
 2. Read the current implementation contract. If none exists, write a small
    working contract in the task context: intended behavior, acceptance check,
-   and explicit non-claims. If that contract and the current diff disagree, or
-   the work must route back to spec or ideation, open `references/contract-consumption.md`.
+   and explicit non-claims. Before accepting its requested mechanism, apply the
+   [claim boundary frame](../../shared/references/claim-boundary-frame.md):
+   concept and premise, named consumer and distinct state, canonical behavior
+   owner, and claimed evidence level with its observer and falsifier. A false
+   premise or an owner outside the write scope is a typed escalation, not a
+   reason to build a scoped substitute. If the contract and the current diff
+   disagree, or the work must route back to spec or ideation, open
+   `references/contract-consumption.md`.
 3. Inspect the exact target paths and current diff. Preserve unrelated parent
    worktree changes. When using an implementation worktree, it must be clean at
    entry and its runtime/cache paths must be outside the worktree.
@@ -119,4 +125,5 @@ without its explicit authorization. Ordinary implementation completes from this 
 - `references/external-api-contract.md` (only for an external API seam)
 - `../../shared/references/prescribed-path-self-test.md` (only for a prescribed path)
 - `../../shared/references/source-bound-records.md` (only for a multi-source or durable record)
+- `../../shared/references/claim-boundary-frame.md` (before accepting a requested mechanism or evidence claim)
 - `../prove/SKILL.md` (only when its evidence format is explicitly needed)

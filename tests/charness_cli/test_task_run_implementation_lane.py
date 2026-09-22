@@ -1,7 +1,8 @@
 """Implementation-lane shaping for require-change task runs.
 
-The carrier treats declared scope as an edit boundary, requires premise and
-owner validation before editing, and records phase/blocker signals.
+The carrier treats declared scope as an edit boundary, requires concept,
+consumer, owner, and evidence-level validation before editing, and records
+phase/blocker signals.
 """
 
 from __future__ import annotations
@@ -24,13 +25,16 @@ def test_implementation_prompt_separates_edit_scope_from_judgment() -> None:
     assert "gateway/lease.py" in shaped
     assert "declared scope limits edits, not judgment" in shaped
     assert "Before editing" in shaped
-    assert "option, check, or verifier" in shaped
+    assert "concept and premise" in shaped
     assert "real consumer" in shaped
-    assert "meaningful contract or product-state difference" in shaped
-    assert "fixture or simulation may own a bounded lower-level claim" in shaped
+    assert "distinct observable state" in shaped
+    assert "canonical behavior owner" in shaped
+    assert "evidence level with an observer and falsifier" in shaped
+    assert "fixture or simulation may own an honestly labelled lower-level claim" in shaped
     assert "must never substitute for or be reported as product or release behavior" in shaped
-    assert "requested product or release claim" in shaped
-    assert "actual behavior owner" in shaped
+    assert "explicitly narrowed within user intent" in shaped
+    assert "retaining the higher non-claim" in shaped
+    assert "claim cannot be narrowed honestly" in shaped
     assert "EDITING" in shaped
     assert "BLOCKED: premise/scope mismatch - <concrete reason>" in shaped
     assert shaped.rstrip().endswith("Fix the lease delta.")
