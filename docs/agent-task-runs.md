@@ -71,9 +71,11 @@ message}`. Finished-but-unapprovable work reports `completed-needs-review`
 with `review_required` reasons: merge or re-scope, never relaunch.
 Scope closure stays warning-only (#831): preflight receipts carry
 `scope_warnings` for unmatched exact scopes, and a scope-mismatch stop
-records a typed `scope_extension_request` whose next step re-validates the
-same candidate with the approved addition. Refresh never admits
-lane-created directories.
+records a typed `scope_extension_request` for same-candidate re-validation.
+Refresh never admits lane-created directories. Lane secret scrub (#832):
+secret-pattern env names are dropped from the lane env except executor auth
+keeps and `CHARNESS_TASK_RUN_KEEP_SECRET_ENV`; the receipt names them,
+never values.
 
 A persistence-risk lens blocks lanes adding or removing
 `DROP`/`TRUNCATE` or unscoped `DELETE FROM` with no replacement

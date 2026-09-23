@@ -358,10 +358,14 @@ def run_task(
 
     try:
         git_worktree_dir = _checkout_own_dir(create_payload)
-        configured_env = _exec.prepare_exec_environment(
-            resolved_target,
-            os.environ.copy(),
-            runtime_root=execution_runtime_path,
+        configured_env = _support.scrubbed_lane_env(
+            payload,
+            _exec.prepare_exec_environment(
+                resolved_target,
+                os.environ.copy(),
+                runtime_root=execution_runtime_path,
+            ),
+            resolved_executor,
         )
         writable_dirs, lane_prompt, command = _lane_runner.prepare_lane_execution(
             payload,

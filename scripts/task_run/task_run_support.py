@@ -106,6 +106,7 @@ parse_scope_extension_request = _scope.parse_scope_extension_request
 rescope_result = _scope.rescope_result
 resolve_scope_specs = _scope.resolve_scope_specs
 scope_closure_warnings = _scope.scope_closure_warnings
+scrubbed_lane_env = _runtime.scrubbed_lane_env
 
 
 def _completion_evidence(*args: Any, **kwargs: Any) -> Any:

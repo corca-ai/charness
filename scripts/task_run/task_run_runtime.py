@@ -173,6 +173,75 @@ def build_muse_command(
     ]
 
 
+#: Env-name fragments (case-insensitive) treated as secret-bearing (#832).
+#: The lane child inherits ambient env, and an executor may re-emit its
+#: environment where any local process can read it (observed: muse
+#: `--env-json` argv). Names only are ever matched or recorded, never values.
+_SECRET_ENV_FRAGMENTS = (
+    "API_KEY",
+    "APIKEY",
+    "_TOKEN",
+    "TOKEN_",
+    "SECRET",
+    "PASSWD",
+    "PASSWORD",
+    "PRIVATE_KEY",
+    "CREDENTIALS",
+    "ACCESS_TOKEN",
+    "AUTH_TOKEN",
+    "REFRESH_TOKEN",
+    "SESSION_TOKEN",
+    "CLIENT_SECRET",
+)
+_SECRET_ENV_EXACT = frozenset({"TOKEN", "API_KEY", "SECRET", "PASSWORD"})
+
+#: Executor auth keys that must stay in the lane env to function (#832).
+#: Muse authenticates from its stored credentials; codex reads its key here.
+_EXECUTOR_SECRET_KEEPS: dict[str, frozenset[str]] = {
+    "codex": frozenset({"OPENAI_API_KEY"}),
+    "muse": frozenset(),
+}
+
+#: Operator override: comma-separated exact env names to keep in lane env.
+LANE_KEEP_SECRET_ENV = "CHARNESS_TASK_RUN_KEEP_SECRET_ENV"
+
+
+def _is_secret_env_name(name: str) -> bool:
+    upper = name.upper()
+    return upper in _SECRET_ENV_EXACT or any(
+        fragment in upper for fragment in _SECRET_ENV_FRAGMENTS
+    )
+
+
+def scrubbed_lane_env(
+    payload: dict[str, Any],
+    env: Mapping[str, str],
+    executor: str,
+) -> dict[str, str]:
+    """Drop secret-pattern names from the lane child env, recording names (#832).
+
+    Unknown executors keep nothing secret-patterned (fail closed). Only the
+    executor's auth keeps and explicit `CHARNESS_TASK_RUN_KEEP_SECRET_ENV`
+    names survive; the receipt records scrubbed/kept names, never values.
+    """
+    keeps = set(_EXECUTOR_SECRET_KEEPS.get(executor, frozenset()))
+    for extra in os.environ.get(LANE_KEEP_SECRET_ENV, "").split(","):
+        if extra.strip():
+            keeps.add(extra.strip())
+    scrubbed = sorted(
+        name for name in env if _is_secret_env_name(name) and name not in keeps
+    )
+    kept = sorted(
+        name for name in env if _is_secret_env_name(name) and name in keeps
+    )
+    payload["lane_env"] = {
+        "executor": executor,
+        "scrubbed": scrubbed,
+        "kept_secret_names": kept,
+    }
+    return {name: value for name, value in env.items() if name not in scrubbed}
+
+
 def task_runtime_root(repo_root: Path) -> Path:
     """Resolve the result store by clean parent identity, ignoring ambient roots."""
     preview_env = os.environ.copy()
