@@ -121,6 +121,8 @@ fatal: Not possible to fast-forward, aborting.`
 - `post_publish_install_refresh`: 1.105s
 - `post_publish_installed_readback`: 1.186s
 - `release_observer`: 0.001s
+- `issue_closeout_carrier`: 17.407s
+- `issue_closeout`: 2.339s
 
 ## Release Observer Record
 
@@ -137,7 +139,14 @@ fatal: Not possible to fast-forward, aborting.`
 
 ## Issue Closeout
 
-- Issue closeout verification: `carrier-pending-state-verification`.
+- Issue closeout verification: `state-verified`.
+- GitHub repo: `corca-ai/charness`
+- Issue #831: `CLOSED` (https://github.com/corca-ai/charness/issues/831)
+  - carrier: `direct_post_publish_commit_body`
+  - manual fallback used: `False`
+- Issue #832: `CLOSED` (https://github.com/corca-ai/charness/issues/832)
+  - carrier: `direct_post_publish_commit_body`
+  - manual fallback used: `False`
 
 ## User Update Steps
 
