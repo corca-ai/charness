@@ -238,10 +238,11 @@ def _refresh_scope_specs(
     for source in specs:
         spec = dict(source)
         if spec["kind"] == "glob":
-            # File matches union with post-freeze additions, but directory
-            # matches stay frozen: a lane-created directory whose name fits
-            # the glob must not widen the scope to its descendants (#831).
-            # Admitting such a directory is an explicit operator-approved
+            # File matches union with post-freeze additions, but the frozen
+            # directory-match set never grows: a lane-created directory is
+            # not admitted as a scope root on refresh (#831). Paths that
+            # literally match the glob pattern itself are still unioned;
+            # admitting a new scope root is an explicit operator-approved
             # rescope (see rescope_result), never an automatic refresh.
             current, _ = matcher(root, str(spec["path"]))
             matches = sorted(set(spec.get("matches", ())) | set(current))
