@@ -89,6 +89,7 @@ def _execute_watched_lane(
     scope_specs: list[dict[str, Any]],
     executor: str = "codex",
     runtime_path: Path | None = None,
+    no_progress_seconds: float | None = None,
 ) -> dict[str, Any]:
     """Run the lane executor under its live progress guard, retrying stalls."""
     max_attempts = _env_attempts(MAX_ATTEMPTS_ENV, DEFAULT_MAX_ATTEMPTS)
@@ -111,6 +112,7 @@ def _execute_watched_lane(
             base_sha=base_sha,
             scope_specs=scope_specs,
             observe=observe,
+            budget_override=no_progress_seconds,
         )
         execution = _execution._execute_codex(
             command,

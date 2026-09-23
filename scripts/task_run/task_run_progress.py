@@ -241,6 +241,7 @@ class LaneProgressWatch:
         blocked_grace_seconds: float = DEFAULT_BLOCKED_GRACE_SECONDS,
         clock: Callable[[], float] = time.monotonic,
         observe: Callable[[dict[str, Any]], None] | None = None,
+        budget_source: str = "env",
     ) -> None:
         self._stdout_log = stdout_log
         self._stderr_log = stderr_log
@@ -248,6 +249,7 @@ class LaneProgressWatch:
         self._base_sha = base_sha
         self._scope_specs = list(scope_specs)
         self._budget_seconds = budget_seconds
+        self._budget_source = budget_source
         self._poll_seconds = max(poll_seconds, 0.05)
         self._blocked_grace_seconds = blocked_grace_seconds
         self._clock = clock
@@ -264,6 +266,10 @@ class LaneProgressWatch:
         self._stopped = threading.Event()
         self._thread: threading.Thread | None = None
         self.stop_reason: str | None = None
+        self._first_scoped_paths: list[str] | None = None
+        self._first_scoped_diff: str | None = None
+        self._first_scoped_truncated: bool = False
+        self._first_scoped_elapsed: float | None = None
 
     def start(
         self,
@@ -293,10 +299,18 @@ class LaneProgressWatch:
             "stop_enabled": self._budget_seconds > 0,
             "linger_stop_enabled": self._blocked_grace_seconds > 0,
             "budget_seconds": self._budget_seconds,
+            "budget_source": self._budget_source,
             "blocked_grace_seconds": self._blocked_grace_seconds,
             "poll_seconds": self._poll_seconds,
             "stop_reason": self.stop_reason,
             "last_phases": list(self._last_phases),
+            "first_scoped_diff": {
+                "observed": self._first_scoped_paths is not None,
+                "changed_paths": list(self._first_scoped_paths or []),
+                "diff": self._first_scoped_diff,
+                "truncated": self._first_scoped_truncated,
+                "observed_elapsed_s": self._first_scoped_elapsed,
+            },
         }
 
     def tick(self, now: float) -> str | None:
@@ -392,15 +406,57 @@ class LaneProgressWatch:
             return None
         if self._contract_read_at is None:
             self._contract_read_at = now
+        diff_present = scoped_diff_present(
+            self._worktree, self._base_sha, self._scope_specs
+        )
+        if diff_present:
+            self._maybe_snapshot_scoped_diff(now)
         return no_progress_stop_due(
             phases=phases,
             contract_read_at=self._contract_read_at,
             now=now,
             budget_seconds=self._budget_seconds,
-            diff_present=scoped_diff_present(
-                self._worktree, self._base_sha, self._scope_specs
-            ),
+            diff_present=diff_present,
         )
+
+    def _maybe_snapshot_scoped_diff(self, now: float) -> None:
+        """Keep the first observed scoped diff so a self-revert stays recoverable (#834).
+
+        Best-effort and once-only: the guard must never fail a lane it is
+        watching, so any unobservable worktree simply leaves the snapshot
+        empty for the receipt backstop to report as unobserved.
+        """
+        if self._first_scoped_paths is not None:
+            return
+        try:
+            refreshed = _support._refresh_scope_specs(self._worktree, list(self._scope_specs))
+            changed = _support._candidate_carrier(self._worktree, self._base_sha)[
+                "changed_paths"
+            ]
+            scoped = _support._paths_in_scopes(changed, refreshed)
+            if not scoped:
+                return
+            self._first_scoped_paths = list(scoped)
+            elapsed = None
+            if self._started_at is not None:
+                elapsed = max(0.0, now - self._started_at)
+            self._first_scoped_elapsed = elapsed
+            # The diff covers the first 50 paths; a longer scoped set is a
+            # second truncation source beside the byte cap below.
+            self._first_scoped_truncated = len(scoped) > 50
+            result = _support._git(
+                self._worktree, "diff", self._base_sha, "--", *scoped[:50]
+            )
+            text = result.stdout if result.returncode == 0 else ""
+        except Exception:  # noqa: BLE001 - an unobservable tree reads as unknown
+            return
+        limit = 64 * 1024
+        if len(text.encode("utf-8", errors="replace")) > limit:
+            raw = text.encode("utf-8", errors="replace")[:limit]
+            self._first_scoped_diff = raw.decode("utf-8", errors="replace")
+            self._first_scoped_truncated = True
+        else:
+            self._first_scoped_diff = text
 
     def fire(self, reason: str) -> None:
         """Record the typed stop on the transcript and kill the stalled lane."""
@@ -438,28 +494,39 @@ def build_progress_watch(
     base_sha: str,
     scope_specs: Sequence[Mapping[str, Any]],
     observe: Callable[[dict[str, Any]], None] | None = None,
+    budget_override: float | None = None,
 ) -> LaneProgressWatch | None:
     """The live guard for a require-change lane, or None when it is off.
 
     Only require-change lanes are watched, and a non-positive budget turns
-    the stop off (the phase relay still runs while the lane does).
+    the stop off (the phase relay still runs while the lane does). An
+    explicit ``budget_override`` (``--no-progress-seconds``) wins over the
+    environment so a contract-heavy lane records its budget as a deliberate
+    per-lane choice (#835).
     """
     if not require_change:
         return None
+    if budget_override is None:
+        budget_seconds = _env_seconds(
+            NO_PROGRESS_BUDGET_ENV, DEFAULT_NO_PROGRESS_BUDGET_SECONDS
+        )
+        budget_source = "env" if NO_PROGRESS_BUDGET_ENV in os.environ else "default"
+    else:
+        budget_seconds = budget_override
+        budget_source = "flag"
     return LaneProgressWatch(
         stdout_log=stdout_log,
         stderr_log=stderr_log,
         worktree=worktree,
         base_sha=base_sha,
         scope_specs=scope_specs,
-        budget_seconds=_env_seconds(
-            NO_PROGRESS_BUDGET_ENV, DEFAULT_NO_PROGRESS_BUDGET_SECONDS
-        ),
+        budget_seconds=budget_seconds,
         poll_seconds=_env_seconds(PROGRESS_POLL_ENV, DEFAULT_PROGRESS_POLL_SECONDS),
         blocked_grace_seconds=_env_seconds(
             BLOCKED_GRACE_ENV, DEFAULT_BLOCKED_GRACE_SECONDS
         ),
         observe=observe,
+        budget_source=budget_source,
     )
 
 def _execute_watched_lane(payload: dict[str, Any], command: list[str], **kwargs: Any) -> dict[str, Any]:

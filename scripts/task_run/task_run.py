@@ -202,6 +202,7 @@ def run_task(
     timeout_seconds: int = 3600,
     dry_run: bool = False,
     report_only: bool = False,
+    no_progress_seconds: float | None = None,
 ) -> dict[str, Any]:
     """Create, run, and receipt one bounded Codex worktree task."""
     resolved_repo: Path | None = None
@@ -235,6 +236,7 @@ def run_task(
             timeout_seconds=timeout_seconds,
             repo_snapshot=repo_snapshot,
             report_only=report_only,
+            no_progress_seconds=no_progress_seconds,
         )
     except (OSError, TaskRunError, subprocess.SubprocessError) as exc:
         return _failure_payload(
@@ -281,6 +283,7 @@ def run_task(
         "prepare": resolved_prepare,
         "require_change": resolved_require_change,
         "report_only": resolved_report_only,
+        "no_progress_seconds": resolved.get("no_progress_seconds"),
         "keep_worktree": True,
         "runner_pid": os.getpid(),
         "timestamps": {"launched_at": _support.utc_now_iso()},
@@ -422,6 +425,7 @@ def run_task(
             scope_specs=scope_specs,
             executor=resolved_executor,
             runtime_path=runtime_path,
+            no_progress_seconds=resolved.get("no_progress_seconds"),
         )
         _record_timing(payload, "exec", exec_started_at)
         candidate_commit = None

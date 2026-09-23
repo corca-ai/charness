@@ -265,7 +265,9 @@ usage: charness task run [-h] [--repo-root REPO_ROOT] [--lane LANE]
                          [--executor {codex,muse}] --effort EFFORT
                          [--task-id TASK_ID] [--prepare] [--require-change]
                          [--skip-prepare] [--allow-no-change] [--report-only]
-                         [--timeout-seconds TIMEOUT_SECONDS] [--dry-run]
+                         [--timeout-seconds TIMEOUT_SECONDS]
+                         [--no-progress-seconds NO_PROGRESS_SECONDS]
+                         [--dry-run]
 
 Run one independently delegable lane: shorthand derives a named branch,
 external worktree, task id, and HEAD base; the explicit form remains available
@@ -289,9 +291,9 @@ options:
                         repeatable, and a `{a,b}` group expands to one scope
                         per alternative. Existing directories include
                         descendants; a path absent from the base is an exact
-                        file, so enumerate planned files in a new directory.
-                        Globs must match before launch and retain the pattern
-                        for new matching paths.
+                        file, so enumerate planned files in a new directory. A
+                        glob that matches nothing warns and admits lane-
+                        created matching paths on refresh.
   --prompt PROMPT       Implementation instructions passed to the lane
                         executor.
   --prompt-file PROMPT_FILE
@@ -320,6 +322,11 @@ options:
                         Per-attempt executor timeout in seconds; a retried
                         stall reruns the full budget (see
                         CHARNESS_TASK_RUN_MAX_ATTEMPTS).
+  --no-progress-seconds NO_PROGRESS_SECONDS
+                        No-progress guard budget in seconds from CONTRACT-READ
+                        to first EDITING/scoped diff; 0 turns the stop off.
+                        Overrides CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS and is
+                        recorded in progress_guard.
   --dry-run             Validate inputs and show the planned lane without
                         creating or running it.
 ```

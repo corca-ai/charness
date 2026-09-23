@@ -5339,6 +5339,7 @@ def cmd_task_run(args: argparse.Namespace) -> int:
         timeout_seconds=args.timeout_seconds,
         dry_run=args.dry_run,
         report_only=args.report_only,
+        no_progress_seconds=args.no_progress_seconds,
     )
     emit_yaml(payload)
     return 0 if payload.get("approval_eligibility") == "eligible" or payload.get("status") == lib.PASS else 1
@@ -5655,7 +5656,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--scope",
         action="append",
         required=True,
-        help="Repository-relative candidate path or quoted glob; repeatable, and a `{a,b}` group expands to one scope per alternative. Existing directories include descendants; a path absent from the base is an exact file, so enumerate planned files in a new directory. Globs must match before launch and retain the pattern for new matching paths.",
+        help="Repository-relative candidate path or quoted glob; repeatable, and a `{a,b}` group expands to one scope per alternative. Existing directories include descendants; a path absent from the base is an exact file, so enumerate planned files in a new directory. A glob that matches nothing warns and admits lane-created matching paths on refresh.",
     )
     task_run_prompt = task_run_parser.add_mutually_exclusive_group(required=True)
     task_run_prompt.add_argument("--prompt", help="Implementation instructions passed to the lane executor.")
@@ -5674,6 +5675,7 @@ def build_parser() -> argparse.ArgumentParser:
     task_run_parser.add_argument("--allow-no-change", action="store_true", help="Shorthand diagnostic opt-out: allow an unchanged candidate.")
     task_run_parser.add_argument("--report-only", action="store_true", help="Report-only lane: force require-change off, treat the delivered stdout report as the terminal artifact, and never classify parent progress as a writer conflict. Cannot be combined with --require-change.")
     task_run_parser.add_argument("--timeout-seconds", type=int, default=3600, help="Per-attempt executor timeout in seconds; a retried stall reruns the full budget (see CHARNESS_TASK_RUN_MAX_ATTEMPTS).")
+    task_run_parser.add_argument("--no-progress-seconds", type=float, default=None, help="No-progress guard budget in seconds from CONTRACT-READ to first EDITING/scoped diff; 0 turns the stop off. Overrides CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS and is recorded in progress_guard.")
     task_run_parser.add_argument("--dry-run", action="store_true", help="Validate inputs and show the planned lane without creating or running it.")
     task_run_parser.add_argument("--home-root", type=Path, default=default_home_root(), help=argparse.SUPPRESS)
     task_run_parser.add_argument("--charness-checkout", type=Path, help=argparse.SUPPRESS)

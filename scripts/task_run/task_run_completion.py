@@ -148,6 +148,9 @@ def complete_task(
         guard_phases=_progress._guard_phases(payload),
         guard_blocker=_progress._guard_stop_reason(payload),
     )
+    _apply_self_revert_backstop(
+        payload, scope, blockers, base_sha=base_sha, require_change=require_change
+    )
     gate, blockers, result_state = _prove_ready_candidate(
         payload,
         candidate,
@@ -218,6 +221,63 @@ def _execution_reviewer_result(delivery: Mapping[str, Any]) -> dict[str, Any] | 
     from scripts.task_run.task_run_execution import _reviewer_result_carrier
 
     return _reviewer_result_carrier(delivery)
+
+
+def _apply_self_revert_backstop(
+    payload: dict[str, Any],
+    scope: Mapping[str, Any],
+    blockers: list[str],
+    *,
+    base_sha: str,
+    require_change: bool,
+) -> bool:
+    """Flag an EDITING lane that ends BLOCKED with an unchanged worktree (#834).
+
+    A worker that discovers a scope mismatch after editing must keep its
+    candidate and emit the typed extension request; a lane that emitted
+    EDITING/TESTING and then reports BLOCKED with no changes discarded its
+    own tested candidate (usually via ``git restore``). That shape reads as
+    ``candidate-self-reverted`` on the receipt instead of a plain
+    skipped/unchanged stall, and the guard's first-scoped-diff snapshot rides
+    along when observed so the parent can recover what was discarded.
+    """
+    lane_progress = payload.get("lane_progress")
+    phases = lane_progress.get("phases") if isinstance(lane_progress, Mapping) else []
+    blocker = lane_progress.get("blocker") if isinstance(lane_progress, Mapping) else None
+    edited = isinstance(phases, list) and any(
+        phase in ("EDITING", "TESTING") for phase in phases
+    )
+    unchanged = not scope.get("changed_paths") and not scope.get("disallowed_paths")
+    same_head = payload.get("target_sha") == base_sha
+    if not (require_change and edited and isinstance(blocker, str) and blocker and unchanged and same_head):
+        return False
+    payload["candidate_self_reverted"] = True
+    candidate = payload.get("candidate")
+    if isinstance(candidate, dict):
+        candidate["self_reverted"] = True
+    guard = payload.get("progress_guard")
+    snapshot = guard.get("first_scoped_diff") if isinstance(guard, Mapping) else None
+    if isinstance(snapshot, Mapping) and snapshot.get("observed"):
+        # The diff text lives once at progress_guard.first_scoped_diff; this
+        # snapshot carries only the recovery pointer, not a second copy.
+        payload["recovered_scoped_snapshot"] = {
+            "changed_paths": list(snapshot.get("changed_paths") or []),
+            "diff_ref": "progress_guard.first_scoped_diff.diff",
+            "truncated": bool(snapshot.get("truncated")),
+        }
+    else:
+        payload["recovered_scoped_snapshot"] = {
+            "changed_paths": [],
+            "diff_ref": None,
+            "truncated": False,
+            "unobserved": True,
+        }
+    blockers.append(
+        "candidate self-reverted after EDITING: the lane emitted EDITING "
+        "then ended BLOCKED with an unchanged worktree; keep the candidate "
+        "on a rescope instead of restoring scoped files"
+    )
+    return True
 
 
 def _completion_blockers(

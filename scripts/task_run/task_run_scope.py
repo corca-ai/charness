@@ -217,7 +217,16 @@ def _resolve_one_scope(
     matches = sorted(path for path in tree_paths if _glob_path_matches(path, scope))
     directories = sorted(path for path in matches if path in tree_directories)
     if not matches:
-        raise TaskRunError(f"scope glob matched no paths: {scope!r}")
+        # A zero-match glob is a creation seam, not a preflight refusal
+        # (#836): warn like an unmatched exact scope and admit paths the
+        # lane creates that match the pattern on refresh.
+        return {
+            "path": scope,
+            "kind": "glob",
+            "matches": [],
+            "match_count": 0,
+            "directory_matches": [],
+        }
     return {
         "path": scope,
         "kind": "glob",
@@ -339,33 +348,48 @@ def scope_closure_warnings(
     specs: Sequence[Mapping[str, Any]],
     tree_paths: set[str],
 ) -> list[dict[str, str]]:
-    """Name statically discoverable scope-closure gaps before launch (#831).
+    """Name statically discoverable scope-closure gaps before launch (#831, #836).
 
     An ``exact`` spec absent from the base tree never matches an existing
     path: it is either an intended-new file (creation seam) or a typo / missed
-    companion path that will fail late at candidate validation. The scope
-    itself is unchanged (warning-only, never expands); the caller surfaces
-    these on the preflight/dry-run receipt so the operator can correct the
-    declaration before spending a lane run.
+    companion path that will fail late at candidate validation. A ``glob``
+    spec with no frozen matches is the same shape: either a creation seam for
+    paths the lane will create or a mistyped pattern. The scope itself is
+    unchanged (warning-only, never expands); the caller surfaces these on the
+    preflight/dry-run receipt so the operator can correct the declaration
+    before spending a lane run.
     """
     warnings: list[dict[str, str]] = []
     for spec in specs:
-        if spec.get("kind") != "exact":
+        if spec.get("kind") == "exact":
+            path = str(spec.get("path", ""))
+            if path in tree_paths:
+                continue
+            warnings.append(
+                {
+                    "code": "unmatched-literal-scope",
+                    "path": path,
+                    "message": (
+                        f"scope {path!r} matches no path in the base tree: "
+                        "either an intended-new file or a missed companion path; "
+                        "the scope is unchanged"
+                    ),
+                }
+            )
             continue
-        path = str(spec.get("path", ""))
-        if path in tree_paths:
-            continue
-        warnings.append(
-            {
-                "code": "unmatched-literal-scope",
-                "path": path,
-                "message": (
-                    f"scope {path!r} matches no path in the base tree: "
-                    "either an intended-new file or a missed companion path; "
-                    "the scope is unchanged"
-                ),
-            }
-        )
+        if spec.get("kind") == "glob" and not spec.get("matches"):
+            path = str(spec.get("path", ""))
+            warnings.append(
+                {
+                    "code": "unmatched-glob-scope",
+                    "path": path,
+                    "message": (
+                        f"scope glob {path!r} matches no path in the base tree: "
+                        "either a creation seam for paths the lane will create "
+                        "or a mistyped pattern; the scope is unchanged"
+                    ),
+                }
+            )
     return warnings
 
 

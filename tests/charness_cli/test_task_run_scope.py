@@ -393,9 +393,11 @@ def test_explicit_base_glob_does_not_use_current_parent_head(tmp_path: Path) -> 
         dry_run=True,
     )
 
-    assert payload["status"] == "fail"
-    assert payload["phase"] == "preflight"
-    assert "scope glob matched no paths" in payload["error"]
+    assert payload["status"] == "pass", payload
+    assert [warning["path"] for warning in payload["scope_warnings"]] == [
+        "current-*.py"
+    ]
+    assert payload["scope_warnings"][0]["code"] == "unmatched-glob-scope"
     assert not (tmp_path / "lane").exists()
 
 
@@ -545,16 +547,37 @@ def test_new_glob_matching_directory_does_not_widen_to_descendants(tmp_path: Pat
     assert payload["scope"]["specs"][0]["directory_matches"] == []
 
 
-def test_zero_match_glob_fails_before_worktree_creation(tmp_path: Path) -> None:
+def test_zero_match_glob_warns_and_admits_lane_created_paths(tmp_path: Path) -> None:
+    """A zero-match glob is a creation seam, not a preflight refusal (#836)."""
     repo = _repo(tmp_path)
-    executable = _codex(tmp_path, "exit 0")
+    executable = _codex(
+        tmp_path, "mkdir -p missing/sub\nprintf 'VALUE = 1\\n' > missing/sub/new.py"
+    )
 
     payload = _run(repo, tmp_path, executable, scopes=["missing/**/*.py"])
 
-    assert payload["status"] == "fail"
-    assert payload["phase"] == "preflight"
-    assert "scope glob matched no paths" in payload["error"]
-    assert not (tmp_path / "lane").exists()
+    assert payload["status"] == "completed", payload
+    assert [warning["path"] for warning in payload["scope_warnings"]] == [
+        "missing/**/*.py"
+    ]
+    assert payload["scope_warnings"][0]["code"] == "unmatched-glob-scope"
+    assert payload["scope"]["disallowed_paths"] == []
+    assert payload["scope"]["changed_paths"] == ["missing/sub/new.py"]
+
+
+def test_zero_match_glob_without_lane_output_warns_instead_of_preflight(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(tmp_path, "true")
+
+    payload = _run(
+        repo, tmp_path, executable, scopes=["missing/**/*.py"], require_change=False
+    )
+
+    assert payload["status"] == "completed", payload
+    assert [warning["path"] for warning in payload["scope_warnings"]] == [
+        "missing/**/*.py"
+    ]
+    assert payload["worktree_path"].endswith("lane")
 
 
 def test_absent_scope_remains_exact_when_command_creates_a_directory(tmp_path: Path) -> None:

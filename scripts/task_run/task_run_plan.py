@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -70,6 +71,25 @@ def _resolve_require_change(
     return bool(require_change) and not allow_no_change
 
 
+def _resolve_no_progress_seconds(value: float | None) -> float | None:
+    """Validate an explicit ``--no-progress-seconds`` budget (#835).
+
+    ``None`` keeps the environment/default budget; otherwise a finite number
+    ``>= 0`` where ``0`` turns the stop off.
+    """
+    if value is None:
+        return None
+    try:
+        resolved = float(value)
+    except (TypeError, ValueError) as exc:
+        raise TaskRunError("--no-progress-seconds must be a number of seconds") from exc
+    if not math.isfinite(resolved) or resolved < 0:
+        raise TaskRunError(
+            "--no-progress-seconds must be a finite number >= 0; 0 turns the stop off"
+        )
+    return resolved
+
+
 def resolve_task_inputs(
     resolved_repo: Path,
     *,
@@ -90,6 +110,7 @@ def resolve_task_inputs(
     timeout_seconds: int,
     repo_snapshot: Mapping[str, Any] | None = None,
     report_only: bool = False,
+    no_progress_seconds: float | None = None,
 ) -> dict[str, Any]:
     if prepare and skip_prepare:
         raise TaskRunError("--prepare and --skip-prepare cannot be used together")
@@ -165,6 +186,7 @@ def resolve_task_inputs(
         )
     if not isinstance(timeout_seconds, int) or timeout_seconds < 1:
         raise TaskRunError("--timeout-seconds must be a positive integer")
+    resolved_no_progress = _resolve_no_progress_seconds(no_progress_seconds)
     if lane is None:
         resolved_task_id = _task_id(resolved_branch, task_id)
         runtime_path = _runtime_preview(resolved_repo)
@@ -194,4 +216,5 @@ def resolve_task_inputs(
         "prepare": resolved_prepare,
         "require_change": resolved_require_change,
         "report_only": report_only,
+        "no_progress_seconds": resolved_no_progress,
     }
