@@ -192,6 +192,119 @@ def prepared_record(
     }
 
 
+#: How many first-parent steps past HEAD the prepared-boundary walk may take
+#: looking for the marker-introducing commit. Mirrors the generated-artifact
+#: walk budget: enough for record corrections the release process itself
+#: demands, too small for an unrelated history to read as adjacent.
+_MAX_BOUNDARY_TAIL_COMMITS = 4
+
+
+def _record_targets_tag(record_text: str, tag_name: str) -> bool:
+    """Whether a marked release record names `tag_name` (or its version)."""
+    version = tag_name.removeprefix("v")
+    return tag_name in record_text or version in record_text
+
+
+def _tail_commit_is_paperwork(repo_root: Path, *, commit: str, record_path: str, run) -> bool:
+    """Whether `commit`'s own parent-diff is release paperwork, nothing else.
+
+    Between the prepared record and the claims evidence only paperwork under
+    `charness-artifacts/` may land -- closeout-ledger or narrative corrections
+    the release process itself demands. The release record file itself is
+    excluded (a second prepare rewrites it), and so is every product path: a
+    source edit between prepare and claims would ride into main unreviewed for
+    this release, so it waits for post-publish and the walk refuses it here.
+    """
+    parents = run(["git", "show", "-s", "--format=%P", commit], cwd=repo_root, check=False)
+    if parents.returncode != 0 or len(parents.stdout.split()) != 1:
+        return False
+    changed = run(
+        ["git", "diff-tree", "--no-commit-id", "--name-only", "-r",
+         parents.stdout.split()[0], commit],
+        cwd=repo_root,
+        check=False,
+    )
+    if changed.returncode != 0:
+        return False
+    names = [line for line in changed.stdout.splitlines() if line]
+    return bool(names) and all(
+        name.startswith("charness-artifacts/") and name != record_path for name in names
+    )
+
+
+def find_prepared_boundary_for_tag(
+    repo_root: Path, *, head: str, tag_name: str, record_path: str, run,
+    max_tail: int = _MAX_BOUNDARY_TAIL_COMMITS,
+) -> dict[str, str] | None:
+    """Walk back from `head` for the marker-introducing commit for `tag_name`.
+
+    WHY THIS EXISTS. Record corrections the release process itself demands
+    (closeout-ledger fixes, narrative wording) land as commits between the
+    prepared record P and the claims evidence R. Fixed-position boundary
+    checks (HEAD/parent only) then stop recognizing the outstanding release,
+    and the only documented recovery is abandon-reset -- for a state the
+    tool's own routine behavior produced rather than operator error.
+
+    Deliberately narrow, mirroring the generated-artifact walk precedent.
+    First parents only; a merge anywhere in the walk refuses. Every tail step
+    must be release paperwork under `charness-artifacts/` -- never the record
+    file itself (a second prepare rewrites it) and never a product path (a
+    source edit between prepare and claims would ride into main unreviewed
+    for this release, so it waits for post-publish). The found record must
+    name `tag_name`, so an older release's introducer further back never
+    binds; and the walk refuses when it holds zero or more than one tag-bound
+    introducer, so a second prepare for the same tag stays refused exactly as
+    before.
+
+    The returned commit is the resolved object id, never the `head` spelling
+    the caller passed: the boundary must stay put while later commits move
+    the ref.
+    """
+    resolved = run(["git", "rev-parse", head], cwd=repo_root, check=False)
+    if resolved.returncode != 0 or not resolved.stdout.strip():
+        return None
+    current = resolved.stdout.strip()
+    introducer: dict[str, str] | None = None
+    for _ in range(max_tail + 1):
+        record = run(["git", "show", f"{current}:{record_path}"], cwd=repo_root, check=False)
+        if record.returncode != 0 or MARKER not in record.stdout:
+            if introducer is None:
+                return None
+            # The marker is absent above a found introducer: pre-prepare
+            # history, a publication rewrite, or an older release. Keep
+            # scanning the remaining budget for a second introducer for this
+            # tag rather than assuming the first one found stands.
+            parents = run(["git", "show", "-s", "--format=%P", current], cwd=repo_root, check=False)
+            parent_list = parents.stdout.split() if parents.returncode == 0 else []
+            if len(parent_list) != 1:
+                return introducer
+            current = parent_list[0]
+            continue
+        parents = run(["git", "show", "-s", "--format=%P", current], cwd=repo_root, check=False)
+        parent_list = parents.stdout.split() if parents.returncode == 0 else []
+        if len(parent_list) != 1:
+            return None
+        parent = parent_list[0]
+        parent_record = run(["git", "show", f"{parent}:{record_path}"], cwd=repo_root, check=False)
+        parent_has_marker = parent_record.returncode == 0 and MARKER in parent_record.stdout
+        if not parent_has_marker:
+            if not _record_targets_tag(record.stdout, tag_name):
+                # An older release's introducer above (or instead of) ours:
+                # whatever tag-bound introducer the walk found stands.
+                return introducer
+            if introducer is not None:
+                return None
+            introducer = {
+                "commit": current,
+                "path": record_path,
+                "sha256": hashlib.sha256(record.stdout.encode("utf-8")).hexdigest(),
+            }
+        elif not _tail_commit_is_paperwork(repo_root, commit=current, record_path=record_path, run=run):
+            return None
+        current = parent
+    return introducer
+
+
 def validate_claims_review(
     repo_root: Path,
     *,
@@ -208,9 +321,23 @@ def validate_claims_review(
     normalized = _evidence.review_relative_path(artifact_path, "--claims-review-artifact", ".json")
     parents = run(["git", "show", "-s", "--format=%P", evidence_commit], cwd=repo_root, check=False)
     if parents.returncode != 0 or parents.stdout.split() != [prepared["commit"]]:
-        raise SystemExit(
-            "--resume: claims-review evidence must be the direct child of the prepared release record"
+        # Tailed claims evidence: record corrections the release process
+        # itself demands may sit between the prepared record and the evidence
+        # commit. The walk re-binds the same introducer (bounded paperwork
+        # tail, exactly one introducer for this tag) instead of refusing a
+        # state the tool's own routine behavior produces.
+        walked = find_prepared_boundary_for_tag(
+            repo_root,
+            head=evidence_commit,
+            tag_name=tag_name,
+            record_path=prepared["path"],
+            run=run,
         )
+        if walked is None or walked["commit"] != prepared["commit"]:
+            raise SystemExit(
+                "--resume: claims-review evidence must be the direct child of the prepared release record"
+            )
+    evidence_parent = parents.stdout.split()[0] if parents.returncode == 0 and parents.stdout.split() else prepared["commit"]
     changed = [
         line
         for line in run(
@@ -220,7 +347,7 @@ def validate_claims_review(
                 "--no-commit-id",
                 "--name-only",
                 "-r",
-                prepared["commit"],
+                evidence_parent,
                 evidence_commit,
             ],
             cwd=repo_root,

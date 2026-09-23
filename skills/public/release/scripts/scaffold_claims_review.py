@@ -201,21 +201,32 @@ def _prepared_facts(args: argparse.Namespace) -> dict[str, Any]:
         )
     record_path = _claims.release_record_path(adapter["data"])
     head = _git_text(repo_root, ["rev-parse", "HEAD"]).strip()
-    prepared = _claims.prepared_record(
-        repo_root, commit=head, record_path=record_path, run=_helpers.run
+    head_record = _git_text(repo_root, ["show", f"{head}:{record_path}"])
+    if _evidence.PREPARED_MARKER not in head_record:
+        raise SystemExit(
+            "claims-review scaffold: HEAD does not carry the prepared claims-review marker"
+        )
+    target = _target_version(head_record)
+    # HEAD may sit atop record-correction commits the release process itself
+    # demands; walk back for the tag-bound introducer instead of requiring
+    # HEAD to be it (bounded paperwork tail, exactly one introducer).
+    prepared = _claims.find_prepared_boundary_for_tag(
+        repo_root,
+        head=head,
+        tag_name=f"v{target}",
+        record_path=record_path,
+        run=_helpers.run,
     )
     if prepared is None:
         raise SystemExit(
-            "claims-review scaffold: HEAD is not the one-parent commit that introduced "
-            "the prepared claims-review marker"
+            "claims-review scaffold: no single tag-bound commit introduced "
+            "the prepared claims-review marker within the boundary walk"
         )
-    record_text = _git_text(repo_root, ["show", f"{head}:{record_path}"])
-    target = _target_version(record_text)
     manifest_path = adapter["data"].get("packaging_manifest_path")
     if not isinstance(manifest_path, str) or not manifest_path:
         raise SystemExit("claims-review scaffold: release adapter has no packaging manifest path")
     try:
-        manifest = json.loads(_git_text(repo_root, ["show", f"{head}:{manifest_path}"]))
+        manifest = json.loads(_git_text(repo_root, ["show", f"{prepared['commit']}:{manifest_path}"]))
     except json.JSONDecodeError as exc:
         raise SystemExit(
             "claims-review scaffold: prepared packaging manifest is not valid JSON"
@@ -260,7 +271,7 @@ def build_record(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, An
     facts = _prepared_facts(args)
     _validate_operator_inputs(args)
     repo_root = facts["repo_root"]
-    prepared, head = facts["prepared"], facts["head"]
+    prepared = facts["prepared"]
     record_path, target, output = facts["record_path"], facts["target"], facts["output"]
 
     if args.verdict == "pass":
@@ -274,7 +285,7 @@ def build_record(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, An
             repo_root, args.review_artifact, prepared=prepared, target=target
         )
         scope, basis = _release_scope(
-            repo_root, prepared_commit=head, target=target, remote=args.remote
+            repo_root, prepared_commit=prepared["commit"], target=target, remote=args.remote
         )
         allowed = {narrative, output}
     else:
@@ -296,7 +307,7 @@ def build_record(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, An
 
     record: dict[str, Any] = {
         "schema_version": _schema.SCHEMA_VERSION,
-        "prepared_commit": head,
+        "prepared_commit": prepared["commit"],
         "release_record_path": record_path,
         "release_record_sha256": prepared["sha256"],
         "target_version": target,
@@ -317,7 +328,7 @@ def build_record(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, An
     summary = {
         "status": "ready-to-write" if not args.write else "written",
         "output": output,
-        "prepared_commit": head,
+        "prepared_commit": prepared["commit"],
         "target_version": target,
         "tag_name": f"v{target}",
         "verdict": args.verdict,

@@ -722,3 +722,135 @@ def test_pre_push_quality_receipt_is_promoted_before_release_scratch_closes(tmp_
     assert payload["prepush_quality_receipt"] == str(durable.relative_to(tmp_path))
     assert payload["prepush_quality_receipt_sha256"]
     assert not (tmp_path / ".runtime" / "scratch" / "release-prepush-quality" / "receipt").exists()
+
+
+def _tailed_scripted_run(answers: dict[tuple[str, ...], tuple[int, str]]):
+    """A `run` carrying per-command git return codes for the tail-boundary tests.
+
+    The walk and the resume classifier ask only git reads; unanswered commands
+    raise so a test cannot pass by silently inventing history.
+    """
+    def run(command, *, cwd=None, check=False):  # noqa: ARG001 - mirrors the real signature
+        key = tuple(str(part) for part in command)
+        if key not in answers:
+            raise AssertionError(f"unscripted git read: {list(key)}")
+        returncode, stdout = answers[key]
+        return SimpleNamespace(returncode=returncode, stdout=stdout, stderr="")
+
+    return run
+
+
+_TAILED_TAG = "v9.9.9"
+_TAILED_MARKED = f"<!-- {CLAIMS.MARKER} -->\ntag `{_TAILED_TAG}`\n"
+_TAILED_REVIEW_DIFF = "charness-artifacts/release-review/review.json\n"
+
+
+def _tailed_walk_answers() -> dict[tuple[str, ...], tuple[int, str]]:
+    """Scripted history: evidence retaining the marker atop a paperwork gap.
+
+    `w` (the evidence commit) keeps the prepared record byte-identical, so the
+    marker is present but introduced below; `p` is a record-correction commit
+    without the marker; `g` is older history without it.
+    """
+    return {
+        ("git", "rev-parse", "head"): (0, "w\n"),
+        ("git", "show", f"w:{_RECORD_PATH}"): (0, _TAILED_MARKED),
+        ("git", "show", "-s", "--format=%P", "w"): (0, "p\n"),
+        ("git", "show", f"p:{_RECORD_PATH}"): (0, "record without marker\n"),
+        ("git", "show", "-s", "--format=%P", "p"): (0, "g\n"),
+        ("git", "show", f"g:{_RECORD_PATH}"): (0, "record without marker\n"),
+        ("git", "show", "-s", "--format=%P", "g"): (0, ""),
+    }
+
+
+def test_tailed_boundary_binds_evidence_that_retains_the_marker() -> None:
+    """The tail arm's happy path: walk binds, head diff is claims-shaped.
+
+    The evidence commit does not touch the release record, so the marker is
+    present at HEAD but introduced at the prepared commit below the paperwork
+    gap. The walk binds the tag-bound introducer and the parent-to-head diff
+    carries exactly the review record, so the outstanding release resolves.
+    """
+    answers = _tailed_walk_answers()
+    answers[("git", "diff-tree", "--no-commit-id", "--name-only", "-r", "p", "head")] = (
+        0, _TAILED_REVIEW_DIFF,
+    )
+    cli = SimpleNamespace(run=_tailed_scripted_run(answers))
+
+    prepared, evidence = RESUME_STATE._tailed_claims_boundary(
+        cli, Path("."), prepared=None, parent_sha="p", head_sha="head",
+        tag_name=_TAILED_TAG, record_path=_RECORD_PATH,
+    )
+
+    assert evidence == "head"
+    assert prepared is not None and prepared["commit"] == "w"
+
+
+def test_tailed_boundary_refuses_a_head_diff_without_the_review_record() -> None:
+    """The walk binding alone is not enough: R's own diff must be claims-shaped.
+
+    A paperwork-only head above the bound introducer is a correction awaiting
+    its review, not evidence carrying one -- binding it as evidence would let
+    the resume publish a release whose claims were never recorded.
+    """
+    answers = _tailed_walk_answers()
+    answers[("git", "diff-tree", "--no-commit-id", "--name-only", "-r", "p", "head")] = (
+        0, "charness-artifacts/issue/note.md\n",
+    )
+    cli = SimpleNamespace(run=_tailed_scripted_run(answers))
+
+    assert RESUME_STATE._tailed_claims_boundary(
+        cli, Path("."), prepared=None, parent_sha="p", head_sha="head",
+        tag_name=_TAILED_TAG, record_path=_RECORD_PATH,
+    ) == (None, "")
+
+
+def test_resumable_state_recovers_prepared_through_a_paperwork_tail() -> None:
+    """The classifier's `elif tailed_evidence` arm, driven where coverage sees it.
+
+    HEAD is the claims evidence above a record-correction gap: no tag exists
+    yet, neither HEAD nor its parent introduces the marker (both inherit it),
+    and no earlier arm binds -- so the direct checks decline and only the
+    tail walk recognizes the outstanding release. Without this arm the resume
+    reports the legacy `release-content` lane and its refusals never run.
+    """
+    answers = _tailed_walk_answers()
+    answers.update({
+        ("git", "log", "-1", "--format=%s"): (0, "Record generated claims review\n"),
+        ("git", "rev-parse", "HEAD"): (0, "head\n"),
+        ("git", "show", "-s", "--format=%B", "HEAD"): (0, "Record generated claims review\n"),
+        ("git", "rev-parse", "HEAD^"): (0, "parent\n"),
+        ("git", "show", "-s", "--format=%B", "HEAD^"): (0, "Correct fixture closeout ledger\n"),
+        ("git", "ls-remote", "--heads", "origin", "refs/heads/main"): (1, ""),
+        ("git", "show", f"head:{_RECORD_PATH}"): (0, "record without marker\n"),
+        ("git", "show", f"parent:{_RECORD_PATH}"): (0, "record without marker\n"),
+        ("git", "diff-tree", "--no-commit-id", "--name-only", "-r", "parent", "head"): (
+            0, _TAILED_REVIEW_DIFF,
+        ),
+        ("git", "rev-parse", "w^"): (0, "parent\n"),
+    })
+    cli = SimpleNamespace(
+        run=_tailed_scripted_run(answers),
+        _helpers=SimpleNamespace(
+            tag_exists=lambda repo_root, tag_name, remote=None: {
+                "local": False, "remote": False, "remote_tag_sha": "",
+            },
+            release_exists=lambda repo_root, tag_name, backend: False,
+        ),
+        release_content_close_keyword_refs=lambda message: [],
+    )
+
+    state = RESUME_STATE.resumable_state(
+        Path("."),
+        tag_name=_TAILED_TAG,
+        commit_message="Release 9.9.9",
+        remote="origin",
+        branch="main",
+        backend={"kind": "github"},
+        record_path=_RECORD_PATH,
+        cli=cli,
+    )
+
+    assert state["phase"] == "prepared-claims-review"
+    assert state["prepared"] is not None and state["prepared"]["commit"] == "w"
+    assert state["claims_evidence_commit"] == "head"

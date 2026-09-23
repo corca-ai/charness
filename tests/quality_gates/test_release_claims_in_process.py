@@ -93,7 +93,13 @@ def test_validate_claims_review_refuses_evidence_that_is_not_the_direct_child(tm
             evidence_commit="evidence",
             artifact_path="charness-artifacts/release-review/review.json",
             target_version="1.2.3", tag_name="v1.2.3",
-            run=_scripted_run({("git", "show", "-s", "--format=%P", "evidence"): "someone-else"}),
+            run=_scripted_run({
+                ("git", "show", "-s", "--format=%P", "evidence"): "someone-else",
+                # The boundary walk runs before the refusal: it resolves the
+                # evidence spelling and finds no marker, so nothing binds.
+                ("git", "rev-parse", "evidence"): "evidence",
+                ("git", "show", f"evidence:{_RECORD}"): "published record without marker\n",
+            }),
         )
 
 
@@ -115,3 +121,112 @@ def test_a_merge_cannot_be_the_prepared_record_even_when_it_carries_the_marker()
     assert CLAIMS_REVIEW.prepared_record(
         Path("."), commit="merge", record_path=_RECORD, run=run
     ) is None
+
+
+def _scripted_outcomes(outcomes: dict[tuple[str, ...], tuple[int, str]]):
+    """Like `_scripted_run`, but each answer also carries its git return code.
+
+    The paperwork-tail check refuses two distinct git failures -- unreadable
+    parents and an unreadable diff -- and a stub that always succeeds cannot
+    reach either refusal.
+    """
+    def run(command, *, cwd=None, check=False):  # noqa: ARG001 - mirrors the real signature
+        key = tuple(str(part) for part in command)
+        if key not in outcomes:
+            raise AssertionError(f"unscripted git read: {list(key)}")
+        returncode, stdout = outcomes[key]
+        return SimpleNamespace(returncode=returncode, stdout=stdout, stderr="")
+
+    return run
+
+
+def test_tail_paperwork_check_refuses_when_parents_are_unreadable() -> None:
+    """A tail step git cannot read is not paperwork."""
+    run = _scripted_outcomes({
+        ("git", "show", "-s", "--format=%P", "tail"): (128, ""),
+    })
+
+    assert CLAIMS_REVIEW._tail_commit_is_paperwork(
+        Path("."), commit="tail", record_path=_RECORD, run=run
+    ) is False
+
+
+def test_tail_paperwork_check_refuses_when_the_diff_is_unreadable() -> None:
+    """A tail step whose own diff git cannot read is not paperwork."""
+    run = _scripted_outcomes({
+        ("git", "show", "-s", "--format=%P", "tail"): (0, "parent"),
+        ("git", "diff-tree", "--no-commit-id", "--name-only", "-r", "parent", "tail"): (128, ""),
+    })
+
+    assert CLAIMS_REVIEW._tail_commit_is_paperwork(
+        Path("."), commit="tail", record_path=_RECORD, run=run
+    ) is False
+
+
+def _marked(tag: str) -> str:
+    return f"<!-- {CLAIMS_REVIEW.MARKER} -->\ntag `{tag}`\n"
+
+
+def test_boundary_walk_refuses_a_merge_below_a_marked_record() -> None:
+    """First parents only: a merge anywhere in the walk refuses.
+
+    The marked commit above the merge may be the genuine prepared record, but
+    the walk cannot attribute the marker across a merge -- the marker could be
+    retained from the non-first parent -- so there is no bound introducer.
+    """
+    run = _scripted_run({
+        ("git", "rev-parse", "head"): "marked",
+        ("git", "show", f"marked:{_RECORD}"): _marked("v9.9.9"),
+        ("git", "show", "-s", "--format=%P", "marked"): "parent-a parent-b",
+    })
+
+    assert CLAIMS_REVIEW.find_prepared_boundary_for_tag(
+        Path("."), head="head", tag_name="v9.9.9", record_path=_RECORD, run=run
+    ) is None
+
+
+def test_boundary_walk_refuses_a_second_introducer_below_a_paperwork_gap() -> None:
+    """Prepare, paperwork correction, prepare again: no single introducer.
+
+    Each prepare targets the tag and each parent gap is clean, so the walk
+    finds two tag-bound marker introducers -- and a second prepare for the
+    same tag stays refused exactly as before the tail walk existed.
+    """
+    run = _scripted_run({
+        ("git", "rev-parse", "head"): "second-prepare",
+        ("git", "show", f"second-prepare:{_RECORD}"): _marked("v9.9.9"),
+        ("git", "show", "-s", "--format=%P", "second-prepare"): "correction",
+        ("git", "show", f"correction:{_RECORD}"): "record without marker\n",
+        ("git", "show", "-s", "--format=%P", "correction"): "first-prepare",
+        ("git", "show", f"first-prepare:{_RECORD}"): _marked("v9.9.9"),
+        ("git", "show", "-s", "--format=%P", "first-prepare"): "seed",
+        ("git", "show", f"seed:{_RECORD}"): "record without marker\n",
+    })
+
+    assert CLAIMS_REVIEW.find_prepared_boundary_for_tag(
+        Path("."), head="head", tag_name="v9.9.9", record_path=_RECORD, run=run
+    ) is None
+
+
+def test_boundary_walk_returns_the_introducer_when_the_budget_runs_out() -> None:
+    """The walk's terminal return: budget exhausted with one introducer bound.
+
+    Real histories return earlier through the older-release arm, so that arm
+    owns the loop's end in every seeded test -- and the loop-exhaustion return
+    reads as unproven. One step of budget isolates it: the single tag-bound
+    introducer at HEAD stands.
+    """
+    run = _scripted_run({
+        ("git", "rev-parse", "head"): "prepared",
+        ("git", "show", f"prepared:{_RECORD}"): _marked("v9.9.9"),
+        ("git", "show", "-s", "--format=%P", "prepared"): "seed",
+        ("git", "show", f"seed:{_RECORD}"): "record without marker\n",
+    })
+
+    found = CLAIMS_REVIEW.find_prepared_boundary_for_tag(
+        Path("."), head="head", tag_name="v9.9.9", record_path=_RECORD, run=run,
+        max_tail=0,
+    )
+
+    assert found is not None
+    assert found["commit"] == "prepared"

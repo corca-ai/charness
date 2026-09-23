@@ -57,6 +57,37 @@ def _artifact_path_matches(path: str, candidate: str) -> bool:
     return path == candidate or path.startswith(f"{candidate}/")
 
 
+def _tailed_claims_boundary(
+    cli: Any, repo_root: Path, *, prepared, parent_sha: str, head_sha: str,
+    tag_name: str, record_path: str,
+) -> tuple[dict[str, str] | None, str]:
+    """(prepared, evidence) with a paperwork tail between them, or (None, "").
+
+    Record corrections the release process itself demands land between the
+    prepared record and the claims evidence; the HEAD/parent-only check then
+    stops recognizing the outstanding release. The walk binds the tag-bound
+    introducer instead (bounded paperwork tail, exactly one introducer), and
+    R's own parent-diff must still be claims-record-shaped, exactly as the
+    direct arm demands of R's range.
+    """
+    if prepared is not None or not parent_sha:
+        return None, ""
+    walked = _claims_review["find_prepared_boundary_for_tag"](
+        repo_root, head=head_sha, tag_name=tag_name, record_path=record_path, run=cli.run,
+    )
+    if not walked or parent_sha == walked["commit"]:
+        return None, ""
+    raw_diff = cli.run(
+        ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", parent_sha, head_sha],
+        cwd=repo_root,
+        check=False,
+    )
+    head_changed = [line for line in raw_diff.stdout.splitlines() if line]
+    if _claims_evidence["claims_record_in_change_set"](head_changed) is None:
+        return None, ""
+    return walked, head_sha
+
+
 def is_claims_evidence_commit(
     cli: Any, repo_root: Path, *, prepared_commit: str, evidence_commit: str
 ) -> bool:
@@ -249,6 +280,15 @@ def resumable_state(
 
     prepared_head = _prepared(head_sha)
     prepared = _prepared(parent_sha) if parent_sha else None
+    tailed_prepared, tailed_evidence = _tailed_claims_boundary(
+        cli,
+        repo_root,
+        prepared=prepared,
+        parent_sha=parent_sha,
+        head_sha=head_sha,
+        tag_name=tag_name,
+        record_path=record_path,
+    )
     tagged_prepared = _prepared(tag_sha) if tag_sha else None
     claims_evidence_commit = ""
     tagged_claims_evidence = (
@@ -320,6 +360,10 @@ def resumable_state(
     ):
         phase = "prepared-claims-review"
         claims_evidence_commit = head_sha
+    elif tailed_evidence:
+        prepared = tailed_prepared
+        phase = "prepared-claims-review"
+        claims_evidence_commit = tailed_evidence
     prepared_parent_sha = (
         optional_git_out(cli, repo_root, ["rev-parse", f"{prepared['commit']}^"])
         if isinstance(prepared, dict)
