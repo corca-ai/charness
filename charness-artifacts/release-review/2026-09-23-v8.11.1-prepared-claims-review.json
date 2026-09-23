@@ -1,0 +1,53 @@
+{
+  "schema_version": "charness.release.claims-review.v4",
+  "prepared_commit": "0f81d826a443e24ace29dcd38fcfc411d2a0b385",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "30f752eabb421470ee281aeed21283bd5afe0e023176fdfae2a6f36cf988dbfb",
+  "target_version": "8.11.1",
+  "tag_name": "v8.11.1",
+  "verdict": "pass",
+  "preparer_context": "Parent release session: authored fix 755342cda, critique, closeout ledger, re-prepare, and this resume.",
+  "reviewer_context": "Distinct subagent claims reviewer (claims-review-v8111) plus parent re-verification for re-prepared commit 0f81d826a443: version slots exact, record honesty holds, Behavior tests exist; verdict pass with 3 advisories in narrative.",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "subagent claims-review-v8111 findings-received task/01a0cd8c-8869-7ac2-bf42-59249fc4db88; parent re-verified scope for 0f81d826a443",
+    "review_artifact": "charness-artifacts/release-review/2026-09-23-v8.11.1-claims-review.md"
+  },
+  "review_scope": {
+    "blocking_paths": [
+      ".claude-plugin/marketplace.json",
+      "charness",
+      "charness-artifacts/critique/task-run-834-836-release-critique.md",
+      "charness-artifacts/issue/2026-09-23-issue-834-835-836-closeout.md",
+      "charness-artifacts/probe/2026-09-23-v8.11.0-release-observer.json",
+      "charness-artifacts/release-review/2026-09-23-v8.11.0-prepared-claims-review.json",
+      "charness-artifacts/release-review/v8.11.0-claims-review.md",
+      "charness-artifacts/release/.8.11.0-prepush-quality.json.charness-receipt.json",
+      "charness-artifacts/release/8.11.0-prepush-quality.json",
+      "charness-artifacts/release/latest.md",
+      "docs/cli-reference.md",
+      "packaging/charness.json",
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_attempts.py",
+      "scripts/task_run/task_run_completion.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "scripts/task_run/task_run_plan.py",
+      "scripts/task_run/task_run_progress.py",
+      "scripts/task_run/task_run_scope.py",
+      "tests/charness_cli/test_task_run_no_progress_835.py",
+      "tests/charness_cli/test_task_run_scope.py",
+      "tests/charness_cli/test_task_run_scope_mismatch_834.py"
+    ],
+    "advisory_paths": []
+  },
+  "scope_basis": {
+    "base_ref": "refs/tags/v8.11.0",
+    "changed_paths_sha256": "c66f102330f65df8c2e6a3dd75ccccf3cd590dfa4a96211959910aa4fb8551d8",
+    "changed_path_count": 22
+  },
+  "advisory_findings": [
+    "tag v8.11.1 named in latest.md but not yet pushed; no consumer should cite it as existing yet",
+    "publication waits on pytest-release resume; read-only pass is necessary but not sufficient",
+    "first prepare abandoned unpublished after out-of-order ledger commit; re-prepared cleanly"
+  ]
+}
