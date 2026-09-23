@@ -1,0 +1,64 @@
+{
+  "schema_version": "charness.release.claims-review.v4",
+  "prepared_commit": "81f325709656723845dbad474a5ad6199b906186",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "ce447db3f7e086ca3e6a73ae0922c0425faf569bcfed4595cc3fdafc4fc43d13",
+  "target_version": "8.10.0",
+  "tag_name": "v8.10.0",
+  "verdict": "pass",
+  "preparer_context": "Muse Code parent session 01a0cba7 (release operator): prepared v8.10.0 via publish_release --execute (second prepare after folding the critique boundary fix pre-stop), wrote this narrative from the distinct observer's findings.",
+  "reviewer_context": "Typed subagent release-claims-reviewer (task 01a0cbe9-3d62-74a3-919f-4529fe98da13): audited the prepared record only (version/figures/verified-lines), returned block-with-pending-items reframed here as resume-gated advisories.",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "subagent task 01a0cbe9-3d62-74a3-919f-4529fe98da13 completed with delivered findings envelope; parent session retains the child session log as the distinct-context signal",
+    "review_artifact": "charness-artifacts/release-review/v8100-claims-narrative.md"
+  },
+  "review_scope": {
+    "blocking_paths": [
+      ".agents/critique-adapter.yaml",
+      ".claude-plugin/marketplace.json",
+      "charness",
+      "charness-artifacts/critique/v8100-critique.md",
+      "charness-artifacts/issue/2026-09-22-issue-826-830-closeout.md",
+      "charness-artifacts/issue/2026-09-23-issue-831-832-closeout.md",
+      "charness-artifacts/probe/2026-09-22-v8.9.8-release-observer.json",
+      "charness-artifacts/release-review/2026-09-23-v8.9.8-prepared-claims-review.json",
+      "charness-artifacts/release/.8.9.8-prepush-quality.json.charness-receipt.json",
+      "charness-artifacts/release/8.9.8-prepush-quality.json",
+      "charness-artifacts/release/latest.md",
+      "docs/agent-task-runs.md",
+      "docs/cli-reference.md",
+      "packaging/charness.json",
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_completion_next_step.py",
+      "scripts/task_run/task_run_contract.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "scripts/task_run/task_run_plan.py",
+      "scripts/task_run/task_run_runtime.py",
+      "scripts/task_run/task_run_scope.py",
+      "scripts/task_run/task_run_support.py",
+      "skills/public/critique/adapter.example.yaml",
+      "skills/public/critique/scripts/templates/critique_adapter.yaml",
+      "tests/charness_cli/test_task_run.py",
+      "tests/charness_cli/test_task_run_lane_env_832.py",
+      "tests/charness_cli/test_task_run_scope_closure_831.py",
+      "tests/quality_gates/test_critique_fresh_eye_presence.py",
+      "tests/quality_gates/test_critique_skill.py",
+      "tests/quality_gates/test_reviewer_tier_policy.py",
+      "tests/test_critique_prepare_packet.py"
+    ],
+    "advisory_paths": [
+      "charness-artifacts/release-review/2026-09-22-v8.9.8-claims.md"
+    ]
+  },
+  "scope_basis": {
+    "base_ref": "refs/tags/v8.9.8",
+    "changed_paths_sha256": "0bc19a77da994f5740c6c015e2dbfeedfb518b0830d89f617f81acc7cb40169b",
+    "changed_path_count": 32
+  },
+  "advisory_findings": [
+    "Quality exit-0 reported alongside explicit unestablished declaration; pytest-release proof pending at resume.",
+    "Fresh-checkout passed is helper-measured only, no persisted log artifact; resume re-runs probes.",
+    "No v8.10.0 notes file yet (generate-notes at publish); verify notes exist before calling the release public."
+  ]
+}
