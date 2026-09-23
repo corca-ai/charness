@@ -1,0 +1,12 @@
+{
+ "kind": "charness.goal-run-operation/v1",
+ "repo": "corca-ai/charness",
+ "parent_number": 844,
+ "operation": "add-child",
+ "attempt_id": "844-add-wi-5-launch-hygiene",
+ "observation_dir": "charness-artifacts/goal-runs/844/observations",
+ "target": {
+  "work_item_key": "wi-5-launch-hygiene",
+  "sub_issue_number": 849
+ }
+}

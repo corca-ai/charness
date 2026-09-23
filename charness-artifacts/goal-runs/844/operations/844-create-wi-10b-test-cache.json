@@ -1,0 +1,13 @@
+{
+ "kind": "charness.goal-run-operation/v1",
+ "repo": "corca-ai/charness",
+ "parent_number": 844,
+ "operation": "create-or-reuse-child",
+ "attempt_id": "844-create-wi-10b-test-cache",
+ "observation_dir": "charness-artifacts/goal-runs/844/observations",
+ "target": {
+  "work_item_key": "wi-10b-test-cache",
+  "title": "WI-10b: content-addressed test-result cache"
+ },
+ "body_file": "charness-artifacts/goals/2026-09-24-lane-lifecycle-items/wi-10b-test-cache.md"
+}

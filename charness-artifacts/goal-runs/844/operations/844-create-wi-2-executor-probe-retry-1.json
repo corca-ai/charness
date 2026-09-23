@@ -1,0 +1,13 @@
+{
+ "kind": "charness.goal-run-operation/v1",
+ "repo": "corca-ai/charness",
+ "parent_number": 844,
+ "operation": "create-or-reuse-child",
+ "attempt_id": "844-create-wi-2-executor-probe-retry-1",
+ "observation_dir": "charness-artifacts/goal-runs/844/observations",
+ "target": {
+  "work_item_key": "wi-2-executor-probe",
+  "title": "WI-2: executor availability probe and ordered fallback"
+ },
+ "body_file": "charness-artifacts/goals/2026-09-24-lane-lifecycle-items/wi-2-executor-probe.md"
+}
