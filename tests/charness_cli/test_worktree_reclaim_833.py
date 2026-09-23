@@ -328,6 +328,77 @@ def test_audit_reclaim_skips_missing_unreadable_and_locked_task_worktrees(
     assert "dirty or unreadable worktree" in skipped[str(blind.resolve())]["reason"]
 
 
+def test_dirty_tree_without_candidate_metadata_is_kept(tmp_path: Path) -> None:
+    """The empty-lane gate never trusts missing metadata over a dirty tree."""
+    repo, base = _retention_repo(tmp_path)
+    lane = tmp_path / "lane"
+    _git("worktree", "add", "-b", "task/dirty", str(lane), cwd=repo)
+    (lane / "untracked.txt").write_text("untracked\n", encoding="utf-8")
+    payload = {"status": "aborted", "base_sha": base}
+
+    assert (
+        task_run_retention.release_finished_lane(
+            payload,
+            resolved_repo=repo,
+            resolved_target=lane,
+            record_dir=_record_dir(tmp_path, "record"),
+            git=_real_git,
+        )
+        is None
+    )
+    assert lane.exists()
+
+
+def test_unobservable_status_keeps_the_lane(tmp_path: Path) -> None:
+    repo, base = _retention_repo(tmp_path)
+
+    def _blind_status(root: Path, *args: str) -> SimpleNamespace:
+        if args[:1] == ("status",):
+            return SimpleNamespace(returncode=1, stdout="", stderr="blind")
+        return _real_git(root, *args)
+
+    payload = {
+        "status": "failed",
+        "base_sha": base,
+        "candidate": {"changed_paths": [], "disallowed_paths": []},
+    }
+
+    assert (
+        task_run_retention.release_finished_lane(
+            payload,
+            resolved_repo=repo,
+            resolved_target=repo,
+            record_dir=_record_dir(tmp_path, "record"),
+            git=_blind_status,
+        )
+        is None
+    )
+
+
+def test_stale_metadata_alone_keeps_the_lane(tmp_path: Path) -> None:
+    """Candidate metadata claiming changes a clean tree does not have wins."""
+    repo, base = _retention_repo(tmp_path)
+    lane = tmp_path / "lane"
+    _git("worktree", "add", "-b", "task/stale", str(lane), cwd=repo)
+    payload = {
+        "status": "failed",
+        "base_sha": base,
+        "candidate": {"changed_paths": ["ghost.py"], "disallowed_paths": []},
+    }
+
+    assert (
+        task_run_retention.release_finished_lane(
+            payload,
+            resolved_repo=repo,
+            resolved_target=lane,
+            record_dir=_record_dir(tmp_path, "record"),
+            git=_real_git,
+        )
+        is None
+    )
+    assert lane.exists()
+
+
 def test_lane_with_stray_file_or_commits_is_kept(tmp_path: Path) -> None:
     repo, base = _retention_repo(tmp_path)
     stray_lane = tmp_path / "stray"

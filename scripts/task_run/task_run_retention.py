@@ -82,18 +82,22 @@ def _empty_lane_removal(
 
     A failed, aborted, or no-op lane whose HEAD never moved past the base
     and whose tree is clean carries no result to consume, so it is released
-    immediately instead of lingering as a registered worktree. Commits,
-    changed or disallowed paths, and unobservable state keep the existing
-    retention path.
+    immediately instead of lingering as a registered worktree. Cleanliness
+    is verified with an independent `git status`, never trusted from
+    candidate metadata alone. Commits, changed or disallowed paths, dirty
+    trees, and unobservable state keep the existing retention path.
     """
     base_sha = payload.get("base_sha")
     if not isinstance(base_sha, str) or not base_sha:
         return None
     try:
         head_sha = git(resolved_target, "rev-parse", "HEAD").stdout.strip()
+        status = git(resolved_target, "status", "--porcelain")
     except (OSError, ValueError, TypeError, AttributeError):
         return None
     if head_sha != base_sha:
+        return None
+    if status.returncode != 0 or status.stdout.strip():
         return None
     if isinstance(candidate, Mapping) and (
         candidate.get("changed_paths") or candidate.get("disallowed_paths")
