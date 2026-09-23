@@ -33,6 +33,8 @@ from scripts.task_run.task_run_state import (  # noqa: E402
     _abnormal_exit_state,
     _candidate_result_state,
     _execution_state,
+    blocker_for_receipt,
+    result_kind_for_status,
 )
 
 _worktree = import_repo_module(__file__, "scripts.worktree.worktree_create_lib")
@@ -128,6 +130,8 @@ def _terminal(
     )
     if error is not None:
         payload["error"] = error
+    payload["result_kind"] = result_kind_for_status(status).value
+    payload["blocker"] = blocker_for_receipt(payload)
     _persist(payload, runtime_path)
     return payload
 

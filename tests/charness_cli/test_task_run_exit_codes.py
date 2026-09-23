@@ -7,10 +7,10 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.task_run import task_run_events, task_run_state
+from scripts.task_run import task_run, task_run_events, task_run_state
 from tests.charness_cli.support import CLI, load_cli_module
-from tests.script_main import run_loaded_script_main
 from tests.charness_cli.test_task_run_completion import _complete
+from tests.script_main import run_loaded_script_main
 
 
 def test_result_kinds_have_one_exit_code_each() -> None:
@@ -56,6 +56,59 @@ def test_completion_receipt_emits_kind_and_stable_blocker_separately(
     assert "correctness unverified" in payload["next_step"]
     assert "approval_eligibility=ineligible" in payload["next_step"]
     capsys.readouterr()
+
+
+def test_terminal_receipt_persists_kind_and_blocker_before_write(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    blocker = "requested behavior has no verified owner"
+    persisted: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        task_run,
+        "_persist",
+        lambda payload, _path: persisted.append(dict(payload)),
+    )
+    payload = {"lane_progress": {"blocker": blocker}}
+
+    result = task_run._terminal(
+        payload,
+        tmp_path / "result.json",
+        status="premise-blocked",
+        next_step="Inspect the declared blocker before retrying.",
+    )
+
+    assert result["result_kind"] == "premise-blocked"
+    assert result["blocker"] == blocker
+    assert persisted == [result]
+
+
+@pytest.mark.parametrize(
+    ("status", "result_kind", "exit_code"),
+    [
+        ("completed", "success", 0),
+        ("failed", "failed", 1),
+        ("validated-partial-result", "validated-partial", 3),
+        ("executor-unavailable", "executor-unavailable", 4),
+    ],
+)
+def test_task_run_cli_maps_other_terminal_kinds(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    status: str,
+    result_kind: str,
+    exit_code: int,
+) -> None:
+    result = _run_task_cli_with_receipt(
+        tmp_path,
+        monkeypatch,
+        {
+            "status": status,
+            "approval_eligibility": "eligible" if status == "completed" else "ineligible",
+        },
+    )
+
+    assert result.returncode == exit_code
+    assert yaml.safe_load(result.stdout)["result_kind"] == result_kind
 
 
 def _run_task_cli_with_receipt(
