@@ -18,6 +18,7 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
+from scripts.task_run import task_run_scope as _scope  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402
 
 build_codex_command = _support.build_codex_command
@@ -118,6 +119,7 @@ def apply_lane_receipt(
         "merged_guard_phases": [phase for phase in phases if phase not in parsed["phases"]],
     }
     payload["lane_progress"] = progress
+    payload["scope_extension_request"] = _scope.parse_scope_extension_request(blocker)
     blockers.extend(
         lane_receipt_blockers(progress=progress, require_change=require_change, scope=scope)
     )

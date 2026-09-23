@@ -50,11 +50,20 @@ def _next_step(
             + suffix
         )
     if blockers:
-        return (
+        step = (
             f"Inspect the retained candidate {location}, typed result, and captured logs; "
             + "; ".join(blockers)
             + "."
         )
+        extension = payload.get("scope_extension_request")
+        if isinstance(extension, dict) and extension.get("requested_paths"):
+            step += (
+                " The lane reported a scope mismatch naming "
+                + ", ".join(str(path) for path in extension["requested_paths"])
+                + ": approve or refuse that explicit addition, then re-validate "
+                "the same candidate with the expanded scope instead of relaunching."
+            )
+        return step
     if result_state == "validated-partial-result":
         return (
             f"Review the validated candidate {location}; "

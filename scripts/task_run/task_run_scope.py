@@ -32,7 +32,7 @@ _SUSPICIOUS_RUNTIME_PARTS = frozenset(
 
 def _normalize_scope(value: str) -> str:
     scope = value.strip()
-    if scope.startswith("./"):
+    while scope.startswith("./"):
         scope = scope[2:]
     if (
         not scope
@@ -238,6 +238,11 @@ def _refresh_scope_specs(
     for source in specs:
         spec = dict(source)
         if spec["kind"] == "glob":
+            # File matches union with post-freeze additions, but directory
+            # matches stay frozen: a lane-created directory whose name fits
+            # the glob must not widen the scope to its descendants (#831).
+            # Admitting such a directory is an explicit operator-approved
+            # rescope (see rescope_result), never an automatic refresh.
             current, _ = matcher(root, str(spec["path"]))
             matches = sorted(set(spec.get("matches", ())) | set(current))
             spec.update(matches=matches, match_count=len(matches))
@@ -303,6 +308,99 @@ def _path_cause(path: str) -> str:
             "dependency/install output appeared inside the worktree; compare with the prepare step"
         )
     return "the child command produced a file outside the tracked task candidate; inspect the captured Codex log"
+
+
+#: Blocker fragment a require-change lane emits when the real owner of the
+#: requested behavior lies outside the declared scope (#831). The carrier
+#: prompt fixes this wording, so the receipt can parse it back into a typed
+#: scope-extension request instead of forcing a fresh lane relaunch.
+SCOPE_MISMATCH_BLOCKER_MARKER = "scope mismatch - real owner"
+
+
+def parse_scope_extension_request(blocker: str | None) -> dict[str, Any] | None:
+    """Parse a lane-reported scope-mismatch blocker into a typed request (#831).
+
+    Returns ``{"requested_paths": [...], "reason": blocker}`` when the blocker
+    names an out-of-scope owner path, else None. Warning-only parsing: it never
+    expands any scope, it only records what the lane asked to add so the
+    operator can approve or refuse it before any re-validation.
+    """
+    if not blocker or SCOPE_MISMATCH_BLOCKER_MARKER not in blocker:
+        return None
+    after = blocker.split("real owner", 1)[1].strip()
+    candidate = after.split(" is outside", 1)[0].strip().strip("<>").strip()
+    if not candidate:
+        return None
+    return {"requested_paths": [candidate], "reason": blocker}
+
+
+def scope_closure_warnings(
+    specs: Sequence[Mapping[str, Any]],
+    tree_paths: set[str],
+) -> list[dict[str, str]]:
+    """Name statically discoverable scope-closure gaps before launch (#831).
+
+    An ``exact`` spec absent from the base tree never matches an existing
+    path: it is either an intended-new file (creation seam) or a typo / missed
+    companion path that will fail late at candidate validation. The scope
+    itself is unchanged (warning-only, never expands); the caller surfaces
+    these on the preflight/dry-run receipt so the operator can correct the
+    declaration before spending a lane run.
+    """
+    warnings: list[dict[str, str]] = []
+    for spec in specs:
+        if spec.get("kind") != "exact":
+            continue
+        path = str(spec.get("path", ""))
+        if path in tree_paths:
+            continue
+        warnings.append(
+            {
+                "code": "unmatched-literal-scope",
+                "path": path,
+                "message": (
+                    f"scope {path!r} matches no path in the base tree: "
+                    "either an intended-new file or a missed companion path; "
+                    "the scope is unchanged"
+                ),
+            }
+        )
+    return warnings
+
+
+def rescope_result(
+    repo_root: Path,
+    base_sha: str,
+    existing_specs: Sequence[Mapping[str, Any]],
+    extra_scopes: Sequence[str],
+    require_change: bool,
+    populations: Mapping[str, Sequence[str]] | None = None,
+    head: str | None = None,
+    branch: str | None = None,
+) -> dict[str, Any]:
+    """Re-validate the same worktree candidate with an approved scope addition.
+
+    The operator-approved counterpart to a lane-reported
+    :func:`parse_scope_extension_request` (#831): the extra scopes are
+    normalized, resolved against the same base, unioned with the existing
+    specs, refreshed, and re-run through :func:`_scope_result` on the SAME
+    worktree. No new lane runs; truly forbidden paths still refuse because
+    only explicitly approved additions are admitted.
+    """
+    added_specs = resolve_scope_specs(repo_root, normalize_scopes(extra_scopes), base_sha)
+    merged: list[dict[str, Any]] = [dict(spec) for spec in existing_specs]
+    seen = {(str(spec.get("path")), str(spec.get("kind"))) for spec in merged}
+    for spec in added_specs:
+        key = (str(spec.get("path")), str(spec.get("kind")))
+        if key not in seen:
+            seen.add(key)
+            merged.append(dict(spec))
+    refreshed = _refresh_scope_specs(repo_root, merged)
+    result = _scope_result(
+        repo_root, base_sha, refreshed, require_change, populations, head, branch
+    )
+    result["added_specs"] = added_specs
+    return result
 
 
 def _generated_files(

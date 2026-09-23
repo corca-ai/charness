@@ -102,7 +102,10 @@ _scope_result = _scope._scope_result
 _validate_glob_scope = _scope._validate_glob_scope
 _git_tree_paths = _scope._git_tree_paths
 normalize_scopes = _scope.normalize_scopes
+parse_scope_extension_request = _scope.parse_scope_extension_request
+rescope_result = _scope.rescope_result
 resolve_scope_specs = _scope.resolve_scope_specs
+scope_closure_warnings = _scope.scope_closure_warnings
 
 
 def _completion_evidence(*args: Any, **kwargs: Any) -> Any:

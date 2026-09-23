@@ -274,6 +274,7 @@ def run_task(
         "git_common_dir": str(resolved["git_common_dir"]),
         "scopes": normalized_scopes,
         "scope_specs": resolved["scope_specs"],
+        "scope_warnings": resolved.get("scope_warnings", []),
         "runtime_root": str(runtime_path),
         "execution_runtime_root": str(execution_runtime_path),
         "result_path": str(_support.task_result_path(runtime_path, resolved_task_id)),

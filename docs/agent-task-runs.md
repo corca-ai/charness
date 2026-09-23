@@ -37,35 +37,31 @@ instead of further adjacent-file exploration. The receipt records
 `lane_progress` (phases observed plus the blocker, if any), parsed from
 both the delivery stream (stdout) and the executor transcript (stderr),
 so a lane with an empty delivery still reports the phases it emitted.
-While the lane runs, the carrier relays phase changes as `PROGRESS` lines
-on stderr and publishes `live` (phase, file/commit counts, last commit
-subject, log idle seconds, attempt) to result.json on every guard poll. A
-require-change lane that announced `CONTRACT-READ` but shows no `EDITING`
-and no real scoped diff once the no-progress budget is spent
-(`CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS`, default 300; `0` disables the
-stop) is killed and recorded with a typed `NO-PROGRESS-STOP` blocker; the
-guard configuration and outcome live on the receipt as `progress_guard`.
+While the lane runs, the carrier relays `PROGRESS` lines on stderr and
+publishes live phase/file/commit/idle/attempt counts to result.json on
+every guard poll. A require-change lane past the no-progress budget
+(`CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS`, default 300; `0` disables it)
+with `CONTRACT-READ` but no `EDITING` and no real scoped diff is killed
+and recorded with a typed `NO-PROGRESS-STOP` blocker; the guard
+configuration and outcome live on the receipt as `progress_guard`.
 A lane that declares `BLOCKED` but outlives the blocked grace
-(`CHARNESS_TASK_RUN_BLOCKED_GRACE_SECONDS`, default 60) is stopped; both
-stops are recorded independently, a lost marker's guard reason becomes the
-blocker, and guard-observed phases merge into `lane_progress`.
-A changeless require-change lane that never emitted `EDITING` fails with
-that stall named. Other lanes transmit the prompt verbatim.
+(`CHARNESS_TASK_RUN_BLOCKED_GRACE_SECONDS`, default 60) is stopped; a lost
+marker's guard reason becomes the blocker, and guard-observed phases merge
+into `lane_progress`.
+A changeless require-change lane without `EDITING` fails naming that
+stall. Other lanes transmit the prompt verbatim.
 A `--report-only` lane inspects without changing: it forces
 `require_change` off, treats the delivered stdout report as the artifact
 (missing or truncated delivery fails), and never reports `writer-conflict`.
 
 An interrupted lane whose checkpoint proved the worktree held no scoped
 changes reports a known unchanged candidate (`interrupted-before-edit`,
-`state_known: true`) with cleanup-or-corrected-scope retry guidance, not
-`interrupted-mid-edit`. The WIP shape is reserved for worktrees that
-actually contain changes whose completeness is unknown.
+`state_known: true`) with retry guidance, not `interrupted-mid-edit`. WIP
+is reserved for worktrees with changes of unknown completeness.
 
 A completed lane whose useful dirty candidate the carrier persists after
-blockers were already reported records that intent explicitly
-(`candidate persisted for review`, persistence/correctness/approval kept
-as separate facts) instead of leaving the executor's pre-persist
-declaration beside the persisted commit as a contradiction.
+blockers were reported records `candidate persisted for review`, keeping
+persistence/correctness/approval as separate facts.
 
 A transient model-stream stall retries in the same worktree
 (`CHARNESS_TASK_RUN_MAX_ATTEMPTS`, default 3; backoff
@@ -73,6 +69,11 @@ A transient model-stream stall retries in the same worktree
 their `failure_kind`. Every receipt carries `failure: {kind, retryable,
 message}`. Finished-but-unapprovable work reports `completed-needs-review`
 with `review_required` reasons: merge or re-scope, never relaunch.
+Scope closure stays warning-only (#831): preflight receipts carry
+`scope_warnings` for unmatched exact scopes, and a scope-mismatch stop
+records a typed `scope_extension_request` whose next step re-validates the
+same candidate with the approved addition. Refresh never admits
+lane-created directories.
 
 A persistence-risk lens blocks lanes adding or removing
 `DROP`/`TRUNCATE` or unscoped `DELETE FROM` with no replacement
@@ -108,11 +109,11 @@ The parent reads the receipt before integrating. A lane is done only when
 A useful candidate whose worker left a
 dirty tree is committed onto the lane branch before proof and retention, so `target_sha`
 carries the files; completion re-observes the carrier after an invoked gate and
-denies approval for dirt, read failure, or identity change. Retention may release
-a freshly observed complete commit-carried tree even when proof denies approval;
-if persistence or observation fails, `keep_worktree` stays true and the runtime
-sweep will not delete the worktree. Parent path-delta classes (`normal`,
-`concurrent-parent-progress`, `writer-conflict`) are on the receipt.
+denies approval for dirt, read failure, or identity change. Retention may still
+release a fresh complete commit-carried tree when proof denies approval; on
+persistence/observation failure `keep_worktree` stays true. Parent path-delta
+classes (`normal`, `concurrent-parent-progress`, `writer-conflict`) are on
+the receipt.
 
 ## Status
 

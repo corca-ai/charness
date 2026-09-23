@@ -37,7 +37,12 @@ from scripts.task_run.task_run_runtime import (  # noqa: E402
     resolve_executor_executable,
     validate_lane_id,
 )
-from scripts.task_run.task_run_scope import normalize_scopes, resolve_scope_specs  # noqa: E402
+from scripts.task_run.task_run_scope import (  # noqa: E402
+    _git_tree_paths,
+    normalize_scopes,
+    resolve_scope_specs,
+    scope_closure_warnings,
+)
 
 
 def _resolve_require_change(
@@ -144,6 +149,8 @@ def resolve_task_inputs(
         base_sha = _resolve_base_sha(resolved_repo, resolved_base)
     normalized_scopes = normalize_scopes(scopes)
     scope_specs = resolve_scope_specs(resolved_repo, normalized_scopes, base_sha)
+    tree_paths, _tree_directories = _git_tree_paths(resolved_repo, base_sha)
+    scope_warnings = scope_closure_warnings(scope_specs, tree_paths)
     git_common_dir = (
         Path(repo_snapshot["git_common_dir"])
         if repo_snapshot is not None
@@ -178,6 +185,7 @@ def resolve_task_inputs(
         "git_common_dir": git_common_dir,
         "scopes": normalized_scopes,
         "scope_specs": scope_specs,
+        "scope_warnings": scope_warnings,
         "codex_path": codex_path,
         "executor": resolved_executor,
         "effort": effort,
