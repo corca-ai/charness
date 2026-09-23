@@ -1,0 +1,62 @@
+{
+  "schema_version": "charness.release.claims-review.v4",
+  "prepared_commit": "91e89d4241935eb7604f10a4eb1c46b334e19327",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "3fb88cdd578a00431ea8ae303eb32ac1d5dd3d0f4ae2bbf7cf8beefe4e4c8700",
+  "target_version": "8.11.0",
+  "tag_name": "v8.11.0",
+  "verdict": "pass",
+  "preparer_context": "Parent release session: prepared v8.11.0 via publish_release --part minor on main at 91e89d4241935eb7604f10a4eb1c46b334e19327 (delta v8.10.0..HEAD: #833 worktree reclaim, divergence wording, closeout/critique carriers, four migrated managed-checkout commits).",
+  "reviewer_context": "Separate-agent-context read-only audit of the prepared tree at 91e89d424: delta/stat, version-surface drift, prose-vs-delta, and record-figures checks all verified; verdict pass-with-notes with three non-blocking advisories.",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "ephemeral native subagent session 01a0cc77, fresh context, shared checkout, read-only objective, no repo mutation; audit persisted verbatim in charness-artifacts/release-review/v8.11.0-claims-review.md",
+    "review_artifact": "charness-artifacts/release-review/v8.11.0-claims-review.md"
+  },
+  "review_scope": {
+    "blocking_paths": [
+      ".claude-plugin/marketplace.json",
+      "charness",
+      "charness-artifacts/create-skill/2026-09-22-claim-boundary-frame-brief.md",
+      "charness-artifacts/critique/v8110-critique.md",
+      "charness-artifacts/issue/2026-09-23-issue-833-closeout.md",
+      "charness-artifacts/probe/2026-09-23-v8.10.0-release-observer.json",
+      "charness-artifacts/release-review/2026-09-23-v8.10.0-prepared-claims-review.json",
+      "charness-artifacts/release-review/v8100-claims-narrative.md",
+      "charness-artifacts/release/.8.10.0-prepush-quality.json.charness-receipt.json",
+      "charness-artifacts/release/8.10.0-prepush-quality.json",
+      "charness-artifacts/release/latest.md",
+      "charness-artifacts/retro/2026-09-22-010716-packet.json",
+      "charness-artifacts/retro/lesson-selection-index.json",
+      "docs/worktree-prepare.md",
+      "packaging/charness.json",
+      "scripts/artifact-referent-local-context.json",
+      "scripts/task_run/task_run_lane_runner.py",
+      "scripts/task_run/task_run_retention.py",
+      "scripts/worktree/worktree_audit_lib.py",
+      "scripts/worktree/worktree_cleanup_lib.py",
+      "skills/public/impl/SKILL.md",
+      "skills/public/prove/SKILL.md",
+      "skills/shared/references/claim-boundary-frame.md",
+      "tests/charness_cli/test_managed_install.py",
+      "tests/charness_cli/test_task_run.py",
+      "tests/charness_cli/test_task_run_implementation_lane.py",
+      "tests/charness_cli/test_worktree_reclaim_833.py",
+      "tools/check_skill_contracts.py"
+    ],
+    "advisory_paths": [
+      "charness-artifacts/retro/2026-09-22-010716-packet.md",
+      "charness-artifacts/retro/2026-09-22-claim-boundary-judgment-retro.md"
+    ]
+  },
+  "scope_basis": {
+    "base_ref": "refs/tags/v8.10.0",
+    "changed_paths_sha256": "b261e21ce600e6043c595c32862165d8a3d3a5b6a2b5895cb11dbf6045834fb0",
+    "changed_path_count": 30
+  },
+  "advisory_findings": [
+    "latest.md:18 frames quality as unestablished; resume must run the full release lane before publication.",
+    "latest.md:77 issue-closeout-pending line reads stale next to closeout commit 53a7a91be.",
+    "Tag v8.11.0 absent and push/release pending review is expected pre-publish state, not a finding."
+  ]
+}
