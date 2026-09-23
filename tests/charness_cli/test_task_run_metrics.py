@@ -124,3 +124,74 @@ def test_invalid_observation_does_not_change_the_snapshot() -> None:
         metrics.record_phase_time("implementation", "carrier-a", "wait", float("nan"))
 
     assert metrics.snapshot() == before
+
+
+@pytest.mark.parametrize(
+    ("lane", "carrier"),
+    [
+        ("", "carrier-a"),
+        ("   ", "carrier-a"),
+        ("implementation", ""),
+        ("implementation", "   "),
+    ],
+)
+def test_review_rejects_empty_labels_without_changing_snapshot(
+    lane: str, carrier: str
+) -> None:
+    metrics = TaskRunMetricsStore()
+    before = metrics.snapshot()
+
+    with pytest.raises(ValueError, match="non-empty string"):
+        metrics.record_review(
+            lane, carrier, needs_follow_up_fix_lane=False
+        )
+
+    assert metrics.snapshot() == before
+
+
+@pytest.mark.parametrize("count", [True, False, -1])
+def test_review_rejects_boolean_or_negative_counts_without_changing_snapshot(
+    count: int,
+) -> None:
+    metrics = TaskRunMetricsStore()
+    before = metrics.snapshot()
+
+    with pytest.raises(ValueError, match="non-negative integer"):
+        metrics.record_review(
+            "implementation",
+            "carrier-a",
+            p2=count,
+            needs_follow_up_fix_lane=False,
+        )
+
+    assert metrics.snapshot() == before
+
+
+@pytest.mark.parametrize("duration", [float("nan"), float("inf"), -1.0])
+def test_phase_time_rejects_non_finite_or_negative_duration_without_mutation(
+    duration: float,
+) -> None:
+    metrics = TaskRunMetricsStore()
+    before = metrics.snapshot()
+
+    with pytest.raises(ValueError, match="finite non-negative number"):
+        metrics.record_phase_time("implementation", "carrier-a", "wait", duration)
+
+    assert metrics.snapshot() == before
+
+
+@pytest.mark.parametrize("flag", [0, 1, "false", None])
+def test_review_rejects_non_boolean_follow_up_flag_without_changing_snapshot(
+    flag: object,
+) -> None:
+    metrics = TaskRunMetricsStore()
+    before = metrics.snapshot()
+
+    with pytest.raises(ValueError, match="must be a boolean"):
+        metrics.record_review(
+            "implementation",
+            "carrier-a",
+            needs_follow_up_fix_lane=flag,  # type: ignore[arg-type]
+        )
+
+    assert metrics.snapshot() == before
