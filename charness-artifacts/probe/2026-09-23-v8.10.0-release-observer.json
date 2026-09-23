@@ -1,0 +1,53 @@
+{
+  "distinct_channel_verification": {
+    "channel": "https-fetch",
+    "does_not_establish": "that a GitHub RELEASE exists for this tag \u2014 the same page returns 200 for a pushed tag with no release, and the tag is pushed before the release is created",
+    "establishes": "public-page-reachable-and-names-the-tag",
+    "evidence_len": 201964,
+    "expected_content": "v8.10.0",
+    "fetched_url": "https://github.com/corca-ai/charness/releases/tag/v8.10.0",
+    "http_status": 200,
+    "observer": "unauthenticated-http (credential-free; same host/process as publisher)",
+    "status": "confirmed",
+    "url": "https://github.com/corca-ai/charness/releases/tag/v8.10.0"
+  },
+  "installed_readback": {
+    "doctor": {
+      "command": "charness doctor",
+      "returncode": 0,
+      "status": "confirmed",
+      "value": "source: codex_host_guidance"
+    },
+    "install_refresh": {
+      "command": "charness update",
+      "elapsed_seconds": 1.105,
+      "returncode": 1,
+      "status": "failed",
+      "stderr_tail": "STEP: refreshing source checkout\nmanaged checkout `/home/hwidong/.agents/src/charness` diverged from `origin/main` (ahead 4, behind 10); `charness update` only fast-forwards managed checkouts. If the local commit is intentional dogfood, run `charness update --repo-root . --no-pull --skip-cli-install` from that checkout. Otherwise rebase or reset the managed checkout onto `origin/main` and retry.\nSTDOUT:\n\nSTDERR:\nFrom https://github.com/corca-ai/charness\n   91ce106e4..4e1aee721  main       -> origin/main\n * [new tag]             v8.10.0    -> v8.10.0\nhint: Diverging branches can't be fast-forwarded, you need to either:\nhint:\nhint: \tgit merge --no-ff\nhint:\nhint: or:\nhint:\nhint: \tgit rebase\nhint:\nhint: Disable this message with \"git config set advice.diverging false\"\nfatal: Not possible to fast-forward, aborting.",
+      "stdout_tail": ""
+    },
+    "status": "version-mismatch",
+    "version": {
+      "command": "charness version",
+      "expected_version": "8.10.0",
+      "reason": "installed readback reported version '8.9.8' (from 'version: 8.9.8'), not the published version '8.10.0'; the refresh may not have taken effect",
+      "reported_version": "8.9.8",
+      "returncode": 0,
+      "status": "mismatch",
+      "value": "version: 8.9.8",
+      "version_match": "mismatch"
+    }
+  },
+  "non_claims": [
+    "This record preserves observations; it is not a second release-success verdict.",
+    "A digest, command exit code, or recorded status is not terminal proof of operator-facing behavior."
+  ],
+  "observed_at": "2026-09-23T02:05:52.966797+00:00",
+  "schema_version": "charness.release_observer.v1",
+  "target": {
+    "commit": "81f325709656723845dbad474a5ad6199b906186",
+    "release_url": "https://github.com/corca-ai/charness/releases/tag/v8.10.0",
+    "tag": "v8.10.0",
+    "version": "8.10.0"
+  }
+}
