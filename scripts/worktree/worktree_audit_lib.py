@@ -288,6 +288,90 @@ def run_audit(
     }
 
 
+def _is_task_branch(branch: str | None) -> bool:
+    return bool(branch) and (
+        branch == "task" or branch.startswith("task/") or branch.startswith("refs/heads/task/")
+    )
+
+
+def _worktree_is_clean(path: Path) -> tuple[bool, str]:
+    proc = _guard.run_process(
+        ["git", "status", "--porcelain"],
+        cwd=path,
+        timeout_seconds=None,
+    )
+    if proc.returncode != 0:
+        return False, proc.stderr.strip() or "git status failed"
+    return not proc.stdout.strip(), proc.stdout.strip()
+
+
+def _reclaim_integrated_task_worktrees(
+    repo_root: Path, *, base: str = "HEAD"
+) -> dict[str, list[dict[str, Any]]]:
+    """Remove integrated-and-clean task-run worktrees, report the rest (#833).
+
+    A cherry-picked lane is never ancestry-merged, so integrated means
+    ancestry-merged or patch-equivalent in `base`. Dirty trees and
+    unintegrated branches are never removed; they are reported with their
+    age for a human decision. Deferred import: cleanup_lib already imports
+    this module at top level, so importing it here avoids the cycle.
+    """
+    from scripts.runtime_bootstrap import import_repo_module as _import
+
+    _cleanup_lib = _import(__file__, "scripts.worktree.worktree_cleanup_lib")
+    now = datetime.now(tz=timezone.utc)
+    reclaimed: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    rc, stdout, _stderr = _run_git_worktree_list(repo_root)
+    if rc != 0:
+        return {"reclaimed": reclaimed, "skipped": skipped}
+    for raw in parse_porcelain(stdout):
+        branch = (raw.get("branch") or "").removeprefix("refs/heads/")
+        if not _is_task_branch(raw.get("branch")):
+            continue
+        path = Path(raw["worktree"])
+        record = {
+            "path": str(path),
+            "branch": branch,
+            "age_days": _resolve_age_days(path, now),
+            "base": base,
+        }
+        if not path.is_dir():
+            skipped.append({**record, "reason": "worktree directory missing"})
+            continue
+        clean, detail = _worktree_is_clean(path)
+        if not clean:
+            skipped.append({**record, "reason": f"dirty or unreadable worktree: {detail}"})
+            continue
+        integrated, how = _cleanup_lib.branch_integrated(repo_root, branch, base)
+        if not integrated:
+            skipped.append({**record, "reason": f"unintegrated branch: {how}"})
+            continue
+        remove = _guard.run_process(
+            ["git", "worktree", "remove", str(path)],
+            cwd=repo_root,
+            timeout_seconds=None,
+        )
+        if remove.returncode != 0:
+            skipped.append(
+                {**record, "reason": remove.stderr.strip() or "git worktree remove failed"}
+            )
+            continue
+        branch_proc = _guard.run_process(
+            ["git", "branch", "-D", branch],
+            cwd=repo_root,
+            timeout_seconds=None,
+        )
+        reclaimed.append(
+            {
+                **record,
+                "via": how or "contained",
+                "branch_deleted": branch_proc.returncode == 0,
+            }
+        )
+    return {"reclaimed": reclaimed, "skipped": skipped}
+
+
 def run_prune(repo_root: Path) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     reclaimed = _lifetime.reclaim_expired(repo_root)
@@ -297,6 +381,7 @@ def run_prune(repo_root: Path) -> dict[str, Any]:
         cwd=repo_root,
         timeout_seconds=None,
     )
+    task_reclaim = _reclaim_integrated_task_worktrees(repo_root)
     after = run_audit(repo_root)
     delta = max(0, before["summary"].get("prunable", 0) - after["summary"].get("prunable", 0))
     parsed_names: list[str] = []
@@ -310,6 +395,8 @@ def run_prune(repo_root: Path) -> dict[str, Any]:
         "reclaimed": reclaimed,
         "pruned_count": delta,
         "pruned": parsed_names,
+        "reclaimed_task_worktrees": task_reclaim["reclaimed"],
+        "skipped_task_worktrees": task_reclaim["skipped"],
         "remaining_after_prune": after["summary"],
         "stderr": proc.stderr.strip() if proc.returncode != 0 else "",
     }

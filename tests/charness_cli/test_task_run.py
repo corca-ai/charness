@@ -835,7 +835,9 @@ def test_timeout_with_no_changes_creates_no_wip_commit(tmp_path: Path) -> None:
 
     assert payload["status"] == "timed-out"
     assert payload["candidate"]["commit"]["status"] == "skipped"
-    assert _git(worktree, "rev-parse", "HEAD").stdout.strip() == payload["base_sha"]
+    assert payload["retention"]["worktree"] == "removed"
+    assert "empty lane" in payload["retention"]["reason"]
+    assert not worktree.exists()
 
 
 def test_timeout_with_scoped_change_commits_only_scoped_paths(

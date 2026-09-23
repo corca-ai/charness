@@ -32,6 +32,164 @@ def load_charness_module(module_name: str = "charness_managed_install_under_test
     return load_cli_module(module_name, CLI)
 
 
+def _divergence_repo(tmp_path: Path, name: str) -> tuple[Path, Path]:
+    origin = tmp_path / f"{name}-origin"
+    local = tmp_path / f"{name}-local"
+    subprocess.run(
+        ["git", "init", "--bare", str(origin)],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "init", "-b", "main", str(local)],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(local), "config", "user.email", "test@example.com"],
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(local), "config", "user.name", "test"], check=True
+    )
+    manifest = local / "packaging" / "charness.json"
+    manifest.parent.mkdir(parents=True)
+    manifest.write_text('{"version": "0.0.0"}', encoding="utf-8")
+    subprocess.run(["git", "add", "."], cwd=local, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "seed"], cwd=local, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "remote", "add", "origin", str(origin)], cwd=local, check=True)
+    subprocess.run(
+        ["git", "push", "-u", "origin", "main"], cwd=local, check=True, capture_output=True, text=True
+    )
+    return origin, local
+
+
+def _commit_file(repo: Path, name: str, content: str, message: str) -> None:
+    (repo / name).write_text(content, encoding="utf-8")
+    subprocess.run(
+        ["git", "add", name], cwd=repo, check=True, capture_output=True, text=True
+    )
+    subprocess.run(
+        ["git", "commit", "-m", message],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _clone_upstream(tmp_path: Path, origin: Path, name: str) -> Path:
+    upstream = tmp_path / name
+    subprocess.run(
+        ["git", "clone", str(origin), str(upstream)],
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(upstream), "config", "user.email", "test@example.com"],
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(upstream), "config", "user.name", "test"], check=True
+    )
+    return upstream
+
+
+def test_ensure_checkout_divergence_names_unique_commits() -> None:
+    import tempfile
+
+    launcher = load_charness_module("charness_divergence_unique_under_test")
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        origin, local = _divergence_repo(tmp_path, "unique")
+        _commit_file(local, "note.txt", "local\n", "local unique note")
+        upstream = _clone_upstream(tmp_path, origin, "upstream")
+        _commit_file(upstream, "up.txt", "up\n", "upstream progress")
+        subprocess.run(
+            ["git", "push", "origin", "main"],
+            cwd=upstream,
+            check=True,
+            capture_output=True,
+        )
+
+        with pytest.raises(launcher.CharnessError, match="diverged from") as exc:
+            launcher.ensure_checkout(
+                local,
+                managed=True,
+                repo_url="https://example.invalid/x",
+                allow_clone=False,
+                allow_pull=True,
+            )
+
+    message = str(exc.value)
+    assert "local unique note" in message
+    assert "migrate them first" in message
+
+
+def test_ensure_checkout_divergence_marks_equivalent_commits_reset_safe() -> None:
+    import tempfile
+
+    launcher = load_charness_module("charness_divergence_equiv_under_test")
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        origin, local = _divergence_repo(tmp_path, "equiv")
+        _commit_file(local, "note.txt", "shared\n", "local shared note")
+        upstream = _clone_upstream(tmp_path, origin, "upstream")
+        _commit_file(upstream, "note.txt", "shared\n", "upstream shared note")
+        subprocess.run(
+            ["git", "push", "origin", "main"],
+            cwd=upstream,
+            check=True,
+            capture_output=True,
+        )
+
+        with pytest.raises(launcher.CharnessError, match="diverged from") as exc:
+            launcher.ensure_checkout(
+                local,
+                managed=True,
+                repo_url="https://example.invalid/x",
+                allow_clone=False,
+                allow_pull=True,
+            )
+
+    message = str(exc.value)
+    assert "local shared note" in message
+    assert "loses no content" in message
+
+
+def test_diverged_checkout_detail_truncates_and_survives_git_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import tempfile
+
+    launcher = load_charness_module("charness_divergence_units_under_test")
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        _origin, local = _divergence_repo(tmp_path, "many")
+        for index in range(12):
+            _commit_file(local, f"f{index}.txt", f"{index}\n", f"local note {index}")
+
+        detail = launcher._diverged_checkout_detail(local, "origin/main")
+        assert "local note 11" in detail
+        assert "... and 1 more" in detail
+
+        plain = tmp_path / "plain"
+        plain.mkdir()
+        assert launcher._diverged_checkout_detail(plain, "origin/main") == ""
+
+    calls: list[list[str]] = []
+
+    def _failing_run(argv: list[str], **kwargs: object) -> object:
+        calls.append(argv)
+        raise OSError("no git")
+
+    monkeypatch.setattr(launcher, "run", _failing_run)
+    assert launcher._diverged_checkout_detail(Path("/nonexistent"), "origin/main") == ""
+    assert calls and calls[0][:2] == ["git", "log"]
+
+
 def sync_root_plugin_manifests_inprocess(repo_root: Path) -> dict[str, object]:
     module_name = "sync_root_plugin_manifests_managed_install_under_test"
     module = load_script_module(module_name, CLI.parent / "scripts" / "plugin_export" / "sync_root_plugin_manifests.py")
@@ -576,6 +734,57 @@ def test_installed_cli_update_reports_diverged_managed_checkout(tmp_path: Path, 
     assert "diverged from `origin/main` (ahead 1, behind 1)" in output
     assert "only fast-forwards managed checkouts" in output
     assert "charness update --repo-root . --no-pull --skip-cli-install" in output
+    assert "local managed checkout divergence" in output
+    assert "migrate them first" in output
+
+
+@pytest.mark.release_only
+def test_installed_cli_update_names_patch_equivalent_divergence_as_reset_safe(
+    tmp_path: Path, seeded_charness_git_repo: Path
+) -> None:
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
+    home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
+
+    managed_checkout = home_root / ".agents" / "src" / "charness"
+    managed_readme = managed_checkout / "README.md"
+    managed_readme.write_text(managed_readme.read_text(encoding="utf-8") + "\nshared note\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md"], cwd=managed_checkout, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "local shared note"],
+        cwd=managed_checkout,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    source_readme = source_repo / "README.md"
+    source_readme.write_text(source_readme.read_text(encoding="utf-8") + "\nshared note\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md"], cwd=source_repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "upstream shared note"],
+        cwd=source_repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    installed_cli = home_root / ".local" / "bin" / "charness"
+    update_result = run_cli_path(
+        installed_cli,
+        "update",
+        "--home-root",
+        str(home_root),
+        "--skip-codex-cache-refresh",
+        cwd=tmp_path,
+        env=env,
+    )
+    output = update_result.stderr + update_result.stdout
+    assert update_result.returncode != 0
+    assert "diverged from `origin/main` (ahead 1, behind 1)" in output
+    assert "local shared note" in output
+    assert "loses no content" in output
 
 
 @pytest.mark.release_only

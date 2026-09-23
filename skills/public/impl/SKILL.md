@@ -125,5 +125,5 @@ without its explicit authorization. Ordinary implementation completes from this 
 - `references/external-api-contract.md` (only for an external API seam)
 - `../../shared/references/prescribed-path-self-test.md` (only for a prescribed path)
 - `../../shared/references/source-bound-records.md` (only for a multi-source or durable record)
-- `../../shared/references/claim-boundary-frame.md` (before accepting a requested mechanism or evidence claim)
+- `../../shared/references/claim-boundary-frame.md` (only before accepting a requested mechanism or evidence claim)
 - `../prove/SKILL.md` (only when its evidence format is explicitly needed)

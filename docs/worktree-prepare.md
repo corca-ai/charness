@@ -33,7 +33,7 @@ charness worktree exec --repo-root ../feature-worktree -- pytest -q
 
 charness worktree audit                          # classify primary/active/prunable/stale
 charness worktree audit --doctor                 # also surface readiness failures
-charness worktree audit --prune                  # reclaim expired ephemerals; prune missing dirs
+charness worktree audit --prune                  # reclaim expired ephemerals, integrated task worktrees; prune missing dirs
 
 # After a local merge (dry-run without --yes):
 charness worktree cleanup --path ../feature-worktree --delete-merged-branch --yes
@@ -45,11 +45,11 @@ Use `charness worktree create --path <path> --branch <branch> --base <ref>` inst
 
 ## When to run `audit`
 
-Run `charness worktree audit` to read the registry. `--doctor` adds readiness. `--prune` reclaims expired ephemerals, idle unlabeled throwaways, and missing metadata. Unlabeled feature paths still need `cleanup --yes`.
+Run `charness worktree audit` to read the registry. `--doctor` adds readiness. `--prune` reclaims expired ephemerals, idle unlabeled throwaways, missing metadata, and integrated-and-clean task worktrees (ancestry-merged or patch-equivalent); dirty or unintegrated task worktrees are reported with age, never removed. Task lanes that end with no commits and a clean tree release their worktree immediately. Unlabeled feature paths still need `cleanup --yes`.
 
 ## When to run `cleanup`
 
-Run `charness worktree cleanup --path <worktree>` after the worktree is merged into the local base you trust. It refuses the primary worktree, refuses dirty targets without `--force`, and defaults to dry-run. `--delete-merged-branch` deletes the local branch only when `--branch-base` (default `HEAD`) contains it, using `git branch -D` because Git's upstream-aware `-d` refuses a branch whose base was never pushed.
+Run `charness worktree cleanup --path <worktree>` after the worktree is merged into the local base you trust. It refuses the primary worktree, refuses dirty targets without `--force`, and defaults to dry-run. `--delete-merged-branch` deletes the local branch when `--branch-base` (default `HEAD`) contains it or every commit on it is patch-equivalent there (cherry-picked lanes count as integrated), using `git branch -D` because Git's upstream-aware `-d` refuses a branch whose base was never pushed.
 
 ## Manifest contract
 

@@ -52,9 +52,14 @@ def _apply_lane_retention(
         payload["retention"] = retention
         payload["keep_worktree"] = retention.get("worktree") != "removed"
         if retention.get("worktree") == "removed":
-            payload["next_step"] = payload["next_step"].rstrip(".") + (
-                "; the lane worktree was released because that commit carries the whole candidate."
-            )
+            if retention.get("carrier"):
+                payload["next_step"] = payload["next_step"].rstrip(".") + (
+                    "; the lane worktree was released because that commit carries the whole candidate."
+                )
+            else:
+                payload["next_step"] = payload["next_step"].rstrip(".") + (
+                    "; the empty lane worktree was released because it carries nothing to consume."
+                )
         persist(payload, runtime_path)
         return
     if result_state in {"completed", "validated-partial-result", "completed-needs-review", "failed"}:
@@ -62,6 +67,59 @@ def _apply_lane_retention(
             _candidate_has_work(candidate) and not candidate.get("head_is_complete")
         )
         persist(payload, runtime_path)
+
+
+def _empty_lane_removal(
+    payload: Mapping[str, Any],
+    candidate: Mapping[str, Any] | None,
+    *,
+    resolved_repo: Path,
+    resolved_target: Path,
+    record_dir: Path,
+    git: Callable[..., Any],
+) -> dict[str, Any] | None:
+    """Remove a task worktree that holds no commits and no changes (#833).
+
+    A failed, aborted, or no-op lane whose HEAD never moved past the base
+    and whose tree is clean carries no result to consume, so it is released
+    immediately instead of lingering as a registered worktree. Commits,
+    changed or disallowed paths, and unobservable state keep the existing
+    retention path.
+    """
+    base_sha = payload.get("base_sha")
+    if not isinstance(base_sha, str) or not base_sha:
+        return None
+    try:
+        head_sha = git(resolved_target, "rev-parse", "HEAD").stdout.strip()
+    except (OSError, ValueError, TypeError, AttributeError):
+        return None
+    if head_sha != base_sha:
+        return None
+    if isinstance(candidate, Mapping) and (
+        candidate.get("changed_paths") or candidate.get("disallowed_paths")
+    ):
+        return None
+    retention: dict[str, Any] = {"worktree": "retained", "runtime": "retained"}
+    removal = git(resolved_repo, "worktree", "remove", "--force", str(resolved_target))
+    if removal.returncode != 0:
+        retention["reason"] = f"git worktree remove failed: {removal.stderr.strip()[-300:]}"
+        return retention
+    retention["worktree"] = "removed"
+    runtime_dir = record_dir / "runtime"
+    if runtime_dir.is_dir():
+        try:
+            _rmtree_writable(runtime_dir)
+            retention["runtime"] = "removed"
+        except OSError as exc:
+            retention["reason"] = f"runtime removal failed: {exc}"
+    else:
+        retention["runtime"] = "absent"
+    retention.setdefault(
+        "reason",
+        "empty lane: no commits beyond the base and a clean tree; nothing to consume",
+    )
+    retention["kept"] = ["result.json", *sorted(p.name for p in record_dir.glob("*.log"))]
+    return retention
 
 
 def release_finished_lane(
@@ -78,6 +136,16 @@ def release_finished_lane(
     worktree with keep_worktree set, so the runtime sweep preserves its only copy.
     """
     candidate = payload.get("candidate")
+    empty = _empty_lane_removal(
+        payload,
+        candidate if isinstance(candidate, Mapping) else None,
+        resolved_repo=resolved_repo,
+        resolved_target=resolved_target,
+        record_dir=record_dir,
+        git=git,
+    )
+    if empty is not None:
+        return empty
     if not isinstance(candidate, Mapping) or payload.get("status") not in {
         "completed",
         "validated-partial-result",

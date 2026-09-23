@@ -64,8 +64,23 @@ def _branch_is_contained(repo_root: Path, branch: str, base: str) -> tuple[bool,
     if result.returncode == 0:
         return True, ""
     if result.returncode == 1:
+        patch_result = _run_git(repo_root, "cherry", base, branch_ref)
+        if patch_result.returncode == 0 and not any(
+            line.startswith("+") for line in patch_result.stdout.splitlines()
+        ):
+            return True, f"{branch_ref} is patch-equivalent in {base}"
         return False, f"{branch_ref} is not contained in {base}"
     return False, result.stderr.strip() or f"could not compare {branch_ref} to {base}"
+
+
+def branch_integrated(repo_root: Path, branch: str, base: str) -> tuple[bool, str]:
+    """Whether a branch's work already landed in base, by ancestry or patch (#833).
+
+    A cherry-picked lane carries different SHAs, so ancestry alone reports it
+    unmerged forever. Shared by cleanup's branch deletion and audit's reclaim
+    of integrated task worktrees.
+    """
+    return _branch_is_contained(repo_root, branch, base)
 
 
 def _action(

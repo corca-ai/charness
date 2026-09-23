@@ -12,5 +12,19 @@
     "token": "d309412d6",
     "line_sha256": "7614ddd1bc6dae52777061b0a98ef03d758a9a5ed61ebbbbf0ac8e00add2a300",
     "reason": "The frozen Goal Draft explicitly distinguishes excluded local main history from provider publication authority."
+  },
+  {
+    "artifact": "charness-artifacts/retro/2026-09-22-claim-boundary-judgment-retro.md",
+    "line": 11,
+    "token": "33f5709f2",
+    "line_sha256": "14c452452955b1ecab55742e44205bac5261b17a56f52062ebf67a31d3a93f5f",
+    "reason": "The frozen retro cites the pre-amend managed-checkout version of the lane-premises fix; the durable amended equivalent is preserved in main history."
+  },
+  {
+    "artifact": "charness-artifacts/retro/2026-09-22-claim-boundary-judgment-retro.md",
+    "line": 11,
+    "token": "11bae815d",
+    "line_sha256": "14c452452955b1ecab55742e44205bac5261b17a56f52062ebf67a31d3a93f5f",
+    "reason": "The frozen retro cites the pre-amend managed-checkout version of the lower-level-proof fix; the durable amended equivalent is preserved in main history."
   }
 ]
