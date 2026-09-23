@@ -83,6 +83,17 @@ None. All three reviewers returned ship with no act-before-ship items.
   already raise at resolve time.
 - Docs diff includes prose tightening to satisfy the docs-length budget.
 
+## Boundary Ownership
+
+- **Producer**: release critique reviewers (angle findings plus synthesis)
+- **Consumer**: release publisher (`publish_release.py --execute`) and operators
+  reading the release notes
+- **Owning surface**: `charness-artifacts/critique/v8100-critique.md` (this
+  record); scope-verdict logic owned by `scripts/task_run/task_run_scope.py`,
+  lane env owned by `scripts/task_run/task_run_runtime.py`, wording owned by
+  `docs/agent-task-runs.md`
+- **Verdict**: `owned-correctly`
+
 ## Bump Rationale
 
 minor, not patch: alongside the #831 behavior repair and the #832 leak
