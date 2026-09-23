@@ -167,15 +167,30 @@ def test_review_rejects_boolean_or_negative_counts_without_changing_snapshot(
     assert metrics.snapshot() == before
 
 
-@pytest.mark.parametrize("duration", [float("nan"), float("inf"), -1.0])
+@pytest.mark.parametrize(
+    "duration",
+    [
+        float("nan"),
+        float("inf"),
+        -1.0,
+        True,
+        "1",
+        pytest.param(10**400, id="integer-too-large-for-float"),
+    ],
+)
 def test_phase_time_rejects_non_finite_or_negative_duration_without_mutation(
-    duration: float,
+    duration: object,
 ) -> None:
     metrics = TaskRunMetricsStore()
     before = metrics.snapshot()
 
     with pytest.raises(ValueError, match="finite non-negative number"):
-        metrics.record_phase_time("implementation", "carrier-a", "wait", duration)
+        metrics.record_phase_time(
+            "implementation",
+            "carrier-a",
+            "wait",
+            duration,  # type: ignore[arg-type]
+        )
 
     assert metrics.snapshot() == before
 
