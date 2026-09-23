@@ -1,7 +1,7 @@
-# Release Critique — charness task-run repair 834/835/836 (patch)
+# Release Critique — charness v8.11.1 (patch): task-run repair 834/835/836
 
 - **Kind**: `charness.release-critique` (v1)
-- **Prepared for**: next patch release after v8.11.0 (task-run repair bundle)
+- **Prepared for**: v8.11.1-release (task-run repair bundle for #834, #835, #836)
 - **Scope**: `task run` lane repairs for #834 (post-edit scope-mismatch
   self-revert), #835 (`--no-progress-seconds` flag), #836 (zero-match glob
   warn-only). Touched: `scripts/task_run/` (scope, plan, progress, attempts,
