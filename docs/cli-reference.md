@@ -269,10 +269,15 @@ usage: charness task run [-h] [--repo-root REPO_ROOT] [--lane LANE]
                          [--no-progress-seconds NO_PROGRESS_SECONDS]
                          [--dry-run]
 
-Run one independently delegable lane: shorthand derives a named branch,
-external worktree, task id, and HEAD base; the explicit form remains available
-for diagnostics. The parent worktree must be clean; the parent orchestrator
-owns parallel fan-out and integration.
+Run one independently delegable lane: shorthand derives a named branch, external worktree, task id, and HEAD base; the explicit form remains available for diagnostics. The parent worktree must be clean; the parent orchestrator owns parallel fan-out and integration.
+
+Exit codes:
+  0 success
+  1 failed
+  2 premise-blocked
+  3 validated-partial
+  4 executor-unavailable
+  5 completed-needs-review
 
 options:
   -h, --help            show this help message and exit

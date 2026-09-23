@@ -63,10 +63,7 @@ A completed lane whose useful dirty candidate the carrier persists after
 blockers were reported records `candidate persisted for review`, keeping
 persistence/correctness/approval as separate facts.
 
-Terminal receipts carry `result_kind` and a stable `blocker` field (`null` when
-no blocker applies). `task run` exits 0 for success, 1 for failed, 2 for
-premise-blocked, 3 for validated-partial, 4 for executor-unavailable, and 5
-for completed-needs-review; `charness task run --help` is the command contract.
+Terminal receipts carry `result_kind` plus a stable `blocker` field, exit-mapped 0 success, 1 failed, 2 premise-blocked, 3 validated-partial, 4 executor-unavailable, 5 needs-review (`--help` is the contract).
 
 A transient model-stream stall retries in the same worktree
 (`CHARNESS_TASK_RUN_MAX_ATTEMPTS`, default 3; backoff
@@ -98,29 +95,9 @@ charness task run \
   --effort xhigh
 ```
 
-A clean parent is required. Identity for model/effort, scope expansion, the
-result carrier, `changed_line_gate`, and retention lives in
-[`task_run_contract.py`](../scripts/task_run/task_run_contract.py),
-[`task_run_scope.py`](../scripts/task_run/task_run_scope.py),
-[`task_run_git.py`](../scripts/task_run/task_run_git.py),
-[`task_run_changed_line.py`](../scripts/task_run/task_run_changed_line.py), and
-[`task_run_completion.py`](../scripts/task_run/task_run_completion.py). Do not
-recopy those fields here; `charness task run --help` is the typed surface.
-`--scope` repeats. `--skip-prepare` and `--allow-no-change` are diagnostic
-opt-outs. The fully explicit `--path/--branch/--base` form remains for
-exceptional host setup.
+A clean parent is required. Model/effort identity, scope expansion, the result carrier, `changed_line_gate`, and retention live in [`task_run_contract.py`](../scripts/task_run/task_run_contract.py), [`task_run_scope.py`](../scripts/task_run/task_run_scope.py), [`task_run_git.py`](../scripts/task_run/task_run_git.py), [`task_run_changed_line.py`](../scripts/task_run/task_run_changed_line.py), and [`task_run_completion.py`](../scripts/task_run/task_run_completion.py); do not recopy fields here, `--help` is the typed surface. `--scope` repeats; `--skip-prepare` and `--allow-no-change` are diagnostic opt-outs; `--path/--branch/--base` stays for exceptional host setup.
 
-The parent reads the receipt before integrating. A lane is done only when
-`changed_line_gate` is `clean` or `noop` (`proof_status`; the diagnostic
-`status` may still read `not-applicable` on trees without the gate script).
-A useful candidate whose worker left a
-dirty tree is committed onto the lane branch before proof and retention, so `target_sha`
-carries the files; completion re-observes the carrier after an invoked gate and
-denies approval for dirt, read failure, or identity change. Retention may still
-release a fresh complete commit-carried tree when proof denies approval; on
-persistence/observation failure `keep_worktree` stays true. Parent path-delta
-classes (`normal`, `concurrent-parent-progress`, `writer-conflict`) are on
-the receipt.
+The parent reads the receipt before integrating. A lane is done only when `changed_line_gate` is `clean` or `noop` (`proof_status`; diagnostic `status` may read `not-applicable` without the gate script). A useful dirty candidate is committed onto the lane branch before proof and retention so `target_sha` carries the files; completion re-observes after an invoked gate and denies approval for dirt, read failure, or identity change. Retention may still release a fresh commit-carried tree when proof denies approval; on persistence/observation failure `keep_worktree` stays true. Parent path-delta classes (`normal`, `concurrent-parent-progress`, `writer-conflict`) are on the receipt.
 
 ## Status
 
