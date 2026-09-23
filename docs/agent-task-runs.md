@@ -63,6 +63,11 @@ A completed lane whose useful dirty candidate the carrier persists after
 blockers were reported records `candidate persisted for review`, keeping
 persistence/correctness/approval as separate facts.
 
+Terminal receipts carry `result_kind` and a stable `blocker` field (`null` when
+no blocker applies). `task run` exits 0 for success, 1 for failed, 2 for
+premise-blocked, 3 for validated-partial, 4 for executor-unavailable, and 5
+for completed-needs-review; `charness task run --help` is the command contract.
+
 A transient model-stream stall retries in the same worktree
 (`CHARNESS_TASK_RUN_MAX_ATTEMPTS`, default 3; backoff
 `CHARNESS_TASK_RUN_RETRY_BACKOFF_SECONDS`, default 30); attempts record

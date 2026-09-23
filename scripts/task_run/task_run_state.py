@@ -17,6 +17,7 @@ boundary no reader crosses by accident.
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import Any, Mapping
 
 
@@ -35,6 +36,85 @@ from scripts.task_run import task_run_support as _support  # noqa: E402
 
 PASS = _support.PASS
 TaskRunError = _support.TaskRunError
+
+
+class ResultKind(str, Enum):
+    """Stable public outcomes for task-run receipts and command exit codes."""
+
+    SUCCESS = "success"
+    FAILED = "failed"
+    PREMISE_BLOCKED = "premise-blocked"
+    VALIDATED_PARTIAL = "validated-partial"
+    EXECUTOR_UNAVAILABLE = "executor-unavailable"
+    COMPLETED_NEEDS_REVIEW = "completed-needs-review"
+
+
+RESULT_EXIT_CODES = {
+    ResultKind.SUCCESS: 0,
+    ResultKind.FAILED: 1,
+    ResultKind.PREMISE_BLOCKED: 2,
+    ResultKind.VALIDATED_PARTIAL: 3,
+    ResultKind.EXECUTOR_UNAVAILABLE: 4,
+    ResultKind.COMPLETED_NEEDS_REVIEW: 5,
+}
+
+_RESULT_KIND_BY_STATUS = {
+    "completed": ResultKind.SUCCESS,
+    "pass": ResultKind.SUCCESS,
+    "failed": ResultKind.FAILED,
+    "fail": ResultKind.FAILED,
+    "premise-blocked": ResultKind.PREMISE_BLOCKED,
+    "validated-partial-result": ResultKind.VALIDATED_PARTIAL,
+    "executor-unavailable": ResultKind.EXECUTOR_UNAVAILABLE,
+    "completed-needs-review": ResultKind.COMPLETED_NEEDS_REVIEW,
+}
+
+
+def result_kind_for_status(status: object) -> ResultKind:
+    """Map a lane status to the frozen public result vocabulary."""
+    if not isinstance(status, str):
+        return ResultKind.FAILED
+    return _RESULT_KIND_BY_STATUS.get(status, ResultKind.FAILED)
+
+
+def result_kind_for_receipt(receipt: object) -> ResultKind:
+    """Read a typed result kind, falling back to legacy status receipts."""
+    if not isinstance(receipt, Mapping):
+        return ResultKind.FAILED
+    explicit = receipt.get("result_kind")
+    if explicit is not None:
+        try:
+            return ResultKind(explicit)
+        except (TypeError, ValueError):
+            return ResultKind.FAILED
+    return result_kind_for_status(receipt.get("status"))
+
+
+def exit_code_for_result_kind(kind: ResultKind | str) -> int:
+    """Return the unique command exit code assigned to a result kind."""
+    return RESULT_EXIT_CODES[ResultKind(kind)]
+
+
+def blocker_for_receipt(receipt: Mapping[str, Any]) -> str | None:
+    """Return the primary stable blocker, preserving the most specific fact."""
+    blocker = receipt.get("blocker")
+    if isinstance(blocker, str) and blocker.strip():
+        return blocker.strip()
+    progress = receipt.get("lane_progress")
+    if isinstance(progress, Mapping):
+        blocker = progress.get("blocker")
+        if isinstance(blocker, str) and blocker.strip():
+            return blocker.strip()
+    blockers = receipt.get("blockers")
+    if isinstance(blockers, list):
+        first = next(
+            (item.strip() for item in blockers if isinstance(item, str) and item.strip()),
+            None,
+        )
+        if first is not None:
+            return first
+    error = receipt.get("error")
+    return error.strip() if isinstance(error, str) and error.strip() else None
 
 
 #: Post-execution states whose worktree holds work no one has typed yet. A timeout

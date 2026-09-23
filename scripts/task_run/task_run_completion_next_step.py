@@ -23,6 +23,29 @@ def _next_step(
     result_state: str,
     blockers: list[str],
 ) -> str:
+    receipt_candidate = payload.get("candidate")
+    if isinstance(receipt_candidate, Mapping):
+        candidate = receipt_candidate
+    receipt_execution = payload.get("execution")
+    if isinstance(receipt_execution, Mapping) and isinstance(
+        receipt_execution.get("status"), str
+    ):
+        execution_status = receipt_execution["status"]
+    if isinstance(payload.get("status"), str):
+        result_state = payload["status"]
+    receipt_blockers = payload.get("blockers")
+    if isinstance(receipt_blockers, list) and all(
+        isinstance(item, str) for item in receipt_blockers
+    ):
+        blockers = receipt_blockers
+    result_kind = payload.get("result_kind")
+    if not isinstance(result_kind, str):
+        from scripts.task_run.task_run_state import result_kind_for_status
+
+        result_kind = result_kind_for_status(result_state).value
+    approval = payload.get("approval_eligibility")
+    if not isinstance(approval, str):
+        approval = "eligible" if result_kind == "success" and not blockers else "ineligible"
     location = _candidate_location(payload, resolved_target, candidate)
     if execution_status == "interrupted" and (candidate.get("commit") or {}).get(
         "status"
@@ -51,10 +74,22 @@ def _next_step(
         )
     if blockers:
         step = (
-            f"Inspect the retained candidate {location}, typed result, and captured logs; "
+            f"Inspect the retained candidate {location}, typed result {result_kind}, "
+            f"approval eligibility {approval}, and captured logs; "
             + "; ".join(blockers)
             + "."
         )
+        persisted = candidate.get("persist")
+        if isinstance(persisted, Mapping) and persisted.get("after_block"):
+            correctness = persisted.get("correctness_verified") is True
+            correctness_label = "verified" if correctness else "unverified"
+            step += (
+                " Candidate persisted for review: persistence="
+                + str(persisted.get("status"))
+                + f"; correctness {correctness_label} "
+                + f"(correctness_verified={str(correctness).lower()}); "
+                + f"approval_eligibility={approval}."
+            )
         extension = payload.get("scope_extension_request")
         if isinstance(extension, dict) and extension.get("requested_paths"):
             step += (
@@ -71,8 +106,11 @@ def _next_step(
         )
     if result_state == "completed-needs-review":
         return (
-            f"Merge or re-scope the finished candidate {location}; the agent "
-            "completed its work but a gate needs review, so relaunching would "
-            "repeat finished work."
+            f"Merge or re-scope the finished candidate {location}; "
+            f"review_required={payload.get('review_required', [])}; "
+            f"approval_eligibility={approval}; relaunch would repeat finished work."
         )
-    return f"Review the candidate {location}; the typed result is approval-eligible."
+    return (
+        f"Review the candidate {location}; result_kind={result_kind}; "
+        f"approval_eligibility={approval}; the typed result is approval-eligible."
+    )

@@ -176,6 +176,9 @@ def complete_task(
         scope=scope, parent_progress=parent_progress, persistence=payload["persistence"]
     )
     payload["status"] = result_state
+    payload["result_kind"] = _state.result_kind_for_status(result_state).value
+    payload["blockers"] = list(blockers)
+    payload["blocker"] = _state.blocker_for_receipt(payload)
     payload["approval_eligibility"] = (
         "eligible" if result_state == "completed" and not blockers else "ineligible"
     )
@@ -398,8 +401,7 @@ def _reconcile_persisted_blockers(
     sha = persist.get("sha") or payload.get("target_sha")
     where = payload.get("target_branch") or str(resolved_target)
     blockers.append(
-        f"candidate persisted for review as {sha} on {where} with blockers "
-        "already reported; correctness unverified and approval ineligible"
+        f"candidate persisted after blockers were reported as {sha} on {where}"
     )
 
 

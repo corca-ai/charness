@@ -5315,6 +5315,8 @@ def cmd_worktree_exec(args: argparse.Namespace) -> int:
 
 def cmd_task_run(args: argparse.Namespace) -> int:
     lib = _load_task_run_lib(args)
+    from scripts.task_run import task_run_state as result_state
+
     prompt_text = args.prompt
     if args.prompt_file is not None:
         try:
@@ -5341,8 +5343,11 @@ def cmd_task_run(args: argparse.Namespace) -> int:
         report_only=args.report_only,
         no_progress_seconds=args.no_progress_seconds,
     )
+    kind = result_state.result_kind_for_receipt(payload)
+    payload["result_kind"] = kind.value
+    payload["blocker"] = result_state.blocker_for_receipt(payload)
     emit_yaml(payload)
-    return 0 if payload.get("approval_eligibility") == "eligible" or payload.get("status") == lib.PASS else 1
+    return result_state.exit_code_for_result_kind(kind)
 
 
 def _resolve_goal_run_helper_repo_root(args: argparse.Namespace) -> Path:
@@ -5639,8 +5644,16 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Run one independently delegable lane: shorthand derives a named branch, external "
             "worktree, task id, and HEAD base; the explicit form remains available for diagnostics. "
-            "The parent worktree must be clean; the parent orchestrator owns parallel fan-out and integration."
+            "The parent worktree must be clean; the parent orchestrator owns parallel fan-out and integration.\n\n"
+            "Exit codes:\n"
+            "  0 success\n"
+            "  1 failed\n"
+            "  2 premise-blocked\n"
+            "  3 validated-partial\n"
+            "  4 executor-unavailable\n"
+            "  5 completed-needs-review"
         ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     task_run_parser.add_argument(
         "--repo-root",
