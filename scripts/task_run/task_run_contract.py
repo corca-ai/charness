@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from typing import Any, TypedDict
 
 PASS = "pass"
 FAIL = "fail"
@@ -16,6 +17,8 @@ TASK_EXECUTOR_DEFAULT = "codex"
 # lane preset alongside the shared medium/xhigh/max set.
 TASK_MUSE_EFFORTS = ("medium", "high", "xhigh", "max")
 TASK_MUSE_MODEL = "default"
+BRIEF_CRITIQUE_TIMEOUT_SECONDS = 120
+ACCEPTANCE_SKELETON_TIMEOUT_SECONDS = 600
 _GIT_DISCOVERY_ENV = ("GIT_DIR", "GIT_COMMON_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE")
 _BRANCH_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*$")
 _TASK_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$")
@@ -23,3 +26,12 @@ _TASK_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$")
 
 class TaskRunError(ValueError):
     """A task-run preflight input is not safe or resolvable."""
+
+
+class AcceptanceSkeletonDeclaration(TypedDict, total=False):
+    """Receipt contract for a tracked pytest skeleton declared by a lane."""
+
+    path: str
+    status: str
+    baseline: dict[str, Any]
+    final: dict[str, Any]

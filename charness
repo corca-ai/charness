@@ -5461,6 +5461,12 @@ def cmd_task_run(args: argparse.Namespace) -> int:
         dry_run=args.dry_run,
         report_only=args.report_only,
         no_progress_seconds=args.no_progress_seconds,
+        prelaunch={
+            "brief_critique": True,
+            "critical_lane": args.critical_lane,
+            "acceptance_skeleton": args.acceptance_skeleton,
+            "premise_checks": args.premise_check,
+        },
     )
     kind = result_state.result_kind_for_receipt(payload)
     payload["result_kind"] = kind.value
@@ -5836,6 +5842,9 @@ def build_parser() -> argparse.ArgumentParser:
     task_run_parser.add_argument("--skip-prepare", action="store_true", help="Shorthand diagnostic opt-out: skip the default preparation step.")
     task_run_parser.add_argument("--allow-no-change", action="store_true", help="Shorthand diagnostic opt-out: allow an unchanged candidate.")
     task_run_parser.add_argument("--report-only", action="store_true", help="Report-only lane: force require-change off, treat the delivered stdout report as the terminal artifact, and never classify parent progress as a writer conflict. Cannot be combined with --require-change.")
+    task_run_parser.add_argument("--critical-lane", action="store_true", help="Require a committed failing acceptance skeleton before launch and green at completion.")
+    task_run_parser.add_argument("--acceptance-skeleton", help="Repository-relative pytest file that must fail before launch and pass before completion.")
+    task_run_parser.add_argument("--premise-check", action="append", nargs=3, default=[], metavar=("ID", "PREMISE", "DECISION"), help="Premise to check before launch and the decision a BLOCKED result needs; repeatable.")
     task_run_parser.add_argument("--timeout-seconds", type=int, default=3600, help="Per-attempt executor timeout in seconds; a retried stall reruns the full budget (see CHARNESS_TASK_RUN_MAX_ATTEMPTS).")
     task_run_parser.add_argument("--no-progress-seconds", type=float, default=None, help="No-progress guard budget in seconds from CONTRACT-READ to first EDITING/scoped diff; 0 turns the stop off. Overrides CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS and is recorded in progress_guard.")
     task_run_parser.add_argument("--dry-run", action="store_true", help="Validate inputs and show the planned lane without creating or running it.")
