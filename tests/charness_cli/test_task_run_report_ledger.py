@@ -7,8 +7,19 @@ from pathlib import Path
 
 import pytest
 
-from scripts.task_run import task_run_ledger, task_run_plan
+from scripts.task_run import task_run_events, task_run_evidence, task_run_ledger, task_run_plan
 from tests.charness_cli.test_task_run_fixtures import _codex, _repo, _run
+
+
+def _decision_event(event_id: str) -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "event_id": event_id,
+        "occurred_at": "2026-09-24T12:00:00Z",
+        "source": "decision-ledger",
+        "event_kind": "contract-amendment",
+        "facts": {"decision": "keep provider closeout authoritative"},
+    }
 
 
 def test_task_result_returns_short_summary_and_complete_report_file(
@@ -106,3 +117,87 @@ def test_decision_ledger_appends_unique_v1_events_and_returns_existing_link(
     assert task_run_ledger.read_decision_events(repo) == [event]
     with pytest.raises(ValueError, match="already exists"):
         task_run_ledger.append_decision_event(repo, event)
+
+
+def test_persist_full_report_records_clipping_error(tmp_path: Path) -> None:
+    delivery: dict[str, object] = {
+        "text": "clipped-report",
+        "bytes": 10**9,
+        "truncated": True,
+    }
+    artifact = task_run_evidence._persist_full_report(
+        delivery, tmp_path / "full-report.log"
+    )
+
+    assert artifact["complete"] is not True
+    assert artifact["error"] == "source report was clipped before persistence"
+
+
+def test_persist_full_report_reports_unwritable_destination(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def _raise(_self: object, _data: bytes) -> None:
+        raise OSError("disk unavailable")
+
+    monkeypatch.setattr(Path, "write_bytes", _raise)
+    artifact = task_run_evidence._persist_full_report(
+        {"text": "report"}, tmp_path / "full-report.log"
+    )
+
+    assert artifact == {
+        "path": str(tmp_path / "full-report.log"),
+        "bytes": None,
+        "complete": False,
+        "error": "disk unavailable",
+    }
+
+
+def test_report_delivery_blockers_surface_unsaved_full_report() -> None:
+    delivery: dict[str, object] = {
+        "status": "delivered",
+        "text": "report",
+        "full_report": {"error": "disk unavailable"},
+    }
+
+    blockers = task_run_evidence._report_delivery_blockers(
+        delivery, report_only=True
+    )
+
+    assert blockers == ["full report could not be saved: disk unavailable"]
+
+
+def test_decision_ledger_rejects_foreign_source_events(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    foreign = dict(_decision_event("foreign-1"))
+    foreign["source"] = "friction-log"
+    foreign["event_kind"] = "block"
+
+    with pytest.raises(task_run_events.EventSchemaError, match="only source="):
+        task_run_ledger.append_decision_event(repo, foreign)
+
+
+def test_decision_ledger_rejects_invalid_and_foreign_lines(
+    tmp_path: Path,
+) -> None:
+    repo = _repo(tmp_path)
+    path = repo / task_run_ledger.LEDGER_RELATIVE_PATH
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    assert task_run_ledger.read_decision_events(repo) == []
+
+    path.write_text("not-json\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="invalid event at line 1"):
+        task_run_ledger.append_decision_event(repo, _decision_event("x-1"))
+    with pytest.raises(ValueError, match="invalid event at line 1"):
+        task_run_ledger.read_decision_events(repo)
+
+    foreign = dict(_decision_event("foreign-2"))
+    foreign["source"] = "friction-log"
+    foreign["event_kind"] = "block"
+    path.write_text(
+        json.dumps(foreign, separators=(",", ":")) + "\n", encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="foreign event at line 1"):
+        task_run_ledger.append_decision_event(repo, _decision_event("x-2"))
+    with pytest.raises(ValueError, match="foreign event at line 1"):
+        task_run_ledger.read_decision_events(repo)
