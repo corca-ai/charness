@@ -126,7 +126,12 @@ def test_import_closure_change_invalidates_cached_test(tmp_path: Path, monkeypat
     support = repo / "scripts" / "support.py"
     support.parent.mkdir(parents=True)
     (support.parent / "__init__.py").write_text("", encoding="utf-8")
-    support.write_text("from tests.helper import VALUE\nVALUE = 1\n", encoding="utf-8")
+    support.write_text(
+        "from tests.helper import VALUE\n"
+        "from tests.test_sample import VALUE\n"
+        "VALUE = 1\n",
+        encoding="utf-8",
+    )
     package = repo / "scripts" / "package"
     package.mkdir()
     (package / "__init__.py").write_text("", encoding="utf-8")
@@ -156,6 +161,23 @@ def test_import_closure_change_invalidates_cached_test(tmp_path: Path, monkeypat
     assert cache.file_hashes(repo, Path("tests/test_sample.py")) is not None
 
 
+def test_file_hash_and_cache_lookup_reject_paths_outside_repo(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    tests = repo / "tests"
+    tests.mkdir(parents=True)
+    test_file = tests / "test_sample.py"
+    test_file.write_text("def broken(\n", encoding="utf-8")
+    outside = tmp_path / "outside" / "test_sample.py"
+    outside.parent.mkdir()
+    outside.write_text("def test_sample(): pass\n", encoding="utf-8")
+
+    assert cache.file_hashes(repo, test_file) is None
+    assert cache.file_hashes(repo, outside) is None
+    assert cache.cached_green_outcome(
+        tmp_path / "cache", repo, outside
+    ) is None
+
+
 def test_standing_runner_filters_only_the_changed_file(tmp_path: Path, monkeypatch) -> None:
     repo = tmp_path / "repo"
     tests = repo / "tests"
@@ -170,6 +192,7 @@ def test_standing_runner_filters_only_the_changed_file(tmp_path: Path, monkeypat
         "import sys\n"
         "if '--print-expanded-targets' in sys.argv:\n"
         "    print('tests')\n"
+        "    print('tests/test_first.py')\n"
         "    print('../outside/test_escape.py')\n",
         encoding="utf-8",
     )
@@ -382,10 +405,17 @@ def test_cache_writer_handles_syntax_and_atomic_write_failures(
         "new_failures": [],
     }
     cache_root = tmp_path / "cache"
+    assert cache.remember_green_outcome(
+        cache_root, repo, test_file, {**green, "status": train.FAIL}
+    ) is False
+    assert cache.remember_green_outcome(
+        cache_root, repo, Path("tests/test_sample.py"), green
+    ) is True
     test_file.write_text("def broken(\n", encoding="utf-8")
 
     assert cache.remember_green_outcome(cache_root, repo, test_file, green) is False
     test_file.write_text("def test_sample(): pass\n", encoding="utf-8")
+    failed_cache_root = tmp_path / "failed-cache"
     monkeypatch.setattr(
         cache.os,
         "replace",
@@ -400,5 +430,5 @@ def test_cache_writer_handles_syntax_and_atomic_write_failures(
 
     monkeypatch.setattr(Path, "unlink", fail_cache_cleanup)
 
-    assert cache.remember_green_outcome(cache_root, repo, test_file, green) is False
-    assert not list(cache_root.glob("*.json"))
+    assert cache.remember_green_outcome(failed_cache_root, repo, test_file, green) is False
+    assert not list(failed_cache_root.glob("*.json"))
