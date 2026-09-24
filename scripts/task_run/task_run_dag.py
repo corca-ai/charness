@@ -25,18 +25,6 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-def _load_repo_runtime_bootstrap() -> None:
-    marker = ("scripts", "adapter_lib.py")
-    root = next(
-        (parent for parent in Path(__file__).resolve().parents if parent.joinpath(*marker).is_file()),
-        None,
-    )
-    if root is not None and str(root) not in sys.path:
-        sys.path.insert(0, str(root))
-
-
-_load_repo_runtime_bootstrap()
-
 from scripts.core import subprocess_guard as _guard  # noqa: E402
 from scripts.runtime_bootstrap import configure_runtime_environment  # noqa: E402
 from scripts.task_run import task_run_contract as _contract  # noqa: E402

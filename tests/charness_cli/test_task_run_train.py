@@ -9,6 +9,8 @@ from types import SimpleNamespace
 import pytest
 
 from scripts.task_run import task_run_train as train
+from scripts.task_run import task_run_train_core as train_core
+from scripts.task_run import task_run_train_flow as train_flow
 from tests.quality_gates.repo_shapes import install_committed_repo
 
 from .support import ROOT, run_cli_path
@@ -54,7 +56,7 @@ def _provision_as_pass(monkeypatch) -> list[tuple[Path, dict[str, object]]]:
         calls.append((path, kwargs))
         return {"status": train.PASS, "doctor": {"status": train.PASS}}
 
-    monkeypatch.setattr(train._doctor, "run_prepare", prepare)
+    monkeypatch.setattr(train_flow._doctor, "run_prepare", prepare)
     return calls
 
 
@@ -272,6 +274,53 @@ def test_red_train_names_first_bad_branch_and_lands_green_prefix(
     assert not (repo / "bad.txt").exists() and not (repo / "four.txt").exists()
 
 
+def test_split_flow_verifies_midpoint_prefixes_with_runner_callback(
+    tmp_path: Path, monkeypatch
+) -> None:
+    branches = ["lane/one", "lane/two", "lane/three"]
+    root = tmp_path / "train-run"
+    created: list[Path] = []
+    verified_counts: list[int] = []
+    monkeypatch.setattr(
+        train_flow,
+        "_prepare_worktree",
+        lambda *_args: {"status": train.PASS},
+    )
+    monkeypatch.setattr(
+        train_flow,
+        "_create_worktree",
+        lambda _repo, path, *_args: created.append(path) or {"created": True},
+    )
+    monkeypatch.setattr(train_flow, "_sha", lambda *_args: "base-sha")
+
+    def verify(_profile, worktree: Path, _report_root: Path):
+        count = len(branches) if worktree.name == "stack" else int(worktree.name.split("-")[1])
+        verified_counts.append(count)
+        return count <= 1, []
+
+    attempts, outcomes, main_now, decision = train_flow._verify_train_stack(
+        tmp_path,
+        branches,
+        root / "worktrees" / "stack",
+        ["base", "one", "two", "three"],
+        "base-sha",
+        "main",
+        root,
+        tmp_path / "dependency-cache",
+        [],
+        {},
+        verify,
+    )
+
+    assert verified_counts == [3, 1, 2]
+    assert [attempt["prefix_count"] for attempt in attempts] == [3, 1, 2]
+    assert outcomes == {0: True, 1: True, 2: False, 3: False}
+    assert main_now == "base-sha"
+    assert decision["action"] == "land-prefix"
+    assert decision["first_bad_branch"] == "lane/two"
+    assert created == [root / "worktrees" / "prefix-1", root / "worktrees" / "prefix-2"]
+
+
 def test_conflicting_stack_refuses_before_prepare_or_verification(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -349,7 +398,7 @@ def test_failed_provisioning_refuses_verification_on_stale_tree(
         provision_calls.append((path, kwargs))
         return {"status": train.FAIL, "next_step": "repair install"}
 
-    monkeypatch.setattr(train._doctor, "run_prepare", prepare)
+    monkeypatch.setattr(train_flow._doctor, "run_prepare", prepare)
     monkeypatch.setattr(
         train,
         "run_verify_profile",
@@ -371,10 +420,10 @@ def test_failed_provisioning_refuses_verification_on_stale_tree(
 def test_decision_core_selects_midpoint_then_prefix_land_without_io() -> None:
     queue = ["lane/a", "lane/b", "lane/c", "lane/d"]
 
-    first = train.decide_next_action(
+    first = train_core.decide_next_action(
         queue, {0: True, 4: False}, main_at_start="base", main_now="base"
     )
-    last = train.decide_next_action(
+    last = train_core.decide_next_action(
         queue, {0: True, 4: False, 2: True, 3: False},
         main_at_start="base", main_now="base",
     )
@@ -396,7 +445,7 @@ def test_decision_core_selects_midpoint_then_prefix_land_without_io() -> None:
 
 def test_decision_core_refuses_non_monotonic_prefix_outcomes() -> None:
     with pytest.raises(train.TrainError, match="non-monotonic"):
-        train.decide_next_action(
+        train_core.decide_next_action(
             ["lane/a", "lane/b", "lane/c"],
             {0: True, 1: False, 2: True, 3: True},
             main_at_start="base",
