@@ -40,7 +40,7 @@
         "not-configured",
         "state"
       ],
-      "rationale": "`not_configured` is one arm of the three-state probe vocabulary `evaluated | not-configured | not-established` that replaced a bare `triggered: false`. It is a DETERMINED verdict, not a silent pass: the repo deliberately declared no cross-surface probe, so the objective override is off by design while the always-brief and closeout presence floors still apply. It is distinguishable from `not-established` (configured but not evaluable) on two channels at once \u2014 the state word and the exit byte, since undetermined exits 3 and this exits 0. The state leads the payload and `triggered` is emitted ONLY when the probe actually ran, so a caller polling one key cannot read 'could not tell' as 'no'."
+      "rationale": "`not_configured` is one arm of the three-state probe vocabulary `evaluated | not-configured | not-established` that replaced a bare `triggered: false`. It is a DETERMINED verdict, not a silent pass: the repo deliberately declared no cross-surface probe, so the objective override is off by design while the always-brief and closeout presence floors still apply. It is distinguishable from `not-established` (configured but not evaluable) on two channels at once — the state word and the exit byte, since undetermined exits 3 and this exits 0. The state leads the payload and `triggered` is emitted ONLY when the probe actually ran, so a caller polling one key cannot read 'could not tell' as 'no'."
     },
     "scripts/retro_debug/build_debug_seam_risk_index.py": {
       "states": [
@@ -273,7 +273,7 @@
         "not-configured",
         "skipped"
       ],
-      "rationale": "This module exists to stop exactly this failure on the critique evidence surface: a conditional floor that is off emits nothing by construction, so `Validated N critique artifact(s).` read as coverage it never claimed. Every state it names is printed on stdout in the enforcement-scope record on BOTH passing and failing runs \u2014 `binding-currency-check=disabled` when a full sweep deliberately skips re-reading historical bindings, and the typed cross-surface states `not-configured` / `not-established` / `not-resolved`, which the bare boolean previously collapsed into an indistinguishable `False`. None of them is a pass verdict; each names a scope the run did not establish."
+      "rationale": "This module exists to stop exactly this failure on the critique evidence surface: a conditional floor that is off emits nothing by construction, so `Validated N critique artifact(s).` read as coverage it never claimed. Every state it names is printed on stdout in the enforcement-scope record on BOTH passing and failing runs — `binding-currency-check=disabled` when a full sweep deliberately skips re-reading historical bindings, and the typed cross-surface states `not-configured` / `not-established` / `not-resolved`, which the bare boolean previously collapsed into an indistinguishable `False`. None of them is a pass verdict; each names a scope the run did not establish."
     },
     "scripts/setup/doctor.py": {
       "states": [
@@ -528,6 +528,18 @@
         "SKIPPED"
       ],
       "rationale": "The state module defines the canonical skipped value consumed by worktree doctor renderers."
+    },
+    "tools/check_plugin_doc_links.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped"
+      ],
+      "rationale": "The repository-only plugin documentation link checker reports skipped checks explicitly when its export mirror is unavailable."
     },
     "skills/public/gather/scripts/advise_google_workspace_path.py": {
       "states": [
@@ -806,7 +818,7 @@
         "skipped",
         "reason"
       ],
-      "rationale": "run_post_publish_install_refresh returns not_configured (surfaced under install_refresh). confirm_release_via_distinct_channel (WS-1 rung-2) returns status skipped only when there is no published release URL and no adapter post_publish_distinct_channel_probe; that skipped is a TYPED, RECORDED disposition written to payload.distinct_channel_verification and rendered in the release artifact's `## Distinct-Channel Verification` section, which the human rung-2 disposition review audits. It passes the rung-1 presence floor (render-not-declare, F2a) but is never a silent clean pass \u2014 the gap is legible, not green."
+      "rationale": "run_post_publish_install_refresh returns not_configured (surfaced under install_refresh). confirm_release_via_distinct_channel (WS-1 rung-2) returns status skipped only when there is no published release URL and no adapter post_publish_distinct_channel_probe; that skipped is a TYPED, RECORDED disposition written to payload.distinct_channel_verification and rendered in the release artifact's `## Distinct-Channel Verification` section, which the human rung-2 disposition review audits. It passes the rung-1 presence floor (render-not-declare, F2a) but is never a silent clean pass — the gap is legible, not green."
     },
     "skills/public/release/scripts/publish_release_verification_sections.py": {
       "states": [
