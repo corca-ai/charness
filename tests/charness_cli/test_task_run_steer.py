@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -21,6 +22,20 @@ from scripts.task_run import (
 )
 from tests.charness_cli.support import CLI, load_cli_module
 from tests.charness_cli.test_task_run_fixtures import _git, _repo
+
+
+def test_direct_script_bootstrap_fallback_runs_from_real_entry_path() -> None:
+    """The entry-script fallback is observable only through direct execution."""
+    script = Path(__file__).resolve().parents[2] / "charness"
+    result = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        capture_output=True,
+        check=False,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    assert "usage:" in result.stdout.lower()
 
 
 def test_guard_queue_delivery_precedes_resumed_fake_executor_edit(tmp_path: Path) -> None:
