@@ -797,6 +797,7 @@ def test_scope_evidence_relative_path_edge_branches(tmp_path: Path) -> None:
     rel = task_run_scope_evidence._relative_path
     assert rel("", tmp_path, set()) is None
     assert rel("..", tmp_path, set()) is None
+    assert rel("a/../b.py", tmp_path, set()) is None
     assert rel("/opt/other/x.py", tmp_path, set()) is None
     assert (
         rel("/opt/other/scripts/task_run/x.py", tmp_path, {"scripts", "task_run"})
