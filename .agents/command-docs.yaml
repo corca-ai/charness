@@ -13,6 +13,7 @@ commands:
       - reset
       - uninstall
       - task
+      - train
       - catalog
       - capability
       - goal
@@ -191,6 +192,15 @@ commands:
       - --lane feature-lane
       - clean parent
       - external runtime
+  train:
+    help_command: ./charness train --help
+    doc_paths:
+      - docs/cli-reference.md
+    required_help_contains:
+      - --repo-root
+      - --main
+      - --profile
+      - branches
   catalog:
     help_command: ./charness catalog --help
     doc_paths:

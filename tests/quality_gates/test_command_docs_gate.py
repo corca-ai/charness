@@ -184,7 +184,9 @@ def test_root_cli_command_contracts_cover_every_parser_path() -> None:
     }
 
     assert _command_doc_paths() == {(), *expected}
-    assert _command_registry_paths() == expected
+    registry_paths = _command_registry_paths()
+    assert ("train",) in registry_paths
+    assert registry_paths == expected
     assert rendered == {(), *expected}
 
 
