@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import argparse
-import json
 import math
 from pathlib import Path
 from typing import Sequence
 
 from scripts.task_run import task_run_support as _support  # noqa: E402
 from scripts.task_run.task_run import _terminal  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 
 def terminalize_stale_exec(
@@ -105,7 +105,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         action = None
     if action is not None:
         outcome["log_entry"] = {"action": action, "reason": reason, "fields": fields}
-    print(json.dumps(outcome, sort_keys=True))
+    emit_yaml(outcome)
     return 0
 
 

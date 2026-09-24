@@ -232,7 +232,7 @@ def test_terminalize_dry_run_reports_without_writing(
 
 
 def _main_with(monkeypatch, capsys, outcome: dict) -> dict:
-    import json
+    import yaml
 
     monkeypatch.setattr(
         task_run_stale_exec, "terminalize_stale_exec", lambda *a, **k: dict(outcome)
@@ -247,7 +247,7 @@ def _main_with(monkeypatch, capsys, outcome: dict) -> dict:
         "1.0",
     ]
     assert task_run_stale_exec.main(argv) == 0
-    return json.loads(capsys.readouterr().out)
+    return yaml.safe_load(capsys.readouterr().out)
 
 
 def test_main_reports_terminalized_transition(tmp_path, monkeypatch, capsys) -> None:

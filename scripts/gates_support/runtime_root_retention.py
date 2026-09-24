@@ -52,6 +52,8 @@ import time
 from pathlib import Path
 from typing import Any, Callable
 
+import yaml
+
 
 def _load_repo_runtime_bootstrap():
     pathlib, sys = __import__("pathlib"), __import__("sys")
@@ -230,8 +232,8 @@ class Sweep:
             command.append("--dry-run")
         completed = run_process(command, cwd=repo_root, timeout_seconds=30)
         try:
-            outcome = json.loads(completed.stdout) if completed.returncode == 0 else None
-        except (TypeError, ValueError):
+            outcome = yaml.safe_load(completed.stdout) if completed.returncode == 0 else None
+        except (TypeError, ValueError, yaml.YAMLError):
             outcome = None
         if not isinstance(outcome, dict):
             self._record(

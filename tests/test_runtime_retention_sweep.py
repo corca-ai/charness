@@ -66,6 +66,19 @@ def test_sweep_reports_invalid_stale_exec_output(tmp_path, monkeypatch) -> None:
     assert outcome == {"transitioned": False, "reason": "invalid-entrypoint-output"}
 
 
+def test_sweep_reports_malformed_entrypoint_output(tmp_path, monkeypatch) -> None:
+    record = _stale_record(tmp_path)
+    sweep = _sweep(tmp_path)
+    monkeypatch.setattr(
+        retention, "run_process", lambda _c, **_k: _completed("{unclosed: 1")
+    )
+
+    outcome = sweep._terminalize_stale_exec(record)
+
+    assert outcome == {"transitioned": False, "reason": "invalid-entrypoint-output"}
+    assert any(entry["action"] == "failed" for entry in sweep.entries)
+
+
 def test_sweep_records_terminalized_stale_exec(tmp_path, monkeypatch) -> None:
     record = _stale_record(tmp_path)
     sweep = _sweep(tmp_path)
