@@ -5,11 +5,11 @@ from __future__ import annotations
 import shlex
 from typing import Any
 
+from scripts.task_run import task_run_completion, task_run_prelaunch, task_run_state
 from tests.charness_cli.support import CLI, load_cli_module
 from tests.charness_cli.test_task_run_fixtures import _codex, _repo, _run
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.script_main import run_loaded_script_main
-from scripts.task_run import task_run_completion, task_run_prelaunch, task_run_state
 
 
 def _resolved(checks: list[dict[str, str]]) -> dict[str, Any]:
@@ -288,6 +288,32 @@ def test_critical_acceptance_skeleton_must_be_green_for_completion(tmp_path) -> 
     assert task_run_completion._acceptance_result_state("completed", acceptance) == (
         "completed-needs-review"
     )
+
+
+def test_lane_prompt_surfaces_precomputed_gates_and_advisory_scope_findings() -> None:
+    prompt = task_run_prelaunch.acceptance_skeleton_prompt(
+        "Lane task",
+        {
+            "prelaunch_plan": {
+                "scope_verifiers": {
+                    "completion_gates": ["release-changed-line-coverage"],
+                    "matched_surface_ids": ["repo-python"],
+                    "bundle_status": "repo-owned-bundle",
+                    "verify_commands": ["python3 -m pytest -q tests/test_task.py"],
+                },
+                "scope_preflight": {
+                    "would_touch_outside_declared": [
+                        {"path": ".agents/temp-producers.yaml"}
+                    ]
+                },
+            }
+        },
+    )
+
+    assert "release-changed-line-coverage" in prompt
+    assert "repo-python" in prompt
+    assert "python3 -m pytest -q tests/test_task.py" in prompt
+    assert "would-touch-outside-declared: `.agents/temp-producers.yaml`" in prompt
 
 
 def test_cli_forwards_prelaunch_declarations_to_task_runner(
