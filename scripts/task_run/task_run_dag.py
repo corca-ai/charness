@@ -67,7 +67,7 @@ def _plan_provider(value: Mapping[str, Any]) -> dict[str, Any]:
 
 _LANE_FIELDS = {
         "key", "issue_number", "depends_on", "dependency_kinds", "carrier",
-        "brief_path", "scopes", "effort",
+        "brief_path", "scopes", "effort", "base", "stacked_on",
 }
 
 
@@ -134,6 +134,15 @@ def _validate_lane(raw: object, index: int, repo_root: Path) -> dict[str, Any]:
     dependencies, kinds = _lane_dependencies(raw, label)
     carrier, effort = _lane_execution(raw, label)
     brief_path, scopes = _lane_brief_and_scopes(raw, label, repo_root)
+    base, stacked_on = raw.get("base"), raw.get("stacked_on")
+    if base is not None and (
+        not isinstance(base, str) or not base.strip() or stacked_on is not None
+    ):
+        raise DagError(f"{label}.base must be non-empty and exclusive with stacked_on")
+    if stacked_on is not None and (
+        not isinstance(stacked_on, str) or not _KEY_RE.fullmatch(stacked_on)
+    ):
+        raise DagError(f"{label}.stacked_on must be a lane key")
     return {
         "key": key,
         "issue_number": issue_number,
@@ -143,6 +152,8 @@ def _validate_lane(raw: object, index: int, repo_root: Path) -> dict[str, Any]:
         "brief_path": brief_path,
         "scopes": scopes,
         "effort": effort,
+        "base": base,
+        "stacked_on": stacked_on,
     }
 
 
@@ -162,6 +173,9 @@ def _validate_lanes(raw_lanes: object, repo_root: Path) -> list[dict[str, Any]]:
         missing = set(lane["depends_on"]) - known
         if missing:
             raise DagError(f"lane {lane['key']!r} has unknown dependencies {sorted(missing)!r}")
+        stacked_on = lane["stacked_on"]
+        if stacked_on is not None and (stacked_on not in lane["depends_on"] or lane["dependency_kinds"].get(stacked_on, "hard") != "hard"):
+            raise DagError(f"lane {lane['key']!r}.stacked_on must be a hard dependency")
     _validate_acyclic(lanes)
     return lanes
 
@@ -366,6 +380,7 @@ def _launch_lane(repo_root: Path, lane: Mapping[str, Any]) -> dict[str, Any]:
     return task_run.run_task(
         repo_root,
         lane=lane["key"],
+        base=lane.get("base"),
         scopes=lane["scopes"],
         prompt=prompt,
         executor=lane["carrier"],
@@ -373,16 +388,24 @@ def _launch_lane(repo_root: Path, lane: Mapping[str, Any]) -> dict[str, Any]:
     )
 
 
+def _is_candidate_sha(value: object) -> bool:
+    return isinstance(value, str) and bool(re.fullmatch(r"[0-9a-fA-F]{40,64}", value))
+
+
 def _lane_result(key: str, payload: object) -> dict[str, Any]:
     receipt = payload if isinstance(payload, Mapping) else {"status": "failed"}
     kind = _state.result_kind_for_receipt(receipt)
-    return {
+    result = {
         "key": key,
         "task_id": receipt.get("task_id", key),
         "result_kind": kind.value,
         "exit_code": _state.exit_code_for_result_kind(kind),
         "blocker": _state.blocker_for_receipt(receipt),
     }
+    candidate_sha = receipt.get("target_sha")
+    if _is_candidate_sha(candidate_sha):
+        result["candidate_sha"] = candidate_sha
+    return result
 
 
 def pull_once(
@@ -405,6 +428,11 @@ def pull_once(
     records = task_reader(repo_root)
     attempted = {lane["key"] for lane in plan["lanes"] if lane["key"] in records}
     external_active = {key for key, record in records.items() if _record_is_active(record)}
+    candidate_shas = {
+        lane["key"]: records[lane["key"]].get("target_sha")
+        for lane in plan["lanes"]
+        if lane["key"] in records
+    }
     futures: dict[concurrent.futures.Future[object], str] = {}
     worker_count = plan["max_parallel"]
 
@@ -417,7 +445,12 @@ def pull_once(
             )
             by_key = {lane["key"]: lane for lane in plan["lanes"]}
             for key in ready:
-                futures[pool.submit(launcher, repo_root, by_key[key])] = key
+                launch_lane = dict(by_key[key])
+                stacked_on = launch_lane["stacked_on"]
+                if stacked_on is not None:
+                    stacked_sha = candidate_shas.get(stacked_on)
+                    launch_lane["base"] = stacked_sha if _is_candidate_sha(stacked_sha) else ""
+                futures[pool.submit(launcher, repo_root, launch_lane)] = key
                 launched.add(key)
             if not futures:
                 break
@@ -427,7 +460,10 @@ def pull_once(
             for future in completed:
                 key = futures.pop(future)
                 try:
-                    lane_results.append(_lane_result(key, future.result()))
+                    lane_result = _lane_result(key, future.result())
+                    if "candidate_sha" in lane_result:
+                        candidate_shas[key] = lane_result["candidate_sha"]
+                    lane_results.append(lane_result)
                 except Exception as exc:
                     lane_results.append(
                         {"key": key, "task_id": key, "result_kind": _state.ResultKind.FAILED.value,

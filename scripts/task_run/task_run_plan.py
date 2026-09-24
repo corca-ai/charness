@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import re
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -24,6 +25,7 @@ from scripts.task_run.task_run_contract import (  # noqa: E402
     TaskRunError,
 )
 from scripts.task_run.task_run_git import (  # noqa: E402
+    _base_is_fresh,
     _git_common_dir,
     _resolve_base_sha,
     _validate_branch,
@@ -47,6 +49,57 @@ from scripts.task_run.task_run_scope import (  # noqa: E402
     resolve_scope_specs,
     scope_closure_warnings,
 )
+
+_LANE_SIZE_LIMIT_MINUTES = 60
+_LANE_SIZE_LIMIT_COMMIT_UNITS = 4
+_LANE_SIZE_RE = re.compile(
+    r"(?im)^\s*Lane size:\s*(?P<minutes>\d+)\s*minutes?\s*;\s*"
+    r"(?P<units>\d+)\s*commit units?\s*$"
+)
+_LANE_SIZE_PREFIX_RE = re.compile(r"(?im)^\s*Lane size\s*:")
+
+
+def _lane_size_hygiene(prompt: str) -> dict[str, Any]:
+    """Read the brief estimate against #843-7's 60-minute / four-unit calibration."""
+    declarations = list(_LANE_SIZE_RE.finditer(prompt))
+    result: dict[str, Any] = {
+        "limits": {
+            "minutes": _LANE_SIZE_LIMIT_MINUTES,
+            "commit_units": _LANE_SIZE_LIMIT_COMMIT_UNITS,
+        },
+        "estimated_minutes": None,
+        "estimated_commit_units": None,
+    }
+    if len(declarations) != 1:
+        malformed = bool(_LANE_SIZE_PREFIX_RE.search(prompt)) or len(declarations) > 1
+        result.update(
+            status="invalid" if malformed else "missing",
+            warning=(
+                "brief must declare one lane size as `Lane size: <minutes> minutes; "
+                "<commit_units> commit units`."
+            ),
+        )
+        return result
+
+    minutes, units = (int(declarations[0][field]) for field in ("minutes", "units"))
+    result.update(estimated_minutes=minutes, estimated_commit_units=units)
+    if minutes < 1 or units < 1:
+        result.update(
+            status="invalid",
+            warning="lane size estimates must use positive minutes and commit units.",
+        )
+    elif minutes > _LANE_SIZE_LIMIT_MINUTES or units > _LANE_SIZE_LIMIT_COMMIT_UNITS:
+        result.update(
+            status="oversize",
+            warning=(
+                f"estimated lane size is {minutes} minutes and {units} commit units; "
+                "split it into smaller lanes, landing any shared seam interfaces, "
+                "builders, and simulator in a hard-dependency lane before sibling fan-out."
+            ),
+        )
+    else:
+        result.update(status="within-limit", warning=None)
+    return result
 
 
 def _resolve_require_change(
@@ -173,9 +226,9 @@ def resolve_task_inputs(
     executor_order = _parse_executor_order(executor)
     resolved_executor = executor_order[0]
     if lane is not None:
-        if any(value is not None for value in (target_path, branch, base)):
+        if any(value is not None for value in (target_path, branch)):
             raise TaskRunError(
-                "--lane cannot be combined with --path, --branch, or --base; "
+                "--lane cannot be combined with --path or --branch; "
                 "choose shorthand or the fully explicit form"
             )
         if task_id is not None:
@@ -187,7 +240,7 @@ def resolve_task_inputs(
         resolved_target = _validate_worktree_path(
             resolved_repo, runtime_path / "task-run" / resolved_task_id / "worktree"
         )
-        resolved_base = "HEAD"
+        resolved_base = "HEAD" if base is None else base
         resolved_prepare = not skip_prepare if prepare is None else prepare
         resolved_require_change = _resolve_require_change(
             require_change=require_change,
@@ -235,6 +288,32 @@ def resolve_task_inputs(
         raise TaskRunError("--timeout-seconds must be a positive integer")
     resolved_no_progress = _resolve_no_progress_seconds(no_progress_seconds)
     resolved_prelaunch = _resolve_prelaunch_contract(prelaunch)
+    tip_sha = (
+        str(repo_snapshot["head"])
+        if repo_snapshot is not None
+        else _resolve_base_sha(resolved_repo, "HEAD")
+    )
+    base_fresh = _base_is_fresh(resolved_repo, base_sha, tip_sha)
+    base_warning = (
+        None
+        if base_fresh
+        else (
+            f"base {base_sha[:12]} does not contain dependency tip {tip_sha[:12]}; "
+            "the selected base was kept and no automatic rebase was performed."
+        )
+    )
+    lane_size = _lane_size_hygiene(prompt)
+    launch_warnings = [warning for warning in (base_warning, lane_size["warning"]) if warning]
+    resolved_prelaunch["launch_hygiene"] = {
+        "base_freshness": {
+            "status": "fresh" if base_fresh else "stale",
+            "base_sha": base_sha,
+            "dependency_tip_sha": tip_sha,
+            "warning": base_warning,
+        },
+        "lane_size": lane_size,
+        "warnings": launch_warnings,
+    }
     if lane is None:
         resolved_task_id = _task_id(resolved_branch, task_id)
         runtime_path = _runtime_preview(resolved_repo)
