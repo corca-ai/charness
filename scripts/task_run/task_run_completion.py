@@ -22,10 +22,10 @@ _load_repo_runtime_bootstrap()
 from scripts.task_run import task_run_changed_line as _changed_line  # noqa: E402
 from scripts.task_run import task_run_lane_runner as _lane_runner  # noqa: E402
 from scripts.task_run import task_run_persistence as _persistence  # noqa: E402
+from scripts.task_run import task_run_prelaunch as _prelaunch  # noqa: E402
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run import task_run_retention as _retention  # noqa: E402
 from scripts.task_run import task_run_state as _state  # noqa: E402
-from scripts.task_run import task_run_plan as _plan  # noqa: E402
 from scripts.task_run.task_run_completion_next_step import _next_step  # noqa: E402
 from scripts.task_run.task_run_contract import TaskRunError  # noqa: E402
 from scripts.task_run.task_run_git import _candidate_carrier  # noqa: E402
@@ -117,7 +117,7 @@ def complete_task(
 
     execution_status = execution_state(execution, delivery)
     payload["execution"]["status"] = execution_status
-    acceptance_skeleton = _plan.finish_acceptance_skeleton(payload, resolved_target) if execution_status == "completed" else None
+    acceptance_skeleton = _prelaunch.finish_acceptance_skeleton(payload, resolved_target) if execution_status == "completed" else None
     stderr_text = _progress._lane_stderr_text(stdout_log, stderr_log)
     payload["failure"] = _state.classify_failure(execution, stderr_text=stderr_text, delivery=delivery)
     candidate, result_state = candidate_result_state(

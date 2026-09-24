@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import os
 import subprocess
-import sys
-import time
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -25,10 +23,12 @@ from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 from scripts.task_run import task_run_changed_line as _changed_line  # noqa: E402
 from scripts.task_run import task_run_completion as _completion  # noqa: E402
 from scripts.task_run import task_run_lane_runner as _lane_runner  # noqa: E402
+from scripts.task_run import task_run_payload as _payload  # noqa: E402
+from scripts.task_run import task_run_plan as _plan  # noqa: E402
+from scripts.task_run import task_run_prelaunch as _prelaunch  # noqa: E402
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402
 from scripts.task_run.task_run_git import _checkout_own_dir, _repo_snapshot  # noqa: E402
-from scripts.task_run import task_run_plan as _plan  # noqa: E402
 from scripts.task_run.task_run_state import (  # noqa: E402
     _abnormal_exit_state,
     _candidate_result_state,
@@ -67,49 +67,6 @@ build_muse_command = _support.build_muse_command
 normalize_scopes = _support.normalize_scopes
 
 
-def _mark_phase(payload: dict[str, Any], phase: str, stamp: str) -> float:
-    """Enter a phase: record its UTC start and return the monotonic origin."""
-    payload["phase"] = phase
-    payload["timestamps"][stamp] = _support.utc_now_iso()
-    return time.monotonic()
-
-
-def _record_timing(payload: dict[str, Any], key: str, origin: float) -> None:
-    payload["timings_ms"][key] = int((time.monotonic() - origin) * 1000)
-
-
-def _persist(payload: dict[str, Any], runtime_path: Path) -> None:
-    stamps = payload.setdefault("timestamps", {})
-    stamps["updated_at"] = _support.utc_now_iso()
-    if payload.get("phase") == "terminal":
-        stamps["finished_at"] = stamps["updated_at"]
-    _support.write_task_result(runtime_path, payload)
-
-
-def _persist_completion(payload: dict[str, Any], runtime_path: Path) -> None:
-    candidate = payload.get("candidate")
-    persist_status = (
-        candidate.get("persist", {}).get("status") if isinstance(candidate, dict) else None
-    )
-    if (
-        payload.get("status") == "completed"
-        and isinstance(candidate, dict)
-        and candidate.get("status") == "validated"
-        and persist_status != "committed"
-        and not candidate.get("head_is_complete", True)
-    ):
-        if candidate.get("carrier_kind") == "worktree-only":
-            payload["next_step"] = (
-                f"Review the complete validated candidate in {payload['worktree_path']}; "
-                "no lane commit exists, so lane HEAD is not the complete candidate."
-            )
-        else:
-            payload["next_step"] = (
-                f"Review the complete validated candidate in {payload['worktree_path']}; "
-                "the lane HEAD commit is a proper subset of the complete candidate. "
-                "Carry the committed_paths and dirty_paths before treating it as integrated."
-            )
-    _persist(payload, runtime_path)
 
 
 def _terminal(
@@ -132,8 +89,33 @@ def _terminal(
         payload["error"] = error
     payload["result_kind"] = result_kind_for_status(status).value
     payload["blocker"] = blocker_for_receipt(payload)
-    _persist(payload, runtime_path)
+    _payload._persist(payload, runtime_path)
     return payload
+
+
+def _prepare_exec_logs_and_prompt(
+    payload: dict[str, Any],
+    resolved: Mapping[str, Any],
+    prompt: str,
+    lane_prompt: str,
+    runtime_path: Path,
+    resolved_task_id: str,
+    resolved_executor: str,
+) -> tuple[dict[str, Any] | None, Path, Path, str]:
+    """Create exec logs and run prelaunch gates; terminal payload first on block."""
+    log_dir = runtime_path / "task-run" / resolved_task_id
+    log_dir.mkdir(parents=True, exist_ok=True)
+    stdout_log = log_dir / f"{resolved_executor}.stdout.log"
+    stderr_log = log_dir / f"{resolved_executor}.stderr.log"
+    payload["logs"] = {"stdout": str(stdout_log), "stderr": str(stderr_log)}
+    prelaunch_blocker = _prelaunch.run_prelaunch_gates(payload, resolved, prompt)
+    _payload._persist(payload, runtime_path)
+    if prelaunch_blocker:
+        return _terminal(
+            payload, runtime_path, status="premise-blocked", next_step=prelaunch_blocker,
+            error=prelaunch_blocker,
+        ), stdout_log, stderr_log, lane_prompt
+    return None, stdout_log, stderr_log, _prelaunch.acceptance_skeleton_prompt(lane_prompt, payload)
 
 
 def _complete_task(
@@ -175,7 +157,7 @@ def _complete_task(
         candidate_commit=candidate_commit,
         target_head=target_head,
         changed_line_gate=_changed_line.run_changed_line_gate,
-        persist=_persist_completion,
+        persist=_payload._persist_completion,
         result_delivery=_support._result_delivery,
         completion_evidence=_completion_evidence,
         execution_state=_execution_state,
@@ -260,6 +242,7 @@ def run_task(
     normalized_scopes = resolved["scopes"]
     codex_path = resolved["codex_path"]
     resolved_executor = resolved["executor"]
+    executor_order, executor_paths = resolved["executor_order"], resolved["executor_paths"]
     resolved_task_id = resolved["task_id"]
     runtime_path = resolved["runtime_path"]
     execution_runtime_path = _task_execution_runtime_root(runtime_path, resolved_task_id)
@@ -281,6 +264,7 @@ def run_task(
         "scopes": normalized_scopes,
         "scope_specs": resolved["scope_specs"],
         "scope_warnings": resolved.get("scope_warnings", []),
+        "executor_order": list(executor_order),
         "runtime_root": str(runtime_path),
         "execution_runtime_root": str(execution_runtime_path),
         "result_path": str(_support.task_result_path(runtime_path, resolved_task_id)),
@@ -320,8 +304,8 @@ def run_task(
         return payload
 
     payload["status"] = "running"
-    started_at = _mark_phase(payload, "create", "create_started_at")
-    _persist(payload, runtime_path)
+    started_at = _payload._mark_phase(payload, "create", "create_started_at")
+    _payload._persist(payload, runtime_path)
     try:
         resolved_target.parent.mkdir(parents=True, exist_ok=True)
         create_payload = _worktree.run_create(
@@ -351,7 +335,7 @@ def run_task(
         )
 
     _support.record_create(payload, create_payload)
-    _record_timing(payload, "create", started_at)
+    _payload._record_timing(payload, "create", started_at)
     if not create_payload.get("created") or (
         resolved_prepare and create_payload.get("status") != PASS
     ):
@@ -403,26 +387,13 @@ def run_task(
                 next_step=f"The newly-created worktree was not clean before {resolved_executor}; inspect it and use a fresh path.",
             )
 
-        log_dir = runtime_path / "task-run" / resolved_task_id
-        log_dir.mkdir(parents=True, exist_ok=True)
-        stdout_log = log_dir / f"{resolved_executor}.stdout.log"
-        stderr_log = log_dir / f"{resolved_executor}.stderr.log"
-        payload["logs"] = {"stdout": str(stdout_log), "stderr": str(stderr_log)}
-        prelaunch_blocker = _plan.run_prelaunch_gates(payload, resolved, prompt)
-        _persist(payload, runtime_path)
-        if prelaunch_blocker:
-            return _terminal(
-                payload, runtime_path, status="premise-blocked", next_step=prelaunch_blocker,
-                error=prelaunch_blocker,
-            )
-        lane_prompt = _plan.acceptance_skeleton_prompt(lane_prompt, payload)
-        exec_started_at = _mark_phase(payload, "exec", "exec_started_at")
-        _persist(payload, runtime_path)
-
-        print(
-            f"task run: executing {resolved_executor} in {resolved_target}",
-            file=sys.stderr,
+        blocked, stdout_log, stderr_log, lane_prompt = _prepare_exec_logs_and_prompt(
+            payload, resolved, prompt, lane_prompt, runtime_path,
+            resolved_task_id, resolved_executor,
         )
+        if blocked is not None:
+            return blocked
+        exec_started_at = _payload._mark_phase(payload, "exec", "exec_started_at")
         execution = _progress._execute_watched_lane(
             payload,
             command,
@@ -438,11 +409,23 @@ def run_task(
             executor=resolved_executor,
             runtime_path=runtime_path,
             no_progress_seconds=resolved.get("no_progress_seconds"),
+            executor_order=executor_order,
+            executor_paths=executor_paths,
+            fallback_context={
+                **resolved,
+                "git_worktree_dir": git_worktree_dir,
+                "execution_runtime_path": execution_runtime_path,
+                "prompt": prompt,
+            },
+            persist=_payload._persist,
         )
-        _record_timing(payload, "exec", exec_started_at)
+        stdout_log, stderr_log = (
+            Path(payload["logs"][key]) for key in ("stdout", "stderr")
+        )
+        _payload._record_timing(payload, "exec", exec_started_at)
         candidate_commit = None
         abnormal = _abnormal_exit_state(execution)
-        if abnormal is not None:
+        if abnormal is not None and abnormal != "executor-unavailable":
             try:
                 candidate_commit = _lane_runner._checkpoint_interrupted_lane(
                     resolved_target, base_sha, scope_specs

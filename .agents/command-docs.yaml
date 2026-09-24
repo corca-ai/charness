@@ -33,6 +33,7 @@ commands:
     required_help_contains:
       - status
       - run
+      - executors
     required_doc_contains:
       - charness task run
       - charness task status
@@ -164,6 +165,14 @@ commands:
       - task_id
     required_doc_contains:
       - charness task status
+  task-executors:
+    help_command: ./charness task executors --help
+    doc_paths:
+      - docs/agent-task-runs.md
+      - docs/cli-reference.md
+    required_help_contains:
+      - --repo-root
+      - quota
   task-steer:
     help_command: ./charness task steer --help
     doc_paths:

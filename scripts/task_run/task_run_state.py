@@ -17,6 +17,7 @@ boundary no reader crosses by accident.
 
 from __future__ import annotations
 
+import re
 from enum import Enum
 from typing import Any, Mapping
 
@@ -135,6 +136,7 @@ NEEDS_REVIEW_STATE = "completed-needs-review"
 #: transient model-stream stall is retryable.
 FAILURE_KINDS = (
     "none",
+    "executor-unavailable",
     "model-stream-idle",
     "timed-out",
     "interrupted",
@@ -160,6 +162,8 @@ def _abnormal_child_state(execution: dict[str, Any]) -> str | None:
         execution["exit_code"] is not None and execution["exit_code"] < 0
     ):
         return "interrupted"
+    if isinstance(execution.get("executor_unavailable"), Mapping):
+        return "executor-unavailable"
     if execution.get("exec_error") or execution["exit_code"] is None:
         return "failed"
     if execution["exit_code"] != 0:
@@ -196,6 +200,40 @@ def _idle_stall_line(stderr_text: str) -> str | None:
     return None
 
 
+def executor_unavailable_reason(
+    execution: Mapping[str, Any], transcript: str
+) -> dict[str, str | None] | None:
+    """Recognize a failed quota refusal and retain its nearest retry hint."""
+    if execution.get("timed_out") or execution.get("interrupted"):
+        return None
+    if not (execution.get("exec_error") or execution.get("exit_code") != 0):
+        return None
+    markers = ("usage limit", "usage limits", "out of quota", "quota exceeded", "quota limit")
+    retry_patterns = (
+        r"\btry again\s+(?:at|after|on|in)\s+(.+)$",
+        r"\b(?:retry|available again|resets?)\s+(?:at|after|on|in|until)\s+(.+)$",
+        r"\buntil\s+(.+)$",
+    )
+    lines = transcript.splitlines()
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped or not any(marker in stripped.lower() for marker in markers):
+            continue
+        retry_text = " ".join(
+            candidate.strip() for candidate in lines[index : index + 3] if candidate.strip()
+        )
+        retry_after = next(
+            (
+                match.group(1).strip().rstrip(" .") or None
+                for pattern in retry_patterns
+                if (match := re.search(pattern, retry_text, flags=re.IGNORECASE))
+            ),
+            None,
+        )
+        return {"message": stripped[:300], "retry_after": retry_after}
+    return None
+
+
 def classify_failure(
     execution: Mapping[str, Any] | dict[str, Any],
     *,
@@ -215,6 +253,14 @@ def classify_failure(
         isinstance(execution.get("exit_code"), int) and execution["exit_code"] < 0
     ):
         return {"kind": "interrupted", "retryable": False, "message": "lane was interrupted"}
+    unavailable = execution.get("executor_unavailable")
+    if isinstance(unavailable, Mapping):
+        return {
+            "kind": "executor-unavailable",
+            "retryable": False,
+            "message": str(unavailable.get("message") or "executor usage limit reached")[:300],
+            "retry_after": unavailable.get("retry_after"),
+        }
     idle = _idle_stall_line(stderr_text or "")
     exit_code = execution.get("exit_code")
     abnormal_exit = exit_code is None or (isinstance(exit_code, int) and exit_code != 0)
@@ -309,6 +355,9 @@ def _candidate_result_state(
         "disallowed_paths": list(scope.get("disallowed_paths", ())),
         **scope["candidate_carrier"],
     }
+    if execution_state == "executor-unavailable":
+        candidate["status"] = "absent"
+        return candidate, execution_state
     if execution_state in _ABNORMAL_EXIT_STATES:
         if candidate_commit is None:
             raise TaskRunError(f"{execution_state} task is missing its WIP candidate commit")

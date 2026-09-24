@@ -9,7 +9,7 @@ from tests.charness_cli.support import CLI, load_cli_module
 from tests.charness_cli.test_task_run_fixtures import _codex, _repo, _run
 from tests.quality_gates.repo_shapes import install_committed_repo
 from tests.script_main import run_loaded_script_main
-from scripts.task_run import task_run_completion, task_run_plan, task_run_state
+from scripts.task_run import task_run_completion, task_run_prelaunch, task_run_state
 
 
 def _resolved(checks: list[dict[str, str]]) -> dict[str, Any]:
@@ -55,7 +55,7 @@ def test_one_blocked_premise_item_does_not_stop_the_lane() -> None:
             ]
         )
 
-    blocker = task_run_plan.run_prelaunch_gates(
+    blocker = task_run_prelaunch.run_prelaunch_gates(
         payload, _resolved(declaration), "brief", brief_critic=critic
     )
 
@@ -86,7 +86,7 @@ def test_run_task_launches_after_a_single_blocked_item(tmp_path, monkeypatch) ->
             [{"id": "provider-order", "kind": "premise-blocked", "evidence": "unknown"}]
         )
 
-    monkeypatch.setattr(task_run_plan, "_run_brief_critique", critic)
+    monkeypatch.setattr(task_run_prelaunch, "_run_brief_critique", critic)
     payload = _run(
         repo,
         tmp_path,
@@ -109,7 +109,7 @@ def test_run_task_blocks_before_launch_on_a_false_brief_premise(tmp_path, monkey
     marker = tmp_path / "lane-started"
     executable = _codex(tmp_path, f"touch {shlex.quote(str(marker))}")
     monkeypatch.setattr(
-        task_run_plan,
+        task_run_prelaunch,
         "_run_brief_critique",
         lambda **_kwargs: {
             "status": "completed",
@@ -149,7 +149,7 @@ def test_partial_premise_success_keeps_blocked_decisions_in_receipt() -> None:
         },
     ]
 
-    blocker = task_run_plan.run_prelaunch_gates(
+    blocker = task_run_prelaunch.run_prelaunch_gates(
         payload,
         _resolved(declarations),
         "brief",
@@ -174,7 +174,7 @@ def test_partial_premise_success_keeps_blocked_decisions_in_receipt() -> None:
 def test_style_findings_are_advisory_but_false_brief_premise_blocks() -> None:
     resolved = _resolved([])
     resolved["prelaunch"]["enabled"] = True
-    advisory = task_run_plan.run_prelaunch_gates(
+    advisory = task_run_prelaunch.run_prelaunch_gates(
         {},
         resolved,
         "brief",
@@ -184,7 +184,7 @@ def test_style_findings_are_advisory_but_false_brief_premise_blocks() -> None:
             "findings": ["consider a clearer variable name"],
         },
     )
-    blocked = task_run_plan.run_prelaunch_gates(
+    blocked = task_run_prelaunch.run_prelaunch_gates(
         {},
         resolved,
         "brief",
@@ -203,7 +203,7 @@ def test_brief_critic_uses_read_only_bounded_fresh_process(tmp_path, monkeypatch
     from scripts.runtime_bootstrap import import_repo_module
     from scripts.task_run import task_run_execution, task_run_runtime, task_run_support
 
-    exec_lib = import_repo_module(task_run_plan.__file__, "scripts.worktree.worktree_exec_lib")
+    exec_lib = import_repo_module(task_run_prelaunch.__file__, "scripts.worktree.worktree_exec_lib")
     observed: dict[str, Any] = {}
     monkeypatch.setattr(task_run_runtime, "_resolve_codex", lambda _name: "/usr/bin/codex")
     monkeypatch.setattr(
@@ -228,7 +228,7 @@ def test_brief_critic_uses_read_only_bounded_fresh_process(tmp_path, monkeypatch
         return {"exit_code": 0, "timed_out": False}
 
     monkeypatch.setattr(task_run_execution, "_execute_codex", execute)
-    review = task_run_plan._run_brief_critique(
+    review = task_run_prelaunch._run_brief_critique(
         payload={"task_id": "lane", "execution_runtime_root": str(tmp_path / "execution")},
         resolved={"runtime_path": tmp_path / "runtime", "target_path": tmp_path, "executor": "muse"},
         prompt="implement the lane",
@@ -254,7 +254,7 @@ def test_critical_acceptance_skeleton_must_be_green_for_completion(tmp_path) -> 
         "acceptance_skeleton": "tests/test_acceptance.py",
         "premise_checks": [],
     }
-    blocker = task_run_plan.run_prelaunch_gates(
+    blocker = task_run_prelaunch.run_prelaunch_gates(
         payload,
         resolved,
         "brief",
@@ -262,18 +262,18 @@ def test_critical_acceptance_skeleton_must_be_green_for_completion(tmp_path) -> 
     )
     assert blocker is None
     assert payload["prelaunch"]["acceptance_skeleton"]["baseline"]["status"] == "red"
-    assert "tests/test_acceptance.py" in task_run_plan.acceptance_skeleton_prompt(
+    assert "tests/test_acceptance.py" in task_run_prelaunch.acceptance_skeleton_prompt(
         "brief", payload
     )
 
     skeleton = target / "tests/test_acceptance.py"
     skeleton.write_text("def test_acceptance():\n    assert True\n", encoding="utf-8")
-    acceptance = task_run_plan.finish_acceptance_skeleton(payload, target)
+    acceptance = task_run_prelaunch.finish_acceptance_skeleton(payload, target)
     assert acceptance is not None and acceptance["status"] == "green"
     assert task_run_completion._acceptance_result_state("completed", acceptance) == "completed"
 
     skeleton.write_text("def test_acceptance():\n    assert False\n", encoding="utf-8")
-    acceptance = task_run_plan.finish_acceptance_skeleton(payload, target)
+    acceptance = task_run_prelaunch.finish_acceptance_skeleton(payload, target)
     blockers = task_run_completion._completion_blockers(
         execution_status="completed",
         scope={"verdict": "pass", "reason": ""},
