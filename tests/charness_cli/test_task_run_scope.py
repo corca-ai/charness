@@ -777,3 +777,66 @@ def test_scope_evidence_normalizes_absolute_traceback_paths() -> None:
     assert task_run_scope_evidence.suggest_scopes(traceback) == [
         "scripts/task_run/task_run_scope.py"
     ]
+
+
+def test_scope_evidence_repo_root_falls_back_to_cwd(monkeypatch) -> None:
+    monkeypatch.setattr(task_run_scope_evidence, "__file__", "/nope/x.py", raising=False)
+
+    assert task_run_scope_evidence._repo_root() == Path.cwd()
+
+
+def test_scope_evidence_top_level_names_empty_on_os_error() -> None:
+    class _UnreadableRoot:
+        def iterdir(self) -> None:
+            raise OSError("denied")
+
+    assert task_run_scope_evidence._repo_top_level_names(_UnreadableRoot()) == set()
+
+
+def test_scope_evidence_relative_path_edge_branches(tmp_path: Path) -> None:
+    rel = task_run_scope_evidence._relative_path
+    assert rel("", tmp_path, set()) is None
+    assert rel("..", tmp_path, set()) is None
+    assert rel("/opt/other/x.py", tmp_path, set()) is None
+    assert (
+        rel("/opt/other/scripts/task_run/x.py", tmp_path, {"scripts", "task_run"})
+        == "scripts/task_run/x.py"
+    )
+    assert rel("C:/scripts/task_run/x.py", tmp_path, {"scripts"}) == "scripts/task_run/x.py"
+
+
+def test_scope_evidence_skips_bare_tokens() -> None:
+    assert task_run_scope_evidence.suggest_scopes("see foo.bar baz") == []
+
+
+def test_scope_evidence_cli_reads_evidence_file(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    import runpy
+    import sys
+
+    evidence = tmp_path / "evidence.txt"
+    evidence.write_text(
+        "scope mismatch - real owner `scripts/task_run/task_run_ledger.py` is outside",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sys, "argv", ["task_run_scope_evidence.py", str(evidence)])
+    with pytest.raises(SystemExit) as exit_info:
+        runpy.run_path(str(Path(task_run_scope_evidence.__file__)), run_name="__main__")
+
+    assert exit_info.value.code == 0
+    assert "scripts/task_run/task_run_ledger.py" in capsys.readouterr().out
+
+
+def test_scope_evidence_cli_reads_stdin(monkeypatch, capsys) -> None:
+    import io
+    import runpy
+    import sys
+
+    monkeypatch.setattr(sys, "argv", ["task_run_scope_evidence.py"])
+    monkeypatch.setattr(sys, "stdin", io.StringIO("nothing pathlike here"))
+    with pytest.raises(SystemExit) as exit_info:
+        runpy.run_path(str(Path(task_run_scope_evidence.__file__)), run_name="__main__")
+
+    assert exit_info.value.code == 0
+    assert capsys.readouterr().out == ""
