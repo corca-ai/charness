@@ -134,6 +134,60 @@ def test_improvements_line_and_retro_cadence_are_documented() -> None:
     assert "improvements found: none" in docs
 
 
+def test_unreadable_store_and_foreign_lines_never_change_lane_semantics(
+    tmp_path: Path,
+) -> None:
+    blocker = tmp_path / "blocker-file"
+    blocker.write_text("not a directory", encoding="utf-8")
+    assert (
+        task_run_friction.append_friction_event(blocker, "block", task_id="t1")
+        is None
+    )
+
+    runtime_path = tmp_path / "runtime"
+    log_path = task_run_friction.friction_log_path(runtime_path)
+    log_path.parent.mkdir(parents=True)
+    log_path.write_text("not json\n", encoding="utf-8")
+    assert (
+        task_run_friction.append_friction_event(runtime_path, "block", task_id="t2")
+        is None
+    )
+
+    foreign = {
+        "schema_version": 1,
+        "event_id": "foreign-1",
+        "occurred_at": "2026-09-24T00:00:00Z",
+        "source": "decision-ledger",
+        "event_kind": "design-approval",
+        "facts": {},
+    }
+    log_path.write_text(json.dumps(foreign) + "\n", encoding="utf-8")
+    assert (
+        task_run_friction.append_friction_event(runtime_path, "block", task_id="t3")
+        is None
+    )
+
+
+def test_terminal_success_writes_nothing_and_premise_blocked_writes_block(
+    tmp_path: Path,
+) -> None:
+    runtime_path = tmp_path / "runtime"
+    assert (
+        task_run_friction.append_terminal_friction(
+            runtime_path, {"task_id": "s", "status": "completed"}
+        )
+        is None
+    )
+    assert not task_run_friction.friction_log_path(runtime_path).exists()
+
+    task_run_friction.append_terminal_friction(
+        runtime_path, {"task_id": "p", "status": "premise-blocked"}
+    )
+    [event] = _events(runtime_path)
+    assert event["event_kind"] == "block"
+    assert event["facts"]["task_id"] == "p"
+
+
 def test_pointer_file_is_read_for_each_built_lane_prompt(tmp_path: Path) -> None:
     pointer_file = tmp_path / task_run_lane_runner.ORCHESTRATION_POINTERS_RELATIVE_PATH
     pointer_file.parent.mkdir(parents=True)
