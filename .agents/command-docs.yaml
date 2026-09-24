@@ -163,6 +163,15 @@ commands:
       - task_id
     required_doc_contains:
       - charness task status
+  task-steer:
+    help_command: ./charness task steer --help
+    doc_paths:
+      - docs/agent-task-runs.md
+      - docs/cli-reference.md
+    required_help_contains:
+      - task_id
+      - --message
+      - --amend-scope
   task-run:
     help_command: ./charness task run --help
     doc_paths:
