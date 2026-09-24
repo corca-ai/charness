@@ -289,6 +289,9 @@ usage: charness task run [-h] [--repo-root REPO_ROOT] [--lane LANE]
                          [--executor {codex,muse}] --effort EFFORT
                          [--task-id TASK_ID] [--prepare] [--require-change]
                          [--skip-prepare] [--allow-no-change] [--report-only]
+                         [--critical-lane]
+                         [--acceptance-skeleton ACCEPTANCE_SKELETON]
+                         [--premise-check ID PREMISE DECISION]
                          [--timeout-seconds TIMEOUT_SECONDS]
                          [--no-progress-seconds NO_PROGRESS_SECONDS]
                          [--dry-run]
@@ -347,6 +350,14 @@ options:
                         delivered stdout report as the terminal artifact, and
                         never classify parent progress as a writer conflict.
                         Cannot be combined with --require-change.
+  --critical-lane       Require a committed failing acceptance skeleton before
+                        launch and green at completion.
+  --acceptance-skeleton ACCEPTANCE_SKELETON
+                        Repository-relative pytest file that must fail before
+                        launch and pass before completion.
+  --premise-check ID PREMISE DECISION
+                        Premise to check before launch and the decision a
+                        BLOCKED result needs; repeatable.
   --timeout-seconds TIMEOUT_SECONDS
                         Per-attempt executor timeout in seconds; a retried
                         stall reruns the full budget (see
