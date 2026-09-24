@@ -148,6 +148,7 @@ def complete_task(
         persistence=payload["persistence"],
         acceptance_skeleton=acceptance_skeleton,
     )
+    scope_specs = scope.get("specs") or scope_specs
     blockers += _prelaunch.acceptance_deficit_blockers(payload, resolved_target, scope_specs, candidate)
     _lane_runner.apply_lane_receipt(
         payload,
