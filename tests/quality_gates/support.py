@@ -720,6 +720,10 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         # The runtime-root sweep the runner calls beside `prepare_repo_key` (#787);
         # imported at module scope for the same reason as the basetemp lifecycle.
         "runtime_root_retention.py",
+        # The lane-salvage half split out of the sweep when it crossed its length
+        # cap (#865); the sweep imports it at module scope, so a seeded repo
+        # without it fails at import rather than on behavior. Same rule as above.
+        "runtime_lane_salvage.py",
         # The quality engine owns its per-run scratch root through this module;
         # copy the real owner so fixture runs exercise receipts and cleanup rather
         # than failing at import or silently falling back to process-global temp.
