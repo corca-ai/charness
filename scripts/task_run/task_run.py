@@ -137,7 +137,9 @@ def _complete_task(
     started_at: float,
     candidate_commit: dict[str, Any] | None,
     target_head: str | None = None,
+    self_review_prompt: str = "",
 ) -> dict[str, Any]:
+    payload["_self_review_prompt"] = self_review_prompt
     return _completion.complete_task(
         payload,
         runtime_path=runtime_path,
@@ -189,12 +191,15 @@ def run_task(
     dry_run: bool = False,
     report_only: bool = False,
     no_progress_seconds: float | None = None,
+    self_review_policy: str = "auto",
     prelaunch: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Create, run, and receipt one bounded Codex worktree task."""
     resolved_repo: Path | None = None
     resolved_target: Path | None = None
     try:
+        if self_review_policy not in ("auto", "always"):
+            raise TaskRunError("self_review_policy must be auto or always")
         repo_snapshot = _repo_snapshot(repo_root)
         resolved_repo = repo_snapshot["repo_root"]
         parent_before = _collect_populations(resolved_repo)
@@ -271,6 +276,7 @@ def run_task(
         "prepare": resolved_prepare,
         "require_change": resolved_require_change,
         "report_only": resolved_report_only,
+        "self_review_policy": self_review_policy,
         "no_progress_seconds": resolved.get("no_progress_seconds"),
         "prelaunch_plan": resolved["prelaunch"],
         "keep_worktree": True,
@@ -473,6 +479,7 @@ def run_task(
             stderr_log=stderr_log,
             execution=execution,
             started_at=started_at,
+            self_review_prompt=prompt,
             candidate_commit=candidate_commit,
             target_head=(
                 str(candidate_commit["sha"])

@@ -5540,6 +5540,7 @@ def cmd_task_run(args: argparse.Namespace) -> int:
         dry_run=args.dry_run,
         report_only=args.report_only,
         no_progress_seconds=args.no_progress_seconds,
+        self_review_policy=args.self_review_policy,
         prelaunch={
             "brief_critique": True,
             "critical_lane": args.critical_lane,
@@ -5936,6 +5937,7 @@ def build_parser() -> argparse.ArgumentParser:
     task_run_parser.add_argument("--skip-prepare", action="store_true", help="Shorthand diagnostic opt-out: skip the default preparation step.")
     task_run_parser.add_argument("--allow-no-change", action="store_true", help="Shorthand diagnostic opt-out: allow an unchanged candidate.")
     task_run_parser.add_argument("--report-only", action="store_true", help="Report-only lane: force require-change off, treat the delivered stdout report as the terminal artifact, and never classify parent progress as a writer conflict. Cannot be combined with --require-change.")
+    task_run_parser.add_argument("--self-review", dest="self_review_policy", action="store_const", const="always", default="auto", help="Run self-review for every lane; irreversible-boundary lanes are reviewed automatically.")
     task_run_parser.add_argument("--critical-lane", action="store_true", help="Require a committed failing acceptance skeleton before launch and green at completion.")
     task_run_parser.add_argument("--acceptance-skeleton", help="Repository-relative pytest file that must fail before launch and pass before completion.")
     task_run_parser.add_argument("--premise-check", action="append", nargs=3, default=[], metavar=("ID", "PREMISE", "DECISION"), help="Premise to check before launch and the decision a BLOCKED result needs; repeatable.")

@@ -383,8 +383,66 @@ _MAX_RESULT_TEXT_BYTES = 1024 * 1024
 _REVIEW_SCAN_LIMIT_BYTES = 64 * 1024 * 1024
 _BOUNDED_REVIEW_KIND = "charness.bounded_review.v1"
 
-
 _REVIEWER_CONTRACT: Any | None = None
+
+
+def run_self_review(payload: dict[str, Any]) -> dict[str, Any]:
+    """Run a read-only Codex self-review and retain its non-approval findings."""
+    from scripts.task_run import task_run_state, task_run_support, task_run_runtime
+    from scripts.worktree import worktree_exec_lib
+
+    prompt = str(payload.pop("_self_review_prompt", ""))
+    candidate = payload.get("candidate")
+    candidate = candidate if isinstance(candidate, Mapping) else {}
+    changed_paths = candidate.get("changed_paths") or []
+    persistence = payload.get("persistence")
+    persistence = persistence if isinstance(persistence, Mapping) else {}
+    policy = str(payload.get("self_review_policy", "never"))
+    scopes = payload.get("scopes", [])
+    if not isinstance(scopes, list):
+        scopes = []
+    if not task_run_state.self_review_requested(policy, prompt, scopes, changed_paths, persistence):
+        reason = "self-review is disabled for this invocation" if policy == "never" else "no irreversible-boundary signal; use --self-review to opt in"
+        return task_run_state.self_review_block("not-requested", reason=reason)
+    executor_info = payload.get("executor")
+    executor_info = executor_info if isinstance(executor_info, Mapping) else {}
+    if executor_info.get("kind") != "codex":
+        return task_run_state.self_review_block(
+            "unavailable-skip",
+            reason="a read-only Codex reviewer is unavailable for the selected lane executor",
+        )
+    original_command = executor_info.get("command")
+    if not isinstance(original_command, list) or not original_command:
+        return task_run_state.self_review_block(
+            "unavailable-skip", reason="the reviewer command is unavailable"
+        )
+    executable = str(original_command[0])
+    if not os.access(executable, os.X_OK):
+        return task_run_state.self_review_block(
+            "unavailable-skip", reason=f"reviewer executable is unavailable: {executable}"
+        )
+    try:
+        runtime_path = Path(str(payload["execution_runtime_root"]))
+        worktree = Path(str(payload["worktree_path"]))
+        review_root = runtime_path / "self-review"
+        review_root.mkdir(parents=True, exist_ok=True)
+        stdout_log, stderr_log = review_root / "codex.stdout.log", review_root / "codex.stderr.log"
+        output_path = review_root / "codex.last-message.txt"
+        command = task_run_runtime.build_codex_command(executable, effort="medium")
+        command[command.index("--sandbox") + 1] = "read-only"
+        command[-1:-1] = ["--json", "--output-last-message", str(output_path)]
+        env = worktree_exec_lib.prepare_exec_environment(worktree, os.environ.copy(), runtime_root=runtime_path)
+        env = task_run_support.scrubbed_lane_env(payload, env, "codex")
+        result = _execute_codex(
+            command, prompt=task_run_state.self_review_prompt(prompt, str(payload.get("base_sha", "")), changed_paths),
+            target_path=worktree, configured_env=env, stdout_log=stdout_log, stderr_log=stderr_log,
+            timeout_seconds=min(int(executor_info.get("timeout_seconds") or 300), 300), executor="codex",
+        )
+        return task_run_state.self_review_result(result, _tail_text(stdout_log, limit=1024 * 1024))
+    except (OSError, RuntimeError, ValueError) as exc:
+        return task_run_state.self_review_block(
+            "unavailable-skip", reason=f"reviewer could not run: {exc}"
+        )
 
 
 def _bounded_result_shape(payload: dict[str, Any]) -> str:
@@ -414,91 +472,21 @@ def _bounded_result_shape(payload: dict[str, Any]) -> str:
     return _REVIEWER_CONTRACT.bounded_result_shape(payload)
 
 
-def _nested_mappings(value: Any):
-    if isinstance(value, dict):
-        yield value
-        for nested in value.values():
-            yield from _nested_mappings(nested)
-    elif isinstance(value, list):
-        for nested in value:
-            yield from _nested_mappings(nested)
-
-
 def _extract_bounded_review(raw: bytes) -> tuple[dict[str, Any], str] | None:
-    """Find a bounded result after noise, pretty-printing, or a large prefix."""
-    if len(raw) > _REVIEW_SCAN_LIMIT_BYTES:
-        half = _REVIEW_SCAN_LIMIT_BYTES // 2
-        raw = raw[:half] + b"\n[Charness bounded-result scan window]\n" + raw[-half:]
-    text = raw.decode("utf-8", errors="replace")
-    decoder = json.JSONDecoder()
-    for index, char in enumerate(text):
-        if char not in "[{":
-            continue
-        try:
-            value, _end = decoder.raw_decode(text, index)
-        except json.JSONDecodeError:
-            continue
-        for candidate in _nested_mappings(value):
-            if candidate.get("kind") == _BOUNDED_REVIEW_KIND:
-                return dict(candidate), "text-json"
-    return None
+    from scripts.task_run import task_run_state
+
+    candidate = task_run_state.extract_structured_review(
+        raw, kind=_BOUNDED_REVIEW_KIND, limit=_REVIEW_SCAN_LIMIT_BYTES
+    )
+    return (candidate, "text-json") if candidate is not None else None
 
 
 def _reviewer_result_carrier(delivery: Mapping[str, Any]) -> dict[str, Any] | None:
-    """Project a task's bounded-review bytes into a reusable, non-approval carrier.
+    from scripts.task_run import task_run_state
 
-    `task run` owns durable result.json, including failed and timed-out lanes. A
-    reviewer result found there is useful for retry and comparison, but task-run
-    delivery alone cannot prove the consumer's expected packet identity. Keep the
-    result reusable while requiring the review consumer to bind it before approval.
-    """
-    candidate = delivery.get("reviewer_result")
-    source = str(delivery.get("reviewer_result_source") or "raw-log")
-    if not isinstance(candidate, Mapping) or candidate.get("kind") != _BOUNDED_REVIEW_KIND:
-        candidate = delivery.get("structured")
-        source = "structured"
-    if not isinstance(candidate, Mapping) or candidate.get("kind") != _BOUNDED_REVIEW_KIND:
-        raw_text = delivery.get("text")
-        candidate = None
-        if isinstance(raw_text, str):
-            try:
-                parsed = json.loads(raw_text)
-            except json.JSONDecodeError:
-                parsed = None
-            if isinstance(parsed, dict) and parsed.get("kind") == _BOUNDED_REVIEW_KIND:
-                candidate = parsed
-                source = "text-json"
-            if candidate is None:
-                extracted = _extract_bounded_review(raw_text.encode("utf-8"))
-                if extracted is not None:
-                    candidate, source = extracted
-    if not isinstance(candidate, Mapping) or candidate.get("kind") != _BOUNDED_REVIEW_KIND:
-        return None
-    validation = _bounded_result_shape(dict(candidate))
-    complete = validation != "partial-schema"
-    return {
-        "schema_version": "charness.task_reviewer_carrier.v1",
-        "state": "received" if complete else "partial",
-        "delivery_state": "findings-received" if complete else "partial",
-        "reusable": True,
-        "approval_eligible": False,
-        "identity_binding": "consumer-required",
-        "source": source,
-        "result_kind": _BOUNDED_REVIEW_KIND,
-        # Keep the bounded finding body beside its projection.  `result_delivery`
-        # already retains the raw carrier, but callers should not have to parse a
-        # log again merely to reuse a failed review as retry context.
-        "result": dict(candidate),
-        "verdict": candidate.get("verdict"),
-        "packet_identity": candidate.get("packet_sha256"),
-        "reviewed_input_identity": candidate.get("reviewed_input_identity_sha256"),
-        "validation": validation,
-        "next_move": (
-            "Bind packet/input identity and the task receipt before treating this as approval."
-            if complete
-            else "Reuse the retained partial result as retry context; do not approve it."
-        ),
-    }
+    return task_run_state.reviewer_result_carrier(
+        delivery, result_shape=_bounded_result_shape, extract=_extract_bounded_review
+    )
 
 
 def _result_delivery(stdout_log: Path) -> dict[str, Any]:

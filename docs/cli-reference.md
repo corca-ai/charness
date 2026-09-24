@@ -306,7 +306,7 @@ usage: charness task run [-h] [--repo-root REPO_ROOT] [--lane LANE]
                          [--executor EXECUTOR] --effort EFFORT
                          [--task-id TASK_ID] [--prepare] [--require-change]
                          [--skip-prepare] [--allow-no-change] [--report-only]
-                         [--critical-lane]
+                         [--self-review] [--critical-lane]
                          [--acceptance-skeleton ACCEPTANCE_SKELETON]
                          [--premise-check ID PREMISE DECISION]
                          [--timeout-seconds TIMEOUT_SECONDS]
@@ -367,6 +367,8 @@ options:
                         delivered stdout report as the terminal artifact, and
                         never classify parent progress as a writer conflict.
                         Cannot be combined with --require-change.
+  --self-review         Run self-review for every lane; irreversible-boundary
+                        lanes are reviewed automatically.
   --critical-lane       Require a committed failing acceptance skeleton before
                         launch and green at completion.
   --acceptance-skeleton ACCEPTANCE_SKELETON

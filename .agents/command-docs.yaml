@@ -196,6 +196,7 @@ commands:
       - --prompt
       - --prompt-file
       - --effort
+      - --self-review
     required_doc_contains:
       - charness task run
       - --lane feature-lane
