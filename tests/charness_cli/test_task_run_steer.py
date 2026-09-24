@@ -364,9 +364,8 @@ def test_direct_entry_copy_nacks_unknown_task_from_real_checkout(tmp_path: Path)
     repo = Path(__file__).resolve().parents[2]
     copy = tmp_path / "charness-copy"
     shutil.copy(repo / "charness", copy)
-    # The child must resolve the checkout itself: an inherited PYTHONPATH
-    # would put the repo on sys.path and skip the fallback insert.
-    env = {key: value for key, value in os.environ.items() if key != "PYTHONPATH"}
+    # Inherit the whole environment: the coverage wiring travels in it, and
+    # scrubbing it would leave the child unmeasured.
     result = subprocess.run(
         [
             sys.executable,
@@ -387,7 +386,6 @@ def test_direct_entry_copy_nacks_unknown_task_from_real_checkout(tmp_path: Path)
         check=False,
         text=True,
         cwd=repo,
-        env=env,
     )
 
     assert result.returncode == 1
