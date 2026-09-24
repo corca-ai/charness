@@ -164,6 +164,26 @@ def test_basetemp_helpers_preserve_on_os_errors(
     assert basetemp_lib._basetemp_is_active(basetemp) is True
 
 
+def test_basetemp_liveness_unlock_failure_still_reports_idle(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import fcntl
+
+    run = tmp_path / "pytest-of-user" / "charness-run-1"
+    run.mkdir(parents=True)
+    basetemp_lib._basetemp_lock_path(run).write_text("holder\n", encoding="utf-8")
+    real_flock = fcntl.flock
+
+    def fail_unlock(fd: int, op: int) -> None:
+        if op == fcntl.LOCK_UN:
+            raise OSError("unlock failed")
+        real_flock(fd, op)
+
+    monkeypatch.setattr(fcntl, "flock", fail_unlock)
+
+    assert basetemp_lib._basetemp_is_active(run) is False
+
+
 def test_basetemp_liveness_check_creates_no_lock_files(tmp_path: Path) -> None:
     run = tmp_path / "pytest-of-user" / "charness-run-1"
     run.mkdir(parents=True)

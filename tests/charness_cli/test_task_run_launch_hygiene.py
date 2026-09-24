@@ -275,3 +275,117 @@ def test_lane_launcher_forwards_explicit_base_to_task_run(
     task_run_dag._launch_lane(plan["repo_root"], lane)
 
     assert captured["base"] == "b" * 40
+
+
+def test_acceptance_flags_missing_verifier_plan(tmp_path: Path) -> None:
+    blockers = task_run_prelaunch.acceptance_deficit_blockers(
+        {"prelaunch_plan": {}}, tmp_path, [], {"changed_paths": []}
+    )
+
+    assert blockers == [
+        "coverage mapping deficit: no scope-to-verifier plan was recorded"
+    ]
+
+
+def test_acceptance_flags_missing_directory_scope(tmp_path: Path) -> None:
+    payload = {
+        "prelaunch_plan": {
+            "scope_preflight": {},
+            "scope_verifiers": {"bundle_status": "ok"},
+        },
+    }
+    blockers = task_run_prelaunch.acceptance_deficit_blockers(
+        payload, tmp_path, [{"path": "adir", "kind": "directory"}], {"changed_paths": []}
+    )
+
+    assert any(
+        "in-scope file deficit" in item and "adir" in item for item in blockers
+    )
+
+
+def test_verifier_command_targets_rejects_unparseable_commands(tmp_path: Path) -> None:
+    assert task_run_plan._verifier_command_targets(tmp_path, "pytest --target 'oops") == []
+
+
+def test_verifier_command_targets_reads_target_flags(tmp_path: Path) -> None:
+    command = "pytest --pytest-target tests/a.py"
+    assert task_run_plan._verifier_command_targets(tmp_path, command) == ["tests/a.py"]
+
+
+def test_verifier_command_targets_reads_direct_paths(tmp_path: Path) -> None:
+    assert task_run_plan._verifier_command_targets(tmp_path, "./tests/b.py") == [
+        "tests/b.py"
+    ]
+
+
+def test_verifier_command_targets_ignores_non_test_commands(tmp_path: Path) -> None:
+    assert task_run_plan._verifier_command_targets(tmp_path, "make check") == []
+
+
+def _suite_repo(tmp_path: Path) -> Path:
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_a.py").write_text("x = 1\n", encoding="utf-8")
+    (tmp_path / "tests" / "helper.py").write_text("x = 1\n", encoding="utf-8")
+    return tmp_path
+
+
+def test_mapped_suite_paths_skips_absolute_targets(tmp_path: Path) -> None:
+    assert task_run_plan._mapped_suite_paths(_suite_repo(tmp_path), ["/abs/x.py"]) == []
+
+
+def test_mapped_suite_paths_expands_test_directories(tmp_path: Path) -> None:
+    commands = ["pytest --pytest-target tests"]
+    assert task_run_plan._mapped_suite_paths(_suite_repo(tmp_path), commands) == [
+        "tests/test_a.py"
+    ]
+
+
+def test_mapped_suite_paths_expands_globs(tmp_path: Path) -> None:
+    assert task_run_plan._mapped_suite_paths(_suite_repo(tmp_path), ["tests/*.py"]) == [
+        "tests/test_a.py"
+    ]
+
+
+def test_mapped_suite_paths_skips_non_test_files(tmp_path: Path) -> None:
+    assert (
+        task_run_plan._mapped_suite_paths(_suite_repo(tmp_path), ["tests/helper.py"])
+        == []
+    )
+
+
+def test_scope_verifier_plan_marks_broken_manifests(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from scripts.gates_support import select_verifiers as real
+
+    class _Broken:
+        SurfaceError = real.SurfaceError
+
+        def load_surfaces(self, _root, **_kwargs):
+            raise real.SurfaceError("bad manifest")
+
+    monkeypatch.setattr(task_run_plan, "_select_verifiers", _Broken())
+    result = task_run_plan._scope_verifier_plan(
+        tmp_path, scope_paths=["a.py"], tree_paths=set()
+    )
+
+    assert result["status"] == "invalid"
+    assert result["bundle_status"] == "missing-bundle"
+
+
+def test_scope_verifier_plan_names_changed_line_gate(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from scripts.task_run import task_run_changed_line as changed_line
+
+    gate_script = changed_line.GATE_SCRIPT.as_posix()
+    monkeypatch.setattr(
+        task_run_plan, "_list_eligible", lambda _root: ["scripts/task_run/x.py"]
+    )
+    result = task_run_plan._scope_verifier_plan(
+        tmp_path,
+        scope_paths=["scripts/task_run/x.py"],
+        tree_paths={gate_script},
+    )
+
+    assert changed_line.GATE_SCRIPT.stem.replace("_", "-") in result["completion_gates"]

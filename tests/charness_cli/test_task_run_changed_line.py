@@ -363,3 +363,15 @@ def test_a_lane_in_a_tree_without_the_gate_records_not_applicable(tmp_path: Path
 
 def command_index(command: list[str], flag: str) -> int:
     return command.index(flag)
+
+
+def test_block_unmapped_pool_files_guards_clean_verdicts() -> None:
+    guarded, message = gate.block_unmapped_pool_files(
+        {"unmapped_changed_pool_files": ["b.py", "a.py"]}
+    )
+
+    assert guarded["blocking"] is True
+    assert guarded["summary"] == "changed-line gate coverage mapping deficit: a.py, b.py"
+    assert message == (
+        "coverage mapping deficit: changed pool files have no mapped suite: a.py, b.py"
+    )
