@@ -90,6 +90,54 @@ def _resolve_no_progress_seconds(value: float | None) -> float | None:
     return resolved
 
 
+def _parse_executor_order(value: str | None) -> list[str]:
+    """Validate the caller's ordered executor candidates before lane setup."""
+    requested = TASK_EXECUTOR_DEFAULT if value is None else value
+    executors = [item.strip() for item in requested.split(",")]
+    allowed = ", ".join(TASK_EXECUTORS)
+    if not executors or any(not item for item in executors):
+        raise TaskRunError(
+            f"--executor must be one of: {allowed}; use commas to provide fallback order"
+        )
+    invalid = [item for item in executors if item not in TASK_EXECUTORS]
+    if invalid:
+        raise TaskRunError(
+            f"--executor must be one of: {allowed}; got {', '.join(invalid)}"
+        )
+    if len(set(executors)) != len(executors):
+        raise TaskRunError("--executor entries must be unique")
+    return executors
+
+
+def _resolve_executor_paths(executor_order: Sequence[str], codex: str) -> dict[str, str]:
+    """Resolve every explicitly requested candidate before creating a lane."""
+    paths = {}
+    for candidate in executor_order:
+        executable_name = (
+            codex
+            if codex != "codex" and (candidate == "codex" or len(executor_order) == 1)
+            else candidate
+        )
+        if candidate == "codex" and executable_name == "codex":
+            paths[candidate] = _resolve_codex(executable_name)
+        else:
+            paths[candidate] = resolve_executor_executable(
+                executable_name, executor=candidate
+            )
+    return paths
+
+
+def _validate_executor_efforts(executor_order: Sequence[str], effort: str) -> None:
+    """Reject an effort preset unsupported by any executor in the fallback list."""
+    for candidate in executor_order:
+        if candidate == "muse":
+            build_muse_args(
+                effort=effort, prompt_file=Path("prompt.md"), worktree=Path("worktree")
+            )
+        else:
+            build_codex_args(effort=effort)
+
+
 def resolve_task_inputs(
     resolved_repo: Path,
     *,
@@ -116,10 +164,8 @@ def resolve_task_inputs(
         raise TaskRunError("--prepare and --skip-prepare cannot be used together")
     if require_change and allow_no_change:
         raise TaskRunError("--require-change and --allow-no-change cannot be used together")
-    resolved_executor = executor or TASK_EXECUTOR_DEFAULT
-    if resolved_executor not in TASK_EXECUTORS:
-        allowed_executors = ", ".join(TASK_EXECUTORS)
-        raise TaskRunError(f"--executor must be one of: {allowed_executors}")
+    executor_order = _parse_executor_order(executor)
+    resolved_executor = executor_order[0]
     if lane is not None:
         if any(value is not None for value in (target_path, branch, base)):
             raise TaskRunError(
@@ -177,27 +223,15 @@ def resolve_task_inputs(
         if repo_snapshot is not None
         else _git_common_dir(resolved_repo)
     )
-    if resolved_executor == "codex" and codex == "codex":
-        codex_path = _resolve_codex(codex)
-    else:
-        executable_name = codex if codex != "codex" else resolved_executor
-        codex_path = resolve_executor_executable(
-            executable_name, executor=resolved_executor
-        )
+    executor_paths = _resolve_executor_paths(executor_order, codex)
+    codex_path = executor_paths[resolved_executor]
     if not isinstance(timeout_seconds, int) or timeout_seconds < 1:
         raise TaskRunError("--timeout-seconds must be a positive integer")
     resolved_no_progress = _resolve_no_progress_seconds(no_progress_seconds)
     if lane is None:
         resolved_task_id = _task_id(resolved_branch, task_id)
         runtime_path = _runtime_preview(resolved_repo)
-    if resolved_executor == "muse":
-        # Validate the muse effort preset; the real prompt file and worktree
-        # are written at execution time, these paths only exercise validation.
-        build_muse_args(
-            effort=effort, prompt_file=Path("prompt.md"), worktree=Path("worktree")
-        )
-    else:
-        build_codex_args(effort=effort)
+    _validate_executor_efforts(executor_order, effort)
     return {
         "lane": resolved_lane,
         "target_path": resolved_target,
@@ -210,7 +244,10 @@ def resolve_task_inputs(
         "scope_warnings": scope_warnings,
         "codex_path": codex_path,
         "executor": resolved_executor,
+        "executor_order": executor_order,
+        "executor_paths": executor_paths,
         "effort": effort,
+        "timeout_seconds": timeout_seconds,
         "task_id": resolved_task_id,
         "runtime_path": runtime_path,
         "prepare": resolved_prepare,

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import os
 import subprocess
-import sys
 import time
 from pathlib import Path
 from typing import Any, Sequence
@@ -258,6 +257,7 @@ def run_task(
     normalized_scopes = resolved["scopes"]
     codex_path = resolved["codex_path"]
     resolved_executor = resolved["executor"]
+    executor_order, executor_paths = resolved["executor_order"], resolved["executor_paths"]
     resolved_task_id = resolved["task_id"]
     runtime_path = resolved["runtime_path"]
     execution_runtime_path = _task_execution_runtime_root(runtime_path, resolved_task_id)
@@ -281,6 +281,7 @@ def run_task(
         "scopes": normalized_scopes,
         "scope_specs": resolved["scope_specs"],
         "scope_warnings": resolved.get("scope_warnings", []),
+        "executor_order": list(executor_order),
         "runtime_root": str(runtime_path),
         "execution_runtime_root": str(execution_runtime_path),
         "result_path": str(_support.task_result_path(runtime_path, resolved_task_id)),
@@ -409,12 +410,6 @@ def run_task(
         stderr_log = log_dir / f"{resolved_executor}.stderr.log"
         payload["logs"] = {"stdout": str(stdout_log), "stderr": str(stderr_log)}
         exec_started_at = _mark_phase(payload, "exec", "exec_started_at")
-        _persist(payload, runtime_path)
-
-        print(
-            f"task run: executing {resolved_executor} in {resolved_target}",
-            file=sys.stderr,
-        )
         execution = _progress._execute_watched_lane(
             payload,
             command,
@@ -430,11 +425,23 @@ def run_task(
             executor=resolved_executor,
             runtime_path=runtime_path,
             no_progress_seconds=resolved.get("no_progress_seconds"),
+            executor_order=executor_order,
+            executor_paths=executor_paths,
+            fallback_context={
+                **resolved,
+                "git_worktree_dir": git_worktree_dir,
+                "execution_runtime_path": execution_runtime_path,
+                "prompt": prompt,
+            },
+            persist=_persist,
+        )
+        stdout_log, stderr_log = (
+            Path(payload["logs"][key]) for key in ("stdout", "stderr")
         )
         _record_timing(payload, "exec", exec_started_at)
         candidate_commit = None
         abnormal = _abnormal_exit_state(execution)
-        if abnormal is not None:
+        if abnormal is not None and abnormal != "executor-unavailable":
             try:
                 candidate_commit = _lane_runner._checkpoint_interrupted_lane(
                     resolved_target, base_sha, scope_specs

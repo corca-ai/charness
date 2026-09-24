@@ -3287,6 +3287,85 @@ def cmd_task_status(args: argparse.Namespace) -> int:
     return 1 if payload.get("status") == "missing" else 0
 
 
+def cmd_task_executors(args: argparse.Namespace) -> int:
+    _load_task_run_lib(args)
+    from scripts.task_run import task_run_contract, task_run_runtime
+
+    task_status = task_run_runtime.task_status(args.repo_root.resolve())
+    task_results = task_status.get("tasks", [])
+    executors = []
+    for kind in task_run_contract.TASK_EXECUTORS:
+        observed_limits = []
+        for record in task_results:
+            attempts = record.get("attempts")
+            for attempt in (attempts if isinstance(attempts, list) else []):
+                if (
+                    isinstance(attempt, dict)
+                    and attempt.get("executor") == kind
+                    and attempt.get("failure_kind") == "executor-unavailable"
+                ):
+                    observed_limits.append(
+                        {
+                            "task_id": record.get("task_id"),
+                            "retry_after": attempt.get("retry_after"),
+                            "observed_at": attempt.get("started_at"),
+                        }
+                    )
+            failure = record.get("failure")
+            runner = record.get("executor")
+            if (
+                isinstance(failure, dict)
+                and isinstance(runner, dict)
+                and runner.get("kind") == kind
+                and failure.get("kind") == "executor-unavailable"
+            ):
+                observed_limits.append(
+                    {
+                        "task_id": record.get("task_id"),
+                        "retry_after": failure.get("retry_after"),
+                        "observed_at": record.get("timestamps", {}).get("finished_at"),
+                    }
+                )
+        last_observed_limit = max(
+            observed_limits,
+            key=lambda item: item.get("observed_at") or "",
+            default=None,
+        )
+        try:
+            executable = task_run_runtime.resolve_executor_executable(
+                kind, executor=kind
+            )
+        except task_run_contract.TaskRunError as exc:
+            executors.append(
+                {
+                    "kind": kind,
+                    "availability": "unavailable",
+                    "executable": None,
+                    "reason": str(exc),
+                    "quota_state": "unknown",
+                    "last_observed_usage_limit": last_observed_limit,
+                }
+            )
+        else:
+            executors.append(
+                {
+                    "kind": kind,
+                    "availability": "available",
+                    "executable": executable,
+                    "quota_state": "unknown",
+                    "last_observed_usage_limit": last_observed_limit,
+                }
+            )
+    emit_yaml(
+        {
+            "probe": "executable-resolution-only",
+            "lane_started": False,
+            "executors": executors,
+        }
+    )
+    return 0
+
+
 def cmd_task_steer(args: argparse.Namespace) -> int:
     _load_task_run_lib(args)
     from scripts.task_run import (
@@ -5770,6 +5849,22 @@ def build_parser() -> argparse.ArgumentParser:
     task_status_parser.add_argument("task_id", nargs="?")
     task_status_parser.set_defaults(func=cmd_task_status)
 
+    task_executors_parser = task_subparsers.add_parser(
+        "executors",
+        help="Check executor executable availability without starting a lane.",
+        description=(
+            "Resolve the configured executor executables without launching them. "
+            "Provider quota remains unknown until an executor reports a usage limit."
+        ),
+    )
+    task_executors_parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repo whose task-run environment is selected. Defaults to the current directory.",
+    )
+    task_executors_parser.set_defaults(func=cmd_task_executors)
+
     task_steer_parser = task_subparsers.add_parser(
         "steer",
         help="Queue a message for a running lane or amend its retained candidate scope.",
@@ -5825,9 +5920,8 @@ def build_parser() -> argparse.ArgumentParser:
     task_run_prompt.add_argument("--prompt-file", type=Path, help="Read implementation instructions from this file.")
     task_run_parser.add_argument(
         "--executor",
-        choices=("codex", "muse"),
         default="codex",
-        help="Lane executor: codex (fixed gpt-6-luna model) or muse (muse default model). Default: codex. Effort presets depend on the executor.",
+        help="Ordered lane executors, comma-separated (for example codex,muse); usage-limit failures fall through in order. Default: codex. Effort must fit every listed executor.",
     )
     task_run_parser.add_argument("--effort", required=True, help="Orchestrator-selected reasoning effort: medium, xhigh, or max for codex; medium, high, xhigh, or max for muse.")
     task_run_parser.add_argument("--task-id", help="Optional receipt/log identifier for explicit runs; shorthand derives it from --lane.")

@@ -16,29 +16,8 @@ from typing import Any, Mapping, Sequence
 
 import yaml
 
-
-def _load_repo_runtime_bootstrap():
-    pathlib, sys = __import__("pathlib"), __import__("sys")
-    marker = ("scripts", "adapter_lib.py")
-    parents = pathlib.Path(__file__).resolve().parents
-    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is not None and str(root) not in sys.path:
-        sys.path.insert(0, str(root))
-
-
-_load_repo_runtime_bootstrap()
-
-try:
-    from scripts.core.subprocess_guard import render_display, run_monitored_phase
-except ImportError:  # flat layout: the repo root is not on sys.path
-    _repo_root = next(
-        ancestor
-        for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
-    )
-    if str(_repo_root) not in sys.path:
-        sys.path.insert(0, str(_repo_root))
-    from scripts.core.subprocess_guard import render_display, run_monitored_phase
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from scripts.core.subprocess_guard import render_display, run_monitored_phase  # noqa: E402
 
 _DESCENDANT_CLEANUP_SHELL = (
     'printf "%s\\n" "$$" > "$1"; shift; exec 3<&0; "$@" <&3 & '
@@ -61,6 +40,18 @@ def _tail_text(path: Path, limit: int = 64 * 1024) -> str:
         return path.read_bytes()[-limit:].decode("utf-8", errors="replace")
     except OSError:
         return ""
+
+
+def _executor_unavailable_reason(
+    result: dict[str, Any], stdout_log: Path, stderr_log: Path, executor: str
+) -> None:
+    from scripts.task_run import task_run_state
+
+    logs = (stdout_log, stderr_log, stdout_log.with_name(f"{executor}.events.log"))
+    transcript = "\n".join(_tail_text(path) for path in logs)
+    reason = task_run_state.executor_unavailable_reason(result, transcript)
+    if reason:
+        result["executor_unavailable"] = reason
 
 
 def _lane_stderr_text(stdout_log: Path, stderr_log: Path | None) -> str:
@@ -95,19 +86,11 @@ def _guard_stop_reason(payload: Mapping[str, Any]) -> str:
 def _command_with_normal_completion_cleanup(
     command: Sequence[str], configured_env: Mapping[str, str], group_path: Path
 ) -> Sequence[str]:
-    """Keep the task runner's old whole-group cleanup after a clean child exit."""
     if not command:
         return command
     executable = os.fspath(command[0])
-    if "/" in executable:
-        available = os.access(executable, os.X_OK)
-    else:
-        available = (
-            shutil.which(executable, path=configured_env.get("PATH", os.defpath)) is not None
-        )
-    if not available:
-        # Keep the guard's FileNotFoundError path for a missing Codex executable.
-        return command
+    path = configured_env.get("PATH", os.defpath)
+    available = os.access(executable, os.X_OK) if "/" in executable else shutil.which(executable, path=path)
     return [
         "sh",
         "-c",
@@ -115,7 +98,7 @@ def _command_with_normal_completion_cleanup(
         "charness-task-run",
         str(group_path),
         *command,
-    ]
+    ] if available else command
 
 
 def _kill_recorded_process_group(group_path: Path) -> None:
@@ -245,6 +228,7 @@ def _execute_codex(
                 _record_steer_delivery(queue_path, pending, resume_path)
     except OSError as exc:
         result["exec_error"] = str(exc)
+    _executor_unavailable_reason(result, stdout_log, stderr_log, executor)
     steer_messages = _lane_runner.read_steer_queue(queue_path)
     if steer_messages:
         result["steer_messages"] = steer_messages
