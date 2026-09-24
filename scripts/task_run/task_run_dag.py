@@ -14,6 +14,17 @@ from pathlib import Path
 from typing import Any, Callable, Mapping
 
 
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 def _load_repo_runtime_bootstrap() -> None:
     marker = ("scripts", "adapter_lib.py")
     root = next(
@@ -26,12 +37,12 @@ def _load_repo_runtime_bootstrap() -> None:
 
 _load_repo_runtime_bootstrap()
 
-from scripts.core import subprocess_guard as _guard
-from scripts.runtime_bootstrap import configure_runtime_environment
-from scripts.task_run import task_run_contract as _contract
-from scripts.task_run import task_run_runtime as _runtime
-from scripts.task_run import task_run_state as _state
-from scripts.task_run.task_run_train_core import FAIL, PASS
+from scripts.core import subprocess_guard as _guard  # noqa: E402
+from scripts.runtime_bootstrap import configure_runtime_environment  # noqa: E402
+from scripts.task_run import task_run_contract as _contract  # noqa: E402
+from scripts.task_run import task_run_runtime as _runtime  # noqa: E402
+from scripts.task_run import task_run_state as _state  # noqa: E402
+from scripts.task_run.task_run_train_core import FAIL, PASS  # noqa: E402
 
 PLAN_SCHEMA = "charness.task-run-dag/v1"
 _KEY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$")

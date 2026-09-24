@@ -12,15 +12,27 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from scripts.runtime_bootstrap import (
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.runtime_bootstrap import (  # noqa: E402
     configure_runtime_environment,
     import_repo_module,
     repo_root_from_script,
     runtime_root,
     skill_script,
 )
-from scripts.task_run import task_run_test_cache as _test_cache
-from scripts.task_run.task_run_train_core import (
+from scripts.task_run import task_run_test_cache as _test_cache  # noqa: E402
+from scripts.task_run.task_run_train_core import (  # noqa: E402
     FAIL,
     PASS,
     TrainError,
@@ -316,6 +328,204 @@ def _landing_review_trigger(
     return record
 
 
+def _stage_train_branches(
+    repo_root: Path,
+    branch_refs: Sequence[str],
+    base_sha: str,
+    root: Path,
+    dependency_cache: Path,
+    worktrees: list[Path],
+) -> tuple[Path, list[str]]:
+    stage = root / "worktrees" / "stack"
+    _create_worktree(repo_root, stage, base_sha, dependency_cache)
+    worktrees.append(stage)
+    prefix_shas = [base_sha]
+    for branch_ref in branch_refs:
+        merged = _run_process(
+            [
+                "git",
+                "-c",
+                "user.name=Charness Train",
+                "-c",
+                "user.email=charness@localhost",
+                "merge",
+                "--no-ff",
+                "--no-edit",
+                branch_ref,
+            ],
+            cwd=stage,
+            timeout_seconds=None,
+        )
+        if merged.returncode != 0:
+            name = branch_ref.removeprefix("refs/heads/")
+            raise TrainError(
+                f"could not stack branch {name}: "
+                f"{merged.stderr.strip() or merged.stdout.strip()}"
+            )
+        prefix_shas.append(_git(stage, "rev-parse", "HEAD"))
+    return stage, prefix_shas
+
+
+def _verify_train_stack(
+    repo_root: Path,
+    branches: Sequence[str],
+    stage: Path,
+    prefix_shas: list[str],
+    base_sha: str,
+    main_branch: str,
+    root: Path,
+    dependency_cache: Path,
+    worktrees: list[Path],
+    profile: dict[str, Any],
+) -> tuple[list[dict[str, Any]], dict[int, bool], str, dict[str, Any]]:
+    prepared = _prepare_worktree(repo_root, stage, dependency_cache)
+    if prepared.get("status") != PASS:
+        raise TrainError(
+            "train verification refused: Charness worktree prepare/doctor failed: "
+            f"{prepared.get('next_step') or prepared.get('status')}"
+        )
+    attempts: list[dict[str, Any]] = []
+    full_good, full_results = run_verify_profile(
+        profile, stage, root / "reports" / "full"
+    )
+    attempts.append(
+        {
+            "prefix_count": len(branches),
+            "status": PASS if full_good else FAIL,
+            "results": full_results,
+        }
+    )
+    outcomes: dict[int, bool] = {0: True, len(branches): full_good}
+    main_now = _sha(repo_root, main_branch)
+    decision = decide_next_action(
+        branches, outcomes, main_at_start=base_sha, main_now=main_now
+    )
+    while decision["action"] == "verify-prefix":
+        count = decision["prefix_count"]
+        target = root / "worktrees" / f"prefix-{count}"
+        _create_worktree(repo_root, target, prefix_shas[count], dependency_cache)
+        worktrees.append(target)
+        prepared = _prepare_worktree(repo_root, target, dependency_cache)
+        if prepared.get("status") != PASS:
+            raise TrainError(
+                f"train bisect verification refused at prefix {count}: "
+                "Charness prepare/doctor failed"
+            )
+        good, results = run_verify_profile(
+            profile, target, root / "reports" / f"prefix-{count}"
+        )
+        attempts.append(
+            {
+                "prefix_count": count,
+                "status": PASS if good else FAIL,
+                "results": results,
+            }
+        )
+        outcomes[count] = good
+        main_now = _sha(repo_root, main_branch)
+        decision = decide_next_action(
+            branches, outcomes, main_at_start=base_sha, main_now=main_now
+        )
+    return attempts, outcomes, main_now, decision
+
+
+def _finalize_train(
+    repo_root: Path,
+    branches: Sequence[str],
+    outcomes: dict[int, bool],
+    decision: dict[str, Any],
+    main_branch: str,
+    base_sha: str,
+    prefix_shas: list[str],
+    attempts: list[dict[str, Any]],
+    root: Path,
+    run_id: str,
+    main_now: str,
+) -> dict[str, Any]:
+    if decision["action"] == "requeue":
+        return _payload_from_decision(
+            decision,
+            queue=branches,
+            base_sha=base_sha,
+            main_sha=main_now,
+            candidate_sha=prefix_shas[-1],
+            attempts=attempts,
+        )
+
+    land_count = decision["land_count"]
+    tip_sha = prefix_shas[land_count]
+    main_now = _sha(repo_root, main_branch)
+    decision = decide_next_action(
+        branches, outcomes, main_at_start=base_sha, main_now=main_now
+    )
+    if decision["action"] == "requeue":
+        return _payload_from_decision(
+            decision,
+            queue=branches,
+            base_sha=base_sha,
+            main_sha=main_now,
+            candidate_sha=prefix_shas[-1],
+            attempts=attempts,
+        )
+    if land_count == 0:
+        return _payload_from_decision(
+            decision,
+            queue=branches,
+            base_sha=base_sha,
+            main_sha=main_now,
+            candidate_sha=tip_sha,
+            attempts=attempts,
+        )
+
+    landed, error = _land_main(repo_root, main_branch, base_sha, tip_sha)
+    main_after = _sha(repo_root, main_branch)
+    if not landed and main_after != base_sha:
+        moved = decide_next_action(
+            branches, outcomes, main_at_start=base_sha, main_now=main_after
+        )
+        return _payload_from_decision(
+            moved,
+            queue=branches,
+            base_sha=base_sha,
+            main_sha=main_after,
+            candidate_sha=prefix_shas[-1],
+            attempts=attempts,
+        )
+    if not landed:
+        raise TrainError(error)
+    if main_after != tip_sha:
+        payload = _payload_from_decision(
+            decision,
+            queue=branches,
+            base_sha=base_sha,
+            main_sha=main_after,
+            candidate_sha=tip_sha,
+            attempts=attempts,
+        )
+        payload.update(
+            {
+                "status": FAIL,
+                "decision": "land-raced",
+                "error": "main changed while the fast-forward was completing",
+                "landed_sha": main_after,
+            }
+        )
+        return payload
+    payload = _payload_from_decision(
+        decision,
+        queue=branches,
+        base_sha=base_sha,
+        main_sha=main_after,
+        candidate_sha=tip_sha,
+        attempts=attempts,
+    )
+    payload["landed_sha"] = main_after
+    payload["landing_review_trigger"] = _landing_review_trigger(
+        repo_root, root, base_sha, main_after, run_id
+    )
+    return payload
+
+
 def run_train(
     repo_root: Path,
     queue: Sequence[str],
@@ -338,161 +548,39 @@ def run_train(
         run_id = uuid.uuid4().hex
         root = runtime_root(repo_root) / "train-runs" / run_id
         dependency_cache = root.parent / _doctor.DEPENDENCY_CACHE_DIR_NAME
-        prefix_shas = [base_sha]
-        stage = root / "worktrees" / "stack"
-        _create_worktree(repo_root, stage, base_sha, dependency_cache)
-        worktrees.append(stage)
-        for branch_ref in branch_refs:
-            merged = _run_process(
-                [
-                    "git",
-                    "-c",
-                    "user.name=Charness Train",
-                    "-c",
-                    "user.email=charness@localhost",
-                    "merge",
-                    "--no-ff",
-                    "--no-edit",
-                    branch_ref,
-                ],
-                cwd=stage,
-                timeout_seconds=None,
-            )
-            if merged.returncode != 0:
-                name = branch_ref.removeprefix("refs/heads/")
-                raise TrainError(
-                    f"could not stack branch {name}: "
-                    f"{merged.stderr.strip() or merged.stdout.strip()}"
-                )
-            prefix_shas.append(_git(stage, "rev-parse", "HEAD"))
-
-        prepared = _prepare_worktree(repo_root, stage, dependency_cache)
-        if prepared.get("status") != PASS:
-            raise TrainError(
-                "train verification refused: Charness worktree prepare/doctor failed: "
-                f"{prepared.get('next_step') or prepared.get('status')}"
-            )
-        attempts: list[dict[str, Any]] = []
-        full_good, full_results = run_verify_profile(profile, stage, root / "reports" / "full")
-        attempts.append(
-            {
-                "prefix_count": len(branches),
-                "status": PASS if full_good else FAIL,
-                "results": full_results,
-            }
+        stage, prefix_shas = _stage_train_branches(
+            repo_root,
+            branch_refs,
+            base_sha,
+            root,
+            dependency_cache,
+            worktrees,
         )
-        outcomes: dict[int, bool] = {0: True, len(branches): full_good}
-        main_now = _sha(repo_root, main_branch)
-        decision = decide_next_action(
-            branches, outcomes, main_at_start=base_sha, main_now=main_now
+        attempts, outcomes, main_now, decision = _verify_train_stack(
+            repo_root,
+            branches,
+            stage,
+            prefix_shas,
+            base_sha,
+            main_branch,
+            root,
+            dependency_cache,
+            worktrees,
+            profile,
         )
-        while decision["action"] == "verify-prefix":
-            count = decision["prefix_count"]
-            target = root / "worktrees" / f"prefix-{count}"
-            _create_worktree(repo_root, target, prefix_shas[count], dependency_cache)
-            worktrees.append(target)
-            prepared = _prepare_worktree(repo_root, target, dependency_cache)
-            if prepared.get("status") != PASS:
-                raise TrainError(
-                    f"train bisect verification refused at prefix {count}: "
-                    "Charness prepare/doctor failed"
-                )
-            good, results = run_verify_profile(
-                profile, target, root / "reports" / f"prefix-{count}"
-            )
-            attempts.append(
-                {
-                    "prefix_count": count,
-                    "status": PASS if good else FAIL,
-                    "results": results,
-                }
-            )
-            outcomes[count] = good
-            main_now = _sha(repo_root, main_branch)
-            decision = decide_next_action(
-                branches, outcomes, main_at_start=base_sha, main_now=main_now
-            )
-        if decision["action"] == "requeue":
-            payload = _payload_from_decision(
-                decision,
-                queue=branches,
-                base_sha=base_sha,
-                main_sha=main_now,
-                candidate_sha=prefix_shas[-1],
-                attempts=attempts,
-            )
-        else:
-            land_count = decision["land_count"]
-            tip_sha = prefix_shas[land_count]
-            main_now = _sha(repo_root, main_branch)
-            decision = decide_next_action(
-                branches, outcomes, main_at_start=base_sha, main_now=main_now
-            )
-            if decision["action"] == "requeue":
-                payload = _payload_from_decision(
-                    decision,
-                    queue=branches,
-                    base_sha=base_sha,
-                    main_sha=main_now,
-                    candidate_sha=prefix_shas[-1],
-                    attempts=attempts,
-                )
-            elif land_count == 0:
-                payload = _payload_from_decision(
-                    decision,
-                    queue=branches,
-                    base_sha=base_sha,
-                    main_sha=main_now,
-                    candidate_sha=tip_sha,
-                    attempts=attempts,
-                )
-            else:
-                landed, error = _land_main(repo_root, main_branch, base_sha, tip_sha)
-                main_after = _sha(repo_root, main_branch)
-                if not landed and main_after != base_sha:
-                    moved = decide_next_action(
-                        branches, outcomes, main_at_start=base_sha, main_now=main_after
-                    )
-                    payload = _payload_from_decision(
-                        moved,
-                        queue=branches,
-                        base_sha=base_sha,
-                        main_sha=main_after,
-                        candidate_sha=prefix_shas[-1],
-                        attempts=attempts,
-                    )
-                elif not landed:
-                    raise TrainError(error)
-                elif main_after != tip_sha:
-                    payload = _payload_from_decision(
-                        decision,
-                        queue=branches,
-                        base_sha=base_sha,
-                        main_sha=main_after,
-                        candidate_sha=tip_sha,
-                        attempts=attempts,
-                    )
-                    payload.update(
-                        {
-                            "status": FAIL,
-                            "decision": "land-raced",
-                            "error": "main changed while the fast-forward was completing",
-                            "landed_sha": main_after,
-                        }
-                    )
-                else:
-                    payload = _payload_from_decision(
-                        decision,
-                        queue=branches,
-                        base_sha=base_sha,
-                        main_sha=main_after,
-                        candidate_sha=tip_sha,
-                        attempts=attempts,
-                    )
-                    payload["landed_sha"] = main_after
-                    payload["landing_review_trigger"] = _landing_review_trigger(
-                        repo_root, root, base_sha, main_after, run_id
-                    )
+        payload = _finalize_train(
+            repo_root,
+            branches,
+            outcomes,
+            decision,
+            main_branch,
+            base_sha,
+            prefix_shas,
+            attempts,
+            root,
+            run_id,
+            main_now,
+        )
         return payload
     except (OSError, RuntimeError, TrainError, subprocess.SubprocessError) as exc:
         payload.update({"status": FAIL, "decision": "refused", "error": str(exc)})

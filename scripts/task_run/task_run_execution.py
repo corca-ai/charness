@@ -40,7 +40,7 @@ except ImportError:  # flat layout: the repo root is not on sys.path
         sys.path.insert(0, str(_repo_root))
     from scripts.core.subprocess_guard import render_display, run_monitored_phase
 
-from scripts.task_run import task_run_friction as _friction
+from scripts.task_run import task_run_friction as _friction  # noqa: E402
 
 _DESCENDANT_CLEANUP_SHELL = (
     'printf "%s\\n" "$$" > "$1"; shift; exec 3<&0; "$@" <&3 & '
@@ -396,7 +396,7 @@ _REVIEWER_CONTRACT: Any | None = None
 
 def run_self_review(payload: dict[str, Any]) -> dict[str, Any]:
     """Run a read-only Codex self-review and retain its non-approval findings."""
-    from scripts.task_run import task_run_state, task_run_support, task_run_runtime
+    from scripts.task_run import task_run_runtime, task_run_state, task_run_support
     from scripts.worktree import worktree_exec_lib
 
     prompt = str(payload.pop("_self_review_prompt", ""))

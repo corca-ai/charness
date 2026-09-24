@@ -3,12 +3,14 @@ from __future__ import annotations
 import os
 import shlex
 import subprocess
-from types import SimpleNamespace
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
+
 from scripts.task_run import task_run_train as train
 from tests.quality_gates.repo_shapes import install_committed_repo
+
 from .support import ROOT, run_cli_path
 
 
@@ -92,6 +94,33 @@ def test_repo_verify_profile_override_is_loaded_and_validated(tmp_path: Path) ->
 
     assert train.load_verify_profile(repo)["commands"][0]["id"] == "custom"
     assert train.validate_verify_profile({"version": 1, "commands": [], "known_failures": []})
+
+
+def test_verify_profile_validation_checks_command_and_baseline_sections() -> None:
+    profile = {
+        "version": 1,
+        "commands": [
+            {"id": "pytest", "argv": ["pytest"], "report": "junit-xml"},
+            {"id": "pytest", "argv": [], "report": "json"},
+        ],
+        "known_failures": [
+            {"command_id": "pytest", "testcase": "tests.legacy::test_old"},
+            {"command_id": "pytest", "testcase": "tests.legacy::test_old"},
+            {"command_id": "missing", "testcase": " "},
+            {"command_id": "pytest"},
+        ],
+    }
+
+    errors = train.validate_verify_profile(profile)
+
+    assert "profile.commands[1].id 'pytest' is duplicated" in errors
+    assert "profile.commands[1].argv must be a non-empty list of non-empty strings" in errors
+    assert "profile.commands[1].report must be 'exit-code' or 'junit-xml'" in errors
+    assert "profile.known_failures[0].command_id must name a junit-xml command" in errors
+    assert "profile.known_failures[1] duplicates a known failure" in errors
+    assert "profile.known_failures[2].command_id must name a junit-xml command" in errors
+    assert "profile.known_failures[2].testcase must be a non-empty string" in errors
+    assert "profile.known_failures[3] must contain command_id and testcase" in errors
 
 
 def test_train_subcommand_is_registered_on_root_cli() -> None:
@@ -241,6 +270,31 @@ def test_red_train_names_first_bad_branch_and_lands_green_prefix(
     assert verified_prefixes == [4, 2, 3]
     assert (repo / "one.txt").is_file() and (repo / "two.txt").is_file()
     assert not (repo / "bad.txt").exists() and not (repo / "four.txt").exists()
+
+
+def test_conflicting_stack_refuses_before_prepare_or_verification(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo = _repo(tmp_path)
+    _branch(repo, "lane/one", "shared.txt", "one\n")
+    _branch(repo, "lane/two", "shared.txt", "two\n")
+    _runtime(tmp_path, monkeypatch)
+    provision_calls = _provision_as_pass(monkeypatch)
+    verify_calls: list[Path] = []
+    monkeypatch.setattr(
+        train,
+        "run_verify_profile",
+        lambda _profile, worktree, _report: (verify_calls.append(worktree) or True, []),
+    )
+
+    result = train.run_train(repo, ["lane/one", "lane/two"])
+
+    assert result["status"] == train.FAIL
+    assert result["decision"] == "refused"
+    assert "could not stack branch lane/two" in result["error"]
+    assert provision_calls == []
+    assert verify_calls == []
+    assert _git(repo, "worktree", "list", "--porcelain").count("worktree ") == 1
 
 
 def test_main_move_during_verification_refuses_land_and_returns_requeue(

@@ -5,12 +5,24 @@ from __future__ import annotations
 import json
 import os
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Mapping
 
-from scripts.lessons.lesson_ledger_writer_lib import ledger_lock
-from scripts.task_run import task_run_events, task_run_runtime
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.lessons.lesson_ledger_writer_lib import ledger_lock  # noqa: E402
+from scripts.task_run import task_run_events, task_run_runtime  # noqa: E402
 
 FRICTION_LOG_RELATIVE_PATH = Path("task-run/friction-log.jsonl")
 FRICTION_WINDOW = timedelta(days=30)

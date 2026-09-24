@@ -20,8 +20,8 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-from scripts.task_run import task_run_lesson_injection as _lesson_injection  # noqa: E402
 from scripts.task_run import task_run_friction as _friction  # noqa: E402
+from scripts.task_run import task_run_lesson_injection as _lesson_injection  # noqa: E402
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run import task_run_scope as _scope  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402

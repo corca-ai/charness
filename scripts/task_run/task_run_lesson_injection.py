@@ -12,8 +12,20 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from scripts.lessons import lesson_ledger_lib as _lesson_ledger
-from scripts.lessons import recent_lesson_selection as _lesson_selection
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.lessons import lesson_ledger_lib as _lesson_ledger  # noqa: E402
+from scripts.lessons import recent_lesson_selection as _lesson_selection  # noqa: E402
 
 # Retro text is unbounded; cap one lane's complete added prompt block at 16 KiB.
 LESSON_INJECTION_BUDGET_BYTES = 16 * 1024

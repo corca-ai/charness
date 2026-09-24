@@ -105,16 +105,21 @@ producers:
   symbol: mkstemp
   disposition: atomic-sibling
   rationale: Promotion writes a sibling temporary file before the final atomic replacement.
-- identity: scripts/task_run/task_run_execution.py::_execute_codex::prompt_handle
+- identity: scripts/task_run/task_run_execution.py::_run_executor_invocation::prompt_handle
   path: scripts/task_run/task_run_execution.py
   symbol: prompt_handle
   disposition: anonymous-auto-delete-file
-  rationale: The Codex prompt is streamed through an anonymous TemporaryFile handle.
+  rationale: The executor prompt is streamed through an anonymous TemporaryFile handle.
 - identity: scripts/task_run/task_run_runtime.py::write_task_result::mkstemp
   path: scripts/task_run/task_run_runtime.py
   symbol: mkstemp
   disposition: atomic-sibling
   rationale: Task results use an atomic sibling before publication.
+- identity: scripts/task_run/task_run_test_cache.py::remember_green_outcome::handle
+  path: scripts/task_run/task_run_test_cache.py
+  symbol: handle
+  disposition: anonymous-auto-delete-file
+  rationale: The test outcome cache writes through a temporary handle before atomic promotion.
 - identity: skills/public/achieve/scripts/goal_binding.py::write_immutable_binding::handle
   path: skills/public/achieve/scripts/goal_binding.py
   symbol: handle

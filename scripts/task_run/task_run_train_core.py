@@ -214,21 +214,14 @@ def default_verify_profile() -> dict[str, Any]:
     }
 
 
-def validate_verify_profile(profile: object) -> list[str]:
-    errors: list[str] = []
-    if not isinstance(profile, dict):
-        return ["profile root must be a mapping"]
-    if type(profile.get("version")) is not int or profile.get("version") != 1:
-        errors.append("profile.version must be integer 1")
-    unknown = set(profile) - {"version", "commands", "known_failures"}
-    if unknown:
-        errors.append(f"profile has unknown keys: {', '.join(sorted(map(str, unknown)))}")
-    commands = profile.get("commands")
+def _validate_profile_commands(
+    commands: object, errors: list[str]
+) -> tuple[set[str], dict[str, object]]:
     if not isinstance(commands, list) or not commands:
         errors.append("profile.commands must be a non-empty list")
         commands = []
     ids: set[str] = set()
-    reports: dict[str, str] = {}
+    reports: dict[str, object] = {}
     for index, entry in enumerate(commands):
         label = f"profile.commands[{index}]"
         if not isinstance(entry, dict):
@@ -252,7 +245,15 @@ def validate_verify_profile(profile: object) -> list[str]:
         if not isinstance(report, str) or report not in {"exit-code", "junit-xml"}:
             errors.append(f"{label}.report must be 'exit-code' or 'junit-xml'")
         reports[command_id] = report
-    baseline = profile.get("known_failures", [])
+    return ids, reports
+
+
+def _validate_known_failures(
+    baseline: object,
+    ids: set[str],
+    reports: Mapping[str, object],
+    errors: list[str],
+) -> None:
     if not isinstance(baseline, list):
         errors.append("profile.known_failures must be a list")
         baseline = []
@@ -278,4 +279,18 @@ def validate_verify_profile(profile: object) -> list[str]:
             if key in seen:
                 errors.append(f"{label} duplicates a known failure")
             seen.add(key)
+
+
+def validate_verify_profile(profile: object) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(profile, dict):
+        return ["profile root must be a mapping"]
+    if type(profile.get("version")) is not int or profile.get("version") != 1:
+        errors.append("profile.version must be integer 1")
+    unknown = set(profile) - {"version", "commands", "known_failures"}
+    if unknown:
+        errors.append(f"profile has unknown keys: {', '.join(sorted(map(str, unknown)))}")
+    ids, reports = _validate_profile_commands(profile.get("commands"), errors)
+    baseline = profile.get("known_failures", [])
+    _validate_known_failures(baseline, ids, reports, errors)
     return errors

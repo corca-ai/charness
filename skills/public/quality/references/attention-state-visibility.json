@@ -910,6 +910,20 @@
       ],
       "rationale": "Web-fetch skipped acquisition attempts are explicit trace entries."
     },
+    "scripts/task_run/task_run_progress.py": {
+      "states": [
+        "disabled"
+      ],
+      "visibility": [
+        "local_noop_not_closeout"
+      ],
+      "evidence_terms": [
+        "disabled",
+        "return None",
+        "require_change"
+      ],
+      "rationale": "When require_change is false, build_progress_watch returns None and execution keeps its ordinary queue polling at executor boundaries. The disabled live watchdog is an internal no-op state, not evidence that a lane passed or that closeout proof exists."
+    },
     "scripts/task_run/task_run_lane_runner.py": {
       "states": [
         "skipped"
