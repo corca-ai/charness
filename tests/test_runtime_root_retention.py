@@ -4,16 +4,20 @@ and the sweep removes what the written rule names, logs it, and reaches nothing 
 from __future__ import annotations
 
 import json
+import io
 import os
 import subprocess
 import tarfile
 import time
+from contextlib import redirect_stdout
 from pathlib import Path
 
 import pytest
 
 from scripts import runtime_bootstrap
 from scripts.gates_support import runtime_root_retention as retention
+from scripts.task_run import task_run
+from scripts.task_run import task_run_runtime
 from tests.quality_gates.repo_shapes import install_committed_repo
 
 DAY = 86400.0
@@ -673,6 +677,76 @@ def test_salvage_keeps_every_untracked_path_git_names_including_awkward_ones(tmp
     assert {"new.txt", *awkward} <= names
     record = json.loads((mine / "task-run" / "dirty-lane" / retention.SALVAGE_RECORD).read_text(encoding="utf-8"))
     assert sorted(record["untracked"]) == sorted(["new.txt", *awkward])
+
+
+def test_sweep_terminalizes_a_dead_stale_exec_and_logs_the_transition(
+    tmp_path: Path, monkeypatch
+) -> None:
+    now = 1_800_000_000.0
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    mine = tmp_path / "cache" / "charness" / "runtime" / "0000000000000042"
+    lane = mine / "task-run" / "orphan-lane"
+    worktree = lane / "worktree"
+    worktree.mkdir(parents=True)
+    (lane / "runtime").mkdir()
+    task_run_runtime.write_task_result(
+        mine,
+        {
+            "task_id": "orphan-lane",
+            "status": "running",
+            "phase": "exec",
+            "runner_pid": 903,
+            "keep_worktree": True,
+        },
+    )
+    _age(lane, 2 * DAY, now=now)
+    pid_table = {903: False}
+    monkeypatch.setattr(
+        task_run._support,
+        "runner_liveness",
+        lambda record: {"runner_pid": record.get("runner_pid"), "alive": pid_table.get(record.get("runner_pid"))},
+    )
+    spawned: list[list[str]] = []
+
+    def fake_run_process(command, *, cwd: Path, timeout_seconds: float):
+        spawned.append(list(command))
+        output = io.StringIO()
+        with redirect_stdout(output):
+            returncode = task_run.main(command[2:])
+        return subprocess.CompletedProcess(command, returncode, output.getvalue(), "")
+
+    monkeypatch.setattr(retention, "run_process", fake_run_process)
+    salvage_calls: list[tuple[Path, Path, bool]] = []
+
+    def fake_salvage(path: Path, record: Path, *, git, dry_run: bool):
+        salvage_calls.append((path, record, dry_run))
+        return {"status": "salvaged"}
+
+    monkeypatch.setattr(retention, "salvage_uncommitted", fake_salvage)
+
+    report = retention.sweep_runtime_root(repo, key_root=mine, now=now)
+
+    saved = task_run_runtime.read_task_result(mine, "orphan-lane")
+    transition = next(item for item in report["entries"] if item["action"] == "terminalized")
+    logged = json.loads(Path(report["log_path"]).read_text(encoding="utf-8"))
+    saved_transition = next(
+        item for item in logged["entries"] if item["action"] == "terminalized"
+    )
+    worktree_entry = next(
+        item for item in report["entries"] if item["path"] == str(worktree)
+    )
+    assert len(spawned) == 1
+    assert spawned[0][2] == "terminalize-stale-exec"
+    assert saved is not None and saved["phase"] == "terminal"
+    assert saved["status"] == "interrupted"
+    assert transition["status"] == "interrupted"
+    assert saved_transition == transition
+    assert salvage_calls == [(worktree, lane, False)]
+    assert worktree_entry["action"] == "skipped"
+    assert worktree_entry["salvage"] == {"status": "salvaged"}
+    assert worktree.is_dir()
+    assert (lane / "runtime").is_dir()
 
 
 def test_a_salvage_whose_archive_misses_a_path_keeps_the_worktree(tmp_path: Path, monkeypatch) -> None:
