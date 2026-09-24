@@ -470,6 +470,11 @@ def _is_ancestor(repo_root: Path, base_sha: str, head: str) -> bool:
     return completed.returncode == 0
 
 
+def _base_is_fresh(repo_root: Path, base_sha: str, tip_sha: str) -> bool:
+    """A base is current when it is the tip or already contains the tip."""
+    return base_sha == tip_sha or _is_ancestor(repo_root, tip_sha, base_sha)
+
+
 def _candidate_carrier(
     repo_root: Path,
     base_sha: str,
