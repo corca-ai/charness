@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import math
 import os
 import shutil
 import signal
@@ -43,6 +44,52 @@ _DESCENDANT_CLEANUP_SHELL = (
     'printf "%s\\n" "$$" > "$1"; shift; exec 3<&0; "$@" <&3 & '
     'child=$!; wait "$child"; status=$?; exit "$status"'
 )
+
+def _env_seconds(name: str, default: float) -> float:
+    """Read one finite duration from the environment, or use its default."""
+    try:
+        value = float(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+    return value if math.isfinite(value) else default
+
+
+def _tail_text(path: Path, limit: int = 64 * 1024) -> str:
+    try:
+        if not path.is_file():
+            return ""
+        return path.read_bytes()[-limit:].decode("utf-8", errors="replace")
+    except OSError:
+        return ""
+
+
+def _lane_stderr_text(stdout_log: Path, stderr_log: Path | None) -> str:
+    """Read the conventional executor stderr transcript for phase parsing."""
+    candidate = stderr_log
+    if candidate is None and stdout_log.name.endswith(".stdout.log"):
+        candidate = stdout_log.with_name(
+            stdout_log.name[: -len(".stdout.log")] + ".stderr.log"
+        )
+    if candidate is None:
+        return ""
+    try:
+        if candidate.is_file():
+            return candidate.read_bytes()[-256 * 1024 :].decode("utf-8", errors="replace")
+    except OSError:
+        pass
+    return ""
+
+
+def _guard_phases(payload: Mapping[str, Any]) -> list[str]:
+    guard = payload.get("progress_guard")
+    phases = guard.get("last_phases") if isinstance(guard, Mapping) else None
+    return [phase for phase in phases if isinstance(phase, str)] if isinstance(phases, list) else []
+
+
+def _guard_stop_reason(payload: Mapping[str, Any]) -> str:
+    guard = payload.get("progress_guard")
+    reason = guard.get("stop_reason") if isinstance(guard, Mapping) else None
+    return reason if isinstance(reason, str) else ""
 
 
 def _command_with_normal_completion_cleanup(
@@ -112,61 +159,219 @@ def _execute_codex(
     result: dict[str, Any] = {"exit_code": None, "timed_out": False, "interrupted": False}
     group_path = stdout_log.with_suffix(".pgid")
     group_path.unlink(missing_ok=True)
+    from scripts.task_run import task_run_lane_runner as _lane_runner
 
+    current_command = list(command)
+    current_prompt = prompt
+    session_id = _command_session_id(current_command, executor)
+    resume_path = "initial"
+    delivered_batch: list[Mapping[str, Any]] = []
+    event_log = stdout_log.with_name(f"{executor}.events.log")
+    queue_path = stdout_log.parent / "steer.queue.jsonl"
+    try:
+        invocation = 0
+        while True:
+            last_message_path = _last_message_path(current_command, executor)
+            if last_message_path is not None:
+                last_message_path.unlink(missing_ok=True)
+            result.update(
+                _run_executor_invocation(
+                    current_command,
+                    current_prompt,
+                    target_path=target_path,
+                    configured_env=configured_env,
+                    stdout_log=stdout_log,
+                    stderr_log=stderr_log,
+                    timeout_seconds=timeout_seconds,
+                    lane_watch=lane_watch,
+                    executor=executor,
+                    group_path=group_path,
+                    append_stderr=bool(invocation),
+                )
+            )
+            if executor == "codex":
+                raw_output = _tail_text(stdout_log, limit=64 * 1024 * 1024)
+                session_id = _codex_session_id(raw_output) or session_id
+                if raw_output:
+                    with event_log.open("a", encoding="utf-8") as handle:
+                        handle.write(raw_output)
+                        if not raw_output.endswith("\n"):
+                            handle.write("\n")
+                if last_message_path is not None and last_message_path.is_file():
+                    stdout_log.write_text(last_message_path.read_text(encoding="utf-8"), encoding="utf-8")
+            if (
+                result["timed_out"]
+                or result["interrupted"]
+            ):
+                break
+            if lane_watch is not None and lane_watch.stop_reason is not None:
+                result["progress_stopped"] = lane_watch.stop_reason
+                break
+            if (
+                resume_path == "session-resume"
+                and (result.get("exec_error") or result["exit_code"] not in (None, 0))
+            ):
+                if lane_watch is not None:
+                    lane_watch.record_steer_delivery(delivered_batch, resume_path="relaunch-in-place")
+                else:
+                    _record_steer_delivery(queue_path, delivered_batch, "relaunch-in-place")
+                result.pop("exec_error", None)
+                current_command = list(command)
+                resume_path = "relaunch-in-place"
+                _append_steer_transcript(
+                    stderr_log, delivered_batch, "relaunch-in-place"
+                )
+                invocation += 1
+                continue
+            pending = (
+                lane_watch.pending_steers()
+                if lane_watch is not None
+                else [
+                    item for item in _lane_runner.read_steer_queue(queue_path)
+                    if not item.get("delivered_at")
+                ]
+            )
+            if not pending:
+                break
+            delivered_batch = pending
+            current_command, current_prompt, resume_path = _lane_runner.steered_lane_invocation(
+                executor, current_command, current_prompt, pending, session_id
+            )
+            _append_steer_transcript(stderr_log, pending, resume_path)
+            invocation += 1
+            if lane_watch is not None:
+                lane_watch.record_steer_delivery(pending, resume_path=resume_path)
+            else:
+                _record_steer_delivery(queue_path, pending, resume_path)
+    except OSError as exc:
+        result["exec_error"] = str(exc)
+    steer_messages = _lane_runner.read_steer_queue(queue_path)
+    if steer_messages:
+        result["steer_messages"] = steer_messages
+    return result
+
+
+def _run_executor_invocation(
+    command: Sequence[str],
+    prompt: str,
+    *,
+    target_path: Path,
+    configured_env: Mapping[str, str],
+    stdout_log: Path,
+    stderr_log: Path,
+    timeout_seconds: int,
+    lane_watch: Any | None,
+    executor: str,
+    group_path: Path,
+    append_stderr: bool,
+) -> dict[str, Any]:
+    result: dict[str, Any] = {"exit_code": None, "timed_out": False, "interrupted": False}
     try:
         with (
             stdout_log.open("w", encoding="utf-8") as stdout_handle,
-            stderr_log.open("w", encoding="utf-8") as stderr_handle,
+            stderr_log.open("a" if append_stderr else "w", encoding="utf-8") as stderr_handle,
+            tempfile.TemporaryFile(mode="w+", encoding="utf-8") as prompt_handle,
         ):
-            with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as prompt_handle:
-                prompt_handle.write(prompt)
-                prompt_handle.flush()
-                prompt_handle.seek(0)
-                terminal_stderr = os.fdopen(os.dup(2), "w", buffering=1, closefd=True)
-                outcome = None
-                try:
-                    if lane_watch is not None:
-                        lane_watch.start(
-                            emit=lambda phases, elapsed: print(
-                                f"PROGRESS [{executor}] elapsed={elapsed:.1f}s "
-                                f"phases={','.join(phases) if phases else 'none'}",
-                                file=terminal_stderr,
-                                flush=True,
-                            ),
-                            kill=lambda: _kill_recorded_process_group(group_path),
-                        )
-                    with _redirect_stdio(prompt_handle, stdout_handle, stderr_handle):
-                        outcome = run_monitored_phase(
-                            _command_with_normal_completion_cleanup(
-                                command, configured_env, group_path
-                            ),
-                            cwd=target_path,
-                            phase="codex",
-                            timeout_seconds=timeout_seconds,
-                            display=render_display(command),
-                            env=dict(configured_env),
-                            capture=False,
-                            stream=terminal_stderr,
-                        )
-                except KeyboardInterrupt:
-                    result["interrupted"] = True
-                finally:
-                    if lane_watch is not None:
-                        lane_watch.stop()
-                    terminal_stderr.close()
-                    _kill_recorded_process_group(group_path)
-                if outcome is not None:
-                    result["timed_out"] = outcome.timed_out
-                    result["exit_code"] = None if outcome.timed_out else outcome.returncode
-                if (
-                    lane_watch is not None
-                    and lane_watch.stop_reason is not None
-                    and not result["interrupted"]
-                ):
-                    result["progress_stopped"] = lane_watch.stop_reason
+            prompt_handle.write(prompt)
+            prompt_handle.flush()
+            prompt_handle.seek(0)
+            terminal_stderr = os.fdopen(os.dup(2), "w", buffering=1, closefd=True)
+            outcome = None
+            try:
+                if lane_watch is not None:
+                    lane_watch.start(
+                        emit=lambda phases, elapsed: print(
+                            f"PROGRESS [{executor}] elapsed={elapsed:.1f}s "
+                            f"phases={','.join(phases) if phases else 'none'}",
+                            file=terminal_stderr,
+                            flush=True,
+                        ),
+                        kill=lambda: _kill_recorded_process_group(group_path),
+                    )
+                with _redirect_stdio(prompt_handle, stdout_handle, stderr_handle):
+                    outcome = run_monitored_phase(
+                        _command_with_normal_completion_cleanup(
+                            command, configured_env, group_path
+                        ),
+                        cwd=target_path,
+                        phase=executor,
+                        timeout_seconds=timeout_seconds,
+                        display=render_display(command),
+                        env=dict(configured_env),
+                        capture=False,
+                        stream=terminal_stderr,
+                    )
+            except KeyboardInterrupt:
+                result["interrupted"] = True
+            except OSError as exc:
+                result["exec_error"] = str(exc)
+            finally:
+                if lane_watch is not None:
+                    lane_watch.stop()
+                terminal_stderr.close()
+                _kill_recorded_process_group(group_path)
+            if outcome is not None:
+                result["timed_out"] = outcome.timed_out
+                result["exit_code"] = None if outcome.timed_out else outcome.returncode
     except OSError as exc:
         result["exec_error"] = str(exc)
     return result
+
+
+def _record_steer_delivery(
+    queue_path: Path, messages: Sequence[Mapping[str, Any]], resume_path: str
+) -> None:
+    from scripts.task_run import task_run_lane_runner as _lane_runner
+    from scripts.task_run.task_run_runtime import utc_now_iso
+
+    stamp = utc_now_iso()
+    for message in messages:
+        _lane_runner.update_steer_queue(
+            queue_path,
+            {**message, "delivered_at": stamp, "disposition": "accepted", "resume_path": resume_path},
+        )
+
+
+def _command_session_id(command: Sequence[str], executor: str) -> str | None:
+    if executor != "muse" or "--session-id" not in command:
+        return None
+    try:
+        return str(command[command.index("--session-id") + 1])
+    except (IndexError, ValueError):
+        return None
+
+
+def _last_message_path(command: Sequence[str], executor: str) -> Path | None:
+    if executor != "codex" or "--output-last-message" not in command:
+        return None
+    try:
+        return Path(command[command.index("--output-last-message") + 1])
+    except (IndexError, ValueError):
+        return None
+
+
+def _codex_session_id(output: str) -> str | None:
+    for line in output.splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(event, dict) and event.get("type") == "thread.started":
+            value = event.get("thread_id")
+            if isinstance(value, str) and value:
+                return value
+    return None
+
+
+def _append_steer_transcript(
+    stderr_log: Path, messages: Sequence[Mapping[str, Any]], resume_path: str
+) -> None:
+    with stderr_log.open("a", encoding="utf-8") as handle:
+        for message in messages:
+            handle.write(
+                f"STEER [{message['message_id']}] queued_at={message['queued_at']} "
+                f"resume_path={resume_path}\n{message['message']}\n"
+            )
 
 
 _MAX_RESULT_TEXT_BYTES = 1024 * 1024

@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+import os
+import uuid
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
@@ -23,6 +26,62 @@ from scripts.task_run import task_run_support as _support  # noqa: E402
 
 build_codex_command = _support.build_codex_command
 build_muse_command = _support.build_muse_command
+
+STEER_ENVELOPE_KIND = "charness.task_steer.v1"
+
+
+def read_steer_queue(queue_path: Path) -> list[dict[str, Any]]:
+    """Read the latest typed envelope for each message in the lane queue."""
+    try:
+        lines = queue_path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    records: dict[str, dict[str, Any]] = {}
+    for line in lines:
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(record, dict) and record.get("kind") == STEER_ENVELOPE_KIND:
+            message_id = record.get("message_id")
+            if isinstance(message_id, str):
+                records[message_id] = record
+    return list(records.values())
+
+
+def enqueue_steer(queue_path: Path, task_id: str, message: str) -> dict[str, Any]:
+    """Append a typed accept/nack envelope for one queued lane message."""
+    from scripts.task_run.task_run_runtime import utc_now_iso
+
+    stamp = utc_now_iso()
+    normalized = message.strip()
+    record = {
+        "kind": STEER_ENVELOPE_KIND,
+        "message_id": str(uuid.uuid4()),
+        "task_id": task_id,
+        "message": normalized,
+        "queued_at": stamp,
+        "delivered_at": None,
+        "disposition": "accepted" if normalized else "nacked",
+        "reason": None if normalized else "empty-message",
+        "resume_path": None,
+    }
+    if normalized:
+        queue_path.parent.mkdir(parents=True, exist_ok=True)
+        with queue_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+    return record
+
+
+def update_steer_queue(queue_path: Path, record: Mapping[str, Any]) -> None:
+    """Append a delivery update; queue readers retain the newest version."""
+    queue_path.parent.mkdir(parents=True, exist_ok=True)
+    with queue_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(dict(record), ensure_ascii=False) + "\n")
+        handle.flush()
+        os.fsync(handle.fileno())
 
 
 def build_lane_prompt(
@@ -308,17 +367,53 @@ def lane_command(
         prompt_file = execution_runtime_path / "prompt.md"
         prompt_file.parent.mkdir(parents=True, exist_ok=True)
         prompt_file.write_text(prompt, encoding="utf-8")
-        return build_muse_command(
+        command = build_muse_command(
             executable,
             effort=effort,
             prompt_file=prompt_file,
             worktree=worktree,
         )
-    return build_codex_command(
-        executable,
-        effort=effort,
-        writable_dirs=writable_dirs,
+        command.extend(["--session-id", str(uuid.uuid4())])
+        return command
+    command = build_codex_command(
+        executable, effort=effort, writable_dirs=writable_dirs
     )
+    command[-1:-1] = [
+        "--json",
+        "--output-last-message",
+        str(execution_runtime_path / "codex.last-message.txt"),
+    ]
+    return command
+
+
+def steered_lane_invocation(
+    executor: str,
+    command: Sequence[str],
+    prompt: str,
+    messages: Sequence[Mapping[str, Any]],
+    session_id: str | None,
+) -> tuple[list[str], str, str]:
+    """Build the next same-worktree invocation with typed messages in its prompt."""
+    rendered = "\n\n[Charness steer messages]\n" + "\n".join(
+        f"{item['message_id']} ({item['queued_at']}): {item['message']}"
+        for item in messages
+    )
+    amended_prompt = prompt + rendered
+    if executor == "muse" and session_id:
+        prompt_path = Path(command[command.index("--prompt-file") + 1])
+        prompt_path.write_text(amended_prompt, encoding="utf-8")
+        return list(command), amended_prompt, "session-resume"
+    if executor == "codex" and session_id:
+        output_path = Path(command[command.index("--output-last-message") + 1])
+        return (
+            [
+                command[0], "exec", "resume", session_id, "--json",
+                "--output-last-message", str(output_path), "-",
+            ],
+            amended_prompt,
+            "session-resume",
+        )
+    return list(command), amended_prompt, "relaunch-in-place"
 
 
 def record_lane_runner(

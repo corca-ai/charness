@@ -3287,6 +3287,115 @@ def cmd_task_status(args: argparse.Namespace) -> int:
     return 1 if payload.get("status") == "missing" else 0
 
 
+def cmd_task_steer(args: argparse.Namespace) -> int:
+    _load_task_run_lib(args)
+    from scripts.task_run import (
+        task_run_lane_runner,
+        task_run_runtime,
+        task_run_scope,
+        task_run_state,
+    )
+
+    repo_root = args.repo_root.resolve()
+    runtime_root = task_run_runtime.task_runtime_root(repo_root)
+    payload = task_run_runtime.read_task_result(runtime_root, args.task_id)
+    if payload is None:
+        record = {
+            "kind": task_run_lane_runner.STEER_ENVELOPE_KIND,
+            "task_id": args.task_id,
+            "disposition": "nacked",
+            "reason": "task-not-found",
+            "queued_at": task_run_runtime.utc_now_iso(),
+        }
+        kind = task_run_state.ResultKind.FAILED
+    elif args.message is not None:
+        liveness = task_run_runtime.runner_liveness(payload)
+        if payload.get("status") != "running" or liveness.get("alive") is not True:
+            record = {
+                "kind": task_run_lane_runner.STEER_ENVELOPE_KIND,
+                "task_id": args.task_id,
+                "disposition": "nacked",
+                "reason": "task-not-running",
+                "queued_at": task_run_runtime.utc_now_iso(),
+            }
+            kind = task_run_state.ResultKind.FAILED
+        else:
+            record = task_run_lane_runner.enqueue_steer(
+                task_run_runtime.task_execution_runtime_root(runtime_root, args.task_id)
+                / "steer.queue.jsonl",
+                args.task_id,
+                args.message,
+            )
+            kind = (
+                task_run_state.ResultKind.SUCCESS
+                if record["disposition"] == "accepted"
+                else task_run_state.ResultKind.FAILED
+            )
+    else:
+        now = task_run_runtime.utc_now_iso()
+        worktree_value = payload.get("worktree_path")
+        worktree = Path(str(worktree_value or ""))
+        if (
+            payload.get("status") == "running"
+            or not worktree_value
+            or not worktree.is_dir()
+            or not isinstance(payload.get("base_sha"), str)
+            or not isinstance(payload.get("scope_specs"), list)
+        ):
+            record = {
+                "kind": task_run_lane_runner.STEER_ENVELOPE_KIND,
+                "task_id": args.task_id,
+                "queued_at": now,
+                "disposition": "nacked",
+                "reason": "same-candidate-unavailable",
+            }
+            kind = task_run_state.ResultKind.FAILED
+        else:
+            amended = task_run_scope.rescope_result(
+                worktree,
+                payload["base_sha"],
+                payload["scope_specs"],
+                args.amend_scope,
+                bool(payload.get("require_change")),
+                head=payload.get("target_sha"),
+                branch=payload.get("target_branch"),
+            )
+            accepted = amended.get("verdict") == task_run_scope.PASS
+            record = {
+                "kind": task_run_lane_runner.STEER_ENVELOPE_KIND,
+                "task_id": args.task_id,
+                "queued_at": now,
+                "delivered_at": now,
+                "disposition": "accepted" if accepted else "nacked",
+                "reason": None if accepted else "candidate-still-out-of-scope",
+                "same_candidate": True,
+                "executor_relaunched": False,
+                "target_sha": payload.get("target_sha"),
+                "scope": amended,
+            }
+            kind = (
+                task_run_state.ResultKind.SUCCESS
+                if accepted
+                else task_run_state.ResultKind.FAILED
+            )
+            record["result_kind"] = kind.value
+            payload.setdefault("scope_amendments", []).append(record)
+            if accepted:
+                payload["scope_specs"] = amended["specs"]
+                payload["scope"] = amended
+                if isinstance(payload.get("candidate"), dict):
+                    candidate = payload["candidate"]
+                    candidate["changed_paths"] = amended["changed_paths"]
+                    candidate["disallowed_paths"] = amended["disallowed_paths"]
+                    candidate["status"] = "validated" if amended["changed_paths"] else "absent"
+                    candidate["useful"] = bool(amended["changed_paths"])
+            payload.setdefault("timestamps", {})["updated_at"] = now
+            task_run_runtime.write_task_result(runtime_root, payload)
+    output = {**record, "result_kind": kind.value}
+    emit_yaml(output)
+    return task_run_state.exit_code_for_result_kind(kind)
+
+
 def invoke_repo_json_script(
     repo_root: Path,
     relative_script: str,
@@ -5637,6 +5746,23 @@ def build_parser() -> argparse.ArgumentParser:
     )
     task_status_parser.add_argument("task_id", nargs="?")
     task_status_parser.set_defaults(func=cmd_task_status)
+
+    task_steer_parser = task_subparsers.add_parser(
+        "steer",
+        help="Queue a message for a running lane or amend its retained candidate scope.",
+    )
+    task_steer_parser.add_argument(
+        "--repo-root", type=Path, default=Path.cwd(),
+        help="Parent repo whose external task-run runtime is read.",
+    )
+    task_steer_parser.add_argument("task_id")
+    task_steer_action = task_steer_parser.add_mutually_exclusive_group(required=True)
+    task_steer_action.add_argument("--message", help="Message to deliver at the next executor turn boundary.")
+    task_steer_action.add_argument(
+        "--amend-scope", action="append",
+        help="Approve an additional scope and revalidate the same retained candidate; repeatable.",
+    )
+    task_steer_parser.set_defaults(func=cmd_task_steer)
 
     task_run_parser = task_subparsers.add_parser(
         "run",

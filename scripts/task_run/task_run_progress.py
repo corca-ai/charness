@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import math
+import json
 import os
 import threading
 import time
@@ -21,7 +21,14 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
+from scripts.task_run import task_run_execution as _execution  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402
+
+_env_seconds = _execution._env_seconds
+_tail_text = _execution._tail_text
+_lane_stderr_text = _execution._lane_stderr_text
+_guard_phases = _execution._guard_phases
+_guard_stop_reason = _execution._guard_stop_reason
 
 LANE_PHASES = ("CONTRACT-READ", "EDITING", "TESTING")
 
@@ -43,10 +50,7 @@ DEFAULT_PROGRESS_POLL_SECONDS = 15.0
 #: full-timeout consumption.
 DEFAULT_BLOCKED_GRACE_SECONDS = 60.0
 
-#: Phase-marker scan window for the executor transcript. Stderr can grow
-#: without bound on long lanes; markers are emitted throughout the run, so the
-#: tail carries the phases that matter for the receipt.
-_MAX_LANE_STDERR_SCAN_BYTES = 256 * 1024
+
 def lane_progress(stdout_text: str, stderr_text: str = "") -> dict[str, Any]:
     """Parse phase markers and the typed blocker from lane output (#815).
 
@@ -59,7 +63,7 @@ def lane_progress(stdout_text: str, stderr_text: str = "") -> dict[str, Any]:
     phases: list[str] = []
     blocker: str | None = None
     for text in (stdout_text, stderr_text):
-        for line in text.splitlines():
+        for line in _transcript_lines(text):
             stripped = line.strip()
             if stripped in LANE_PHASES and stripped not in phases:
                 phases.append(stripped)
@@ -68,6 +72,31 @@ def lane_progress(stdout_text: str, stderr_text: str = "") -> dict[str, Any]:
             elif blocker is None and stripped.startswith(NO_PROGRESS_STOP_PREFIX):
                 blocker = stripped[len(NO_PROGRESS_STOP_PREFIX):].strip() or None
     return {"phases": phases, "blocker": blocker}
+
+
+def _transcript_lines(text: str):
+    """Expose phase text inside JSONL executor events as transcript lines."""
+    for line in text.splitlines():
+        yield line
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        yield from _event_texts(event)
+
+
+def _event_texts(value: Any):
+    if isinstance(value, Mapping):
+        for key, nested in value.items():
+            if key in {"text", "message", "content", "last_agent_message"} and isinstance(
+                nested, str
+            ):
+                yield from nested.splitlines()
+            else:
+                yield from _event_texts(nested)
+    elif isinstance(value, list):
+        for nested in value:
+            yield from _event_texts(nested)
 
 
 def no_progress_stop_due(
@@ -141,76 +170,6 @@ def _worktree_liveliness(worktree: Path, base_sha: str) -> dict[str, Any] | None
     }
 
 
-def _lane_stderr_text(stdout_log: Path, stderr_log: Path | None) -> str:
-    """Executor stderr for phase-marker parsing (#815).
-
-    Executors render progress (CONTRACT-READ / EDITING / TESTING / BLOCKED)
-    on stderr while stdout carries the machine delivery, so a lane whose
-    delivery stayed empty can still have emitted its phases. An explicit log
-    wins; otherwise the conventional `<executor>.stderr.log` sibling of the
-    stdout log is tried. Anything unreadable parses as no markers.
-    """
-    candidate = stderr_log
-    if candidate is None and stdout_log.name.endswith(".stdout.log"):
-        candidate = stdout_log.with_name(
-            stdout_log.name[: -len(".stdout.log")] + ".stderr.log"
-        )
-    if candidate is None:
-        return ""
-    try:
-        if not candidate.is_file():
-            return ""
-        raw = candidate.read_bytes()
-        return raw[-_MAX_LANE_STDERR_SCAN_BYTES:].decode("utf-8", errors="replace")
-    except OSError:
-        return ""
-
-
-def _guard_phases(payload: Mapping[str, Any]) -> list[str]:
-    """Phases the live guard observed, for the terminal receipt merge (#815)."""
-    guard = payload.get("progress_guard")
-    if not isinstance(guard, Mapping):
-        return []
-    phases = guard.get("last_phases")
-    if not isinstance(phases, list):
-        return []
-    return [phase for phase in phases if isinstance(phase, str)]
-
-
-def _guard_stop_reason(payload: Mapping[str, Any]) -> str:
-    """The live guard stop reason, for when the transcript marker is lost (#815)."""
-    guard = payload.get("progress_guard")
-    if not isinstance(guard, Mapping):
-        return ""
-    reason = guard.get("stop_reason")
-    return reason if isinstance(reason, str) else ""
-
-
-def _env_seconds(name: str, default: float) -> float:
-    """A tuned duration from the environment, falling back to the default.
-
-    Non-finite values (NaN/inf) parse but break every comparison the guard
-    and the receipt predicates rely on, so they fall back like unparsable
-    ones instead of arming a stop the receipt reports as disabled.
-    """
-    try:
-        value = float(os.environ.get(name, default))
-    except (TypeError, ValueError):
-        return default
-    if not math.isfinite(value):
-        return default
-    return value
-
-
-def _tail_text(path: Path, limit: int = 64 * 1024) -> str:
-    try:
-        if not path.is_file():
-            return ""
-        return path.read_bytes()[-limit:].decode("utf-8", errors="replace")
-    except OSError:
-        return ""
-
-
 class LaneProgressWatch:
     """Live phase relay and no-progress guard for one require-change lane.
 
@@ -270,6 +229,9 @@ class LaneProgressWatch:
         self._first_scoped_diff: str | None = None
         self._first_scoped_truncated: bool = False
         self._first_scoped_elapsed: float | None = None
+        self._steer_queue = stdout_log.parent / "steer.queue.jsonl"
+        self._steer_seen: set[str] = set()
+        self._steer_messages: list[dict[str, Any]] = []
 
     def start(
         self,
@@ -281,6 +243,7 @@ class LaneProgressWatch:
         self._emit = emit
         self._kill = kill
         self._started_at = self._clock()
+        self._stopped.clear()
         self._thread = threading.Thread(
             target=self._run, name="charness-lane-progress", daemon=True
         )
@@ -315,6 +278,7 @@ class LaneProgressWatch:
 
     def tick(self, now: float) -> str | None:
         """One poll: relay new phases, publish a live snapshot, report a stop reason."""
+        self._poll_steer_queue()
         self._track_log_growth(now)
         reason = self._poll(now)
         if self._observe is not None:
@@ -323,6 +287,40 @@ class LaneProgressWatch:
             except Exception:  # noqa: BLE001 - a failed snapshot must not kill the watch
                 pass
         return reason
+
+    def pending_steers(self) -> list[dict[str, Any]]:
+        """Read the queue once more at the turn boundary and return undelivered entries."""
+        self._poll_steer_queue()
+        return [message for message in self._steer_messages if message.get("delivered_at") is None]
+
+    def record_steer_delivery(
+        self, messages: Sequence[Mapping[str, Any]], *, resume_path: str
+    ) -> None:
+        """Record the typed delivery disposition after the next invocation starts."""
+        by_id = {item.get("message_id"): item for item in self._steer_messages}
+        stamp = _support.utc_now_iso()
+        from scripts.task_run import task_run_lane_runner as _lane_runner
+
+        for message in messages:
+            current = by_id.get(message.get("message_id"))
+            if current is not None:
+                current.update(
+                    delivered_at=stamp,
+                    disposition="accepted",
+                    reason=None,
+                    resume_path=resume_path,
+                )
+                _lane_runner.update_steer_queue(self._steer_queue, current)
+
+    def _poll_steer_queue(self) -> None:
+        from scripts.task_run import task_run_lane_runner as _lane_runner
+
+        for message in _lane_runner.read_steer_queue(self._steer_queue):
+            message_id = message.get("message_id")
+            if not isinstance(message_id, str) or message_id in self._steer_seen:
+                continue
+            self._steer_seen.add(message_id)
+            self._steer_messages.append(dict(message))
 
     def snapshot(self, now: float) -> dict[str, Any]:
         """Cheap live lane signal for result.json pollers (#829).
@@ -498,8 +496,8 @@ def build_progress_watch(
 ) -> LaneProgressWatch | None:
     """The live guard for a require-change lane, or None when it is off.
 
-    Only require-change lanes are watched, and a non-positive budget turns
-    the stop off (the phase relay still runs while the lane does). An
+    The guard owns queue polling for watched lanes. Execution checks the same
+    queue at every natural executor boundary when this guard is absent. An
     explicit ``budget_override`` (``--no-progress-seconds``) wins over the
     environment so a contract-heavy lane records its budget as a deliberate
     per-lane choice (#835).
@@ -507,10 +505,13 @@ def build_progress_watch(
     if not require_change:
         return None
     if budget_override is None:
-        budget_seconds = _env_seconds(
-            NO_PROGRESS_BUDGET_ENV, DEFAULT_NO_PROGRESS_BUDGET_SECONDS
+        budget_seconds = (
+            _env_seconds(NO_PROGRESS_BUDGET_ENV, DEFAULT_NO_PROGRESS_BUDGET_SECONDS)
         )
-        budget_source = "env" if NO_PROGRESS_BUDGET_ENV in os.environ else "default"
+        budget_source = (
+            "env" if require_change and NO_PROGRESS_BUDGET_ENV in os.environ
+            else "default" if require_change else "disabled"
+        )
     else:
         budget_seconds = budget_override
         budget_source = "flag"
@@ -522,8 +523,9 @@ def build_progress_watch(
         scope_specs=scope_specs,
         budget_seconds=budget_seconds,
         poll_seconds=_env_seconds(PROGRESS_POLL_ENV, DEFAULT_PROGRESS_POLL_SECONDS),
-        blocked_grace_seconds=_env_seconds(
-            BLOCKED_GRACE_ENV, DEFAULT_BLOCKED_GRACE_SECONDS
+        blocked_grace_seconds=(
+            _env_seconds(BLOCKED_GRACE_ENV, DEFAULT_BLOCKED_GRACE_SECONDS)
+            if require_change else 0.0
         ),
         observe=observe,
         budget_source=budget_source,
