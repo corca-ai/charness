@@ -12,8 +12,13 @@ import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from scripts.task_run import task_run_train as train
-from scripts.task_run.task_run_train_core import derive_landing_review_routing
+from scripts.task_run.task_run_train_core import (
+    TrainError,
+    derive_landing_review_routing,
+)
 from tests.quality_gates.repo_shapes import install_committed_repo
 
 
@@ -156,3 +161,74 @@ def test_review_launch_failure_records_nonclaim_and_keeps_landing_successful(
     assert "reviewer process could not start" in record["reason"]
     assert "NON-CLAIM" in trigger["non_claim"]
     assert "not review-passed" in trigger["non_claim"]
+
+
+def test_landing_review_routing_rejects_bad_shapes_and_reroutes_unknown() -> None:
+    with pytest.raises(TrainError, match="must be a sequence"):
+        derive_landing_review_routing("P1")  # type: ignore[arg-type]
+    with pytest.raises(TrainError, match="must be a mapping"):
+        derive_landing_review_routing(["P1"])  # type: ignore[list-item]
+
+    routes = derive_landing_review_routing(
+        [
+            {"id": "mystery", "severity": "P0"},
+            {"id": "ungraded"},
+        ]
+    )
+
+    assert [item["id"] for item in routes["unrouted"]] == ["mystery", "ungraded"]
+    assert routes["next_unit"] == []
+    assert routes["batch"] == []
+
+
+def test_packet_preparation_success_returns_identity(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo, _base_sha = _repo_with_branch(tmp_path)
+    stdout = (
+        "ok: true\n"
+        "reviewed_input_binding:\n"
+        "  usable: true\n"
+        "  packet_path: packets/train-landing.json\n"
+        f"  packet_sha256: {'b' * 64}\n"
+    )
+    monkeypatch.setattr(
+        train,
+        "_run_process",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            returncode=0, stdout=stdout, stderr=""
+        ),
+    )
+
+    packet_path, packet_sha = train._prepare_landing_review_packet(
+        repo, ["prepare_packet.py"]
+    )
+
+    assert packet_path == "packets/train-landing.json"
+    assert packet_sha == "b" * 64
+
+
+def test_trigger_record_write_failure_is_captured_not_raised(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo, _base_sha = _repo_with_branch(tmp_path)
+    _stub_successful_train(monkeypatch, repo)
+    _stub_packet_preparation(monkeypatch)
+    monkeypatch.setattr(
+        train, "_launch_popen", lambda *args, **kwargs: SimpleNamespace(pid=7)
+    )
+    real_write_text = Path.write_text
+
+    def failing_write(self: Path, *args, **kwargs):
+        if self.name == "launch-record.json":
+            raise OSError("record store unavailable")
+        return real_write_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "write_text", failing_write)
+
+    result = train.run_train(repo, ["lane/landing-review"])
+
+    trigger = result["landing_review_trigger"]
+    assert result["status"] == train.PASS
+    assert trigger["status"] == "launched"
+    assert trigger["record_error"] == "record store unavailable"
