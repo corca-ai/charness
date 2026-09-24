@@ -276,8 +276,6 @@ def _closure_files(root: Path, test_file: Path) -> set[Path]:
     seen: set[Path] = set()
     while pending:
         current = pending.pop()
-        if current == test_file or current in seen:
-            continue
         seen.add(current)
         pending.update(_imports(root, current) - seen - {test_file})
     return seen
