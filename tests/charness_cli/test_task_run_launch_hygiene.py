@@ -330,7 +330,34 @@ def _suite_repo(tmp_path: Path) -> Path:
 
 
 def test_mapped_suite_paths_skips_absolute_targets(tmp_path: Path) -> None:
-    assert task_run_plan._mapped_suite_paths(_suite_repo(tmp_path), ["/abs/x.py"]) == []
+    commands = ["pytest --pytest-target /abs/x.py"]
+    assert task_run_plan._mapped_suite_paths(_suite_repo(tmp_path), commands) == []
+
+
+def test_mapped_suite_paths_tolerates_glob_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def _raise(self: Path, _pattern: str):
+        raise OSError("boom")
+
+    monkeypatch.setattr(Path, "glob", _raise)
+    commands = ["pytest --pytest-target tests/*.py"]
+
+    assert task_run_plan._mapped_suite_paths(_suite_repo(tmp_path), commands) == []
+
+
+def test_mapped_suite_paths_tolerates_directory_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / "tests").mkdir()
+
+    def _raise(self: Path, _pattern: str):
+        raise OSError("boom")
+
+    monkeypatch.setattr(Path, "rglob", _raise)
+    commands = ["pytest --pytest-target tests"]
+
+    assert not task_run_plan._mapped_suite_paths(tmp_path, commands)
 
 
 def test_mapped_suite_paths_expands_test_directories(tmp_path: Path) -> None:
@@ -389,3 +416,89 @@ def test_scope_verifier_plan_names_changed_line_gate(
     )
 
     assert changed_line.GATE_SCRIPT.stem.replace("_", "-") in result["completion_gates"]
+
+
+def test_scope_verifier_plan_tolerates_ineligible_pool(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from scripts.task_run import task_run_changed_line as changed_line
+
+    gate_script = changed_line.GATE_SCRIPT.as_posix()
+
+    def _raise(_root: Path):
+        raise RuntimeError("no pool")
+
+    monkeypatch.setattr(task_run_plan, "_list_eligible", _raise)
+    result = task_run_plan._scope_verifier_plan(
+        tmp_path,
+        scope_paths=["scripts/task_run/x.py"],
+        tree_paths={gate_script},
+    )
+
+    assert changed_line.GATE_SCRIPT.stem.replace("_", "-") not in result[
+        "completion_gates"
+    ]
+
+
+def _deficit_payload(**plan_extra: object) -> dict:
+    plan: dict[str, object] = {
+        "scope_preflight": {},
+        "scope_verifiers": {
+            "status": "configured",
+            "bundle_status": "ok",
+            "unmatched_paths": [],
+            "scope_paths": [],
+        },
+    }
+    plan.update(plan_extra)
+    return {"prelaunch_plan": plan}
+
+
+def test_coverage_mapping_flags_broken_manifest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from scripts.gates_support import select_verifiers as real
+
+    def _raise(_target: Path, **_kwargs: object):
+        raise real.SurfaceError("bad manifest")
+
+    monkeypatch.setattr(real, "load_surfaces", _raise)
+    blockers = task_run_prelaunch.acceptance_deficit_blockers(
+        _deficit_payload(), tmp_path, [], {"changed_paths": ["a.py"]}
+    )
+
+    assert any("selected surfaces manifest is missing" in item for item in blockers)
+
+
+def test_coverage_mapping_tolerates_match_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from scripts.gates_support import select_verifiers as real
+
+    def _raise(_manifest: object, _paths: object):
+        raise real.SurfaceError("bad match")
+
+    monkeypatch.setattr(real, "load_surfaces", lambda _t, **_k: {"manifest": True})
+    monkeypatch.setattr(real, "match_surfaces", _raise)
+    blockers = task_run_prelaunch.acceptance_deficit_blockers(
+        _deficit_payload(), tmp_path, [], {"changed_paths": ["a.py"]}
+    )
+
+    assert any("could not be mapped" in item for item in blockers)
+
+
+def test_coverage_mapping_flags_unmatched_paths(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from scripts.gates_support import select_verifiers as real
+
+    monkeypatch.setattr(real, "load_surfaces", lambda _t, **_k: {"manifest": True})
+    monkeypatch.setattr(
+        real, "match_surfaces", lambda _m, _p: {"unmatched_paths": ["x.py"]}
+    )
+    monkeypatch.setattr(real, "bundle_status", lambda _a: ("ok", []))
+    blockers = task_run_prelaunch.acceptance_deficit_blockers(
+        _deficit_payload(), tmp_path, [], {"changed_paths": ["a.py"]}
+    )
+
+    assert any("no mapped verifier for: x.py" in item for item in blockers)
