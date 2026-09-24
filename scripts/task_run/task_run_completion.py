@@ -25,6 +25,7 @@ from scripts.task_run import task_run_persistence as _persistence  # noqa: E402
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run import task_run_retention as _retention  # noqa: E402
 from scripts.task_run import task_run_state as _state  # noqa: E402
+from scripts.task_run import task_run_plan as _plan  # noqa: E402
 from scripts.task_run.task_run_completion_next_step import _next_step  # noqa: E402
 from scripts.task_run.task_run_contract import TaskRunError  # noqa: E402
 from scripts.task_run.task_run_git import _candidate_carrier  # noqa: E402
@@ -116,6 +117,7 @@ def complete_task(
 
     execution_status = execution_state(execution, delivery)
     payload["execution"]["status"] = execution_status
+    acceptance_skeleton = _plan.finish_acceptance_skeleton(payload, resolved_target) if execution_status == "completed" else None
     stderr_text = _progress._lane_stderr_text(stdout_log, stderr_log)
     payload["failure"] = _state.classify_failure(execution, stderr_text=stderr_text, delivery=delivery)
     candidate, result_state = candidate_result_state(
@@ -137,6 +139,7 @@ def complete_task(
         delivery=delivery,
         report_only=report_only,
         persistence=payload["persistence"],
+        acceptance_skeleton=acceptance_skeleton,
     )
     _lane_runner.apply_lane_receipt(
         payload,
@@ -165,6 +168,7 @@ def complete_task(
         git_output=git_output,
     )
     payload["changed_line_gate"] = gate
+    result_state = _acceptance_result_state(result_state, acceptance_skeleton)
 
     if report_only and result_state in ("completed", "non-delivery") and blockers:
         # A report-only lane has no candidate to salvage as a partial result:
@@ -292,9 +296,12 @@ def _completion_blockers(
     delivery: Mapping[str, Any],
     report_only: bool = False,
     persistence: Mapping[str, Any] | None = None,
+    acceptance_skeleton: Mapping[str, Any] | None = None,
 ) -> list[str]:
     blockers = [f"execution: {execution_status}"] if execution_status != "completed" else []
     blockers.extend(_persistence.persistence_blockers(persistence))
+    if acceptance_skeleton and acceptance_skeleton.get("status") != "green":
+        blockers.append("acceptance skeleton did not turn green")
     if scope["verdict"] != pass_value:
         blockers.append(str(scope["reason"]))
     if parent_progress["blocking"]:
@@ -315,6 +322,14 @@ def _completion_blockers(
                 "report-only task result was truncated: the delivered report is incomplete"
             )
     return blockers
+
+
+def _acceptance_result_state(
+    result_state: str, acceptance_skeleton: Mapping[str, Any] | None
+) -> str:
+    if result_state == "completed" and acceptance_skeleton and acceptance_skeleton.get("status") != "green":
+        return "completed-needs-review"
+    return result_state
 
 
 def _prove_ready_candidate(

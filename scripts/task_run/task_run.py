@@ -7,7 +7,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 
 def _load_repo_runtime_bootstrap():
@@ -28,7 +28,7 @@ from scripts.task_run import task_run_lane_runner as _lane_runner  # noqa: E402
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402
 from scripts.task_run.task_run_git import _checkout_own_dir, _repo_snapshot  # noqa: E402
-from scripts.task_run.task_run_plan import resolve_task_inputs as _resolve_task_inputs  # noqa: E402
+from scripts.task_run import task_run_plan as _plan  # noqa: E402
 from scripts.task_run.task_run_state import (  # noqa: E402
     _abnormal_exit_state,
     _candidate_result_state,
@@ -207,6 +207,7 @@ def run_task(
     dry_run: bool = False,
     report_only: bool = False,
     no_progress_seconds: float | None = None,
+    prelaunch: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Create, run, and receipt one bounded Codex worktree task."""
     resolved_repo: Path | None = None
@@ -221,7 +222,7 @@ def run_task(
                 "parent worktree must be clean before launching a task; "
                 "checkpoint current changes or choose a clean named worktree"
             )
-        resolved = _resolve_task_inputs(
+        resolved = _plan.resolve_task_inputs(
             resolved_repo,
             target_path=target_path,
             branch=branch,
@@ -241,6 +242,7 @@ def run_task(
             repo_snapshot=repo_snapshot,
             report_only=report_only,
             no_progress_seconds=no_progress_seconds,
+            prelaunch=prelaunch,
         )
     except (OSError, TaskRunError, subprocess.SubprocessError) as exc:
         return _failure_payload(
@@ -265,10 +267,8 @@ def run_task(
     resolved_require_change = resolved["require_change"]
     resolved_report_only = resolved["report_only"]
     payload: dict[str, Any] = {
-        "schema_version": _support.SCHEMA_VERSION,
-        "event": "task-run",
-        "status": FAIL,
-        "phase": "planned" if dry_run else "running",
+        "schema_version": _support.SCHEMA_VERSION, "event": "task-run",
+        "status": FAIL, "phase": "planned" if dry_run else "running",
         "approval_eligibility": "ineligible",
         "dry_run": dry_run,
         "task_id": resolved_task_id,
@@ -288,9 +288,9 @@ def run_task(
         "require_change": resolved_require_change,
         "report_only": resolved_report_only,
         "no_progress_seconds": resolved.get("no_progress_seconds"),
+        "prelaunch_plan": resolved["prelaunch"],
         "keep_worktree": True,
-        "runner_pid": os.getpid(),
-        "timestamps": {"launched_at": _support.utc_now_iso()},
+        "runner_pid": os.getpid(), "timestamps": {"launched_at": _support.utc_now_iso()},
         "timings_ms": {},
     }
     _lane_runner.record_lane_runner(
@@ -408,6 +408,14 @@ def run_task(
         stdout_log = log_dir / f"{resolved_executor}.stdout.log"
         stderr_log = log_dir / f"{resolved_executor}.stderr.log"
         payload["logs"] = {"stdout": str(stdout_log), "stderr": str(stderr_log)}
+        prelaunch_blocker = _plan.run_prelaunch_gates(payload, resolved, prompt)
+        _persist(payload, runtime_path)
+        if prelaunch_blocker:
+            return _terminal(
+                payload, runtime_path, status="premise-blocked", next_step=prelaunch_blocker,
+                error=prelaunch_blocker,
+            )
+        lane_prompt = _plan.acceptance_skeleton_prompt(lane_prompt, payload)
         exec_started_at = _mark_phase(payload, "exec", "exec_started_at")
         _persist(payload, runtime_path)
 
