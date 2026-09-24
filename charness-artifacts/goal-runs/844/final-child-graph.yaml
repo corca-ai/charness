@@ -1,0 +1,33 @@
+parent:
+  repo: corca-ai/charness
+  number: 844
+  state: OPEN
+children:
+  - number: 845
+    state: CLOSED
+  - number: 846
+    state: CLOSED
+  - number: 847
+    state: CLOSED
+  - number: 848
+    state: CLOSED
+  - number: 849
+    state: CLOSED
+  - number: 850
+    state: CLOSED
+  - number: 851
+    state: CLOSED
+  - number: 852
+    state: CLOSED
+  - number: 853
+    state: CLOSED
+  - number: 854
+    state: CLOSED
+  - number: 855
+    state: CLOSED
+  - number: 856
+    state: CLOSED
+  - number: 857
+    state: CLOSED
+  - number: 858
+    state: CLOSED

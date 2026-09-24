@@ -1,0 +1,33 @@
+{
+ "kind": "charness.goal-run-close-frontier/v1",
+ "repo": "corca-ai/charness",
+ "parent_number": 844,
+ "parent_state": "OPEN",
+ "children_closed": [
+  845,
+  846,
+  847,
+  848,
+  849,
+  850,
+  851,
+  852,
+  853,
+  854,
+  855,
+  856,
+  857,
+  858
+ ],
+ "targets_closed": [
+  837,
+  838,
+  839,
+  840,
+  841,
+  842
+ ],
+ "targets_open_with_reason": {
+  "843": "task_run_dag.py:540 violates the YAML-output contract gate; follow-up migration lane needed"
+ }
+}
