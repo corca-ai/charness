@@ -15,6 +15,7 @@ from scripts.runtime_bootstrap import (
     import_repo_module,
     runtime_root,
 )
+from scripts.task_run import task_run_test_cache as _test_cache
 from scripts.task_run.task_run_train_core import (
     FAIL,
     PASS,
@@ -138,6 +139,8 @@ def run_verify_profile(
     profile: Mapping[str, Any],
     worktree: Path,
     report_root: Path,
+    *,
+    cache_root: Path | None = None,
 ) -> tuple[bool, list[dict[str, Any]]]:
     """Execute declared commands on a prepared candidate and classify outcomes."""
     report_root.mkdir(parents=True, exist_ok=True)
@@ -146,8 +149,18 @@ def run_verify_profile(
         for item in profile["known_failures"]
     }
     results: list[dict[str, Any]] = []
+    cache_root = Path(cache_root) if cache_root is not None else _test_cache.train_cache_root(report_root)
     for entry in profile["commands"]:
         command_id = entry["id"]
+        plan = (
+            _test_cache.prepare_verify(cache_root, worktree, command_id, entry["argv"])
+            if cache_root is not None
+            else None
+        )
+        if plan is not None and plan["skip_result"] is not None:
+            results.append(plan["skip_result"])
+            continue
+        command = plan["command"] if plan is not None else entry["argv"]
         report_kind = entry.get("report", "exit-code")
         env = configure_runtime_environment(worktree, os.environ.copy())
         report_path = report_root / f"{command_id}.xml"
@@ -157,7 +170,7 @@ def run_verify_profile(
             report_option = shlex.join(["--junitxml", str(report_path)])
             env["PYTEST_ADDOPTS"] = f"{current} {report_option}".strip()
         outcome = _guard.run_monitored_phase(
-            entry["argv"],
+            command,
             cwd=worktree,
             phase=f"train-verify:{command_id}",
             timeout_seconds=None,
@@ -189,7 +202,8 @@ def run_verify_profile(
             for key, value in (("stdout_tail", outcome.stdout), ("stderr_tail", outcome.stderr)):
                 if value:
                     result[key] = value[-4000:]
-        results.append(result)
+        combined = _test_cache.finish_verify(plan, result) if plan is not None else result
+        results.append(combined)
     return all(result["status"] == PASS for result in results), results
 
 
