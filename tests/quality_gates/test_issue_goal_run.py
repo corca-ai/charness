@@ -6,6 +6,7 @@ import runpy
 from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import pytest
 
@@ -287,10 +288,23 @@ def test_goal_run_close_reuses_parent_read_for_carrier_preflight(tmp_path: Path)
             else child
         }
 
-    module["command_close"].__globals__["READ"] = SimpleNamespace(
-        read_issue_with_comments=read_issue
+    globals_ = module["command_close"].__globals__
+    loaded_proof = globals_["CONTRACT"].load_close_proof(
+        proof, repo=REPO, parent_number=724, repo_root=tmp_path
     )
-    module["command_close"].__globals__["TRACKER"] = SimpleNamespace(
+    adjudication_review = loaded_proof["final_proof_index"]["adjudication_review"]
+    assert adjudication_review == []
+    bound_reviews: list[list[dict[str, object]]] = []
+    existing_close_result = globals_["existing_close_result"]
+
+    def capture_existing_close_result(
+        prepared: dict[str, object], expected: list[dict[str, object]]
+    ) -> dict[str, object] | None:
+        bound_reviews.append(expected)
+        return existing_close_result(prepared, expected)
+
+    globals_["READ"] = SimpleNamespace(read_issue_with_comments=read_issue)
+    globals_["TRACKER"] = SimpleNamespace(
         list_sub_issues=lambda *_args, **_kwargs: {
             "children": [{"number": 725, "state": "CLOSED"}]
         },
@@ -311,16 +325,15 @@ def test_goal_run_close_reuses_parent_read_for_carrier_preflight(tmp_path: Path)
         captured.update(kwargs)
         return {"carrier": "test", "preflight_state": kwargs["preflight_state"]}
 
-    module["command_close"].__globals__["CLOSE"] = SimpleNamespace(
-        close_with_comment=close_with_comment
-    )
+    globals_["CLOSE"] = SimpleNamespace(close_with_comment=close_with_comment)
     emitted: list[dict[str, object]] = []
 
-    rc = module["command_close"](
-        Namespace(repo=REPO, number=724, proof_file=proof, repo_root=tmp_path),
-        resolve_backend=lambda _root, **_kwargs: {"adapter_ok": True, "backend": {"id": "gh"}},
-        emit=emitted.append,
-    )
+    with patch.dict(globals_, {"existing_close_result": capture_existing_close_result}):
+        rc = module["command_close"](
+            Namespace(repo=REPO, number=724, proof_file=proof, repo_root=tmp_path),
+            resolve_backend=lambda _root, **_kwargs: {"adapter_ok": True, "backend": {"id": "gh"}},
+            emit=emitted.append,
+        )
 
     assert rc == 0
     assert reads == [724, 725, 724]
@@ -340,6 +353,7 @@ def test_goal_run_close_reuses_parent_read_for_carrier_preflight(tmp_path: Path)
     assert metadata["progress"]["revision"] == 1
     assert metadata["terminal_observation_path"].endswith("close-2.terminal.json")
     assert metadata["terminal_observation_sha256"] == emitted[0]["observation"]["terminal_sha256"]
+    assert bound_reviews == [adjudication_review]
 
 
 @pytest.mark.parametrize("failure", ["malformed", "stale", "mismatched"])

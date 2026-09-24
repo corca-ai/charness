@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import runpy
 from pathlib import Path
 from typing import Any
@@ -12,10 +13,27 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
     "sibling_loader"
 ](__file__)
 INPUT = _load_local("issue_goal_run_input", "issue_goal_run_close_contract_input")
+REVIEW = _load_local("issue_review_resolution", "issue_goal_run_close_review")
+_MARKDOWN = _load_local("issue_markdown_lib", "issue_goal_run_close_markdown")
 GoalRunInputError = INPUT.GoalRunInputError
 
 CLOSE_PROOF_KIND = "charness.goal-run-close-proof/v1"
 FINAL_PROOF_INDEX_KIND = "charness.goal-run-final-proof-index/v1"
+_ADJUDICATION_SECTION_RE = re.compile(
+    r"^ {0,3}#{1,6}\s+adjudications?\s*\n(?P<body>.*?)(?=^ {0,3}#{1,6}\s|\Z)",
+    re.I | re.M | re.S,
+)
+_ADJUDICATION_BULLET_RE = re.compile(
+    r"^[ \t]*[-*+][ \t]+(.+?)(?=^[ \t]*[-*+][ \t]+|^ {0,3}#{1,6}\s|\Z)", re.M | re.S
+)
+
+
+def _parent_adjudication_claims(text: str) -> list[str]:
+    plain = "\n".join(_MARKDOWN.strip_code_fences(text))
+    section = _ADJUDICATION_SECTION_RE.search(plain)
+    if section is None:
+        return []
+    return [" ".join(item.split()) for item in _ADJUDICATION_BULLET_RE.findall(section["body"])]
 
 
 def _bound_json_file(
@@ -116,6 +134,18 @@ def _load_evidence(repo_root: Path, value: Any) -> list[dict[str, Any]]:
     return evidence
 
 
+def prior_adjudication_review(prepared: dict[str, Any]) -> list[dict[str, Any]]:
+    if "already_closed" in prepared:
+        receipt = prepared["already_closed"].get("terminal_metadata", {}).get("receipt", {})
+        payload = receipt.get("payload", {}) if isinstance(receipt, dict) else {}
+        result = payload.get("result", {}) if isinstance(payload, dict) else {}
+        return result.get("parent_adjudication_review", []) if isinstance(result, dict) else []
+    prior = prepared.get("result", {}).get("prior_terminal", {})
+    payload = prior.get("payload", {}) if isinstance(prior, dict) else {}
+    result = payload.get("result", {}) if isinstance(payload, dict) else {}
+    return result.get("parent_adjudication_review", []) if isinstance(result, dict) else []
+
+
 def load_final_proof_index(
     path: Path,
     *,
@@ -144,6 +174,7 @@ def load_final_proof_index(
             "expected_children",
             "parent_obligation",
             "evidence",
+            "parent_adjudications",
         },
         "final proof index",
     )
@@ -176,7 +207,17 @@ def load_final_proof_index(
         raise INPUT.error("input-invalid", "parent obligation is not valid UTF-8 text") from exc
     if not obligation_text.strip():
         raise INPUT.error("proof-incomplete", "parent obligation must not be empty")
+    adjudication_claims = _parent_adjudication_claims(obligation_text)
     evidence = _load_evidence(repo_root, value.get("evidence"))
+    adjudication_review = REVIEW.validate_parent_adjudications(
+        repo_root,
+        value,
+        input_contract=INPUT,
+        parent_adjudication_claims=adjudication_claims,
+        parent_obligation_path=obligation_path,
+        evidence=evidence,
+        expected_children=children,
+    )
     return {
         "path": str(path),
         "sha256": digest,
@@ -189,6 +230,7 @@ def load_final_proof_index(
         "expected_children_source": expected_children,
         "parent_obligation": {"path": str(obligation_path), "sha256": obligation_digest},
         "evidence": evidence,
+        "adjudication_review": adjudication_review,
     }
 
 
