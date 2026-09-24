@@ -22,6 +22,7 @@ _load_repo_runtime_bootstrap()
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 from scripts.task_run import task_run_changed_line as _changed_line  # noqa: E402
 from scripts.task_run import task_run_completion as _completion  # noqa: E402
+from scripts.task_run import task_run_friction as _friction  # noqa: E402
 from scripts.task_run import task_run_lane_runner as _lane_runner  # noqa: E402
 from scripts.task_run import task_run_payload as _payload  # noqa: E402
 from scripts.task_run import task_run_plan as _plan  # noqa: E402
@@ -89,6 +90,7 @@ def _terminal(
         payload["error"] = error
     payload["result_kind"] = result_kind_for_status(status).value
     payload["blocker"] = blocker_for_receipt(payload)
+    _friction.append_terminal_friction(runtime_path, payload)
     _payload._persist(payload, runtime_path)
     return payload
 

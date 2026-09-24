@@ -40,6 +40,8 @@ except ImportError:  # flat layout: the repo root is not on sys.path
         sys.path.insert(0, str(_repo_root))
     from scripts.core.subprocess_guard import render_display, run_monitored_phase
 
+from scripts.task_run import task_run_friction as _friction
+
 _DESCENDANT_CLEANUP_SHELL = (
     'printf "%s\\n" "$$" > "$1"; shift; exec 3<&0; "$@" <&3 & '
     'child=$!; wait "$child"; status=$?; exit "$status"'
@@ -253,6 +255,12 @@ def _execute_codex(
     steer_messages = _lane_runner.read_steer_queue(queue_path)
     if steer_messages:
         result["steer_messages"] = steer_messages
+    _friction.append_execution_friction(
+        stdout_log.parents[2],
+        task_id=stdout_log.parent.name,
+        relaunch_count=invocation,
+        execution_error=(str(result["exec_error"]) if result.get("exec_error") else None),
+    )
     return result
 
 

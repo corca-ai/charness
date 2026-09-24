@@ -21,6 +21,7 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.task_run import task_run_lesson_injection as _lesson_injection  # noqa: E402
+from scripts.task_run import task_run_friction as _friction  # noqa: E402
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run import task_run_scope as _scope  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402
@@ -29,6 +30,9 @@ build_codex_command = _support.build_codex_command
 build_muse_command = _support.build_muse_command
 
 STEER_ENVELOPE_KIND = "charness.task_steer.v1"
+ORCHESTRATION_POINTERS_RELATIVE_PATH = Path(
+    ".charness/task-run/orchestration-pointers.md"
+)
 
 
 def read_steer_queue(queue_path: Path) -> list[dict[str, Any]]:
@@ -91,6 +95,7 @@ def build_lane_prompt(
     require_change: bool,
     scopes: Sequence[str],
     lesson_injection_block: str = "",
+    orchestration_pointer_file: Path | None = None,
 ) -> str:
     """Shape the lane prompt; implementation lanes get carrier directives.
 
@@ -148,9 +153,21 @@ def build_lane_prompt(
             "---\n"
             f"{prompt}"
         )
-    if not lesson_injection_block:
+    injections = []
+    if lesson_injection_block:
+        injections.append(lesson_injection_block)
+    if orchestration_pointer_file is not None:
+        try:
+            pointer_text = orchestration_pointer_file.read_text(encoding="utf-8").strip()
+        except FileNotFoundError:
+            pointer_text = ""
+        if pointer_text:
+            injections.append(
+                "Orchestration pointers (re-injected for this lane):\n" + pointer_text
+            )
+    if not injections:
         return shaped
-    return f"{shaped}\n\n{lesson_injection_block}"
+    return shaped + "\n\n" + "\n\n".join(injections)
 
 
 def lane_receipt_blockers(
@@ -214,6 +231,17 @@ def apply_lane_receipt(
     }
     payload["lane_progress"] = progress
     payload["scope_extension_request"] = _scope.parse_scope_extension_request(blocker)
+    if payload["scope_extension_request"] and payload.get("runtime_root"):
+        _friction.append_friction_event(
+            Path(str(payload["runtime_root"])),
+            "block",
+            task_id=str(payload.get("task_id") or "unknown-task"),
+            facts={
+                "producer": "task_run_lane_runner",
+                "blocker": str(blocker or "")[:500],
+                "scope_extension_request": payload["scope_extension_request"],
+            },
+        )
     blockers.extend(
         lane_receipt_blockers(progress=progress, require_change=require_change, scope=scope)
     )
@@ -265,6 +293,11 @@ def prepare_lane_execution(
         require_change=require_change,
         scopes=scopes,
         lesson_injection_block=lesson_block,
+        orchestration_pointer_file=(
+            Path(str(repo_root_value)) / ORCHESTRATION_POINTERS_RELATIVE_PATH
+            if repo_root_value
+            else None
+        ),
     )
     command = lane_command(
         executor=executor,

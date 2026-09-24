@@ -2,87 +2,70 @@
 
 > Status: current
 > Source of truth: this page and the `charness task run/status` implementation
-> Last verified: 2026-09-14
+> Last verified: 2026-09-24
 
-`charness task` provides `task run` for one bounded lane and `task status`
-for reading its external result store. It does not add a scheduler lifecycle.
-`--executor` selects the lane runner (default: `codex`): `codex` runs the fixed
-`gpt-6-luna` model with effort one of medium, xhigh, max; `muse` runs the
-muse default model with effort one of medium, high, xhigh, max.
+`charness task run` executes one bounded lane; `task status` reads its external
+result store. There is no scheduler lifecycle. `--executor` defaults to
+`codex` (`gpt-6-luna`, effort medium/xhigh/max); `muse` uses its default model
+and effort medium/high/xhigh/max.
 
-Receipt shape is per executor. The canonical block is `payload["executor"]`
-(`kind`, `executable`, `model`, `effort`, `timeout_scope`, `command`).
-Codex lanes keep the legacy `payload["codex"]` alias, `codex-exec` scope, and
-`codex.stdout/stderr.log` names. Muse lanes carry only the `executor` block
-with `timeout_scope: muse-exec` and `muse.stdout/stderr.log` logs; their
-`model` reads `"default"`, meaning whatever `muse exec` ships, unpinned.
-Readers keyed on the `codex` names must branch on `executor.kind` before
-consuming muse lanes.
+The receipt's canonical executor block is `payload["executor"]`. Codex keeps
+legacy aliases and log names; Muse records its trusted lane worktree as the
+workspace because its runner has one effective workspace, not Codex's
+`--add-dir` grants. Readers should branch on `executor.kind`.
 
-A muse lane roots its single `muse exec --workspace` at the lane worktree
-itself and trusts it (`--trust-workspace`), so the repo's rules load and
-the untrusted-workspace delegation block clears (observed: the warning is
-gone; delegation itself was not exercised). `muse exec` honors one effective
-workspace, so the Codex `--add-dir` grants do not apply; the receipt
-records the root as top-level `workspace` instead of `writable_dirs`.
+For `--require-change`, the carrier injects scope, edit/test, and typed-blocker
+instructions. If the real owner lies outside scope, stop with
+`BLOCKED: scope mismatch - real owner <path> is outside declared scope`. Receipts
+record observed `CONTRACT-READ`, `EDITING`, and `TESTING` phases plus blockers.
+The guard stops a blocked lane that outlives its grace period and a lane with
+`CONTRACT-READ` but no edit or scoped diff after its no-progress budget. The
+receipt records the guard outcome. `CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS`
+defaults to 300 (`0` disables it); `CHARNESS_TASK_RUN_BLOCKED_GRACE_SECONDS`
+defaults to 60. Other lanes receive their prompt unchanged.
 
-A `--require-change` lane is an implementation lane: the carrier prepends
-directives naming the scope, demanding prompt entry into the scoped
-edit/test loop, and defining a typed early blocker (`BLOCKED: <reason>`
-on its own line) with `CONTRACT-READ` / `EDITING` / `TESTING` progress
-markers. Discovery that the real owner of the requested behavior lies
-outside the declared scope must end in
-`BLOCKED: scope mismatch - real owner <path> is outside declared scope`
-instead of further adjacent-file exploration. The receipt records
-`lane_progress` (phases observed plus the blocker, if any), parsed from
-both the delivery stream (stdout) and the executor transcript (stderr),
-so a lane with an empty delivery still reports the phases it emitted.
-While the lane runs, the carrier relays `PROGRESS` lines on stderr and
-publishes live phase/file/commit/idle/attempt counts to result.json on
-every guard poll. A require-change lane past the no-progress budget
-(`CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS`, default 300; `0` disables it)
-with `CONTRACT-READ` but no `EDITING` and no real scoped diff is killed
-and recorded with a typed `NO-PROGRESS-STOP` blocker; the guard
-configuration and outcome live on the receipt as `progress_guard`.
-A lane that declares `BLOCKED` but outlives the blocked grace
-(`CHARNESS_TASK_RUN_BLOCKED_GRACE_SECONDS`, default 60) is stopped; a lost
-marker's guard reason becomes the blocker, and guard-observed phases merge
-into `lane_progress`.
-A changeless require-change lane without `EDITING` fails naming that
-stall. Other lanes transmit the prompt verbatim.
-A `--report-only` lane inspects without changing: it forces
-`require_change` off, treats the delivered stdout report as the artifact
-(missing or truncated delivery fails), and never reports `writer-conflict`.
+`--report-only` inspects without changing and never reports a writer conflict.
+Interrupted work with a proven empty scope is `interrupted-before-edit`; WIP is
+reserved for changed work whose completeness is unknown. A useful dirty
+candidate can be retained for review even when blockers deny approval.
 
-An interrupted lane whose checkpoint proved the worktree held no scoped
-changes reports a known unchanged candidate (`interrupted-before-edit`,
-`state_known: true`) with retry guidance, not `interrupted-mid-edit`. WIP
-is reserved for worktrees with changes of unknown completeness.
+Terminal receipts carry `result_kind` and a stable blocker. Exit codes are 0
+success, 1 failed, 2 premise-blocked, 3 validated-partial, 4
+executor-unavailable, and 5 needs-review; `--help` is the typed contract.
+Transient stream stalls retry in the same worktree (three attempts by default,
+30-second backoff); attempts record their failure kind. Finished-but-unapprovable
+work needs review, merge, or re-scope; it does not need relaunch. Scope closure
+stays warning-only (#831), a typed scope mismatch records a
+`scope_extension_request`, and refresh excludes lane-created directories.
+Secret-pattern environment names are scrubbed except
+executor auth keeps and `CHARNESS_TASK_RUN_KEEP_SECRET_ENV`; the receipt records
+names, never values. Budget wall time as `MAX_ATTEMPTS` x `--timeout-seconds`.
 
-A completed lane whose useful dirty candidate the carrier persists after
-blockers were reported records `candidate persisted for review`, keeping
-persistence/correctness/approval as separate facts.
+A persistence-risk lens blocks adding or removing `DROP`/`TRUNCATE` or unscoped
+`DELETE FROM` with no replacement (`completed-needs-review`).
 
-Terminal receipts carry `result_kind` plus a stable `blocker` field, exit-mapped 0 success, 1 failed, 2 premise-blocked, 3 validated-partial, 4 executor-unavailable, 5 needs-review (`--help` is the contract).
+## Learning and resumed orchestration
 
-A transient model-stream stall retries in the same worktree
-(`CHARNESS_TASK_RUN_MAX_ATTEMPTS`, default 3; backoff
-`CHARNESS_TASK_RUN_RETRY_BACKOFF_SECONDS`, default 30); attempts record
-their `failure_kind`. Every receipt carries `failure: {kind, retryable,
-message}`. Finished-but-unapprovable work reports `completed-needs-review`
-with `review_required` reasons: merge or re-scope, never relaunch.
-Scope closure stays warning-only (#831): preflight receipts carry
-`scope_warnings` for unmatched exact scopes, and a scope-mismatch stop
-records a typed `scope_extension_request` for same-candidate re-validation.
-Refresh never admits lane-created directories. Lane secret scrub (#832):
-secret-pattern env names are dropped from the lane env except executor auth
-keeps and `CHARNESS_TASK_RUN_KEEP_SECRET_ENV`; the receipt names them,
-never values.
+Task-run friction events use WI-1 event-schema v1 and live in
+`task-run/friction-log.jsonl` under the external task runtime root. A second
+same-kind event from a distinct task run within 30 days carries
+`repair the pattern, don't reshape the command`. This asks the integrator to
+repair the recurring pattern; it does not run an automatic repair. Writer
+conflicts are recorded for operator resolution.
 
-A persistence-risk lens blocks lanes adding or removing
-`DROP`/`TRUNCATE` or unscoped `DELETE FROM` with no replacement
-(`completed-needs-review`). Green-to-red; see release notes.
-Budget wall time as `MAX_ATTEMPTS` x `--timeout-seconds`.
+Pause for a short retro after every five lane outcomes and after a resumed
+handoff following compaction. Include exactly one line:
+`improvements found: <concise items>` or `improvements found: none`.
+
+Keep the active principles, DAG file, and handoff in the parent repo's
+`.charness/task-run/orchestration-pointers.md`. When present and nonempty, that
+file is read into every newly built lane prompt. A resumed orchestrator thus
+restores those pointers when it launches the next lane. The prompt builder
+reads it on each launch; it does not detect host compaction itself.
+
+The lane environment includes root `AGENTS.md` and inherited agent
+instructions. Lane briefs and integrators should proactively surface relevant
+constraints and link to their owning files across handoffs.
 
 ## Run
 
@@ -95,9 +78,24 @@ charness task run \
   --effort xhigh
 ```
 
-A clean parent is required. Model/effort identity, scope expansion, the result carrier, `changed_line_gate`, and retention live in [`task_run_contract.py`](../scripts/task_run/task_run_contract.py), [`task_run_scope.py`](../scripts/task_run/task_run_scope.py), [`task_run_git.py`](../scripts/task_run/task_run_git.py), [`task_run_changed_line.py`](../scripts/task_run/task_run_changed_line.py), and [`task_run_completion.py`](../scripts/task_run/task_run_completion.py); do not recopy fields here, `--help` is the typed surface. `--scope` repeats; `--skip-prepare` and `--allow-no-change` are diagnostic opt-outs; `--path/--branch/--base` stays for exceptional host setup.
+A clean parent is required. Model/effort identity, scope expansion, result
+carrier, `changed_line_gate`, and retention live in
+[`task_run_contract.py`](../scripts/task_run/task_run_contract.py),
+[`task_run_scope.py`](../scripts/task_run/task_run_scope.py),
+[`task_run_git.py`](../scripts/task_run/task_run_git.py),
+[`task_run_changed_line.py`](../scripts/task_run/task_run_changed_line.py), and
+[`task_run_completion.py`](../scripts/task_run/task_run_completion.py). Do not
+recopy receipt fields here; `--help` is the typed surface. `--scope` repeats;
+`--skip-prepare` and `--allow-no-change` are diagnostic opt-outs; `--path`,
+`--branch`, and `--base` are for exceptional host setup.
 
-The parent reads the receipt before integrating. A lane is done only when `changed_line_gate` is `clean` or `noop` (`proof_status`; diagnostic `status` may read `not-applicable` without the gate script). A useful dirty candidate is committed onto the lane branch before proof and retention so `target_sha` carries the files; completion re-observes after an invoked gate and denies approval for dirt, read failure, or identity change. Retention may still release a fresh commit-carried tree when proof denies approval; on persistence/observation failure `keep_worktree` stays true. Parent path-delta classes (`normal`, `concurrent-parent-progress`, `writer-conflict`) are on the receipt.
+The parent reads the receipt before integrating. A lane is done only when
+`changed_line_gate` is `clean` or `noop`. Useful dirty work is committed before
+proof; completion re-observes after the gate and denies approval for dirt, read
+failure, or changed identity. Retention can release a fresh commit-carried tree
+when proof denies approval; on persistence or observation failure,
+`keep_worktree` stays true. Parent path-delta classes are `normal`,
+`concurrent-parent-progress`, and `writer-conflict`.
 
 ## Status
 
@@ -106,24 +104,14 @@ charness task status --repo-root .
 charness task status --repo-root . <task-id>
 ```
 
-Status reads exactly the external task-run result store and lists all records
-when no id is supplied. Each returned record adds one read-time
-`liveness` key beside the persisted fields: `runner_pid` and `alive`, an
-advisory pid check. A `running` record whose pid is dead is
-stale; a live pid on a terminal record is normal while the runner finishes.
+Status reads the external result store. Each record adds read-time `liveness`
+(`runner_pid` and advisory `alive`); a dead pid on a `running` record is stale,
+while a live pid on a terminal record is normal during retention.
 
-When delivered text is one complete schema-bearing JSON/YAML mapping,
-`result_delivery.structured` exposes it unchanged; a
-`charness.reviewer_lifecycle.v1` mapping is also exposed as top-level
-`reviewer_lifecycle`, a projection of the carrier owned by
-[reviewer_lifecycle.py](../skills/shared/scripts/reviewer_lifecycle.py).
-Bounded-review JSON is additionally recorded as `reviewer_result`: it remains
-reusable evidence even for `partial`, `defer`, `block`, timeout, or failed task
-runs, but `approval_eligible` stays false until a consumer rebinds the packet,
-input identity, and task receipt. Its bounded `result` body is retained beside
-the projection, so retry code can consume findings without reparsing a log.
-Malformed or partial review JSON is retained with `validation: partial-schema`
-for retry context rather than discarded.
-Malformed schema-bearing text is `structured_status: invalid`; prose is
-`not-applicable`. The external result store retains these terminal records and
-their bounded logs, so a failed review is a resumable input by default.
+Complete schema-bearing JSON/YAML delivery is exposed as `result_delivery.structured`;
+review-lifecycle input is also projected as `reviewer_lifecycle`. Bounded review
+JSON stays reusable as `reviewer_result`, including partial, deferred, blocked,
+timed-out, or failed runs, but is not approval until a consumer rebinds its
+packet, input identity, and task receipt. Malformed review JSON is retained as
+partial-schema for retry; prose is not applicable. Terminal records and bounded
+logs remain available in the external result store.

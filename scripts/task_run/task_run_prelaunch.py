@@ -31,6 +31,7 @@ from scripts.task_run.task_run_contract import (  # noqa: E402
     AcceptanceSkeletonDeclaration,
     TaskRunError,
 )
+from scripts.task_run import task_run_friction as _friction  # noqa: E402
 
 
 def _resolve_prelaunch_contract(value: Mapping[str, Any] | None) -> dict[str, Any]:
@@ -290,6 +291,16 @@ def run_prelaunch_gates(
     }
     if payload["prelaunch"]["brief_critique"]["premise_failure"]:
         payload["prelaunch"]["status"] = "blocked"
+        if resolved.get("runtime_path"):
+            _friction.append_friction_event(
+                Path(str(resolved["runtime_path"])),
+                "premise-failure",
+                task_id=str(payload.get("task_id") or "unknown-task"),
+                facts={
+                    "producer": "task_run_prelaunch",
+                    "reason": str(review.get("premise_failure_reason") or "false task premise")[:500],
+                },
+            )
         return str(review.get("premise_failure_reason") or "brief critique found a false task premise")[:500]
     if blocker:
         payload["prelaunch"]["status"] = "blocked"

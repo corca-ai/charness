@@ -27,6 +27,7 @@ from scripts.task_run import task_run_prelaunch as _prelaunch  # noqa: E402
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run import task_run_retention as _retention  # noqa: E402
 from scripts.task_run import task_run_evidence as _evidence  # noqa: E402
+from scripts.task_run import task_run_friction as _friction  # noqa: E402
 from scripts.task_run import task_run_ledger as _ledger  # noqa: E402
 from scripts.task_run import task_run_execution as _execution, task_run_state as _state  # noqa: E402
 from scripts.task_run.task_run_completion_next_step import _next_step  # noqa: E402
@@ -191,6 +192,12 @@ def complete_task(
     )
     payload["blockers"] = list(blockers)
     payload["blocker"] = _state.blocker_for_receipt(payload)
+    _friction.append_completion_friction(
+        runtime_path,
+        task_id=str(payload.get("task_id") or "unknown-task"),
+        blockers=blockers,
+        parent_classification=str(parent_progress.get("classification") or ""),
+    )
     payload["approval_eligibility"] = (
         "eligible" if result_state == "completed" and not blockers else "ineligible"
     )
