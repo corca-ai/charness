@@ -429,6 +429,24 @@ def test_real_entry_path_inserts_foreign_checkout_lib_root(tmp_path: Path) -> No
     assert payload["reason"] == "task-not-found"
 
 
+def test_load_train_lib_inserts_missing_repo_root(monkeypatch) -> None:
+    cli = load_cli_module("charness_task_run_train_libroot", CLI)
+    repo = Path(__file__).resolve().parents[2]
+    # The loaded module resolves to this checkout, so dropping the checkout
+    # from the path takes the fallback insert; the import below re-adds it.
+    monkeypatch.setattr(
+        sys,
+        "path",
+        [entry for entry in sys.path if Path(entry or ".").resolve() != repo],
+    )
+    assert str(repo) not in sys.path
+
+    lib = cli._load_train_lib(argparse.Namespace())
+
+    assert lib is not None
+    assert sys.path[0] == str(repo)
+
+
 def test_steered_invocation_uses_resume_when_available_and_falls_back_in_place() -> None:
     initial = ["codex", "exec", "--output-last-message", "/tmp/last.txt", "-"]
     message = {
