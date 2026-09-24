@@ -12,6 +12,7 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
     "sibling_loader"
 ](__file__)
 INPUT = _load_local("issue_goal_run_input", "issue_goal_run_close_contract_input")
+REVIEW = _load_local("issue_review_resolution", "issue_goal_run_close_review")
 GoalRunInputError = INPUT.GoalRunInputError
 
 CLOSE_PROOF_KIND = "charness.goal-run-close-proof/v1"
@@ -116,6 +117,35 @@ def _load_evidence(repo_root: Path, value: Any) -> list[dict[str, Any]]:
     return evidence
 
 
+def prior_adjudication_review(prepared: dict[str, Any]) -> list[dict[str, Any]]:
+    if "already_closed" in prepared:
+        receipt = prepared["already_closed"].get("terminal_metadata", {}).get("receipt", {})
+        payload = receipt.get("payload", {}) if isinstance(receipt, dict) else {}
+        result = payload.get("result", {}) if isinstance(payload, dict) else {}
+        return result.get("parent_adjudication_review", []) if isinstance(result, dict) else []
+    prior = prepared.get("result", {}).get("prior_terminal", {})
+    payload = prior.get("payload", {}) if isinstance(prior, dict) else {}
+    result = payload.get("result", {}) if isinstance(payload, dict) else {}
+    return result.get("parent_adjudication_review", []) if isinstance(result, dict) else []
+
+
+def existing_close_result(
+    prepared: dict[str, Any], expected: list[dict[str, Any]]
+) -> dict[str, Any] | None:
+    actual = prior_adjudication_review(prepared)
+    if actual != expected:
+        raise RuntimeError(
+            "existing Goal Run close receipt does not bind the current parent adjudication review"
+        )
+    if "already_closed" in prepared:
+        result = prepared["already_closed"]
+        result["parent_adjudication_review"] = expected
+        return result
+    if prepared.get("recovery"):
+        prepared["result"]["parent_adjudication_review"] = expected
+    return None
+
+
 def load_final_proof_index(
     path: Path,
     *,
@@ -144,6 +174,7 @@ def load_final_proof_index(
             "expected_children",
             "parent_obligation",
             "evidence",
+            "parent_adjudications",
         },
         "final proof index",
     )
@@ -177,6 +208,14 @@ def load_final_proof_index(
     if not obligation_text.strip():
         raise INPUT.error("proof-incomplete", "parent obligation must not be empty")
     evidence = _load_evidence(repo_root, value.get("evidence"))
+    adjudication_review = REVIEW.validate_parent_adjudications(
+        repo_root,
+        value,
+        parent_obligation_path=obligation_path,
+        parent_obligation_text=obligation_text,
+        evidence=evidence,
+        expected_children=children,
+    )
     return {
         "path": str(path),
         "sha256": digest,
@@ -189,6 +228,7 @@ def load_final_proof_index(
         "expected_children_source": expected_children,
         "parent_obligation": {"path": str(obligation_path), "sha256": obligation_digest},
         "evidence": evidence,
+        "adjudication_review": adjudication_review,
     }
 
 

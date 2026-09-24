@@ -191,24 +191,27 @@ def _metadata_failure(result: dict[str, Any], exc: RuntimeError) -> dict[str, An
     }
 
 
-def command_close(args: Any, *, resolve_backend: Any, emit: Any) -> int:
+def _load_proof(args: Any, emit: Any) -> dict[str, Any] | None:
+    repo_root = args.repo_root.resolve()
     try:
-        repo_root = args.repo_root.resolve()
         proof_path = CONTRACT.repo_file(repo_root, str(args.proof_file), context="proof_file")
-        proof = CONTRACT.load_close_proof(
+        return CONTRACT.load_close_proof(
             proof_path, repo=args.repo, parent_number=args.number, repo_root=repo_root
         )
     except CONTRACT.GoalRunInputErrors as exc:
         emit(_refusal(exc.code, str(exc), repo=args.repo, parent=args.number))
-        return 2
+        return None
+
+
+def _resolve_close_backend(args: Any, resolve_backend: Any, emit: Any) -> dict[str, Any] | None:
     try:
         resolved = resolve_backend(args.repo_root.resolve(), target_repo=args.repo)
     except RuntimeError as exc:
         emit(_refusal("provider-selection-invalid", str(exc), repo=args.repo, parent=args.number))
-        return 2
+        return None
     if not resolved.get("adapter_ok"):
         emit(_refusal("adapter-invalid", "issue adapter is invalid", repo=args.repo, parent=args.number))
-        return 2
+        return None
     capability = CONTRACT.capability_report(
         resolved["backend"], ["close-goal-run"], repo=args.repo
     )
@@ -221,6 +224,17 @@ def command_close(args: Any, *, resolve_backend: Any, emit: Any) -> int:
         )
         result["capability"] = capability
         emit(result)
+        return None
+    return resolved["backend"]
+
+
+def command_close(args: Any, *, resolve_backend: Any, emit: Any) -> int:
+    repo_root = args.repo_root.resolve()
+    proof = _load_proof(args, emit)
+    if proof is None:
+        return 2
+    backend = _resolve_close_backend(args, resolve_backend, emit)
+    if backend is None:
         return 2
     try:
         prepared = _prepare_close(
@@ -228,13 +242,20 @@ def command_close(args: Any, *, resolve_backend: Any, emit: Any) -> int:
             repo=args.repo,
             parent_number=args.number,
             proof=proof,
-            backend=resolved["backend"],
+            backend=backend,
         )
     except RuntimeError as exc:
         emit(_refusal("close-refused", str(exc), repo=args.repo, parent=args.number))
         return 2
-    if "already_closed" in prepared:
-        emit(prepared["already_closed"])
+    try:
+        existing_close = CONTRACT.CLOSE_CONTRACT.existing_close_result(
+            prepared, proof["final_proof_index"]["adjudication_review"]
+        )
+    except RuntimeError as exc:
+        emit(_refusal("close-refused", str(exc), repo=args.repo, parent=args.number))
+        return 2
+    if existing_close is not None:
+        emit(existing_close)
         return 0
     parent = prepared["parent"]
     comment_file = Path(proof["comment_path"])
@@ -256,13 +277,13 @@ def command_close(args: Any, *, resolve_backend: Any, emit: Any) -> int:
                 comment_file,
                 repo_root=repo_root,
                 classification=proof.get("classification", "feature"),
-                backend=resolved["backend"],
+                backend=backend,
                 reason=proof.get("reason", "completed"),
                 manual_target_declaration=proof.get("manual_target_declaration"),
                 **({} if prepared["mode"] == "resume" else {"goal_run_authorized": True}),
                 preflight_state=parent,
             )
-            result = _mutation_result(carrier, operation=operation, backend=resolved["backend"])
+            result = _mutation_result(carrier, operation=operation, backend=backend)
         except CLOSE_MUTATION_ERROR as exc:
             result = {
                 **_refusal("close-unverified", str(exc), repo=args.repo, parent=args.number),
@@ -278,6 +299,7 @@ def command_close(args: Any, *, resolve_backend: Any, emit: Any) -> int:
                 **_refusal("close-refused", str(exc), repo=args.repo, parent=args.number),
                 "operation": operation,
             }
+        result["parent_adjudication_review"] = proof["final_proof_index"]["adjudication_review"]
         try:
             terminal = OBSERVATION.finish(
                 repo_root=repo_root,
@@ -310,7 +332,7 @@ def command_close(args: Any, *, resolve_backend: Any, emit: Any) -> int:
                 parent_number=args.number,
                 parent_body=parent.get("body"),
                 terminal=terminal,
-                backend=resolved["backend"],
+                backend=backend,
                 tracker=TRACKER,
                 read=READ,
                 guard=GUARD,
