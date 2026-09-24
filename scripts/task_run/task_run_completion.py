@@ -182,6 +182,9 @@ def complete_task(
     )
     payload["status"] = result_state
     payload["result_kind"] = _state.result_kind_for_status(result_state).value
+    payload["lesson_injection"] = _lesson_injection_result(
+        payload.get("lesson_injection")
+    )
     payload["blockers"] = list(blockers)
     payload["blocker"] = _state.blocker_for_receipt(payload)
     payload["approval_eligibility"] = (
@@ -222,6 +225,36 @@ def complete_task(
     )
     print(f"task run: {payload['status']} ({payload['task_id']})", file=sys.stderr)
     return payload
+
+
+def _lesson_injection_result(value: object) -> dict[str, Any]:
+    """Keep lesson facts in the WI-1 receipt without adding a verdict kind."""
+    raw = value if isinstance(value, Mapping) else {}
+
+    def string_list(key: str) -> list[str]:
+        items = raw.get(key)
+        if not isinstance(items, list):
+            return []
+        return [item for item in items if isinstance(item, str)]
+
+    result: dict[str, Any] = {
+        "schema_version": _lane_runner.LESSON_INJECTION_SCHEMA,
+        "ledger_path": raw.get("ledger_path")
+        if isinstance(raw.get("ledger_path"), str)
+        else _lane_runner.LESSON_LEDGER_RELATIVE_PATH,
+        "declared_slugs": string_list("declared_slugs"),
+        "injected_ids": string_list("injected_ids"),
+        "unmatched_slugs": string_list("unmatched_slugs"),
+        "budget_excluded_ids": string_list("budget_excluded_ids"),
+        "budget_bytes": raw.get("budget_bytes"),
+        "used_bytes": raw.get("used_bytes"),
+        "prepared": isinstance(value, Mapping),
+        "non_claim": _lane_runner.LESSON_INJECTION_NON_CLAIM,
+    }
+    error = raw.get("error")
+    if isinstance(error, str) and error:
+        result["error"] = error
+    return result
 
 
 def _execution_reviewer_result(delivery: Mapping[str, Any]) -> dict[str, Any] | None:
