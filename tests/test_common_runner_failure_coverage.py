@@ -466,8 +466,9 @@ def test_completion_next_step_discloses_validated_partial_result() -> None:
     )
 
     assert message == (
-        "Review the validated candidate on branch main at head-sha; "
-        "it is useful but not approval-eligible."
+        "Review the candidate on branch main at head-sha; "
+        "candidate_useful=false; result_kind=unrecorded; "
+        "approval_eligibility=unrecorded."
     )
 
 
