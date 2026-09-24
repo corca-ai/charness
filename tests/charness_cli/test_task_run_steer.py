@@ -221,6 +221,53 @@ def test_scope_amend_revalidates_same_candidate_without_relaunch(
     assert result["scope_amendments"][0]["result_kind"] == "success"
 
 
+def test_scope_amend_records_reason_and_actor(tmp_path: Path, monkeypatch) -> None:
+    cli = load_cli_module("charness_task_run_steer_amend_audit", CLI)
+    repo = _repo(tmp_path)
+    base_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    (repo / "stray.py").write_text("VALUE = 3\n", encoding="utf-8")
+    specs = task_run_scope.resolve_scope_specs(repo, ["module.py"], base_sha)
+    result = {
+        "task_id": "lane-4",
+        "status": "completed-needs-review",
+        "worktree_path": str(repo),
+        "base_sha": base_sha,
+        "target_sha": base_sha,
+        "target_branch": "task/lane-4",
+        "scope_specs": specs,
+        "require_change": True,
+        "candidate": {
+            "status": "invalid",
+            "changed_paths": ["stray.py"],
+            "disallowed_paths": ["stray.py"],
+        },
+        "timestamps": {},
+    }
+    monkeypatch.setattr(cli, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: tmp_path / "runtime")
+    monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: result)
+    monkeypatch.setattr(task_run_runtime, "write_task_result", lambda _root, _value: None)
+    emitted: list[dict[str, object]] = []
+    monkeypatch.setattr(cli, "emit_yaml", emitted.append)
+
+    code = cli.cmd_task_steer(
+        argparse.Namespace(
+            repo_root=tmp_path,
+            task_id="lane-4",
+            message=None,
+            amend_scope=["stray.py"],
+            reason="lane missed its file",
+            actor="hwidong",
+        )
+    )
+
+    assert code == 0
+    assert emitted[-1]["reason_detail"] == "lane missed its file"
+    assert emitted[-1]["actor"] == "hwidong"
+    assert result["scope_amendments"][0]["reason_detail"] == "lane missed its file"
+    assert result["scope_amendments"][0]["actor"] == "hwidong"
+
+
 def test_steered_invocation_uses_resume_when_available_and_falls_back_in_place() -> None:
     initial = ["codex", "exec", "--output-last-message", "/tmp/last.txt", "-"]
     message = {
