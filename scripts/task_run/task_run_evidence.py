@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
@@ -31,6 +32,112 @@ from scripts.task_run.task_run_scope import (  # noqa: E402
     _refresh_scope_specs,
     _scope_result,
 )
+
+
+def _persist_full_report(
+    delivery: Mapping[str, Any], report_path: Path
+) -> dict[str, Any]:
+    """Write the complete delivered report beside its task-run result."""
+    source = delivery.get("log")
+    raw: bytes | None = None
+    if isinstance(source, (str, Path)):
+        try:
+            raw = Path(source).read_bytes()
+        except OSError:
+            raw = None
+    if raw is None:
+        text = delivery.get("text")
+        if isinstance(text, str):
+            raw = text.encode("utf-8")
+    try:
+        if raw is None:
+            return {
+                "path": str(report_path),
+                "bytes": None,
+                "complete": None,
+            }
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_bytes(raw)
+        expected = delivery.get("bytes")
+        complete = (
+            len(raw) == expected
+            if isinstance(expected, int) and not isinstance(expected, bool)
+            else not bool(delivery.get("truncated"))
+        )
+        complete = complete and report_path.stat().st_size == len(raw)
+        return {
+            "path": str(report_path),
+            "bytes": len(raw),
+            "complete": complete,
+            **({"error": "source report was clipped before persistence"} if not complete else {}),
+        }
+    except OSError as exc:
+        return {
+            "path": str(report_path),
+            "bytes": None,
+            "complete": False,
+            "error": str(exc),
+        }
+
+
+def _write_full_report(
+    delivery: dict[str, Any], report_path: Path
+) -> None:
+    delivery["full_report"] = _persist_full_report(delivery, report_path)
+
+
+def _short_summary(
+    *,
+    branch: object,
+    head: object,
+    verdict: object,
+    decisions: object,
+) -> dict[str, Any]:
+    """Return the three fields the integrator needs before opening the report."""
+    return {
+        "branch_head": {"branch": branch, "head": head},
+        "verdict": verdict,
+        "decisions_needing_confirmation": decisions if isinstance(decisions, list) else [],
+    }
+
+
+def _render_short_summary(summary: Mapping[str, Any]) -> str:
+    return json.dumps(dict(summary), ensure_ascii=False, separators=(",", ":"))
+
+
+def _attach_short_summary(
+    payload: dict[str, Any], delivery: dict[str, Any]
+) -> None:
+    payload["summary"] = _short_summary(
+        branch=payload.get("target_branch"),
+        head=payload.get("target_sha"),
+        verdict=payload.get("result_kind"),
+        decisions=payload.get(
+            "decisions_needing_confirmation", payload.get("review_required", [])
+        ),
+    )
+    delivery["text"] = _render_short_summary(payload["summary"])
+
+
+def _report_delivery_blockers(
+    delivery: Mapping[str, Any], *, report_only: bool
+) -> list[str]:
+    blockers: list[str] = []
+    full_report = delivery.get("full_report")
+    if isinstance(full_report, Mapping) and full_report.get("error"):
+        blockers.append(f"full report could not be saved: {full_report['error']}")
+    if not report_only:
+        return blockers
+    delivered_text = delivery.get("text")
+    if delivery.get("status") != "delivered" or not str(delivered_text or "").strip():
+        blockers.append("report-only task delivered no report: the lane must produce a full report")
+        return blockers
+    report_complete = isinstance(full_report, Mapping) and full_report.get("complete") is True
+    if delivery.get("truncated") and not report_complete:
+        blockers.append(
+            "report-only task result was truncated: the full report file is incomplete"
+        )
+    return blockers
 
 
 def _parent_progress(
