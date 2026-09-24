@@ -290,6 +290,32 @@ def test_critical_acceptance_skeleton_must_be_green_for_completion(tmp_path) -> 
     )
 
 
+def test_lane_prompt_surfaces_precomputed_gates_and_advisory_scope_findings() -> None:
+    prompt = task_run_prelaunch.acceptance_skeleton_prompt(
+        "Lane task",
+        {
+            "prelaunch_plan": {
+                "scope_verifiers": {
+                    "completion_gates": ["release-changed-line-coverage"],
+                    "matched_surface_ids": ["repo-python"],
+                    "bundle_status": "repo-owned-bundle",
+                    "verify_commands": ["python3 -m pytest -q tests/test_task.py"],
+                },
+                "scope_preflight": {
+                    "would_touch_outside_declared": [
+                        {"path": ".agents/temp-producers.yaml"}
+                    ]
+                },
+            }
+        },
+    )
+
+    assert "release-changed-line-coverage" in prompt
+    assert "repo-python" in prompt
+    assert "python3 -m pytest -q tests/test_task.py" in prompt
+    assert "would-touch-outside-declared: `.agents/temp-producers.yaml`" in prompt
+
+
 def test_cli_forwards_prelaunch_declarations_to_task_runner(
     tmp_path, monkeypatch
 ) -> None:

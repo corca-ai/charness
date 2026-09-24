@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import re
+import shlex
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -31,9 +32,7 @@ from scripts.task_run.task_run_git import (  # noqa: E402
     _validate_branch,
     _validate_worktree_path,
 )
-from scripts.task_run.task_run_prelaunch import (  # noqa: E402
-    _resolve_prelaunch_contract,
-)
+from scripts.task_run import task_run_prelaunch as _prelaunch  # noqa: E402
 from scripts.task_run.task_run_runtime import (  # noqa: E402
     _resolve_codex,
     _runtime_preview,
@@ -45,10 +44,15 @@ from scripts.task_run.task_run_runtime import (  # noqa: E402
 )
 from scripts.task_run.task_run_scope import (  # noqa: E402
     _git_tree_paths,
+    _scope_matches,
     normalize_scopes,
     resolve_scope_specs,
     scope_closure_warnings,
 )
+from scripts.task_run import task_run_scope_evidence as _scope_evidence  # noqa: E402
+from scripts.gates_support import select_verifiers as _select_verifiers  # noqa: E402
+from scripts.task_run import task_run_changed_line as _changed_line  # noqa: E402
+from scripts.mutation.sample_mutation_files import list_eligible as _list_eligible  # noqa: E402
 
 _LANE_SIZE_LIMIT_MINUTES = 60
 _LANE_SIZE_LIMIT_COMMIT_UNITS = 4
@@ -196,6 +200,136 @@ def _validate_executor_efforts(executor_order: Sequence[str], effort: str) -> No
             build_codex_args(effort=effort)
 
 
+def _verifier_command_targets(repo_root: Path, command: str) -> list[str]:
+    """Extract focused test targets or the standing pytest set from a command."""
+    from scripts.gates_support.run_standing_pytest import expand_targets
+
+    try:
+        tokens = shlex.split(command)
+    except ValueError:
+        return []
+    targets = [
+        tokens[index + 1]
+        for index, token in enumerate(tokens[:-1])
+        if token in {"--pytest-target", "--target"}
+    ]
+    if targets:
+        return targets
+    direct = [
+        token.removeprefix("./")
+        for token in tokens
+        if token.removeprefix("./").startswith("tests/")
+        and token.removeprefix("./").endswith(".py")
+    ]
+    if direct:
+        return direct
+    return expand_targets(repo_root) if any("pytest" in token for token in tokens) else []
+
+
+def _mapped_suite_paths(repo_root: Path, commands: Sequence[str]) -> list[str]:
+    """Resolve test files selected by the existing repo-owned verifier commands."""
+    root = repo_root.resolve()
+    suite_paths: set[str] = set()
+
+    def add_target(value: str) -> None:
+        target = value.removeprefix("./")
+        target_path = Path(target)
+        if target_path.is_absolute() or ".." in target_path.parts:
+            return
+        candidate = root / target
+        if any(marker in target for marker in ("*", "?", "[")):
+            try:
+                matches = sorted(root.glob(target))
+            except OSError:
+                matches = []
+            for match in matches:
+                add_target(match.relative_to(root).as_posix())
+            return
+        if candidate.is_dir():
+            try:
+                for child in candidate.rglob("*.py"):
+                    if child.name.startswith("test_") or child.name.endswith("_test.py"):
+                        suite_paths.add(child.relative_to(root).as_posix())
+            except OSError:
+                return
+        elif (candidate.is_file() or target.startswith("tests/")) and target.endswith(".py"):
+            if candidate.name.startswith("test_") or candidate.name.endswith("_test.py"):
+                suite_paths.add(target)
+
+    for command in commands:
+        for target in _verifier_command_targets(root, command):
+            add_target(target)
+    return sorted(suite_paths)
+
+
+def _scope_verifier_plan(
+    repo_root: Path,
+    *,
+    scope_paths: Sequence[str],
+    tree_paths: set[str],
+) -> dict[str, Any]:
+    """Precompute the existing surface verifier bundle and task-run gate names."""
+    result: dict[str, Any] = {
+        "status": "not-configured",
+        "scope_paths": list(scope_paths),
+        "matched_surface_ids": [],
+        "unmatched_paths": [],
+        "verify_commands": [],
+        "mapped_suites": [],
+        "bundle_status": "not-configured",
+        "completion_gates": [],
+        "notes": [],
+    }
+    try:
+        manifest = _select_verifiers.load_surfaces(repo_root, required=False)
+    except _select_verifiers.SurfaceError as exc:
+        result.update(
+            status="invalid",
+            bundle_status="missing-bundle",
+            notes=[str(exc)],
+        )
+        manifest = None
+    if manifest is None and result["status"] == "invalid":
+        return result
+    if manifest is not None:
+        mapped = _select_verifiers.match_surfaces(manifest, list(scope_paths))
+        bundle_status, notes = _select_verifiers.bundle_status(mapped)
+        recommendations = _select_verifiers.command_reasons(mapped, "verify")
+        verify_commands = _select_verifiers.dedupe_preserve_order(
+            [
+                str(item["command"])
+                for item in recommendations
+                if isinstance(item.get("command"), str)
+            ]
+        )
+        result.update(
+            status="configured",
+            surfaces_manifest_path=manifest["path"],
+            matched_surface_ids=[
+                str(surface["surface_id"])
+                for surface in mapped.get("matched_surfaces", [])
+                if isinstance(surface, Mapping) and isinstance(surface.get("surface_id"), str)
+            ],
+            unmatched_paths=list(mapped.get("unmatched_paths") or []),
+            verify_commands=verify_commands,
+            mapped_suites=_mapped_suite_paths(repo_root, verify_commands),
+            bundle_status=bundle_status,
+            notes=notes,
+        )
+
+    gate_script = _changed_line.GATE_SCRIPT.as_posix()
+    if gate_script in tree_paths:
+        try:
+            eligible = set(_list_eligible(repo_root))
+        except Exception:  # noqa: BLE001 - other repos may not configure this release pool
+            eligible = set()
+        if eligible.intersection(scope_paths):
+            result["completion_gates"].append(
+                _changed_line.GATE_SCRIPT.stem.replace("_", "-")
+            )
+    return result
+
+
 def resolve_task_inputs(
     resolved_repo: Path,
     *,
@@ -275,8 +409,37 @@ def resolve_task_inputs(
         base_sha = _resolve_base_sha(resolved_repo, resolved_base)
     normalized_scopes = normalize_scopes(scopes)
     scope_specs = resolve_scope_specs(resolved_repo, normalized_scopes, base_sha)
-    tree_paths, _tree_directories = _git_tree_paths(resolved_repo, base_sha)
+    tree_paths, tree_directories = _git_tree_paths(resolved_repo, base_sha)
     scope_warnings = scope_closure_warnings(scope_specs, tree_paths)
+    scope_paths = _prelaunch.scope_candidate_paths(
+        scope_specs, tree_paths, tree_directories
+    )
+    evidence_paths = _scope_evidence.suggest_scopes(prompt)
+    would_touch_outside = [
+        {
+            "code": "would-touch-outside-declared",
+            "path": path,
+            "basis": "the brief/task evidence names this repository path",
+        }
+        for path in evidence_paths
+        if not any(_scope_matches(path, spec) for spec in scope_specs)
+    ]
+    required_scope_paths = sorted(
+        str(spec["path"])
+        for spec in scope_specs
+        if spec.get("kind") == "exact" and str(spec.get("path", "")) not in tree_paths
+    )
+    scope_preflight = {
+        "status": "findings" if would_touch_outside else "clear",
+        "evidence_paths": evidence_paths,
+        "would_touch_outside_declared": would_touch_outside,
+        "required_scope_paths": required_scope_paths,
+    }
+    scope_verifiers = _scope_verifier_plan(
+        resolved_repo,
+        scope_paths=scope_paths,
+        tree_paths=tree_paths,
+    )
     git_common_dir = (
         Path(repo_snapshot["git_common_dir"])
         if repo_snapshot is not None
@@ -287,7 +450,7 @@ def resolve_task_inputs(
     if not isinstance(timeout_seconds, int) or timeout_seconds < 1:
         raise TaskRunError("--timeout-seconds must be a positive integer")
     resolved_no_progress = _resolve_no_progress_seconds(no_progress_seconds)
-    resolved_prelaunch = _resolve_prelaunch_contract(prelaunch)
+    resolved_prelaunch = _prelaunch._resolve_prelaunch_contract(prelaunch)
     tip_sha = (
         str(repo_snapshot["head"])
         if repo_snapshot is not None
@@ -304,6 +467,12 @@ def resolve_task_inputs(
     )
     lane_size = _lane_size_hygiene(prompt)
     launch_warnings = [warning for warning in (base_warning, lane_size["warning"]) if warning]
+    launch_warnings.extend(
+        f"brief evidence names {finding['path']!r} outside declared scope"
+        for finding in would_touch_outside
+    )
+    resolved_prelaunch["scope_preflight"] = scope_preflight
+    resolved_prelaunch["scope_verifiers"] = scope_verifiers
     resolved_prelaunch["launch_hygiene"] = {
         "base_freshness": {
             "status": "fresh" if base_fresh else "stale",
@@ -328,6 +497,8 @@ def resolve_task_inputs(
         "scopes": normalized_scopes,
         "scope_specs": scope_specs,
         "scope_warnings": scope_warnings,
+        "scope_preflight": scope_preflight,
+        "scope_verifiers": scope_verifiers,
         "codex_path": codex_path,
         "executor": resolved_executor,
         "executor_order": executor_order,

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -30,14 +31,49 @@ def _complete(
     git: Any = None,
     persist_events: list[str] | None = None,
     carrier_override: dict[str, Any] | None = None,
+    scope_specs_override: list[dict[str, Any]] | None = None,
+    prelaunch_plan_override: dict[str, Any] | None = None,
+    extra_files: dict[str, str] | None = None,
+    delete_path: str | None = None,
 ) -> dict[str, Any]:
-    target = install_committed_repo(tmp_path / "worktree", {"module.py": "VALUE = 1\n"})
+    mapped_suite = "tests/test_completion_scope.py"
+    surface_manifest = json.dumps(
+        {
+            "version": 1,
+            "surfaces": [
+                {
+                    "surface_id": "completion-fixture",
+                    "description": "Fixture verifier mapping for task completion tests.",
+                    "source_paths": ["module.py"],
+                    "derived_paths": [],
+                    "sync_commands": [],
+                    "verify_commands": [f"python3 -m pytest -q {mapped_suite}"],
+                    "notes": [],
+                }
+            ],
+        }
+    )
+    files = {
+        "module.py": "VALUE = 1\n",
+        ".agents/surfaces.json": surface_manifest,
+        mapped_suite: "def test_completion_scope():\n    assert True\n",
+        **(extra_files or {}),
+    }
+    target = install_committed_repo(
+        tmp_path / "worktree",
+        files,
+    )
     base_sha = task_run_git._git_output(target, "rev-parse", "HEAD").strip()
     if candidate_kind == "clean":
         (target / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
         task_run_git._commit_lane_snapshot(target, message="test candidate")
     elif candidate_kind == "dirty":
         (target / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+    elif candidate_kind == "delete":
+        if not delete_path:
+            raise AssertionError("delete candidates need a path")
+        (target / delete_path).unlink()
+        task_run_git._commit_lane_snapshot(target, message="delete mapped file")
     elif candidate_kind != "absent":
         raise AssertionError(f"unknown candidate fixture: {candidate_kind}")
     branch = task_run_git._git_output(target, "symbolic-ref", "--quiet", "--short", "HEAD").strip()
@@ -56,6 +92,16 @@ def _complete(
     }
     if result_state is None:
         result_state = "validated-partial-result" if parent_blocking else "completed"
+    prelaunch_plan = prelaunch_plan_override if prelaunch_plan_override is not None else {
+        "scope_preflight": {"required_scope_paths": []},
+        "scope_verifiers": {
+            "status": "configured",
+            "bundle_status": "repo-owned-bundle",
+            "scope_paths": ["module.py"],
+            "unmatched_paths": [],
+            "mapped_suites": [mapped_suite],
+        },
+    }
     evidence = {"populations": {}}
     scope = {"verdict": scope_verdict, "reason": "scope drifted"}
     parent_progress = {
@@ -71,13 +117,18 @@ def _complete(
         return task_run_git._git(cwd, *args)
 
     return task_run_completion.complete_task(
-        {"task_id": "lane-1", "target_branch": branch, "base_sha": base_sha},
+        {
+            "task_id": "lane-1",
+            "target_branch": branch,
+            "base_sha": base_sha,
+            "prelaunch_plan": prelaunch_plan,
+        },
         runtime_path=tmp_path / "runtime",
         resolved_target=target,
         resolved_repo=target,
         before_exec={},
         base_sha=base_sha,
-        scope_specs=[],
+        scope_specs=scope_specs_override or [],
         require_change=False,
         parent_before={},
         parent_before_head=base_sha,
@@ -341,6 +392,95 @@ def test_a_gate_refusal_demotes_a_completed_lane_and_names_the_line(
         "and captured logs; changed-line gate blocked (exit 1): scripts/x.py lines 7."
         in payload["next_step"]
     )
+    capsys.readouterr()
+
+
+def test_completion_blocks_a_scope_without_verifier_coverage(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    payload = _complete(
+        tmp_path,
+        prelaunch_plan_override={
+            "scope_preflight": {"required_scope_paths": []},
+            "scope_verifiers": {
+                "status": "configured",
+                "bundle_status": "missing-bundle",
+                "scope_paths": ["module.py"],
+                "unmatched_paths": ["module.py"],
+                "mapped_suites": [],
+            },
+        },
+        changed_line_gate=lambda *_args, **_kwargs: {
+            "status": "clean",
+            "blocking": False,
+            "summary": "gate clean",
+        },
+    )
+
+    assert payload["status"] == "validated-partial-result"
+    assert payload["approval_eligibility"] == "ineligible"
+    assert any("coverage mapping deficit" in item for item in payload["blockers"])
+    capsys.readouterr()
+
+
+def test_completion_blocks_a_missing_exact_scope_file(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    payload = _complete(
+        tmp_path,
+        candidate_kind="delete",
+        delete_path="module.py",
+        scope_specs_override=[{"path": "module.py", "kind": "exact"}],
+        changed_line_gate=lambda *_args, **_kwargs: {
+            "status": "clean",
+            "blocking": False,
+            "summary": "gate clean",
+        },
+    )
+
+    assert payload["status"] == "validated-partial-result"
+    assert payload["approval_eligibility"] == "ineligible"
+    assert payload["blocker"].startswith("in-scope file deficit:")
+    assert "module.py" in payload["blocker"]
+    capsys.readouterr()
+
+
+def test_completion_blocks_a_mapped_suite_dropped_from_the_candidate(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    suite = "tests/test_mapped.py"
+    surfaces = (
+        '{"version":1,"surfaces":[{"surface_id":"repo-python",'
+        '"description":"Repo Python tests.","source_paths":["module.py","tests/**"],'
+        '"derived_paths":[],"sync_commands":[],'
+        f'"verify_commands":["python3 -m pytest -q {suite}"],"notes":[]}]}}'
+    )
+    payload = _complete(
+        tmp_path,
+        candidate_kind="delete",
+        delete_path=suite,
+        extra_files={suite: "def test_mapped():\n    assert True\n", ".agents/surfaces.json": surfaces},
+        prelaunch_plan_override={
+            "scope_preflight": {"required_scope_paths": []},
+            "scope_verifiers": {
+                "status": "configured",
+                "bundle_status": "repo-owned-bundle",
+                "scope_paths": ["module.py"],
+                "unmatched_paths": [],
+                "mapped_suites": [suite],
+            },
+        },
+        changed_line_gate=lambda *_args, **_kwargs: {
+            "status": "clean",
+            "blocking": False,
+            "summary": "gate clean",
+        },
+    )
+
+    assert payload["status"] == "validated-partial-result"
+    assert payload["approval_eligibility"] == "ineligible"
+    assert payload["blocker"].startswith("mapped suite deficit:")
+    assert suite in payload["blocker"]
     capsys.readouterr()
 
 

@@ -148,6 +148,14 @@ def complete_task(
         persistence=payload["persistence"],
         acceptance_skeleton=acceptance_skeleton,
     )
+    blockers.extend(
+        _prelaunch.acceptance_deficit_blockers(
+            payload,
+            resolved_target=resolved_target,
+            scope_specs=scope_specs,
+            candidate=candidate,
+        )
+    )
     _lane_runner.apply_lane_receipt(
         payload,
         blockers,
@@ -374,6 +382,9 @@ def _prove_ready_candidate(
         log_dir=stdout_log.parent,
         skip_reason=("; ".join(blockers) if blockers else None),
     )
+    gate, unmapped_blocker = _changed_line.block_unmapped_pool_files(gate)
+    if unmapped_blocker:
+        blockers.append(unmapped_blocker)
     if gate.get("blocking"):
         blockers.append(str(gate.get("summary") or "changed-line gate refused the candidate"))
 

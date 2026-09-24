@@ -75,6 +75,158 @@ def _resolve_prelaunch_contract(value: Mapping[str, Any] | None) -> dict[str, An
     }
 
 
+def scope_candidate_paths(
+    scope_specs: Sequence[Mapping[str, Any]],
+    tree_paths: set[str],
+    tree_directories: set[str],
+) -> list[str]:
+    """Expand the frozen write scope to existing files plus exact creation targets."""
+    from scripts.task_run import task_run_scope as scope
+
+    paths = {
+        path
+        for path in tree_paths - tree_directories
+        if any(scope._scope_matches(path, spec) for spec in scope_specs)
+    }
+    paths.update(
+        str(spec["path"])
+        for spec in scope_specs
+        if spec.get("kind") == "exact" and str(spec.get("path", "")) not in tree_paths
+    )
+    return sorted(paths)
+
+
+def _scope_file_deficits(
+    plan: Mapping[str, Any],
+    target: Path,
+    scope_specs: Sequence[Mapping[str, Any]],
+    changed_paths: Sequence[Any],
+) -> list[str]:
+    from scripts.task_run import task_run_scope as scope
+
+    preflight = plan.get("scope_preflight")
+    required = preflight.get("required_scope_paths", []) if isinstance(preflight, Mapping) else []
+    required = required if isinstance(required, list) else []
+    missing = {
+        path
+        for path in required
+        if isinstance(path, str) and not (target / path).exists()
+    }
+    missing.update(
+        path
+        for path in changed_paths
+        if isinstance(path, str)
+        and any(scope._scope_matches(path, spec) for spec in scope_specs)
+        and not (target / path).exists()
+    )
+    for spec in scope_specs:
+        path = str(spec.get("path", ""))
+        if spec.get("kind") == "glob" and not spec.get("matches"):
+            if not any(
+                isinstance(changed, str) and scope._scope_matches(changed, spec)
+                for changed in changed_paths
+            ):
+                missing.add(path)
+        elif spec.get("kind") == "directory" and not (target / path).is_dir():
+            missing.add(path)
+    return (
+        [
+            "in-scope file deficit: required scope files are absent from the candidate: "
+            + ", ".join(sorted(missing))
+        ]
+        if missing
+        else []
+    )
+
+
+def _coverage_mapping_deficits(
+    verifiers: Mapping[str, Any], target: Path, changed_paths: Sequence[Any]
+) -> list[str]:
+    from scripts.gates_support import select_verifiers
+
+    if verifiers.get("status") != "configured":
+        state = str(verifiers.get("status") or "missing")
+        return [f"coverage mapping deficit: scope-to-verifier mapping is {state}"]
+    blockers: list[str] = []
+    unmatched = verifiers.get("unmatched_paths", [])
+    unmatched = (
+        [path for path in unmatched if isinstance(path, str)]
+        if isinstance(unmatched, list)
+        else []
+    )
+    if verifiers.get("bundle_status") == "missing-bundle" or unmatched:
+        raw_scope_paths = verifiers.get("scope_paths", [])
+        scope_paths = raw_scope_paths if isinstance(raw_scope_paths, list) else []
+        paths = unmatched or scope_paths
+        blockers.append(
+            "coverage mapping deficit: declared scope has no mapped verifier for: "
+            + ", ".join(str(path) for path in paths)
+        )
+    try:
+        manifest = select_verifiers.load_surfaces(target, required=False)
+    except select_verifiers.SurfaceError:
+        manifest = None
+    if manifest is None:
+        blockers.append("coverage mapping deficit: the selected surfaces manifest is missing")
+    elif changed_paths:
+        paths = [path for path in changed_paths if isinstance(path, str)]
+        try:
+            actual = select_verifiers.match_surfaces(manifest, paths)
+        except select_verifiers.SurfaceError:
+            actual = None
+        if actual is None:
+            blockers.append("coverage mapping deficit: changed candidate paths could not be mapped")
+        else:
+            bundle, _notes = select_verifiers.bundle_status(actual)
+            unmatched = actual.get("unmatched_paths") or []
+            if bundle == "missing-bundle" or unmatched:
+                blockers.append(
+                    "coverage mapping deficit: changed candidate paths have no mapped verifier for: "
+                    + ", ".join(str(path) for path in unmatched)
+                )
+    return blockers
+
+
+def _mapped_suite_deficits(verifiers: Mapping[str, Any], target: Path) -> list[str]:
+    mapped = verifiers.get("mapped_suites", [])
+    mapped = mapped if isinstance(mapped, list) else []
+    missing = sorted(
+        {
+            path
+            for path in mapped
+            if isinstance(path, str) and not (target / path).is_file()
+        }
+    )
+    if not missing:
+        return []
+    return [
+        "mapped suite deficit: suites selected at launch are missing from the candidate: "
+        + ", ".join(missing)
+    ]
+
+
+def acceptance_deficit_blockers(
+    payload: Mapping[str, Any],
+    *,
+    resolved_target: Path,
+    scope_specs: Sequence[Mapping[str, Any]],
+    candidate: Mapping[str, Any],
+) -> list[str]:
+    """Return receipt blockers when scoped files or their verifiers disappear."""
+    plan = payload.get("prelaunch_plan")
+    if not isinstance(plan, Mapping):
+        return ["acceptance deficit: launch preflight and verifier plan are missing"]
+    changed = candidate.get("changed_paths")
+    changed = changed if isinstance(changed, list) else []
+    blockers = _scope_file_deficits(plan, resolved_target, scope_specs, changed)
+    verifiers = plan.get("scope_verifiers")
+    if not isinstance(verifiers, Mapping):
+        return [*blockers, "coverage mapping deficit: no scope-to-verifier plan was recorded"]
+    blockers.extend(_coverage_mapping_deficits(verifiers, resolved_target, changed))
+    blockers.extend(_mapped_suite_deficits(verifiers, resolved_target))
+    return blockers
+
+
 def _brief_critique_prompt(brief: str, checks: Sequence[Mapping[str, Any]]) -> str:
     return (
         "Review this task brief read-only against repository code and available provider docs. "
@@ -223,14 +375,55 @@ def run_acceptance_skeleton(worktree: Path, path_value: str) -> dict[str, Any]:
 def acceptance_skeleton_prompt(prompt: str, payload: Mapping[str, Any]) -> str:
     prelaunch = payload.get("prelaunch")
     acceptance = prelaunch.get("acceptance_skeleton") if isinstance(prelaunch, Mapping) else None
-    if not isinstance(acceptance, Mapping) or not acceptance.get("path"):
+    plan = payload.get("prelaunch_plan")
+    sections: list[str] = []
+    if isinstance(plan, Mapping):
+        verifiers = plan.get("scope_verifiers")
+        if isinstance(verifiers, Mapping):
+            gates = verifiers.get("completion_gates")
+            if isinstance(gates, list) and gates:
+                sections.append(
+                    "Task-run completion gates selected for the declared scope: "
+                    + ", ".join(f"`{gate}`" for gate in gates if isinstance(gate, str))
+                    + "."
+                )
+            surfaces = verifiers.get("matched_surface_ids")
+            if isinstance(surfaces, list) and surfaces:
+                sections.append(
+                    "Verifier surfaces selected for the declared scope: "
+                    + ", ".join(f"`{surface}`" for surface in surfaces if isinstance(surface, str))
+                    + f" (bundle status: {verifiers.get('bundle_status', 'unknown')})."
+                )
+            commands = verifiers.get("verify_commands")
+            if isinstance(commands, list) and commands:
+                sections.append(
+                    "Mapped verifier commands:\n"
+                    + "\n".join(f"- `{command}`" for command in commands if isinstance(command, str))
+                )
+        scope_preflight = plan.get("scope_preflight")
+        findings = (
+            scope_preflight.get("would_touch_outside_declared")
+            if isinstance(scope_preflight, Mapping)
+            else None
+        )
+        if isinstance(findings, list) and findings:
+            sections.append(
+                "Scope preflight findings (advisory; inspect before editing):\n"
+                + "\n".join(
+                    f"- would-touch-outside-declared: `{finding['path']}`"
+                    for finding in findings
+                    if isinstance(finding, Mapping) and isinstance(finding.get("path"), str)
+                )
+            )
+    if isinstance(acceptance, Mapping) and acceptance.get("path"):
+        sections.append(
+            "Critical acceptance skeleton: run `python3 -m pytest -q "
+            + str(acceptance["path"])
+            + "` and make it pass before reporting completion."
+        )
+    if not sections:
         return prompt
-    return (
-        prompt.rstrip()
-        + "\n\nCritical acceptance skeleton: run `python3 -m pytest -q "
-        + str(acceptance["path"])
-        + "` and make it pass before reporting completion."
-    )
+    return prompt.rstrip() + "\n\n" + "\n\n".join(sections)
 
 
 def run_prelaunch_gates(

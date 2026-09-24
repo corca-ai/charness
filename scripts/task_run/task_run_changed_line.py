@@ -222,16 +222,28 @@ def run_changed_line_gate(
     report = _consumer_report(payload)
     status = str(payload.get("status") or NO_VERDICT)
     reason = str(payload.get("reason") or "")
+    raw_unmapped = payload.get("unmapped_changed_pool_files")
+    raw_unmapped = raw_unmapped if isinstance(raw_unmapped, list) else []
+    unmapped = [
+        str(path)
+        for path in raw_unmapped
+        if isinstance(path, str) and path
+    ]
+    if unmapped and status == "clean":
+        analyzed = payload.get("analyzed_changed_pool_files")
+        status = "partial" if isinstance(analyzed, list) and analyzed else "unproven"
+        reason = "coverage mapping missing for changed pool files: " + ", ".join(unmapped)
     blocking_detail = report.get("blocking_detail") if isinstance(report, dict) else None
     verdict.update(
         {
             "status": status,
             # Every non-zero exit is one the pre-push hook refuses on; a payload
-            # without a verdict blocks too, whatever byte the child returned.
-            "blocking": outcome.returncode != 0 or status == NO_VERDICT,
+            # without a verdict blocks too. A clean byte cannot override an
+            # explicit list of changed files that had no coverage mapping.
+            "blocking": outcome.returncode != 0 or status == NO_VERDICT or bool(unmapped),
             "reason": reason,
             "analyzed_changed_pool_files": list(payload.get("analyzed_changed_pool_files") or []),
-            "unmapped_changed_pool_files": list(payload.get("unmapped_changed_pool_files") or []),
+            "unmapped_changed_pool_files": unmapped,
             "blocking_detail": blocking_detail if isinstance(blocking_detail, dict) else {},
             # Verbatim: the consumer writes a mapping of path -> [{line, source}],
             # and the receipt is where the parent reads it, so its shape is the
@@ -242,7 +254,10 @@ def run_changed_line_gate(
     detail = summarize_blocking_detail(verdict["blocking_detail"])
     if verdict["blocking"]:
         verdict["summary"] = f"changed-line gate {status} (exit {outcome.returncode}): " + (
-            detail or reason or "the gate refused without naming a reason"
+            detail
+            or ("unmapped changed pool files: " + ", ".join(unmapped) if unmapped else "")
+            or reason
+            or "the gate refused without naming a reason"
         )
     else:
         verdict["summary"] = f"changed-line gate {status}: {reason}".rstrip(": ")
@@ -252,6 +267,30 @@ def run_changed_line_gate(
 def _candidate_has_work(candidate: Mapping[str, Any]) -> bool:
     """Whether a completed candidate has bytes worth preserving, even if invalid."""
     return bool(candidate.get("useful") or candidate.get("changed_paths"))
+
+
+def block_unmapped_pool_files(
+    verdict: Mapping[str, Any],
+) -> tuple[dict[str, Any], str | None]:
+    """Keep a clean gate payload from hiding changed files without suite mapping."""
+    raw = verdict.get("unmapped_changed_pool_files")
+    unmapped = sorted(
+        {path for path in raw if isinstance(path, str) and path}
+        if isinstance(raw, list)
+        else set()
+    )
+    if not unmapped:
+        return dict(verdict), None
+    guarded = dict(verdict)
+    if not guarded.get("blocking"):
+        guarded["blocking"] = True
+        guarded["summary"] = "changed-line gate coverage mapping deficit: " + ", ".join(
+            unmapped
+        )
+    return guarded, (
+        "coverage mapping deficit: changed pool files have no mapped suite: "
+        + ", ".join(unmapped)
+    )
 
 
 def _changed_line_verdict(

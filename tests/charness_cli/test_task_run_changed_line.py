@@ -35,13 +35,19 @@ _CONSUMER_REPORT = {
 }
 
 
-def _wrapper_yaml(status: str, *, consumer: dict[str, Any] | None = None, reason: str = "") -> str:
+def _wrapper_yaml(
+    status: str,
+    *,
+    consumer: dict[str, Any] | None = None,
+    reason: str = "",
+    unmapped: list[str] | None = None,
+) -> str:
     payload: dict[str, Any] = {
         "status": status,
         "reason": reason,
         "base_sha": "f" * 40,
         "analyzed_changed_pool_files": ["scripts/example.py"],
-        "unmapped_changed_pool_files": [],
+        "unmapped_changed_pool_files": list(unmapped or []),
     }
     if consumer is not None:
         payload["consumer_stdout"] = yaml.safe_dump(consumer, sort_keys=False)
@@ -192,6 +198,27 @@ def test_a_clean_verdict_is_not_blocking(tmp_path: Path) -> None:
     assert verdict["blocking"] is False
     assert verdict["blocking_detail"] == {}
     assert verdict["summary"].startswith("changed-line gate clean: every mapped")
+
+
+def test_a_zero_exit_cannot_hide_unmapped_changed_pool_files(tmp_path: Path) -> None:
+    tree = _tree_with_gate(tmp_path)
+    run = _fake_run(
+        _outcome(
+            0,
+            _wrapper_yaml(
+                "clean",
+                consumer={"ok": True, "blocking": [], "blocking_detail": {}},
+                unmapped=["scripts/unmapped.py"],
+            ),
+        )
+    )
+
+    verdict = gate.run_changed_line_gate(tree, base_sha="c" * 40, log_dir=tmp_path / "l", run=run)
+
+    assert verdict["status"] == "partial"
+    assert verdict["blocking"] is True
+    assert verdict["unmapped_changed_pool_files"] == ["scripts/unmapped.py"]
+    assert "scripts/unmapped.py" in verdict["summary"]
 
 
 def test_an_unestablished_or_partial_exit_blocks_like_the_hook(tmp_path: Path) -> None:
