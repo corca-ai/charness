@@ -6,12 +6,16 @@
 - **Reviewers**: two fresh-eye parallel reviewers (A: operational/safety angle, B: contract/readability angle) + synthesis; read-only, no repo mutation
 - **Lane evidence**: release gate 89 passed, 0 failed
 
+Fresh-eye satisfaction: parent-delegated two angle reviewers plus synthesis
+
 ## Reviewer Tier Evidence
 
 - **Requested tier**: `high-leverage`
 - **Requested spawn fields**: read-only shared checkout; structured concerns schema
 - **Reviewer A**: operational/data-loss angle (`/tmp/critique-A.md`) — 5 findings (2 major, 3 minor), 5 non-findings cleared, verdict SHIP-WITH-NOTES
 - **Reviewer B**: contract/readability angle (`/tmp/critique-B.md`) — 5 findings (4 major, 1 minor), 5 non-findings cleared, verdict SHIP-WITH-NOTES
+- **Host exposure state**: `host-defaulted`
+- **Application state**: `two angle reports plus synthesis delivered with concerns and four-bin triage`
 - **Delivery state**: `findings-received`
 - **Execution mode**: `typed-subagent`
 - **Lane evidence**: release lane green, 89 passed, 0 failed
@@ -69,6 +73,14 @@ Items worth addressing before consumers pin the new shapes (B findings 1–4); n
 
 - **Reviewer A**: "**SHIP-WITH-NOTES** — no blocker found; the two major items are narrow TOCTOU/fall-through windows on machine-owned paths, but finding 1 should get a re-verify-before-`--force` (or non-force remove with retry) and finding 2 should treat entrypoint-failure as a sweep stop, not a fall-through, in a follow-up."
 - **Reviewer B**: "**SHIP-WITH-NOTES** — no data-loss or silent-corruption blocker found (removals are salvage-gated, nack paths are safe, exit codes are tested); findings 1–4 should be addressed as docs/rename follow-ups, ideally before consumers pin the `reason`/`carrier`/train-status shapes."
+
+## Boundary Ownership
+
+- **Producer**: release critique reviewers (angle findings plus synthesis)
+- **Consumer**: release publisher and operators reading the release notes
+- **Owning surface**: `charness-artifacts/critique/v8120-critique.md` (this
+  record); reviewed code owned by its modules
+- **Verdict**: `owned-correctly`
 
 ## Publish Recommendation
 
