@@ -5314,6 +5314,16 @@ def _load_task_run_lib(args: argparse.Namespace):
     return task_run
 
 
+def _load_train_lib(args: argparse.Namespace):
+    repo_root = _resolve_worktree_lib_root(args)
+    repo_text = str(repo_root)
+    if repo_text not in sys.path:
+        sys.path.insert(0, repo_text)
+    from scripts.task_run import task_run_train
+
+    return task_run_train
+
+
 def _resolve_worktree_target(args: argparse.Namespace) -> Path:
     target = args.repo_root if args.repo_root is not None else Path.cwd()
     return Path(target).resolve()
@@ -5457,6 +5467,19 @@ def cmd_task_run(args: argparse.Namespace) -> int:
     payload["blocker"] = result_state.blocker_for_receipt(payload)
     emit_yaml(payload)
     return result_state.exit_code_for_result_kind(kind)
+
+
+def cmd_train(args: argparse.Namespace) -> int:
+    repo_root = _resolve_worktree_target(args)
+    lib = _load_train_lib(args)
+    payload = lib.run_train(
+        repo_root,
+        args.branches,
+        main_ref=args.main,
+        profile_path=args.profile,
+    )
+    emit_yaml(payload)
+    return 0 if payload.get("status") == lib.PASS else 1
 
 
 def _resolve_goal_run_helper_repo_root(args: argparse.Namespace) -> Path:
@@ -5819,6 +5842,33 @@ def build_parser() -> argparse.ArgumentParser:
     task_run_parser.add_argument("--home-root", type=Path, default=default_home_root(), help=argparse.SUPPRESS)
     task_run_parser.add_argument("--charness-checkout", type=Path, help=argparse.SUPPRESS)
     task_run_parser.set_defaults(func=cmd_task_run)
+
+    train_parser = subparsers.add_parser(
+        "train",
+        help="Stack, verify, and fast-forward an explicit queue of local lane branches.",
+    )
+    train_parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repository whose local main branch and lane branches are integrated.",
+    )
+    train_parser.add_argument(
+        "--main",
+        default="main",
+        help="Local branch to guard and fast-forward (default: main).",
+    )
+    train_parser.add_argument(
+        "--profile",
+        type=Path,
+        help="Optional verify profile; defaults to .agents/train-verify.yaml or built-in standing pytest.",
+    )
+    train_parser.add_argument(
+        "branches",
+        nargs="+",
+        help="Local lane branches in queue order.",
+    )
+    train_parser.set_defaults(func=cmd_train)
 
     catalog_parser = subparsers.add_parser(
         "catalog",
