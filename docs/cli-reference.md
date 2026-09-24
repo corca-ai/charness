@@ -231,19 +231,21 @@ options:
 ## `charness task`
 
 ```text
-usage: charness task [-h] {status,steer,run} ...
+usage: charness task [-h] {status,executors,steer,run} ...
 
 positional arguments:
-  {status,steer,run}
-    status            Show one external task-run result, or list all task-run
-                      results.
-    steer             Queue a message for a running lane or amend its retained
-                      candidate scope.
-    run               Run one independently delegable lane in a clean named
-                      worktree and emit a compact receipt.
+  {status,executors,steer,run}
+    status              Show one external task-run result, or list all task-
+                        run results.
+    executors           Check executor executable availability without
+                        starting a lane.
+    steer               Queue a message for a running lane or amend its
+                        retained candidate scope.
+    run                 Run one independently delegable lane in a clean named
+                        worktree and emit a compact receipt.
 
 options:
-  -h, --help          show this help message and exit
+  -h, --help            show this help message and exit
 ```
 
 ## `charness task status`
@@ -258,6 +260,21 @@ options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
                         Parent repo whose external task-run runtime is read.
+```
+
+## `charness task executors`
+
+```text
+usage: charness task executors [-h] [--repo-root REPO_ROOT]
+
+Resolve the configured executor executables without launching them. Provider
+quota remains unknown until an executor reports a usage limit.
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Repo whose task-run environment is selected. Defaults
+                        to the current directory.
 ```
 
 ## `charness task steer`
@@ -286,7 +303,7 @@ options:
 usage: charness task run [-h] [--repo-root REPO_ROOT] [--lane LANE]
                          [--path PATH] [--branch BRANCH] [--base BASE] --scope
                          SCOPE (--prompt PROMPT | --prompt-file PROMPT_FILE)
-                         [--executor {codex,muse}] --effort EFFORT
+                         [--executor EXECUTOR] --effort EFFORT
                          [--task-id TASK_ID] [--prepare] [--require-change]
                          [--skip-prepare] [--allow-no-change] [--report-only]
                          [--critical-lane]
@@ -330,10 +347,10 @@ options:
                         executor.
   --prompt-file PROMPT_FILE
                         Read implementation instructions from this file.
-  --executor {codex,muse}
-                        Lane executor: codex (fixed gpt-6-luna model) or muse
-                        (muse default model). Default: codex. Effort presets
-                        depend on the executor.
+  --executor EXECUTOR   Ordered lane executors, comma-separated (for example
+                        codex,muse); usage-limit failures fall through in
+                        order. Default: codex. Effort must fit every listed
+                        executor.
   --effort EFFORT       Orchestrator-selected reasoning effort: medium, xhigh,
                         or max for codex; medium, high, xhigh, or max for
                         muse.
