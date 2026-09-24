@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.task_run import task_run, task_run_git, task_run_scope
+from scripts.task_run import task_run, task_run_git, task_run_scope, task_run_scope_evidence
 from scripts.worktree import checkout_view
 
 from .test_task_run_fixtures import _codex, _commit, _git, _repo, _run
@@ -709,3 +709,71 @@ def test_out_of_scope_change_names_the_offending_paths(tmp_path: Path) -> None:
     assert payload["candidate"]["status"] == "invalid"
     assert payload["candidate"]["disallowed_paths"] == ["stray.py"]
     assert "outside the declared scope: stray.py" in payload["next_step"]
+
+
+_SCOPE_MISMATCH_CASE_A = """scope mismatch - real owner `.agents/temp-producers.yaml` is outside declared
+scope; add entries for
+`scripts/task_run/task_run_execution.py::_run_executor_invocation::prompt_handle`
+and `scripts/task_run/task_run_test_cache.py::remember_green_outcome::handle`."""
+
+_SCOPE_MISMATCH_CASE_B = """scope mismatch - extending coverage for `validate_verify_profile` and `run_train` requires editing their canonical test owner,
+`tests/charness_cli/test_task_run_train.py`, which is outside the declared scope.
+Adding those tests to `test_task_run_friction.py` would substitute the wrong
+behavior owner."""
+
+_SCOPE_MISMATCH_CASE_C = """scope mismatch - the sanctioned shim sync would rewrite four drifted files
+outside the declared scope: scripts/task_run/task_run_dag.py,
+scripts/task_run/task_run_ledger.py, scripts/task_run/task_run_lesson_injection.py,
+and scripts/task_run/task_run_test_cache.py."""
+
+
+def test_scope_evidence_recalls_every_case_a_owner() -> None:
+    assert task_run_scope_evidence.suggest_scopes(_SCOPE_MISMATCH_CASE_A) == [
+        ".agents/temp-producers.yaml",
+        "scripts/task_run/task_run_execution.py",
+        "scripts/task_run/task_run_test_cache.py",
+    ]
+
+
+def test_scope_evidence_keeps_case_b_canonical_test_owner() -> None:
+    suggested = task_run_scope_evidence.suggest_scopes(_SCOPE_MISMATCH_CASE_B)
+
+    assert suggested == ["tests/charness_cli/test_task_run_train.py"]
+    assert "test_task_run_friction.py" not in suggested
+
+
+def test_scope_evidence_recalls_every_case_c_drifted_file() -> None:
+    assert task_run_scope_evidence.suggest_scopes(_SCOPE_MISMATCH_CASE_C) == [
+        "scripts/task_run/task_run_dag.py",
+        "scripts/task_run/task_run_ledger.py",
+        "scripts/task_run/task_run_lesson_injection.py",
+        "scripts/task_run/task_run_test_cache.py",
+    ]
+
+
+def test_scope_evidence_extracts_gate_log_path_line_entries() -> None:
+    gate_log = """FAIL release-changed-line-coverage
+blocking_detail: {"scripts/task_run/task_run_scope.py": {"changed_and_missing": [42]}}
+blocking_targets: {"scripts/task_run/task_run_scope.py": [{"line": 42}]}
+test_no_repo_owned_command_writes_json_to_stdout offenders: ['tests/quality_gates/test_public_skill_yaml_output_contract.py:571']
+quality-failure-logs/release-changed-line-coverage.log
+"""
+
+    suggested = task_run_scope_evidence.suggest_scopes(gate_log)
+
+    assert suggested == [
+        "scripts/task_run/task_run_scope.py",
+        "tests/quality_gates/test_public_skill_yaml_output_contract.py",
+    ]
+
+
+def test_scope_evidence_normalizes_absolute_traceback_paths() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    traceback = (
+        "Traceback (most recent call last):\n"
+        f'  File "{repo_root / "scripts/task_run/task_run_scope.py"}", line 42, in run\n'
+    )
+
+    assert task_run_scope_evidence.suggest_scopes(traceback) == [
+        "scripts/task_run/task_run_scope.py"
+    ]
