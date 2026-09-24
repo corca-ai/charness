@@ -282,6 +282,7 @@ options:
 ```text
 usage: charness task steer [-h] [--repo-root REPO_ROOT]
                            (--message MESSAGE | --amend-scope AMEND_SCOPE)
+                           [--reason REASON] [--actor ACTOR]
                            task_id
 
 positional arguments:
@@ -295,6 +296,10 @@ options:
   --amend-scope AMEND_SCOPE
                         Approve an additional scope and revalidate the same
                         retained candidate; repeatable.
+  --reason REASON       Why this steer/amendment is issued; recorded as audit
+                        metadata.
+  --actor ACTOR         Who issues this steer/amendment; recorded as audit
+                        metadata.
 ```
 
 ## `charness task run`
