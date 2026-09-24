@@ -15,10 +15,9 @@ verdicts; synthetic store tests do not establish live task-run behavior.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import math
+from dataclasses import dataclass, field
 from typing import Any
-
 
 PHASES = ("wait", "run", "integrate", "verify", "rework")
 SEVERITIES = ("P1", "P2", "P3")

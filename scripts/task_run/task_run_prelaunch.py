@@ -25,13 +25,13 @@ from scripts.core.subprocess_guard import (  # noqa: E402
     run_monitored_phase,
     run_process,
 )
+from scripts.task_run import task_run_friction as _friction  # noqa: E402
 from scripts.task_run.task_run_contract import (  # noqa: E402
     ACCEPTANCE_SKELETON_TIMEOUT_SECONDS,
     BRIEF_CRITIQUE_TIMEOUT_SECONDS,
     AcceptanceSkeletonDeclaration,
     TaskRunError,
 )
-from scripts.task_run import task_run_friction as _friction  # noqa: E402
 
 
 def _resolve_prelaunch_contract(value: Mapping[str, Any] | None) -> dict[str, Any]:
