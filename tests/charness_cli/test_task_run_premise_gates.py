@@ -199,6 +199,54 @@ def test_style_findings_are_advisory_but_false_brief_premise_blocks() -> None:
     assert blocked == "no active consumer exists"
 
 
+def test_brief_critic_failure_is_retained_as_partial_prelaunch_state() -> None:
+    payload: dict[str, Any] = {}
+    resolved = _resolved(
+        [{"id": "consumer", "premise": "used", "decision_needed": "choose"}]
+    )
+
+    def critic_fails(**_kwargs: Any) -> dict[str, Any]:
+        raise RuntimeError("review offline")
+
+    blocker = task_run_prelaunch.run_prelaunch_gates(
+        payload,
+        resolved,
+        "brief",
+        brief_critic=critic_fails,
+    )
+
+    assert blocker is None
+    assert payload["prelaunch"]["brief_critique"]["status"] == "unavailable"
+    assert payload["prelaunch"]["brief_critique"]["error"] == "review offline"
+    assert payload["prelaunch"]["status"] == "partial"
+
+
+def test_non_red_acceptance_baseline_blocks_prelaunch(
+    tmp_path, monkeypatch
+) -> None:
+    payload: dict[str, Any] = {}
+    resolved = _resolved([])
+    resolved["prelaunch"].update(
+        {"enabled": True, "acceptance_skeleton": "tests/test_acceptance.py"}
+    )
+    resolved["target_path"] = tmp_path
+    monkeypatch.setattr(
+        task_run_prelaunch,
+        "run_acceptance_skeleton",
+        lambda *_args: {"status": "green", "exit_code": 0},
+    )
+
+    blocker = task_run_prelaunch.run_prelaunch_gates(
+        payload,
+        resolved,
+        "brief",
+        brief_critic=lambda **_kwargs: _review([]),
+    )
+
+    assert blocker == "acceptance skeleton must be committed and failing before launch"
+    assert payload["prelaunch"]["status"] == "blocked"
+
+
 def test_brief_critic_uses_read_only_bounded_fresh_process(tmp_path, monkeypatch) -> None:
     from scripts.runtime_bootstrap import import_repo_module
     from scripts.task_run import task_run_execution, task_run_runtime, task_run_support
