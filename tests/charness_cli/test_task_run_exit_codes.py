@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.task_run import task_run, task_run_events, task_run_state
+from scripts.task_run import task_run, task_run_events, task_run_payload, task_run_state
 from tests.charness_cli.support import CLI, load_cli_module
 from tests.charness_cli.test_task_run_completion import _complete
 from tests.script_main import run_loaded_script_main
@@ -64,7 +64,7 @@ def test_terminal_receipt_persists_kind_and_blocker_before_write(
     blocker = "requested behavior has no verified owner"
     persisted: list[dict[str, object]] = []
     monkeypatch.setattr(
-        task_run,
+        task_run_payload,
         "_persist",
         lambda payload, _path: persisted.append(dict(payload)),
     )

@@ -16,8 +16,29 @@ from typing import Any, Mapping, Sequence
 
 import yaml
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from scripts.core.subprocess_guard import render_display, run_monitored_phase  # noqa: E402
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+try:
+    from scripts.core.subprocess_guard import render_display, run_monitored_phase
+except ImportError:  # flat layout: the repo root is not on sys.path
+    _repo_root = next(
+        ancestor
+        for ancestor in Path(__file__).resolve().parents
+        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
+    )
+    if str(_repo_root) not in sys.path:
+        sys.path.insert(0, str(_repo_root))
+    from scripts.core.subprocess_guard import render_display, run_monitored_phase
 
 _DESCENDANT_CLEANUP_SHELL = (
     'printf "%s\\n" "$$" > "$1"; shift; exec 3<&0; "$@" <&3 & '

@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.task_run import task_run, task_run_execution, task_run_runtime
+from scripts.task_run import task_run, task_run_execution, task_run_payload, task_run_runtime
 from tests.module_eviction import evict_module, evict_new_modules
 from tests.script_loader import load_script_module
 
@@ -174,7 +174,7 @@ def test_persist_completion_names_the_worktree_only_carrier(tmp_path: Path) -> N
     """A persisted worktree-only candidate says no lane commit holds it."""
     payload = _completion_payload("worktree-only")
 
-    task_run._persist_completion(payload, tmp_path / "runtime")
+    task_run_payload._persist_completion(payload, tmp_path / "runtime")
 
     assert payload["next_step"] == (
         "Review the complete validated candidate in /tmp/lane; "
@@ -186,7 +186,7 @@ def test_persist_completion_names_the_subset_lane_head(tmp_path: Path) -> None:
     """Any other carrier says the lane HEAD is a proper subset of the candidate."""
     payload = _completion_payload("lane")
 
-    task_run._persist_completion(payload, tmp_path / "runtime")
+    task_run_payload._persist_completion(payload, tmp_path / "runtime")
 
     assert payload["next_step"] == (
         "Review the complete validated candidate in /tmp/lane; "
