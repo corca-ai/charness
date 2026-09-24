@@ -529,18 +529,6 @@
       ],
       "rationale": "The state module defines the canonical skipped value consumed by worktree doctor renderers."
     },
-    "tools/check_plugin_doc_links.py": {
-      "states": [
-        "skipped"
-      ],
-      "visibility": [
-        "terminal_payload"
-      ],
-      "evidence_terms": [
-        "skipped"
-      ],
-      "rationale": "The repository-only plugin documentation link checker reports skipped checks explicitly when its export mirror is unavailable."
-    },
     "skills/public/gather/scripts/advise_google_workspace_path.py": {
       "states": [
         "skipped"
@@ -1004,6 +992,47 @@
         "blocking"
       ],
       "rationale": "The changed-line verdict reports typed skipped/not-run states when no gate was supplied, when blockers skip it, or when the execution never produced a validated candidate. Each carries a reason and summary onto the terminal result.json changed_line_gate, and a changed candidate with a skipped gate stays approval-ineligible, so the skip cannot read as proof."
+    },
+    "scripts/task_run/task_run_plan.py": {
+      "states": [
+        "not_configured"
+      ],
+      "visibility": [
+        "local_noop_not_closeout"
+      ],
+      "evidence_terms": [
+        "not-configured",
+        "bundle_status",
+        "missing-bundle"
+      ],
+      "rationale": "The verifier-plan bundle defaults status and bundle_status to not-configured when no verifier bundle is selected; the default carries empty matches and gates, so an unconfigured plan cannot read as a passing verification."
+    },
+    "scripts/task_run/task_run_prelaunch.py": {
+      "states": [
+        "not_configured"
+      ],
+      "visibility": [
+        "local_noop_not_closeout"
+      ],
+      "evidence_terms": [
+        "not-configured",
+        "coverage mapping deficit"
+      ],
+      "rationale": "The coverage-mapping deficit check short-circuits to no deficits when the verifier bundle is not-configured; the state marks an absent mapping, not a completed coverage proof."
+    },
+    "scripts/task_run/task_run_stale_exec.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "explicit_skip_summary"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "record-fresh",
+        "runner-not-confirmed-dead"
+      ],
+      "rationale": "The stale-exec entrypoint reports a typed skipped outcome with a reason (live runner, fresh record) instead of terminalizing; the sweep records the skip as a log entry with that reason, so a skipped lane is never recorded as terminalized."
     }
   }
 }
