@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import json
 import os
 import shlex
 import subprocess
+import sys
 import uuid
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -13,15 +15,19 @@ from typing import Any, Mapping, Sequence
 from scripts.runtime_bootstrap import (
     configure_runtime_environment,
     import_repo_module,
+    repo_root_from_script,
     runtime_root,
+    skill_script,
 )
 from scripts.task_run import task_run_test_cache as _test_cache
 from scripts.task_run.task_run_train_core import (
     FAIL,
     PASS,
     TrainError,
+    _payload_from_decision,
     decide_next_action,
     default_verify_profile,
+    landing_review_plan,
     stack_order,
     validate_verify_profile,
 )
@@ -33,6 +39,9 @@ _cleanup = import_repo_module(__file__, "scripts.worktree.worktree_cleanup_lib")
 _adapter = import_repo_module(__file__, "scripts.adapter_lib")
 
 PROFILE_RELATIVE_PATH = Path(".agents/train-verify.yaml")
+_launch_popen = subprocess.Popen
+
+
 def load_verify_profile(
     repo_root: Path, profile_path: Path | None = None
 ) -> dict[str, Any]:
@@ -240,30 +249,71 @@ def _land_main(repo_root: Path, branch_ref: str, base_sha: str, tip_sha: str) ->
     return True, ""
 
 
-def _payload_from_decision(
-    decision: dict[str, Any],
-    *,
-    queue: Sequence[str],
+def _prepare_landing_review_packet(repo_root: Path, command: Sequence[str]) -> tuple[str, str]:
+    """Prepare and identify the canonical packet for a landed train range."""
+    result = _run_process(command, cwd=repo_root, timeout_seconds=None)
+    payload = _adapter.load_yaml(result.stdout)
+    binding = payload.get("reviewed_input_binding", {})
+    if result.returncode or payload.get("ok") is not True or binding.get("usable") is False:
+        raise TrainError(str(payload.get("error") or "critique packet preparation was unavailable"))
+    return str(binding["packet_path"]), str(binding["packet_sha256"])
+
+
+def _landing_review_trigger(
+    repo_root: Path,
+    execution_runtime_root: Path,
     base_sha: str,
-    main_sha: str,
-    candidate_sha: str,
-    attempts: list[dict[str, Any]],
+    landed_sha: str,
+    run_id: str,
 ) -> dict[str, Any]:
-    requeued = decision["action"] == "requeue"
-    red = decision["action"] == "land-prefix"
-    return {
-        "status": PASS if not requeued and not red else FAIL,
-        "decision": decision["action"],
-        "reason": decision.get("reason"),
-        "main_sha_at_start": base_sha,
-        "main_sha": main_sha,
-        "candidate_sha": candidate_sha,
-        "landed_branches": decision["landed_branches"],
-        "requeue_branches": decision["requeue_branches"],
-        "first_bad_branch": decision["first_bad_branch"],
-        "verification_attempts": attempts,
-        "queue": list(queue),
-    }
+    """Start canonical fresh-eye review without waiting and persist its trigger."""
+    owner_root = repo_root_from_script(__file__)
+    plan = landing_review_plan(
+        sys.executable,
+        skill_script(owner_root, "critique", "prepare_packet.py"),
+        skill_script(owner_root, "critique", "run_review.py"),
+        repo_root,
+        execution_runtime_root,
+        base_sha,
+        landed_sha,
+        run_id,
+    )
+    record, record_path, log_path = plan["record"], plan["record_path"], plan["log_path"]
+    try:
+        packet_path, record["packet_identity"] = _prepare_landing_review_packet(
+            repo_root, plan["prepare_command"]
+        )
+        command = [*plan["review_command"], packet_path]
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        review_env = configure_runtime_environment(repo_root, os.environ.copy())
+        with log_path.open("wb") as output:
+            process = _launch_popen(
+                command,
+                cwd=repo_root,
+                env=review_env,
+                stdin=subprocess.DEVNULL,
+                stdout=output,
+                stderr=output,
+                start_new_session=True,
+            )
+        record.update(
+            {
+                "status": "launched",
+                "process_id": process.pid,
+                "non_claim": (
+                    "NON-CLAIM: reviewer completion, live findings, and P1 delivery "
+                    "are not proven by this launch record."
+                ),
+            }
+        )
+    except Exception as exc:
+        record.update({"status": "unavailable-skip", "reason": str(exc), "non_claim": "NON-CLAIM: no fresh-eye review was started; this result is not review-passed."})
+    try:
+        record_path.parent.mkdir(parents=True, exist_ok=True)
+        record_path.write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    except OSError as exc:
+        record["record_error"] = str(exc)
+    return record
 
 
 def run_train(
@@ -440,6 +490,9 @@ def run_train(
                         attempts=attempts,
                     )
                     payload["landed_sha"] = main_after
+                    payload["landing_review_trigger"] = _landing_review_trigger(
+                        repo_root, root, base_sha, main_after, run_id
+                    )
         return payload
     except (OSError, RuntimeError, TrainError, subprocess.SubprocessError) as exc:
         payload.update({"status": FAIL, "decision": "refused", "error": str(exc)})

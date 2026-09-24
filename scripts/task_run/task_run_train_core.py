@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 PASS = "pass"
@@ -28,6 +29,69 @@ _DEFAULT_PROFILE: dict[str, Any] = {
 
 class TrainError(ValueError):
     """A train input or integration step cannot be completed safely."""
+
+
+def _payload_from_decision(
+    decision: dict[str, Any],
+    *,
+    queue: Sequence[str],
+    base_sha: str,
+    main_sha: str,
+    candidate_sha: str,
+    attempts: list[dict[str, Any]],
+) -> dict[str, Any]:
+    requeued, red = decision["action"] == "requeue", decision["action"] == "land-prefix"
+    return {
+        "status": PASS if not requeued and not red else FAIL,
+        "decision": decision["action"],
+        "reason": decision.get("reason"),
+        "main_sha_at_start": base_sha,
+        "main_sha": main_sha,
+        "candidate_sha": candidate_sha,
+        "landed_branches": decision["landed_branches"],
+        "requeue_branches": decision["requeue_branches"],
+        "first_bad_branch": decision["first_bad_branch"],
+        "verification_attempts": attempts,
+        "queue": list(queue),
+    }
+
+
+def landing_review_plan(
+    python: str,
+    prepare_script: Path,
+    review_script: Path,
+    repo_root: Path,
+    execution_runtime_root: Path,
+    base_sha: str,
+    landed_sha: str,
+    run_id: str,
+) -> dict[str, Any]:
+    """Derive packet, lifecycle, and receipt paths for one landed range."""
+    attempt_id = f"train-landing-{run_id}"
+    record_root = execution_runtime_root / "landing-review"
+    record_path, log_path = record_root / "launch-record.json", record_root / "review.log"
+    return {
+        "attempt_id": attempt_id,
+        "record_path": record_path,
+        "log_path": log_path,
+        "record": {
+            "schema_version": "charness.train_landing_review_trigger.v1",
+            "base_sha": base_sha,
+            "landed_sha": landed_sha,
+            "packet_identity": None,
+            "launch_record_path": str(record_path),
+            "log_path": str(log_path),
+        },
+        "prepare_command": [
+            python, str(prepare_script), "--repo-root", str(repo_root), "--range",
+            f"{base_sha}..{landed_sha}", "--slug", attempt_id,
+        ],
+        "review_command": [
+            python, str(review_script), "--repo-root", str(repo_root),
+            "--scope", "merge-train landing", "--lens", "fresh-eye",
+            "--attempt-id", attempt_id, "--packet-file",
+        ],
+    }
 
 
 def stack_order(queue: Sequence[str]) -> tuple[str, ...]:
@@ -109,6 +173,33 @@ def decide_next_action(
         "landed_branches": list(branches[:low]),
         "requeue_branches": list(branches[low:]),
     }
+
+
+def derive_landing_review_routing(
+    findings: Sequence[Mapping[str, Any]],
+) -> dict[str, list[dict[str, Any]]]:
+    """Route P1 findings to the next unit and P2/P3 findings to the batch."""
+    if not isinstance(findings, Sequence) or isinstance(findings, (str, bytes)):
+        raise TrainError("landing review findings must be a sequence")
+    routes: dict[str, list[dict[str, Any]]] = {
+        "next_unit": [],
+        "batch": [],
+        "unrouted": [],
+    }
+    for finding in findings:
+        if not isinstance(finding, Mapping):
+            raise TrainError("each landing review finding must be a mapping")
+        severity = finding.get("severity")
+        if not isinstance(severity, str):
+            destination = "unrouted"
+        else:
+            destination = {
+                "P1": "next_unit",
+                "P2": "batch",
+                "P3": "batch",
+            }.get(severity.strip().upper(), "unrouted")
+        routes[destination].append(dict(finding))
+    return routes
 
 
 def default_verify_profile() -> dict[str, Any]:
