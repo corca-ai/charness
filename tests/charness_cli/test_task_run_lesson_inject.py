@@ -7,8 +7,11 @@ import os
 import sys
 from pathlib import Path
 
+import pytest
+
 from scripts.lessons import lesson_ledger_lib
 from scripts.task_run import task_run, task_run_lane_runner as lane_runner
+from scripts.task_run import task_run_lesson_injection as lesson_injection
 from tests.charness_cli.test_task_run_fixtures import _commit, _repo
 
 
@@ -90,7 +93,7 @@ def test_unknown_class_is_unmatched_and_never_injected(tmp_path: Path) -> None:
     repo = _repo_with_lesson(
         tmp_path, slug="known-class", wording="Check the source boundary first."
     )
-    block, result = lane_runner._prepare_lesson_injection(
+    block, result = lesson_injection._prepare_lesson_injection(
         repo, "recurrence-class: missing-class"
     )
 
@@ -103,7 +106,7 @@ def test_lesson_injection_byte_budget_excludes_oversized_lesson(tmp_path: Path) 
     repo = _repo_with_lesson(
         tmp_path, slug="large-class", wording="교훈 " + "가" * 5000
     )
-    block, result = lane_runner._prepare_lesson_injection(
+    block, result = lesson_injection._prepare_lesson_injection(
         repo, "recurrence-class: large-class", budget_bytes=512
     )
 
@@ -154,3 +157,92 @@ def test_result_json_records_injected_and_unmatched_ids(tmp_path: Path) -> None:
     assert block["unmatched_slugs"] == ["missing-class"]
     assert saved["lesson_injection"] == block
     assert "Scope-path matching is deferred" in block["non_claim"]
+
+
+def test_prepare_without_repo_root_reports_unavailable(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setattr(lane_runner, "lane_writable_dirs", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(lane_runner, "lane_command", lambda **_kwargs: ["codex"])
+
+    _, prompt, _ = lane_runner.prepare_lane_execution(
+        {},
+        {},
+        tmp_path / "repo",
+        tmp_path / "runtime",
+        prompt="recurrence-class: known-class",
+        require_change=False,
+        scopes=["module.py"],
+        executor="codex",
+        executable="codex",
+        effort="medium",
+        worktree=tmp_path / "repo",
+    )
+
+    assert prompt == "recurrence-class: known-class"
+
+
+def test_unavailable_receipt_names_the_missing_root() -> None:
+    result = lesson_injection.lesson_injection_unavailable(
+        "task run did not provide a repository root", ["known-class"]
+    )
+
+    assert result["declared_slugs"] == ["known-class"]
+    assert result["injected_ids"] == []
+    assert result["error"] == "task run did not provide a repository root"
+    assert "Scope-path matching is deferred" in result["non_claim"]
+
+
+def test_validated_lesson_without_tagged_wording_reports_error(
+    tmp_path: Path,
+) -> None:
+    repo = _repo_with_lesson(
+        tmp_path, slug="known-class", wording="Check the source boundary first."
+    )
+    untagged_ref = "charness-artifacts/retro/untagged-retro.md"
+    (repo / untagged_ref).write_text(
+        "# Untagged retro\n\n## Waste\n\n- nothing tagged here\n",
+        encoding="utf-8",
+    )
+    replayed = {"known-class": {"source_retro": untagged_ref}}
+
+    with pytest.raises(ValueError, match="no tagged wording"):
+        lesson_injection._lesson_texts_for_sources(repo, replayed, ["known-class"])
+
+
+def test_invalid_ledger_reports_validation_error(tmp_path: Path) -> None:
+    repo = _repo_with_lesson(
+        tmp_path, slug="known-class", wording="Check the source boundary first."
+    )
+    ledger_path = repo / "charness-artifacts" / "retro" / "lesson-ledger.json"
+    ledger_path.write_text("{}", encoding="utf-8")
+
+    block, result = lesson_injection._prepare_lesson_injection(
+        repo, "recurrence-class: known-class"
+    )
+
+    assert result["injected_ids"] == []
+    assert result["error"] is not None
+    assert "unavailable" in block
+
+
+def test_render_rejects_budget_below_header() -> None:
+    with pytest.raises(ValueError, match="exceeds its byte budget"):
+        lesson_injection._render_lesson_injection(
+            "ledger", {"known-class": "wording"}, budget_bytes=10
+        )
+
+
+def test_injection_result_keeps_error_text() -> None:
+    result = lesson_injection.injection_result(
+        {"declared_slugs": ["known-class"], "error": "boom"}
+    )
+
+    assert result["error"] == "boom"
+    assert result["prepared"] is True
+    assert lesson_injection.injection_result(None)["prepared"] is False
+
+
+def test_injection_module_uses_plain_repo_imports() -> None:
+    assert lesson_injection._lesson_ledger.KIND == "charness.lesson-ledger"
+    assert hasattr(lesson_injection._lesson_selection, "RECURRENCE_CLASS_RE")
