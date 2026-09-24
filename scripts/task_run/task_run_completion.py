@@ -25,7 +25,7 @@ from scripts.task_run import task_run_persistence as _persistence  # noqa: E402
 from scripts.task_run import task_run_prelaunch as _prelaunch  # noqa: E402
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run import task_run_retention as _retention  # noqa: E402
-from scripts.task_run import task_run_state as _state  # noqa: E402
+from scripts.task_run import task_run_execution as _execution, task_run_state as _state  # noqa: E402
 from scripts.task_run.task_run_completion_next_step import _next_step  # noqa: E402
 from scripts.task_run.task_run_contract import TaskRunError  # noqa: E402
 from scripts.task_run.task_run_git import _candidate_carrier  # noqa: E402
@@ -130,6 +130,7 @@ def complete_task(
     payload["persistence"] = _persistence.scan_persistence_risks(
         resolved_target, base_sha, candidate.get("changed_paths") or [], git=git
     )
+    payload["self_review"] = _execution.run_self_review(payload)
 
     blockers = _completion_blockers(
         execution_status=execution_status,
@@ -224,10 +225,7 @@ def complete_task(
 
 
 def _execution_reviewer_result(delivery: Mapping[str, Any]) -> dict[str, Any] | None:
-    """Load the task execution's non-approval reviewer carrier lazily."""
-    from scripts.task_run.task_run_execution import _reviewer_result_carrier
-
-    return _reviewer_result_carrier(delivery)
+    return _execution._reviewer_result_carrier(delivery)
 
 
 def _apply_self_revert_backstop(
