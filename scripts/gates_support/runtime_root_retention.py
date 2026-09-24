@@ -214,6 +214,38 @@ class Sweep:
     def _is_fresh(self, path: Path) -> bool:
         return _has_entry_newer_than(path, self._active_cutoff())
 
+    def _terminalize_stale_exec(self, record: Path) -> dict[str, Any] | None:
+        """Ask the task-run stale-exec CLI to close an eligible old record."""
+        payload = self._lane_result(record)
+        runner_pid = None if payload is None else payload.get("runner_pid")
+        if not isinstance(runner_pid, int) or isinstance(runner_pid, bool) or runner_pid <= 0:
+            return None
+        repo_root = Path(__file__).resolve().parents[2]
+        command = [
+            sys.executable, "-m", "scripts.task_run.task_run_stale_exec", "terminalize-stale-exec",
+            "--runtime-root", str(record.parent.parent), "--task-id", record.name,
+            "--stale-before", str(self._active_cutoff()),
+        ]
+        if self.dry_run:
+            command.append("--dry-run")
+        completed = run_process(command, cwd=repo_root, timeout_seconds=30)
+        try:
+            outcome = json.loads(completed.stdout) if completed.returncode == 0 else None
+        except (TypeError, ValueError):
+            outcome = None
+        if not isinstance(outcome, dict):
+            self._record(
+                "failed", record, "task_run_stale_exec.py returned no structured stale-exec outcome",
+                error=f"exit {completed.returncode}: {completed.stderr.strip() or completed.stdout.strip()}",
+            )
+            reason = "entrypoint-failed" if completed.returncode else "invalid-entrypoint-output"
+            return {"transitioned": False, "reason": reason}
+
+        entry = outcome.get("log_entry")
+        if isinstance(entry, dict):
+            self._record(entry["action"], record, entry["reason"], **entry.get("fields", {}))
+        return outcome
+
     # -- lanes -----------------------------------------------------------
 
     def _lane_result(self, record: Path) -> dict[str, Any] | None:
@@ -250,9 +282,14 @@ class Sweep:
     def sweep_lane(self, record: Path, *, expire_kept: bool = False) -> None:
         worktree = record / "worktree"
         runtime = record / "runtime"
-        if not worktree.exists() and not runtime.exists():
-            return
         payload = self._lane_result(record)
+        has_artifacts = worktree.exists() or runtime.exists()
+        if not has_artifacts and (
+            payload is None
+            or payload.get("phase") in TERMINAL_PHASES
+            or self._is_fresh(record)
+        ):
+            return
         if payload is not None and payload.get("phase") in TERMINAL_PHASES:
             reason = f"finished lane ({payload.get('status')}); result.json and logs kept"
         else:
@@ -264,7 +301,20 @@ class Sweep:
             if self._is_fresh(record):
                 self._record("skipped", record, f"{state} and the record is fresh")
                 return
-            reason = f"{state} and the record is idle past the active window"
+            stale_exec = self._terminalize_stale_exec(record)
+            if stale_exec is not None and stale_exec.get("reason") in {
+                "runner-not-confirmed-dead",
+                "record-fresh",
+            }:
+                return
+            if stale_exec is not None and stale_exec.get("reason") == "already-terminal":
+                payload = self._lane_result(record)
+            if payload is not None and payload.get("phase") in TERMINAL_PHASES:
+                reason = f"finished lane ({payload.get('status')}); result.json and logs kept"
+            else:
+                reason = f"{state} and the record is idle past the active window"
+        if not has_artifacts:
+            return
         if worktree.is_dir():
             salvage = salvage_uncommitted(worktree, record, git=self.git, dry_run=self.dry_run)
             keeping = payload is not None and payload.get("keep_worktree") is True
