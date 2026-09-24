@@ -1,22 +1,37 @@
 from __future__ import annotations
 
 import json
+import shlex
 from pathlib import Path
 from typing import Any
 
 import pytest
 
-from scripts.task_run import task_run, task_run_dag, task_run_lane_runner
+from scripts.task_run import (
+    task_run,
+    task_run_dag,
+    task_run_lane_runner,
+    task_run_plan,
+    task_run_prelaunch,
+)
 from tests.charness_cli.test_task_run_dag import _provider, _raw_plan
 from tests.charness_cli.test_task_run_fixtures import _codex, _commit, _git, _repo
 
 
-def _dry_run(repo: Path, tmp_path: Path, *, lane: str, prompt: str, base: str | None = None):
+def _dry_run(
+    repo: Path,
+    tmp_path: Path,
+    *,
+    lane: str,
+    prompt: str,
+    base: str | None = None,
+    scopes: list[str] | None = None,
+):
     return task_run.run_task(
         repo,
         lane=lane,
         base=base,
-        scopes=["module.py"],
+        scopes=scopes or ["module.py"],
         prompt=prompt,
         codex=str(_codex(tmp_path, "exit 0")),
         effort="medium",
@@ -81,6 +96,128 @@ def test_lane_brief_requires_size_and_shared_primitive_candidate_report() -> Non
     assert "Shared-primitive candidates:" in prompt
     assert "candidate's name, path, and purpose, or `none`" in prompt
     assert "hard `depends_on`" in prompt
+
+
+def test_scope_preflight_names_an_evidence_path_outside_scope_before_exec(
+    tmp_path: Path,
+) -> None:
+    repo = _repo(tmp_path)
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "temp-producers.yaml").write_text("version: 1\n", encoding="utf-8")
+    _commit(repo, "add named evidence path", ".agents/temp-producers.yaml")
+
+    payload = _dry_run(
+        repo,
+        tmp_path,
+        lane="scope-omission",
+        scopes=["module.py"],
+        prompt=(
+            "Lane size: 45 minutes; 3 commit units\n"
+            "The failure evidence names `.agents/temp-producers.yaml` as a required owner."
+        ),
+    )
+
+    findings = payload["prelaunch_plan"]["scope_preflight"]["would_touch_outside_declared"]
+    assert findings == [
+        {
+            "code": "would-touch-outside-declared",
+            "path": ".agents/temp-producers.yaml",
+            "basis": "the brief/task evidence names this repository path",
+        }
+    ]
+    assert payload["dry_run"] is True
+    assert "execution" not in payload
+
+
+def test_scope_omission_blocks_before_executor_launch(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "temp-producers.yaml").write_text("version: 1\n", encoding="utf-8")
+    _commit(repo, "add named evidence path", ".agents/temp-producers.yaml")
+    marker = tmp_path / "executor-started"
+    executable = _codex(tmp_path, f"touch {shlex.quote(str(marker))}")
+
+    payload = task_run.run_task(
+        repo,
+        lane="scope-omission-blocked",
+        scopes=["module.py"],
+        prompt=(
+            "Lane size: 30 minutes; 1 commit unit\n"
+            "The failure evidence names `.agents/temp-producers.yaml` as a required owner."
+        ),
+        codex=str(executable),
+        effort="medium",
+        prepare=False,
+        require_change=False,
+    )
+
+    assert payload["status"] == "premise-blocked"
+    assert payload["prelaunch"]["status"] == "blocked"
+    assert ".agents/temp-producers.yaml" in payload["next_step"]
+    assert not marker.exists()
+
+
+def test_task_run_scope_precomputes_its_gate_and_verifier_bundle(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _repo(tmp_path)
+    (repo / ".agents").mkdir()
+    (repo / "scripts" / "task_run").mkdir(parents=True)
+    (repo / "scripts" / "mutation").mkdir(parents=True)
+    (repo / "tests").mkdir()
+    source = "scripts/task_run/task_run_plan.py"
+    suite = "tests/test_task_run_plan.py"
+    (repo / source).write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / suite).write_text("def test_scope():\n    assert True\n", encoding="utf-8")
+    (repo / "scripts/mutation/release_changed_line_coverage.py").write_text(
+        "# release gate\n", encoding="utf-8"
+    )
+    command = f"python3 -m pytest -q {suite}"
+    manifest = {
+        "version": 1,
+        "surfaces": [
+            {
+                "surface_id": "task-run-python",
+                "description": "Task-run Python source and its focused test.",
+                "source_paths": ["scripts/**"],
+                "derived_paths": [],
+                "sync_commands": [],
+                "verify_commands": [command],
+                "notes": [],
+            }
+        ],
+    }
+    (repo / ".agents" / "surfaces.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
+    _commit(
+        repo,
+        "seed verifier surfaces",
+        source,
+        suite,
+        "scripts/mutation/release_changed_line_coverage.py",
+        ".agents/surfaces.json",
+    )
+    monkeypatch.setattr(task_run_plan, "_list_eligible", lambda _root: [source])
+
+    payload = _dry_run(
+        repo,
+        tmp_path,
+        lane="task-run-verifiers",
+        scopes=[source],
+        prompt="Lane size: 45 minutes; 3 commit units\nUpdate task-run planning.",
+    )
+
+    verifiers = payload["prelaunch_plan"]["scope_verifiers"]
+    assert verifiers["completion_gates"] == ["release-changed-line-coverage"]
+    assert verifiers["matched_surface_ids"] == ["task-run-python"]
+    assert verifiers["verify_commands"] == [command]
+    assert verifiers["mapped_suites"] == [suite]
+    brief = task_run_prelaunch.acceptance_skeleton_prompt(
+        "Lane brief", {"prelaunch_plan": payload["prelaunch_plan"]}
+    )
+    assert "release-changed-line-coverage" in brief
+    assert command in brief
 
 
 def _stacked_plan(tmp_path: Path) -> dict[str, Any]:
