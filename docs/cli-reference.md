@@ -14,14 +14,14 @@ Human-readable summaries print the affordance line with the `NEXT:` prefix.
 
 ```text
 usage: charness [-h]
-                {init,update,doctor,version,uninstall,reset,task,catalog,capability,goal,tool,worktree}
+                {init,update,doctor,version,uninstall,reset,task,train,catalog,capability,goal,tool,worktree}
                 ...
 
 Thin charness CLI for managed local install, capability resolution, and
 external tool install/update/doctor flows.
 
 positional arguments:
-  {init,update,doctor,version,uninstall,reset,task,catalog,capability,goal,tool,worktree}
+  {init,update,doctor,version,uninstall,reset,task,train,catalog,capability,goal,tool,worktree}
     init                Bootstrap or refresh the managed local install
                         surface, cloning the managed checkout first when it is
                         missing.
@@ -35,6 +35,8 @@ positional arguments:
     reset               Remove host plugin state for Codex and Claude while
                         preserving the managed checkout and CLI.
     task                Run or inspect a bounded task lane.
+    train               Stack, verify, and fast-forward an explicit queue of
+                        local lane branches.
     catalog             Inspect capability inventory, packaged consumer-
                         validator adoption, or stale skill paths.
     capability          Resolve repo-local logical capabilities through
@@ -229,17 +231,19 @@ options:
 ## `charness task`
 
 ```text
-usage: charness task [-h] {status,run} ...
+usage: charness task [-h] {status,steer,run} ...
 
 positional arguments:
-  {status,run}
-    status      Show one external task-run result, or list all task-run
-                results.
-    run         Run one independently delegable lane in a clean named worktree
-                and emit a compact receipt.
+  {status,steer,run}
+    status            Show one external task-run result, or list all task-run
+                      results.
+    steer             Queue a message for a running lane or amend its retained
+                      candidate scope.
+    run               Run one independently delegable lane in a clean named
+                      worktree and emit a compact receipt.
 
 options:
-  -h, --help    show this help message and exit
+  -h, --help          show this help message and exit
 ```
 
 ## `charness task status`
@@ -254,6 +258,26 @@ options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
                         Parent repo whose external task-run runtime is read.
+```
+
+## `charness task steer`
+
+```text
+usage: charness task steer [-h] [--repo-root REPO_ROOT]
+                           (--message MESSAGE | --amend-scope AMEND_SCOPE)
+                           task_id
+
+positional arguments:
+  task_id
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Parent repo whose external task-run runtime is read.
+  --message MESSAGE     Message to deliver at the next executor turn boundary.
+  --amend-scope AMEND_SCOPE
+                        Approve an additional scope and revalidate the same
+                        retained candidate; repeatable.
 ```
 
 ## `charness task run`
@@ -334,6 +358,27 @@ options:
                         recorded in progress_guard.
   --dry-run             Validate inputs and show the planned lane without
                         creating or running it.
+```
+
+## `charness train`
+
+```text
+usage: charness train [-h] [--repo-root REPO_ROOT] [--main MAIN]
+                      [--profile PROFILE]
+                      branches [branches ...]
+
+positional arguments:
+  branches              Local lane branches in queue order.
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Repository whose local main branch and lane branches
+                        are integrated.
+  --main MAIN           Local branch to guard and fast-forward (default:
+                        main).
+  --profile PROFILE     Optional verify profile; defaults to .agents/train-
+                        verify.yaml or built-in standing pytest.
 ```
 
 ## `charness catalog`

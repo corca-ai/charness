@@ -9,11 +9,8 @@
     {"path": ["task"], "group": "coordination"},
     {"path": ["task", "run"], "group": "coordination"},
     {"path": ["task", "status"], "group": "coordination"},
-<<<<<<< HEAD
     {"path": ["task", "steer"], "group": "coordination"},
-=======
     {"path": ["train"], "group": "coordination"},
->>>>>>> b000b0948 (task-run: persist validated candidate onto the lane branch)
     {"path": ["catalog"], "group": "catalog"},
     {"path": ["catalog", "list"], "group": "catalog"},
     {"path": ["catalog", "refresh"], "group": "catalog"},
