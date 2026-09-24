@@ -600,6 +600,29 @@ def test_review_refuses_unverified_observer(tmp_path: Path) -> None:
         REVIEW_MOD["_FRESH_EYE"] = original
 
 
+CONTRACT_MOD = runpy.run_path(
+    str(ROOT / "skills/public/issue/scripts/issue_goal_run_close_contract.py")
+)
+
+
+def test_prior_review_reads_closed_receipt() -> None:
+    review = CONTRACT_MOD["prior_adjudication_review"](_already_closed(["a"]))
+
+    assert review == ["a"]
+
+
+def test_prior_review_reads_recovery_terminal() -> None:
+    prepared = {
+        "result": {"prior_terminal": {"payload": {"result": {"parent_adjudication_review": ["b"]}}}}
+    }
+
+    assert CONTRACT_MOD["prior_adjudication_review"](prepared) == ["b"]
+
+
+def test_prior_review_defaults_to_empty() -> None:
+    assert CONTRACT_MOD["prior_adjudication_review"]({}) == []
+
+
 def test_close_emits_refusal_on_unbound_existing_review(tmp_path: Path) -> None:
     prepared = _already_closed(["old"])
     proof = {"final_proof_index": {"adjudication_review": ["new"]}}
