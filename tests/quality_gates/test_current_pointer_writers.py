@@ -296,6 +296,8 @@ def test_release_record_binds_the_no_drift_claim_to_the_check_that_ran(tmp_path:
             "versioned_surfaces": ["claude_plugin", "packaging_manifest"],
             "presence_surfaces": ["codex_marketplace_source_path"],
             "drift": [],
+            "checked_commit": "abc123def456abc123def456abc123def456abc1",
+            "checked_tree": "tree789tree789tree789tree789tree789tree789tree1",
         },
     )
 
@@ -304,6 +306,10 @@ def test_release_record_binds_the_no_drift_claim_to_the_check_that_ran(tmp_path:
         "surface(s) not version-checked against target `0.2.0`"
     ) in text
     assert "checked at `post-bump, pre-commit`" in text
+    # The claim names the tree it was validated against, so a later reader can
+    # check the pushed tag against it instead of taking the sentence on trust.
+    assert "commit `abc123def456abc123def456abc123def456abc1`" in text
+    assert "tree `tree789tree789tree789tree789tree789tree789tree1`" in text
 
 
 def test_release_record_states_that_a_required_preflight_was_not_executed(tmp_path: Path) -> None:

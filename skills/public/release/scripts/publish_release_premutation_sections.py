@@ -59,7 +59,13 @@ def rationale_body_lines(text: str) -> list[str]:
     return [f"> {line}" if line else ">" for line in text.strip().splitlines()]
 
 
-def bump_rationale_lines(bump_rationale: str | None) -> list[str]:
+def bump_rationale_lines(
+    bump_rationale: str | None,
+    *,
+    previous_version: str | None = None,
+    target_version: str | None = None,
+    bump_part: str | None = None,
+) -> list[str]:
     """Why THIS bump level, in the artifact a reader outside the session gets.
 
     `version-policy.md` requires a stated rationale whenever the level is debatable,
@@ -68,8 +74,30 @@ def bump_rationale_lines(bump_rationale: str | None) -> list[str]:
     re-running the helper could not put it here. An absent rationale gets a sentence
     that says the level is unexplained rather than no section at all -- a reader who
     sees no section infers there was nothing to explain.
+
+    The `Bump:` line above the prose is the machine-checkable half of the same
+    section: the version transition and the part that produced it, in one fixed
+    shape a gate can parse without reading prose. Prose stays the human
+    explanation judged by human readers (`version-policy.md` proposes no validator
+    for it); the line states the DECISION prose is about, so a record can never
+    again carry an unexplained level with no parseable account of what the level
+    was. A v8.12.0 claims round recorded exactly that advisory: "bump rationale
+    not recorded", over a record whose prose was absent AND whose level appeared
+    only as two version strings in another section.
     """
     lines = ["", "## Bump Rationale", ""]
+    if (
+        isinstance(previous_version, str)
+        and previous_version.strip()
+        and isinstance(target_version, str)
+        and target_version.strip()
+    ):
+        decision = f"- Bump: `{previous_version.strip()}` -> `{target_version.strip()}`"
+        if isinstance(bump_part, str) and bump_part.strip():
+            decision += f" (`{bump_part.strip()}`)."
+        else:
+            decision += "."
+        lines.append(decision)
     absent = [
         "- Bump rationale: NOT recorded by this helper invocation. `version-policy.md` "
         "requires a stated rationale whenever the bump level is debatable; this record "
@@ -100,6 +128,13 @@ def version_drift_lines(version_drift_check: dict[str, Any] | None) -> list[str]
     ran, did not run, or found drift. The lanes really do differ -- the resume lane
     that publishes wrote that sentence while calling no such check -- so the unchecked
     state gets its own sentence instead of inheriting the claim.
+
+    The claim is additionally bound to the tree the check validated
+    (`checked_commit`, `checked_tree` from `ensure_release_surface`). A v8.12.0
+    claims round recorded the advisory "drift-check claim cites no output or
+    receipt": the sentence named counts and a stage but no identity a later reader
+    could compare against the pushed tag. A disposition without that identity --
+    from a caller that never ran the current check -- renders no claim at all.
     """
     checked_version = (
         version_drift_check.get("checked_version")
@@ -116,12 +151,24 @@ def version_drift_lines(version_drift_check: dict[str, Any] | None) -> list[str]
         if isinstance(version_drift_check, dict)
         else None
     )
+    checked_commit = (
+        version_drift_check.get("checked_commit")
+        if isinstance(version_drift_check, dict)
+        else None
+    )
+    checked_tree = (
+        version_drift_check.get("checked_tree")
+        if isinstance(version_drift_check, dict)
+        else None
+    )
     if (
         not isinstance(checked_version, str)
         or not checked_version.strip()
         or not isinstance(raw_versioned, (list, tuple))
         or not raw_versioned
         or not isinstance(raw_presence, (list, tuple))
+        or not isinstance(checked_commit, str)
+        or not checked_commit.strip()
     ):
         return [
             "- Version drift check: NOT recorded by this helper invocation, so this record "
@@ -133,10 +180,19 @@ def version_drift_lines(version_drift_check: dict[str, Any] | None) -> list[str]
     if presence:
         scope += f", with {len(presence)} presence-only surface(s) not version-checked"
     stage = version_drift_check.get("stage") or "unrecorded stage"
-    return [
+    lines = [
         f"- `current_release.py` reported no version drift{scope} against target "
         f"`{checked_version}`, checked at `{stage}`."
     ]
+    validated = f"- Validated tree: commit `{checked_commit.strip()}`"
+    if isinstance(checked_tree, str) and checked_tree.strip():
+        validated += f" (tree `{checked_tree.strip()}`)"
+    validated += (
+        "; a pushed tag or branch that does not contain this tree "
+        "was not what this check validated."
+    )
+    lines.append(validated)
+    return lines
 
 
 def pending_payload_section(

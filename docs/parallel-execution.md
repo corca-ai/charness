@@ -35,7 +35,7 @@ Inspect the current runtime's exposed tools and any host-provided deferred-tool
 inventory before selecting a channel. Use a host spawn/subagent for short,
 interactive, or judgment-bound work, and use the repository's isolated
 `charness task run` lane for bounded implementation, long-running Codex work,
-explicit branch/worktree/path scope, or a durable result carrier. Only explicit
+explicit branch/worktree/path scope, or a durable candidate carrier. Only explicit
 inventory absence, invocation rejection, or a host error proves a lane
 unavailable. When inventory cannot be inspected, call the lane unverified and
 use what is visible; repository catalogs and prior-session memory are not host

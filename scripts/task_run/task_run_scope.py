@@ -321,9 +321,10 @@ def _path_cause(path: str) -> str:
 
 
 #: Blocker fragment a require-change lane emits when the real owner of the
-#: requested behavior lies outside the declared scope (#831). The carrier
-#: prompt fixes this wording, so the receipt can parse it back into a typed
-#: scope-extension request instead of forcing a fresh lane relaunch.
+#: requested behavior lies outside the declared scope (#831). The
+#: implementation-lane prompt shaping fixes this wording, so the receipt can
+#: parse it back into a typed scope-extension request instead of forcing a
+#: fresh lane relaunch.
 SCOPE_MISMATCH_BLOCKER_MARKER = "scope mismatch - real owner"
 
 

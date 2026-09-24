@@ -1,7 +1,9 @@
 """Identity-checked recovery for post-publication issue-closeout commits."""
 from __future__ import annotations
 
+import importlib.util
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -10,6 +12,24 @@ from typing import Any
 # `json` stays for the release-observer ARTIFACT read below -- that file is stored
 # JSON and is not this command's stdout.
 from scripts.yaml_output import emit_yaml
+
+
+def _load_closeout_refusal():
+    # Sibling load by path, mirroring `_load_release_common` in the resume
+    # helper: the commit-then-refuse helper lives next door so this recovery
+    # module stays under the file-length cap, and this module never imports
+    # a sibling by package name it does not have.
+    module_path = Path(__file__).resolve().with_name("publish_release_closeout_refusal.py")
+    spec = importlib.util.spec_from_file_location("publish_release_closeout_refusal", module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["publish_release_closeout_refusal"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_closeout_refusal = _load_closeout_refusal()
 
 
 def _require_closeout_resume_inputs(args: Any) -> None:
@@ -216,6 +236,19 @@ def resume_post_publication_closeout(
             release_verified=verify.returncode == 0,
             commit_sha=state["tag_sha"],
         )
+        if verify.returncode != 0:
+            _closeout_refusal._commit_and_refuse_unverified_release(
+                repo_root,
+                args=args,
+                plan=plan,
+                adapter_data=adapter_data,
+                payload=payload,
+                fresh_checkout_payload=fresh_checkout_payload,
+                artifact_relpath=artifact_relpath,
+                expected_release_url=expected_url,
+                verify=verify,
+                cli=cli,
+            )
         tail_state = {
             "artifact_relpath": artifact_relpath,
             "backend": plan["backend"],
@@ -329,6 +362,19 @@ def resume_post_publication_closeout(
         release_verified=verify.returncode == 0,
         commit_sha=(state.get("prepared") or {}).get("commit") if claims_phase else None,
     )
+    if verify.returncode != 0:
+        _closeout_refusal._commit_and_refuse_unverified_release(
+            repo_root,
+            args=args,
+            plan=plan,
+            adapter_data=adapter_data,
+            payload=payload,
+            fresh_checkout_payload=fresh_checkout_payload,
+            artifact_relpath=artifact_relpath,
+            expected_release_url=expected_url,
+            verify=verify,
+            cli=cli,
+        )
     payload["issue_closeout_carrier_commit_sha"] = state["head_sha"]
     tail_state = {
         "artifact_relpath": artifact_relpath,

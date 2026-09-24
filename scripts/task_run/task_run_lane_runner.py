@@ -59,13 +59,13 @@ def enqueue_steer(
     task_id: str,
     message: str,
     *,
-    reason_detail: str | None = None,
+    reason: str | None = None,
     actor: str | None = None,
 ) -> dict[str, Any]:
     """Append a typed accept/nack envelope for one queued lane message.
 
-    ``reason_detail``/``actor`` are audit metadata supplied by the issuer;
-    ``reason`` stays the machine disposition cause.
+    ``reason``/``actor`` are audit metadata supplied by the issuer;
+    ``reason_code`` stays the machine disposition cause.
     """
     from scripts.task_run.task_run_runtime import utc_now_iso
 
@@ -76,12 +76,12 @@ def enqueue_steer(
         "message_id": str(uuid.uuid4()),
         "task_id": task_id,
         "message": normalized,
-        "reason_detail": reason_detail,
+        "reason": reason,
         "actor": actor,
         "queued_at": stamp,
         "delivered_at": None,
         "disposition": "accepted" if normalized else "nacked",
-        "reason": None if normalized else "empty-message",
+        "reason_code": None if normalized else "empty-message",
         "resume_path": None,
     }
     if normalized:
@@ -110,12 +110,12 @@ def build_lane_prompt(
     lesson_injection_block: str = "",
     orchestration_pointer_file: Path | None = None,
 ) -> str:
-    """Shape the lane prompt; implementation lanes get carrier directives.
+    """Shape the lane prompt; implementation lanes get prompt-shaping directives.
 
     A require-change scope is a write boundary, not evidence that the requested
-    change is warranted. The carrier requires concept, consumer, owner, and
-    evidence-level validation before editing, then defines progress and
-    typed-blocker signals; all other lanes pass through untouched.
+    change is warranted. The implementation-lane shaping requires concept,
+    consumer, owner, and evidence-level validation before editing, then defines
+    progress and typed-blocker signals; all other lanes pass through untouched.
     """
     shaped = prompt
     if require_change:

@@ -296,10 +296,10 @@ options:
   --amend-scope AMEND_SCOPE
                         Approve an additional scope and revalidate the same
                         retained candidate; repeatable.
-  --reason REASON       Why this steer/amendment is issued; recorded as audit
-                        metadata.
-  --actor ACTOR         Who issues this steer/amendment; recorded as audit
-                        metadata.
+  --reason REASON       Why this steer/amendment is issued; recorded as the
+                        envelope `reason` audit field.
+  --actor ACTOR         Who issues this steer/amendment; recorded as the
+                        envelope `actor` audit field.
 ```
 
 ## `charness task run`

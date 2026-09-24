@@ -60,7 +60,7 @@ def test_guard_queue_delivery_precedes_resumed_fake_executor_edit(tmp_path: Path
         "    queue.write_text(json.dumps({'kind': 'charness.task_steer.v1', "
         "'message_id': 'message-1', 'task_id': 'lane-1', 'message': 'Keep the public API stable.', "
         "'queued_at': '2026-09-24T00:00:00Z', 'delivered_at': None, "
-        "'disposition': 'accepted', 'reason': None, 'resume_path': None}) + '\\n')\n"
+        "'disposition': 'accepted', 'reason_code': None, 'resume_path': None}) + '\\n')\n"
         "    output.write_text('first turn\\n')\n"
         "else:\n"
         "    prompt = sys.stdin.read()\n"
@@ -277,10 +277,64 @@ def test_scope_amend_records_reason_and_actor(tmp_path: Path, monkeypatch) -> No
     )
 
     assert code == 0
-    assert emitted[-1]["reason_detail"] == "lane missed its file"
+    assert emitted[-1]["reason"] == "lane missed its file"
     assert emitted[-1]["actor"] == "hwidong"
-    assert result["scope_amendments"][0]["reason_detail"] == "lane missed its file"
+    assert result["scope_amendments"][0]["reason"] == "lane missed its file"
     assert result["scope_amendments"][0]["actor"] == "hwidong"
+
+
+def test_scope_amend_nack_keeps_audit_reason_and_machine_reason_code(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """A rejected amendment keeps issuer text in `reason`, cause in `reason_code`."""
+    cli = load_cli_module("charness_task_run_steer_amend_nack_audit", CLI)
+    repo = _repo(tmp_path)
+    base_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    (repo / "stray.py").write_text("VALUE = 3\n", encoding="utf-8")
+    specs = task_run_scope.resolve_scope_specs(repo, ["module.py"], base_sha)
+    result = {
+        "task_id": "lane-4",
+        "status": "completed-needs-review",
+        "worktree_path": str(repo),
+        "base_sha": base_sha,
+        "target_sha": base_sha,
+        "target_branch": "task/lane-4",
+        "scope_specs": specs,
+        "require_change": True,
+        "candidate": {
+            "status": "invalid",
+            "changed_paths": ["stray.py"],
+            "disallowed_paths": ["stray.py"],
+        },
+        "timestamps": {},
+    }
+    monkeypatch.setattr(cli, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: tmp_path / "runtime")
+    monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: result)
+    monkeypatch.setattr(task_run_runtime, "write_task_result", lambda _root, _value: None)
+    emitted: list[dict[str, object]] = []
+    monkeypatch.setattr(cli, "emit_yaml", emitted.append)
+
+    code = cli.cmd_task_steer(
+        argparse.Namespace(
+            repo_root=tmp_path,
+            task_id="lane-4",
+            message=None,
+            amend_scope=["other.py"],
+            reason="lane missed its file",
+            actor="hwidong",
+        )
+    )
+
+    assert code == 1
+    amendment = emitted[-1]
+    assert amendment["disposition"] == "nacked"
+    assert amendment["reason"] == "lane missed its file"
+    assert amendment["actor"] == "hwidong"
+    assert amendment["reason_code"] == "candidate-still-out-of-scope"
+    assert "reason_detail" not in amendment
+    assert result["scope_amendments"][0]["reason"] == "lane missed its file"
+    assert result["scope_amendments"][0]["reason_code"] == "candidate-still-out-of-scope"
 
 
 def test_task_steer_cli_nacks_unknown_task(tmp_path: Path, monkeypatch) -> None:
@@ -305,7 +359,7 @@ def test_task_steer_cli_nacks_unknown_task(tmp_path: Path, monkeypatch) -> None:
 
     assert code == 1
     assert emitted[-1]["disposition"] == "nacked"
-    assert emitted[-1]["reason"] == "task-not-found"
+    assert emitted[-1]["reason_code"] == "task-not-found"
 
 
 def test_task_steer_cli_nacks_amend_on_running_lane(tmp_path: Path, monkeypatch) -> None:
@@ -345,7 +399,7 @@ def test_task_steer_cli_nacks_amend_on_running_lane(tmp_path: Path, monkeypatch)
 
     assert code == 1
     assert emitted[-1]["disposition"] == "nacked"
-    assert emitted[-1]["reason"] == "same-candidate-unavailable"
+    assert emitted[-1]["reason_code"] == "same-candidate-unavailable"
 
 
 def test_direct_entry_copy_nacks_unknown_task_from_real_checkout(tmp_path: Path) -> None:
@@ -383,7 +437,7 @@ def test_direct_entry_copy_nacks_unknown_task_from_real_checkout(tmp_path: Path)
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "nacked"
-    assert payload["reason"] == "task-not-found"
+    assert payload["reason_code"] == "task-not-found"
 
 
 def test_real_entry_path_inserts_foreign_checkout_lib_root(tmp_path: Path) -> None:
@@ -426,7 +480,7 @@ def test_real_entry_path_inserts_foreign_checkout_lib_root(tmp_path: Path) -> No
     assert result.returncode == 1
     payload = yaml.safe_load(result.stdout)
     assert payload["disposition"] == "nacked"
-    assert payload["reason"] == "task-not-found"
+    assert payload["reason_code"] == "task-not-found"
 
 
 def test_load_train_lib_inserts_missing_repo_root(monkeypatch) -> None:
@@ -473,21 +527,22 @@ def test_enqueue_steer_records_reason_and_actor(tmp_path: Path) -> None:
     queue = tmp_path / "steer.queue.jsonl"
 
     entry = task_run_lane_runner.enqueue_steer(
-        queue, "lane-9", "Hold the line.", reason_detail="release gate", actor="hwidong"
+        queue, "lane-9", "Hold the line.", reason="release gate", actor="hwidong"
     )
 
-    assert entry["reason_detail"] == "release gate"
+    assert entry["reason"] == "release gate"
     assert entry["actor"] == "hwidong"
-    assert entry["reason"] is None
+    assert entry["reason_code"] is None
+    assert "reason_detail" not in entry
     stored = task_run_lane_runner.read_steer_queue(queue)[0]
-    assert stored["reason_detail"] == "release gate"
+    assert stored["reason"] == "release gate"
     assert stored["actor"] == "hwidong"
 
 
 def test_enqueue_steer_defaults_reason_and_actor_to_none(tmp_path: Path) -> None:
     entry = task_run_lane_runner.enqueue_steer(tmp_path / "q.jsonl", "lane-9", "Hi.")
 
-    assert entry["reason_detail"] is None
+    assert entry["reason"] is None
     assert entry["actor"] is None
 
 
@@ -518,10 +573,10 @@ def test_task_steer_cli_threads_reason_and_actor(tmp_path: Path, monkeypatch) ->
     )
 
     assert code == 0
-    assert emitted[-1]["reason_detail"] == "flaky window"
+    assert emitted[-1]["reason"] == "flaky window"
     assert emitted[-1]["actor"] == "hwidong"
     queued = task_run_lane_runner.read_steer_queue(
         runtime / "lane-3" / "runtime" / "steer.queue.jsonl"
     )
-    assert queued[0]["reason_detail"] == "flaky window"
+    assert queued[0]["reason"] == "flaky window"
     assert queued[0]["actor"] == "hwidong"

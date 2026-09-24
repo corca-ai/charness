@@ -2,13 +2,33 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Any
 
 from scripts.runtime_scratch import owned_scratch
 from scripts.yaml_output import emit_yaml
+
+
+def _load_push_binding():
+    # Sibling load by path, mirroring `_load_release_common` in the resume
+    # helper: the binding helpers live next door so this publication tail
+    # stays under the file-length cap, and this module never imports a
+    # sibling by package name it does not have.
+    module_path = Path(__file__).resolve().with_name("publish_release_push_binding.py")
+    spec = importlib.util.spec_from_file_location("publish_release_push_binding", module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["publish_release_push_binding"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_push_binding = _load_push_binding()
 
 # Mirrors the claims-lane phase set owned by `publish_release_claims_review`; this
 # module is loaded by `runpy` from the resume helper and does not import it.
@@ -316,6 +336,11 @@ def _resume_publish_impl(repo_root: Path, *, args: Any, plan: dict[str, Any], ad
     )
     fresh = common.timed(payload, "fresh_checkout_probes_resume", lambda: cli.run_fresh_checkout_probes(repo_root))
     payload["fresh_checkout_probe_status"] = fresh["status"]
+    # Bind validation evidence to what is pushed: the gates above ran against
+    # this HEAD/tree, and the artifact refresh commit below is allowed to move
+    # it. Without this snapshot the push-time check could not tell gate-seen
+    # state from drift.
+    _push_binding._record_validation_binding(cli, repo_root, payload)
     expected_url = cli.expected_github_release_url(repo_root, backend, tag_name)
     payload["expected_release_url"] = expected_url
     # Adapter-derived, not a literal: on the claims lane the writer below is SKIPPED, so
@@ -347,6 +372,9 @@ def _resume_publish_impl(repo_root: Path, *, args: Any, plan: dict[str, Any], ad
         previous_version=payload.get("previous_version"),
     )
     commit_artifact_before_push(repo_root, cli=cli, tag_name=tag_name, record_path=record_path)
+    # Seal what the push is about to carry. Anything moving HEAD after this
+    # line is external drift, and `publish()` refuses to push it.
+    _push_binding._seal_push_binding(cli, repo_root, payload)
 
     branch_needed = state["remote_branch_sha"] != (
         state.get("claims_evidence_commit") or state["head_sha"]
@@ -356,6 +384,15 @@ def _resume_publish_impl(repo_root: Path, *, args: Any, plan: dict[str, Any], ad
         receipt_path = None
 
     def publish() -> tuple[str, Any]:
+        # Re-verify the sealed digest/tree at push time; abort on drift. This
+        # is the first statement so no push runs on unbound state.
+        expected_tag_commit = (
+            (state.get("prepared") or {}).get("commit") if claims_lane else state["head_sha"]
+        )
+        _push_binding._verify_push_binding(
+            cli, repo_root, payload,
+            tag_name=tag_name, expected_tag_commit=expected_tag_commit,
+        )
         if not state["tag_local"]:
             cli.run(["git", "tag", tag_name, state["prepared"]["commit"] if claims_lane else state["head_sha"]], cwd=repo_root)
         if branch_needed and tag_needed:

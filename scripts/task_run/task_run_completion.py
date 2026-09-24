@@ -408,11 +408,11 @@ def _reconcile_persisted_blockers(
     """Name an intentional recovery commit beside pre-persist blockers (#823).
 
     Persistence, correctness, and approval are separate facts: a commit the
-    carrier persists after blockers were already reported is preserved for
-    review, not a correctness or approval claim. Without this entry the
-    executor's pre-persist declaration (e.g. "staged but uncommitted")
-    stands beside the persisted commit as a contradiction no caller can
-    resolve. Clean persists (no blockers) record nothing.
+    persistence path writes after blockers were already reported is preserved
+    for review, not a correctness or approval claim. Without this entry the
+    lane agent's (executor's) pre-persist declaration (e.g. "staged but
+    uncommitted") stands beside the persisted commit as a contradiction no
+    caller can resolve. Clean persists (no blockers) record nothing.
     """
     persist = candidate.get("persist")
     if not isinstance(persist, dict) or persist.get("status") != "committed":
@@ -437,7 +437,7 @@ def _persist_useful_dirty_candidate(
     git: Callable[..., Any],
     git_output: Callable[..., str],
 ) -> str | None:
-    """Make a useful completed candidate durable and observe its carrier again."""
+    """Make a useful completed candidate durable and observe its candidate carrier again."""
     if (
         execution_status != "completed"
         or not _candidate_has_work(candidate)
@@ -510,7 +510,7 @@ def _carrier_not_ready_reason(
 
 
 def _mark_carrier_unreadable(candidate: dict[str, Any], *, phase: str, error: Exception) -> None:
-    """Make retention fail closed after a carrier read cannot establish state."""
+    """Make retention fail closed after a candidate-carrier read cannot establish state."""
     candidate["carrier_observation"] = {"status": "unreadable", "phase": phase, "error": str(error)}
     candidate.update(carrier_kind="unknown", head_is_complete=False, state_known=False)
 

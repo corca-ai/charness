@@ -62,6 +62,7 @@ def write_release_artifact(
     claims_review: dict[str, Any] | None = None,
     release_stage: str | None = None,
     bump_rationale: str | None = None,
+    bump_part: str | None = None,
     version_drift_check: dict[str, Any] | None = None,
 ) -> str:
     artifact_dir = repo_root / output_dir
@@ -95,7 +96,16 @@ def write_release_artifact(
                 f"(sha256: `{prepush_quality_receipt_sha256}`)."
             ]
             if prepush_quality_receipt
-            else []
+            # A quality sentence with no receipt beside it reads as backed
+            # evidence. A v8.12.0 claims round recorded exactly that advisory:
+            # the prepared record asserted "exited 0" while carrying no durable
+            # receipt anywhere. The absence is now stated on the same line
+            # family, so a reviewer -- human or machine -- can bind every
+            # quality claim to its receipt artifact or to the fact there is none.
+            else [
+                "- pre-push quality receipt: NOT recorded by this helper invocation, "
+                "so the quality sentence above cites no durable receipt."
+            ]
         ),
         *version_drift_lines(version_drift_check),
         *([] if prepared else release_push_lines(public_release_verification)),
@@ -147,7 +157,14 @@ def write_release_artifact(
     # Not above `## Release State`, which was the previous home: the narrative audit reads
     # the five-entry ledger as the span to the next `## `, so a section inside it blocks
     # the publish with four missing-entry blockers.
-    lines.extend(bump_rationale_lines(bump_rationale))
+    lines.extend(
+        bump_rationale_lines(
+            bump_rationale,
+            previous_version=previous_version,
+            target_version=target_version,
+            bump_part=bump_part,
+        )
+    )
     write_current_pointer_text(artifact_path, "\n".join(lines))
     return str(artifact_path.relative_to(repo_root))
 
@@ -197,5 +214,6 @@ def write_current_artifact(
         release_observer=payload.get("release_observer"), claims_review=payload.get("claims_review"),
         release_stage=release_stage or payload.get("release_stage"),
         bump_rationale=payload.get("bump_rationale"),
+        bump_part=payload.get("bump_part"),
         version_drift_check=payload.get("version_drift_check"),
     )

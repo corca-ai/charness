@@ -88,6 +88,18 @@ def build_publish_payload(
         # `None` when the operator gave none, so the record renders the "not recorded"
         # sentence rather than an empty rationale section that reads as a satisfied one.
         "bump_rationale": getattr(args, "bump_rationale", None),
+        # The machine-checkable half of the rationale: HOW the target version was
+        # chosen, so the record's `## Bump Rationale` section can state the decision
+        # in a fixed shape next to the human prose. Derived from the same args the
+        # target version itself comes from (`target_version` above), never from
+        # prose, so the two cannot disagree. On `--resume` the payload is rebuilt
+        # from arguments, which is exactly why this lives here rather than only at
+        # the call site that knows the part.
+        "bump_part": (
+            getattr(args, "part", None)
+            or ("publish-current" if getattr(args, "publish_current", False) else None)
+            or ("set-version" if getattr(args, "set_version", None) else None)
+        ),
         "execute": args.execute,
     }
 

@@ -8,6 +8,18 @@ from typing import Any, Mapping, Sequence
 
 PASS = "pass"
 FAIL = "fail"
+
+#: Terminal train decisions mapped to process exit codes. A flat 0/1 made a
+#: refused train (bad profile, duplicate branches, worktree infrastructure
+#: failure) indistinguishable from a red train (verification failed, first bad
+#: branch named) and from a transient requeue (main moved under the run).
+#: Drivers need all three apart: fix-the-input, drop-the-branch, retry-as-is.
+TRAIN_EXIT_CODES = {
+    "land": 0,
+    "land-prefix": 1,
+    "requeue": 3,
+    "refused": 2,
+}
 _ID_RE = re.compile(r"^[a-z][a-z0-9_.-]*$")
 _DEFAULT_PROFILE: dict[str, Any] = {
     "version": 1,
@@ -200,6 +212,23 @@ def derive_landing_review_routing(
             }.get(severity.strip().upper(), "unrouted")
         routes[destination].append(dict(finding))
     return routes
+
+
+def exit_code_for_decision(decision: Mapping[str, Any]) -> int:
+    """Map a terminal train decision to a process exit code.
+
+    `land` is success. `land-prefix` is verification failure with a named first
+    bad branch. `refused` is a loader/input/infrastructure error -- the caller
+    must fix something before retrying, mirroring the worktree commands' 2 for
+    non-pass, non-warning outcomes. `requeue` is transient (main moved): the
+    same queue is worth retrying, which a shared code with `land-prefix` would
+    hide from a driver. Unknown actions fail closed: inventing a code here
+    would let a new decision read as a settled one.
+    """
+    action = decision.get("action") if isinstance(decision, Mapping) else None
+    if action not in TRAIN_EXIT_CODES:
+        raise TrainError(f"unknown train decision {action!r}; cannot map to an exit code")
+    return TRAIN_EXIT_CODES[action]
 
 
 def default_verify_profile() -> dict[str, Any]:

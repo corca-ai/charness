@@ -550,10 +550,10 @@ def _candidate_carrier(
 
 def _checkout_own_dir(create_payload: dict[str, Any]) -> Path:
     """Validate the checkout-specific Git dir carried by worktree creation."""
-    carrier = create_payload.get("_checkout")
-    if not isinstance(carrier, dict):
+    checkout = create_payload.get("_checkout")
+    if not isinstance(checkout, dict):
         raise TaskRunError("worktree create payload is missing checkout metadata")
-    raw = carrier.get("own_dir")
+    raw = checkout.get("own_dir")
     if not isinstance(raw, str) or not raw or raw != raw.strip():
         raise TaskRunError("worktree create payload has malformed checkout own_dir")
     candidate = Path(raw)

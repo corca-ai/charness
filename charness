@@ -3383,7 +3383,7 @@ def cmd_task_steer(args: argparse.Namespace) -> int:
             "kind": task_run_lane_runner.STEER_ENVELOPE_KIND,
             "task_id": args.task_id,
             "disposition": "nacked",
-            "reason": "task-not-found",
+            "reason_code": "task-not-found",
             "queued_at": task_run_runtime.utc_now_iso(),
         }
         kind = task_run_state.ResultKind.FAILED
@@ -3394,7 +3394,7 @@ def cmd_task_steer(args: argparse.Namespace) -> int:
                 "kind": task_run_lane_runner.STEER_ENVELOPE_KIND,
                 "task_id": args.task_id,
                 "disposition": "nacked",
-                "reason": "task-not-running",
+                "reason_code": "task-not-running",
                 "queued_at": task_run_runtime.utc_now_iso(),
             }
             kind = task_run_state.ResultKind.FAILED
@@ -3404,7 +3404,7 @@ def cmd_task_steer(args: argparse.Namespace) -> int:
                 / "steer.queue.jsonl",
                 args.task_id,
                 args.message,
-                reason_detail=getattr(args, "reason", None),
+                reason=getattr(args, "reason", None),
                 actor=getattr(args, "actor", None),
             )
             kind = (
@@ -3428,7 +3428,7 @@ def cmd_task_steer(args: argparse.Namespace) -> int:
                 "task_id": args.task_id,
                 "queued_at": now,
                 "disposition": "nacked",
-                "reason": "same-candidate-unavailable",
+                "reason_code": "same-candidate-unavailable",
             }
             kind = task_run_state.ResultKind.FAILED
         else:
@@ -3448,12 +3448,12 @@ def cmd_task_steer(args: argparse.Namespace) -> int:
                 "queued_at": now,
                 "delivered_at": now,
                 "disposition": "accepted" if accepted else "nacked",
-                "reason": None if accepted else "candidate-still-out-of-scope",
+                "reason_code": None if accepted else "candidate-still-out-of-scope",
                 "same_candidate": True,
                 "executor_relaunched": False,
                 "target_sha": payload.get("target_sha"),
                 "scope": amended,
-                "reason_detail": getattr(args, "reason", None),
+                "reason": getattr(args, "reason", None),
                 "actor": getattr(args, "actor", None),
             }
             kind = (
@@ -5569,7 +5569,10 @@ def cmd_train(args: argparse.Namespace) -> int:
         profile_path=args.profile,
     )
     emit_yaml(payload)
-    return 0 if payload.get("status") == lib.PASS else 1
+    # Decision-based, not status-based: `run_train` always sets `decision` to
+    # one of land / land-prefix / requeue / refused, and a flat 0/1 made a
+    # refused (bad input) train read as a red (verification-failed) one.
+    return lib.exit_code_for_decision({"action": payload.get("decision")})
 
 
 def _resolve_goal_run_helper_repo_root(args: argparse.Namespace) -> Path:
@@ -5893,11 +5896,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     task_steer_parser.add_argument(
         "--reason", default=None,
-        help="Why this steer/amendment is issued; recorded as audit metadata.",
+        help="Why this steer/amendment is issued; recorded as the envelope `reason` audit field.",
     )
     task_steer_parser.add_argument(
         "--actor", default=None,
-        help="Who issues this steer/amendment; recorded as audit metadata.",
+        help="Who issues this steer/amendment; recorded as the envelope `actor` audit field.",
     )
     task_steer_parser.set_defaults(func=cmd_task_steer)
 

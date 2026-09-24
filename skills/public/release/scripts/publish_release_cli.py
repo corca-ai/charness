@@ -181,7 +181,7 @@ def ensure_release_surface(repo_root: Path, expected_version: str, *, stage: str
         raise SystemExit(blocker)
     versioned_surfaces = release_payload.get("versioned_surfaces")
     presence_surfaces = release_payload.get("presence_surfaces")
-    return {
+    disposition = {
         "status": "passed",
         "stage": stage,
         "checked_version": expected_version,
@@ -196,6 +196,20 @@ def ensure_release_surface(repo_root: Path, expected_version: str, *, stage: str
         "drift": list(release_payload.get("drift") or []),
         "absence_corroboration": release_payload.get("absence_corroboration"),
     }
+    # WHAT was validated, not just what was concluded. The release record binds its
+    # no-drift sentence to this identity, so a later reader can check the validated
+    # tree against the pushed tag instead of taking the sentence on trust.
+    # Best-effort: when git cannot answer, the keys are absent and the record renders
+    # no no-drift claim at all (fail closed at the renderer).
+    identity = run(
+        ["git", "rev-parse", "HEAD", "HEAD^{tree}"], cwd=repo_root, check=False
+    )
+    if identity.returncode == 0:
+        values = identity.stdout.split()
+        if len(values) >= 2:
+            disposition["checked_commit"] = values[0]
+            disposition["checked_tree"] = values[1]
+    return disposition
 
 
 def finalize_release_payload(

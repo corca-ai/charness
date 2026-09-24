@@ -3,7 +3,9 @@
 A finished worktree is released only when its commit carries the whole
 candidate; receipt and logs survive cleanup either way. Incomplete or
 unknown content stays in the worktree with keep_worktree set, so the
-runtime sweep preserves its only copy.
+runtime sweep preserves its only copy. keep_worktree is a newest-N hold,
+not a pin: the sweep (runtime_root_retention.KEPT_WORKTREE_LIMIT) keeps the
+newest kept worktrees per key and removes older ones after verified salvage.
 """
 
 from __future__ import annotations

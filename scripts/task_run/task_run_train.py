@@ -33,6 +33,7 @@ from scripts.task_run.task_run_train_core import (  # noqa: E402
     PASS,
     TrainError,
     default_verify_profile,
+    exit_code_for_decision,  # noqa: F401 - re-exported for the `charness train` entrypoint
     stack_order,
     validate_verify_profile,
 )

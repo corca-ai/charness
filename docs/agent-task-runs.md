@@ -12,10 +12,13 @@ and effort medium/high/xhigh/max.
 The receipt's canonical executor block is `payload["executor"]`. Codex keeps
 legacy aliases and log names; Muse records its trusted lane worktree as the
 workspace because its runner has one effective workspace, not Codex's
-`--add-dir` grants. Readers should branch on `executor.kind`.
+`--add-dir` grants. Readers should branch on `executor.kind`. Executor names
+the agent runner (`codex`/`muse`); carrier names where the candidate lives
+(`carrier_kind`: `commit-only`, `commit-plus-dirty`, `worktree-only`,
+`unknown`), not who ran it.
 
-For `--require-change`, the carrier injects scope, edit/test, and typed-blocker
-instructions. If the real owner lies outside scope, stop with
+For `--require-change`, the implementation-lane prompt shaping injects scope,
+edit/test, and typed-blocker instructions. If the real owner lies outside scope, stop with
 `BLOCKED: scope mismatch - real owner <path> is outside declared scope`. Receipts
 record observed `CONTRACT-READ`, `EDITING`, and `TESTING` phases plus blockers.
 The guard stops a blocked lane that outlives its grace period and a lane with
@@ -78,23 +81,30 @@ charness task run \
   --effort xhigh
 ```
 
-A clean parent is required. Model/effort identity, scope expansion, result
+A clean parent is required. Model/effort identity, scope expansion, candidate
 carrier, `changed_line_gate`, and retention live in
 [`task_run_contract.py`](../scripts/task_run/task_run_contract.py),
 [`task_run_scope.py`](../scripts/task_run/task_run_scope.py),
 [`task_run_git.py`](../scripts/task_run/task_run_git.py),
-[`task_run_changed_line.py`](../scripts/task_run/task_run_changed_line.py), and
-[`task_run_completion.py`](../scripts/task_run/task_run_completion.py). Do not
-recopy receipt fields here; `--help` is the typed surface. `--scope` repeats;
-`--skip-prepare` and `--allow-no-change` are diagnostic opt-outs; `--path`,
-`--branch`, and `--base` are for exceptional host setup.
+[`task_run_changed_line.py`](../scripts/task_run/task_run_changed_line.py),
+[`task_run_completion.py`](../scripts/task_run/task_run_completion.py),
+[`task_run_retention.py`](../scripts/task_run/task_run_retention.py), and
+[`runtime_root_retention.py`](../scripts/gates_support/runtime_root_retention.py).
+Do not recopy receipt fields here; `--help` is the typed surface. `--scope`
+repeats; `--skip-prepare` and `--allow-no-change` are diagnostic opt-outs;
+`--path`, `--branch`, and `--base` are for exceptional host setup.
 
 The parent reads the receipt before integrating. A lane is done only when
 `changed_line_gate` is `clean` or `noop`. Useful dirty work is committed before
 proof; completion re-observes after the gate and denies approval for dirt, read
-failure, or changed identity. Retention can release a fresh commit-carried tree
-when proof denies approval; on persistence or observation failure,
-`keep_worktree` stays true. Parent path-delta classes are `normal`,
+failure, or changed identity. Retention releases a finished worktree only when
+the lane-branch commit carries the whole candidate (`commit-only`, clean tree)
+with a `clean`/`noop` changed-line proof — even when other blockers deny
+approval. Anything else (dirty tree, missing proof, persistence or observation
+failure) keeps `keep_worktree` true. That flag is a newest-N hold, not a pin:
+the sweep keeps the newest 10 kept worktrees per key with their `runtime/` dirs
+and removes older ones only after verified salvage; `result.json` and logs
+always stay. Parent path-delta classes are `normal`,
 `concurrent-parent-progress`, and `writer-conflict`.
 
 ## Status

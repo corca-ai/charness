@@ -3,9 +3,9 @@
 A retryable stall (typed by `classify_failure`, e.g. a model-stream idle
 timeout) reruns the same prompt in the same worktree until the attempt
 budget is spent; every attempt is recorded on `payload["attempts"]`.
-Executor sessions are stateless, so each attempt starts a fresh agent
-session; the lane worktree (files and lane-branch commits) is the resume
-carrier that persists across attempts.
+Executor (agent-runner) sessions are stateless, so each attempt starts a
+fresh agent session; the lane worktree (files and lane-branch commits) is
+the resume state -- the candidate carrier -- that persists across attempts.
 """
 
 from __future__ import annotations

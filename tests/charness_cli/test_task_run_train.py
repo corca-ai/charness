@@ -163,7 +163,7 @@ def test_train_cli_loads_runner_from_charness_for_profile_only_repo(
         cwd=repo,
     )
 
-    assert result.returncode == 1
+    assert result.returncode == 2
     assert "decision: refused" in result.stdout
     assert "worktree prepare/doctor failed" in result.stdout
     assert "No module named" not in result.stderr
@@ -211,6 +211,26 @@ def test_junit_known_failure_baseline_allows_only_listed_testcases(
     good, results = train.run_verify_profile(profile, tmp_path, tmp_path / "reports")
     assert good is False
     assert results[0]["new_failures"] == ["tests.test_legacy::test_new"]
+
+
+def test_train_exit_codes_distinguish_land_red_requeue_and_refused() -> None:
+    """The exit taxonomy keeps loader errors, red trains, and transient requeues apart.
+
+    A flat 0/1 made `refused` (fix the input) read as `land-prefix`
+    (verification failed, first bad branch named), so a driver would drop a
+    branch over a bad profile. `requeue` (main moved) stays distinct from both
+    so the same queue is retried rather than triaged.
+    """
+    assert train_core.exit_code_for_decision({"action": "land"}) == 0
+    assert train_core.exit_code_for_decision({"action": "land-prefix"}) == 1
+    assert train_core.exit_code_for_decision({"action": "refused"}) == 2
+    assert train_core.exit_code_for_decision({"action": "requeue"}) == 3
+    assert train_core.exit_code_for_decision({"action": "land", "reason": None}) == 0
+
+    with pytest.raises(train_core.TrainError, match="unknown train decision"):
+        train_core.exit_code_for_decision({"action": "verify-prefix"})
+    with pytest.raises(train_core.TrainError, match="unknown train decision"):
+        train_core.exit_code_for_decision({})
 
 
 def test_green_train_verifies_once_and_lands_multiple_branches(tmp_path: Path, monkeypatch) -> None:
