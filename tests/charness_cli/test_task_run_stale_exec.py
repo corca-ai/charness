@@ -1,12 +1,34 @@
 from __future__ import annotations
 
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 from scripts.gates_support import runtime_root_retention as retention
 from scripts.task_run import task_run_runtime, task_run_stale_exec
+
+
+def test_stale_exec_direct_entrypoint_bootstraps_from_real_script_path(
+    tmp_path: Path,
+) -> None:
+    script = Path(task_run_stale_exec.__file__).resolve()
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+
+    completed = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0
+    assert "terminalize-stale-exec" in completed.stdout
 
 
 def test_stale_exec_with_dead_runner_uses_the_canonical_terminal_writer(

@@ -203,3 +203,78 @@ def test_sweep_lane_skips_fresh_nonterminal_records(tmp_path, monkeypatch) -> No
 
     assert (record / "runtime").exists()
     assert any("record is fresh" in e["reason"] for e in sweep.entries)
+
+
+def test_remove_tree_uses_zero_bytes_when_size_probe_fails(tmp_path, monkeypatch) -> None:
+    candidate = _key(tmp_path) / "old-tree"
+    candidate.mkdir()
+    sweep = _sweep(tmp_path, dry_run=True)
+
+    def _raise_oserror(_path: Path) -> int:
+        raise OSError("size unavailable")
+
+    monkeypatch.setattr(retention, "_tree_size_bytes", _raise_oserror)
+
+    assert sweep._remove_tree(candidate, "expired") is True
+    assert sweep.entries[-1]["action"] == "would-remove"
+    assert sweep.entries[-1]["bytes"] == 0
+
+
+def test_remove_tree_records_symlink_unlink_oserror(tmp_path: Path, monkeypatch) -> None:
+    link = _key(tmp_path) / "old-link"
+    target = link.parent / "target"
+    target.write_text("keep target", encoding="utf-8")
+    link.symlink_to(target)
+    sweep = _sweep(tmp_path)
+    original_unlink = Path.unlink
+
+    def fail_link(path: Path, *args, **kwargs):
+        if path == link:
+            raise OSError("unlink denied")
+        return original_unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "unlink", fail_link)
+
+    assert sweep._remove_tree(link, "expired") is False
+    assert link.is_symlink()
+    assert sweep.entries[-1]["action"] == "failed"
+    assert "removal failed: unlink denied" in sweep.entries[-1]["reason"]
+
+
+def test_sweep_lanes_uses_zero_finished_time_when_result_stat_fails(
+    tmp_path: Path, monkeypatch
+) -> None:
+    key = _key(tmp_path)
+    fallback_record = key / "task-run" / "fallback-time"
+    newest_record = key / "task-run" / "newest"
+    fallback_record.mkdir()
+    newest_record.mkdir()
+    fallback_result = fallback_record / "result.json"
+    newest_result = newest_record / "result.json"
+    payload = {"phase": "terminal", "status": "completed", "keep_worktree": True}
+    for result in (fallback_result, newest_result):
+        result.write_text(json.dumps(payload), encoding="utf-8")
+    (fallback_record / "runtime").mkdir()
+    newest_runtime = newest_record / "runtime"
+    newest_runtime.mkdir()
+    os.utime(newest_result, (2_000, 2_000))
+    monkeypatch.setattr(retention, "KEPT_WORKTREE_LIMIT", 1)
+    original_stat = Path.stat
+
+    def fail_fallback_stat(path: Path, *args, **kwargs):
+        if path == fallback_result:
+            raise OSError("result stat unavailable")
+        return original_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "stat", fail_fallback_stat)
+
+    sweep = _sweep(tmp_path)
+    sweep.sweep_lanes()
+
+    assert not (fallback_record / "runtime").exists()
+    assert newest_runtime.is_dir()
+    assert any(
+        entry["path"] == str(fallback_record / "runtime")
+        and "runtime expired with kept worktree" in entry["reason"]
+        for entry in sweep.entries
+    )
