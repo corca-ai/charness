@@ -15,6 +15,7 @@ from types import SimpleNamespace
 import pytest
 
 from scripts.task_run import task_run_train as train
+from scripts.task_run import task_run_train_flow as flow
 from scripts.task_run.task_run_train_core import (
     TrainError,
     derive_landing_review_routing,
@@ -70,12 +71,12 @@ def _stub_successful_train(monkeypatch, repo: Path) -> None:
         _git(repo_root, "update-ref", branch_ref, tip_sha, base_sha)
         return True, ""
 
-    monkeypatch.setattr(train, "_land_main", fast_forward)
+    monkeypatch.setattr(flow, "_land_main", fast_forward)
 
 
 def _stub_packet_preparation(monkeypatch) -> None:
     monkeypatch.setattr(
-        train,
+        flow,
         "_prepare_landing_review_packet",
         lambda *_args: (
             "charness-artifacts/critique/train-landing-packet.json",
@@ -110,7 +111,7 @@ def test_fast_forward_records_packet_identity_and_nonblocking_lifecycle_launch(
         calls.append((list(command), kwargs))
         return SimpleNamespace(pid=4321)
 
-    monkeypatch.setattr(train, "_launch_popen", popen)
+    monkeypatch.setattr(flow, "_launch_popen", popen)
 
     result = train.run_train(repo, ["lane/landing-review"])
 
@@ -146,7 +147,7 @@ def test_review_launch_failure_records_nonclaim_and_keeps_landing_successful(
         calls.append(list(command))
         raise OSError("reviewer process could not start")
 
-    monkeypatch.setattr(train, "_launch_popen", unavailable)
+    monkeypatch.setattr(flow, "_launch_popen", unavailable)
 
     result = train.run_train(repo, ["lane/landing-review"])
 
@@ -193,14 +194,14 @@ def test_packet_preparation_success_returns_identity(
         f"  packet_sha256: {'b' * 64}\n"
     )
     monkeypatch.setattr(
-        train,
+        flow,
         "_run_process",
         lambda *_args, **_kwargs: SimpleNamespace(
             returncode=0, stdout=stdout, stderr=""
         ),
     )
 
-    packet_path, packet_sha = train._prepare_landing_review_packet(
+    packet_path, packet_sha = flow._prepare_landing_review_packet(
         repo, ["prepare_packet.py"]
     )
 
@@ -215,7 +216,7 @@ def test_trigger_record_write_failure_is_captured_not_raised(
     _stub_successful_train(monkeypatch, repo)
     _stub_packet_preparation(monkeypatch)
     monkeypatch.setattr(
-        train, "_launch_popen", lambda *args, **kwargs: SimpleNamespace(pid=7)
+        flow, "_launch_popen", lambda *args, **kwargs: SimpleNamespace(pid=7)
     )
     real_write_text = Path.write_text
 
