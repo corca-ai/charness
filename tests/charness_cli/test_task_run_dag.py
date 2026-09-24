@@ -195,6 +195,23 @@ def test_plan_file_read_failure_is_typed(tmp_path: Path) -> None:
         dag.load_plan(plan_path)
 
 
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("base", " ", "base must be non-empty"),
+        ("stacked_on", "contains space", "stacked_on must be a lane key"),
+    ],
+)
+def test_lane_base_and_stacked_on_values_are_validated(
+    tmp_path: Path, field: str, value: str, message: str
+) -> None:
+    raw = _raw_plan(tmp_path)
+    raw["lanes"][0][field] = value
+
+    with pytest.raises(dag.DagError, match=message):
+        dag.validate_plan(raw, plan_path=tmp_path / "dag.json")
+
+
 def test_provider_reader_uses_issue_tool_and_returns_only_provider_states(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
