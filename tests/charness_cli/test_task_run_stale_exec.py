@@ -109,3 +109,184 @@ def test_stale_exec_reaper_leaves_live_or_fresh_records_untouched(
 
     assert outcome == {"transitioned": False, "reason": expected_reason}
     assert result_path.read_bytes() == before
+
+
+def _stale_runtime(tmp_path: Path, *, phase: str = "exec", age_days: int = 2):
+    runtime = tmp_path / "runtime"
+    payload = {
+        "task_id": "orphan-lane",
+        "status": "running",
+        "phase": phase,
+        "runner_pid": 901,
+        "keep_worktree": True,
+    }
+    result_path = task_run_runtime.write_task_result(runtime, payload)
+    now = 1_800_000_000.0
+    os.utime(result_path, (now - age_days * 86400, now - age_days * 86400))
+    return runtime, result_path, now
+
+
+def _pid_table(monkeypatch, table: dict) -> None:
+    monkeypatch.setattr(
+        task_run_stale_exec._support,
+        "runner_liveness",
+        lambda record: {
+            "runner_pid": record.get("runner_pid"),
+            "alive": table.get(record.get("runner_pid")),
+        },
+    )
+
+
+def test_terminalize_rejects_missing_record(tmp_path: Path) -> None:
+    runtime = tmp_path / "runtime"
+    runtime.mkdir()
+
+    outcome = task_run_stale_exec.terminalize_stale_exec(
+        runtime, "nope", stale_before=1_700_000_000.0
+    )
+
+    assert outcome == {"transitioned": False, "reason": "record-missing"}
+
+
+def test_terminalize_rejects_nonfinite_cutoff(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="stale_before must be finite"):
+        task_run_stale_exec.terminalize_stale_exec(
+            tmp_path, "x", stale_before=float("nan")
+        )
+
+
+def test_terminalize_skips_terminal_records(tmp_path: Path) -> None:
+    runtime, _path, now = _stale_runtime(tmp_path, phase="terminal")
+
+    outcome = task_run_stale_exec.terminalize_stale_exec(
+        runtime, "orphan-lane", stale_before=now - 86400
+    )
+
+    assert outcome == {"transitioned": False, "reason": "already-terminal"}
+
+
+def test_terminalize_treats_unstatable_record_as_missing(
+    tmp_path: Path, monkeypatch
+) -> None:
+    runtime, result_path, now = _stale_runtime(tmp_path)
+    _pid_table(monkeypatch, {901: False})
+    payload = task_run_runtime.read_task_result(runtime, "orphan-lane")
+    assert payload is not None
+    # `read_task_result` probes `is_file` (a stat) before the guarded `stat`
+    # below; serve the payload directly so only the guarded call can fail.
+    monkeypatch.setattr(
+        task_run_stale_exec._support, "read_task_result", lambda _r, _t: payload
+    )
+    real_stat = Path.stat
+
+    def _fail(self: Path):
+        if self == result_path:
+            raise OSError("gone")
+        return real_stat(self)
+
+    monkeypatch.setattr(Path, "stat", _fail)
+    outcome = task_run_stale_exec.terminalize_stale_exec(
+        runtime, "orphan-lane", stale_before=now - 86400
+    )
+
+    assert outcome == {"transitioned": False, "reason": "record-missing"}
+
+
+def test_terminalize_skips_fresh_records(tmp_path: Path, monkeypatch) -> None:
+    runtime, _path, now = _stale_runtime(tmp_path, age_days=0)
+    _pid_table(monkeypatch, {901: False})
+
+    outcome = task_run_stale_exec.terminalize_stale_exec(
+        runtime, "orphan-lane", stale_before=now - 86400
+    )
+
+    assert outcome == {"transitioned": False, "reason": "record-fresh"}
+
+
+def test_terminalize_skips_live_runners(tmp_path: Path, monkeypatch) -> None:
+    runtime, _path, now = _stale_runtime(tmp_path)
+    _pid_table(monkeypatch, {901: True})
+
+    outcome = task_run_stale_exec.terminalize_stale_exec(
+        runtime, "orphan-lane", stale_before=now - 86400
+    )
+
+    assert outcome == {"transitioned": False, "reason": "runner-not-confirmed-dead"}
+
+
+def test_terminalize_dry_run_reports_without_writing(
+    tmp_path: Path, monkeypatch
+) -> None:
+    runtime, result_path, now = _stale_runtime(tmp_path)
+    _pid_table(monkeypatch, {901: False})
+    before = result_path.read_bytes()
+
+    outcome = task_run_stale_exec.terminalize_stale_exec(
+        runtime, "orphan-lane", stale_before=now - 86400, dry_run=True
+    )
+
+    assert outcome["transitioned"] is False
+    assert outcome["would_transition"] is True
+    assert outcome["status"] == "interrupted"
+    assert result_path.read_bytes() == before
+
+
+def _main_with(monkeypatch, capsys, outcome: dict) -> dict:
+    import json
+
+    monkeypatch.setattr(
+        task_run_stale_exec, "terminalize_stale_exec", lambda *a, **k: dict(outcome)
+    )
+    argv = [
+        "terminalize-stale-exec",
+        "--runtime-root",
+        "rt",
+        "--task-id",
+        "t",
+        "--stale-before",
+        "1.0",
+    ]
+    assert task_run_stale_exec.main(argv) == 0
+    return json.loads(capsys.readouterr().out)
+
+
+def test_main_reports_terminalized_transition(tmp_path, monkeypatch, capsys) -> None:
+    printed = _main_with(monkeypatch, capsys, {"transitioned": True})
+
+    assert printed["log_entry"]["action"] == "terminalized"
+
+
+def test_main_reports_would_transition(tmp_path, monkeypatch, capsys) -> None:
+    printed = _main_with(
+        monkeypatch, capsys, {"transitioned": False, "would_transition": True}
+    )
+
+    assert printed["log_entry"]["action"] == "would-terminalize"
+
+
+def test_main_reports_live_skip(tmp_path, monkeypatch, capsys) -> None:
+    printed = _main_with(
+        monkeypatch,
+        capsys,
+        {"transitioned": False, "reason": "runner-not-confirmed-dead"},
+    )
+
+    assert printed["log_entry"]["action"] == "skipped"
+
+
+def test_main_reports_fresh_skip(tmp_path, monkeypatch, capsys) -> None:
+    printed = _main_with(
+        monkeypatch, capsys, {"transitioned": False, "reason": "record-fresh"}
+    )
+
+    assert printed["log_entry"]["action"] == "skipped"
+
+
+def test_main_reports_plain_outcome_without_log_entry(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    printed = _main_with(
+        monkeypatch, capsys, {"transitioned": False, "reason": "record-missing"}
+    )
+
+    assert "log_entry" not in printed
