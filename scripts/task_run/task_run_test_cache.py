@@ -203,14 +203,6 @@ def finish_verify(plan: Mapping[str, Any], executed: dict[str, Any]) -> dict[str
     return combined
 
 
-def _inside(path: Path, root: Path) -> bool:
-    try:
-        path.relative_to(root)
-    except ValueError:
-        return False
-    return True
-
-
 def _module_files(root: Path, parts: tuple[str, ...]) -> set[Path]:
     """Resolve a local Python module and its package initializers."""
     if not parts or any(not part.isidentifier() for part in parts):
@@ -233,8 +225,7 @@ def _local_import_files(
     root: Path, source: Path, parts: tuple[str, ...]
 ) -> set[Path]:
     found = _module_files(root, parts)
-    local = _module_files(source.parent, parts)
-    return found | {path for path in local if _inside(path.resolve(), root)}
+    return found | _module_files(source.parent, parts)
 
 
 def _relative_import_base(root: Path, source: Path, level: int, module: str | None) -> tuple[str, ...]:
@@ -252,14 +243,16 @@ def _imports(root: Path, source: Path) -> set[Path]:
         if isinstance(node, ast.Import):
             modules.extend(tuple(alias.name.split(".")) for alias in node.names)
         elif isinstance(node, ast.ImportFrom):
-            if node.level:
-                base = _relative_import_base(root, source, node.level, node.module)
-            elif node.module:
-                base = tuple(node.module.split("."))
-            else:
-                continue
-            modules.append(base)
-            modules.extend((*base, alias.name) for alias in node.names if alias.name != "*")
+            base = (
+                _relative_import_base(root, source, node.level, node.module)
+                if node.level
+                else tuple(node.module.split(".")) if node.module else ()
+            )
+            if base:
+                modules.append(base)
+                modules.extend(
+                    (*base, alias.name) for alias in node.names if alias.name != "*"
+                )
         elif isinstance(node, ast.Call):
             for argument in node.args:
                 if isinstance(argument, ast.Constant) and isinstance(argument.value, str):
@@ -277,8 +270,6 @@ def _closure_files(root: Path, test_file: Path) -> set[Path]:
     for parent in test_file.parents:
         if parent == root.parent:
             break
-        if not _inside(parent, root):
-            break
         conftest = parent / "conftest.py"
         if conftest.is_file():
             pending.add(conftest)
@@ -290,6 +281,14 @@ def _closure_files(root: Path, test_file: Path) -> set[Path]:
         seen.add(current)
         pending.update(_imports(root, current) - seen - {test_file})
     return seen
+
+
+def _inside(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
 
 
 def file_hashes(repo_root: Path, test_file: Path) -> dict[str, str] | None:
@@ -322,9 +321,7 @@ def _entry_path(cache_root: Path, relative_path: str, hashes: Mapping[str, str])
     return cache_root / f"{key}.json"
 
 
-def _green_envelope(record: object) -> dict[str, Any] | None:
-    if not isinstance(record, Mapping):
-        return None
+def _green_envelope(record: Mapping[str, Any]) -> dict[str, Any] | None:
     success_code = RESULT_EXIT_CODES[ResultKind.SUCCESS]
     if record.get("result_kind") != ResultKind.SUCCESS.value or record.get("exit_code") != success_code:
         return None
