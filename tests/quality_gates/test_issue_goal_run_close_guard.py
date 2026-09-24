@@ -570,3 +570,55 @@ def test_close_backend_refuses_invalid_adapter(tmp_path: Path) -> None:
 
     assert result is None
     assert "adapter-invalid" in json.dumps(emitted[0])
+
+
+def test_review_refuses_unverified_observer(tmp_path: Path) -> None:
+    report = tmp_path / "report.md"
+    report.write_text(
+        "Second observer verdict: corroborated\nfirst claim text\nnames ev.md here\n",
+        encoding="utf-8",
+    )
+    other = tmp_path / "ev.md"
+    other.write_text("independent\n", encoding="utf-8")
+    record = _record(observer_role="observer", independent_roles=["evidence"])
+    kwargs = _review_kwargs(
+        tmp_path,
+        records=[record],
+        evidence=[
+            {"role": "observer", "path": str(report)},
+            {"role": "evidence", "path": str(other)},
+        ],
+    )
+    original = REVIEW_MOD["_FRESH_EYE"]
+    REVIEW_MOD["_FRESH_EYE"] = SimpleNamespace(
+        _observer_disposition=lambda * _args, **_kwargs: None
+    )
+    try:
+        with pytest.raises(RuntimeError, match="has no verified distinct observer"):
+            REVIEW_MOD["validate_parent_adjudications"](**kwargs)
+    finally:
+        REVIEW_MOD["_FRESH_EYE"] = original
+
+
+def test_close_emits_refusal_on_unbound_existing_review(tmp_path: Path) -> None:
+    prepared = _already_closed(["old"])
+    proof = {"final_proof_index": {"adjudication_review": ["new"]}}
+    # command_close resolves names in its own globals (the lane idiom), not the
+    # runpy carrier dict.
+    namespace = CLOSE_FN_MOD["command_close"].__globals__
+    patched = ("_prepare_close", "_load_proof", "_resolve_close_backend")
+    saved = {key: namespace[key] for key in patched}
+    namespace["_prepare_close"] = lambda **_kwargs: prepared
+    namespace["_load_proof"] = lambda _args, _emit: proof
+    namespace["_resolve_close_backend"] = lambda _args, _rb, _emit: object()
+    try:
+        emitted: list = []
+        args = SimpleNamespace(repo_root=tmp_path, repo=REPO, number=1)
+        result = CLOSE_FN_MOD["command_close"](
+            args, resolve_backend=None, emit=emitted.append
+        )
+    finally:
+        namespace.update(saved)
+
+    assert result == 2
+    assert "close-refused" in json.dumps(emitted[0])
