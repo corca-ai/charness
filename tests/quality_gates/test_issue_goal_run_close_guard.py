@@ -345,3 +345,228 @@ def test_goal_run_close_carries_parent_adjudication_review(
         assert terminal["result"]["parent_adjudication_review"] == review
         assert review[0]["status"] == "corroborated"
         assert review[0]["fresh_eye_observer"]["disposition"] == "delegated"
+
+
+REVIEW_MOD = runpy.run_path(
+    str(ROOT / "skills/public/issue/scripts/issue_review_resolution.py")
+)
+CLOSE_FN_MOD = runpy.run_path(str(CLOSE_PATH))
+_INPUT_MOD = runpy.run_path(
+    str(ROOT / "skills/public/issue/scripts/issue_goal_run_input.py")
+)
+INPUT = SimpleNamespace(
+    error=_INPUT_MOD["error"],
+    positive=_INPUT_MOD["positive"],
+    fields=_INPUT_MOD["fields"],
+)
+
+_OBLIGATION = "## Adjudications\n\n- first claim text\n"
+
+
+def _review_kwargs(tmp_path: Path, *, records, claims=("first claim text",), evidence=None):
+    obligation = tmp_path / "obligation.md"
+    obligation.write_text(_OBLIGATION, encoding="utf-8")
+    return {
+        "repo_root": tmp_path,
+        "value": {"repo": REPO, "parent_adjudications": records},
+        "input_contract": INPUT,
+        "parent_adjudication_claims": list(claims),
+        "parent_obligation_path": obligation,
+        "evidence": evidence if evidence is not None else [],
+        "expected_children": [{"number": 725}],
+    }
+
+
+def _record(**overrides):
+    base = {"claim": "first claim text", "child_number": 725}
+    base.update(overrides)
+    return base
+
+
+def test_review_refuses_non_list_adjudications(tmp_path: Path) -> None:
+    with pytest.raises(RuntimeError, match="must be a list"):
+        REVIEW_MOD["validate_parent_adjudications"](**_review_kwargs(tmp_path, records="x"))
+
+
+def test_review_refuses_records_absent_from_obligation(tmp_path: Path) -> None:
+    kwargs = _review_kwargs(tmp_path, records=[_record()], claims=[])
+    with pytest.raises(RuntimeError, match="absent from the parent obligation"):
+        REVIEW_MOD["validate_parent_adjudications"](**kwargs)
+
+
+def test_review_refuses_non_object_record(tmp_path: Path) -> None:
+    with pytest.raises(RuntimeError, match="must be an object"):
+        REVIEW_MOD["validate_parent_adjudications"](
+            **_review_kwargs(tmp_path, records=["x"])
+        )
+
+
+def test_review_refuses_claim_mismatch(tmp_path: Path) -> None:
+    with pytest.raises(RuntimeError, match="does not match obligation"):
+        REVIEW_MOD["validate_parent_adjudications"](
+            **_review_kwargs(tmp_path, records=[_record(claim="other claim")])
+        )
+
+
+def test_review_refuses_unexpected_child(tmp_path: Path) -> None:
+    with pytest.raises(RuntimeError, match="is not an expected child"):
+        REVIEW_MOD["validate_parent_adjudications"](
+            **_review_kwargs(tmp_path, records=[_record(child_number=999)])
+        )
+
+
+def test_review_refuses_blank_override_reason(tmp_path: Path) -> None:
+    with pytest.raises(RuntimeError, match="override_reason must be non-empty"):
+        REVIEW_MOD["validate_parent_adjudications"](
+            **_review_kwargs(tmp_path, records=[_record(override_reason="   ")])
+        )
+
+
+def test_review_needs_distinct_observer_roles(tmp_path: Path) -> None:
+    with pytest.raises(RuntimeError, match="needs distinct observer and evidence roles"):
+        REVIEW_MOD["validate_parent_adjudications"](
+            **_review_kwargs(tmp_path, records=[_record()])
+        )
+
+
+def test_review_refuses_roles_not_bound_by_proof(tmp_path: Path) -> None:
+    record = _record(observer_role="observer", independent_roles=["evidence"])
+    with pytest.raises(RuntimeError, match="cites roles not bound"):
+        REVIEW_MOD["validate_parent_adjudications"](
+            **_review_kwargs(tmp_path, records=[record])
+        )
+
+
+def test_review_refuses_parent_summary_as_evidence(tmp_path: Path) -> None:
+    other = tmp_path / "ev.md"
+    other.write_text("independent\n", encoding="utf-8")
+    record = _record(observer_role="observer", independent_roles=["evidence"])
+    with pytest.raises(RuntimeError, match="cannot use the parent summary"):
+        REVIEW_MOD["validate_parent_adjudications"](
+            **_review_kwargs(
+                tmp_path,
+                records=[record],
+                evidence=[
+                    {"role": "observer", "path": str(tmp_path / "obligation.md")},
+                    {"role": "evidence", "path": str(other)},
+                ],
+            )
+        )
+
+
+def test_review_requires_distinct_evidence_files(tmp_path: Path) -> None:
+    shared = tmp_path / "shared.md"
+    shared.write_text("report\n", encoding="utf-8")
+    record = _record(observer_role="observer", independent_roles=["evidence"])
+    with pytest.raises(RuntimeError, match="must be distinct files"):
+        REVIEW_MOD["validate_parent_adjudications"](
+            **_review_kwargs(
+                tmp_path,
+                records=[record],
+                evidence=[
+                    {"role": "observer", "path": str(shared)},
+                    {"role": "evidence", "path": str(shared)},
+                ],
+            )
+        )
+
+
+def test_review_refuses_unreadable_observer_report(tmp_path: Path) -> None:
+    other = tmp_path / "ev.md"
+    other.write_text("independent\n", encoding="utf-8")
+    record = _record(observer_role="observer", independent_roles=["evidence"])
+    with pytest.raises(RuntimeError, match="observer report is unreadable"):
+        REVIEW_MOD["validate_parent_adjudications"](
+            **_review_kwargs(
+                tmp_path,
+                records=[record],
+                evidence=[
+                    {"role": "observer", "path": str(tmp_path / "missing.md")},
+                    {"role": "evidence", "path": str(other)},
+                ],
+            )
+        )
+
+
+def test_review_refuses_report_without_verdict(tmp_path: Path) -> None:
+    report = tmp_path / "report.md"
+    report.write_text("first claim text\nnames ev.md here\n", encoding="utf-8")
+    other = tmp_path / "ev.md"
+    other.write_text("independent\n", encoding="utf-8")
+    record = _record(observer_role="observer", independent_roles=["evidence"])
+    with pytest.raises(RuntimeError, match="does not support the claim"):
+        REVIEW_MOD["validate_parent_adjudications"](
+            **_review_kwargs(
+                tmp_path,
+                records=[record],
+                evidence=[
+                    {"role": "observer", "path": str(report)},
+                    {"role": "evidence", "path": str(other)},
+                ],
+            )
+        )
+
+
+def _already_closed(review) -> dict:
+    return {
+        "already_closed": {
+            "terminal_metadata": {
+                "receipt": {"payload": {"result": {"parent_adjudication_review": review}}}
+            }
+        }
+    }
+
+
+def test_existing_close_rejects_unbound_review() -> None:
+    with pytest.raises(RuntimeError, match="does not bind"):
+        CLOSE_FN_MOD["existing_close_result"](_already_closed(["old"]), ["new"])
+
+
+def test_existing_close_returns_bound_receipt() -> None:
+    result = CLOSE_FN_MOD["existing_close_result"](_already_closed(["a"]), ["a"])
+
+    assert result["parent_adjudication_review"] == ["a"]
+
+
+def test_existing_close_rejects_unbound_recovery() -> None:
+    prepared = {
+        "recovery": True,
+        "result": {"prior_terminal": {"payload": {"result": {"parent_adjudication_review": []}}}},
+    }
+    with pytest.raises(RuntimeError, match="does not bind"):
+        CLOSE_FN_MOD["existing_close_result"](prepared, ["x"])
+
+
+def test_existing_close_binds_recovery_review() -> None:
+    prepared = {
+        "recovery": True,
+        "result": {"prior_terminal": {"payload": {"result": {"parent_adjudication_review": ["a"]}}}},
+    }
+
+    assert CLOSE_FN_MOD["existing_close_result"](prepared, ["a"]) is None
+    assert prepared["result"]["parent_adjudication_review"] == ["a"]
+
+
+def _close_args(tmp_path: Path) -> SimpleNamespace:
+    return SimpleNamespace(repo_root=tmp_path, repo=REPO, number=1)
+
+
+def test_close_backend_refuses_provider_failure(tmp_path: Path) -> None:
+    def boom(_root, **_kwargs):
+        raise RuntimeError("nope")
+
+    emitted: list = []
+    result = CLOSE_FN_MOD["_resolve_close_backend"](_close_args(tmp_path), boom, emitted.append)
+
+    assert result is None
+    assert "provider-selection-invalid" in json.dumps(emitted[0])
+
+
+def test_close_backend_refuses_invalid_adapter(tmp_path: Path) -> None:
+    emitted: list = []
+    result = CLOSE_FN_MOD["_resolve_close_backend"](
+        _close_args(tmp_path), lambda _root, **_kwargs: {"adapter_ok": False}, emitted.append
+    )
+
+    assert result is None
+    assert "adapter-invalid" in json.dumps(emitted[0])
