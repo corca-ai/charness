@@ -349,13 +349,7 @@ def test_task_steer_cli_nacks_amend_on_running_lane(tmp_path: Path, monkeypatch)
 
 
 def test_direct_entry_copy_nacks_unknown_task_from_real_checkout(tmp_path: Path) -> None:
-    """A copied entry script inserts the lib root, then steers and nacks.
-
-    The copy lives outside the checkout, so the bootstrap fallback inserts
-    the resolved checkout root; a scratch repo root would instead fall
-    through to the managed copy, which is a different behavior under test
-    elsewhere.
-    """
+    """A copied entry script steers and nacks; kept as a behavior probe."""
     import shutil
     import subprocess
 
@@ -364,8 +358,6 @@ def test_direct_entry_copy_nacks_unknown_task_from_real_checkout(tmp_path: Path)
     repo = Path(__file__).resolve().parents[2]
     copy = tmp_path / "charness-copy"
     shutil.copy(repo / "charness", copy)
-    # Inherit the whole environment: the coverage wiring travels in it, and
-    # scrubbing it would leave the child unmeasured.
     result = subprocess.run(
         [
             sys.executable,
@@ -380,6 +372,49 @@ def test_direct_entry_copy_nacks_unknown_task_from_real_checkout(tmp_path: Path)
             "probe",
             "--actor",
             "t",
+            "ghost-lane",
+        ],
+        capture_output=True,
+        check=False,
+        text=True,
+        cwd=repo,
+    )
+
+    assert result.returncode == 1
+    payload = yaml.safe_load(result.stdout)
+    assert payload["disposition"] == "nacked"
+    assert payload["reason"] == "task-not-found"
+
+
+def test_real_entry_path_inserts_foreign_checkout_lib_root(tmp_path: Path) -> None:
+    """The bootstrap fallback insert runs for a foreign checkout root.
+
+    The spawn uses the real in-repo script path with an inherited
+    environment so the executed lines attribute to the entry script; a
+    copied script would run but its lines would attribute to the copy.
+    The foreign checkout needs only the marker files the resolver checks.
+    """
+    import subprocess
+
+    import yaml
+
+    repo = Path(__file__).resolve().parents[2]
+    foreign = tmp_path / "foreign-checkout"
+    (foreign / "packaging").mkdir(parents=True)
+    (foreign / "packaging" / "charness.json").write_text("{}\n", encoding="utf-8")
+    task_run_dir = foreign / "scripts" / "task_run"
+    task_run_dir.mkdir(parents=True)
+    (task_run_dir / "task_run.py").write_text('"""Marker."""\n', encoding="utf-8")
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(repo / "charness"),
+            "task",
+            "steer",
+            "--repo-root",
+            str(foreign),
+            "--message",
+            "Hello?",
             "ghost-lane",
         ],
         capture_output=True,
