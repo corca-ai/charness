@@ -22,6 +22,7 @@ import hashlib
 import os
 import re
 import shutil
+import stat
 import sys
 import time
 from pathlib import Path
@@ -355,11 +356,96 @@ def _tree_size_bytes(root: Path) -> int:
     return total
 
 
+def stale_entry_roots(
+    root: Path,
+    cutoff: float,
+    *,
+    protected: tuple[Path, ...] = (),
+) -> list[Path]:
+    """Return maximal stale entries below a rebuilt-on-demand root.
+
+    Fresh directories are still walked so old siblings can expire. A directory
+    is returned as one candidate only when none of its descendants are fresh,
+    unreadable, or protected. Linked worktrees and explicit protected roots stay
+    intact for their owning lifecycle to handle.
+    """
+    root = root.absolute()
+    protected_paths = tuple(path.absolute() for path in protected)
+
+    def is_protected(path: Path) -> bool:
+        return any(path == item or item in path.parents for item in protected_paths)
+
+    def inspect(path: Path, *, include: bool) -> tuple[bool, list[Path]]:
+        try:
+            info = path.lstat()
+        except OSError:
+            return True, []
+        if is_protected(path):
+            return True, []
+        is_link = stat.S_ISLNK(info.st_mode)
+        is_dir = stat.S_ISDIR(info.st_mode) and not is_link
+        if not is_dir:
+            if info.st_mtime > cutoff:
+                return True, []
+            return False, [path]
+        # A linked worktree must be unregistered before its files disappear.
+        if (path / ".git").is_file():
+            return True, []
+        try:
+            children = sorted(path.iterdir())
+        except OSError:
+            return True, []
+        remaining = False
+        candidates: list[Path] = []
+        for child in children:
+            child_remaining, child_candidates = inspect(child, include=True)
+            remaining = remaining or child_remaining
+            candidates.extend(child_candidates)
+        if include and info.st_mtime <= cutoff and not remaining:
+            return False, [path]
+        return True, candidates
+
+    _remaining, candidates = inspect(root, include=False)
+    return candidates
+
+
 def _key_is_dead(key: Path, cutoff: float) -> bool:
     recorded = _key_repo_root(key)
     if recorded is not None:
         return not Path(recorded).exists()
     return not _has_entry_newer_than(key, cutoff)
+
+
+def _prune_idle_key_entries(key: Path, cutoff: float, *, log=None) -> list[Path]:
+    protected = [key / REPO_ROOT_MARKER]
+    try:
+        runs = list(key.glob(_RUN_GLOB))
+    except OSError:
+        return []
+    for run in runs:
+        if not run.is_dir() or run.is_symlink():
+            continue
+        if (
+            (run / _FAILED_BASETEMP_MARKER).exists()
+            or (run / _KEPT_BASETEMP_MARKER).exists()
+            or _basetemp_is_active(run)
+        ):
+            protected.extend((run, _basetemp_lock_path(run)))
+
+    removed: list[Path] = []
+    for entry in stale_entry_roots(key, cutoff, protected=tuple(protected)):
+        freed = _tree_size_bytes(entry)
+        try:
+            if entry.is_symlink() or not entry.is_dir():
+                entry.unlink()
+            else:
+                shutil.rmtree(entry)
+        except OSError:
+            continue
+        removed.append(entry)
+        if log is not None:
+            log(f"removed idle pytest temp entry {entry} ({freed // (1024 * 1024)} MiB)")
+    return removed
 
 
 def prune_dead_repo_keys(
@@ -388,7 +474,17 @@ def prune_dead_repo_keys(
     for key in siblings:
         if key.is_symlink() or not key.is_dir() or key.resolve() == mine:
             continue
-        if not _key_is_dead(key, cutoff) or _key_is_active(key):
+        if _key_is_active(key):
+            continue
+        recorded = _key_repo_root(key)
+        if recorded is None and _has_entry_newer_than(key, cutoff):
+            _prune_idle_key_entries(key, cutoff, log=log)
+            continue
+        if recorded is None:
+            dead = True
+        else:
+            dead = not Path(recorded).exists()
+        if not dead:
             continue
         freed = _tree_size_bytes(key)
         try:
@@ -401,7 +497,17 @@ def prune_dead_repo_keys(
     return removed
 
 
-def prepare_repo_key(repo_root: Path, temp_root: Path, *, log=None) -> list[Path]:
+def prepare_repo_key(
+    repo_root: Path,
+    temp_root: Path,
+    *,
+    log=None,
+    now: float | None = None,
+) -> list[Path]:
     """Claim this run's key by name, then reclaim the keys whose repos are gone."""
     record_repo_root_marker(temp_root, repo_root)
-    return prune_dead_repo_keys(temp_root, log=log)
+    current = time.time() if now is None else now
+    cutoff = current - LEGACY_KEY_MAX_AGE_DAYS * 86400
+    if temp_root.parent.name == _KEY_ROOT_NAME:
+        _prune_idle_key_entries(temp_root, cutoff, log=log)
+    return prune_dead_repo_keys(temp_root, now=current, log=log)

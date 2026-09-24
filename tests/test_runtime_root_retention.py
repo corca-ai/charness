@@ -277,6 +277,111 @@ def test_the_sweep_does_not_delete_a_keep_worktree_named_copy(tmp_path: Path) ->
     assert (lane / "runtime").is_dir()
 
 
+def test_kept_worktrees_are_bounded_per_key_and_expiry_preserves_salvage(
+    tmp_path: Path, monkeypatch
+) -> None:
+    now = time.time()
+    mine, repo = _tree(tmp_path, now=now)
+    monkeypatch.setattr(retention, "KEPT_WORKTREE_LIMIT", 2)
+    lanes = mine / "task-run"
+    records: dict[str, Path] = {}
+    for name in ("kept-old", "kept-recent-1", "kept-recent-2"):
+        record = lanes / name
+        worktree = record / "worktree"
+        install_committed_repo(worktree, {"candidate.py": "VALUE = 1\n"})
+        if name == "kept-old":
+            (worktree / "candidate.py").write_text("VALUE = 2\n", encoding="utf-8")
+            (worktree / "new.txt").write_text("salvage me\n", encoding="utf-8")
+        (record / "runtime").mkdir(parents=True)
+        (record / "result.json").write_text(
+            json.dumps(
+                {
+                    "phase": "terminal",
+                    "status": "validated-partial-result",
+                    "keep_worktree": True,
+                }
+            ),
+            encoding="utf-8",
+        )
+        records[name] = record
+
+    _age(records["kept-old"], 30 * DAY, now=now)
+    _age(records["kept-recent-1"], 2 * DAY, now=now)
+    _age(records["kept-recent-2"], DAY, now=now)
+    report = retention.sweep_runtime_root(repo, key_root=mine, now=now)
+
+    expired_worktree = records["kept-old"] / "worktree"
+    expired_entry = next(item for item in report["entries"] if item["path"] == str(expired_worktree))
+    assert expired_entry["action"] == "removed"
+    assert "expired" in expired_entry["reason"]
+    assert expired_entry["salvage"]["status"] == "salvaged"
+    assert not expired_worktree.exists()
+    saved_log = json.loads(Path(report["log_path"]).read_text(encoding="utf-8"))
+    logged_expiry = next(
+        item for item in saved_log["entries"] if item["path"] == str(expired_worktree)
+    )
+    assert "expired" in logged_expiry["reason"]
+    patch = (records["kept-old"] / retention.SALVAGE_PATCH).read_text(encoding="utf-8")
+    assert "-VALUE = 1" in patch and "+VALUE = 2" in patch
+    with tarfile.open(records["kept-old"] / retention.SALVAGE_TAR) as archive:
+        assert archive.getnames() == ["new.txt"]
+    for name in ("kept-recent-1", "kept-recent-2"):
+        assert (records[name] / "worktree").is_dir()
+        assert (records[name] / "runtime").is_dir()
+        entry = next(
+            item for item in report["entries"] if item["path"] == str(records[name] / "worktree")
+        )
+        assert entry["action"] == "skipped"
+
+
+def test_fresh_subtrees_prune_only_stale_entries_with_an_injected_clock(
+    tmp_path: Path,
+) -> None:
+    from scripts.gates_support import standing_pytest_basetemp as basetemp
+
+    now = time.time()
+    mine, repo = _tree(tmp_path, now=now)
+    coverage = mine / "coverage"
+    stale_coverage = coverage / "old-report.dat"
+    stale_coverage.write_text("old coverage", encoding="utf-8")
+    _age(coverage, 30 * DAY, now=now)
+    fresh_coverage = coverage / ".coverage"
+    os.utime(fresh_coverage, (now, now))
+
+    temp_parent = tmp_path / "cache" / "charness" / "pytest-tmp"
+    current = temp_parent / "current"
+    run_root = current / "pytest-of-user" / "charness-run-100"
+    stale_tmp = run_root / "old.tmp"
+    fresh_tmp = run_root / "fresh.tmp"
+    stale_tmp.parent.mkdir(parents=True)
+    stale_tmp.write_text("stale", encoding="utf-8")
+    fresh_tmp.write_text("fresh", encoding="utf-8")
+    _age(current, 30 * DAY, now=now)
+    os.utime(fresh_tmp, (now, now))
+
+    legacy = temp_parent / "legacy"
+    legacy_run = legacy / "pytest-of-user" / "charness-run-99"
+    legacy_stale = legacy_run / "old.tmp"
+    legacy_fresh = legacy_run / "fresh.tmp"
+    legacy_stale.parent.mkdir(parents=True)
+    legacy_stale.write_text("stale", encoding="utf-8")
+    legacy_fresh.write_text("fresh", encoding="utf-8")
+    _age(legacy, 30 * DAY, now=now)
+    os.utime(legacy_fresh, (now, now))
+    repo.mkdir(exist_ok=True)
+
+    report = retention.sweep_runtime_root(repo, key_root=mine, now=now)
+    basetemp.prepare_repo_key(repo, current, now=now)
+
+    coverage_entry = next(item for item in report["entries"] if item["path"] == str(stale_coverage))
+    assert coverage_entry["action"] == "removed"
+    assert not stale_coverage.exists()
+    assert fresh_coverage.is_file()
+    assert coverage.is_dir()
+    assert fresh_tmp.is_file() and not stale_tmp.exists()
+    assert legacy_fresh.is_file() and not legacy_stale.exists()
+
+
 def test_a_dry_run_plans_the_same_and_removes_nothing(tmp_path: Path) -> None:
     now = time.time()
     mine, repo = _tree(tmp_path, now=now)
