@@ -25,6 +25,8 @@ from scripts.task_run import task_run_persistence as _persistence  # noqa: E402
 from scripts.task_run import task_run_prelaunch as _prelaunch  # noqa: E402
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run import task_run_retention as _retention  # noqa: E402
+from scripts.task_run import task_run_evidence as _evidence  # noqa: E402
+from scripts.task_run import task_run_ledger as _ledger  # noqa: E402
 from scripts.task_run import task_run_execution as _execution, task_run_state as _state  # noqa: E402
 from scripts.task_run.task_run_completion_next_step import _next_step  # noqa: E402
 from scripts.task_run.task_run_contract import TaskRunError  # noqa: E402
@@ -73,6 +75,7 @@ def complete_task(
             "delivery_error": str(exc),
             "delivery_error_type": type(exc).__name__,
         }
+    _evidence._write_full_report(delivery, stdout_log.with_name("full-report.log"))
     evidence, scope, parent_progress = completion_evidence(
         target_path=resolved_target,
         parent_root=resolved_repo,
@@ -208,6 +211,8 @@ def complete_task(
         result_state=result_state,
         blockers=blockers,
     )
+    payload["decision_ledger"] = _ledger.decision_ledger_link(resolved_repo)
+    _evidence._attach_short_summary(payload, delivery)
     persist(payload, runtime_path)
     _apply_lane_retention(
         payload,
@@ -298,6 +303,7 @@ def _completion_blockers(
 ) -> list[str]:
     blockers = [f"execution: {execution_status}"] if execution_status != "completed" else []
     blockers.extend(_persistence.persistence_blockers(persistence))
+    blockers.extend(_evidence._report_delivery_blockers(delivery, report_only=report_only))
     if acceptance_skeleton and acceptance_skeleton.get("status") != "green":
         blockers.append("acceptance skeleton did not turn green")
     if scope["verdict"] != pass_value:
@@ -306,19 +312,6 @@ def _completion_blockers(
         blockers.append("parent changed within the resolved candidate scope")
     if delivery.get("delivery_error"):
         blockers.append(f"result delivery could not be read: {delivery['delivery_error']}")
-    if report_only:
-        # The delivered stdout report is the terminal artifact of a
-        # report-only lane (#827): a missing or clipped report fails the lane
-        # even when the executor exited cleanly and nothing changed.
-        delivered_text = delivery.get("text") if isinstance(delivery, Mapping) else ""
-        if delivery.get("status") != "delivered" or not str(delivered_text or "").strip():
-            blockers.append(
-                "report-only task delivered no report: the lane must print its report to stdout"
-            )
-        elif delivery.get("truncated"):
-            blockers.append(
-                "report-only task result was truncated: the delivered report is incomplete"
-            )
     return blockers
 
 
