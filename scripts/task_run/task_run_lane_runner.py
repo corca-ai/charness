@@ -54,8 +54,19 @@ def read_steer_queue(queue_path: Path) -> list[dict[str, Any]]:
     return list(records.values())
 
 
-def enqueue_steer(queue_path: Path, task_id: str, message: str) -> dict[str, Any]:
-    """Append a typed accept/nack envelope for one queued lane message."""
+def enqueue_steer(
+    queue_path: Path,
+    task_id: str,
+    message: str,
+    *,
+    reason_detail: str | None = None,
+    actor: str | None = None,
+) -> dict[str, Any]:
+    """Append a typed accept/nack envelope for one queued lane message.
+
+    ``reason_detail``/``actor`` are audit metadata supplied by the issuer;
+    ``reason`` stays the machine disposition cause.
+    """
     from scripts.task_run.task_run_runtime import utc_now_iso
 
     stamp = utc_now_iso()
@@ -65,6 +76,8 @@ def enqueue_steer(queue_path: Path, task_id: str, message: str) -> dict[str, Any
         "message_id": str(uuid.uuid4()),
         "task_id": task_id,
         "message": normalized,
+        "reason_detail": reason_detail,
+        "actor": actor,
         "queued_at": stamp,
         "delivered_at": None,
         "disposition": "accepted" if normalized else "nacked",

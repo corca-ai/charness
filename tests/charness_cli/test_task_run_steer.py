@@ -241,3 +241,61 @@ def test_steered_invocation_uses_resume_when_available_and_falls_back_in_place()
     )
     assert relaunched == initial
     assert path == "relaunch-in-place"
+
+
+def test_enqueue_steer_records_reason_and_actor(tmp_path: Path) -> None:
+    queue = tmp_path / "steer.queue.jsonl"
+
+    entry = task_run_lane_runner.enqueue_steer(
+        queue, "lane-9", "Hold the line.", reason_detail="release gate", actor="hwidong"
+    )
+
+    assert entry["reason_detail"] == "release gate"
+    assert entry["actor"] == "hwidong"
+    assert entry["reason"] is None
+    stored = task_run_lane_runner.read_steer_queue(queue)[0]
+    assert stored["reason_detail"] == "release gate"
+    assert stored["actor"] == "hwidong"
+
+
+def test_enqueue_steer_defaults_reason_and_actor_to_none(tmp_path: Path) -> None:
+    entry = task_run_lane_runner.enqueue_steer(tmp_path / "q.jsonl", "lane-9", "Hi.")
+
+    assert entry["reason_detail"] is None
+    assert entry["actor"] is None
+
+
+def test_task_steer_cli_threads_reason_and_actor(tmp_path: Path, monkeypatch) -> None:
+    cli = load_cli_module("charness_task_run_steer_audit", CLI)
+    runtime = tmp_path / "runtime"
+    record = {"task_id": "lane-3", "status": "running", "runner_pid": os.getpid()}
+    monkeypatch.setattr(cli, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: runtime)
+    monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: dict(record))
+    monkeypatch.setattr(
+        task_run_runtime,
+        "task_execution_runtime_root",
+        lambda _root, _task_id: runtime / "lane-3" / "runtime",
+    )
+    emitted: list[dict[str, object]] = []
+    monkeypatch.setattr(cli, "emit_yaml", emitted.append)
+
+    code = cli.cmd_task_steer(
+        argparse.Namespace(
+            repo_root=tmp_path,
+            task_id="lane-3",
+            message="Narrow the retry.",
+            amend_scope=None,
+            reason="flaky window",
+            actor="hwidong",
+        )
+    )
+
+    assert code == 0
+    assert emitted[-1]["reason_detail"] == "flaky window"
+    assert emitted[-1]["actor"] == "hwidong"
+    queued = task_run_lane_runner.read_steer_queue(
+        runtime / "lane-3" / "runtime" / "steer.queue.jsonl"
+    )
+    assert queued[0]["reason_detail"] == "flaky window"
+    assert queued[0]["actor"] == "hwidong"

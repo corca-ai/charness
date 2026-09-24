@@ -3404,6 +3404,8 @@ def cmd_task_steer(args: argparse.Namespace) -> int:
                 / "steer.queue.jsonl",
                 args.task_id,
                 args.message,
+                reason_detail=getattr(args, "reason", None),
+                actor=getattr(args, "actor", None),
             )
             kind = (
                 task_run_state.ResultKind.SUCCESS
@@ -3451,6 +3453,8 @@ def cmd_task_steer(args: argparse.Namespace) -> int:
                 "executor_relaunched": False,
                 "target_sha": payload.get("target_sha"),
                 "scope": amended,
+                "reason_detail": getattr(args, "reason", None),
+                "actor": getattr(args, "actor", None),
             }
             kind = (
                 task_run_state.ResultKind.SUCCESS
@@ -5886,6 +5890,14 @@ def build_parser() -> argparse.ArgumentParser:
     task_steer_action.add_argument(
         "--amend-scope", action="append",
         help="Approve an additional scope and revalidate the same retained candidate; repeatable.",
+    )
+    task_steer_parser.add_argument(
+        "--reason", default=None,
+        help="Why this steer/amendment is issued; recorded as audit metadata.",
+    )
+    task_steer_parser.add_argument(
+        "--actor", default=None,
+        help="Who issues this steer/amendment; recorded as audit metadata.",
     )
     task_steer_parser.set_defaults(func=cmd_task_steer)
 
