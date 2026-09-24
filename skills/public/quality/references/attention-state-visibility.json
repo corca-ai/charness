@@ -529,6 +529,18 @@
       ],
       "rationale": "The state module defines the canonical skipped value consumed by worktree doctor renderers."
     },
+    "tools/check_plugin_doc_links.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped"
+      ],
+      "rationale": "The repository-only plugin documentation link checker reports skipped checks explicitly when its export mirror is unavailable."
+    },
     "skills/public/gather/scripts/advise_google_workspace_path.py": {
       "states": [
         "skipped"
