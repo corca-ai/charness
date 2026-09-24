@@ -31,6 +31,7 @@ from scripts.task_run import task_run_contract as _contract  # noqa: E402
 from scripts.task_run import task_run_runtime as _runtime  # noqa: E402
 from scripts.task_run import task_run_state as _state  # noqa: E402
 from scripts.task_run.task_run_train_core import FAIL, PASS  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 PLAN_SCHEMA = "charness.task-run-dag/v1"
 _KEY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$")
@@ -536,7 +537,7 @@ def main(argv: list[str] | None = None) -> int:
             "exit_code": _state.exit_code_for_result_kind(kind),
             "error": str(exc),
         }
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_yaml(payload)
     return int(payload["exit_code"])
 
 

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 
 from scripts.task_run import task_run_dag as dag
 from scripts.task_run.task_run_state import ResultKind
@@ -226,7 +227,7 @@ def test_module_command_reads_one_plan_and_emits_structured_status(
     monkeypatch.setattr(dag, "status_once", lambda _plan: expected)
 
     assert dag.main(["status", "--plan-file", str(plan_path)]) == 0
-    assert json.loads(capsys.readouterr().out) == expected
+    assert yaml.safe_load(capsys.readouterr().out) == expected
 
 
 def test_lane_launcher_delegates_to_task_run_with_static_brief(
@@ -449,7 +450,7 @@ def test_main_reports_a_typed_failure_and_direct_execution_reaches_entrypoint(
     monkeypatch.setattr(dag, "load_plan", lambda _path: (_ for _ in ()).throw(dag.DagError("bad plan")))
 
     assert dag.main(["status", "--plan-file", str(tmp_path / "dag.json")]) == 1
-    failure = json.loads(capsys.readouterr().out)
+    failure = yaml.safe_load(capsys.readouterr().out)
     assert failure["result_kind"] == ResultKind.FAILED.value
     assert failure["exit_code"] == 1
     assert failure["error"] == "bad plan"
