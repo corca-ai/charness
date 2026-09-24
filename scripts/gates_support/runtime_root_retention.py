@@ -19,15 +19,16 @@ What it removes, and what it never touches:
   (`git diff HEAD --binary`) and `uncommitted-untracked.tar` beside the result,
   verified with `git apply --check -R` before the worktree goes; a salvage that
   cannot be verified keeps the worktree and logs why. A receipt with
-  `keep_worktree: true` keeps the worktree even after a verified salvage, because
-  that flag is the producer saying the directory is still the named copy (#797).
+  `keep_worktree: true` keeps the worktree while it is among the newest kept
+  lanes for the key; an expired candidate is removed only after verified salvage.
   A linked worktree (``.git`` is a file) is unregistered with `git worktree
   remove` before the directory is removed, so `.git/worktrees/` does not keep a
   ghost entry.
 - `xdg-cache/charness/runtime/<nested key>`: a key inside a key, the shape the
   bootstrap fix in #787 stops creating. Removed whole once idle.
-- `pycache`, `coverage`, `tmp`, `ruff`, `npm`, `pip`, `pytest-cache`: removed
-  whole once idle for `SUBTREE_MAX_AGE_DAYS`; they are rebuilt on demand.
+- `pycache`, `coverage`, `tmp`, `ruff`, `npm`, `pip`, `pytest-cache`: entries
+  older than `SUBTREE_MAX_AGE_DAYS` are removed even under a fresh subtree; a
+  wholly idle subtree is removed as one tree. These are rebuilt on demand.
 - sibling keys under `charness/runtime/`: removed whole when the repo root the
   key recorded (`.charness-repo-root`, written by the bootstrap) no longer exists,
   or, for a key with no marker, when nothing under it moved for
@@ -47,7 +48,6 @@ import json
 import os
 import shutil
 import sys
-import tarfile
 import time
 from pathlib import Path
 from typing import Any, Callable
@@ -65,6 +65,7 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.core.subprocess_guard import run_process  # noqa: E402
+from scripts.gates_support import runtime_lane_salvage as _lane_salvage  # noqa: E402
 from scripts.gates_support import standing_pytest_basetemp as _basetemp  # noqa: E402
 from scripts.runtime_bootstrap import (  # noqa: E402
     RUNTIME_KEYS_NAME,
@@ -73,6 +74,12 @@ from scripts.runtime_bootstrap import (  # noqa: E402
 )
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
+SALVAGE_PATCH = _lane_salvage.SALVAGE_PATCH
+SALVAGE_RECORD = _lane_salvage.SALVAGE_RECORD
+SALVAGE_TAR = _lane_salvage.SALVAGE_TAR
+_porcelain_z_entries = _lane_salvage.porcelain_z_entries
+salvage_uncommitted = _lane_salvage.salvage_uncommitted
+
 #: Anything touched inside this window is a live session's, whatever else is true.
 ACTIVE_WINDOW_DAYS = 1.0
 #: Rebuilt-on-demand subtrees are kept while a session keeps using them.
@@ -80,12 +87,11 @@ SUBTREE_MAX_AGE_DAYS = 14.0
 LEGACY_KEY_MAX_AGE_DAYS = _basetemp.LEGACY_KEY_MAX_AGE_DAYS
 REPO_ROOT_MARKER = _basetemp.REPO_ROOT_MARKER
 IDLE_SUBTREES = ("pycache", "coverage", "tmp", "ruff", "npm", "pip", "pytest-cache")
+# Ten keeps two weeks of daily candidates available while bounding per-key growth.
+KEPT_WORKTREE_LIMIT = 10
 LANE_RECORDS = "task-run"
 NESTED_KEYS_REL = Path("xdg-cache") / RUNTIME_TREE_NAME / RUNTIME_KEYS_NAME
 LOG_DIR_NAME = "retention"
-SALVAGE_PATCH = "uncommitted.patch"
-SALVAGE_TAR = "uncommitted-untracked.tar"
-SALVAGE_RECORD = "uncommitted.json"
 TERMINAL_PHASES = frozenset({"terminal"})
 
 Log = Callable[[str], None]
@@ -174,16 +180,25 @@ class Sweep:
         if not _inside(path, self.keys_root):
             self._record("refused", path, f"outside {self.keys_root}; never a candidate")
             return False
-        size = _tree_size_bytes(path)
+        try:
+            size = _tree_size_bytes(path) if path.is_dir() and not path.is_symlink() else path.lstat().st_size
+        except OSError:
+            size = 0
         action = "would-remove" if self.dry_run else "removed"
         if not self.dry_run:
             try:
-                if (path / ".git").is_file():
-                    from scripts.worktree.worktree_lifetime import unregister
+                if path.is_symlink():
+                    path.unlink()
+                elif path.is_dir():
+                    if (path / ".git").is_file():
+                        from scripts.worktree.worktree_lifetime import unregister
 
-                    unregister(path)
-                if path.exists():
-                    _rmtree_writable(path)
+                        unregister(path)
+                    if path.exists():
+                        _rmtree_writable(path)
+                elif path.exists():
+                    os.chmod(path, 0o600)
+                    path.unlink()
             except OSError as exc:
                 self._record("failed", path, f"{reason}; removal failed: {exc}", bytes=size)
                 return False
@@ -211,11 +226,28 @@ class Sweep:
 
     def sweep_lanes(self, key_root: Path | None = None) -> None:
         lanes = (key_root or self.key_root) / LANE_RECORDS
-        for record in _children(lanes):
-            if record.is_dir() and not record.is_symlink():
-                self.sweep_lane(record)
+        records = [record for record in _children(lanes) if record.is_dir() and not record.is_symlink()]
+        kept: list[tuple[float, str, Path]] = []
+        for record in records:
+            payload = self._lane_result(record)
+            if (
+                payload is None
+                or payload.get("phase") not in TERMINAL_PHASES
+                or payload.get("keep_worktree") is not True
+                or not ((record / "worktree").is_dir() or (record / "runtime").exists())
+            ):
+                continue
+            try:
+                finished_at = (record / "result.json").stat().st_mtime
+            except OSError:
+                finished_at = 0.0
+            kept.append((finished_at, str(record), record))
+        kept.sort(reverse=True)
+        expired = {record for _finished_at, _path, record in kept[max(0, KEPT_WORKTREE_LIMIT) :]}
+        for record in records:
+            self.sweep_lane(record, expire_kept=record in expired)
 
-    def sweep_lane(self, record: Path) -> None:
+    def sweep_lane(self, record: Path, *, expire_kept: bool = False) -> None:
         worktree = record / "worktree"
         runtime = record / "runtime"
         if not worktree.exists() and not runtime.exists():
@@ -235,7 +267,8 @@ class Sweep:
             reason = f"{state} and the record is idle past the active window"
         if worktree.is_dir():
             salvage = salvage_uncommitted(worktree, record, git=self.git, dry_run=self.dry_run)
-            if payload is not None and payload.get("keep_worktree") is True:
+            keeping = payload is not None and payload.get("keep_worktree") is True
+            if keeping and not expire_kept:
                 extra = (
                     "; salvage written beside the result"
                     if salvage.get("status") in {"salvaged", "would-salvage"}
@@ -251,9 +284,20 @@ class Sweep:
                 self._record("skipped", worktree, f"uncommitted edits could not be salvaged verifiably: {salvage.get('error')}")
                 return
             else:
-                self._remove_tree(worktree, reason, salvage=salvage)
-        if runtime.exists() and not (payload is not None and payload.get("keep_worktree") is True):
-            self._remove_tree(runtime, reason)
+                removal_reason = (
+                    f"kept worktree expired: only the {KEPT_WORKTREE_LIMIT} newest kept worktrees per key are retained"
+                    if keeping and expire_kept
+                    else reason
+                )
+                self._remove_tree(worktree, removal_reason, salvage=salvage)
+        keeping = payload is not None and payload.get("keep_worktree") is True
+        if runtime.exists() and (not keeping or expire_kept):
+            runtime_reason = (
+                f"runtime expired with kept worktree beyond the newest {KEPT_WORKTREE_LIMIT} per-key limit"
+                if keeping and expire_kept
+                else reason
+            )
+            self._remove_tree(runtime, runtime_reason)
 
     # -- nested keys and idle subtrees -----------------------------------
 
@@ -276,6 +320,9 @@ class Sweep:
             if not subtree.is_dir() or subtree.is_symlink():
                 continue
             if _has_entry_newer_than(subtree, cutoff):
+                reason = f"entry idle inside rebuilt-on-demand subtree for {SUBTREE_MAX_AGE_DAYS:g} days"
+                for entry in _basetemp.stale_entry_roots(subtree, cutoff):
+                    self._remove_tree(entry, reason)
                 continue
             self._remove_tree(subtree, f"rebuilt-on-demand subtree idle for {SUBTREE_MAX_AGE_DAYS:g} days")
 
@@ -377,113 +424,10 @@ def _rmtree_writable(path: Path) -> None:
     shutil.rmtree(path)
 
 
-def salvage_uncommitted(
-    worktree: Path, record: Path, *, git: Callable[..., Any], dry_run: bool = False
-) -> dict[str, Any]:
-    """Keep a finished lane's uncommitted edits beside its result before the worktree goes.
-
-    Returns `{"status": "clean"}` when HEAD carries everything, `"salvaged"` with the
-    files written and their verification, or `"unverified"` with the error when the
-    patch could not be proven to apply, in which case the caller keeps the worktree.
-    """
-    if not (worktree / ".git").exists():
-        return {"status": "not-a-worktree"}
-    head = git(worktree, "rev-parse", "HEAD")
-    if head.returncode != 0:
-        return {"status": "unverified", "error": f"rev-parse HEAD failed: {head.stderr.strip()}"}
-    # `-z`: NUL-separated, unquoted paths. The human porcelain form quotes and
-    # escapes a path with a space, quote, backslash, or non-ASCII byte, and a path
-    # read back from that form need not name the file; the release critique for
-    # 8.0.3 caught that the first cut would then have skipped the file silently and
-    # still reported the salvage complete.
-    status = git(worktree, "status", "--porcelain", "-z", "--untracked-files=all")
-    if status.returncode != 0:
-        return {"status": "unverified", "error": f"status failed: {status.stderr.strip()}"}
-    lines = _porcelain_z_entries(status.stdout)
-    if not lines:
-        return {"status": "clean", "head": head.stdout.strip()}
-    tracked = [line for line in lines if not line.startswith("??")]
-    untracked = [line[3:] for line in lines if line.startswith("??")]
-    result: dict[str, Any] = {"status": "salvaged", "head": head.stdout.strip(), "files": []}
-    if dry_run:
-        result["status"] = "would-salvage"
-        result["tracked"] = len(tracked)
-        result["untracked"] = len(untracked)
-        return result
-    if tracked:
-        diff = git(worktree, "diff", "HEAD", "--binary")
-        if diff.returncode != 0:
-            return {"status": "unverified", "error": f"diff failed: {diff.stderr.strip()}"}
-        patch = record / SALVAGE_PATCH
-        patch.write_text(diff.stdout, encoding="utf-8")
-        check = git(worktree, "apply", "--check", "-R", str(patch))
-        if check.returncode != 0:
-            return {
-                "status": "unverified",
-                "error": f"apply --check -R refused the salvaged patch: {check.stderr.strip()[-400:]}",
-            }
-        result["files"].append(str(patch))
-        result["patch_verified"] = True
-    if untracked:
-        archive = record / SALVAGE_TAR
-        missing = [rel for rel in untracked if not (worktree / rel).exists()]
-        if missing:
-            return {
-                "status": "unverified",
-                "error": f"untracked path(s) reported by git are not on disk: {', '.join(missing[:5])}",
-            }
-        with tarfile.open(archive, "w") as tar:
-            for rel in untracked:
-                tar.add(worktree / rel, arcname=rel)
-        # Read the archive back: every untracked path git named is a member, or the
-        # worktree stays.
-        with tarfile.open(archive) as tar:
-            members = set(tar.getnames())
-        absent = [rel for rel in untracked if rel not in members and rel.rstrip("/") not in members]
-        if absent:
-            return {
-                "status": "unverified",
-                "error": f"salvage archive is missing {len(absent)} untracked path(s): {', '.join(absent[:5])}",
-            }
-        result["files"].append(str(archive))
-        result["archive_members"] = len(members)
-    (record / SALVAGE_RECORD).write_text(
-        json.dumps(
-            {"head": result["head"], "tracked": tracked, "untracked": untracked, "files": result["files"]},
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    result["files"].append(str(record / SALVAGE_RECORD))
-    return result
-
-
 #: The sweep runs on every standing pytest run and a quiet pass still lists every
 #: skipped entry with its reason (about 300 KB on this repo's key), so the logs
 #: are themselves bounded: the newest `SWEEP_LOG_KEEP` stay.
 SWEEP_LOG_KEEP = 20
-
-
-def _porcelain_z_entries(stdout: str) -> list[str]:
-    """`XY path` entries from `git status --porcelain -z`.
-
-    A rename entry is `XY new\0old\0`; the second record is the old name and is
-    dropped so it is not read as a separate path.
-    """
-    records = stdout.split("\0")
-    entries: list[str] = []
-    skip_next = False
-    for record in records:
-        if skip_next:
-            skip_next = False
-            continue
-        if not record:
-            continue
-        entries.append(record)
-        if record[:1] in {"R", "C"} or record[1:2] in {"R", "C"}:
-            skip_next = True
-    return entries
 
 
 def write_sweep_log(key_root: Path, report: dict[str, Any]) -> Path | None:
