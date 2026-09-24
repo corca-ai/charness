@@ -159,21 +159,26 @@ def _hold_basetemp_lock(basetemp: Path):
 
 
 def _basetemp_is_active(basetemp: Path) -> bool:
+    # Read-only probe: opening with "a+" would create the lock file (and bump
+    # directory mtimes even with the unlink below), poisoning the freshness
+    # checks that call this predicate during a sweep.
     lock_path = _basetemp_lock_path(basetemp)
     try:
-        with lock_path.open("a+", encoding="utf-8") as handle:
-            try:
-                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except BlockingIOError:
-                return True
-            finally:
-                try:
-                    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
-                except OSError:
-                    pass
+        handle = lock_path.open("r", encoding="utf-8")
+    except FileNotFoundError:
+        return False
     except OSError:
         return True
-    lock_path.unlink(missing_ok=True)
+    with handle:
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return True
+        finally:
+            try:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            except OSError:
+                pass
     return False
 
 
