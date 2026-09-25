@@ -254,7 +254,10 @@ def smoke_exported_plugin_imports(plugin_root: Path) -> None:
         # Do not run from the authoring checkout: Python would put it on
         # sys.path and source-only imports could hide an incomplete export.
         cwd=plugin_root.parent,
-        timeout_seconds=30,
+        # 30 s flaked under full-release load (30.4 s observed vs 18 s
+        # median, 10.7 s idle); the smoke execs every exported module in
+        # one process, so the bound must tolerate a loaded runner.
+        timeout_seconds=120,
     )
     if result.returncode != 0:
         stderr = result.stderr.strip()

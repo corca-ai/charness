@@ -185,7 +185,11 @@ def test_diverged_checkout_detail_truncates_and_survives_git_failure(
         calls.append(argv)
         raise OSError("no git")
 
-    monkeypatch.setattr(launcher, "run", _failing_run)
+    # `_diverged_checkout_detail` lives in scripts/cli/bootstrap.py after
+    # #873: patch the namespace the payload calls, not the loaded entry copy.
+    import scripts.cli.bootstrap as bootstrap
+
+    monkeypatch.setattr(bootstrap, "run", _failing_run)
     assert launcher._diverged_checkout_detail(Path("/nonexistent"), "origin/main") == ""
     assert calls and calls[0][:2] == ["git", "log"]
 

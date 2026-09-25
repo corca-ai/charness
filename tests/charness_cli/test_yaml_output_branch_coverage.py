@@ -55,28 +55,87 @@ def _runtime_args(home_root: Path, repo_root: Path) -> Namespace:
     )
 
 
+def _feature_namespaces():
+    # Command payloads live in scripts/cli after #873 and read collaborator
+    # seams from their own module globals, so entry-level patches no longer
+    # reach them. The fakes below must land in every feature namespace on the
+    # exercised command paths, not just the loaded entry copy.
+    import scripts.cli.cmd_doctor as cmd_doctor
+    import scripts.cli.cmd_goal as cmd_goal
+    import scripts.cli.cmd_init as cmd_init
+    import scripts.cli.cmd_task as cmd_task
+    import scripts.cli.cmd_update as cmd_update
+    import scripts.cli.cmd_worktree as cmd_worktree
+    import scripts.cli.host_codex as host_codex
+    import scripts.cli.tool_commands as tool_commands
+    import scripts.cli.tool_update as tool_update
+
+    return (
+        cmd_doctor,
+        cmd_goal,
+        cmd_init,
+        cmd_task,
+        cmd_update,
+        cmd_worktree,
+        host_codex,
+        tool_commands,
+        tool_update,
+    )
+
+
 def _patch_runtime_dependencies(module, monkeypatch, repo_root: Path, home_root: Path) -> None:
     runtime_paths = (home_root / "plugin", home_root / "marketplace.json", home_root / "claude", home_root / "cli")
-    monkeypatch.setattr(module, "resolve_repo_root", lambda *_args: (repo_root, False))
-    monkeypatch.setattr(module, "resolve_target_repo_root", lambda *_args: repo_root)
-    monkeypatch.setattr(module, "enforce_managed_cli_contract", lambda **_kwargs: None)
-    monkeypatch.setattr(module, "resolve_runtime_paths", lambda _args: runtime_paths)
-    monkeypatch.setattr(module, "ensure_checkout", lambda *_args, **_kwargs: {"repo_root": str(repo_root)})
-    monkeypatch.setattr(
-        module, "maybe_reexec_refreshed_cli", lambda *_args, **_kwargs: {"status": "reexecuted", "checkout_cli": "checkout/charness"}
-    )
-    monkeypatch.setattr(module, "install_surface", lambda *_args, **_kwargs: {"host_next_steps": {}, "raw_install_trace": "verbose installer evidence"})
-    monkeypatch.setattr(module, "build_doctor_payload", lambda **_kwargs: _doctor_payload())
-    monkeypatch.setattr(module, "maybe_install_codex_host", lambda **_kwargs: {"status": "skipped"})
-    monkeypatch.setattr(module, "write_install_state", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(module, "write_version_state", lambda *_args, **_kwargs: {})
-    monkeypatch.setattr(module, "write_host_state", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(module, "build_version_provenance", lambda **_kwargs: {})
-    monkeypatch.setattr(module, "codex_all_plugin_cache_entries", lambda _path: [])
-    monkeypatch.setattr(module, "diff_cache_entries", lambda *_args: [])
-    monkeypatch.setattr(module, "session_staleness_payload", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(module, "latest_release_for_current_version", lambda *_args: None)
-    monkeypatch.setattr(module, "packaging_version", lambda _path: "1.0.9")
+    fakes = {
+        "resolve_repo_root": lambda *_args: (repo_root, False),
+        "resolve_target_repo_root": lambda *_args: repo_root,
+        "enforce_managed_cli_contract": lambda **_kwargs: None,
+        "resolve_runtime_paths": lambda _args: runtime_paths,
+        "ensure_checkout": lambda *_args, **_kwargs: {"repo_root": str(repo_root)},
+        "maybe_reexec_refreshed_cli": lambda *_args, **_kwargs: {"status": "reexecuted", "checkout_cli": "checkout/charness"},
+        "install_surface": lambda *_args, **_kwargs: {"host_next_steps": {}, "raw_install_trace": "verbose installer evidence"},
+        "build_doctor_payload": lambda **_kwargs: _doctor_payload(),
+        "maybe_install_codex_host": lambda **_kwargs: {"status": "skipped"},
+        "write_install_state": lambda *_args, **_kwargs: None,
+        "write_version_state": lambda *_args, **_kwargs: {},
+        "write_host_state": lambda *_args, **_kwargs: None,
+        "build_version_provenance": lambda **_kwargs: {},
+        "codex_all_plugin_cache_entries": lambda _path: [],
+        "diff_cache_entries": lambda *_args: [],
+        "session_staleness_payload": lambda *_args, **_kwargs: None,
+        "latest_release_for_current_version": lambda *_args: None,
+        "packaging_version": lambda _path: "1.0.9",
+    }
+    targets = (module, *_feature_namespaces())
+    for name, fake in fakes.items():
+        landed = 0
+        for target in targets:
+            if hasattr(target, name):
+                monkeypatch.setattr(target, name, fake)
+                landed += 1
+        assert landed, f"seam {name!r} exists nowhere to patch"
+
+
+def _phase2_kwargs(home_root: Path, repo_root: Path) -> dict:
+    # Phase-1 (`cmd_init`/`cmd_update` in the entry) purges `scripts.cli` and
+    # reimports phase 2 from the ensured checkout, so in-process fakes cannot
+    # ride along: these tests drive `finish_init`/`finish_update` directly on
+    # the feature modules (the update_flow_unit pattern), fabricating the
+    # phase-1 outputs with the same fakes `_patch_runtime_dependencies`
+    # installs. `cli_reexec_state` mirrors the `maybe_reexec_refreshed_cli`
+    # fake so re-exec assertions keep proving the payload wiring.
+    return {
+        "home_root": home_root,
+        "managed_checkout": False,
+        "target_repo_root": repo_root,
+        "plugin_root": home_root / "plugin",
+        "codex_marketplace_path": home_root / "marketplace.json",
+        "claude_wrapper_path": home_root / "cli",
+        "cli_path": home_root / "cli" / "charness",
+        "checkout": {"repo_root": str(repo_root)},
+        "cli_reexec_state": {"status": "reexecuted", "checkout_cli": "checkout/charness"},
+        "script_path": repo_root / "charness",
+        "embedded_repo_root": None,
+    }
 
 
 def test_init_update_and_doctor_emit_yaml_on_all_public_paths(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -84,9 +143,13 @@ def test_init_update_and_doctor_emit_yaml_on_all_public_paths(tmp_path: Path, mo
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     _patch_runtime_dependencies(module, monkeypatch, repo_root, tmp_path / "home")
-    args = _runtime_args(tmp_path / "home", repo_root)
+    import scripts.cli.cmd_init as cmd_init_feature
+    import scripts.cli.cmd_update as cmd_update_feature
 
-    assert module.cmd_init(args) == 0
+    args = _runtime_args(tmp_path / "home", repo_root)
+    phase2 = _phase2_kwargs(tmp_path / "home", repo_root)
+
+    assert cmd_init_feature.finish_init(args, **phase2) == 0
     init_output = yaml.safe_load(capsys.readouterr().out)
     assert init_output["response_level"] == "summary"
     assert init_output["checkout"]["repo_root"] == str(repo_root)
@@ -95,18 +158,22 @@ def test_init_update_and_doctor_emit_yaml_on_all_public_paths(tmp_path: Path, mo
     assert "raw_install_trace" not in init_output
 
     args.detail = True
-    assert module.cmd_init(args) == 0
+    assert cmd_init_feature.finish_init(args, **phase2) == 0
     init_detail = yaml.safe_load(capsys.readouterr().out)
     assert init_detail["response_level"] == "detail"
     assert init_detail["raw_install_trace"] == "verbose installer evidence"
     args.detail = False
 
-    assert module.cmd_update(args) == 0
+    update_kwargs = {k: v for k, v in phase2.items() if k not in ("script_path", "embedded_repo_root")}
+    update_kwargs.update(include_repo_onboarding=False, previous_checkout_version=None)
+    assert cmd_update_feature.finish_update(args, **update_kwargs) == 0
     update_output = capsys.readouterr()
     assert yaml.safe_load(update_output.out)["response_level"] == "summary"
     assert yaml.safe_load(update_output.out)["scope"] == "self"
     assert yaml.safe_load(update_output.out)["cli_reexec"]["status"] == "reexecuted"
-    assert "STEP: refreshing source checkout" in update_output.err
+    # Phase-1's own line ("refreshing source checkout") is entry wiring, not
+    # phase-2 payload behavior; phase 2 emits the install-surface refresh.
+    assert "STEP: refreshing install surface" in update_output.err
     assert "DONE: update complete" in update_output.err
 
     doctor_args = Namespace(
@@ -143,14 +210,23 @@ def test_init_and_update_fail_on_explicit_host_delivery_failure(tmp_path: Path, 
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     _patch_runtime_dependencies(module, monkeypatch, repo_root, tmp_path / "home")
-    monkeypatch.setattr(module, "maybe_install_codex_host", lambda **_kwargs: {"status": "failed", "reason": "post-readback"})
-    args = _runtime_args(tmp_path / "home", repo_root)
+    import scripts.cli.cmd_init as cmd_init_feature
+    import scripts.cli.cmd_update as cmd_update_feature
 
-    assert module.cmd_init(args) == 1
+    for feature in (cmd_init_feature, cmd_update_feature):
+        monkeypatch.setattr(
+            feature, "maybe_install_codex_host", lambda **_kwargs: {"status": "failed", "reason": "post-readback"}
+        )
+    args = _runtime_args(tmp_path / "home", repo_root)
+    phase2 = _phase2_kwargs(tmp_path / "home", repo_root)
+    update_kwargs = {k: v for k, v in phase2.items() if k not in ("script_path", "embedded_repo_root")}
+    update_kwargs.update(include_repo_onboarding=False, previous_checkout_version=None)
+
+    assert cmd_init_feature.finish_init(args, **phase2) == 1
     init_payload = yaml.safe_load(capsys.readouterr().out)
     assert init_payload["codex_host_install"]["status"] == "failed"
 
-    assert module.cmd_update(args) == 1
+    assert cmd_update_feature.finish_update(args, **update_kwargs) == 1
     update_payload = yaml.safe_load(capsys.readouterr().out)
     assert update_payload["codex_cache_refresh"]["status"] == "failed"
 
@@ -160,8 +236,10 @@ def test_update_all_failure_preserves_scope_in_recovery_action(tmp_path: Path, m
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     _patch_runtime_dependencies(module, monkeypatch, repo_root, tmp_path / "home")
+    import scripts.cli.cmd_update as cmd_update_feature
+
     monkeypatch.setattr(
-        module,
+        cmd_update_feature,
         "run_tool_update_flow",
         lambda **_kwargs: (
             {"results": {"nose": {"update": {"status": "failed"}}}},
@@ -170,8 +248,12 @@ def test_update_all_failure_preserves_scope_in_recovery_action(tmp_path: Path, m
     )
     args = _runtime_args(tmp_path / "home", repo_root)
     args.scope = "all"
+    update_kwargs = _phase2_kwargs(tmp_path / "home", repo_root)
+    for key in ("script_path", "embedded_repo_root"):
+        update_kwargs.pop(key)
+    update_kwargs.update(include_repo_onboarding=False, previous_checkout_version=None)
 
-    assert module.cmd_update(args) == 1
+    assert cmd_update_feature.finish_update(args, **update_kwargs) == 1
     payload = yaml.safe_load(capsys.readouterr().out)
     assert payload["scope"] == "all"
     assert payload["tool_update"]["status"] == "failed"
@@ -489,9 +571,13 @@ def test_doctor_surfaces_latest_failed_delivery_and_compact_projection_keeps_pro
 
 def test_same_version_verified_readback_skips_refresh_call(tmp_path: Path, monkeypatch) -> None:
     module = load_charness_module("charness_verified_same_version_skip_under_test")
-    monkeypatch.setattr(module, "_last_installed_commit", lambda _home_root: "commit-1")
+    # `maybe_install_codex_host` lives in scripts/cli/host_codex.py after
+    # #873: patch the namespace the payload calls, not the loaded entry copy.
+    import scripts.cli.host_codex as host_codex
+
+    monkeypatch.setattr(host_codex, "_last_installed_commit", lambda _home_root: "commit-1")
     monkeypatch.setattr(
-        module,
+        host_codex,
         "_same_version_cache_readback",
         lambda _doctor_payload: {
             "delivery_verified": True,
@@ -502,7 +588,7 @@ def test_same_version_verified_readback_skips_refresh_call(tmp_path: Path, monke
     def unexpected_refresh(**_kwargs):
         raise AssertionError("verified same-version content must not refresh")
 
-    monkeypatch.setattr(module, "refresh_codex_cache_via_app_server", unexpected_refresh)
+    monkeypatch.setattr(host_codex, "refresh_codex_cache_via_app_server", unexpected_refresh)
     result = module.maybe_install_codex_host(
         home_root=tmp_path / "home",
         codex_marketplace_path=tmp_path / "marketplace.json",
@@ -535,12 +621,16 @@ def test_init_and_update_record_attempted_delivery_readback(tmp_path: Path, monk
             "codex_source_cache_drift": False,
         }
     )
-    monkeypatch.setattr(module, "build_doctor_payload", lambda **_kwargs: dict(doctor))
-    monkeypatch.setattr(
-        module,
-        "maybe_install_codex_host",
-        lambda **_kwargs: {"status": "attempted", "action": "install"},
-    )
+    import scripts.cli.cmd_init as cmd_init_feature
+    import scripts.cli.cmd_update as cmd_update_feature
+
+    for feature in (cmd_init_feature, cmd_update_feature):
+        monkeypatch.setattr(feature, "build_doctor_payload", lambda **_kwargs: dict(doctor))
+        monkeypatch.setattr(
+            feature,
+            "maybe_install_codex_host",
+            lambda **_kwargs: {"status": "attempted", "action": "install"},
+        )
     phases: list[str] = []
 
     def record_readback(delivery, _doctor_payload, *, phase):
@@ -548,11 +638,15 @@ def test_init_and_update_record_attempted_delivery_readback(tmp_path: Path, monk
         delivery.update({"delivery_verified": True, "verification": "test-readback"})
         return {"delivery_verified": True, "verification": "test-readback"}
 
-    monkeypatch.setattr(module, "_record_post_delivery_readback", record_readback)
+    for feature in (cmd_init_feature, cmd_update_feature):
+        monkeypatch.setattr(feature, "_record_post_delivery_readback", record_readback)
     args = _runtime_args(home_root, repo_root)
-    assert module.cmd_init(args) == 0
+    phase2 = _phase2_kwargs(home_root, repo_root)
+    update_kwargs = {k: v for k, v in phase2.items() if k not in ("script_path", "embedded_repo_root")}
+    update_kwargs.update(include_repo_onboarding=False, previous_checkout_version=None)
+    assert cmd_init_feature.finish_init(args, **phase2) == 0
     capsys.readouterr()
-    assert module.cmd_update(args) == 0
+    assert cmd_update_feature.finish_update(args, **update_kwargs) == 0
     capsys.readouterr()
     assert phases == ["init", "update"]
 
@@ -585,9 +679,13 @@ def test_tool_command_outputs_are_routed_through_yaml(tmp_path: Path, monkeypatc
     module = load_charness_module("charness_yaml_tool_output_under_test")
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
-    monkeypatch.setattr(module, "resolve_tool_repo_root", lambda _args: (repo_root, False))
-    monkeypatch.setattr(module, "default_plugin_root", lambda _path: tmp_path / "plugin")
-    monkeypatch.setattr(module, "invoke_repo_json_script", lambda *_args, **_kwargs: [])
+    # Tool payloads live in scripts/cli/tool_commands.py after #873: patch
+    # the namespace the payload calls, not the loaded entry copy.
+    import scripts.cli.tool_commands as tool_commands
+
+    monkeypatch.setattr(tool_commands, "resolve_tool_repo_root", lambda _args: (repo_root, False))
+    monkeypatch.setattr(tool_commands, "default_plugin_root", lambda _path: tmp_path / "plugin")
+    monkeypatch.setattr(tool_commands, "invoke_repo_json_script", lambda *_args, **_kwargs: [])
     base_args = Namespace(
         home_root=tmp_path / "home",
         repo_root=repo_root,
@@ -626,7 +724,7 @@ def test_tool_command_outputs_are_routed_through_yaml(tmp_path: Path, monkeypatc
     assert install_output["response_level"] == "summary"
     assert install_output["results"] == {}
 
-    monkeypatch.setattr(module, "run_tool_update_flow", lambda **_kwargs: ({"results": {}}, False))
+    monkeypatch.setattr(tool_commands, "run_tool_update_flow", lambda **_kwargs: ({"results": {}}, False))
     assert module.cmd_tool_update(base_args) == 0
     update_output = yaml.safe_load(capsys.readouterr().out)
     assert update_output["response_level"] == "summary"
@@ -696,9 +794,13 @@ def test_worktree_and_goal_run_fallback_keep_stdout_yaml(tmp_path: Path, monkeyp
         def run_cleanup(*_args, **_kwargs):
             return {"status": WorktreeCleanup.PASS}
 
-    monkeypatch.setattr(module, "_load_worktree_audit_lib", lambda _args: WorktreeAudit)
-    monkeypatch.setattr(module, "_load_worktree_cleanup_lib", lambda _args: WorktreeCleanup)
-    monkeypatch.setattr(module, "_resolve_worktree_target", lambda _args: tmp_path)
+    # Worktree payloads live in scripts/cli/cmd_worktree.py after #873: patch
+    # the namespace the payload calls, not the loaded entry copy.
+    import scripts.cli.cmd_worktree as cmd_worktree
+
+    monkeypatch.setattr(cmd_worktree, "_load_worktree_audit_lib", lambda _args: WorktreeAudit)
+    monkeypatch.setattr(cmd_worktree, "_load_worktree_cleanup_lib", lambda _args: WorktreeCleanup)
+    monkeypatch.setattr(cmd_worktree, "_resolve_worktree_target", lambda _args: tmp_path)
 
     assert module.cmd_worktree_audit(Namespace(stale_days=30, doctor=False, prune=True)) == 0
     audit_output = yaml.safe_load(capsys.readouterr().out)
@@ -709,11 +811,15 @@ def test_worktree_and_goal_run_fallback_keep_stdout_yaml(tmp_path: Path, monkeyp
     assert module.cmd_worktree_cleanup(cleanup_args) == 0
     assert yaml.safe_load(capsys.readouterr().out)["status"] == "pass"
 
-    monkeypatch.setattr(module, "_resolve_goal_run_helper_repo_root", lambda _args: tmp_path)
-    monkeypatch.setattr(module, "_goal_run_script_args", lambda _args, _repo: [])
-    monkeypatch.setattr(module, "resolve_repo_python", lambda _path: sys.executable)
+    # Goal payloads live in scripts/cli/cmd_goal.py after #873: patch the
+    # namespace the payload calls, not the loaded entry copy.
+    import scripts.cli.cmd_goal as cmd_goal
+
+    monkeypatch.setattr(cmd_goal, "_resolve_goal_run_helper_repo_root", lambda _args: tmp_path)
+    monkeypatch.setattr(cmd_goal, "_goal_run_script_args", lambda _args, _repo: [])
+    monkeypatch.setattr(cmd_goal, "resolve_repo_python", lambda _path: sys.executable)
     monkeypatch.setattr(
-        module,
+        cmd_goal,
         "run",
         lambda *_args, **_kwargs: SimpleNamespace(stdout="not json\n", stderr="helper warning\n", returncode=0),
     )
@@ -738,11 +844,15 @@ def test_build_host_next_steps_includes_repo_onboarding_message() -> None:
 
 def test_install_surface_records_claude_plugin_message_in_host_next_steps(monkeypatch, tmp_path: Path) -> None:
     module = load_charness_module("charness_install_surface_claude_under_test")
-    monkeypatch.setattr(module, "invoke_repo_script", lambda *args, **kwargs: '{"host_next_steps": {}}')
-    monkeypatch.setattr(module, "invoke_repo_json_script", lambda *args, **kwargs: [])
-    monkeypatch.setattr(module, "ensure_claude_marketplace", lambda *args, **kwargs: ([], "marketplace ready"))
+    # `install_surface` lives in scripts/cli/doctor_payload.py after #873:
+    # patch the namespace the payload calls, not the loaded entry copy.
+    import scripts.cli.doctor_payload as doctor_payload
+
+    monkeypatch.setattr(doctor_payload, "invoke_repo_script", lambda *args, **kwargs: '{"host_next_steps": {}}')
+    monkeypatch.setattr(doctor_payload, "invoke_repo_json_script", lambda *args, **kwargs: [])
+    monkeypatch.setattr(doctor_payload, "ensure_claude_marketplace", lambda *args, **kwargs: ([], "marketplace ready"))
     monkeypatch.setattr(
-        module, "ensure_claude_plugin", lambda *args, **kwargs: (["claude_plugin_installed"], "Restart Claude Code to load charness.")
+        doctor_payload, "ensure_claude_plugin", lambda *args, **kwargs: (["claude_plugin_installed"], "Restart Claude Code to load charness.")
     )
     payload = module.install_surface(
         tmp_path / "repo",

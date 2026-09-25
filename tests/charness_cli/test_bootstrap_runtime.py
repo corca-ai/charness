@@ -14,6 +14,7 @@ from .support import load_cli_module, pin_state_home
 ROOT = Path(__file__).resolve().parents[2]
 BOOTSTRAP_RUNTIME_PATH = ROOT / "scripts" / "core" / "bootstrap_runtime.py"
 CHARNESS_PATH = ROOT / "charness"
+PROCESS_PATH = ROOT / "scripts" / "cli" / "process.py"
 INIT_SH_PATH = ROOT / "init.sh"
 
 
@@ -24,14 +25,18 @@ def load_module(module_name: str, path: Path):
 def copy_bootstrap_contract(repo_root: Path) -> None:
     packaging_dir = repo_root / "packaging"
     packaging_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ROOT / "packaging" / "bootstrap-python.json", packaging_dir / "bootstrap-python.json")
+    shutil.copy2(
+        ROOT / "packaging" / "bootstrap-python.json", packaging_dir / "bootstrap-python.json"
+    )
     shutil.copy2(
         ROOT / "packaging" / "bootstrap-requirements.txt",
         packaging_dir / "bootstrap-requirements.txt",
     )
 
 
-def completed(command: list[str], *, returncode: int = 0, stdout: str = "", stderr: str = "") -> subprocess.CompletedProcess[str]:
+def completed(
+    command: list[str], *, returncode: int = 0, stdout: str = "", stderr: str = ""
+) -> subprocess.CompletedProcess[str]:
     return subprocess.CompletedProcess(command, returncode, stdout, stderr)
 
 
@@ -43,7 +48,9 @@ def external_bootstrap_dir(monkeypatch, tmp_path: Path) -> Path:
     return runtime_root / "bootstrap-python"
 
 
-def test_bootstrap_runtime_creates_runtime_and_installs_requirements(tmp_path: Path, monkeypatch) -> None:
+def test_bootstrap_runtime_creates_runtime_and_installs_requirements(
+    tmp_path: Path, monkeypatch
+) -> None:
     module = load_module("bootstrap_runtime_test_create", BOOTSTRAP_RUNTIME_PATH)
     repo_root = tmp_path / "repo"
     copy_bootstrap_contract(repo_root)
@@ -53,7 +60,9 @@ def test_bootstrap_runtime_creates_runtime_and_installs_requirements(tmp_path: P
     requirements_installed = {"value": False}
     module_probe = "import importlib, sys\nmodules = ['jsonschema', 'packaging', 'yaml']\nmissing = []\nfor name in modules:\n    try:\n        importlib.import_module(name)\n    except Exception:\n        missing.append(name)\nsys.exit(0 if not missing else 1)\n"
 
-    def fake_run(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+    def fake_run(
+        command: list[str], *, cwd: Path | None = None
+    ) -> subprocess.CompletedProcess[str]:
         del cwd
         commands.append(command)
         if command[:2] == ["python", "-c"]:
@@ -92,7 +101,9 @@ def test_bootstrap_runtime_creates_runtime_and_installs_requirements(tmp_path: P
     assert any(command[1:4] == ["-m", "pip", "install"] for command in commands)
 
 
-def test_bootstrap_runtime_repairs_stale_launcher_when_base_has_modules(tmp_path: Path, monkeypatch) -> None:
+def test_bootstrap_runtime_repairs_stale_launcher_when_base_has_modules(
+    tmp_path: Path, monkeypatch
+) -> None:
     module = load_module("bootstrap_runtime_test_repair_stale_launcher", BOOTSTRAP_RUNTIME_PATH)
     repo_root = tmp_path / "repo"
     copy_bootstrap_contract(repo_root)
@@ -104,7 +115,9 @@ def test_bootstrap_runtime_repairs_stale_launcher_when_base_has_modules(tmp_path
     commands: list[list[str]] = []
     module_probe = "import importlib, sys\nmodules = ['jsonschema', 'packaging', 'yaml']\nmissing = []\nfor name in modules:\n    try:\n        importlib.import_module(name)\n    except Exception:\n        missing.append(name)\nsys.exit(0 if not missing else 1)\n"
 
-    def fake_run(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+    def fake_run(
+        command: list[str], *, cwd: Path | None = None
+    ) -> subprocess.CompletedProcess[str]:
         del cwd
         commands.append(command)
         if command[:2] == ["python", "-c"]:
@@ -130,7 +143,9 @@ def test_bootstrap_runtime_repairs_stale_launcher_when_base_has_modules(tmp_path
     assert not any(command[1:4] == ["-m", "pip", "install"] for command in commands)
 
 
-def test_bootstrap_runtime_reuses_existing_runtime_when_modules_are_present(tmp_path: Path, monkeypatch) -> None:
+def test_bootstrap_runtime_reuses_existing_runtime_when_modules_are_present(
+    tmp_path: Path, monkeypatch
+) -> None:
     module = load_module("bootstrap_runtime_test_reuse", BOOTSTRAP_RUNTIME_PATH)
     repo_root = tmp_path / "repo"
     copy_bootstrap_contract(repo_root)
@@ -142,7 +157,9 @@ def test_bootstrap_runtime_reuses_existing_runtime_when_modules_are_present(tmp_
     commands: list[list[str]] = []
     module_probe = "import importlib, sys\nmodules = ['jsonschema', 'packaging', 'yaml']\nmissing = []\nfor name in modules:\n    try:\n        importlib.import_module(name)\n    except Exception:\n        missing.append(name)\nsys.exit(0 if not missing else 1)\n"
 
-    def fake_run(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+    def fake_run(
+        command: list[str], *, cwd: Path | None = None
+    ) -> subprocess.CompletedProcess[str]:
         del cwd
         commands.append(command)
         if command[:2] == ["python", "-c"]:
@@ -165,13 +182,15 @@ def test_bootstrap_runtime_reuses_existing_runtime_when_modules_are_present(tmp_
 
 
 def test_charness_invokes_repo_scripts_with_bootstrap_runtime(monkeypatch, tmp_path: Path) -> None:
-    module = load_module("charness_bootstrap_runtime_test", CHARNESS_PATH)
+    module = load_module("charness_bootstrap_runtime_test", PROCESS_PATH)
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     external_bootstrap_dir(monkeypatch, tmp_path)
     commands: list[list[str]] = []
 
-    def fake_run(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+    def fake_run(
+        command: list[str], *, cwd: Path | None = None
+    ) -> subprocess.CompletedProcess[str]:
         del cwd
         commands.append(command)
         if command[:2] == [sys.executable, "scripts/core/bootstrap_runtime.py"]:
@@ -190,8 +209,10 @@ def test_charness_invokes_repo_scripts_with_bootstrap_runtime(monkeypatch, tmp_p
     assert commands[1][0] == "/tmp/charness-bootstrap/bin/python"
 
 
-def test_resolve_repo_python_reuses_healthy_launcher_without_bootstrap(monkeypatch, tmp_path: Path) -> None:
-    module = load_module("charness_bootstrap_fast_path_healthy", CHARNESS_PATH)
+def test_resolve_repo_python_reuses_healthy_launcher_without_bootstrap(
+    monkeypatch, tmp_path: Path
+) -> None:
+    module = load_module("charness_bootstrap_fast_path_healthy", PROCESS_PATH)
     repo_root = tmp_path / "repo"
     copy_bootstrap_contract(repo_root)
     launcher = external_bootstrap_dir(monkeypatch, tmp_path) / (
@@ -218,11 +239,15 @@ def test_resolve_repo_python_reuses_healthy_launcher_without_bootstrap(monkeypat
 
     assert module.resolve_repo_python(repo_root) == str(launcher)
     assert len(commands) == 1
-    assert isolated_envs == [env for env in isolated_envs if env and "PYTHONPATH" not in env and "PYTHONHOME" not in env]
+    assert isolated_envs == [
+        env for env in isolated_envs if env and "PYTHONPATH" not in env and "PYTHONHOME" not in env
+    ]
 
 
-def test_resolve_repo_python_bootstraps_when_launcher_is_absent(monkeypatch, tmp_path: Path) -> None:
-    module = load_module("charness_bootstrap_fast_path_absent", CHARNESS_PATH)
+def test_resolve_repo_python_bootstraps_when_launcher_is_absent(
+    monkeypatch, tmp_path: Path
+) -> None:
+    module = load_module("charness_bootstrap_fast_path_absent", PROCESS_PATH)
     repo_root = tmp_path / "repo"
     copy_bootstrap_contract(repo_root)
     external_bootstrap_dir(monkeypatch, tmp_path)
@@ -262,7 +287,7 @@ def test_resolve_repo_python_leaves_malformed_contracts_to_bootstrap(
     invalid_value: object,
 ) -> None:
     module_name = "charness_bootstrap_fast_path_malformed_" + "_".join(field_path)
-    module = load_module(module_name, CHARNESS_PATH)
+    module = load_module(module_name, PROCESS_PATH)
     repo_root = tmp_path / "repo"
     copy_bootstrap_contract(repo_root)
     launcher = external_bootstrap_dir(monkeypatch, tmp_path) / (
@@ -310,7 +335,7 @@ def test_resolve_repo_python_bootstraps_when_launcher_probe_fails(
 ) -> None:
     module = load_module(
         f"charness_bootstrap_fast_path_unhealthy_{requires_version_guard}",
-        CHARNESS_PATH,
+        PROCESS_PATH,
     )
     repo_root = tmp_path / "repo"
     copy_bootstrap_contract(repo_root)
@@ -340,11 +365,13 @@ def test_resolve_repo_python_bootstraps_when_launcher_probe_fails(
     assert [command[0] for command in commands] == [str(launcher), sys.executable]
 
 
-@pytest.mark.skipif(os.name == "nt", reason="POSIX execute permissions provide the real probe failure")
+@pytest.mark.skipif(
+    os.name == "nt", reason="POSIX execute permissions provide the real probe failure"
+)
 def test_resolve_repo_python_bootstraps_when_launcher_is_not_executable(
     tmp_path: Path, monkeypatch
 ) -> None:
-    module = load_module("charness_bootstrap_fast_path_non_executable", CHARNESS_PATH)
+    module = load_module("charness_bootstrap_fast_path_non_executable", PROCESS_PATH)
     repo_root = tmp_path / "repo"
     copy_bootstrap_contract(repo_root)
     launcher = external_bootstrap_dir(monkeypatch, tmp_path) / "bin" / "python"
@@ -368,7 +395,9 @@ def test_init_sh_falls_back_to_python_when_python3_is_missing(tmp_path: Path) ->
     (fixture_repo / "packaging").mkdir(parents=True)
     (fixture_repo / "scripts" / "core").mkdir(parents=True, exist_ok=True)
     (fixture_repo / "scripts" / "core").mkdir(parents=True, exist_ok=True)
-    (fixture_repo / "scripts" / "core" / "bootstrap_runtime.py").write_text("# fixture\n", encoding="utf-8")
+    (fixture_repo / "scripts" / "core" / "bootstrap_runtime.py").write_text(
+        "# fixture\n", encoding="utf-8"
+    )
     (fixture_repo / "charness").write_text("# fixture\n", encoding="utf-8")
     init_copy = tmp_path / "init.sh"
     init_copy.write_text(INIT_SH_PATH.read_text(encoding="utf-8"), encoding="utf-8")
@@ -378,14 +407,12 @@ def test_init_sh_falls_back_to_python_when_python3_is_missing(tmp_path: Path) ->
     fake_bin.mkdir()
     for name, target in {"mkdir": "/bin/mkdir", "dirname": "/usr/bin/dirname"}.items():
         wrapper = fake_bin / name
-        wrapper.write_text(f"#!/bin/sh\nexec {target} \"$@\"\n", encoding="utf-8")
+        wrapper.write_text(f'#!/bin/sh\nexec {target} "$@"\n', encoding="utf-8")
         wrapper.chmod(0o755)
     bootstrap_python = fake_bin / "bootstrap-python"
     bootstrap_log = tmp_path / "bootstrap.log"
     bootstrap_python.write_text(
-        "#!/bin/sh\n"
-        f"printf '%s\\n' \"$@\" > {bootstrap_log}\n"
-        "exit 0\n",
+        f"#!/bin/sh\nprintf '%s\\n' \"$@\" > {bootstrap_log}\nexit 0\n",
         encoding="utf-8",
     )
     bootstrap_python.chmod(0o755)
@@ -395,7 +422,7 @@ def test_init_sh_falls_back_to_python_when_python3_is_missing(tmp_path: Path) ->
     fake_python.write_text(
         "#!/bin/sh\n"
         f"printf '%s\\n' \"$@\" >> {python_log}\n"
-        "if [ \"$1\" = scripts/core/bootstrap_runtime.py ]; then\n"
+        'if [ "$1" = scripts/core/bootstrap_runtime.py ]; then\n'
         f"  printf '%s\\n' '{bootstrap_python}'\n"
         "  exit 0\n"
         "fi\n"
@@ -407,8 +434,8 @@ def test_init_sh_falls_back_to_python_when_python3_is_missing(tmp_path: Path) ->
     fake_git = fake_bin / "git"
     fake_git.write_text(
         "#!/bin/sh\n"
-        "if [ \"$1\" = clone ]; then\n"
-        f"  /bin/cp -R {fixture_repo} \"$3\"\n"
+        'if [ "$1" = clone ]; then\n'
+        f'  /bin/cp -R {fixture_repo} "$3"\n'
         "  exit 0\n"
         "fi\n"
         "exit 1\n",
@@ -432,3 +459,43 @@ def test_init_sh_falls_back_to_python_when_python3_is_missing(tmp_path: Path) ->
     assert result.returncode == 0, result.stderr
     assert "scripts/core/bootstrap_runtime.py" in python_log.read_text(encoding="utf-8")
     assert bootstrap_log.read_text(encoding="utf-8").splitlines()[:2] == ["./charness", "init"]
+
+
+def test_package_import_does_not_configure_process_env(tmp_path: Path) -> None:
+    """Importing through the `scripts` package leaves os.environ alone (#874).
+
+    A standalone entry script owns its process environment, but a module
+    imported as `scripts.*` inherits its entry point's. The loader used to
+    configure unconditionally, so importing `task_run_runtime` (via
+    `task_run_git` <- friction <- command guards) rewired AUTO/KEY/TMPDIR
+    for the whole process and a pointed CHARNESS_RUNTIME_ROOT was silently
+    ignored for any other repo. Runs the import in a child so the probe's
+    own worker environment stays intact.
+    """
+    probe = (
+        "import json, os\n"
+        "before = dict(os.environ)\n"
+        "import scripts.task_run.task_run_runtime\n"
+        "import scripts.hooks.host_hook_command_guards\n"
+        "after = dict(os.environ)\n"
+        "diff = {k: [before.get(k), after.get(k)] for k in set(before) | set(after)"
+        " if before.get(k) != after.get(k)}\n"
+        "print(json.dumps(diff))\n"
+    )
+    from scripts.runtime_bootstrap import MANAGED_RUNTIME_PATH_KEYS
+
+    env = {
+        key: value
+        for key, value in os.environ.items()
+        if key not in MANAGED_RUNTIME_PATH_KEYS and not key.startswith("CHARNESS_")
+    }
+    result = subprocess.run(
+        [sys.executable, "-c", probe],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {}

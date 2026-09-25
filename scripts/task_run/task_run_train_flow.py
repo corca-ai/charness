@@ -37,6 +37,7 @@ from scripts.task_run.task_run_train_core import (  # noqa: E402
 )
 
 _guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
+_train_stats = import_repo_module(__file__, "scripts.task_run.task_run_train_stats")
 _worktree = import_repo_module(__file__, "scripts.worktree.worktree_create_lib")
 _doctor = import_repo_module(__file__, "scripts.worktree.worktree_doctor_lib")
 _cleanup = import_repo_module(__file__, "scripts.worktree.worktree_cleanup_lib")
@@ -44,9 +45,7 @@ _adapter = import_repo_module(__file__, "scripts.adapter_lib")
 _launch_popen = subprocess.Popen
 
 
-def _run_process(
-    command: Sequence[str], *, cwd: Path, timeout_seconds: float | None = 30
-):
+def _run_process(command: Sequence[str], *, cwd: Path, timeout_seconds: float | None = 30):
     return _guard.run_process(command, cwd=cwd, timeout_seconds=timeout_seconds)
 
 
@@ -81,9 +80,7 @@ def _sha(repo_root: Path, ref: str) -> str:
     return _git(repo_root, "rev-parse", "--verify", f"{ref}^{{commit}}")
 
 
-def _prepare_worktree(
-    repo_root: Path, target: Path, dependency_cache: Path
-) -> dict[str, Any]:
+def _prepare_worktree(repo_root: Path, target: Path, dependency_cache: Path) -> dict[str, Any]:
     return _doctor.run_prepare(
         target,
         force=True,
@@ -119,18 +116,14 @@ def _checked_out_path(repo_root: Path, branch_ref: str) -> Path | None:
     output = _git(repo_root, "worktree", "list", "--porcelain")
     path: Path | None = None
     for block in output.split("\n\n"):
-        fields = dict(
-            line.split(" ", 1) for line in block.splitlines() if " " in line
-        )
+        fields = dict(line.split(" ", 1) for line in block.splitlines() if " " in line)
         if fields.get("branch") == branch_ref and "worktree" in fields:
             path = Path(fields["worktree"])
             break
     return path
 
 
-def _land_main(
-    repo_root: Path, branch_ref: str, base_sha: str, tip_sha: str
-) -> tuple[bool, str]:
+def _land_main(repo_root: Path, branch_ref: str, base_sha: str, tip_sha: str) -> tuple[bool, str]:
     checked_out = _checked_out_path(repo_root, branch_ref)
     if checked_out is not None:
         if _sha(checked_out, branch_ref) != base_sha:
@@ -138,21 +131,15 @@ def _land_main(
         dirty = _run_process(["git", "status", "--porcelain"], cwd=checked_out)
         if dirty.returncode != 0 or dirty.stdout.strip():
             return False, "the main branch worktree is not clean; train was not landed"
-        result = _run_process(
-            ["git", "merge", "--ff-only", "--no-edit", tip_sha], cwd=checked_out
-        )
+        result = _run_process(["git", "merge", "--ff-only", "--no-edit", tip_sha], cwd=checked_out)
     else:
-        result = _run_process(
-            ["git", "update-ref", branch_ref, tip_sha, base_sha], cwd=repo_root
-        )
+        result = _run_process(["git", "update-ref", branch_ref, tip_sha, base_sha], cwd=repo_root)
     if result.returncode != 0:
         return False, result.stderr.strip() or "main changed before the train could land"
     return True, ""
 
 
-def _prepare_landing_review_packet(
-    repo_root: Path, command: Sequence[str]
-) -> tuple[str, str]:
+def _prepare_landing_review_packet(repo_root: Path, command: Sequence[str]) -> tuple[str, str]:
     """Prepare and identify the canonical packet for a landed train range."""
     result = _run_process(command, cwd=repo_root, timeout_seconds=None)
     payload = _adapter.load_yaml(result.stdout)
@@ -258,8 +245,7 @@ def _stage_train_branches(
         if merged.returncode != 0:
             name = branch_ref.removeprefix("refs/heads/")
             raise TrainError(
-                f"could not stack branch {name}: "
-                f"{merged.stderr.strip() or merged.stdout.strip()}"
+                f"could not stack branch {name}: {merged.stderr.strip() or merged.stdout.strip()}"
             )
         prefix_shas.append(_git(stage, "rev-parse", "HEAD"))
     return stage, prefix_shas
@@ -276,9 +262,7 @@ def _verify_train_stack(
     dependency_cache: Path,
     worktrees: list[Path],
     profile: dict[str, Any],
-    verify_profile: Callable[
-        [Mapping[str, Any], Path, Path], tuple[bool, list[dict[str, Any]]]
-    ],
+    verify_profile: Callable[[Mapping[str, Any], Path, Path], tuple[bool, list[dict[str, Any]]]],
 ) -> tuple[list[dict[str, Any]], dict[int, bool], str, dict[str, Any]]:
     prepared = _prepare_worktree(repo_root, stage, dependency_cache)
     if prepared.get("status") != PASS:
@@ -297,9 +281,7 @@ def _verify_train_stack(
     )
     outcomes: dict[int, bool] = {0: True, len(branches): full_good}
     main_now = _sha(repo_root, main_branch)
-    decision = decide_next_action(
-        branches, outcomes, main_at_start=base_sha, main_now=main_now
-    )
+    decision = decide_next_action(branches, outcomes, main_at_start=base_sha, main_now=main_now)
     while decision["action"] == "verify-prefix":
         count = decision["prefix_count"]
         target = root / "worktrees" / f"prefix-{count}"
@@ -311,9 +293,7 @@ def _verify_train_stack(
                 f"train bisect verification refused at prefix {count}: "
                 "Charness prepare/doctor failed"
             )
-        good, results = verify_profile(
-            profile, target, root / "reports" / f"prefix-{count}"
-        )
+        good, results = verify_profile(profile, target, root / "reports" / f"prefix-{count}")
         attempts.append(
             {
                 "prefix_count": count,
@@ -323,9 +303,7 @@ def _verify_train_stack(
         )
         outcomes[count] = good
         main_now = _sha(repo_root, main_branch)
-        decision = decide_next_action(
-            branches, outcomes, main_at_start=base_sha, main_now=main_now
-        )
+        decision = decide_next_action(branches, outcomes, main_at_start=base_sha, main_now=main_now)
     return attempts, outcomes, main_now, decision
 
 
@@ -355,9 +333,7 @@ def _finalize_train(
     land_count = decision["land_count"]
     tip_sha = prefix_shas[land_count]
     main_now = _sha(repo_root, main_branch)
-    decision = decide_next_action(
-        branches, outcomes, main_at_start=base_sha, main_now=main_now
-    )
+    decision = decide_next_action(branches, outcomes, main_at_start=base_sha, main_now=main_now)
     if decision["action"] == "requeue":
         return _payload_from_decision(
             decision,
@@ -380,9 +356,7 @@ def _finalize_train(
     landed, error = _land_main(repo_root, main_branch, base_sha, tip_sha)
     main_after = _sha(repo_root, main_branch)
     if not landed and main_after != base_sha:
-        moved = decide_next_action(
-            branches, outcomes, main_at_start=base_sha, main_now=main_after
-        )
+        moved = decide_next_action(branches, outcomes, main_at_start=base_sha, main_now=main_after)
         return _payload_from_decision(
             moved,
             queue=branches,
@@ -422,5 +396,13 @@ def _finalize_train(
     payload["landed_sha"] = main_after
     payload["landing_review_trigger"] = _landing_review_trigger(
         repo_root, root, base_sha, main_after, run_id
+    )
+    # The landing record is best effort: a stats miss must never fail a land.
+    _train_stats.record_landing_for_repo(
+        repo_root,
+        base_sha=base_sha,
+        landed_sha=main_after,
+        branches=list(branches[:land_count]),
+        run_id=run_id,
     )
     return payload

@@ -95,13 +95,27 @@ def landing_review_plan(
             "log_path": str(log_path),
         },
         "prepare_command": [
-            python, str(prepare_script), "--repo-root", str(repo_root), "--range",
-            f"{base_sha}..{landed_sha}", "--slug", attempt_id,
+            python,
+            str(prepare_script),
+            "--repo-root",
+            str(repo_root),
+            "--range",
+            f"{base_sha}..{landed_sha}",
+            "--slug",
+            attempt_id,
         ],
         "review_command": [
-            python, str(review_script), "--repo-root", str(repo_root),
-            "--scope", "merge-train landing", "--lens", "fresh-eye",
-            "--attempt-id", attempt_id, "--packet-file",
+            python,
+            str(review_script),
+            "--repo-root",
+            str(repo_root),
+            "--scope",
+            "merge-train landing",
+            "--lens",
+            "fresh-eye",
+            "--attempt-id",
+            attempt_id,
+            "--packet-file",
         ],
     }
 
@@ -148,8 +162,7 @@ def decide_next_action(
     for position, (_index, good) in enumerate(observed):
         if not good and any(later_good for _, later_good in observed[position + 1 :]):
             raise TrainError(
-                "prefix outcomes are non-monotonic; the first bad branch "
-                "cannot be bisected safely"
+                "prefix outcomes are non-monotonic; the first bad branch cannot be bisected safely"
             )
     if outcomes.get(full) is True:
         return {
@@ -236,8 +249,7 @@ def default_verify_profile() -> dict[str, Any]:
     return {
         "version": 1,
         "commands": [
-            dict(command, argv=list(command["argv"]))
-            for command in _DEFAULT_PROFILE["commands"]
+            dict(command, argv=list(command["argv"])) for command in _DEFAULT_PROFILE["commands"]
         ],
         "known_failures": [],
     }
@@ -266,8 +278,10 @@ def _validate_profile_commands(
             errors.append(f"{label}.id {command_id!r} is duplicated")
         ids.add(command_id)
         argv = entry.get("argv")
-        if not isinstance(argv, list) or not argv or any(
-            not isinstance(arg, str) or not arg for arg in argv
+        if (
+            not isinstance(argv, list)
+            or not argv
+            or any(not isinstance(arg, str) or not arg for arg in argv)
         ):
             errors.append(f"{label}.argv must be a non-empty list of non-empty strings")
         report = entry.get("report", "exit-code")
@@ -316,10 +330,39 @@ def validate_verify_profile(profile: object) -> list[str]:
         return ["profile root must be a mapping"]
     if type(profile.get("version")) is not int or profile.get("version") != 1:
         errors.append("profile.version must be integer 1")
-    unknown = set(profile) - {"version", "commands", "known_failures"}
+    unknown = set(profile) - {"version", "commands", "known_failures", "loosening"}
     if unknown:
         errors.append(f"profile has unknown keys: {', '.join(sorted(map(str, unknown)))}")
     ids, reports = _validate_profile_commands(profile.get("commands"), errors)
     baseline = profile.get("known_failures", [])
     _validate_known_failures(baseline, ids, reports, errors)
+    _validate_loosening(profile.get("loosening"), errors)
     return errors
+
+
+def _validate_loosening(value: object, errors: list[str]) -> None:
+    """Optional train loosening threshold: parallel lanes only when kept up."""
+    if value is None:
+        return
+    if not isinstance(value, dict):
+        errors.append("profile.loosening must be a mapping")
+        return
+    unknown = set(value) - {
+        "min_lands",
+        "min_landings_per_hour",
+        "max_queue_wait_minutes",
+        "require_no_waste",
+    }
+    if unknown:
+        errors.append(f"profile.loosening has unknown keys: {', '.join(sorted(map(str, unknown)))}")
+    for key in ("min_lands", "min_landings_per_hour", "max_queue_wait_minutes"):
+        bound = value.get(key)
+        if bound is None:
+            continue
+        if not isinstance(bound, (int, float)) or isinstance(bound, bool):
+            errors.append(f"profile.loosening.{key} must be a number")
+        elif bound < 0:
+            errors.append(f"profile.loosening.{key} must not be negative")
+    flag = value.get("require_no_waste", False)
+    if not isinstance(flag, bool):
+        errors.append("profile.loosening.require_no_waste must be a boolean")

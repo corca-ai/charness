@@ -232,12 +232,15 @@ options:
 ## `charness task`
 
 ```text
-usage: charness task [-h] {status,executors,steer,run,wait} ...
+usage: charness task [-h] {status,report,executors,steer,run,wait} ...
 
 positional arguments:
-  {status,executors,steer,run,wait}
+  {status,report,executors,steer,run,wait}
     status              Show one external task-run result, or list all task-
                         run results.
+    report              Render the fixed-shape periodic status report from
+                        lane metrics, the friction log, and the decision
+                        ledger.
     executors           Check executor executable availability without
                         starting a lane.
     steer               Queue a message for a running lane or amend its
@@ -262,6 +265,19 @@ options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
                         Parent repo whose external task-run runtime is read.
+```
+
+## `charness task report`
+
+```text
+usage: charness task report [-h] [--repo-root REPO_ROOT] [--window WINDOW]
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Parent repo whose external task-run runtime is read.
+  --window WINDOW       Trailing window for the period (30m, 3h, 1d, or bare
+                        hours).
 ```
 
 ## `charness task executors`
@@ -470,11 +486,12 @@ options:
 
 ```text
 usage: charness train [-h] [--repo-root REPO_ROOT] [--main MAIN]
-                      [--profile PROFILE]
-                      branches [branches ...]
+                      [--profile PROFILE] [--stats] [--window WINDOW]
+                      [branches ...]
 
 positional arguments:
-  branches              Local lane branches in queue order.
+  branches              Local lane branches in queue order (empty with
+                        --stats).
 
 options:
   -h, --help            show this help message and exit
@@ -485,6 +502,10 @@ options:
                         main).
   --profile PROFILE     Optional verify profile; defaults to .agents/train-
                         verify.yaml or built-in standing pytest.
+  --stats               Report train throughput (landings, queue wait, waste)
+                        instead of landing.
+  --window WINDOW       Trailing window for --stats (like 30m, 3h, 1d;
+                        default: 3h).
 ```
 
 ## `charness catalog`

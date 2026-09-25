@@ -13,6 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import scripts.cli.cmd_task as task_payload
 from scripts.task_run import (
     task_run_execution,
     task_run_lane_runner,
@@ -144,7 +145,7 @@ def test_task_steer_cli_returns_typed_accept_and_nack(tmp_path: Path, monkeypatc
     cli = load_cli_module("charness_task_run_steer_accept", CLI)
     runtime = tmp_path / "runtime"
     record = {"task_id": "lane-3", "status": "running", "runner_pid": os.getpid()}
-    monkeypatch.setattr(cli, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
     monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: runtime)
     monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: dict(record))
     monkeypatch.setattr(
@@ -153,7 +154,7 @@ def test_task_steer_cli_returns_typed_accept_and_nack(tmp_path: Path, monkeypatc
         lambda _root, _task_id: runtime / "lane-3" / "runtime",
     )
     emitted: list[dict[str, object]] = []
-    monkeypatch.setattr(cli, "emit_yaml", emitted.append)
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
 
     code = cli.cmd_task_steer(
         argparse.Namespace(
@@ -207,14 +208,14 @@ def test_scope_amend_revalidates_same_candidate_without_relaunch(
         "timestamps": {},
     }
     writes: list[dict[str, object]] = []
-    monkeypatch.setattr(cli, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
     monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: tmp_path / "runtime")
     monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: result)
     monkeypatch.setattr(
         task_run_runtime, "write_task_result", lambda _root, value: writes.append(value)
     )
     emitted: list[dict[str, object]] = []
-    monkeypatch.setattr(cli, "emit_yaml", emitted.append)
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
 
     code = cli.cmd_task_steer(
         argparse.Namespace(
@@ -258,12 +259,12 @@ def test_scope_amend_records_reason_and_actor(tmp_path: Path, monkeypatch) -> No
         },
         "timestamps": {},
     }
-    monkeypatch.setattr(cli, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
     monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: tmp_path / "runtime")
     monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: result)
     monkeypatch.setattr(task_run_runtime, "write_task_result", lambda _root, _value: None)
     emitted: list[dict[str, object]] = []
-    monkeypatch.setattr(cli, "emit_yaml", emitted.append)
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
 
     code = cli.cmd_task_steer(
         argparse.Namespace(
@@ -308,12 +309,12 @@ def test_scope_amend_nack_keeps_audit_reason_and_machine_reason_code(
         },
         "timestamps": {},
     }
-    monkeypatch.setattr(cli, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
     monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: tmp_path / "runtime")
     monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: result)
     monkeypatch.setattr(task_run_runtime, "write_task_result", lambda _root, _value: None)
     emitted: list[dict[str, object]] = []
-    monkeypatch.setattr(cli, "emit_yaml", emitted.append)
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
 
     code = cli.cmd_task_steer(
         argparse.Namespace(
@@ -340,11 +341,11 @@ def test_scope_amend_nack_keeps_audit_reason_and_machine_reason_code(
 def test_task_steer_cli_nacks_unknown_task(tmp_path: Path, monkeypatch) -> None:
     cli = load_cli_module("charness_task_run_steer_not_found", CLI)
     runtime = tmp_path / "runtime"
-    monkeypatch.setattr(cli, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
     monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: runtime)
     monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: None)
     emitted: list[dict[str, object]] = []
-    monkeypatch.setattr(cli, "emit_yaml", emitted.append)
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
 
     code = cli.cmd_task_steer(
         argparse.Namespace(
@@ -379,12 +380,12 @@ def test_task_steer_cli_nacks_amend_on_running_lane(tmp_path: Path, monkeypatch)
         "candidate": {},
         "timestamps": {},
     }
-    monkeypatch.setattr(cli, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
     monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: tmp_path / "runtime")
     monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: result)
     monkeypatch.setattr(task_run_runtime, "write_task_result", lambda _root, _value: None)
     emitted: list[dict[str, object]] = []
-    monkeypatch.setattr(cli, "emit_yaml", emitted.append)
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
 
     code = cli.cmd_task_steer(
         argparse.Namespace(
@@ -550,7 +551,7 @@ def test_task_steer_cli_threads_reason_and_actor(tmp_path: Path, monkeypatch) ->
     cli = load_cli_module("charness_task_run_steer_audit", CLI)
     runtime = tmp_path / "runtime"
     record = {"task_id": "lane-3", "status": "running", "runner_pid": os.getpid()}
-    monkeypatch.setattr(cli, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
     monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: runtime)
     monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: dict(record))
     monkeypatch.setattr(
@@ -559,7 +560,7 @@ def test_task_steer_cli_threads_reason_and_actor(tmp_path: Path, monkeypatch) ->
         lambda _root, _task_id: runtime / "lane-3" / "runtime",
     )
     emitted: list[dict[str, object]] = []
-    monkeypatch.setattr(cli, "emit_yaml", emitted.append)
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
 
     code = cli.cmd_task_steer(
         argparse.Namespace(

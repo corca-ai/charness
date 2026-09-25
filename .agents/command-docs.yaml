@@ -184,6 +184,15 @@ commands:
       - task_id
     required_doc_contains:
       - charness task status
+  task-report:
+    help_command: ./charness task report --help
+    doc_paths:
+      - docs/agent-task-runs.md
+      - docs/cli-reference.md
+    required_help_contains:
+      - --window
+    required_doc_contains:
+      - charness task report
   task-executors:
     help_command: ./charness task executors --help
     doc_paths:

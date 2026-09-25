@@ -1,8 +1,8 @@
 """Sibling host-hook intent registry and state-liveness checks.
 
 `reconcile_host_hooks` fans out to every opt-in sibling hook intent
-(the skill anchor edit-time guard plus the three command-time orchestration
-guards). Each sibling used to
+(the skill anchor edit-time guard, the three command-time orchestration
+guards, and the Goal Run re-injection hook). Each sibling used to
 be a copied lazy-import block in `host_hook_install_lib`; this registry makes
 a new hook intent a table row instead. Per-host error isolation stays inside
 each sibling's own reconcile function (an enabled host's failure reports
@@ -72,6 +72,13 @@ SIBLING_HOOK_INTENTS: tuple[SiblingHookIntent, ...] = (
         reconcile_function="reconcile_discard_worktree_hooks",
         status_function="discard_worktree_status",
         script_relative_attr="DISCARD_WORKTREE_SCRIPT_RELATIVE",
+    ),
+    SiblingHookIntent(
+        key="goal_reinject",
+        module="scripts.hooks.host_hook_goal_reinject_install",
+        reconcile_function="reconcile_goal_reinject_hooks",
+        status_function="goal_reinject_status",
+        script_relative_attr="GOAL_REINJECT_SCRIPT_RELATIVE",
     ),
 )
 

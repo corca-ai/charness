@@ -12,6 +12,7 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
+from scripts.cli.bootstrap import CharnessError as _TreeCharnessError
 from tests.repo_copy import repo_copy_ignore_for
 
 from .support import (
@@ -25,7 +26,9 @@ from .support import (
 )
 from .test_managed_install import load_charness_module
 
-CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
+CURRENT_VERSION = json.loads(
+    (CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8")
+)["version"]
 pytestmark = pytest.mark.boundary_contract(
     reason="JSON-RPC refresh tests require a real child transport and deadline"
 )
@@ -39,17 +42,33 @@ def test_charness_update_reports_codex_version_drift(
     config_path = home_root / ".codex" / "config.toml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
-    cache_manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / "local" / ".codex-plugin" / "plugin.json"
+    cache_manifest = (
+        home_root
+        / ".codex"
+        / "plugins"
+        / "cache"
+        / "local"
+        / "charness"
+        / "local"
+        / ".codex-plugin"
+        / "plugin.json"
+    )
     cache_manifest.parent.mkdir(parents=True, exist_ok=True)
     cache_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
 
-    update_result = run_cli("update", "--home-root", str(home_root), "--skip-codex-cache-refresh", env=env)
+    update_result = run_cli(
+        "update", "--home-root", str(home_root), "--skip-codex-cache-refresh", env=env
+    )
     assert update_result.returncode == 0, update_result.stderr
     payload = yaml.safe_load(update_result.stdout)
     assert payload["codex_source_version"] == CURRENT_VERSION
     assert payload["codex_cache_manifest_version"] == "0.0.0-old"
     assert payload["codex_source_cache_drift"] is True
-    host_state = json.loads((home_root / ".local" / "state" / "charness" / "host-state.json").read_text(encoding="utf-8"))
+    host_state = json.loads(
+        (home_root / ".local" / "state" / "charness" / "host-state.json").read_text(
+            encoding="utf-8"
+        )
+    )
     assert host_state["last_update"]["doctor"]["codex_source_cache_drift"] is True
     assert host_state["last_update"]["doctor"]["codex_cache_manifest_version"] == "0.0.0-old"
     assert isinstance(host_state["last_update"]["recorded_at"], str)
@@ -66,7 +85,17 @@ def test_charness_update_refreshes_codex_cache_via_official_app_server(
     config_path = home_root / ".codex" / "config.toml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
-    cache_manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / "0.0.0-old" / ".codex-plugin" / "plugin.json"
+    cache_manifest = (
+        home_root
+        / ".codex"
+        / "plugins"
+        / "cache"
+        / "local"
+        / "charness"
+        / "0.0.0-old"
+        / ".codex-plugin"
+        / "plugin.json"
+    )
     cache_manifest.parent.mkdir(parents=True, exist_ok=True)
     cache_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
 
@@ -74,7 +103,17 @@ def test_charness_update_refreshes_codex_cache_via_official_app_server(
     assert update_result.returncode == 0, update_result.stderr
     payload = yaml.safe_load(update_result.stdout)
 
-    refreshed_manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / CURRENT_VERSION / ".codex-plugin" / "plugin.json"
+    refreshed_manifest = (
+        home_root
+        / ".codex"
+        / "plugins"
+        / "cache"
+        / "local"
+        / "charness"
+        / CURRENT_VERSION
+        / ".codex-plugin"
+        / "plugin.json"
+    )
     assert payload["codex_cache_refresh"]["status"] == "refreshed"
     assert payload["codex_cache_refresh"]["method"] == "codex-app-server-plugin-install"
     assert payload["codex_cache_refresh"]["action"] == "refresh"
@@ -87,7 +126,12 @@ def test_charness_update_refreshes_codex_cache_via_official_app_server(
     staleness = payload.get("session_staleness")
     assert isinstance(staleness, dict), "expected session_staleness payload after cache rotation"
     rotated_pairs = {
-        (record["marketplace"], record["plugin"], record["old_version"], record.get("new_version", ""))
+        (
+            record["marketplace"],
+            record["plugin"],
+            record["old_version"],
+            record.get("new_version", ""),
+        )
         for record in staleness.get("rotated", [])
     }
     assert ("local", "charness", "0.0.0-old", CURRENT_VERSION) in rotated_pairs
@@ -108,7 +152,17 @@ def test_failed_codex_refresh_is_retryable_and_does_not_emit_success_completion(
     config_path = home_root / ".codex" / "config.toml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
-    cache_manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / "0.0.0-old" / ".codex-plugin" / "plugin.json"
+    cache_manifest = (
+        home_root
+        / ".codex"
+        / "plugins"
+        / "cache"
+        / "local"
+        / "charness"
+        / "0.0.0-old"
+        / ".codex-plugin"
+        / "plugin.json"
+    )
     cache_manifest.parent.mkdir(parents=True, exist_ok=True)
     cache_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
 
@@ -122,7 +176,11 @@ def test_failed_codex_refresh_is_retryable_and_does_not_emit_success_completion(
     assert "FAILED: update incomplete" in failed.stderr
     assert "DONE: update complete" not in failed.stderr
 
-    host_state = json.loads((home_root / ".local" / "state" / "charness" / "host-state.json").read_text(encoding="utf-8"))
+    host_state = json.loads(
+        (home_root / ".local" / "state" / "charness" / "host-state.json").read_text(
+            encoding="utf-8"
+        )
+    )
     assert host_state["last_update"]["delivery_status"] == "failed"
     assert host_state["last_update"]["delivery_verified"] is False
 
@@ -144,9 +202,14 @@ def test_failed_codex_refresh_is_retryable_and_does_not_emit_success_completion(
     assert same_version_payload["codex_cache_refresh"]["status"] == "skipped"
     assert same_version_payload["codex_cache_refresh"]["reason"] == "already-current"
     assert same_version_payload["codex_cache_refresh"]["delivery_verified"] is True
-    assert same_version_payload["codex_cache_refresh"]["verification"] == "same-version-content-readback"
+    assert (
+        same_version_payload["codex_cache_refresh"]["verification"]
+        == "same-version-content-readback"
+    )
     same_version_state = json.loads(
-        (home_root / ".local" / "state" / "charness" / "host-state.json").read_text(encoding="utf-8")
+        (home_root / ".local" / "state" / "charness" / "host-state.json").read_text(
+            encoding="utf-8"
+        )
     )
     assert same_version_state["last_update"]["delivery_status"] == "skipped"
     assert same_version_state["last_update"]["delivery_verified"] is True
@@ -154,7 +217,9 @@ def test_failed_codex_refresh_is_retryable_and_does_not_emit_success_completion(
     # A same-version directory with changed payload must not inherit the old
     # verified provenance; a failed refresh remains retryable.
     cache_root = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / CURRENT_VERSION
-    cache_file = next(path for path in cache_root.rglob("*") if path.is_file() and path.name != "plugin.json")
+    cache_file = next(
+        path for path in cache_root.rglob("*") if path.is_file() and path.name != "plugin.json"
+    )
     cache_file.write_bytes(cache_file.read_bytes() + b"\ncontent-drift\n")
     stale_same_version = run_cli("update", "--detail", "--home-root", str(home_root), env=env)
     assert stale_same_version.returncode == 1, stale_same_version.stderr
@@ -175,7 +240,17 @@ def test_same_version_invalid_cache_manifest_is_not_verified(
 
     first = run_cli("update", "--detail", "--home-root", str(home_root), env=env)
     assert first.returncode == 0, first.stderr
-    manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / CURRENT_VERSION / ".codex-plugin" / "plugin.json"
+    manifest = (
+        home_root
+        / ".codex"
+        / "plugins"
+        / "cache"
+        / "local"
+        / "charness"
+        / CURRENT_VERSION
+        / ".codex-plugin"
+        / "plugin.json"
+    )
     manifest.write_text('{"version":"not-the-source"}\n', encoding="utf-8")
     fake_codex.with_name(".codex-fail-plugin-install").write_text("1\n", encoding="utf-8")
 
@@ -196,7 +271,17 @@ def test_failed_codex_init_emits_failure_progress_and_records_failed_operation(
     config_path = home_root / ".codex" / "config.toml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
-    old_manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / "0.0.0-old" / ".codex-plugin" / "plugin.json"
+    old_manifest = (
+        home_root
+        / ".codex"
+        / "plugins"
+        / "cache"
+        / "local"
+        / "charness"
+        / "0.0.0-old"
+        / ".codex-plugin"
+        / "plugin.json"
+    )
     old_manifest.parent.mkdir(parents=True, exist_ok=True)
     old_manifest.write_text('{"version":"0.0.0-old"}\n', encoding="utf-8")
 
@@ -206,7 +291,11 @@ def test_failed_codex_init_emits_failure_progress_and_records_failed_operation(
     assert payload["codex_host_install"]["status"] == "failed"
     assert "FAILED: init incomplete" in result.stderr
     assert "DONE: init complete" not in result.stderr
-    state = json.loads((home_root / ".local" / "state" / "charness" / "host-state.json").read_text(encoding="utf-8"))
+    state = json.loads(
+        (home_root / ".local" / "state" / "charness" / "host-state.json").read_text(
+            encoding="utf-8"
+        )
+    )
     assert state["last_init"]["operation_status"] == "failed"
     assert state["last_init"]["delivery_verified"] is False
 
@@ -262,7 +351,9 @@ def test_cache_diff_and_staleness_capture_rotation(tmp_path: Path) -> None:
             "new_version_dir": str(new_root),
         }
     ]
-    payload = module.session_staleness_payload(diff, home_root=tmp_path / "home", repo_root=tmp_path / "repo")
+    payload = module.session_staleness_payload(
+        diff, home_root=tmp_path / "home", repo_root=tmp_path / "repo"
+    )
     assert payload is not None
     assert payload["affected"] == [f"local/charness 0.0.0-old -> {CURRENT_VERSION}"]
     assert "Restart" in payload["message"]
@@ -278,7 +369,12 @@ def test_cache_diff_and_staleness_capture_rotation(tmp_path: Path) -> None:
     }
     stable_diff = module.diff_cache_entries([stable], [stable])
     assert stable_diff == {"rotated": [], "removed": [], "added": []}
-    assert module.session_staleness_payload(stable_diff, home_root=tmp_path / "home", repo_root=tmp_path / "repo") is None
+    assert (
+        module.session_staleness_payload(
+            stable_diff, home_root=tmp_path / "home", repo_root=tmp_path / "repo"
+        )
+        is None
+    )
 
 
 def test_session_staleness_without_cache_diff_returns_none(tmp_path: Path) -> None:
@@ -338,14 +434,17 @@ def test_jsonrpc_response_wait_uses_one_absolute_deadline(monkeypatch: pytest.Mo
     """
     module = load_charness_module("charness_codex_deadline_under_test")
     fake_time, calls = _stepped_monotonic(step=1000.0)
-    monkeypatch.setattr(module, "time", fake_time)
+    # The wait clock lives in scripts/cli/install_delivery.py
+    # (`read_jsonrpc_line_before`): patch the namespace the payload calls,
+    # not the loaded entry copy.
+    import scripts.cli.install_delivery as install_delivery
+
+    monkeypatch.setattr(install_delivery, "time", fake_time)
     proc = _jsonrpc_child(
-        "import json\n"
-        "while True:\n"
-        " print(json.dumps({'id': 99, 'result': {}}), flush=True)\n"
+        "import json\nwhile True:\n print(json.dumps({'id': 99, 'result': {}}), flush=True)\n"
     )
     try:
-        with pytest.raises(module.CharnessError, match="timed out"):
+        with pytest.raises(_TreeCharnessError, match="timed out"):
             module.wait_for_jsonrpc_response(
                 proc,
                 expected_id=2,
@@ -370,10 +469,15 @@ def test_jsonrpc_response_wait_reports_malformed_payload_and_eof(
 ) -> None:
     module = load_charness_module(f"charness_codex_failure_{message.split()[0]}_under_test")
     fake_time, _calls = _stepped_monotonic(step=0.0)
-    monkeypatch.setattr(module, "time", fake_time)
+    # The wait clock lives in scripts/cli/install_delivery.py
+    # (`read_jsonrpc_line_before`): patch the namespace the payload calls,
+    # not the loaded entry copy.
+    import scripts.cli.install_delivery as install_delivery
+
+    monkeypatch.setattr(install_delivery, "time", fake_time)
     proc = _jsonrpc_child(source)
     try:
-        with pytest.raises(module.CharnessError, match=message):
+        with pytest.raises(_TreeCharnessError, match=message):
             module.wait_for_jsonrpc_response(
                 proc,
                 expected_id=2,
@@ -388,7 +492,12 @@ def test_jsonrpc_response_wait_returns_matching_error_after_unrelated_message(
 ) -> None:
     module = load_charness_module("charness_codex_matching_error_under_test")
     fake_time, _calls = _stepped_monotonic(step=0.0)
-    monkeypatch.setattr(module, "time", fake_time)
+    # The wait clock lives in scripts/cli/install_delivery.py
+    # (`read_jsonrpc_line_before`): patch the namespace the payload calls,
+    # not the loaded entry copy.
+    import scripts.cli.install_delivery as install_delivery
+
+    monkeypatch.setattr(install_delivery, "time", fake_time)
     proc = _jsonrpc_child(
         "import json\n"
         "print(json.dumps({'method': 'progress'}), flush=True)\n"
@@ -484,21 +593,32 @@ def test_codex_cache_refresh_maps_transport_failures_to_existing_envelope(
     assert error_text in result["error"]
 
 
-def test_session_staleness_uses_repo_resolver_then_managed_checkout_fallback(tmp_path: Path) -> None:
+def test_session_staleness_uses_repo_resolver_then_managed_checkout_fallback(
+    tmp_path: Path,
+) -> None:
     module = load_charness_module("charness_codex_cache_refresh_resolver_under_test")
-    diff = {"rotated": [{"marketplace": "local", "plugin": "charness", "old_version": "1", "new_version": "2"}], "removed": []}
+    diff = {
+        "rotated": [
+            {"marketplace": "local", "plugin": "charness", "old_version": "1", "new_version": "2"}
+        ],
+        "removed": [],
+    }
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / "scripts" / "adapters").mkdir(parents=True, exist_ok=True)
     (repo / "scripts" / "adapters").mkdir(parents=True, exist_ok=True)
-    (repo / "scripts" / "adapters" / "capability_catalog.py").write_text("# repo resolver\n", encoding="utf-8")
+    (repo / "scripts" / "adapters" / "capability_catalog.py").write_text(
+        "# repo resolver\n", encoding="utf-8"
+    )
     payload = module.session_staleness_payload(diff, home_root=tmp_path / "home", repo_root=repo)
     assert payload["resolver_path"] == str(repo / "scripts" / "adapters" / "capability_catalog.py")
 
     fallback = tmp_path / "fallback-home" / ".agents" / "src" / "charness" / "scripts" / "adapters"
     fallback.mkdir(parents=True)
     (fallback / "capability_catalog.py").write_text("# managed resolver\n", encoding="utf-8")
-    payload = module.session_staleness_payload(diff, home_root=tmp_path / "fallback-home", repo_root=tmp_path / "missing-repo")
+    payload = module.session_staleness_payload(
+        diff, home_root=tmp_path / "fallback-home", repo_root=tmp_path / "missing-repo"
+    )
     assert payload["resolver_path"] == str(fallback / "capability_catalog.py")
 
 
@@ -570,6 +690,18 @@ def test_charness_catalog_loader_imports_backend_in_process(tmp_path: Path, caps
     )
     assert module.cmd_catalog_resolve_skill_path(resolve_args) == 1
     capsys.readouterr()
+
+
+def test_catalog_feature_module_serves_list_directly(tmp_path: Path, capsys) -> None:
+    """Pin the lazy-loaded catalog surface the entry wrapper resolves to."""
+    import scripts.cli.cmd_catalog as cmd_catalog_feature
+
+    missing = tmp_path / "missing-feature-root"
+    args = argparse.Namespace(repo_root=missing, summary=False)
+    assert cmd_catalog_feature.cmd_catalog_list(args) == 2
+    error = capsys.readouterr()
+    assert "does not exist" in error.out
+    assert "Traceback" not in error.out
 
 
 def test_installed_cli_catalog_list_loads_backend_from_managed_checkout(tmp_path: Path) -> None:

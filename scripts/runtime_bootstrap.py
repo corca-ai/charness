@@ -44,6 +44,32 @@ def _is_inside(path: Path, root: Path) -> bool:
     return True
 
 
+def _package_import_context() -> bool:
+    """True when the loader runs inside a `scripts.*` package import (#874).
+
+    A standalone entry script (`__main__`, a spec-loaded copy, a smoke
+    probe) owns its process environment and keeps the configure side
+    effect. A module already imported through the `scripts` package
+    inherits its entry point's environment; configuring again would rewire
+    the process (runtime root, AUTO/KEY markers, TMPDIR, cache dirs) for
+    every downstream import, so the loader only resolves the root there.
+    Frames are an import-machinery detail, so absence fails safe toward
+    the historic behavior (configure).
+    """
+    try:
+        frame = sys._getframe(1)  # noqa: SLF001 - caller-module detection
+    except (AttributeError, ValueError):  # non-CPython or shallow stack
+        return False
+    try:
+        while frame is not None and frame.f_globals.get("__name__", "") == __name__:
+            frame = frame.f_back
+        if frame is None:
+            return False
+        return frame.f_globals.get("__name__", "").startswith("scripts.")
+    finally:
+        del frame
+
+
 def _bootstrap_pycache_prefix() -> None:
     """Choose a safe bytecode prefix before this module's first local import."""
     if sys.dont_write_bytecode:
@@ -277,7 +303,8 @@ def repo_root_from_script(script_file: str | Path) -> Path:
                 f"cannot resolve a repository root for script {script_path}: "
                 "no ancestor contains `scripts/adapter_lib.py`"
             )
-    configure_runtime_environment(root)
+    if not _package_import_context():
+        configure_runtime_environment(root)
     return root
 
 

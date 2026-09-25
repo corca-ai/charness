@@ -11,7 +11,9 @@ from tests.quality_gates.git_fixture_support import init_git_repo
 from .support import ROOT, pin_state_home, run_cli
 
 
-def write_repo_capability_config(target_repo_root: Path, *, bindings: dict[str, str], profiles: dict[str, object]) -> None:
+def write_repo_capability_config(
+    target_repo_root: Path, *, bindings: dict[str, str], profiles: dict[str, object]
+) -> None:
     config_dir = target_repo_root / ".charness" / "local"
     config_dir.mkdir(parents=True, exist_ok=True)
     (config_dir / "capability.json").write_text(
@@ -163,7 +165,9 @@ def test_capability_init_scaffolds_repo_local_config_and_updates_gitignore(tmp_p
     assert "/.charness/local/" in gitignore_lines
 
 
-def test_capability_init_does_not_duplicate_gitignore_line_when_already_present(tmp_path: Path) -> None:
+def test_capability_init_does_not_duplicate_gitignore_line_when_already_present(
+    tmp_path: Path,
+) -> None:
     target_repo = init_target_repo(tmp_path / "target")
     gitignore_path = target_repo / ".gitignore"
     gitignore_path.write_text("/build/\n/.charness/local/\n", encoding="utf-8")
@@ -214,7 +218,9 @@ def test_capability_resolve_failure_points_at_retired_xdg_layout(tmp_path: Path)
     assert "capability-profiles.json" in combined
 
 
-def test_capability_explain_reports_skill_needs_and_announcement_adapter_binding(tmp_path: Path) -> None:
+def test_capability_explain_reports_skill_needs_and_announcement_adapter_binding(
+    tmp_path: Path,
+) -> None:
     target_repo = init_target_repo(tmp_path / "target")
     agents_dir = target_repo / ".agents"
     agents_dir.mkdir(parents=True, exist_ok=True)
@@ -354,5 +360,26 @@ def test_capability_explain_keeps_thread_reply_before_parent_draft_only(tmp_path
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["announcement_delivery"]["status"] == "draft-only"
-    assert any("before any preceding `parent`" in issue for issue in payload["announcement_delivery"]["blocking_issues"])
+    assert any(
+        "before any preceding `parent`" in issue
+        for issue in payload["announcement_delivery"]["blocking_issues"]
+    )
     assert "slack.default" not in {need["logical_id"] for need in payload["capability_needs"]}
+
+
+def test_capability_feature_module_serves_pure_helpers_directly(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Pin the lazy-loaded capability surface the entry wrapper resolves to."""
+    import scripts.cli.cmd_capability as cmd_capability_feature
+
+    monkeypatch.setenv("CHARNESS_CAPABILITY_PROBE_PRESENT", "token")
+    monkeypatch.delenv("CHARNESS_CAPABILITY_PROBE_ABSENT", raising=False)
+    assert cmd_capability_feature.source_env_present("CHARNESS_CAPABILITY_PROBE_PRESENT") is True
+    assert cmd_capability_feature.source_env_present("CHARNESS_CAPABILITY_PROBE_ABSENT") is False
+    guidance = cmd_capability_feature.capability_setup_guidance(tmp_path)
+    assert guidance and all(isinstance(line, str) for line in guidance)
+    scaffold = tmp_path / "nested" / "caps.json"
+    assert cmd_capability_feature.write_json_scaffold(scaffold, {"a": 1}, force=False) == "written"
+    assert cmd_capability_feature.write_json_scaffold(scaffold, {"a": 2}, force=False) == "exists"
+    assert json.loads(scaffold.read_text(encoding="utf-8")) == {"a": 1}

@@ -7,7 +7,6 @@ import json
 import os
 import shutil
 import signal
-import subprocess
 import sys
 import threading
 from pathlib import Path
@@ -16,7 +15,7 @@ import pytest
 
 from scripts.task_run import task_run_detach, task_run_runtime
 from tests.charness_cli.support import CLI, build_test_path, load_cli_module, run_cli
-from tests.charness_cli.test_task_run_fixtures import _git, _repo
+from tests.charness_cli.test_task_run_fixtures import _repo
 
 
 class _StubChild:
@@ -45,9 +44,7 @@ def test_wait_returns_already_terminal_lane_immediately(tmp_path: Path) -> None:
     runtime = tmp_path / "runtime"
     _seed_record(runtime, "lane-a", phase="terminal", status="premise-blocked")
 
-    outcome = task_run_detach.wait_for_tasks(
-        runtime, ["lane-a"], sleep=_no_sleep
-    )
+    outcome = task_run_detach.wait_for_tasks(runtime, ["lane-a"], sleep=_no_sleep)
 
     assert outcome["finished"] == [
         {"task_id": "lane-a", "status": "premise-blocked", "exit_code": 2}
@@ -74,9 +71,7 @@ def test_wait_all_reports_first_non_success_in_cli_order(tmp_path: Path) -> None
     _seed_record(runtime, "lane-a", phase="terminal", status="completed")
     _seed_record(runtime, "lane-b", phase="terminal", status="premise-blocked")
 
-    outcome = task_run_detach.wait_for_tasks(
-        runtime, ["lane-a", "lane-b"], sleep=_no_sleep
-    )
+    outcome = task_run_detach.wait_for_tasks(runtime, ["lane-a", "lane-b"], sleep=_no_sleep)
 
     assert outcome["exit_code"] == 2
     assert [entry["status"] for entry in outcome["finished"]] == [
@@ -106,15 +101,11 @@ def test_wait_picks_up_a_lane_that_ends_mid_wait(tmp_path: Path) -> None:
     timer = threading.Timer(0.05, finish_lane)
     timer.start()
     try:
-        outcome = task_run_detach.wait_for_tasks(
-            runtime, ["lane-slow"], poll_seconds=0.01
-        )
+        outcome = task_run_detach.wait_for_tasks(runtime, ["lane-slow"], poll_seconds=0.01)
     finally:
         timer.join()
 
-    assert outcome["finished"] == [
-        {"task_id": "lane-slow", "status": "completed", "exit_code": 0}
-    ]
+    assert outcome["finished"] == [{"task_id": "lane-slow", "status": "completed", "exit_code": 0}]
     assert outcome["exit_code"] == 0
 
 
@@ -122,9 +113,7 @@ def test_launch_reports_terminal_refusal_with_its_exit_code(tmp_path: Path) -> N
     runtime = tmp_path / "runtime"
     _seed_record(runtime, "lane-a", phase="terminal", status="premise-blocked")
 
-    outcome = task_run_detach.wait_for_launch(
-        runtime, "lane-a", _StubChild(2), sleep=_no_sleep
-    )
+    outcome = task_run_detach.wait_for_launch(runtime, "lane-a", _StubChild(2), sleep=_no_sleep)
 
     assert outcome == {
         "launched": False,
@@ -148,9 +137,7 @@ def test_launch_returns_zero_only_after_carrier_start(tmp_path: Path) -> None:
         logs={"stdout": str(log), "stderr": str(log.parent / "codex.stderr.log")},
     )
 
-    outcome = task_run_detach.wait_for_launch(
-        runtime, "lane-a", _StubChild(None), sleep=_no_sleep
-    )
+    outcome = task_run_detach.wait_for_launch(runtime, "lane-a", _StubChild(None), sleep=_no_sleep)
 
     assert outcome["launched"] is True
     assert outcome["exit_code"] == 0
@@ -237,17 +224,15 @@ def test_task_wait_cli_names_id_and_status(tmp_path: Path, monkeypatch) -> None:
     cli = load_cli_module("charness_task_wait_cli", CLI)
     runtime = tmp_path / "runtime"
     _seed_record(runtime, "lane-a", phase="terminal", status="premise-blocked")
-    monkeypatch.setattr(cli, "_load_task_run_lib", lambda _args: object())
-    monkeypatch.setattr(
-        task_run_runtime, "task_runtime_root", lambda _root: runtime
-    )
+    import scripts.cli.cmd_task as task_payload
+
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: runtime)
     emitted: list[dict] = []
-    monkeypatch.setattr(cli, "emit_yaml", emitted.append)
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
 
     code = cli.cmd_task_wait(
-        argparse.Namespace(
-            repo_root=tmp_path, task_ids=["lane-a"], any=False, timeout_seconds=0
-        )
+        argparse.Namespace(repo_root=tmp_path, task_ids=["lane-a"], any=False, timeout_seconds=0)
     )
 
     assert code == 2
@@ -264,7 +249,7 @@ def test_detach_end_to_end_returns_zero_then_wait_times_out(tmp_path: Path) -> N
     # lane executor itself stays slow so the carrier-start signal precedes
     # the terminal receipt.
     codex.write_text(
-        "#!/bin/sh\ncase \"$*\" in\n*read-only*) exit 1;;\n*) sleep 25;;\nesac\n",
+        '#!/bin/sh\ncase "$*" in\n*read-only*) exit 1;;\n*) sleep 25;;\nesac\n',
         encoding="utf-8",
     )
     codex.chmod(0o755)

@@ -43,6 +43,7 @@ def test_registry_names_the_supported_intents() -> None:
         "command_guard_parallel_window",
         "command_guard_verdict_channel",
         "command_guard_discard_worktree",
+        "goal_reinject",
     ]
 
 
@@ -163,12 +164,14 @@ def test_known_basenames_derive_from_owning_module_constants() -> None:
     # or a renamed script constant fails here, not in a consumer.
     from scripts.hooks import host_hook_skill_anchor_guard as guard
     from scripts.hooks import host_hook_command_guard_install as command_guards
+    from scripts.hooks import host_hook_goal_reinject_install as goal_reinject
 
     assert registry.known_hook_script_basenames() == {
         guard.GUARD_SCRIPT_RELATIVE.name,
         command_guards.PARALLEL_WINDOW_SCRIPT_RELATIVE.name,
         command_guards.VERDICT_CHANNEL_SCRIPT_RELATIVE.name,
         command_guards.DISCARD_WORKTREE_SCRIPT_RELATIVE.name,
+        goal_reinject.GOAL_REINJECT_SCRIPT_RELATIVE.name,
     }
 
 

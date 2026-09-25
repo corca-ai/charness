@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+import scripts.cli.cmd_task as task_payload
 from scripts.task_run import task_run_attempts, task_run_plan, task_run_runtime, task_run_state
 from tests.charness_cli.support import CLI, load_cli_module
 from tests.charness_cli.test_task_run_fixtures import _repo, _run
@@ -43,19 +44,15 @@ def test_usage_limit_receipt_has_executor_kind_and_retry_after(
     monkeypatch.setenv("PATH", f"{tmp_path}{os.pathsep}{os.defpath}")
     monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _repo: runtime)
     module = load_cli_module("charness_task_executors_after_limit", CLI)
-    monkeypatch.setattr(module, "_load_task_run_lib", lambda _args: None)
-    args = module.build_parser().parse_args(
-        ["task", "executors", "--repo-root", str(repo)]
-    )
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: None)
+    args = module.build_parser().parse_args(["task", "executors", "--repo-root", str(repo)])
 
     assert args.func(args) == 0
     report = yaml.safe_load(capsys.readouterr().out)
     codex_status = next(item for item in report["executors"] if item["kind"] == "codex")
     assert codex_status["availability"] == "available"
     assert codex_status["quota_state"] == "unknown"
-    assert codex_status["last_observed_usage_limit"]["retry_after"] == (
-        "2099-05-06T07:08:09Z"
-    )
+    assert codex_status["last_observed_usage_limit"]["retry_after"] == ("2099-05-06T07:08:09Z")
 
 
 def test_task_executors_resolves_paths_without_invoking_or_starting_lane(
@@ -75,10 +72,8 @@ def test_task_executors_resolves_paths_without_invoking_or_starting_lane(
         task_run_runtime, "task_runtime_root", lambda _repo: tmp_path / "empty-runtime"
     )
     module = load_cli_module("charness_task_executors_probe", CLI)
-    monkeypatch.setattr(module, "_load_task_run_lib", lambda _args: None)
-    args = module.build_parser().parse_args(
-        ["task", "executors", "--repo-root", str(repo)]
-    )
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: None)
+    args = module.build_parser().parse_args(["task", "executors", "--repo-root", str(repo)])
 
     assert args.func(args) == 0
     report = yaml.safe_load(capsys.readouterr().out)
@@ -92,13 +87,9 @@ def test_task_executors_resolves_paths_without_invoking_or_starting_lane(
     assert sorted(path.name for path in repo.iterdir()) == [".git", "module.py"]
 
 
-def test_usage_limit_falls_through_in_requested_executor_order(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_usage_limit_falls_through_in_requested_executor_order(tmp_path: Path, monkeypatch) -> None:
     repo = _repo(tmp_path)
-    monkeypatch.setattr(
-        task_run_plan, "_runtime_preview", lambda _repo: tmp_path / "task-runtime"
-    )
+    monkeypatch.setattr(task_run_plan, "_runtime_preview", lambda _repo: tmp_path / "task-runtime")
     bindir = tmp_path / "bin"
     bindir.mkdir()
     order_log = tmp_path / "executor-order.txt"
@@ -131,9 +122,7 @@ def test_usage_limit_falls_through_in_requested_executor_order(
 
 def test_usage_limit_falls_from_muse_to_codex(tmp_path: Path, monkeypatch) -> None:
     repo = _repo(tmp_path)
-    monkeypatch.setattr(
-        task_run_plan, "_runtime_preview", lambda _repo: tmp_path / "task-runtime"
-    )
+    monkeypatch.setattr(task_run_plan, "_runtime_preview", lambda _repo: tmp_path / "task-runtime")
     bindir = tmp_path / "bin"
     bindir.mkdir()
     order_log = tmp_path / "executor-order.txt"

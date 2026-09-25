@@ -11,11 +11,27 @@ def load_charness_module(module_name: str = "charness_update_flow_unit_under_tes
     return load_cli_module(module_name, ROOT / "charness")
 
 
+def load_tool_commands_module(module_name: str):
+    # `run_tool_update_flow` lives in scripts/cli/tool_update.py after #873:
+    # load the feature file fresh so the `invoke_repo_json_script` seam below
+    # patches the namespace the payload actually calls.
+    return load_cli_module(module_name, ROOT / "scripts" / "cli" / "tool_update.py")
+
+
+def load_bootstrap_module(module_name: str):
+    # The canonical post-#873 home of `maybe_reexec_refreshed_cli`: load the
+    # feature file fresh so the entry-context default below patches the
+    # namespace the helper actually reads.
+    return load_cli_module(module_name, ROOT / "scripts" / "cli" / "bootstrap.py")
+
+
 def test_update_all_flow_reuses_precomputed_support_results(monkeypatch, tmp_path: Path) -> None:
-    module = load_charness_module()
+    module = load_tool_commands_module("charness_update_flow_unit_under_test")
     calls: list[str] = []
 
-    def fake_invoke(_repo_root: Path, relative_script: str, *args: str, allow_failure: bool = False) -> object:
+    def fake_invoke(
+        _repo_root: Path, relative_script: str, *args: str, allow_failure: bool = False
+    ) -> object:
         calls.append(relative_script)
         assert allow_failure is True
         assert "scripts/sync_support.py" not in relative_script
@@ -45,10 +61,12 @@ def test_update_all_flow_reuses_precomputed_support_results(monkeypatch, tmp_pat
 
 
 def test_update_flow_syncs_support_when_reuse_is_not_available(monkeypatch, tmp_path: Path) -> None:
-    module = load_charness_module("charness_update_flow_unit_sync_under_test")
+    module = load_tool_commands_module("charness_update_flow_unit_sync_under_test")
     calls: list[tuple[str, tuple[str, ...]]] = []
 
-    def fake_invoke(_repo_root: Path, relative_script: str, *args: str, allow_failure: bool = False) -> object:
+    def fake_invoke(
+        _repo_root: Path, relative_script: str, *args: str, allow_failure: bool = False
+    ) -> object:
         calls.append((relative_script, args))
         assert allow_failure is True
         if relative_script == "scripts/update_tools.py":
@@ -81,9 +99,11 @@ def test_update_flow_syncs_support_when_reuse_is_not_available(monkeypatch, tmp_
 
 
 def test_update_all_flow_treats_refreshed_not_ready_as_failure(monkeypatch, tmp_path: Path) -> None:
-    module = load_charness_module("charness_update_flow_unit_refreshed_failure_under_test")
+    module = load_tool_commands_module("charness_update_flow_unit_refreshed_failure_under_test")
 
-    def fake_invoke(_repo_root: Path, relative_script: str, *args: str, allow_failure: bool = False) -> object:
+    def fake_invoke(
+        _repo_root: Path, relative_script: str, *args: str, allow_failure: bool = False
+    ) -> object:
         assert allow_failure is True
         if relative_script == "scripts/update_tools.py":
             return [{"tool_id": "demo", "status": "refreshed-not-ready"}]
@@ -107,18 +127,29 @@ def test_update_all_flow_treats_refreshed_not_ready_as_failure(monkeypatch, tmp_
     assert payload["results"]["demo"]["update"]["status"] == "refreshed-not-ready"
 
 
-def test_update_all_flow_propagates_blocking_doctor_and_support_failures(monkeypatch, tmp_path: Path) -> None:
-    module = load_charness_module("charness_update_flow_unit_phase_failure_under_test")
+def test_update_all_flow_propagates_blocking_doctor_and_support_failures(
+    monkeypatch, tmp_path: Path
+) -> None:
+    module = load_tool_commands_module("charness_update_flow_unit_phase_failure_under_test")
 
-    def fake_invoke(_repo_root: Path, relative_script: str, *args: str, allow_failure: bool = False) -> object:
+    def fake_invoke(
+        _repo_root: Path, relative_script: str, *args: str, allow_failure: bool = False
+    ) -> object:
         assert allow_failure is True
         if relative_script == "scripts/update_tools.py":
-            return [{"tool_id": "doctor-blocked", "status": "updated"}, {"tool_id": "support-broken", "status": "updated"}]
+            return [
+                {"tool_id": "doctor-blocked", "status": "updated"},
+                {"tool_id": "support-broken", "status": "updated"},
+            ]
         if relative_script == "scripts/sync_support.py":
             return [{"tool_id": "support-broken", "status": "failed"}]
         if relative_script == "scripts/doctor.py":
             return [
-                {"tool_id": "doctor-blocked", "doctor_status": "failed", "doctor_disposition": "blocking-failure"},
+                {
+                    "tool_id": "doctor-blocked",
+                    "doctor_status": "failed",
+                    "doctor_disposition": "blocking-failure",
+                },
                 {"tool_id": "support-broken", "doctor_status": "ok", "doctor_disposition": "ok"},
             ]
         raise AssertionError(f"unexpected script: {relative_script}")
@@ -159,7 +190,10 @@ def test_reexec_noops_when_running_cli_matches_checkout(monkeypatch, tmp_path: P
 
     assert module.maybe_reexec_refreshed_cli(checkout, running_cli=checkout / "charness") is None
     assert module.maybe_reexec_refreshed_cli(checkout, running_cli=same_bytes_copy) is None
-    assert module.maybe_reexec_refreshed_cli(tmp_path / "no-checkout", running_cli=same_bytes_copy) is None
+    assert (
+        module.maybe_reexec_refreshed_cli(tmp_path / "no-checkout", running_cli=same_bytes_copy)
+        is None
+    )
     # An unreadable comparison (here: the running CLI resolves to a directory)
     # must fail safe into the no-reexec path instead of crashing the command.
     unreadable = tmp_path / "cli-as-dir"
@@ -200,12 +234,16 @@ def test_reexec_guard_reports_child_and_blocks_loops(monkeypatch, tmp_path: Path
     still_stale = tmp_path / "installed-charness"
     still_stale.write_text("print('old cli')\n", encoding="utf-8")
     skipped = module.maybe_reexec_refreshed_cli(
-        checkout, running_cli=still_stale, execve=lambda *a, **k: (_ for _ in ()).throw(AssertionError("must not re-exec"))
+        checkout,
+        running_cli=still_stale,
+        execve=lambda *a, **k: (_ for _ in ()).throw(AssertionError("must not re-exec")),
     )
     assert skipped is not None and skipped["status"] == "skipped"
 
 
-def test_reexec_ignores_foreign_guard_value_and_survives_execve_failure(monkeypatch, tmp_path: Path) -> None:
+def test_reexec_ignores_foreign_guard_value_and_survives_execve_failure(
+    monkeypatch, tmp_path: Path
+) -> None:
     module = load_charness_module("charness_reexec_foreign_guard_under_test")
     # A stale/foreign guard (a "1" or another process's pid inherited from an
     # unrelated environment) must not suppress the self-heal.
@@ -218,12 +256,39 @@ def test_reexec_ignores_foreign_guard_value_and_survives_execve_failure(monkeypa
     def fake_execve(executable: str, argv: list[str], env: dict[str, str]) -> None:
         fired["env_guard"] = env.get(module._CLI_REEXEC_GUARD_ENV)
 
-    assert module.maybe_reexec_refreshed_cli(checkout, running_cli=stale_cli, execve=fake_execve) is None
+    assert (
+        module.maybe_reexec_refreshed_cli(checkout, running_cli=stale_cli, execve=fake_execve)
+        is None
+    )
     assert fired["env_guard"] == str(module.os.getpid())
 
     def broken_execve(*_args: object) -> None:
         raise OSError("exec format error")
 
-    fallback = module.maybe_reexec_refreshed_cli(checkout, running_cli=stale_cli, execve=broken_execve)
+    fallback = module.maybe_reexec_refreshed_cli(
+        checkout, running_cli=stale_cli, execve=broken_execve
+    )
     assert fallback is not None and fallback["status"] == "failed"
     assert "re-exec failed" in fallback["reason"]
+
+
+def test_reexec_default_compares_published_entry_not_feature_module(
+    monkeypatch, tmp_path: Path
+) -> None:
+    # Post-#873 the helper lives in scripts.cli.bootstrap, so a bare
+    # `Path(__file__)` default names the feature module, which never
+    # byte-matches a checkout CLI: an omitted `running_cli` re-exec'd every
+    # run, and in-process that replaced the test worker. The default must
+    # prefer the entry context the root shim publishes.
+    module = load_bootstrap_module("charness_reexec_entry_default_under_test")
+    monkeypatch.delenv(module._CLI_REEXEC_GUARD_ENV, raising=False)
+    body = "#!/usr/bin/env python3\nprint('cli')\n"
+    checkout = _seed_checkout(tmp_path, body)
+    entry = tmp_path / "installed-charness"
+    entry.write_text(body, encoding="utf-8")
+    module.set_entry_context(None, entry)
+
+    def _must_not_exec(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("must not re-exec when the entry matches the checkout")
+
+    assert module.maybe_reexec_refreshed_cli(checkout, execve=_must_not_exec) is None

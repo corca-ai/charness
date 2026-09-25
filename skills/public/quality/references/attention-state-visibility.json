@@ -1045,6 +1045,83 @@
         "runner-not-confirmed-dead"
       ],
       "rationale": "The stale-exec entrypoint reports a typed skipped outcome with a reason (live runner, fresh record) instead of terminalizing; the sweep records the skip as a log entry with that reason, so a skipped lane is never recorded as terminalized."
+    },
+    "scripts/cli/bootstrap.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "\"status\": \"skipped\"",
+        "reexecuted"
+      ],
+      "rationale": "The re-exec probe returns a typed skipped state when there is nothing to refresh (no checkout CLI yet, or the checkout already matches the running entry); it rides inside the init/update result payload instead of silently continuing on a stale CLI."
+    },
+    "scripts/cli/doctor_payload.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "\"status\": \"skipped\"",
+        "skipped during update unless --target-repo-root is provided"
+      ],
+      "rationale": "The repo-onboarding section reports skipped with its reason when update runs without --target-repo-root; the doctor payload keeps the omission visible instead of a clean pass."
+    },
+    "scripts/cli/host_codex.py": {
+      "states": [
+        "disabled",
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "flag-disabled",
+        "codex-cli-missing"
+      ],
+      "rationale": "The codex host install/refresh flow reports skipped with its reason (flag-disabled, codex-cli-missing) inside the CLI payload instead of reading as a clean pass."
+    },
+    "scripts/cli/host_codex_rpc.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "codex-cli-missing",
+        "missing-marketplace"
+      ],
+      "rationale": "The codex app-server refresh reports skipped with its reason (missing CLI, missing marketplace) inside the CLI payload instead of reading as a clean pass."
+    },
+    "scripts/cli/tool_next_steps.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "stdout_attention"
+      ],
+      "evidence_terms": [
+        "healthcheck=skipped"
+      ],
+      "rationale": "The next-steps renderer appends a human-readable healthcheck=skipped suffix when the healthcheck payload carries skipped, so skipped tool health stays visible in terminal output."
+    },
+    "scripts/task_run/task_run_status_report.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "stdout_attention"
+      ],
+      "evidence_terms": [
+        "unreadable line(s) skipped."
+      ],
+      "rationale": "The fixed-shape status report counts unreadable ledger lines and prints the skipped count in the section head instead of silently dropping them."
     }
   }
 }

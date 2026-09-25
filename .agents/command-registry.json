@@ -9,6 +9,7 @@
     {"path": ["task"], "group": "coordination"},
     {"path": ["task", "run"], "group": "coordination"},
     {"path": ["task", "status"], "group": "coordination"},
+    {"path": ["task", "report"], "group": "coordination"},
     {"path": ["task", "executors"], "group": "coordination"},
     {"path": ["task", "steer"], "group": "coordination"},
     {"path": ["task", "wait"], "group": "coordination"},

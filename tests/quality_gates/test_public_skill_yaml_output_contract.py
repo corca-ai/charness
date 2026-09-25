@@ -431,6 +431,12 @@ JSON_STDOUT_EXEMPT = {
         "for emitting its own documented fallback would make the gate refuse the thing "
         "it exists to enforce."
     ),
+    "scripts/cli/bootstrap_state.py": (
+        "the canonical home of the inlined `render_yaml` since the #873 root-CLI "
+        "split (the `charness` entry above carries the verbatim fallback copy, "
+        "sync-pinned). Same PyYAML-absent JSON-as-YAML fallback reason; no other "
+        "site in this file writes JSON to stdout."
+    ),
 }
 
 

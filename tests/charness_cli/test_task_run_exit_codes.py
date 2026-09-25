@@ -22,9 +22,7 @@ def test_result_kinds_have_one_exit_code_each() -> None:
         task_run_state.ResultKind.EXECUTOR_UNAVAILABLE: 4,
         task_run_state.ResultKind.COMPLETED_NEEDS_REVIEW: 5,
     }
-    assert len(set(task_run_state.RESULT_EXIT_CODES.values())) == len(
-        task_run_state.ResultKind
-    )
+    assert len(set(task_run_state.RESULT_EXIT_CODES.values())) == len(task_run_state.ResultKind)
     assert (
         task_run_state.result_kind_for_status("premise-blocked")
         is task_run_state.ResultKind.PREMISE_BLOCKED
@@ -121,7 +119,9 @@ def _run_task_cli_with_receipt(
         def run_task(*_args: object, **_kwargs: object) -> dict[str, object]:
             return dict(receipt)
 
-    monkeypatch.setattr(module, "_load_task_run_lib", lambda _args: FakeTaskRun)
+    import scripts.cli.cmd_task as task_payload
+
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: FakeTaskRun)
     return run_loaded_script_main(
         str(CLI),
         module,
@@ -206,9 +206,7 @@ def test_task_run_help_documents_all_six_codes() -> None:
         ("friction-log", "premise-failure"),
     ],
 )
-def test_event_schema_v1_accepts_each_frozen_producer_kind(
-    source: str, event_kind: str
-) -> None:
+def test_event_schema_v1_accepts_each_frozen_producer_kind(source: str, event_kind: str) -> None:
     event = {
         "schema_version": 1,
         "event_id": "event-1",

@@ -19,7 +19,9 @@ def load_charness_module():
     return module
 
 
-def test_claude_subprocess_env_preserves_default_and_binds_custom_home(tmp_path: Path, monkeypatch) -> None:
+def test_claude_subprocess_env_preserves_default_and_binds_custom_home(
+    tmp_path: Path, monkeypatch
+) -> None:
     module = load_charness_module()
     inherited = tmp_path / "inherited"
     custom = tmp_path / "custom"
@@ -45,7 +47,11 @@ def test_run_claude_forwards_effective_home_to_subprocess(tmp_path: Path, monkey
         seen.append(env)
         return subprocess.CompletedProcess(command, 0, "", "")
 
-    monkeypatch.setattr(module, "run", fake_run)
+    # `run_claude` lives in scripts/cli/host_claude.py after #873: patch the
+    # namespace the payload calls, not the loaded entry copy.
+    import scripts.cli.host_claude as host_claude
+
+    monkeypatch.setattr(host_claude, "run", fake_run)
 
     result = module.run_claude(["claude", "--version"], cwd=tmp_path, home_root=custom)
 
@@ -54,7 +60,9 @@ def test_run_claude_forwards_effective_home_to_subprocess(tmp_path: Path, monkey
     assert seen[0]["HOME"] == str(custom.resolve())
 
 
-def test_all_claude_call_sites_bind_custom_home_and_doctor_reads_it(tmp_path: Path, monkeypatch) -> None:
+def test_all_claude_call_sites_bind_custom_home_and_doctor_reads_it(
+    tmp_path: Path, monkeypatch
+) -> None:
     module = load_charness_module()
     repo = CLI.parent
     custom = tmp_path / "custom-home"
@@ -69,9 +77,14 @@ def test_all_claude_call_sites_bind_custom_home_and_doctor_reads_it(tmp_path: Pa
         env = module.claude_subprocess_env(home_root)
         effective_home = (env or os.environ)["HOME"]
         calls.append((command, effective_home))
-        return subprocess.run(command, cwd=cwd, check=False, capture_output=True, text=True, env=env)
+        return subprocess.run(
+            command, cwd=cwd, check=False, capture_output=True, text=True, env=env
+        )
 
-    monkeypatch.setattr(module, "run_claude", run_claude)
+    # Call sites live in scripts/cli/host_claude.py after #873.
+    import scripts.cli.host_claude as host_claude
+
+    monkeypatch.setattr(host_claude, "run_claude", run_claude)
 
     # New marketplace: add + update. A stale source then exercises remove + add + update.
     module.ensure_claude_marketplace(repo, home_root=custom)
@@ -99,9 +112,52 @@ def test_all_claude_call_sites_bind_custom_home_and_doctor_reads_it(tmp_path: Pa
         ("claude", "plugins", "list"),
         ("claude", "plugins", "uninstall"),
     )
-    assert all(any(tuple(command[: len(prefix)]) == prefix for command, _home in calls) for prefix in expected)
+    assert all(
+        any(tuple(command[: len(prefix)]) == prefix for command, _home in calls)
+        for prefix in expected
+    )
     assert {home for _command, home in calls} == {str(custom.resolve())}
     assert not (process_home / ".claude").exists()
+
+
+def test_remove_paths_intercept_late_patch_after_early_cmd_meta_import(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """The remove paths honor a late `run_claude` patch after an early import.
+
+    `cmd_meta` used to from-bind `run_claude`, so when it was imported before
+    the patch (the full-suite order), the remove calls bypassed the patched
+    namespace while every return-value assertion still passed. Importing it
+    first here pins that order.
+    """
+    import scripts.cli.cmd_meta  # noqa: F401 - pin the full-suite import order
+
+    module = load_charness_module()
+    repo = CLI.parent
+    custom = tmp_path / "custom-home"
+    process_home = tmp_path / "unrelated-process-home"
+    fake_claude = make_fake_claude(tmp_path)
+    monkeypatch.setenv("HOME", str(process_home))
+    monkeypatch.setenv("PATH", build_test_path(fake_claude.parent))
+
+    calls: list[list[str]] = []
+
+    def run_claude(command: list[str], *, cwd: Path, home_root: Path):
+        calls.append(command)
+        return subprocess.run(
+            command, cwd=cwd, check=False, capture_output=True, text=True, env=None
+        )
+
+    import scripts.cli.host_claude as host_claude
+
+    monkeypatch.setattr(host_claude, "run_claude", run_claude)
+
+    assert module.remove_claude_plugin(repo, home_root=custom) is True
+    assert module.remove_claude_marketplace(repo, home_root=custom) is True
+    assert any(tuple(command[:3]) == ("claude", "plugins", "uninstall") for command in calls)
+    assert any(
+        tuple(command[:4]) == ("claude", "plugins", "marketplace", "remove") for command in calls
+    )
 
 
 def test_doctor_consumer_uses_custom_home_for_claude_listing(tmp_path: Path, monkeypatch) -> None:

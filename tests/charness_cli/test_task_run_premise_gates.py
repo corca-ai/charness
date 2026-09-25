@@ -82,9 +82,7 @@ def test_run_task_launches_after_a_single_blocked_item(tmp_path, monkeypatch) ->
 
     def critic(**_kwargs: Any) -> dict[str, Any]:
         events.write_text("review\n", encoding="utf-8")
-        return _review(
-            [{"id": "provider-order", "kind": "premise-blocked", "evidence": "unknown"}]
-        )
+        return _review([{"id": "provider-order", "kind": "premise-blocked", "evidence": "unknown"}])
 
     monkeypatch.setattr(task_run_prelaunch, "_run_brief_critique", critic)
     payload = _run(
@@ -201,9 +199,7 @@ def test_style_findings_are_advisory_but_false_brief_premise_blocks() -> None:
 
 def test_brief_critic_failure_is_retained_as_partial_prelaunch_state() -> None:
     payload: dict[str, Any] = {}
-    resolved = _resolved(
-        [{"id": "consumer", "premise": "used", "decision_needed": "choose"}]
-    )
+    resolved = _resolved([{"id": "consumer", "premise": "used", "decision_needed": "choose"}])
 
     def critic_fails(**_kwargs: Any) -> dict[str, Any]:
         raise RuntimeError("review offline")
@@ -221,9 +217,7 @@ def test_brief_critic_failure_is_retained_as_partial_prelaunch_state() -> None:
     assert payload["prelaunch"]["status"] == "partial"
 
 
-def test_non_red_acceptance_baseline_blocks_prelaunch(
-    tmp_path, monkeypatch
-) -> None:
+def test_non_red_acceptance_baseline_blocks_prelaunch(tmp_path, monkeypatch) -> None:
     payload: dict[str, Any] = {}
     resolved = _resolved([])
     resolved["prelaunch"].update(
@@ -278,7 +272,11 @@ def test_brief_critic_uses_read_only_bounded_fresh_process(tmp_path, monkeypatch
     monkeypatch.setattr(task_run_execution, "_execute_codex", execute)
     review = task_run_prelaunch._run_brief_critique(
         payload={"task_id": "lane", "execution_runtime_root": str(tmp_path / "execution")},
-        resolved={"runtime_path": tmp_path / "runtime", "target_path": tmp_path, "executor": "muse"},
+        resolved={
+            "runtime_path": tmp_path / "runtime",
+            "target_path": tmp_path,
+            "executor": "muse",
+        },
         prompt="implement the lane",
         premise_checks=[],
     )
@@ -350,9 +348,7 @@ def test_lane_prompt_surfaces_precomputed_gates_and_advisory_scope_findings() ->
                     "verify_commands": ["python3 -m pytest -q tests/test_task.py"],
                 },
                 "scope_preflight": {
-                    "would_touch_outside_declared": [
-                        {"path": ".agents/temp-producers.yaml"}
-                    ]
+                    "would_touch_outside_declared": [{"path": ".agents/temp-producers.yaml"}]
                 },
             }
         },
@@ -364,9 +360,7 @@ def test_lane_prompt_surfaces_precomputed_gates_and_advisory_scope_findings() ->
     assert "would-touch-outside-declared: `.agents/temp-producers.yaml`" in prompt
 
 
-def test_cli_forwards_prelaunch_declarations_to_task_runner(
-    tmp_path, monkeypatch
-) -> None:
+def test_cli_forwards_prelaunch_declarations_to_task_runner(tmp_path, monkeypatch) -> None:
     module = load_cli_module("charness_task_run_premise_gates", CLI)
     observed: dict[str, Any] = {}
 
@@ -376,7 +370,9 @@ def test_cli_forwards_prelaunch_declarations_to_task_runner(
             observed.update(kwargs)
             return {"status": "completed", "result_kind": "success"}
 
-    monkeypatch.setattr(module, "_load_task_run_lib", lambda _args: FakeTaskRun)
+    import scripts.cli.cmd_task as task_payload
+
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: FakeTaskRun)
     result = run_loaded_script_main(
         str(CLI),
         module,

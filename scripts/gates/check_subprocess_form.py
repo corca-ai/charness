@@ -50,6 +50,17 @@ DEFAULT_SCAN_GLOBS = (
     "skills/shared/scripts/**/*.py",
 )
 GUARD_RELATIVE = "scripts/core/subprocess_guard.py"
+#: Direct spawns the guard primitives cannot express, reviewed per entry.
+#: `run_process`/`run_monitored_phase` are run-to-completion; an interactive
+#: stdio session (write a request, read a response, repeat) fits neither, so
+#: the Codex app-server driver below keeps its own `Popen` with an absolute
+#: deadline, explicit terminate/kill escalation, and a fake-clock seam test.
+REVIEWED_DIRECT_SPAWNS = {
+    "scripts/cli/host_codex_rpc.py": (
+        "interactive `codex app-server` stdio JSON-RPC session "
+        "(initialize/install request-response rounds)"
+    ),
+}
 SKIP_PATH_PARTS = {"__pycache__", "vendor", "generated"}
 SUBPROCESS_SPAWNS = frozenset(
     {"run", "Popen", "check_output", "check_call", "call", "getoutput", "getstatusoutput"}
@@ -95,7 +106,7 @@ def _iter_scan_paths(repo_root: Path, *, require_git: bool) -> list[Path]:
 
 def check_file(repo_root: Path, path: Path) -> list[str]:
     relative = path.relative_to(repo_root).as_posix()
-    if relative == GUARD_RELATIVE:
+    if relative == GUARD_RELATIVE or relative in REVIEWED_DIRECT_SPAWNS:
         return []
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))

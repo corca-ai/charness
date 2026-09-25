@@ -60,6 +60,12 @@ Pause for a short retro after every five lane outcomes and after a resumed
 handoff following compaction. Include exactly one line:
 `improvements found: <concise items>` or `improvements found: none`.
 
+`charness task report [--window 30m]` renders the fixed-shape period report
+from lane metrics, the friction log, and the decision ledger: goals, lane
+states, friction with repairs, measured improvements with the period
+`improvements found:` line, decisions plus what needs the operator, and the
+next-action table. Every section carries measured numbers, not prose claims.
+
 Keep the active principles, DAG file, and handoff in the parent repo's
 `.charness/task-run/orchestration-pointers.md`. When present and nonempty, that
 file is read into every newly built lane prompt. A resumed orchestrator thus

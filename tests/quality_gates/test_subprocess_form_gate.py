@@ -62,3 +62,18 @@ def test_live_repo_spawns_only_through_the_guard() -> None:
         for failure in gate.check_file(ROOT, path)
     ]
     assert failures == []
+
+
+def test_reviewed_direct_spawns_still_spawn() -> None:
+    # An exemption that no longer spawns is dead weight hiding nothing: every
+    # REVIEWED_DIRECT_SPAWNS entry must still contain a direct spawn finding.
+    import ast
+
+    for relative, reason in gate.REVIEWED_DIRECT_SPAWNS.items():
+        assert reason, f"exemption for {relative} carries no reason"
+        path = ROOT / relative
+        assert path.is_file(), f"exempted {relative} is gone; drop the exemption"
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        assert gate._direct_spawn_findings(tree), (
+            f"exempted {relative} no longer spawns; drop the exemption"
+        )

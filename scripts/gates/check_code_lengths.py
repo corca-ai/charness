@@ -60,13 +60,17 @@ NATIVE_TEST_FILE_MAX = 800
 # as NATIVE: exactly today's tokei code-line count, so nothing may grow past
 # where it already stands, and the warn band sits at the scripts cap so the
 # file reports as debt on every run until it is split toward that cap. The
-# landed count (5,892) is the true 2026-09-25 measure: new parser blocks
+# landed count (5,892) was the true 2026-09-25 measure: new parser blocks
 # must stay inline in the root entry because a copied entry script builds its
 # parser with zero sibling imports, so only command payloads live in feature
-# modules. A follow-up root-CLI split owns lowering this number, never
-# raising it.
+# modules. The #873 root-CLI split (payloads to scripts/cli/, fallback sync
+# test pinning the duplication) landed 2026-09-25 and reset the true measure
+# to 2,205. Parser blocks and the entry bridge must stay inline in the root
+# entry, so each addition re-measures this number in review (never padding,
+# never payloads): `task report` (#872), the entry-bound lazy-read shim, and
+# the post-purge context re-publish moved it to 2,236 on 2026-09-25.
 ROOT_CLI_RELATIVE = Path("charness")
-ROOT_CLI_FILE_MAX = 5892
+ROOT_CLI_FILE_MAX = 2236
 ROOT_CLI_FILE_WARN = REPO_SCRIPT_FILE_MAX
 
 # Advisory file-length warn band (tokei code lines, Python and Rust — function length

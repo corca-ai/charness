@@ -636,9 +636,15 @@ def test_an_unreadable_repo_script_payload_names_the_repo_and_the_child_stderr(
     usually the real cause -- is discarded with the CompletedProcess.
     """
     repo = _script_repo(tmp_path, "emit.py", UNREADABLE_PAYLOAD_SCRIPT)
-    monkeypatch.setattr(charness_cli, "resolve_repo_python", lambda _root: sys.executable)
+    # `invoke_repo_json_script` lives in scripts/cli/process.py after #873:
+    # patch the namespace the payload calls, which also raises the tree
+    # error class rather than the entry fallback copy.
+    import scripts.cli.process as process
+    from scripts.cli.bootstrap import CharnessError as _TreeCharnessError
 
-    with pytest.raises(charness_cli.CharnessError) as caught:
+    monkeypatch.setattr(process, "resolve_repo_python", lambda _root: sys.executable)
+
+    with pytest.raises(_TreeCharnessError) as caught:
         charness_cli.invoke_repo_json_script(repo, "emit.py")
 
     message = str(caught.value)
@@ -698,14 +704,18 @@ def test_tool_install_hands_sync_support_the_plugin_root_and_the_selected_tools(
     repo = tmp_path / "repo"
     repo.mkdir()
     plugin_root = tmp_path / "plugins"
-    monkeypatch.setattr(charness_cli, "resolve_tool_repo_root", lambda _args: (repo, False))
+    # `cmd_tool_install` lives in scripts/cli/tool_commands.py after #873:
+    # patch the namespace the payload calls, not the loaded entry copy.
+    import scripts.cli.tool_commands as tool_commands
+
+    monkeypatch.setattr(tool_commands, "resolve_tool_repo_root", lambda _args: (repo, False))
     calls: dict[str, tuple[str, ...]] = {}
 
     def fake_invoke(_repo_root, script, *script_args, allow_failure=False):
         calls[script] = script_args
         return []
 
-    monkeypatch.setattr(charness_cli, "invoke_repo_json_script", fake_invoke)
+    monkeypatch.setattr(tool_commands, "invoke_repo_json_script", fake_invoke)
     parser = charness_cli.build_parser()
 
     args = parser.parse_args(

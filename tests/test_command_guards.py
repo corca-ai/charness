@@ -10,8 +10,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.hooks import host_hook_command_guards as guards
 from scripts.hooks import host_hook_command_guard_install as install
+from scripts.hooks import host_hook_command_guards as guards
 from scripts.hooks import host_hook_registry
 
 pytestmark = pytest.mark.boundary_contract(
@@ -62,8 +62,7 @@ def test_parallel_window_passes_backgrounded_and_short_sleep() -> None:
 
 def test_parallel_window_override_needs_a_stated_reason() -> None:
     assert (
-        blocked("sleep 20 #window-ok: waiting for the lane verdict", guards.PARALLEL_WINDOW)
-        is None
+        blocked("sleep 20 #window-ok: waiting for the lane verdict", guards.PARALLEL_WINDOW) is None
     )
     assert blocked("sleep 20 #window-ok:", guards.PARALLEL_WINDOW) is not None
 
@@ -82,7 +81,10 @@ def test_parallel_window_blocks_bundles_not_single_files() -> None:
 
 def test_parallel_window_blocks_foreground_lane_launch_and_wait() -> None:
     assert (
-        blocked("charness task run --lane x --scope pkg --prompt p --effort xhigh", guards.PARALLEL_WINDOW)
+        blocked(
+            "charness task run --lane x --scope pkg --prompt p --effort xhigh",
+            guards.PARALLEL_WINDOW,
+        )
         is not None
     )
     assert (
@@ -103,10 +105,7 @@ def test_parallel_window_blocks_foreground_lane_launch_and_wait() -> None:
 def test_verdict_channel_blocks_masked_composition() -> None:
     assert blocked("pytest tests/ -q; echo done", guards.VERDICT_CHANNEL) is not None
     assert blocked("git push origin main | tail -5", guards.VERDICT_CHANNEL) is not None
-    assert (
-        blocked("charness task run --lane x || echo failed", guards.VERDICT_CHANNEL)
-        is not None
-    )
+    assert blocked("charness task run --lane x || echo failed", guards.VERDICT_CHANNEL) is not None
 
 
 def test_verdict_channel_passes_captured_and_reraised_status() -> None:
@@ -130,10 +129,7 @@ def test_verdict_channel_passes_combined_test_reraise() -> None:
 
 
 def test_verdict_channel_blocks_truncated_record() -> None:
-    assert (
-        blocked("cat /tmp/lane-result.json | cut -c1-200", guards.VERDICT_CHANNEL)
-        is not None
-    )
+    assert blocked("cat /tmp/lane-result.json | cut -c1-200", guards.VERDICT_CHANNEL) is not None
     assert (
         blocked(
             "cat /tmp/lane-result.json | cut -c1-200 #verdict-ok: previewing shape",
@@ -183,8 +179,7 @@ def test_discard_passes_staged_only_and_overrides() -> None:
         is None
     )
     assert (
-        blocked("git checkout -- pkg/module.py #discard-ok:", guards.DISCARD_WORKTREE)
-        is not None
+        blocked("git checkout -- pkg/module.py #discard-ok:", guards.DISCARD_WORKTREE) is not None
     )
 
 
@@ -264,8 +259,7 @@ def test_adapter_pattern_blocks_only_in_its_repository(tmp_path: Path) -> None:
         is not None
     )
     assert (
-        blocked("task-verify --lane x | tail -3", guards.VERDICT_CHANNEL, repo_root=other)
-        is None
+        blocked("task-verify --lane x | tail -3", guards.VERDICT_CHANNEL, repo_root=other) is None
     )
     assert blocked("publish preview", guards.PARALLEL_WINDOW, repo_root=repo) is not None
     assert blocked("publish preview", guards.PARALLEL_WINDOW, repo_root=other) is None
@@ -283,13 +277,14 @@ def test_malformed_adapter_fails_open(tmp_path: Path) -> None:
     assert blocked("echo hello", guards.PARALLEL_WINDOW, repo_root=repo) is None
 
 
-def test_registry_carries_four_intents() -> None:
+def test_registry_carries_five_intents() -> None:
     keys = [intent.key for intent in host_hook_registry.SIBLING_HOOK_INTENTS]
     assert keys == [
         "skill_anchor_edit_guard",
         "command_guard_parallel_window",
         "command_guard_verdict_channel",
         "command_guard_discard_worktree",
+        "goal_reinject",
     ]
 
 
@@ -304,22 +299,18 @@ def test_reconcile_installs_and_status_reports_per_host(tmp_path: Path) -> None:
     home.mkdir()
     adapter = _adapter("command_guard_parallel_window")
 
-    actions = host_hook_registry.reconcile_sibling_hooks(
-        repo, adapter=adapter, home=home
-    )
+    actions = host_hook_registry.reconcile_sibling_hooks(repo, adapter=adapter, home=home)
 
     assert actions["command_guard_parallel_window"]["claude"]["result"]["action"] in {
         "installed",
         "noop",
     }
-    assert (
-        "codex"
-        in actions["command_guard_parallel_window"]["codex"].get("error", "")
-        or "codex" in actions["command_guard_parallel_window"]["codex"].get("result", {}).get("reason", "")
+    assert "codex" in actions["command_guard_parallel_window"]["codex"].get(
+        "error", ""
+    ) or "codex" in actions["command_guard_parallel_window"]["codex"].get("result", {}).get(
+        "reason", ""
     )
-    statuses = host_hook_registry.sibling_hook_statuses(
-        repo, adapter=adapter, home=home
-    )
+    statuses = host_hook_registry.sibling_hook_statuses(repo, adapter=adapter, home=home)
     window = statuses["command_guard_parallel_window"]
     assert window["hosts"]["claude"]["intent"] == "enabled"
     assert window["hosts"]["claude"]["actual"]["present"] is True
@@ -386,9 +377,7 @@ def _exec_module_fresh(path: Path, name: str):
     saved = sys.path[:]
     root = str(REPO_ROOT)
     sys.path[:] = [
-        entry
-        for entry in sys.path
-        if entry not in ("", root) and os.path.abspath(entry) != root
+        entry for entry in sys.path if entry not in ("", root) and os.path.abspath(entry) != root
     ]
     before = set(sys.modules)
     try:
@@ -426,9 +415,7 @@ def test_strip_and_split_fail_open_on_hostile_input() -> None:
 
 def test_window_hit_skips_invalid_extra_pattern() -> None:
     bad = guards.GuardPattern(id="bad", pattern="([", reason="never compiles")
-    assert (
-        guards.check_parallel_window("sleep 30", extra=[bad]) is not None
-    )
+    assert guards.check_parallel_window("sleep 30", extra=[bad]) is not None
     assert guards._window_hit(bad, ["sleep 30"]) is False
     assert guards._single_test_file_selected("") is False
     assert guards._single_test_file_selected("echo hi") is False
@@ -462,12 +449,9 @@ def test_evaluate_reports_blocks_and_escalation(tmp_path: Path, monkeypatch) -> 
         repo,
     )
     assert second is not None and guards.HOOK_REPEAT_ESCALATION in second["message"]
-    assert (
-        guards.evaluate_hook_payload(
-            {"tool_input": {"command": "echo hi"}, "cwd": str(repo)}, repo
-        )
-        == {"blocked": False}
-    )
+    assert guards.evaluate_hook_payload(
+        {"tool_input": {"command": "echo hi"}, "cwd": str(repo)}, repo
+    ) == {"blocked": False}
     assert guards.evaluate_hook_payload(None, repo) is None
 
 
@@ -475,12 +459,7 @@ def test_evaluate_fails_open_when_a_guard_raises(tmp_path: Path, monkeypatch) ->
     monkeypatch.setattr(
         guards, "check_command", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom"))
     )
-    assert (
-        guards.evaluate_hook_payload(
-            {"tool_input": {"command": "sleep 30"}}, tmp_path
-        )
-        is None
-    )
+    assert guards.evaluate_hook_payload({"tool_input": {"command": "sleep 30"}}, tmp_path) is None
     assert guards.run_guards("sleep 30") == []
 
 
@@ -493,9 +472,7 @@ def test_repo_root_for_edge_shapes(tmp_path: Path, monkeypatch) -> None:
         assert guards.repo_root_for(str(tmp_path)) is None
     finally:
         monkeypatch.undo()
-    monkeypatch.setattr(
-        Path, "is_file", lambda self: (_ for _ in ()).throw(OSError("gone"))
-    )
+    monkeypatch.setattr(Path, "is_file", lambda self: (_ for _ in ()).throw(OSError("gone")))
     try:
         assert guards.load_adapter_extras(tmp_path) == {
             "extra_verdict_commands": [],
@@ -579,6 +556,7 @@ def test_status_payload_reports_sync(tmp_path: Path) -> None:
         "command_guard_parallel_window",
         "command_guard_verdict_channel",
         "command_guard_discard_worktree",
+        "goal_reinject",
     }
 
 
@@ -608,17 +586,13 @@ def test_record_block_fails_open(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(
         guards, "runtime_root", lambda *a, **k: (_ for _ in ()).throw(OSError("gone"))
     )
-    assert (
-        guards.record_block(tmp_path, {"guard": "parallel-window"}, "sleep 30") is None
-    )
+    assert guards.record_block(tmp_path, {"guard": "parallel-window"}, "sleep 30") is None
     monkeypatch.setattr(
         friction,
         "append_friction_event",
         lambda *a, **k: (_ for _ in ()).throw(OSError("gone")),
     )
-    assert (
-        guards.record_block(tmp_path, {"guard": "parallel-window"}, "sleep 30") is None
-    )
+    assert guards.record_block(tmp_path, {"guard": "parallel-window"}, "sleep 30") is None
 
 
 def test_hook_decide_all_branch_and_unknown_guard(tmp_path: Path, monkeypatch) -> None:
@@ -651,7 +625,9 @@ def test_hook_main_entry_points(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("CHARNESS_RUNTIME_ROOT", str(tmp_path / "runtime"))
     monkeypatch.setattr(sys, "stdin", __import__("io").StringIO(""))
     with pytest.raises(SystemExit) as clean:
-        runpy.run_path(str(REPO_ROOT / "scripts" / "host_command_guard_hook.py"), run_name="__main__")
+        runpy.run_path(
+            str(REPO_ROOT / "scripts" / "host_command_guard_hook.py"), run_name="__main__"
+        )
     assert clean.value.code == 2 or clean.value.code == 0
     assert hook.main(["--guard", "parallel-window"]) == 0
     for script in (
@@ -666,7 +642,9 @@ def test_hook_main_entry_points(tmp_path: Path, monkeypatch) -> None:
         monkeypatch.setattr(
             sys, "stdin", __import__("io").StringIO('{"tool_input": {"command": "sleep 30"}}')
         )
-        runpy.run_path(str(REPO_ROOT / "scripts" / "host_parallel_window_hook.py"), run_name="__main__")
+        runpy.run_path(
+            str(REPO_ROOT / "scripts" / "host_parallel_window_hook.py"), run_name="__main__"
+        )
     assert blocked_exit.value.code == 2
 
 
@@ -674,23 +652,27 @@ def test_hooks_status_command_reports_intents(tmp_path: Path, monkeypatch) -> No
     from tests.charness_cli.support import CLI, load_cli_module
 
     cli = load_cli_module("charness_hooks_status_cli", CLI)
-    monkeypatch.setattr(cli, "_load_task_run_lib", lambda _args: object())
+    import scripts.cli.cmd_hooks as hooks_payload
+
+    monkeypatch.setattr(hooks_payload, "_load_task_run_lib", lambda _args: object())
     emitted: list[dict] = []
-    monkeypatch.setattr(cli, "emit_yaml", emitted.append)
+    monkeypatch.setattr(hooks_payload, "emit_yaml", emitted.append)
 
     code = cli.cmd_hooks_status(
-        __import__("argparse").Namespace(
-            repo_root=tmp_path, home_root=tmp_path, adapter_file=None
-        )
+        __import__("argparse").Namespace(repo_root=tmp_path, home_root=tmp_path, adapter_file=None)
     )
 
     assert code == 0
     assert set(emitted[-1]["intents"]) >= {"command_guard_parallel_window"}
 
-    code = cli.cmd_task_run_detached(
-        __import__("argparse").Namespace(dry_run=True)
-    ) if False else code
-    with pytest.raises(cli.CharnessError, match="--detach cannot be combined"):
+    code = (
+        cli.cmd_task_run_detached(__import__("argparse").Namespace(dry_run=True)) if False else code
+    )
+    # The detach entry lives in scripts/cli after #873: the tree contract
+    # error is wrapped into the tree CharnessError, not the entry fallback.
+    from scripts.cli.bootstrap import CharnessError as TreeCharnessError
+
+    with pytest.raises(TreeCharnessError, match="--detach cannot be combined"):
         cli.cmd_task_run_detached(__import__("argparse").Namespace(dry_run=True))
 
 
@@ -720,18 +702,12 @@ def test_check_command_fails_open_when_checker_raises(monkeypatch) -> None:
     assert guards.check_command("sleep 30", guards.PARALLEL_WINDOW) is None
 
 
-def test_repo_root_for_survives_unreadable_markers(
-    tmp_path: Path, monkeypatch
-) -> None:
-    monkeypatch.setattr(
-        Path, "exists", lambda self: (_ for _ in ()).throw(OSError("gone"))
-    )
+def test_repo_root_for_survives_unreadable_markers(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(Path, "exists", lambda self: (_ for _ in ()).throw(OSError("gone")))
     assert guards.repo_root_for(str(tmp_path)) is None
 
 
-def test_adapter_extras_without_yaml_and_malformed_json(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_adapter_extras_without_yaml_and_malformed_json(tmp_path: Path, monkeypatch) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / ".agents" / "command-guards.local.yaml").write_text(
@@ -759,15 +735,11 @@ def test_check_command_routes_parallel_window_extras(tmp_path: Path) -> None:
         "      overridable: true\n",
         encoding="utf-8",
     )
-    found = guards.check_command(
-        "publish preview", guards.PARALLEL_WINDOW, repo_root=repo
-    )
+    found = guards.check_command("publish preview", guards.PARALLEL_WINDOW, repo_root=repo)
     assert found is not None and found["pattern_id"] == "repo-slow-publish"
 
 
-def test_record_block_fails_open_when_append_raises(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_record_block_fails_open_when_append_raises(tmp_path: Path, monkeypatch) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     _isolate_runtime_root(monkeypatch, tmp_path)
@@ -799,9 +771,7 @@ def test_run_guards_returns_blocks() -> None:
     assert guards.run_guards("echo hi") == []
 
 
-def test_hook_decide_second_block_carries_escalation(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_hook_decide_second_block_carries_escalation(tmp_path: Path, monkeypatch) -> None:
     from scripts import host_command_guard_hook as hook
 
     repo = tmp_path / "repo"
@@ -826,14 +796,18 @@ def test_adapter_from_file_without_yaml(tmp_path: Path, monkeypatch) -> None:
         monkeypatch.undo()
 
 
-def test_hooks_status_command_wraps_adapter_errors(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_hooks_status_command_wraps_adapter_errors(tmp_path: Path, monkeypatch) -> None:
     from tests.charness_cli.support import CLI, load_cli_module
 
     cli = load_cli_module("charness_hooks_status_errors_cli", CLI)
-    monkeypatch.setattr(cli, "_load_task_run_lib", lambda _args: object())
-    with pytest.raises(cli.CharnessError, match="could not read"):
+    import scripts.cli.cmd_hooks as hooks_payload
+
+    monkeypatch.setattr(hooks_payload, "_load_task_run_lib", lambda _args: object())
+    # The hooks payload lives in scripts/cli after #873, so it raises the
+    # tree error class, not the entry fallback copy.
+    from scripts.cli.bootstrap import CharnessError
+
+    with pytest.raises(CharnessError, match="could not read"):
         cli.cmd_hooks_status(
             __import__("argparse").Namespace(
                 repo_root=tmp_path,

@@ -9,6 +9,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+_MISSING: object = object()
+
 
 @functools.cache
 def load_script_module(module_name: str, module_path: str | Path) -> object:
@@ -38,6 +40,55 @@ def load_script_module(module_name: str, module_path: str | Path) -> object:
     return module
 
 
+def _snapshot_parent_attrs(saved: dict[str, object]) -> dict[tuple[str, str], object]:
+    """Pin the parent-package attribute each dotted name resolves through.
+
+    `del sys.modules[...]` does not clear the parent's attribute, and a
+    re-import rebinds it to the new object: restoring the mapping alone leaves
+    `import scripts.cli.x as x` (attribute resolution) and `sys.modules[...]`
+    (mapping resolution) naming two different modules in the same worker.
+    """
+    pinned: dict[tuple[str, str], object] = {}
+    for name, module in saved.items():
+        parent_name, _, attribute = name.rpartition(".")
+        if not parent_name:
+            continue
+        parent = saved.get(parent_name)
+        if parent is None:
+            continue
+        pinned[(parent_name, attribute)] = getattr(parent, attribute, _MISSING)
+    return pinned
+
+
+def _restore_sys_modules(
+    saved: dict[str, object], parent_attrs: dict[tuple[str, str], object]
+) -> None:
+    """Undo the import-table mutations the loaded main made.
+
+    An in-process `init`/`update` inserts the ensured checkout on `sys.path`
+    and re-imports `scripts.cli.*` from it; without a restore the next test in
+    the worker resolves the checkout's duplicate classes, and `pytest.raises`
+    against the worker's own copy fails on identity, not behavior. New modules
+    go through the `module_eviction` owner so a stranded parent attribute
+    cannot outlive them either.
+    """
+    from tests.module_eviction import evict_new_modules
+
+    evict_new_modules(set(saved))
+    for name, module in saved.items():
+        if sys.modules.get(name) is not module:
+            sys.modules[name] = module
+    for (parent_name, attribute), value in parent_attrs.items():
+        parent = sys.modules.get(parent_name)
+        if parent is None:
+            continue
+        if value is _MISSING:
+            if attribute in parent.__dict__:
+                delattr(parent, attribute)
+        else:
+            parent.__dict__[attribute] = value
+
+
 def run_loaded_script_main(
     script_name: str,
     module: object,
@@ -49,6 +100,9 @@ def run_loaded_script_main(
     out, err = io.StringIO(), io.StringIO()
     saved_argv = sys.argv
     saved_env = os.environ.copy()
+    saved_path = list(sys.path)
+    saved_modules = dict(sys.modules)
+    saved_parent_attrs = _snapshot_parent_attrs(saved_modules)
     sys.argv = [script_name, *args]
     if env is not None:
         # A caller-supplied env REPLACES the environment, which would drop the
@@ -94,4 +148,6 @@ def run_loaded_script_main(
         sys.argv = saved_argv
         os.environ.clear()
         os.environ.update(saved_env)
+        sys.path[:] = saved_path
+        _restore_sys_modules(saved_modules, saved_parent_attrs)
     return SimpleNamespace(returncode=returncode, stdout=out.getvalue(), stderr=err.getvalue())
