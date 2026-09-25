@@ -161,3 +161,23 @@ def test_fresh_exec_runs_lane_options_bootstrap_without_repo_root() -> None:
         sys.path[:] = saved
         evict_new_modules(before)
     assert module.resolve_granted_writable is not None
+
+
+def test_grant_muse_refusal_without_executables(monkeypatch, tmp_path: Path) -> None:
+    """Grant/executor refusal precedes PATH probing (#825).
+
+    With no executor executable installed, --grant-writable with muse in the
+    order must still report the grant refusal instead of a "not on PATH"
+    error.
+    """
+    monkeypatch.setenv("PATH", "/usr/bin:/bin")
+    repo = _repo(tmp_path)
+    granted = tmp_path / "host-state"
+    granted.mkdir()
+
+    payload = _dry_run(
+        repo, tmp_path, grant_writable=[granted], executor="codex,muse"
+    )
+
+    assert payload["status"] == "fail", payload
+    assert "--grant-writable needs the codex executor" in payload["error"]

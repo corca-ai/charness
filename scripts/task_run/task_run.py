@@ -212,6 +212,18 @@ def run_task(
                 "parent worktree must be clean before launching a task; "
                 "checkpoint current changes or choose a clean named worktree"
             )
+        # Launch-option refusals (grant/executor compat, rules files) precede
+        # executor PATH probing so a bad flag reports itself even when no
+        # executor executable is installed (#825). The keys land on `resolved`
+        # via merge; resolve_task_inputs never sets them.
+        early_launch_options: dict[str, Any] = {}
+        _lane_options.resolve_launch_options(
+            early_launch_options,
+            resolved_repo,
+            rules_files,
+            grant_writable,
+            executor=executor,
+        )
         resolved = _plan.resolve_task_inputs(
             resolved_repo,
             target_path=target_path,
@@ -234,9 +246,7 @@ def run_task(
             no_progress_seconds=no_progress_seconds,
             prelaunch=prelaunch,
         )
-        _lane_options.resolve_launch_options(
-            resolved, resolved_repo, rules_files, grant_writable, executor=executor
-        )
+        resolved.update(early_launch_options)
     except (OSError, TaskRunError, subprocess.SubprocessError) as exc:
         return _failure_payload(
             repo_root=resolved_repo or repo_root.expanduser().resolve(),

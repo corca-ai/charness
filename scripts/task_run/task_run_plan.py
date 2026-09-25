@@ -454,11 +454,14 @@ def resolve_task_inputs(
         if repo_snapshot is not None
         else _git_common_dir(resolved_repo)
     )
-    executor_paths = _resolve_executor_paths(executor_order, codex)
-    codex_path = executor_paths[resolved_executor]
+    # Pure input validation precedes PATH probing: a bad flag must report
+    # itself even when no executor executable is installed (#825).
     if not isinstance(timeout_seconds, int) or timeout_seconds < 1:
         raise TaskRunError("--timeout-seconds must be a positive integer")
     resolved_no_progress = _resolve_no_progress_seconds(no_progress_seconds)
+    _validate_executor_efforts(executor_order, effort)
+    executor_paths = _resolve_executor_paths(executor_order, codex)
+    codex_path = executor_paths[resolved_executor]
     resolved_prelaunch = _prelaunch._resolve_prelaunch_contract(prelaunch)
     tip_sha = (
         str(repo_snapshot["head"])
@@ -495,7 +498,6 @@ def resolve_task_inputs(
     if lane is None:
         resolved_task_id = _task_id(resolved_branch, task_id)
         runtime_path = _runtime_preview(resolved_repo)
-    _validate_executor_efforts(executor_order, effort)
     return {
         "lane": resolved_lane,
         "target_path": resolved_target,

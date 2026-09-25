@@ -10,7 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from scripts.task_run import task_run_progress as prog
-from tests.charness_cli.test_task_run_fixtures import _git, _repo
+from tests.charness_cli.test_task_run_fixtures import _codex, _git, _repo
 
 
 def test_no_progress_flag_overrides_env_and_records_source(
@@ -40,6 +40,11 @@ def test_no_progress_seconds_rejects_nonfinite_and_negative(tmp_path: Path) -> N
     base_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
     import pytest
 
+    # A self-made executable keeps this test off ambient PATH (#825).
+    fake_bin = tmp_path / "fakebin"
+    fake_bin.mkdir(exist_ok=True)
+    executable = _codex(fake_bin, "exit 0")
+
     for bad in ("nan", "-5", "inf", "not-a-number", object()):
         with pytest.raises(task_run_plan.TaskRunError, match="no-progress-seconds"):
             task_run_plan.resolve_task_inputs(
@@ -50,7 +55,7 @@ def test_no_progress_seconds_rejects_nonfinite_and_negative(tmp_path: Path) -> N
                 lane=None,
                 scopes=["module.py"],
                 prompt="update the module",
-                codex="codex",
+                codex=str(executable),
                 executor="codex",
                 effort="medium",
                 task_id="bad-budget",
@@ -71,7 +76,7 @@ def test_no_progress_seconds_rejects_nonfinite_and_negative(tmp_path: Path) -> N
             lane=None,
             scopes=["module.py"],
             prompt="update the module",
-            codex="codex",
+            codex=str(executable),
             executor="codex",
             effort="medium",
             task_id="good-budget",
@@ -147,3 +152,42 @@ def test_guard_snapshot_truncates_large_diffs(tmp_path: Path) -> None:
     snapshot = watch.receipt()["first_scoped_diff"]
     assert snapshot["observed"] is True
     assert snapshot["truncated"] is True
+
+
+def test_bad_budget_reports_itself_without_executables(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """Input validation precedes PATH probing (#825).
+
+    With no executor executable installed, a bad --no-progress-seconds must
+    still report itself instead of a "not on PATH" error. Deliberately uses
+    the ambient ``codex`` name so the ordering, not a fake, is exercised.
+    """
+    from scripts.task_run import task_run_plan
+
+    monkeypatch.setenv("PATH", "/usr/bin:/bin")
+    repo = _repo(tmp_path)
+    base_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    import pytest
+
+    with pytest.raises(task_run_plan.TaskRunError, match="no-progress-seconds"):
+        task_run_plan.resolve_task_inputs(
+            repo,
+            target_path=tmp_path / "lane",
+            branch="lane/no-exec-budget",
+            base=base_sha,
+            lane=None,
+            scopes=["module.py"],
+            prompt="update the module",
+            codex="codex",
+            executor="codex",
+            effort="medium",
+            task_id="no-exec-budget",
+            prepare=False,
+            require_change=True,
+            skip_prepare=False,
+            allow_no_change=False,
+            timeout_seconds=60,
+            report_only=False,
+            no_progress_seconds="nan",
+        )
