@@ -13,6 +13,27 @@
 
 Fresh-eye satisfaction: parent-delegated angle reviewer, findings received.
 
+## Reviewer Tier Evidence
+
+- **Requested tier**: (none requested — single general-purpose reviewer)
+- **Requested spawn fields**: read-only shared checkout, verdict-plus-findings
+  report, no repo mutation
+- **Host exposure state**: `host-defaulted`
+- **Application state**: findings received as subagent result text
+- **Delivery state**: `findings-received`
+- **Execution mode**: `typed-subagent`
+- **Lane evidence**: release lane green, 89 passed, 0 failed
+  (`./scripts/run-quality.sh --full --read-only --release`)
+
+## Boundary Ownership
+
+- **Producer**: fresh-eye release critique reviewer (verdict plus findings)
+- **Consumer**: release publisher (`publish_release.py --execute`) and operators
+  reading the release notes
+- **Owning surface**: `charness-artifacts/critique/v8140-critique.md` (this
+  record)
+- **Verdict**: `owned-correctly`
+
 ## Verdict
 
 GO, conditional on standard pre-publish gates (both now met: battery green on the release HEAD; stray `charness,cover` annotate artifact confirmed derived-only and removed, worktree clean).
