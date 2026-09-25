@@ -107,6 +107,22 @@ and removes older ones only after verified salvage; `result.json` and logs
 always stay. Parent path-delta classes are `normal`,
 `concurrent-parent-progress`, and `writer-conflict`.
 
+## Detach and wait
+
+```bash
+charness task run --repo-root . --lane x --detach
+charness task wait --repo-root . <task-id>... [--any]
+```
+
+`--detach` returns once the carrier has started (exit 0 with the task id
+and result path) or with the launch failure's exit code; `--dry-run` reports
+the scope refusal with the launch's own code instead of launching. `task
+wait` blocks until the named lanes end and exits with the finished lane's
+code, so a host background job's notification carries the verdict.
+`--rules-file` names standing material by absolute path (never inlined,
+never scope evidence); `--grant-writable` grants a codex lane one
+host-state directory (refused for muse, the repo root, `$HOME`, and `/`).
+
 ## Status
 
 ```bash

@@ -33,6 +33,23 @@ def test_check_code_lengths_uses_adapter_python_sources(tmp_path: Path) -> None:
     assert PYTHON_LENGTHS.iter_python_targets(repo) == [selected]
 
 
+def test_check_code_lengths_gates_the_extensionless_root_cli(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    entry = repo / "charness"
+    entry.write_text("#!/usr/bin/env python3\nprint(1)\n", encoding="utf-8")
+
+    assert repo / "charness" in PYTHON_LENGTHS.iter_python_targets(repo)
+    assert (
+        PYTHON_LENGTHS.file_limit_for(repo / "charness", repo)
+        == PYTHON_LENGTHS.ROOT_CLI_FILE_MAX
+    )
+    assert (
+        PYTHON_LENGTHS.file_warn_for(repo / "charness", repo)
+        == PYTHON_LENGTHS.REPO_SCRIPT_FILE_MAX
+    )
+
+
 def test_check_code_lengths_refuses_declared_empty_python_sources(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

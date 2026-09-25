@@ -36,34 +36,42 @@ def _seed_state(repo: Path, entries: dict[str, dict[str, str]]) -> None:
     lib.write_state(repo, state)
 
 
-def test_registry_names_the_supported_intent() -> None:
+def test_registry_names_the_supported_intents() -> None:
     keys = [intent.key for intent in registry.SIBLING_HOOK_INTENTS]
-    assert keys == ["skill_anchor_edit_guard"]
+    assert keys == [
+        "skill_anchor_edit_guard",
+        "command_guard_parallel_window",
+        "command_guard_verdict_channel",
+        "command_guard_discard_worktree",
+    ]
 
 
 def test_reconcile_host_hooks_payload_keys_match_pre_registry_shape(tmp_path: Path) -> None:
     repo = _fake_repo(tmp_path)
     home = _fake_home(tmp_path)
     actions = lib.reconcile_host_hooks(repo, adapter={}, home=home)
-    assert list(actions) == ["skill_anchor_edit_guard"]
+    assert list(actions) == [intent.key for intent in registry.SIBLING_HOOK_INTENTS]
 
 
-def test_fourth_intent_is_a_table_row(tmp_path: Path) -> None:
-    # Adding a hypothetical fourth hook intent means passing one more registry
+def test_fifth_intent_is_a_table_row(tmp_path: Path) -> None:
+    # Adding a hypothetical fifth hook intent means passing one more registry
     # row — reconcile fan-out needs no new import block or code path.
     repo = _fake_repo(tmp_path)
     home = _fake_home(tmp_path)
-    fourth = registry.SiblingHookIntent(
-        key="hypothetical_fourth",
+    fifth = registry.SiblingHookIntent(
+        key="hypothetical_fifth",
         module="scripts.hooks.host_hook_skill_anchor_guard",
         reconcile_function="reconcile_skill_anchor_guard_hooks",
         status_function="skill_anchor_guard_status",
         script_relative_attr="GUARD_SCRIPT_RELATIVE",
     )
     actions = registry.reconcile_sibling_hooks(
-        repo, adapter={}, home=home, intents=(*registry.SIBLING_HOOK_INTENTS, fourth)
+        repo, adapter={}, home=home, intents=(*registry.SIBLING_HOOK_INTENTS, fifth)
     )
-    assert list(actions) == ["skill_anchor_edit_guard", "hypothetical_fourth"]
+    assert list(actions) == [
+        *(intent.key for intent in registry.SIBLING_HOOK_INTENTS),
+        "hypothetical_fifth",
+    ]
 
 
 def test_import_module_loads_a_nested_package_module(monkeypatch) -> None:
@@ -154,9 +162,13 @@ def test_known_basenames_derive_from_owning_module_constants() -> None:
     # Pin the derived set against the live constants; a forked literal list
     # or a renamed script constant fails here, not in a consumer.
     from scripts.hooks import host_hook_skill_anchor_guard as guard
+    from scripts.hooks import host_hook_command_guard_install as command_guards
 
     assert registry.known_hook_script_basenames() == {
         guard.GUARD_SCRIPT_RELATIVE.name,
+        command_guards.PARALLEL_WINDOW_SCRIPT_RELATIVE.name,
+        command_guards.VERDICT_CHANNEL_SCRIPT_RELATIVE.name,
+        command_guards.DISCARD_WORKTREE_SCRIPT_RELATIVE.name,
     }
 
 

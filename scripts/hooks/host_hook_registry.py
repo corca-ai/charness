@@ -1,7 +1,8 @@
 """Sibling host-hook intent registry and state-liveness checks.
 
 `reconcile_host_hooks` fans out to every opt-in sibling hook intent
-(currently the skill anchor edit-time guard). Each sibling used to
+(the skill anchor edit-time guard plus the three command-time orchestration
+guards). Each sibling used to
 be a copied lazy-import block in `host_hook_install_lib`; this registry makes
 a new hook intent a table row instead. Per-host error isolation stays inside
 each sibling's own reconcile function (an enabled host's failure reports
@@ -50,6 +51,27 @@ SIBLING_HOOK_INTENTS: tuple[SiblingHookIntent, ...] = (
         reconcile_function="reconcile_skill_anchor_guard_hooks",
         status_function="skill_anchor_guard_status",
         script_relative_attr="GUARD_SCRIPT_RELATIVE",
+    ),
+    SiblingHookIntent(
+        key="command_guard_parallel_window",
+        module="scripts.hooks.host_hook_command_guard_install",
+        reconcile_function="reconcile_parallel_window_hooks",
+        status_function="parallel_window_status",
+        script_relative_attr="PARALLEL_WINDOW_SCRIPT_RELATIVE",
+    ),
+    SiblingHookIntent(
+        key="command_guard_verdict_channel",
+        module="scripts.hooks.host_hook_command_guard_install",
+        reconcile_function="reconcile_verdict_channel_hooks",
+        status_function="verdict_channel_status",
+        script_relative_attr="VERDICT_CHANNEL_SCRIPT_RELATIVE",
+    ),
+    SiblingHookIntent(
+        key="command_guard_discard_worktree",
+        module="scripts.hooks.host_hook_command_guard_install",
+        reconcile_function="reconcile_discard_worktree_hooks",
+        status_function="discard_worktree_status",
+        script_relative_attr="DISCARD_WORKTREE_SCRIPT_RELATIVE",
     ),
 )
 

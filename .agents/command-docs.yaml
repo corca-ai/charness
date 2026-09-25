@@ -33,10 +33,29 @@ commands:
     required_help_contains:
       - status
       - run
+      - wait
       - executors
     required_doc_contains:
       - charness task run
       - charness task status
+      - charness task wait
+  hooks:
+    help_command: ./charness hooks --help
+    doc_paths:
+      - docs/cli-reference.md
+    required_help_contains:
+      - status
+    required_doc_contains:
+      - charness hooks status
+  hooks-status:
+    help_command: ./charness hooks status --help
+    doc_paths:
+      - docs/cli-reference.md
+    required_help_contains:
+      - --repo-root
+      - --adapter-file
+    required_doc_contains:
+      - charness hooks status
   init:
     help_command: ./charness init --help
     doc_paths:
@@ -197,11 +216,26 @@ commands:
       - --prompt-file
       - --effort
       - --self-review
+      - --detach
+      - --rules-file
+      - --grant-writable
     required_doc_contains:
       - charness task run
       - --lane feature-lane
       - clean parent
       - external runtime
+      - --detach
+  task-wait:
+    help_command: ./charness task wait --help
+    doc_paths:
+      - docs/agent-task-runs.md
+      - docs/cli-reference.md
+    required_help_contains:
+      - task_ids
+      - --any
+      - --timeout-seconds
+    required_doc_contains:
+      - charness task wait
   train:
     help_command: ./charness train --help
     doc_paths:

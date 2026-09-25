@@ -23,6 +23,7 @@ from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 from scripts.task_run import task_run_changed_line as _changed_line  # noqa: E402
 from scripts.task_run import task_run_completion as _completion  # noqa: E402
 from scripts.task_run import task_run_friction as _friction  # noqa: E402
+from scripts.task_run import task_run_lane_options as _lane_options  # noqa: E402
 from scripts.task_run import task_run_lane_runner as _lane_runner  # noqa: E402
 from scripts.task_run import task_run_payload as _payload  # noqa: E402
 from scripts.task_run import task_run_plan as _plan  # noqa: E402
@@ -170,8 +171,6 @@ def _complete_task(
         git_output=_git_output,
         pass_value=PASS,
     )
-
-
 def run_task(
     repo_root: Path,
     *,
@@ -195,6 +194,8 @@ def run_task(
     no_progress_seconds: float | None = None,
     self_review_policy: str = "auto",
     prelaunch: Mapping[str, Any] | None = None,
+    rules_files: Sequence[str | Path] = (),
+    grant_writable: Sequence[str | Path] = (),
 ) -> dict[str, Any]:
     """Create, run, and receipt one bounded Codex worktree task."""
     resolved_repo: Path | None = None
@@ -232,6 +233,9 @@ def run_task(
             report_only=report_only,
             no_progress_seconds=no_progress_seconds,
             prelaunch=prelaunch,
+        )
+        _lane_options.resolve_launch_options(
+            resolved, resolved_repo, rules_files, grant_writable, executor=executor
         )
     except (OSError, TaskRunError, subprocess.SubprocessError) as exc:
         return _failure_payload(
@@ -294,21 +298,11 @@ def run_task(
     )
     if resolved_lane is not None:
         payload["lane"] = resolved_lane
+    _lane_options.record_launch_options(payload, resolved)
     if dry_run:
-        payload["status"] = PASS
-        payload["approval_eligibility"] = "not-applicable"
-        payload["next_step"] = (
-            "Re-run without --dry-run to create the named worktree and execute "
-            f"{resolved_executor}."
+        _lane_options.plan_dry_run(
+            payload, resolved, resolved_executor, resolved_target, PASS
         )
-        payload["actions"] = [
-            {"id": "create-worktree", "status": "planned"},
-            {
-                "id": f"{resolved_executor}-exec",
-                "status": "planned",
-                "cwd": str(resolved_target),
-            },
-        ]
         return payload
 
     payload["status"] = "running"

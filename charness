@@ -5515,7 +5515,45 @@ def cmd_worktree_exec(args: argparse.Namespace) -> int:
         return 2
 
 
+def cmd_hooks_status(args: argparse.Namespace) -> int:
+    _load_task_run_lib(args)
+    from scripts.hooks import host_hook_command_guard_install as guard_install
+
+    try:
+        adapter = guard_install.adapter_from_file(args.adapter_file)
+    except ValueError as exc:
+        raise CharnessError(str(exc)) from exc
+    payload, code = guard_install.status_payload(
+        args.repo_root.resolve(), args.home_root.resolve(), adapter
+    )
+    emit_yaml(payload)
+    return code
+
+
+def cmd_task_run_detached(args: argparse.Namespace) -> int:
+    _load_task_run_lib(args)
+    from scripts.task_run import task_run_detach
+
+    try:
+        payload, code = task_run_detach.launch_detached_command(args)
+    except ValueError as exc:
+        raise CharnessError(str(exc)) from exc
+    emit_yaml(payload)
+    return code
+
+
+def cmd_task_wait(args: argparse.Namespace) -> int:
+    _load_task_run_lib(args)
+    from scripts.task_run import task_run_detach
+
+    payload, code = task_run_detach.wait_command(args)
+    emit_yaml(payload)
+    return code
+
+
 def cmd_task_run(args: argparse.Namespace) -> int:
+    if args.detach:
+        return cmd_task_run_detached(args)
     lib = _load_task_run_lib(args)
     from scripts.task_run import task_run_state as result_state
 
@@ -5542,6 +5580,8 @@ def cmd_task_run(args: argparse.Namespace) -> int:
         allow_no_change=args.allow_no_change,
         timeout_seconds=args.timeout_seconds,
         dry_run=args.dry_run,
+        rules_files=args.rules_file,
+        grant_writable=args.grant_writable,
         report_only=args.report_only,
         no_progress_seconds=args.no_progress_seconds,
         self_review_policy=args.self_review_policy,
@@ -5959,9 +5999,100 @@ def build_parser() -> argparse.ArgumentParser:
     task_run_parser.add_argument("--timeout-seconds", type=int, default=3600, help="Per-attempt executor timeout in seconds; a retried stall reruns the full budget (see CHARNESS_TASK_RUN_MAX_ATTEMPTS).")
     task_run_parser.add_argument("--no-progress-seconds", type=float, default=None, help="No-progress guard budget in seconds from CONTRACT-READ to first EDITING/scoped diff; 0 turns the stop off. Overrides CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS and is recorded in progress_guard.")
     task_run_parser.add_argument("--dry-run", action="store_true", help="Validate inputs and show the planned lane without creating or running it.")
+    task_run_parser.add_argument(
+        "--rules-file",
+        action="append",
+        type=Path,
+        default=[],
+        help="Standing-rule file the lane executor must read by reference; repeatable. "
+        "Listed by absolute path in the lane prompt, never inlined, and never read by scope evidence.",
+    )
+    task_run_parser.add_argument(
+        "--grant-writable",
+        action="append",
+        type=Path,
+        default=[],
+        help="Absolute host-state directory a codex lane may write (mapped to codex --add-dir); "
+        "repeatable. Refused for muse lanes and for grants covering the repo root, $HOME, or /.",
+    )
+    task_run_parser.add_argument(
+        "--detach",
+        action="store_true",
+        help="Launch the lane detached and return once its carrier has started "
+        "(exit 0, printing the task id and result path), or with the task-run exit code "
+        "of a preflight or launch failure. Never returns 0 for a lane that did not start. "
+        "Cannot be combined with --dry-run.",
+    )
     task_run_parser.add_argument("--home-root", type=Path, default=default_home_root(), help=argparse.SUPPRESS)
     task_run_parser.add_argument("--charness-checkout", type=Path, help=argparse.SUPPRESS)
     task_run_parser.set_defaults(func=cmd_task_run)
+
+    task_wait_parser = task_subparsers.add_parser(
+        "wait",
+        help="Block until named lanes reach a terminal status.",
+        description=(
+            "Block until all (or with --any, the first) of the named lanes reach a "
+            "terminal status; print task_id and status for each finished lane. Exit "
+            "with the finished lane's task-run exit code (0 success, 1 failed, "
+            "2 premise-blocked, 3 validated-partial, 4 executor-unavailable, "
+            "5 completed-needs-review); with several lanes, the first non-success "
+            "in CLI order decides. An already-terminal lane returns immediately."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    task_wait_parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Parent repo whose external task-run runtime is read.",
+    )
+    task_wait_parser.add_argument(
+        "task_ids", nargs="+", help="Lane task ids to wait for."
+    )
+    task_wait_parser.add_argument(
+        "--any",
+        action="store_true",
+        help="Return when the first named lane ends; the others keep running.",
+    )
+    task_wait_parser.add_argument(
+        "--timeout-seconds",
+        type=float,
+        default=0,
+        help="Bound the wait in seconds; 0 waits indefinitely.",
+    )
+    task_wait_parser.set_defaults(func=cmd_task_wait)
+
+    hooks_parser = subparsers.add_parser(
+        "hooks",
+        help="Inspect host hook intents.",
+    )
+    hooks_subparsers = hooks_parser.add_subparsers(dest="hooks_command", required=True)
+    hooks_status_parser = hooks_subparsers.add_parser(
+        "status",
+        help="Report every host-hook intent per host.",
+        description=(
+            "Report every host-hook intent (the skill-anchor edit guard and "
+            "the three command-time orchestration guards) per host: declared "
+            "intent, installed actual, and whether they agree. Exit 0 when "
+            "every intent is in sync, 1 otherwise."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    hooks_status_parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repo whose hook state is read. Defaults to the current directory.",
+    )
+    hooks_status_parser.add_argument(
+        "--adapter-file",
+        type=Path,
+        default=None,
+        help="Adapter YAML declaring host-hook intents; absent means every intent disabled.",
+    )
+    hooks_status_parser.add_argument("--home-root", type=Path, default=default_home_root(), help=argparse.SUPPRESS)
+    hooks_status_parser.add_argument("--charness-checkout", type=Path, help=argparse.SUPPRESS)
+    hooks_status_parser.set_defaults(func=cmd_hooks_status)
 
     train_parser = subparsers.add_parser(
         "train",

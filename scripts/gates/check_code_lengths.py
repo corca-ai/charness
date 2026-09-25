@@ -54,6 +54,20 @@ NATIVE_SOURCE_FILE_MAX = 1340
 # Rust tests share the Python test budget; the largest is 406 today, so this is a
 # real ceiling rather than a ratchet.
 NATIVE_TEST_FILE_MAX = 800
+# The repo-root CLI entry is extensionless Python, so no `*.py` glob in any
+# universe ever matched it: it grew past 6,500 physical lines while every
+# scripts/*.py module stayed under 480 (found 2026-09-25). Same ratchet shape
+# as NATIVE: exactly today's tokei code-line count, so nothing may grow past
+# where it already stands, and the warn band sits at the scripts cap so the
+# file reports as debt on every run until it is split toward that cap. The
+# landed count (5,892) is the true 2026-09-25 measure: new parser blocks
+# must stay inline in the root entry because a copied entry script builds its
+# parser with zero sibling imports, so only command payloads live in feature
+# modules. A follow-up root-CLI split owns lowering this number, never
+# raising it.
+ROOT_CLI_RELATIVE = Path("charness")
+ROOT_CLI_FILE_MAX = 5892
+ROOT_CLI_FILE_WARN = REPO_SCRIPT_FILE_MAX
 
 # Advisory file-length warn band (tokei code lines, Python and Rust — function length
 # is gated separately by ruff PLR0915, a statement-count rule, since tokei does
@@ -218,6 +232,10 @@ NON_PYTHON_GLOBS = (  # discovery-boundary: U0 has no separate shell/test/Rust u
     "native/*/tests/*.rs",
     "native/*/tests/**/*.rs",
     "native/*/build.rs",
+    # Extensionless repo-root CLI: no universe owns it, so it rides with the
+    # literal non-U0 families. Its limit class stays Python (tokei-measured);
+    # see ROOT_CLI_FILE_MAX and file_limit_for.
+    "charness",
 )
 GATED_GLOBS = tuple(DEFAULT_UNIVERSES["python_sources"]) + NON_PYTHON_GLOBS
 
@@ -281,6 +299,8 @@ def _is_native_test(relative: Path) -> bool:
 
 def file_limit_for(path: Path, root: Path) -> int:
     relative = path.relative_to(root)
+    if relative == ROOT_CLI_RELATIVE:
+        return ROOT_CLI_FILE_MAX
     if relative.suffix == ".sh":
         return SHELL_FILE_MAX
     if relative.parts[:1] == ("native",):
@@ -294,6 +314,8 @@ def file_limit_for(path: Path, root: Path) -> int:
 
 def file_warn_for(path: Path, root: Path) -> int:
     relative = path.relative_to(root)
+    if relative == ROOT_CLI_RELATIVE:
+        return ROOT_CLI_FILE_WARN
     if relative.suffix == ".sh":
         return SHELL_FILE_WARN
     if relative.parts[:1] == ("native",):

@@ -60,8 +60,14 @@ def append_friction_event(
     task_id: str,
     facts: Mapping[str, Any] | None = None,
     occurred_at: str | None = None,
+    repeat_window: timedelta | None = None,
+    escalation: str = PATTERN_REPAIR_ESCALATION,
 ) -> dict[str, Any] | None:
-    """Append one validated event; repeat kinds in 30 days carry escalation."""
+    """Append one validated event; repeat kinds in 30 days carry escalation.
+
+    Command-time guards pass a one-day `repeat_window` with their own
+    `escalation` sentence; every other producer keeps the 30-day default.
+    """
     stamp = occurred_at or task_run_runtime.utc_now_iso()
     event_facts = dict(facts or {})
     event_facts["task_id"] = task_id
@@ -79,16 +85,20 @@ def append_friction_event(
         with ledger_lock(path):
             previous = _read_events(path)
             current_time = _timestamp(stamp)
-            cutoff = current_time - FRICTION_WINDOW
+            cutoff = current_time - (repeat_window or FRICTION_WINDOW)
             matches = [
                 prior
                 for prior in previous
                 if prior["event_kind"] == event_kind
                 and prior["facts"].get("task_id") != task_id
+                # Lane blocks carry no guard; hook blocks carry their guard
+                # key. Repeats escalate only within the same block kind, so a
+                # lane block never escalates a hook block or vice versa.
+                and prior["facts"].get("guard") == event_facts.get("guard")
                 and cutoff <= _timestamp(prior["occurred_at"]) <= current_time
             ]
             if matches:
-                normalized["facts"]["escalation"] = PATTERN_REPAIR_ESCALATION
+                normalized["facts"]["escalation"] = escalation
                 normalized["facts"]["matching_event_ids"] = [item["event_id"] for item in matches]
             encoded = json.dumps(normalized, ensure_ascii=False, separators=(",", ":"))
             path.parent.mkdir(parents=True, exist_ok=True)

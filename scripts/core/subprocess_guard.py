@@ -180,6 +180,34 @@ def run_processes_in_order(
         return [future.result() for future in futures]
 
 
+def spawn_detached(
+    command: Sequence[str], *, log_path: Path, cwd: Path | None = None
+) -> subprocess.Popen[bytes]:
+    """Start a fire-and-forget child that outlives the parent by design.
+
+    The third spawn shape: the child runs in its own session with stdout and
+    stderr appended to `log_path`, and the caller polls some OTHER channel
+    (a result store, a notification) instead of the child — never `wait()`.
+    There is deliberately no timeout or heartbeat here; a caller that needs
+    either wants `run_process` or `run_monitored_phase` instead. The returned
+    handle exposes `poll()`/`returncode` for liveness checks only.
+    """
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    handle = open(log_path, "ab")
+    try:
+        return subprocess.Popen(
+            list(command),
+            stdin=subprocess.DEVNULL,
+            stdout=handle,
+            stderr=subprocess.STDOUT,
+            cwd=str(cwd) if cwd is not None else None,
+            start_new_session=True,
+            close_fds=True,
+        )
+    finally:
+        handle.close()
+
+
 def render_display(command: Sequence[str] | str, *, limit: int = DISPLAY_LIMIT) -> str:
     """A single-line, bounded rendering of ``command`` for lifecycle events.
 

@@ -21,6 +21,7 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.task_run import task_run_friction as _friction  # noqa: E402
+from scripts.task_run import task_run_lane_options as _lane_options  # noqa: E402
 from scripts.task_run import task_run_lesson_injection as _lesson_injection  # noqa: E402
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run import task_run_scope as _scope  # noqa: E402
@@ -109,6 +110,7 @@ def build_lane_prompt(
     scopes: Sequence[str],
     lesson_injection_block: str = "",
     orchestration_pointer_file: Path | None = None,
+    rules_files: Sequence[str | Path] = (),
 ) -> str:
     """Shape the lane prompt; implementation lanes get prompt-shaping directives.
 
@@ -178,6 +180,7 @@ def build_lane_prompt(
             injections.append(
                 "Orchestration pointers (re-injected for this lane):\n" + pointer_text
             )
+    _lane_options.append_rules_section(injections, rules_files)
     if not injections:
         return shaped
     return shaped + "\n\n" + "\n\n".join(injections)
@@ -311,6 +314,7 @@ def prepare_lane_execution(
             if repo_root_value
             else None
         ),
+        rules_files=resolved.get("rules_files", ()),
     )
     command = lane_command(
         executor=executor,
@@ -411,9 +415,11 @@ def lane_writable_dirs(
     Codex lanes get workspace-write plus `--add-dir` grants beyond the
     worktree itself: its sandbox holds a workdir's `.agents/` read-only
     (measured 2026-09-02), so the worktree's `.agents/` is granted when
-    present. Muse lanes root their single `--workspace` at the lane
-    worktree itself and take no `--add-dir` grants (#814); the receipt
-    records that root as `workspace` instead of `writable_dirs`.
+    present. Explicit `--grant-writable` directories (stashed on `resolved`
+    by lane options) join the same grant list. Muse lanes root their
+    single `--workspace` at the lane worktree itself and take no
+    `--add-dir` grants (#814); the receipt records that root as
+    `workspace` instead of `writable_dirs`.
     """
     if executor != "codex":
         payload["workspace"] = str(worktree)
@@ -422,6 +428,9 @@ def lane_writable_dirs(
     worktree_agents_dir = Path(payload["worktree_path"]) / ".agents"
     if worktree_agents_dir.is_dir():
         writable_dirs.append(worktree_agents_dir)
+    _lane_options.apply_granted_writable(
+        writable_dirs, payload, resolved.get("granted_writable_dirs", ())
+    )
     payload["writable_dirs"] = [str(path) for path in writable_dirs]
     return writable_dirs
 

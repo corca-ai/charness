@@ -14,14 +14,14 @@ Human-readable summaries print the affordance line with the `NEXT:` prefix.
 
 ```text
 usage: charness [-h]
-                {init,update,doctor,version,uninstall,reset,task,train,catalog,capability,goal,tool,worktree}
+                {init,update,doctor,version,uninstall,reset,task,hooks,train,catalog,capability,goal,tool,worktree}
                 ...
 
 Thin charness CLI for managed local install, capability resolution, and
 external tool install/update/doctor flows.
 
 positional arguments:
-  {init,update,doctor,version,uninstall,reset,task,train,catalog,capability,goal,tool,worktree}
+  {init,update,doctor,version,uninstall,reset,task,hooks,train,catalog,capability,goal,tool,worktree}
     init                Bootstrap or refresh the managed local install
                         surface, cloning the managed checkout first when it is
                         missing.
@@ -35,6 +35,7 @@ positional arguments:
     reset               Remove host plugin state for Codex and Claude while
                         preserving the managed checkout and CLI.
     task                Run or inspect a bounded task lane.
+    hooks               Inspect host hook intents.
     train               Stack, verify, and fast-forward an explicit queue of
                         local lane branches.
     catalog             Inspect capability inventory, packaged consumer-
@@ -231,10 +232,10 @@ options:
 ## `charness task`
 
 ```text
-usage: charness task [-h] {status,executors,steer,run} ...
+usage: charness task [-h] {status,executors,steer,run,wait} ...
 
 positional arguments:
-  {status,executors,steer,run}
+  {status,executors,steer,run,wait}
     status              Show one external task-run result, or list all task-
                         run results.
     executors           Check executor executable availability without
@@ -243,6 +244,7 @@ positional arguments:
                         retained candidate scope.
     run                 Run one independently delegable lane in a clean named
                         worktree and emit a compact receipt.
+    wait                Block until named lanes reach a terminal status.
 
 options:
   -h, --help            show this help message and exit
@@ -316,7 +318,8 @@ usage: charness task run [-h] [--repo-root REPO_ROOT] [--lane LANE]
                          [--premise-check ID PREMISE DECISION]
                          [--timeout-seconds TIMEOUT_SECONDS]
                          [--no-progress-seconds NO_PROGRESS_SECONDS]
-                         [--dry-run]
+                         [--dry-run] [--rules-file RULES_FILE]
+                         [--grant-writable GRANT_WRITABLE] [--detach]
 
 Run one independently delegable lane: shorthand derives a named branch, external worktree, task id, and HEAD base; the explicit form remains available for diagnostics. The parent worktree must be clean; the parent orchestrator owns parallel fan-out and integration.
 
@@ -393,6 +396,74 @@ options:
                         recorded in progress_guard.
   --dry-run             Validate inputs and show the planned lane without
                         creating or running it.
+  --rules-file RULES_FILE
+                        Standing-rule file the lane executor must read by
+                        reference; repeatable. Listed by absolute path in the
+                        lane prompt, never inlined, and never read by scope
+                        evidence.
+  --grant-writable GRANT_WRITABLE
+                        Absolute host-state directory a codex lane may write
+                        (mapped to codex --add-dir); repeatable. Refused for
+                        muse lanes and for grants covering the repo root,
+                        $HOME, or /.
+  --detach              Launch the lane detached and return once its carrier
+                        has started (exit 0, printing the task id and result
+                        path), or with the task-run exit code of a preflight
+                        or launch failure. Never returns 0 for a lane that did
+                        not start. Cannot be combined with --dry-run.
+```
+
+## `charness task wait`
+
+```text
+usage: charness task wait [-h] [--repo-root REPO_ROOT] [--any]
+                          [--timeout-seconds TIMEOUT_SECONDS]
+                          task_ids [task_ids ...]
+
+Block until all (or with --any, the first) of the named lanes reach a terminal status; print task_id and status for each finished lane. Exit with the finished lane's task-run exit code (0 success, 1 failed, 2 premise-blocked, 3 validated-partial, 4 executor-unavailable, 5 completed-needs-review); with several lanes, the first non-success in CLI order decides. An already-terminal lane returns immediately.
+
+positional arguments:
+  task_ids              Lane task ids to wait for.
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Parent repo whose external task-run runtime is read.
+  --any                 Return when the first named lane ends; the others keep
+                        running.
+  --timeout-seconds TIMEOUT_SECONDS
+                        Bound the wait in seconds; 0 waits indefinitely.
+```
+
+## `charness hooks`
+
+```text
+usage: charness hooks [-h] {status} ...
+
+positional arguments:
+  {status}
+    status    Report every host-hook intent per host.
+
+options:
+  -h, --help  show this help message and exit
+```
+
+## `charness hooks status`
+
+```text
+usage: charness hooks status [-h] [--repo-root REPO_ROOT]
+                             [--adapter-file ADAPTER_FILE]
+
+Report every host-hook intent (the skill-anchor edit guard and the three command-time orchestration guards) per host: declared intent, installed actual, and whether they agree. Exit 0 when every intent is in sync, 1 otherwise.
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Repo whose hook state is read. Defaults to the current
+                        directory.
+  --adapter-file ADAPTER_FILE
+                        Adapter YAML declaring host-hook intents; absent means
+                        every intent disabled.
 ```
 
 ## `charness train`

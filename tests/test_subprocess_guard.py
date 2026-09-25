@@ -19,6 +19,7 @@ from scripts.core.subprocess_guard import (
     run_monitored_phase,
     run_process,
     run_processes_in_order,
+    spawn_detached,
 )
 from tests.fifo_witness import FifoWitness, shell_holder_snippet
 
@@ -695,3 +696,12 @@ def test_heartbeat_interval_from_env_floors_and_falls_back(monkeypatch) -> None:
     for hostile in ("inf", "-inf", "nan"):
         monkeypatch.setenv("CHARNESS_PROBE_INTERVAL", hostile)
         assert heartbeat_interval_from_env("CHARNESS_PROBE_INTERVAL", 7.0) == 7.0
+
+
+def test_spawn_detached_redirects_output_and_outlives_polling(tmp_path: Path) -> None:
+    log = tmp_path / "launch.log"
+    child = spawn_detached(["sh", "-c", "echo launched; exit 3"], log_path=log)
+    assert child.poll() is None or child.returncode in (None, 3)
+    code = child.wait(timeout=10)
+    assert code == 3
+    assert log.read_text(encoding="utf-8").strip() == "launched"
