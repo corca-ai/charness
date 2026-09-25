@@ -121,6 +121,6 @@
     "changed_path_count": 97
   },
   "advisory_findings": [
-    "claims evidence re-bound after validator-floor critique-conformance fix (82896c03e); original evidence 621844560; verdict, scope, and reviewer unchanged"
+    "claims evidence re-bound with narrative addendum after validator-floor critique-conformance fix (82896c03e); original pass verdict at 621844560 by the same reviewer, scope unchanged"
   ]
 }

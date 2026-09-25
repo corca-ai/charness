@@ -102,3 +102,12 @@ gates (pre-push receipt, branch/tag push); this PASS does not clear those.
 2. Branch/tag push, GitHub release creation, and public surface verification
    all recorded pending (rec:26-28, rec:33, rec:61).
 3. Claims review was the pending item (rec:50); this file is that review.
+
+## Addendum (parent, evidence re-bind — reviewer's verdict above unchanged)
+
+After this review passed, the validator floor demanded a critique-artifact
+fix (tier evidence, boundary ownership), which landed on top of the first
+claims evidence commit and broke the prepared→evidence topology. The claims
+record was therefore re-scaffolded (same verdict, scope, and reviewer) and
+re-committed here together with this addendum so the evidence commit carries
+both files as the topology requires. Original evidence: 621844560.
