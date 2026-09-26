@@ -1,0 +1,62 @@
+{
+  "schema_version": "charness.release.claims-review.v4",
+  "prepared_commit": "b0927cd8e7295a34238d25580b617d0708bbebac",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "7c557d243ec0653d918218ffe8a6115c4299dca7f9fa1f068466f5f93303560a",
+  "target_version": "8.14.1",
+  "tag_name": "v8.14.1",
+  "verdict": "pass",
+  "preparer_context": "prepared stop b0927cd8e for v8.14.1 patch (#825, #875, #876); round-1 FAIL (pre-bump validation claim) adjudicated against prepare ordering bump-then-drift-then-quality; round-2 fresh reviewer passed",
+  "reviewer_context": "fresh round-2 claims reviewer (separate agent context from preparer and from round-1 reviewer); read the prepared record, manifests, git trees, and publish_release_execute.py ordering lines itself and rendered R2-PASS with per-blocker adjudication",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "fresh subagent task v8.14.1-claims-r2 rendered R2-PASS citing latest.md:21, file:line prepare ordering, and git tree comparison, independent of the round-1 reviewer",
+    "review_artifact": "charness-artifacts/release-review/2026-09-26-v8.14.1-claims-review.md"
+  },
+  "review_scope": {
+    "blocking_paths": [
+      ".agents/quality-gates.yaml",
+      ".claude-plugin/marketplace.json",
+      ".github/workflows/quality-core.yml",
+      "charness",
+      "charness-artifacts/critique/v8130-critique.md",
+      "charness-artifacts/critique/v8140-critique.md",
+      "charness-artifacts/critique/v8141-critique.md",
+      "charness-artifacts/issue/2026-09-26-v8141-closeout-875-876.md",
+      "charness-artifacts/probe/2026-09-25-v8.14.0-release-observer.json",
+      "charness-artifacts/release-review/2026-09-26-v8.14.0-prepared-claims-review-r2.json",
+      "charness-artifacts/release-review/2026-09-26-v8.14.0-prepared-claims-review.json",
+      "charness-artifacts/release-review/v8140-claims.md",
+      "charness-artifacts/release/.8.14.0-prepush-quality.json.charness-receipt.json",
+      "charness-artifacts/release/8.14.0-prepush-quality.json",
+      "charness-artifacts/release/latest.md",
+      "docs/validator-timing-layers.md",
+      "native/repograph/fixtures/carriers/expected/quality_label_universe.yaml",
+      "packaging/charness.json",
+      "scripts/gates/check_path_independence.py",
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_carrier.py",
+      "scripts/task_run/task_run_completion.py",
+      "scripts/task_run/task_run_git.py",
+      "scripts/task_run/task_run_plan.py",
+      "scripts/task_run/task_run_scope.py",
+      "scripts/task_run/task_run_support.py",
+      "skills/public/quality/references/consumer-validator-catalog.yaml",
+      "tests/charness_cli/test_standalone_entry_task_run_876.py",
+      "tests/charness_cli/test_task_run_completion.py",
+      "tests/charness_cli/test_task_run_grant_writable_869.py",
+      "tests/charness_cli/test_task_run_no_progress_835.py",
+      "tests/charness_cli/test_task_run_scope.py",
+      "tests/quality_gates/fixtures/.agents/quality-gates.yaml",
+      "tests/quality_gates/support.py",
+      "tests/quality_gates/test_path_independence_gate.py"
+    ],
+    "advisory_paths": []
+  },
+  "scope_basis": {
+    "base_ref": "refs/tags/v8.14.0",
+    "changed_paths_sha256": "0f1e5b7e2ae00fbbaef13cea595aba8eedd42033605b519894d87efab1634f6c",
+    "changed_path_count": 35
+  },
+  "advisory_findings": []
+}
