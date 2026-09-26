@@ -139,6 +139,8 @@ DONE: update complete`
 - `post_publish_install_refresh`: 8.152s
 - `post_publish_installed_readback`: 1.124s
 - `release_observer`: 0.008s
+- `issue_closeout_carrier`: 18.680s
+- `issue_closeout`: 0.964s
 
 ## Release Observer Record
 
@@ -155,7 +157,14 @@ DONE: update complete`
 
 ## Issue Closeout
 
-- Issue closeout verification: `carrier-pending-state-verification`.
+- Issue closeout verification: `state-verified`.
+- GitHub repo: `corca-ai/charness`
+- Issue #875: `CLOSED` (https://github.com/corca-ai/charness/issues/875)
+  - carrier: `direct_post_publish_commit_body`
+  - manual fallback used: `False`
+- Issue #876: `CLOSED` (https://github.com/corca-ai/charness/issues/876)
+  - carrier: `direct_post_publish_commit_body`
+  - manual fallback used: `False`
 
 ## User Update Steps
 
