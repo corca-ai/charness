@@ -101,6 +101,10 @@ jobs:
       - name: Validate plugin packaging export
         run: python3 scripts/plugin_export/validate_packaging.py --repo-root .
 
+      - name: Validate task_run PATH independence
+        # Local gate mirror: quality-gates.yaml `path-independence` phase.
+        run: python3 scripts/gates/check_path_independence.py --repo-root .
+
       - name: Validate doc links
         run: python3 scripts/gates/check_doc_links.py --repo-root .
 

@@ -21,6 +21,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
+from scripts.task_run import task_run_carrier as _carrier_owner  # noqa: E402
 from scripts.task_run import task_run_contract as _contract  # noqa: E402
 from scripts.task_run import task_run_evidence as _evidence  # noqa: E402
 from scripts.task_run import task_run_execution as _execution  # noqa: E402
@@ -43,7 +44,7 @@ _BRANCH_RE = _contract._BRANCH_RE
 _TASK_ID_RE = _contract._TASK_ID_RE
 
 _changed_paths = _git_owner._changed_paths
-_candidate_carrier = _git_owner._candidate_carrier
+_candidate_carrier = _carrier_owner._candidate_carrier
 _collect_populations = _git_owner._collect_populations
 _collect_populations_with_metadata = _git_owner._collect_populations_with_metadata
 _git = _git_owner._git

@@ -10,6 +10,7 @@ from typing import Any
 import pytest
 
 from scripts.task_run import (
+    task_run_carrier,
     task_run_completion,
     task_run_git,
     task_run_lane_runner,
@@ -77,7 +78,7 @@ def _complete(
     elif candidate_kind != "absent":
         raise AssertionError(f"unknown candidate fixture: {candidate_kind}")
     branch = task_run_git._git_output(target, "symbolic-ref", "--quiet", "--short", "HEAD").strip()
-    carrier = task_run_git._candidate_carrier(target, base_sha, branch=branch)
+    carrier = task_run_carrier._candidate_carrier(target, base_sha, branch=branch)
     if carrier_override is not None:
         carrier = {**carrier, **carrier_override}
     useful = candidate_kind != "absent"

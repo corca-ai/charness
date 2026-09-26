@@ -41,6 +41,20 @@ phases:
     timing_layer: stays
     note: src scripts/run-quality.sh:954; labels literal (475-479).
   fail_message: standing pytest failed; stopping before later quality checks.
+- id: path-independence
+  isolation: alone
+  fail_fast: true
+  gates:
+  - label: path-independence
+    command:
+    - python3
+    - scripts/gates/check_path_independence.py
+    - --repo-root
+    - $REPO_ROOT
+    lane: standard
+    timing_layer: stays
+    note: task_run lane surface under a minimal PATH; input validation must precede PATH probing (#825).
+  fail_message: path-independence gate failed; task_run tests depend on ambient PATH executables.
 - id: agent-browser-baseline
   isolation: alone
   fail_fast: true

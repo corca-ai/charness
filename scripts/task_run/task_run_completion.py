@@ -31,9 +31,9 @@ from scripts.task_run import task_run_prelaunch as _prelaunch  # noqa: E402
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
 from scripts.task_run import task_run_retention as _retention  # noqa: E402
 from scripts.task_run import task_run_state as _state  # noqa: E402
+from scripts.task_run.task_run_carrier import _candidate_carrier  # noqa: E402
 from scripts.task_run.task_run_completion_next_step import _next_step  # noqa: E402
 from scripts.task_run.task_run_contract import TaskRunError  # noqa: E402
-from scripts.task_run.task_run_git import _candidate_carrier  # noqa: E402
 
 
 def complete_task(

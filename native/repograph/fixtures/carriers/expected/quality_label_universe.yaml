@@ -3,6 +3,7 @@ reason: null
 labels:
 - pytest-release
 - pytest
+- path-independence
 - agent-browser-runtime-baseline
 - validate-skills
 - validate-quality-reference-catalog
@@ -112,6 +113,7 @@ sources:
   queue_call_sites:
   - pytest-release
   - pytest
+  - path-independence
   - agent-browser-runtime-baseline
   - validate-skills
   - validate-quality-reference-catalog

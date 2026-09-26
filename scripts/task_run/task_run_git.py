@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-import hashlib
 import os
 import re
-import stat
 import subprocess
 import sys
 from collections.abc import Callable
@@ -430,36 +428,6 @@ def _untracked_paths(repo_root: Path) -> list[str]:
     )
 
 
-def _digest_frame(digest: Any, value: bytes) -> None:
-    digest.update(len(value).to_bytes(8, "big"))
-    digest.update(value)
-
-
-def _candidate_content_digest(repo_root: Path, base_sha: str, changed_paths: Sequence[str]) -> str:
-    digest = hashlib.sha256()
-    _digest_frame(digest, b"charness.task-run.candidate.v1")
-    _digest_frame(digest, base_sha.encode("ascii"))
-    for path in changed_paths:
-        _digest_frame(digest, os.fsencode(path))
-        candidate_path = repo_root / path
-        try:
-            metadata = candidate_path.lstat()
-        except FileNotFoundError:
-            _digest_frame(digest, b"missing")
-            continue
-        _digest_frame(digest, str(stat.S_IMODE(metadata.st_mode)).encode("ascii"))
-        if stat.S_ISLNK(metadata.st_mode):
-            _digest_frame(digest, b"symlink")
-            _digest_frame(digest, os.fsencode(os.readlink(candidate_path)))
-        elif stat.S_ISREG(metadata.st_mode):
-            _digest_frame(digest, b"file")
-            _digest_frame(digest, candidate_path.read_bytes())
-        else:
-            _digest_frame(digest, b"special")
-            _digest_frame(digest, str(metadata.st_size).encode("ascii"))
-    return digest.hexdigest()
-
-
 def _is_ancestor(repo_root: Path, base_sha: str, head: str) -> bool:
     """True when `base_sha` is reachable from `head`, so HEAD can carry base-to-HEAD."""
     completed = run_process(
@@ -473,79 +441,6 @@ def _is_ancestor(repo_root: Path, base_sha: str, head: str) -> bool:
 def _base_is_fresh(repo_root: Path, base_sha: str, tip_sha: str) -> bool:
     """A base is current when it is the tip or already contains the tip."""
     return base_sha == tip_sha or _is_ancestor(repo_root, tip_sha, base_sha)
-
-
-def _candidate_carrier(
-    repo_root: Path,
-    base_sha: str,
-    populations: Mapping[str, Sequence[str]] | None = None,
-    head: str | None = None,
-    branch: str | None = None,
-) -> dict[str, Any]:
-    """Describe which lane tree carries the complete validated candidate."""
-    head = (
-        head
-        or _head_sha_from_checkout(repo_root)
-        or _git_output(repo_root, "rev-parse", "HEAD").strip()
-    )
-    # ANCESTRY, not inequality. `head != base_sha` answers "did HEAD move", which is a
-    # different question from "does HEAD carry the base-to-worktree candidate". A lane
-    # that amends its own base, or resets to an ancestor, leaves a clean tree at a
-    # SIBLING commit -- and the inequality test called that `commit-only` with
-    # `head_is_complete: true`, which invites the parent to cherry-pick a commit that
-    # replays against the wrong parent instead of carrying the validated candidate.
-    # Equality already establishes ancestry.  Most worktree-only task runs use
-    # ``base=HEAD`` and used to pay for a merge-base subprocess before asking
-    # Git for the same tracked diff twice below.
-    base_is_ancestor = head == base_sha or _is_ancestor(repo_root, base_sha, head)
-    has_commit = head != base_sha and base_is_ancestor
-    committed_paths = _diff_paths(repo_root, base_sha, head) if has_commit else []
-    # Porcelain status is the one coherent snapshot of the current worktree
-    # population.  Its tracked and untracked paths are exactly the dirty
-    # populations needed below; asking Git separately for `diff HEAD` and
-    # `ls-files --others` only re-reads that same boundary.  Keep the
-    # base-relative diff below because status cannot answer whether a path was
-    # restored to the selected base after a lane commit.
-    current_populations = populations or _collect_populations(repo_root)
-    untracked_paths = list(current_populations["untracked"])
-    working_tree_paths = sorted(set(current_populations["tracked"]) | set(untracked_paths))
-    if head == base_sha:
-        # The two tracked views are identical when HEAD is the selected base;
-        # status is the complete candidate view, so no separate diff or
-        # untracked listing is necessary.
-        changed_paths = working_tree_paths
-        dirty_paths = list(working_tree_paths)
-    else:
-        dirty_paths = working_tree_paths
-        if has_commit and not dirty_paths:
-            # A clean descendant HEAD is exactly the committed candidate already
-            # read above. Re-running the same base diff cannot add information.
-            changed_paths = list(committed_paths)
-        else:
-            changed_paths = sorted(set(_diff_paths(repo_root, base_sha)) | set(untracked_paths))
-    if not has_commit:
-        carrier_kind = "worktree-only"
-    elif dirty_paths:
-        carrier_kind = "commit-plus-dirty"
-    else:
-        carrier_kind = "commit-only"
-    return {
-        "changed_paths": changed_paths,
-        "carrier_kind": carrier_kind,
-        "committed_paths": committed_paths,
-        "dirty_paths": dirty_paths,
-        "head_sha": head if has_commit else None,
-        # Published even when it is True, because its FALSE case is otherwise
-        # invisible: a lane that amended its base has a clean tree at a sibling
-        # commit, and without this the receipt reads exactly like a lane that never
-        # committed at all. A parent that sees `observed_head` differ from the base
-        # while this is False knows a commit exists and does not carry the candidate.
-        "base_is_ancestor_of_head": base_is_ancestor,
-        "observed_head_sha": head,
-        "observed_branch": branch,
-        "head_is_complete": has_commit and not dirty_paths,
-        "content_digest": _candidate_content_digest(repo_root, base_sha, changed_paths),
-    }
 
 
 def _checkout_own_dir(create_payload: dict[str, Any]) -> Path:

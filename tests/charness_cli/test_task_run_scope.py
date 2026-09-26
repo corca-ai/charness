@@ -7,7 +7,13 @@ from pathlib import Path
 
 import pytest
 
-from scripts.task_run import task_run, task_run_git, task_run_scope, task_run_scope_evidence
+from scripts.task_run import (
+    task_run,
+    task_run_carrier,
+    task_run_git,
+    task_run_scope,
+    task_run_scope_evidence,
+)
 from scripts.worktree import checkout_view
 
 from .test_task_run_fixtures import _codex, _commit, _git, _repo, _run
@@ -160,10 +166,10 @@ def test_candidate_digest_detects_worktree_byte_drift(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     (repo / "new_module.py").write_text("NEW = 1\n", encoding="utf-8")
     base = _git(repo, "rev-parse", "HEAD").stdout.strip()
-    original = task_run_git._candidate_carrier(repo, base)
+    original = task_run_carrier._candidate_carrier(repo, base)
     (repo / "new_module.py").write_bytes(b"NEW = 2\n")
 
-    moved = task_run_git._candidate_carrier(repo, base)
+    moved = task_run_carrier._candidate_carrier(repo, base)
 
     assert original["changed_paths"] == ["new_module.py"]
     assert moved["changed_paths"] == ["new_module.py"]
@@ -196,7 +202,7 @@ def test_candidate_carrier_reuses_equal_head_worktree_reads(
         lambda *_args: pytest.fail("equal HEAD and base must not spawn merge-base"),
     )
 
-    carrier = task_run_git._candidate_carrier(repo, base)
+    carrier = task_run_carrier._candidate_carrier(repo, base)
 
     assert carrier["base_is_ancestor_of_head"] is True
     assert carrier["carrier_kind"] == "worktree-only"
@@ -218,6 +224,7 @@ def test_candidate_carrier_reuses_committed_diff_for_a_clean_commit(
         return ["module.py"]
 
     monkeypatch.setattr(task_run_git, "_is_ancestor", lambda *_args: True)
+    monkeypatch.setattr(task_run_git, "_git_output", lambda _repo, *args: f"{head} {base}\n")
     monkeypatch.setattr(task_run_git, "_diff_paths", diff_paths)
     monkeypatch.setattr(
         task_run_git,
@@ -225,7 +232,7 @@ def test_candidate_carrier_reuses_committed_diff_for_a_clean_commit(
         lambda _repo: {"tracked": [], "untracked": [], "ignored": []},
     )
 
-    carrier = task_run_git._candidate_carrier(tmp_path, base, head=head)
+    carrier = task_run_carrier._candidate_carrier(tmp_path, base, head=head)
 
     assert carrier["carrier_kind"] == "commit-only"
     assert carrier["committed_paths"] == ["module.py"]
@@ -264,7 +271,7 @@ def test_candidate_carrier_reads_untracked_paths_once_for_a_commit_plus_dirty_tr
     monkeypatch.setattr(task_run_git, "_is_ancestor", traced_is_ancestor)
     monkeypatch.setattr(checkout_view, "capture_status", traced_status)
 
-    carrier = task_run_git._candidate_carrier(repo, base)
+    carrier = task_run_carrier._candidate_carrier(repo, base)
 
     assert carrier["carrier_kind"] == "commit-plus-dirty"
     assert carrier["committed_paths"] == ["module.py"]
@@ -273,9 +280,11 @@ def test_candidate_carrier_reads_untracked_paths_once_for_a_commit_plus_dirty_tr
     assert len(status_calls) == 1
     assert status_calls[0].get("ignored") is True
     assert ("rev-parse", "HEAD") not in git_calls
-    assert len(git_calls) + len(status_calls) == 3
+    # rev-list (first-parent walk for #875) plus the base, head, and
+    # worktree diffs; status is still read once.
+    assert len(git_calls) + len(status_calls) == 5
     assert len(ancestry_calls) == 1
-    assert len(git_calls) + len(status_calls) + len(ancestry_calls) == 4
+    assert len(git_calls) + len(status_calls) + len(ancestry_calls) == 6
 
 
 def test_candidate_carrier_keeps_base_scope_when_worktree_restores_a_committed_path(
@@ -287,7 +296,7 @@ def test_candidate_carrier_keeps_base_scope_when_worktree_restores_a_committed_p
     _commit(repo, "update module", "module.py")
     (repo / "module.py").write_text("VALUE = 1\n", encoding="utf-8")
 
-    carrier = task_run_git._candidate_carrier(repo, base)
+    carrier = task_run_carrier._candidate_carrier(repo, base)
 
     assert carrier["committed_paths"] == ["module.py"]
     assert carrier["dirty_paths"] == ["module.py"]
@@ -626,7 +635,7 @@ def test_a_non_descendant_head_is_not_a_commit_carrier(tmp_path) -> None:
     """
     base = _lane_tree(tmp_path, "amended-base")
 
-    carrier = task_run_git._candidate_carrier(tmp_path, base)
+    carrier = task_run_carrier._candidate_carrier(tmp_path, base)
 
     assert carrier["base_is_ancestor_of_head"] is False
     assert carrier["head_is_complete"] is False
@@ -640,7 +649,7 @@ def test_a_descendant_head_with_a_clean_tree_is_still_the_whole_candidate(tmp_pa
     """The control: the ancestry check must not disqualify an ordinary lane commit."""
     base = _lane_tree(tmp_path, "descendant")
 
-    carrier = task_run_git._candidate_carrier(tmp_path, base)
+    carrier = task_run_carrier._candidate_carrier(tmp_path, base)
 
     assert carrier["base_is_ancestor_of_head"] is True
     assert carrier["carrier_kind"] == "commit-only"
@@ -841,3 +850,100 @@ def test_scope_evidence_cli_reads_stdin(monkeypatch, capsys) -> None:
 
     assert exit_info.value.code == 0
     assert capsys.readouterr().out == ""
+
+
+def test_carrier_bootstrap_reinserts_a_missing_root(tmp_path: Path, monkeypatch) -> None:
+    """The repo bootstrap restores an absent root on a path-based load."""
+    import importlib.util
+    import sys
+
+    from scripts.task_run import task_run_carrier as _carrier_package
+
+    carrier_path = Path(_carrier_package.__file__).resolve()
+    repo_root = str(carrier_path.parents[2])
+
+    def _resolved(entry: str) -> str:
+        try:
+            return str(Path(entry).resolve())
+        except OSError:
+            return entry
+
+    monkeypatch.setattr(
+        sys, "path", [entry for entry in sys.path if _resolved(entry) != repo_root]
+    )
+    spec = importlib.util.spec_from_file_location(
+        "task_run_carrier_bootstrap_probe", carrier_path
+    )
+    assert spec is not None and spec.loader is not None
+    probe = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(probe)
+
+    assert repo_root in sys.path
+
+
+def test_candidate_content_digest_covers_special_files(tmp_path: Path) -> None:
+    """The digest frames symlinks, non-regular files, and missing paths."""
+    import os
+
+    repo = _repo(tmp_path)
+    (repo / "link.py").symlink_to("module.py")
+    os.mkfifo(repo / "pipe")
+    digest = task_run_carrier._candidate_content_digest(
+        repo, "base", ["link.py", "pipe", "missing.py"]
+    )
+
+    assert len(digest) == 64
+
+
+def _merge(repo: Path, *args: str) -> None:
+    _git(
+        repo,
+        "-c",
+        "user.email=test@example.com",
+        "-c",
+        "user.name=test",
+        "merge",
+        *args,
+    )
+
+
+def test_merged_target_changes_are_not_lane_changes(tmp_path: Path) -> None:
+    """Merging an advanced main must not flag its paths as lane changes (#875)."""
+    repo = _repo(tmp_path)
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    _git(repo, "checkout", "-b", "lane/work")
+    (repo / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+    _commit(repo, "lane change", "module.py")
+    _git(repo, "checkout", "main")
+    (repo / "other.py").write_text("O = 1\n", encoding="utf-8")
+    _commit(repo, "main change", "other.py")
+    _git(repo, "checkout", "lane/work")
+    _merge(repo, "main", "-m", "merge main")
+
+    carrier = task_run_carrier._candidate_carrier(repo, base)
+
+    assert carrier["carrier_kind"] == "commit-only"
+    assert carrier["committed_paths"] == ["module.py"]
+    assert carrier["changed_paths"] == ["module.py"]
+
+
+def test_lane_edit_in_merge_resolution_stays_a_lane_change(tmp_path: Path) -> None:
+    """A lane edit inside the merge resolution is still reported (#875)."""
+    repo = _repo(tmp_path)
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    _git(repo, "checkout", "-b", "lane/work")
+    (repo / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+    _commit(repo, "lane change", "module.py")
+    _git(repo, "checkout", "main")
+    (repo / "other.py").write_text("O = 1\n", encoding="utf-8")
+    _commit(repo, "main change", "other.py")
+    _git(repo, "checkout", "lane/work")
+    _merge(repo, "--no-commit", "--no-ff", "main")
+    (repo / "other.py").write_text("O = 2\n", encoding="utf-8")
+    _commit(repo, "merge main with resolution", "other.py")
+
+    carrier = task_run_carrier._candidate_carrier(repo, base)
+
+    assert carrier["carrier_kind"] == "commit-only"
+    assert carrier["committed_paths"] == ["module.py", "other.py"]
+    assert carrier["changed_paths"] == ["module.py", "other.py"]

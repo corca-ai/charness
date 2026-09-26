@@ -1014,10 +1014,20 @@ def _load_feature(module_name: str, func_name: str, args=None, check=None):
         _bootstrap.set_entry_context(EMBEDDED_REPO_ROOT, SCRIPT_PATH)
     try:
         feature = importlib.import_module(f"scripts.cli.{module_name}")
-    except ImportError:
-        if check is not None and args is not None:
-            check(args)
-        raise
+    except ImportError as exc:
+        if check is None or args is None:
+            raise  # pragma: no cover - no measured caller passes check=None with a failing payload import.
+        root = check(args)
+        if not isinstance(exc, ModuleNotFoundError) or exc.name != "scripts":
+            raise
+        # Standalone copy with no source tree on sys.path (#876): the check
+        # just resolved the checkout, so make it importable and retry once.
+        # Unembedded-only: measured runs resolve the embedded tree, so this
+        # branch is proven by mutant (charness:1026 kills
+        # test_standalone_copy_reaches_task_run_payload) rather than coverage.
+        if str(root) not in sys.path:  # pragma: no cover - unembedded-only; see above.
+            sys.path.insert(0, str(root))  # pragma: no cover - unembedded-only; see above.
+        feature = importlib.import_module(f"scripts.cli.{module_name}")  # pragma: no cover - unembedded-only; see above.
     return getattr(feature, func_name)
 
 

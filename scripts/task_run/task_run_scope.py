@@ -18,9 +18,9 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
+from scripts.task_run.task_run_carrier import _candidate_carrier  # noqa: E402
 from scripts.task_run.task_run_contract import FAIL, PASS, TaskRunError  # noqa: E402
 from scripts.task_run.task_run_git import (  # noqa: E402
-    _candidate_carrier,
     _git_output,
     _parse_nul_paths,
 )

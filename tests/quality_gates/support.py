@@ -744,6 +744,7 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         "run_quality_engine_selection.py",
         "quality_gate_provenance_fallback.py",
         "run_specdown.py",
+        "gates/check_path_independence.py",
         "inventory_gitignore_scan_hygiene_unavailable.py",
         "inventory_cli_ergonomics_unavailable.py",
         "inventory_nose_clones_unavailable.py",
