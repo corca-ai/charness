@@ -156,7 +156,11 @@ DONE: update complete`
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: `state-verified`.
+- GitHub repo: `corca-ai/charness`
+- Issue #880: `CLOSED` (https://github.com/corca-ai/charness/issues/880)
+  - carrier: `direct_post_publish_commit_body`
+  - manual fallback used: `False`
 
 ## User Update Steps
 
