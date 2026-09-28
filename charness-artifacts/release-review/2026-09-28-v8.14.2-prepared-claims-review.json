@@ -1,0 +1,41 @@
+{
+  "schema_version": "charness.release.claims-review.v4",
+  "prepared_commit": "4545d6c07111bd9420676d7c72db84e7895289e2",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "fd794151e0ded2438e6753a4bfbba87bfd3ed3f4feb8fcf66564c41b1006bdc0",
+  "target_version": "8.14.2",
+  "tag_name": "v8.14.2",
+  "verdict": "pass",
+  "preparer_context": "release publisher (parent session): prepared v8.14.2 via publish_release --execute at 4545d6c0; counterweight owner of the release critique",
+  "reviewer_context": "distinct claims-reviewer subagent (read-only shared checkout): audited prepared commit 4545d6c0 record honesty only, verdict PASS, self-authored narrative v8142-claims-narrative.md",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "subagent claims-review-8-14-2b result_ready with narrative at charness-artifacts/release-review/v8142-claims-narrative.md, verdict PASS, no blocking findings",
+    "review_artifact": "charness-artifacts/release-review/v8142-claims-narrative.md"
+  },
+  "review_scope": {
+    "blocking_paths": [
+      ".claude-plugin/marketplace.json",
+      "charness-artifacts/critique/v8142-critique.md",
+      "charness-artifacts/probe/2026-09-26-v8.14.1-release-observer.json",
+      "charness-artifacts/release-review/2026-09-26-v8.14.1-prepared-claims-review.json",
+      "charness-artifacts/release/.8.14.1-prepush-quality.json.charness-receipt.json",
+      "charness-artifacts/release/8.14.1-prepush-quality.json",
+      "charness-artifacts/release/latest.md",
+      "packaging/charness.json",
+      "scripts/task_run/task_run_lane_options.py",
+      "scripts/task_run/task_run_prelaunch.py",
+      "tests/charness_cli/test_task_run_launch_hygiene.py",
+      "tests/charness_cli/test_task_run_rules_file_867.py"
+    ],
+    "advisory_paths": [
+      "charness-artifacts/release-review/2026-09-26-v8.14.1-claims-review.md"
+    ]
+  },
+  "scope_basis": {
+    "base_ref": "refs/tags/v8.14.1",
+    "changed_paths_sha256": "28a7cbe238d06c595b33dbab6c03171e2e00092be35c1fd8c4bc969f5042a164",
+    "changed_path_count": 13
+  },
+  "advisory_findings": []
+}
