@@ -3,8 +3,8 @@
 Standing material (lane rules, decision ledgers) is passed by reference so
 scope evidence keeps reading only the task prompt, and host-state writable
 grants stay narrow, recorded, and refused for executors that cannot honor
-them. Both are validated before any launch work; dry-run reports the same
-scope refusal the real launch would end on.
+them. Both are validated before any launch work. Prompt-evidence scope
+findings are advisory only (#880) and never refuse a dry-run or a launch.
 """
 
 from __future__ import annotations
@@ -146,19 +146,6 @@ def record_launch_options(payload: dict[str, Any], resolved: Mapping[str, Any]) 
     payload["granted_writable_dirs"] = resolved["granted_writable_dirs"]
 
 
-def apply_dry_run_refusal(
-    payload: dict[str, Any], scope_preflight: Mapping[str, Any]
-) -> bool:
-    """Deny a dry-run on the would-touch refusal; True when refused."""
-    refusal = dry_run_scope_refusal(scope_preflight)
-    if refusal is None:
-        return False
-    payload["status"] = "premise-blocked"
-    payload["error"] = refusal["error"]
-    payload["next_step"] = refusal["next_step"]
-    return True
-
-
 def plan_dry_run(
     payload: dict[str, Any],
     resolved: Mapping[str, Any],
@@ -166,13 +153,12 @@ def plan_dry_run(
     resolved_target: Path,
     pass_value: str,
 ) -> None:
-    """Fill a dry-run receipt: refusal wins, else the planned lane.
+    """Fill a dry-run receipt for the planned lane.
 
     The whole dry-run outcome lives here so the run orchestrator keeps one
-    branch for \"plan only, never create\".
+    branch for \"plan only, never create\". Prompt-evidence scope findings are
+    advisory (#880) and never refuse the plan.
     """
-    if apply_dry_run_refusal(payload, resolved["scope_preflight"]):
-        return
     payload["status"] = pass_value
     payload["approval_eligibility"] = "not-applicable"
     payload["next_step"] = (
@@ -187,33 +173,3 @@ def plan_dry_run(
             "cwd": str(resolved_target),
         },
     ]
-
-
-def dry_run_scope_refusal(
-    scope_preflight: Mapping[str, Any],
-) -> dict[str, str] | None:
-    """Report the would-touch refusal a real launch would end on.
-
-    `--dry-run` must exit with the launch's own refusal code on the same
-    findings, so no caller needs a private preflight probe.
-    """
-    outside = sorted(
-        {
-            finding["path"]
-            for finding in scope_preflight.get("would_touch_outside_declared", [])
-            if isinstance(finding, Mapping) and finding.get("path")
-        }
-    )
-    if not outside:
-        return None
-    refusal = (
-        "scope mismatch: brief evidence names repository paths outside "
-        "declared --scope: " + ", ".join(outside)
-    )
-    return {
-        "error": refusal,
-        "next_step": (
-            refusal + "; extend --scope or narrow the prompt, then re-run --dry-run. "
-            "No worktree was created."
-        ),
-    }

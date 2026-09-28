@@ -76,7 +76,9 @@ def test_executor_prompt_lists_rules_paths_not_content(tmp_path: Path) -> None:
     assert content not in shaped
 
 
-def test_dry_run_reports_out_of_scope_refusal(tmp_path: Path) -> None:
+def test_dry_run_keeps_out_of_scope_evidence_advisory(tmp_path: Path) -> None:
+    """#880: a dry-run plans the lane even when the prompt names an
+    out-of-scope path; the finding stays advisory on the receipt."""
     repo = _repo(tmp_path)
 
     payload = _dry_run(
@@ -87,9 +89,12 @@ def test_dry_run_reports_out_of_scope_refusal(tmp_path: Path) -> None:
     assert [finding["path"] for finding in outside] == [
         "scripts/task_run/task_run.py"
     ]
-    assert payload["status"] == "premise-blocked", payload
-    assert "scripts/task_run/task_run.py" in payload["error"]
-    assert _exit_code(payload) == 2
+    assert payload["status"] == "pass", payload
+    assert _exit_code(payload) == 0
+    assert [action["id"] for action in payload["actions"]] == [
+        "create-worktree",
+        "codex-exec",
+    ]
     assert not (tmp_path / "lane").exists()
 
 

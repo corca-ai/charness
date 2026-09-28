@@ -385,7 +385,7 @@ def acceptance_skeleton_prompt(prompt: str, payload: Mapping[str, Any]) -> str:
         )
         if isinstance(findings, list) and findings:
             sections.append(
-                "Scope preflight findings (resolve before executor launch):\n"
+                "Scope preflight advisory (non-blocking; scope is enforced on the candidate):\n"
                 + "\n".join(
                     f"- would-touch-outside-declared: `{finding['path']}`"
                     for finding in findings
@@ -410,38 +410,13 @@ def run_prelaunch_gates(
     *,
     brief_critic=None,
 ) -> str | None:
-    """Record a bounded brief review and premise results before executor launch."""
-    from scripts.task_run.task_run_state import ResultKind
+    """Record a bounded brief review and premise results before executor launch.
 
-    scope_preflight = resolved.get("scope_preflight")
-    findings = (
-        scope_preflight.get("would_touch_outside_declared")
-        if isinstance(scope_preflight, Mapping)
-        else None
-    )
-    omitted_paths = sorted(
-        {
-            finding["path"]
-            for finding in findings
-            if isinstance(finding, Mapping)
-            and isinstance(finding.get("path"), str)
-            and finding["path"]
-        }
-        if isinstance(findings, list)
-        else set()
-    )
-    if omitted_paths:
-        payload["prelaunch"] = {
-            "status": "blocked",
-            "scope_preflight": {
-                "status": "blocked",
-                "omitted_paths": omitted_paths,
-            },
-        }
-        return (
-            "scope mismatch: brief evidence names repository paths outside declared --scope: "
-            + ", ".join(omitted_paths)
-        )
+    Prompt-evidence scope findings stay advisory (#880): brief prose is not a
+    reliable predictor of what the lane will write, so it never blocks launch.
+    The declared scope is still enforced on the actual candidate at completion.
+    """
+    from scripts.task_run.task_run_state import ResultKind
 
     declaration = resolved["prelaunch"]
     if not declaration["enabled"]:

@@ -26,6 +26,7 @@ def _dry_run(
     prompt: str,
     base: str | None = None,
     scopes: list[str] | None = None,
+    report_only: bool = False,
 ):
     return task_run.run_task(
         repo,
@@ -36,6 +37,7 @@ def _dry_run(
         codex=str(_codex(tmp_path, "exit 0")),
         effort="medium",
         dry_run=True,
+        report_only=report_only,
     )
 
 
@@ -129,7 +131,15 @@ def test_scope_preflight_names_an_evidence_path_outside_scope_before_exec(
     assert "execution" not in payload
 
 
-def test_scope_omission_blocks_before_executor_launch(tmp_path: Path) -> None:
+def test_scope_omission_stays_advisory_and_launches_the_executor(
+    tmp_path: Path,
+) -> None:
+    """#880: prompt-evidence scope findings never block launch.
+
+    The named path is still recorded on the preflight receipt, but the lane
+    runs: brief prose is not a reliable predictor of what will be written,
+    and the declared scope is enforced on the actual candidate instead.
+    """
     repo = _repo(tmp_path)
     (repo / ".agents").mkdir()
     (repo / ".agents" / "temp-producers.yaml").write_text("version: 1\n", encoding="utf-8")
@@ -139,7 +149,7 @@ def test_scope_omission_blocks_before_executor_launch(tmp_path: Path) -> None:
 
     payload = task_run.run_task(
         repo,
-        lane="scope-omission-blocked",
+        lane="scope-omission-advisory",
         scopes=["module.py"],
         prompt=(
             "Lane size: 30 minutes; 1 commit unit\n"
@@ -151,10 +161,37 @@ def test_scope_omission_blocks_before_executor_launch(tmp_path: Path) -> None:
         require_change=False,
     )
 
-    assert payload["status"] == "premise-blocked"
-    assert payload["prelaunch"]["status"] == "blocked"
-    assert ".agents/temp-producers.yaml" in payload["next_step"]
-    assert not marker.exists()
+    assert payload["status"] != "premise-blocked", payload
+    assert marker.exists()
+    findings = payload["prelaunch_plan"]["scope_preflight"]["would_touch_outside_declared"]
+    assert [finding["path"] for finding in findings] == [".agents/temp-producers.yaml"]
+
+
+def test_slash_separated_prose_does_not_block_a_report_only_dry_run(
+    tmp_path: Path,
+) -> None:
+    """#880: ordinary slash-separated prose is not a scope refusal."""
+    repo = _repo(tmp_path)
+
+    payload = _dry_run(
+        repo,
+        tmp_path,
+        lane="slash-prose",
+        scopes=["module.py"],
+        report_only=True,
+        prompt=(
+            "Lane size: 45 minutes; 3 commit units\n"
+            "Find direct connector operations across catalog, withheld, "
+            "required_action_sequence, errors, guide rendering, session bootstrap: "
+            "create/list/update/delete, describe/invoke. Cover docs/tests. "
+            "Do not edit, commit, deploy, or run live/provider calls. "
+            "See tests/docs for prior art."
+        ),
+    )
+
+    assert payload["status"] == "pass", payload
+    assert payload["dry_run"] is True
+    assert "execution" not in payload
 
 
 def test_task_run_scope_precomputes_its_gate_and_verifier_bundle(
