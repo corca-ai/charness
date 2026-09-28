@@ -1,5 +1,4 @@
 # Release Surface Check
-<!-- charness-release-state:prepared-awaiting-claims-review -->
 Date: 2026-09-28
 
 ## Scope
@@ -15,31 +14,48 @@ Advanced `charness` toward release `8.14.2` (tag `v8.14.2`) through the repo-own
 
 ## Verification
 
-- `./scripts/run-quality.sh --release --read-only` exited 0 in 208.7s at `post-bump, pre-commit`, measured by this helper (`./scripts/run-quality.sh --release --read-only --release-prepare`); quality unestablished: pytest-release pending final resume.
-- pre-push quality receipt: NOT recorded by this helper invocation, so the quality sentence above cites no durable receipt.
-- `current_release.py` reported no version drift across 4 versioned surface(s), with 1 presence-only surface(s) not version-checked against target `8.14.2`, checked at `post-bump, pre-commit`.
-- Validated tree: commit `2efacb6b75581dc657367899d55ac3175242b06f` (tree `7f23a833b409e85430190bc22b6f153d9b41e6b4`); a pushed tag or branch that does not contain this tree was not what this check validated.
+- `./scripts/run-quality.sh --release --read-only` exited 0 in 413.1s at `post-claims-review, pre-push`, measured by this helper (`./scripts/run-quality.sh --release --read-only --receipt-json=/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/release-prepush-quality/65423-1790593708088166753/semantic-quality.json`).
+- pre-push quality receipt: `charness-artifacts/release/8.14.2-prepush-quality.json` (sha256: `13f7258ca2abe6790f7630955c432ebd61b83f6f347d0d796a1c8cc4dbd1f2ab`).
+- `current_release.py` reported no version drift across 4 versioned surface(s), with 1 presence-only surface(s) not version-checked against target `8.14.2`, checked at `post-claims-review, pre-push`.
+- Validated tree: commit `977a391f834de4462d01e6d2c45edabc03c5ed83` (tree `b337afa10835a6ec01af38324e1baff2fd2783e3`); a pushed tag or branch that does not contain this tree was not what this check validated.
+- initial release push carried the release branch update and tag from the release helper.
+- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
 - local release mutation: complete
-- branch/tag push: pending independent claims review.
-- GitHub release record: pending independent claims review before creation
-- public release surface verification: pending independent claims review
+- branch/tag push: complete
+- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v8.14.2`
+- public release surface verification: verified
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: expected after branch/tag push; not verified yet.
+- GitHub release publication: verified by the release backend.
+
+## Distinct-Channel Verification
+
+- Rung-2 distinct-channel verdict: `confirmed` via `https-fetch` (a channel distinct from `gh release view`).
+- Response content checked for: `v8.14.2`
+- What this confirms: public-page-reachable-and-names-the-tag
+- What it does NOT confirm: that a GitHub RELEASE exists for this tag — the same page returns 200 for a pushed tag with no release, and the tag is pushed before the release is created
+- Observer identity: unauthenticated-http (credential-free; same host/process as publisher)
+- Channel URL: `https://github.com/corca-ai/charness/releases/tag/v8.14.2`
+- HTTP status: `200`
+- Rung-1 floor: a per-surface verdict is recorded (presence), so issue closeout was not silent; the honesty of this verdict is the human rung-2 disposition review.
+
+## Published Notes Audit
+
+- Published release body audit: `unauthored` (advisory; never blocks a publish).
+- The published body carries no authored notes (83 body bytes) — this release shipped with a generated changelog line and nothing else. `gh release edit` is the remedy; the release itself is unaffected.
+- Disposition reason: published body carries no authored notes (generated changelog line only); `gh release edit` is the remedy
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `not_required`.
 - Reason: release adapter did not change in the release delta
 - Focused preflight commands: none planned.
-- Focused preflight execution: `not_run`.
-- This is a recorded absence, not a passing preflight: no focused adapter check is claimed to have completed successfully for this release.
-  - Reason: focused preflight status is `not_required`; no commands were required
+- Focused preflight execution: NOT recorded by this helper invocation; this record does not establish that the commands above ran.
 
 ## Review Proof
 
@@ -47,7 +63,13 @@ Advanced `charness` toward release `8.14.2` (tag `v8.14.2`) through the repo-own
 
 ## Claims Review
 
-- Claims review: not yet performed -- THIS record is the subject of the pending independent review, and publication is stopped until that review is committed.
+- Claims review record: `charness-artifacts/release-review/2026-09-28-v8.14.2-prepared-claims-review.json`.
+- Claims review verdict: `pass`.
+- Observer distinctness: `separate-agent-context`.
+- Recorded signal: subagent claims-review-8-14-2b result_ready with narrative at charness-artifacts/release-review/v8142-claims-narrative.md, verdict PASS, no blocking findings
+- Review narrative: `charness-artifacts/release-review/v8142-claims-narrative.md`.
+- Verdict scope: 12 blocking path(s) gated this tag; 1 advisory path(s) (session narrative) were reviewed but did not.
+- Advisory findings: none recorded by this review.
 
 ## Requested Review Gate
 
@@ -56,16 +78,74 @@ Advanced `charness` toward release `8.14.2` (tag `v8.14.2`) through the repo-own
 - Policy: `advisory-only`.
 - Configured command count: `0`.
 
+## Post-Publish Proof
+
+- Public release check: `gh release view v8.14.2`.
+
 ## Install Refresh
 
-- Post-publish install refresh: pending final publish verification.
+- Post-publish install refresh status: `refreshed`.
+- Command: `charness update`
+- Return code: `0`
+- Elapsed seconds: `7.797`
+- Stdout tail: `de to load or
+    refresh charness.
+grok_host_guidance:
+  status: installed
+  manual_action_required: false
+  message: Grok plugin tree is present at `~/.grok/plugins/charness`. List `charness`
+    in `[plugins].enabled` (do not add a marketplace), then restart Grok Build.
+host_next_steps:
+  codex: Codex host install markers are present. Start a new Codex session to load
+    charness.
+  claude: Claude host install markers are present. Restart Claude Code to load or
+    refresh charness.
+  grok: Grok plugin tree is present at `~/.grok/plugins/charness`. List `charness`
+    in `[plugins].enabled` (do not add a marketplace), then restart Grok Build.
+repo_onboarding:
+  status: skipped
+  manual_action_required: false
+  message: null
+  reason: skipped during update unless --target-repo-root is provided
+next_action:
+  kind: restart
+  host: codex
+  status: installed
+  manual_action_required: false
+  message: Codex host install markers are present. Start a new Codex session to load
+    charness.
+  source: codex_host_guidance
+session_staleness:
+  message: Updated plugin caches were rotated. Active Codex/Claude sessions may have
+    stale absolute skill paths injected into their system prompt. Restart those sessions,
+    or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/scripts/adapters/capability_catalog.py
+    resolve-skill-path --repo-root <repo> --skill-id <id> --reported-path <stale>
+    [--marketplace <m> --plugin <p>]`.
+  affected_count: 1`
+- Stderr tail: `STEP: refreshing source checkout
+STEP: refreshing install surface
+STEP: refreshing Codex host cache
+DONE: update complete`
 
 ## Release Runtime
 
-- `requested_review_gate`: 0.002s
-- `cli_skill_surface_gate`: 2.201s
-- `quality_command`: 208.715s
-- `fresh_checkout_probes_initial`: 6.443s
+- `requested_review_gate`: 0.003s
+- `cli_skill_surface_gate`: 2.152s
+- `quality_command`: 413.147s
+- `fresh_checkout_probes_resume`: 6.536s
+- `push_create_verify_release`: 431.067s
+- `distinct_channel_verification`: 0.697s
+- `published_notes_audit`: 0.483s
+- `post_publish_install_refresh`: 7.797s
+- `post_publish_installed_readback`: 1.008s
+- `release_observer`: 0.001s
+- `issue_closeout`: 0.000s
+
+## Release Observer Record
+
+- Durable observer record: `charness-artifacts/probe/2026-09-28-v8.14.2-release-observer.json`.
+- Installed readback disposition: `observed`.
+- Verdict ownership: this record embeds `distinct_channel_verification`; it does not declare a second release-success verdict.
 
 ## Fresh Checkout Probes
 
@@ -76,7 +156,7 @@ Advanced `charness` toward release `8.14.2` (tag `v8.14.2`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: pending or not requested.
+- Issue closeout verification: `not_requested`.
 
 ## User Update Steps
 
@@ -86,5 +166,5 @@ Advanced `charness` toward release `8.14.2` (tag `v8.14.2`) through the repo-own
 
 ## Bump Rationale
 
-- Bump: `8.14.1` -> `8.14.2` (`patch`).
-> bug fix: prompt-evidence scope preflight no longer premise-blocks lanes on slash-separated prose (#880)
+- Bump: `8.14.1` -> `8.14.2` (`publish-current`).
+- Bump rationale: NOT recorded by this helper invocation. `version-policy.md` requires a stated rationale whenever the bump level is debatable; this record carries none, so the level above is an unexplained judgment call.
