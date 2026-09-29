@@ -1,0 +1,40 @@
+title:	Scope evidence heuristic treats dotted identifiers and non-repo slash tokens as paths
+state:	OPEN
+author:	spilist (Hwidong Bae)
+labels:
+comments:	0
+assignees:
+projects:
+milestone:
+issue-type:
+parent:
+sub-issues:
+sub-issues-completed:
+blocked-by:
+blocking:
+number:	879
+--
+## Problem
+
+`scripts/task_run/task_run_scope_evidence.py` (`suggest_scopes`) treats these tokens as repository paths, and the launch scope preflight then refuses the lane:
+- dotted identifiers in inline code, such as `issue.create` or `ceal.gateway_leased_agent_notion_search_arguments.v1`;
+- slash tokens whose first segment is not a top-level directory of the repository, such as `origin/main`, `task/<lane>`, `corca-org/ceal` (an npm scope) or `fs/promises`.
+
+Also, any brief containing the phrase "scope mismatch" makes every dotted token count.
+
+In one consuming repository on 2026-09-27, 40 of 47 lane briefs were refused for these tokens alone. The briefs were then reworded to avoid the heuristic, for example by paraphrasing exact row keys instead of quoting them. That bends the input to fit the validator.
+
+## Proposal
+
+In `_relative_path` or `suggest_scopes`, keep a relative candidate only when one of these holds:
+- its first segment is a top-level name of the repository, or
+- it exists in the repository.
+
+Candidates such as `issue.create`, `origin/main`, `task/x` and `corca-org/ceal` then drop out. A new file under a real top-level directory still counts, because its first segment matches.
+
+Also drop the "scope mismatch" substring switch, or scope it to evidence text that is not a task brief.
+
+## Test
+
+- Inline `issue.create`, `origin/main` and a backticked dotted schema id suggest no scope.
+- `gateway/src/new-file.ts` (not yet existing) and `scripts/x.ts:12` still suggest their paths.

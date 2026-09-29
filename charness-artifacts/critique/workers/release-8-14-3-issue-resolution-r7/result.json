@@ -1,0 +1,80 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Fresh-eye issue-resolution review: verify #877–#879 against their reported defects and pinned contracts.",
+  "packet_sha256": "8f010f8ceb0334dea1ce24c4da8633595d3c6b238887fd470627480952bc64b5",
+  "reviewed_input_identity_sha256": "1eeb8a99496a75e9ce4d5df70123eecd303bf77b07e1d27826608ea090423fce",
+  "verdict": "block",
+  "target_observations": [
+    {
+      "target": "corca-ai/charness#877",
+      "verdict": "defer",
+      "summary": "The checkpoint logic appears to address merge and clean-tree cases while preserving #816’s no-empty-checkpoint rule, but I cannot establish compatibility with #822 from the supplied semantic input.",
+      "evidence": [
+        "Issue #877 requires a merge candidate or a distinct unresolved-merge blocker, and the clean tree with lane commits must reuse its tip.",
+        "task_run_checkpoint checks merge state before the empty-lane skip, rejects unresolved conflicts and out-of-scope merge changes, commits a resolved merge, and returns the tip for commit-only changes.",
+        "The supplied checkpoint code returns skipped when there are no scoped changes; the attention-state declaration also describes that as a typed terminal state, consistent with #816.",
+        "#822 checkpoint discipline was pinned but its contract and implementation were not supplied, so compatibility with it cannot be verified."
+      ]
+    },
+    {
+      "target": "corca-ai/charness#878",
+      "verdict": "defer",
+      "summary": "The supplied backend strips the unsupported top-level schema key and includes captured stderr in nonzero-exit errors, but the pinned reviewer worker backend contract cannot be established from the supplied input.",
+      "evidence": [
+        "Issue #878 identifies Claude CLI rejection of the draft 2020-12 $schema key and expects stderr in the lifecycle reason.",
+        "reviewer_worker_backend._command removes only the top-level $schema key before serializing the schema for claude -p.",
+        "execute_backend reads the first nonempty stderr line and appends it to the typed backend-failed message when the process exits nonzero.",
+        "The visible tests cover these cases, but the reviewer worker runtime, lifecycle consumer, and authoritative backend contract were not included; end-to-end propagation and absence of contract regressions remain unverified."
+      ]
+    },
+    {
+      "target": "corca-ai/charness#879",
+      "verdict": "pass",
+      "summary": "The scope evidence heuristic now rejects dotted identifiers and non-repository slash tokens while preserving advisory recall for file-shaped tokens, and its tests cover the reported examples and #880 recall boundary.",
+      "evidence": [
+        "Issue #879 reports false path candidates from dotted identifiers, foreign slash tokens, and the “scope mismatch” phrase.",
+        "_keep_candidate admits candidates with a repository top-level foothold or existing path, with file-shaped slash tokens retained as advisory recall; the old phrase switch is absent.",
+        "The supplied tests assert no scope for issue.create, origin/main, task/abc, a dotted schema ID, npm scopes, fs/promises, and dotted tokens after “scope mismatch.”",
+        "The supplied tests retain new paths under gateway/ and scripts/, retain a file-shaped zebra/qux.ts advisory candidate, and verify preflight derives top-level names from the lane repository."
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "R1",
+      "severity": "blocking",
+      "summary": "Pinned contract coverage is incomplete for #877 and #878.",
+      "evidence": [
+        "The review input omits the #822 checkpoint contract needed to assess #877’s compatibility claim.",
+        "The review input omits the reviewer worker backend contract and lifecycle consumer needed to verify #878’s end-to-end behavior.",
+        "The requested verdict requires all three fixes to resolve without breaking the pinned contracts."
+      ],
+      "action": "Supply the #822 checkpoint contract and reviewer worker backend contract/lifecycle surfaces in a bounded review packet, then verify the interactions before approval."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "#877 might create empty or out-of-scope checkpoints while handling merges.",
+      "bin": "addressed in supplied evidence",
+      "disposition": "The code checks merge state before the empty-lane skip, rejects unresolved conflicts, and refuses resolved merges with out-of-scope dirty paths."
+    },
+    {
+      "concern": "#879’s filtering might suppress recall of new paths under valid repository directories.",
+      "bin": "addressed in supplied evidence",
+      "disposition": "A matching top-level segment retains not-yet-existing paths; file-shaped slash tokens remain advisory recall per #880."
+    },
+    {
+      "concern": "The #878 schema and stderr fix may violate the worker backend contract or fail to surface in the lifecycle reason.",
+      "bin": "unresolved due to missing evidence",
+      "disposition": "The supplied helper and focused tests support the local fix, but the contract and end-to-end lifecycle consumer are absent."
+    }
+  ],
+  "next_move": "Extend the bounded semantic input with the #822 checkpoint contract and reviewer worker backend contract plus lifecycle consumer; review those boundaries before deciding whether all targets pass.",
+  "non_claims": [
+    "No tests or commands were run; this review relies on the identity-bound inline payload.",
+    "No claim is made about host-side review tier application or delivery state.",
+    "The payload does not establish #822 or reviewer worker backend contract compatibility."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

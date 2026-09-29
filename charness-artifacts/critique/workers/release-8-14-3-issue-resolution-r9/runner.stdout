@@ -1,0 +1,69 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'issue-resolution #877 #878 #879: verify each fix resolves its reported defect'
+attempt_id: release-8-14-3-issue-resolution-r9
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 9292c4282d23ee2ba148e580b62f00d86f4d310e0b0c1c3f52613e0a26a5b525
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-5a0bb737763cfeb34e78a3783ad0e6f0/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-5a0bb737763cfeb34e78a3783ad0e6f0/delivery.json
+producer_run_id: run-release-8-14-3-issue-resolution-r9
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-5a0bb737763cfeb34e78a3783ad0e6f0/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-5a0bb737763cfeb34e78a3783ad0e6f0/receipt.json
+  producer_run_id: run-release-8-14-3-issue-resolution-r9
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: true
+expected_targets:
+- corca-ai/charness#877
+- corca-ai/charness#878
+- corca-ai/charness#879
+expected_targets_sha256: a6536564ca23f1304b141da3548eda70df549dca9a8081c51431de77c54985df
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 2f4f1370b82de7ff3c276d5c0e42d84b640c64f7bdcc2aa884dd2a2a9b2ba40b
+receipt_output_sha256: 2f4f1370b82de7ff3c276d5c0e42d84b640c64f7bdcc2aa884dd2a2a9b2ba40b
+packet_identity: 90649a109efd19f4625f6cabda05a78ff5492ba1ec1d6a38d00c3c791327642f
+reviewed_input_identity: 77bd02ce93f1f2c2866a1ed2138ba01c372ca480ad95cea10716c36db3aecbc7
+parent_receipt_identity: parent-ca9f4778eda9d0f777d336bb0d2f3c8f082c4488a393ebec
+provenance:
+  scope: 'issue-resolution #877 #878 #879: verify each fix resolves its reported defect'
+  packet_identity: 90649a109efd19f4625f6cabda05a78ff5492ba1ec1d6a38d00c3c791327642f
+  reviewed_input_identity: 77bd02ce93f1f2c2866a1ed2138ba01c372ca480ad95cea10716c36db3aecbc7
+  parent_receipt_identity: parent-ca9f4778eda9d0f777d336bb0d2f3c8f082c4488a393ebec
+  expected_targets_sha256: a6536564ca23f1304b141da3548eda70df549dca9a8081c51431de77c54985df
+  attempt_id: release-8-14-3-issue-resolution-r9
+  attempt_scope: 'issue-resolution #877 #878 #879: verify each fix resolves its reported
+    defect'
+  attempt_packet_identity: 90649a109efd19f4625f6cabda05a78ff5492ba1ec1d6a38d00c3c791327642f
+  attempt_parent_receipt_identity: parent-ca9f4778eda9d0f777d336bb0d2f3c8f082c4488a393ebec
+  result_packet_identity: 90649a109efd19f4625f6cabda05a78ff5492ba1ec1d6a38d00c3c791327642f
+  result_reviewed_input_identity: 77bd02ce93f1f2c2866a1ed2138ba01c372ca480ad95cea10716c36db3aecbc7
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 9292c4282d23ee2ba148e580b62f00d86f4d310e0b0c1c3f52613e0a26a5b525
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

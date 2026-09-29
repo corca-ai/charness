@@ -1,0 +1,332 @@
+"""Interrupted-lane WIP checkpoint across merges and clean trees (#877).
+
+A lane that ends mid-merge must either commit the resolved merge as its
+WIP merge candidate or report a distinct `unresolved merge in progress`
+blocker naming the conflicted paths — never a generic partial-commit
+failure. A lane that ends with a clean tree on top of its own commits
+names the branch tip as the candidate instead of failing the checkpoint.
+"""
+
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+from scripts.task_run import task_run_checkpoint as checkpoint_owner
+from scripts.task_run import task_run_lane_runner
+from scripts.task_run.task_run_contract import MixedScopeMergeError, UnresolvedMergeError
+
+from .test_task_run_fixtures import _codex, _commit, _git, _repo, _run
+
+_SPECS = [{"path": "module.py", "kind": "exact"}]
+_IDENTITY = ("-c", "user.email=test@example.com", "-c", "user.name=test")
+
+
+def _git_no_check(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", *args], cwd=repo, check=False, capture_output=True, text=True
+    )
+
+
+def _start_merge(repo: Path) -> None:
+    _git(repo, "checkout", "-qb", "side-change")
+    (repo / "module.py").write_text("SIDE = 1\n", encoding="utf-8")
+    _commit(repo, "side change", "module.py")
+    _git(repo, "checkout", "-q", "-")
+    (repo / "module.py").write_text("LANE = 1\n", encoding="utf-8")
+    _commit(repo, "lane change", "module.py")
+    merge = _git_no_check(repo, *_IDENTITY, "merge", "--no-commit", "side-change")
+    assert merge.returncode != 0
+
+
+def test_checkpoint_bootstrap_reinserts_repo_root() -> None:
+    root = next(
+        p
+        for p in Path(checkpoint_owner.__file__).resolve().parents
+        if (p / "scripts" / "adapter_lib.py").is_file()
+    )
+    assert str(root) in sys.path
+    while str(root) in sys.path:
+        sys.path.remove(str(root))
+    try:
+        checkpoint_owner._load_repo_runtime_bootstrap()
+        assert str(root) in sys.path
+    finally:
+        if str(root) not in sys.path:
+            sys.path.insert(0, str(root))
+
+
+def test_resolved_merge_commits_a_wip_merge_candidate(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    _start_merge(repo)
+    _git(repo, "checkout", "--ours", "--", "module.py")
+    _git(repo, "add", "--", "module.py")
+
+    commit = task_run_lane_runner._checkpoint_interrupted_lane(
+        repo, base, [dict(_SPECS[0])]
+    )
+
+    assert commit["status"] == "committed"
+    parents = (
+        _git(repo, "rev-list", "--parents", "-n", "1", commit["sha"])
+        .stdout.strip()
+        .split()
+    )
+    assert len(parents) == 3
+
+
+def test_staged_conflict_markers_raise_unresolved_blocker(tmp_path: Path) -> None:
+    """Staging marker content clears the unmerged listing but not the markers."""
+    repo = _repo(tmp_path)
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    _start_merge(repo)
+    _git(repo, "add", "--", "module.py")
+    assert _git(repo, "diff", "--name-only", "--diff-filter=U").stdout.strip() == ""
+
+    with pytest.raises(UnresolvedMergeError) as raised:
+        task_run_lane_runner._checkpoint_interrupted_lane(
+            repo, base, [dict(_SPECS[0])]
+        )
+
+    assert raised.value.conflicted_paths == ["module.py"]
+
+
+def test_unresolved_merge_raises_a_distinct_blocker(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    _start_merge(repo)
+
+    with pytest.raises(UnresolvedMergeError) as raised:
+        task_run_lane_runner._checkpoint_interrupted_lane(
+            repo, base, [dict(_SPECS[0])]
+        )
+
+    assert raised.value.conflicted_paths == ["module.py"]
+    assert str(raised.value) == "unresolved merge in progress: module.py"
+
+
+def test_resolved_merge_with_out_of_scope_changes_is_not_committed(
+    tmp_path: Path,
+) -> None:
+    """A resolved merge touching out-of-scope paths keeps the worktree and reports."""
+    repo = _repo(tmp_path)
+    (repo / "other.py").write_text("OTHER = 1\n", encoding="utf-8")
+    _commit(repo, "add out-of-scope file", "other.py")
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    _start_merge(repo)
+    (repo / "other.py").write_text("OTHER = 2\n", encoding="utf-8")
+    _git(repo, "checkout", "--ours", "--", "module.py")
+    _git(repo, "add", "--", "module.py", "other.py")
+    head_before = _git(repo, "rev-parse", "HEAD").stdout.strip()
+
+    with pytest.raises(MixedScopeMergeError) as raised:
+        task_run_lane_runner._checkpoint_interrupted_lane(
+            repo, base, [dict(_SPECS[0])]
+        )
+
+    assert raised.value.out_of_scope_paths == ["other.py"]
+    assert "outside the declared scope: other.py" in str(raised.value)
+    assert _git(repo, "rev-parse", "HEAD").stdout.strip() == head_before
+
+
+def test_resolved_merge_with_unrelated_residue_is_not_committed(
+    tmp_path: Path,
+) -> None:
+    repo = _repo(tmp_path)
+    (repo / "revertme.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "mover.py").write_text("VALUE = 1\n", encoding="utf-8")
+    _commit(repo, "add revert and rename targets", "revertme.py", "mover.py")
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    _start_merge(repo)
+    _git(repo, "checkout", "--ours", "--", "module.py")
+    _git(repo, "add", "--", "module.py")
+    (repo / "stray_untracked.py").write_text("STRAY = 1\n", encoding="utf-8")
+    (repo / "staged_extra.py").write_text("EXTRA = 1\n", encoding="utf-8")
+    _git(repo, "add", "--", "staged_extra.py")
+    (repo / "pkg").mkdir()
+    (repo / "pkg" / "nested.py").write_text("NESTED = 1\n", encoding="utf-8")
+    (repo / "revertme.py").write_text("VALUE = 2\n", encoding="utf-8")
+    _git(repo, "add", "--", "revertme.py")
+    (repo / "revertme.py").write_text("VALUE = 1\n", encoding="utf-8")
+    _git(repo, "mv", "mover.py", "moved.py")
+
+    with pytest.raises(MixedScopeMergeError) as raised:
+        task_run_lane_runner._checkpoint_interrupted_lane(
+            repo, base, [dict(_SPECS[0])]
+        )
+
+    assert raised.value.out_of_scope_paths == [
+        "moved.py",
+        "mover.py",
+        "pkg/nested.py",
+        "revertme.py",
+        "staged_extra.py",
+        "stray_untracked.py",
+    ]
+
+
+def test_resolved_merge_with_base_restoration_is_not_committed(
+    tmp_path: Path,
+) -> None:
+    """Base-relative cancellation must not hide a path the merge still changes.
+
+    outside.txt returns to its base version, so it cancels out of the
+    base-relative changed population — but the merge commit changes it
+    relative to its first parent, and the guard reads the dirty population.
+    """
+    repo = _repo(tmp_path)
+    (repo / "outside.txt").write_text("0\n", encoding="utf-8")
+    _commit(repo, "add outside file", "outside.txt")
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    (repo / "module.py").write_text("LANE = 1\n", encoding="utf-8")
+    (repo / "outside.txt").write_text("1\n", encoding="utf-8")
+    _commit(repo, "lane commit", "module.py", "outside.txt")
+    _git(repo, "checkout", "-qb", "side-change", base)
+    (repo / "module.py").write_text("SIDE = 1\n", encoding="utf-8")
+    _commit(repo, "side change", "module.py")
+    _git(repo, "checkout", "-q", "-")
+    merge = _git_no_check(repo, *_IDENTITY, "merge", "--no-commit", "side-change")
+    assert merge.returncode != 0
+    _git(repo, "checkout", "--ours", "--", "module.py")
+    (repo / "outside.txt").write_text("0\n", encoding="utf-8")
+    _git(repo, "add", "--", "module.py", "outside.txt")
+
+    with pytest.raises(MixedScopeMergeError) as raised:
+        task_run_lane_runner._checkpoint_interrupted_lane(
+            repo, base, [dict(_SPECS[0])]
+        )
+
+    assert raised.value.out_of_scope_paths == ["outside.txt"]
+
+
+def test_clean_tree_with_lane_commits_reuses_the_tip(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    (repo / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+    tip = _commit(repo, "lane commit", "module.py")
+
+    commit = task_run_lane_runner._checkpoint_interrupted_lane(
+        repo, base, [dict(_SPECS[0])]
+    )
+
+    assert commit["status"] == "committed"
+    assert commit["sha"] == tip
+    assert commit["correctness_verified"] is False
+
+
+def test_failed_lane_mid_merge_reports_the_distinct_blocker(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "branch=$(git symbolic-ref --short HEAD)\n"
+        "git checkout -qb side-change\n"
+        "printf 'SIDE = 1\\n' > module.py\n"
+        "git add -- module.py\n"
+        "git -c user.email=test@example.com -c user.name=test commit -m 'side change'\n"
+        'git checkout -q "$branch"\n'
+        "printf 'LANE = 1\\n' > module.py\n"
+        "git add -- module.py\n"
+        "git -c user.email=test@example.com -c user.name=test commit -m 'lane change'\n"
+        "git -c user.email=test@example.com -c user.name=test merge --no-commit side-change\n"
+        "exit 1",
+    )
+
+    payload = _run(repo, tmp_path, executable)
+
+    assert payload["status"] == "failed", payload
+    assert payload["blocker"] == "unresolved merge in progress: module.py"
+    assert payload["candidate"]["commit"]["status"] == "failed"
+    assert (
+        payload["candidate"]["commit"]["error"]
+        == "unresolved merge in progress: module.py"
+    )
+
+
+def test_failed_lane_with_mixed_merge_reports_the_scope_blocker(
+    tmp_path: Path,
+) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "branch=$(git symbolic-ref --short HEAD)\n"
+        "git checkout -qb side-change\n"
+        "printf 'SIDE = 1\\n' > module.py\n"
+        "git add -- module.py\n"
+        "git -c user.email=test@example.com -c user.name=test commit -m 'side change'\n"
+        'git checkout -q "$branch"\n'
+        "printf 'LANE = 1\\n' > module.py\n"
+        "git add -- module.py\n"
+        "git -c user.email=test@example.com -c user.name=test commit -m 'lane change'\n"
+        "git -c user.email=test@example.com -c user.name=test merge --no-commit side-change\n"
+        "git checkout -q --ours -- module.py\n"
+        "git add -- module.py\n"
+        "printf 'OTHER = 1\\n' > other.py\n"
+        "exit 1",
+    )
+
+    payload = _run(repo, tmp_path, executable)
+
+    assert payload["status"] == "failed", payload
+    assert (
+        payload["blocker"]
+        == "resolved merge changes paths outside the declared scope: other.py"
+    )
+
+
+def test_failed_lane_with_resolved_merge_names_the_merge_sha(
+    tmp_path: Path,
+) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "branch=$(git symbolic-ref --short HEAD)\n"
+        "git checkout -qb side-change\n"
+        "printf 'SIDE = 1\\n' > module.py\n"
+        "git add -- module.py\n"
+        "git -c user.email=test@example.com -c user.name=test commit -m 'side change'\n"
+        'git checkout -q "$branch"\n'
+        "printf 'LANE = 1\\n' > module.py\n"
+        "git add -- module.py\n"
+        "git -c user.email=test@example.com -c user.name=test commit -m 'lane change'\n"
+        "git -c user.email=test@example.com -c user.name=test merge --no-commit side-change\n"
+        "git checkout -q --ours -- module.py\n"
+        "git add -- module.py\n"
+        "exit 1",
+    )
+
+    payload = _run(repo, tmp_path, executable)
+    merge_sha = _git(repo, "rev-parse", "lane/task-run").stdout.strip()
+    parents = (
+        _git(repo, "rev-list", "--parents", "-n", "1", merge_sha)
+        .stdout.strip()
+        .split()
+    )
+
+    assert payload["status"] == "failed", payload
+    assert payload["target_sha"] == merge_sha
+    assert len(parents) == 3
+    assert payload["candidate"]["status"] == "wip"
+    assert "WIP candidate commit failed" not in (payload["blocker"] or "")
+
+
+def test_failed_lane_with_clean_tree_names_the_tip(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "printf 'VALUE = 2\\n' > module.py\n"
+        "git add -- module.py\n"
+        "git -c user.email=test@example.com -c user.name=test commit -m 'lane commit'\n"
+        "exit 1",
+    )
+
+    payload = _run(repo, tmp_path, executable)
+    tip = _git(repo, "rev-parse", "lane/task-run").stdout.strip()
+
+    assert payload["status"] == "failed", payload
+    assert payload["target_sha"] == tip
+    assert payload["candidate"]["status"] == "wip"
+    assert "WIP candidate commit failed" not in (payload["blocker"] or "")

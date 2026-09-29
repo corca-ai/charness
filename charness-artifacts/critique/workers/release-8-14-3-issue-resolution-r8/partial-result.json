@@ -1,0 +1,79 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "addressed",
+      "concern": "Merge checkpoint could commit unrelated merge content.",
+      "disposition": "Resolved-merge dirty paths are checked against declared scope; conflicts and mixed-scope merges raise typed blockers."
+    },
+    {
+      "bin": "addressed",
+      "concern": "#816/#822 empty or pre-edit lanes could acquire empty WIP commits or unknown mid-edit classification.",
+      "disposition": "No scoped changes produce a skipped checkpoint; the pinned interrupted-before-edit tests require known absent state and preserve WIP only for actual or unproven changes."
+    },
+    {
+      "bin": "no observed regression in supplied semantic inputs",
+      "concern": "Reviewer result, lifecycle, or worker contracts could be relaxed by #878.",
+      "disposition": "The backend change is confined to Claude schema argument construction and typed backend-failure detail; supplied result-coverage and lifecycle contracts remain present and unchanged in the bound inputs."
+    },
+    {
+      "bin": "valid counterweight, not a reason to fail launch preflight",
+      "concern": "Removing all unrooted file-shaped recall could lose useful advisory evidence (#880).",
+      "disposition": "Keep advisory recall if useful, but separate it from candidates that trigger out-of-scope preflight refusal."
+    }
+  ],
+  "findings": [
+    {
+      "action": "Restrict launch-scope candidates to existing repository paths or tokens rooted at an actual repository top-level name; preserve #880 recall through a separate advisory path that does not create scope-preflight findings.",
+      "evidence": [
+        "_keep_candidate accepts _looks_like_file(normalized) as an independent alternative to a real top-level segment or existing path.",
+        "The test expects zebra/qux.ts to be suggested despite no zebra top-level entry or existing path."
+      ],
+      "id": "879-foreign-file-token",
+      "severity": "major",
+      "summary": "Nonexistent slash tokens with file extensions are still treated as repository paths regardless of their first segment, contrary to the issue's proposed foothold/existence rule and leaving a false-refusal route in place."
+    }
+  ],
+  "kind": "charness.bounded_review.v1",
+  "lens": "Fresh-eye verification of #877–#879 fixes against the reported defects and pinned contracts",
+  "next_move": "Repair #879 so foreign unrooted tokens cannot trigger scope preflight, retain any #880 recall separately from blocking scope evidence, then rerun the bounded review.",
+  "non_claims": [
+    "No tests were run; this is a static review of the packet-bound semantic inputs.",
+    "The supplied packet does not include a separate #880 contract/test input establishing that arbitrary unrooted file-shaped tokens must be launch-preflight candidates.",
+    "No conclusion is made about content outside the packet-bound inputs."
+  ],
+  "packet_sha256": "49aa79fefc4c28b3a990c0e4099c15108478b3b71a5ca3ccd1cf0700f6735bb8",
+  "reviewed_input_identity_sha256": "4898db70983f13992348b852dd5cd2f6fd48520cf0365f501ea10ef6ef8dcf76",
+  "target_observations": [
+    {
+      "evidence": [
+        "task_run_checkpoint.py checks merge state before the empty-lane skip, refuses conflicted merges with named paths, checks resolved merge dirty paths against refreshed declared scopes, and commits a resolved in-scope merge without a pathspec.",
+        "task_run_git.py detects unmerged paths and leftover conflict markers, commits a resolved merge as a whole, and returns the branch tip for a clean tree with commits beyond base.",
+        "test_task_run_merge_checkpoint_877.py covers those behaviors, including out-of-scope merge residue; test_task_run_interrupted_before_edit.py pins the empty-skip and before-edit receipt behavior."
+      ],
+      "summary": "The checkpoint fix handles resolved and unresolved merges and reuses a clean branch tip while preserving the pinned #816/#822 empty-checkpoint discipline.",
+      "target": "corca-ai/charness#877",
+      "verdict": "pass"
+    },
+    {
+      "evidence": [
+        "reviewer_worker_backend.py parses the schema and removes $schema before serializing it into Claude's --json-schema argument.",
+        "On a nonzero backend exit, execute_backend reads the first nonempty stderr line and includes it in the typed backend-failed WorkerError.",
+        "test_reviewer_worker_backend.py checks schema stripping, stderr propagation, and the no-stderr fallback."
+      ],
+      "summary": "The Claude backend removes the unsupported top-level $schema key and includes captured stderr in nonzero-exit failure reasons.",
+      "target": "corca-ai/charness#878",
+      "verdict": "pass"
+    },
+    {
+      "evidence": [
+        "task_run_scope_evidence.py's _keep_candidate returns true for any token whose last segment has a file extension through _looks_like_file, even when its first segment is not a repository top-level name and the path does not exist.",
+        "The issue explicitly identifies foreign slash tokens such as corca-org/ceal and proposes retaining only candidates rooted at a real top-level name or existing in the repository; the implementation relaxes that rule for all file-shaped slash tokens.",
+        "test_task_run_scope_evidence_879.py codifies this exception with zebra/qux.ts, while the pinned #880 advisory-recall concern is not demonstrated to require every unrooted file-shaped token to enter launch scope preflight."
+      ],
+      "summary": "The scope heuristic still admits arbitrary file-shaped slash tokens without a repository foothold, so the reported false-preflight case is not fully resolved.",
+      "target": "corca-ai/charness#879",
+      "verdict": "block"
+    }
+  ],
+  "verdict": "block"
+}

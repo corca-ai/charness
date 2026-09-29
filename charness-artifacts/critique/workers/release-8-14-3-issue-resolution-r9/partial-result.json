@@ -1,0 +1,65 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "accepted-tradeoff",
+      "concern": "The file-shaped slash fallback can still suggest an external-looking path such as zebra/qux.ts.",
+      "disposition": "Retained as advisory recall, consistent with #880 and the explicit #879 test; scope enforcement remains on the actual candidate."
+    },
+    {
+      "bin": "controlled-boundary",
+      "concern": "Resolved merge handling commits the whole index during MERGE_HEAD.",
+      "disposition": "The checkpoint verifies conflict state and checks dirty paths against refreshed declared scope before whole-merge commit; empty lanes still skip and out-of-scope residue still blocks."
+    },
+    {
+      "bin": "no-new-defect-evidence",
+      "concern": "Stripping $schema may alter Claude schema handling beyond the reported rejection.",
+      "disposition": "The backend preserves the remaining schema payload and the supplied test pins that behavior; no contradictory contract evidence appears in the reviewed bytes."
+    }
+  ],
+  "findings": [],
+  "kind": "charness.bounded_review.v1",
+  "lens": "Read each issue body and verify each fix on the bound final tree; preserve #880 advisory recall, #816/#822 checkpoint discipline, and reviewer worker backend contract.",
+  "next_move": "No fix follow-up is indicated by the bound evidence; retain the three issue-resolution results as passing.",
+  "non_claims": [
+    "This review did not execute tests or commands; it assessed only the identity-bound semantic payload supplied in the packet.",
+    "The packet contains no evidence of a live Claude CLI invocation after the schema change."
+  ],
+  "packet_sha256": "90649a109efd19f4625f6cabda05a78ff5492ba1ec1d6a38d00c3c791327642f",
+  "reviewed_input_identity_sha256": "77bd02ce93f1f2c2866a1ed2138ba01c372ca480ad95cea10716c36db3aecbc7",
+  "target_observations": [
+    {
+      "evidence": [
+        "Issue #877 requires a resolved MERGE_HEAD to be committed as a whole WIP merge, or a distinct unresolved-merge blocker with conflicted paths; a clean tree with lane commits should use the branch tip.",
+        "task_run_checkpoint checks merge state before the no-scoped-change skip, rejects unresolved paths and conflict-marker paths, refuses resolved merges with out-of-scope dirty paths, and commits admitted resolved merges without a pathspec.",
+        "For non-merge state, no scoped changes still returns a skipped checkpoint; commit-only carrier state returns the head tip. task_run preserves distinct merge errors in the blocker detail.",
+        "The supplied #877 tests cover resolved and unresolved merges, mixed-scope refusal, marker detection, tip reuse, and terminal target_sha reporting. The supplied #822 tests pin known-before-edit classification for skipped checkpoints and retain unknown WIP for failed checkpoints."
+      ],
+      "summary": "The checkpoint handles both reported cases and retains the pinned empty-lane and before-edit distinctions.",
+      "target": "corca-ai/charness#877",
+      "verdict": "pass"
+    },
+    {
+      "evidence": [
+        "Issue #878 reports Claude CLI rejection of the top-level draft 2020-12 $schema and asks for the stderr cause to appear in the lifecycle reason.",
+        "reviewer_worker_backend._command parses the schema and removes only the top-level $schema key before compact JSON is passed to --json-schema.",
+        "execute_backend reads the first nonempty stderr line, bounds it to 500 characters, and includes it in the typed backend-failed message; without stderr it retains a plain exit-code message.",
+        "The supplied backend tests pin preservation of schema shape, stripping of $schema, surfaced stderr, and fallback behavior when stderr is absent or blank. The backend remains in its established command/execution/normalization owner; no lifecycle or result-contract change is introduced here."
+      ],
+      "summary": "The Claude backend removes the rejected schema dialect marker and includes captured backend stderr in nonzero-exit failures.",
+      "target": "corca-ai/charness#878",
+      "verdict": "pass"
+    },
+    {
+      "evidence": [
+        "Issue #879 asks to drop dotted identifiers and foreign slash tokens, retain paths rooted at real top-level directories or existing paths, and remove the scope-mismatch phrase switch.",
+        "_keep_candidate retains candidates with a repository top-level first segment, an existing path, or a file-shaped slash token. The parser has no scope-mismatch substring switch; supplied tests cover dotted identifiers, origin/main, task/abc, npm scope and fs/promises, plus new paths and line-number paths under real top-level directories.",
+        "The reported false-refusal premise does not hold in these bytes: task_run_plan records would_touch_outside_declared findings and warnings, while task_run_prelaunch renders them as explicitly non-blocking advisory text. run_prelaunch_gates only returns blockers for a central premise failure or acceptance-skeleton baseline; scope findings do not raise or block launch.",
+        "The supplied launch-hygiene test asserts the scope-omission marker executes and findings remain recorded, preserving #880 advisory recall. A file-shaped slash token without a repository foothold remains a suggestion as separately pinned by the #879 test."
+      ],
+      "summary": "The path heuristic filters identifier/ref-like tokens while preserving file-shaped advisory recall; the alleged launch refusal is contradicted by the bound prelaunch and test code.",
+      "target": "corca-ai/charness#879",
+      "verdict": "pass"
+    }
+  ],
+  "verdict": "pass"
+}
