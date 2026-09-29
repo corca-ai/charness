@@ -1,0 +1,66 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'v8.14.3 patch final tree: three issue fixes (877/878/879) plus focused tests'
+attempt_id: release-8-14-3-closing
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 77fe9fb69a1aba0d0406d3fd19743d71a671bf8d79b27a820d712a6597238112
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release-8-14-3-closing/receipt.json
+ledger_path: charness-artifacts/critique/workers/release-8-14-3-closing/delivery.json
+producer_run_id: run-release-8-14-3-closing
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release-8-14-3-closing/result.json
+  receipt_file: charness-artifacts/critique/workers/release-8-14-3-closing/receipt.json
+  producer_run_id: run-release-8-14-3-closing
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 01164c9595dcb4342774d4dfca86fe1630544e00718fddffb9a5c338668533b8
+receipt_output_sha256: 01164c9595dcb4342774d4dfca86fe1630544e00718fddffb9a5c338668533b8
+packet_identity: 030cd37a8155528adf11488aa9a101c29345f6f2724a1a28fd35514ea6140359
+reviewed_input_identity: 89cebf2d9a0c839a76308a8ff04c39876b782a7b18ef463e6beefe95d3ab97c9
+parent_receipt_identity: parent-589399b2b9ddac50349156382ed5ca1e49478b0374359d4f
+provenance:
+  scope: 'v8.14.3 patch final tree: three issue fixes (877/878/879) plus focused tests'
+  packet_identity: 030cd37a8155528adf11488aa9a101c29345f6f2724a1a28fd35514ea6140359
+  reviewed_input_identity: 89cebf2d9a0c839a76308a8ff04c39876b782a7b18ef463e6beefe95d3ab97c9
+  parent_receipt_identity: parent-589399b2b9ddac50349156382ed5ca1e49478b0374359d4f
+  expected_targets_sha256: null
+  attempt_id: release-8-14-3-closing
+  attempt_scope: 'v8.14.3 patch final tree: three issue fixes (877/878/879) plus focused
+    tests'
+  attempt_packet_identity: 030cd37a8155528adf11488aa9a101c29345f6f2724a1a28fd35514ea6140359
+  attempt_parent_receipt_identity: parent-589399b2b9ddac50349156382ed5ca1e49478b0374359d4f
+  result_packet_identity: 030cd37a8155528adf11488aa9a101c29345f6f2724a1a28fd35514ea6140359
+  result_reviewed_input_identity: 89cebf2d9a0c839a76308a8ff04c39876b782a7b18ef463e6beefe95d3ab97c9
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 77fe9fb69a1aba0d0406d3fd19743d71a671bf8d79b27a820d712a6597238112
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

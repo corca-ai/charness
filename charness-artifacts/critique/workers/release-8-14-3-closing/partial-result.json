@@ -1,0 +1,48 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "discharged",
+      "concern": "#877 merge checkpoints could commit out-of-scope residue or hide unresolved conflicts.",
+      "disposition": "The checkpoint checks unresolved merges before the empty-lane skip and checks HEAD-relative dirty paths before committing a resolved merge. Focused tests cover mixed scope, staged and untracked residue, renames, and base-relative cancellation. Typed merge errors survive terminal rendering."
+    },
+    {
+      "bin": "discharged",
+      "concern": "#816/#822 checkpoint discipline could regress.",
+      "disposition": "Ordinary checkpoints retain scoped pathspec commits and skip absent scoped changes. Clean commit-only candidates reuse the tip. The implementation introduces no reset, restore, checkout, or cleanup operation; WIP results remain explicitly unverified."
+    },
+    {
+      "bin": "discharged",
+      "concern": "#879 precision could remove #880 advisory recall.",
+      "disposition": "Repository-root-aware filtering rejects the supplied identifier and foreign-reference cases while preserving existing paths, new paths under known top-level names, and file-shaped slash tokens without a repository foothold. The planner passes the task repository explicitly; suggestions do not modify declared scope."
+    },
+    {
+      "bin": "discharged",
+      "concern": "#878 could weaken the reviewer backend contract.",
+      "disposition": "Only Claude's inline schema representation loses the top-level $schema key; the source schema file is untouched. Process failure statuses and exit codes remain typed, and nonzero exits still stop before normalization. Diagnostic stderr adds context without converting failure into success."
+    },
+    {
+      "bin": "discharged",
+      "concern": "Claude-specific compatibility handling might belong outside skills/shared.",
+      "disposition": "reviewer_worker_backend.py already owns backend command construction and normalization for both supported backends. Keeping this transformation inside its claude_p branch preserves that boundary without spreading Claude behavior into generic task execution or review policy."
+    },
+    {
+      "bin": "limitation",
+      "concern": "Focused test source might be mistaken for executed or live verification.",
+      "disposition": "The supplied tests support the intended cases by inspection. No test execution, live Claude acceptance, packaging synchronization, or release verification is established by this review."
+    }
+  ],
+  "findings": [],
+  "kind": "charness.bounded_review.v1",
+  "lens": "Correctness and contract preservation: #877/#878/#879, #880 advisory recall, #816/#822 checkpoint discipline, reviewer worker backend contract, and skills/shared boundary ownership.",
+  "next_move": "Use this bounded static review alongside executed focused and pinned-contract regressions; it does not authorize release.",
+  "non_claims": [
+    "Reviewed all 13 supplied semantic payloads; no workspace content substituted for the bound input.",
+    "No tests or live backends were executed, and no workspace files were edited.",
+    "Reviewer tier application and end-to-end release readiness are not established.",
+    "{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ],
+  "packet_sha256": "030cd37a8155528adf11488aa9a101c29345f6f2724a1a28fd35514ea6140359",
+  "reviewed_input_identity_sha256": "89cebf2d9a0c839a76308a8ff04c39876b782a7b18ef463e6beefe95d3ab97c9",
+  "target_observations": null,
+  "verdict": "pass"
+}
