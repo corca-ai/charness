@@ -1,0 +1,38 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "resolved",
+      "concern": "#877 merge and clean-tree checkpoint failures",
+      "disposition": "The checkpoint distinguishes unresolved merges, checks staged and unstaged conflict markers, refuses out-of-scope dirty merge paths, and commits resolved merges without a pathspec. Clean commit-only candidates reuse HEAD. The supplied tests cover these branches, including base-relative cancellation and lifecycle blocker propagation."
+    },
+    {
+      "bin": "preserved",
+      "concern": "#816/#822 checkpoint discipline",
+      "disposition": "Ordinary checkpoints retain the no-scoped-change skip and path-limited commit. Merge checkpoints explicitly check dirty paths before staging everything. WIP results remain correctness-unverified, and task completion remains responsible for approval eligibility."
+    },
+    {
+      "bin": "resolved",
+      "concern": "#878 Claude schema rejection and hidden backend error",
+      "disposition": "Claude command construction removes only the top-level $schema from the parsed inline schema. Nonzero backend exits retain typed backend-failed status and exit code, append the first nonempty stderr line, and fail before normalization or publication. Codex command construction and typed process failures remain intact."
+    },
+    {
+      "bin": "resolved",
+      "concern": "#879 token false positives versus #880 advisory recall",
+      "disposition": "Scope extraction uses the consuming repository root, drops the reported dotted identifiers and foreign extensionless slash tokens, and removes the scope-mismatch substring switch. Existing paths, new paths under repository top-level names, and file-shaped slash tokens retain advisory recall."
+    }
+  ],
+  "findings": [],
+  "kind": "charness.bounded_review.v1",
+  "lens": "issue-resolution #877 #878 #879; preserve #880 advisory recall, #816/#822 checkpoint discipline, and reviewer worker backend contract",
+  "next_move": "Proceed with the parent’s verification and issue-closeout checks for this exact reviewed input.",
+  "non_claims": [
+    "This is a static review of all supplied semantic payloads; test bodies were inspected but not executed.",
+    "No live Claude CLI run, full-repository validation, or issue closure was performed.",
+    "No structured prepared_targets were supplied.",
+    "Goal lineage is not-goal-bound; no Goal Run completion is claimed."
+  ],
+  "packet_sha256": "17936592c4637cd7d30e7e7f5c3e4bc71af3bce75bbd287e740a2feb2b1f931e",
+  "reviewed_input_identity_sha256": "8c7bc52bc08709a246d241213db030ec365b2d59820997afadbcfa5d3a63d041",
+  "target_observations": null,
+  "verdict": "pass"
+}

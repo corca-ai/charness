@@ -1,0 +1,68 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "bounded residual; no packet evidence of a missed marker form",
+      "concern": "Merge marker detection depends on git diff --check output spelling and may not establish semantic conflict resolution beyond recognized marker lines.",
+      "disposition": "The approach also checks Git's unmerged index and only the marker diagnostics from staged and unstaged diff checks; the tests cover both unstaged conflict and staged marker content. No concrete defect in the reported behavior is established."
+    },
+    {
+      "bin": "intentional advisory recall (#880)",
+      "concern": "Unknown-root tokens ending in a file extension may still be false-positive candidates.",
+      "disposition": "Retained deliberately by _looks_like_file and covered by the unknown-root new-file test; it is advisory evidence, not an automatic scope expansion."
+    },
+    {
+      "bin": "evidence limit, not contradiction",
+      "concern": "The inline reviewer-backend tests simulate process outcomes rather than launching an installed Claude CLI.",
+      "disposition": "The issue documents the CLI's behavior and the fix removes the identified unsupported key; the backend command and failure receipt paths are covered. No contrary backend-contract regression appears in the supplied semantic input."
+    }
+  ],
+  "findings": [],
+  "kind": "charness.bounded_review.v1",
+  "lens": "Verify issue-resolution #877, #878, and #879 fixes against reported defects and pinned contracts",
+  "next_move": "No blocking follow-up identified for #877, #878, or #879; retain the explicit WIP/unverified checkpoint semantics and #880 advisory recall behavior.",
+  "non_claims": [
+    "This review did not run the supplied tests or invoke an installed Claude CLI.",
+    "The verdict covers only the packet-bound source and test payload; it does not claim broader repository quality or release verification."
+  ],
+  "packet_sha256": "d8b6309ca8386d1b0abcfa409d8b626293c832d62482e330b543f27fe857b8c8",
+  "reviewed_input_identity_sha256": "1eeb8a99496a75e9ce4d5df70123eecd303bf77b07e1d27826608ea090423fce",
+  "target_observations": [
+    {
+      "evidence": [
+        "task_run_checkpoint.py calls _merge_state first; conflicted paths raise UnresolvedMergeError, and resolved merge dirty paths outside refreshed scopes raise MixedScopeMergeError.",
+        "task_run_git.py checks unmerged index paths and both staged and unstaged git diff --check conflict-marker reports before merge commit; _commit_merge_candidate commits without a pathspec.",
+        "task_run_checkpoint.py selects _tip_candidate(carrier[\"head_sha\"]) for the commit-only carrier after scoped changes are established.",
+        "task_run.py passes candidate_commit[\"sha\"] as target_head only for a committed checkpoint; task_run_completion.py obtains observed_head from scope candidate_carrier and sets payload target_sha from that head.",
+        "The supplied failed-lane end-to-end tests exercise unresolved merge, mixed-scope merge, resolved merge SHA propagation, and clean committed-tip propagation against real git repositories.",
+        "The checkpoint remains explicitly correctness_verified=false and WIP; state classification still requires abnormal execution and does not confer approval from a candidate SHA."
+      ],
+      "summary": "The abnormal-lane checkpoint handles merge state before the empty-change skip, commits a fully resolved in-scope merge without a pathspec, and reports unresolved or mixed-scope merges as distinct blockers. A clean lane tree with commits beyond base reuses its tip SHA. The task-run call passes a committed checkpoint SHA as target_head; completion uses target_head or observed HEAD for scope evidence, then records the resulting observed head as target_sha.",
+      "target": "#877",
+      "verdict": "pass"
+    },
+    {
+      "evidence": [
+        "reviewer_worker_backend.py loads the schema, pops only the top-level $schema key for claude_p, and serializes the remaining payload into --json-schema.",
+        "execute_backend reads and bounds the first non-empty stderr line to 500 characters and appends it to the backend-failed message when the process exits nonzero.",
+        "reviewer_worker_runtime.py catches WorkerError and stores str(exc) in the terminal receipt error; reviewer_worker.py serializes that failure receipt and returns nonzero.",
+        "Supplied unit tests assert schema-key removal, stderr propagation, unchanged plain errors when stderr is absent or blank, and that a failed backend does not publish pending output.",
+        "The runtime still validates normalized output through the canonical schema validator; the patch does not weaken result validation or change backend selection/receipt contracts."
+      ],
+      "summary": "The Claude backend removes the unsupported top-level $schema before encoding the inline --json-schema argument. For nonzero backend exits, the worker error now includes the first non-empty captured stderr line, and the runtime persists that error in its typed failure receipt while retaining the backend and output lifecycle boundary.",
+      "target": "#878",
+      "verdict": "pass"
+    },
+    {
+      "evidence": [
+        "task_run_scope_evidence.py has no scope-mismatch substring switch; dotted tokens are considered only when inline code or line-number context makes them candidates, then _keep_candidate applies repository admission.",
+        "_keep_candidate accepts candidates under a real top-level name, an existing path, or a file-shaped slash token; this preserves new files under known roots and #880 advisory recall for unknown-root filenames.",
+        "The supplied tests cover issue.create/schema identifiers, origin/main, task/x, npm scope and fs/promises rejection; new gateway/scripts file paths; unknown-root zebra/qux.ts recall; and phrase-only dotted-token rejection.",
+        "task_run_plan.py continues to record evidence paths as advisory preflight findings; the review did not identify a path from these tokens directly altering declared scope or being treated as proof of ownership."
+      ],
+      "summary": "Scope evidence now filters ordinary dotted identifiers and foreign slash tokens using repository top-level names or existing paths, removes the phrase-triggered dotted-token behavior, and retains advisory recall for file-shaped slash tokens such as new files outside known top-level names.",
+      "target": "#879",
+      "verdict": "pass"
+    }
+  ],
+  "verdict": "pass"
+}

@@ -1,0 +1,86 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Fresh-eye verification of issue-resolution #877, #878, and #879 against their reported defects and pinned contracts.",
+  "packet_sha256": "7b526dd42e04e826789eef393c415457b089f3e60542ec09b573029617edfd47",
+  "reviewed_input_identity_sha256": "096cf0e174a71287f34cb7eac2c1e4be56df92a990e6edf7e88ba235a338125b",
+  "verdict": "block",
+  "target_observations": [
+    {
+      "target": "#877",
+      "verdict": "defer",
+      "summary": "The included checkpoint logic addresses resolved and unresolved merges, and clean-tree committed tips. However, candidate propagation to the terminal receipt is not established by the supplied paths.",
+      "evidence": [
+        "task_run_checkpoint._checkpoint_interrupted_lane commits a resolved merge or raises UnresolvedMergeError/MixedScopeMergeError, and uses _tip_candidate for commit-only state.",
+        "task_run.py passes target_head only when candidate_commit has status committed, but the supplied task_run_completion.py implementation that records target_sha and candidate is absent.",
+        "Tests assert merge behavior and target_sha, but test source alone does not establish that those tests pass on the final tree."
+      ]
+    },
+    {
+      "target": "#878",
+      "verdict": "pass",
+      "summary": "The Claude command removes the unsupported top-level $schema key, and nonzero backend exits include the first nonempty stderr line in the typed failure message.",
+      "evidence": [
+        "reviewer_worker_backend._command parses the schema and pops $schema before serializing it for claude -p --json-schema.",
+        "execute_backend reads _stderr_first_line(stderr) on nonzero exit and appends it to the backend-failed message.",
+        "The supplied focused tests cover both behaviors; execution evidence was not supplied."
+      ]
+    },
+    {
+      "target": "#879",
+      "verdict": "block",
+      "summary": "The heuristic still accepts any file-shaped slash token without a repository foothold, contrary to the issue's proposal to retain candidates only when their first segment is a repository top-level name or the path exists.",
+      "evidence": [
+        "_keep_candidate returns true for _looks_like_file(normalized) even when the first segment is absent from top_level_names and the candidate does not exist.",
+        "The test explicitly preserves zebra/qux.ts as evidence, despite the proposal's stated acceptance rule; this can continue to treat foreign slash tokens as repository paths."
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "high",
+      "summary": "#877 receipt propagation is not verifiable from the bounded input.",
+      "evidence": [
+        "The supplied task_run.py passes a committed checkpoint sha as target_head to _complete_task.",
+        "The completion owner that maps that value into target_sha and preserves candidate state was not included in the semantic payload.",
+        "The tests' target_sha assertions are not runtime proof."
+      ],
+      "action": "Provide the completion/receipt owner and focused execution evidence for merge, clean-tip, and unresolved-merge cases before approval."
+    },
+    {
+      "id": "F2",
+      "severity": "medium",
+      "summary": "#879 retains a broad file-shaped-token escape hatch for foreign slash tokens.",
+      "evidence": [
+        "_keep_candidate accepts any slash path whose final segment has an extension, regardless of repository top-level names or existence.",
+        "The issue proposal specifies retaining a candidate only if its first segment is a repository top-level name or it exists; zebra/qux.ts is specifically accepted by a new test."
+      ],
+      "action": "Align filtering and tests with the stated repository foothold rule, or document why #880 requires this broader recall contract and add a targeted false-positive boundary."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "#880 advisory recall could be weakened by requiring repository foothold for all path suggestions.",
+      "bin": "valid counterweight, not resolved by current evidence",
+      "disposition": "The broad _looks_like_file exception preserves recall, but the supplied packet does not show that this exception is required by #880 or bounded against foreign slash-token false positives."
+    },
+    {
+      "concern": "#816/#822 checkpoint discipline could be broken by merge handling or clean-tip reuse.",
+      "bin": "partly addressed",
+      "disposition": "The checkpoint code retains the no-empty/no-scoped-change skip and commits whole resolved merges; #822-specific behavior and completion receipt propagation are not established in the supplied input."
+    },
+    {
+      "concern": "Reviewer worker backend contract could be broken by schema stripping or stderr reporting.",
+      "bin": "no defect observed in supplied implementation",
+      "disposition": "The changes are localized to Claude command construction and nonzero backend errors, and the supplied tests preserve typed process failures and normalization behavior."
+    }
+  ],
+  "next_move": "Defer approval until #877 receipt propagation is verified from its completion owner and focused execution evidence, and resolve the #879 broad file-shaped-token exception against #880's pinned recall contract.",
+  "non_claims": [
+    "No tests or commands were run; the supplied packet contains source and test bytes, not execution results.",
+    "The packet does not include the #822 implementation surface or the task-run completion owner, so those contracts cannot be fully verified.",
+    "No claims are made about files outside the supplied semantic payload."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

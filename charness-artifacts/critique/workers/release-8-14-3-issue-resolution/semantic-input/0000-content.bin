@@ -1,0 +1,33 @@
+title:	task run: WIP candidate commit fails during an in-progress merge, and on a clean tree with commits
+state:	OPEN
+author:	spilist (Hwidong Bae)
+labels:	
+comments:	0
+assignees:	
+projects:	
+milestone:	
+issue-type:	
+parent:	
+sub-issues:	
+sub-issues-completed:	
+blocked-by:	
+blocking:	
+number:	877
+--
+## Problem
+
+When a task lane ends (failed or timed-out) while its worktree is in the middle of a `git merge`, the WIP candidate commit fails with `fatal: cannot do a partial commit during a merge.` The lane result then has no `target_sha`, so downstream verification skips it and the work only survives as an unresolved merge in the retained worktree.
+
+Observed 2026-09-26 in a multi-lane session: lane `ws-link-guard-e` ended with 46 changed paths and `MERGE_HEAD` present; its result blocker was `failed WIP candidate commit failed: git commit failed: fatal: cannot do a partial commit during a merge.`
+
+A related variant: a timed-out lane with a clean tree reports `WIP candidate commit failed: ... nothing to commit, working tree clean` as a blocker, although the branch tip already holds the lane's commits. The tip should be the candidate.
+
+## Expected
+
+- If `MERGE_HEAD` exists at the end of the lane, then either commit the merge as a WIP merge commit (`git commit` with no pathspec, all conflicts staged) when no conflict markers remain, or report a distinct blocker `unresolved merge in progress` with the conflicted paths. Do not report a generic commit failure.
+- If the tree is clean and the branch has commits beyond the base, set `target_sha` to the branch tip instead of reporting a WIP commit failure.
+
+## Why it matters
+
+Both cases lose the candidate sha, so the orchestrator must inspect the worktree by hand. A continuation lane cannot start from a named commit.
+

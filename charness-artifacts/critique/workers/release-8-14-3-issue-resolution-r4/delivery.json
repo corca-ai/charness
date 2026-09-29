@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8-14-3-issue-resolution-r4",
+      "scope": "issue-resolution #877 #878 #879: verify each fix resolves its reported defect",
+      "packet_identity": "7b526dd42e04e826789eef393c415457b089f3e60542ec09b573029617edfd47",
+      "parent_receipt_identity": "parent-c770bedda0a612be1d5086237c65083d765b7add2deffd45",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-09-29T11:30:42Z",
+      "history": [
+        {
+          "event_id": "4b7fffc8bc5e4b52b62af6a9a9ba9e2e",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-09-29T11:30:16Z",
+          "attempt_id": "release-8-14-3-issue-resolution-r4",
+          "scope": "issue-resolution #877 #878 #879: verify each fix resolves its reported defect",
+          "packet_identity": "7b526dd42e04e826789eef393c415457b089f3e60542ec09b573029617edfd47",
+          "parent_receipt_identity": "parent-c770bedda0a612be1d5086237c65083d765b7add2deffd45",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "0b16e285b6ad4511accf51d5aabdcdee",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-09-29T11:30:16Z",
+          "attempt_id": "release-8-14-3-issue-resolution-r4",
+          "scope": "issue-resolution #877 #878 #879: verify each fix resolves its reported defect",
+          "packet_identity": "7b526dd42e04e826789eef393c415457b089f3e60542ec09b573029617edfd47",
+          "parent_receipt_identity": "parent-c770bedda0a612be1d5086237c65083d765b7add2deffd45",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "cb53c9bf3db249199bef4a57a413baf2",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-09-29T11:30:42Z",
+          "attempt_id": "release-8-14-3-issue-resolution-r4",
+          "scope": "issue-resolution #877 #878 #879: verify each fix resolves its reported defect",
+          "packet_identity": "7b526dd42e04e826789eef393c415457b089f3e60542ec09b573029617edfd47",
+          "parent_receipt_identity": "parent-c770bedda0a612be1d5086237c65083d765b7add2deffd45",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "dae633b9bd87d6d247e05b30c2be0209ec631219fb5ba1daf0e2b568ce294257"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "096cf0e174a71287f34cb7eac2c1e4be56df92a990e6edf7e88ba235a338125b",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "0fa927bbdd92c7f315245822a6858a2e993a4d353fe845632667489dfb5f2f54",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8-14-3-issue-resolution-r4/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8-14-3-issue-resolution-r4/receipt.json",
+      "producer_run_id": "run-release-8-14-3-issue-resolution-r4",
+      "findings_identity": "dae633b9bd87d6d247e05b30c2be0209ec631219fb5ba1daf0e2b568ce294257"
+    }
+  ]
+}

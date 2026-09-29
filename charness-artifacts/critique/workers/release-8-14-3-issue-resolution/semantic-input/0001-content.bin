@@ -1,0 +1,40 @@
+title:	critique claude_p backend: --json-schema rejects draft 2020-12 $schema, every run fails
+state:	OPEN
+author:	spilist (Hwidong Bae)
+labels:	
+comments:	0
+assignees:	
+projects:	
+milestone:	
+issue-type:	
+parent:	
+sub-issues:	
+sub-issues-completed:	
+blocked-by:	
+blocking:	
+number:	878
+--
+## Problem
+
+The critique skill's `claude_p` reviewer backend fails every run in under a second, so no critique can run through Claude when the codex backend is down.
+
+`skills/shared/scripts/reviewer_worker_backend.py` passes the bounded-review result schema verbatim to `claude -p --json-schema`. The schema carries `"$schema": "https://json-schema.org/draft/2020-12/schema"`, and the Claude CLI rejects it:
+
+```
+Error: --json-schema is not a valid JSON Schema: no schema with key or ref "https://json-schema.org/draft/2020-12/schema"
+```
+
+The worker then reports `delivery_state: invalid` with "no identity-matching bounded-review object was found in the bounded log", which hides the real cause; it only shows in the worker's `backend.stderr`.
+
+## Reproduce
+
+`run_review.py --backend claude_p ...` on any packet; or directly: `claude -p --json-schema '{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object"}'` fails, while the same schema without `$schema` works.
+
+## Expected
+
+The `claude_p` branch of `_command` drops the top-level `$schema` key (or maps it to a draft the CLI accepts) before passing `--json-schema`, and a backend failure surfaces the backend's stderr line in the lifecycle reason.
+
+## Context
+
+ceal #870 orchestration, 2026-09-26: the codex backend returned 401 for every run, the operator moved codex work to muse and Sonnet, and all brief critiques came back NO RESULT through `claude_p`.
+

@@ -1,0 +1,51 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "issue-resolution #877 #878 #879: verify reported defects and preserve #880 advisory recall, #816/#822 checkpoint discipline, and the reviewer worker backend contract",
+  "packet_sha256": "13906134ef14e8f3fa58a0cd2833652b57e56b71d7efd0be8fb9c440e2d28026",
+  "reviewed_input_identity_sha256": "dd4c637e4edc38f0393686ffc1ecb4aaf7999b890237905567cf7c7fe609dc62",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "medium",
+      "summary": "#877 still commits staged files containing unresolved merge conflict markers.",
+      "evidence": [
+        "The supplied issue #877 explicitly requires no conflict markers to remain before creating the WIP merge commit.",
+        "scripts/task_run/task_run_git.py::_merge_state checks only `git diff --name-only --diff-filter=U`. Staging a conflicted file removes its unmerged index entries even when its conflict markers remain.",
+        "scripts/task_run/task_run_checkpoint.py::_checkpoint_interrupted_lane treats an empty conflicted list as resolved and, when dirty paths are in scope, invokes _commit_merge_candidate. That helper stages everything and commits without checking file content.",
+        "Concrete counterexample: create a conflicting merge affecting an in-scope file, run `git add` on that file without removing its conflict markers, then end the lane abnormally. The supplied implementation creates a merge candidate instead of reporting `unresolved merge in progress`.",
+        "tests/charness_cli/test_task_run_merge_checkpoint_877.py covers unmerged index entries and genuinely resolved files, but omits staged conflict markers."
+      ],
+      "action": "Detect remaining merge conflict markers before committing the pending merge, preserve the distinct unresolved-merge blocker with affected paths, and add a regression covering staged unresolved content."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "#877 clean-tree candidates and checkpoint scope discipline",
+      "bin": "supported",
+      "disposition": "The commit-only branch reuses the tip; ordinary empty scoped populations skip commits. Pending merges check HEAD-relative dirty paths for out-of-scope changes before committing, including the supplied base-restoration regression."
+    },
+    {
+      "concern": "#878 schema compatibility and backend failure diagnostics",
+      "bin": "supported",
+      "disposition": "The Claude command removes only the top-level $schema from its parsed copy. Nonzero exits retain backend-failed status and exit code, append captured stderr, and stop before normalization. Codex command construction remains unchanged."
+    },
+    {
+      "concern": "#879 precision versus #880 advisory recall",
+      "bin": "supported",
+      "disposition": "The supplied examples of dotted identifiers and foreign extensionless slash tokens are filtered; the scope-mismatch substring switch is absent. Repository-root context is passed by task planning, while file-shaped slash tokens retain advisory recall."
+    },
+    {
+      "concern": "WIP candidates explicitly remain unverified",
+      "bin": "mitigating",
+      "disposition": "correctness_verified=false limits the claim, but does not satisfy #877's explicit requirement to distinguish unresolved merges before committing."
+    }
+  ],
+  "next_move": "Fix F1 and re-review the bound final input before approving resolution of all three issues.",
+  "non_claims": [
+    "Review is based on the supplied semantic bytes; no workspace edits, test execution, or live backend verification were performed.",
+    "No structured prepared_targets were supplied.",
+    "Goal evidence lineage: {\"binding\":null,\"disposition\":\"not-goal-bound\",\"draft\":null,\"goal_run\":null,\"kind\":\"charness.goal-lineage\",\"reason\":\"critique review was run without a Goal Run Work Item identity\",\"schema_version\":1,\"work_item\":null}"
+  ]
+}

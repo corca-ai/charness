@@ -1,0 +1,4 @@
+# Review semantic-input carriers are content-addressed byte blobs (named *.bin);
+# integrity rides on carrier_sha256, not on line diffs, so keep git from
+# converting line endings or running text whitespace checks on them.
+charness-artifacts/critique/workers/**/semantic-input/*.bin binary

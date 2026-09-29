@@ -1,0 +1,81 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Fresh-eye issue-resolution review of #877, #878, and #879 against supplied semantic input; pinned contracts #880, #816/#822, and reviewer worker backend contract.",
+  "packet_sha256": "2295b47c226e2b18b2398d2773923cc871c5361a3bc601d98b430fd2c428876f",
+  "reviewed_input_identity_sha256": "7b3d072dead0ae8a793991f8926aba67237b86de1be8f4702ec63849678060d6",
+  "verdict": "defer",
+  "target_observations": [
+    {
+      "target": "#877",
+      "verdict": "defer",
+      "summary": "The checkpoint code addresses merge and clean-tip cases and the cited tests exercise run_task through receipt payload assertions. However, the supplied semantic input does not include task_run_completion.py, so the target_sha propagation path to the final receipt cannot be independently verified here.",
+      "evidence": [
+        "task_run_checkpoint.py detects MERGE_HEAD, raises a distinct unresolved-merge error, checks scope against dirty paths before whole-merge commit, and returns the branch tip for commit-only candidates.",
+        "The two named tests assert target_sha on failed-lane payloads, but the supplied task_run.py delegates receipt completion to task_run_completion.py, whose implementation is absent from the packet.",
+        "The issue expects unresolved merges to identify conflicted paths and clean trees beyond base to use the tip; checkpoint behavior shown is consistent with those expectations."
+      ]
+    },
+    {
+      "target": "#878",
+      "verdict": "pass",
+      "summary": "The Claude backend removes the top-level $schema before passing the inline schema and includes the first non-empty stderr line in nonzero-exit failure details.",
+      "evidence": [
+        "reviewer_worker_backend.py parses the schema, removes $schema when it is an object, then serializes the remaining schema for --json-schema.",
+        "The supplied tests assert the schema key is omitted and that a backend stderr line appears in the typed failure message.",
+        "Backend normalization and command execution remain within the reviewer worker backend owner, preserving the shown delegation contract."
+      ]
+    },
+    {
+      "target": "#879",
+      "verdict": "pass",
+      "summary": "The heuristic filters dotted identifiers and foreign slash tokens while preserving repo-root footholds and file-shaped slash-token recall under #880.",
+      "evidence": [
+        "_keep_candidate admits a token when its first segment is a top-level repo name, the path exists, or the slash token has a file-shaped tail.",
+        "The supplied tests cover issue.create, origin/main, task/abc, a dotted schema identifier, corca-org/ceal, fs/promises, new files under real top-level directories, and zebra/qux.ts.",
+        "No scope-mismatch substring switch appears in suggest_scopes; the dotted-token phrase test expects no suggestions."
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "R1",
+      "severity": "evidence-gap",
+      "summary": "#877 receipt propagation is not independently verifiable from the bound files because the completion owner that writes target_sha is absent, despite the issue specifically requiring the final payload to name the candidate.",
+      "evidence": [
+        "The supplied task_run.py passes candidate_commit and target_head into _completion.complete_task, but task_run_completion.py is not among the semantic inputs.",
+        "The cited end-to-end tests assert target_sha, but their test bodies alone do not establish the implementation path or rule out a defect in the omitted completion owner."
+      ],
+      "action": "Bind task_run_completion.py and the relevant final payload/receipt path for a fresh bounded review, or provide equivalent inline semantic bytes that establish how target_head becomes target_sha."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "#877 may still fail at final receipt propagation even though checkpoint selection is correct.",
+      "bin": "material evidence gap",
+      "disposition": "Defer approval until the completion owner is reviewed; the issue requires the final payload to carry the SHA."
+    },
+    {
+      "concern": "#816/#822 checkpoint discipline could be weakened by merge handling.",
+      "bin": "addressed in supplied code, limited scope",
+      "disposition": "The checkpoint reuses refreshed scope specs, skips empty scoped changes, and checks merge dirty paths before committing; supplied tests cover out-of-scope and base-restoration cases. #822-specific behavior is not independently reviewed beyond the stated pinned contract and packet evidence."
+    },
+    {
+      "concern": "#880 advisory recall could be lost while filtering noise tokens.",
+      "bin": "addressed",
+      "disposition": "File-shaped slash tokens are explicitly retained and a test pins zebra/qux.ts recall."
+    },
+    {
+      "concern": "Reviewer worker backend contract could be broken by the #878 change.",
+      "bin": "no defect evident in supplied owner and tests",
+      "disposition": "Command construction remains in reviewer_worker_backend.py and runtime delegation is asserted by the supplied contract test."
+    }
+  ],
+  "next_move": "Review the omitted task_run_completion.py and final receipt path in a fresh packet before approving all three fixes.",
+  "non_claims": [
+    "No tests or workspace files were accessed or changed; this verdict uses only the inline packet payload.",
+    "#877 final target_sha propagation is not established by the supplied implementation bytes.",
+    "#822 behavior was not exhaustively reviewed from its owning source and tests."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

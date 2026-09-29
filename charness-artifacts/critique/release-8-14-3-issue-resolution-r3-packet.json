@@ -1,0 +1,173 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-29T11:12:32Z",
+  "prepared_for": "working tree",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- charness-artifacts/issues/2026-09-29-877-body.raw.md\n- charness-artifacts/issues/2026-09-29-878-body.raw.md\n- charness-artifacts/issues/2026-09-29-879-body.raw.md\n- scripts/task_run/task_run.py\n- scripts/task_run/task_run_checkpoint.py\n- scripts/task_run/task_run_contract.py\n- scripts/task_run/task_run_git.py\n- scripts/task_run/task_run_lane_runner.py\n- scripts/task_run/task_run_plan.py\n- scripts/task_run/task_run_scope_evidence.py\n- scripts/task_run/task_run_support.py\n- skills/public/quality/references/attention-state-visibility.json\n- skills/shared/scripts/reviewer_worker_backend.py\n- tests/charness_cli/test_task_run_merge_checkpoint_877.py\n- tests/charness_cli/test_task_run_scope_evidence_879.py\n- tests/quality_gates/test_reviewer_worker_backend.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_checkpoint.py, scripts/task_run/task_run_contract.py, scripts/task_run/task_run_git.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_plan.py, scripts/task_run/task_run_scope_evidence.py, scripts/task_run/task_run_support.py, skills/public/quality/references/attention-state-visibility.json, skills/shared/scripts/reviewer_worker_backend.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/issues/2026-09-29-877-body.raw.md, charness-artifacts/issues/2026-09-29-878-body.raw.md, charness-artifacts/issues/2026-09-29-879-body.raw.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/issues/2026-09-29-877-body.raw.md, charness-artifacts/issues/2026-09-29-878-body.raw.md, charness-artifacts/issues/2026-09-29-879-body.raw.md\n  verify: python3 scripts/gates/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/gates/validate_quality_artifact.py --repo-root ., python3 scripts/gates/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/quality/references/attention-state-visibility.json, skills/shared/scripts/reviewer_worker_backend.py\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/quality/references/attention-state-visibility.json, skills/shared/scripts/reviewer_worker_backend.py\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/quality/references/attention-state-visibility.json, skills/shared/scripts/reviewer_worker_backend.py\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_checkpoint.py, scripts/task_run/task_run_contract.py, scripts/task_run/task_run_git.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_plan.py, scripts/task_run/task_run_scope_evidence.py, scripts/task_run/task_run_support.py, tests/charness_cli/test_task_run_merge_checkpoint_877.py, tests/charness_cli/test_task_run_scope_evidence_879.py, tests/quality_gates/test_reviewer_worker_backend.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_checkpoint.py, scripts/task_run/task_run_contract.py, scripts/task_run/task_run_git.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_plan.py, scripts/task_run/task_run_scope_evidence.py, scripts/task_run/task_run_support.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-6-luna",
+      "reasoning_effort": "xhigh",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "628f023d3b0e3f61d7a5d44c6ac33dbadb1aa581",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/issues/2026-09-29-877-body.raw.md",
+      "charness-artifacts/issues/2026-09-29-878-body.raw.md",
+      "charness-artifacts/issues/2026-09-29-879-body.raw.md",
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_checkpoint.py",
+      "scripts/task_run/task_run_contract.py",
+      "scripts/task_run/task_run_git.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "scripts/task_run/task_run_plan.py",
+      "scripts/task_run/task_run_scope_evidence.py",
+      "scripts/task_run/task_run_support.py",
+      "skills/public/quality/references/attention-state-visibility.json",
+      "skills/shared/scripts/reviewer_worker_backend.py",
+      "tests/charness_cli/test_task_run_merge_checkpoint_877.py",
+      "tests/charness_cli/test_task_run_scope_evidence_879.py",
+      "tests/quality_gates/test_reviewer_worker_backend.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/issues/2026-09-29-877-body.raw.md",
+        "content_sha256": "1f6ab532adf377d01dfc7f220fde8ec4a476bc63ce910a1443d468c5ac7ceae2"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-09-29-878-body.raw.md",
+        "content_sha256": "5bf56a942441beff9a3aa4ab73071e7b9dfb4a0e301b88ea86d199bccda345ce"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-09-29-879-body.raw.md",
+        "content_sha256": "2de6e9bc2a5236c592c7fd1f3c4ac76c136701350a48e4d24bb70310c9135faf"
+      },
+      {
+        "path": "scripts/task_run/task_run.py",
+        "content_sha256": "871943340412616cd197ab0c4ec4366f5be6ee57a6ca4725b338fa10c29c22b7"
+      },
+      {
+        "path": "scripts/task_run/task_run_checkpoint.py",
+        "content_sha256": "2fb8a0174413b34fff24b71a5ed767c425594820731ed6f1529b415d3a01ccb6"
+      },
+      {
+        "path": "scripts/task_run/task_run_contract.py",
+        "content_sha256": "65cbc6d03859ba8b42c575ab757cff10affdf1ef7923fc1f506792ff67692778"
+      },
+      {
+        "path": "scripts/task_run/task_run_git.py",
+        "content_sha256": "7400a821ac029697b476571a45374cb52b325a47a99dc592606612f41bafb433"
+      },
+      {
+        "path": "scripts/task_run/task_run_lane_runner.py",
+        "content_sha256": "7b773dfbb2966395a65f5d6f9a48be85396e39504ed7c688b8db3aa7b1ce2edb"
+      },
+      {
+        "path": "scripts/task_run/task_run_plan.py",
+        "content_sha256": "a83b22ba8d6289500a47502e8b729a9135ae8ac6dde95c287db3796c2b5b542d"
+      },
+      {
+        "path": "scripts/task_run/task_run_scope_evidence.py",
+        "content_sha256": "02f6e5185904dab2073e0d67b3a9ec39d8ed676225035d6b4f22f789c50ea5b8"
+      },
+      {
+        "path": "scripts/task_run/task_run_support.py",
+        "content_sha256": "3dab710e6cb12cb82927cbe720431392b8fb20afbce469c4683e08238c24c55a"
+      },
+      {
+        "path": "skills/public/quality/references/attention-state-visibility.json",
+        "content_sha256": "de0fe3e4ca2b73ed12720e7314d111fa24ca531687586562ec541685bbc555ec"
+      },
+      {
+        "path": "skills/shared/scripts/reviewer_worker_backend.py",
+        "content_sha256": "b763fe3dd0bf1617e18c0b236b3015d552c8fc44615320c014c855c3aeffa49f"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_merge_checkpoint_877.py",
+        "content_sha256": "175cc14c8d1db02d64d484cb2ced15a58b479f542db12c184cbb758b7be22217"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_scope_evidence_879.py",
+        "content_sha256": "a5ecef9932d01fa53a1207b11bbb57b996997549b59f50f9d908c64346ae11e2"
+      },
+      {
+        "path": "tests/quality_gates/test_reviewer_worker_backend.py",
+        "content_sha256": "e251d6a92e0a9e3e504497f9a66fafd8601d8c6d3d134c1c177c46fc4b521c62"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "c28e8115eabb9d09e0a34d3bba98987edd85e75d1014254b54a3da3b2486e2e9",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [
+      {
+        "path": "charness-artifacts/issues/2026-09-29-877-body.raw.md",
+        "content_sha256": "1f6ab532adf377d01dfc7f220fde8ec4a476bc63ce910a1443d468c5ac7ceae2"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-09-29-878-body.raw.md",
+        "content_sha256": "5bf56a942441beff9a3aa4ab73071e7b9dfb4a0e301b88ea86d199bccda345ce"
+      },
+      {
+        "path": "charness-artifacts/issues/2026-09-29-879-body.raw.md",
+        "content_sha256": "2de6e9bc2a5236c592c7fd1f3c4ac76c136701350a48e4d24bb70310c9135faf"
+      }
+    ],
+    "auto_excluded_paths": [],
+    "identity_sha256": "8c7bc52bc08709a246d241213db030ec365b2d59820997afadbcfa5d3a63d041"
+  }
+}

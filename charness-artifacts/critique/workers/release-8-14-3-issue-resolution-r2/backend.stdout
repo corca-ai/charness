@@ -1,0 +1,32 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Issue-resolution #877 #878 #879; preserve #880 advisory recall, #816/#822 checkpoint discipline, and reviewer worker backend contracts.",
+  "packet_sha256": "1f147cccc0e4f708fcdbef10f0c03a38fa1436a416d1d01e8f68c02d90c7e935",
+  "reviewed_input_identity_sha256": "c0ba5deab5a1763c3c12d1670c829de7629571dde7c0e35f528126e7e87123b8",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "#877 merge recovery could bypass checkpoint scope discipline.",
+      "bin": "addressed",
+      "disposition": "Unresolved index entries and staged conflict markers produce a distinct blocker. Resolved merges check all dirty paths against refreshed scopes before committing without a pathspec. Ordinary empty checkpoints still skip; clean scoped commits reuse HEAD and remain explicitly unverified."
+    },
+    {
+      "concern": "#878 schema adaptation could weaken backend failure handling.",
+      "bin": "addressed",
+      "disposition": "Only Claude's inline schema loses the top-level $schema declaration. Nonzero exits retain typed failure status and exit code, append captured stderr detail, and stop before result normalization."
+    },
+    {
+      "concern": "#879 filtering could remove #880 advisory recall.",
+      "bin": "addressed",
+      "disposition": "The reported identifier/ref examples are filtered, the global scope-mismatch switch is absent, and repository-root context reaches the heuristic. Existing paths, new paths under repository roots, and file-shaped slash tokens remain discoverable."
+    }
+  ],
+  "next_move": "Accept this bounded source review and retain execution evidence separately for issue closeout.",
+  "non_claims": [
+    "Reviewed the supplied semantic bytes; no workspace changes or test execution.",
+    "No live Claude invocation or production lane recovery was performed.",
+    "This review is not Goal Run-bound and does not authorize issue closure or release."
+  ]
+}
