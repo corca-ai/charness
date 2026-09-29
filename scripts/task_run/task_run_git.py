@@ -240,6 +240,39 @@ def _commit_wip_candidate(repo_root: Path, paths: Sequence[str]) -> dict[str, An
     )
 
 
+def _merge_state(repo_root: Path) -> tuple[bool, list[str]]:
+    """Report an in-progress merge and its still-unmerged paths (#877)."""
+    merging = _git(repo_root, "rev-parse", "--verify", "--quiet", "MERGE_HEAD").returncode == 0
+    if not merging:
+        return False, []
+    unmerged = _git_output(repo_root, "diff", "--name-only", "--diff-filter=U")
+    return True, sorted({line.strip() for line in unmerged.splitlines() if line.strip()})
+
+
+def _commit_merge_candidate(repo_root: Path) -> dict[str, Any]:
+    """Checkpoint a fully-resolved in-progress merge as the WIP candidate.
+
+    Git refuses a partial commit during a merge, so the merge commits whole:
+    the caller must have verified no unmerged paths remain. The WIP message
+    still marks the result explicitly unverified.
+    """
+    return _commit_lane_snapshot(
+        repo_root,
+        message=WIP_CANDIDATE_COMMIT_MESSAGE,
+        paths=None,
+    )
+
+
+def _tip_candidate(head_sha: str) -> dict[str, Any]:
+    """Name a clean-tree branch tip as the WIP candidate (#877).
+
+    The lane committed its own work before it ended abnormally, so there is
+    nothing left to commit: the tip already carries the candidate. The shape
+    matches a checkpoint commit; only the commit step is skipped.
+    """
+    return {"status": "committed", "sha": head_sha, "message": WIP_CANDIDATE_COMMIT_MESSAGE, "correctness_verified": False}
+
+
 def _require_git_root(repo_root: Path) -> Path:
     repo_root = repo_root.expanduser().resolve()
     discovered = worktree_root_from_files(repo_root)

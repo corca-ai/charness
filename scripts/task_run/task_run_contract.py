@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, TypedDict
+from typing import Any, Sequence, TypedDict
 
 PASS = "pass"
 FAIL = "fail"
@@ -26,6 +26,22 @@ _TASK_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$")
 
 class TaskRunError(ValueError):
     """A task-run preflight input is not safe or resolvable."""
+
+
+class UnresolvedMergeError(TaskRunError):
+    """A lane ended mid-merge with conflicted paths still unmerged (#877)."""
+
+    def __init__(self, conflicted_paths: Sequence[str]) -> None:
+        self.conflicted_paths = sorted(set(conflicted_paths))
+        super().__init__(f"unresolved merge in progress: {', '.join(self.conflicted_paths)}")
+
+
+class MixedScopeMergeError(TaskRunError):
+    """A resolved merge reaches outside the declared scope, so no merge commit is made."""
+
+    def __init__(self, out_of_scope_paths: Sequence[str]) -> None:
+        self.out_of_scope_paths = sorted(set(out_of_scope_paths))
+        super().__init__(f"resolved merge changes paths outside the declared scope: {', '.join(self.out_of_scope_paths)}")
 
 
 class AcceptanceSkeletonDeclaration(TypedDict, total=False):

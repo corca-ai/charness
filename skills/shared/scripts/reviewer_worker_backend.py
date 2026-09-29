@@ -88,11 +88,28 @@ def _command(backend: str, workspace: Path, schema: Path, raw_output: Path) -> l
             schema_payload = json.loads(schema.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
             raise WorkerError("invalid-schema", f"cannot load Claude JSON schema: {exc}") from exc
+        if isinstance(schema_payload, dict):
+            # The Claude CLI rejects a draft 2020-12 $schema key, so the
+            # inline --json-schema form carries the shape without it (#878).
+            schema_payload.pop("$schema", None)
         return [
             "claude", "-p", "--no-session-persistence", "--tools", "", "--output-format", "json",
             "--json-schema", json.dumps(schema_payload, ensure_ascii=False, separators=(",", ":")),
         ]
     raise WorkerError("input-invalid", f"unsupported backend: {backend}")
+
+
+def _stderr_first_line(stderr: Path) -> str | None:
+    """Read the first non-empty backend stderr line, if one was captured."""
+    try:
+        text = stderr.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped:
+            return stripped[:500]
+    return None
 
 
 def _normalize_codex(raw_path: Path, pending_output: Path) -> None:
@@ -148,6 +165,8 @@ def execute_backend(
     except ReviewerProcessError as exc:
         raise WorkerError(exc.status, str(exc), exit_code=exc.exit_code) from exc
     if exit_code != 0:
-        raise WorkerError("backend-failed", f"backend exited with code {exit_code}", exit_code=exit_code)
+        detail = _stderr_first_line(stderr)
+        message = f"backend exited with code {exit_code}" + (f": {detail}" if detail else "")
+        raise WorkerError("backend-failed", message, exit_code=exit_code)
     _normalize(backend, raw_output, pending_output)
     return exit_code

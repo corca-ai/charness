@@ -924,7 +924,7 @@
       ],
       "rationale": "When require_change is false, build_progress_watch returns None and execution keeps its ordinary queue polling at executor boundaries. The disabled live watchdog is an internal no-op state, not evidence that a lane passed or that closeout proof exists."
     },
-    "scripts/task_run/task_run_lane_runner.py": {
+    "scripts/task_run/task_run_checkpoint.py": {
       "states": [
         "skipped"
       ],
@@ -936,6 +936,19 @@
         "reason"
       ],
       "rationale": "An interrupted lane with zero declared-scope changes records candidate commit `status: skipped` with a `reason` instead of an empty WIP commit. It is a typed, persisted field in the lane's terminal `result.json`, and the timed-out next-step names the missing commit, so a skipped checkpoint cannot read as a recorded candidate."
+    },
+    "scripts/task_run/task_run_lane_runner.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "reason"
+      ],
+      "rationale": "persist_incomplete_candidate records `status: skipped` with a `reason` when the scope verdict admitted zero paths, instead of an empty persistence commit. It is a typed, persisted field beside the candidate in the lane's terminal `result.json`, so a skipped persistence cannot read as a persisted candidate."
     },
     "scripts/task_run/task_run_completion.py": {
       "states": [

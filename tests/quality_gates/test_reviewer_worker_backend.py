@@ -145,6 +145,116 @@ def test_nonzero_backend_exit_is_typed_and_keeps_output_unpublished(
     assert not paths["pending"].exists()
 
 
+def test_claude_command_drops_top_level_schema_key(tmp_path: Path) -> None:
+    """#878: the Claude CLI rejects draft 2020-12 $schema, so claude_p strips it."""
+    paths = _inputs(tmp_path)
+    paths["schema"].write_text(
+        json.dumps(
+            {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {"kind": {"type": "string"}},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    command = backend._command(
+        "claude_p", paths["workspace"], paths["schema"], paths["raw"]
+    )
+
+    payload = json.loads(command[command.index("--json-schema") + 1])
+    assert "$schema" not in payload
+    assert payload["type"] == "object"
+    assert payload["properties"] == {"kind": {"type": "string"}}
+
+
+def test_nonzero_exit_surfaces_the_backend_stderr_line(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """#878: a backend failure carries the backend's stderr line, not just the code."""
+    paths = _inputs(tmp_path)
+
+    def fail_with_stderr(*_args, **kwargs):
+        Path(kwargs["stderr_path"]).write_text(
+            "Error: --json-schema is not a valid JSON Schema: no schema with key\n",
+            encoding="utf-8",
+        )
+        return 1
+
+    monkeypatch.setattr(backend, "run_bounded_process", fail_with_stderr)
+    with pytest.raises(backend.WorkerError) as raised:
+        backend.execute_backend(
+            "claude_p",
+            workspace=paths["workspace"],
+            prompt=paths["prompt"],
+            schema=paths["schema"],
+            stdout=paths["stdout"],
+            stderr=paths["stderr"],
+            pending_output=paths["pending"],
+            raw_output=paths["raw"],
+            timeout_seconds=1.0,
+        )
+
+    assert raised.value.status == "backend-failed"
+    assert raised.value.exit_code == 1
+    assert "backend exited with code 1" in str(raised.value)
+    assert "--json-schema is not a valid JSON Schema" in str(raised.value)
+
+
+def test_nonzero_exit_without_stderr_keeps_the_plain_message(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    paths = _inputs(tmp_path)
+    monkeypatch.setattr(backend, "run_bounded_process", lambda *_args, **_kwargs: 7)
+
+    with pytest.raises(backend.WorkerError) as raised:
+        backend.execute_backend(
+            "claude_p",
+            workspace=paths["workspace"],
+            prompt=paths["prompt"],
+            schema=paths["schema"],
+            stdout=paths["stdout"],
+            stderr=paths["stderr"],
+            pending_output=paths["pending"],
+            raw_output=paths["raw"],
+            timeout_seconds=1.0,
+        )
+
+    assert raised.value.status == "backend-failed"
+    assert str(raised.value) == "backend exited with code 7"
+
+
+def test_nonzero_exit_with_blank_stderr_keeps_the_plain_message(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    paths = _inputs(tmp_path)
+
+    def fail_with_blank_stderr(*_args, **kwargs):
+        Path(kwargs["stderr_path"]).write_text("\n  \n", encoding="utf-8")
+        return 2
+
+    monkeypatch.setattr(backend, "run_bounded_process", fail_with_blank_stderr)
+    with pytest.raises(backend.WorkerError) as raised:
+        backend.execute_backend(
+            "codex_exec",
+            workspace=paths["workspace"],
+            prompt=paths["prompt"],
+            schema=paths["schema"],
+            stdout=paths["stdout"],
+            stderr=paths["stderr"],
+            pending_output=paths["pending"],
+            raw_output=paths["raw"],
+            timeout_seconds=1.0,
+        )
+
+    assert raised.value.status == "backend-failed"
+    assert str(raised.value) == "backend exited with code 2"
+
+
 def test_runtime_delegates_backend_construction_execution_and_normalization() -> None:
     runtime_source = Path(runtime.__file__).read_text(encoding="utf-8")
     backend_source = Path(backend.__file__).read_text(encoding="utf-8")

@@ -20,6 +20,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
+from scripts.task_run import task_run_checkpoint as _checkpoint  # noqa: E402
 from scripts.task_run import task_run_friction as _friction  # noqa: E402
 from scripts.task_run import task_run_lane_options as _lane_options  # noqa: E402
 from scripts.task_run import task_run_lesson_injection as _lesson_injection  # noqa: E402
@@ -328,26 +329,9 @@ def prepare_lane_execution(
     return writable_dirs, lane_prompt, command
 
 
-def _checkpoint_interrupted_lane(
-    resolved_target: Path, base_sha: str, scope_specs: list[dict[str, Any]]
-) -> dict[str, Any]:
-    """Commit declared-scope changes as the WIP candidate, or record the skip.
-
-    Stale harness residue or an empty lane must not become a candidate commit
-    (#816). The scope verdict in completion classifies the same population, so
-    this reuses its refreshed specs rather than redefining them.
-    """
-    refreshed_specs = _support._refresh_scope_specs(resolved_target, scope_specs)
-    changed = _support._candidate_carrier(resolved_target, base_sha)["changed_paths"]
-    scoped = _support._paths_in_scopes(changed, refreshed_specs)
-    if not scoped:
-        return {
-            "status": "skipped",
-            "reason": "no scoped changes: no WIP candidate commit created",
-            "changed_paths": [],
-            "correctness_verified": False,
-        }
-    return _support._commit_wip_candidate(resolved_target, scoped)
+# The interrupted-lane checkpoint lives in task_run_checkpoint; this alias keeps
+# the lane-runner call sites and monkeypatch targets stable.
+_checkpoint_interrupted_lane = _checkpoint._checkpoint_interrupted_lane
 
 
 def _in_scope_candidate_paths(candidate: Mapping[str, Any]) -> Sequence[str] | None:
@@ -356,7 +340,7 @@ def _in_scope_candidate_paths(candidate: Mapping[str, Any]) -> Sequence[str] | N
     The scope verdict already split ``changed_paths`` into admitted and
     ``disallowed_paths``; the persistence path reuses that classification
     instead of re-deriving it, mirroring the interrupted-lane WIP checkpoint
-    above (#816). ``None`` keeps the historical stage-everything shape for
+    (#816). ``None`` keeps the historical stage-everything shape for
     callers with no classification to reuse.
     """
     changed = candidate.get("changed_paths")

@@ -45,6 +45,8 @@ _exec = import_repo_module(__file__, "scripts.worktree.worktree_exec_lib")
 PASS = _support.PASS
 FAIL = _support.FAIL
 TaskRunError = _support.TaskRunError
+UnresolvedMergeError = _support.UnresolvedMergeError
+MixedScopeMergeError = _support.MixedScopeMergeError
 _collect_populations = _support._collect_populations
 _completion_evidence = _support._completion_evidence
 _failure_payload = _support._failure_payload
@@ -94,6 +96,15 @@ def _terminal(
     _friction.append_terminal_friction(runtime_path, payload)
     _payload._persist(payload, runtime_path)
     return payload
+
+
+def _checkpoint_failure_detail(abnormal: str, exc: BaseException) -> str:
+    """Render a WIP checkpoint failure without hiding a distinct blocker."""
+    # A merge blocker already names itself; wrapping it in the generic
+    # checkpoint wording would hide it (#877).
+    if isinstance(exc, (UnresolvedMergeError, MixedScopeMergeError)):
+        return str(exc)
+    return f"{abnormal} WIP candidate commit failed: {exc}"
 
 
 def _prepare_exec_logs_and_prompt(
@@ -463,7 +474,7 @@ def run_task(
                     payload,
                     runtime_path,
                     status=abnormal,
-                    error=f"{abnormal} WIP candidate commit failed: {exc}",
+                    error=_checkpoint_failure_detail(abnormal, exc),
                     next_step=(
                         f"The {abnormal} WIP checkpoint could not be committed; inspect and "
                         "recover the retained worktree manually."

@@ -19,6 +19,7 @@ _REJECTED_OWNER_AFTER = re.compile(
     r"(?:\s+[\w-]+){0,2}\s+owner\b",
     re.IGNORECASE,
 )
+_FILE_TAIL = re.compile(r"\.[A-Za-z][A-Za-z0-9]*$")
 
 
 def _repo_root() -> Path:
@@ -79,20 +80,42 @@ def _is_rejected_owner_mention(text: str, end: int) -> bool:
     return bool(_REJECTED_OWNER_AFTER.match(after))
 
 
-def suggest_scopes(evidence_text: str) -> list[str]:
+def _looks_like_file(normalized: str) -> bool:
+    """Whether a slash token names a file rather than a ref or a scope."""
+    if "/" not in normalized:
+        return False
+    return bool(_FILE_TAIL.search(normalized.rsplit("/", 1)[1]))
+
+
+def _keep_candidate(normalized: str, *, root: Path, top_level_names: set[str]) -> bool:
+    """Keep a relative candidate only when the repository admits it (#879).
+
+    Dotted identifiers (``issue.create``) and slash tokens whose first
+    segment is not a top-level repository name (``origin/main``,
+    ``corca-org/ceal``) are not paths. A new file under a real top-level
+    directory still counts through its first segment, an existing path
+    counts even when the root listing failed, and a file-shaped slash
+    token stays advisory recall for not-yet-existing files (#880).
+    """
+    first = normalized.split("/", 1)[0]
+    return first in top_level_names or (root / normalized).exists() or _looks_like_file(normalized)
+
+
+def suggest_scopes(evidence_text: str, *, repo_root: Path | None = None) -> list[str]:
     """Return sorted, deduplicated path candidates found in textual evidence.
 
     Paths are suggestions only. This function does not verify ownership or
-    modify a declared task scope.
+    modify a declared task scope. ``repo_root`` is the repository the
+    evidence is about; it defaults to the checkout carrying this script.
     """
-    root = _repo_root()
+    root = repo_root if repo_root is not None else _repo_root()
     top_level_names = _repo_top_level_names(root)
     candidates: set[str] = set()
 
     # Traceback frames can contain absolute paths or root-level filenames.
     for match in _TRACEBACK_FRAME.finditer(evidence_text):
         path = _relative_path(match.group(1), root, top_level_names)
-        if path is not None:
+        if path is not None and _keep_candidate(path, root=root, top_level_names=top_level_names):
             candidates.add(path)
 
     for match in _PATH_TOKEN.finditer(evidence_text):
@@ -100,12 +123,12 @@ def suggest_scopes(evidence_text: str) -> list[str]:
         has_directory = "/" in raw or "\\" in raw
         is_code = _is_inline_code_span(evidence_text, *match.span("path"))
         is_path_line = match.group("line") is not None
-        if not (has_directory or is_code or is_path_line or "scope mismatch" in evidence_text.lower()):
+        if not (has_directory or is_code or is_path_line):
             continue
         if _is_rejected_owner_mention(evidence_text, match.end("path")):
             continue
         path = _relative_path(raw, root, top_level_names)
-        if path is not None:
+        if path is not None and _keep_candidate(path, root=root, top_level_names=top_level_names):
             candidates.add(path)
 
     return sorted(candidates)

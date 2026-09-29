@@ -423,7 +423,7 @@ def resolve_task_inputs(
             if spec.get("kind") == "exact" and str(spec.get("path", "")) not in tree_paths
         }
     )
-    evidence_paths = _scope_evidence.suggest_scopes(prompt)
+    evidence_paths = _scope_evidence.suggest_scopes(prompt, repo_root=resolved_repo)
     would_touch_outside = [
         {
             "code": "would-touch-outside-declared",
