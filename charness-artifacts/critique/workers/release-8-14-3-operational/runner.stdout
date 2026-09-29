@@ -1,0 +1,65 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: v8.14.3 patch release lock-in
+attempt_id: release-8-14-3-operational
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 717dcbe7dd3687662c375f9ed59ef1c337d09b5493c32aa13c327d1910afd8de
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-25c66df8ea96991a3998883e87822750/receipt.json
+ledger_path: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-25c66df8ea96991a3998883e87822750/delivery.json
+producer_run_id: run-release-8-14-3-operational
+producer_binding:
+  output_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-25c66df8ea96991a3998883e87822750/result.json
+  receipt_file: /home/hwidong/codes/charness/.charness/scratch/critique-review/review-25c66df8ea96991a3998883e87822750/receipt.json
+  producer_run_id: run-release-8-14-3-operational
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: defer
+receipt_provenance_ok: true
+findings_identity: 350568bf04d7a43269c31593a24f292f90c11c937fb3d7196da49dac8a376cd0
+receipt_output_sha256: 350568bf04d7a43269c31593a24f292f90c11c937fb3d7196da49dac8a376cd0
+packet_identity: cf4b8e4d4894013b0e02abfde100e631117ddbc1c47dd1ab0d6154b1671bf557
+reviewed_input_identity: d663f3fb5c40212368ad2aa3c739542c3ae8991faf5d0c805812c78213266e65
+parent_receipt_identity: parent-4bfb3661544fb524ebbe527392e6e0e5bfda1633692b4e98
+provenance:
+  scope: v8.14.3 patch release lock-in
+  packet_identity: cf4b8e4d4894013b0e02abfde100e631117ddbc1c47dd1ab0d6154b1671bf557
+  reviewed_input_identity: d663f3fb5c40212368ad2aa3c739542c3ae8991faf5d0c805812c78213266e65
+  parent_receipt_identity: parent-4bfb3661544fb524ebbe527392e6e0e5bfda1633692b4e98
+  expected_targets_sha256: null
+  attempt_id: release-8-14-3-operational
+  attempt_scope: v8.14.3 patch release lock-in
+  attempt_packet_identity: cf4b8e4d4894013b0e02abfde100e631117ddbc1c47dd1ab0d6154b1671bf557
+  attempt_parent_receipt_identity: parent-4bfb3661544fb524ebbe527392e6e0e5bfda1633692b4e98
+  result_packet_identity: cf4b8e4d4894013b0e02abfde100e631117ddbc1c47dd1ab0d6154b1671bf557
+  result_reviewed_input_identity: d663f3fb5c40212368ad2aa3c739542c3ae8991faf5d0c805812c78213266e65
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 717dcbe7dd3687662c375f9ed59ef1c337d09b5493c32aa13c327d1910afd8de
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''defer'''
+partial_output_reason: worker did not preserve partial output bytes

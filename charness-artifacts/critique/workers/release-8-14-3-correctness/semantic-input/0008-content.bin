@@ -1,0 +1,136 @@
+"""Interrupted-lane WIP checkpoint across merges and clean trees (#877).
+
+A lane that ends mid-merge must either commit the resolved merge as its
+WIP merge candidate or report a distinct `unresolved merge in progress`
+blocker naming the conflicted paths — never a generic partial-commit
+failure. A lane that ends with a clean tree on top of its own commits
+names the branch tip as the candidate instead of failing the checkpoint.
+"""
+
+from __future__ import annotations
+
+import subprocess
+from pathlib import Path
+
+import pytest
+
+from scripts.task_run import task_run_lane_runner
+from scripts.task_run.task_run_contract import UnresolvedMergeError
+
+from .test_task_run_fixtures import _codex, _commit, _git, _repo, _run
+
+_SPECS = [{"path": "module.py", "kind": "exact"}]
+_IDENTITY = ("-c", "user.email=test@example.com", "-c", "user.name=test")
+
+
+def _git_no_check(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", *args], cwd=repo, check=False, capture_output=True, text=True
+    )
+
+
+def _start_merge(repo: Path) -> None:
+    _git(repo, "checkout", "-qb", "side-change")
+    (repo / "module.py").write_text("SIDE = 1\n", encoding="utf-8")
+    _commit(repo, "side change", "module.py")
+    _git(repo, "checkout", "-q", "-")
+    (repo / "module.py").write_text("LANE = 1\n", encoding="utf-8")
+    _commit(repo, "lane change", "module.py")
+    merge = _git_no_check(repo, *_IDENTITY, "merge", "--no-commit", "side-change")
+    assert merge.returncode != 0
+
+
+def test_resolved_merge_commits_a_wip_merge_candidate(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    _start_merge(repo)
+    _git(repo, "checkout", "--ours", "--", "module.py")
+    _git(repo, "add", "--", "module.py")
+
+    commit = task_run_lane_runner._checkpoint_interrupted_lane(
+        repo, base, [dict(_SPECS[0])]
+    )
+
+    assert commit["status"] == "committed"
+    parents = (
+        _git(repo, "rev-list", "--parents", "-n", "1", commit["sha"])
+        .stdout.strip()
+        .split()
+    )
+    assert len(parents) == 3
+
+
+def test_unresolved_merge_raises_a_distinct_blocker(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    _start_merge(repo)
+
+    with pytest.raises(UnresolvedMergeError) as raised:
+        task_run_lane_runner._checkpoint_interrupted_lane(
+            repo, base, [dict(_SPECS[0])]
+        )
+
+    assert raised.value.conflicted_paths == ["module.py"]
+    assert str(raised.value) == "unresolved merge in progress: module.py"
+
+
+def test_clean_tree_with_lane_commits_reuses_the_tip(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    (repo / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
+    tip = _commit(repo, "lane commit", "module.py")
+
+    commit = task_run_lane_runner._checkpoint_interrupted_lane(
+        repo, base, [dict(_SPECS[0])]
+    )
+
+    assert commit["status"] == "committed"
+    assert commit["sha"] == tip
+    assert commit["correctness_verified"] is False
+
+
+def test_failed_lane_mid_merge_reports_the_distinct_blocker(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "branch=$(git symbolic-ref --short HEAD)\n"
+        "git checkout -qb side-change\n"
+        "printf 'SIDE = 1\\n' > module.py\n"
+        "git add -- module.py\n"
+        "git -c user.email=test@example.com -c user.name=test commit -m 'side change'\n"
+        'git checkout -q "$branch"\n'
+        "printf 'LANE = 1\\n' > module.py\n"
+        "git add -- module.py\n"
+        "git -c user.email=test@example.com -c user.name=test commit -m 'lane change'\n"
+        "git -c user.email=test@example.com -c user.name=test merge --no-commit side-change\n"
+        "exit 1",
+    )
+
+    payload = _run(repo, tmp_path, executable)
+
+    assert payload["status"] == "failed", payload
+    assert payload["blocker"] == "unresolved merge in progress: module.py"
+    assert payload["candidate"]["commit"]["status"] == "failed"
+    assert (
+        payload["candidate"]["commit"]["error"]
+        == "unresolved merge in progress: module.py"
+    )
+
+
+def test_failed_lane_with_clean_tree_names_the_tip(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        "printf 'VALUE = 2\\n' > module.py\n"
+        "git add -- module.py\n"
+        "git -c user.email=test@example.com -c user.name=test commit -m 'lane commit'\n"
+        "exit 1",
+    )
+
+    payload = _run(repo, tmp_path, executable)
+    tip = _git(repo, "rev-parse", "lane/task-run").stdout.strip()
+
+    assert payload["status"] == "failed", payload
+    assert payload["target_sha"] == tip
+    assert payload["candidate"]["status"] == "wip"
+    assert "WIP candidate commit failed" not in (payload["blocker"] or "")

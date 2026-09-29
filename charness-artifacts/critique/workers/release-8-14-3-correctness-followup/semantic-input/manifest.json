@@ -1,0 +1,55 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "scripts/task_run/task_run.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness-followup/semantic-input/0000-content.bin",
+      "content_sha256": "871943340412616cd197ab0c4ec4366f5be6ee57a6ca4725b338fa10c29c22b7",
+      "carrier_sha256": "b388cdcdac48965427549517add5a06a27b83ce3263c36a6505b7dd214db9a80",
+      "source": "working-tree:scripts/task_run/task_run.py",
+      "size_bytes": 20858,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_contract.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness-followup/semantic-input/0001-content.bin",
+      "content_sha256": "65cbc6d03859ba8b42c575ab757cff10affdf1ef7923fc1f506792ff67692778",
+      "carrier_sha256": "6dc3c4ed46f98e4ff1cbb1faf4151632dca0d8a21728139ae464773f57aab169",
+      "source": "working-tree:scripts/task_run/task_run_contract.py",
+      "size_bytes": 1984,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_lane_runner.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness-followup/semantic-input/0002-content.bin",
+      "content_sha256": "1e302d6415161ce1c465138f44ecace6bce687d3a19c607732c4ff24137d598c",
+      "carrier_sha256": "cc9b471c9ce72f9856d900d7076e5a54a0db5cc423df32e956bf0f88fbf6b22f",
+      "source": "working-tree:scripts/task_run/task_run_lane_runner.py",
+      "size_bytes": 21884,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_support.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness-followup/semantic-input/0003-content.bin",
+      "content_sha256": "3dab710e6cb12cb82927cbe720431392b8fb20afbce469c4683e08238c24c55a",
+      "carrier_sha256": "390be10000dcb406452975a558c08920402b9707f7f820b6e87dc966ebac349b",
+      "source": "working-tree:scripts/task_run/task_run_support.py",
+      "size_bytes": 5611,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/charness_cli/test_task_run_merge_checkpoint_877.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness-followup/semantic-input/0004-content.bin",
+      "content_sha256": "31e8d5473e5c67173884c56c59d55407197bd52d63473a215e7baf0f10f3a71c",
+      "carrier_sha256": "9b3ef8d40cc2f80873ecfcf6f11ca28faca4acca4a098efc92e81b27ad6bfc47",
+      "source": "working-tree:tests/charness_cli/test_task_run_merge_checkpoint_877.py",
+      "size_bytes": 7808,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

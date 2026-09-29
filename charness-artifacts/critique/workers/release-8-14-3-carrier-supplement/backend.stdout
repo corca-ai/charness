@@ -1,0 +1,57 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "compare the MixedScope guard population (carrier changed_paths) with what the merge checkpoint commits (git add --all plus the merge result): does the guard cover every path the commit can include, including staged-only, untracked, ignored, and subdir-collapsed entries?",
+  "packet_sha256": "907c5833432655f1b58145645e1bacdf09cbde39c743f9a1ce64f00f4d06d4aa",
+  "reviewed_input_identity_sha256": "b95ac40703419a2028558486293ada651441078003f882bdbbb202c1f16b125a",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "F1-population",
+      "severity": "high",
+      "summary": "Base-relative cancellation can hide an out-of-scope path that the whole merge commit changes.",
+      "evidence": [
+        "task_run_carrier.py::_candidate_carrier computes changed_paths for a dirty descendant HEAD by intersecting worktree_vs_base with committed_paths | dirty_vs_head. Tracked paths equal to their base version are therefore excluded even when they differ from HEAD.",
+        "Static counterexample: base has outside.txt=0, descendant HEAD has outside.txt=1, and a resolved pending merge restores and stages outside.txt=0 while also changing an admitted file. outside.txt is dirty relative to HEAD but absent from worktree_vs_base, so changed_paths omits it.",
+        "task_run_git.py::_commit_merge_candidate passes paths=None to _commit_lane_snapshot, which runs git add --all -- . and commits without a pathspec. The resulting merge commit includes the outside.txt restoration relative to its first parent.",
+        "Thus comparison against carrier changed_paths cannot establish that every path changed by the merge checkpoint belongs to the admitted set."
+      ],
+      "action": "Use a merge-specific population covering the proposed commit's changes relative to the current HEAD, without the base-relative cancellation filter. Add a regression with an out-of-scope tracked restoration to the base version alongside an admitted merge resolution; require refusal before staging or committing."
+    },
+    {
+      "id": "F1-collector-evidence",
+      "severity": "evidence-gap",
+      "summary": "The supplied status wrapper still delegates the actual path population to an unbound implementation.",
+      "evidence": [
+        "task_run_git.py::_collect_populations_with_metadata obtains its populations through moment_from_status(GitCheckout.status(ignored=True)).",
+        "checkout_view.py forwards untracked='all' to capture_status, but moment_from_status delegates directly to snapshot.populations().",
+        "Neither scripts.core.git_status_snapshot.capture nor GitStatusSnapshot.populations is supplied. The packet therefore does not establish staged-only coverage, rename endpoint handling, or preservation of individual untracked paths through parsing."
+      ],
+      "action": "Bind the status capture and population parser implementations, plus focused execution evidence for staged-only changes, staged deletions, forced-added ignored files, and nested untracked files."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Ordinary ignored, untracked files are omitted from changed_paths.",
+      "bin": "not-a-blocker",
+      "disposition": "The merge helper uses git add --all without --force, so ordinary ignored untracked files are not added. Tracked or already force-staged ignored paths require tracked-population coverage."
+    },
+    {
+      "concern": "Untracked directories might be collapsed into directory entries.",
+      "bin": "partially-addressed",
+      "disposition": "GitCheckout explicitly defaults to untracked='all' and forwards it. This addresses the requested capture mode, but the absent capture/parser owner prevents verification of the resulting population."
+    },
+    {
+      "concern": "Base-relative cancellation intentionally keeps the candidate scope narrow.",
+      "bin": "must-fix",
+      "disposition": "That behavior may suit net candidate attribution, but it cannot establish the requested invariant covering every path changed by a whole merge checkpoint."
+    }
+  ],
+  "next_move": "Repair the merge guard population, then submit a bound follow-up including the status parser and regression evidence for the cancellation counterexample and remaining population cases.",
+  "non_claims": [
+    "Reviewed all three supplied semantic payloads; did not substitute workspace contents.",
+    "The counterexample is static reasoning, not an executed reproduction. No tests or live backend executions were performed.",
+    "No release approval, prior-review approval, or reviewer-tier verification is claimed.",
+    "Goal evidence lineage: {\"binding\":null,\"disposition\":\"not-goal-bound\",\"draft\":null,\"goal_run\":null,\"kind\":\"charness.goal-lineage\",\"reason\":\"critique review was run without a Goal Run Work Item identity\",\"schema_version\":1,\"work_item\":null}"
+  ]
+}

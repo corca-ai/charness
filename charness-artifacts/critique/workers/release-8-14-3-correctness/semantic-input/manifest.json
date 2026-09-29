@@ -1,0 +1,115 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "scripts/task_run/task_run.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness/semantic-input/0000-content.bin",
+      "content_sha256": "03413792e63436a62570f1dfecf68ce3c3b819b6f26eb240da306afccf496e6b",
+      "carrier_sha256": "ed2a8ea9f44d04254d88f9495a6265e02c68948f648f2f332811f3e54abc1d7c",
+      "source": "working-tree:scripts/task_run/task_run.py",
+      "size_bytes": 20790,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_contract.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness/semantic-input/0001-content.bin",
+      "content_sha256": "ba76d77052b6a06930dfcce8732cdcebc44e0cca0e9055dcf391363e34d954ae",
+      "carrier_sha256": "b9556c1f4b5f953c0b70ed75e5f88d00279057732274889a54cc68cca0021e2b",
+      "source": "working-tree:scripts/task_run/task_run_contract.py",
+      "size_bytes": 1592,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_git.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness/semantic-input/0002-content.bin",
+      "content_sha256": "20b00e5a8b0ff13842796d3a65fe0b7ee6745e75ddf689aa3652e6823911a8d0",
+      "carrier_sha256": "c2a9b1ba1cef1acebd3d5b6d9a488e33b5ec0f76fcb690d119c4b8151cbe3304",
+      "source": "working-tree:scripts/task_run/task_run_git.py",
+      "size_bytes": 18485,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_lane_runner.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness/semantic-input/0003-content.bin",
+      "content_sha256": "46de529d538bb1a3bd015f185f2e83a80cedc4cc8ec0f8d3e8fef01e14e2a98f",
+      "carrier_sha256": "bd35eb862e14cf2ec00e1ab8dc96fa276d1ac406a6a794c42c628d043c172127",
+      "source": "working-tree:scripts/task_run/task_run_lane_runner.py",
+      "size_bytes": 21567,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_plan.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness/semantic-input/0004-content.bin",
+      "content_sha256": "a83b22ba8d6289500a47502e8b729a9135ae8ac6dde95c287db3796c2b5b542d",
+      "carrier_sha256": "a9c784bda420e26a858988b29dbf098e7a2dcff10ba3ba99ce7f163ac79ac9f1",
+      "source": "working-tree:scripts/task_run/task_run_plan.py",
+      "size_bytes": 19939,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_scope_evidence.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness/semantic-input/0005-content.bin",
+      "content_sha256": "02f6e5185904dab2073e0d67b3a9ec39d8ed676225035d6b4f22f789c50ea5b8",
+      "carrier_sha256": "41b1f22ed606b246b580b35a9f485ef04deabc62e84e729491d33a3790fa8e16",
+      "source": "working-tree:scripts/task_run/task_run_scope_evidence.py",
+      "size_bytes": 5621,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_support.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness/semantic-input/0006-content.bin",
+      "content_sha256": "a84d1bae359aed22d412709764151eca3909f14981f5a506cb516d628b3cfc33",
+      "carrier_sha256": "0ee366501a5d1d5bbd37c5ce58f41f228f2377cc2b6a7d7d47956f18447901a8",
+      "source": "working-tree:scripts/task_run/task_run_support.py",
+      "size_bytes": 5557,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "skills/shared/scripts/reviewer_worker_backend.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness/semantic-input/0007-content.bin",
+      "content_sha256": "b763fe3dd0bf1617e18c0b236b3015d552c8fc44615320c014c855c3aeffa49f",
+      "carrier_sha256": "be3d98ac41f5578d0d94bd32abeca28fea72f8481dc7c6d8f74eb0964cb032f2",
+      "source": "working-tree:skills/shared/scripts/reviewer_worker_backend.py",
+      "size_bytes": 6107,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/charness_cli/test_task_run_merge_checkpoint_877.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness/semantic-input/0008-content.bin",
+      "content_sha256": "1eff56448a34a23466c1bb6d459e5b10686aebd15cd19e2fd5786a9a42fa5ec3",
+      "carrier_sha256": "82613ad1f683584bb9cd1d65e5d5e140766f06c72dea1473fca6178cad90bb1b",
+      "source": "working-tree:tests/charness_cli/test_task_run_merge_checkpoint_877.py",
+      "size_bytes": 4891,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/charness_cli/test_task_run_scope_evidence_879.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness/semantic-input/0009-content.bin",
+      "content_sha256": "a5ecef9932d01fa53a1207b11bbb57b996997549b59f50f9d908c64346ae11e2",
+      "carrier_sha256": "4f179ef9d102ce711850e3ab5af4ab277789703b2bd03ac63d183c165ba28265",
+      "source": "working-tree:tests/charness_cli/test_task_run_scope_evidence_879.py",
+      "size_bytes": 3334,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/quality_gates/test_reviewer_worker_backend.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-correctness/semantic-input/0010-content.bin",
+      "content_sha256": "e251d6a92e0a9e3e504497f9a66fafd8601d8c6d3d134c1c177c46fc4b521c62",
+      "carrier_sha256": "6aa041ca6adb1dcd554350ad8d5f806c52387896245af8865cdabeac2f2da2e2",
+      "source": "working-tree:tests/quality_gates/test_reviewer_worker_backend.py",
+      "size_bytes": 8798,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

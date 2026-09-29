@@ -1,0 +1,64 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release-operational readiness",
+  "packet_sha256": "cf4b8e4d4894013b0e02abfde100e631117ddbc1c47dd1ab0d6154b1671bf557",
+  "reviewed_input_identity_sha256": "d663f3fb5c40212368ad2aa3c739542c3ae8991faf5d0c805812c78213266e65",
+  "verdict": "defer",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R1",
+      "severity": "high",
+      "summary": "The bound input does not establish v8.14.3 release lock-in, version consistency, or operator release-record readiness.",
+      "evidence": [
+        "The eleven reviewed paths contain implementation and tests; no version manifests, generated release surfaces, changelog, or release record are bound.",
+        "The owning-surface inventory identifies materialized-plugin-export and lists manifest synchronization as planned, without synchronized output or validation results.",
+        "The packet provides no release-wide change comparison supporting the patch classification; base_head is explicitly provenance-only."
+      ],
+      "action": "Bind the release version surfaces, synchronized manifests, release-wide change inventory, and operator release record. Record the patch rationale and distinguish completed checks from remaining pre-tag/publish steps."
+    },
+    {
+      "id": "R2",
+      "severity": "high",
+      "summary": "Relevant regression tests are supplied, but successful execution and release-gate proof are absent.",
+      "evidence": [
+        "The merge checkpoint tests cover resolved merges, conflicts, mixed scope, unrelated residue, and reuse of an existing branch tip.",
+        "The scope-evidence tests cover identifier rejection, new-file recall, unreadable root listings, and repository-specific preflight behavior.",
+        "The reviewer backend tests verify schema argument construction and stderr propagation through mocked process execution.",
+        "The packet lists packaging, skill, Python, and scan-hygiene validators but includes no execution results tied to the reviewed content."
+      ],
+      "action": "Provide successful focused regression and applicable owning-surface gate results for the final candidate, including packaging verification after manifest synchronization. Keep mocked backend evidence explicitly distinguished from live Claude compatibility evidence."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The changes necessarily require a minor release.",
+      "bin": "not-established",
+      "disposition": "The supplied behavior appears corrective and preserves existing entry points. A patch is plausible; the missing release-wide comparison prevents confirming it."
+    },
+    {
+      "concern": "Changed blocker wording is too generic for operators.",
+      "bin": "supported-improvement",
+      "disposition": "Merge errors identify conflicted or out-of-scope paths, checkpoint handling preserves those messages, and the next step directs manual recovery of the retained worktree. Backend failures retain the exit code and add a bounded stderr detail."
+    },
+    {
+      "concern": "No surface inventory exists.",
+      "bin": "resolved-within-packet",
+      "disposition": "The packet maps the reviewed files to owning surfaces and names sync and verification commands. This establishes the bounded inventory, not completion of release checks."
+    },
+    {
+      "concern": "Missing receipts prove checks were never run.",
+      "bin": "unsupported-inference",
+      "disposition": "Their execution is unknown from this packet. The verdict defers readiness rather than asserting failures."
+    }
+  ],
+  "next_move": "Complete and bind the release surfaces, operator record, and verification receipts, then obtain review of the final candidate before tag or publish.",
+  "non_claims": [
+    "Reviewed all eleven inline semantic inputs; did not inspect or modify the workspace.",
+    "No tests, synchronization commands, or release gates were executed by this reviewer.",
+    "No tag, publish, live backend compatibility, or full-release approval is established.",
+    "Goal evidence lineage: {\"binding\":null,\"disposition\":\"not-goal-bound\",\"draft\":null,\"goal_run\":null,\"kind\":\"charness.goal-lineage\",\"reason\":\"critique review was run without a Goal Run Work Item identity\",\"schema_version\":1,\"work_item\":null}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

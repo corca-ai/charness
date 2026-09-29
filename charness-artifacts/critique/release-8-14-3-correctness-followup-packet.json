@@ -1,0 +1,266 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-09-29T09:15:02Z",
+  "prepared_for": "working tree",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- scripts/task_run/task_run.py\n- scripts/task_run/task_run_contract.py\n- scripts/task_run/task_run_lane_runner.py\n- scripts/task_run/task_run_support.py\n- tests/charness_cli/test_task_run_merge_checkpoint_877.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_contract.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_support.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_contract.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_support.py, tests/charness_cli/test_task_run_merge_checkpoint_877.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_contract.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_support.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-6-luna",
+      "reasoning_effort": "xhigh",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "fd5c853a556245e7b24f3280a1c8d137af2ae823",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_contract.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "scripts/task_run/task_run_support.py",
+      "tests/charness_cli/test_task_run_merge_checkpoint_877.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "scripts/task_run/task_run.py",
+        "content_sha256": "871943340412616cd197ab0c4ec4366f5be6ee57a6ca4725b338fa10c29c22b7"
+      },
+      {
+        "path": "scripts/task_run/task_run_contract.py",
+        "content_sha256": "65cbc6d03859ba8b42c575ab757cff10affdf1ef7923fc1f506792ff67692778"
+      },
+      {
+        "path": "scripts/task_run/task_run_lane_runner.py",
+        "content_sha256": "1e302d6415161ce1c465138f44ecace6bce687d3a19c607732c4ff24137d598c"
+      },
+      {
+        "path": "scripts/task_run/task_run_support.py",
+        "content_sha256": "3dab710e6cb12cb82927cbe720431392b8fb20afbce469c4683e08238c24c55a"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_merge_checkpoint_877.py",
+        "content_sha256": "31e8d5473e5c67173884c56c59d55407197bd52d63473a215e7baf0f10f3a71c"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "cd84c8005d28d10449a185de09ec6c4673aead3c8f34b9af12155c56b276cb3d",
+    "declared_untracked": [
+      {
+        "path": "tests/charness_cli/test_task_run_merge_checkpoint_877.py",
+        "content_sha256": "31e8d5473e5c67173884c56c59d55407197bd52d63473a215e7baf0f10f3a71c"
+      }
+    ],
+    "auto_excluded_paths": [],
+    "identity_sha256": "6d5f3fa255be6197e6e2c4443ac90b7cc90fe5d4d9d96ce773f88339e3268f2c"
+  },
+  "follow_up": {
+    "kind": "charness.review_followup_context.v1",
+    "source": "charness-artifacts/critique/workers/release-8-14-3-correctness/partial-result.json",
+    "source_sha256": "ff240dd122a9ddccad6992af8ddac9a7f94eee9777fcfa7811c27205258dd481",
+    "prior_attempt_id": "release-8-14-3-correctness",
+    "prior_verdict": "block",
+    "prior_scope": "v8.14.3 patch: three issue fixes (877/878/879) plus focused tests",
+    "prior_lens": "correctness and contract preservation",
+    "prior_packet_path": "charness-artifacts/critique/release-8-14-3-correctness-packet.json",
+    "prior_packet_sha256": "b70bcfcc539aae78fff31ca37b98bdcad0a74d9e1655fb57287a2c4483bd0b4a",
+    "prior_reviewed_input_identity_sha256": "77bcdf33b86992299c08edb518ffa99ec0de6c20cc705834b418c454d1936bc6",
+    "selection": "changed-prior-inputs",
+    "selected_paths": [
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_contract.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "scripts/task_run/task_run_support.py",
+      "tests/charness_cli/test_task_run_merge_checkpoint_877.py"
+    ],
+    "prior_reviewed_paths": 11,
+    "comparison": {
+      "prior_paths": 11,
+      "changed_paths": 5,
+      "comparison_identity_sha256": "d663f3fb5c40212368ad2aa3c739542c3ae8991faf5d0c805812c78213266e65",
+      "comparison_identity_paths": [
+        "scripts/task_run/task_run.py",
+        "scripts/task_run/task_run_contract.py",
+        "scripts/task_run/task_run_git.py",
+        "scripts/task_run/task_run_lane_runner.py",
+        "scripts/task_run/task_run_plan.py",
+        "scripts/task_run/task_run_scope_evidence.py",
+        "scripts/task_run/task_run_support.py",
+        "skills/shared/scripts/reviewer_worker_backend.py",
+        "tests/charness_cli/test_task_run_merge_checkpoint_877.py",
+        "tests/charness_cli/test_task_run_scope_evidence_879.py",
+        "tests/quality_gates/test_reviewer_worker_backend.py"
+      ]
+    },
+    "selection_receipt": {
+      "prior_binding": {
+        "status": "verified",
+        "attempt_id": "release-8-14-3-correctness",
+        "packet_sha256": "b70bcfcc539aae78fff31ca37b98bdcad0a74d9e1655fb57287a2c4483bd0b4a",
+        "reviewed_input_identity_sha256": "77bcdf33b86992299c08edb518ffa99ec0de6c20cc705834b418c454d1936bc6",
+        "packet_verification": "canonical-integrity-only",
+        "identity_verification": "recorded-self-digest",
+        "semantic_input": {
+          "status": "verified",
+          "entries": 11
+        },
+        "result_carrier": {
+          "status": "verified",
+          "attempt_id": "release-8-14-3-correctness",
+          "partial_result_sha256": "ff240dd122a9ddccad6992af8ddac9a7f94eee9777fcfa7811c27205258dd481",
+          "result_sha256": "eeaa5a2ad269f23ab539c57aabaad5dee1908a0358507d4e44081a5abd80e467",
+          "source_path": "charness-artifacts/critique/workers/release-8-14-3-correctness/backend.stdout"
+        }
+      },
+      "explicit_paths": false,
+      "prior_identity_sha256": "77bcdf33b86992299c08edb518ffa99ec0de6c20cc705834b418c454d1936bc6",
+      "comparison_identity_sha256": "d663f3fb5c40212368ad2aa3c739542c3ae8991faf5d0c805812c78213266e65",
+      "comparison_identity_paths": [
+        "scripts/task_run/task_run.py",
+        "scripts/task_run/task_run_contract.py",
+        "scripts/task_run/task_run_git.py",
+        "scripts/task_run/task_run_lane_runner.py",
+        "scripts/task_run/task_run_plan.py",
+        "scripts/task_run/task_run_scope_evidence.py",
+        "scripts/task_run/task_run_support.py",
+        "skills/shared/scripts/reviewer_worker_backend.py",
+        "tests/charness_cli/test_task_run_merge_checkpoint_877.py",
+        "tests/charness_cli/test_task_run_scope_evidence_879.py",
+        "tests/quality_gates/test_reviewer_worker_backend.py"
+      ],
+      "selected_changed_prior_paths": [
+        "scripts/task_run/task_run.py",
+        "scripts/task_run/task_run_contract.py",
+        "scripts/task_run/task_run_lane_runner.py",
+        "scripts/task_run/task_run_support.py",
+        "tests/charness_cli/test_task_run_merge_checkpoint_877.py"
+      ],
+      "new_paths": [],
+      "unchanged_selected_paths": [],
+      "omitted_changed_prior_paths": []
+    },
+    "prior_findings": [
+      {
+        "id": "F1",
+        "severity": "high",
+        "summary": "Resolved-merge checkpointing commits out-of-scope changes, violating the pinned checkpoint discipline.",
+        "action": "Before committing a resolved merge, verify that the complete merge candidate and everything staging would include are scope-admitted. If preserving the merge requires out-of-scope content, retain the worktree and return a distinct blocker without staging or committing it. Add regression cases for out-of-scope merge changes and unrelated staged/untracked residue.",
+        "evidence": [
+          "scripts/task_run/task_run_lane_runner.py::_checkpoint_interrupted_lane checks only that some candidate paths are scoped before invoking _commit_merge_candidate; it does not establish that all merge and dirty paths are admitted.",
+          "scripts/task_run/task_run_git.py::_commit_merge_candidate passes paths=None to _commit_lane_snapshot, which executes git add --all -- . and commits without a path restriction.",
+          "Counterexample: a resolved merge changes scoped module.py while an unrelated out-of-scope file is staged, modified, or untracked. The checkpoint stages and commits that unrelated file along with the merge.",
+          "tests/charness_cli/test_task_run_merge_checkpoint_877.py tests a resolved merge involving only module.py; it does not cover mixed-scope merge contents or unrelated residue."
+        ]
+      }
+    ],
+    "omitted_finding_ids": [],
+    "prior_next_move": "Fix the resolved-merge scope escape, add mixed-scope regression coverage, and submit a newly bound review packet.",
+    "prior_non_claims": [
+      "Reviewed the eleven supplied semantic payloads; did not substitute current workspace contents.",
+      "No tests or live backend executions were performed.",
+      "This is not release approval or verification of packaging, worker delivery, or requested reviewer tier application.",
+      "Goal evidence lineage: not-goal-bound; critique review was run without a Goal Run Work Item identity."
+    ],
+    "approval_rule": "This is prior evidence only. Reuse findings as hypotheses; do not treat a prior block, defer, timeout, or partial result as approval. The new reviewer must bind the new packet and current selected paths independently.",
+    "final_reviewed_input_identity_sha256": "6d5f3fa255be6197e6e2c4443ac90b7cc90fe5d4d9d96ce773f88339e3268f2c",
+    "final_selected_path_count": 5,
+    "context_size_bytes": 6486
+  },
+  "follow_up_scope": {
+    "kind": "charness.follow_up_scope_receipt.v1",
+    "status": "verified",
+    "selected_paths": [
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_contract.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "scripts/task_run/task_run_support.py",
+      "tests/charness_cli/test_task_run_merge_checkpoint_877.py"
+    ],
+    "sections": [
+      {
+        "section_id": "changed-files-and-owning-surfaces",
+        "mode": "selected-paths",
+        "binding": "CHARNESS_CRITIQUE_REVIEWED_PATHS",
+        "path_binding": "exact-path-manifest",
+        "selected_path_count": 5,
+        "path_set_sha256": "a5e4648e722d86e484a21f3629a78c4260918c7f7106e51d0df716f57cec7c3d",
+        "status": "verified",
+        "path_check": "exact-manifest"
+      },
+      {
+        "section_id": "critique-prepare-non-goals",
+        "mode": "static",
+        "binding": "adapter-static-content",
+        "path_binding": null,
+        "selected_path_count": 5,
+        "path_set_sha256": null,
+        "status": "verified",
+        "path_check": "not-applicable"
+      },
+      {
+        "section_id": "reviewer-packet-semantic-question",
+        "mode": "static",
+        "binding": "adapter-static-content",
+        "path_binding": null,
+        "selected_path_count": 5,
+        "path_set_sha256": null,
+        "status": "verified",
+        "path_check": "not-applicable"
+      }
+    ],
+    "contract": "Adapter-declared follow-up scope; selected-path sections must expose every identity-bound path, and static sections must declare that they are not path-bearing."
+  }
+}

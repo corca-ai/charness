@@ -1,0 +1,35 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "scripts/task_run/task_run_carrier.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-carrier-supplement/semantic-input/0000-content.bin",
+      "content_sha256": "ce671b723547e1bb0fb20f4b00a0a7c789b41a61fb88345b3550a940cfad0792",
+      "carrier_sha256": "a513105c90faf9083da41f738c3e1901d3fba8c6298bd1469ea8bd88873627ad",
+      "source": "working-tree:scripts/task_run/task_run_carrier.py",
+      "size_bytes": 7893,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_git.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-carrier-supplement/semantic-input/0001-content.bin",
+      "content_sha256": "20b00e5a8b0ff13842796d3a65fe0b7ee6745e75ddf689aa3652e6823911a8d0",
+      "carrier_sha256": "c2a9b1ba1cef1acebd3d5b6d9a488e33b5ec0f76fcb690d119c4b8151cbe3304",
+      "source": "working-tree:scripts/task_run/task_run_git.py",
+      "size_bytes": 18485,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/worktree/checkout_view.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8-14-3-carrier-supplement/semantic-input/0002-content.bin",
+      "content_sha256": "95a8aaa197de53a6165f070c04bfc224a31591e107c6c10b9115cbab02b5e855",
+      "carrier_sha256": "c79dde80b7b0f6f0447b5808b66f011e810e5cbbfb5522e33a89af7072e26ebf",
+      "source": "working-tree:scripts/worktree/checkout_view.py",
+      "size_bytes": 4356,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

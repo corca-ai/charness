@@ -1,0 +1,65 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'F1 recheck completion: guard population versus committed population'
+attempt_id: release-8-14-3-carrier-supplement
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 5eb69cbe5c0695b089d7a165b2f3dd80580faa7c02d6517dbb1d95176b9673aa
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release-8-14-3-carrier-supplement/receipt.json
+ledger_path: charness-artifacts/critique/workers/release-8-14-3-carrier-supplement/delivery.json
+producer_run_id: run-release-8-14-3-carrier-supplement
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release-8-14-3-carrier-supplement/result.json
+  receipt_file: charness-artifacts/critique/workers/release-8-14-3-carrier-supplement/receipt.json
+  producer_run_id: run-release-8-14-3-carrier-supplement
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 5abf71c6d46be8e4338383529fd0b3d61e868d7a361f47060a395021d7ae7e69
+receipt_output_sha256: 5abf71c6d46be8e4338383529fd0b3d61e868d7a361f47060a395021d7ae7e69
+packet_identity: 907c5833432655f1b58145645e1bacdf09cbde39c743f9a1ce64f00f4d06d4aa
+reviewed_input_identity: b95ac40703419a2028558486293ada651441078003f882bdbbb202c1f16b125a
+parent_receipt_identity: parent-c6afa6621f28fe0c1653100c3563839af59b0b3ea8f94d0b
+provenance:
+  scope: 'F1 recheck completion: guard population versus committed population'
+  packet_identity: 907c5833432655f1b58145645e1bacdf09cbde39c743f9a1ce64f00f4d06d4aa
+  reviewed_input_identity: b95ac40703419a2028558486293ada651441078003f882bdbbb202c1f16b125a
+  parent_receipt_identity: parent-c6afa6621f28fe0c1653100c3563839af59b0b3ea8f94d0b
+  expected_targets_sha256: null
+  attempt_id: release-8-14-3-carrier-supplement
+  attempt_scope: 'F1 recheck completion: guard population versus committed population'
+  attempt_packet_identity: 907c5833432655f1b58145645e1bacdf09cbde39c743f9a1ce64f00f4d06d4aa
+  attempt_parent_receipt_identity: parent-c6afa6621f28fe0c1653100c3563839af59b0b3ea8f94d0b
+  result_packet_identity: 907c5833432655f1b58145645e1bacdf09cbde39c743f9a1ce64f00f4d06d4aa
+  result_reviewed_input_identity: b95ac40703419a2028558486293ada651441078003f882bdbbb202c1f16b125a
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 5eb69cbe5c0695b089d7a165b2f3dd80580faa7c02d6517dbb1d95176b9673aa
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

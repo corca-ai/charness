@@ -1,0 +1,47 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "recheck the F1 repair: the resolved-merge path refuses out-of-scope content without breaking in-scope merges, tip reuse, or the unresolved-merge blocker",
+  "packet_sha256": "8d91b163336d620da93b1b6fd11413ddb59b03bbc0b9501f36cdc2a50fcfb0f5",
+  "reviewed_input_identity_sha256": "6d5f3fa255be6197e6e2c4443ac90b7cc90fe5d4d9d96ce773f88339e3268f2c",
+  "verdict": "defer",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "F1-evidence",
+      "severity": "evidence-gap",
+      "summary": "The new guard rejects reported out-of-scope paths, but the packet does not establish that its path population covers everything the merge checkpoint commits.",
+      "evidence": [
+        "task_run_lane_runner.py::_checkpoint_interrupted_lane compares carrier['changed_paths'] against the admitted set before calling _commit_merge_candidate.",
+        "task_run_support.py delegates _candidate_carrier to task_run_carrier and _commit_merge_candidate to task_run_git; neither implementation is included in the supplied semantic bytes.",
+        "The supplied regression tests assert rejection of staged and untracked residue, but no execution results are supplied. Their source alone does not establish the delegated population's completeness."
+      ],
+      "action": "Provide identity-bound implementations of the candidate population and merge staging helpers, plus their relevant path collectors, so the guard's coverage can be compared with the actual committed population."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The original mixed-scope escape remains directly visible in the selected code.",
+      "bin": "mitigated",
+      "disposition": "The new outside-path check raises MixedScopeMergeError before invoking the merge commit helper. No concrete surviving escape is established from the supplied bytes."
+    },
+    {
+      "concern": "The repair disrupts existing checkpoint branches or hides the blocker.",
+      "bin": "supported-by-static-review",
+      "disposition": "Unresolved conflicts retain precedence; admitted merges still reach the merge helper; clean commit-only candidates still reuse the tip. The new exception is exported consistently and preserves its distinct message through _checkpoint_failure_detail."
+    },
+    {
+      "concern": "Regression coverage omits the reported residue scenarios.",
+      "bin": "mitigated",
+      "disposition": "The supplied tests cover an out-of-scope staged modification, staged and untracked additions, and receipt-level blocker propagation. Execution remains unverified."
+    }
+  ],
+  "next_move": "Submit a supplemental bound packet containing the population and staging owners to finish the F1 recheck.",
+  "non_claims": [
+    "Reviewed all five supplied semantic payloads without substituting workspace contents.",
+    "No tests or live backend executions were performed.",
+    "This is not release approval or verification of packaging, worker delivery, or reviewer tier application.",
+    "Goal evidence lineage: {\"binding\":null,\"disposition\":\"not-goal-bound\",\"draft\":null,\"goal_run\":null,\"kind\":\"charness.goal-lineage\",\"reason\":\"critique review was run without a Goal Run Work Item identity\",\"schema_version\":1,\"work_item\":null}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

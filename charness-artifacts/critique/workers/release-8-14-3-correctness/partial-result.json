@@ -1,0 +1,56 @@
+{
+  "counterweight_triage": [
+    {
+      "bin": "blocker",
+      "concern": "Git requires a whole merge commit, potentially justifying unrestricted staging.",
+      "disposition": "Git's restriction explains why a partial commit cannot work; it does not authorize widening the declared write boundary. The WIP/unverified label also does not preserve scope discipline."
+    },
+    {
+      "bin": "supported",
+      "concern": "#877 unresolved-merge diagnostics and clean committed-tip reuse.",
+      "disposition": "The supplied code preserves a distinct unresolved-merge error and introduces tip reuse for commit-only candidates. Focused tests cover both directly and through failed-lane receipts. These improvements do not resolve F1."
+    },
+    {
+      "bin": "non-blocking",
+      "concern": "#879 precision versus #880 advisory recall.",
+      "disposition": "The supplied predicate rejects the recorded dotted identifiers and foreign extensionless slash tokens while retaining file-shaped slash candidates without a repository foothold. resolve_task_inputs passes the task repository explicitly. The focused tests cover these distinctions."
+    },
+    {
+      "bin": "non-blocking",
+      "concern": "Boundary ownership of the skills/shared backend change.",
+      "disposition": "The bounded search across supplied sources places command construction, process failure mapping, and normalization in reviewer_worker_backend.py. Claude-specific schema transport adaptation belongs at this existing backend boundary; it does not introduce provider policy into review judgment. No reader-facing invocation reference is included in the bound inputs."
+    },
+    {
+      "bin": "supported-with-limit",
+      "concern": "#878 reviewer worker contract preservation.",
+      "disposition": "Schema stripping affects only the Claude command's in-memory top-level payload. Nonzero exits remain backend-failed with the original exit code and stop before normalization; stderr adds diagnostic detail. Tests cover these seams. Actual Claude CLI acceptance and downstream schema validation are not demonstrated by this packet."
+    }
+  ],
+  "findings": [
+    {
+      "action": "Before committing a resolved merge, verify that the complete merge candidate and everything staging would include are scope-admitted. If preserving the merge requires out-of-scope content, retain the worktree and return a distinct blocker without staging or committing it. Add regression cases for out-of-scope merge changes and unrelated staged/untracked residue.",
+      "evidence": [
+        "scripts/task_run/task_run_lane_runner.py::_checkpoint_interrupted_lane checks only that some candidate paths are scoped before invoking _commit_merge_candidate; it does not establish that all merge and dirty paths are admitted.",
+        "scripts/task_run/task_run_git.py::_commit_merge_candidate passes paths=None to _commit_lane_snapshot, which executes git add --all -- . and commits without a path restriction.",
+        "Counterexample: a resolved merge changes scoped module.py while an unrelated out-of-scope file is staged, modified, or untracked. The checkpoint stages and commits that unrelated file along with the merge.",
+        "tests/charness_cli/test_task_run_merge_checkpoint_877.py tests a resolved merge involving only module.py; it does not cover mixed-scope merge contents or unrelated residue."
+      ],
+      "id": "F1",
+      "severity": "high",
+      "summary": "Resolved-merge checkpointing commits out-of-scope changes, violating the pinned checkpoint discipline."
+    }
+  ],
+  "kind": "charness.bounded_review.v1",
+  "lens": "correctness and contract preservation",
+  "next_move": "Fix the resolved-merge scope escape, add mixed-scope regression coverage, and submit a newly bound review packet.",
+  "non_claims": [
+    "Reviewed the eleven supplied semantic payloads; did not substitute current workspace contents.",
+    "No tests or live backend executions were performed.",
+    "This is not release approval or verification of packaging, worker delivery, or requested reviewer tier application.",
+    "Goal evidence lineage: not-goal-bound; critique review was run without a Goal Run Work Item identity."
+  ],
+  "packet_sha256": "b70bcfcc539aae78fff31ca37b98bdcad0a74d9e1655fb57287a2c4483bd0b4a",
+  "reviewed_input_identity_sha256": "77bcdf33b86992299c08edb518ffa99ec0de6c20cc705834b418c454d1936bc6",
+  "target_observations": null,
+  "verdict": "block"
+}
