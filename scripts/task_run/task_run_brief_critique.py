@@ -33,17 +33,17 @@ def _brief_critique_prompt(
 ) -> str:
     role = "You are a read-only preflight reviewer for a task lane, not the lane executor. "
     if lane_executor:
-        carrier = f"The lane itself will execute on the {lane_executor!r} carrier"
+        executor_note = f"The lane itself will run on the {lane_executor!r} executor"
         if lane_executable:
-            carrier += f", whose executable the task runtime already validated at {lane_executable!r}"
+            executor_note += f", whose executable the task runtime already validated at {lane_executable!r}"
         else:
-            carrier += ", whose availability the task runtime already validated"
-        carrier += (
-            "; your own Codex-only tool context says nothing about that carrier's "
+            executor_note += ", whose availability the task runtime already validated"
+        executor_note += (
+            "; your own Codex-only tool context says nothing about that executor's "
             "availability, so never report the lane executor as unavailable because "
             "you lack its tools. "
         )
-        role += carrier
+        role += executor_note
     return (
         role
         + "Review this task brief read-only against repository code and available provider docs. "
@@ -58,7 +58,7 @@ def _brief_critique_prompt(
     )
 
 
-def _lane_carrier_facts(
+def _lane_executor_facts(
     payload: Mapping[str, Any], resolved: Mapping[str, Any]
 ) -> tuple[str | None, str | None]:
     """The selected lane carrier and its validated executable, when known."""
@@ -107,7 +107,7 @@ def _run_brief_critique(
         ),
         "codex",
     )
-    lane_executor, lane_executable = _lane_carrier_facts(payload, resolved)
+    lane_executor, lane_executable = _lane_executor_facts(payload, resolved)
     outcome = execution._execute_codex(
         command,
         prompt=_brief_critique_prompt(

@@ -1787,7 +1787,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     task_run_parser.add_argument(
         "--lane",
-        help="Safe lane id; derives the task id, task/<id> branch, external worktree, and HEAD base.",
+        help="Safe lane id; derives the task id, task/<id> branch, and external worktree (HEAD base unless --base is given).",
     )
     task_run_parser.add_argument(
         "--path",
@@ -1798,7 +1798,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--branch", help="Named local branch for the new worktree (explicit form)."
     )
     task_run_parser.add_argument(
-        "--base", help="Commit/ref from which the named worktree is created (explicit form)."
+        "--base",
+        help="Commit/ref the new worktree starts from (required with --path/--branch; overrides the lane HEAD base with --lane).",
     )
     task_run_parser.add_argument(
         "--scope",

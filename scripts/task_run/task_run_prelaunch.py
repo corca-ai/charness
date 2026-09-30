@@ -207,7 +207,7 @@ def acceptance_deficit_blockers(
 # while the Codex precheck lives in its own cohesive home. Callers and tests
 # keep spelling these through prelaunch.
 _brief_critique_prompt = _brief_critique._brief_critique_prompt
-_lane_carrier_facts = _brief_critique._lane_carrier_facts
+_lane_executor_facts = _brief_critique._lane_executor_facts
 _run_brief_critique = _brief_critique._run_brief_critique
 
 
@@ -388,7 +388,7 @@ def run_prelaunch_gates(
         }
         if baseline["status"] != "red":
             blocker = "acceptance skeleton must be committed and failing before launch"
-    lane_executor, lane_executable = _lane_carrier_facts(payload, resolved)
+    lane_executor, lane_executable = _lane_executor_facts(payload, resolved)
     payload["prelaunch"] = {
         "brief_critique": {
             "status": review.get("status", "invalid"),

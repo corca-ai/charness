@@ -509,12 +509,11 @@ def build_progress_watch(
     """
     if not require_change:
         return None
-    budget_raw: str | None = None
+    budget_raw = os.environ.get(NO_PROGRESS_BUDGET_ENV)
     if budget_override is None:
         budget_seconds, budget_parsed = _env_seconds(
             NO_PROGRESS_BUDGET_ENV, DEFAULT_NO_PROGRESS_BUDGET_SECONDS
         )
-        budget_raw = os.environ.get(NO_PROGRESS_BUDGET_ENV)
         budget_source = (
             "env" if require_change and budget_parsed
             else "default" if require_change else "disabled"

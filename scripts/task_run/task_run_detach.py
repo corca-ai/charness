@@ -54,7 +54,10 @@ def preview_task_id(
     if lane is not None:
         return _runtime.validate_lane_id(lane)
     if branch is None:
-        raise ValueError("explicit task runs need --branch for --detach")
+        raise ValueError(
+            "explicit task runs require --path, --branch, and --base; "
+            "otherwise pass --lane <id>"
+        )
     return _runtime._task_id(branch, task_id)
 
 

@@ -353,13 +353,15 @@ options:
                         Clean parent repo from which the linked worktree is
                         created. Defaults to the current working directory.
   --lane LANE           Safe lane id; derives the task id, task/<id> branch,
-                        external worktree, and HEAD base.
+                        and external worktree (HEAD base unless --base is
+                        given).
   --path PATH           New linked worktree path outside the parent repo
                         (explicit form).
   --branch BRANCH       Named local branch for the new worktree (explicit
                         form).
-  --base BASE           Commit/ref from which the named worktree is created
-                        (explicit form).
+  --base BASE           Commit/ref the new worktree starts from (required with
+                        --path/--branch; overrides the lane HEAD base with
+                        --lane).
   --scope SCOPE         Repository-relative candidate path or quoted glob;
                         repeatable, and a `{a,b}` group expands to one scope
                         per alternative. Existing directories include

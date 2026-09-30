@@ -98,7 +98,8 @@ carrier, `changed_line_gate`, and retention live in
 [`runtime_root_retention.py`](../scripts/gates_support/runtime_root_retention.py).
 Do not recopy receipt fields here; `--help` is the typed surface. `--scope`
 repeats; `--skip-prepare` and `--allow-no-change` are diagnostic opt-outs;
-`--path`, `--branch`, and `--base` are for exceptional host setup.
+`--path` and `--branch` are for exceptional host setup; `--base` also
+overrides the lane HEAD base in shorthand.
 
 The parent reads the receipt before integrating. A lane is done only when
 `changed_line_gate` is `clean` or `noop`. Useful dirty work is committed before

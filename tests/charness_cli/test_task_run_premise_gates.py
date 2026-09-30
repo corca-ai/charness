@@ -408,8 +408,8 @@ def test_cli_forwards_prelaunch_declarations_to_task_runner(tmp_path, monkeypatc
     }
 
 
-def test_brief_prompt_separates_checker_from_lane_carrier() -> None:
-    """The precheck names the outer carrier and never infers from its own tools (#884)."""
+def test_brief_prompt_separates_checker_from_lane_executor() -> None:
+    """The precheck names the outer executor and never infers from its own tools (#884)."""
     guarded = task_run_prelaunch._brief_critique_prompt(
         "review this", [], lane_executor="muse", lane_executable="/usr/bin/muse"
     )
@@ -428,7 +428,7 @@ def test_brief_prompt_separates_checker_from_lane_carrier() -> None:
     assert "will execute on" not in bare
 
 
-def test_brief_critique_receives_the_selected_carrier_facts(tmp_path, monkeypatch) -> None:
+def test_brief_critique_receives_the_selected_executor_facts(tmp_path, monkeypatch) -> None:
     """The checker prompt carries the resolved executor, not the checker's context (#884)."""
     from scripts.runtime_bootstrap import import_repo_module
     from scripts.task_run import task_run_execution, task_run_runtime, task_run_support
@@ -475,8 +475,8 @@ def test_brief_critique_receives_the_selected_carrier_facts(tmp_path, monkeypatc
     assert "never report the lane executor as unavailable" in observed["prompt"]
 
 
-def test_prelaunch_receipt_distinguishes_checker_from_lane_carrier() -> None:
-    """The receipt names both the Codex checker and the selected lane carrier (#884)."""
+def test_prelaunch_receipt_distinguishes_checker_from_lane_executor() -> None:
+    """The receipt names both the Codex checker and the selected lane executor (#884)."""
     payload: dict[str, Any] = {}
     resolved = _resolved([])
     resolved["executor"] = "muse"

@@ -73,6 +73,27 @@ def test_valid_env_budget_records_env_source_and_raw(
     assert receipt["budget_raw"] == "300"
 
 
+def test_flag_override_keeps_the_shadowed_env_spelling(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """The flag wins and the shadowed env spelling stays debuggable."""
+    monkeypatch.setenv(prog.NO_PROGRESS_BUDGET_ENV, "300")
+    watch = prog.build_progress_watch(
+        require_change=True,
+        stdout_log=tmp_path / "o.log",
+        stderr_log=tmp_path / "e.log",
+        worktree=tmp_path,
+        base_sha="deadbeef",
+        scope_specs=[],
+        budget_override=1200.0,
+    )
+    assert watch is not None
+    receipt = watch.receipt()
+    assert receipt["budget_seconds"] == 1200.0
+    assert receipt["budget_source"] == "flag"
+    assert receipt["budget_raw"] == "300"
+
+
 def test_no_progress_seconds_rejects_nonfinite_and_negative(tmp_path: Path) -> None:
     from scripts.task_run import task_run_plan
 
