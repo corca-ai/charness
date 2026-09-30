@@ -1,0 +1,57 @@
+{
+  "schema_version": "charness.release.claims-review.v4",
+  "prepared_commit": "aa2f96d47775e3ea470388c92fbe39b5d3b688f0",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "2fa698b39818a4724a3ee459572edede11f99b95ecb025666c7a7e322e001841",
+  "target_version": "8.14.5",
+  "tag_name": "v8.14.5",
+  "verdict": "pass",
+  "preparer_context": "Release preparer for charness 8.14.5 (commit aa2f96d47); fossil-removal author plus critique author in the parent release session.",
+  "reviewer_context": "Distinct subagent context (release claims reviewer 01a0f0b3), read-only; audited the prepared record claim-by-claim (commit scope, version exactness, latest.md honesty, range contents, critique artifact validity, rationale sanity); all checkable assertions verified, 4 advisory findings, zero blockers; corrected the delegated range claim (9 commits incl. 5 post-tag v8.14.4 lifecycle commits; 8.14.5 delta itself exactly removal + 2 critique + release); narrative in 2026-09-30-v8.14.5-claims-review.md.",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "ephemeral subagent session 01a0f0b3-a8c5-73c0-b874-91301144fb57, fresh context, read-only (no repo mutation; parent persisted the returned narrative); full audit in charness-artifacts/release-review/2026-09-30-v8.14.5-claims-review.md",
+    "review_artifact": "charness-artifacts/release-review/2026-09-30-v8.14.5-claims-review.md"
+  },
+  "review_scope": {
+    "blocking_paths": [
+      ".claude-plugin/marketplace.json",
+      "charness-artifacts/critique/v8145-critique.md",
+      "charness-artifacts/probe/2026-09-30-v8.14.4-release-observer.json",
+      "charness-artifacts/release-review/2026-09-30-v8.14.4-prepared-claims-review.json",
+      "charness-artifacts/release/.8.14.4-prepush-quality.json.charness-receipt.json",
+      "charness-artifacts/release/8.14.4-prepush-quality.json",
+      "charness-artifacts/release/latest.md",
+      "packaging/charness.json",
+      "scripts/adapters/surfaces_lib.py",
+      "scripts/evidence/probe_record_parse.py",
+      "scripts/evidence/probe_stimulus_replay.py",
+      "scripts/gates_support/removed_name_consumers.py",
+      "scripts/setup/setup_adapter_inspect_lib.py",
+      "scripts/setup/setup_inspect_quality_lib.py",
+      "scripts/setup/validate_maintainer_setup.py",
+      "scripts/task_run/task_run_execution.py",
+      "scripts/task_run/task_run_git.py",
+      "tests/charness_cli/test_task_run_git_refusals.py",
+      "tests/charness_cli/test_task_run_scope_gaps.py",
+      "tests/coverage_debt/test_batch12.py",
+      "tests/quality_gates/test_maintainer_hooks.py",
+      "tests/quality_gates/test_setup_inspect_adapters.py",
+      "tests/repo_bootstrap_marker.py"
+    ],
+    "advisory_paths": [
+      "charness-artifacts/release-review/2026-09-30-v8.14.4-claims-review.md"
+    ]
+  },
+  "scope_basis": {
+    "base_ref": "refs/tags/v8.14.4",
+    "changed_paths_sha256": "b50096c54087633c2db483355351011e92cab7978d17302e4cdd607e12888657",
+    "changed_path_count": 24
+  },
+  "advisory_findings": [
+    "Tag v8.14.5 named in latest.md does not exist yet (push pending, record says so); no consumer should cite the tag as existing yet.",
+    "Publication must still wait on the pytest-release resume; the read-only exit-0 pass is necessary but not sufficient evidence.",
+    "Delegated range claim corrected: v8.14.4..aa2f96d47 holds 9 commits incl. 5 post-tag v8.14.4 lifecycle commits; 8.14.5 delta exactly removal + 2 critique + release; latest.md makes no range claim so the record stands.",
+    "Read-only review did not re-run the quality lane or standing suite; counts rest on preparer session evidence until the pytest-release resume re-verdicts."
+  ]
+}
