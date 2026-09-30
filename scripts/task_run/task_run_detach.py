@@ -140,6 +140,7 @@ def _mode_argv(args: argparse.Namespace) -> list[str]:
     argv: list[str] = []
     for flag in (
         ("prepare", "--prepare"),
+        ("require_change", "--require-change"),
         ("skip_prepare", "--skip-prepare"),
         ("allow_no_change", "--allow-no-change"),
         ("report_only", "--report-only"),
@@ -360,10 +361,20 @@ def launch_detached_command(args: argparse.Namespace) -> tuple[dict[str, Any], i
         )
     if args.lane is not None and args.task_id is not None:
         raise TaskRunError("--task-id is derived from --lane; omit it in shorthand mode")
+    if args.lane is not None and (args.path is not None or args.branch is not None):
+        raise TaskRunError(
+            "--lane cannot be combined with --path or --branch; "
+            "choose shorthand or the fully explicit form"
+        )
     try:
         task_id = preview_task_id(args.lane, args.branch, args.task_id)
     except ValueError as exc:
         raise TaskRunError(str(exc)) from exc
+    if args.lane is None and (args.path is None or args.base is None):
+        raise TaskRunError(
+            "explicit task runs require --path, --branch, and --base; "
+            "otherwise pass --lane <id>"
+        )
     repo_root = args.repo_root.resolve()
     runtime_path, _result_path = result_paths(repo_root, task_id)
     child = _guard.spawn_detached(

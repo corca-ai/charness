@@ -45,6 +45,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -198,9 +199,12 @@ class Sweep:
                     if path.exists():
                         _rmtree_writable(path)
                 elif path.exists():
-                    # No chmod: POSIX unlink needs write on the containing
+                    # No chmod on POSIX: unlink needs write on the containing
                     # directory only, and this file may hardlink a surviving
                     # inode whose mode the sweep must not touch (#881).
+                    # Windows alone cannot unlink a read-only file.
+                    if sys.platform == "win32":
+                        os.chmod(path, 0o600)
                     path.unlink()
             except OSError as exc:
                 self._record("failed", path, f"{reason}; removal failed: {exc}", bytes=size)

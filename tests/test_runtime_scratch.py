@@ -12,6 +12,7 @@ from scripts.runtime_scratch import (
     OWNER_RECEIPT_NAME,
     ScratchError,
     _repo_identity,
+    _rmtree_writable,
     gc_scratch_roots,
     inspect_scratch_roots,
     owned_scratch,
@@ -359,3 +360,19 @@ def test_closing_an_owner_keeps_a_hardlinked_survivor_executable(tmp_path: Path)
     assert not path.exists()
     assert survivor.read_bytes() == b"fixture"
     assert survivor.stat().st_mode & 0o777 == 0o755
+
+
+def test_windows_branch_chmods_files_before_unlink(tmp_path: Path, monkeypatch) -> None:
+    """Windows cannot unlink a read-only file, so only there files gain write bits."""
+    survivor = tmp_path / "survivor"
+    survivor.write_bytes(b"fixture")
+    survivor.chmod(0o755)
+    doomed = tmp_path / "doomed"
+    doomed.mkdir()
+    os.link(survivor, doomed / "linked")
+    monkeypatch.setattr(os, "name", "nt")
+
+    _rmtree_writable(doomed)
+
+    assert not doomed.exists()
+    assert survivor.stat().st_mode & 0o777 == 0o600

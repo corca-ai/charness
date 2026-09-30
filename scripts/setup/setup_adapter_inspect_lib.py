@@ -23,14 +23,14 @@ from scripts.setup.setup_agent_docs_lib import _recommendation  # noqa: E402
 try:
     from scripts.core.subprocess_guard import TIMEOUT_EXIT_CODE, run_process
 except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
-    _scripts_dir = next(
-        ancestor / "scripts"
+    _repo_root = next(
+        ancestor
         for ancestor in Path(__file__).resolve().parents
         if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
     )
-    if str(_scripts_dir) not in sys.path:
-        sys.path.insert(0, str(_scripts_dir))
-    from subprocess_guard import TIMEOUT_EXIT_CODE, run_process
+    if str(_repo_root) not in sys.path:
+        sys.path.insert(0, str(_repo_root))
+    from scripts.core.subprocess_guard import TIMEOUT_EXIT_CODE, run_process
 
 WORKTREE_ADAPTER_RELATIVE_PATH = Path(".agents/worktree-adapter.yaml")
 WORKTREE_ADAPTER_SEED_COMMAND = "python3 $SKILL_DIR/scripts/seed_worktree_adapter.py --repo-root ."

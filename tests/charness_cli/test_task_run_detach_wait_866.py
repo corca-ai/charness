@@ -434,6 +434,40 @@ def test_detached_child_preserves_the_foreground_resolved_base(
     assert plan["base_sha"] == head_sha
 
 
+def test_child_argv_round_trips_through_the_real_parser(tmp_path: Path) -> None:
+    """The rebuilt child argv re-parses to the same namespace: every flag survives.
+
+    Only --detach itself is dropped by design; any other asymmetry means the
+    child would resolve a different lane than the foreground (the #882 class).
+    """
+    cli = load_cli_module("charness_detach_round_trip", CLI)
+    parser = cli.build_parser()
+    lane_path = str(tmp_path / "lane")
+    shapes = [
+        ["--lane", "rr-lane", "--base", "deadbee", "--require-change"],
+        ["--lane", "rr-head"],
+        ["--path", lane_path, "--branch", "lane/rr", "--base", "deadbee"],
+        ["--path", lane_path, "--branch", "lane/rr"],
+    ]
+    for extra in shapes:
+        argv = [
+            "task", "run",
+            "--repo-root", str(tmp_path),
+            "--scope", "module.py",
+            "--prompt", "do it",
+            "--effort", "medium",
+            "--detach",
+            *extra,
+        ]
+        namespace = parser.parse_args(argv)
+        child = task_run_detach.child_argv(["charness"], namespace)
+        reparsed = parser.parse_args(child[1:])
+        left = {k: v for k, v in vars(namespace).items() if k != "detach"}
+        right = {k: v for k, v in vars(reparsed).items() if k != "detach"}
+
+        assert right == left
+
+
 def test_prompt_argv_spells_prompt_file_branch() -> None:
     args = argparse.Namespace(
         prompt=None,
@@ -455,6 +489,7 @@ def test_prompt_argv_spells_prompt_file_branch() -> None:
 def test_mode_and_option_argv_spell_every_flag() -> None:
     mode = argparse.Namespace(
         prepare=True,
+        require_change=True,
         skip_prepare=False,
         allow_no_change=True,
         report_only=False,
@@ -467,6 +502,7 @@ def test_mode_and_option_argv_spell_every_flag() -> None:
     )
     assert task_run_detach._mode_argv(mode) == [
         "--prepare",
+        "--require-change",
         "--allow-no-change",
         "--critical-lane",
         "--self-review",
@@ -589,6 +625,43 @@ def test_launch_detached_command_wraps_preview_errors() -> None:
     with pytest.raises(TaskRunError, match="--branch"):
         task_run_detach.launch_detached_command(
             argparse.Namespace(dry_run=False, lane=None, branch=None, task_id=None)
+        )
+
+
+@pytest.mark.parametrize(
+    ("path", "branch"),
+    [(Path("/tmp/x"), None), (None, "lane-b")],
+)
+def test_launch_detached_command_refuses_lane_with_explicit_target(path, branch) -> None:
+    """A lane mixed with explicit selectors refuses before spawn, like the plan."""
+    from scripts.task_run.task_run_contract import TaskRunError
+
+    with pytest.raises(TaskRunError, match="cannot be combined with --path or --branch"):
+        task_run_detach.launch_detached_command(
+            argparse.Namespace(
+                dry_run=False, lane="lane-a", task_id=None, path=path, branch=branch
+            )
+        )
+
+
+@pytest.mark.parametrize(
+    ("path", "base"),
+    [(None, "deadbee"), (Path("/tmp/x"), None)],
+)
+def test_launch_detached_command_refuses_incomplete_explicit_target(path, base) -> None:
+    """Baseless or pathless explicit detach refuses before spawn, like the plan."""
+    from scripts.task_run.task_run_contract import TaskRunError
+
+    with pytest.raises(TaskRunError, match="require --path, --branch, and --base"):
+        task_run_detach.launch_detached_command(
+            argparse.Namespace(
+                dry_run=False,
+                lane=None,
+                task_id="explicit-a",
+                path=path,
+                branch="lane-b",
+                base=base,
+            )
         )
 
 

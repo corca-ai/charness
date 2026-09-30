@@ -221,12 +221,22 @@ def _rmtree_writable(path: Path) -> None:
     that): unlinking needs write+execute on the containing directory,
     never on the file itself, and a file in the tree may hardlink a
     surviving inode whose mode we must not touch.
+
+    Windows alone cannot unlink a read-only file, so only there do files
+    gain write bits first; the read-only attribute has no exec-bit
+    equivalent to break, which keeps the #881 protection intact on POSIX.
     """
-    for parent, dirs, _files in os.walk(path):
+    windows = os.name == "nt"
+    for parent, dirs, files in os.walk(path):
         for name in dirs:
             target = os.path.join(parent, name)
             if not os.path.islink(target):
                 os.chmod(target, 0o700)
+        if windows:
+            for name in files:
+                target = os.path.join(parent, name)
+                if not os.path.islink(target):
+                    os.chmod(target, 0o600)
         os.chmod(parent, 0o700)
     shutil.rmtree(path)
 

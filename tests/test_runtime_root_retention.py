@@ -513,6 +513,26 @@ def test_removing_a_single_file_keeps_a_hardlinked_survivor_executable(tmp_path:
     assert survivor.stat().st_mode & 0o777 == 0o755
 
 
+def test_windows_branch_chmods_a_single_file_before_unlink(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Windows cannot unlink a read-only file, so only there it gains write bits."""
+    now = time.time()
+    mine, _repo = _tree(tmp_path, now=now)
+    survivor = tmp_path / "survivor"
+    survivor.write_bytes(b"fixture")
+    survivor.chmod(0o755)
+    doomed = mine / "loose-leaf"
+    os.link(survivor, doomed)
+    monkeypatch.setattr(sys, "platform", "win32")
+
+    removed = retention.Sweep(mine, now=now)._remove_tree(doomed, "single-file candidate")
+
+    assert removed is True
+    assert not doomed.exists()
+    assert survivor.stat().st_mode & 0o777 == 0o600
+
+
 def test_retention_reuses_the_single_unlink_safe_removal() -> None:
     """The sweep owns no second rmtree copy; inode-safety fixes land once (#881)."""
     from scripts import runtime_scratch
