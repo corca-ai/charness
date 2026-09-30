@@ -5,7 +5,6 @@ from __future__ import annotations
 import fnmatch
 import json
 import re
-import sys
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -25,18 +24,7 @@ _load_repo_runtime_bootstrap()
 from scripts.core.git_status_snapshot import GitStatusError  # noqa: E402
 from scripts.core.git_status_snapshot import capture as capture_git_status  # noqa: E402
 from scripts.core.git_status_snapshot import parse as parse_git_status  # noqa: E402
-
-try:
-    from scripts.core.subprocess_guard import run_process
-except ImportError:  # flat layout: the repo root is not on sys.path
-    _repo_root = next(
-        ancestor
-        for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
-    )
-    if str(_repo_root) not in sys.path:
-        sys.path.insert(0, str(_repo_root))
-    from scripts.core.subprocess_guard import run_process
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 
 SURFACES_PATH = Path(".agents/surfaces.json")
 

@@ -1,16 +1,12 @@
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
 from scripts.setup import setup_adapter_inspect_lib
-from tests.module_eviction import evict_module, evict_new_modules
 from tests.quality_gates.repo_shapes import replace_with_committed_repo
-from tests.repo_bootstrap_marker import hide_repo_bootstrap_marker
-from tests.script_loader import load_script_module
 
 from .support import SETUP_RESOLVE_ADAPTER, inspect_setup_repo
 
@@ -267,47 +263,3 @@ def test_setup_inspect_reports_present_setup_adapter(tmp_path: Path) -> None:
 
     init_state = payload["agent_docs"]["normalization"]["setup_adapter"]
     assert init_state["adapter_exists"] is True
-
-
-class _RefuseSubprocessGuardOnce:
-    """Refuses the first `scripts.core.subprocess_guard` import, then stands down."""
-
-    def __init__(self) -> None:
-        self.fired = False
-
-    def find_spec(self, fullname, path=None, target=None):
-        if fullname == "scripts.core.subprocess_guard" and not self.fired:
-            self.fired = True
-            raise ModuleNotFoundError(f"No module named {fullname!r}")
-        return None
-
-
-def test_flat_layout_fallback_binds_the_real_subprocess_guard(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """The flat-layout fallback binds the real guard via the repo root (#825 class)."""
-    import scripts.core.git_checkout  # noqa: F401
-    import scripts.setup.setup_agent_docs_lib  # noqa: F401
-
-    root = Path(__file__).resolve().parents[2]
-    refuser = _RefuseSubprocessGuardOnce()
-    monkeypatch.setattr(sys, "meta_path", [refuser] + sys.meta_path)
-    evict_module(monkeypatch, "scripts.core.subprocess_guard")
-    monkeypatch.setattr(sys, "path", [entry for entry in sys.path if entry != str(root)])
-    # Without this the module-level bootstrap re-inserts the root before the
-    # `try` import runs, so the fallback's own insert never executes.
-    hide_repo_bootstrap_marker(monkeypatch)
-    before = set(sys.modules)
-    try:
-        module = load_script_module(
-            "setup_adapter_inspect_lib_flat",
-            root / "scripts/setup/setup_adapter_inspect_lib.py",
-        )
-
-        assert refuser.fired
-        assert module.run_process.__module__ == "scripts.core.subprocess_guard"
-        assert module.TIMEOUT_EXIT_CODE is not None
-        # The bootstrap stood down, so only the fallback could have inserted this.
-        assert sys.path[0] == str(root)
-    finally:
-        evict_new_modules(before)

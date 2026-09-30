@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
-import sys
 from pathlib import Path
 
 
@@ -19,18 +18,7 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.core.git_checkout import discoverable as _git_metadata_is_discoverable  # noqa: E402
-
-try:
-    from scripts.core.subprocess_guard import run_process
-except ImportError:  # flat layout: the repo root is not on sys.path
-    _repo_root = next(
-        ancestor
-        for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
-    )
-    if str(_repo_root) not in sys.path:
-        sys.path.insert(0, str(_repo_root))
-    from scripts.core.subprocess_guard import run_process
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 
 
 def _present_paths(repo_root: Path, candidates: tuple[str, ...]) -> list[str]:

@@ -5,7 +5,6 @@ from __future__ import annotations
 import os
 import re
 import subprocess
-import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -29,29 +28,18 @@ from scripts.core.git_checkout import (  # noqa: E402
     worktree_root_from_files,
 )
 from scripts.core.git_status_snapshot import GitStatusError  # noqa: E402
-from scripts.worktree.checkout_view import (  # noqa: E402
-    CheckoutView,
-    GitCheckout,
-    moment_from_status,
-)
-
-try:
-    from scripts.core.subprocess_guard import run_process
-except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
-    _repo_root = next(
-        ancestor
-        for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
-    )
-    if str(_repo_root) not in sys.path:
-        sys.path.insert(0, str(_repo_root))
-    from scripts.core.subprocess_guard import run_process
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 from scripts.task_run.task_run_contract import (  # noqa: E402
     _BRANCH_RE,
     _GIT_DISCOVERY_ENV,
     FAIL,
     PASS,
     TaskRunError,
+)
+from scripts.worktree.checkout_view import (  # noqa: E402
+    CheckoutView,
+    GitCheckout,
+    moment_from_status,
 )
 
 WIP_CANDIDATE_COMMIT_MESSAGE = "task-run: WIP candidate — interrupted mid-edit — state unknown"

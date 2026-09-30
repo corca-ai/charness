@@ -23,7 +23,6 @@ carries the full list.
 from __future__ import annotations
 
 import re
-import sys
 from pathlib import Path
 
 
@@ -38,17 +37,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.core.subprocess_guard import run_process
-except ImportError:  # flat layout: the repo root is not on sys.path
-    _repo_root = next(
-        ancestor
-        for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
-    )
-    if str(_repo_root) not in sys.path:
-        sys.path.insert(0, str(_repo_root))
-    from scripts.core.subprocess_guard import run_process
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 
 # FIELD LINES START AT COLUMN 0. The permissive `^\s*` this replaces made every indented
 # line a candidate field, so a markdown sub-list under a value (`  - the exit status: 0 vs

@@ -9,14 +9,11 @@ detail it carries, rather than the lane wiring the sibling file covers.
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
 from scripts.task_run import task_run, task_run_evidence, task_run_git
-from tests.module_eviction import evict_module, evict_new_modules
-from tests.script_loader import load_script_module
 
 from .test_task_run_fixtures import _git, _repo
 
@@ -283,46 +280,6 @@ def test_repo_snapshot_fallback_refuses_unusable_layouts(
 
     with pytest.raises(task_run.TaskRunError, match=message):
         task_run_git._repo_snapshot(repo)
-
-
-class _RefuseSubprocessGuardOnce:
-    """Refuses the first `scripts.core.subprocess_guard` import, then stands down."""
-
-    def __init__(self) -> None:
-        self.fired = False
-
-    def find_spec(self, fullname, path=None, target=None):
-        if fullname == "scripts.core.subprocess_guard" and not self.fired:
-            self.fired = True
-            raise ModuleNotFoundError(f"No module named {fullname!r}")
-        return None
-
-
-def test_task_run_git_binds_its_owners_without_the_package(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """The flat-layout fallback still binds the real subprocess guard (#825)."""
-    import scripts.core.git_checkout  # noqa: F401
-    import scripts.core.git_status_snapshot  # noqa: F401
-    import scripts.worktree.checkout_view  # noqa: F401
-
-    root = Path(__file__).resolve().parents[2]
-    refuser = _RefuseSubprocessGuardOnce()
-    monkeypatch.setattr(sys, "meta_path", [refuser] + sys.meta_path)
-    evict_module(monkeypatch, "scripts.core.subprocess_guard")
-    monkeypatch.setattr(sys, "path", [entry for entry in sys.path if entry != str(root)])
-    before = set(sys.modules)
-    try:
-        module = load_script_module(
-            "task_run_git_flat_825",
-            root / "scripts/task_run/task_run_git.py",
-        )
-
-        assert refuser.fired
-        assert module.run_process.__module__ == "scripts.core.subprocess_guard"
-        assert str(root) in sys.path
-    finally:
-        evict_new_modules(before)
 
 
 def test_changed_paths_unions_diff_and_untracked_paths(tmp_path: Path) -> None:

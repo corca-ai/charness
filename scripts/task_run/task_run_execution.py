@@ -8,7 +8,6 @@ import math
 import os
 import shutil
 import signal
-import sys
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
@@ -28,18 +27,10 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.core.subprocess_guard import render_display, run_monitored_phase
-except ImportError:  # flat layout: the repo root is not on sys.path
-    _repo_root = next(
-        ancestor
-        for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
-    )
-    if str(_repo_root) not in sys.path:
-        sys.path.insert(0, str(_repo_root))
-    from scripts.core.subprocess_guard import render_display, run_monitored_phase
-
+from scripts.core.subprocess_guard import (  # noqa: E402
+    render_display,
+    run_monitored_phase,
+)
 from scripts.task_run import task_run_friction as _friction  # noqa: E402
 
 _DESCENDANT_CLEANUP_SHELL = (

@@ -50,19 +50,8 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 from scripts.runtime_bootstrap import import_repo_module, repo_root_from_script  # noqa: E402
-
-try:
-    from scripts.core.subprocess_guard import run_process
-except ImportError:  # flat layout: the repo root is not on sys.path
-    _repo_root = next(
-        ancestor
-        for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
-    )
-    if str(_repo_root) not in sys.path:
-        sys.path.insert(0, str(_repo_root))
-    from scripts.core.subprocess_guard import run_process
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)

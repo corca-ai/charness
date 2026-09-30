@@ -5,21 +5,18 @@ blocking signal, 67 sampled mutants whose lines the mapped tests never
 execute. The changed-line gate was clean, so the repair is coverage, not
 sampling. The arms live here instead of `test_task_run.py` because that
 module is at the test-file length cap: creation-failure handlers, the
-failed-WIP-checkpoint terminal, the persisted-for-review completion
-branches, and the flat-layout import fallback.
+failed-WIP-checkpoint terminal, and the persisted-for-review completion
+branches.
 """
 
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
 from scripts.task_run import task_run, task_run_execution, task_run_payload, task_run_runtime
-from tests.module_eviction import evict_module, evict_new_modules
-from tests.script_loader import load_script_module
 
 from .test_task_run_fixtures import _codex, _repo, _run
 
@@ -193,49 +190,6 @@ def test_persist_completion_names_the_subset_lane_head(tmp_path: Path) -> None:
         "the lane HEAD commit is a proper subset of the complete candidate. "
         "Carry the committed_paths and dirty_paths before treating it as integrated."
     )
-
-
-class _RefuseSubprocessGuardOnce:
-    """Refuses the first `scripts.core.subprocess_guard` import, then stands down."""
-
-    def __init__(self) -> None:
-        self.fired = False
-
-    def find_spec(self, fullname, path=None, target=None):
-        if fullname == "scripts.core.subprocess_guard" and not self.fired:
-            self.fired = True
-            raise ModuleNotFoundError(f"No module named {fullname!r}")
-        return None
-
-
-def test_task_run_execution_binds_its_owners_without_the_package(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """The flat-layout fallback still binds the real subprocess guard.
-
-    `task_run_execution` is imported both as `scripts.task_run...` and by path
-    from a host that cannot resolve the `scripts` package for one import. The
-    fallback arm re-roots on the file location and binds the same owners, and
-    it leaves `sys.path` alone when the root is already present.
-    """
-    root = Path(__file__).resolve().parents[2]
-    refuser = _RefuseSubprocessGuardOnce()
-    monkeypatch.setattr(sys, "meta_path", [refuser] + sys.meta_path)
-    evict_module(monkeypatch, "scripts.core.subprocess_guard")
-    before_path = list(sys.path)
-    before = set(sys.modules)
-    try:
-        module = load_script_module(
-            "task_run_execution_flat_825",
-            root / "scripts/task_run/task_run_execution.py",
-        )
-
-        assert refuser.fired
-        assert module.render_display.__module__ == "scripts.core.subprocess_guard"
-        assert module.run_monitored_phase.__module__ == "scripts.core.subprocess_guard"
-        assert list(sys.path) == before_path
-    finally:
-        evict_new_modules(before)
 
 
 def test_task_run_execution_module_is_mapped_for_mutation_sampling() -> None:

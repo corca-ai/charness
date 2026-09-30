@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import shutil
-import sys
 from pathlib import Path
 
 
@@ -18,19 +17,11 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.core.git_checkout import discoverable as _git_metadata_is_discoverable  # noqa: E402
+from scripts.core.subprocess_guard import (  # noqa: E402
+    TIMEOUT_EXIT_CODE,
+    run_process,
+)
 from scripts.setup.setup_agent_docs_lib import _recommendation  # noqa: E402
-
-try:
-    from scripts.core.subprocess_guard import TIMEOUT_EXIT_CODE, run_process
-except ImportError:  # flat layout: the script dir is on sys.path, the repo root is not
-    _repo_root = next(
-        ancestor
-        for ancestor in Path(__file__).resolve().parents
-        if (ancestor / "scripts" / "core" / "subprocess_guard.py").is_file()
-    )
-    if str(_repo_root) not in sys.path:
-        sys.path.insert(0, str(_repo_root))
-    from scripts.core.subprocess_guard import TIMEOUT_EXIT_CODE, run_process
 
 WORKTREE_ADAPTER_RELATIVE_PATH = Path(".agents/worktree-adapter.yaml")
 WORKTREE_ADAPTER_SEED_COMMAND = "python3 $SKILL_DIR/scripts/seed_worktree_adapter.py --repo-root ."

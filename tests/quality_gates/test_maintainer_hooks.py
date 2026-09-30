@@ -5,16 +5,12 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 
 from runtime_bootstrap import import_repo_module
-from tests.module_eviction import evict_module, evict_new_modules
 from tests.quality_gates.git_fixture_support import init_git_repo
-from tests.repo_bootstrap_marker import hide_repo_bootstrap_marker
-from tests.script_loader import load_script_module as load_script_module_bare
 from tests.script_main import load_script_module, run_loaded_script_main
 
 from .support import ROOT
@@ -297,43 +293,3 @@ def test_close_keyword_guard_arming_refuses_each_disarm(
 def test_validate_maintainer_setup_accepts_source_hook_without_mutation_arm(tmp_path: Path) -> None:
     result = _run_setup(_seed_source_repo(tmp_path))
     assert result.returncode == 0, result.stderr
-
-
-class _RefuseSubprocessGuardOnce:
-    """Refuses the first `scripts.core.subprocess_guard` import, then stands down."""
-
-    def __init__(self) -> None:
-        self.fired = False
-
-    def find_spec(self, fullname, path=None, target=None):
-        if fullname == "scripts.core.subprocess_guard" and not self.fired:
-            self.fired = True
-            raise ModuleNotFoundError(f"No module named {fullname!r}")
-        return None
-
-
-def test_flat_layout_fallback_binds_the_real_subprocess_guard(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """The flat-layout fallback binds the real guard via the repo root (#825 class)."""
-    root = Path(__file__).resolve().parents[2]
-    refuser = _RefuseSubprocessGuardOnce()
-    monkeypatch.setattr(sys, "meta_path", [refuser] + sys.meta_path)
-    evict_module(monkeypatch, "scripts.core.subprocess_guard")
-    monkeypatch.setattr(sys, "path", [entry for entry in sys.path if entry != str(root)])
-    # Without this the module-level bootstrap re-inserts the root before the
-    # `try` import runs, so the fallback's own insert never executes.
-    hide_repo_bootstrap_marker(monkeypatch)
-    before = set(sys.modules)
-    try:
-        module = load_script_module_bare(
-            "validate_maintainer_setup_flat",
-            root / "scripts/setup/validate_maintainer_setup.py",
-        )
-
-        assert refuser.fired
-        assert module.run_process.__module__ == "scripts.core.subprocess_guard"
-        # The bootstrap stood down, so only the fallback could have inserted this.
-        assert sys.path[0] == str(root)
-    finally:
-        evict_new_modules(before)
