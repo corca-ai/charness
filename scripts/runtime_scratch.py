@@ -210,12 +210,23 @@ def _contains_path(parent: Path, child: Path) -> bool:
 
 
 def _rmtree_writable(path: Path) -> None:
-    """Remove owned trees even when a read-only worker input was materialized."""
-    for parent, dirs, files in os.walk(path):
-        for name in (*dirs, *files):
+    """Remove owned trees even when a read-only worker input was materialized.
+
+    This is the one unlink-safe removal: the retention sweep re-uses it
+    instead of keeping a second copy, so a future inode-safety fix lands
+    once (#881 structural follow-up).
+
+    Only directories gain write bits (lane runtimes hold read-only
+    manifests; 69 of one hand sweep's removals first failed on exactly
+    that): unlinking needs write+execute on the containing directory,
+    never on the file itself, and a file in the tree may hardlink a
+    surviving inode whose mode we must not touch.
+    """
+    for parent, dirs, _files in os.walk(path):
+        for name in dirs:
             target = os.path.join(parent, name)
             if not os.path.islink(target):
-                os.chmod(target, 0o700 if os.path.isdir(target) else 0o600)
+                os.chmod(target, 0o700)
         os.chmod(parent, 0o700)
     shutil.rmtree(path)
 

@@ -111,7 +111,10 @@ def _flag(values: Sequence[Any] | None) -> list[str]:
 def _target_argv(args: argparse.Namespace) -> list[str]:
     """Lane shorthand vs explicit path/branch/base selection."""
     if args.lane is not None:
-        return ["--lane", args.lane]
+        argv = ["--lane", args.lane]
+        if args.base is not None:
+            argv += ["--base", args.base]
+        return argv
     argv = ["--path", str(args.path), "--branch", args.branch]
     if args.base is not None:
         argv += ["--base", args.base]

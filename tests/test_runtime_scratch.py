@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -341,3 +342,20 @@ def test_gc_is_dry_run_by_default_and_removes_only_expired_scratch(tmp_path: Pat
     assert executed["reclaimed_bytes"] == expected_bytes
     assert executed["roots"][0]["disposition"] == "removed"
     assert not path.exists()
+
+
+def test_closing_an_owner_keeps_a_hardlinked_survivor_executable(tmp_path: Path) -> None:
+    """Cleanup unlinks its own names; a hardlinked survivor keeps mode and bytes (#881)."""
+    repo, runtime = _paths(tmp_path)
+    survivor = tmp_path / "survivor"
+    survivor.write_bytes(b"fixture")
+    survivor.chmod(0o755)
+    owner = owned_scratch(repo, "hardlink", run_id="linked", runtime_root_path=runtime)
+    path = owner.open()
+    os.link(survivor, path / "linked")
+
+    owner.close()
+
+    assert not path.exists()
+    assert survivor.read_bytes() == b"fixture"
+    assert survivor.stat().st_mode & 0o777 == 0o755

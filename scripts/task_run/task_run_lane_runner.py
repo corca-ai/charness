@@ -32,9 +32,21 @@ build_codex_command = _support.build_codex_command
 build_muse_command = _support.build_muse_command
 
 STEER_ENVELOPE_KIND = "charness.task_steer.v1"
+STEER_QUEUE_FILENAME = "steer.queue.jsonl"
 ORCHESTRATION_POINTERS_RELATIVE_PATH = Path(
     ".charness/task-run/orchestration-pointers.md"
 )
+
+
+def steer_queue_path(task_dir: Path) -> Path:
+    """The one lane steer queue the CLI producer and both lane consumers share.
+
+    The producer once wrote the task's private runtime directory while the
+    progress poller and the executor loop read the task directory, so accepted
+    messages never reached the lane (#883). Every site derives this path from
+    the task directory through this owner.
+    """
+    return task_dir / STEER_QUEUE_FILENAME
 
 
 def read_steer_queue(queue_path: Path) -> list[dict[str, Any]]:

@@ -13,9 +13,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts.task_run import task_run_detach, task_run_runtime
+from scripts.task_run import task_run, task_run_detach, task_run_runtime
 from tests.charness_cli.support import CLI, build_test_path, load_cli_module, run_cli
-from tests.charness_cli.test_task_run_fixtures import _repo
+from tests.charness_cli.test_task_run_fixtures import _codex, _git, _repo
 
 
 class _StubChild:
@@ -333,7 +333,105 @@ def test_target_argv_spells_explicit_selection() -> None:
     ]
     bare = argparse.Namespace(lane=None, path="/tmp/x", branch="lane-b", base=None, task_id=None)
     assert task_run_detach._target_argv(bare) == ["--path", "/tmp/x", "--branch", "lane-b"]
-    assert task_run_detach._target_argv(argparse.Namespace(lane="a")) == ["--lane", "a"]
+    assert task_run_detach._target_argv(argparse.Namespace(lane="a", base=None)) == ["--lane", "a"]
+    assert task_run_detach._target_argv(argparse.Namespace(lane="a", base="deadbee")) == [
+        "--lane",
+        "a",
+        "--base",
+        "deadbee",
+    ]
+
+
+def test_detached_shorthand_preserves_the_foreground_base(tmp_path: Path) -> None:
+    """Detachment forwards an explicit shorthand base; omission keeps HEAD (#882)."""
+    repo = _repo(tmp_path)
+    base_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    executable = _codex(tmp_path, "exit 0")
+
+    def plan(**kwargs):
+        return task_run.run_task(
+            repo,
+            scopes=["module.py"],
+            prompt="inspect the selected base",
+            codex=os.fspath(executable),
+            effort="medium",
+            dry_run=True,
+            **kwargs,
+        )
+
+    assert plan(lane="parity-base", base=base_sha)["base_sha"] == base_sha
+    assert plan(lane="parity-base", base=base_sha)["base"] == base_sha
+    assert task_run_detach._target_argv(
+        argparse.Namespace(lane="parity-base", base=base_sha)
+    ) == ["--lane", "parity-base", "--base", base_sha]
+
+    assert plan(lane="parity-head")["base"] == "HEAD"
+    assert task_run_detach._target_argv(
+        argparse.Namespace(lane="parity-head", base=None)
+    ) == ["--lane", "parity-head"]
+
+
+@pytest.mark.parametrize(
+    ("shape", "with_base"),
+    [
+        ("lane", True),
+        ("lane", False),
+        ("explicit", True),
+        ("explicit", False),
+    ],
+)
+def test_detached_child_preserves_the_foreground_resolved_base(
+    tmp_path: Path, shape: str, with_base: bool
+) -> None:
+    """Every target shape: the child argv carries the foreground's base or refusal (#882)."""
+    repo = _repo(tmp_path)
+    head_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    executable = _codex(tmp_path, "exit 0")
+    base_selector = head_sha if with_base else None
+    common = dict(
+        scopes=["module.py"],
+        prompt="inspect the selected base",
+        codex=os.fspath(executable),
+        effort="medium",
+        dry_run=True,
+    )
+    if shape == "lane":
+        plan = task_run.run_task(repo, lane="parity-lane", base=base_selector, **common)
+        namespace = argparse.Namespace(
+            lane="parity-lane", path=None, branch=None, base=base_selector, task_id=None
+        )
+    else:
+        plan = task_run.run_task(
+            repo,
+            target_path=tmp_path / "lane",
+            branch="lane/parity",
+            base=base_selector,
+            task_id="parity-explicit",
+            **common,
+        )
+        namespace = argparse.Namespace(
+            lane=None,
+            path=tmp_path / "lane",
+            branch="lane/parity",
+            base=base_selector,
+            task_id="parity-explicit",
+        )
+
+    child = task_run_detach._target_argv(namespace)
+    if shape == "explicit" and not with_base:
+        # The foreground refuses baseless explicit runs; the child argv must
+        # carry no base either, so the child refuses identically instead of
+        # silently substituting a default.
+        assert plan["status"] == "fail"
+        assert "--base" in plan["error"]
+        assert "--base" not in child
+        return
+
+    child_base = child[child.index("--base") + 1] if "--base" in child else "HEAD"
+
+    assert plan["base"] == (base_selector if with_base else "HEAD")
+    assert child_base == plan["base"]
+    assert plan["base_sha"] == head_sha
 
 
 def test_prompt_argv_spells_prompt_file_branch() -> None:

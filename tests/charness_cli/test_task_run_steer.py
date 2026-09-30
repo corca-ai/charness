@@ -141,6 +141,32 @@ def test_progress_poll_records_timestamped_typed_envelopes(tmp_path: Path) -> No
     assert task_run_lane_runner.read_steer_queue(queue)[0]["resume_path"] == "relaunch-in-place"
 
 
+def test_steer_producer_and_poller_share_one_queue_path(tmp_path: Path) -> None:
+    """An accepted CLI message lands where the progress poller reads (#883)."""
+    runtime = tmp_path / "runtime"
+    task_dir = task_run_runtime.task_result_path(runtime, "lane-9").parent
+    stdout_log = task_dir / "codex.stdout.log"
+    task_dir.mkdir(parents=True)
+    stdout_log.write_text("", encoding="utf-8")
+    produced = task_run_lane_runner.steer_queue_path(task_dir)
+    entry = task_run_lane_runner.enqueue_steer(produced, "lane-9", "Narrow the retry.")
+    watch = task_run_progress.LaneProgressWatch(
+        stdout_log=stdout_log,
+        stderr_log=task_dir / "codex.stderr.log",
+        worktree=tmp_path,
+        base_sha="base",
+        scope_specs=[],
+        budget_seconds=0,
+        poll_seconds=0.1,
+    )
+
+    pending = watch.pending_steers()
+
+    assert produced == task_run_lane_runner.steer_queue_path(stdout_log.parent)
+    assert [message["message_id"] for message in pending] == [entry["message_id"]]
+    assert task_run_lane_runner.read_steer_queue(produced)[0]["message"] == "Narrow the retry."
+
+
 def test_task_steer_cli_returns_typed_accept_and_nack(tmp_path: Path, monkeypatch) -> None:
     cli = load_cli_module("charness_task_run_steer_accept", CLI)
     runtime = tmp_path / "runtime"
@@ -148,11 +174,6 @@ def test_task_steer_cli_returns_typed_accept_and_nack(tmp_path: Path, monkeypatc
     monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
     monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: runtime)
     monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: dict(record))
-    monkeypatch.setattr(
-        task_run_runtime,
-        "task_execution_runtime_root",
-        lambda _root, _task_id: runtime / "lane-3" / "runtime",
-    )
     emitted: list[dict[str, object]] = []
     monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
 
@@ -167,7 +188,7 @@ def test_task_steer_cli_returns_typed_accept_and_nack(tmp_path: Path, monkeypatc
     assert emitted[-1]["disposition"] == "accepted"
     assert emitted[-1]["queued_at"]
     assert task_run_lane_runner.read_steer_queue(
-        runtime / "lane-3" / "runtime" / "steer.queue.jsonl"
+        runtime / "task-run" / "lane-3" / "steer.queue.jsonl"
     )
 
     monkeypatch.setattr(
@@ -554,11 +575,6 @@ def test_task_steer_cli_threads_reason_and_actor(tmp_path: Path, monkeypatch) ->
     monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
     monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: runtime)
     monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: dict(record))
-    monkeypatch.setattr(
-        task_run_runtime,
-        "task_execution_runtime_root",
-        lambda _root, _task_id: runtime / "lane-3" / "runtime",
-    )
     emitted: list[dict[str, object]] = []
     monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
 
@@ -577,7 +593,7 @@ def test_task_steer_cli_threads_reason_and_actor(tmp_path: Path, monkeypatch) ->
     assert emitted[-1]["reason"] == "flaky window"
     assert emitted[-1]["actor"] == "hwidong"
     queued = task_run_lane_runner.read_steer_queue(
-        runtime / "lane-3" / "runtime" / "steer.queue.jsonl"
+        runtime / "task-run" / "lane-3" / "steer.queue.jsonl"
     )
     assert queued[0]["reason"] == "flaky window"
     assert queued[0]["actor"] == "hwidong"

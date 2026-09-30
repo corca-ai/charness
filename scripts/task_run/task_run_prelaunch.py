@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-import os
 import sys
 import time
 from pathlib import Path
@@ -25,6 +23,7 @@ from scripts.core.subprocess_guard import (  # noqa: E402
     run_monitored_phase,
     run_process,
 )
+from scripts.task_run import task_run_brief_critique as _brief_critique  # noqa: E402
 from scripts.task_run import task_run_friction as _friction  # noqa: E402
 from scripts.task_run.task_run_contract import (  # noqa: E402
     ACCEPTANCE_SKELETON_TIMEOUT_SECONDS,
@@ -204,74 +203,12 @@ def acceptance_deficit_blockers(
     ]
 
 
-def _brief_critique_prompt(brief: str, checks: Sequence[Mapping[str, Any]]) -> str:
-    return (
-        "Review this task brief read-only against repository code and available provider docs. "
-        "Use this fresh context; treat style as advisory. Set premise_failure true only when a central factual premise makes the task "
-        "invalid; one blocked item never sets it. Check each premise independently. Return one JSON object with "
-        "premise_failure (boolean), premise_failure_reason, findings, and premise_checks "
-        "(array of objects with id, kind: success or premise-blocked, and evidence). "
-        "Do not edit files.\n\nTASK BRIEF:\n"
-        + brief
-        + "\n\nPREMISES:\n"
-        + json.dumps(list(checks), ensure_ascii=False)
-    )
-
-
-def _run_brief_critique(
-    *, payload: dict[str, Any], resolved: Mapping[str, Any], prompt: str,
-    premise_checks: Sequence[Mapping[str, Any]],
-) -> dict[str, Any]:
-    from scripts.runtime_bootstrap import import_repo_module
-    from scripts.task_run import task_run_execution as execution
-    from scripts.task_run import task_run_support as support
-    from scripts.task_run.task_run_runtime import (
-        _resolve_codex,
-        build_codex_command,
-    )
-
-    exec_lib = import_repo_module(__file__, "scripts.worktree.worktree_exec_lib")
-
-    executable = _resolve_codex("codex")
-    command = build_codex_command(executable, effort="medium")
-    command[command.index("--sandbox") + 1] = "read-only"
-    task_root = Path(resolved["runtime_path"]) / "task-run" / str(payload["task_id"])
-    stdout_log, stderr_log = task_root / "brief-critique.stdout.log", task_root / "brief-critique.stderr.log"
-    stdout_log.parent.mkdir(parents=True, exist_ok=True)
-    target = Path(resolved["target_path"])
-    execution_root = Path(payload["execution_runtime_root"])
-    configured_env = support.scrubbed_lane_env(
-        payload,
-        exec_lib.prepare_exec_environment(
-            target, os.environ.copy(), runtime_root=execution_root
-        ),
-        "codex",
-    )
-    outcome = execution._execute_codex(
-        command,
-        prompt=_brief_critique_prompt(prompt, premise_checks),
-        target_path=target,
-        configured_env=configured_env,
-        stdout_log=stdout_log,
-        stderr_log=stderr_log,
-        timeout_seconds=BRIEF_CRITIQUE_TIMEOUT_SECONDS,
-    )
-    try:
-        parsed = json.loads(stdout_log.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        parsed = None
-    if outcome.get("exit_code") != 0 or not isinstance(parsed, Mapping):
-        return {
-            "status": "timed-out" if outcome.get("timed_out") else "unavailable",
-            "error": str(outcome.get("exec_error") or "review returned no JSON result")[:300],
-        }
-    return {
-        "status": "completed",
-        "premise_failure": parsed.get("premise_failure") is True,
-        "premise_failure_reason": str(parsed.get("premise_failure_reason") or "")[:500],
-        "findings": parsed.get("findings"),
-        "premise_checks": parsed.get("premise_checks"),
-    }
+# Re-exported from the brief-critique module: prelaunch orchestrates the gates
+# while the Codex precheck lives in its own cohesive home. Callers and tests
+# keep spelling these through prelaunch.
+_brief_critique_prompt = _brief_critique._brief_critique_prompt
+_lane_carrier_facts = _brief_critique._lane_carrier_facts
+_run_brief_critique = _brief_critique._run_brief_critique
 
 
 def _typed_premise_results(
@@ -451,10 +388,13 @@ def run_prelaunch_gates(
         }
         if baseline["status"] != "red":
             blocker = "acceptance skeleton must be committed and failing before launch"
+    lane_executor, lane_executable = _lane_carrier_facts(payload, resolved)
     payload["prelaunch"] = {
         "brief_critique": {
             "status": review.get("status", "invalid"),
             "executor": "codex",
+            "lane_executor": lane_executor,
+            "lane_executable": lane_executable,
             "timeout_seconds": BRIEF_CRITIQUE_TIMEOUT_SECONDS,
             "duration_ms": duration_ms,
             "premise_failure": review.get("status") == "completed" and review.get("premise_failure") is True,

@@ -45,8 +45,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-import shutil
 import sys
 import time
 from pathlib import Path
@@ -74,6 +72,7 @@ from scripts.runtime_bootstrap import (  # noqa: E402
     RUNTIME_TREE_NAME,
     runtime_root,
 )
+from scripts.runtime_scratch import _rmtree_writable  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
 
 SALVAGE_PATCH = _lane_salvage.SALVAGE_PATCH
@@ -199,7 +198,9 @@ class Sweep:
                     if path.exists():
                         _rmtree_writable(path)
                 elif path.exists():
-                    os.chmod(path, 0o600)
+                    # No chmod: POSIX unlink needs write on the containing
+                    # directory only, and this file may hardlink a surviving
+                    # inode whose mode the sweep must not touch (#881).
                     path.unlink()
             except OSError as exc:
                 self._record("failed", path, f"{reason}; removal failed: {exc}", bytes=size)
@@ -460,20 +461,6 @@ def record_repo_root_marker(key_root: Path, repo_root: Path) -> None:
         marker.write_text(f"{repo_root}\n", encoding="utf-8")
     except OSError:
         pass
-
-
-def _rmtree_writable(path: Path) -> None:
-    """`rmtree` after restoring write bits: lane runtimes hold read-only manifests.
-
-    69 of the hand sweep's removals first failed on exactly that (2026-09-03).
-    """
-    for parent, dirs, files in os.walk(path):
-        for name in (*dirs, *files):
-            target = os.path.join(parent, name)
-            if not os.path.islink(target):
-                os.chmod(target, 0o700 if os.path.isdir(target) else 0o600)
-        os.chmod(parent, 0o700)
-    shutil.rmtree(path)
 
 
 #: The sweep runs on every standing pytest run and a quiet pass still lists every

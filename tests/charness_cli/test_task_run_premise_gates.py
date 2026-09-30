@@ -406,3 +406,89 @@ def test_cli_forwards_prelaunch_declarations_to_task_runner(tmp_path, monkeypatc
             ["ordering", "provider preserves order", "verify or choose another API"]
         ],
     }
+
+
+def test_brief_prompt_separates_checker_from_lane_carrier() -> None:
+    """The precheck names the outer carrier and never infers from its own tools (#884)."""
+    guarded = task_run_prelaunch._brief_critique_prompt(
+        "review this", [], lane_executor="muse", lane_executable="/usr/bin/muse"
+    )
+
+    assert "not the lane executor" in guarded
+    assert "'muse'" in guarded
+    assert "/usr/bin/muse" in guarded
+    assert "never report the lane executor as unavailable because you lack its tools" in guarded
+
+    unvalidated = task_run_prelaunch._brief_critique_prompt("review this", [], lane_executor="muse")
+    assert "'muse'" in unvalidated
+    assert "already validated" in unvalidated
+
+    bare = task_run_prelaunch._brief_critique_prompt("review this", [])
+    assert "not the lane executor" in bare
+    assert "will execute on" not in bare
+
+
+def test_brief_critique_receives_the_selected_carrier_facts(tmp_path, monkeypatch) -> None:
+    """The checker prompt carries the resolved executor, not the checker's context (#884)."""
+    from scripts.runtime_bootstrap import import_repo_module
+    from scripts.task_run import task_run_execution, task_run_runtime, task_run_support
+
+    exec_lib = import_repo_module(task_run_prelaunch.__file__, "scripts.worktree.worktree_exec_lib")
+    observed: dict[str, Any] = {}
+    monkeypatch.setattr(task_run_runtime, "_resolve_codex", lambda _name: "/usr/bin/codex")
+    monkeypatch.setattr(
+        task_run_runtime,
+        "build_codex_command",
+        lambda executable, *, effort: [executable, "exec", "--sandbox", "workspace-write", "-"],
+    )
+    monkeypatch.setattr(
+        exec_lib,
+        "prepare_exec_environment",
+        lambda *_args, **_kwargs: {"PATH": "/usr/bin"},
+    )
+    monkeypatch.setattr(task_run_support, "scrubbed_lane_env", lambda _p, env, _e: env)
+
+    def execute(command: list[str], **kwargs: Any) -> dict[str, Any]:
+        observed["prompt"] = kwargs["prompt"]
+        kwargs["stdout_log"].write_text(
+            '{"premise_failure": false, "findings": [], "premise_checks": []}',
+            encoding="utf-8",
+        )
+        return {"exit_code": 0, "timed_out": False}
+
+    monkeypatch.setattr(task_run_execution, "_execute_codex", execute)
+    review = task_run_prelaunch._run_brief_critique(
+        payload={"task_id": "lane", "execution_runtime_root": str(tmp_path / "execution")},
+        resolved={
+            "runtime_path": tmp_path / "runtime",
+            "target_path": tmp_path,
+            "executor": "muse",
+            "executor_paths": {"muse": "/usr/bin/muse"},
+        },
+        prompt="request an actual Muse source review",
+        premise_checks=[],
+    )
+
+    assert review["status"] == "completed"
+    assert "'muse'" in observed["prompt"]
+    assert "/usr/bin/muse" in observed["prompt"]
+    assert "never report the lane executor as unavailable" in observed["prompt"]
+
+
+def test_prelaunch_receipt_distinguishes_checker_from_lane_carrier() -> None:
+    """The receipt names both the Codex checker and the selected lane carrier (#884)."""
+    payload: dict[str, Any] = {}
+    resolved = _resolved([])
+    resolved["executor"] = "muse"
+    resolved["executor_paths"] = {"muse": "/usr/bin/muse"}
+    resolved["prelaunch"]["enabled"] = True
+
+    blocker = task_run_prelaunch.run_prelaunch_gates(
+        payload, resolved, "brief", brief_critic=lambda **_kwargs: _review([])
+    )
+
+    assert blocker is None
+    critique = payload["prelaunch"]["brief_critique"]
+    assert critique["executor"] == "codex"
+    assert critique["lane_executor"] == "muse"
+    assert critique["lane_executable"] == "/usr/bin/muse"

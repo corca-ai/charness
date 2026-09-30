@@ -229,7 +229,9 @@ class LaneProgressWatch:
         self._first_scoped_diff: str | None = None
         self._first_scoped_truncated: bool = False
         self._first_scoped_elapsed: float | None = None
-        self._steer_queue = stdout_log.parent / "steer.queue.jsonl"
+        from scripts.task_run import task_run_lane_runner as _lane_runner
+
+        self._steer_queue = _lane_runner.steer_queue_path(stdout_log.parent)
         self._steer_seen: set[str] = set()
         self._steer_messages: list[dict[str, Any]] = []
 

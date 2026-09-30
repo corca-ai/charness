@@ -478,6 +478,48 @@ def test_read_only_files_inside_a_removed_tree_do_not_stop_the_removal(tmp_path:
     assert not manifest.exists()
 
 
+def test_removing_a_tree_keeps_a_hardlinked_survivor_executable(tmp_path: Path) -> None:
+    """The sweep unlinks its own names; a hardlinked survivor keeps mode and bytes (#881)."""
+    now = time.time()
+    mine, repo = _tree(tmp_path, now=now)
+    survivor = tmp_path / "survivor"
+    survivor.write_bytes(b"fixture")
+    survivor.chmod(0o755)
+    os.link(survivor, mine / "task-run" / "clean-lane" / "runtime" / "tmp" / "linked")
+    _age(mine / "task-run" / "clean-lane", 30 * DAY, now=now)
+
+    retention.sweep_runtime_root(repo, key_root=mine, now=now)
+
+    assert not (mine / "task-run" / "clean-lane" / "runtime").exists()
+    assert survivor.read_bytes() == b"fixture"
+    assert survivor.stat().st_mode & 0o777 == 0o755
+
+
+def test_removing_a_single_file_keeps_a_hardlinked_survivor_executable(tmp_path: Path) -> None:
+    """Single-file removal unlinks its own name; a hardlinked survivor keeps mode (#881)."""
+    now = time.time()
+    mine, _repo = _tree(tmp_path, now=now)
+    survivor = tmp_path / "survivor"
+    survivor.write_bytes(b"fixture")
+    survivor.chmod(0o755)
+    doomed = mine / "loose-leaf"
+    os.link(survivor, doomed)
+
+    removed = retention.Sweep(mine, now=now)._remove_tree(doomed, "single-file candidate")
+
+    assert removed is True
+    assert not doomed.exists()
+    assert survivor.read_bytes() == b"fixture"
+    assert survivor.stat().st_mode & 0o777 == 0o755
+
+
+def test_retention_reuses_the_single_unlink_safe_removal() -> None:
+    """The sweep owns no second rmtree copy; inode-safety fixes land once (#881)."""
+    from scripts import runtime_scratch
+
+    assert retention._rmtree_writable is runtime_scratch._rmtree_writable
+
+
 @pytest.mark.parametrize("phase", ["exec", None])
 def test_an_idle_lane_that_never_reached_terminal_is_released_with_its_reason(tmp_path: Path, phase) -> None:
     now = time.time()

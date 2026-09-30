@@ -173,7 +173,7 @@ def _execute_codex(
     resume_path = "initial"
     delivered_batch: list[Mapping[str, Any]] = []
     event_log = stdout_log.with_name(f"{executor}.events.log")
-    queue_path = stdout_log.parent / "steer.queue.jsonl"
+    queue_path = _lane_runner.steer_queue_path(stdout_log.parent)
     try:
         invocation = 0
         while True:

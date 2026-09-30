@@ -175,8 +175,9 @@ def cmd_task_steer(args: argparse.Namespace) -> int:
             kind = task_run_state.ResultKind.FAILED
         else:
             record = task_run_lane_runner.enqueue_steer(
-                task_run_runtime.task_execution_runtime_root(runtime_root, args.task_id)
-                / "steer.queue.jsonl",
+                task_run_lane_runner.steer_queue_path(
+                    task_run_runtime.task_result_path(runtime_root, args.task_id).parent
+                ),
                 args.task_id,
                 args.message,
                 reason=getattr(args, "reason", None),
