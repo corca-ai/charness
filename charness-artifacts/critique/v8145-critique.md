@@ -56,16 +56,54 @@ no state or contract change).
 - Claim under test: v8.14.5 patch removes only unreachable fallback arms
   and their pinning tests, breaks no import path in any shipped layout,
   and leaves no stale reference (imports, tests, docs).
-- Evidence accepted: critic subagent disk survey + gate scan (read-only,
-  fresh context); parent spot-checks of the critic's two novel claims;
-  `ruff check` clean on all touched files; length gate validated;
-  fresh-interpreter imports of all nine modules with and without
-  `PYTHONPATH`; by-path loads from a foreign cwd; 59/59 focused tests;
-  11076/11076 standing suite; `check_standalone_imports` ok on the nine
-  files (run by the critic against the real gate).
-- Not re-proven: downstream copiers outside this repo (none exist in repo,
-  docs, skills, or tests; the sanctioned in-repo copier structurally
-  cannot emit the guard-without-bootstrap shape).
+- Changed surfaces: scripts/adapters/surfaces_lib.py,
+  scripts/evidence/probe_record_parse.py,
+  scripts/evidence/probe_stimulus_replay.py,
+  scripts/gates_support/removed_name_consumers.py,
+  scripts/setup/setup_adapter_inspect_lib.py,
+  scripts/setup/setup_inspect_quality_lib.py,
+  scripts/setup/validate_maintainer_setup.py,
+  scripts/task_run/task_run_execution.py, scripts/task_run/task_run_git.py,
+  tests/charness_cli/test_task_run_git_refusals.py,
+  tests/charness_cli/test_task_run_scope_gaps.py,
+  tests/coverage_debt/test_batch12.py,
+  tests/quality_gates/test_maintainer_hooks.py,
+  tests/quality_gates/test_setup_inspect_adapters.py,
+  tests/repo_bootstrap_marker.py (deleted)
+- Minimum sufficient proof: one adversarial critic pass (`VERDICT: ship`,
+  zero blockers, 13 numbered findings) with the two novel claims
+  parent-verified against the tree; `ruff check` clean on all touched
+  files; length gate validated; fresh-interpreter imports of all nine
+  modules with and without `PYTHONPATH`; by-path loads from a foreign
+  cwd; 59/59 focused tests; standing suite 11076 passed on the final
+  tree; `check_standalone_imports` ok on the nine files; negative
+  control below executed.
+- Deliberately omitted checks: downstream copiers outside this repo (none
+  exist in repo, docs, skills, or tests; the sanctioned in-repo copier
+  structurally cannot emit the guard-without-bootstrap shape); live
+  provider lanes (import-time deletion, no lane behavior change).
+- Verifier contract: native read-only subagent on the shared tree
+  (reviewer verdict in this session's subagent log, fossil-critic
+  01a0f0a5); standing pytest; run-quality full read-only release lane;
+  ruff check; fresh-interpreter probes; this artifact validated by
+  validate_critique_artifacts.py.
+- Failure classification: none
+- Negative control: command: replayed the deleted refuser probe against the new tree (meta_path blocker for `scripts.core.subprocess_guard` + evicted guard + root stripped from sys.path, by-path load of `scripts/task_run/task_run_git.py`); expected refusal: plain `ModuleNotFoundError` propagates (no fallback swallows it); observed result: `ModuleNotFoundError: No module named 'scripts.core.subprocess_guard'`, refuser fired=True; receipt: this-session run record, tree left unmodified (inline probe, no repo writes).
+- Subject identity: sha256:f6859b435d324de4d308523f085be4fa6da37feb94c770818f5cb2407ecdd5ce
+- Verifier identity: sha256:09d2c417c352fec7bf4019c6972198ae9a28667dc8edf59aa43dbed86406ee67
+- Input identity: sha256:953b1d207c76bfa5c8128f7a19672b36a985251f49c33345191dacf84eb56afd
+- Failure identity: stable:clean
+- Evidence identity: sha256:85c12d8b8879b3aa6ea97e31a647763db7c99d5e0fc9d02ed7536f2c526acb81
+- Retry disposition: first-attempt
+- Retry key: sha256:2531a89cc48e24fdc933c36ba00c5f1d678f5402420de8e4d6659adab425111f
+
+Identity preimages (reproducible): subject is sha256 of
+`git diff 4cfd3cc75..7565242f3` bytes; verifier is sha256 of the critic
+verdict text (fossil-critic 01a0f0a5 final answer); input is sha256 of the
+string "release 8.14.5 patch over 4cfd3cc75..7565242f3 closing no issues";
+evidence is sha256 of "standing:11076 passed;" plus the first 512 bytes of
+tests/coverage_debt/test_batch12.py; retry key is
+`build_retry_key` over the four identities above (NUL-joined sha256).
 
 ## Failure Angles
 
