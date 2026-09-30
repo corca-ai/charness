@@ -9,6 +9,7 @@ import pytest
 from scripts.setup import setup_adapter_inspect_lib
 from tests.module_eviction import evict_module, evict_new_modules
 from tests.quality_gates.repo_shapes import replace_with_committed_repo
+from tests.repo_bootstrap_marker import hide_repo_bootstrap_marker
 from tests.script_loader import load_script_module
 
 from .support import SETUP_RESOLVE_ADAPTER, inspect_setup_repo
@@ -293,6 +294,9 @@ def test_flat_layout_fallback_binds_the_real_subprocess_guard(
     monkeypatch.setattr(sys, "meta_path", [refuser] + sys.meta_path)
     evict_module(monkeypatch, "scripts.core.subprocess_guard")
     monkeypatch.setattr(sys, "path", [entry for entry in sys.path if entry != str(root)])
+    # Without this the module-level bootstrap re-inserts the root before the
+    # `try` import runs, so the fallback's own insert never executes.
+    hide_repo_bootstrap_marker(monkeypatch)
     before = set(sys.modules)
     try:
         module = load_script_module(
@@ -303,6 +307,7 @@ def test_flat_layout_fallback_binds_the_real_subprocess_guard(
         assert refuser.fired
         assert module.run_process.__module__ == "scripts.core.subprocess_guard"
         assert module.TIMEOUT_EXIT_CODE is not None
-        assert str(root) in sys.path
+        # The bootstrap stood down, so only the fallback could have inserted this.
+        assert sys.path[0] == str(root)
     finally:
         evict_new_modules(before)
