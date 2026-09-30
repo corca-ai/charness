@@ -33,6 +33,46 @@ def test_no_progress_flag_overrides_env_and_records_source(
     assert receipt["budget_source"] == "flag"
 
 
+def test_garbage_env_budget_falls_back_without_claiming_env(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """Garbage env takes the default and its source; the raw value is kept."""
+    monkeypatch.setenv(prog.NO_PROGRESS_BUDGET_ENV, "not-a-number")
+    watch = prog.build_progress_watch(
+        require_change=True,
+        stdout_log=tmp_path / "o.log",
+        stderr_log=tmp_path / "e.log",
+        worktree=tmp_path,
+        base_sha="deadbeef",
+        scope_specs=[],
+    )
+    assert watch is not None
+    receipt = watch.receipt()
+    assert receipt["budget_seconds"] == prog.DEFAULT_NO_PROGRESS_BUDGET_SECONDS
+    assert receipt["budget_source"] == "default"
+    assert receipt["budget_raw"] == "not-a-number"
+
+
+def test_valid_env_budget_records_env_source_and_raw(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """A parseable env budget records env provenance with its raw spelling."""
+    monkeypatch.setenv(prog.NO_PROGRESS_BUDGET_ENV, "300")
+    watch = prog.build_progress_watch(
+        require_change=True,
+        stdout_log=tmp_path / "o.log",
+        stderr_log=tmp_path / "e.log",
+        worktree=tmp_path,
+        base_sha="deadbeef",
+        scope_specs=[],
+    )
+    assert watch is not None
+    receipt = watch.receipt()
+    assert receipt["budget_seconds"] == 300.0
+    assert receipt["budget_source"] == "env"
+    assert receipt["budget_raw"] == "300"
+
+
 def test_no_progress_seconds_rejects_nonfinite_and_negative(tmp_path: Path) -> None:
     from scripts.task_run import task_run_plan
 

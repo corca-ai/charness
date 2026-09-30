@@ -125,7 +125,7 @@ def _execute_watched_lane(
             persist=persist,
         )
     max_attempts = _env_attempts(MAX_ATTEMPTS_ENV, DEFAULT_MAX_ATTEMPTS)
-    backoff = _progress._env_seconds(RETRY_BACKOFF_ENV, DEFAULT_RETRY_BACKOFF_SECONDS)
+    backoff, _ = _progress._env_seconds(RETRY_BACKOFF_ENV, DEFAULT_RETRY_BACKOFF_SECONDS)
     if persist is not None and runtime_path is not None:
         persist(payload, runtime_path)
     print(f"task run: executing {executor} in {resolved_target}", file=sys.stderr)

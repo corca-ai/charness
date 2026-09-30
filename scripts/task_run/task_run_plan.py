@@ -175,6 +175,8 @@ def _resolve_executor_paths(executor_order: Sequence[str], codex: str) -> dict[s
     """Resolve every explicitly requested candidate before creating a lane."""
     paths = {}
     for candidate in executor_order:
+        # A custom `codex` value is the lane-binary override for single-executor
+        # lanes (the CLI never passes one; tests use it as the stub binary).
         executable_name = (
             codex
             if codex != "codex" and (candidate == "codex" or len(executor_order) == 1)

@@ -47,13 +47,20 @@ _DESCENDANT_CLEANUP_SHELL = (
     'child=$!; wait "$child"; status=$?; exit "$status"'
 )
 
-def _env_seconds(name: str, default: float) -> float:
-    """Read one finite duration from the environment, or use its default."""
+def _env_seconds(name: str, default: float) -> tuple[float, bool]:
+    """Read one finite duration from the environment: (value, parsed_from_env).
+
+    Garbage, NaN, and infinity fall back to the default with parsed False, so
+    callers record honest provenance instead of claiming env for a default.
+    """
+    raw = os.environ.get(name)
+    if raw is None:
+        return default, False
     try:
-        value = float(os.environ.get(name, default))
+        value = float(raw)
     except (TypeError, ValueError):
-        return default
-    return value if math.isfinite(value) else default
+        return default, False
+    return (value, True) if math.isfinite(value) else (default, False)
 
 
 def _tail_text(path: Path, limit: int = 64 * 1024) -> str:

@@ -212,15 +212,15 @@ def _contains_path(parent: Path, child: Path) -> bool:
 def _rmtree_writable(path: Path) -> None:
     """Remove owned trees even when a read-only worker input was materialized.
 
-    This is the one unlink-safe removal: the retention sweep re-uses it
+    This is the one tree-removal helper: the retention sweep re-uses it
     instead of keeping a second copy, so a future inode-safety fix lands
     once (#881 structural follow-up).
 
-    Only directories gain write bits (lane runtimes hold read-only
-    manifests; 69 of one hand sweep's removals first failed on exactly
-    that): unlinking needs write+execute on the containing directory,
-    never on the file itself, and a file in the tree may hardlink a
-    surviving inode whose mode we must not touch.
+    On POSIX, only directories gain write bits (lane runtimes hold
+    read-only manifests; 69 of one hand sweep's removals first failed on
+    exactly that): unlinking needs write+execute on the containing
+    directory, never on the file itself, and a file in the tree may
+    hardlink a surviving inode whose mode we must not touch.
 
     Windows alone cannot unlink a read-only file, so only there do files
     gain write bits first; the read-only attribute has no exec-bit

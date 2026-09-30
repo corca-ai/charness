@@ -37,33 +37,40 @@ from scripts.task_run.task_run_contract import (  # noqa: E402
 )
 
 
-def _resolve_codex(value: str) -> str:
+def _resolve_lane_executable(
+    value: str, *, empty_error: str, not_runnable: str, not_on_path: str
+) -> str:
+    """The one executable-resolution core; wrappers only name their executor."""
     if not value.strip():
-        raise TaskRunError("--codex must name an executable")
+        raise TaskRunError(empty_error)
     if "/" in value:
         candidate = Path(value).expanduser().resolve()
         if not candidate.is_file() or not os.access(candidate, os.X_OK):
-            raise TaskRunError(f"Codex executable is not runnable: {value}")
+            raise TaskRunError(f"{not_runnable}: {value}")
         return str(candidate)
     resolved = shutil.which(value)
     if resolved is None:
-        raise TaskRunError(f"Codex executable is not on PATH: {value}")
+        raise TaskRunError(f"{not_on_path}: {value}")
     return resolved
+
+
+def _resolve_codex(value: str) -> str:
+    return _resolve_lane_executable(
+        value,
+        empty_error="--codex must name an executable",
+        not_runnable="Codex executable is not runnable",
+        not_on_path="Codex executable is not on PATH",
+    )
 
 
 def resolve_executor_executable(value: str, *, executor: str) -> str:
     """Resolve the lane executable for the selected executor."""
-    if not value.strip():
-        raise TaskRunError(f"{executor} executor must name an executable")
-    if "/" in value:
-        candidate = Path(value).expanduser().resolve()
-        if not candidate.is_file() or not os.access(candidate, os.X_OK):
-            raise TaskRunError(f"{executor} executable is not runnable: {value}")
-        return str(candidate)
-    resolved = shutil.which(value)
-    if resolved is None:
-        raise TaskRunError(f"{executor} executable is not on PATH: {value}")
-    return resolved
+    return _resolve_lane_executable(
+        value,
+        empty_error=f"{executor} executor must name an executable",
+        not_runnable=f"{executor} executable is not runnable",
+        not_on_path=f"{executor} executable is not on PATH",
+    )
 
 
 def validate_lane_id(lane: str) -> str:

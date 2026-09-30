@@ -201,6 +201,7 @@ class LaneProgressWatch:
         clock: Callable[[], float] = time.monotonic,
         observe: Callable[[dict[str, Any]], None] | None = None,
         budget_source: str = "env",
+        budget_raw: str | None = None,
     ) -> None:
         self._stdout_log = stdout_log
         self._stderr_log = stderr_log
@@ -209,6 +210,7 @@ class LaneProgressWatch:
         self._scope_specs = list(scope_specs)
         self._budget_seconds = budget_seconds
         self._budget_source = budget_source
+        self._budget_raw = budget_raw
         self._poll_seconds = max(poll_seconds, 0.05)
         self._blocked_grace_seconds = blocked_grace_seconds
         self._clock = clock
@@ -265,6 +267,7 @@ class LaneProgressWatch:
             "linger_stop_enabled": self._blocked_grace_seconds > 0,
             "budget_seconds": self._budget_seconds,
             "budget_source": self._budget_source,
+            "budget_raw": self._budget_raw,
             "blocked_grace_seconds": self._blocked_grace_seconds,
             "poll_seconds": self._poll_seconds,
             "stop_reason": self.stop_reason,
@@ -506,17 +509,21 @@ def build_progress_watch(
     """
     if not require_change:
         return None
+    budget_raw: str | None = None
     if budget_override is None:
-        budget_seconds = (
-            _env_seconds(NO_PROGRESS_BUDGET_ENV, DEFAULT_NO_PROGRESS_BUDGET_SECONDS)
+        budget_seconds, budget_parsed = _env_seconds(
+            NO_PROGRESS_BUDGET_ENV, DEFAULT_NO_PROGRESS_BUDGET_SECONDS
         )
+        budget_raw = os.environ.get(NO_PROGRESS_BUDGET_ENV)
         budget_source = (
-            "env" if require_change and NO_PROGRESS_BUDGET_ENV in os.environ
+            "env" if require_change and budget_parsed
             else "default" if require_change else "disabled"
         )
     else:
         budget_seconds = budget_override
         budget_source = "flag"
+    poll_seconds, _ = _env_seconds(PROGRESS_POLL_ENV, DEFAULT_PROGRESS_POLL_SECONDS)
+    grace_seconds, _ = _env_seconds(BLOCKED_GRACE_ENV, DEFAULT_BLOCKED_GRACE_SECONDS)
     return LaneProgressWatch(
         stdout_log=stdout_log,
         stderr_log=stderr_log,
@@ -524,13 +531,14 @@ def build_progress_watch(
         base_sha=base_sha,
         scope_specs=scope_specs,
         budget_seconds=budget_seconds,
-        poll_seconds=_env_seconds(PROGRESS_POLL_ENV, DEFAULT_PROGRESS_POLL_SECONDS),
+        poll_seconds=poll_seconds,
         blocked_grace_seconds=(
-            _env_seconds(BLOCKED_GRACE_ENV, DEFAULT_BLOCKED_GRACE_SECONDS)
+            grace_seconds
             if require_change else 0.0
         ),
         observe=observe,
         budget_source=budget_source,
+        budget_raw=budget_raw,
     )
 
 def _execute_watched_lane(payload: dict[str, Any], command: list[str], **kwargs: Any) -> dict[str, Any]:

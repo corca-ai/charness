@@ -443,18 +443,38 @@ def test_child_argv_round_trips_through_the_real_parser(tmp_path: Path) -> None:
     cli = load_cli_module("charness_detach_round_trip", CLI)
     parser = cli.build_parser()
     lane_path = str(tmp_path / "lane")
+    prompt_file = tmp_path / "prompt.md"
+    prompt_file.write_text("do it", encoding="utf-8")
     shapes = [
-        ["--lane", "rr-lane", "--base", "deadbee", "--require-change"],
-        ["--lane", "rr-head"],
-        ["--path", lane_path, "--branch", "lane/rr", "--base", "deadbee"],
-        ["--path", lane_path, "--branch", "lane/rr"],
+        ["--lane", "rr-lane", "--base", "deadbee", "--require-change",
+         "--prompt", "do it"],
+        ["--lane", "rr-head", "--prompt", "do it"],
+        ["--path", lane_path, "--branch", "lane/rr", "--base", "deadbee",
+         "--prompt", "do it"],
+        ["--path", lane_path, "--branch", "lane/rr", "--prompt", "do it"],
+        # Fat writer shape: every forwarding-relevant flag off its default.
+        ["--path", lane_path, "--branch", "lane/rr-fat", "--base", "deadbee",
+         "--task-id", "rr-fat", "--scope", "other.py", "--prompt", "do it",
+         "--executor", "muse", "--effort", "xhigh", "--prepare",
+         "--require-change", "--critical-lane", "--self-review",
+         "--acceptance-skeleton", "accept.json",
+         "--premise-check", "a", "b", "c", "--premise-check", "d", "e", "f",
+         "--timeout-seconds", "60", "--no-progress-seconds", "5",
+         "--rules-file", "rules.md", "--rules-file", "more.md",
+         "--grant-writable", "/tmp/g", "--charness-checkout", "/tmp/c",
+         "--home-root", "/tmp/h"],
+        # Fat diagnostic shape: the opt-out flags plus the --prompt-file branch.
+        ["--lane", "rr-diag", "--scope", "other.py",
+         "--prompt-file", str(prompt_file), "--effort", "xhigh",
+         "--skip-prepare", "--allow-no-change", "--report-only",
+         "--timeout-seconds", "60", "--no-progress-seconds", "0",
+         "--rules-file", "rules.md", "--grant-writable", "/tmp/g"],
     ]
     for extra in shapes:
         argv = [
             "task", "run",
             "--repo-root", str(tmp_path),
             "--scope", "module.py",
-            "--prompt", "do it",
             "--effort", "medium",
             "--detach",
             *extra,
