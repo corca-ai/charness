@@ -30,12 +30,8 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
-
-try:
-    from scripts.core.subprocess_guard import run_process
-except ModuleNotFoundError:  # executed directly from scripts/
-    from scripts.core.subprocess_guard import run_process
 
 _sampling = import_repo_module(__file__, "scripts.mutation.mutation_sampling_lib")
 _changed_files = import_repo_module(__file__, "scripts.mutation.mutation_changed_files_lib")

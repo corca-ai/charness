@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import importlib.util
-import sys
 from pathlib import Path
 
 
@@ -18,44 +16,11 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.core.subprocess_guard import run_process
-except ModuleNotFoundError:  # loaded as a standalone sibling module
-    _subprocess_guard_spec = importlib.util.spec_from_file_location(
-        "subprocess_guard", Path(__file__).with_name("subprocess_guard.py")
-    )
-    if _subprocess_guard_spec is None or _subprocess_guard_spec.loader is None:
-        raise
-    _subprocess_guard = importlib.util.module_from_spec(_subprocess_guard_spec)
-    sys.modules["subprocess_guard"] = _subprocess_guard
-    _subprocess_guard_spec.loader.exec_module(_subprocess_guard)
-    run_process = _subprocess_guard.run_process
-
-try:
-    from scripts.core.git_checkout import discoverable as _git_metadata_is_discoverable
-    from scripts.core.repo_layout import support_dir
-except ModuleNotFoundError:
-    _git_checkout_spec = importlib.util.spec_from_file_location(
-        "git_checkout", Path(__file__).with_name("git_checkout.py")
-    )
-    _repo_layout_spec = importlib.util.spec_from_file_location(
-        "repo_layout", Path(__file__).with_name("repo_layout.py")
-    )
-    if (
-        _git_checkout_spec is None
-        or _git_checkout_spec.loader is None
-        or _repo_layout_spec is None
-        or _repo_layout_spec.loader is None
-    ):
-        raise
-    _git_checkout = importlib.util.module_from_spec(_git_checkout_spec)
-    _repo_layout = importlib.util.module_from_spec(_repo_layout_spec)
-    sys.modules["git_checkout"] = _git_checkout
-    sys.modules["repo_layout"] = _repo_layout
-    _git_checkout_spec.loader.exec_module(_git_checkout)
-    _repo_layout_spec.loader.exec_module(_repo_layout)
-    _git_metadata_is_discoverable = _git_checkout.discoverable
-    support_dir = _repo_layout.support_dir
+from scripts.core.git_checkout import (  # noqa: E402
+    discoverable as _git_metadata_is_discoverable,
+)
+from scripts.core.repo_layout import support_dir  # noqa: E402
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 
 
 class RepoFileListingError(SystemExit):

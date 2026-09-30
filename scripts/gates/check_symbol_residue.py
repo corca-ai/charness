@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import re
 import sys
 from dataclasses import dataclass
@@ -27,21 +26,8 @@ from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
-try:
-    from scripts.core.repo_file_listing import RepoFileSnapshot
-    from scripts.yaml_output import emit_yaml
-except ModuleNotFoundError:
-    _repo_file_listing_spec = importlib.util.spec_from_file_location(
-        "repo_file_listing", Path(__file__).resolve().parents[1] / "core" / "repo_file_listing.py"
-    )
-    if _repo_file_listing_spec is None or _repo_file_listing_spec.loader is None:
-        raise
-    _repo_file_listing = importlib.util.module_from_spec(_repo_file_listing_spec)
-    sys.modules["repo_file_listing"] = _repo_file_listing
-    _repo_file_listing_spec.loader.exec_module(_repo_file_listing)
-    RepoFileSnapshot = _repo_file_listing.RepoFileSnapshot
-
-    from scripts.yaml_output import emit_yaml
+from scripts.core.repo_file_listing import RepoFileSnapshot  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 SYMBOL_RE = re.compile(r"^\s*(?:def|class)\s+([A-Za-z_][A-Za-z0-9_]*)\b")
 CONSTANT_RE = re.compile(r"^\s*([A-Z][A-Z0-9_]{2,})\s*(?::[^=]+)?=")

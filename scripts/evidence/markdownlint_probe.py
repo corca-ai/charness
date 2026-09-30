@@ -32,10 +32,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.core.subprocess_guard import run_process
-except ModuleNotFoundError:  # executed directly from scripts/
-    from scripts.core.subprocess_guard import run_process
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 
 # markdownlint-cli2's first output line, on every run it makes: ``markdownlint-cli2 v0.21.0
 # (markdownlint v0.40.0)``. It is the only evidence available here that the ENGINE ran, as

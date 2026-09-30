@@ -25,10 +25,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.core.subprocess_guard import run_process
-except ModuleNotFoundError:  # executed directly from scripts/
-    from scripts.core.subprocess_guard import run_process
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 
 SEMVER_RE = re.compile(r"(?<!\d)(\d+(?:\.\d+){1,}(?:-[0-9A-Za-z.-]+)?)(?![0-9A-Za-z.-])")
 GITHUB_API_TEMPLATE = "https://api.github.com/repos/{repo}/releases/latest"

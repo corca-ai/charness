@@ -13,6 +13,8 @@ import re
 import sys
 from pathlib import Path
 
+import scripts.render_validator_timing_layers as render_validator_timing_layers_module
+
 from .support import ROOT
 
 META = importlib.import_module("tools.check_timing_layer_completeness")
@@ -284,3 +286,22 @@ def test_an_unresolvable_queue_line_is_a_named_refusal_not_a_traceback(
     captured = capsys.readouterr()
     assert "non-literal label" in captured.err
     assert "Traceback" not in captured.err
+
+
+def test_timing_table_renderer_binds_packaged_gate_model_and_renders_markers() -> None:
+    """The timing-table renderer binds the packaged gate model, with no flat fallback.
+
+    The renderer previously drove only by path, so its import binding had no
+    in-process proof; the historical try/except fallback is removed and the
+    repo bootstrap is the single owner of repo-root insertion. The packaged
+    module identity is asserted, plus a smoke of the pure render over the real
+    gate list.
+    """
+    assert (
+        render_validator_timing_layers_module.load_gate_list.__module__
+        == "scripts.run_quality_engine_model"
+    )
+    section = render_validator_timing_layers_module.rendered_classification_section(ROOT)
+    assert section.startswith("## Classification table\n")
+    assert "<!-- BEGIN GENERATED: validator timing layers -->" in section
+    assert "<!-- END GENERATED: validator timing layers -->" in section

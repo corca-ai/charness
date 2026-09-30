@@ -18,10 +18,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.yaml_output import emit_yaml
-except ModuleNotFoundError:
-    from scripts.yaml_output import emit_yaml
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 DEFAULT_TOTAL_BUDGET_BYTES = 10 * 1024 * 1024 * 1024
 DEFAULT_PER_SEED_BUDGET_BYTES = 3 * 1024 * 1024 * 1024

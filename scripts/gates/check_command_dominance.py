@@ -52,12 +52,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts import adapter_lib, quality_label_universe
-except ModuleNotFoundError:  # invoked directly with only the scripts directory importable
-    import adapter_lib
-    import quality_label_universe
-
+from scripts import adapter_lib, quality_label_universe  # noqa: E402
 from scripts.runtime_bootstrap import (  # noqa: E402
     load_path_module,
     repo_root_from_script,

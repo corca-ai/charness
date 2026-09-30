@@ -26,18 +26,12 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.runtime_bootstrap import import_repo_module
-except ModuleNotFoundError:  # executed directly from scripts/
-    from runtime_bootstrap import import_repo_module
+from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
-try:
-    from scripts.yaml_output import emit_yaml
-except ModuleNotFoundError:  # loaded as a standalone sibling module
-    from scripts.yaml_output import emit_yaml
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 UniverseSource = Literal["adapter", "default", "deliberately-absent"]
 

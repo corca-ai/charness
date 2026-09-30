@@ -29,10 +29,7 @@ from pathlib import Path
 
 import yaml
 
-try:
-    from runtime_bootstrap import load_path_module
-except ModuleNotFoundError:  # imported as tools.validate_inventory_consumption_declaration
-    from scripts.runtime_bootstrap import load_path_module
+from runtime_bootstrap import load_path_module
 
 DEFAULT_CONSUMER_FIELDS_PATH = "skills/public/quality/references/inventory-consumer-fields.json"
 INVENTORY_DIR = "skills/public/quality/scripts"

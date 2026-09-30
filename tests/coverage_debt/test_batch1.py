@@ -11,14 +11,12 @@ behaviour breaks, not merely when a line stops executing:
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pytest
 import yaml
 
 from scripts.core import scaffold_artifact_lib
-from tests.module_eviction import evict_module, evict_new_modules
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
 
@@ -164,51 +162,21 @@ def test_the_t_signal_cli_prints_a_classification_and_exits_zero_without_git(
 # --------------------------------------------------------------------------
 
 
-class _BlockScriptsPackage:
-    """Makes `scripts.*` unimportable for the duration of one test, deterministically."""
+def test_the_rca_recorder_binds_packaged_owners_when_loaded_by_path() -> None:
+    """A by-path load binds the packaged ledger library and live YAML helpers.
 
-    def find_spec(self, fullname, path=None, target=None):
-        if fullname == "scripts" or fullname.startswith("scripts."):
-            raise ModuleNotFoundError(f"No module named {fullname!r}")
-        return None
-
-
-def test_the_rca_recorder_loads_when_run_as_a_plain_script(monkeypatch: pytest.MonkeyPatch) -> None:
-    """`python3 scripts/issue/record_rca_event.py` puts `scripts/` on the path, not the repo root.
-
-    In that layout `from scripts import ...` cannot resolve, and the fallback arm
-    is the ONLY thing that binds the ledger library and both YAML helpers. A
-    fallback that bound one name and dropped another would import cleanly and then
-    fail on the first receipt it tried to render, so all three are asserted.
+    The module's historical flat fallback is removed: the repo bootstrap is
+    the single owner of repo-root insertion, so a by-path load resolves the
+    packaged imports. A load that bound one name and dropped another would
+    import cleanly and then fail on the first receipt it tried to render, so
+    all three are asserted -- including the packaged identity of the ledger
+    library (no flat `rca_ledger_lib` split).
     """
-    # A meta-path finder, not a `sys.path` filter. Filtering the path leaves whether
-    # `scripts` is reachable dependent on what other tests have already imported, so
-    # this test took the try arm in one run and the fallback in another -- and the
-    # fallback arm it exists to cover was not reliably exercised at all. A finder that
-    # refuses the name outright does not depend on any of that.
-    monkeypatch.setattr(sys, "meta_path", [_BlockScriptsPackage()] + sys.meta_path)
-    for name in [name for name in sys.modules if name == "scripts" or name.startswith("scripts.")]:
-        evict_module(monkeypatch, name)
-    monkeypatch.syspath_prepend(str(ROOT / "scripts" / "issue"))
+    module = load_script_module(
+        "record_rca_event_by_path", ROOT / "scripts" / "issue" / "record_rca_event.py"
+    )
 
-    before = set(sys.modules)
-    try:
-        module = load_script_module(
-            "record_rca_event_no_package", ROOT / "scripts" / "issue" / "record_rca_event.py"
-        )
-
-        # What THIS module bound, not whether `scripts` happens to be importable in
-        # this interpreter. The global probe (`pytest.raises(ImportError)` around
-        # `import scripts.issue.rca_ledger_lib`) passed in isolation and failed in the full
-        # suite: whether some other test has left the package reachable is not a fact
-        # about the layout under test, and asserting it made a correct fallback red.
-        # `lib.__name__` is the discriminator: the try arm binds `scripts.issue.rca_ledger_lib`
-        # and the fallback binds the bare sibling. `render_yaml.__module__` is NOT usable
-        # here -- the repo's bootstrap aliases the two module names, so the same function
-        # object carries `scripts.yaml_output` either way.
-        assert module.lib.__name__ == "rca_ledger_lib"
-        assert module.render_yaml({"converted": True}).strip() == "converted: true"
-        assert callable(module.emit_yaml)
-        assert module.lib.resolve_ledger_path(ROOT, None) == ROOT / module.lib.LEDGER_PATH
-    finally:
-        evict_new_modules(before)
+    assert module.lib.__name__ == "scripts.issue.rca_ledger_lib"
+    assert module.render_yaml({"converted": True}).strip() == "converted: true"
+    assert callable(module.emit_yaml)
+    assert module.lib.resolve_ledger_path(ROOT, None) == ROOT / module.lib.LEDGER_PATH

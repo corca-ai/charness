@@ -32,10 +32,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.yaml_output import emit_yaml
-except ModuleNotFoundError:
-    from scripts.yaml_output import emit_yaml
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 
 def _load_lib():

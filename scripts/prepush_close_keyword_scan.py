@@ -55,16 +55,7 @@ ZERO_SHA = "0" * 40
 GIT_TIMEOUT_SECONDS = 30
 NO_VERDICT_EXIT = 2
 
-try:
-    from scripts.core.subprocess_guard import run_process
-except ModuleNotFoundError:  # executed directly from scripts/
-    try:
-        from scripts.core.subprocess_guard import run_process
-    except ModuleNotFoundError:
-
-        def run_process(*_args: Any, **_kwargs: Any):
-            raise ModuleNotFoundError("subprocess_guard")
-
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 
 # The close verbs and the three ref forms GitHub closes on, spelled exactly as the
 # canonical scanner now spells them. `GH-123` and the full issue URL were once visible

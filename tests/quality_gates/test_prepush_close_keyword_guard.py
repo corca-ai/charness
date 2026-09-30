@@ -23,9 +23,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.core.repo_layout import repo_script
 from tests.closeout_authorization_world import CROSSWALK_REL, PROTECTED, build_protected_world
-from tests.module_eviction import evict_module
 from tests.quality_gates.prepush_close_keyword_fixtures import (
     commit as _commit,
 )
@@ -628,52 +626,27 @@ def test_dropped_stdin_lines_are_counted_rather_than_absorbed() -> None:
     assert only_garbage[0]["local_sha"] == ""
 
 
-@pytest.mark.boundary_contract(
-    reason="assert the close-keyword guard's exact crash exit and stderr contract from a partial installed layout"
-)
-def test_a_crash_exits_two_rather_than_the_refusal_code(repo: Path, tmp_path: Path) -> None:
-    """A partial install (scripts without the issue skill) must not report a verdict.
+def test_a_crash_exits_two_rather_than_the_refusal_code(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """An unexpected crash inside `evaluate` exits 2, never the refusal code.
 
-    `main` catches only `RangeUnreadable`; everything else would leave Python's own
-    exit 1, which is this guard's documented REFUSAL code. The operator would then
-    reword an innocent commit message to answer a crash.
+    `cli` maps any exception escaping `main` to exit 2 with a "crashed"
+    line: exit 1 is this guard's documented REFUSAL code, so a crash
+    exiting 1 would be read as a verdict and answered by rewording an
+    innocent message. Executed in-process through `cli`, which exists for
+    exactly this (its docstring); a historical version of this test
+    triggered the crash from a synthetic marker-less "lonely tree", but no
+    shipped layout lacks the repo marker, so the crash is raised directly.
     """
-    lonely = tmp_path.parent / "guard-lonely" / "scripts"
-    lonely.mkdir(parents=True, exist_ok=True)
-    hooks_dir = lonely / "hooks"
-    hooks_dir.mkdir()
-    for name in (
-        "prepush_close_keyword_guard.py",
-        "prepush_close_keyword_scan.py",
-        "check_issue_closeout_commit_msg.py",
-        "runtime_bootstrap.py",
-        "yaml_output.py",
-    ):
-        # A packaged script is copied flat: the lonely tree is the pre-packaging shape.
-        shutil.copy2(repo_script(ROOT, name), lonely / name)
-    shutil.copy2(
-        ROOT / "scripts" / "hooks" / "commit_msg_closeout_authorization.py",
-        hooks_dir / "commit_msg_closeout_authorization.py",
-    )
-    base = _head(repo)
-    head = _commit(repo, "chore: extra commit\n", "work.txt")
+    def _boom(*args: object, **kwargs: object) -> object:
+        raise RuntimeError("simulated evaluator crash")
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(lonely / "prepush_close_keyword_guard.py"),
-            "--repo-root",
-            str(repo),
-            "--range",
-            f"{base}..{head}",
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    monkeypatch.setattr(GUARD, "evaluate", _boom)
+    argv = ["--repo-root", ".", "--range", f"{'a' * 40}..{'b' * 40}"]
 
-    assert result.returncode == GUARD.NO_VERDICT_EXIT, result.stdout + result.stderr
-    assert "crashed" in result.stderr
+    assert GUARD.cli(argv) == GUARD.NO_VERDICT_EXIT
+    assert "crashed" in capsys.readouterr().err
 
 
 # --- what round 2 of the bounded review found ------------------------------------
@@ -942,41 +915,6 @@ def test_a_git_timeout_is_a_no_verdict_not_a_pass(repo: Path, monkeypatch) -> No
     # Fail-closed: a git call that never answered must not degrade to an empty range,
     # which the guard would report as a clean scan.
     assert "timed out" in str(excinfo.value)
-
-
-def test_the_hook_mode_import_fallback_binds(monkeypatch) -> None:
-    """The `except ModuleNotFoundError` arm, forced rather than assumed.
-
-    In a git hook `scripts/` is `sys.path[0]` and `scripts.<mod>` is not importable,
-    so the guard falls back to flat imports. That arm is invisible from a test process
-    where the package form resolves. Filtering `sys.path` would not force it either --
-    the modules are already in `sys.modules`. A `meta_path` finder that refuses the
-    package spelling is what actually selects the arm.
-    """
-    import importlib.util
-    import sys
-
-    class RefuseScriptsPackage:
-        def find_spec(self, name, path=None, target=None):
-            if name.startswith("scripts."):
-                raise ModuleNotFoundError(f"No module named {name!r}")
-            return None
-
-    finder = RefuseScriptsPackage()
-    monkeypatch.setattr(sys, "meta_path", [finder, *sys.meta_path])
-    for name in [n for n in list(sys.modules) if n.startswith("scripts.")]:
-        evict_module(monkeypatch, name)
-    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
-
-    spec = importlib.util.spec_from_file_location(
-        "prepush_close_keyword_guard_hook_mode", ROOT / "scripts" / "prepush_close_keyword_guard.py"
-    )
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    # The names the fallback binds are the ones the guard cannot run without.
-    assert module.close_targets("fix: closes #7\n", SCANNER) == [(None, 7)]
-    assert module.emit_yaml is not None
 
 
 def test_a_protected_target_is_refused_by_authorization_before_any_ledger(

@@ -26,13 +26,8 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.issue import rca_ledger_lib as lib
-    from scripts.yaml_output import emit_yaml, render_yaml
-except ImportError:
-    import rca_ledger_lib as lib
-
-    from yaml_output import emit_yaml, render_yaml
+from scripts.issue import rca_ledger_lib as lib  # noqa: E402
+from scripts.yaml_output import emit_yaml, render_yaml  # noqa: E402
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

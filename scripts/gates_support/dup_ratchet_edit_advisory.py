@@ -48,19 +48,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.core.git_checkout import head_oid_from_files
-except ModuleNotFoundError:  # invoked as `python3 scripts/gates_support/dup_ratchet_edit_advisory.py`
-    _git_checkout_spec = importlib.util.spec_from_file_location(
-        "git_checkout", Path(__file__).resolve().parent.parent / "core" / "git_checkout.py"
-    )
-    if _git_checkout_spec is None or _git_checkout_spec.loader is None:
-        raise
-    _git_checkout = importlib.util.module_from_spec(_git_checkout_spec)
-    sys.modules["git_checkout"] = _git_checkout
-    _git_checkout_spec.loader.exec_module(_git_checkout)
-    head_oid_from_files = _git_checkout.head_oid_from_files
-
+from scripts.core.git_checkout import head_oid_from_files  # noqa: E402
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
@@ -327,7 +315,6 @@ def advisory_state(
 
 def main(argv: list[str] | None = None) -> int:
     import argparse
-    import sys
 
     # Resolved HERE, not at module import. This module also rides an edit-time
     # PostToolUse hook, where it is imported as `scripts.gates_support.dup_ratchet_edit_advisory`

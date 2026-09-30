@@ -40,12 +40,8 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.yaml_output import emit_yaml
-except ModuleNotFoundError:
-    from scripts.yaml_output import emit_yaml
-
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 _waiver_file_lines = import_repo_module(__file__, "scripts.core.waiver_file_lines")
 iter_waiver_lines = _waiver_file_lines.iter_waiver_lines

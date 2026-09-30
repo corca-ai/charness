@@ -45,12 +45,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 # zero observations. `_bound_residual_chars` counts alphanumerics only and removes every
 # token longest-first, which is what closes both.
 from scripts.core.repo_path_display import display_path as _display_path  # noqa: E402
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 from scripts.gates import check_prescribed_skill_executed_lib as _residual_lib  # noqa: E402
-
-try:
-    from scripts.core.subprocess_guard import run_process
-except ModuleNotFoundError:  # executed directly from scripts/
-    from scripts.core.subprocess_guard import run_process
 
 DEFAULT_ARTIFACT_PATH = "charness-artifacts/quality/latest.md"
 DEFAULT_CONSUMER_FIELDS_PATH = "skills/public/quality/references/inventory-consumer-fields.json"

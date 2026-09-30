@@ -5,6 +5,8 @@ from pathlib import Path
 
 import yaml
 
+import scripts.issue.aggregate_rca_ledger as aggregate_rca_ledger_module
+import scripts.issue.validate_rca_ledger as validate_rca_ledger_module
 from scripts.issue import rca_ledger_lib as lib
 from tests.rca_ledger_helpers import (
     COMMITTED_LEDGER,
@@ -35,6 +37,22 @@ def test_repo_owned_rca_commands_reject_a_json_flag(tmp_path: Path) -> None:
         res = run_script(script, *args, "--json")
         assert res.returncode == 2, f"{script} accepted --json: {res.stdout}{res.stderr}"
         assert "--json" in res.stderr, script
+
+
+def test_rca_ledger_scripts_bind_the_packaged_ledger_library() -> None:
+    """The RCA report/validate CLIs bind the packaged ledger lib, with no flat fallback.
+
+    Both scripts previously drove only through subprocesses, so their import
+    bindings had no in-process proof; the historical try/except fallbacks are
+    removed and the repo bootstrap is the single owner of repo-root insertion.
+    A binding that resolved to a sibling copy would still import, so the
+    packaged module identity is asserted (`lib.__name__` is the discriminator:
+    the fallback bound the bare sibling).
+    """
+    assert aggregate_rca_ledger_module.lib.__name__ == "scripts.issue.rca_ledger_lib"
+    assert validate_rca_ledger_module.lib.__name__ == "scripts.issue.rca_ledger_lib"
+    assert callable(aggregate_rca_ledger_module.emit_yaml)
+    assert callable(validate_rca_ledger_module.emit_yaml)
 
 
 # AC1 -------------------------------------------------------------------------

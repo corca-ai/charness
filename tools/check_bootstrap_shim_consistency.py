@@ -21,12 +21,8 @@ import builtins
 import re
 from pathlib import Path
 
-try:
-    from scripts.core.repo_file_listing import iter_matching_repo_files
-    from scripts.yaml_output import emit_yaml
-except ModuleNotFoundError:
-    from scripts.core.repo_file_listing import iter_matching_repo_files
-    from yaml_output import emit_yaml
+from scripts.core.repo_file_listing import iter_matching_repo_files
+from scripts.yaml_output import emit_yaml
 
 SHIM_NAME = "_load_skill_runtime_bootstrap"
 CANONICAL_SHIM = """def _load_skill_runtime_bootstrap():

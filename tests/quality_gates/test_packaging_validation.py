@@ -17,6 +17,7 @@ import scripts.plugin_export.packaging_lib as packaging_lib
 import scripts.plugin_export.sync_root_plugin_manifests as sync_root_plugin_manifests_module
 import scripts.plugin_export.validate_packaging as validate_packaging_module
 import scripts.plugin_export.validate_packaging_install_surface as validate_packaging_install_surface_module
+import tools.validate_packaging_committed as validate_packaging_committed_module
 from tests.repo_copy import clone_seeded_charness_repo
 from tests.script_main import run_loaded_script_main
 
@@ -362,6 +363,25 @@ def test_validate_packaging_committed_accepts_clean_head(
 
     result = run_script("tools/validate_packaging_committed.py", "--repo-root", str(repo), cwd=repo)
     assert result.returncode == 0, result.stderr
+
+
+def test_validate_packaging_committed_binds_packaged_subprocess_guard() -> None:
+    """The committed-packaging probe binds the packaged guard, with no flat fallback.
+
+    The tool previously drove only through a subprocess, so its import binding
+    had no in-process proof; the historical try/except fallback is removed and
+    the repo bootstrap is the single owner of repo-root insertion. A binding
+    that resolved to a sibling copy would still import, so the packaged module
+    identity is asserted.
+    """
+    assert (
+        validate_packaging_committed_module.run_process.__module__
+        == "scripts.core.subprocess_guard"
+    )
+    assert (
+        validate_packaging_committed_module.run_monitored_phase.__module__
+        == "scripts.core.subprocess_guard"
+    )
 
 
 # DELETED 2026-08-29: `test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_export`.

@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import json
 import re
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -22,10 +20,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.core.subprocess_guard import run_process
-except ModuleNotFoundError:  # loaded as a standalone sibling module
-    from scripts.core.subprocess_guard import run_process
+from scripts.core.subprocess_guard import run_process  # noqa: E402
 
 ALGORITHM = "sha256-v2"
 SUBSTRATE_WORKING_TREE = "working-tree"
@@ -113,19 +108,10 @@ def _sha256(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-try:
-    from scripts.core.sibling_module_loader import load_sibling as _load_sibling
-except ModuleNotFoundError:  # invoked as `python3 scripts/<name>.py`
-    _sibling_loader_spec = importlib.util.spec_from_file_location(
-        "sibling_module_loader",
-        Path(__file__).resolve().parents[1] / "core" / "sibling_module_loader.py",  # scripts/core
-    )
-    if _sibling_loader_spec is None or _sibling_loader_spec.loader is None:
-        raise
-    _sibling_loader = importlib.util.module_from_spec(_sibling_loader_spec)
-    sys.modules["sibling_module_loader"] = _sibling_loader
-    _sibling_loader_spec.loader.exec_module(_sibling_loader)
-    _load_sibling = _sibling_loader.load_sibling
+from scripts.core.sibling_module_loader import (  # noqa: E402
+    load_sibling as _load_sibling,
+)
+
 
 def _load_review_sibling(module_stem: str):
     return _load_sibling(module_stem, anchor_file=__file__)

@@ -38,13 +38,10 @@ try:
 except ImportError:  # pragma: no cover - Windows has no fcntl
     fcntl = None
 
-try:
-    from scripts.runtime_bootstrap import import_repo_module, runtime_root
-except ModuleNotFoundError:  # direct ``python scripts/runtime_scratch.py``
-    _root = Path(__file__).resolve().parent.parent
-    if str(_root) not in sys.path:
-        sys.path.insert(0, str(_root))
-    from scripts.runtime_bootstrap import import_repo_module, runtime_root
+from scripts.runtime_bootstrap import (  # noqa: E402
+    import_repo_module,
+    runtime_root,
+)
 
 _guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _guard.run_process

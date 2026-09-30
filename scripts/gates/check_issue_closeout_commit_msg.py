@@ -27,10 +27,7 @@ from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process
 
-try:
-    from scripts.yaml_output import emit_yaml
-except ModuleNotFoundError:  # git-hook execution: `scripts/` is sys.path[0], not a package
-    from scripts.yaml_output import emit_yaml
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 _CLASSIFICATION_RE = re.compile(
     r"(?im)^\s*(?:[-*]\s*)?(?:\*\*)?classification(?:\*\*)?\s*:\s*"
@@ -42,20 +39,13 @@ _CLASSIFICATION_RE = re.compile(
     # fabricate exactly the repair claims the disposition exists to refuse.
     r"(?P<classification>bug|feature|deferred-work|question|decision-needed|consolidated)\s*$"
 )
-try:
-    from scripts.review.closeout_message_claims import (
-        _close_keyword_numbers,
-        _close_keyword_scan_text,
-        _strip_commit_comments,
-        partition_closeout_carriers,
-    )
-except ModuleNotFoundError:  # invoked as `python3 scripts/<name>.py`
-    from closeout_message_claims import (
-        _close_keyword_numbers,
-        _close_keyword_scan_text,
-        _strip_commit_comments,
-        partition_closeout_carriers,
-    )
+from scripts.review.closeout_message_claims import (  # noqa: E402
+    _close_keyword_numbers,
+    _close_keyword_scan_text,
+    _strip_commit_comments,
+    partition_closeout_carriers,
+)
+
 # A pausing resolution brief (references/resolution-brief.md "Persistence")
 # declares itself with the template's `Autonomous vs pause:` field; a value
 # starting with "paus" (paused/pausing) is the pause state, "continuing" is not.

@@ -23,12 +23,8 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
+from scripts.issue import rca_ledger_lib as lib  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
-
-try:
-    from scripts.issue import rca_ledger_lib as lib
-except ImportError:
-    import rca_ledger_lib as lib
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

@@ -34,10 +34,7 @@ refuse_if_declared_and_empty = _quality_universes.refuse_if_declared_and_empty
 resolve_universe = _quality_universes.resolve_universe
 load_quality_adapter = _quality_adapter.load_quality_adapter
 
-try:
-    from scripts.core.repo_file_listing import iter_repo_files
-except ModuleNotFoundError:
-    from scripts.core.repo_file_listing import iter_repo_files
+from scripts.core.repo_file_listing import iter_repo_files  # noqa: E402
 
 IGNORED_DIRS = {
     ".artifacts",

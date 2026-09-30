@@ -36,10 +36,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.core.subprocess_guard import run_monitored_phase
-except ModuleNotFoundError:  # executed directly from scripts/
-    from scripts.core.subprocess_guard import run_monitored_phase
+from scripts.core.subprocess_guard import run_monitored_phase  # noqa: E402
 
 Provenance = Literal["override", "dev-tree", "installed"]
 

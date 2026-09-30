@@ -2,8 +2,8 @@
 
 Every test here names a way one of these surfaces is *asked to keep working when
 its input is wrong*: a note whose derived block was hand-edited into an
-unparseable shape, a helper imported from the flat exported layout instead of the
-`scripts` package, a subprocess carrier whose stdout is not YAML, a validator run
+unparseable shape, a helper loaded by path instead of through the `scripts`
+package, a subprocess carrier whose stdout is not YAML, a validator run
 against an adapter it must refuse. Those arms are the ones a reader trusts
 without ever seeing them run, which is exactly why they need assertions that go
 red when the behaviour changes rather than assertions that a line executed.
@@ -13,14 +13,12 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import sys
 from pathlib import Path
 
 import pytest
 import yaml
 
 from tests.dsl import Repo, run_at
-from tests.module_eviction import evict_module
 from tests.script_loader import load_script_module
 from tests.script_main import run_loaded_script_main
 
@@ -325,56 +323,31 @@ def test_the_web_fetch_yaml_renderer_loads_from_the_real_tree() -> None:
     assert callable(ROUTE_PUBLIC_FETCH.load_yaml_output().render_yaml)
 
 
-# --- closeout_refusal_lib: the flat exported layout has no `scripts` package ---
+# --- closeout_refusal_lib: loaded by path, refusals keep their shape ---
 
 
-class _BlockScriptsPackage:
-    """A meta-path finder that makes `scripts.*` unimportable, deterministically.
-
-    Filtering `sys.path` is not enough: whether `scripts` is reachable depends on what
-    other tests have already imported and on how the runner was invoked, so the same
-    test took the try arm in one run and the fallback arm in another. A finder that
-    refuses the name outright does not depend on any of that.
-    """
-
-    def find_spec(self, fullname, path=None, target=None):
-        if fullname == "scripts" or fullname.startswith("scripts."):
-            raise ModuleNotFoundError(f"No module named {fullname!r}")
-        return None
-
-
-def test_the_closeout_refusal_lib_still_emits_refusals_in_the_flat_layout(
-    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+def test_the_closeout_refusal_lib_emits_refusals_when_loaded_by_path(
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """Imported without the `scripts` package, the refusal shape must be unchanged.
+    """Loaded by path, the refusal shape must be unchanged.
 
-    The exported plugin ships these helpers flat, side by side, with no package root --
-    so the package-qualified import fails there. If the sibling fallback were broken,
-    every refusal in the issue capture/freeze/crosswalk lane would become an
-    ImportError at the moment it needed to say no.
-
-    The arm taken is NOT observable from the loaded module: the repo's bootstrap
-    aliases `scripts.yaml_output` and `yaml_output` to one module object, so
-    `emit_yaml.__module__` reads the same either way. What makes this test pin the
-    fallback is the finder below, which guarantees the try arm raises.
+    The module's historical flat fallback is removed: the repo bootstrap is
+    the single owner of repo-root insertion, so a by-path load resolves the
+    packaged import. If the binding were broken, every refusal in the issue
+    capture/freeze/crosswalk lane would become an ImportError at the moment
+    it needed to say no.
     """
-    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
-    monkeypatch.setattr(sys, "meta_path", [_BlockScriptsPackage()] + sys.meta_path)
-    for name in [
-        n for n in list(sys.modules) if n in ("scripts", "yaml_output") or n.startswith("scripts.")
-    ]:
-        evict_module(monkeypatch, name)
-
     spec = importlib.util.spec_from_file_location(
-        "coverage_debt_flat_closeout_refusal_lib",
+        "coverage_debt_closeout_refusal_lib_by_path",
         ROOT / "scripts" / "review" / "closeout_refusal_lib.py",
     )
     assert spec is not None and spec.loader is not None
-    flat = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(flat)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
 
-    exit_code = flat.emit_refusal(
-        "issue-freeze", flat.RefusalError("stale_freeze", "the freeze is stale")
+    assert module.emit_yaml.__module__ == "scripts.yaml_output"
+    exit_code = module.emit_refusal(
+        "issue-freeze", module.RefusalError("stale_freeze", "the freeze is stale")
     )
     captured = capsys.readouterr()
 

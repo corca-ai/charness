@@ -74,17 +74,9 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.yaml_output import emit_yaml
-except ModuleNotFoundError:
-    from scripts.yaml_output import emit_yaml
-
-try:
-    from scripts.core.env_bypass import env_bypass_enabled
-except ModuleNotFoundError:
-    from env_bypass import env_bypass_enabled
-
+from scripts.core.env_bypass import env_bypass_enabled  # noqa: E402
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 _subprocess_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
 run_process = _subprocess_guard.run_process

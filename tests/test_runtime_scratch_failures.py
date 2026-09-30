@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import builtins
 import importlib.util
 import json
 import shutil
@@ -71,36 +70,6 @@ def _patched_registry_report(monkeypatch, roots: list[dict[str, object]]) -> Non
         "inspect_scratch_roots",
         lambda *_args, **_kwargs: {"roots": roots},
     )
-
-
-def test_installed_bootstrap_and_direct_import_fallback(tmp_path: Path, monkeypatch) -> None:
-    repo_root = Path(core.__file__).resolve().parents[1]
-    import_path = [entry for entry in sys.path if entry != str(repo_root)]
-    monkeypatch.setattr(sys, "path", import_path)
-    original_import = builtins.__import__
-    failed_once = False
-
-    def fail_first_bootstrap_import(name, *args, **kwargs):
-        nonlocal failed_once
-        if name == "scripts.runtime_bootstrap" and not failed_once:
-            failed_once = True
-            sys.path[:] = [entry for entry in sys.path if entry != str(repo_root)]
-            raise ModuleNotFoundError("simulated installed bootstrap miss", name=name)
-        return original_import(name, *args, **kwargs)
-
-    monkeypatch.setattr(builtins, "__import__", fail_first_bootstrap_import)
-    module_name = "runtime_scratch_direct_import_probe"
-    spec = importlib.util.spec_from_file_location(module_name, Path(core.__file__))
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    monkeypatch.setitem(sys.modules, module_name, module)
-    spec.loader.exec_module(module)
-
-    assert failed_once is True
-    assert str(repo_root) in sys.path
-    repo, runtime = _repo_and_runtime(tmp_path)
-    with module.owned_scratch(repo, "direct", run_id="imported", runtime_root_path=runtime) as path:
-        assert path.is_dir()
 
 
 def test_promotion_bootstrap_adds_missing_installed_root(monkeypatch) -> None:

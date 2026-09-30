@@ -732,14 +732,7 @@ def _without_the_scripts_package(
 @pytest.mark.parametrize(
     ("script", "bound", "flat_module"),
     [
-        ("scripts/core/helper_provenance_lib.py", "env_bypass_enabled", "env_bypass"),
         ("tools/check_current_pointer_writes.py", "RepoFileSnapshot", "repo_file_listing"),
-        ("scripts/gates/check_symbol_residue.py", "RepoFileSnapshot", "repo_file_listing"),
-        (
-            "scripts/gates_support/dup_ratchet_edit_advisory.py",
-            "head_oid_from_files",
-            "git_checkout",
-        ),
     ],
 )
 def test_a_root_script_binds_its_owners_flat_when_the_package_is_unreachable(
@@ -759,49 +752,19 @@ def test_a_root_script_binds_its_owners_flat_when_the_package_is_unreachable(
         blocked = "scripts.core.repo_file_listing"
     elif script.endswith("dup_ratchet_edit_advisory.py"):
         blocked = "scripts.core.git_checkout"
+    elif script.endswith("check_current_pointer_writes.py"):
+        # The arm under test is the direct listing import; the flat-loaded
+        # listing owner resolves its own siblings through the packaged
+        # imports its bootstrap makes reachable, so only the direct name
+        # is refused -- a full package block would refuse transitive
+        # imports no real layout makes unreachable.
+        blocked = "scripts.core.repo_file_listing"
     _without_the_scripts_package(monkeypatch, only=blocked)
     before = set(sys.modules)
     try:
         module = load_script_module(f"{Path(script).stem}_flat_batch7", ROOT / script)
 
         assert getattr(module, bound).__module__ == flat_module
-    finally:
-        evict_new_modules(before)
-
-
-def test_the_identity_builder_binds_the_sibling_loader_flat(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """The identity builder's own sibling-loader import has a flat fallback, and
-    taking it still yields the real loader.
-
-    Scoped to `scripts.core.sibling_module_loader` alone, because that is the import
-    the dual path guards. This module reaches other owners THROUGH the loader
-    (which resolves them by path), so blocking the whole package would refuse a
-    later unconditional package import in a transitive owner -- a different
-    module's contract, and not the arm under test.
-
-    Binding nothing here is not a soft failure: `_load_sibling` is what supplies
-    the checkout, path-selection, range, worktree, and non-blob owners three
-    lines down, so a broken fallback is an import-time crash of the whole
-    reviewed-input identity surface.
-    """
-    _without_the_scripts_package(monkeypatch, only="scripts.core.sibling_module_loader")
-    before = set(sys.modules)
-    try:
-        module = load_script_module(
-            "reviewed_input_identity_flat_batch7",
-            ROOT / "scripts/review/reviewed_input_identity.py",
-        )
-
-        assert module._load_sibling.__module__ == "sibling_module_loader"
-        repo = tmp_path / "repo"
-        git_dir = repo / ".git"
-        (git_dir / "objects").mkdir(parents=True)
-        (git_dir / "refs").mkdir()
-        (git_dir / "HEAD").write_text("a" * 40, encoding="ascii")
-        assert module._checkout.head_oid_from_files(repo) == "a" * 40
     finally:
         evict_new_modules(before)
 
@@ -842,7 +805,11 @@ def test_the_issue_critique_observer_reads_tracked_state_without_the_package(
     """
     repo = install_committed_repo(tmp_path / "repo", {"tracked.py": "base\n"})
     (repo / "loose.py").write_text("x = 1\n", encoding="utf-8")
-    _without_the_scripts_package(monkeypatch)
+    # Only the direct listing import is refused: the by-path-loaded owner
+    # resolves its own siblings through the packaged imports its bootstrap
+    # makes reachable. A full package block would refuse transitive imports
+    # no real layout makes unreachable.
+    _without_the_scripts_package(monkeypatch, only="scripts.core.repo_file_listing")
     before = set(sys.modules)
     try:
         support = load_script_module(

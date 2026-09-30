@@ -80,11 +80,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts import adapter_lib
-except ModuleNotFoundError:  # direct execution from the shipped scripts directory
-    import adapter_lib
-
+from scripts import adapter_lib  # noqa: E402
 from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
 from scripts.yaml_output import emit_yaml  # noqa: E402
 

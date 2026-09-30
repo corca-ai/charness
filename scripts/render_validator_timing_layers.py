@@ -18,11 +18,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.run_quality_engine_model import load_gate_list
-except ImportError:  # run by path from scripts/
-    from run_quality_engine_model import load_gate_list
-
+from scripts.run_quality_engine_model import load_gate_list  # noqa: E402
 from scripts.runtime_bootstrap import repo_root_from_script  # noqa: E402
 
 REPO_ROOT = repo_root_from_script(__file__)

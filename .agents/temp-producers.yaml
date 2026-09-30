@@ -80,11 +80,6 @@ producers:
   symbol: source
   disposition: anonymous-auto-delete-file
   rationale: Git object batching uses an anonymous TemporaryFile handle owned by the current process.
-- identity: scripts/prepush_close_keyword_guard.py::owned_scratch::path
-  path: scripts/prepush_close_keyword_guard.py
-  symbol: path
-  disposition: test-compatibility-only
-  rationale: The fallback exists only for minimal compatibility fixtures when the optional runtime owner module is absent.
 - identity: scripts/review/reviewed_input_nonblob.py::_run_with_input::source
   path: scripts/review/reviewed_input_nonblob.py
   symbol: source

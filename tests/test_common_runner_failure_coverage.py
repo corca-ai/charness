@@ -119,23 +119,24 @@ def test_lesson_writer_fallback_bootstraps_a_partial_layout_root(
     assert module.runtime_root(ROOT).is_absolute()
 
 
-def test_prepush_partial_layout_fallback_owns_and_cleans_its_temp_directory(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
-    module = _load_with_one_import_failure(
-        monkeypatch,
-        "prepush_partial_layout",
+def test_prepush_guard_binds_the_real_scratch_owner() -> None:
+    """The guard binds the packaged scratch owner, with no partial-layout stub.
+
+    The historical `owned_scratch` stub fallback is removed: hooks execute
+    the in-tree script (absolute `$SOURCE_ROOT` path), so the repo bootstrap
+    always resolves the packaged import first. What remains pinned is the
+    single-owner convergence -- the guard's scratch context manager is the
+    real `scripts.runtime_scratch` owner, not a local re-implementation.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "prepush_close_keyword_guard_by_path",
         ROOT / "scripts" / "prepush_close_keyword_guard.py",
-        "scripts.runtime_scratch",
-        ModuleNotFoundError,
     )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
 
-    with module.owned_scratch(tmp_path / "repo", "partial-layout") as scratch:
-        assert scratch.is_dir()
-        (scratch / "diagnostic.txt").write_text("kept only while owned\n", encoding="utf-8")
-        retained_path = scratch
-
-    assert not retained_path.exists()
+    assert module.owned_scratch.__module__ == "scripts.runtime_scratch"
 
 
 def test_markdown_preview_partial_layout_imports_the_real_scratch_owner(

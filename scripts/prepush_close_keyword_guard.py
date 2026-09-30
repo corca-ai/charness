@@ -110,8 +110,6 @@ from __future__ import annotations
 
 import argparse
 import sys
-import tempfile
-from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -127,44 +125,20 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-try:
-    from scripts.runtime_scratch import owned_scratch  # noqa: E402
-except ModuleNotFoundError:  # partial hook layout; the full package owns this path
-    @contextmanager
-    def owned_scratch(repo_root: Path, producer: str):  # type: ignore[no-untyped-def]
-        del repo_root
-        with tempfile.TemporaryDirectory(prefix=f"charness-{producer}-") as path:
-            yield Path(path)
-
-try:
-    from scripts.prepush_close_keyword_scan import (
-        MAX_UNBOUNDED_CREATION_SCAN,
-        RangeUnreadable,
-        close_targets,
-        commit_body,
-        commit_file,
-        commit_paths,
-        local_numbers,
-        parse_push_stdin,
-        range_commits,
-    )
-    from scripts.runtime_bootstrap import load_path_module
-    from scripts.yaml_output import emit_yaml
-except ModuleNotFoundError:  # git-hook execution: `scripts/` is sys.path[0], not a package
-    from prepush_close_keyword_scan import (
-        MAX_UNBOUNDED_CREATION_SCAN,
-        RangeUnreadable,
-        close_targets,
-        commit_body,
-        commit_file,
-        commit_paths,
-        local_numbers,
-        parse_push_stdin,
-        range_commits,
-    )
-
-    from runtime_bootstrap import load_path_module
-    from yaml_output import emit_yaml
+from scripts.prepush_close_keyword_scan import (  # noqa: E402
+    MAX_UNBOUNDED_CREATION_SCAN,
+    RangeUnreadable,
+    close_targets,
+    commit_body,
+    commit_file,
+    commit_paths,
+    local_numbers,
+    parse_push_stdin,
+    range_commits,
+)
+from scripts.runtime_bootstrap import load_path_module  # noqa: E402
+from scripts.runtime_scratch import owned_scratch  # noqa: E402
+from scripts.yaml_output import emit_yaml  # noqa: E402
 
 NO_VERDICT_EXIT = 2
 #: Why a dropped pre-push stdin line is a no-verdict rather than a scan of what parsed.
