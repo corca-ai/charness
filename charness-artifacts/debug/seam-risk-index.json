@@ -3,7 +3,7 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 196,
+  "source_artifact_count": 197,
   "indexed_artifact_count": 181,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
@@ -2619,6 +2619,10 @@
     },
     {
       "artifact_path": "charness-artifacts/debug/2026-08-30-issue-759-deletion-range-premise.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-10-01-issue-886-muse-json-causal-record.md",
       "reason": "debug artifact has no risk interrupt sections yet"
     },
     {
