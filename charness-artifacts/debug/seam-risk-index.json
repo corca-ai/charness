@@ -4,19 +4,19 @@
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
   "source_artifact_count": 197,
-  "indexed_artifact_count": 181,
+  "indexed_artifact_count": 182,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 8,
-    "none": 79,
+    "none": 80,
     "operator-visible-recovery": 23,
     "repeated-symptom": 24
   },
   "generalization_pressure_counts": {
     "factor-now": 26,
     "monitor": 126,
-    "none": 29
+    "none": 30
   },
   "entries": [
     {
@@ -2554,6 +2554,20 @@
       "forced": true
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-10-01-issue-886-muse-json-causal-record.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-886-muse-json-observability",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "executor structured transport to lane receipt consumers",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/critique/v8146-critique.md",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
       "interrupt_id": "issue-813-temp-output-ownership",
@@ -2619,10 +2633,6 @@
     },
     {
       "artifact_path": "charness-artifacts/debug/2026-08-30-issue-759-deletion-range-premise.md",
-      "reason": "debug artifact has no risk interrupt sections yet"
-    },
-    {
-      "artifact_path": "charness-artifacts/debug/2026-10-01-issue-886-muse-json-causal-record.md",
       "reason": "debug artifact has no risk interrupt sections yet"
     },
     {
