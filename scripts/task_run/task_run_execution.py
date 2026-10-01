@@ -32,6 +32,11 @@ from scripts.core.subprocess_guard import (  # noqa: E402
     run_monitored_phase,
 )
 from scripts.task_run import task_run_friction as _friction  # noqa: E402
+from scripts.task_run import task_run_self_review as _self_review  # noqa: E402
+
+#: The read-only Codex self-review runner lives in its own cohesive module;
+#: this alias keeps the historical execution-surface seam stable.
+run_self_review = _self_review.run_self_review
 
 _DESCENDANT_CLEANUP_SHELL = (
     'printf "%s\\n" "$$" > "$1"; shift; exec 3<&0; "$@" <&3 & '
@@ -193,16 +198,13 @@ def _execute_codex(
                     append_stderr=bool(invocation),
                 )
             )
-            if executor == "codex":
-                raw_output = _tail_text(stdout_log, limit=64 * 1024 * 1024)
-                session_id = _codex_session_id(raw_output) or session_id
-                if raw_output:
-                    with event_log.open("a", encoding="utf-8") as handle:
-                        handle.write(raw_output)
-                        if not raw_output.endswith("\n"):
-                            handle.write("\n")
-                if last_message_path is not None and last_message_path.is_file():
-                    stdout_log.write_text(last_message_path.read_text(encoding="utf-8"), encoding="utf-8")
+            session_id = _retain_invocation_events(
+                executor,
+                stdout_log,
+                event_log,
+                last_message_path,
+                session_id,
+            )
             if (
                 result["timed_out"]
                 or result["interrupted"]
@@ -250,6 +252,7 @@ def _execute_codex(
     except OSError as exc:
         result["exec_error"] = str(exc)
     _executor_unavailable_reason(result, stdout_log, stderr_log, executor)
+    _muse_stream_diagnostics(result, stdout_log, stderr_log, executor)
     steer_messages = _lane_runner.read_steer_queue(queue_path)
     if steer_messages:
         result["steer_messages"] = steer_messages
@@ -361,6 +364,68 @@ def _last_message_path(command: Sequence[str], executor: str) -> Path | None:
         return None
 
 
+def _retain_invocation_events(
+    executor: str,
+    stdout_log: Path,
+    event_log: Path,
+    last_message_path: Path | None,
+    session_id: str | None,
+) -> str | None:
+    """Keep one invocation's raw events and surface its terminal report."""
+    if executor == "codex":
+        raw_output = _tail_text(stdout_log, limit=64 * 1024 * 1024)
+        if raw_output:
+            with event_log.open("a", encoding="utf-8") as handle:
+                handle.write(raw_output)
+                if not raw_output.endswith("\n"):
+                    handle.write("\n")
+        if last_message_path is not None and last_message_path.is_file():
+            stdout_log.write_text(last_message_path.read_text(encoding="utf-8"), encoding="utf-8")
+        return _codex_session_id(raw_output) or session_id
+    if executor == "muse":
+        _retain_muse_events(stdout_log, event_log)
+    return session_id
+
+
+def _retain_muse_events(stdout_log: Path, event_log: Path) -> None:
+    """Keep raw muse JSONL in the events log and the terminal report on stdout.
+
+    Mirrors the Codex last-message shape: the raw `--json` transport is
+    appended per invocation for forensics, while `stdout_log` keeps only the
+    terminal report (or the streamed partial text when the run never
+    terminated), so result delivery stays the actual report (#886).
+    Transcripts without muse events are plain-text lanes and stay untouched.
+    """
+    from scripts.task_run import task_run_muse_events as _muse_events
+
+    raw_output = _tail_text(stdout_log, limit=64 * 1024 * 1024)
+    report = _muse_events.muse_stdout_report(raw_output)
+    if report is None:
+        return
+    with event_log.open("a", encoding="utf-8") as handle:
+        handle.write(raw_output)
+        if not raw_output.endswith("\n"):
+            handle.write("\n")
+    stdout_log.write_text(report, encoding="utf-8")
+
+
+def _muse_stream_diagnostics(
+    result: dict[str, Any], stdout_log: Path, stderr_log: Path, executor: str
+) -> None:
+    """Attach lane-cumulative muse stream retry/failure diagnostics (#886)."""
+    if executor != "muse":
+        return
+    from scripts.task_run import task_run_muse_events as _muse_events
+
+    event_log = stdout_log.with_name(f"{executor}.events.log")
+    events_text = _tail_text(event_log, limit=64 * 1024 * 1024)
+    if not _muse_events.has_muse_events(events_text):
+        events_text = _tail_text(stdout_log, limit=64 * 1024 * 1024)
+    result["stream_diagnostics"] = _muse_events.stream_diagnostics(
+        events_text, _tail_text(stderr_log, limit=256 * 1024)
+    )
+
+
 def _codex_session_id(output: str) -> str | None:
     for line in output.splitlines():
         try:
@@ -390,65 +455,6 @@ _REVIEW_SCAN_LIMIT_BYTES = 64 * 1024 * 1024
 _BOUNDED_REVIEW_KIND = "charness.bounded_review.v1"
 
 _REVIEWER_CONTRACT: Any | None = None
-
-
-def run_self_review(payload: dict[str, Any]) -> dict[str, Any]:
-    """Run a read-only Codex self-review and retain its non-approval findings."""
-    from scripts.task_run import task_run_runtime, task_run_state, task_run_support
-    from scripts.worktree import worktree_exec_lib
-
-    prompt = str(payload.pop("_self_review_prompt", ""))
-    candidate = payload.get("candidate")
-    candidate = candidate if isinstance(candidate, Mapping) else {}
-    changed_paths = candidate.get("changed_paths") or []
-    persistence = payload.get("persistence")
-    persistence = persistence if isinstance(persistence, Mapping) else {}
-    policy = str(payload.get("self_review_policy", "never"))
-    scopes = payload.get("scopes", [])
-    if not isinstance(scopes, list):
-        scopes = []
-    if not task_run_state.self_review_requested(policy, prompt, scopes, changed_paths, persistence):
-        reason = "self-review is disabled for this invocation" if policy == "never" else "no irreversible-boundary signal; use --self-review to opt in"
-        return task_run_state.self_review_block("not-requested", reason=reason)
-    executor_info = payload.get("executor")
-    executor_info = executor_info if isinstance(executor_info, Mapping) else {}
-    if executor_info.get("kind") != "codex":
-        return task_run_state.self_review_block(
-            "unavailable-skip",
-            reason="a read-only Codex reviewer is unavailable for the selected lane executor",
-        )
-    original_command = executor_info.get("command")
-    if not isinstance(original_command, list) or not original_command:
-        return task_run_state.self_review_block(
-            "unavailable-skip", reason="the reviewer command is unavailable"
-        )
-    executable = str(original_command[0])
-    if not os.access(executable, os.X_OK):
-        return task_run_state.self_review_block(
-            "unavailable-skip", reason=f"reviewer executable is unavailable: {executable}"
-        )
-    try:
-        runtime_path = Path(str(payload["execution_runtime_root"]))
-        worktree = Path(str(payload["worktree_path"]))
-        review_root = runtime_path / "self-review"
-        review_root.mkdir(parents=True, exist_ok=True)
-        stdout_log, stderr_log = review_root / "codex.stdout.log", review_root / "codex.stderr.log"
-        output_path = review_root / "codex.last-message.txt"
-        command = task_run_runtime.build_codex_command(executable, effort="medium")
-        command[command.index("--sandbox") + 1] = "read-only"
-        command[-1:-1] = ["--json", "--output-last-message", str(output_path)]
-        env = worktree_exec_lib.prepare_exec_environment(worktree, os.environ.copy(), runtime_root=runtime_path)
-        env = task_run_support.scrubbed_lane_env(payload, env, "codex")
-        result = _execute_codex(
-            command, prompt=task_run_state.self_review_prompt(prompt, str(payload.get("base_sha", "")), changed_paths),
-            target_path=worktree, configured_env=env, stdout_log=stdout_log, stderr_log=stderr_log,
-            timeout_seconds=min(int(executor_info.get("timeout_seconds") or 300), 300), executor="codex",
-        )
-        return task_run_state.self_review_result(result, _tail_text(stdout_log, limit=1024 * 1024))
-    except (OSError, RuntimeError, ValueError) as exc:
-        return task_run_state.self_review_block(
-            "unavailable-skip", reason=f"reviewer could not run: {exc}"
-        )
 
 
 def _bounded_result_shape(payload: dict[str, Any]) -> str:

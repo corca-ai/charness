@@ -429,6 +429,12 @@ def classify_failure(
         detail = execution.get("exec_error") or "executor exit code is unknown"
         return {"kind": "executor-error", "retryable": False, "message": str(detail)[:300]}
     if isinstance(exit_code, int) and exit_code != 0:
+        diagnostics = execution.get("stream_diagnostics")
+        reason = diagnostics.get("terminal_reason") if isinstance(diagnostics, Mapping) else None
+        if isinstance(reason, str) and reason.strip():
+            # A muse lane that named its failure keeps that cause instead of
+            # the bare exit code (#886).
+            return {"kind": "executor-error", "retryable": False, "message": reason[:300]}
         return {
             "kind": "executor-error",
             "retryable": False,

@@ -22,6 +22,7 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.task_run import task_run_execution as _execution  # noqa: E402
+from scripts.task_run import task_run_muse_events as _muse_events  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402
 
 _env_seconds = _execution._env_seconds
@@ -76,6 +77,12 @@ def lane_progress(stdout_text: str, stderr_text: str = "") -> dict[str, Any]:
 
 def _transcript_lines(text: str):
     """Expose phase text inside JSONL executor events as transcript lines."""
+    agent_text = _muse_events.accumulated_agent_text(text)
+    if agent_text:
+        # Muse `--json` streams agent text as ordered delta chunks; one
+        # marker line may span several chunks, so phases read the
+        # accumulation, not any single chunk (#886).
+        yield from agent_text.splitlines()
     for line in text.splitlines():
         yield line
         try:

@@ -57,6 +57,7 @@ def test_muse_arguments_pin_high_effort_and_prompt_file(tmp_path: Path) -> None:
         prompt_file=prompt_file,
         worktree=worktree,
     ) == [
+        "--json",
         "--reasoning-effort",
         "high",
         "--disable-approval",
@@ -156,7 +157,7 @@ def test_task_run_muse_executor_uses_prompt_file_and_high_effort(
     workspaces = [args[index + 1] for index, arg in enumerate(args) if arg == "--workspace"]
     assert workspaces == [payload["worktree_path"]]
     assert "--trust-workspace" in args
-    assert args[:2] == ["exec", "--reasoning-effort"]
+    assert args[:3] == ["exec", "--json", "--reasoning-effort"]
     assert args[args.index("--reasoning-effort") + 1] == "high"
     assert "--disable-approval" in args
     assert "-m" not in args

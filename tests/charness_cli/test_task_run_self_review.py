@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -202,3 +204,23 @@ def test_auto_policy_runs_for_boundary_signals_and_stays_off_for_ordinary_lanes(
         "auto", "Update a local helper.", ["src/store.py"], ["src/store.py"],
         {"findings": [{"shape": "unscoped-delete"}], "blocking": True}
     )
+
+
+def test_self_review_module_imports_before_execution() -> None:
+    """Either import order binds the same runner; no circular-import trap (#886)."""
+    repo_root = Path(__file__).resolve().parents[2]
+    probe = (
+        "from scripts.task_run import task_run_self_review; "
+        "from scripts.task_run import task_run_execution; "
+        "assert task_run_execution.run_self_review "
+        "is task_run_self_review.run_self_review"
+    )
+    env = {key: value for key, value in os.environ.items() if key != "PYTHONPATH"}
+    result = subprocess.run(
+        [sys.executable, "-c", probe],
+        cwd=repo_root,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr

@@ -146,12 +146,17 @@ def build_muse_args(
     passing every writable dir rooted the lane at `<worktree>/.agents` and
     every write outside it was refused (#814). The lane worktree is created
     for the agent, so it is trusted: otherwise the repo's rules are skipped
-    and delegation stays unavailable.
+    and delegation stays unavailable. `--json` streams machine-readable
+    events on stdout: without it the lane stdout stays empty until the run
+    ends, so a timed-out lane receipted no phases and no retry cause (#886).
+    The terminal report is extracted from the `run_terminal` event, separate
+    from that JSONL transport.
     """
     if effort not in TASK_MUSE_EFFORTS:
         allowed = ", ".join(TASK_MUSE_EFFORTS)
         raise TaskRunError(f"--effort must be one of: {allowed} (muse executor)")
     return [
+        "--json",
         "--reasoning-effort",
         effort,
         "--disable-approval",
