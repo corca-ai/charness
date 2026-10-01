@@ -391,6 +391,21 @@ def test_muse_timeout_keeps_phases_partial_report_and_retries(tmp_path: Path, mo
     assert diagnostics["cause_status"] == "provided"
 
 
+def test_failed_task_reason_covers_missing_terminal() -> None:
+    """A failed-task reason names the cause when no terminal event exists."""
+    events = "\n".join(
+        json.dumps(event)
+        for event in (
+            _status("opening meta model stream attempt 1/10", "opening_stream"),
+            _failed_task("transport error: connection reset"),
+        )
+    )
+    diagnostics = muse_events.stream_diagnostics(events, "")
+    assert diagnostics["terminal"] is None
+    assert diagnostics["terminal_reason"] == "transport error: connection reset"
+    assert diagnostics["cause_status"] == "provided"
+
+
 def test_stream_diagnostics_ignores_success_outcome_kind() -> None:
     """A succeeded stream's outcome token is not a stream error."""
     succeeded = _status(
@@ -454,9 +469,35 @@ def test_hostile_transcript_degrades_to_unobserved_fields() -> None:
     hostile = "\n".join(
         [
             "{not json",
+            'prefix "task.lifecycle.status" suffix',
+            '{"task.lifecycle.status": broken json',
+            '["task.lifecycle.status"]',
             json.dumps(["a", "list", "envelope"]),
             json.dumps({"payload_type": 42, "payload": {}}),
             json.dumps({"payload_type": "run.output.delta", "payload": []}),
+            json.dumps(
+                {
+                    "payload_type": "something-else",
+                    "payload": {"note": 'saw "run.output.delta" once'},
+                }
+            ),
+            json.dumps(
+                {
+                    "payload_type": "something-else",
+                    "payload": {
+                        "event": {
+                            "kind": "status",
+                            "message": 'saw "task.lifecycle.status" once',
+                        }
+                    },
+                }
+            ),
+            json.dumps(
+                {
+                    "payload_type": "something-else",
+                    "payload": {"note": 'saw "task.lifecycle.failed" once'},
+                }
+            ),
             json.dumps(_delta("").get("payload", {})),
             json.dumps(_envelope("run.output.delta", {"kind": "run_output_delta", "text": 42})),
             json.dumps(_envelope("task.lifecycle.status", {"kind": "task_lifecycle"})),
