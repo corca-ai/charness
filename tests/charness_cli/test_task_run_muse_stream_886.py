@@ -475,29 +475,9 @@ def test_hostile_transcript_degrades_to_unobserved_fields() -> None:
             json.dumps(["a", "list", "envelope"]),
             json.dumps({"payload_type": 42, "payload": {}}),
             json.dumps({"payload_type": "run.output.delta", "payload": []}),
-            json.dumps(
-                {
-                    "payload_type": "something-else",
-                    "payload": {"note": 'saw "run.output.delta" once'},
-                }
-            ),
-            json.dumps(
-                {
-                    "payload_type": "something-else",
-                    "payload": {
-                        "event": {
-                            "kind": "status",
-                            "message": 'saw "task.lifecycle.status" once',
-                        }
-                    },
-                }
-            ),
-            json.dumps(
-                {
-                    "payload_type": "something-else",
-                    "payload": {"note": 'saw "task.lifecycle.failed" once'},
-                }
-            ),
+            '{"payload_type": "something-else", "payload": {}, "run.output.delta": 0}',
+            '{"payload_type": "something-else", "payload": {}, "task.lifecycle.status": 0}',
+            '{"payload_type": "something-else", "payload": {}, "task.lifecycle.failed": 0}',
             json.dumps(_delta("").get("payload", {})),
             json.dumps(_envelope("run.output.delta", {"kind": "run_output_delta", "text": 42})),
             json.dumps(_envelope("task.lifecycle.status", {"kind": "task_lifecycle"})),

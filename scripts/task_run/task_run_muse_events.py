@@ -64,8 +64,7 @@ def _iter_muse_events(text: str, only: tuple[str, ...] = ()):
             event = json.loads(stripped)
         except json.JSONDecodeError:
             continue
-        if not isinstance(event, Mapping):
-            continue
+        # A `{`-starting line that parses is a JSON object by construction.
         payload_type = event.get("payload_type")
         payload = event.get("payload")
         if isinstance(payload_type, str) and isinstance(payload, Mapping):
