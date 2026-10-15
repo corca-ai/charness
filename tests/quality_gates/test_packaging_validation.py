@@ -493,6 +493,41 @@ def test_plugin_import_smoke_allows_exported_script_sibling_imports(tmp_path: Pa
     validate_packaging_install_surface_module.smoke_exported_plugin_imports(plugin_root)
 
 
+def test_plugin_import_smoke_loads_package_relative_imports(tmp_path: Path) -> None:
+    plugin_root = tmp_path / "plugin"
+    task_run_dir = plugin_root / "scripts" / "task_run"
+    task_run_dir.mkdir(parents=True)
+    (plugin_root / "scripts" / "__init__.py").write_text("", encoding="utf-8")
+    (task_run_dir / "__init__.py").write_text("", encoding="utf-8")
+    (task_run_dir / "helper_lib.py").write_text("VALUE = 7\n", encoding="utf-8")
+    (task_run_dir / "uses_helper.py").write_text(
+        "from .helper_lib import VALUE\nassert VALUE == 7\n",
+        encoding="utf-8",
+    )
+
+    validate_packaging_install_surface_module.smoke_exported_plugin_imports(plugin_root)
+
+
+def test_plugin_import_smoke_rejects_missing_package_relative_dependency(
+    tmp_path: Path,
+) -> None:
+    plugin_root = tmp_path / "plugin"
+    task_run_dir = plugin_root / "scripts" / "task_run"
+    task_run_dir.mkdir(parents=True)
+    (plugin_root / "scripts" / "__init__.py").write_text("", encoding="utf-8")
+    (task_run_dir / "__init__.py").write_text("", encoding="utf-8")
+    (task_run_dir / "uses_missing.py").write_text(
+        "from .source_only import VALUE\nassert VALUE == 7\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match=r"uses_missing\.py: ModuleNotFoundError: No module named 'scripts\.task_run\.source_only'",
+    ):
+        validate_packaging_install_surface_module.smoke_exported_plugin_imports(plugin_root)
+
+
 @pytest.mark.release_only
 def test_validate_packaging_rejects_invalid_public_skill_policy_when_present(
     tmp_path: Path, seeded_charness_repo: Path

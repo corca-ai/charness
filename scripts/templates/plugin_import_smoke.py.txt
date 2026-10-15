@@ -1,8 +1,24 @@
-import importlib.util, pathlib, sys
+import importlib, importlib.util, pathlib, sys
 
 plugin_root = pathlib.Path(sys.argv[1])
 sys.path.insert(0, str(plugin_root))
 errors = []
+
+def package_module_name(rel):
+    package_parts = rel.parent.parts
+    if not package_parts or not all(part.isidentifier() for part in package_parts):
+        return None
+    current = plugin_root
+    for part in package_parts:
+        current /= part
+        if not (current / "__init__.py").is_file():
+            return None
+    if rel.name == "__init__.py":
+        return ".".join(package_parts)
+    if not rel.stem.isidentifier():
+        return None
+    return ".".join((*package_parts, rel.stem))
+
 for py_path in sorted(plugin_root.rglob("*.py")):
     if "__pycache__" in py_path.parts:
         continue
@@ -10,14 +26,18 @@ for py_path in sorted(plugin_root.rglob("*.py")):
     if parent not in sys.path:
         sys.path.insert(0, parent)
     rel = py_path.relative_to(plugin_root)
-    module_name = "smoke_" + str(rel).replace("/", "_").replace(".", "_").replace("-", "_")
     try:
-        spec = importlib.util.spec_from_file_location(module_name, py_path)
-        if spec is None or spec.loader is None:
-            continue
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[module_name] = module
-        spec.loader.exec_module(module)
+        module_name = package_module_name(rel)
+        if module_name:
+            importlib.import_module(module_name)
+        else:
+            module_name = "smoke_" + str(rel).replace("/", "_").replace(".", "_").replace("-", "_")
+            spec = importlib.util.spec_from_file_location(module_name, py_path)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[module_name] = module
+            spec.loader.exec_module(module)
     except SystemExit:
         continue
     except Exception as exc:

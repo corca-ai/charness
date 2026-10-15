@@ -238,16 +238,14 @@ _IMPORT_SMOKE_SCRIPT = (
 
 
 def smoke_exported_plugin_imports(plugin_root: Path) -> None:
-    """Exec every .py in the exported plugin tree as a module to detect
-    dev-tree-only imports that survive export but fail with
-    ModuleNotFoundError when the plugin actually runs (e.g.,
-    `from skills.public.X import Y`).
+    """Exec every exported Python module in its package or standalone context.
 
-    Modules are loaded via `importlib.util.spec_from_file_location`, which
-    runs top-level statements (imports, constants) but skips any
-    `if __name__ == '__main__':` block, so argparse.parse_args() and CLI
-    side effects do not fire. `SystemExit` is swallowed because a few
-    helpers call `sys.exit` during module body when imported standalone.
+    Regular packages use their dotted path so relative imports resolve as they
+    do in the export. Standalone or non-package paths use a synthetic module
+    name; both paths run top-level imports and constants without triggering
+    `if __name__ == '__main__':` CLI behavior. `SystemExit` is swallowed
+    because a few helpers call `sys.exit` during module body when imported
+    standalone.
     """
     result = run_process(
         [sys.executable, "-c", _IMPORT_SMOKE_SCRIPT, str(plugin_root)],
