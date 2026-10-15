@@ -738,7 +738,7 @@ def test_overlapping_parent_progress_is_a_writer_conflict(tmp_path: Path) -> Non
     assert payload["parent"]["progress"]["overlap_paths"] == ["module.py"]
 
 
-def test_glob_scope_blocks_overlapping_parent_progress(tmp_path: Path) -> None:
+def test_glob_scope_does_not_block_disjoint_parent_progress(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     executable = _codex(
         tmp_path,
@@ -747,9 +747,10 @@ def test_glob_scope_blocks_overlapping_parent_progress(tmp_path: Path) -> None:
 
     payload = _run(repo, tmp_path, executable, scopes=["*.py"])
 
-    assert payload["status"] == "validated-partial-result"
-    assert payload["parent"]["progress"]["classification"] == "writer-conflict"
-    assert payload["parent"]["progress"]["overlap_paths"] == ["module.py"]
+    assert payload["status"] == "completed", payload
+    assert payload["scope"]["changed_paths"] == ["child.py"]
+    assert payload["parent"]["progress"]["classification"] == "concurrent-parent-progress"
+    assert payload["parent"]["progress"]["overlap_paths"] == []
 
 
 def test_parent_ignored_residue_is_not_writer_progress(tmp_path: Path) -> None:

@@ -146,6 +146,7 @@ def _parent_progress(
     parent_before: Mapping[str, Sequence[str]],
     parent_before_head: str,
     specs: Sequence[Mapping[str, Any]],
+    candidate_paths: Sequence[str] | None = None,
     glob_matches: Callable[[Path, str], tuple[list[str], list[str]]] | None = None,
     report_only: bool = False,
 ) -> tuple[dict[str, Any], dict[str, list[str]]]:
@@ -187,14 +188,19 @@ def _parent_progress(
         "paths": sorted(ignored_after),
     }
     changed = sorted(set(committed) | set(dirty_paths))
-    refreshed = _refresh_scope_specs(parent_root, specs, glob_matches=glob_matches)
-    overlap = _paths_in_scopes(changed, refreshed)
     if report_only:
+        refreshed = _refresh_scope_specs(parent_root, specs, glob_matches=glob_matches)
+        overlap = _paths_in_scopes(changed, refreshed)
         # A report-only lane carries no write candidate, so scoped parent
         # movement cannot collide with it (#827). Overlap stays recorded in
         # `overlap_paths` with the before/after HEADs, but never blocks.
         classification = "normal" if not changed else "concurrent-parent-progress"
     else:
+        if candidate_paths is None or any(not isinstance(path, str) for path in candidate_paths):
+            raise TaskRunError(
+                "candidate path evidence is unavailable for parent progress classification"
+            )
+        overlap = sorted(set(changed) & set(candidate_paths))
         classification = (
             "normal"
             if not changed
@@ -246,11 +252,19 @@ def _completion_evidence(
         target_head or observed_head,
         observed_branch,
     )
+    observed_candidate_paths = scope.get("changed_paths")
+    candidate_paths = (
+        observed_candidate_paths
+        if isinstance(observed_candidate_paths, Sequence)
+        and not isinstance(observed_candidate_paths, (str, bytes))
+        else None
+    )
     parent_progress, parent_after = _parent_progress(
         parent_root=parent_root,
         parent_before=parent_before,
         parent_before_head=parent_before_head,
         specs=scope_specs,
+        candidate_paths=candidate_paths,
         glob_matches=glob_matches,
         report_only=report_only,
     )

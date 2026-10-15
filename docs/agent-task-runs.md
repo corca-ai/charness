@@ -111,8 +111,9 @@ approval. Anything else (dirty tree, missing proof, persistence or observation
 failure) keeps `keep_worktree` true. That flag is a newest-N hold, not a pin:
 the sweep keeps the newest 10 kept worktrees per key with their `runtime/` dirs
 and removes older ones only after verified salvage; `result.json` and logs
-always stay. Parent path-delta classes are `normal`,
-`concurrent-parent-progress`, and `writer-conflict`.
+always stay. Writes block only when committed or dirty parent paths intersect actual
+candidate paths; missing candidate evidence refuses completion. Declared
+scope is advisory.
 
 ## Detach and wait
 
