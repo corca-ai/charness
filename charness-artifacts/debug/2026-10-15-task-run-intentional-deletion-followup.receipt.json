@@ -1,0 +1,29 @@
+{
+  "command": "PYTHONDONTWRITEBYTECODE=1 python3 - <<'PY' in-process harness replaces only task_run_completion_proof._reclassify_persisted_candidate with a no-op and runs tests/charness_cli/test_task_run_completion_deletions.py::test_persisted_mixed_merge_deletion_is_reclassified_before_proof[False-ineligible] via pytest.main; expected pytest code 1, wrapper code 0.",
+  "disposition": "reproduced",
+  "executed": true,
+  "expected": "After persistence, final changed paths must be scope- and verifier-classified before proof and approval.",
+  "final_consumer": "complete_task candidate scope/acceptance classification, changed-line proof admission, and approval_eligibility",
+  "final_consumer_observed": true,
+  "finding": "R1",
+  "fixture": "tests/charness_cli/test_task_run_completion_deletions.py::test_persisted_mixed_merge_deletion_is_reclassified_before_proof[False-ineligible]; repaired coverage control: ::test_persisted_in_scope_deletion_without_verifier_mapping_blocks_proof",
+  "observed": "Current-owner omission leaves pkg/item.py with disallowed_paths empty. Restored completion blocks the out-of-scope candidate and the in-scope candidate whose deleted path has no mapped verifier; the focused suite passes 230 tests.",
+  "omission_expected_returncode": 1,
+  "omission_output_sha256": "c5d8608a65a264481814511acc56dbff82d56849fb543a8cf753531d40246b45",
+  "repaired_command": "PYTHONDONTWRITEBYTECODE=1 python3 -m pytest -p no:cacheprovider -q --basetemp /tmp/charness-r1-final-pytest tests/charness_cli/test_task_run_completion.py tests/charness_cli/test_task_run_completion_deletions.py tests/charness_cli/test_task_run_scope.py tests/charness_cli/test_task_run_scope_deletions.py tests/charness_cli/test_task_run_exit_codes.py tests/charness_cli/test_task_run_premise_gates.py tests/charness_cli/test_task_run_report_only.py tests/charness_cli/test_task_run_scope_mismatch_834.py tests/charness_cli/test_task_run_launch_hygiene.py tests/coverage_debt/test_batch10.py tests/test_common_runner_failure_coverage.py",
+  "repaired_output_retained": false,
+  "repaired_returncode": 0,
+  "repaired_tests_passed": 230,
+  "returncode": 1,
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "source": "tests/charness_cli/test_task_run_completion_deletions.py",
+  "source_sha256": {
+    "scripts/task_run/task_run_completion.py": "5a3d2c6a7eeec54fe67317aeed1a6a1047ddce5c3673d60c8df2972eeeefd22d",
+    "scripts/task_run/task_run_completion_proof.py": "b75b261889431b8a26a329430a205fb52bef7c8a094c0329eceff64d299eeb85",
+    "scripts/task_run/task_run_prelaunch.py": "3563729ea038c40b0695824f8fa15aa1e58772af5efd11b56c5f86fb275df364",
+    "tests/charness_cli/task_run_completion_support.py": "db93831e6b4367cc1e85b0d62a890a3e82a979b1d382692958003dabe78a8398",
+    "tests/charness_cli/test_task_run_completion_deletions.py": "d67a5d49d85fa951fb0a01f4749e0b9c874ce73a7e4156e0ea4602f0d714bb24"
+  },
+  "stimulus": "Build target adds pkg/item.py; lane merges then deletes it; dirty allowed module.py persists; disable only final reclassification and observe completion.",
+  "wrapper_returncode": 0
+}

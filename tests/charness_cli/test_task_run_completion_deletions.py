@@ -210,6 +210,56 @@ def test_persisted_mixed_merge_deletion_is_reclassified_before_proof(
     capsys.readouterr()
 
 
+def test_persisted_in_scope_deletion_without_verifier_mapping_blocks_proof(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    suite = "tests/test_completion_scope.py"
+    surfaces = json.dumps(
+        {
+            "version": 1,
+            "surfaces": [
+                {
+                    "surface_id": "completion-fixture",
+                    "description": "Fixture verifier mapping for task completion tests.",
+                    "source_paths": ["module.py"],
+                    "derived_paths": [],
+                    "sync_commands": [],
+                    "verify_commands": [f"python3 -m pytest -q {suite}"],
+                    "notes": [],
+                }
+            ],
+        }
+    )
+    gate_calls: list[str] = []
+
+    def gate(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        gate_calls.append("gate")
+        return {"status": "clean", "blocking": False, "summary": "gate clean"}
+
+    payload = _complete(
+        tmp_path,
+        candidate_kind="mixed-merge-delete",
+        scope_specs_override=[
+            {"path": "module.py", "kind": "exact"},
+            {"path": "pkg", "kind": "directory"},
+        ],
+        extra_files={".agents/surfaces.json": surfaces},
+        changed_line_gate=gate,
+    )
+
+    assert payload["candidate"]["changed_paths"] == ["module.py", "pkg/item.py"]
+    assert payload["candidate"]["disallowed_paths"] == []
+    assert payload["scope"]["verdict"] == "pass"
+    assert payload["status"] == "validated-partial-result"
+    assert payload["approval_eligibility"] == "ineligible"
+    assert any(
+        "changed candidate paths have no mapped verifier for: pkg/item.py" in item
+        for item in payload["blockers"]
+    )
+    assert gate_calls == []
+    capsys.readouterr()
+
+
 def test_completion_blocks_a_mapped_suite_dropped_from_the_candidate(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

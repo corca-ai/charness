@@ -5,24 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
-
-def _load_repo_runtime_bootstrap():
-    pathlib, sys = __import__("pathlib"), __import__("sys")
-    marker = ("scripts", "adapter_lib.py")
-    parents = pathlib.Path(__file__).resolve().parents
-    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is not None and str(root) not in sys.path:
-        sys.path.insert(0, str(root))
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.task_run import task_run_changed_line as _changed_line  # noqa: E402
-from scripts.task_run import task_run_lane_runner as _lane_runner  # noqa: E402
-from scripts.task_run import task_run_prelaunch as _prelaunch  # noqa: E402
-from scripts.task_run import task_run_scope as _scope  # noqa: E402
-from scripts.task_run.task_run_carrier import _candidate_carrier  # noqa: E402
-from scripts.task_run.task_run_contract import TaskRunError  # noqa: E402
+from scripts.task_run import task_run_changed_line as _changed_line
+from scripts.task_run import task_run_lane_runner as _lane_runner
+from scripts.task_run import task_run_prelaunch as _prelaunch
+from scripts.task_run import task_run_scope as _scope
+from scripts.task_run.task_run_carrier import _candidate_carrier
+from scripts.task_run.task_run_contract import TaskRunError
 
 
 def _prove_ready_candidate(
