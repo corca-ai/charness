@@ -21,7 +21,7 @@ import pytest
 
 import scripts.support_sync_lib as support_sync
 from scripts.run_quality_engine import run as run_quality_engine
-from scripts.task_run import task_run_completion, task_run_completion_next_step, task_run_execution
+from scripts.task_run import task_run_completion, task_run_completion_next_step, task_run_completion_proof, task_run_execution
 from tests.script_main import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -404,7 +404,7 @@ def test_task_completion_persists_delivery_failure_and_reviewer_carrier(
         lambda _delivery: {"state": "partial"},
     )
     monkeypatch.setattr(
-        task_run_completion,
+        task_run_completion_proof,
         "_prove_ready_candidate",
         lambda _payload, _candidate, **kwargs: (
             {"status": "skipped", "reason": "blocked"},
