@@ -1,1 +1,1 @@
-2026-09-12-issue-813-temp-output-ownership.md
+2026-10-15-task-run-intentional-deletion.md

@@ -9,7 +9,7 @@ import yaml
 
 from scripts.task_run import task_run, task_run_events, task_run_payload, task_run_state
 from tests.charness_cli.support import CLI, load_cli_module
-from tests.charness_cli.test_task_run_completion import _complete
+from tests.charness_cli.task_run_completion_support import _complete
 from tests.script_main import run_loaded_script_main
 
 

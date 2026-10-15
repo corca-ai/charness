@@ -77,36 +77,15 @@ def _resolve_prelaunch_contract(value: Mapping[str, Any] | None) -> dict[str, An
 def _scope_file_deficits(
     plan: Mapping[str, Any],
     target: Path,
-    scope_specs: Sequence[Mapping[str, Any]],
-    changed_paths: Sequence[Any],
 ) -> list[str]:
-    from scripts.task_run import task_run_scope as scope
-
     preflight = plan.get("scope_preflight")
     required = preflight.get("required_scope_paths", []) if isinstance(preflight, Mapping) else []
     required = required if isinstance(required, list) else []
     missing = {
         path
         for path in required
-        if isinstance(path, str) and not (target / path).exists()
+        if isinstance(path, str) and not (target / path).is_file()
     }
-    missing.update(
-        path
-        for path in changed_paths
-        if isinstance(path, str)
-        and any(scope._scope_matches(path, spec) for spec in scope_specs)
-        and not (target / path).exists()
-    )
-    for spec in scope_specs:
-        path = str(spec.get("path", ""))
-        if spec.get("kind") == "glob" and not spec.get("matches"):
-            if not any(
-                isinstance(changed, str) and scope._scope_matches(changed, spec)
-                for changed in changed_paths
-            ):
-                missing.add(path)
-        elif spec.get("kind") == "directory" and not (target / path).is_dir():
-            missing.add(path)
     if missing:
         message = "in-scope file deficit: required scope files are absent from the candidate: "
         return [message + ", ".join(sorted(missing))]
@@ -184,7 +163,6 @@ def _mapped_suite_deficits(verifiers: Mapping[str, Any], target: Path) -> list[s
 def acceptance_deficit_blockers(
     payload: Mapping[str, Any],
     resolved_target: Path,
-    scope_specs: Sequence[Mapping[str, Any]],
     candidate: Mapping[str, Any],
 ) -> list[str]:
     plan = payload.get("prelaunch_plan")
@@ -192,7 +170,7 @@ def acceptance_deficit_blockers(
         return ["acceptance deficit: launch preflight and verifier plan are missing"]
     changed = candidate.get("changed_paths")
     changed = changed if isinstance(changed, list) else []
-    blockers = _scope_file_deficits(plan, resolved_target, scope_specs, changed)
+    blockers = _scope_file_deficits(plan, resolved_target)
     verifiers = plan.get("scope_verifiers")
     if not isinstance(verifiers, Mapping):
         return [*blockers, "coverage mapping deficit: no scope-to-verifier plan was recorded"]

@@ -42,6 +42,18 @@ def _commit(repo: Path, message: str, *paths: str) -> str:
     return _git(repo, "rev-parse", "HEAD").stdout.strip()
 
 
+def _merge(repo: Path, *args: str) -> None:
+    _git(
+        repo,
+        "-c",
+        "user.email=test@example.com",
+        "-c",
+        "user.name=test",
+        "merge",
+        *args,
+    )
+
+
 def _codex(tmp_path: Path, body: str, *, deliver: bool = True) -> Path:
     executable = tmp_path / "codex"
     delivery = "printf 'task complete\\n'" if deliver else ""

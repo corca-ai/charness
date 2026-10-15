@@ -1,0 +1,26 @@
+{
+  "schema": "charness.adversarial-evidence.receipt.v1",
+  "finding": "R1",
+  "source": "tests/charness_cli/test_task_run_completion_deletions.py",
+  "expected": "Final persisted paths outside scope deny proof and eligibility; in-scope deletion remains eligible",
+  "stimulus": "Real Git target adds pkg/item.py, lane merges then deletes it, dirty allowed module.py is persisted; omit then restore final reclassification in the completion proof owner",
+  "disposition": "reproduced",
+  "observed": "Omission control fails because disallowed_paths is empty instead of pkg/item.py; restored implementation passes both eligibility cases and all 210 affected tests",
+  "command": "In-process pytest on the False-ineligible deletion node with task_run_completion_proof._reclassify_persisted_candidate omitted; then canonical run_standing_pytest.py with the ten affected test modules",
+  "fixture": "tests/charness_cli/test_task_run_completion_deletions.py::test_persisted_mixed_merge_deletion_is_reclassified_before_proof",
+  "final_consumer": "complete_task candidate.disallowed_paths, changed_line proof admission and approval_eligibility",
+  "executed": true,
+  "final_consumer_observed": true,
+  "returncode": 1,
+  "omission_expected_returncode": 1,
+  "repaired_returncode": 0,
+  "repaired_tests_passed": 210,
+  "omission_output_sha256": "fbe10708677c0ec22ef6a3723451b1e7652e6a338012c01e4b011de266fad464",
+  "repaired_output_sha256": "0a817139563cc3f64d87dabb3ef12b9bf9ea676ec51af1b6902ec2e7b445bd39",
+  "source_sha256": {
+    "scripts/task_run/task_run_completion.py": "5a3d2c6a7eeec54fe67317aeed1a6a1047ddce5c3673d60c8df2972eeeefd22d",
+    "scripts/task_run/task_run_completion_proof.py": "c962cb566f58f7eac0bd9539aa367e5dc072c40b4554cdc3ef5fb4dab47654ba",
+    "scripts/task_run/task_run_prelaunch.py": "3563729ea038c40b0695824f8fa15aa1e58772af5efd11b56c5f86fb275df364",
+    "tests/charness_cli/test_task_run_completion_deletions.py": "bc39d48d37a2f8adf7f99bf10f26c43267e2027739f24fdf0bd9195226de5788"
+  }
+}

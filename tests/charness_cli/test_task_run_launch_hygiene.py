@@ -316,7 +316,7 @@ def test_lane_launcher_forwards_explicit_base_to_task_run(
 
 def test_acceptance_flags_missing_verifier_plan(tmp_path: Path) -> None:
     blockers = task_run_prelaunch.acceptance_deficit_blockers(
-        {"prelaunch_plan": {}}, tmp_path, [], {"changed_paths": []}
+        {"prelaunch_plan": {}}, tmp_path, {"changed_paths": []}
     )
 
     assert blockers == [
@@ -324,20 +324,18 @@ def test_acceptance_flags_missing_verifier_plan(tmp_path: Path) -> None:
     ]
 
 
-def test_acceptance_flags_missing_directory_scope(tmp_path: Path) -> None:
+def test_acceptance_does_not_require_a_directory_scope_to_remain_present(tmp_path: Path) -> None:
     payload = {
         "prelaunch_plan": {
             "scope_preflight": {},
-            "scope_verifiers": {"bundle_status": "ok"},
+            "scope_verifiers": {"status": "not-configured"},
         },
     }
     blockers = task_run_prelaunch.acceptance_deficit_blockers(
-        payload, tmp_path, [{"path": "adir", "kind": "directory"}], {"changed_paths": []}
+        payload, tmp_path, {"changed_paths": []}
     )
 
-    assert any(
-        "in-scope file deficit" in item and "adir" in item for item in blockers
-    )
+    assert blockers == []
 
 
 def test_verifier_command_targets_rejects_unparseable_commands(tmp_path: Path) -> None:
@@ -501,7 +499,7 @@ def test_coverage_mapping_flags_broken_manifest(
 
     monkeypatch.setattr(real, "load_surfaces", _raise)
     blockers = task_run_prelaunch.acceptance_deficit_blockers(
-        _deficit_payload(), tmp_path, [], {"changed_paths": ["a.py"]}
+        _deficit_payload(), tmp_path, {"changed_paths": ["a.py"]}
     )
 
     assert any("selected surfaces manifest is missing" in item for item in blockers)
@@ -518,7 +516,7 @@ def test_coverage_mapping_tolerates_match_failure(
     monkeypatch.setattr(real, "load_surfaces", lambda _t, **_k: {"manifest": True})
     monkeypatch.setattr(real, "match_surfaces", _raise)
     blockers = task_run_prelaunch.acceptance_deficit_blockers(
-        _deficit_payload(), tmp_path, [], {"changed_paths": ["a.py"]}
+        _deficit_payload(), tmp_path, {"changed_paths": ["a.py"]}
     )
 
     assert any("could not be mapped" in item for item in blockers)
@@ -535,7 +533,7 @@ def test_coverage_mapping_flags_unmatched_paths(
     )
     monkeypatch.setattr(real, "bundle_status", lambda _a: ("ok", []))
     blockers = task_run_prelaunch.acceptance_deficit_blockers(
-        _deficit_payload(), tmp_path, [], {"changed_paths": ["a.py"]}
+        _deficit_payload(), tmp_path, {"changed_paths": ["a.py"]}
     )
 
     assert any("no mapped verifier for: x.py" in item for item in blockers)

@@ -249,8 +249,6 @@ def test_scope_and_coverage_mapping_deficits_name_missing_evidence(tmp_path: Pat
     scope = task_run_prelaunch._scope_file_deficits(
         {"scope_preflight": {"required_scope_paths": ["missing.py"]}},
         tmp_path,
-        [],
-        ["missing.py"],
     )
     mapping = task_run_prelaunch._coverage_mapping_deficits(
         {

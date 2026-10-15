@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -10,152 +9,15 @@ from typing import Any
 import pytest
 
 from scripts.task_run import (
-    task_run_carrier,
     task_run_completion,
+    task_run_completion_proof,
     task_run_git,
     task_run_lane_runner,
     task_run_progress,
     task_run_retention,
 )
+from tests.charness_cli.task_run_completion_support import _complete
 from tests.quality_gates.repo_shapes import install_committed_repo
-
-
-def _complete(
-    tmp_path: Path,
-    *,
-    candidate_kind: str = "clean",
-    result_state: str | None = None,
-    scope_verdict: str = "pass",
-    changed_line_gate: Any = None,
-    execution_state: str = "completed",
-    parent_blocking: bool = False,
-    git: Any = None,
-    persist_events: list[str] | None = None,
-    carrier_override: dict[str, Any] | None = None,
-    scope_specs_override: list[dict[str, Any]] | None = None,
-    prelaunch_plan_override: dict[str, Any] | None = None,
-    extra_files: dict[str, str] | None = None,
-    delete_path: str | None = None,
-) -> dict[str, Any]:
-    mapped_suite = "tests/test_completion_scope.py"
-    surface_manifest = json.dumps(
-        {
-            "version": 1,
-            "surfaces": [
-                {
-                    "surface_id": "completion-fixture",
-                    "description": "Fixture verifier mapping for task completion tests.",
-                    "source_paths": ["module.py"],
-                    "derived_paths": [],
-                    "sync_commands": [],
-                    "verify_commands": [f"python3 -m pytest -q {mapped_suite}"],
-                    "notes": [],
-                }
-            ],
-        }
-    )
-    files = {
-        "module.py": "VALUE = 1\n",
-        ".agents/surfaces.json": surface_manifest,
-        mapped_suite: "def test_completion_scope():\n    assert True\n",
-        **(extra_files or {}),
-    }
-    target = install_committed_repo(
-        tmp_path / "worktree",
-        files,
-    )
-    base_sha = task_run_git._git_output(target, "rev-parse", "HEAD").strip()
-    if candidate_kind == "clean":
-        (target / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
-        task_run_git._commit_lane_snapshot(target, message="test candidate")
-    elif candidate_kind == "dirty":
-        (target / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
-    elif candidate_kind == "delete":
-        if not delete_path:
-            raise AssertionError("delete candidates need a path")
-        (target / delete_path).unlink()
-        task_run_git._commit_lane_snapshot(target, message="delete mapped file")
-    elif candidate_kind != "absent":
-        raise AssertionError(f"unknown candidate fixture: {candidate_kind}")
-    branch = task_run_git._git_output(target, "symbolic-ref", "--quiet", "--short", "HEAD").strip()
-    carrier = task_run_carrier._candidate_carrier(target, base_sha, branch=branch)
-    if carrier_override is not None:
-        carrier = {**carrier, **carrier_override}
-    useful = candidate_kind != "absent"
-    candidate = {
-        "status": "validated" if useful else "absent",
-        "useful": useful,
-        **carrier,
-        # Production candidates always carry the verdict's denied set (possibly
-        # empty); the fixture states it explicitly so the persist path classifies
-        # exactly what production classifies.
-        "disallowed_paths": [],
-    }
-    if result_state is None:
-        result_state = "validated-partial-result" if parent_blocking else "completed"
-    prelaunch_plan = prelaunch_plan_override if prelaunch_plan_override is not None else {
-        "scope_preflight": {"required_scope_paths": []},
-        "scope_verifiers": {
-            "status": "configured",
-            "bundle_status": "repo-owned-bundle",
-            "scope_paths": ["module.py"],
-            "unmatched_paths": [],
-            "mapped_suites": [mapped_suite],
-        },
-    }
-    evidence = {"populations": {}}
-    scope = {"verdict": scope_verdict, "reason": "scope drifted"}
-    parent_progress = {
-        "blocking": parent_blocking,
-        "classification": "writer-conflict" if parent_blocking else "no-parent-progress",
-    }
-
-    def default_git(cwd: Path, *args: str) -> Any:
-        if args[:2] == ("worktree", "remove"):
-            return SimpleNamespace(returncode=1, stdout="", stderr="not removing the unit fixture")
-        if persist_events is not None and "commit" in args:
-            persist_events.append("persist-commit")
-        return task_run_git._git(cwd, *args)
-
-    return task_run_completion.complete_task(
-        {
-            "task_id": "lane-1",
-            "target_branch": branch,
-            "base_sha": base_sha,
-            "prelaunch_plan": prelaunch_plan,
-        },
-        runtime_path=tmp_path / "runtime",
-        resolved_target=target,
-        resolved_repo=target,
-        before_exec={},
-        base_sha=base_sha,
-        scope_specs=scope_specs_override or [],
-        require_change=False,
-        parent_before={},
-        parent_before_head=base_sha,
-        stdout_log=tmp_path / "stdout.log",
-        execution={},
-        started_at=0.0,
-        persist=lambda _payload, _path: None,
-        result_delivery=lambda _log: {"status": "delivered"},
-        completion_evidence=lambda **_kwargs: (
-            {**evidence, "scope": scope},
-            {
-                "verdict": scope_verdict,
-                "reason": "scope drifted",
-                "changed_paths": carrier["changed_paths"],
-                "candidate_carrier": carrier,
-            },
-            parent_progress,
-        ),
-        execution_state=lambda _execution, _delivery: execution_state,
-        candidate_result_state=lambda **_kwargs: (candidate, result_state),
-        candidate_commit=None,
-        git=git or default_git,
-        git_output=task_run_git._git_output,
-        pass_value="pass",
-        changed_line_gate=changed_line_gate,
-    )
 
 
 def test_dirty_useful_work_is_persisted_before_the_gate_sees_a_clean_candidate(
@@ -283,56 +145,6 @@ def test_a_persistence_failure_skips_proof_and_keeps_dirty_worktree(
     capsys.readouterr()
 
 
-def test_snapshot_acknowledgement_does_not_hide_new_dirty_work(tmp_path: Path) -> None:
-    def git(cwd: Path, *args: str) -> Any:
-        result = task_run_git._git(cwd, *args)
-        if "commit" in args and result.returncode == 0:
-            (cwd / "late.py").write_text("LATE = 1\n", encoding="utf-8")
-        return result
-
-    def gate(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
-        raise AssertionError("incomplete preserved work must not invoke proof")
-
-    payload = _complete(tmp_path, candidate_kind="dirty", changed_line_gate=gate, git=git)
-
-    assert payload["candidate"]["persist"]["status"] == "committed"
-    assert payload["approval_eligibility"] == "ineligible"
-    assert payload["changed_line_gate"]["status"] == "skipped"
-    assert "incomplete after persistence" in payload["changed_line_gate"]["reason"]
-    assert payload["keep_worktree"] is True
-    assert (tmp_path / "worktree" / "late.py").read_text() == "LATE = 1\n"
-
-
-def test_carrier_refresh_failure_after_persistence_fails_closed(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    def boom(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
-        raise task_run_completion.TaskRunError("carrier refresh failed")
-
-    original = task_run_completion._candidate_carrier
-    task_run_completion._candidate_carrier = boom
-    try:
-        calls: list[str] = []
-
-        def gate(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
-            calls.append("gate")
-            return {"status": "clean", "blocking": False}
-
-        payload = _complete(tmp_path, candidate_kind="dirty", changed_line_gate=gate)
-    finally:
-        task_run_completion._candidate_carrier = original
-
-    assert calls == []
-    assert payload["candidate"]["persist"]["status"] == "committed"
-    assert payload["candidate"]["carrier_observation"]["status"] == "unreadable"
-    assert payload["candidate"]["carrier_kind"] == "unknown"
-    assert payload["candidate"]["head_is_complete"] is False
-    assert payload["keep_worktree"] is True
-    assert payload["approval_eligibility"] == "ineligible"
-    assert "carrier could not be observed after persistence" in payload["changed_line_gate"]["reason"]
-    capsys.readouterr()
-
-
 def test_no_change_skips_an_injected_gate_and_remains_compatible(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -424,77 +236,6 @@ def test_completion_blocks_a_scope_without_verifier_coverage(
     capsys.readouterr()
 
 
-def test_completion_blocks_a_missing_exact_scope_file(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    payload = _complete(
-        tmp_path,
-        candidate_kind="delete",
-        delete_path="module.py",
-        scope_specs_override=[{"path": "module.py", "kind": "exact"}],
-        changed_line_gate=lambda *_args, **_kwargs: {
-            "status": "clean",
-            "blocking": False,
-            "summary": "gate clean",
-        },
-    )
-
-    assert payload["status"] == "validated-partial-result"
-    assert payload["approval_eligibility"] == "ineligible"
-    assert payload["blocker"].startswith("in-scope file deficit:")
-    assert "module.py" in payload["blocker"]
-    capsys.readouterr()
-
-
-def test_completion_blocks_a_mapped_suite_dropped_from_the_candidate(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    suite = "tests/test_mapped.py"
-    surfaces = json.dumps(
-        {
-            "version": 1,
-            "surfaces": [
-                {
-                    "surface_id": "repo-python",
-                    "description": "Repo Python tests.",
-                    "source_paths": ["module.py", "tests/**"],
-                    "derived_paths": [],
-                    "sync_commands": [],
-                    "verify_commands": [f"python3 -m pytest -q {suite}"],
-                    "notes": [],
-                }
-            ],
-        }
-    )
-    payload = _complete(
-        tmp_path,
-        candidate_kind="delete",
-        delete_path=suite,
-        extra_files={suite: "def test_mapped():\n    assert True\n", ".agents/surfaces.json": surfaces},
-        prelaunch_plan_override={
-            "scope_preflight": {"required_scope_paths": []},
-            "scope_verifiers": {
-                "status": "configured",
-                "bundle_status": "repo-owned-bundle",
-                "scope_paths": ["module.py"],
-                "unmatched_paths": [],
-                "mapped_suites": [suite],
-            },
-        },
-        changed_line_gate=lambda *_args, **_kwargs: {
-            "status": "clean",
-            "blocking": False,
-            "summary": "gate clean",
-        },
-    )
-
-    assert payload["status"] == "validated-partial-result"
-    assert payload["approval_eligibility"] == "ineligible"
-    assert payload["blocker"].startswith("mapped suite deficit:")
-    assert suite in payload["blocker"]
-    capsys.readouterr()
-
-
 def test_the_gate_is_skipped_when_there_is_no_validated_candidate(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -532,37 +273,13 @@ def test_gate_created_dirty_work_is_not_committed_and_survives_retention(
     capsys.readouterr()
 
 
-def test_gate_changed_head_is_ineligible_but_fresh_clean_content_can_be_released(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    def gate(worktree: Path, *, base_sha: str, log_dir: Path) -> dict[str, Any]:
-        (worktree / "module.py").write_text("VALUE = 3\n", encoding="utf-8")
-        task_run_git._commit_lane_snapshot(worktree, message="gate mutation")
-        return {"status": "clean", "blocking": False, "summary": "gate clean"}
-
-    def allow_release(cwd: Path, *args: str) -> Any:
-        if args[:2] == ("worktree", "remove"):
-            return SimpleNamespace(returncode=0, stdout="", stderr="")
-        return task_run_git._git(cwd, *args)
-
-    payload = _complete(tmp_path, changed_line_gate=gate, git=allow_release)
-
-    assert payload["status"] == "validated-partial-result"
-    assert payload["approval_eligibility"] == "ineligible"
-    assert payload["candidate"]["carrier_kind"] == "commit-only"
-    assert payload["candidate"]["head_is_complete"] is True
-    assert payload["retention"]["worktree"] == "removed"
-    assert payload["keep_worktree"] is False
-    capsys.readouterr()
-
-
 def test_post_gate_carrier_read_failure_denies_approval_and_retains_worktree(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     def boom(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
         raise task_run_completion.TaskRunError("post-gate carrier unreadable")
 
-    monkeypatch.setattr(task_run_completion, "_candidate_carrier", boom)
+    monkeypatch.setattr(task_run_completion_proof, "_candidate_carrier", boom)
 
     def gate(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
         return {"status": "clean", "blocking": False, "summary": "gate clean"}
@@ -692,7 +409,7 @@ def test_prove_ready_candidate_persists_only_allowed_paths(tmp_path: Path) -> No
         "disallowed_paths": ["probe.py"],
     }
 
-    reason = task_run_completion._persist_useful_dirty_candidate(
+    reason = task_run_completion_proof._persist_useful_dirty_candidate(
         {},
         candidate,
         resolved_target=worktree,
@@ -718,7 +435,7 @@ def test_prove_ready_candidate_skips_persist_without_a_classification(
     base_sha = task_run_git._git_output(worktree, "rev-parse", "HEAD").strip()
     candidate: dict[str, Any] = {"useful": True}
 
-    reason = task_run_completion._persist_useful_dirty_candidate(
+    reason = task_run_completion_proof._persist_useful_dirty_candidate(
         {},
         candidate,
         resolved_target=worktree,
@@ -734,7 +451,7 @@ def test_prove_ready_candidate_skips_persist_without_a_classification(
 
 
 def _prove_ready(worktree: Path, base_sha: str, candidate: dict[str, Any]) -> Any:
-    return task_run_completion._persist_useful_dirty_candidate(
+    return task_run_completion_proof._persist_useful_dirty_candidate(
         {},
         candidate,
         resolved_target=worktree,
@@ -793,7 +510,7 @@ def test_prove_ready_candidate_skips_persist_when_all_changes_are_disallowed(
         "disallowed_paths": ["probe.py"],
     }
 
-    reason = task_run_completion._persist_useful_dirty_candidate(
+    reason = task_run_completion_proof._persist_useful_dirty_candidate(
         {},
         candidate,
         resolved_target=worktree,
