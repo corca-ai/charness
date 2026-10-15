@@ -950,7 +950,7 @@
       ],
       "rationale": "persist_incomplete_candidate records `status: skipped` with a `reason` when the scope verdict admitted zero paths, instead of an empty persistence commit. It is a typed, persisted field beside the candidate in the lane's terminal `result.json`, so a skipped persistence cannot read as a persisted candidate."
     },
-    "scripts/task_run/task_run_completion.py": {
+    "scripts/task_run/task_run_completion_proof.py": {
       "states": [
         "skipped"
       ],
@@ -962,7 +962,7 @@
         "reason",
         "changed_line_gate"
       ],
-      "rationale": "_changed_line_verdict records `changed_line_gate.status: skipped` with a `reason` when a lane ended without a validated candidate, so there is nothing for the changed-line gate to judge. It is a typed, persisted field in the lane's terminal `result.json` beside `not-run` (no gate supplied) and `not-applicable` (a tree without the gate script); none of the three is `clean`, `blocking` is false only because no candidate exists, and the parent reads the status at the receipt (docs/agent-task-runs.md)."
+      "rationale": "Completion proof records `changed_line_gate.status: skipped` with a `reason` when blockers or a non-useful candidate prevent the changed-line gate from running. It is a typed, persisted field in the lane's terminal `result.json` beside `not-run` (no gate supplied) and `not-applicable` (a tree without the gate script); none of the three is `clean`, and the parent reads the status at the receipt (docs/agent-task-runs.md)."
     },
     "scripts/gates_support/runtime_root_retention.py": {
       "states": [

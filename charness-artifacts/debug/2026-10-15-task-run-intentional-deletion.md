@@ -76,13 +76,13 @@ Keep deletion truth in the canonical Git carrier. Reuse its scope classification
 
 ## Evidence Disposition
 
-- Report Identity: fixture:R1#sha256:bc39d48d37a2f8adf7f99bf10f26c43267e2027739f24fdf0bd9195226de5788
+- Report Identity: debug-receipt:task-run-intentional-deletion#sha256:d52decfed094dc5f645555368db67333d549cea3f75ef6e73c473947be72e8bb
 - Reported Findings: 1
 - Dispositioned Findings: R1
 - Missing Findings: none
 - Evidence Digest: sha256:a5d7190f5189303e7986a1def41b244e84699eb00c9cc093888ae91348563f54
-- Report Source: tests/charness_cli/test_task_run_completion_deletions.py
-- Report Source SHA256: bc39d48d37a2f8adf7f99bf10f26c43267e2027739f24fdf0bd9195226de5788
+- Report Source: charness-artifacts/debug/2026-10-15-task-run-intentional-deletion.receipt.json
+- Report Source SHA256: d52decfed094dc5f645555368db67333d549cea3f75ef6e73c473947be72e8bb
 
 ## Adversarial Verification
 

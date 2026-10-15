@@ -5,12 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
-from scripts.task_run import task_run_changed_line as _changed_line
-from scripts.task_run import task_run_lane_runner as _lane_runner
-from scripts.task_run import task_run_prelaunch as _prelaunch
-from scripts.task_run import task_run_scope as _scope
-from scripts.task_run.task_run_carrier import _candidate_carrier
-from scripts.task_run.task_run_contract import TaskRunError
+from . import task_run_changed_line as _changed_line
+from . import task_run_lane_runner as _lane_runner
+from . import task_run_prelaunch as _prelaunch
+from . import task_run_scope as _scope
+from .task_run_carrier import _candidate_carrier
+from .task_run_contract import TaskRunError
 
 
 def _prove_ready_candidate(
