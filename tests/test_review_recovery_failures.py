@@ -282,7 +282,7 @@ def test_promoted_chain_reopens_durable_files_and_checks_integrity(tmp_path: Pat
         else:
             SUPPORT.write_json(path, {"kind": key})
         files[key] = SUPPORT.relative(tmp_path, path)
-    final_carrier = {"state": "terminal", "approval_eligible": True}
+    final_carrier = {"state": "terminal", "approval_eligible": False}
     SUPPORT.write_yaml(durable / "summary.json", final_carrier)
     integrity = {
         key: {
@@ -327,14 +327,48 @@ def test_promoted_chain_reopens_durable_files_and_checks_integrity(tmp_path: Pat
     assert "integrity check failed" in invalid["reason"]
 
 
+@pytest.mark.parametrize("fault", ["pass", "chain"])
 def test_finalizer_validates_promoted_chain_before_approval_commit(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, fault: str
 ) -> None:
     durable = tmp_path / "charness-artifacts" / "critique" / "workers" / "attempt"
     durable.mkdir(parents=True)
     summary = durable / "lifecycle.yaml"
+    report_path = durable / "worker-report.yaml"
+    receipt_path = durable / "receipt.json"
+    ledger_path = durable / "delivery.json"
+    output_path = durable / "result.json"
     manifest = durable / "attempt-manifest.json"
-    SUPPORT.write_json(manifest, {"approval_eligible": False, "files": {}})
+    report = {
+        "attempt_id": "attempt",
+        "packet_identity": "p",
+        "reviewed_input_identity": "i",
+        "parent_receipt_identity": "parent",
+        "delivery_state": "findings-received",
+        "review_verdict": "pass",
+        "approval_eligible": True,
+    }
+    SUPPORT.write_yaml(report_path, report)
+    SUPPORT.write_json(receipt_path, {"attempt_id": "attempt"})
+    SUPPORT.write_json(ledger_path, {"attempt_id": "attempt"})
+    SUPPORT.write_json(output_path, {"attempt_id": "attempt"})
+    files = {
+        "worker-report.yaml": SUPPORT.relative(tmp_path, report_path),
+        "receipt.json": SUPPORT.relative(tmp_path, receipt_path),
+        "delivery.json": SUPPORT.relative(tmp_path, ledger_path),
+        "result.json": SUPPORT.relative(tmp_path, output_path),
+        "lifecycle.yaml": SUPPORT.relative(tmp_path, summary),
+    }
+    SUPPORT.write_json(
+        manifest,
+        {
+            "attempt_id": "attempt",
+            "approval_eligible": False,
+            "use_class": "diagnostic-retryable",
+            "identity_binding": "consumer-required",
+            "files": files,
+        },
+    )
     carrier = {
         "schema_version": "charness.reviewer_lifecycle.v1",
         "execution_state": "terminal",
@@ -347,7 +381,11 @@ def test_finalizer_validates_promoted_chain_before_approval_commit(
         "carrier_ok": True,
     }
     paths = {
-        "report": tmp_path / "report.yaml",
+        "report": report_path,
+        "receipt": receipt_path,
+        "ledger": ledger_path,
+        "output": output_path,
+        "summary": tmp_path / "runtime-lifecycle.yaml",
         "run_dir": tmp_path / "run",
     }
     paths["run_dir"].mkdir()
@@ -358,36 +396,50 @@ def test_finalizer_validates_promoted_chain_before_approval_commit(
         "paths": {},
     }
     validation_states: list[bool] = []
+    carrier_validation = SimpleNamespace(validate_delivered_worker_report=lambda **_kwargs: None)
 
     def validate_chain(*_args, **_kwargs):
         visible = json.loads(manifest.read_text(encoding="utf-8"))
         validation_states.append(visible["approval_eligible"])
-        return {"status": "invalid", "ok": False, "reason": "corrupted promoted output"}
+        if fault == "chain":
+            output_path.write_text("corrupted after integrity readback\n", encoding="utf-8")
+        return RECOVERY_INPUTS.validate_promoted_chain_integrity(
+            tmp_path,
+            {"report": files["worker-report.yaml"], "receipt": files["receipt.json"],
+             "ledger": files["delivery.json"], "output": files["result.json"],
+             "summary": files["lifecycle.yaml"]},
+            carrier,
+            {"attempt_id": "attempt", "packet_sha256": "p",
+             "reviewed_input_identity_sha256": "i", "parent_receipt_identity": "parent"},
+            support=SUPPORT,
+            carrier_validation=carrier_validation,
+            promotion=PROMOTION,
+        )
 
     monkeypatch.setattr(
         SUPPORT,
         "package_paths",
         lambda _script_dir: {"carrier_validation": tmp_path / "carrier.py"},
     )
-    monkeypatch.setattr(
-        SUPPORT,
-        "load_module",
-        lambda _path, name: SimpleNamespace(
-            validate_promoted_chain=validate_chain,
-            validate_delivered_worker_report=lambda **_kwargs: None,
-        )
-        if "recovery_inputs" in name
-        else SimpleNamespace(validate_delivered_worker_report=lambda **_kwargs: None),
-    )
+    monkeypatch.setattr(SUPPORT, "load_module", lambda path, _name: (
+        SimpleNamespace(validate_promoted_chain_integrity=validate_chain)
+        if path.name == "run_review_recovery_inputs.py"
+        else carrier_validation
+    ))
     promotion = SimpleNamespace(
         STORAGE=PROMOTION.STORAGE,
-        SOURCE_KEYS={},
-        LOG_SOURCE_KEYS={},
+        SOURCE_KEYS=PROMOTION.SOURCE_KEYS,
+        LOG_SOURCE_KEYS=PROMOTION.LOG_SOURCE_KEYS,
+        identity_binding=PROMOTION.identity_binding,
         promote_attempt_metadata=lambda *_args, **_kwargs: {
+            "worker-report.yaml": files["worker-report.yaml"],
+            "receipt.json": files["receipt.json"],
+            "delivery.json": files["delivery.json"],
+            "result.json": files["result.json"],
             "lifecycle.yaml": SUPPORT.relative(tmp_path, summary),
             "attempt-manifest.json": SUPPORT.relative(tmp_path, manifest),
         },
-        refresh_manifest_integrity=lambda *_args, **_kwargs: {},
+        refresh_manifest_integrity=PROMOTION.refresh_manifest_integrity,
         approval_for=lambda *_args, **_kwargs: (True, {"matches": True}),
     )
     result = CARRIER.finalize_carrier(
@@ -403,10 +455,31 @@ def test_finalizer_validates_promoted_chain_before_approval_commit(
     )
 
     saved = json.loads(manifest.read_text(encoding="utf-8"))
-    assert result == {"status": "invalid", "ok": False, "reason": "corrupted promoted output"}
+    assert result["manifest"] == saved
     assert validation_states == [False]
-    assert saved["approval_eligible"] is False
-    assert saved["use_class"] == "diagnostic-retryable"
+    if fault == "pass":
+        assert result["promoted_chain"]["ok"] is True
+        assert result["manifest"]["approval_eligible"] is True
+        assert saved["approval_eligible"] is True
+        consumed = RECOVERY_INPUTS.validate_promoted_chain(
+            tmp_path,
+            {"report": files["worker-report.yaml"], "receipt": files["receipt.json"],
+             "ledger": files["delivery.json"], "output": files["result.json"],
+             "summary": files["lifecycle.yaml"]},
+            carrier,
+            {"attempt_id": "attempt", "packet_sha256": "p",
+             "reviewed_input_identity_sha256": "i", "parent_receipt_identity": "parent"},
+            support=SUPPORT,
+            carrier_validation=carrier_validation,
+            promotion=PROMOTION,
+        )
+        assert consumed["ok"] is True
+    else:
+        assert result["promoted_chain"]["ok"] is False
+        assert "integrity check failed" in result["promoted_chain"]["reason"]
+        assert result["manifest"]["approval_eligible"] is False
+        assert saved["approval_eligible"] is False
+    assert saved["use_class"] == ("approval" if fault == "pass" else "diagnostic-retryable")
 
 
 class _RecoveryOwner:

@@ -221,7 +221,7 @@ def validate_retained_inputs(  # noqa: C901, PLR0915
     return {"status": "verified", "ok": True, "checks": checks}
 
 
-def validate_promoted_chain(
+def validate_promoted_chain_integrity(
     root: Path,
     paths: dict[str, str],
     final_carrier: dict[str, Any],
@@ -327,4 +327,38 @@ def validate_promoted_chain(
         "attempt_manifest": support.relative(root, manifest_path),
         "identity_binding": binding,
         "file_integrity": {"status": "verified", "files": len(files)},
+        "_manifest_approval_eligible": manifest.get("approval_eligible"),
     }
+
+
+def validate_promoted_chain(
+    root: Path,
+    paths: dict[str, str],
+    final_carrier: dict[str, Any],
+    expected: dict[str, Any],
+    *,
+    support: Any,
+    carrier_validation: Any,
+    promotion: Any,
+) -> dict[str, Any]:
+    """Validate the promoted chain as a consumer, including approval state."""
+    result = validate_promoted_chain_integrity(
+        root,
+        paths,
+        final_carrier,
+        expected,
+        support=support,
+        carrier_validation=carrier_validation,
+        promotion=promotion,
+    )
+    if not result.get("ok"):
+        return result
+    if result.pop("_manifest_approval_eligible", None) is not (
+        final_carrier.get("approval_eligible") is True
+    ):
+        return {
+            "status": "invalid",
+            "ok": False,
+            "reason": "promoted attempt manifest disagrees with the final lifecycle carrier",
+        }
+    return result

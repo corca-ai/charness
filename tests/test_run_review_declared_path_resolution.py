@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts.runtime_bootstrap import runtime_root
 from tests.module_eviction import evict_module
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -110,12 +111,12 @@ def test_hold_out_retains_both_copies_when_the_worker_recreates_source(tmp_path:
     assert staged[0].read_text(encoding="utf-8") == "original\n"
 
 
-def test_new_run_owner_is_repo_relative_and_cleans_terminal_scratch(tmp_path: Path) -> None:
+def test_new_run_owner_uses_external_runtime_and_cleans_terminal_scratch(tmp_path: Path) -> None:
     support = _support()
     owner = support.new_run_owner(tmp_path, "attempt:with-colon")
 
     assert owner.path.is_dir()
-    assert owner.path.is_relative_to(tmp_path / ".charness" / "scratch")
+    assert owner.path.is_relative_to(runtime_root(tmp_path) / "scratch")
     assert (owner.path / ".charness-owner.json").is_file()
     owner.close(state="failed")
 
@@ -185,9 +186,21 @@ def test_final_promotion_failure_never_approves_and_can_retry(tmp_path: Path, mo
     manifest_path = tmp_path / promotion.DURABLE_WORKER_REPORTS / "retry" / "attempt-manifest.json"
     assert json.loads(manifest_path.read_text())["approval_eligible"] is False
     monkeypatch.setattr(carrier_module, "refresh_manifest_integrity", refresh)
-    carrier_module.finalize_carrier(support, promotion, tmp_path, "retry", paths, context, final, report)
+    monkeypatch.setattr(
+        carrier_module,
+        "validate_promoted_chain",
+        lambda *_args, **_kwargs: {
+            "status": "verified",
+            "ok": True,
+            "attempt_manifest": support.relative(tmp_path, manifest_path),
+        },
+    )
+    finalization = carrier_module.finalize_carrier(
+        support, promotion, tmp_path, "retry", paths, context, final, report
+    )
     manifest = json.loads(manifest_path.read_text())
     assert manifest["approval_eligible"] is True
+    assert finalization["manifest"]["approval_eligible"] is True
     for name, descriptor in manifest["file_integrity"].items():
         assert descriptor["sha256"] == support.sha256(tmp_path / manifest["files"][name])
 

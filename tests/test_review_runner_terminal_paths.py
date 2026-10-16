@@ -123,7 +123,7 @@ def test_live_runner_disposes_terminal_failure_without_losing_retry_inputs(tmp_p
 
 
 @pytest.mark.parametrize("fault", ["plan", "packet", "report", "validator", "identity", "stream", "chain", "promotion", "pass", "partial"])
-def test_recovery_only_removes_retained_inputs_after_promoted_readback(tmp_path, fault):
+def test_recovery_only_removes_retained_inputs_after_promoted_readback(tmp_path, fault, monkeypatch):
     run = tmp_path / "run"
     run.mkdir()
     owner = Owner(run)
@@ -144,15 +144,23 @@ def test_recovery_only_removes_retained_inputs_after_promoted_readback(tmp_path,
         if fault == "promotion":
             raise OSError("promotion unavailable")
         promoted_chain = chain(*args)
+        saved = SUPPORT.load_mapping(manifest)
         if promoted_chain["ok"]:
-            saved = SUPPORT.load_mapping(manifest)
             saved.update(
                 approval_eligible=fault == "pass",
                 use_class="approval" if fault == "pass" else "diagnostic-retryable",
                 identity_binding={"matches": True},
             )
             SUPPORT.write_json(manifest, saved)
-        return promoted_chain
+        real_read_text = Path.read_text
+
+        def fail_postcommit_manifest_read(path, *read_args, **read_kwargs):
+            if path == manifest:
+                raise OSError("manifest acknowledgement read unavailable")
+            return real_read_text(path, *read_args, **read_kwargs)
+
+        monkeypatch.setattr(Path, "read_text", fail_postcommit_manifest_read)
+        return {"promoted_chain": promoted_chain, "manifest": saved}
     def chain(*args, **kwargs):
         events.append("readback")
         assert SUPPORT.load_mapping(manifest)["approval_eligible"] is False
@@ -182,5 +190,7 @@ def test_recovery_only_removes_retained_inputs_after_promoted_readback(tmp_path,
         recovered = fault in {"pass", "partial"}
         assert emitted[-1]["status"] == ("recovered" if recovered else "refused")
         assert emitted[-1]["approval_eligible"] is (fault == "pass")
+        if recovered:
+            assert emitted[-1]["identity_binding"] == {"matches": True}
         assert owner.closed == ([{"state": "succeeded", "remove_retained": True}] if recovered else [{"state": "failed"}])
         assert events == (["promote", "readback"] if recovered or fault == "chain" else [])

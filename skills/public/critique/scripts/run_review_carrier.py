@@ -231,7 +231,7 @@ def validate_promoted_chain(
         Path(__file__).with_name("run_review_recovery_inputs.py"),
         "charness_run_review_recovery_inputs_finalization",
     )
-    return retained_inputs.validate_promoted_chain(
+    result = retained_inputs.validate_promoted_chain_integrity(
         root,
         paths,
         carrier,
@@ -245,6 +245,8 @@ def validate_promoted_chain(
         carrier_validation=carrier_validation,
         promotion=promotion,
     )
+    result.pop("_manifest_approval_eligible", None)
+    return result
 
 
 def require_valid_promoted_chain(
@@ -281,7 +283,7 @@ def finalize_carrier(
     carrier: dict[str, Any],
     report: dict[str, Any] | None,
     recovery_validation: dict[str, Any] | None = None,
-) -> dict[str, Any] | None:
+) -> dict[str, Any]:
     """Promote all terminal bytes, then emit paths that survive owner cleanup."""
     old_paths = dict(context.setdefault("paths", {}))
     promoted = promotion.promote_attempt_metadata(
@@ -386,7 +388,7 @@ def finalize_carrier(
         identity_check=binding,
     )
     promotion.STORAGE.write_json_atomically(root / manifest_path, manifest)
-    return promoted_chain
+    return {"promoted_chain": promoted_chain, "manifest": manifest}
 
 
 def owner_terminal_state(status: str, carrier: dict[str, Any]) -> str:

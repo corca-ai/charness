@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from pathlib import Path
 from typing import Any
 
@@ -177,7 +176,7 @@ def resume_retained_attempt(
                 if key != "run_dir"
             },
         }
-        promoted_chain = carrier_module.finalize_carrier(
+        finalization = carrier_module.finalize_carrier(
             support,
             promotion,
             root,
@@ -188,6 +187,7 @@ def resume_retained_attempt(
             report,
             recovery_validation,
         )
+        promoted_chain = finalization["promoted_chain"]
         if not promoted_chain.get("ok"):
             owner.close(state="failed")
             support.emit(
@@ -209,8 +209,7 @@ def resume_retained_attempt(
             )
             return 1
         recovery_validation["promoted_chain"] = promoted_chain
-        manifest_path = root / promoted_chain["attempt_manifest"]
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest = finalization["manifest"]
         promoted = dict(context["paths"])
         promoted["attempt-manifest.json"] = promoted_chain["attempt_manifest"]
         owner.close(state="succeeded", remove_retained=True)
