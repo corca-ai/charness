@@ -131,8 +131,8 @@ def _coverage_mapping_deficits(
         if isinstance(unmatched, list)
         else []
     )
-    if (verifiers.get("bundle_status") == "missing-bundle" or unmatched) and not (
-        empty_report_only_candidate and unmatched
+    if verifiers.get("bundle_status") == "missing-bundle" or (
+        unmatched and not empty_report_only_candidate
     ):
         raw_scope_paths = verifiers.get("scope_paths", [])
         scope_paths = raw_scope_paths if isinstance(raw_scope_paths, list) else []

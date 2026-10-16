@@ -556,13 +556,15 @@ def test_coverage_mapping_flags_unmatched_paths(
         "report_only",
         "candidate_status",
         "changed_paths",
+        "bundle_status",
         "unmatched_paths",
         "expected_scope_mapping_blocker",
     ),
     [
-        (True, "absent", [], ["outside-surface.py"], False),
-        (False, "validated", ["module.py"], ["outside-surface.py"], True),
-        (True, "absent", [], [], True),
+        (True, "absent", [], "repo-owned-bundle", ["outside-surface.py"], False),
+        (False, "validated", ["module.py"], "repo-owned-bundle", ["outside-surface.py"], True),
+        (True, "absent", [], "missing-bundle", [], True),
+        (True, "absent", [], "missing-bundle", ["outside-surface.py"], True),
     ],
 )
 def test_only_empty_report_only_candidate_omits_unmatched_scope_mapping(
@@ -571,6 +573,7 @@ def test_only_empty_report_only_candidate_omits_unmatched_scope_mapping(
     report_only: bool,
     candidate_status: str,
     changed_paths: list[str],
+    bundle_status: str,
     unmatched_paths: list[str],
     expected_scope_mapping_blocker: bool,
 ) -> None:
@@ -589,7 +592,7 @@ def test_only_empty_report_only_candidate_omits_unmatched_scope_mapping(
             "scope_preflight": {"required_scope_paths": []},
             "scope_verifiers": {
                 "status": "configured",
-                "bundle_status": "missing-bundle",
+                "bundle_status": bundle_status,
                 "scope_paths": ["outside-surface.py"],
                 "unmatched_paths": unmatched_paths,
                 "mapped_suites": [],
