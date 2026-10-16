@@ -26,6 +26,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from scripts.plugin_export.packaging_lib import load_manifest
+
 from .support import ROOT
 
 # Layer 1: exact removed surfaces. Broad reach — these must never reappear on any
@@ -42,7 +44,9 @@ LITERAL_SCAN_ROOTS = (
     "plugins/charness/support",
     "plugins/charness/shared",
     "plugins/charness/integrations",
-    "integrations",
+    # Local integration locks are generated runtime state, not exported inputs.
+    # The packaged tree above includes the lock schema/docs the exporter serves.
+    load_manifest(ROOT, "charness")["source"]["integrations_dir"],
 )
 # The single-file `charness` CLI scaffolds `.charness/local|example` capability
 # config, so it is scanned too (the leak the critique caught lived here).
@@ -101,23 +105,42 @@ def scan_guidance_tokens(root: Path) -> list[tuple[str, str]]:
     return violations
 
 
-def test_no_credentialed_provider_route_in_skill_surfaces() -> None:
+def literal_surface_violations(repo_root: Path) -> list[str]:
     found: list[str] = []
     for scan_root in LITERAL_SCAN_ROOTS:
-        for rel, marker in scan_literal_markers(ROOT / scan_root):
+        for rel, marker in scan_literal_markers(repo_root / scan_root):
             found.append(f"{scan_root}/{rel}: `{marker}`")
     for scan_file in LITERAL_SCAN_FILES:
-        path = ROOT / scan_file
+        path = repo_root / scan_file
         if path.is_file():
             text = path.read_text(encoding="utf-8", errors="ignore")
             for marker in LITERAL_MARKERS:
                 if marker in text:
                     found.append(f"{scan_file}: `{marker}`")
+    return found
+
+
+def test_no_credentialed_provider_route_in_skill_surfaces() -> None:
+    found = literal_surface_violations(ROOT)
     assert found == [], (
         "credentialed-org-provider leak on a consumer-materialized surface (gather "
         "is public-source only; credentialed org data belongs to the consuming "
         "runtime's capability/connector):\n" + "\n".join(found)
     )
+
+
+def test_literal_surface_population_follows_source_and_export_not_local_locks(tmp_path: Path) -> None:
+    source = tmp_path / "integrations" / "tools"
+    exported = tmp_path / "plugins" / "charness" / "integrations" / "locks"
+    local = tmp_path / "integrations" / "locks"
+    for directory in (source, exported, local):
+        directory.mkdir(parents=True)
+    for directory in (source, exported, local):
+        (directory / "example.json").write_text('{"route": "SLACK_BOT_TOKEN"}', encoding="utf-8")
+    assert literal_surface_violations(tmp_path) == [
+        "plugins/charness/integrations/locks/example.json: `SLACK_BOT_TOKEN`",
+        "integrations/tools/example.json: `SLACK_BOT_TOKEN`",
+    ]
 
 
 def test_no_credentialed_org_token_in_skill_guidance() -> None:
