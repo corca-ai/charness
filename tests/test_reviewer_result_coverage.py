@@ -16,6 +16,7 @@ from pathlib import Path
 import pytest
 
 from skills.shared.scripts import reviewer_delivery as delivery
+from skills.shared.scripts import reviewer_runner_support
 from skills.shared.scripts.reviewer_capability import (
     non_claims_sha256,
     validate_capability_envelope,
@@ -31,7 +32,6 @@ from skills.shared.scripts.reviewer_worker_carrier_support import (
     validate_delivered_worker_report,
 )
 from skills.shared.scripts.reviewer_worker_report import build_report
-from skills.shared.scripts import reviewer_runner_support
 from tests.quality_gates.reviewer_capability_support import ready_capability
 
 PACKET = "a" * 64
@@ -323,11 +323,6 @@ def _e2e_files(
             "parent_receipt_identity": _E2E_PARENT,
             "expected_targets_sha256": floor_digest,
             "attempt_id": _E2E_ATTEMPT,
-            "attempt_scope": _E2E_SCOPE,
-            "attempt_packet_identity": PACKET,
-            "attempt_parent_receipt_identity": _E2E_PARENT,
-            "result_packet_identity": PACKET,
-            "result_reviewed_input_identity": INPUT,
             "boundary_mode": "read-only-worker",
             "boundary_fingerprint": None,
             "execution_mode": "file-backed-worker",

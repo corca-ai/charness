@@ -142,6 +142,7 @@ def _worker_delivered_artifact(
                 "packet_identity": packet_identity,
                 "reviewed_input_identity": input_identity,
                 "parent_receipt_identity": "Parent-Receipt-1",
+                "boundary_mode": "shared-tree-fingerprint",
                 "boundary_fingerprint": boundary_fingerprint,
                 "execution_mode": "file-backed-worker",
                 "prompt_sha256": prompt_sha256,
@@ -354,12 +355,12 @@ def _case_worker_carrier_rejects_optional_non_claim_result_mutation(
     assert expected_reason in observer["carrier_reason"]
 
 
-def _case_worker_delivered_provenance_alias_mismatch_is_refused(case_dir: Path) -> None:
+def _case_worker_delivered_primary_provenance_mismatch_is_refused(case_dir: Path) -> None:
     module = _load_resolution_critique()
     artifact = _worker_delivered_artifact(case_dir)
     report_path = case_dir / "worker-report.yaml"
     report = yaml.safe_load(report_path.read_text(encoding="utf-8"))
-    report["provenance"]["attempt_parent_receipt_identity"] = "foreign-parent"
+    report["provenance"]["parent_receipt_identity"] = "foreign-parent"
     report_path.write_text(yaml.safe_dump(report, sort_keys=True), encoding="utf-8")
     report_identity = hashlib.sha256(report_path.read_bytes()).hexdigest()
     artifact.write_text(
@@ -380,7 +381,7 @@ def _case_worker_delivered_provenance_alias_mismatch_is_refused(case_dir: Path) 
     observer = module._observer_disposition(case_dir, check)
 
     assert observer["disposition"] == "carrier-unverified"
-    assert "provenance aliases" in observer["carrier_reason"]
+    assert "parent_receipt_identity does not match report provenance" in observer["carrier_reason"]
 
 
 _WORKER_CARRIER_REFUSAL_CASES = {
@@ -391,7 +392,7 @@ _WORKER_CARRIER_REFUSAL_CASES = {
     "capability-identity-foreign-to-the-attempt": (
         _case_worker_carrier_rejects_capability_identity_foreign_to_the_attempt
     ),
-    "provenance-alias-mismatch": _case_worker_delivered_provenance_alias_mismatch_is_refused,
+    "primary-provenance-mismatch": _case_worker_delivered_primary_provenance_mismatch_is_refused,
 }
 
 #: Both arms, named. The helper takes a `mutation` the others do not, so it
@@ -473,12 +474,7 @@ def _rebind_worker_packet(artifact: Path, prepared_for: str, *, repo: str | None
     report["packet_identity"] = packet_identity
     report["findings_identity"] = result_identity
     report["receipt_output_sha256"] = result_identity
-    for key in (
-        "packet_identity",
-        "attempt_packet_identity",
-        "result_packet_identity",
-    ):
-        report["provenance"][key] = packet_identity
+    report["provenance"]["packet_identity"] = packet_identity
     report_path.write_text(yaml.safe_dump(report, sort_keys=True), encoding="utf-8")
     report_identity = hashlib.sha256(report_path.read_bytes()).hexdigest()
 

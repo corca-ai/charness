@@ -15,7 +15,7 @@ import pytest
 import yaml
 
 from scripts.runtime_scratch import owned_scratch
-from skills.shared.scripts import reviewer_worker_carrier_support
+from skills.shared.scripts import reviewer_delivery_fields, reviewer_worker_carrier_support
 from skills.shared.scripts.reviewer_capability import envelope_sha256
 from tests.quality_gates.reviewer_capability_support import (
     EMPTY_NON_CLAIMS_SHA256,
@@ -62,7 +62,7 @@ def _assert_carrier_refuses_owner_symlink(repo: Path, owner: Path) -> None:
         )
 
 
-def test_carrier_rejects_receipt_without_explicit_boundary_mode() -> None:
+def test_delivery_fields_reject_receipt_without_explicit_boundary_mode() -> None:
     fields = {
         "attempt_id": "attempt-1",
         "scope": "scope-1",
@@ -81,11 +81,8 @@ def test_carrier_rejects_receipt_without_explicit_boundary_mode() -> None:
     provenance = {**report}
     receipt = {key: value for key, value in fields.items() if key != "boundary_mode"}
 
-    with pytest.raises(
-        reviewer_worker_carrier_support.WorkerCarrierError,
-        match="delivery chain boundary_mode does not match",
-    ):
-        reviewer_worker_carrier_support._validate_joined_fields(
+    with pytest.raises(ValueError, match="delivery chain boundary_mode does not match"):
+        reviewer_delivery_fields.validate_joined_fields(
             attempt=SimpleNamespace(**fields), report=report, receipt=receipt, provenance=provenance
         )
 

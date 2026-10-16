@@ -24,10 +24,10 @@ def _load_delivery_fields():
         raise ImportError(f"unable to load package-local helper: {candidate}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module.PARENT_RECEIPT_ID_RE
+    return module.PARENT_RECEIPT_ID_RE, module.validate_joined_fields
 
 
-PARENT_RECEIPT_ID_RE = _load_delivery_fields()
+PARENT_RECEIPT_ID_RE, _validate_joined_fields = _load_delivery_fields()
 EXPECTED_PACKET_KIND = "charness.critique_prepare_packet"
 
 
@@ -248,35 +248,6 @@ def _validate_receipt_and_result(
     return receipt, result, output_hash
 
 
-def _validate_joined_fields(
-    *, attempt: Any, report: dict[str, Any], receipt: dict[str, Any], provenance: dict[str, Any]
-) -> None:
-    joined_fields = (
-        "attempt_id", "scope", "packet_identity", "reviewed_input_identity",
-        "parent_receipt_identity", "boundary_mode", "boundary_fingerprint", "execution_mode",
-        "backend", "prompt_sha256", "schema_sha256",
-        "capability_launch_envelope_sha256",
-    )
-    if report.get("attempt_id") != provenance.get("attempt_id"):
-        raise WorkerCarrierError("delivery chain attempt_id does not match report provenance")
-    if provenance.get("capability_non_claims_sha256") != report.get("capability_non_claims_sha256"):
-        raise WorkerCarrierError("delivery chain capability non-claim digest does not match report provenance")
-    for field in joined_fields:
-        expected = provenance.get(field) if field == "attempt_id" else report.get(field)
-        actual = getattr(attempt, field, None)
-        if field == "boundary_fingerprint" and expected is None:
-            if actual is not None or receipt.get(field) is not None or provenance.get(field) is not None:
-                raise WorkerCarrierError(
-                    "delivery chain boundary_fingerprint is present for a boundary mode that does not require it"
-                )
-            continue
-        observed_receipt = receipt.get(field)
-        if expected is None or actual != expected or observed_receipt != expected:
-            raise WorkerCarrierError(f"delivery chain {field} does not match report, receipt, and ledger attempt")
-        if field != "attempt_id" and provenance.get(field) != expected:
-            raise WorkerCarrierError(f"delivery chain {field} does not match report provenance")
-
-
 def _validate_ledger(
     *,
     repo_root: Path,
@@ -305,17 +276,10 @@ def _validate_ledger(
         attempt = _load_delivery_attempt_parser().from_dict(raw_attempt)
     except (ImportError, ValueError, TypeError, KeyError) as exc:
         raise WorkerCarrierError(f"delivery ledger canonical history is invalid: {exc}") from exc
-    _validate_joined_fields(attempt=attempt, report=report, receipt=receipt, provenance=provenance)
-    aliases = {
-        "attempt_scope": report.get("scope"),
-        "attempt_packet_identity": report.get("packet_identity"),
-        "attempt_parent_receipt_identity": report.get("parent_receipt_identity"),
-        "result_packet_identity": report.get("packet_identity"),
-        "result_reviewed_input_identity": report.get("reviewed_input_identity"),
-    }
-    mismatches = [key for key, expected in aliases.items() if provenance.get(key) != expected]
-    if mismatches:
-        raise WorkerCarrierError(f"delivery chain provenance aliases do not match the report: {mismatches}")
+    try:
+        _validate_joined_fields(attempt=attempt, report=report, receipt=receipt, provenance=provenance)
+    except ValueError as exc:
+        raise WorkerCarrierError(str(exc)) from exc
     if attempt.state != "findings-received" or attempt.terminal is not True or not attempt.findings_identity:
         raise WorkerCarrierError("delivery ledger does not prove findings-received completion")
     if attempt.findings_identity != output_hash:
