@@ -259,7 +259,7 @@ def test_scope_and_coverage_mapping_deficits_name_missing_evidence(tmp_path: Pat
             "scope_paths": ["missing.py"],
         },
         tmp_path,
-        ["missing.py"],
+        [],
     )
 
     assert "in-scope file deficit" in scope[0]

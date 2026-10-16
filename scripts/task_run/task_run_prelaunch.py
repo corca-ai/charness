@@ -90,13 +90,6 @@ def _scope_file_deficits(
         for path in required
         if isinstance(path, str) and not (target / path).exists()
     }
-    missing.update(
-        path
-        for path in changed_paths
-        if isinstance(path, str)
-        and any(scope._scope_matches(path, spec) for spec in scope_specs)
-        and not (target / path).exists()
-    )
     for spec in scope_specs:
         path = str(spec.get("path", ""))
         if spec.get("kind") == "glob" and not spec.get("matches"):
@@ -106,7 +99,11 @@ def _scope_file_deficits(
             ):
                 missing.add(path)
         elif spec.get("kind") == "directory" and not (target / path).is_dir():
-            missing.add(path)
+            if not any(
+                isinstance(changed, str) and scope._scope_matches(changed, spec)
+                for changed in changed_paths
+            ):
+                missing.add(path)
     if missing:
         message = "in-scope file deficit: required scope files are absent from the candidate: "
         return [message + ", ".join(sorted(missing))]

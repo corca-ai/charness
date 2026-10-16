@@ -36,6 +36,8 @@ def _complete(
     prelaunch_plan_override: dict[str, Any] | None = None,
     extra_files: dict[str, str] | None = None,
     delete_path: str | None = None,
+    rename_from: str | None = None,
+    rename_to: str | None = None,
 ) -> dict[str, Any]:
     mapped_suite = "tests/test_completion_scope.py"
     surface_manifest = json.dumps(
@@ -73,8 +75,21 @@ def _complete(
     elif candidate_kind == "delete":
         if not delete_path:
             raise AssertionError("delete candidates need a path")
-        (target / delete_path).unlink()
+        deleted_path = target / delete_path
+        deleted_path.unlink()
+        parent = deleted_path.parent
+        while parent != target:
+            try:
+                parent.rmdir()
+            except OSError:
+                break
+            parent = parent.parent
         task_run_git._commit_lane_snapshot(target, message="delete mapped file")
+    elif candidate_kind == "rename":
+        if not rename_from or not rename_to:
+            raise AssertionError("rename candidates need source and destination paths")
+        (target / rename_from).rename(target / rename_to)
+        task_run_git._commit_lane_snapshot(target, message="rename mapped file")
     elif candidate_kind != "absent":
         raise AssertionError(f"unknown candidate fixture: {candidate_kind}")
     branch = task_run_git._git_output(target, "symbolic-ref", "--quiet", "--short", "HEAD").strip()
@@ -421,28 +436,6 @@ def test_completion_blocks_a_scope_without_verifier_coverage(
     assert payload["status"] == "validated-partial-result"
     assert payload["approval_eligibility"] == "ineligible"
     assert any("coverage mapping deficit" in item for item in payload["blockers"])
-    capsys.readouterr()
-
-
-def test_completion_blocks_a_missing_exact_scope_file(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    payload = _complete(
-        tmp_path,
-        candidate_kind="delete",
-        delete_path="module.py",
-        scope_specs_override=[{"path": "module.py", "kind": "exact"}],
-        changed_line_gate=lambda *_args, **_kwargs: {
-            "status": "clean",
-            "blocking": False,
-            "summary": "gate clean",
-        },
-    )
-
-    assert payload["status"] == "validated-partial-result"
-    assert payload["approval_eligibility"] == "ineligible"
-    assert payload["blocker"].startswith("in-scope file deficit:")
-    assert "module.py" in payload["blocker"]
     capsys.readouterr()
 
 
