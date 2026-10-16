@@ -87,12 +87,10 @@ def parent_receipt_identity(value: object, label: str = "parent_receipt_identity
 def boundary_binding(
     mode_value: object | None, fingerprint_value: object | None
 ) -> tuple[str, str | None]:
-    """Normalize the execution boundary without inventing a git snapshot.
+    """Normalize optional producer inputs without inventing a git snapshot.
 
-    Older ledgers only carried ``boundary_fingerprint``. Preserve that shape by
-    inferring the shared-tree mode when the field is present. New read-only
-    workers carry an explicit mode and no fingerprint because their backend
-    envelope already removes write and exec capability.
+    New read-only workers carry an explicit mode and no fingerprint because
+    their backend envelope already removes write and exec capability.
     """
     if mode_value is None:
         mode = FINGERPRINT_BOUNDARY_MODE if fingerprint_value is not None else DEFAULT_BOUNDARY_MODE
@@ -166,8 +164,10 @@ def bound_fields(
         if payload.get("capability_launch_envelope_sha256") is not None
         else None
     )
+    if payload.get("boundary_mode") is None:
+        raise ValueError("boundary_mode is required")
     boundary_mode, boundary_fingerprint = boundary_binding(
-        payload.get("boundary_mode"), payload.get("boundary_fingerprint")
+        payload["boundary_mode"], payload.get("boundary_fingerprint")
     )
     output_file = _text(payload["output_file"], "output_file") if payload.get("output_file") is not None else None
     receipt_file = _text(payload["receipt_file"], "receipt_file") if payload.get("receipt_file") is not None else None

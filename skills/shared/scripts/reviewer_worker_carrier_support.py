@@ -271,8 +271,6 @@ def _validate_joined_fields(
                 )
             continue
         observed_receipt = receipt.get(field)
-        if field == "boundary_mode" and observed_receipt is None and receipt.get("boundary_fingerprint") is not None:
-            observed_receipt = "shared-tree-fingerprint"
         if expected is None or actual != expected or observed_receipt != expected:
             raise WorkerCarrierError(f"delivery chain {field} does not match report, receipt, and ledger attempt")
         if field != "attempt_id" and provenance.get(field) != expected:

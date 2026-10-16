@@ -138,11 +138,6 @@ def _receipt_join_error(receipt: dict[str, Any], attempt: Any) -> str | None:
     }
     for field, expected in joins.items():
         observed = receipt.get(field)
-        if field == "boundary_mode" and observed is None and receipt.get("boundary_fingerprint") is not None:
-            # Receipts emitted before boundary_mode was introduced remain
-            # readable; their non-empty fingerprint unambiguously identifies
-            # the old shared-tree path.
-            observed = "shared-tree-fingerprint"
         if expected is None:
             if field == "boundary_fingerprint" and observed is None:
                 continue

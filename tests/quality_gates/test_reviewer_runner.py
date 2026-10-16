@@ -9,6 +9,7 @@ import stat
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -58,6 +59,34 @@ def _assert_carrier_refuses_owner_symlink(repo: Path, owner: Path) -> None:
     ):
         reviewer_worker_carrier_support._report_path(
             repo, str(link), allow_hidden=True, owned_root=owner
+        )
+
+
+def test_carrier_rejects_receipt_without_explicit_boundary_mode() -> None:
+    fields = {
+        "attempt_id": "attempt-1",
+        "scope": "scope-1",
+        "packet_identity": "packet-1",
+        "reviewed_input_identity": "input-1",
+        "parent_receipt_identity": "parent-1",
+        "boundary_mode": "shared-tree-fingerprint",
+        "boundary_fingerprint": "fingerprint-1",
+        "execution_mode": "file-backed-worker",
+        "backend": "codex_exec",
+        "prompt_sha256": "a" * 64,
+        "schema_sha256": "b" * 64,
+        "capability_launch_envelope_sha256": "c" * 64,
+    }
+    report = {**fields, "capability_non_claims_sha256": "d" * 64}
+    provenance = {**report}
+    receipt = {key: value for key, value in fields.items() if key != "boundary_mode"}
+
+    with pytest.raises(
+        reviewer_worker_carrier_support.WorkerCarrierError,
+        match="delivery chain boundary_mode does not match",
+    ):
+        reviewer_worker_carrier_support._validate_joined_fields(
+            attempt=SimpleNamespace(**fields), report=report, receipt=receipt, provenance=provenance
         )
 
 
