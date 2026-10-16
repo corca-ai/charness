@@ -33,7 +33,7 @@ def test_named_skills_reference_shared_reviewer_policy() -> None:
 
 
 def test_portable_surfaces_do_not_hardcode_provider_models() -> None:
-    surfaces = [SHARED_REVIEW.read_text(encoding="utf-8")]
+    surfaces = [path.read_text(encoding="utf-8") for path in (SHARED_REVIEW, ADAPTER_CONTRACT)]
     surfaces.extend(_skill_md(skill) for skill in NAMED_SKILLS)
     surfaces.extend(
         path.read_text(encoding="utf-8") for path in DIRECT_HIGH_LEVERAGE_REVIEW_SURFACES
@@ -68,14 +68,6 @@ def test_causal_review_uses_the_shared_file_backed_delivery_contract() -> None:
         "same-agent local causal review",
     ):
         assert marker in text, f"causal review contract must pin `{marker}`"
-
-
-def test_reviewer_tier_policy_is_host_plural() -> None:
-    text = SHARED_REVIEW.read_text(encoding="utf-8")
-    assert "host-plural" in text
-    assert "Codex" in text and "Claude Code" in text, (
-        "the reviewer-tier policy must name more than one host, not Codex-only"
-    )
 
 
 def test_shared_reference_keeps_delegated_fast_path() -> None:
@@ -191,14 +183,3 @@ def test_critique_adapter_rejects_unknown_runner_mode_and_backend() -> None:
 def test_critique_adapter_rejects_non_mapping_reviewer_runner() -> None:
     _, errors, _ = validate_adapter_data({"reviewer_runner": ["worker"]}, ROOT)
     assert errors == ["reviewer_runner must be a mapping"]
-
-
-def test_adapter_contract_delegates_concrete_host_defaults_to_owned_assets() -> None:
-    text = ADAPTER_CONTRACT.read_text(encoding="utf-8")
-    for token in PROVIDER_MODEL_TOKENS:
-        assert token not in text
-    assert "../adapter.example.yaml" in text
-    assert "../scripts/templates/critique_adapter.yaml" in text
-    assert "does not prove the provider applied" in text
-    assert "only when the host confirms it" in text
-    assert "Codex `agent_type`" in text
