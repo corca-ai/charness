@@ -22,6 +22,7 @@ _load_repo_runtime_bootstrap()
 
 def run_self_review(payload: dict[str, Any]) -> dict[str, Any]:
     """Run a read-only Codex self-review and retain its non-approval findings."""
+    from scripts.task_run import task_run_evidence as _evidence
     from scripts.task_run import task_run_execution as _execution
     from scripts.task_run import task_run_runtime, task_run_support
     from scripts.worktree import worktree_exec_lib
@@ -74,7 +75,7 @@ def run_self_review(payload: dict[str, Any]) -> dict[str, Any]:
             target_path=worktree, configured_env=env, stdout_log=stdout_log, stderr_log=stderr_log,
             timeout_seconds=min(int(executor_info.get("timeout_seconds") or 300), 300), executor="codex",
         )
-        return self_review_result(result, _execution._tail_text(stdout_log, limit=1024 * 1024))
+        return self_review_result(result, _evidence._tail_text(stdout_log, limit=1024 * 1024))
     except (OSError, RuntimeError, ValueError) as exc:
         return self_review_block(
             "unavailable-skip", reason=f"reviewer could not run: {exc}"

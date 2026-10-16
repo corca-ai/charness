@@ -16,7 +16,10 @@ from __future__ import annotations
 
 import json
 import re
+from pathlib import Path
 from typing import Any, Mapping
+
+from . import task_run_evidence as _evidence
 
 #: Intermediate agent-text chunks, in stream order. One marker line may span
 #: several chunks, so consumers concatenate before splitting into lines.
@@ -117,6 +120,41 @@ def muse_stdout_report(text: str) -> str | None:
         if isinstance(report, str) and report.strip():
             return report
     return accumulated_agent_text(text)
+
+
+def _retain_muse_events(stdout_log: Path, event_log: Path) -> None:
+    """Keep Muse JSONL forensics separate from its terminal report."""
+    raw_output = _evidence._tail_text(stdout_log, limit=64 * 1024 * 1024)
+    report = muse_stdout_report(raw_output)
+    if report is None:
+        return
+    with event_log.open("a", encoding="utf-8") as handle:
+        handle.write(raw_output)
+        if not raw_output.endswith("\n"):
+            handle.write("\n")
+    stdout_log.write_text(report, encoding="utf-8")
+
+
+def _muse_stream_diagnostics(
+    result: dict[str, Any],
+    stdout_log: Path,
+    stderr_log: Path,
+    executor: str,
+    event_window: _evidence._LogWindow,
+) -> None:
+    """Attach retry diagnostics from this execution's Muse stream window."""
+    if executor != "muse":
+        return
+    events_text = _evidence._tail_text(
+        event_window.path,
+        limit=64 * 1024 * 1024,
+        window=event_window,
+    )
+    if not has_muse_events(events_text):
+        events_text = _evidence._tail_text(stdout_log, limit=64 * 1024 * 1024)
+    result["stream_diagnostics"] = stream_diagnostics(
+        events_text, _evidence._tail_text(stderr_log, limit=256 * 1024)
+    )
 
 
 def _external_attempt_facet(payload: Mapping[str, Any]) -> dict[str, Any] | None:

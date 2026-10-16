@@ -21,13 +21,12 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
+from scripts.task_run import task_run_evidence as _evidence  # noqa: E402
 from scripts.task_run import task_run_execution as _execution  # noqa: E402
 from scripts.task_run import task_run_muse_events as _muse_events  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402
 
 _env_seconds = _execution._env_seconds
-_tail_text = _execution._tail_text
-_lane_stderr_text = _execution._lane_stderr_text
 _guard_phases = _execution._guard_phases
 _guard_stop_reason = _execution._guard_stop_reason
 
@@ -375,7 +374,8 @@ class LaneProgressWatch:
         the tail window still counts (#815).
         """
         progress = lane_progress(
-            _tail_text(self._stdout_log), _tail_text(self._stderr_log)
+            _evidence._tail_text(self._stdout_log),
+            _evidence._tail_text(self._stderr_log),
         )
         fresh = [phase for phase in progress["phases"]]
         new = [phase for phase in LANE_PHASES if phase in fresh and phase not in self._last_phases]

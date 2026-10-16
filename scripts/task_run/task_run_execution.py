@@ -11,7 +11,7 @@ import signal
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Mapping, NamedTuple, Sequence
+from typing import Any, Mapping, Sequence
 
 import yaml
 
@@ -31,18 +31,15 @@ from scripts.core.subprocess_guard import (  # noqa: E402
     render_display,
     run_monitored_phase,
 )
+from scripts.task_run import task_run_evidence as _evidence  # noqa: E402
 from scripts.task_run import task_run_friction as _friction  # noqa: E402
+from scripts.task_run import task_run_muse_events as _muse_events  # noqa: E402
 from scripts.task_run import task_run_self_review as _self_review  # noqa: E402
 
 #: The read-only Codex self-review runner lives in its own cohesive module;
 #: this alias keeps the historical execution-surface seam stable.
 run_self_review = _self_review.run_self_review
 
-
-class _LogWindow(NamedTuple):
-    path: Path
-    offset: int
-    byte_count: int
 
 _DESCENDANT_CLEANUP_SHELL = (
     'printf "%s\\n" "$$" > "$1"; shift; exec 3<&0; "$@" <&3 & '
@@ -65,80 +62,24 @@ def _env_seconds(name: str, default: float) -> tuple[float, bool]:
     return (value, True) if math.isfinite(value) else (default, False)
 
 
-def _tail_text(
-    path: Path,
-    limit: int = 64 * 1024,
-    *,
-    window: _LogWindow | None = None,
-) -> str:
-    try:
-        if not path.is_file():
-            return ""
-        if window is not None and window.path != path:
-            raise ValueError("log window path does not match the requested log")
-        with path.open("rb") as handle:
-            handle.seek(0, os.SEEK_END)
-            file_end = handle.tell()
-            if window is None:
-                end = file_end
-                start = max(0, end - limit)
-            else:
-                if window.offset < 0 or window.byte_count < 0:
-                    raise ValueError("log window has a negative byte boundary")
-                end = min(file_end, window.offset + window.byte_count)
-                if end <= window.offset:
-                    return ""
-                start = max(window.offset, end - limit)
-            handle.seek(start)
-            return handle.read(end - start).decode("utf-8", errors="replace")
-    except OSError:
-        return ""
-
-
-def _log_window(path: Path, offset: int) -> _LogWindow:
-    """Bind one log's appended byte extent from an observed start offset."""
-    try:
-        end = path.stat().st_size if path.is_file() else offset
-    except OSError:
-        end = offset
-    return _LogWindow(path=path, offset=offset, byte_count=max(0, end - offset))
-
-
 def _executor_unavailable_reason(
     result: dict[str, Any],
     stdout_log: Path,
     stderr_log: Path,
-    event_window: _LogWindow,
+    event_window: _evidence._LogWindow,
 ) -> None:
     from scripts.task_run import task_run_state
 
     transcript = "\n".join(
         (
-            _tail_text(stdout_log),
-            _tail_text(stderr_log),
-            _tail_text(event_window.path, window=event_window),
+            _evidence._tail_text(stdout_log),
+            _evidence._tail_text(stderr_log),
+            _evidence._tail_text(event_window.path, window=event_window),
         )
     )
     reason = task_run_state.executor_unavailable_reason(result, transcript)
     if reason:
         result["executor_unavailable"] = reason
-
-
-def _lane_stderr_text(stdout_log: Path, stderr_log: Path | None) -> str:
-    """Read the conventional executor stderr transcript for phase parsing."""
-    candidate = stderr_log
-    if candidate is None and stdout_log.name.endswith(".stdout.log"):
-        candidate = stdout_log.with_name(
-            stdout_log.name[: -len(".stdout.log")] + ".stderr.log"
-        )
-    if candidate is None:
-        return ""
-    try:
-        if candidate.is_file():
-            return candidate.read_bytes()[-256 * 1024 :].decode("utf-8", errors="replace")
-    except OSError:
-        pass
-    return ""
 
 
 def _guard_phases(payload: Mapping[str, Any]) -> list[str]:
@@ -302,14 +243,14 @@ def _execute_codex(
                 _record_steer_delivery(queue_path, pending, resume_path)
     except OSError as exc:
         result["exec_error"] = str(exc)
-    event_window = _log_window(event_log, event_log_offset)
+    event_window = _evidence._log_window(event_log, event_log_offset)
     result["event_log_window"] = {
         "path": str(event_window.path),
         "offset_bytes": event_window.offset,
         "byte_count": event_window.byte_count,
     }
     _executor_unavailable_reason(result, stdout_log, stderr_log, event_window)
-    _muse_stream_diagnostics(result, stdout_log, stderr_log, executor, event_window)
+    _muse_events._muse_stream_diagnostics(result, stdout_log, stderr_log, executor, event_window)
     steer_messages = _lane_runner.read_steer_queue(queue_path)
     if steer_messages:
         result["steer_messages"] = steer_messages
@@ -430,7 +371,7 @@ def _retain_invocation_events(
 ) -> str | None:
     """Keep one invocation's raw events and surface its terminal report."""
     if executor == "codex":
-        raw_output = _tail_text(stdout_log, limit=64 * 1024 * 1024)
+        raw_output = _evidence._tail_text(stdout_log, limit=64 * 1024 * 1024)
         if stdout_log.is_file() and stdout_log.stat().st_size > 0:
             with stdout_log.open("rb") as source, event_log.open("ab") as handle:
                 shutil.copyfileobj(source, handle)
@@ -449,54 +390,8 @@ def _retain_invocation_events(
                 stdout_log.write_bytes(b"")
         return _codex_session_id(raw_output) or session_id
     if executor == "muse":
-        _retain_muse_events(stdout_log, event_log)
+        _muse_events._retain_muse_events(stdout_log, event_log)
     return session_id
-
-
-def _retain_muse_events(stdout_log: Path, event_log: Path) -> None:
-    """Keep raw muse JSONL in the events log and the terminal report on stdout.
-
-    Mirrors the Codex last-message shape: the raw `--json` transport is
-    appended per invocation for forensics, while `stdout_log` keeps only the
-    terminal report (or the streamed partial text when the run never
-    terminated), so result delivery stays the actual report (#886).
-    Transcripts without muse events are plain-text lanes and stay untouched.
-    """
-    from scripts.task_run import task_run_muse_events as _muse_events
-
-    raw_output = _tail_text(stdout_log, limit=64 * 1024 * 1024)
-    report = _muse_events.muse_stdout_report(raw_output)
-    if report is None:
-        return
-    with event_log.open("a", encoding="utf-8") as handle:
-        handle.write(raw_output)
-        if not raw_output.endswith("\n"):
-            handle.write("\n")
-    stdout_log.write_text(report, encoding="utf-8")
-
-
-def _muse_stream_diagnostics(
-    result: dict[str, Any],
-    stdout_log: Path,
-    stderr_log: Path,
-    executor: str,
-    event_window: _LogWindow,
-) -> None:
-    """Attach current-execution Muse diagnostics, including steering (#886)."""
-    if executor != "muse":
-        return
-    from scripts.task_run import task_run_muse_events as _muse_events
-
-    events_text = _tail_text(
-        event_window.path,
-        limit=64 * 1024 * 1024,
-        window=event_window,
-    )
-    if not _muse_events.has_muse_events(events_text):
-        events_text = _tail_text(stdout_log, limit=64 * 1024 * 1024)
-    result["stream_diagnostics"] = _muse_events.stream_diagnostics(
-        events_text, _tail_text(stderr_log, limit=256 * 1024)
-    )
 
 
 def _codex_session_id(output: str) -> str | None:

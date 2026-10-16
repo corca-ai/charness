@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
-from typing import Any, Callable, Mapping, Sequence
+from typing import Any, Callable, Mapping, NamedTuple, Sequence
 
 
 def _load_repo_runtime_bootstrap():
@@ -32,6 +33,64 @@ from scripts.task_run.task_run_scope import (  # noqa: E402
     _refresh_scope_specs,
     _scope_result,
 )
+
+
+class _LogWindow(NamedTuple):
+    path: Path
+    offset: int
+    byte_count: int
+
+
+def _tail_text(
+    path: Path,
+    limit: int = 64 * 1024,
+    *,
+    window: _LogWindow | None = None,
+) -> str:
+    """Read a bounded tail or the invocation-owned byte window of one log."""
+    try:
+        if not path.is_file():
+            return ""
+        if window is not None and window.path != path:
+            raise ValueError("log window path does not match the requested log")
+        with path.open("rb") as handle:
+            handle.seek(0, os.SEEK_END)
+            file_end = handle.tell()
+            if window is None:
+                end = file_end
+                start = max(0, end - limit)
+            else:
+                if window.offset < 0 or window.byte_count < 0:
+                    raise ValueError("log window has a negative byte boundary")
+                end = min(file_end, window.offset + window.byte_count)
+                if end <= window.offset:
+                    return ""
+                start = max(window.offset, end - limit)
+            handle.seek(start)
+            return handle.read(end - start).decode("utf-8", errors="replace")
+    except OSError:
+        return ""
+
+
+def _log_window(path: Path, offset: int) -> _LogWindow:
+    """Bind one log's appended byte extent from an observed start offset."""
+    try:
+        end = path.stat().st_size if path.is_file() else offset
+    except OSError:
+        end = offset
+    return _LogWindow(path=path, offset=offset, byte_count=max(0, end - offset))
+
+
+def _lane_stderr_text(stdout_log: Path, stderr_log: Path | None) -> str:
+    """Read the conventional executor stderr transcript for phase parsing."""
+    candidate = stderr_log
+    if candidate is None and stdout_log.name.endswith(".stdout.log"):
+        candidate = stdout_log.with_name(
+            stdout_log.name[: -len(".stdout.log")] + ".stderr.log"
+        )
+    if candidate is None:
+        return ""
+    return _tail_text(candidate, limit=256 * 1024)
 
 
 def _persist_full_report(

@@ -124,7 +124,7 @@ def complete_task(
     execution_status = execution_state(execution, delivery)
     payload["execution"]["status"] = execution_status
     acceptance_skeleton = _prelaunch.finish_acceptance_skeleton(payload, resolved_target) if execution_status == "completed" else None
-    stderr_text = _progress._lane_stderr_text(stdout_log, stderr_log)
+    stderr_text = _evidence._lane_stderr_text(stdout_log, stderr_log)
     payload["failure"] = _state.classify_failure(execution, stderr_text=stderr_text, delivery=delivery)
     candidate, result_state = candidate_result_state(
         execution_state=execution_status,

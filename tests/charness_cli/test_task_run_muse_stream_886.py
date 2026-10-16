@@ -14,6 +14,7 @@ import json
 import sys
 from pathlib import Path
 
+from scripts.task_run import task_run_evidence as evidence
 from scripts.task_run import task_run_execution as execution
 from scripts.task_run import task_run_muse_events as muse_events
 from scripts.task_run import task_run_progress as prog
@@ -335,8 +336,8 @@ def test_stream_diagnostics_reads_past_old_tail_cuts(tmp_path: Path) -> None:
     stdout_log.write_text("late report\n", encoding="utf-8")
     stderr_log.write_text("", encoding="utf-8")
     result: dict = {}
-    event_window = execution._log_window(event_log, 0)
-    execution._muse_stream_diagnostics(result, stdout_log, stderr_log, "muse", event_window)
+    event_window = evidence._log_window(event_log, 0)
+    muse_events._muse_stream_diagnostics(result, stdout_log, stderr_log, "muse", event_window)
     diagnostics = result["stream_diagnostics"]
     assert diagnostics["retries"] == 1
     assert diagnostics["last_error_kind"] == "transport"
@@ -564,13 +565,13 @@ def test_retain_muse_events_keeps_report_and_terminates_log(tmp_path: Path) -> N
         json.dumps(_delta("EDITING\n")) + "\n" + json.dumps(_terminal("done\n")),
         encoding="utf-8",
     )
-    execution._retain_muse_events(stdout_log, event_log)
+    muse_events._retain_muse_events(stdout_log, event_log)
     assert stdout_log.read_text(encoding="utf-8") == "done\n"
     assert event_log.read_text(encoding="utf-8").endswith("\n")
 
     plain_log = tmp_path / "plain.stdout.log"
     plain_log.write_text("task complete\n", encoding="utf-8")
-    execution._retain_muse_events(plain_log, tmp_path / "plain.events.log")
+    muse_events._retain_muse_events(plain_log, tmp_path / "plain.events.log")
     assert plain_log.read_text(encoding="utf-8") == "task complete\n"
     assert not (tmp_path / "plain.events.log").exists()
 
@@ -584,13 +585,13 @@ def test_muse_stream_diagnostics_attaches_for_muse_only(tmp_path: Path) -> None:
         "muse: retrying meta model stream in 1000ms (attempt 2/10)\n",
         encoding="utf-8",
     )
-    event_window = execution._log_window(stdout_log.with_name("muse.events.log"), 0)
+    event_window = evidence._log_window(stdout_log.with_name("muse.events.log"), 0)
     result: dict = {}
-    execution._muse_stream_diagnostics(result, stdout_log, stderr_log, "muse", event_window)
+    muse_events._muse_stream_diagnostics(result, stdout_log, stderr_log, "muse", event_window)
     assert result["stream_diagnostics"]["source"] == "stderr"
     assert result["stream_diagnostics"]["retries"] == 1
     codex_result: dict = {}
-    execution._muse_stream_diagnostics(codex_result, stdout_log, stderr_log, "codex", event_window)
+    muse_events._muse_stream_diagnostics(codex_result, stdout_log, stderr_log, "codex", event_window)
     assert "stream_diagnostics" not in codex_result
 
 
