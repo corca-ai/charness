@@ -419,7 +419,7 @@ def test_worker_delivered_rejects_unsafe_report_path(tmp_path: Path) -> None:
 
 def test_worker_delivered_rejects_missing_report_carrier(tmp_path: Path) -> None:
     fields = _carrier_fields("missing/report.yaml")
-    with pytest.raises(_evidence.ValidationError, match="does not exist inside"):
+    with pytest.raises(_evidence.ValidationError, match="does not exist"):
         _validate_carrier(tmp_path, fields)
 
 

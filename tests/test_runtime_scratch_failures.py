@@ -178,6 +178,55 @@ def test_lock_probe_refuses_unreadable_lock_and_supports_no_fcntl(tmp_path: Path
         assert core._lock_is_active(lock_path) is False
 
 
+def test_owned_lock_authority_requires_observed_contention(tmp_path: Path, monkeypatch) -> None:
+    lock_path = tmp_path / "owner.lock"
+    lock_path.write_text("owner\n", encoding="utf-8")
+    with monkeypatch.context() as patch:
+        patch.setattr(core, "fcntl", None)
+        with pytest.raises(core.ScratchError, match="cannot be verified"):
+            core._require_held_owner_lock(lock_path)
+    if core.fcntl is None:
+        return
+
+    class BrokenFcntl:
+        LOCK_EX = core.fcntl.LOCK_EX
+        LOCK_NB = core.fcntl.LOCK_NB
+
+        @staticmethod
+        def flock(*_args, **_kwargs):
+            raise OSError("lock device failed")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(core, "fcntl", BrokenFcntl)
+        with pytest.raises(core.ScratchError, match="cannot be verified"):
+            core._require_held_owner_lock(lock_path)
+
+    missing = tmp_path / "missing.lock"
+    with pytest.raises(core.ScratchError, match="cannot be verified"):
+        core._require_held_owner_lock(missing)
+    assert not missing.exists()
+
+    original_open = core.Path.open
+
+    def unreadable(path, *args, **kwargs):
+        if path == lock_path:
+            raise OSError("lock is unreadable")
+        return original_open(path, *args, **kwargs)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(core.Path, "open", unreadable)
+        with pytest.raises(core.ScratchError, match="cannot be verified"):
+            core._require_held_owner_lock(lock_path)
+
+    with pytest.raises(core.ScratchError, match="not held"):
+        core._require_held_owner_lock(lock_path)
+
+    with lock_path.open("r") as held:
+        core.fcntl.flock(held.fileno(), core.fcntl.LOCK_EX | core.fcntl.LOCK_NB)
+        assert core.observe_owner_lock(lock_path) is True
+        core._require_held_owner_lock(lock_path)
+
+
 @pytest.mark.parametrize("outcome, expected", [("dead", False), ("denied", True), ("error", False), ("alive", True)])
 def test_pid_probe_maps_process_liveness_errors(
     monkeypatch, outcome: str, expected: bool

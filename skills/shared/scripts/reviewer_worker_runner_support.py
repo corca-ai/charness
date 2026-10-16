@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import os
 import runpy
 import tempfile
@@ -60,9 +61,163 @@ def _runtime():
     return SimpleNamespace(**runpy.run_path(str(bootstrap)))
 
 
+def runtime_scratch_module():
+    """Load the package-owned runtime receipt/path contract."""
+    return _runtime().import_repo_module(__file__, "scripts.runtime_scratch")
+
+
 def repo_path(repo_root: Path, value: Path) -> Path:
     """Resolve runner paths against the explicit repo root, never launch cwd."""
     return (value if value.is_absolute() else repo_root / value).resolve()
+
+
+def validate_owned_run_reference(
+    repo_root: Path,
+    *,
+    owner_run_id: str | None,
+    owner_receipt_file: Path | None,
+    attempt_id: str,
+    scope: str,
+    packet_identity: str,
+    reviewed_input_identity: str,
+    parent_receipt_identity: str,
+    backend: str,
+    boundary_mode: str,
+    boundary_fingerprint: str | None,
+    runtime_environment: dict[str, str],
+) -> tuple[Any | None, dict[str, Any] | None]:
+    """Bind a runner to the live owner receipt and canonical plan, without locking it."""
+    if bool(owner_run_id) != bool(owner_receipt_file):
+        raise ValueError("owner-run-id and owner-receipt-file must be supplied together")
+    if owner_run_id is None or owner_receipt_file is None:
+        return None, None
+    try:
+        scratch = runtime_scratch_module()
+        probe = scratch.OwnedScratch(
+            repo_root,
+            "critique-review",
+            run_id=owner_run_id,
+            runtime_root_path=scratch.runtime_root(repo_root, runtime_environment),
+        )
+        if probe.receipt_path.is_symlink() or not probe.receipt_path.is_file():
+            raise ValueError("owned scratch receipt is missing or unsafe")
+        plan_path = probe.path / "run-plan.json"
+        if plan_path.is_symlink() or not plan_path.is_file():
+            raise ValueError("owned scratch run plan is missing or unsafe")
+        try:
+            owner_plan = json.loads(plan_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValueError(f"owned scratch run plan is unreadable: {exc}") from exc
+        if not isinstance(owner_plan, dict):
+            raise ValueError("owned scratch run plan must be a mapping")
+        prompt_bound = owner_plan.get("prompt_sha256")
+        if not isinstance(prompt_bound, str) or not prompt_bound.strip():
+            raise ValueError("owned scratch run plan has no prompt binding")
+        owner, _ = scratch.validate_owned_scratch_reference(
+            repo_root,
+            owner_receipt_file,
+            producer="critique-review",
+            run_id=owner_run_id,
+            expected_fields={
+                "attempt_id": attempt_id,
+                "plan_sha256": sha256(plan_path),
+                "packet_identity": packet_identity,
+                "reviewed_input_identity": reviewed_input_identity,
+                "parent_receipt_identity": parent_receipt_identity,
+            },
+            runtime_environment=runtime_environment,
+        )
+    except (ImportError, RuntimeError) as exc:
+        raise ValueError(f"owned scratch reference is invalid: {exc}") from exc
+    expected_plan_fields = (
+        ("kind", "charness.review_run_plan.v1"),
+        ("attempt_id", attempt_id),
+        ("owner_run_id", owner_run_id),
+        ("scope", scope),
+        ("packet_sha256", packet_identity),
+        ("reviewed_input_identity_sha256", reviewed_input_identity),
+        ("parent_receipt_identity", parent_receipt_identity),
+        ("backend", backend),
+        ("boundary_mode", boundary_mode),
+        ("boundary_fingerprint", boundary_fingerprint),
+    )
+    for field, expected in expected_plan_fields:
+        if owner_plan.get(field) != expected:
+            raise ValueError(f"owned scratch run plan {field} does not match the runner request")
+    return owner, owner_plan
+
+
+def resolve_runner_path(
+    repo_root: Path,
+    value: Path,
+    *,
+    label: str,
+    owner: Any | None = None,
+) -> Path:
+    """Resolve a repo path or a path inside the exact, already-verified owner."""
+    raw = value.expanduser()
+    if owner is not None and raw.is_absolute():
+        lexical = Path(os.path.abspath(raw))
+        try:
+            owner_relative = lexical.relative_to(owner.path)
+        except ValueError:
+            owner_relative = None
+        if owner_relative is not None:
+            current = owner.path
+            for part in owner_relative.parts:
+                current = current / part
+                if current.is_symlink():
+                    raise ValueError(f"runner {label} crosses an owned scratch symlink: {current}")
+            resolved = raw.resolve()
+            try:
+                resolved.relative_to(owner.path)
+            except ValueError as exc:
+                raise ValueError(
+                    f"runner {label} resolves outside the exact owned scratch root: {resolved}"
+                ) from exc
+            try:
+                if resolved.is_file() and resolved.stat().st_nlink > 1:
+                    raise ValueError(
+                        f"runner {label} is hardlinked outside private ownership: {resolved}"
+                    )
+            except OSError as exc:
+                raise ValueError(f"runner {label} cannot be verified inside the owned root: {exc}") from exc
+            return resolved
+    resolved = repo_path(repo_root, raw)
+    try:
+        resolved.relative_to(repo_root)
+        return resolved
+    except ValueError as exc:
+        if owner is None or not raw.is_absolute():
+            raise ValueError(
+                f"runner path resolves outside --repo-root without owned scratch proof: {resolved}"
+            ) from exc
+        raise ValueError(f"runner {label} is outside the exact owned scratch root: {resolved}") from exc
+
+
+def require_prompt_binding(owner_plan: dict[str, Any] | None, prompt_sha: str) -> None:
+    """Bind the actual prompt bytes to the canonical owner plan before the backend starts."""
+    if owner_plan is None:
+        return
+    expected = owner_plan.get("prompt_sha256")
+    if not isinstance(expected, str) or expected != prompt_sha:
+        raise ValueError("owned scratch prompt bytes do not match the run plan")
+
+
+def require_distinct_runner_paths(paths: tuple[Path, ...]) -> None:
+    """Refuse input/output aliasing before any runner artifact is written."""
+    if len(set(paths)) != len(paths):
+        raise ValueError("runner input and output paths must resolve to distinct files")
+    seen: dict[tuple[int, int], Path] = {}
+    for path in paths:
+        try:
+            descriptor = path.stat()
+        except OSError:
+            continue
+        key = (descriptor.st_dev, descriptor.st_ino)
+        if key in seen:
+            raise ValueError("runner input and output paths must resolve to distinct files")
+        seen[key] = path
 
 
 def atomic_write_yaml(path: Path, payload: dict[str, Any]) -> None:
@@ -139,6 +294,8 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--execution-mode", choices=("file-backed-worker", "typed-subagent"))
     result.add_argument("--timeout-seconds", type=float)
     result.add_argument("--run-id")
+    result.add_argument("--owner-run-id")
+    result.add_argument("--owner-receipt-file", type=Path)
     return result
 
 
