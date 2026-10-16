@@ -2,6 +2,7 @@
 
 > Status: current
 > Source of truth: this page and the `charness task run/status` implementation
+> Last verified: 2026-10-17
 
 `charness task run` executes one bounded lane; `task status` reads its external
 result store. There is no scheduler lifecycle. `--executor` defaults to
@@ -23,9 +24,8 @@ Interrupted work with a proven empty scope is `interrupted-before-edit`; WIP is
 reserved for changed work whose completeness is unknown. A useful dirty
 candidate can be retained for review even when blockers deny approval.
 
-Terminal receipts carry `result_kind` and a stable blocker. Exit codes are 0
-success, 1 failed, 2 premise-blocked, 3 validated-partial, 4
-executor-unavailable, and 5 needs-review; `--help` is the typed contract.
+Terminal receipts carry `result_kind` and a stable blocker. The CLI exit-code
+mapping is owned by `charness task run --help`.
 Transient stream stalls retry in the same worktree (three attempts by default,
 30-second backoff); attempts record their failure kind. Finished-but-unapprovable
 work needs review, merge, or re-scope; it does not need relaunch. Scope closure
@@ -35,7 +35,6 @@ Secret-pattern environment names are scrubbed except
 executor auth keeps and `CHARNESS_TASK_RUN_KEEP_SECRET_ENV`; the receipt records
 names, never values. Budget wall time as `MAX_ATTEMPTS` x `--timeout-seconds`.
 
-
 ## Learning and resumed orchestration
 
 Task-run friction events use WI-1 event-schema v1 and live in
@@ -44,7 +43,6 @@ same-kind event from a distinct task run within 30 days carries
 `repair the pattern, don't reshape the command`. This asks the integrator to
 repair the recurring pattern; it does not run an automatic repair. Writer
 conflicts are recorded for operator resolution.
-
 
 `charness task report [--window 30m]` renders the fixed-shape period report
 from lane metrics, the friction log, and the decision ledger: goals, lane
@@ -57,7 +55,6 @@ Keep the active principles, DAG file, and handoff in the parent repo's
 file is read into every newly built lane prompt. A resumed orchestrator thus
 restores those pointers when it launches the next lane. The prompt builder
 reads it on each launch; it does not detect host compaction itself.
-
 
 ## Run
 
