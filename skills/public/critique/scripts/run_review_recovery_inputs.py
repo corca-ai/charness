@@ -320,13 +320,6 @@ def validate_promoted_chain(
             "reason": "promoted worker report identity does not match the requested attempt",
             "identity_binding": binding,
         }
-    expected_approval = final_carrier.get("approval_eligible") is True
-    if manifest.get("approval_eligible") is not expected_approval:
-        return {
-            "status": "invalid",
-            "ok": False,
-            "reason": "promoted attempt manifest disagrees with the final lifecycle carrier",
-        }
     return {
         "status": "verified",
         "ok": True,

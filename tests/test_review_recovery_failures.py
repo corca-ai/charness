@@ -20,6 +20,7 @@ RUN_REVIEW = load_script_module(
 SUPPORT = RUN_REVIEW.SUPPORT
 PACKET = RUN_REVIEW.PACKET
 PROMOTION = RUN_REVIEW.PROMOTION
+CARRIER = RUN_REVIEW.CARRIER
 RECOVERY = load_script_module(
     "review_recovery_under_test", SCRIPT_ROOT / "run_review_recovery.py"
 )
@@ -281,7 +282,7 @@ def test_promoted_chain_reopens_durable_files_and_checks_integrity(tmp_path: Pat
         else:
             SUPPORT.write_json(path, {"kind": key})
         files[key] = SUPPORT.relative(tmp_path, path)
-    final_carrier = {"state": "terminal", "approval_eligible": False}
+    final_carrier = {"state": "terminal", "approval_eligible": True}
     SUPPORT.write_yaml(durable / "summary.json", final_carrier)
     integrity = {
         key: {
@@ -326,54 +327,86 @@ def test_promoted_chain_reopens_durable_files_and_checks_integrity(tmp_path: Pat
     assert "integrity check failed" in invalid["reason"]
 
 
-def test_failed_promoted_readback_downgrades_manifest_and_retains_evidence(tmp_path: Path) -> None:
-    durable = tmp_path / "charness-artifacts" / "critique" / "workers" / "downgrade"
+def test_finalizer_validates_promoted_chain_before_approval_commit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    durable = tmp_path / "charness-artifacts" / "critique" / "workers" / "attempt"
     durable.mkdir(parents=True)
-    names = {key: f"{key}.json" for key in ("report", "receipt", "ledger", "output", "summary")}
-    files = {}
-    for key, name in names.items():
-        path = durable / name
-        SUPPORT.write_json(path, {"kind": key, "approval_eligible": False})
-        files[key] = SUPPORT.relative(tmp_path, path)
-    final_carrier = {"state": "terminal", "approval_eligible": False}
-    integrity = {
-        key: {
-            "path": relative,
-            "bytes": (tmp_path / relative).stat().st_size,
-            "sha256": SUPPORT.sha256(tmp_path / relative),
-        }
-        for key, relative in files.items()
+    summary = durable / "lifecycle.yaml"
+    manifest = durable / "attempt-manifest.json"
+    SUPPORT.write_json(manifest, {"approval_eligible": False, "files": {}})
+    carrier = {
+        "schema_version": "charness.reviewer_lifecycle.v1",
+        "execution_state": "terminal",
+        "lifecycle_state": "terminal",
+        "delivery_state": "findings-received",
+        "approval_eligible": True,
+        "identity_check": {"matches": True},
+        "runner_stream": {"consistent": True},
+        "ok": True,
+        "carrier_ok": True,
     }
-    manifest_path = durable / "attempt-manifest.json"
-    SUPPORT.write_json(
-        manifest_path,
-        {"files": files, "file_integrity": integrity, "approval_eligible": True,
-         "use_class": "approval", "identity_binding": "worker-report-bound"},
+    paths = {
+        "report": tmp_path / "report.yaml",
+        "run_dir": tmp_path / "run",
+    }
+    paths["run_dir"].mkdir()
+    context = {
+        "packet_sha256": "p",
+        "reviewed_input_identity_sha256": "i",
+        "parent_receipt_identity": "parent",
+        "paths": {},
+    }
+    validation_states: list[bool] = []
+
+    def validate_chain(*_args, **_kwargs):
+        visible = json.loads(manifest.read_text(encoding="utf-8"))
+        validation_states.append(visible["approval_eligible"])
+        return {"status": "invalid", "ok": False, "reason": "corrupted promoted output"}
+
+    monkeypatch.setattr(
+        SUPPORT,
+        "package_paths",
+        lambda _script_dir: {"carrier_validation": tmp_path / "carrier.py"},
     )
-    manifest_relative = SUPPORT.relative(tmp_path, manifest_path)
-    (tmp_path / files["output"]).write_text('{"kind": "output", "corrupted": true}\n', encoding="utf-8")
-    failed = RECOVERY_INPUTS.validate_promoted_chain(
+    monkeypatch.setattr(
+        SUPPORT,
+        "load_module",
+        lambda _path, name: SimpleNamespace(
+            validate_promoted_chain=validate_chain,
+            validate_delivered_worker_report=lambda **_kwargs: None,
+        )
+        if "recovery_inputs" in name
+        else SimpleNamespace(validate_delivered_worker_report=lambda **_kwargs: None),
+    )
+    promotion = SimpleNamespace(
+        STORAGE=PROMOTION.STORAGE,
+        SOURCE_KEYS={},
+        LOG_SOURCE_KEYS={},
+        promote_attempt_metadata=lambda *_args, **_kwargs: {
+            "lifecycle.yaml": SUPPORT.relative(tmp_path, summary),
+            "attempt-manifest.json": SUPPORT.relative(tmp_path, manifest),
+        },
+        refresh_manifest_integrity=lambda *_args, **_kwargs: {},
+        approval_for=lambda *_args, **_kwargs: (True, {"matches": True}),
+    )
+    result = CARRIER.finalize_carrier(
+        SUPPORT,
+        promotion,
         tmp_path,
-        dict(files),
-        final_carrier,
-        {"attempt_id": "attempt", "packet_sha256": "p", "reviewed_input_identity_sha256": "i", "parent_receipt_identity": "parent"},
-        support=SUPPORT,
-        carrier_validation=SimpleNamespace(validate_delivered_worker_report=lambda **_kwargs: None),
-        promotion=SimpleNamespace(identity_binding=lambda _report, _expected: {"matches": True}),
+        "attempt",
+        paths,
+        context,
+        carrier,
+        {"delivery_state": "findings-received"},
+        recovery_validation={"ok": True},
     )
-    assert failed["ok"] is False
-    downgraded = json.loads(manifest_path.read_text(encoding="utf-8"))
-    downgraded.update(
-        approval_eligible=False,
-        use_class="diagnostic-retryable",
-        identity_binding="consumer-required",
-    )
-    PROMOTION.STORAGE.write_json_atomically(manifest_path, downgraded)
-    PROMOTION.refresh_manifest_integrity(tmp_path, manifest_relative)
-    saved = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    saved = json.loads(manifest.read_text(encoding="utf-8"))
+    assert result == {"status": "invalid", "ok": False, "reason": "corrupted promoted output"}
+    assert validation_states == [False]
     assert saved["approval_eligible"] is False
     assert saved["use_class"] == "diagnostic-retryable"
-    assert (tmp_path / files["output"]).is_file()
 
 
 class _RecoveryOwner:

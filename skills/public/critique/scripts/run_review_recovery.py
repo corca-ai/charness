@@ -177,7 +177,7 @@ def resume_retained_attempt(
                 if key != "run_dir"
             },
         }
-        carrier_module.finalize_carrier(
+        promoted_chain = carrier_module.finalize_carrier(
             support,
             promotion,
             root,
@@ -188,31 +188,7 @@ def resume_retained_attempt(
             report,
             recovery_validation,
         )
-        promoted_chain = retained_inputs.validate_promoted_chain(
-            root,
-            context["paths"],
-            final_carrier,
-            expected,
-            support=support,
-            carrier_validation=carrier_validation,
-            promotion=promotion,
-        )
         if not promoted_chain.get("ok"):
-            manifest_relative = context["paths"].get("attempt-manifest.json")
-            if isinstance(manifest_relative, str):
-                try:
-                    manifest_file = root / manifest_relative
-                    downgraded = json.loads(manifest_file.read_text(encoding="utf-8"))
-                    if isinstance(downgraded, dict):
-                        downgraded.update(
-                            approval_eligible=False,
-                            use_class="diagnostic-retryable",
-                            identity_binding="consumer-required",
-                        )
-                        promotion.STORAGE.write_json_atomically(manifest_file, downgraded)
-                        promotion.refresh_manifest_integrity(root, manifest_relative)
-                except (OSError, ValueError):
-                    pass
             owner.close(state="failed")
             support.emit(
                 {

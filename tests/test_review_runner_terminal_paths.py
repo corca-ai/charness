@@ -135,7 +135,7 @@ def test_recovery_only_removes_retained_inputs_after_promoted_readback(tmp_path,
         SUPPORT.write_json(run / "worker-report.yaml", {"delivery_state": "findings-received"})
     emitted, events = [], []
     manifest = tmp_path / "attempt-manifest.json"
-    SUPPORT.write_json(manifest, {"approval_eligible": fault == "pass", "identity_binding": {"matches": True}})
+    SUPPORT.write_json(manifest, {"approval_eligible": False, "identity_binding": {"matches": True}})
     def validate(**kwargs):
         if fault == "validator":
             raise ValueError("unbound worker receipt")
@@ -143,14 +143,25 @@ def test_recovery_only_removes_retained_inputs_after_promoted_readback(tmp_path,
         events.append("promote")
         if fault == "promotion":
             raise OSError("promotion unavailable")
+        promoted_chain = chain(*args)
+        if promoted_chain["ok"]:
+            saved = SUPPORT.load_mapping(manifest)
+            saved.update(
+                approval_eligible=fault == "pass",
+                use_class="approval" if fault == "pass" else "diagnostic-retryable",
+                identity_binding={"matches": True},
+            )
+            SUPPORT.write_json(manifest, saved)
+        return promoted_chain
     def chain(*args, **kwargs):
         events.append("readback")
+        assert SUPPORT.load_mapping(manifest)["approval_eligible"] is False
         return {"ok": fault != "chain", "reason": "bad durable chain", "attempt_manifest": manifest.name}
     modules = {
         "carrier": NS(validate_delivered_worker_report=validate),
         "identity": NS(),
         "lifecycle": NS(build_lifecycle=lambda **kwargs: {"approval_eligible": False}),
-        "run_review_recovery_inputs.py": NS(validate_retained_inputs=lambda *a, **k: {"ok": True}, validate_promoted_chain=chain),
+        "run_review_recovery_inputs.py": NS(validate_retained_inputs=lambda *a, **k: {"ok": True}),
         "run_review_carrier.py": NS(compare_report_stream=lambda *a: {"consistent": fault != "stream"}, finalize_carrier=finalize),
     }
     support = _support(
