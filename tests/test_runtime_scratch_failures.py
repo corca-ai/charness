@@ -766,18 +766,23 @@ def test_cli_dispatches_commands_with_injected_core_and_yaml() -> None:
     emitted: list[dict[str, object]] = []
 
     def record(command: str, payload: dict[str, object]):
-        def handler(repo: Path, **options: object) -> dict[str, object]:
-            calls.append((command, repo, options))
+        def handler(core: object, repo: Path, **options: object) -> dict[str, object]:
+            calls.append((command, repo, {"core": core, **options}))
             return payload
 
         return handler
 
     yaml_output = SimpleNamespace(emit_yaml=emitted.append)
-    fake_core = SimpleNamespace(
+    fake_registry = SimpleNamespace(
         inspect_scratch_roots=record("inspect", {"command": "inspect"}),
         gc_scratch_roots=record("gc", {"command": "gc"}),
         recover_scratch_roots=record("recover", {"command": "recover"}),
-        import_repo_module=lambda *_args: yaml_output,
+    )
+    fake_core = SimpleNamespace(
+        import_repo_module=lambda _path, name: {
+            "scripts.runtime_scratch_registry": fake_registry,
+            "scripts.yaml_output": yaml_output,
+        }[name]
     )
     repo = Path("/fixture/repo")
     runtime = Path("/fixture/runtime")
@@ -801,8 +806,15 @@ def test_cli_dispatches_commands_with_injected_core_and_yaml() -> None:
 
     assert [call[0] for call in calls] == ["inspect", "gc", "recover"]
     assert all(call[1] == repo for call in calls)
-    assert calls[0][2] == {"runtime_root_path": runtime, "max_roots": 3, "max_entries": 7}
+    assert calls[0][2] == {
+        "core": fake_core,
+        "runtime_root_path": runtime,
+        "max_roots": 3,
+        "max_entries": 7,
+    }
+    assert calls[1][2]["core"] is fake_core
     assert calls[1][2]["dry_run"] is False
+    assert calls[2][2]["core"] is fake_core
     assert calls[2][2]["dry_run"] is False
     assert emitted == [{"command": command} for command in ("inspect", "gc", "recover")]
 

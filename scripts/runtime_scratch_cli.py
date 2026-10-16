@@ -27,12 +27,13 @@ def main(core: ModuleType, argv: list[str] | None = None) -> int:
         "max_roots": args.max_roots,
         "max_entries": args.max_entries,
     }
+    registry = core.import_repo_module(__file__, "scripts.runtime_scratch_registry")
     if args.command == "inspect":
-        payload = core.inspect_scratch_roots(args.repo_root, **options)
+        payload = registry.inspect_scratch_roots(core, args.repo_root, **options)
     elif args.command == "gc":
-        payload = core.gc_scratch_roots(args.repo_root, dry_run=not args.execute, **options)
+        payload = registry.gc_scratch_roots(core, args.repo_root, dry_run=not args.execute, **options)
     else:
-        payload = core.recover_scratch_roots(args.repo_root, dry_run=not args.execute, **options)
+        payload = registry.recover_scratch_roots(core, args.repo_root, dry_run=not args.execute, **options)
     yaml_output = core.import_repo_module(__file__, "scripts.yaml_output")
     yaml_output.emit_yaml(payload)
     return 0

@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from scripts import runtime_scratch as scratch_core
+from scripts import runtime_scratch_registry as scratch_registry
 from scripts.gates import check_temp_producer_inventory as inventory_cli
 from scripts.gates import run_owned_scratch_command as scratch_adapter
 from scripts.gates import temp_producer_inventory_lib as temp_inventory_lib
@@ -21,7 +23,6 @@ from scripts.gates.temp_producer_inventory_lib import (
     python_producers,
     shell_producers,
 )
-from scripts.runtime_scratch import inspect_scratch_roots
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -385,4 +386,4 @@ def test_standalone_shell_adapter_preserves_verdict_and_cleans_root(
         assert owned_path.is_relative_to(runtime / "scratch" / "shell-fixture")
         assert not owned_path.exists()
     assert list((runtime / "scratch" / "shell-fixture").iterdir()) == []
-    assert inspect_scratch_roots(repo, runtime_root_path=runtime)["roots"] == []
+    assert scratch_registry.inspect_scratch_roots(scratch_core, repo, runtime_root_path=runtime)["roots"] == []

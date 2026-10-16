@@ -579,62 +579,6 @@ def owned_scratch(
     )
 
 
-def _registry_module():
-    return import_repo_module(__file__, "scripts.runtime_scratch_registry")
-
-
-def inspect_scratch_roots(
-    repo_root: str | Path,
-    *,
-    runtime_root_path: str | Path | None = None,
-    max_roots: int = 256,
-    max_entries: int = 100_000,
-) -> dict[str, Any]:
-    return _registry_module().inspect_scratch_roots(
-        sys.modules[__name__],
-        repo_root,
-        runtime_root_path=runtime_root_path,
-        max_roots=max_roots,
-        max_entries=max_entries,
-    )
-
-
-def gc_scratch_roots(
-    repo_root: str | Path,
-    *,
-    runtime_root_path: str | Path | None = None,
-    dry_run: bool = True,
-    max_roots: int = 256,
-    max_entries: int = 100_000,
-) -> dict[str, Any]:
-    return _registry_module().gc_scratch_roots(
-        sys.modules[__name__],
-        repo_root,
-        runtime_root_path=runtime_root_path,
-        dry_run=dry_run,
-        max_roots=max_roots,
-        max_entries=max_entries,
-    )
-
-
-def recover_scratch_roots(
-    repo_root: str | Path,
-    *,
-    runtime_root_path: str | Path | None = None,
-    dry_run: bool = True,
-    max_roots: int = 256,
-    max_entries: int = 100_000,
-) -> dict[str, Any]:
-    return _registry_module().recover_scratch_roots(
-        sys.modules[__name__],
-        repo_root,
-        runtime_root_path=runtime_root_path,
-        dry_run=dry_run,
-        max_roots=max_roots,
-        max_entries=max_entries,
-    )
-
-
 def main(argv: list[str] | None = None) -> int:
     cli = import_repo_module(__file__, "scripts.runtime_scratch_cli")
     return cli.main(sys.modules[__name__], argv)
