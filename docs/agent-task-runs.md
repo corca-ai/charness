@@ -2,7 +2,6 @@
 
 > Status: current
 > Source of truth: this page and the `charness task run/status` implementation
-> Last verified: 2026-09-24
 
 `charness task run` executes one bounded lane; `task status` reads its external
 result store. There is no scheduler lifecycle. `--executor` defaults to
@@ -17,15 +16,7 @@ the agent runner (`codex`/`muse`); carrier names where the candidate lives
 (`carrier_kind`: `commit-only`, `commit-plus-dirty`, `worktree-only`,
 `unknown`), not who ran it.
 
-For `--require-change`, the implementation-lane prompt shaping injects scope,
-edit/test, and typed-blocker instructions. If the real owner lies outside scope, stop with
-`BLOCKED: scope mismatch - real owner <path> is outside declared scope`. Receipts
-record observed `CONTRACT-READ`, `EDITING`, and `TESTING` phases plus blockers.
-The guard stops a blocked lane that outlives its grace period and a lane with
-`CONTRACT-READ` but no edit or scoped diff after its no-progress budget. The
-receipt records the guard outcome. `CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS`
-defaults to 300 (`0` disables it); `CHARNESS_TASK_RUN_BLOCKED_GRACE_SECONDS`
-defaults to 60. Other lanes receive their prompt unchanged.
+`--require-change` shapes implementation prompts and records edit/test phases. A scope mismatch retains a typed blocker rather than silently selecting a substitute owner. The task runner enforces its configured no-progress and blocked grace budgets; `task run --help` owns the options.
 
 `--report-only` inspects without changing and never reports a writer conflict.
 Interrupted work with a proven empty scope is `interrupted-before-edit`; WIP is
@@ -44,8 +35,6 @@ Secret-pattern environment names are scrubbed except
 executor auth keeps and `CHARNESS_TASK_RUN_KEEP_SECRET_ENV`; the receipt records
 names, never values. Budget wall time as `MAX_ATTEMPTS` x `--timeout-seconds`.
 
-A persistence-risk lens blocks adding or removing `DROP`/`TRUNCATE` or unscoped
-`DELETE FROM` with no replacement (`completed-needs-review`).
 
 ## Learning and resumed orchestration
 
@@ -56,9 +45,6 @@ same-kind event from a distinct task run within 30 days carries
 repair the recurring pattern; it does not run an automatic repair. Writer
 conflicts are recorded for operator resolution.
 
-Pause for a short retro after every five lane outcomes and after a resumed
-handoff following compaction. Include exactly one line:
-`improvements found: <concise items>` or `improvements found: none`.
 
 `charness task report [--window 30m]` renders the fixed-shape period report
 from lane metrics, the friction log, and the decision ledger: goals, lane
@@ -72,9 +58,6 @@ file is read into every newly built lane prompt. A resumed orchestrator thus
 restores those pointers when it launches the next lane. The prompt builder
 reads it on each launch; it does not detect host compaction itself.
 
-The lane environment includes root `AGENTS.md` and inherited agent
-instructions. Lane briefs and integrators should proactively surface relevant
-constraints and link to their owning files across handoffs.
 
 ## Run
 
@@ -143,33 +126,9 @@ while a live pid on a terminal record is normal during retention.
 
 ### Aggregate running-task inventory
 
-An admission consumer (parallel fan-out deciding whether another lane may
-start) needs the canonical running count across repos and parent worktrees,
-independent of task-id prefix. The canonical owner exposes one explicit
-aggregate scope for exactly that: `charness task status --repo-root <parent> --all-repos`.
+`charness task status --repo-root <parent> --all-repos` returns the running count across immediate sibling keys in the caller's managed runtime tree, without task-ID prefix filtering or recursive scans. The [runtime owner](../scripts/runtime_bootstrap.py) and [retention owner](../scripts/gates_support/runtime_root_retention.py) derive that boundary. A standalone runtime root reports its narrower scope; neither claims whole-machine coverage.
 
-The boundary comes from the existing runtime owner: this repo's key under
-`<base>/charness/runtime` (`scripts/runtime_bootstrap.py`, `keys_root_of` in
-`scripts/gates_support/runtime_root_retention.py`). Only actual top-level
-`task-run/*/result.json` records in immediate sibling keys are read with the
-canonical `runner_liveness` check. Directories left by failed launches without a
-result file are not tasks; a result that disappears after enumeration remains
-unknown. Nested keys under `xdg-cache` and lane-private `runtime/` dirs are
-never recursed, so one task is never double-counted. A custom standalone
-runtime root has no sibling keys, so the inventory honestly narrows to
-`scope: single-runtime-root` with its limitation stated; `machine_global` is
-always false, never a whole-machine claim.
-
-Classification is canonical: `running` with a live runner counts;
-terminal-with-live-runner is normal retention and does not count; `running`
-with a dead runner is `stale`. Only statuses in the task-state owner's result
-vocabulary count as terminal; an unrecognized status, unreadable or malformed
-result, a result that disappeared during the read, or `running` with no
-confirmable runner forces `completeness: partial`. The response contains the
-live task identities, state counts, and unknown reason counts rather than
-terminal or unknown result records or a listing of every runtime key. Status
-never repairs or rewrites result files; an admission consumer must check
-`completeness` and `running_count` together, with no guessed fallback.
+Only canonical `task-run/*/result.json` records count. Live running records count as running, dead running records as stale, and known terminal states as terminal even while their runner finishes retention. Unknown status, unreadable or malformed storage, and unconfirmed liveness make completeness partial. Status never repairs records. An admission caller must consume both `completeness` and `running_count`; successful query execution is not admission approval.
 
 Complete schema-bearing JSON/YAML delivery is exposed as `result_delivery.structured`;
 review-lifecycle input is also projected as `reviewer_lifecycle`. Bounded review
