@@ -19,7 +19,7 @@ from pathlib import Path
 import pytest
 
 from scripts.cli import cmd_task as task_payload
-from scripts.task_run import task_run, task_run_runtime
+from scripts.task_run import task_run, task_run_inventory, task_run_runtime
 
 _LIVE_PID = os.getpid()
 
@@ -81,7 +81,7 @@ def test_two_sibling_keys_with_non_s33_ids_count_together(tmp_path: Path) -> Non
     )
     snapshot = {path: path.read_bytes() for path in (before_a, before_b)}
 
-    payload = task_run_runtime.running_inventory_for_keys_root(keys_root)
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
 
     assert payload["event"] == "task-status-inventory"
     assert payload["scope"] == "managed-runtime-tree"
@@ -164,17 +164,17 @@ def test_live_terminal_stale_and_unknown_are_distinct(
         {"task_id": "future-status", "status": "unexpected-state", "runner_pid": live_pid},
     )
 
-    payload = task_run_runtime.running_inventory_for_keys_root(keys_root)
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
 
     assert payload["running_count"] == 1
     assert [task["task_id"] for task in payload["running_tasks"]] == ["live-lane"]
     assert payload["terminal_count"] == 4
     assert payload["stale_count"] == 1
     assert payload["unknown_reasons"] == {
-        task_run_runtime.UNKNOWN_MALFORMED: 2,
-        task_run_runtime.UNKNOWN_RUNNER_UNCONFIRMED: 1,
-        task_run_runtime.UNKNOWN_STATUS: 1,
-        task_run_runtime.UNKNOWN_UNREADABLE: 1,
+        task_run_inventory.UNKNOWN_MALFORMED: 2,
+        task_run_inventory.UNKNOWN_RUNNER_UNCONFIRMED: 1,
+        task_run_inventory.UNKNOWN_STATUS: 1,
+        task_run_inventory.UNKNOWN_UNREADABLE: 1,
     }
     # The archive has no canonical result record, so it contributes no unknown.
     assert payload["unknown_count"] == 5
@@ -199,10 +199,65 @@ def test_result_disappearing_after_enumeration_stays_unknown(
 
     monkeypatch.setattr(Path, "read_text", disappear)
 
-    entry = task_run_runtime.inventory_entry_for_result(result, tmp_path / "key")
+    entry = task_run_inventory.inventory_entry_for_result(result, tmp_path / "key")
 
     assert entry["inventory_state"] == "unknown"
-    assert entry["reason_code"] == task_run_runtime.UNKNOWN_RECORD_MISSING
+    assert entry["reason_code"] == task_run_inventory.UNKNOWN_RECORD_MISSING
+
+
+def test_unreadable_result_file_stays_unknown(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    result = _write_record(
+        tmp_path / "key", "unreadable", _running("unreadable", _LIVE_PID)
+    )
+    original = Path.read_text
+
+    def deny_result_read(path: Path, *args: object, **kwargs: object) -> str:
+        if path == result:
+            raise PermissionError("injected result read denial")
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", deny_result_read)
+
+    entry = task_run_inventory.inventory_entry_for_result(result, result.parent.parent)
+
+    assert entry["inventory_state"] == "unknown"
+    assert entry["reason_code"] == task_run_inventory.UNKNOWN_UNREADABLE
+
+
+def test_unreadable_result_metadata_stays_unknown(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    keys_root, key_a, _key_b = _keys(tmp_path)
+    result = _write_record(key_a, "unreadable-metadata", _running("unreadable-metadata", _LIVE_PID))
+    original = Path.lstat
+
+    def deny_result_metadata(path: Path, *args: object, **kwargs: object):
+        if path == result:
+            raise PermissionError("injected result metadata denial")
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "lstat", deny_result_metadata)
+
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
+
+    assert payload["unknown_count"] == 1
+    assert payload["unknown_reasons"] == {
+        task_run_inventory.UNKNOWN_UNREADABLE: 1
+    }
+    assert payload["completeness"] == "partial"
+
+
+def test_missing_result_status_is_malformed_unknown(tmp_path: Path) -> None:
+    result = _write_record(
+        tmp_path / "key", "missing-status", {"task_id": "missing-status"}
+    )
+
+    entry = task_run_inventory.inventory_entry_for_result(result, result.parent.parent)
+
+    assert entry["inventory_state"] == "unknown"
+    assert entry["reason_code"] == task_run_inventory.UNKNOWN_MALFORMED
 
 
 def test_unreadable_task_store_enumeration_makes_inventory_partial(
@@ -220,7 +275,7 @@ def test_unreadable_task_store_enumeration_makes_inventory_partial(
 
     monkeypatch.setattr(os, "scandir", fail_store)
 
-    payload = task_run_runtime.running_inventory_for_keys_root(keys_root)
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
 
     assert payload["running_count"] == 0
     assert payload["unknown_count"] == 0
@@ -228,6 +283,96 @@ def test_unreadable_task_store_enumeration_makes_inventory_partial(
     assert len(payload["completeness_reasons"]) == 1
     assert "unreadable task-run store" in payload["completeness_reasons"][0]
     assert payload["unknown_reasons"] == {}
+
+
+def test_missing_task_store_is_a_complete_empty_inventory(tmp_path: Path) -> None:
+    keys_root = tmp_path / "keys"
+    (keys_root / "quiet-key").mkdir(parents=True)
+
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
+
+    assert payload["running_count"] == 0
+    assert payload["unknown_count"] == 0
+    assert payload["completeness"] == "complete"
+
+
+def test_unreadable_task_store_metadata_makes_inventory_partial(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    keys_root, key_a, _key_b = _keys(tmp_path)
+    store = key_a / "task-run"
+    original = Path.lstat
+
+    def deny_store_metadata(path: Path, *args: object, **kwargs: object):
+        if path == store:
+            raise PermissionError("injected task-store metadata denial")
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "lstat", deny_store_metadata)
+
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
+
+    assert payload["running_count"] == 0
+    assert payload["completeness"] == "partial"
+    assert "unreadable task-run store" in payload["completeness_reasons"][0]
+
+
+@pytest.mark.parametrize(
+    ("error", "expected_completeness"),
+    [
+        (FileNotFoundError("entry vanished"), "complete"),
+        (PermissionError("entry unreadable"), "partial"),
+    ],
+)
+def test_task_directory_stat_races_preserve_inventory_completeness(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    error: OSError,
+    expected_completeness: str,
+) -> None:
+    keys_root, key_a, _key_b = _keys(tmp_path)
+    store = key_a / "task-run"
+    original_scandir = os.scandir
+
+    class VanishedEntry:
+        name = "vanished"
+        path = os.fspath(store / name)
+
+        def stat(self, *, follow_symlinks: bool = True):
+            raise error
+
+    class OneEntryScan:
+        def __enter__(self):
+            return iter((VanishedEntry(),))
+
+        def __exit__(self, *_args: object) -> None:
+            return None
+
+    def scan(path: int | os.PathLike[str] | str):
+        if not isinstance(path, int) and Path(path) == store:
+            return OneEntryScan()
+        return original_scandir(path)
+
+    monkeypatch.setattr(os, "scandir", scan)
+
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
+
+    assert payload["completeness"] == expected_completeness
+    if isinstance(error, PermissionError):
+        assert "unreadable task-run entry" in payload["completeness_reasons"][0]
+    else:
+        assert payload["completeness_reasons"] == []
+
+
+def test_non_directory_task_entries_are_ignored(tmp_path: Path) -> None:
+    keys_root, key_a, _key_b = _keys(tmp_path)
+    (key_a / "task-run" / "loose-record").write_text("ignored", encoding="utf-8")
+
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
+
+    assert payload["running_count"] == 0
+    assert payload["unknown_count"] == 0
+    assert payload["completeness"] == "complete"
 
 
 def test_non_directory_and_symlink_task_stores_make_inventory_partial(
@@ -245,12 +390,49 @@ def test_non_directory_and_symlink_task_stores_make_inventory_partial(
     symlink_store.rmdir()
     symlink_store.symlink_to(external_root / "task-run", target_is_directory=True)
 
-    payload = task_run_runtime.running_inventory_for_keys_root(keys_root)
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
 
     assert payload["running_count"] == 0
     assert payload["completeness"] == "partial"
     assert len(payload["completeness_reasons"]) == 2
     assert all("task-run store" in reason for reason in payload["completeness_reasons"])
+
+
+def test_unreadable_keys_root_makes_managed_inventory_partial(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    keys_root = tmp_path / "keys"
+    keys_root.mkdir()
+    original = Path.iterdir
+
+    def deny_keys_root(path: Path):
+        if path == keys_root:
+            raise PermissionError("injected keys-root read denial")
+        return original(path)
+
+    monkeypatch.setattr(Path, "iterdir", deny_keys_root)
+
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
+
+    assert payload["completeness"] == "partial"
+    assert payload["unknown_reasons"] == {"unreadable-keys-root": 1}
+    assert "unreadable keys root" in payload["completeness_reasons"][0]
+
+
+def test_symlink_and_non_directory_keys_are_not_inventory_scopes(tmp_path: Path) -> None:
+    keys_root = tmp_path / "keys"
+    keys_root.mkdir()
+    valid_key = keys_root / "valid-key"
+    _write_record(valid_key, "counted", _running("counted", _LIVE_PID))
+    external_key = tmp_path / "external-key"
+    _write_record(external_key, "not-counted", _running("not-counted", _LIVE_PID))
+    (keys_root / "not-a-key").write_text("ignored", encoding="utf-8")
+    (keys_root / "linked-key").symlink_to(external_key, target_is_directory=True)
+
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
+
+    assert payload["running_count"] == 1
+    assert [task["task_id"] for task in payload["running_tasks"]] == ["counted"]
 
 
 def test_nested_private_stores_are_not_double_counted(tmp_path: Path) -> None:
@@ -265,14 +447,14 @@ def test_nested_private_stores_are_not_double_counted(tmp_path: Path) -> None:
         json.dumps(_running("outer-lane", _LIVE_PID)), encoding="utf-8"
     )
 
-    payload = task_run_runtime.running_inventory_for_keys_root(keys_root)
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
 
     assert payload["running_count"] == 1
 
 
 def test_all_repos_rejects_a_task_id_without_touching_git() -> None:
     with pytest.raises(task_run.TaskRunError, match="--all-repos cannot be combined"):
-        task_run_runtime.task_status(Path("/nonexistent"), "some-id", all_repos=True)
+        task_run_inventory.task_status(Path("/nonexistent"), "some-id", all_repos=True)
 
 
 def test_explicit_standalone_root_states_its_limitation(
@@ -285,7 +467,7 @@ def test_explicit_standalone_root_states_its_limitation(
         task_run_runtime._git_owner, "_require_git_root", lambda root: Path(root).resolve()
     )
 
-    payload = task_run_runtime.task_status(tmp_path, all_repos=True)
+    payload = task_run_inventory.task_status(tmp_path, all_repos=True)
 
     assert payload["scope"] == "single-runtime-root"
     assert payload["keys_root"] is None
@@ -306,7 +488,7 @@ def test_managed_wrapper_carries_repo_and_runtime(
         task_run_runtime._git_owner, "_require_git_root", lambda root: Path(root).resolve()
     )
 
-    payload = task_run_runtime.task_status(tmp_path, all_repos=True)
+    payload = task_run_inventory.task_status(tmp_path, all_repos=True)
 
     assert payload["keys_root"] == str(keys_root)
     assert payload["runtime_root"] == str(key_a)
