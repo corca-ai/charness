@@ -10,11 +10,11 @@ from pathlib import Path
 
 import pytest
 
-from scripts.task_run import task_run, task_run_execution, task_run_runtime, task_run_state
+from scripts.task_run import task_run, task_run_execution, task_run_runtime, task_run_self_review
 
 
 def test_self_review_findings_are_grouped_by_disposition() -> None:
-    block = task_run_state.self_review_block(
+    block = task_run_self_review.self_review_block(
         "findings-received",
         findings=[
             {"summary": "The boundary is covered.", "disposition": "fixed", "evidence": ["src/a.py:2"]},
@@ -57,11 +57,11 @@ def test_self_review_findings_are_grouped_by_disposition() -> None:
 )
 def test_self_review_rejects_malformed_findings(state: str, findings: object, message: str) -> None:
     with pytest.raises(ValueError, match=message):
-        task_run_state.self_review_block(state, findings=findings)
+        task_run_self_review.self_review_block(state, findings=findings)
 
 
 def test_self_review_filters_blank_evidence() -> None:
-    block = task_run_state.self_review_block(
+    block = task_run_self_review.self_review_block(
         "findings-received",
         findings=[{"summary": "Risk", "disposition": "fixed", "evidence": ["path:2", " "]}],
     )
@@ -70,7 +70,7 @@ def test_self_review_filters_blank_evidence() -> None:
 
 
 def test_self_review_prompt_and_schema_use_list_evidence() -> None:
-    schema = task_run_state.self_review_schema()
+    schema = task_run_self_review.self_review_schema()
     finding_schema = schema["properties"]["findings"]["items"]
 
     assert schema["required"] == list(schema["properties"])
@@ -78,7 +78,7 @@ def test_self_review_prompt_and_schema_use_list_evidence() -> None:
     assert finding_schema["properties"]["evidence"] == {
         "type": "array", "items": {"type": "string"}
     }
-    prompt = task_run_state.self_review_prompt("Review.", "base", ["file.py"])
+    prompt = task_run_self_review.self_review_prompt("Review.", "base", ["file.py"])
     assert finding_schema["required"] == list(finding_schema["properties"])
     assert "minLength" not in json.dumps(schema)
     assert "use [] when there is no evidence" in prompt
@@ -104,9 +104,7 @@ def test_unavailable_self_review_is_a_reasoned_non_claim(
             "self_review_policy": "always",
             "_self_review_prompt": "Review this candidate.",
             "executor": {"kind": executor, "command": command},
-            "scopes": ["src/module.py"],
             "candidate": {"changed_paths": ["src/module.py"]},
-            "persistence": {"findings": [], "blocking": False},
             "execution_runtime_root": str(tmp_path / "runtime"),
             "worktree_path": str(tmp_path),
         }
@@ -118,17 +116,7 @@ def test_unavailable_self_review_is_a_reasoned_non_claim(
     assert block["findings"] == {"fixed": [], "deferred": [], "disputed": []}
 
 
-def test_self_review_normalizes_bad_scopes_and_runtime_failures(tmp_path: Path) -> None:
-    unavailable_executor = task_run_execution.run_self_review(
-        {
-            "self_review_policy": "always",
-            "_self_review_prompt": "Review this candidate.",
-            "executor": {"kind": "muse", "command": ["muse"]},
-            "scopes": "not-a-list",
-        }
-    )
-    assert unavailable_executor["state"] == "unavailable-skip"
-
+def test_self_review_normalizes_runtime_failures(tmp_path: Path) -> None:
     blocked_runtime = tmp_path.parent / f"{tmp_path.name}-runtime-file"
     blocked_runtime.write_text("file", encoding="utf-8")
     runtime_failure = task_run_execution.run_self_review(
@@ -136,7 +124,6 @@ def test_self_review_normalizes_bad_scopes_and_runtime_failures(tmp_path: Path) 
             "self_review_policy": "always",
             "_self_review_prompt": "Review this candidate.",
             "executor": {"kind": "codex", "command": [sys.executable]},
-            "scopes": [],
             "execution_runtime_root": str(blocked_runtime),
             "worktree_path": str(tmp_path),
         }
@@ -146,8 +133,8 @@ def test_self_review_normalizes_bad_scopes_and_runtime_failures(tmp_path: Path) 
 
 
 def test_self_review_maps_executor_and_invalid_result_failures() -> None:
-    failed = task_run_state.self_review_result({"exit_code": 2}, "")
-    invalid = task_run_state.self_review_result(
+    failed = task_run_self_review.self_review_result({"exit_code": 2}, "")
+    invalid = task_run_self_review.self_review_result(
         {"exit_code": 0},
         '{"kind":"charness.task_self_review.v1","findings":"invalid"}',
     )
@@ -160,7 +147,7 @@ def test_self_review_maps_executor_and_invalid_result_failures() -> None:
 
 def test_task_status_reads_the_self_review_receipt(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     runtime = tmp_path / "runtime"
-    block = task_run_state.self_review_block(
+    block = task_run_self_review.self_review_block(
         "unavailable-skip", reason="read-only reviewer is unavailable"
     )
     monkeypatch.setattr(task_run_runtime._git_owner, "_require_git_root", lambda _path: tmp_path)
@@ -201,9 +188,7 @@ def test_self_review_runs_a_read_only_codex_pass_and_records_findings(tmp_path: 
             "self_review_policy": "always",
             "_self_review_prompt": "Review the lane candidate.",
             "executor": {"kind": "codex", "command": [str(executable)], "timeout_seconds": 30},
-            "scopes": ["src/module.py"],
             "candidate": {"changed_paths": ["src/module.py"]},
-            "persistence": {"findings": [], "blocking": False},
             "base_sha": "base-sha",
             "execution_runtime_root": str(runtime_root),
             "worktree_path": str(tmp_path),
@@ -215,7 +200,7 @@ def test_self_review_runs_a_read_only_codex_pass_and_records_findings(tmp_path: 
     arguments = (tmp_path / "args").read_text(encoding="utf-8").splitlines()
     schema_path = Path(arguments[arguments.index("--output-schema") + 1])
     assert schema_path.is_file()
-    assert task_run_state.self_review_schema() == json.loads(
+    assert task_run_self_review.self_review_schema() == json.loads(
         schema_path.read_text(encoding="utf-8")
     )
     assert block["findings"]["deferred"][0]["evidence"] == ["src/module.py:4"]
