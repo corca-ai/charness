@@ -113,69 +113,97 @@ def verify_result_carrier(  # noqa: C901, PLR0915
 
     descriptor = manifest.get("partial_result")
     partial_relative = source.relative_to(root).as_posix()
+    result_relative = result_path.relative_to(root).as_posix()
     source_digest = sha256(source)
     manifest_files = manifest.get("files")
-    if not isinstance(descriptor, dict) or descriptor.get("path") != partial_relative:
-        raise error(
-            "prior-result-unbound",
-            "prior result is not the partial-result carrier recorded by its attempt manifest",
-        )
-    if descriptor.get("sha256") != source_digest or descriptor.get("bytes") != source.stat().st_size:
-        raise error(
-            "prior-result-tampered",
-            "prior result bytes do not match the retained attempt descriptor",
-        )
-    if not isinstance(manifest_files, dict) or manifest_files.get("partial-result.json") != partial_relative:
-        raise error(
-            "prior-result-unbound",
-            "retained attempt manifest does not expose the supplied result carrier",
-        )
-    source_path = _retained_source(root, descriptor.get("source"))
-    source_relative_value = descriptor.get("source")
-    if source_path is None or not isinstance(source_relative_value, str):
-        raise error(
-            "prior-result-unbound",
-            "prior result has no safe retained backend source",
-        )
-    backend_relative = source_path.relative_to(root).as_posix()
-    if backend_relative != source_relative_value:
-        raise error("prior-result-unbound", "prior backend source path is not repository-relative")
-    if backend_relative not in {
-        value for value in manifest_files.values() if isinstance(value, str)
-    }:
-        raise error(
-            "prior-result-unbound",
-            "prior result backend source is not exposed by the attempt manifest",
-        )
-    logs = manifest.get("logs")
-    log_descriptor = next(
-        (
-            value
-            for value in logs.values()
-            if isinstance(value, dict) and value.get("path") == backend_relative
-        ),
-        None,
-    ) if isinstance(logs, dict) else None
-    if not isinstance(log_descriptor, dict):
-        raise error("prior-result-unbound", "prior backend source has no retained log descriptor")
-    retained_bytes = source_path.stat().st_size
-    expected_bytes = log_descriptor.get("retained_bytes") if log_descriptor.get("truncated") else log_descriptor.get("bytes")
-    if expected_bytes != retained_bytes:
-        raise error("prior-result-tampered", "retained backend source byte count changed")
-    if not log_descriptor.get("truncated") and log_descriptor.get("sha256") != sha256(source_path):
-        raise error("prior-result-tampered", "retained backend source digest changed")
-    if not _source_contains_result(source_path, raw):
-        raise error(
-            "prior-result-tampered",
-            "partial result is not present in its retained backend source",
-        )
-    if isinstance(result, dict):
+    is_full_result = partial_relative == result_relative
+    is_partial = isinstance(descriptor, dict) and not is_full_result
+    if is_partial:
+        if descriptor.get("path") != partial_relative:
+            raise error(
+                "prior-result-unbound",
+                "prior result is not the partial-result carrier recorded by its attempt manifest",
+            )
+        if descriptor.get("sha256") != source_digest or descriptor.get("bytes") != source.stat().st_size:
+            raise error(
+                "prior-result-tampered",
+                "prior result bytes do not match the retained attempt descriptor",
+            )
+        if not isinstance(manifest_files, dict) or manifest_files.get("partial-result.json") != partial_relative:
+            raise error(
+                "prior-result-unbound",
+                "retained attempt manifest does not expose the supplied result carrier",
+            )
+        source_path = _retained_source(root, descriptor.get("source"))
+        source_relative_value = descriptor.get("source")
+        if source_path is None or not isinstance(source_relative_value, str):
+            raise error(
+                "prior-result-unbound",
+                "prior result has no safe retained backend source",
+            )
+        backend_relative = source_path.relative_to(root).as_posix()
+        if backend_relative != source_relative_value:
+            raise error("prior-result-unbound", "prior backend source path is not repository-relative")
+        if backend_relative not in {
+            value for value in manifest_files.values() if isinstance(value, str)
+        }:
+            raise error(
+                "prior-result-unbound",
+                "prior result backend source is not exposed by the attempt manifest",
+            )
+        logs = manifest.get("logs")
+        log_descriptor = next(
+            (
+                value
+                for value in logs.values()
+                if isinstance(value, dict) and value.get("path") == backend_relative
+            ),
+            None,
+        ) if isinstance(logs, dict) else None
+        if not isinstance(log_descriptor, dict):
+            raise error("prior-result-unbound", "prior backend source has no retained log descriptor")
+        retained_bytes = source_path.stat().st_size
+        expected_bytes = log_descriptor.get("retained_bytes") if log_descriptor.get("truncated") else log_descriptor.get("bytes")
+        if expected_bytes != retained_bytes:
+            raise error("prior-result-tampered", "retained backend source byte count changed")
+        if not log_descriptor.get("truncated") and log_descriptor.get("sha256") != sha256(source_path):
+            raise error("prior-result-tampered", "retained backend source digest changed")
+        if not _source_contains_result(source_path, raw):
+            raise error(
+                "prior-result-tampered",
+                "partial result is not present in its retained backend source",
+            )
+    elif is_full_result:
+        integrity = manifest.get("file_integrity")
+        result_integrity = integrity.get("result.json") if isinstance(integrity, dict) else None
+        if (
+            not isinstance(result, dict)
+            or manifest.get("reusable") is not True
+            or not isinstance(manifest_files, dict)
+            or manifest_files.get("result.json") != result_relative
+            or not isinstance(result_integrity, dict)
+            or result_integrity.get("path") != result_relative
+        ):
+            raise error(
+                "prior-result-unbound",
+                "prior result is not the reusable result carrier recorded by its attempt manifest",
+            )
+        if (
+            result_integrity.get("sha256") != source_digest
+            or result_integrity.get("bytes") != source.stat().st_size
+        ):
+            raise error("prior-result-tampered", "prior result bytes do not match the retained attempt integrity record")
+        if raw != result:
+            raise error("prior-result-unbound", "supplied result is not the retained result carrier")
+    else:
+        raise error("prior-result-unbound", "supplied result is not a retained partial or full result carrier")
+    if isinstance(result, dict) and is_partial:
         if not all(result.get(key) == value for key, value in raw.items()):
             raise error(
                 "prior-result-unbound",
                 "partial result is not a projection of the receipt-bound result carrier",
             )
-    else:
+    elif not isinstance(result, dict):
         retained_partial = receipt.get("retained_partial_output")
         if not isinstance(retained_partial, dict):
             raise error(
@@ -254,7 +282,7 @@ def verify_result_carrier(  # noqa: C901, PLR0915
     return {
         "status": "verified",
         "attempt_id": attempt,
-        "partial_result_sha256": source_digest,
+        "partial_result_sha256": source_digest if is_partial else None,
         "result_sha256": result_digest,
-        "source_path": backend_relative,
+        "source_path": backend_relative if is_partial else None,
     }

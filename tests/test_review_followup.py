@@ -189,6 +189,26 @@ def _prior_review(repo: Path) -> tuple[str, Path]:
     return "charness-artifacts/critique/workers/prior/partial-result.json", result
 
 
+def _full_prior_review(repo: Path) -> tuple[str, Path]:
+    _source_value, partial = _prior_review(repo)
+    attempt = partial.parent
+    result = attempt / "result.json"
+    manifest_path = attempt / "attempt-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["reusable"] = True
+    result_relative = result.relative_to(repo).as_posix()
+    manifest["files"]["result.json"] = result_relative
+    manifest["file_integrity"] = {
+        "result.json": {
+            "path": result_relative,
+            "bytes": result.stat().st_size,
+            "sha256": hashlib.sha256(result.read_bytes()).hexdigest(),
+        }
+    }
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    return result_relative, result
+
+
 def test_followup_defaults_to_changed_prior_inputs(tmp_path: Path) -> None:
     repo = install_committed_repo(
         tmp_path / "repo",
@@ -211,6 +231,26 @@ def test_followup_defaults_to_changed_prior_inputs(tmp_path: Path) -> None:
     assert context["prior_reviewed_paths"] == 2
     assert context["selection_receipt"]["prior_binding"]["status"] == "verified"
     assert context["selection_receipt"]["selected_changed_prior_paths"] == ["a.py"]
+
+
+def test_followup_accepts_receipt_bound_full_result_carrier(tmp_path: Path) -> None:
+    repo = install_committed_repo(
+        tmp_path / "repo", {"a.py": "VALUE = 1\n", "b.py": "VALUE = 2\n"}
+    )
+    source_value, _ = _full_prior_review(repo)
+    (repo / "a.py").write_text("VALUE = 3\n", encoding="utf-8")
+
+    paths, context = FOLLOWUP.build_followup(
+        repo_root=repo,
+        source_value=source_value,
+        explicit_paths=None,
+        build_identity=build_reviewed_input_identity,
+    )
+
+    assert paths == ["a.py"]
+    assert context["prior_findings"][0]["id"] == "F-1"
+    assert context["prior_verdict"] == "block"
+    assert context["selection_receipt"]["prior_binding"]["status"] == "verified"
 
 
 def test_followup_refuses_when_prior_inputs_have_no_delta(tmp_path: Path) -> None:
