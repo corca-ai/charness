@@ -43,10 +43,6 @@ from scripts.runtime_bootstrap import (  # noqa: E402
     runtime_root,
 )
 
-_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
-run_process = _guard.run_process
-
-
 SCHEMA = "charness.runtime-scratch-owner/v1"
 SCRATCH_DIR_NAME = "scratch"
 OWNER_RECEIPT_NAME = ".charness-owner.json"
@@ -118,33 +114,6 @@ def _read_owner(path: Path) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
-def _tree_inventory(root: Path, *, max_entries: int) -> tuple[int, int, bool]:
-    entries = 0
-    size = 0
-    truncated = False
-    stack = [root]
-    while stack:
-        current = stack.pop()
-        try:
-            children = list(os.scandir(current))
-        except OSError:
-            continue
-        for entry in children:
-            entries += 1
-            if entries > max_entries:
-                return entries, size, True
-            try:
-                if entry.is_symlink():
-                    continue
-                if entry.is_dir(follow_symlinks=False):
-                    stack.append(Path(entry.path))
-                elif entry.is_file(follow_symlinks=False):
-                    size += entry.stat(follow_symlinks=False).st_size
-            except OSError:
-                truncated = True
-    return entries, size, truncated
-
-
 def _lock_is_active(lock_path: Path) -> bool:
     if not lock_path.is_file():
         return False
@@ -214,25 +183,6 @@ def _pid_is_alive(value: object) -> bool:
     except OSError:
         return False
     return True
-
-
-def _registered_worktrees(repo_root: Path) -> list[Path]:
-    try:
-        result = run_process(
-            ["git", "worktree", "list", "--porcelain"],
-            cwd=repo_root,
-            timeout_seconds=10,
-        )
-    except OSError as exc:
-        raise ScratchError(f"cannot inspect registered worktrees: {exc}") from exc
-    if result.returncode != 0:
-        detail = result.stderr.strip() or result.stdout.strip() or "git worktree list failed"
-        raise ScratchError(f"cannot inspect registered worktrees: {detail}")
-    paths: list[Path] = []
-    for line in result.stdout.splitlines():
-        if line.startswith("worktree "):
-            paths.append(Path(line.removeprefix("worktree ")).resolve())
-    return paths
 
 
 def _contains_path(parent: Path, child: Path) -> bool:

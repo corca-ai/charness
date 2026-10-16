@@ -2,11 +2,60 @@
 
 from __future__ import annotations
 
+import os
 import shutil
 from datetime import datetime
 from pathlib import Path
 from types import ModuleType
 from typing import Any
+
+from scripts.core.subprocess_guard import run_process
+
+
+def _tree_inventory(root: Path, *, max_entries: int) -> tuple[int, int, bool]:
+    entries = 0
+    size = 0
+    truncated = False
+    stack = [root]
+    while stack:
+        current = stack.pop()
+        try:
+            children = list(os.scandir(current))
+        except OSError:
+            continue
+        for entry in children:
+            entries += 1
+            if entries > max_entries:
+                return entries, size, True
+            try:
+                if entry.is_symlink():
+                    continue
+                if entry.is_dir(follow_symlinks=False):
+                    stack.append(Path(entry.path))
+                elif entry.is_file(follow_symlinks=False):
+                    size += entry.stat(follow_symlinks=False).st_size
+            except OSError:
+                truncated = True
+    return entries, size, truncated
+
+
+def _registered_worktrees(core: ModuleType, repo_root: Path) -> list[Path]:
+    try:
+        result = run_process(
+            ["git", "worktree", "list", "--porcelain"],
+            cwd=repo_root,
+            timeout_seconds=10,
+        )
+    except OSError as exc:
+        raise core.ScratchError(f"cannot inspect registered worktrees: {exc}") from exc
+    if result.returncode != 0:
+        detail = result.stderr.strip() or result.stdout.strip() or "git worktree list failed"
+        raise core.ScratchError(f"cannot inspect registered worktrees: {detail}")
+    paths: list[Path] = []
+    for line in result.stdout.splitlines():
+        if line.startswith("worktree "):
+            paths.append(Path(line.removeprefix("worktree ")).resolve())
+    return paths
 
 
 def _root_status(
@@ -20,7 +69,7 @@ def _root_status(
     worktree_inventory_ok: bool,
     now: datetime,
 ) -> dict[str, Any]:
-    entries, size, truncated = core._tree_inventory(path, max_entries=max_entries)
+    entries, size, truncated = _tree_inventory(path, max_entries=max_entries)
     if owner is None or owner.get("schema") != core.SCHEMA:
         return {
             "path": str(path),
@@ -149,7 +198,7 @@ def inspect_scratch_roots(
     resolved_repo = Path(repo_root).expanduser().resolve()
     worktree_inventory_error = None
     try:
-        worktrees = core._registered_worktrees(resolved_repo)
+        worktrees = _registered_worktrees(core, resolved_repo)
     except core.ScratchError as exc:
         # A failed worktree inventory is a safety stop. We still report the
         # roots so an operator can diagnose them, but none can become eligible

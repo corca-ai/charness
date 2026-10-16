@@ -47,10 +47,10 @@ def test_worktree_inventory_failure_is_a_safety_stop(tmp_path: Path, monkeypatch
 
     import scripts.runtime_scratch as core
 
-    def fail(_repo):
+    def fail(_core, _repo):
         raise ScratchError("inventory unavailable")
 
-    monkeypatch.setattr(core, "_registered_worktrees", fail)
+    monkeypatch.setattr(registry, "_registered_worktrees", fail)
     report = registry.inspect_scratch_roots(core, repo, runtime_root_path=runtime)
     assert report["ok"] is False
     assert report["roots"][0]["disposition"].startswith("refuse-worktree-inventory-error")

@@ -108,7 +108,7 @@ def test_invalid_receipts_are_unreadable_and_refused(tmp_path: Path, monkeypatch
 
     path = _scratch_path(runtime, "corrupt", "receipt")
     (path / core.OWNER_RECEIPT_NAME).write_text("{not-json", encoding="utf-8")
-    monkeypatch.setattr(core, "_registered_worktrees", lambda _repo: [])
+    monkeypatch.setattr(registry, "_registered_worktrees", lambda _core, _repo: [])
 
     report = registry.inspect_scratch_roots(core, repo, runtime_root_path=runtime)
 
@@ -120,7 +120,7 @@ def test_inventory_handles_missing_roots_links_limits_and_stat_errors(
     tmp_path: Path, monkeypatch
 ) -> None:
     missing = tmp_path / "does-not-exist"
-    assert core._tree_inventory(missing, max_entries=10) == (0, 0, False)
+    assert registry._tree_inventory(missing, max_entries=10) == (0, 0, False)
 
     root = tmp_path / "inventory"
     nested = root / "nested"
@@ -128,9 +128,9 @@ def test_inventory_handles_missing_roots_links_limits_and_stat_errors(
     (nested / "payload").write_bytes(b"payload")
     (root / "link").symlink_to(nested, target_is_directory=True)
 
-    entries, size, truncated = core._tree_inventory(root, max_entries=10)
+    entries, size, truncated = registry._tree_inventory(root, max_entries=10)
     assert (entries, size, truncated) == (3, len(b"payload"), False)
-    assert core._tree_inventory(root, max_entries=0)[2] is True
+    assert registry._tree_inventory(root, max_entries=0)[2] is True
 
     class BrokenFile:
         path = str(root / "broken")
@@ -147,7 +147,7 @@ def test_inventory_handles_missing_roots_links_limits_and_stat_errors(
         def stat(self, *, follow_symlinks: bool = False):
             raise OSError("stat raced with removal")
 
-    original_scandir = core.os.scandir
+    original_scandir = registry.os.scandir
 
     def injected_scandir(current):
         if Path(current) == root:
@@ -155,8 +155,8 @@ def test_inventory_handles_missing_roots_links_limits_and_stat_errors(
         return original_scandir(current)
 
     with monkeypatch.context() as patch:
-        patch.setattr(core.os, "scandir", injected_scandir)
-        assert core._tree_inventory(root, max_entries=10) == (1, 0, True)
+        patch.setattr(registry.os, "scandir", injected_scandir)
+        assert registry._tree_inventory(root, max_entries=10) == (1, 0, True)
 
 
 def test_lock_probe_refuses_unreadable_lock_and_supports_no_fcntl(tmp_path: Path, monkeypatch) -> None:
@@ -252,29 +252,29 @@ def test_worktree_probe_translates_failures_and_parses_success(monkeypatch, tmp_
     def unavailable(*_args, **_kwargs):
         raise OSError("git is unavailable")
 
-    monkeypatch.setattr(core, "run_process", unavailable)
+    monkeypatch.setattr(registry, "run_process", unavailable)
     with pytest.raises(core.ScratchError, match="cannot inspect registered worktrees: git is unavailable"):
-        core._registered_worktrees(repo)
+        registry._registered_worktrees(core, repo)
 
     monkeypatch.setattr(
-        core,
+        registry,
         "run_process",
         lambda *_args, **_kwargs: SimpleNamespace(returncode=1, stderr="permission denied\n", stdout=""),
     )
     with pytest.raises(core.ScratchError, match="permission denied"):
-        core._registered_worktrees(repo)
+        registry._registered_worktrees(core, repo)
 
     monkeypatch.setattr(
-        core,
+        registry,
         "run_process",
         lambda *_args, **_kwargs: SimpleNamespace(returncode=1, stderr="", stdout="git failed\n"),
     )
     with pytest.raises(core.ScratchError, match="git failed"):
-        core._registered_worktrees(repo)
+        registry._registered_worktrees(core, repo)
 
     nested = repo / "nested"
     monkeypatch.setattr(
-        core,
+        registry,
         "run_process",
         lambda *_args, **_kwargs: SimpleNamespace(
             returncode=0,
@@ -282,7 +282,7 @@ def test_worktree_probe_translates_failures_and_parses_success(monkeypatch, tmp_
             stdout=f"worktree {repo}\nworktree {nested}\n",
         ),
     )
-    assert core._registered_worktrees(repo) == [repo.resolve(), nested.resolve()]
+    assert registry._registered_worktrees(core, repo) == [repo.resolve(), nested.resolve()]
 
 
 def test_owner_open_is_idempotent_and_rejects_collisions(tmp_path: Path) -> None:
@@ -502,7 +502,7 @@ def test_registry_refuses_unknown_owner_and_skips_non_directory_children(
     (scratch / "ignored-link").symlink_to(ignored_target, target_is_directory=True)
     path = _scratch_path(runtime, "unknown", "run")
     (path / core.OWNER_RECEIPT_NAME).write_text("{bad", encoding="utf-8")
-    monkeypatch.setattr(core, "_registered_worktrees", lambda _repo: [])
+    monkeypatch.setattr(registry, "_registered_worktrees", lambda _core, _repo: [])
 
     report = registry.inspect_scratch_roots(core, repo, runtime_root_path=runtime)
 
@@ -821,7 +821,7 @@ def test_cli_dispatches_commands_with_injected_core_and_yaml() -> None:
 
 def test_runtime_scratch_main_runs_cli_in_process(tmp_path: Path, monkeypatch, capsys) -> None:
     repo, runtime = _repo_and_runtime(tmp_path)
-    monkeypatch.setattr(core, "_registered_worktrees", lambda _repo: [])
+    monkeypatch.setattr(registry, "_registered_worktrees", lambda _core, _repo: [])
 
     assert core.main(
         [
@@ -840,10 +840,8 @@ def test_direct_script_entrypoint_runs_inspection_with_injected_process_probe(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
     repo, runtime = _repo_and_runtime(tmp_path)
-    from scripts.core import subprocess_guard
-
     monkeypatch.setattr(
-        subprocess_guard,
+        registry,
         "run_process",
         lambda *_args, **_kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
