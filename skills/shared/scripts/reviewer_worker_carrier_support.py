@@ -32,16 +32,15 @@ EXPECTED_PACKET_KIND = "charness.critique_prepare_packet"
 
 
 def _load_result_contract():
-    here = Path(__file__).resolve()
-    for ancestor in (here.parent, *here.parents):
-        candidate = ancestor / "reviewer_result_contract.py"
-        if candidate.is_file():
-            spec = importlib.util.spec_from_file_location("charness_reviewer_result_contract", candidate)
-            if spec is not None and spec.loader is not None:
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
-                return module
-    raise ImportError("package reviewer_result_contract.py not found")
+    candidate = Path(__file__).resolve().with_name("reviewer_result_contract.py")
+    if not candidate.is_file():
+        raise ImportError(f"package-local reviewer_result_contract.py not found: {candidate}")
+    spec = importlib.util.spec_from_file_location("charness_reviewer_result_contract", candidate)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"unable to load package-local reviewer_result_contract.py: {candidate}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _load_capability_contract():

@@ -35,6 +35,27 @@ def _executable(path: Path, body: str) -> None:
     path.chmod(path.stat().st_mode | stat.S_IXUSR)
 
 
+def test_carrier_result_contract_loader_refuses_ancestor_fallback(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    package_dir = tmp_path / "package"
+    package_dir.mkdir()
+    marker = tmp_path / "ancestor-contract-loaded"
+    (tmp_path / "reviewer_result_contract.py").write_text(
+        f"from pathlib import Path\nPath({str(marker)!r}).write_text('loaded')\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        reviewer_worker_carrier_support,
+        "__file__",
+        str(package_dir / "reviewer_worker_carrier_support.py"),
+    )
+
+    with pytest.raises(ImportError, match="package-local reviewer_result_contract.py not found"):
+        reviewer_worker_carrier_support._load_result_contract()
+    assert not marker.exists()
+
+
 def _assert_runner_refuses_option(
     command: list[str], env: dict[str, str], option: str, value: str, reason: str
 ) -> None:
