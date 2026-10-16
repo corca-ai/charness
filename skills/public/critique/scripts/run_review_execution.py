@@ -83,7 +83,9 @@ def run_live(  # noqa: C901, PLR0915
         context["paths"] = {
             key: support.relative(root, value) for key, value in paths.items() if key != "run_dir"
         }
-        semantic_input = materialize_semantic_input(root, packet_payload, paths["run_dir"])
+        semantic_input = materialize_semantic_input(
+            root, packet_payload, paths["run_dir"], owner=run_owner
+        )
         projected_input = lifecycle_semantic_input(semantic_input)
         context["semantic_input"] = semantic_input
         paths["schema"].write_bytes(package["schema"].read_bytes())
@@ -110,6 +112,7 @@ def run_live(  # noqa: C901, PLR0915
         plan = {
             "kind": "charness.review_run_plan.v1",
             "attempt_id": args.attempt_id,
+            "owner_run_id": run_owner.run_id,
             "scope": args.scope,
             "lens": args.lens,
             "packet_path": support.relative(root, packet_path),
@@ -187,6 +190,8 @@ def run_live(  # noqa: C901, PLR0915
             parent_receipt=parent_receipt, boundary_mode=boundary_mode, boundary_sha=boundary_sha,
             expected_targets=expected_targets,
             reviewer_tier=reviewer_tier,
+            owner_run_id=run_owner.run_id,
+            owner_receipt=run_owner.receipt_path,
         )
         returncode, status, started, error = support.run_runner_held_out(
             command, root=root, stdout_path=paths["runner_stdout"],
@@ -212,7 +217,7 @@ def run_live(  # noqa: C901, PLR0915
             partial_outputs=(
                 []
                 if isinstance(report, dict) and report.get("delivery_state") == "findings-received"
-                else partial_output.collect_run_logs(root, paths)
+                else partial_output.collect_run_logs(root, paths, owned_root=run_dir)
             ),
         )
         result.update(

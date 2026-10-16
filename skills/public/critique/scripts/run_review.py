@@ -131,9 +131,11 @@ def _adapter_name(root: Path, adapter: dict[str, Any]) -> str:
     return ".agents/critique-adapter.yaml"
 
 
-def _materialize_semantic_input(root: Path, packet: dict[str, Any], run_dir: Path) -> dict[str, Any]:
+def _materialize_semantic_input(
+    root: Path, packet: dict[str, Any], run_dir: Path, *, owner: Any = None
+) -> dict[str, Any]:
     try:
-        return PACKET.materialize_semantic_input(root, packet, run_dir)
+        return PACKET.materialize_semantic_input(root, packet, run_dir, owner=owner)
     except PACKET.SemanticInputError as exc:
         raise SUPPORT.RunReviewError(exc.code, str(exc), details=exc.details) from exc
 

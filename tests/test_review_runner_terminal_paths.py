@@ -74,7 +74,7 @@ def test_live_runner_disposes_terminal_failure_without_losing_retry_inputs(tmp_p
         emit=emitted.append, load_goal_lineage=lineage,
         package_paths=lambda path: {"schema": canonical, "partial_output": canonical, "resolve_adapter": canonical},
         load_runtime=lambda package: (lifecycle, NS(validate_capability_envelope=lambda *a, **k: NS(envelope_sha256="cap"))),
-        load_module=lambda *args: NS(collect_run_logs=lambda *args: []),
+        load_module=lambda *args: NS(collect_run_logs=lambda *args, **kwargs: []),
         resolve_adapter=lambda *args: {"data": {"packet_sections": [{}]}},
         select_backend=lambda *a, **k: (None if fault == "backend" else "codex_exec", 1),
         new_run_owner=lambda *args: owner, sha256=sha,
@@ -100,7 +100,8 @@ def test_live_runner_disposes_terminal_failure_without_losing_retry_inputs(tmp_p
         promotion=NS(DURABLE_WORKER_REPORTS="durable", load_and_promote_report=lambda *a: {"delivery_state": "findings-received"},
                      identity_binding=lambda *a: {"matches": False}),
         carrier_module=carrier, script_dir=SCRIPT_ROOT, read_only_boundary_mode="read-only",
-        lifecycle_semantic_input=lambda x: x, materialize_semantic_input=lambda *args: {},
+        lifecycle_semantic_input=lambda x: x,
+        materialize_semantic_input=lambda *args, **kwargs: {},
         adapter_name=lambda *args: "adapter.yaml",
     )
     assert result == (1 if fault == "identity" else 2)

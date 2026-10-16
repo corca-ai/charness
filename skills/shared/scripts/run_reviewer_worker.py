@@ -11,6 +11,7 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import os
 import runpy
 import sys
 import uuid
@@ -35,7 +36,10 @@ try:
         parser as _parser,
     )
     from reviewer_worker_runner_support import (
-        repo_path as _repo_path,
+        require_distinct_runner_paths as _require_distinct_runner_paths,
+    )
+    from reviewer_worker_runner_support import (
+        resolve_runner_path as _resolve_runner_path,
     )
     from reviewer_worker_runner_support import (
         reviewer_worker_arguments as _reviewer_worker_arguments,
@@ -45,6 +49,9 @@ try:
     )
     from reviewer_worker_runner_support import (
         sha256 as _sha256,
+    )
+    from reviewer_worker_runner_support import (
+        validate_owned_run_reference as _validate_owned_run_reference,
     )
 except ImportError:
     from skills.shared.scripts.reviewer_capability import load_capability_file
@@ -64,7 +71,10 @@ except ImportError:
         parser as _parser,
     )
     from skills.shared.scripts.reviewer_worker_runner_support import (
-        repo_path as _repo_path,
+        require_distinct_runner_paths as _require_distinct_runner_paths,
+    )
+    from skills.shared.scripts.reviewer_worker_runner_support import (
+        resolve_runner_path as _resolve_runner_path,
     )
     from skills.shared.scripts.reviewer_worker_runner_support import (
         reviewer_worker_arguments as _reviewer_worker_arguments,
@@ -74,6 +84,9 @@ except ImportError:
     )
     from skills.shared.scripts.reviewer_worker_runner_support import (
         sha256 as _sha256,
+    )
+    from skills.shared.scripts.reviewer_worker_runner_support import (
+        validate_owned_run_reference as _validate_owned_run_reference,
     )
 
 
@@ -94,6 +107,7 @@ def _runtime():
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     repo_root = args.repo_root.resolve()
+    runtime_environment = dict(os.environ)
     report_target: Path | None = None
     try:
         mode, backend, timeout, reviewer = _select_runner(args, repo_root)
@@ -117,15 +131,47 @@ def main(argv: list[str] | None = None) -> int:
         boundary_mode, boundary_fingerprint = boundary_binding(
             args.boundary_mode, args.boundary_fingerprint
         )
-        prompt = _repo_path(repo_root, args.prompt_file)
-        capability_file = _repo_path(repo_root, args.capability_file)
-        schema = _repo_path(repo_root, args.schema_file)
-        ledger_path = _repo_path(repo_root, args.ledger_file)
-        output_path = _repo_path(repo_root, args.output_file)
-        receipt_path = _repo_path(repo_root, args.receipt_file)
-        report_target = _repo_path(repo_root, args.report_file)
-        stdout_path = _repo_path(repo_root, args.stdout_file or Path(f"{output_path}.stdout"))
-        stderr_path = _repo_path(repo_root, args.stderr_file or Path(f"{output_path}.stderr"))
+        owner, owner_plan = _validate_owned_run_reference(
+            repo_root,
+            owner_run_id=args.owner_run_id,
+            owner_receipt_file=args.owner_receipt_file,
+            attempt_id=args.attempt_id,
+            scope=args.scope,
+            packet_identity=args.packet_identity,
+            reviewed_input_identity=args.reviewed_input_identity,
+            parent_receipt_identity=args.parent_receipt_identity,
+            backend=backend,
+            boundary_mode=boundary_mode,
+            boundary_fingerprint=args.boundary_fingerprint,
+            runtime_environment=runtime_environment,
+        )
+        prompt = _resolve_runner_path(repo_root, args.prompt_file, label="prompt file", owner=owner)
+        capability_file = _resolve_runner_path(
+            repo_root, args.capability_file, label="capability file", owner=owner
+        )
+        schema = _resolve_runner_path(repo_root, args.schema_file, label="schema file", owner=owner)
+        ledger_path = _resolve_runner_path(
+            repo_root, args.ledger_file, label="delivery ledger", owner=owner
+        )
+        output_path = _resolve_runner_path(repo_root, args.output_file, label="output file", owner=owner)
+        receipt_path = _resolve_runner_path(
+            repo_root, args.receipt_file, label="receipt file", owner=owner
+        )
+        report_target = _resolve_runner_path(
+            repo_root, args.report_file, label="report file", owner=owner
+        )
+        stdout_path = _resolve_runner_path(
+            repo_root,
+            args.stdout_file or Path(f"{output_path}.stdout"),
+            label="stdout file",
+            owner=owner,
+        )
+        stderr_path = _resolve_runner_path(
+            repo_root,
+            args.stderr_file or Path(f"{output_path}.stderr"),
+            label="stderr file",
+            owner=owner,
+        )
         producer_run_id = args.run_id or uuid.uuid4().hex
         if _sha256(schema) != _sha256(DEFAULT_SCHEMA):
             raise ValueError(
@@ -134,6 +180,11 @@ def main(argv: list[str] | None = None) -> int:
         launch_capability = load_capability_file(
             capability_file, attempt_id=args.attempt_id, require_ready=True
         )
+        if owner_plan is not None and (
+            owner_plan.get("schema_sha256") != _sha256(schema)
+            or owner_plan.get("capability_envelope_sha256") != launch_capability.envelope_sha256
+        ):
+            raise ValueError("owned scratch schema or capability identity does not match the run plan")
         all_paths = (
             prompt,
             capability_file,
@@ -149,9 +200,13 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 path.relative_to(repo_root)
             except ValueError as exc:
-                raise ValueError(f"runner path resolves outside --repo-root: {path}") from exc
-        if len({str(path) for path in all_paths}) != len(all_paths):
-            raise ValueError("runner input and output paths must resolve to distinct files")
+                if owner is None:
+                    raise ValueError(f"runner path resolves outside --repo-root: {path}") from exc
+                try:
+                    path.relative_to(owner.path)
+                except ValueError as owner_exc:
+                    raise ValueError(f"runner path resolves outside the exact owned scratch root: {path}") from owner_exc
+        _require_distinct_runner_paths(all_paths)
         stale_targets = [
             path
             for path in (output_path, receipt_path, report_target, stdout_path, stderr_path)

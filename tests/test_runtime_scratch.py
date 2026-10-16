@@ -17,6 +17,7 @@ from scripts.runtime_scratch import (
     inspect_scratch_roots,
     owned_scratch,
     recover_scratch_roots,
+    validate_owned_scratch_reference,
 )
 
 
@@ -196,12 +197,73 @@ def test_owned_scratch_writes_receipt_and_cleans_success_and_failure(tmp_path: P
         assert receipt["state"] == "active"
         assert path.is_relative_to(runtime / "scratch")
     assert not (runtime / "scratch" / "quality-engine" / "success").exists()
-
     failed = owned_scratch(repo, "quality-engine", run_id="failure", runtime_root_path=runtime)
     with pytest.raises(RuntimeError, match="boom"):
         with failed:
             raise RuntimeError("boom")
     assert not (runtime / "scratch" / "quality-engine" / "failure").exists()
+
+
+def test_live_owner_reference_is_exact_read_only_and_identity_bound(tmp_path: Path, monkeypatch) -> None:
+    repo, runtime = _paths(tmp_path)
+    monkeypatch.setenv("CHARNESS_RUNTIME_ROOT", str(runtime))
+    monkeypatch.delenv("CHARNESS_RUNTIME_ROOT_AUTO", raising=False)
+    monkeypatch.delenv("CHARNESS_RUNTIME_REPO_KEY", raising=False)
+    parent = owned_scratch(repo, "critique-review", run_id="review-live")
+    parent.open()
+    parent.update(
+        attempt_id="attempt-1",
+        plan_sha256="a" * 64,
+        packet_identity="b" * 64,
+        reviewed_input_identity="c" * 64,
+        parent_receipt_identity="parent-1",
+    )
+
+    proof, receipt = validate_owned_scratch_reference(
+        repo,
+        parent.receipt_path,
+        producer="critique-review",
+        run_id="review-live",
+        expected_fields={
+            "attempt_id": "attempt-1",
+            "plan_sha256": "a" * 64,
+            "packet_identity": "b" * 64,
+            "reviewed_input_identity": "c" * 64,
+            "parent_receipt_identity": "parent-1",
+        },
+    )
+    assert proof.path == parent.path
+    assert proof._opened is False
+    assert parent._opened is True
+    assert receipt["pid"] == os.getpid()
+
+    with pytest.raises(ScratchError, match="exact default external"):
+        validate_owned_scratch_reference(
+            repo,
+            parent.receipt_path.parent / "alias.json",
+            producer="critique-review",
+            run_id="review-live",
+            expected_fields={},
+        )
+    with pytest.raises(ScratchError, match="attempt_id"):
+        validate_owned_scratch_reference(
+            repo,
+            parent.receipt_path,
+            producer="critique-review",
+            run_id="review-live",
+            expected_fields={"attempt_id": "another-attempt"},
+        )
+    foreign_repo = tmp_path / "foreign-repo"
+    foreign_repo.mkdir()
+    with pytest.raises(ScratchError, match="identity does not match"):
+        validate_owned_scratch_reference(
+            foreign_repo,
+            parent.receipt_path,
+            producer="critique-review",
+            run_id="review-live",
+            expected_fields={},
+        )
+    parent.close()
 
 
 def test_inspection_reports_active_owner_and_exact_inventory(tmp_path: Path) -> None:

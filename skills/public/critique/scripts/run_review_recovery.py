@@ -25,7 +25,6 @@ def resume_retained_attempt(
         root,
         "critique-review",
         run_id=run_id,
-        runtime_root_path=root / ".charness",
     )
     owner.reopen_existing()
     try:
@@ -86,6 +85,7 @@ def resume_retained_attempt(
                 carrier_validation.validate_delivered_worker_report(
                     repo_root=root,
                     report=report,
+                    owned_root=run_dir,
                     expected_attempt_id=attempt,
                     expected_paths={
                         "receipt": paths["receipt"],

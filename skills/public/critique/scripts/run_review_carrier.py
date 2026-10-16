@@ -141,7 +141,9 @@ def failure_carrier(
     return carrier
 
 
-def bind_promoted_paths(context: dict[str, Any], promoted: dict[str, str], promotion: Any) -> dict[str, str]:
+def bind_promoted_paths(
+    context: dict[str, Any], promoted: dict[str, str], promotion: Any, *, run_dir: Path | None = None
+) -> dict[str, str]:
     """Replace runtime-only paths with their durable receipt paths."""
     bound = context.setdefault("paths", {})
     old_paths = dict(bound)
@@ -161,8 +163,19 @@ def bind_promoted_paths(context: dict[str, Any], promoted: dict[str, str], promo
         if relative is not None:
             bound[source_key] = relative
     for key, value in list(bound.items()):
-        if isinstance(value, str) and Path(value).parts[:2] == (".charness", "scratch"):
+        if not isinstance(value, str):
+            continue
+        path = Path(value)
+        if path.parts[:2] == (".charness", "scratch"):
             bound.pop(key, None)
+            continue
+        if run_dir is not None and path.is_absolute():
+            try:
+                path.resolve().relative_to(run_dir.resolve())
+            except ValueError:
+                pass
+            else:
+                bound.pop(key, None)
     return bound
 
 
@@ -244,7 +257,7 @@ def finalize_carrier(
         carrier["semantic_input"] = replace_exact_strings(
             carrier.get("semantic_input"), semantic_replacements
         )
-    bound = bind_promoted_paths(context, promoted, promotion)
+    bound = bind_promoted_paths(context, promoted, promotion, run_dir=run_dir)
     rebind_partial_artifacts(carrier, old_paths, bound, promotion)
     carrier["paths"] = dict(bound)
     summary = promoted.get("lifecycle.yaml")

@@ -181,7 +181,20 @@ def validate_retained_inputs(  # noqa: C901, PLR0915
         if not isinstance(value, str) or not isinstance(entry.get("path"), str):
             return invalid("retained semantic-input manifest entry has no carrier path")
         try:
-            carrier = support.repo_path(root, value, label="retained semantic carrier", require_file=True)
+            raw_carrier = Path(value)
+            if raw_carrier.is_absolute():
+                carrier = raw_carrier
+                relative = carrier.relative_to(paths["run_dir"])
+                current = paths["run_dir"]
+                for part in relative.parts:
+                    current = current / part
+                    if current.is_symlink():
+                        return invalid("retained semantic carrier crosses a symlink")
+                carrier = carrier.resolve()
+            else:
+                carrier = support.repo_path(root, value, label="retained semantic carrier", require_file=True)
+            if not carrier.is_file():
+                return invalid("retained semantic carrier is missing")
             carrier.resolve().relative_to(semantic_root)
         except (support.RunReviewError, ValueError):
             return invalid("retained semantic carrier escaped its run")

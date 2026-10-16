@@ -46,8 +46,10 @@ class _PacketReader:
 
 
 def _retained_fixture(tmp_path: Path) -> dict[str, object]:
+    repo = tmp_path / "repo"
+    repo.mkdir()
     attempt = "retained-1"
-    run_dir = tmp_path / ".charness" / "scratch" / "critique-review" / attempt
+    run_dir = tmp_path / "external-runtime" / "scratch" / "critique-review" / attempt
     semantic_dir = run_dir / "semantic-input"
     semantic_dir.mkdir(parents=True)
     content = b"immutable review input\n"
@@ -66,7 +68,7 @@ def _retained_fixture(tmp_path: Path) -> dict[str, object]:
             ],
         },
     }
-    packet_path = tmp_path / "packet.json"
+    packet_path = repo / "packet.json"
     packet_path.write_text(json.dumps(packet_payload, sort_keys=True) + "\n", encoding="utf-8")
     packet_sha = hashlib.sha256(packet_path.read_bytes()).hexdigest()
 
@@ -132,7 +134,7 @@ def _retained_fixture(tmp_path: Path) -> dict[str, object]:
         "entries": [
             {
                 "path": "reviewed.txt",
-                "carrier_path": SUPPORT.relative(tmp_path, content_path),
+                "carrier_path": SUPPORT.relative(repo, content_path),
                 "content_sha256": content_sha,
             }
         ]
@@ -161,6 +163,7 @@ def _retained_fixture(tmp_path: Path) -> dict[str, object]:
         "paths": paths,
         "owner_receipt": owner_receipt,
         "package": {"verify_packet": tmp_path / "verify_packet.py"},
+        "repo": repo,
         "packet_module": _PacketReader,
         "identity_verification": _IdentityVerification,
         "content_path": content_path,
@@ -185,7 +188,7 @@ def test_retained_input_validation_rebinds_all_identity_and_semantic_bytes(
 ) -> None:
     fixture = _retained_fixture(tmp_path)
     result = RECOVERY_INPUTS.validate_retained_inputs(
-        tmp_path,
+        fixture["repo"],
         fixture["plan"],
         fixture["packet"],
         fixture["paths"],
@@ -227,7 +230,7 @@ def test_retained_input_validation_refuses_tampering_before_recovery(
         SUPPORT.write_json(manifest, {"entries": []})
 
     result = RECOVERY_INPUTS.validate_retained_inputs(
-        tmp_path,
+        fixture["repo"],
         fixture["plan"],
         fixture["packet"],
         fixture["paths"],
@@ -302,6 +305,7 @@ def test_promoted_chain_reopens_durable_files_and_checks_integrity(tmp_path: Pat
 class _RecoveryOwner:
     def __init__(self, path: Path):
         self.path = path
+        self.run_id = path.name
         self.receipt_path = path / ".charness-owner.json"
         self.closed: list[dict[str, object]] = []
         self.reopened = False
@@ -316,7 +320,7 @@ class _RecoveryOwner:
 def test_recovery_emits_refusal_and_retains_scratch_when_inputs_do_not_bind(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    run_dir = tmp_path / ".charness" / "scratch" / "critique-review" / "retained"
+    run_dir = tmp_path.parent / f"{tmp_path.name}-runtime" / "scratch" / "critique-review" / "retained"
     run_dir.mkdir(parents=True)
     (tmp_path / "packet.json").write_text("{}\n", encoding="utf-8")
     SUPPORT.write_json(
